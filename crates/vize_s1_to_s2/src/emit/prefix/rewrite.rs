@@ -30,6 +30,10 @@ pub(super) struct Retained<'r, 'a> {
 
 pub(super) struct RewriteResult {
     pub(super) code: String,
+    /// Set when a binding was read through `_unref(…)`; the emit marks
+    /// that helper once, after the body, the way the shipped lane appends
+    /// it after every used helper.
+    pub(super) used_unref: bool,
     /// The shipped lane reports `X_INVALID_EXPRESSION` here; the emit
     /// refuses instead (the diagnostic is not recoverable, so the corpus
     /// lane never compares such a template).
@@ -74,6 +78,7 @@ pub(super) fn rewrite_expression(
     if overflows || !expression_has_balanced_delimiters(content) {
         return RewriteResult {
             code: String::from(content),
+            used_unref: false,
             parse_error: !overflows,
         };
     }
@@ -89,6 +94,7 @@ pub(super) fn rewrite_expression(
             || (scope.is_ts() && parses_as_params(content, ts_module()));
         return RewriteResult {
             code: js_content,
+            used_unref: false,
             parse_error: !accepted,
         };
     }
@@ -110,6 +116,7 @@ fn project_aliases(result: RewriteResult, scope: &PrefixScope<'_>) -> RewriteRes
             scope.bindings(),
             &["__props", "$props"],
         ),
+        used_unref: result.used_unref,
         parse_error: false,
     }
 }
@@ -121,9 +128,11 @@ fn rewrite_retained(
 ) -> RewriteResult {
     let mut collector = IdentifierCollector::new_unwrapped(scope, content, retained.offset);
     collector.visit_expression(retained.ast);
+    let used_unref = collector.used_unref;
     let code = splice_insertions(content, collector.rewrites, collector.suffix_rewrites, 0);
     RewriteResult {
         code,
+        used_unref,
         parse_error: false,
     }
 }
@@ -149,9 +158,11 @@ fn rewrite_reparsed(
     {
         let mut collector = IdentifierCollector::new(scope, wrapped.as_str());
         collector.visit_expression(&expr);
+        let used_unref = collector.used_unref;
         let code = splice_insertions(content, collector.rewrites, collector.suffix_rewrites, 1);
         return RewriteResult {
             code,
+            used_unref,
             parse_error: false,
         };
     }
@@ -161,14 +172,19 @@ fn rewrite_reparsed(
     if parsed.diagnostics.is_empty() {
         let mut collector = IdentifierCollector::new(scope, content);
         collector.visit_program(&parsed.program);
+        let used_unref = collector.used_unref;
         let code = splice_insertions(content, collector.rewrites, collector.suffix_rewrites, 0);
         return RewriteResult {
             code,
+            used_unref,
             parse_error: false,
         };
     }
 
     if is_simple_identifier(content) {
+        // The same three-way read the collector makes: prefix, `.value`
+        // for an inline ref, `_unref(…)` for an inline `let`.
+        let needs_unref = scope.needs_unref(content);
         let code = match scope.identifier_prefix(content) {
             Some(prefix) => {
                 let mut code = String::with_capacity(prefix.len() + content.len());
@@ -176,10 +192,24 @@ fn rewrite_reparsed(
                 code.push_str(content);
                 code
             }
+            None if scope.is_ref_binding(content) => {
+                let mut code = String::with_capacity(content.len() + 6);
+                code.push_str(content);
+                code.push_str(".value");
+                code
+            }
+            None if needs_unref => {
+                let mut code = String::with_capacity(content.len() + 8);
+                code.push_str("_unref(");
+                code.push_str(content);
+                code.push(')');
+                code
+            }
             None => String::from(content),
         };
         return RewriteResult {
             code,
+            used_unref: needs_unref,
             parse_error: false,
         };
     }
@@ -188,6 +218,7 @@ fn rewrite_reparsed(
             || parses_as_typescript(original));
     RewriteResult {
         code: js_content,
+        used_unref: false,
         parse_error: !ts_accepts,
     }
 }

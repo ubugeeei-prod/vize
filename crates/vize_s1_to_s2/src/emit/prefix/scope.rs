@@ -27,7 +27,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_s0::{SmallVec, String};
 
-use super::super::options::BindingTable;
+use super::super::options::{BindingKind, BindingTable};
 use super::globals::is_scope_chain_global;
 
 #[derive(Default)]
@@ -38,6 +38,7 @@ pub(in crate::emit) struct PrefixScope<'b> {
     bindings: Option<&'b BindingTable>,
     prefix_identifiers: bool,
     is_ts: bool,
+    inline: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -52,13 +53,71 @@ impl<'b> PrefixScope<'b> {
         bindings: Option<&'b BindingTable>,
         prefix_identifiers: bool,
         is_ts: bool,
+        inline: bool,
     ) -> Self {
         Self {
             bindings,
             prefix_identifiers,
             is_ts,
+            inline,
             ..Self::default()
         }
+    }
+
+    /// Whether the render function is inlined into `setup()`.
+    pub(in crate::emit) fn inline(&self) -> bool {
+        self.inline
+    }
+
+    /// `is_ref_binding`: an inline-mode ref is read through `.value`.
+    /// (The shipped lane consults croquis first and falls back to the
+    /// binding table; the table is what this lane carries.)
+    pub(super) fn is_ref_binding(&self, name: &str) -> bool {
+        self.inline
+            && self
+                .bindings
+                .and_then(|table| table.kind(name))
+                .is_some_and(|kind| kind == BindingKind::SetupRef)
+    }
+
+    /// Whether `name` reads a binding that cannot change at runtime, as
+    /// the codegen sees it: only an inline render function leaves the
+    /// name bare enough for the lookup to hit.
+    pub(in crate::emit) fn reads_constant_binding(&self, name: &str) -> bool {
+        self.inline
+            && self
+                .bindings
+                .and_then(|table| table.kind(name))
+                .is_some_and(|kind| {
+                    matches!(kind, BindingKind::LiteralConst | BindingKind::SetupConst)
+                })
+    }
+
+    /// The codegen visitor's `needs_value`: an inline-mode assignment to
+    /// a setup binding writes through `.value`.
+    pub(super) fn writes_through_value(&self, name: &str) -> bool {
+        self.inline
+            && self
+                .bindings
+                .and_then(|table| table.kind(name))
+                .is_some_and(|kind| {
+                    matches!(
+                        kind,
+                        BindingKind::SetupLet | BindingKind::SetupMaybeRef | BindingKind::SetupRef
+                    )
+                })
+    }
+
+    /// `needs_unref`: a `let` or maybe-ref setup binding captured by an
+    /// inline render closure is read through `_unref(…)`.
+    pub(super) fn needs_unref(&self, name: &str) -> bool {
+        self.inline
+            && self
+                .bindings
+                .and_then(|table| table.kind(name))
+                .is_some_and(|kind| {
+                    matches!(kind, BindingKind::SetupLet | BindingKind::SetupMaybeRef)
+                })
     }
 
     /// Whether free identifiers are rewritten at all (`prefix_identifiers`).
@@ -152,7 +211,19 @@ impl<'b> PrefixScope<'b> {
         if is_scope_chain_global(name) || self.is_in_transform_scope(name) {
             return None;
         }
-        Some(self.codegen_prefix(name))
+        self.transform_prefix(name)
+    }
+
+    /// `get_identifier_prefix`'s binding arm: inline mode reads props off
+    /// the setup-local `__props` and every other setup binding straight
+    /// from the closure — `None`, which is what lets the collector fall
+    /// through to the `.value` / `_unref` decisions.
+    fn transform_prefix(&self, name: &str) -> Option<&'static str> {
+        match self.bindings.and_then(|table| table.kind(name)) {
+            Some(kind) if kind.is_props() => Some(if self.inline { "__props." } else { "$props." }),
+            Some(kind) => (!self.inline).then(|| kind.non_inline_template_prefix()),
+            None => Some("_ctx."),
+        }
     }
 
     /// The codegen `IdentifierVisitor` prefix (no scope or allowlist check;
@@ -160,6 +231,15 @@ impl<'b> PrefixScope<'b> {
     /// `_ctx.` for names the table does not know.
     pub(super) fn codegen_prefix(&self, name: &str) -> &'static str {
         match self.bindings.and_then(|table| table.kind(name)) {
+            // Inline mode reads props off the render closure's own
+            // `$props` and every other setup binding directly.
+            Some(kind) if self.inline => {
+                if kind.is_props() {
+                    "$props."
+                } else {
+                    ""
+                }
+            }
             Some(kind) if kind.is_props() => "$props.",
             Some(kind) => kind.non_inline_template_prefix(),
             None => "_ctx.",
@@ -186,7 +266,7 @@ mod tests {
             [],
             true,
         );
-        let mut scope = PrefixScope::new(Some(&table), true, false);
+        let mut scope = PrefixScope::new(Some(&table), true, false, false);
         assert_eq!(scope.identifier_prefix("count"), Some("$setup."));
         assert_eq!(scope.identifier_prefix("title"), Some("$props."));
         assert_eq!(scope.identifier_prefix("label"), Some("$props."));
@@ -200,8 +280,42 @@ mod tests {
     }
 
     #[test]
+    fn inline_reads_setup_bindings_off_the_closure() {
+        let table = BindingTable::new(
+            [
+                ("count", BindingKind::SetupRef),
+                ("msg", BindingKind::SetupLet),
+                ("title", BindingKind::Props),
+                ("handler", BindingKind::SetupConst),
+            ],
+            [],
+            true,
+        );
+        let scope = PrefixScope::new(Some(&table), true, false, true);
+        // A setup binding is read straight from the closure, so the
+        // prefix is `None` — which is what lets the collector reach the
+        // `.value` / `_unref` decisions below.
+        assert_eq!(scope.identifier_prefix("count"), None);
+        assert_eq!(scope.identifier_prefix("msg"), None);
+        assert_eq!(scope.identifier_prefix("handler"), None);
+        assert_eq!(scope.identifier_prefix("title"), Some("__props."));
+        assert_eq!(scope.identifier_prefix("other"), Some("_ctx."));
+        assert_eq!(
+            (
+                scope.is_ref_binding("count"),
+                scope.is_ref_binding("msg"),
+                scope.needs_unref("msg"),
+                scope.needs_unref("count")
+            ),
+            (true, false, true, false)
+        );
+        assert!(scope.reads_constant_binding("handler"));
+        assert!(!scope.reads_constant_binding("count"));
+    }
+
+    #[test]
     fn without_a_table_every_free_name_is_ctx() {
-        let scope = PrefixScope::new(None, true, false);
+        let scope = PrefixScope::new(None, true, false, false);
         assert_eq!(scope.identifier_prefix("count"), Some("_ctx."));
         assert_eq!(scope.codegen_prefix("count"), "_ctx.");
     }

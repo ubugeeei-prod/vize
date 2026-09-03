@@ -252,7 +252,14 @@ fn emit_call(
                 .clone(),
         );
     }
-    let mut patch = bind_patch(&component.bindings, true, if_key, for_item, cx.is_ts);
+    let mut patch = bind_patch(
+        &component.bindings,
+        true,
+        if_key,
+        for_item,
+        cx.is_ts,
+        &|name| cx.reads_constant_binding_name(name),
+    );
     if skip_is {
         patch.dynamic_props.retain(|name| name.as_str() != "is");
         if patch.dynamic_props.is_empty() {
@@ -269,7 +276,7 @@ fn emit_call(
         }
     }
     let mut flag = patch.flag;
-    if array && children_need_text_flag(&component.children) {
+    if array && children_need_text_flag(cx, &component.children) {
         flag |= 1;
     }
     if (cx.in_v_for && has_slots)

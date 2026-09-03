@@ -155,26 +155,38 @@ fn quote_padded<'a>(file: &'a str, source: &str, span: Span) -> Option<&'a str> 
 /// `X_INVALID_EXPRESSION` here, so no comparison exists to win.
 pub(super) struct Refused;
 
+/// Prefixed text, with whether reaching it needed the `_unref` helper.
+pub(super) struct Prefixed {
+    pub(super) text: String,
+    pub(super) used_unref: bool,
+}
+
 /// `process_expression` then the codegen consumption for `site`.
 pub(super) fn prefix_expression(
     scope: &PrefixScope<'_>,
     content: &Content<'_>,
     js: Option<&JsExpr<'_>>,
     site: Site,
-) -> Result<String, Refused> {
+) -> Result<Prefixed, Refused> {
     // `process_expression`: with `prefix_identifiers` off the TS lane only
     // type-erases, and the node is still marked rewritten — so the codegen
     // consumption runs either way.
     if !scope.prefixes_identifiers() {
         let stripped = strip_typescript_from_expression(content.text.as_str());
-        return Ok(consume(scope, stripped, site));
+        return Ok(Prefixed {
+            text: consume(scope, stripped, site),
+            used_unref: false,
+        });
     }
     let retained = content.retained(js);
     let rewritten = rewrite::rewrite_expression(content.text.as_str(), retained, scope, false);
     if rewritten.parse_error {
         return Err(Refused);
     }
-    Ok(consume(scope, rewritten.code, site))
+    Ok(Prefixed {
+        text: consume(scope, rewritten.code, site),
+        used_unref: rewritten.used_unref,
+    })
 }
 
 /// The codegen consumption alone (text the transform did not rewrite).
@@ -202,13 +214,16 @@ pub(super) fn prefix_handler(
     scope: &PrefixScope<'_>,
     content: &Content<'_>,
     js: Option<&JsExpr<'_>>,
-) -> Result<String, Refused> {
+) -> Result<Prefixed, Refused> {
     let retained = content.retained(js);
     let processed = handler::process_inline_handler(content.text.as_str(), retained, scope);
     if processed.parse_error {
         return Err(Refused);
     }
-    Ok(handler::finish_event_handler(processed.code, scope))
+    Ok(Prefixed {
+        text: handler::finish_event_handler(processed.code, scope),
+        used_unref: processed.used_unref,
+    })
 }
 
 /// `emit_dynamic_directive_arg` under `prefix_identifiers`.

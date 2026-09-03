@@ -65,6 +65,8 @@ pub(super) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) -> bool {
             .bindings()
             .and_then(|table| table.kind(binding_name.as_str()))
         {
+            // An inlined render function has the import in scope already.
+            Some(_) if cx.scope.inline() => cx.buf.push(binding_name.as_str()),
             Some(kind) => {
                 cx.buf
                     .push(kind.non_inline_template_prefix().trim_end_matches('.'));

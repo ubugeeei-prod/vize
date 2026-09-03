@@ -204,6 +204,11 @@ pub struct DomEmitOptions<'a> {
     /// The shipped lane's `prefix_identifiers`: free identifiers become
     /// member accesses (`emit::prefix`).
     pub prefix_identifiers: bool,
+    /// The shipped lane's `inline`: the render function is inlined into
+    /// `setup()`, so setup bindings are read straight from the closure —
+    /// refs through `.value`, `let`/maybe-ref bindings through `_unref`,
+    /// props through `__props.` — instead of the `$setup` proxy.
+    pub inline: bool,
     /// The shipped lane's `component_name`: the SFC's own name (its file
     /// stem). A component tag that resolves to it is a self-reference, and
     /// the shipped lane asks the runtime to resolve it as one.
@@ -227,6 +232,7 @@ impl DomEmitOptions<'static> {
         runtime_module_name: "vue",
         runtime_global_name: "Vue",
         prefix_identifiers: false,
+        inline: false,
         component_name: None,
         is_ts: false,
         bindings: None,
@@ -252,6 +258,7 @@ mod tests {
                 runtime_module_name: "vue",
                 runtime_global_name: "Vue",
                 prefix_identifiers: false,
+                inline: false,
                 component_name: None,
                 is_ts: false,
                 bindings: None,

@@ -93,6 +93,35 @@ impl EmitCx<'_> {
     /// Whether the expression pipeline runs at all: the shipped
     /// `process_expression` returns early unless one of `prefix_identifiers`
     /// / `is_ts` is on, and every emit site that consults this mirrors it.
+    /// Fold a prefixed result's `_unref` use into the emit and hand back
+    /// its text.
+    fn record_unref(&self, prefixed: prefix::Prefixed) -> String {
+        if prefixed.used_unref {
+            self.used_unref.set(true);
+        }
+        prefixed.text
+    }
+
+    /// `is_constant_interpolation`: the interpolation reads a single
+    /// binding the script cannot change. The name is only visible as
+    /// itself where the transform leaves it bare — an inlined render
+    /// function — so this is `false` everywhere else.
+    pub(super) fn reads_constant_binding(&self, expr: &ExprRef<'_>) -> bool {
+        let source = match expr {
+            ExprRef::Js(js) => js.source,
+            ExprRef::Opaque(opaque) => opaque.source,
+            ExprRef::Foreign(_) | ExprRef::Filter(_) => return false,
+        }
+        .trim();
+        self.scope.reads_constant_binding(source)
+    }
+
+    /// [`Self::reads_constant_binding`] over a name the caller already
+    /// trimmed out of the op.
+    pub(super) fn reads_constant_binding_name(&self, name: &str) -> bool {
+        self.scope.reads_constant_binding(name)
+    }
+
     pub(super) fn prefixing(&self) -> bool {
         self.prefix_identifiers || self.is_ts
     }
@@ -186,6 +215,7 @@ impl EmitCx<'_> {
             },
         };
         prefix::prefix_expression(&self.scope, &content, js, site)
+            .map(|prefixed| self.record_unref(prefixed))
             .map_err(|_| EmitError::unsupported_at(Reason::PrefixExpressionRejected, expr.span()))
     }
 
@@ -193,6 +223,7 @@ impl EmitCx<'_> {
     pub(super) fn prefixed_js(&self, js: &JsExpr<'_>, site: Site) -> Result<String, EmitError> {
         let content = prefix::node_content(self.source, js.source, js.span);
         prefix::prefix_expression(&self.scope, &content, Some(js), site)
+            .map(|prefixed| self.record_unref(prefixed))
             .map_err(|_| EmitError::unsupported_at(Reason::PrefixExpressionRejected, js.span))
     }
 
@@ -200,6 +231,7 @@ impl EmitCx<'_> {
     pub(super) fn prefixed_bind_js(&self, js: &JsExpr<'_>) -> Result<String, EmitError> {
         let content = prefix::node_content_decoded(self.source, js.source, js.span);
         prefix::prefix_expression(&self.scope, &content, Some(js), Site::Expression)
+            .map(|prefixed| self.record_unref(prefixed))
             .map_err(|_| EmitError::unsupported_at(Reason::PrefixExpressionRejected, js.span))
     }
 
@@ -220,6 +252,7 @@ impl EmitCx<'_> {
             offset: None,
         };
         prefix::prefix_expression(&self.scope, &content, None, site)
+            .map(|prefixed| self.record_unref(prefixed))
             .map_err(|_| EmitError::unsupported(Reason::PrefixExpressionRejected))
     }
 
@@ -237,6 +270,7 @@ impl EmitCx<'_> {
         };
         let content = prefix::node_content(self.source, source, expr.span());
         prefix::prefix_handler(&self.scope, &content, js)
+            .map(|prefixed| self.record_unref(prefixed))
             .map_err(|_| EmitError::unsupported_at(Reason::PrefixExpressionRejected, expr.span()))
     }
 
@@ -247,6 +281,7 @@ impl EmitCx<'_> {
             offset: None,
         };
         prefix::prefix_handler(&self.scope, &content, None)
+            .map(|prefixed| self.record_unref(prefixed))
             .map_err(|_| EmitError::unsupported(Reason::PrefixExpressionRejected))
     }
 

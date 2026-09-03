@@ -26,10 +26,15 @@ use super::scope::PrefixScope;
 
 pub(super) struct IdentifierCollector<'s, 'a> {
     scope: &'s PrefixScope<'s>,
-    /// The walked text; read by the inline-mode assignment scan once
-    /// binding metadata lands.
-    #[allow(dead_code)]
+    /// The walked text; the inline-mode assignment scan reads it to place
+    /// `.value` after the closing parens of `((model) = $event)`.
     pub(super) source: &'a str,
+    /// Whether `source` is the wrapped `(content)` parse. The shipped
+    /// lane drops a suffix that lands at the very end of *unwrapped*
+    /// text, because there the apply loop saw it as out of range.
+    wrapped: bool,
+    /// Set when a binding was read through `_unref(…)`.
+    pub(super) used_unref: bool,
     offset: usize,
     local_scopes: StdVec<StdVec<String>>,
     pub(super) rewrites: StdVec<(usize, String)>,
@@ -43,6 +48,8 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
         Self {
             scope,
             source,
+            wrapped: true,
+            used_unref: false,
             offset: 0,
             local_scopes: alloc::vec![StdVec::new()],
             rewrites: StdVec::new(),
@@ -60,6 +67,7 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
     ) -> Self {
         Self {
             offset,
+            wrapped: false,
             ..Self::new(scope, source)
         }
     }
@@ -87,6 +95,22 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
 
     fn at(&self, position: u32) -> usize {
         position as usize + self.offset
+    }
+
+    /// An assignment target wrapped in parens — `((model) = $event)` —
+    /// takes its `.value` after the closing parens, so the scan walks
+    /// past them. A suffix landing at the very end of unwrapped text is
+    /// dropped: the shipped apply loop saw that position as out of range.
+    fn push_assignment_value_suffix(&mut self, end: usize) {
+        let bytes = self.source.as_bytes();
+        let mut position = end;
+        while position < bytes.len() && bytes[position] == b')' {
+            position += 1;
+        }
+        if self.wrapped || position < bytes.len() {
+            self.suffix_rewrites
+                .push((position, String::from(".value")));
+        }
     }
 
     fn push_prefix(&mut self, position: usize, prefix: &'static str) {
@@ -138,15 +162,37 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
             return;
         }
         let start = self.at(ident.span.start);
+        let end = self.at(ident.span.end);
+        let needs_unref = self.scope.needs_unref(name);
         let is_assignment_target = self.assignment_targets.contains(&start);
         if is_assignment_target {
             if let Some(prefix) = self.scope.identifier_prefix(name) {
                 self.push_prefix(start, prefix);
             }
+            if self.scope.inline() && (self.scope.is_ref_binding(name) || needs_unref) {
+                self.push_assignment_value_suffix(end);
+            }
             return;
         }
-        if let Some(prefix) = self.scope.identifier_prefix(name) {
-            self.push_prefix(start, prefix);
+        match self.scope.identifier_prefix(name) {
+            // `_unref($setup.x)` is unreachable today — `needs_unref`
+            // implies inline, where the prefix is never `$setup.` — but
+            // the shipped branch order is what decides the other two.
+            Some(prefix) if needs_unref && prefix == "$setup." => {
+                self.push_prefix(start, "_unref($setup.");
+                self.suffix_rewrites.push((end, String::from(")")));
+                self.used_unref = true;
+            }
+            Some(prefix) => self.push_prefix(start, prefix),
+            None if self.scope.is_ref_binding(name) => {
+                self.suffix_rewrites.push((end, String::from(".value")));
+            }
+            None if needs_unref => {
+                self.push_prefix(start, "_unref(");
+                self.suffix_rewrites.push((end, String::from(")")));
+                self.used_unref = true;
+            }
+            None => {}
         }
     }
 
@@ -241,14 +287,35 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
             if self.scope.is_in_transform_scope(name) {
                 return;
             }
-            if let Some(prefix) = self.scope.identifier_prefix(name)
-                && !prefix.is_empty()
-            {
-                let mut suffix = String::with_capacity(2 + prefix.len() + name.len());
+            let prefix = self.scope.identifier_prefix(name);
+            let is_ref = self.scope.is_ref_binding(name);
+            let needs_unref = self.scope.needs_unref(name);
+            // Inline mode reads a ref through `.value` and a `let` through
+            // `_unref(…)` with no prefix at all, so the shorthand still has
+            // to expand: `{ n }` becomes `{ n: n.value }`, never `{ n.value }`.
+            if prefix.is_some_and(|prefix| !prefix.is_empty()) || is_ref || needs_unref {
+                let prefix = prefix.unwrap_or("");
+                let (value_prefix, value_suffix) = if needs_unref && prefix.is_empty() {
+                    ("_unref(", ")")
+                } else if is_ref {
+                    ("", ".value")
+                } else {
+                    ("", "")
+                };
+                let mut suffix = String::with_capacity(
+                    2 + value_prefix.len() + prefix.len() + name.len() + value_suffix.len(),
+                );
                 suffix.push_str(": ");
-                suffix.push_str(prefix);
+                suffix.push_str(value_prefix);
+                if !needs_unref {
+                    suffix.push_str(prefix);
+                }
                 suffix.push_str(name);
+                suffix.push_str(value_suffix);
                 self.suffix_rewrites.push((self.at(ident.span.end), suffix));
+                if needs_unref {
+                    self.used_unref = true;
+                }
                 return;
             }
         }

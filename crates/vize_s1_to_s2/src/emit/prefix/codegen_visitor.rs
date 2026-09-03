@@ -120,9 +120,23 @@ impl Visit<'_> for IdentifierVisitor<'_> {
         let start = (ident.span.start - self.offset) as usize;
         let end = (ident.span.end - self.offset) as usize;
         let prefix = self.scope.codegen_prefix(name);
-        let mut replacement = String::with_capacity(prefix.len() + name.len());
+        // An inline-mode assignment target writes through `.value`.
+        let value_suffix = if self
+            .assignment_targets
+            .contains(&(ident.span.start as usize))
+            && self.scope.writes_through_value(name)
+        {
+            ".value"
+        } else {
+            ""
+        };
+        if prefix.is_empty() && value_suffix.is_empty() {
+            return;
+        }
+        let mut replacement = String::with_capacity(prefix.len() + name.len() + value_suffix.len());
         replacement.push_str(prefix);
         replacement.push_str(name);
+        replacement.push_str(value_suffix);
         self.rewrites.push((start, end, replacement));
     }
 
@@ -148,14 +162,35 @@ impl Visit<'_> for IdentifierVisitor<'_> {
             if self.is_local(name) || is_global_allowed(name) || self.scope.is_slot_param(name) {
                 return;
             }
+            let prefix = self.scope.codegen_prefix(name);
+            let is_ref = self.scope.is_ref_binding(name);
+            let needs_unref = self.scope.needs_unref(name);
+            if prefix.is_empty() && !is_ref && !needs_unref {
+                return;
+            }
             let start = (prop.span.start - self.offset) as usize;
             let end = (prop.span.end - self.offset) as usize;
-            let prefix = self.scope.codegen_prefix(name);
-            let mut replacement = String::with_capacity(name.len() * 2 + prefix.len() + 2);
+            // Inline mode reads the shorthand's value through `_unref(x)`
+            // or `x.value`; the prefix is dropped for the `_unref` form,
+            // which the shipped visitor does too.
+            let (value_prefix, value_suffix) = if needs_unref {
+                ("_unref(", ")")
+            } else if is_ref {
+                ("", ".value")
+            } else {
+                ("", "")
+            };
+            let mut replacement = String::with_capacity(
+                name.len() * 2 + prefix.len() + value_prefix.len() + value_suffix.len() + 2,
+            );
             replacement.push_str(name);
             replacement.push_str(": ");
-            replacement.push_str(prefix);
+            replacement.push_str(value_prefix);
+            if !needs_unref {
+                replacement.push_str(prefix);
+            }
             replacement.push_str(name);
+            replacement.push_str(value_suffix);
             self.rewrites.push((start, end, replacement));
             return;
         }

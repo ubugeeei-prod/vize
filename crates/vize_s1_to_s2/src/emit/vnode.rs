@@ -5,9 +5,13 @@ mod checks;
 
 pub(super) use array_child::emit_array_child;
 use vize_davinci::id::NodeId;
-use vize_s2::op::{BindingOp, ElementOp, Op};
+use vize_s2::op::ElementOp;
 
 use super::buf::Buf;
+mod slot_child_props;
+
+use slot_child_props::scoped_for_slot_component_slot_child_props;
+
 use super::children::children_need_text_flag;
 use super::directive;
 use super::flag::emit_patch_flag;
@@ -228,8 +232,15 @@ pub(super) fn emit_call(
             None
         };
     let hoist = hoisted_props.is_some();
-    let patch = bind_patch(&element.bindings, false, if_key, for_item, cx.is_ts);
-    let text_flag = !once && !memo_block && children_need_text_flag(&element.children);
+    let patch = bind_patch(
+        &element.bindings,
+        false,
+        if_key,
+        for_item,
+        cx.is_ts,
+        &|name| cx.reads_constant_binding_name(name),
+    );
+    let text_flag = !once && !memo_block && children_need_text_flag(cx, &element.children);
     let mut flag = patch.flag;
     if text_flag {
         flag |= 1;
@@ -328,22 +339,4 @@ pub(super) fn emit_call(
     }
     cx.buf.push(")");
     Ok(())
-}
-
-fn scoped_for_slot_component_slot_child_props(
-    cx: &EmitCx<'_>,
-    element: &ElementOp<'_>,
-    prop_hoist: PropHoistPosition,
-) -> bool {
-    matches!(prop_hoist, PropHoistPosition::Nested)
-        && cx.slot_param_depth > 0
-        && element.bindings.is_empty()
-        && matches!(
-            element.children.ops.as_slice(),
-            [Op::Component(component)]
-                if component
-                    .bindings
-                    .iter()
-                    .any(|binding| matches!(binding, BindingOp::SlotContent(_)))
-        )
 }

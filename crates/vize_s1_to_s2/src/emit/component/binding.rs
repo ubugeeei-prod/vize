@@ -7,11 +7,11 @@
 use vize_s0::{String, camelize, capitalize};
 
 use super::super::EmitCx;
+use super::super::helper::Helper;
 use super::super::options::{BindingKind, BindingTable};
 
 pub(in crate::emit) struct ComponentBinding<'a> {
     pub(in crate::emit) name: String,
-    #[allow(dead_code)]
     pub(in crate::emit) kind: BindingKind,
     pub(in crate::emit) suffix: Option<&'a str>,
 }
@@ -46,8 +46,27 @@ pub(in crate::emit) fn push_tag(cx: &mut EmitCx<'_>, component: &str) -> bool {
     else {
         return false;
     };
-    cx.buf.push("$setup.");
+    // `push_component_binding_tag`: an inlined render function reads the
+    // binding straight from the closure, through `_unref` when the script
+    // may have rebound it.
+    let inline = cx.scope.inline();
+    let needs_unref = inline
+        && matches!(
+            binding.kind,
+            BindingKind::SetupLet | BindingKind::SetupMaybeRef | BindingKind::SetupRef
+        );
+    if needs_unref {
+        cx.buf.use_helper(Helper::Unref);
+        cx.buf.push(Helper::Unref.alias());
+        cx.buf.push("(");
+    }
+    if !inline {
+        cx.buf.push("$setup.");
+    }
     cx.buf.push(binding.name.as_str());
+    if needs_unref {
+        cx.buf.push(")");
+    }
     if let Some(suffix) = binding.suffix {
         cx.buf.push(".");
         cx.buf.push(suffix);

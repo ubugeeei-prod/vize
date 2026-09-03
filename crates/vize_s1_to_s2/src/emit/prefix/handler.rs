@@ -53,6 +53,7 @@ pub(super) fn process_inline_handler(
             };
             return RewriteResult {
                 code,
+                used_unref: false,
                 parse_error: false,
             };
         }
@@ -71,6 +72,7 @@ pub(super) fn process_inline_handler(
     }
     RewriteResult {
         code,
+        used_unref: false,
         parse_error: rewritten.parse_error,
     }
 }
@@ -91,6 +93,7 @@ fn process(
         } else {
             String::from(content)
         },
+        used_unref: false,
         parse_error: false,
     }
 }

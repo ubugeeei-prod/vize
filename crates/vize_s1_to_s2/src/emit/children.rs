@@ -37,20 +37,28 @@ pub(super) fn emit_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), 
     Ok(())
 }
 
-pub(super) fn children_need_text_flag(children: &Region<'_>) -> bool {
+pub(super) fn children_need_text_flag(cx: &EmitCx<'_>, children: &Region<'_>) -> bool {
     let ops = &children.ops;
     if ops.is_empty() {
         return false;
     }
     let mut any_interp = false;
+    let mut all_constant = true;
     for op in ops.iter() {
         match op {
-            Op::Interpolation(_) => any_interp = true,
+            Op::Interpolation(interp) => {
+                any_interp = true;
+                all_constant &= cx.reads_constant_binding(&interp.expression);
+            }
             Op::Text(_) => {}
             _ => return false,
         }
     }
-    any_interp
+    // `is_constant_interpolation`: text made only of `LiteralConst` /
+    // `SetupConst` reads never updates, so it carries no TEXT flag. Only
+    // an inlined render function ever sees such a bare name — everywhere
+    // else the transform has already written `$setup.` in front of it.
+    any_interp && !all_constant
 }
 
 pub(super) fn emit_interpolation(

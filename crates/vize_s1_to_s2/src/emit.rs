@@ -214,6 +214,10 @@ struct EmitCx<'facts> {
     prefix_identifiers: bool,
     /// The shipped lane's `is_ts`: expressions are type-erased first.
     is_ts: bool,
+    /// Set while prefixing when a binding needed `_unref`; the shipped
+    /// lane registers that helper on the transform and appends it after
+    /// every used helper, so the emit marks it once the body is written.
+    used_unref: core::cell::Cell<bool>,
     /// The shipped lane's `component_name`, for the self-reference flag
     /// on `resolveComponent`.
     component_name: Option<&'facts str>,
@@ -254,7 +258,9 @@ fn emit_dom_with_emit_budget<'f>(
     {
         return Err(EmitError::Diagnostics);
     }
-    let static_cache = static_cache::enabled(&lowered.root, facts, &lowered.wrappers);
+    // `static_cache = inline || !hoists.is_empty()`.
+    let static_cache =
+        options.inline || static_cache::enabled(&lowered.root, facts, &lowered.wrappers);
     let mut cx = EmitCx {
         buf: Buf::new(),
         source: lowered.source,
@@ -283,11 +289,13 @@ fn emit_dom_with_emit_budget<'f>(
         parent_ns: Namespace::Html,
         prefix_identifiers: options.prefix_identifiers,
         is_ts: options.is_ts,
+        used_unref: core::cell::Cell::new(false),
         component_name: options.component_name,
         scope: prefix::PrefixScope::new(
             options.bindings,
             options.prefix_identifiers,
             options.is_ts,
+            options.inline,
         ),
     };
     let filters = &facts.legacy.filters;
@@ -327,6 +335,13 @@ fn emit_dom_with_emit_budget<'f>(
     cx.buf.deindent();
     cx.buf.newline();
     cx.buf.push("}");
+    // `_unref` is a *transform* registration, so it lists with the
+    // pre-walk's preferred helpers, not the emit's used ones: before
+    // `vShow` (codegen) and after `renderList` (transform).
+    if cx.used_unref.get() {
+        cx.buf.prefer(Helper::Unref);
+        cx.buf.use_helper(Helper::Unref);
+    }
     let emit_visits = cx.walk.visits();
     let preamble = cx.buf.preamble(options);
     let code = cx.buf.code;
