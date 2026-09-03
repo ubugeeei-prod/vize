@@ -23,10 +23,35 @@ pub(in crate::emit) fn emit_wrapped_handler(
         cx.buf.push("(");
     }
     match on.handler {
+        Some(expr) if cx.prefixing() => {
+            let text = cx.prefixed_handler(&expr)?;
+            cx.buf.push(text.as_str());
+        }
         Some(ExprRef::Js(js)) => emit_handler(cx, on, js, is_plain_element),
         Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement => {
             let padding = authored_handler_padding(cx.source, on, opaque.source, opaque.span);
-            super::super::on_body::emit(cx, opaque.source, padding);
+            // The shipped codegen prefix-parses the text: `a; b` reads as the
+            // reference `a` and is pushed raw.
+            if super::super::prefix::handler_source_is_reference(opaque.source) {
+                let (leading, trailing) = padding.unwrap_or(("", ""));
+                cx.buf.push(leading);
+                cx.buf.push(opaque.source);
+                cx.buf.push(trailing);
+            } else if !opaque.source.contains(';')
+                && super::super::prefix::handler_source_is_expression(opaque.source)
+            {
+                // An expression the prefix parse admits with no `;` is
+                // paren-wrapped by the shipped codegen, trailing line
+                // comment and all; statement bodies keep the block form.
+                let (leading, trailing) = padding.unwrap_or(("", ""));
+                cx.buf.push("$event => (");
+                cx.buf.push(leading);
+                cx.buf.push(opaque.source);
+                cx.buf.push(trailing);
+                cx.buf.push(")");
+            } else {
+                super::super::on_body::emit(cx, opaque.source, padding);
+            }
         }
         None => cx.buf.push("() => {}"),
         Some(expr) => {

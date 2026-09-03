@@ -150,11 +150,16 @@ pub(super) fn emit_dynamic_bind_pair(
     let value = bind_value(bind)?;
     emit_dynamic_bind_key(cx, bind)?;
     cx.buf.push(": ");
-    value.emit(cx);
+    value.emit(cx, bind)?;
     Ok(true)
 }
 
 fn emit_dynamic_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
+    if cx.prefixing() {
+        let text = cx.prefixed_dynamic_arg(js);
+        cx.buf.push(text.as_str());
+        return;
+    }
     if matches!(js.ast, Expression::TemplateLiteral(_)) {
         emit_template_literal_key_source(cx, js);
         return;
@@ -231,56 +236,7 @@ fn emit_template_literal_prefixes(
 }
 
 pub(super) fn is_global_key_name(name: &str) -> bool {
-    matches!(
-        name,
-        "Infinity"
-            | "undefined"
-            | "NaN"
-            | "Array"
-            | "Boolean"
-            | "Date"
-            | "Error"
-            | "Function"
-            | "JSON"
-            | "Math"
-            | "Number"
-            | "Object"
-            | "Promise"
-            | "Proxy"
-            | "Reflect"
-            | "RegExp"
-            | "Set"
-            | "String"
-            | "Symbol"
-            | "Map"
-            | "WeakMap"
-            | "WeakSet"
-            | "BigInt"
-            | "parseInt"
-            | "parseFloat"
-            | "isNaN"
-            | "isFinite"
-            | "decodeURI"
-            | "decodeURIComponent"
-            | "encodeURI"
-            | "encodeURIComponent"
-            | "arguments"
-            | "console"
-            | "window"
-            | "document"
-            | "navigator"
-            | "globalThis"
-            | "require"
-            | "import"
-            | "exports"
-            | "module"
-            | "_ctx"
-            | "_cache"
-            | "_push"
-            | "_parent"
-            | "$event"
-            | "_toNumber"
-    )
+    super::prefix::is_global_allowed(name)
 }
 
 pub(super) fn js_value<'a>(bind: &'a BindOp<'a>) -> Result<&'a JsExpr<'a>, EmitError> {

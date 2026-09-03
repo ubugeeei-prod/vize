@@ -61,3 +61,7 @@ required-features = ["davinci-differential"]
 [[test]]
 name = "davinci_dom_corpus"
 required-features = ["davinci-differential"]
+
+[[test]]
+name = "davinci_dom_corpus_prefixed"
+required-features = ["davinci-differential"]

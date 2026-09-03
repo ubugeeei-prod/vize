@@ -46,7 +46,7 @@ pub(super) fn source_is_js(source: &str, span_start: u32) -> bool {
     .is_ok()
 }
 
-fn convert_line_comments_to_block(content: &str) -> String {
+pub(super) fn convert_line_comments_to_block(content: &str) -> String {
     let bytes = content.as_bytes();
     let mut result = String::with_capacity(content.len());
     let mut can_start_regex = true;

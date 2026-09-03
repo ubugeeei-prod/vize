@@ -18,6 +18,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::on::{event_key_for, needs_hydration};
+use super::prefix::Site;
 use super::props::{
     BindName, Patch, PropsObjectOptions, StaticBindKeyCasing, bind_name, bind_value,
     bind_value_is_static_patchless, emit_props_object, has_prop_modifier, is_emitted_key_bind,
@@ -172,7 +173,7 @@ pub(super) fn emit_spread_props(
             cx.buf.push(", ");
         }
         match arg {
-            Arg::BindSpread(bind) => bind_value(bind)?.emit_authored(cx, bind),
+            Arg::BindSpread(bind) => bind_value(bind)?.emit_authored(cx, bind)?,
             Arg::OnSpread(on) => emit_to_handlers(cx, on)?,
             Arg::Object { if_key, pieces, .. } => {
                 let force_multiline = force_multiline_object_arg(&args, i, pieces, for_item);
@@ -207,7 +208,7 @@ fn emit_normalize_guard(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), Em
     cx.buf.push("(");
     cx.buf.push(Buf::guard_reactive_props_alias());
     cx.buf.push("(");
-    value.emit_authored(cx, bind);
+    value.emit_authored(cx, bind)?;
     cx.buf.push("))");
     Ok(())
 }
@@ -226,6 +227,13 @@ fn emit_to_handlers(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError>
     cx.buf.use_to_handlers();
     cx.buf.push(Buf::to_handlers_alias());
     cx.buf.push("(");
+    if cx.prefixing() {
+        if let Some(expr) = on.handler {
+            cx.push_prefixed_expr(&expr, Site::Expression)?;
+        }
+        cx.buf.push(", true)");
+        return Ok(());
+    }
     if let Some((leading, trailing)) = authored_object_on_padding(
         cx.source,
         on.span,

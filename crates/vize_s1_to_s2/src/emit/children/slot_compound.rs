@@ -2,8 +2,9 @@ use vize_s0::Span;
 
 use crate::lower::TextPart;
 
-use super::{EmitCx, EmitError, Reason, emit_quoted_text, emit_to_display_string};
+use super::{EmitCx, EmitError, Reason, emit_dynamic_part, emit_quoted_text};
 use crate::emit::buf::Buf;
+use crate::emit::prefix::Site;
 
 pub(super) fn emit_slot_compound_parts(
     cx: &mut EmitCx<'_>,
@@ -22,7 +23,7 @@ pub(super) fn emit_slot_compound_parts(
         cx.buf.push(Buf::create_text_alias());
         cx.buf.push("(");
         if part.dynamic {
-            emit_to_display_string(cx, part.text.as_str());
+            emit_dynamic_part(cx, part.text.as_str(), Site::SlotText)?;
             cx.buf.push(", 1 /* TEXT */");
         } else {
             emit_quoted_text(cx, part.text.as_str());

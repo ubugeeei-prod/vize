@@ -12,10 +12,11 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{
-    emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode,
+    emit_create_text_vnode, emit_dynamic_part, emit_interpolation, emit_plain_text_vnode,
     emit_raw_interpolation_or_refuse, emit_to_display_string, is_empty_interpolation,
 };
 use super::helper::Helper;
+use super::prefix::Site;
 use super::sfc_style;
 use super::slots::is_whitespace_text;
 use super::vnode;
@@ -222,7 +223,7 @@ fn emit_interp(
                 }
                 start_item(cx, first);
                 if part.dynamic {
-                    emit_to_display_string(cx, part.text.as_str());
+                    emit_dynamic_part(cx, part.text.as_str(), Site::Expression)?;
                 } else {
                     emit_plain_text_vnode(cx, part.text.as_str());
                 }

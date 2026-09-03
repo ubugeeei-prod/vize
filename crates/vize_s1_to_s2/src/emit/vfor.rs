@@ -1,16 +1,20 @@
 //! Native HTML `ui.for` (`v-for`) emission.
 
 use vize_davinci::id::NodeId;
-use vize_s0::{String, ToCompactString};
+use vize_s0::ToCompactString;
 use vize_s2::expr::ExprRef;
-use vize_s2::op::{Attribute, BindingOp, ForOp, Op, VueMemoOp};
+use vize_s2::op::{ForOp, Op, VueMemoOp};
+
+mod keys;
 
 use super::EmitCx;
 use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::helper::Helper;
-use super::js::{RawJs, escape_js_string, expr_source, js_expr_source};
+use super::js::{RawJs, expr_source};
+use super::prefix::Site;
+use keys::{has_item_key, item_key_js, memo_item_key_js};
 
 pub(super) fn emit_for(
     cx: &mut EmitCx<'_>,
@@ -19,13 +23,47 @@ pub(super) fn emit_for(
     fragment_key: Option<&str>,
 ) -> Result<(), EmitError> {
     let source_raw = js_source(&for_op.binding.source)?;
-    let source = source_raw.as_str();
+    let source_prefixed;
+    let source = if cx.prefixing() {
+        source_prefixed = cx.prefixed_expr(&for_op.binding.source, Site::Expression)?;
+        source_prefixed.as_str()
+    } else {
+        source_raw.as_str()
+    };
     let value = value_alias(&for_op.binding.value)?;
     let key_alias = optional_ident(&for_op.binding.key)?;
     let index_alias = optional_ident(&for_op.binding.index)?;
+    // The shipped transform processed the wrapper key and the item's own
+    // expressions inside the `v-for` scope; only the source sits outside.
+    let prefix_mark = cx.enter_for_scope(for_op);
+    let result = emit_for_scoped(
+        cx,
+        for_op,
+        id,
+        fragment_key,
+        source,
+        value,
+        key_alias,
+        index_alias,
+    );
+    cx.leave_scope(prefix_mark);
+    result
+}
+
+#[allow(clippy::too_many_arguments)]
+fn emit_for_scoped(
+    cx: &mut EmitCx<'_>,
+    for_op: &ForOp<'_>,
+    id: Option<NodeId>,
+    fragment_key: Option<&str>,
+    source: &str,
+    value: &str,
+    key_alias: Option<&str>,
+    index_alias: Option<&str>,
+) -> Result<(), EmitError> {
     let wrapper = id.and_then(|id| cx.for_wrappers.get(id));
     let wrapper_key = match wrapper.and_then(|wrapper| wrapper.key.as_ref()) {
-        Some(key) => Some(super::tpl::wrapper_key_js(key)?),
+        Some(key) => Some(super::tpl::wrapper_key_js(cx, key)?),
         None => None,
     };
     let wrapper_attrs = wrapper
@@ -174,8 +212,8 @@ fn emit_memo_body(
     stable: bool,
     memo: &VueMemoOp<'_>,
 ) -> Result<(), EmitError> {
-    let deps = super::memo::js_value(memo)?;
-    let key = memo_item_key_js(&for_op.region.ops)?;
+    let deps = super::memo::deps_source(cx, memo)?;
+    let key = memo_item_key_js(cx, &for_op.region.ops)?;
     cx.buf.use_helper(Helper::WithMemo);
     cx.buf.push("const _memo = (");
     cx.buf.push(deps.as_str());
@@ -222,11 +260,11 @@ fn emit_plain_item(
     cx.walk.skip(bind_len);
     match for_op.region.ops.as_slice() {
         [Op::Element(element)] => {
-            let key = item_key_js(&element.attributes, &element.bindings)?;
+            let key = item_key_js(cx, &element.attributes, &element.bindings)?;
             super::emit_for_item_call(cx, element, id, stable, key.as_deref())
         }
         [Op::Component(component)] => {
-            let key = item_key_js(&component.attributes, &component.bindings)?;
+            let key = item_key_js(cx, &component.attributes, &component.bindings)?;
             super::component::emit_for_item(cx, component, id, key.as_deref())
         }
         [Op::Slot(slot)] => super::outlet::emit_outlet(cx, slot, None, false),
@@ -239,14 +277,6 @@ fn plain_item_memo<'a>(ops: &'a [Op<'a>]) -> Option<&'a VueMemoOp<'a>> {
         [Op::Element(element)] => super::memo::first(&element.bindings),
         [Op::Component(component)] => super::memo::first(&component.bindings),
         _ => None,
-    }
-}
-
-fn memo_item_key_js(ops: &[Op<'_>]) -> Result<Option<String>, EmitError> {
-    match ops {
-        [Op::Element(element)] => item_key_js(&element.attributes, &element.bindings),
-        [Op::Component(component)] => item_key_js(&component.attributes, &component.bindings),
-        _ => Ok(None),
     }
 }
 
@@ -281,37 +311,4 @@ pub(super) fn optional_ident<'a>(
 
 fn is_numeric(source: &str) -> bool {
     !source.is_empty() && source.chars().all(|c| c.is_ascii_digit())
-}
-
-fn item_key_js(
-    attributes: &[Attribute<'_>],
-    bindings: &[BindingOp<'_>],
-) -> Result<Option<String>, EmitError> {
-    for binding in bindings {
-        if let BindingOp::Bind(bind) = binding
-            && super::props_bind::is_key_bind_name(bind)
-        {
-            let source = js_expr_source(super::props::js_value(bind)?);
-            return Ok(Some(String::from(source.as_str())));
-        }
-    }
-    for attr in attributes {
-        if attr.name == "key" {
-            let mut out = String::from("\"");
-            out.push_str(escape_js_string(attr.value.unwrap_or("")).as_str());
-            out.push('"');
-            return Ok(Some(out));
-        }
-    }
-    Ok(None)
-}
-
-fn has_item_key(attributes: &[Attribute<'_>], bindings: &[BindingOp<'_>]) -> bool {
-    attributes.iter().any(|attr| attr.name == "key")
-        || bindings.iter().any(|binding| {
-            matches!(
-                binding,
-                BindingOp::Bind(bind) if super::props_bind::is_key_bind_name(bind)
-            )
-        })
 }

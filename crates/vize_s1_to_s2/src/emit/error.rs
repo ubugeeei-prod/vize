@@ -45,6 +45,12 @@ pub enum UnsupportedReason {
     OnHandlerNotJs,
     OnNameNotJs,
     OnNameNotStatic,
+    /// `prefix_identifiers`: a foreign or filter expression has no
+    /// shipped prefix behavior to mirror yet.
+    PrefixExpressionKind,
+    /// `prefix_identifiers`: the shipped lane reports a non-recoverable
+    /// `X_INVALID_EXPRESSION` for this text, so there is no output to match.
+    PrefixExpressionRejected,
     ShowExpressionNotJs,
     SlotDefaultShape,
     SlotFactsMissingGroup,
@@ -96,6 +102,8 @@ impl UnsupportedReason {
         Self::OnHandlerNotJs,
         Self::OnNameNotJs,
         Self::OnNameNotStatic,
+        Self::PrefixExpressionKind,
+        Self::PrefixExpressionRejected,
         Self::ShowExpressionNotJs,
         Self::SlotDefaultShape,
         Self::SlotFactsMissingGroup,
@@ -148,6 +156,8 @@ impl UnsupportedReason {
             Self::OnHandlerNotJs => "on_handler_not_js",
             Self::OnNameNotJs => "on_name_not_js",
             Self::OnNameNotStatic => "on_name_not_static",
+            Self::PrefixExpressionKind => "prefix_expression_kind",
+            Self::PrefixExpressionRejected => "prefix_expression_rejected",
             Self::ShowExpressionNotJs => "show_expression_not_js",
             Self::SlotDefaultShape => "slot_default_shape",
             Self::SlotFactsMissingGroup => "slot_facts_missing_group",

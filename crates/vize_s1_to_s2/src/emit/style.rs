@@ -7,10 +7,10 @@ use oxc_ast_visit::Visit;
 use vize_s2::expr::JsExpr;
 use vize_s2::op::{Attribute, BindOp};
 
-use super::EmitCx;
 use super::buf::Buf;
 use super::js::{escape_js_string, js_expr_source};
 use super::props_value::{BindValue, authored_value_padding};
+use super::{EmitCx, EmitError};
 
 pub(super) fn bind_skips_normalize(
     raw_name: &str,
@@ -136,7 +136,7 @@ pub(super) fn emit_style_value(
     bind: &BindOp<'_>,
     js: &JsExpr<'_>,
     skip_normalize: bool,
-) {
+) -> Result<(), EmitError> {
     let wrap = !skip_normalize;
     if wrap {
         cx.buf.use_normalize_style();
@@ -149,22 +149,32 @@ pub(super) fn emit_style_value(
         if before {
             emit_static_style_object(cx, value);
             cx.buf.push(", ");
-            emit_bound_style_source(cx, bind, js);
+            emit_bound_style_source(cx, bind, js)?;
         } else {
-            emit_bound_style_source(cx, bind, js);
+            emit_bound_style_source(cx, bind, js)?;
             cx.buf.push(", ");
             emit_static_style_object(cx, value);
         }
         cx.buf.push("]");
     } else {
-        emit_bound_style_source(cx, bind, js);
+        emit_bound_style_source(cx, bind, js)?;
     }
     if wrap {
         cx.buf.push(")");
     }
+    Ok(())
 }
 
-fn emit_bound_style_source(cx: &mut EmitCx<'_>, bind: &BindOp<'_>, js: &JsExpr<'_>) {
+fn emit_bound_style_source(
+    cx: &mut EmitCx<'_>,
+    bind: &BindOp<'_>,
+    js: &JsExpr<'_>,
+) -> Result<(), EmitError> {
+    if cx.prefixing() {
+        let text = cx.prefixed_bind_js(js)?;
+        cx.buf.push(text.as_str());
+        return Ok(());
+    }
     let source = js_expr_source(js);
     if let Some((leading, trailing)) =
         authored_value_padding(cx.source, bind, source.as_str(), js.span)
@@ -175,6 +185,7 @@ fn emit_bound_style_source(cx: &mut EmitCx<'_>, bind: &BindOp<'_>, js: &JsExpr<'
     } else {
         cx.buf.push(source.as_str());
     }
+    Ok(())
 }
 
 fn emit_static_style_object(cx: &mut EmitCx<'_>, value: &str) {

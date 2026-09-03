@@ -4,6 +4,7 @@ use vize_s2::op::{InterpolationOp, Op};
 
 use super::super::buf::Buf;
 use super::super::js::escape_js_string;
+use super::super::prefix::Site;
 use super::super::{EmitCx, EmitError, UnsupportedReason as Reason};
 use super::{
     emit_compound_parts, emit_create_text_vnode, emit_quoted_text, emit_to_display_string,
@@ -23,6 +24,10 @@ pub(in crate::emit) fn emit_slot_text_child(
         return emit_create_text_vnode(cx, core::slice::from_ref(op));
     };
     match interp.expression {
+        ExprRef::Js(_) if cx.prefixing() => {
+            let text = cx.prefixed_expr(&interp.expression, Site::SlotText)?;
+            emit_slot_raw_interpolation(cx, text.as_str())
+        }
         ExprRef::Js(js) => emit_slot_raw_interpolation(cx, js.source),
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
             let id = cx.walk.mint().ok_or(EmitError::unsupported_at(
@@ -44,6 +49,10 @@ pub(in crate::emit) fn emit_slot_text_child(
         }
         ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {
             emit_create_text_vnode(cx, core::slice::from_ref(op))
+        }
+        _ if cx.prefixing() => {
+            let text = cx.prefixed_expr(&interp.expression, Site::SlotText)?;
+            emit_slot_raw_interpolation(cx, text.as_str())
         }
         _ => {
             if let Some(source) =
@@ -114,6 +123,11 @@ fn emit_slot_interpolation(
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     match interp.expression {
+        ExprRef::Js(_) if cx.prefixing() => {
+            let text = cx.prefixed_expr(&interp.expression, Site::SlotText)?;
+            emit_to_display_string(cx, text.as_str());
+            Ok(())
+        }
         ExprRef::Js(js) => {
             emit_to_display_string(cx, js.source);
             Ok(())
@@ -132,10 +146,15 @@ fn emit_slot_interpolation(
                     interp.span,
                     id,
                 ))?;
-            emit_compound_parts(cx, &facts.parts, interp.span)
+            emit_compound_parts(cx, &facts.parts, interp.span, Site::SlotText)
         }
         ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {
             emit_to_display_string(cx, "");
+            Ok(())
+        }
+        _ if cx.prefixing() => {
+            let text = cx.prefixed_expr(&interp.expression, Site::SlotText)?;
+            emit_to_display_string(cx, text.as_str());
             Ok(())
         }
         _ => {

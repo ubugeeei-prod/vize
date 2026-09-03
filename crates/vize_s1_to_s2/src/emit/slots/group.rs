@@ -25,9 +25,9 @@ pub(super) fn collect_pieces(
             .iter()
             .position(|group| matches!(group.carrier, SlotCarrier::Component))
     {
-        let scoped = matches!(facts.groups[idx].params, SlotParams::Scoped { .. });
+        let params = scoped_params(&facts.groups[idx].params);
         with_group_if_key(cx, &mut group_keys, idx, |cx| {
-            crate::emit::outlet::with_slot_params(cx, scoped, |cx| {
+            crate::emit::outlet::with_slot_params(cx, params, |cx| {
                 emit_template_pieces(cx, children, &mut buckets[idx])
             })
         })?;
@@ -49,9 +49,9 @@ pub(super) fn collect_pieces(
                         element.span,
                     ));
                 };
-                let scoped = matches!(facts.groups[idx].params, SlotParams::Scoped { .. });
+                let params = scoped_params(&facts.groups[idx].params);
                 with_group_if_key(cx, &mut group_keys, idx, |cx| {
-                    crate::emit::outlet::with_slot_params(cx, scoped, |cx| {
+                    crate::emit::outlet::with_slot_params(cx, params, |cx| {
                         emit_template_pieces(cx, &element.children, &mut buckets[idx])
                     })
                 })?;
@@ -66,9 +66,9 @@ pub(super) fn collect_pieces(
                 let Some(idx) = idx else {
                     return Err(EmitError::unsupported_op(Reason::SlotFactsMissingGroup, op));
                 };
-                let scoped = matches!(facts.groups[idx].params, SlotParams::Scoped { .. });
+                let params = scoped_params(&facts.groups[idx].params);
                 let piece = with_group_if_key(cx, &mut group_keys, idx, |cx| {
-                    crate::emit::outlet::with_slot_params(cx, scoped, |cx| capture_child(cx, op))
+                    crate::emit::outlet::with_slot_params(cx, params, |cx| capture_child(cx, op))
                 })?;
                 buckets[idx].push(piece);
             }
@@ -78,6 +78,13 @@ pub(super) fn collect_pieces(
         cx.if_branch_key = after;
     }
     Ok(())
+}
+
+fn scoped_params(params: &SlotParams) -> Option<&str> {
+    match params {
+        SlotParams::Scoped { text, .. } => Some(text.as_str()),
+        SlotParams::Absent => None,
+    }
 }
 
 fn group_branch_key_starts(

@@ -1,0 +1,253 @@
+//! The transform-time identifier collector
+//! (`vize_atelier_core::steps::expression::collector::IdentifierCollector`),
+//! ported without binding metadata: every free identifier outside the
+//! transform scope and the allowlist gets `_ctx.`, shorthand properties
+//! expand, assignment targets prefix in place. `offset` shifts the walked
+//! AST's spans into `source` (0 when the AST was parsed from `source`
+//! itself), which is how a retained trimmed-text AST rewrites the padded
+//! attribute value the shipped lane held as the node's content.
+
+use alloc::vec::Vec as StdVec;
+
+use oxc_ast::ast as oxc_ast_types;
+use oxc_ast_visit::{
+    Visit,
+    walk::{
+        walk_arrow_function_expression, walk_assignment_expression, walk_block_statement,
+        walk_catch_clause, walk_function, walk_object_property, walk_update_expression,
+        walk_variable_declarator,
+    },
+};
+use oxc_syntax::scope::ScopeFlags;
+use vize_s0::String;
+
+use super::globals::is_global_allowed;
+use super::scope::PrefixScope;
+
+pub(super) struct IdentifierCollector<'s, 'a> {
+    scope: &'s PrefixScope,
+    /// The walked text; read by the inline-mode assignment scan once
+    /// binding metadata lands.
+    #[allow(dead_code)]
+    pub(super) source: &'a str,
+    offset: usize,
+    local_scopes: StdVec<StdVec<String>>,
+    pub(super) rewrites: StdVec<(usize, String)>,
+    pub(super) suffix_rewrites: StdVec<(usize, String)>,
+    pub(super) assignment_targets: StdVec<usize>,
+}
+
+impl<'s, 'a> IdentifierCollector<'s, 'a> {
+    /// The legacy wrapped-parse collector: spans count the synthetic `(`.
+    pub(super) fn new(scope: &'s PrefixScope, source: &'a str) -> Self {
+        Self {
+            scope,
+            source,
+            offset: 0,
+            local_scopes: alloc::vec![StdVec::new()],
+            rewrites: StdVec::new(),
+            suffix_rewrites: StdVec::new(),
+            assignment_targets: StdVec::new(),
+        }
+    }
+
+    /// The retained-AST collector over the bare content, whose AST spans
+    /// are `offset` bytes before their position in `source`.
+    pub(super) fn new_unwrapped(scope: &'s PrefixScope, source: &'a str, offset: usize) -> Self {
+        Self {
+            offset,
+            ..Self::new(scope, source)
+        }
+    }
+
+    fn push_scope(&mut self) {
+        self.local_scopes.push(StdVec::new());
+    }
+
+    fn pop_scope(&mut self) {
+        self.local_scopes.pop();
+    }
+
+    fn add_local(&mut self, name: &str) {
+        if let Some(scope) = self.local_scopes.last_mut() {
+            scope.push(String::from(name));
+        }
+    }
+
+    fn is_local(&self, name: &str) -> bool {
+        self.local_scopes
+            .iter()
+            .rev()
+            .any(|scope| scope.iter().any(|local| local.as_str() == name))
+    }
+
+    fn at(&self, position: u32) -> usize {
+        position as usize + self.offset
+    }
+
+    fn push_prefix(&mut self, position: usize, prefix: &'static str) {
+        let entry = (position, String::from(prefix));
+        if !self.rewrites.contains(&entry) {
+            self.rewrites.push(entry);
+        }
+    }
+
+    pub(super) fn push_assignment_target(&mut self, position: u32) {
+        let position = self.at(position);
+        if !self.assignment_targets.contains(&position) {
+            self.assignment_targets.push(position);
+        }
+    }
+
+    pub(super) fn collect_binding_pattern(&mut self, pattern: &oxc_ast_types::BindingPattern<'_>) {
+        match pattern {
+            oxc_ast_types::BindingPattern::BindingIdentifier(id) => {
+                self.add_local(id.name.as_str());
+            }
+            oxc_ast_types::BindingPattern::ObjectPattern(obj) => {
+                for prop in &obj.properties {
+                    self.collect_binding_pattern(&prop.value);
+                }
+                if let Some(rest) = &obj.rest {
+                    self.collect_binding_pattern(&rest.argument);
+                }
+            }
+            oxc_ast_types::BindingPattern::ArrayPattern(arr) => {
+                for elem in arr.elements.iter().flatten() {
+                    self.collect_binding_pattern(elem);
+                }
+                if let Some(rest) = &arr.rest {
+                    self.collect_binding_pattern(&rest.argument);
+                }
+            }
+            oxc_ast_types::BindingPattern::AssignmentPattern(assign) => {
+                self.collect_binding_pattern(&assign.left);
+            }
+        }
+    }
+}
+
+impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
+    fn visit_identifier_reference(&mut self, ident: &oxc_ast_types::IdentifierReference<'_>) {
+        let name = ident.name.as_str();
+        if self.is_local(name) {
+            return;
+        }
+        let start = self.at(ident.span.start);
+        let is_assignment_target = self.assignment_targets.contains(&start);
+        if is_assignment_target {
+            if let Some(prefix) = self.scope.identifier_prefix(name) {
+                self.push_prefix(start, prefix);
+            }
+            return;
+        }
+        if let Some(prefix) = self.scope.identifier_prefix(name) {
+            self.push_prefix(start, prefix);
+        }
+    }
+
+    fn visit_member_expression(&mut self, expr: &oxc_ast_types::MemberExpression<'_>) {
+        match expr {
+            oxc_ast_types::MemberExpression::ComputedMemberExpression(computed) => {
+                self.visit_expression(&computed.object);
+                self.visit_expression(&computed.expression);
+            }
+            oxc_ast_types::MemberExpression::StaticMemberExpression(static_expr) => {
+                self.visit_expression(&static_expr.object);
+            }
+            oxc_ast_types::MemberExpression::PrivateFieldExpression(private) => {
+                self.visit_expression(&private.object);
+            }
+        }
+    }
+
+    fn visit_arrow_function_expression(
+        &mut self,
+        arrow: &oxc_ast_types::ArrowFunctionExpression<'_>,
+    ) {
+        self.push_scope();
+        for param in &arrow.params.items {
+            self.collect_binding_pattern(&param.pattern);
+        }
+        if let Some(rest) = &arrow.params.rest {
+            self.collect_binding_pattern(&rest.rest.argument);
+        }
+        walk_arrow_function_expression(self, arrow);
+        self.pop_scope();
+    }
+
+    fn visit_function(&mut self, func: &oxc_ast_types::Function<'_>, flags: ScopeFlags) {
+        if func.r#type == oxc_ast_types::FunctionType::FunctionDeclaration
+            && let Some(id) = &func.id
+        {
+            self.add_local(id.name.as_str());
+        }
+        self.push_scope();
+        if let Some(id) = &func.id {
+            self.add_local(id.name.as_str());
+        }
+        for param in &func.params.items {
+            self.collect_binding_pattern(&param.pattern);
+        }
+        if let Some(rest) = &func.params.rest {
+            self.collect_binding_pattern(&rest.rest.argument);
+        }
+        walk_function(self, func, flags);
+        self.pop_scope();
+    }
+
+    fn visit_block_statement(&mut self, block: &oxc_ast_types::BlockStatement<'_>) {
+        self.push_scope();
+        walk_block_statement(self, block);
+        self.pop_scope();
+    }
+
+    fn visit_catch_clause(&mut self, catch_clause: &oxc_ast_types::CatchClause<'_>) {
+        self.push_scope();
+        if let Some(param) = &catch_clause.param {
+            self.collect_binding_pattern(&param.pattern);
+        }
+        walk_catch_clause(self, catch_clause);
+        self.pop_scope();
+    }
+
+    fn visit_variable_declarator(&mut self, declarator: &oxc_ast_types::VariableDeclarator<'_>) {
+        walk_variable_declarator(self, declarator);
+        self.collect_binding_pattern(&declarator.id);
+    }
+
+    fn visit_assignment_expression(&mut self, expr: &oxc_ast_types::AssignmentExpression<'_>) {
+        self.collect_assignment_targets(&expr.left);
+        walk_assignment_expression(self, expr);
+    }
+
+    fn visit_update_expression(&mut self, expr: &oxc_ast_types::UpdateExpression<'_>) {
+        self.collect_simple_assignment_targets(&expr.argument);
+        walk_update_expression(self, expr);
+    }
+
+    fn visit_object_property(&mut self, prop: &oxc_ast_types::ObjectProperty<'_>) {
+        if prop.shorthand
+            && let oxc_ast_types::PropertyKey::StaticIdentifier(ident) = &prop.key
+        {
+            let name = ident.name.as_str();
+            if self.is_local(name) || is_global_allowed(name) {
+                return;
+            }
+            if self.scope.is_in_transform_scope(name) {
+                return;
+            }
+            if let Some(prefix) = self.scope.identifier_prefix(name)
+                && !prefix.is_empty()
+            {
+                let mut suffix = String::with_capacity(2 + prefix.len() + name.len());
+                suffix.push_str(": ");
+                suffix.push_str(prefix);
+                suffix.push_str(name);
+                self.suffix_rewrites.push((self.at(ident.span.end), suffix));
+                return;
+            }
+        }
+        walk_object_property(self, prop);
+    }
+}

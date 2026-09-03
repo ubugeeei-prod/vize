@@ -1,14 +1,15 @@
+mod bind_pair;
 mod pieces;
 
 use alloc::vec::Vec as StdVec;
 use vize_s2::expr::{ExprRef, OpaqueReason};
-use vize_s2::op::{Attribute, BindOp, DynamicName};
+use vize_s2::op::DynamicName;
 
-use super::js::{escape_js_string, push_ident_key};
 use super::model_key::{ModelModifiersKey, ModelName, ModelUpdateKey};
-use super::props_bind::{self, StaticBindKeyCasing};
+use super::on;
+use super::prefix::Site;
 use super::{EmitCx, EmitError};
-use super::{on, props_value, style};
+use bind_pair::{emit_bind_pair, emit_static_pair};
 pub(super) use pieces::{Piece, pieces};
 
 #[derive(Clone, Copy, Default)]
@@ -84,7 +85,7 @@ pub(super) fn emit_props_object(
         && (force_multiline
             || (if_key.is_some() && !visible.is_empty())
             || v_for_merge_arg_multiline
-            || (!for_item && pieces_have_inline_on(pieces))
+            || (!for_item && pieces_have_inline_on(cx, pieces))
             || (!for_item
                 && (visible.len() + extra > 1
                     || pieces_have_named(pieces, "class")
@@ -149,16 +150,24 @@ pub(super) fn emit_props_object(
             Piece::VueHtml(html) => super::html::emit_pair(cx, html)?,
             Piece::VueText(text) => super::vtext::emit_pair(cx, text)?,
             Piece::ModelValue { name, model, .. } => {
-                let source = super::model::js_source(model)?;
-                super::model_key::emit_value(cx, *name, source.as_str())
+                let source = super::model::value_source(
+                    cx,
+                    model,
+                    if matches!(name, ModelName::Dynamic(_)) {
+                        Site::Raw
+                    } else {
+                        Site::Expression
+                    },
+                )?;
+                super::model_key::emit_value(cx, *name, source.as_str())?
             }
             Piece::ModelUpdate { key, model, .. } => {
                 let source = super::model::js_source(model)?;
-                super::model_key::emit_update(cx, key, model, source.as_str())
+                super::model_key::emit_update(cx, key, model, source.as_str())?
             }
             Piece::ModelModifiers {
                 name, modifiers, ..
-            } => super::model_key::emit_modifiers(cx, name, modifiers),
+            } => super::model_key::emit_modifiers(cx, name, modifiers)?,
         }
         i += 1;
     }
@@ -223,16 +232,20 @@ fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
     })
 }
 
-fn pieces_have_static_attr(pieces: &[Piece<'_>], name: &str) -> bool {
+pub(super) fn pieces_have_static_attr(pieces: &[Piece<'_>], name: &str) -> bool {
     pieces
         .iter()
         .any(|piece| matches!(piece, Piece::Attr(attr) if attr.name == name))
 }
 
-fn pieces_have_inline_on(pieces: &[Piece<'_>]) -> bool {
+/// The shipped scan reads the node's content — the padded attribute
+/// value — so `@click=" go "` is an inline handler by its spaces alone.
+fn pieces_have_inline_on(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
     pieces.iter().any(|piece| match piece {
         Piece::On(event) => on::forces_inline_on(event)
-            || matches!(event.handler, Some(ExprRef::Js(js)) if on::is_inline_handler_source(js.source))
+            || matches!(event.handler, Some(ExprRef::Js(js)) if on::is_inline_handler_source(
+                super::prefix::node_content(cx.source, js.source, js.span).text.as_str()
+            ))
             || matches!(event.handler, Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement),
         Piece::ModelUpdate { .. } => true,
         _ => false,
@@ -262,76 +275,4 @@ fn pieces_are_dynamic_model_products(pieces: &[&Piece<'_>]) -> bool {
                 }
             )
         })
-}
-
-fn emit_static_pair(cx: &mut EmitCx<'_>, attr: &Attribute<'_>) {
-    emit_ref_for(cx, attr.name);
-    push_ident_key(cx, attr.name);
-    cx.buf.push(": \"");
-    if let Some(value) = attr.value {
-        cx.buf.push(escape_js_string(value).as_str());
-    }
-    cx.buf.push("\"");
-}
-
-fn emit_bind_pair(
-    cx: &mut EmitCx<'_>,
-    pieces: &[Piece<'_>],
-    bind: &BindOp<'_>,
-    skip_normalize: bool,
-    is_plain_element: bool,
-) -> Result<(), EmitError> {
-    if props_bind::emit_dynamic_bind_pair(cx, bind)? {
-        return Ok(());
-    }
-    let raw_name = props_bind::static_bind_name(bind)?;
-    let key = props_bind::static_bind_key(bind, StaticBindKeyCasing::Preserve)?;
-    let value = props_value::bind_value(bind)?;
-    let static_style = static_style_piece(pieces);
-    let skip_normalize = skip_normalize
-        || style::bind_skips_normalize(raw_name, is_plain_element, static_style.is_some(), &value);
-    emit_ref_for(cx, key.as_str());
-    push_ident_key(cx, key.as_str());
-    cx.buf.push(": ");
-    match raw_name {
-        "class" => match value.js() {
-            Some(_) if skip_normalize && !pieces_have_static_attr(pieces, "class") => {
-                value.emit_authored(cx, bind);
-            }
-            Some(js) => super::props_class::emit_class_value(cx, pieces, bind, js, skip_normalize),
-            None => {
-                if !skip_normalize {
-                    cx.buf.use_normalize_class();
-                    cx.buf.push(super::buf::Buf::normalize_class_alias());
-                    cx.buf.push("(");
-                }
-                value.emit(cx);
-                if !skip_normalize {
-                    cx.buf.push(")");
-                }
-            }
-        },
-        "style" => match value.js() {
-            Some(_) if skip_normalize && static_style.is_none() => {
-                value.emit_authored(cx, bind);
-            }
-            Some(js) => style::emit_style_value(cx, static_style, bind, js, skip_normalize),
-            None => value.emit(cx),
-        },
-        _ => value.emit_authored(cx, bind),
-    }
-    Ok(())
-}
-
-fn emit_ref_for(cx: &mut EmitCx<'_>, name: &str) {
-    if cx.in_v_for && name == "ref" {
-        cx.buf.push("ref_for: true, ");
-    }
-}
-
-fn static_style_piece<'a>(pieces: &'a [Piece<'a>]) -> Option<(&'a Attribute<'a>, &'a str)> {
-    pieces.iter().find_map(|piece| match piece {
-        Piece::Attr(attr) if attr.name == "style" => attr.value.map(|value| (*attr, value)),
-        _ => None,
-    })
 }

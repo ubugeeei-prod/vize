@@ -3,11 +3,13 @@ use vize_s2::op::{InterpolationOp, Op};
 
 use super::super::buf::Buf;
 use super::super::children::{
-    emit_create_text_vnode, emit_interpolation, emit_js_to_display_string, emit_plain_text_vnode,
-    emit_raw_interpolation_or_refuse, emit_to_display_string, is_empty_interpolation,
+    emit_create_text_vnode, emit_dynamic_part, emit_interpolation, emit_js_to_display_string,
+    emit_plain_text_vnode, emit_raw_interpolation_or_refuse, emit_to_display_string,
+    is_empty_interpolation,
 };
 use super::super::hoist::{emit_hoisted_element, is_hoistable};
 use super::super::js::{escape_js_string, is_valid_js_identifier};
+use super::super::prefix::Site;
 use super::super::vnode;
 use super::super::{EmitCx, EmitError, UnsupportedReason as Reason};
 use crate::lower::{WrapperAttr, WrapperClass};
@@ -55,7 +57,7 @@ pub(super) fn emit_inner_fragment(
     cx.buf.push(Buf::create_element_block_alias());
     cx.buf.push("(");
     cx.buf.push(Buf::fragment_alias());
-    emit_fragment_props(cx, key, attributes, class);
+    emit_fragment_props(cx, key, attributes, class)?;
     cx.with_static_vnode_hoist(true, |cx| emit_fragment_children(cx, ops, mode))?;
     cx.buf.push(", 64 /* STABLE_FRAGMENT */))");
     Ok(())
@@ -66,10 +68,10 @@ fn emit_fragment_props(
     key: Option<&str>,
     attributes: &[WrapperAttr],
     class: Option<&WrapperClass>,
-) {
+) -> Result<(), EmitError> {
     if key.is_none() && attributes.is_empty() && class.is_none() {
         cx.buf.push(", null, ");
-        return;
+        return Ok(());
     }
     let multiline = class.is_some_and(|class| class.dynamic_source.is_some());
     if multiline {
@@ -95,7 +97,7 @@ fn emit_fragment_props(
     if let Some(class) = class {
         start_fragment_prop(cx, &mut first, multiline);
         cx.buf.push("class: ");
-        emit_wrapper_class(cx, class);
+        emit_wrapper_class(cx, class)?;
     }
     if multiline {
         cx.buf.deindent();
@@ -104,6 +106,7 @@ fn emit_fragment_props(
     } else {
         cx.buf.push(" }, ");
     }
+    Ok(())
 }
 
 fn start_fragment_prop(cx: &mut EmitCx<'_>, first: &mut bool, multiline: bool) {
@@ -119,8 +122,17 @@ fn start_fragment_prop(cx: &mut EmitCx<'_>, first: &mut bool, multiline: bool) {
     *first = false;
 }
 
-fn emit_wrapper_class(cx: &mut EmitCx<'_>, class: &WrapperClass) {
-    match (&class.static_value, &class.dynamic_source) {
+fn emit_wrapper_class(cx: &mut EmitCx<'_>, class: &WrapperClass) -> Result<(), EmitError> {
+    let prefixed;
+    let dynamic_source = match &class.dynamic_source {
+        Some(source) if cx.prefixing() => {
+            prefixed = cx.prefixed_text(source.as_str(), super::super::prefix::Site::Expression)?;
+            Some(prefixed.as_str())
+        }
+        Some(source) => Some(source.as_str()),
+        None => None,
+    };
+    match (&class.static_value, dynamic_source) {
         (Some(static_value), Some(dynamic_source)) => {
             cx.buf
                 .use_helper(super::super::helper::Helper::NormalizeClass);
@@ -130,7 +142,7 @@ fn emit_wrapper_class(cx: &mut EmitCx<'_>, class: &WrapperClass) {
             cx.buf
                 .push(escape_js_string(static_value.as_str()).as_str());
             cx.buf.push("\", ");
-            cx.buf.push(dynamic_source.as_str());
+            cx.buf.push(dynamic_source);
             cx.buf.push("])");
         }
         (None, Some(dynamic_source)) => {
@@ -139,7 +151,7 @@ fn emit_wrapper_class(cx: &mut EmitCx<'_>, class: &WrapperClass) {
             cx.buf
                 .push(super::super::helper::Helper::NormalizeClass.alias());
             cx.buf.push("(");
-            cx.buf.push(dynamic_source.as_str());
+            cx.buf.push(dynamic_source);
             cx.buf.push(")");
         }
         (Some(static_value), None) => {
@@ -150,6 +162,7 @@ fn emit_wrapper_class(cx: &mut EmitCx<'_>, class: &WrapperClass) {
         }
         (None, None) => cx.buf.push("\"\""),
     }
+    Ok(())
 }
 
 fn push_static_key(cx: &mut EmitCx<'_>, key: &str) {
@@ -254,7 +267,7 @@ fn emit_gen_interp(
             for part in parts.iter() {
                 start_item(cx, first);
                 if part.dynamic {
-                    emit_to_display_string(cx, part.text.as_str());
+                    emit_dynamic_part(cx, part.text.as_str(), Site::Expression)?;
                 } else {
                     emit_plain_text_vnode(cx, part.text.as_str());
                 }
