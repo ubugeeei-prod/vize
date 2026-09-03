@@ -7,12 +7,16 @@
     clippy::disallowed_methods
 )]
 
-use vize_atelier_dom::{DomCompilerOptions, compile_template, compile_template_with_options};
+use vize_atelier_core::options::{CodegenOptions, TemplateSyntaxMode};
+use vize_atelier_dom::{
+    DomCompilerOptions, compile_template, compile_template_with_options,
+    compile_template_with_template_syntax_and_codegen_options,
+};
 use vize_s0::Allocator;
 use vize_s0::config::VueVersion;
 use vize_s1_to_s2::{
-    DOM_LANE_FLAG, EmitError, LegacyCaps, UnsupportedReason, emit_dom_source,
-    emit_dom_source_with_caps,
+    DOM_LANE_FLAG, DomEmitOptions, EmitError, LegacyCaps, UnsupportedReason, emit_dom_source,
+    emit_dom_source_with_caps, emit_dom_source_with_options,
 };
 
 #[derive(Clone, Copy)]
@@ -52,6 +56,61 @@ fn shipped_with_dialect_and_prefix(
     };
     assert!(errors.is_empty(), "shipped lane errors: {errors:?}");
     format!("{}\n{}", result.preamble, result.code)
+}
+
+/// The shipped lane under explicit DOM and codegen options — the entry
+/// `vize_atelier_sfc` compiles template blocks through.
+pub fn shipped_with_options(
+    src: &str,
+    options: &DomCompilerOptions,
+    codegen: &CodegenOptions,
+) -> String {
+    let allocator = Allocator::new();
+    let (_, errors, result) = compile_template_with_template_syntax_and_codegen_options(
+        &allocator,
+        src,
+        options.clone(),
+        TemplateSyntaxMode::Standard,
+        codegen.clone(),
+    );
+    assert!(errors.is_empty(), "shipped lane errors: {errors:?}");
+    format!("{}\n{}", result.preamble, result.code)
+}
+
+/// Dual-run under explicit options on both sides: the shipped lane's
+/// `DomCompilerOptions` + `CodegenOptions` against the S2 emitter's
+/// `DomEmitOptions`, byte-for-byte, with the comparison count pinned.
+pub fn assert_s2_matches_shipped_with_options(
+    battery: &[(&str, &str)],
+    options: &DomCompilerOptions,
+    codegen: &CodegenOptions,
+    emit: &DomEmitOptions<'_>,
+) {
+    let mut compared = 0u64;
+    let mut skipped_legacy_flag = 0u64;
+    if std::env::var(DOM_LANE_FLAG).is_ok_and(|value| value == "legacy") {
+        skipped_legacy_flag += 1;
+    } else {
+        let allocator = Allocator::new();
+        let caps = LegacyCaps::for_version(options.dialect);
+        for (name, src) in battery {
+            let old = shipped_with_options(src, options, codegen);
+            let new = emit_dom_source_with_options(&allocator, src, caps, emit)
+                .unwrap_or_else(|error| panic!("{name}: S2 emit refused: {error:?}"))
+                .assembled();
+            assert_eq!(
+                old.as_str(),
+                new.as_str(),
+                "{name}: S2 DOM emit diverged from the shipped lane"
+            );
+            compared += 1;
+        }
+    }
+    assert_eq!(
+        (compared, skipped_legacy_flag),
+        (battery.len() as u64, 0),
+        "a cfg or {DOM_LANE_FLAG}=legacy regression disarmed the dual-run"
+    );
 }
 
 pub fn assert_s2_matches_shipped(battery: &[(&str, &str)]) {

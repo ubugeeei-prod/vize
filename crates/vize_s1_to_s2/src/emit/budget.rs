@@ -5,7 +5,7 @@ use vize_s1::parse;
 use crate::lower::{LegacyCaps, lower_with_caps};
 use crate::pass::run_transform;
 
-use super::{DomEmit, EmitError, emit_dom_with_emit_budget};
+use super::{DomEmit, DomEmitOptions, EmitError, emit_dom_with_emit_budget};
 
 /// Observer-facing counts for the S2 DOM emitter.
 ///
@@ -44,11 +44,21 @@ pub fn emit_dom_source_with_caps_observed<'a>(
     source: &'a str,
     caps: LegacyCaps,
 ) -> Result<ObservedDomEmit, EmitError> {
+    emit_dom_source_observed_with_options(allocator, source, caps, &DomEmitOptions::DEFAULT)
+}
+
+/// [`emit_dom_source_with_caps_observed`] under explicit [`DomEmitOptions`].
+pub fn emit_dom_source_observed_with_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+) -> Result<ObservedDomEmit, EmitError> {
     let (tree, errors) = parse(allocator, source);
     let mut lowered = lower_with_caps(allocator, &tree, &errors, caps);
     let mut transform = BudgetObserver::new();
     let facts = run_transform(&mut lowered, &mut transform);
-    let (emit, emit_visits) = emit_dom_with_emit_budget(&lowered, &facts)?;
+    let (emit, emit_visits) = emit_dom_with_emit_budget(&lowered, &facts, options)?;
     Ok(ObservedDomEmit {
         emit,
         budget: DomEmitBudget {

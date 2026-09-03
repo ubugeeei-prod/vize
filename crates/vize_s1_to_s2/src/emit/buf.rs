@@ -8,6 +8,7 @@ use super::helper::Helper;
 
 mod call_position;
 mod helper_order;
+mod preamble;
 
 /// Growing JS text plus the helpers the body mentioned.
 pub(super) struct Buf {
@@ -293,37 +294,6 @@ impl Buf {
 
     pub(super) fn hoist_root_props(&mut self, object: String) -> String {
         self.push_hoist(object)
-    }
-
-    /// Function-mode preamble, helpers in import-rank order, then any
-    /// root static-props hoist (the shipped codegen appends hoists to
-    /// the helper preamble).
-    pub(super) fn preamble(&self) -> String {
-        let listed = self.ordered_helpers();
-        if listed.is_empty() {
-            return String::default();
-        }
-        let mut preamble = String::from("const { ");
-        for (i, helper) in listed.iter().enumerate() {
-            if i > 0 {
-                preamble.push_str(", ");
-            }
-            preamble.push_str(helper.name());
-            preamble.push_str(": ");
-            preamble.push_str(helper.alias());
-        }
-        preamble.push_str(" } = Vue\n");
-        if !self.hoists.is_empty() {
-            preamble.push('\n');
-            for (i, rhs) in self.hoists.iter().enumerate() {
-                preamble.push_str("const _hoisted_");
-                preamble.push_str((i + 1).to_compact_string().as_str());
-                preamble.push_str(" = ");
-                preamble.push_str(rhs.as_str());
-                preamble.push('\n');
-            }
-        }
-        preamble
     }
 }
 
