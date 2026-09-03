@@ -15,6 +15,11 @@ pub(super) fn admit(html: &VueHtmlOp<'_>) -> Result<(), EmitError> {
 pub(super) fn emit_pair(cx: &mut EmitCx<'_>, html: &VueHtmlOp<'_>) -> Result<(), EmitError> {
     cx.buf.push("innerHTML: ");
     match html.value {
+        Some(expr) if cx.prefixing() => {
+            value(html)?;
+            let text = cx.prefixed_bind_expr(&expr)?;
+            cx.buf.push(text.as_str());
+        }
         Some(expr) => {
             let raw_source = expr_source(&expr, false).ok_or_else(|| {
                 EmitError::unsupported_at(Reason::HtmlExpressionNotJs, expr.span())

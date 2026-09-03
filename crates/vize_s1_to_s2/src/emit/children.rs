@@ -14,6 +14,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::escape_js_string;
+use super::prefix::Site;
 use crate::lower::TextPart;
 
 pub(super) fn emit_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
@@ -58,6 +59,9 @@ pub(super) fn emit_interpolation(
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     match interp.expression {
+        ExprRef::Js(js) if cx.prefixing() => {
+            emit_prefixed_to_display_string(cx, js, Site::Expression)
+        }
         ExprRef::Js(js) => {
             emit_js_to_display_string(cx, js);
             Ok(())
@@ -76,24 +80,58 @@ pub(super) fn emit_interpolation(
                     interp.span,
                     id,
                 ))?;
-            emit_compound_parts(cx, &facts.parts, interp.span)
+            emit_compound_parts(cx, &facts.parts, interp.span, Site::Expression)
         }
         ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {
             emit_to_display_string(cx, "");
+            Ok(())
+        }
+        _ if cx.prefixing() => {
+            let text = cx.prefixed_expr(&interp.expression, Site::Expression)?;
+            emit_to_display_string(cx, text.as_str());
             Ok(())
         }
         _ => emit_raw_interpolation_or_refuse(cx, interp.expression),
     }
 }
 
+/// `_toDisplayString(<prefixed>)` — the `prefix_identifiers` spelling of
+/// [`emit_js_to_display_string`].
+pub(super) fn emit_prefixed_to_display_string(
+    cx: &mut EmitCx<'_>,
+    js: &JsExpr<'_>,
+    site: Site,
+) -> Result<(), EmitError> {
+    let text = cx.prefixed_js(js, site)?;
+    emit_to_display_string(cx, text.as_str());
+    Ok(())
+}
+
+/// One compound part as the shipped codegen consumed it (a dynamic part
+/// is an interpolation the transform prefixed on its own).
+pub(super) fn emit_dynamic_part(
+    cx: &mut EmitCx<'_>,
+    text: &str,
+    site: Site,
+) -> Result<(), EmitError> {
+    if cx.prefixing() {
+        let text = cx.prefixed_text(text, site)?;
+        emit_to_display_string(cx, text.as_str());
+    } else {
+        emit_to_display_string(cx, text);
+    }
+    Ok(())
+}
+
 pub(super) fn is_empty_interpolation(expr: &vize_s2::expr::OpaqueExpr<'_>) -> bool {
     expr.reason == OpaqueReason::ParseRejected && expr.source.is_empty()
 }
 
-fn emit_compound_parts(
+pub(super) fn emit_compound_parts(
     cx: &mut EmitCx<'_>,
     parts: &[TextPart],
     span: Span,
+    site: Site,
 ) -> Result<(), EmitError> {
     if parts.is_empty() {
         return Err(EmitError::unsupported_at(Reason::EmptyCompoundText, span));
@@ -103,7 +141,7 @@ fn emit_compound_parts(
             cx.buf.push(" + ");
         }
         if part.dynamic {
-            emit_to_display_string(cx, part.text.as_str());
+            emit_dynamic_part(cx, part.text.as_str(), site)?;
         } else {
             emit_quoted_text(cx, part.text.as_str());
         }
@@ -111,7 +149,7 @@ fn emit_compound_parts(
     Ok(())
 }
 
-fn emit_quoted_text(cx: &mut EmitCx<'_>, content: &str) {
+pub(super) fn emit_quoted_text(cx: &mut EmitCx<'_>, content: &str) {
     cx.buf.push("\"");
     cx.buf.push(escape_js_string(content).as_str());
     cx.buf.push("\"");
@@ -208,7 +246,7 @@ fn emit_once_compound_text_vnodes(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result
         cx.buf.push(Buf::create_text_alias());
         cx.buf.push("(");
         if part.dynamic {
-            emit_to_display_string(cx, part.text.as_str());
+            emit_dynamic_part(cx, part.text.as_str(), Site::Expression)?;
             cx.buf.push(", 1 /* TEXT */");
         } else {
             emit_quoted_text(cx, part.text.as_str());

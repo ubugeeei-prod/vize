@@ -8,6 +8,7 @@ use vize_s2::op::{BindOp, BindingOp, OnOp, SlotOp};
 
 use super::buf::Buf;
 use super::js::{escape_js_string, is_valid_js_identifier};
+use super::prefix::Site;
 use super::props::{
     Piece, StaticBindKeyCasing, bind_value, emit_dynamic_bind_pair, pieces, static_bind_key,
 };
@@ -104,8 +105,7 @@ fn push_spread_separator(cx: &mut EmitCx<'_>, first: &mut bool) {
 }
 
 fn emit_bind_spread_expr(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), EmitError> {
-    bind_value(bind)?.emit_authored(cx, bind);
-    Ok(())
+    bind_value(bind)?.emit_authored(cx, bind)
 }
 
 fn emit_on_spread_expr(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
@@ -122,7 +122,12 @@ fn emit_on_spread_expr(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitErr
     cx.buf.use_to_handlers();
     cx.buf.push(Buf::to_handlers_alias());
     cx.buf.push("(");
-    cx.buf.push(source.as_str());
+    if cx.prefixing() {
+        let expr = on.handler.expect("checked handler");
+        cx.push_prefixed_expr(&expr, Site::Expression)?;
+    } else {
+        cx.buf.push(source.as_str());
+    }
     cx.buf.push(", true)");
     Ok(())
 }
@@ -164,7 +169,7 @@ fn emit_props_object(
                         cx.buf.use_normalize_class();
                         cx.buf.push(Buf::normalize_class_alias());
                         cx.buf.push("(");
-                        value.emit_authored(cx, bind);
+                        value.emit_authored(cx, bind)?;
                         cx.buf.push(")");
                     } else if key.as_str() == "style"
                         && !style::bind_skips_normalize("style", false, false, &value)
@@ -172,10 +177,10 @@ fn emit_props_object(
                         cx.buf.use_normalize_style();
                         cx.buf.push(Buf::normalize_style_alias());
                         cx.buf.push("(");
-                        value.emit_authored(cx, bind);
+                        value.emit_authored(cx, bind)?;
                         cx.buf.push(")");
                     } else {
-                        value.emit_authored(cx, bind);
+                        value.emit_authored(cx, bind)?;
                     }
                 }
             }

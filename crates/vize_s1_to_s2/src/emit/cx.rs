@@ -1,8 +1,24 @@
 //! Shared emitter context helpers kept out of `emit.rs` for the source budget.
 
 use vize_davinci::id::NodeId;
+use vize_s0::String;
+use vize_s2::expr::{ExprRef, JsExpr};
+use vize_s2::op::ForOp;
 
-use super::{EmitCx, EmitError};
+use super::js::RawJs;
+use super::prefix::{self, ScopeMark, Site};
+use super::{EmitCx, EmitError, UnsupportedReason as Reason};
+
+/// Which text the shipped node held for an expression position.
+#[derive(Clone, Copy)]
+enum ContentShape {
+    /// The quoted attribute value with its padding.
+    Padded,
+    /// The padded value, entity-decoded (bind values).
+    Decoded,
+    /// The trimmed source alone.
+    Trimmed,
+}
 
 impl EmitCx<'_> {
     pub(super) fn scope_mark(&self) -> usize {
@@ -23,8 +39,12 @@ impl EmitCx<'_> {
         self.scope_names.truncate(mark);
     }
 
+    /// `CodegenContext::is_slot_param`: the S2 scope facts' names plus the
+    /// codegen's own `add_slot_params` list, which also carries the names a
+    /// destructuring `v-for` alias or slot pattern binds.
     pub(super) fn is_scope_name(&self, source: &str) -> bool {
         self.scope_names.iter().any(|name| name.as_str() == source)
+            || self.scope.is_slot_param(source)
     }
 
     pub(super) fn with_static_vnode_hoist<T>(
@@ -62,5 +82,167 @@ impl EmitCx<'_> {
         let result = write(self);
         self.once_element_depth = previous;
         result
+    }
+
+    // ---- `prefix_identifiers` (P2-11 installment 85) ----
+
+    pub(super) fn prefixing(&self) -> bool {
+        self.prefix_identifiers
+    }
+
+    /// `TransformContext::enter_v_for_scope` + `add_slot_params` for the
+    /// callback params; pop with [`Self::leave_scope`].
+    pub(super) fn enter_for_scope(&mut self, for_op: &ForOp<'_>) -> ScopeMark {
+        let mark = self.scope.mark();
+        let binding = &for_op.binding;
+        self.scope.push_for([
+            Some(binding.value.source()),
+            binding.key.as_ref().map(|expr| expr.source()),
+            binding.index.as_ref().map(|expr| expr.source()),
+        ]);
+        mark
+    }
+
+    /// `enter_v_slot_scope` + `add_slot_params` for a scoped slot.
+    pub(super) fn enter_slot_scope(&mut self, params: Option<&str>) -> ScopeMark {
+        let mark = self.scope.mark();
+        if let Some(params) = params
+            && !params.trim().is_empty()
+        {
+            self.scope.push_slot(params);
+        }
+        mark
+    }
+
+    pub(super) fn leave_scope(&mut self, mark: ScopeMark) {
+        self.scope.pop(mark);
+    }
+
+    /// The prefixed text of `expr` the way `site` consumes it.
+    pub(super) fn prefixed_expr(
+        &self,
+        expr: &ExprRef<'_>,
+        site: Site,
+    ) -> Result<String, EmitError> {
+        self.prefixed_expr_content(expr, site, ContentShape::Padded)
+    }
+
+    /// [`Self::prefixed_expr`] over the entity-decoded bind value.
+    pub(super) fn prefixed_bind_expr(&self, expr: &ExprRef<'_>) -> Result<String, EmitError> {
+        self.prefixed_expr_content(expr, Site::Expression, ContentShape::Decoded)
+    }
+
+    /// [`Self::prefixed_expr`] over the trimmed source alone (the
+    /// transform trimmed it before the codegen saw it).
+    pub(super) fn prefixed_trimmed_expr(
+        &self,
+        expr: &ExprRef<'_>,
+        site: Site,
+    ) -> Result<String, EmitError> {
+        self.prefixed_expr_content(expr, site, ContentShape::Trimmed)
+    }
+
+    fn prefixed_expr_content(
+        &self,
+        expr: &ExprRef<'_>,
+        site: Site,
+        shape: ContentShape,
+    ) -> Result<String, EmitError> {
+        let (source, js) = match expr {
+            ExprRef::Js(js) => (js.source, Some(*js)),
+            ExprRef::Opaque(opaque) => (opaque.source, None),
+            ExprRef::Foreign(_) | ExprRef::Filter(_) => {
+                return Err(EmitError::unsupported_at(
+                    Reason::PrefixExpressionKind,
+                    expr.span(),
+                ));
+            }
+        };
+        let content = match shape {
+            ContentShape::Padded => prefix::node_content(self.source, source, expr.span()),
+            ContentShape::Decoded => prefix::node_content_decoded(self.source, source, expr.span()),
+            ContentShape::Trimmed => prefix::Content {
+                text: RawJs::Borrowed(source),
+                offset: Some(0),
+            },
+        };
+        prefix::prefix_expression(&self.scope, &content, js, site)
+            .map_err(|_| EmitError::unsupported_at(Reason::PrefixExpressionRejected, expr.span()))
+    }
+
+    /// The prefixed text of a retained expression the way `site` consumes it.
+    pub(super) fn prefixed_js(&self, js: &JsExpr<'_>, site: Site) -> Result<String, EmitError> {
+        let content = prefix::node_content(self.source, js.source, js.span);
+        prefix::prefix_expression(&self.scope, &content, Some(js), site)
+            .map_err(|_| EmitError::unsupported_at(Reason::PrefixExpressionRejected, js.span))
+    }
+
+    /// [`Self::prefixed_js`] over the entity-decoded bind value.
+    pub(super) fn prefixed_bind_js(&self, js: &JsExpr<'_>) -> Result<String, EmitError> {
+        let content = prefix::node_content_decoded(self.source, js.source, js.span);
+        prefix::prefix_expression(&self.scope, &content, Some(js), Site::Expression)
+            .map_err(|_| EmitError::unsupported_at(Reason::PrefixExpressionRejected, js.span))
+    }
+
+    pub(super) fn push_prefixed_js(
+        &mut self,
+        js: &JsExpr<'_>,
+        site: Site,
+    ) -> Result<(), EmitError> {
+        let text = self.prefixed_js(js, site)?;
+        self.buf.push(text.as_str());
+        Ok(())
+    }
+
+    /// Prefixed text for a fact-derived string (no retained AST, no padding).
+    pub(super) fn prefixed_text(&self, text: &str, site: Site) -> Result<String, EmitError> {
+        let content = prefix::Content {
+            text: RawJs::Borrowed(text),
+            offset: None,
+        };
+        prefix::prefix_expression(&self.scope, &content, None, site)
+            .map_err(|_| EmitError::unsupported(Reason::PrefixExpressionRejected))
+    }
+
+    /// `process_inline_handler` + `generate_event_handler` over `expr`.
+    pub(super) fn prefixed_handler(&self, expr: &ExprRef<'_>) -> Result<String, EmitError> {
+        let (source, js) = match expr {
+            ExprRef::Js(js) => (js.source, Some(*js)),
+            ExprRef::Opaque(opaque) => (opaque.source, None),
+            ExprRef::Foreign(_) | ExprRef::Filter(_) => {
+                return Err(EmitError::unsupported_at(
+                    Reason::PrefixExpressionKind,
+                    expr.span(),
+                ));
+            }
+        };
+        let content = prefix::node_content(self.source, source, expr.span());
+        prefix::prefix_handler(&self.scope, &content, js)
+            .map_err(|_| EmitError::unsupported_at(Reason::PrefixExpressionRejected, expr.span()))
+    }
+
+    /// The handler text for synthesized handler source (`v-model` writes).
+    pub(super) fn prefixed_handler_text(&self, text: &str) -> Result<String, EmitError> {
+        let content = prefix::Content {
+            text: RawJs::Borrowed(text),
+            offset: None,
+        };
+        prefix::prefix_handler(&self.scope, &content, None)
+            .map_err(|_| EmitError::unsupported(Reason::PrefixExpressionRejected))
+    }
+
+    /// `emit_dynamic_directive_arg` under `prefix_identifiers`.
+    pub(super) fn prefixed_dynamic_arg(&self, js: &JsExpr<'_>) -> String {
+        prefix::prefix_dynamic_arg(&self.scope, js)
+    }
+
+    pub(super) fn push_prefixed_expr(
+        &mut self,
+        expr: &ExprRef<'_>,
+        site: Site,
+    ) -> Result<(), EmitError> {
+        let text = self.prefixed_expr(expr, site)?;
+        self.buf.push(text.as_str());
+        Ok(())
     }
 }

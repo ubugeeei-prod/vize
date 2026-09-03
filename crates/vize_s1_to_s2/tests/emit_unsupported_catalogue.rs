@@ -59,6 +59,13 @@ const GUARD_ONLY: &[Reason] = &[
     Reason::WalkIdOverflow,
 ];
 
+/// `prefix_identifiers` lane refusals: the shipped lane reports a
+/// non-recoverable diagnostic or has no behavior to mirror.
+const PREFIX_LANE: &[Reason] = &[
+    Reason::PrefixExpressionKind,
+    Reason::PrefixExpressionRejected,
+];
+
 const RETIRED: &[Reason] = &[
     Reason::CreateSlotsMissingSlotTemplate,
     Reason::DynamicOnHasModifiers,
@@ -73,6 +80,7 @@ fn reason_catalogue_is_fully_accounted_for() {
     accounted.extend_from_slice(DIRECT);
     accounted.extend_from_slice(GUARD_ONLY);
     accounted.extend_from_slice(RETIRED);
+    accounted.extend_from_slice(PREFIX_LANE);
 
     let mut accounted_codes = accounted
         .iter()

@@ -4,6 +4,7 @@ use vize_s2::op::VueTextOp;
 
 use super::UnsupportedReason as Reason;
 use super::js::{RawJs, expr_source};
+use super::prefix::Site;
 use super::{EmitCx, EmitError};
 
 pub(super) fn admit(text: &VueTextOp<'_>) -> Result<(), EmitError> {
@@ -12,9 +13,13 @@ pub(super) fn admit(text: &VueTextOp<'_>) -> Result<(), EmitError> {
 
 pub(super) fn emit_pair(cx: &mut EmitCx<'_>, text: &VueTextOp<'_>) -> Result<(), EmitError> {
     cx.buf.push("textContent: ");
-    match value(text)? {
-        Some(source) => super::children::emit_to_display_string(cx, source.as_str()),
-        None => super::children::emit_to_display_string(cx, "undefined"),
+    match (value(text)?, text.value) {
+        (Some(_), Some(expr)) if cx.prefixing() => {
+            let prefixed = cx.prefixed_expr(&expr, Site::Expression)?;
+            super::children::emit_to_display_string(cx, prefixed.as_str());
+        }
+        (Some(source), _) => super::children::emit_to_display_string(cx, source.as_str()),
+        (None, _) => super::children::emit_to_display_string(cx, "undefined"),
     }
     Ok(())
 }

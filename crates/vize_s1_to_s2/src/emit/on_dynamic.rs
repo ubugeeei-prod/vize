@@ -71,6 +71,11 @@ fn dynamic_name<'a>(on: &'a OnOp<'a>) -> Result<&'a JsExpr<'a>, EmitError> {
 }
 
 pub(super) fn emit_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
+    if cx.prefixing() {
+        let text = cx.prefixed_dynamic_arg(js);
+        cx.buf.push(text.as_str());
+        return;
+    }
     if matches!(js.ast, Expression::TemplateLiteral(_)) {
         emit_template_literal_key_source(cx, js);
         return;
@@ -161,54 +166,5 @@ fn emit_template_literal_prefixes(
 }
 
 fn is_global_key_name(name: &str) -> bool {
-    matches!(
-        name,
-        "Infinity"
-            | "undefined"
-            | "NaN"
-            | "Array"
-            | "Boolean"
-            | "Date"
-            | "Error"
-            | "Function"
-            | "JSON"
-            | "Math"
-            | "Number"
-            | "Object"
-            | "Promise"
-            | "Proxy"
-            | "Reflect"
-            | "RegExp"
-            | "Set"
-            | "String"
-            | "Symbol"
-            | "Map"
-            | "WeakMap"
-            | "WeakSet"
-            | "BigInt"
-            | "parseInt"
-            | "parseFloat"
-            | "isNaN"
-            | "isFinite"
-            | "decodeURI"
-            | "decodeURIComponent"
-            | "encodeURI"
-            | "encodeURIComponent"
-            | "arguments"
-            | "console"
-            | "window"
-            | "document"
-            | "navigator"
-            | "globalThis"
-            | "require"
-            | "import"
-            | "exports"
-            | "module"
-            | "_ctx"
-            | "_cache"
-            | "_push"
-            | "_parent"
-            | "$event"
-            | "_toNumber"
-    )
+    super::props_bind::is_global_key_name(name)
 }

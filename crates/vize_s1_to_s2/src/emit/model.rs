@@ -15,6 +15,7 @@ use super::UnsupportedReason as Reason;
 use super::helper::Helper;
 use super::js::{RawJs, expr_source};
 use super::model_key::{self, ModelName};
+use super::prefix::Site;
 use super::props::Piece;
 
 const KIND: &str = "element-kind";
@@ -108,7 +109,7 @@ pub(super) fn emit_native_entry(
     model: &ModelOp<'_>,
 ) -> Result<(), EmitError> {
     let helper = native_helper(element);
-    let source = js_source(model)?;
+    let source = RawJs::Owned(native_read_source(cx, model)?);
     let modifiers = native_modifiers(model);
     cx.buf.use_helper(helper);
     if modifiers.is_empty() {
@@ -182,6 +183,46 @@ fn static_type<'a>(element: &'a ElementOp<'a>) -> Option<&'a str> {
         .iter()
         .find(|attribute| attribute.name == "type")
         .and_then(|attribute| attribute.value)
+}
+
+/// The model's read expression as the shipped lane wrote it at `site`:
+/// the transform-prefixed content, then `generate_expression`
+/// (`Expression`) or a raw push (`Raw`, the dynamic-argument spelling).
+pub(super) fn value_source(
+    cx: &EmitCx<'_>,
+    model: &ModelOp<'_>,
+    site: Site,
+) -> Result<String, EmitError> {
+    let raw = js_source(model)?;
+    if cx.prefixing() {
+        return cx.prefixed_trimmed_expr(&model.contract.read, site);
+    }
+    Ok(String::from(raw.as_str()))
+}
+
+/// The `withDirectives` entry's read expression: `generate_expression`
+/// over the directive node, whose content keeps the authored padding
+/// inside the quotes (`v-model=" msg "` → `[_vModelText,  msg ]`); the
+/// component `modelValue` value is trimmed by the shipped transform and
+/// stays on [`value_source`].
+fn native_read_source(cx: &EmitCx<'_>, model: &ModelOp<'_>) -> Result<String, EmitError> {
+    let raw = js_source(model)?;
+    if cx.prefixing() {
+        return cx.prefixed_expr(&model.contract.read, Site::Expression);
+    }
+    let read = model.contract.read;
+    let content = super::prefix::node_content(cx.source, read.source(), read.span());
+    let padded = content.text.as_str();
+    if padded.trim() != read.source() {
+        return Ok(String::from(raw.as_str()));
+    }
+    let leading = padded.len() - padded.trim_start().len();
+    let trailing = padded.len() - padded.trim_end().len();
+    let mut out = String::with_capacity(padded.len());
+    out.push_str(&padded[..leading]);
+    out.push_str(raw.as_str());
+    out.push_str(&padded[padded.len() - trailing..]);
+    Ok(out)
 }
 
 pub(super) fn js_source<'a>(model: &'a ModelOp<'a>) -> Result<RawJs<'a>, EmitError> {

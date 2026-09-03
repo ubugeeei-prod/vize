@@ -75,6 +75,7 @@ mod once;
 mod options;
 mod outlet;
 mod outlet_props;
+mod prefix;
 mod props;
 mod props_bind;
 mod props_class;
@@ -208,6 +209,11 @@ struct EmitCx<'facts> {
     /// depends on SVG/MathML boundaries staying block-local while same-namespace
     /// descendants remain inline VNodes.
     parent_ns: Namespace,
+    /// `prefix_identifiers`: expressions go through [`prefix`] on their
+    /// way out instead of being pushed verbatim.
+    prefix_identifiers: bool,
+    /// The transform scope and codegen slot params the prefixer consults.
+    scope: prefix::PrefixScope,
 }
 
 /// Emit a DOM render function from an already-lowered (and typically
@@ -265,6 +271,8 @@ fn emit_dom_with_emit_budget(
         transition_slot_root: false,
         static_cache,
         parent_ns: Namespace::Html,
+        prefix_identifiers: options.prefix_identifiers,
+        scope: prefix::PrefixScope::default(),
     };
     let filters = &facts.legacy.filters;
     if facts.legacy.filter_helper_precedes_components {

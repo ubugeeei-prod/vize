@@ -10,6 +10,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::escape_js_string;
+use super::prefix::Site;
 use crate::pass::{BranchKeyKind, IfFacts};
 
 pub(super) fn emit_if(
@@ -49,7 +50,7 @@ pub(super) fn emit_if(
             cx.buf.newline();
             cx.buf.push(": ");
         }
-        let key = branch_key_js(facts, i, allocated)?;
+        let key = branch_key_js(cx, facts, i, allocated)?;
         let saved = cx.if_branch_key;
         cx.if_branch_key = 0;
         let from_template = id
@@ -91,6 +92,9 @@ fn emit_condition(
     condition: &ExprRef<'_>,
     branch_span: Span,
 ) -> Result<(), EmitError> {
+    if cx.prefixing() {
+        return cx.push_prefixed_expr(condition, Site::Expression);
+    }
     match condition {
         ExprRef::Js(js) => {
             let source = super::js::js_expr_source(js);
@@ -209,6 +213,7 @@ fn authored_condition_quote_padding<'a>(
 }
 
 fn branch_key_js(
+    cx: &EmitCx<'_>,
     facts: Option<&IfFacts>,
     index: usize,
     allocated: u32,
@@ -227,6 +232,9 @@ fn branch_key_js(
         }
         Some(BranchKeyKind::Dynamic { source, .. }) if source.is_empty() => {
             Ok(allocated.to_compact_string())
+        }
+        Some(BranchKeyKind::Dynamic { source, .. }) if cx.prefixing() => {
+            cx.prefixed_text(source.as_str(), Site::Expression)
         }
         Some(BranchKeyKind::Dynamic { source, .. }) => Ok(source.clone()),
     }

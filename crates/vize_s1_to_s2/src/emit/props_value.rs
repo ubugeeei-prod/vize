@@ -15,17 +15,41 @@ pub(super) enum BindValue<'a> {
 }
 
 impl BindValue<'_> {
-    pub(super) fn emit(&self, cx: &mut EmitCx<'_>) {
+    pub(super) fn emit(&self, cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), EmitError> {
+        if cx.prefixing() {
+            return self.emit_prefixed(cx, bind);
+        }
         match self {
             Self::Js(js) => cx.buf.push(bind_js_source(js).as_str()),
             Self::RawJs(source) => cx.buf.push(source.as_str()),
         }
+        Ok(())
     }
 
-    pub(super) fn emit_authored(&self, cx: &mut EmitCx<'_>, bind: &BindOp<'_>) {
+    /// `generate_expression` over the transform-prefixed value.
+    fn emit_prefixed(&self, cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), EmitError> {
+        let text = match (self, bind.value) {
+            (Self::Js(js), _) => cx.prefixed_bind_js(js)?,
+            (Self::RawJs(_), Some(expr)) => cx.prefixed_bind_expr(&expr)?,
+            (Self::RawJs(source), None) => {
+                cx.buf.push(source.as_str());
+                return Ok(());
+            }
+        };
+        cx.buf.push(text.as_str());
+        Ok(())
+    }
+
+    pub(super) fn emit_authored(
+        &self,
+        cx: &mut EmitCx<'_>,
+        bind: &BindOp<'_>,
+    ) -> Result<(), EmitError> {
+        if cx.prefixing() {
+            return self.emit_prefixed(cx, bind);
+        }
         let Self::Js(js) = self else {
-            self.emit(cx);
-            return;
+            return self.emit(cx, bind);
         };
         let raw_source = js_expr_source(js);
         let decoded = raw_source
@@ -43,6 +67,7 @@ impl BindValue<'_> {
         } else {
             cx.buf.push(source);
         }
+        Ok(())
     }
 
     pub(super) const fn js(&self) -> Option<&JsExpr<'_>> {

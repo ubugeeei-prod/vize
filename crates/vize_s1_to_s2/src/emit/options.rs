@@ -45,6 +45,9 @@ pub struct DomEmitOptions<'a> {
     /// The global the helper destructure reads in
     /// [`DomEmitMode::Function`] (`"Vue"` by default).
     pub runtime_global_name: &'a str,
+    /// The shipped lane's `prefix_identifiers`: free identifiers become
+    /// `_ctx.` member accesses (`emit::prefix`), without binding metadata.
+    pub prefix_identifiers: bool,
 }
 
 impl DomEmitOptions<'static> {
@@ -54,6 +57,7 @@ impl DomEmitOptions<'static> {
         mode: DomEmitMode::Function,
         runtime_module_name: "vue",
         runtime_global_name: "Vue",
+        prefix_identifiers: false,
     };
 }
 
@@ -75,6 +79,7 @@ mod tests {
                 mode: DomEmitMode::Function,
                 runtime_module_name: "vue",
                 runtime_global_name: "Vue",
+                prefix_identifiers: false,
             }
         );
     }

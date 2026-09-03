@@ -5,6 +5,7 @@ use super::is_slot_template;
 use crate::emit::EmitCx;
 use crate::emit::create_slots_walk::{advance_after_op, slot_content};
 use crate::emit::js::{escape_js_string, is_valid_js_identifier};
+use crate::emit::prefix::Site;
 use crate::pass::walk::PageWalk;
 use crate::pass::{SlotCarrier, SlotName, SlotParams};
 
@@ -20,7 +21,14 @@ pub(super) fn emit_slot_key(cx: &mut EmitCx<'_>, name: &SlotName) {
         }
         SlotName::Dynamic { text } => {
             cx.buf.push("[");
-            cx.buf.push(text.as_str());
+            if cx.prefixing() {
+                let text = cx
+                    .prefixed_text(text.as_str(), Site::Expression)
+                    .unwrap_or_default();
+                cx.buf.push(text.as_str());
+            } else {
+                cx.buf.push(text.as_str());
+            }
             cx.buf.push("]");
         }
     }
@@ -70,6 +78,7 @@ pub(super) fn emit_slot_params(
         SlotParams::Absent => cx.buf.push("()"),
         SlotParams::Scoped { text, .. } => {
             cx.buf.push("(");
+            let processed = crate::emit::prefix::prefix_slot_defaults(text.as_str());
             if let Some((leading, trailing)) = content
                 .and_then(|content| content.params.as_ref().map(|expr| (content, expr)))
                 .and_then(|(content, expr)| {
@@ -77,10 +86,10 @@ pub(super) fn emit_slot_params(
                 })
             {
                 cx.buf.push(leading);
-                cx.buf.push(text.as_str());
+                cx.buf.push(processed.as_str());
                 cx.buf.push(trailing);
             } else {
-                cx.buf.push(text.as_str());
+                cx.buf.push(processed.as_str());
             }
             cx.buf.push(")");
         }

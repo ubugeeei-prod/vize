@@ -3,10 +3,10 @@
 use vize_s2::expr::JsExpr;
 use vize_s2::op::BindOp;
 
-use super::EmitCx;
 use super::js::{escape_js_string, js_expr_source};
 use super::props_object::Piece;
 use super::props_value::authored_value_padding;
+use super::{EmitCx, EmitError};
 
 pub(super) fn emit_class_value(
     cx: &mut EmitCx<'_>,
@@ -14,7 +14,7 @@ pub(super) fn emit_class_value(
     bind: &BindOp<'_>,
     js: &JsExpr<'_>,
     skip_normalize: bool,
-) {
+) -> Result<(), EmitError> {
     if !skip_normalize {
         cx.buf.use_normalize_class();
         cx.buf.push(super::buf::Buf::normalize_class_alias());
@@ -31,9 +31,9 @@ pub(super) fn emit_class_value(
             cx.buf
                 .push(escape_js_string(static_class.value.unwrap_or("")).as_str());
             cx.buf.push("\", ");
-            emit_authored_js(cx, source.as_str(), authored);
+            emit_authored_js(cx, js, source.as_str(), authored)?;
         } else {
-            emit_authored_js(cx, source.as_str(), authored);
+            emit_authored_js(cx, js, source.as_str(), authored)?;
             cx.buf.push(", \"");
             cx.buf
                 .push(escape_js_string(static_class.value.unwrap_or("")).as_str());
@@ -44,17 +44,29 @@ pub(super) fn emit_class_value(
         let source = js_expr_source(js);
         let authored =
             authored_value_padding(cx.source, bind, source.as_str(), js.span).unwrap_or(("", ""));
-        emit_authored_js(cx, source.as_str(), authored);
+        emit_authored_js(cx, js, source.as_str(), authored)?;
     }
     if !skip_normalize {
         cx.buf.push(")");
     }
+    Ok(())
 }
 
-fn emit_authored_js(cx: &mut EmitCx<'_>, source: &str, authored: (&str, &str)) {
+fn emit_authored_js(
+    cx: &mut EmitCx<'_>,
+    js: &JsExpr<'_>,
+    source: &str,
+    authored: (&str, &str),
+) -> Result<(), EmitError> {
+    if cx.prefixing() {
+        let text = cx.prefixed_bind_js(js)?;
+        cx.buf.push(text.as_str());
+        return Ok(());
+    }
     cx.buf.push(authored.0);
     cx.buf.push(source);
     cx.buf.push(authored.1);
+    Ok(())
 }
 
 fn static_class_piece<'a>(pieces: &'a [Piece<'a>]) -> Option<&'a vize_s2::op::Attribute<'a>> {

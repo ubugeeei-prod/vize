@@ -20,10 +20,11 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::hoist::is_hoistable;
 use super::js::escape_js_string;
+use super::prefix::Site;
 use super::props_static::PropHoistPosition;
 use crate::lower::{WrapperAttr, WrapperClass, WrapperKey};
 
-pub(super) fn wrapper_key_js(key: &WrapperKey) -> Result<String, EmitError> {
+pub(super) fn wrapper_key_js(cx: &EmitCx<'_>, key: &WrapperKey) -> Result<String, EmitError> {
     match key {
         WrapperKey::Static { value: None, .. } => Ok(String::from("\"\"")),
         WrapperKey::Static {
@@ -37,6 +38,9 @@ pub(super) fn wrapper_key_js(key: &WrapperKey) -> Result<String, EmitError> {
         WrapperKey::Dynamic { source, span } if source.is_empty() => Err(
             EmitError::unsupported_at(Reason::TemplateDynamicKeyEmpty, *span),
         ),
+        WrapperKey::Dynamic { source, .. } if cx.prefixing() => {
+            cx.prefixed_text(source.as_str(), Site::Expression)
+        }
         WrapperKey::Dynamic { source, .. } => Ok(source.clone()),
     }
 }

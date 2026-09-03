@@ -5,8 +5,9 @@ use vize_s0::{Span, String, camelize};
 use vize_s2::expr::{ExprRef, JsExpr};
 use vize_s2::op::ModelOp;
 
-use super::EmitCx;
 use super::js::push_ident_key;
+use super::prefix::Site;
+use super::{EmitCx, EmitError};
 
 #[derive(Clone, Copy)]
 pub(super) enum ModelName<'a> {
@@ -24,10 +25,15 @@ pub(super) enum ModelModifiersKey<'a> {
     Dynamic(&'a JsExpr<'a>),
 }
 
-pub(super) fn emit_value(cx: &mut EmitCx<'_>, name: ModelName<'_>, source: &str) {
-    emit_model_name(cx, name);
+pub(super) fn emit_value(
+    cx: &mut EmitCx<'_>,
+    name: ModelName<'_>,
+    source: &str,
+) -> Result<(), EmitError> {
+    emit_model_name(cx, name)?;
     cx.buf.push(": ");
     cx.buf.push(source);
+    Ok(())
 }
 
 pub(super) fn emit_update(
@@ -35,18 +41,18 @@ pub(super) fn emit_update(
     key: &ModelUpdateKey<'_>,
     model: &ModelOp<'_>,
     source: &str,
-) {
-    emit_update_key(cx, key);
+) -> Result<(), EmitError> {
+    emit_update_key(cx, key)?;
     cx.buf.push(": ");
-    emit_assignment(cx, model, source);
+    emit_assignment(cx, model, source)
 }
 
 pub(super) fn emit_modifiers(
     cx: &mut EmitCx<'_>,
     name: &ModelModifiersKey<'_>,
     modifiers: &[&str],
-) {
-    emit_modifiers_key(cx, name);
+) -> Result<(), EmitError> {
+    emit_modifiers_key(cx, name)?;
     cx.buf.push(": { ");
     for (i, modifier) in modifiers.iter().enumerate() {
         if i > 0 {
@@ -56,6 +62,7 @@ pub(super) fn emit_modifiers(
         cx.buf.push(": true");
     }
     cx.buf.push(" }");
+    Ok(())
 }
 
 pub(super) fn update_key_for(name: ModelName<'_>) -> ModelUpdateKey<'_> {
@@ -87,40 +94,60 @@ fn static_modifiers_key(prop: &str) -> String {
     key
 }
 
-fn emit_model_name(cx: &mut EmitCx<'_>, name: ModelName<'_>) {
+/// A dynamic model argument, `generate_expression` over the transform's
+/// prefixed text.
+fn push_argument(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) -> Result<(), EmitError> {
+    if cx.prefixing() {
+        return cx.push_prefixed_js(js, Site::Expression);
+    }
+    super::js::push_js_expr(cx, js);
+    Ok(())
+}
+
+fn emit_model_name(cx: &mut EmitCx<'_>, name: ModelName<'_>) -> Result<(), EmitError> {
     match name {
         ModelName::Static(name) => push_ident_key(cx, name),
         ModelName::Dynamic(js) => {
             cx.buf.push("[");
-            super::js::push_js_expr(cx, js);
+            push_argument(cx, js)?;
             cx.buf.push("]");
         }
     }
+    Ok(())
 }
 
-fn emit_update_key(cx: &mut EmitCx<'_>, key: &ModelUpdateKey<'_>) {
+fn emit_update_key(cx: &mut EmitCx<'_>, key: &ModelUpdateKey<'_>) -> Result<(), EmitError> {
     match key {
         ModelUpdateKey::Static(key) => push_ident_key(cx, key.as_str()),
         ModelUpdateKey::Dynamic(js) => {
             cx.buf.push("[\"onUpdate:\" + ");
-            super::js::push_js_expr(cx, js);
+            push_argument(cx, js)?;
             cx.buf.push("]");
         }
     }
+    Ok(())
 }
 
-fn emit_modifiers_key(cx: &mut EmitCx<'_>, key: &ModelModifiersKey<'_>) {
+fn emit_modifiers_key(cx: &mut EmitCx<'_>, key: &ModelModifiersKey<'_>) -> Result<(), EmitError> {
     match key {
         ModelModifiersKey::Static(key) => push_ident_key(cx, key.as_str()),
         ModelModifiersKey::Dynamic(js) => {
             cx.buf.push("[");
-            super::js::push_js_expr(cx, js);
+            push_argument(cx, js)?;
             cx.buf.push(" + \"Modifiers\"]");
         }
     }
+    Ok(())
 }
 
-pub(super) fn emit_assignment(cx: &mut EmitCx<'_>, model: &ModelOp<'_>, source: &str) {
+pub(super) fn emit_assignment(
+    cx: &mut EmitCx<'_>,
+    model: &ModelOp<'_>,
+    source: &str,
+) -> Result<(), EmitError> {
+    if cx.prefixing() {
+        return emit_prefixed_assignment(cx, model, source);
+    }
     if requires_legacy_nested_assignment(&model.contract.read) {
         cx.buf.push("$event => ($event => ($event => ((");
         if let Some((leading, trailing)) =
@@ -133,7 +160,7 @@ pub(super) fn emit_assignment(cx: &mut EmitCx<'_>, model: &ModelOp<'_>, source: 
             cx.buf.push(source);
         }
         cx.buf.push(") = $event)))");
-        return;
+        return Ok(());
     }
     cx.buf.push("$event => ((");
     if let Some((leading, trailing)) =
@@ -146,6 +173,29 @@ pub(super) fn emit_assignment(cx: &mut EmitCx<'_>, model: &ModelOp<'_>, source: 
         cx.buf.push(source);
     }
     cx.buf.push(") = $event)");
+    Ok(())
+}
+
+/// The shipped `v-model` write under `prefix_identifiers`: the transform
+/// synthesizes `$event => ((<raw value>) = $event)` from the authored
+/// (padded) value text and runs it through `process_inline_handler`.
+fn emit_prefixed_assignment(
+    cx: &mut EmitCx<'_>,
+    model: &ModelOp<'_>,
+    source: &str,
+) -> Result<(), EmitError> {
+    let read = model.contract.read;
+    let (leading, trailing) =
+        authored_model_padding(cx.source, model.span, source, read.span()).unwrap_or(("", ""));
+    let mut handler = String::with_capacity(source.len() + leading.len() + trailing.len() + 24);
+    handler.push_str("$event => ((");
+    handler.push_str(leading);
+    handler.push_str(read.source());
+    handler.push_str(trailing);
+    handler.push_str(") = $event)");
+    let text = cx.prefixed_handler_text(handler.as_str())?;
+    cx.buf.push(text.as_str());
+    Ok(())
 }
 
 fn authored_model_padding<'a>(

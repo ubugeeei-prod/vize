@@ -7,6 +7,7 @@ use vize_s2::op::{DynamicName, ElementOp, ForOp, IfOp, SlotContentOp};
 use crate::emit::buf::Buf;
 use crate::emit::create_slots_walk::{first_slot_template, skip_ops};
 use crate::emit::js::{escape_js_string, expr_source};
+use crate::emit::prefix::Site;
 use crate::emit::slots::emit_template_pieces;
 use crate::emit::vfor;
 use crate::emit::{EmitCx, EmitError};
@@ -58,6 +59,9 @@ fn emit_condition(
     branch_span: Span,
 ) -> Result<(), EmitError> {
     let source = vfor::js_source(condition)?;
+    if cx.prefixing() {
+        return cx.push_prefixed_expr(condition, Site::Expression);
+    }
     if let Some((leading, trailing)) =
         authored_expr_padding(cx.source, branch_span, source.as_str(), condition.span())
     {
@@ -118,7 +122,13 @@ pub(super) fn emit_for_entry(
     slot_content: &SlotContentOp<'_>,
 ) -> Result<(), EmitError> {
     let source_raw = vfor::js_source(&for_op.binding.source)?;
-    let source = source_raw.as_str();
+    let source_prefixed;
+    let source = if cx.prefixing() {
+        source_prefixed = cx.prefixed_expr(&for_op.binding.source, Site::Expression)?;
+        source_prefixed.as_str()
+    } else {
+        source_raw.as_str()
+    };
     let value = vfor::value_alias(&for_op.binding.value)?;
     let key = vfor::optional_ident(&for_op.binding.key)?;
     let index = vfor::optional_ident(&for_op.binding.index)?;
@@ -141,9 +151,11 @@ pub(super) fn emit_for_entry(
     cx.buf.indent();
     cx.buf.newline();
     cx.buf.push("return ");
+    let prefix_mark = cx.enter_for_scope(for_op);
     skip_ops(cx, &for_op.region.ops[..slot_idx]);
     let body = emit_slot_object(cx, slot_element, slot_content, None);
     skip_ops(cx, &for_op.region.ops[slot_idx + 1..]);
+    cx.leave_scope(prefix_mark);
     body?;
     cx.buf.deindent();
     cx.buf.newline();
@@ -156,7 +168,13 @@ pub(super) fn emit_empty_for_slot_outlet_entry(
     for_op: &ForOp<'_>,
 ) -> Result<(), EmitError> {
     let source_raw = vfor::js_source(&for_op.binding.source)?;
-    let source = source_raw.as_str();
+    let source_prefixed;
+    let source = if cx.prefixing() {
+        source_prefixed = cx.prefixed_expr(&for_op.binding.source, Site::Expression)?;
+        source_prefixed.as_str()
+    } else {
+        source_raw.as_str()
+    };
     let value = vfor::value_alias(&for_op.binding.value)?;
     let key = vfor::optional_ident(&for_op.binding.key)?;
     let index = vfor::optional_ident(&for_op.binding.index)?;
@@ -210,8 +228,12 @@ pub(super) fn emit_slot_object(
     cx.buf.push(" => [");
     let mut pieces = StdVec::new();
     cx.buf.indent();
-    let scoped = matches!(&content.params, Some(expr) if !expr.source().is_empty());
-    crate::emit::outlet::with_slot_params(cx, scoped, |cx| {
+    let params = content
+        .params
+        .as_ref()
+        .map(|expr| expr.source())
+        .filter(|source| !source.is_empty());
+    crate::emit::outlet::with_slot_params(cx, params, |cx| {
         emit_template_pieces(cx, &element.children, &mut pieces)
     })?;
     for (i, piece) in pieces.iter().enumerate() {
@@ -240,6 +262,10 @@ pub(super) fn emit_slot_object(
 fn emit_entry_name(cx: &mut EmitCx<'_>, content: &SlotContentOp<'_>) {
     cx.buf.push("name: ");
     match &content.name {
+        Some(DynamicName::Dynamic(expr)) if cx.prefixing() => {
+            let text = cx.prefixed_expr(expr, Site::Expression).unwrap_or_default();
+            cx.buf.push(text.as_str());
+        }
         Some(DynamicName::Dynamic(expr)) => {
             if let Some(source) = expr_source(expr, false) {
                 cx.buf.push(source.as_str());
@@ -266,14 +292,15 @@ fn emit_params(cx: &mut EmitCx<'_>, content: &SlotContentOp<'_>) {
     match &content.params {
         Some(expr) if !expr.source().is_empty() => {
             cx.buf.push("(");
+            let processed = crate::emit::prefix::prefix_slot_defaults(expr.source());
             if let Some((leading, trailing)) =
                 authored_expr_padding(cx.source, content.span, expr.source(), expr.span())
             {
                 cx.buf.push(leading);
-                cx.buf.push(expr.source());
+                cx.buf.push(processed.as_str());
                 cx.buf.push(trailing);
             } else {
-                cx.buf.push(expr.source());
+                cx.buf.push(processed.as_str());
             }
             cx.buf.push(")");
         }

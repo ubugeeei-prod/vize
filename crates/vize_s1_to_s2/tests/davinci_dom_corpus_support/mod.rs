@@ -4,9 +4,21 @@ use std::{collections::BTreeMap, fs};
 
 use davinci_test_support::corpus::CorpusSweep;
 use vize_atelier_dom::errors::ErrorCode;
+use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_s0::Allocator;
-use vize_s1_to_s2::{EmitError, emit_dom_source};
+use vize_s1_to_s2::{
+    DomEmitOptions, EmitError, LegacyCaps, emit_dom_source, emit_dom_source_with_options,
+};
+
+/// Which shipped-lane option surface the comparison runs under.
+#[derive(Clone, Copy)]
+pub enum Lane {
+    /// `compile_template` defaults.
+    Default,
+    /// `prefix_identifiers: true` on both sides (P2-11 installment 85).
+    Prefixed,
+}
 
 pub use allowlist::old_lane_skip_is_allowed;
 
@@ -33,6 +45,10 @@ pub struct Report {
 }
 
 pub fn compare_sweep(sweep: &CorpusSweep) -> Report {
+    compare_sweep_lane(sweep, Lane::Default)
+}
+
+pub fn compare_sweep_lane(sweep: &CorpusSweep, lane: Lane) -> Report {
     let mut report = Report::default();
     for file in &sweep.files {
         let source = match fs::read_to_string(file) {
@@ -48,12 +64,16 @@ pub fn compare_sweep(sweep: &CorpusSweep) -> Report {
             }
         };
         let context = file.to_string_lossy();
-        compare_sfc_template(context.as_ref(), &source, &mut report);
+        compare_sfc_template_lane(context.as_ref(), &source, &mut report, lane);
     }
     report
 }
 
 pub fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
+    compare_sfc_template_lane(name, source, report, Lane::Default)
+}
+
+pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, lane: Lane) {
     report.files += 1;
     let Ok(descriptor) = parse_sfc(source, SfcParseOptions::default()) else {
         return;
@@ -65,7 +85,17 @@ pub fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
     report.templates += 1;
 
     let old_allocator = Allocator::new();
-    let (_, errors, old) = vize_atelier_dom::compile_template(&old_allocator, &template.content);
+    let (_, errors, old) = match lane {
+        Lane::Default => vize_atelier_dom::compile_template(&old_allocator, &template.content),
+        Lane::Prefixed => compile_template_with_options(
+            &old_allocator,
+            &template.content,
+            DomCompilerOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        ),
+    };
     let blocking_errors: Vec<_> = errors
         .iter()
         .filter(|error| !error.is_recoverable())
@@ -93,7 +123,13 @@ pub fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
             .iter()
             .map(|error| format!("{:?}", error.code))
             .collect::<Vec<_>>();
-        if !old_lane_skip_is_allowed(name, &actual_codes) {
+        // Under `prefix_identifiers` the shipped lane parses every expression
+        // (JS dialect, no `is_ts`), so TypeScript-syntax templates fail with
+        // the non-recoverable `InvalidExpression`; those skips are the lane's
+        // own admission boundary, not corpus drift.
+        let prefixed_ts_skip = matches!(lane, Lane::Prefixed)
+            && actual_codes.iter().all(|code| code == "InvalidExpression");
+        if !prefixed_ts_skip && !old_lane_skip_is_allowed(name, &actual_codes) {
             report.unexpected_old_error_skips += 1;
             if report.unexpected_old_error_samples.len() < 20 {
                 report.unexpected_old_error_samples.push(format!(
@@ -106,7 +142,19 @@ pub fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
     let old = format!("{}\n{}", old.preamble, old.code);
 
     let new_allocator = Allocator::new();
-    let new = match emit_dom_source(&new_allocator, &template.content) {
+    let emitted = match lane {
+        Lane::Default => emit_dom_source(&new_allocator, &template.content),
+        Lane::Prefixed => emit_dom_source_with_options(
+            &new_allocator,
+            &template.content,
+            LegacyCaps::VUE3,
+            &DomEmitOptions {
+                prefix_identifiers: true,
+                ..DomEmitOptions::DEFAULT
+            },
+        ),
+    };
+    let new = match emitted {
         Ok(emit) => emit.assembled(),
         Err(error) => {
             report.s2_refusal_count += 1;

@@ -11,12 +11,13 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{
-    emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode,
+    emit_create_text_vnode, emit_dynamic_part, emit_interpolation, emit_plain_text_vnode,
     emit_raw_interpolation_or_refuse, emit_to_display_string, is_empty_interpolation,
 };
 use super::hoist::{emit_hoisted_element, is_hoistable};
 use super::js::escape_js_string;
 use super::outlet_props::emit_props;
+use super::prefix::Site;
 use super::slots::is_whitespace_text;
 use super::vnode::emit_array_child;
 
@@ -38,15 +39,22 @@ fn op_forwards(op: &Op<'_>) -> bool {
     }
 }
 
+/// Emit `write` inside a slot function: `params` is the authored slot
+/// props text when the slot is scoped (`None` for a bare slot). The
+/// depth tracks `has_slot_params`; the prefix scope tracks the transform's
+/// `enter_v_slot_scope` names and the codegen's `add_slot_params`.
 pub(super) fn with_slot_params<T>(
     cx: &mut EmitCx<'_>,
-    scoped: bool,
+    params: Option<&str>,
     write: impl FnOnce(&mut EmitCx<'_>) -> Result<T, EmitError>,
 ) -> Result<T, EmitError> {
+    let scoped = params.is_some();
     if scoped {
         cx.slot_param_depth = cx.slot_param_depth.saturating_add(1);
     }
+    let mark = cx.enter_slot_scope(params);
     let result = write(cx);
+    cx.leave_scope(mark);
     if scoped {
         cx.slot_param_depth = cx.slot_param_depth.saturating_sub(1);
     }
@@ -96,15 +104,19 @@ fn emit_name(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>) -> Result<(), EmitError> {
             Ok(())
         }
         DynamicName::Dynamic(expr) => {
-            if let Some(source) = super::js::expr_source(expr, false) {
-                cx.buf.push(source.as_str());
-                Ok(())
-            } else {
-                Err(EmitError::unsupported_at(
+            if super::js::expr_source(expr, false).is_none() {
+                return Err(EmitError::unsupported_at(
                     Reason::SlotOutletNameNotJs,
                     expr.span(),
-                ))
+                ));
             }
+            if cx.prefixing() {
+                return cx.push_prefixed_expr(expr, Site::Expression);
+            }
+            if let Some(source) = super::js::expr_source(expr, false) {
+                cx.buf.push(source.as_str());
+            }
+            Ok(())
         }
     }
 }
@@ -223,7 +235,7 @@ fn emit_fallback_interp(
             for part in parts.iter() {
                 start_fallback_item(cx, compact, first);
                 if part.dynamic {
-                    emit_to_display_string(cx, part.text.as_str());
+                    emit_dynamic_part(cx, part.text.as_str(), Site::Expression)?;
                 } else {
                     emit_plain_text_vnode(cx, part.text.as_str());
                 }

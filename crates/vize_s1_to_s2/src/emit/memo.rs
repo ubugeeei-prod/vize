@@ -5,6 +5,7 @@ use vize_s2::op::{BindingOp, VueMemoOp};
 
 use super::helper::Helper;
 use super::js::{RawJs, expr_source};
+use super::prefix::Site;
 use super::{EmitCx, EmitError, UnsupportedReason as Reason};
 
 pub(super) fn has(bindings: &[BindingOp<'_>]) -> bool {
@@ -22,6 +23,19 @@ pub(super) fn admit(memo: &VueMemoOp<'_>) -> Result<(), EmitError> {
 pub(super) fn js_value<'a>(memo: &'a VueMemoOp<'a>) -> Result<RawJs<'a>, EmitError> {
     expr_source(&memo.value, false)
         .ok_or_else(|| EmitError::unsupported_at(Reason::MemoExpressionNotJs, memo.value.span()))
+}
+
+/// The `v-memo` dependency array as the shipped codegen wrote it
+/// (`generate_expression` over the transform-prefixed value).
+pub(super) fn deps_source(
+    cx: &EmitCx<'_>,
+    memo: &VueMemoOp<'_>,
+) -> Result<vize_s0::String, EmitError> {
+    let raw = js_value(memo)?;
+    if cx.prefixing() {
+        return cx.prefixed_expr(&memo.value, Site::Expression);
+    }
+    Ok(vize_s0::String::from(raw.as_str()))
 }
 
 pub(super) fn next_cache_index(cx: &mut EmitCx<'_>) -> vize_s0::String {
@@ -51,7 +65,7 @@ pub(super) fn emit_cached_with_key(
     cache_index: &str,
     emit: impl FnOnce(&mut EmitCx<'_>) -> Result<(), EmitError>,
 ) -> Result<(), EmitError> {
-    let deps = js_value(memo)?;
+    let deps = deps_source(cx, memo)?;
     cx.buf.use_helper(Helper::WithMemo);
     cx.buf.push(Helper::WithMemo.alias());
     cx.buf.push("(");
