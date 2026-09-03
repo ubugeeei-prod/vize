@@ -92,7 +92,12 @@ test("DOM S2 witnesses keep their unpublished stage edges test-space only", () =
       req: "*",
       rename: null,
       optional: false,
-      features: [],
+      // The P2-11 witness batteries compile TypeScript templates, which the
+      // stage library keeps behind an opt-in feature (its type erasure is the
+      // one `std` API it reaches). What keeps this edge out of the published
+      // graph is the rest of this shape — `dev`, `*`, unrenamed, not optional
+      // — so selecting a lane on it changes nothing there.
+      features: ["typescript"],
     },
   ]);
 });
