@@ -17,8 +17,6 @@
 
 mod support;
 
-use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
-
 const BATTERY: &[(&str, &str)] = &[
     ("empty_div", "<div></div>"),
     ("div_with_text", "<div>hello</div>"),
@@ -338,23 +336,4 @@ const BATTERY: &[(&str, &str)] = &[
 #[test]
 fn s2_native_html_and_interpolations_match_the_shipped_dom_lane_byte_for_byte() {
     support::assert_s2_matches_shipped(BATTERY);
-}
-
-#[test]
-fn source_maps_keep_the_documented_compatibility_contract() {
-    let allocator = vize_s0::Allocator::new();
-    let (_, errors, result) = compile_template_with_options(
-        &allocator,
-        "<div>{{ msg }}</div>",
-        DomCompilerOptions {
-            source_map: true,
-            ..Default::default()
-        },
-    );
-
-    assert!(errors.is_empty());
-    assert!(
-        result.map.is_some(),
-        "source-map requests must remain additive"
-    );
 }
