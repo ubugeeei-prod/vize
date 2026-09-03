@@ -202,6 +202,13 @@ export function scanStorage(source: string): ScanResult {
 
   const withoutImports = code.split("");
   for (const imported of imports) maskRange(withoutImports, imported.start, imported.end);
+  // `extern crate alloc;` / `extern crate std;` are linkage declarations, not
+  // storage paths — the loop above already read them to register bindings, so
+  // the body scan must not re-read their crate name as a bare `std` use.
+  for (const match of code.matchAll(externPattern)) {
+    if (match.index === undefined) continue;
+    maskRange(withoutImports, match.index, match.index + match[0].length);
+  }
   const bodyTokens = tokensOf(withoutImports.join(""));
   const consumed = new Set<number>();
   for (let index = 0; index < bodyTokens.length; index += 1) {

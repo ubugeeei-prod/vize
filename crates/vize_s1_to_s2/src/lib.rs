@@ -52,12 +52,15 @@
 //! [`ModelOp`]: vize_s2::op::ModelOp
 //! [`VueDirectiveOp`]: vize_s2::op::VueDirectiveOp
 
-// The `typescript` lane reaches oxc's transformer, whose entry point takes a
-// `&std::path::Path`; every other lane — and so the TS-24 portability build,
-// which never turns the feature on — stays `no_std`.
-#![cfg_attr(not(feature = "typescript"), no_std)]
+#![no_std]
 
 extern crate alloc;
+// The `typescript` lane reaches oxc's transformer, whose entry point takes a
+// `&std::path::Path`. The feature is off by default, so both TS-24
+// portability builds link no `std` at all; turning it on links `std` for
+// that one API and nothing else.
+#[cfg(feature = "typescript")]
+extern crate std;
 
 pub mod dom;
 pub mod emit;
