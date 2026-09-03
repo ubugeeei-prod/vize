@@ -6,7 +6,6 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "S2 - the Davinci semantic IR (codename Disegno): the neutral op family every input dialect lowers into"
-publish = false
 metadata.vize.stability = "experimental"
 
 [dependencies]

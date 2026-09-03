@@ -114,12 +114,16 @@ test("Rust crate stability table matches Cargo metadata and crate documentation"
     assert.match(fs.readFileSync(readmePath, "utf8"), new RegExp(escapeRegExp(rustStabilityLink)));
 
     if (tier === "experimental" || tier === "incubating") {
-      const libTarget = pkg.targets.find(
-        (target) => target.kind.includes("lib") || target.crate_types.includes("rlib"),
+      const documentedTarget = pkg.targets.find(
+        (target) =>
+          target.kind.includes("lib") ||
+          target.kind.includes("proc-macro") ||
+          target.crate_types.includes("rlib") ||
+          target.crate_types.includes("proc-macro"),
       );
-      assert.ok(libTarget, `${pkg.name} must expose a library target`);
+      assert.ok(documentedTarget, `${pkg.name} must expose a documented library target`);
       assert.match(
-        fs.readFileSync(libTarget.src_path, "utf8"),
+        fs.readFileSync(documentedTarget.src_path, "utf8"),
         new RegExp(`\\*\\*${tier === "experimental" ? "Experimental" : "Incubating"}`),
         `${pkg.name} rustdoc must disclose its ${tier} status`,
       );

@@ -61,7 +61,7 @@ test("publish_crates script keeps publishable workspace dependencies ordered", (
 
     for (const dependency of pkg.dependencies) {
       const dependencyOrder = publishOrder.get(dependency.name);
-      const strippedOnPublish = dependency.kind === "dev" && dependency.req === "*";
+      const strippedOnPublish = dependency.kind === "dev";
       if (!packages.has(dependency.name) || strippedOnPublish) continue;
       assert.ok(
         dependencyOrder != null,
@@ -226,7 +226,7 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       expectedFrontier(publishedCrates[5]),
     ]);
     assert.match(partial.stdout, /vize_carton .* already published and resolvable/i);
-    assert.match(partial.stdout, /registry-resolvable frontier vize_atelier_dom/i);
+    assert.match(partial.stdout, /registry-resolvable frontier vize_s1/i);
     assert.equal(fs.readFileSync(curlLogPath, "utf8").trim().split("\n").length, 6);
 
     const allPublished = runDryRun(publishedCrates);
@@ -254,7 +254,7 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       TEST_UNRESOLVED_CRATES: publishedCrates[2],
     });
     assert.notEqual(unresolvedPrefix.status, 0);
-    assert.match(unresolvedPrefix.stderr, /could not resolve .*vize_armature/i);
+    assert.match(unresolvedPrefix.stderr, /could not resolve .*vize_davinci/i);
     assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
       expectedPackage,
       ...somePublished.slice(0, 3).map(expectedInfo),

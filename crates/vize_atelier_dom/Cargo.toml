@@ -25,10 +25,9 @@ criterion = { workspace = true }
 davinci_harness = { workspace = true }
 insta = { workspace = true }
 
-# The Davinci S2 DOM lane, test-space only (P2-11): dev-dependencies with
-# no version requirement are stripped on publish, which is the carve-out
-# the release gate (tests/tooling/moonbit-publish-crates.test.ts) encodes
-# for published crates exercising unpublished ones.
+# The Davinci S2 DOM lane, test-space only (P2-11): dev-dependencies are
+# stripped on publish, so the release graph stays independent until the
+# production-lane switch moves these stage crates into normal dependencies.
 vize_davinci = { workspace = true }
 # The P2-11 witness batteries compile TypeScript templates, so the DOM
 # lane's dev graph turns on the stage library's `typescript` feature.
