@@ -12,9 +12,19 @@ pub(in crate::emit) fn collect_names<'a>(root: &Region<'a>) -> StdVec<&'a str> {
     names
 }
 
-pub(in crate::emit) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) {
-    cx.buf.use_resolve_component();
+/// `generate_assets` over the components: tags that resolve to a script
+/// binding are skipped (they are pushed as `$setup.Name` at the call).
+/// Returns whether any `resolveComponent` line was written.
+pub(in crate::emit) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) -> bool {
+    let mut resolved = false;
     for name in names {
+        if super::binding::resolves(cx, name) {
+            continue;
+        }
+        if !resolved {
+            cx.buf.use_resolve_component();
+            resolved = true;
+        }
         cx.buf.push("const ");
         cx.buf.push(asset_ident("component", name).as_str());
         cx.buf.push(" = ");
@@ -24,6 +34,7 @@ pub(in crate::emit) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) {
         cx.buf.push("\")");
         cx.buf.newline();
     }
+    resolved
 }
 
 fn collect_from<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {

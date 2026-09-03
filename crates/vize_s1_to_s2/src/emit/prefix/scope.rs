@@ -19,16 +19,23 @@
 //! the raw alias / slot patterns instead and asks
 //! [`super::params::destructure_params_contain`] per query: no list is
 //! materialised, and the allocation gate's window stays at its baseline.
+//!
+//! The binding table (P2-11 installment 86) decides *which* prefix a
+//! free name gets: the shipped `get_identifier_prefix` in non-inline mode.
 
 use alloc::vec::Vec as StdVec;
 
 use vize_s0::{SmallVec, String};
 
+use super::super::options::BindingTable;
+use super::globals::is_global_allowed;
+
 #[derive(Default)]
-pub(in crate::emit) struct PrefixScope {
+pub(in crate::emit) struct PrefixScope<'b> {
     transform: StdVec<String>,
     slot_params: StdVec<String>,
     patterns: SmallVec<[String; 4]>,
+    bindings: Option<&'b BindingTable>,
 }
 
 #[derive(Clone, Copy)]
@@ -38,7 +45,19 @@ pub(in crate::emit) struct ScopeMark {
     patterns: usize,
 }
 
-impl PrefixScope {
+impl<'b> PrefixScope<'b> {
+    pub(in crate::emit) fn new(bindings: Option<&'b BindingTable>) -> Self {
+        Self {
+            bindings,
+            ..Self::default()
+        }
+    }
+
+    /// The binding table the emit runs under, if any.
+    pub(in crate::emit) fn bindings(&self) -> Option<&'b BindingTable> {
+        self.bindings
+    }
+
     pub(in crate::emit) fn mark(&self) -> ScopeMark {
         ScopeMark {
             transform: self.transform.len(),
@@ -102,12 +121,64 @@ impl PrefixScope {
         &self.slot_params
     }
 
-    /// `get_identifier_prefix` without binding metadata: `None` for
-    /// globals and transform-scope names, `_ctx.` otherwise.
+    /// `get_identifier_prefix` in non-inline mode: `None` for globals and
+    /// transform-scope names, the binding's render-function prefix
+    /// (`$props.` for props) when the table names it, `_ctx.` otherwise.
     pub(super) fn identifier_prefix(&self, name: &str) -> Option<&'static str> {
-        if super::globals::is_global_allowed(name) || self.is_in_transform_scope(name) {
+        if is_global_allowed(name) || self.is_in_transform_scope(name) {
             return None;
         }
-        Some("_ctx.")
+        Some(self.codegen_prefix(name))
+    }
+
+    /// The codegen `IdentifierVisitor` prefix (no scope or allowlist check;
+    /// the visitor applies those first): the binding's non-inline prefix,
+    /// `_ctx.` for names the table does not know.
+    pub(super) fn codegen_prefix(&self, name: &str) -> &'static str {
+        match self.bindings.and_then(|table| table.kind(name)) {
+            Some(kind) if kind.is_props() => "$props.",
+            Some(kind) => kind.non_inline_template_prefix(),
+            None => "_ctx.",
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::PrefixScope;
+    use crate::emit::options::{BindingKind, BindingTable};
+
+    #[test]
+    fn identifier_prefix_follows_the_binding_table_in_non_inline_mode() {
+        let table = BindingTable::new(
+            [
+                ("count", BindingKind::SetupRef),
+                ("title", BindingKind::Props),
+                ("label", BindingKind::PropsAliased),
+                ("d", BindingKind::Data),
+                ("method", BindingKind::Options),
+                ("$slots", BindingKind::VueGlobal),
+            ],
+            [],
+            true,
+        );
+        let mut scope = PrefixScope::new(Some(&table));
+        assert_eq!(scope.identifier_prefix("count"), Some("$setup."));
+        assert_eq!(scope.identifier_prefix("title"), Some("$props."));
+        assert_eq!(scope.identifier_prefix("label"), Some("$props."));
+        assert_eq!(scope.identifier_prefix("d"), Some("$data."));
+        assert_eq!(scope.identifier_prefix("method"), Some("$options."));
+        assert_eq!(scope.identifier_prefix("$slots"), Some("_ctx."));
+        assert_eq!(scope.identifier_prefix("other"), Some("_ctx."));
+        assert_eq!(scope.identifier_prefix("Math"), None);
+        scope.push_for([Some("count"), None, None]);
+        assert_eq!(scope.identifier_prefix("count"), None);
+    }
+
+    #[test]
+    fn without_a_table_every_free_name_is_ctx() {
+        let scope = PrefixScope::new(None);
+        assert_eq!(scope.identifier_prefix("count"), Some("_ctx."));
+        assert_eq!(scope.codegen_prefix("count"), "_ctx.");
     }
 }

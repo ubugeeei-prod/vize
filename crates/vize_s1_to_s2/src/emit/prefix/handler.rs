@@ -20,7 +20,7 @@ use super::strip::strip_scope_prefixes_for_slot_params;
 pub(super) fn process_inline_handler(
     content: &str,
     retained: Option<Retained<'_, '_>>,
-    scope: &PrefixScope,
+    scope: &PrefixScope<'_>,
 ) -> RewriteResult {
     if is_function_expression_node(content, retained) {
         return rewrite_expression(content, retained, scope, false);
@@ -63,7 +63,7 @@ pub(super) fn process_inline_handler(
 /// `generate_event_handler` over an `is_ref_transformed` node: strip the
 /// slot-param prefixes, then re-derive the shape from the processed text
 /// (the retained AST no longer applies to rewritten bytes).
-pub(super) fn finish_event_handler(processed: String, scope: &PrefixScope) -> String {
+pub(super) fn finish_event_handler(processed: String, scope: &PrefixScope<'_>) -> String {
     let processed = if scope.has_slot_params() {
         strip_scope_prefixes_for_slot_params(scope, processed.as_str())
     } else {

@@ -3,12 +3,14 @@ mod allowlist;
 use std::{collections::BTreeMap, fs};
 
 use davinci_test_support::corpus::CorpusSweep;
+use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode};
 use vize_atelier_dom::errors::ErrorCode;
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
-use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+use vize_atelier_sfc::{SfcCompileOptions, SfcDescriptor, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_s0::Allocator;
 use vize_s1_to_s2::{
-    DomEmitOptions, EmitError, LegacyCaps, emit_dom_source, emit_dom_source_with_options,
+    BindingKind, BindingTable, DomEmitMode, DomEmitOptions, EmitError, LegacyCaps, emit_dom_source,
+    emit_dom_source_with_options,
 };
 
 /// Which shipped-lane option surface the comparison runs under.
@@ -18,6 +20,10 @@ pub enum Lane {
     Default,
     /// `prefix_identifiers: true` on both sides (P2-11 installment 85).
     Prefixed,
+    /// Module mode + `prefix_identifiers` + the SFC's own binding metadata
+    /// (non-inline) on both sides (P2-11 installment 86): the dev-server
+    /// shape of a `<script setup>` component.
+    Bindings,
 }
 
 pub use allowlist::old_lane_skip_is_allowed;
@@ -83,6 +89,18 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
         return;
     };
     report.templates += 1;
+    let bindings = match lane {
+        Lane::Bindings => match sfc_bindings(&descriptor) {
+            Ok(bindings) => bindings,
+            Err(reason) => {
+                report.old_error_skips += 1;
+                *report.old_error_reasons.entry(reason).or_default() += 1;
+                return;
+            }
+        },
+        Lane::Default | Lane::Prefixed => None,
+    };
+    let table = bindings.as_ref().map(binding_table);
 
     let old_allocator = Allocator::new();
     let (_, errors, old) = match lane {
@@ -92,6 +110,16 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
             &template.content,
             DomCompilerOptions {
                 prefix_identifiers: true,
+                ..Default::default()
+            },
+        ),
+        Lane::Bindings => compile_template_with_options(
+            &old_allocator,
+            &template.content,
+            DomCompilerOptions {
+                mode: CodegenMode::Module,
+                prefix_identifiers: true,
+                binding_metadata: bindings.clone(),
                 ..Default::default()
             },
         ),
@@ -127,7 +155,7 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
         // (JS dialect, no `is_ts`), so TypeScript-syntax templates fail with
         // the non-recoverable `InvalidExpression`; those skips are the lane's
         // own admission boundary, not corpus drift.
-        let prefixed_ts_skip = matches!(lane, Lane::Prefixed)
+        let prefixed_ts_skip = matches!(lane, Lane::Prefixed | Lane::Bindings)
             && actual_codes.iter().all(|code| code == "InvalidExpression");
         if !prefixed_ts_skip && !old_lane_skip_is_allowed(name, &actual_codes) {
             report.unexpected_old_error_skips += 1;
@@ -150,6 +178,17 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
             LegacyCaps::VUE3,
             &DomEmitOptions {
                 prefix_identifiers: true,
+                ..DomEmitOptions::DEFAULT
+            },
+        ),
+        Lane::Bindings => emit_dom_source_with_options(
+            &new_allocator,
+            &template.content,
+            LegacyCaps::VUE3,
+            &DomEmitOptions {
+                mode: DomEmitMode::Module,
+                prefix_identifiers: true,
+                bindings: table.as_ref(),
                 ..DomEmitOptions::DEFAULT
             },
         ),
@@ -185,6 +224,54 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
             ));
         }
     }
+}
+
+/// The binding metadata the production SFC compile hands its template
+/// compile: `compile_sfc` over the descriptor, defaults otherwise.
+fn sfc_bindings(descriptor: &SfcDescriptor<'_>) -> Result<Option<BindingMetadata>, String> {
+    match compile_sfc(descriptor, SfcCompileOptions::default()) {
+        Ok(result) => Ok(result.bindings),
+        Err(error) => Err(format!(
+            "SfcCompileError:{}",
+            error.code.as_deref().unwrap_or("unknown")
+        )),
+    }
+}
+
+fn binding_kind(kind: BindingType) -> BindingKind {
+    match kind {
+        BindingType::SetupLet => BindingKind::SetupLet,
+        BindingType::SetupMaybeRef => BindingKind::SetupMaybeRef,
+        BindingType::SetupRef => BindingKind::SetupRef,
+        BindingType::SetupReactiveConst => BindingKind::SetupReactiveConst,
+        BindingType::SetupConst => BindingKind::SetupConst,
+        BindingType::Props => BindingKind::Props,
+        BindingType::PropsAliased => BindingKind::PropsAliased,
+        BindingType::Data => BindingKind::Data,
+        BindingType::Options => BindingKind::Options,
+        BindingType::LiteralConst => BindingKind::LiteralConst,
+        BindingType::JsGlobalUniversal => BindingKind::JsGlobalUniversal,
+        BindingType::JsGlobalBrowser => BindingKind::JsGlobalBrowser,
+        BindingType::JsGlobalNode => BindingKind::JsGlobalNode,
+        BindingType::JsGlobalDeno => BindingKind::JsGlobalDeno,
+        BindingType::JsGlobalBun => BindingKind::JsGlobalBun,
+        BindingType::VueGlobal => BindingKind::VueGlobal,
+        BindingType::ExternalModule => BindingKind::ExternalModule,
+    }
+}
+
+pub fn binding_table(metadata: &BindingMetadata) -> BindingTable {
+    BindingTable::new(
+        metadata
+            .bindings
+            .iter()
+            .map(|(name, kind)| (name.as_str(), binding_kind(*kind))),
+        metadata
+            .props_aliases
+            .iter()
+            .map(|(local, key)| (local.as_str(), key.as_str())),
+        metadata.is_script_setup,
+    )
 }
 
 fn refusal_reason(error: &EmitError) -> &'static str {

@@ -44,12 +44,13 @@ s1_to_s2	emit	crates/vize_s1_to_s2/src/emit.rs	1	2	1	1	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/buf.rs	1	6	1	8	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/buf/helper_order.rs	1	2	0	0	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/buf/preamble.rs	0	0	1	3	0	0	0	0
+s1_to_s2	-	crates/vize_s1_to_s2/src/emit/component/binding.rs	0	0	1	6	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/component/call_props.rs	1	1	1	1	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/component/preamble.rs	1	3	0	0	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/create_slots.rs	1	5	1	4	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/create_slots/entry.rs	1	1	1	2	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/cx.rs	0	0	1	10	0	0	0	0
-s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/directive.rs	1	6	0	0	0	0	0	0
+s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/directive.rs	1	6	2	0	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/entity.rs	0	0	1	3	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/entry.rs	0	0	1	3	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/filter.rs	0	0	1	1	0	0	0	0
@@ -66,7 +67,9 @@ s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/model.rs	1	6	1	9	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/model_key.rs	0	0	1	8	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/on.rs	0	0	1	5	0	0	1	3
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/on_dynamic.rs	1	5	0	0	0	0	0	0
+s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/options.rs	1	4	1	7	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/prefix.rs	0	0	1	10	0	0	0	0
+s1_to_s2	-	crates/vize_s1_to_s2/src/emit/prefix/aliases.rs	0	0	1	8	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/prefix/codegen_visitor.rs	1	9	1	11	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/prefix/collector.rs	1	10	1	6	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/prefix/handler.rs	0	0	1	6	0	0	0	0
