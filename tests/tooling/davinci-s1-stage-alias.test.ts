@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { parse as parseToml } from "@iarna/toml";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -13,10 +14,13 @@ function readRepoFile(...parts: string[]): string {
 test("Davinci S1 uses the physical crate package and directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
   assert.match(workspaceManifest, /^\s*"crates\/vize_s1",$/m);
-  assert.match(
-    workspaceManifest,
-    /^vize_s1 = \{ path = "crates\/vize_s1", version = "=0\.390\.0" \}$/m,
-  );
+  const manifest = parseToml(workspaceManifest) as {
+    workspace?: { dependencies?: { vize_s1?: unknown } };
+  };
+  assert.deepEqual(manifest.workspace?.dependencies?.vize_s1, {
+    path: "crates/vize_s1",
+    version: "=0.390.0",
+  });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_sinopia/u);
   assert.doesNotMatch(workspaceManifest, /^vize_sinopia = /m);
 

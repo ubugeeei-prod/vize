@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { parse as parseToml } from "@iarna/toml";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -21,6 +22,7 @@ export type Package = {
   features: Record<string, string[]>;
   manifest_path: string;
   publish: string[] | null;
+  version: string;
 };
 
 export type Metadata = { packages: Package[] };
@@ -58,6 +60,25 @@ export function dependency(
 
 export function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(repoRoot, ...segments), "utf8");
+}
+
+export function workspaceDependencyDeclaration(name: string): {
+  path: string;
+  version: string;
+} {
+  const manifest = parseToml(readRepoFile("Cargo.toml")) as {
+    workspace?: { dependencies?: Record<string, unknown> };
+  };
+  const declaration = manifest.workspace?.dependencies?.[name];
+  assert.ok(
+    declaration !== null && typeof declaration === "object" && !Array.isArray(declaration),
+    `workspace dependency ${name} must be a table`,
+  );
+
+  const { path: dependencyPath, version } = declaration as Record<string, unknown>;
+  assert.equal(typeof dependencyPath, "string", `${name} must declare a path`);
+  assert.equal(typeof version, "string", `${name} must declare a version`);
+  return { path: dependencyPath, version };
 }
 
 export function* walkRustFiles(directory: string): Generator<string> {
