@@ -56,7 +56,7 @@ test("Davinci stage crates are published before a production feature can select 
   }
 });
 
-test("DOM S2 witnesses remain test-space only until the production switch", () => {
+test("DOM production depends on the published S2 renderer", () => {
   const dom = workspacePackage(metadata, "vize_atelier_dom");
   assert.deepEqual(dom.features, {
     legacy: ["vize_atelier_core/legacy"],
@@ -85,15 +85,12 @@ test("DOM S2 witnesses remain test-space only until the production switch", () =
     },
     {
       name: "vize_s1_to_s2",
-      kind: "dev",
+      kind: null,
       req: versionRequirement("vize_s1_to_s2"),
       rename: null,
       optional: false,
-      // The P2-11 witness batteries compile TypeScript templates, which the
-      // stage library keeps behind an opt-in feature (its type erasure is the
-      // one `std` API it reaches). What keeps this edge out of the published
-      // graph is the rest of this shape — `dev`, unrenamed, not optional — so
-      // selecting a lane on it changes nothing there.
+      // TypeScript templates are part of the public DOM compiler contract, so
+      // the production renderer enables the stage library's opt-in erasure.
       features: ["typescript"],
     },
   ]);

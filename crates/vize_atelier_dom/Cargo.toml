@@ -15,6 +15,10 @@ legacy = ["vize_atelier_core/legacy"]
 vize_s0 = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_croquis = { workspace = true }
+# The shipped DOM renderer is the S2 backend. TypeScript expression erasure is
+# part of the public DOM option surface, so keep the stage library's opt-in
+# implementation available in the production graph.
+vize_s1_to_s2 = { workspace = true, features = ["typescript"] }
 
 phf = { workspace = true }
 serde = { workspace = true }
@@ -25,13 +29,8 @@ criterion = { workspace = true }
 davinci_harness = { workspace = true }
 insta = { workspace = true }
 
-# The Davinci S2 DOM lane, test-space only (P2-11): dev-dependencies are
-# stripped on publish, so the release graph stays independent until the
-# production-lane switch moves these stage crates into normal dependencies.
+# S2 test and benchmark fixtures still use the stage diagnostics/types.
 vize_davinci = { workspace = true }
-# The P2-11 witness batteries compile TypeScript templates, so the DOM
-# lane's dev graph turns on the stage library's `typescript` feature.
-vize_s1_to_s2 = { workspace = true, features = ["typescript"] }
 
 [[bench]]
 name = "davinci"
