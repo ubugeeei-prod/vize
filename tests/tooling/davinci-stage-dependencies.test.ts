@@ -168,17 +168,17 @@ test("Davinci S1-to-S2 source paths use the physical S2 folio type", () => {
   }
 });
 
-test("Davinci DOM lane tests import lowering through the physical S1-to-S2 package", () => {
-  const lowering = dependency(metadata, "vize_atelier_dom", "vize_s1_to_s2", "dev");
+test("Davinci DOM production imports lowering through the physical S1-to-S2 package", () => {
+  const lowering = dependency(metadata, "vize_atelier_dom", "vize_s1_to_s2", null);
   assert.equal(lowering.rename, null);
   const dependencies = workspacePackage(metadata, "vize_atelier_dom").dependencies;
   assert.ok(
     dependencies.every(
       (dependency) =>
         dependency.name !== "vize_s1_to_s2" ||
-        (dependency.kind === "dev" && dependency.rename === null),
+        (dependency.kind === null && dependency.rename === null),
     ),
-    "vize_atelier_dom must use the physical vize_s1_to_s2 package name",
+    "vize_atelier_dom must use the physical vize_s1_to_s2 package name in production",
   );
 
   for (const file of s2DomWitnessFiles()) {

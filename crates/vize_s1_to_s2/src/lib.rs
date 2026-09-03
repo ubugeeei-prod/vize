@@ -65,12 +65,10 @@ extern crate alloc;
 #[cfg(feature = "typescript")]
 extern crate std;
 
-pub mod dom;
 pub mod emit;
 pub mod lower;
 pub mod pass;
 
-pub use dom::DOM_LANE_FLAG;
 pub use emit::{
     BindingKind, BindingTable, DomEmit, DomEmitBudget, DomEmitMode, DomEmitOptions, EmitError,
     ObservedDomEmit, UnsupportedReason, UnsupportedRefusal, emit_dom, emit_dom_source,

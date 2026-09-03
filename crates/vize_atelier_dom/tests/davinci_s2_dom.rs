@@ -5,11 +5,9 @@
 //! implicit text / native / component default slots, compared
 //! **byte-for-byte** including helper usage.
 //!
-//! `vize_atelier_dom` is published; the Davinci crates are not. The
-//! comparator therefore rides stripped-on-publish dev-deps (the same
-//! carve-out P2-9 used). The shipped `compile_template` path is
-//! unchanged. `VIZE_DAVINCI_DOM=legacy` disarms the dual-run; the
-//! pinned comparison count makes a silent disarm a loud failure.
+//! S2 owns the shipped DOM renderer. The comparison battery stays as a
+//! byte-for-byte release ratchet, and its pinned count makes any accidental
+//! reduction in coverage loud.
 
 #![allow(
     clippy::disallowed_macros,
@@ -19,7 +17,7 @@
 
 mod support;
 
-use vize_s1_to_s2::DOM_LANE_FLAG;
+use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 
 const BATTERY: &[(&str, &str)] = &[
     ("empty_div", "<div></div>"),
@@ -343,6 +341,20 @@ fn s2_native_html_and_interpolations_match_the_shipped_dom_lane_byte_for_byte() 
 }
 
 #[test]
-fn the_dom_lane_flag_has_its_recorded_name() {
-    assert_eq!(DOM_LANE_FLAG, "VIZE_DAVINCI_DOM");
+fn source_maps_keep_the_documented_compatibility_contract() {
+    let allocator = vize_s0::Allocator::new();
+    let (_, errors, result) = compile_template_with_options(
+        &allocator,
+        "<div>{{ msg }}</div>",
+        DomCompilerOptions {
+            source_map: true,
+            ..Default::default()
+        },
+    );
+
+    assert!(errors.is_empty());
+    assert!(
+        result.map.is_some(),
+        "source-map requests must remain additive"
+    );
 }

@@ -15,7 +15,7 @@ use vize_atelier_dom::{
 use vize_s0::Allocator;
 use vize_s0::config::VueVersion;
 use vize_s1_to_s2::{
-    DOM_LANE_FLAG, DomEmitOptions, EmitError, LegacyCaps, UnsupportedReason, emit_dom_source,
+    DomEmitOptions, EmitError, LegacyCaps, UnsupportedReason, emit_dom_source,
     emit_dom_source_with_caps, emit_dom_source_with_options,
 };
 
@@ -87,56 +87,46 @@ pub fn assert_s2_matches_shipped_with_options(
     emit: &DomEmitOptions<'_>,
 ) {
     let mut compared = 0u64;
-    let mut skipped_legacy_flag = 0u64;
-    if std::env::var(DOM_LANE_FLAG).is_ok_and(|value| value == "legacy") {
-        skipped_legacy_flag += 1;
-    } else {
-        let allocator = Allocator::new();
-        let caps = LegacyCaps::for_version(options.dialect);
-        for (name, src) in battery {
-            let old = shipped_with_options(src, options, codegen);
-            let new = emit_dom_source_with_options(&allocator, src, caps, emit)
-                .unwrap_or_else(|error| panic!("{name}: S2 emit refused: {error:?}"))
-                .assembled();
-            assert_eq!(
-                old.as_str(),
-                new.as_str(),
-                "{name}: S2 DOM emit diverged from the shipped lane"
-            );
-            compared += 1;
-        }
+    let allocator = Allocator::new();
+    let caps = LegacyCaps::for_version(options.dialect);
+    for (name, src) in battery {
+        let old = shipped_with_options(src, options, codegen);
+        let new = emit_dom_source_with_options(&allocator, src, caps, emit)
+            .unwrap_or_else(|error| panic!("{name}: S2 emit refused: {error:?}"))
+            .assembled();
+        assert_eq!(
+            old.as_str(),
+            new.as_str(),
+            "{name}: S2 DOM emit diverged from the shipped lane"
+        );
+        compared += 1;
     }
     assert_eq!(
-        (compared, skipped_legacy_flag),
-        (battery.len() as u64, 0),
-        "a cfg or {DOM_LANE_FLAG}=legacy regression disarmed the dual-run"
+        compared,
+        battery.len() as u64,
+        "the S2 dual-run must remain armed"
     );
 }
 
 pub fn assert_s2_matches_shipped(battery: &[(&str, &str)]) {
     let mut compared = 0u64;
-    let mut skipped_legacy_flag = 0u64;
-    if std::env::var(DOM_LANE_FLAG).is_ok_and(|value| value == "legacy") {
-        skipped_legacy_flag += 1;
-    } else {
-        let allocator = Allocator::new();
-        for (name, src) in battery {
-            let old = shipped(src);
-            let new = emit_dom_source(&allocator, src)
-                .unwrap_or_else(|error| panic!("{name}: S2 emit refused: {error:?}"))
-                .assembled();
-            assert_eq!(
-                old.as_str(),
-                new.as_str(),
-                "{name}: S2 DOM emit diverged from the shipped lane"
-            );
-            compared += 1;
-        }
+    let allocator = Allocator::new();
+    for (name, src) in battery {
+        let old = shipped(src);
+        let new = emit_dom_source(&allocator, src)
+            .unwrap_or_else(|error| panic!("{name}: S2 emit refused: {error:?}"))
+            .assembled();
+        assert_eq!(
+            old.as_str(),
+            new.as_str(),
+            "{name}: S2 DOM emit diverged from the shipped lane"
+        );
+        compared += 1;
     }
     assert_eq!(
-        (compared, skipped_legacy_flag),
-        (battery.len() as u64, 0),
-        "a cfg or {DOM_LANE_FLAG}=legacy regression disarmed the dual-run"
+        compared,
+        battery.len() as u64,
+        "the S2 dual-run must remain armed"
     );
 }
 
@@ -210,29 +200,24 @@ fn assert_s2_matches_shipped_with_dialect_inner(
     prefix_identifiers: bool,
 ) {
     let mut compared = 0u64;
-    let mut skipped_legacy_flag = 0u64;
-    if std::env::var(DOM_LANE_FLAG).is_ok_and(|value| value == "legacy") {
-        skipped_legacy_flag += 1;
-    } else {
-        let allocator = Allocator::new();
-        let caps = LegacyCaps::for_version(dialect);
-        for (name, src) in battery {
-            let old = shipped_with_dialect_and_prefix(src, dialect, prefix_identifiers);
-            let new = emit_dom_source_with_caps(&allocator, src, caps)
-                .unwrap_or_else(|error| panic!("{name}: S2 emit refused: {error:?}"))
-                .assembled();
-            assert_eq!(
-                old.as_str(),
-                new.as_str(),
-                "{name}: S2 DOM emit diverged from the shipped lane"
-            );
-            compared += 1;
-        }
+    let allocator = Allocator::new();
+    let caps = LegacyCaps::for_version(dialect);
+    for (name, src) in battery {
+        let old = shipped_with_dialect_and_prefix(src, dialect, prefix_identifiers);
+        let new = emit_dom_source_with_caps(&allocator, src, caps)
+            .unwrap_or_else(|error| panic!("{name}: S2 emit refused: {error:?}"))
+            .assembled();
+        assert_eq!(
+            old.as_str(),
+            new.as_str(),
+            "{name}: S2 DOM emit diverged from the shipped lane"
+        );
+        compared += 1;
     }
     assert_eq!(
-        (compared, skipped_legacy_flag),
-        (battery.len() as u64, 0),
-        "a cfg or {DOM_LANE_FLAG}=legacy regression disarmed the dual-run"
+        compared,
+        battery.len() as u64,
+        "the S2 dual-run must remain armed"
     );
 }
 

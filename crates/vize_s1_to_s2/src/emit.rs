@@ -1,10 +1,8 @@
 //! S2 → DOM render-function emission (P2-11).
 //!
-//! The unpublished home for the new DOM backend: `vize_atelier_dom` is
-//! published and cannot name this crate in its release graph (the
-//! installment-1 publish-gate measurement). Dual-run lives in
-//! atelier_dom **test space** as a stripped-on-publish dev-dep, the
-//! P2-9 carve-out. It writes JS directly from S2 ops, without relief codegen-nodes.
+//! The published home for the DOM backend. `vize_atelier_dom` calls this
+//! module for normal DOM emission; it writes JS directly from S2 ops, without
+//! relief codegen-nodes.
 //!
 //! This installment emits **static native HTML / SVG / MathML**, interpolations,
 //! mixed text siblings, static-name `ui.bind`, static-name `ui.on`
@@ -38,8 +36,6 @@
 //! Vue 2 pipe filters legalized by `legacy-sugar`, and **module mode**
 //! ([`DomEmitOptions`]: `import { … } from "vue"` + `export function
 //! render(_ctx, _cache)`, custom runtime module / global names).
-//! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
-//! is named here and *read* in the atelier_dom witness.
 
 mod budget;
 mod buf;

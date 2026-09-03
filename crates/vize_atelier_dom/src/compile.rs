@@ -275,6 +275,34 @@ fn compile_template_inner_with_sections<'a>(
         );
     }
 
+    // Project the public output options before consuming Croquis below. Croquis
+    // intentionally crosses the transform boundary by ownership and is not
+    // cloneable, while S2 only borrows the remaining compiler settings.
+    let codegen_opts = CodegenOptions {
+        mode: options.mode,
+        source_map: options.source_map,
+        component_name: options.component_name.clone(),
+        scope_id: options.scope_id.clone(),
+        ssr: options.ssr,
+        is_ts: options.is_ts,
+        inline: options.inline,
+        cache_handlers: options.cache_handlers,
+        binding_metadata: options.binding_metadata.clone(),
+        // Compound dynamic `v-bind` / `v-on` keys (`:[prefix+suffix]`) only
+        // walk identifiers when this flag is set. Transform already receives
+        // it; omitting it here left SFC module-mode render functions with
+        // bare `prefix+suffix` and a runtime ReferenceError.
+        prefix_identifiers: options.prefix_identifiers,
+        ..codegen_options
+    };
+    let binding_table = stage_options::s2_binding_table(options.binding_metadata.as_ref());
+    // `DomCompilerOptions::clone` deliberately drops Croquis. That makes a
+    // compact option projection we can retain across the one-way Croquis
+    // hand-off to the legacy AST transform below.
+    let s2_option_source = options.clone();
+    let s2_options =
+        stage_options::s2_emit_options(&s2_option_source, &codegen_opts, binding_table.as_ref());
+
     let transform_opts = stage_options::transform_options(&options);
     let template_syntax_quirks = template_syntax.is_quirks();
     // Park the summary on the allocator so it shares the allocator lifetime.
@@ -299,27 +327,19 @@ fn compile_template_inner_with_sections<'a>(
     errors.extend(transform_errors);
 
     // Codegen
-    let codegen_opts = CodegenOptions {
-        mode: options.mode,
-        source_map: options.source_map,
-        component_name: options.component_name,
-        scope_id: options.scope_id.clone(),
-        ssr: options.ssr,
-        is_ts: options.is_ts,
-        inline: options.inline,
-        cache_handlers: options.cache_handlers,
-        binding_metadata: options.binding_metadata,
-        // Compound dynamic `v-bind` / `v-on` keys (`:[prefix+suffix]`) only
-        // walk identifiers when this flag is set. Transform already receives
-        // it; omitting it here left SFC module-mode render functions with
-        // bare `prefix+suffix` and a runtime ReferenceError.
-        prefix_identifiers: options.prefix_identifiers,
-        ..codegen_options
+    let s2_emit = (!codegen_opts.source_map).then(|| {
+        profile!(
+            "atelier.dom.template.s2_codegen",
+            stage_options::emit_s2(allocator, source, s2_option_source.dialect, &s2_options)
+        )
+    });
+    let codegen_result = match s2_emit {
+        Some(Ok(result)) => result,
+        Some(Err(_)) | None => profile!(
+            "atelier.dom.template.codegen_compat",
+            generate_with_sections(&root, codegen_opts)
+        ),
     };
-    let codegen_result = profile!(
-        "atelier.dom.template.codegen",
-        generate_with_sections(&root, codegen_opts)
-    );
 
     (root, errors, codegen_result)
 }
