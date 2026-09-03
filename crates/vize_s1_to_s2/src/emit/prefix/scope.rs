@@ -28,7 +28,7 @@ use alloc::vec::Vec as StdVec;
 use vize_s0::{SmallVec, String};
 
 use super::super::options::BindingTable;
-use super::globals::is_global_allowed;
+use super::globals::is_scope_chain_global;
 
 #[derive(Default)]
 pub(in crate::emit) struct PrefixScope<'b> {
@@ -36,6 +36,8 @@ pub(in crate::emit) struct PrefixScope<'b> {
     slot_params: StdVec<String>,
     patterns: SmallVec<[String; 4]>,
     bindings: Option<&'b BindingTable>,
+    prefix_identifiers: bool,
+    is_ts: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -46,11 +48,27 @@ pub(in crate::emit) struct ScopeMark {
 }
 
 impl<'b> PrefixScope<'b> {
-    pub(in crate::emit) fn new(bindings: Option<&'b BindingTable>) -> Self {
+    pub(in crate::emit) fn new(
+        bindings: Option<&'b BindingTable>,
+        prefix_identifiers: bool,
+        is_ts: bool,
+    ) -> Self {
         Self {
             bindings,
+            prefix_identifiers,
+            is_ts,
             ..Self::default()
         }
+    }
+
+    /// Whether free identifiers are rewritten at all (`prefix_identifiers`).
+    pub(in crate::emit) fn prefixes_identifiers(&self) -> bool {
+        self.prefix_identifiers
+    }
+
+    /// Whether expressions are type-erased first (`is_ts`).
+    pub(super) fn is_ts(&self) -> bool {
+        self.is_ts
     }
 
     /// The binding table the emit runs under, if any.
@@ -121,11 +139,17 @@ impl<'b> PrefixScope<'b> {
         &self.slot_params
     }
 
-    /// `get_identifier_prefix` in non-inline mode: `None` for globals and
-    /// transform-scope names, the binding's render-function prefix
+    /// `get_identifier_prefix` in non-inline mode: `None` for the seeded
+    /// JS globals and transform-scope names, the binding's render-function prefix
     /// (`$props.` for props) when the table names it, `_ctx.` otherwise.
     pub(super) fn identifier_prefix(&self, name: &str) -> Option<&'static str> {
-        if is_global_allowed(name) || self.is_in_transform_scope(name) {
+        // The shipped lane only reaches `get_identifier_prefix` under
+        // `prefix_identifiers`; a TS-only lane erases types and prefixes
+        // nothing.
+        if !self.prefix_identifiers {
+            return None;
+        }
+        if is_scope_chain_global(name) || self.is_in_transform_scope(name) {
             return None;
         }
         Some(self.codegen_prefix(name))
@@ -162,7 +186,7 @@ mod tests {
             [],
             true,
         );
-        let mut scope = PrefixScope::new(Some(&table));
+        let mut scope = PrefixScope::new(Some(&table), true, false);
         assert_eq!(scope.identifier_prefix("count"), Some("$setup."));
         assert_eq!(scope.identifier_prefix("title"), Some("$props."));
         assert_eq!(scope.identifier_prefix("label"), Some("$props."));
@@ -177,7 +201,7 @@ mod tests {
 
     #[test]
     fn without_a_table_every_free_name_is_ctx() {
-        let scope = PrefixScope::new(None);
+        let scope = PrefixScope::new(None, true, false);
         assert_eq!(scope.identifier_prefix("count"), Some("_ctx."));
         assert_eq!(scope.codegen_prefix("count"), "_ctx.");
     }

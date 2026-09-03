@@ -64,6 +64,9 @@ pub enum UnsupportedReason {
     TextDirectiveExpressionNotJs,
     TextExpressionNotEmittable,
     TextRunContainsNonText,
+    /// `is_ts` was requested from a build without the `typescript`
+    /// feature, whose type erasure needs `std`.
+    TypeScriptLaneUnavailable,
     UnsupportedBindingKind,
     WalkIdOverflow,
 }
@@ -117,6 +120,7 @@ impl UnsupportedReason {
         Self::TextDirectiveExpressionNotJs,
         Self::TextExpressionNotEmittable,
         Self::TextRunContainsNonText,
+        Self::TypeScriptLaneUnavailable,
         Self::UnsupportedBindingKind,
         Self::WalkIdOverflow,
     ];
@@ -158,6 +162,7 @@ impl UnsupportedReason {
             Self::OnNameNotStatic => "on_name_not_static",
             Self::PrefixExpressionKind => "prefix_expression_kind",
             Self::PrefixExpressionRejected => "prefix_expression_rejected",
+            Self::TypeScriptLaneUnavailable => "typescript_lane_unavailable",
             Self::ShowExpressionNotJs => "show_expression_not_js",
             Self::SlotDefaultShape => "slot_default_shape",
             Self::SlotFactsMissingGroup => "slot_facts_missing_group",

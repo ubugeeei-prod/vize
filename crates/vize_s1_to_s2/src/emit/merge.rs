@@ -58,6 +58,7 @@ pub(super) fn object_patch(
     is_component: bool,
     if_key: Option<&str>,
     for_item: bool,
+    is_ts: bool,
 ) -> Patch {
     let mut dynamic_props = StdVec::new();
     let mut flag = 16i32;
@@ -78,7 +79,7 @@ pub(super) fn object_patch(
                     }
                     if raw_name == "key"
                         || (!is_component && matches!(raw_name, "class" | "style"))
-                        || bind_value_is_static_patchless(bind)
+                        || bind_value_is_static_patchless(bind, is_ts)
                     {
                         continue;
                     }

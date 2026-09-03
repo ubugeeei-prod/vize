@@ -17,6 +17,7 @@ use super::compat::js_module_compatible;
 use super::globals::is_simple_identifier;
 use super::scope::PrefixScope;
 use super::splice::splice_insertions;
+use super::strip_typescript_from_expression;
 
 /// A retained AST beside the text it describes: `ast` was parsed from
 /// `text[offset..offset + len]`, so its spans shift by `offset`.
@@ -39,6 +40,10 @@ fn js_module() -> SourceType {
     SourceType::default().with_module(true)
 }
 
+fn ts_module() -> SourceType {
+    SourceType::ts().with_module(true)
+}
+
 pub(super) fn rewrite_expression(
     content: &str,
     retained: Option<Retained<'_, '_>>,
@@ -46,10 +51,24 @@ pub(super) fn rewrite_expression(
     as_params: bool,
 ) -> RewriteResult {
     if !as_params
-        && let Some(retained) = retained
-        && js_module_compatible(retained.ast, retained.source)
+        && let Some(js) = retained
+        && js_module_compatible(js.ast, js.source)
     {
-        return project_aliases(rewrite_retained(content, retained, scope), scope);
+        if !scope.is_ts() {
+            return project_aliases(rewrite_retained(content, js, scope), scope);
+        }
+        // TS lanes strip first, always: the detection scan can false-positive
+        // on TS-free text (` as ` inside a string literal) and rewrite bytes
+        // through the codegen round-trip. Only the identity outcome keeps the
+        // retained byte proof; changed bytes rejoin the legacy chain.
+        let js_content = strip_typescript_from_expression(content);
+        if js_content.as_str() == content {
+            return project_aliases(rewrite_retained(content, js, scope), scope);
+        }
+        return project_aliases(
+            rewrite_reparsed(js_content, content, retained, scope),
+            scope,
+        );
     }
     let overflows = expression_exceeds_max_depth(content);
     if overflows || !expression_has_balanced_delimiters(content) {
@@ -58,13 +77,25 @@ pub(super) fn rewrite_expression(
             parse_error: !overflows,
         };
     }
+    let js_content = if scope.is_ts() {
+        strip_typescript_from_expression(content)
+    } else {
+        String::from(content)
+    };
     if as_params {
+        // The original text is re-checked as TypeScript: the official
+        // compiler accepts params the stripping fallback could not lower.
+        let accepted = parses_as_params(js_content.as_str(), js_module())
+            || (scope.is_ts() && parses_as_params(content, ts_module()));
         return RewriteResult {
-            code: String::from(content),
-            parse_error: !parses_as_params(content),
+            code: js_content,
+            parse_error: !accepted,
         };
     }
-    project_aliases(rewrite_reparsed(content, scope), scope)
+    project_aliases(
+        rewrite_reparsed(js_content, content, retained, scope),
+        scope,
+    )
 }
 
 /// The transform's `rewrite_props_aliases` post-pass over both prop
@@ -97,7 +128,17 @@ fn rewrite_retained(
     }
 }
 
-fn rewrite_reparsed(content: &str, scope: &PrefixScope<'_>) -> RewriteResult {
+/// The legacy re-parse chain over already-stripped text. `original` is
+/// the pre-strip text, read only by the TS-acceptance check; a retained
+/// AST that passed the dialect gate already proves the original parses as
+/// TypeScript, so it short-circuits that check.
+fn rewrite_reparsed(
+    js_content: String,
+    original: &str,
+    retained: Option<Retained<'_, '_>>,
+    scope: &PrefixScope<'_>,
+) -> RewriteResult {
+    let content = js_content.as_str();
     let allocator = Allocator::new();
     let mut wrapped = String::with_capacity(content.len() + 2);
     wrapped.push('(');
@@ -142,22 +183,46 @@ fn rewrite_reparsed(content: &str, scope: &PrefixScope<'_>) -> RewriteResult {
             parse_error: false,
         };
     }
+    let ts_accepts = scope.is_ts()
+        && (retained.is_some_and(|js| js_module_compatible(js.ast, js.source))
+            || parses_as_typescript(original));
     RewriteResult {
-        code: String::from(content),
-        parse_error: true,
+        code: js_content,
+        parse_error: !ts_accepts,
     }
 }
 
 /// `parse_checks::parse_as_params`: the synthesized `(content) => null` parse.
-fn parses_as_params(content: &str) -> bool {
+fn parses_as_params(content: &str, source_type: SourceType) -> bool {
     let allocator = Allocator::new();
     let mut wrapped = String::with_capacity(content.len() + 12);
     wrapped.push('(');
     wrapped.push_str(content);
     wrapped.push_str(") => null");
-    Parser::new(allocator.as_oxc(), wrapped.as_str(), js_module())
+    Parser::new(allocator.as_oxc(), wrapped.as_str(), source_type)
         .parse_expression()
         .is_ok()
+}
+
+/// `parse_checks::parses_as_typescript`: the wrapped expression parse,
+/// then the whole-program parse, both as TypeScript.
+fn parses_as_typescript(content: &str) -> bool {
+    let expr_allocator = Allocator::new();
+    let mut wrapped = String::with_capacity(content.len() + 2);
+    wrapped.push('(');
+    wrapped.push_str(content);
+    wrapped.push(')');
+    if Parser::new(expr_allocator.as_oxc(), wrapped.as_str(), ts_module())
+        .parse_expression()
+        .is_ok()
+    {
+        return true;
+    }
+    let program_allocator = Allocator::new();
+    Parser::new(program_allocator.as_oxc(), content, ts_module())
+        .parse()
+        .diagnostics
+        .is_empty()
 }
 
 /// The legacy prefix parse: `Parser::parse_expression` over the bare

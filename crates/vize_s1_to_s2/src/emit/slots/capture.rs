@@ -61,7 +61,7 @@ fn emit_slot_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     }
     match op {
         Op::Text(_) | Op::Interpolation(_) => emit_slot_text_child(cx, op),
-        Op::Element(element) if is_static_element_tree(element) => {
+        Op::Element(element) if is_static_element_tree(element, cx.is_ts) => {
             emit_hoisted_element(cx, element)
         }
         Op::Element(_) | Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {

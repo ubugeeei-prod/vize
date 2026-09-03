@@ -63,24 +63,27 @@ pub(super) fn has_legacy_global_for_item_key(bindings: &[BindingOp<'_>]) -> bool
 pub(super) fn root_hoist_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
+    is_ts: bool,
 ) -> Result<Option<String>, EmitError> {
-    root_hoist_props_with_layout(attributes, bindings, None)
+    root_hoist_props_with_layout(attributes, bindings, None, is_ts)
 }
 
 pub(super) fn cached_root_hoist_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     line_indent: usize,
+    is_ts: bool,
 ) -> Result<Option<String>, EmitError> {
-    root_hoist_props_with_layout(attributes, bindings, Some(line_indent))
+    root_hoist_props_with_layout(attributes, bindings, Some(line_indent), is_ts)
 }
 
 fn root_hoist_props_with_layout(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     multiline_indent: Option<usize>,
+    is_ts: bool,
 ) -> Result<Option<String>, EmitError> {
-    if !can_root_hoist_props(attributes, bindings) {
+    if !can_root_hoist_props(attributes, bindings, is_ts) {
         return Ok(None);
     }
 
@@ -88,10 +91,10 @@ fn root_hoist_props_with_layout(
     let pieces = pieces(attributes, bindings, false)?;
     for (index, piece) in pieces.iter().enumerate() {
         let mut prop = String::default();
-        let Some(key) = static_hoist_prop(&mut prop, piece)? else {
+        let Some(key) = static_hoist_prop(&mut prop, piece, is_ts)? else {
             return Ok(None);
         };
-        if has_prior_hoist_key(&pieces[..index], key.as_str())? {
+        if has_prior_hoist_key(&pieces[..index], key.as_str(), is_ts)? {
             continue;
         }
         props.push(prop);
@@ -126,6 +129,7 @@ pub(super) struct ComponentHoistProps {
 pub(super) fn component_hoist_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
+    is_ts: bool,
 ) -> Result<Option<ComponentHoistProps>, EmitError> {
     let pieces = pieces(attributes, bindings, false)?;
     let mut out = String::from("{ ");
@@ -136,10 +140,10 @@ pub(super) fn component_hoist_props(
     let mut all_static_binds = true;
     for (index, piece) in pieces.iter().enumerate() {
         let mut prop = String::default();
-        let Some((key, dynamic_value)) = component_hoist_prop(&mut prop, piece)? else {
+        let Some((key, dynamic_value)) = component_hoist_prop(&mut prop, piece, is_ts)? else {
             return Ok(None);
         };
-        if has_prior_component_hoist_key(&pieces[..index], key.as_str())? {
+        if has_prior_component_hoist_key(&pieces[..index], key.as_str(), is_ts)? {
             continue;
         }
         dynamic_values |= dynamic_value;
@@ -172,16 +176,17 @@ pub(super) fn component_hoist_props(
 pub(super) fn for_item_hoist_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
+    is_ts: bool,
 ) -> Result<Option<String>, EmitError> {
     let pieces = pieces(attributes, bindings, false)?;
     let mut out = String::from("{ ");
     let mut emitted = 0usize;
     for (index, piece) in pieces.iter().enumerate() {
         let mut prop = String::default();
-        let Some(key) = for_item_hoist_prop(&mut prop, piece)? else {
+        let Some(key) = for_item_hoist_prop(&mut prop, piece, is_ts)? else {
             return Ok(None);
         };
-        if has_prior_for_item_hoist_key(&pieces[..index], key.as_str())? {
+        if has_prior_for_item_hoist_key(&pieces[..index], key.as_str(), is_ts)? {
             continue;
         }
         if emitted > 0 {
@@ -200,11 +205,19 @@ pub(super) fn for_item_hoist_props(
 pub(super) fn static_vnode_surface_can_hoist(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
+    is_ts: bool,
 ) -> bool {
-    attributes.iter().all(|attr| attr.name != "ref") && bindings.iter().all(root_binding_can_hoist)
+    attributes.iter().all(|attr| attr.name != "ref")
+        && bindings
+            .iter()
+            .all(|binding| root_binding_can_hoist(binding, is_ts))
 }
 
-fn can_root_hoist_props(attributes: &[Attribute<'_>], bindings: &[BindingOp<'_>]) -> bool {
+fn can_root_hoist_props(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+    is_ts: bool,
+) -> bool {
     if attributes.is_empty() && bindings.is_empty() {
         return false;
     }
@@ -213,10 +226,12 @@ fn can_root_hoist_props(attributes: &[Attribute<'_>], bindings: &[BindingOp<'_>]
         return false;
     }
 
-    bindings.iter().all(root_binding_can_hoist)
+    bindings
+        .iter()
+        .all(|binding| root_binding_can_hoist(binding, is_ts))
 }
 
-fn root_binding_can_hoist(binding: &BindingOp<'_>) -> bool {
+fn root_binding_can_hoist(binding: &BindingOp<'_>, is_ts: bool) -> bool {
     let BindingOp::Bind(bind) = binding else {
         return false;
     };
@@ -225,7 +240,7 @@ fn root_binding_can_hoist(binding: &BindingOp<'_>) -> bool {
         return false;
     }
 
-    if !bind_value_is_legacy_static_prop(bind) {
+    if !bind_value_is_legacy_static_prop(bind, is_ts) {
         return false;
     }
 

@@ -1,6 +1,7 @@
 //! Static attrs plus static-name `ui.bind` / `ui.on` props / patch flags.
 
 mod static_expr;
+mod ts_view;
 
 use alloc::vec::Vec as StdVec;
 
@@ -17,6 +18,7 @@ use static_expr::{
     bind_value_uses_legacy_patchless_runtime_expr, is_legacy_static_global_constant,
     is_static_bound_expr,
 };
+use ts_view::ts_view;
 
 pub(super) use super::props_bind::{
     BindName, StaticBindKeyCasing, bind_name, emit_dynamic_bind_pair, has_prop_modifier,
@@ -122,9 +124,10 @@ pub(super) fn bind_patch(
     is_component: bool,
     if_key: Option<&str>,
     for_item: bool,
+    is_ts: bool,
 ) -> Patch {
     if super::merge::has_object_spread(bindings) {
-        return super::merge::object_patch(bindings, is_component, if_key, for_item);
+        return super::merge::object_patch(bindings, is_component, if_key, for_item, is_ts);
     }
     let mut flag = 0i32;
     let mut dynamic_props = StdVec::new();
@@ -139,16 +142,16 @@ pub(super) fn bind_patch(
                 Ok(BindName::Static(raw_name)) => match raw_name {
                     "ref" => flag |= 512,
                     "class"
-                        if bind_value_is_static_patchless(bind)
+                        if bind_value_is_static_patchless(bind, is_ts)
                             || bind_value_uses_legacy_patchless_runtime_expr(bind) => {}
                     "class" if !is_component => flag |= 2,
                     "style"
-                        if bind_value_is_static_patchless(bind)
+                        if bind_value_is_static_patchless(bind, is_ts)
                             || bind_value_uses_legacy_patchless_runtime_expr(bind) => {}
                     "style" if !is_component => flag |= 4,
                     "key" => {}
                     key if key.ends_with("Modifiers")
-                        || bind_value_is_static_patchless(bind)
+                        || bind_value_is_static_patchless(bind, is_ts)
                         || bind_value_uses_legacy_patchless_bounded_string_concat(bind) => {}
                     _ => {
                         flag |= 8;
@@ -241,12 +244,26 @@ pub(super) fn prune_legacy_patchless_dynamic_props(
     }
 }
 
-pub(super) fn bind_value_is_static_patchless(bind: &vize_s2::op::BindOp<'_>) -> bool {
+/// `is_static_bound_expression` over the value the shipped codegen sees:
+/// under `is_ts` the transform has already erased the types, so a
+/// `{ … } as const` object is a *static* literal by the time the patch
+/// flags and the hoist decisions read it.
+pub(super) fn bind_value_is_static_patchless(bind: &vize_s2::op::BindOp<'_>, is_ts: bool) -> bool {
     match bind_value(bind) {
-        Ok(value) => value.js().is_some_and(|js| {
-            is_static_bound_expr(js.ast) || is_legacy_static_global_constant(js.ast)
+        Ok(value) => value.js().is_some_and(|js| match ts_view(js, is_ts) {
+            Some(view) => view.is_static(),
+            None => is_static_bound_expr(js.ast) || is_legacy_static_global_constant(js.ast),
         }),
         Err(_) => false,
+    }
+}
+
+/// The bind value's text the way the shipped codegen writes it: the
+/// authored source, or its type-erased spelling under `is_ts`.
+pub(super) fn bind_value_text(js: &vize_s2::expr::JsExpr<'_>, is_ts: bool) -> String {
+    match ts_view(js, is_ts) {
+        Some(view) => view.into_text(),
+        None => String::from(super::js::js_expr_source(js).as_str()),
     }
 }
 

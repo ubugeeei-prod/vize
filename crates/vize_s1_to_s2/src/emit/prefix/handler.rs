@@ -14,6 +14,7 @@ use super::shape::{
     is_function_expression_node,
 };
 use super::strip::strip_scope_prefixes_for_slot_params;
+use super::strip_typescript_from_expression;
 
 /// `process_inline_handler` over the node's content (the padded attribute
 /// value the shipped transform held).
@@ -22,9 +23,23 @@ pub(super) fn process_inline_handler(
     retained: Option<Retained<'_, '_>>,
     scope: &PrefixScope<'_>,
 ) -> RewriteResult {
-    if is_function_expression_node(content, retained) {
-        return rewrite_expression(content, retained, scope, false);
+    // The function/reference shape is read off the TS-stripped text; the
+    // retained AST still applies only while that text is the node's own
+    // bytes. The *rewrite* below re-strips from the original.
+    let stripped = scope
+        .is_ts()
+        .then(|| strip_typescript_from_expression(content));
+    let shape_source = stripped.as_ref().map_or(content, String::as_str);
+    let is_function = if shape_source == content {
+        is_function_expression_node(content, retained)
+    } else {
+        is_function_expression(shape_source)
+    };
+    if is_function {
+        return process(content, retained, scope);
     }
+    // Only the function check reads the stripped text; the reference check
+    // is the shipped lane's, over the node's own bytes.
     if is_simple_identifier(content) || is_event_handler_reference_node(content, retained) {
         if is_simple_identifier(content) {
             let code = match scope.identifier_prefix(content) {
@@ -41,9 +56,9 @@ pub(super) fn process_inline_handler(
                 parse_error: false,
             };
         }
-        return rewrite_expression(content, retained, scope, false);
+        return process(content, retained, scope);
     }
-    let rewritten = rewrite_expression(content, retained, scope, false);
+    let rewritten = process(content, retained, scope);
     let mut code = String::with_capacity(rewritten.code.len() + 13);
     if rewritten.code.contains(';') {
         code.push_str("$event => {");
@@ -57,6 +72,26 @@ pub(super) fn process_inline_handler(
     RewriteResult {
         code,
         parse_error: rewritten.parse_error,
+    }
+}
+
+/// The handler body itself: rewritten when identifiers are prefixed,
+/// type-erased alone when only `is_ts` is on.
+fn process(
+    content: &str,
+    retained: Option<Retained<'_, '_>>,
+    scope: &PrefixScope<'_>,
+) -> RewriteResult {
+    if scope.prefixes_identifiers() {
+        return rewrite_expression(content, retained, scope, false);
+    }
+    RewriteResult {
+        code: if scope.is_ts() {
+            strip_typescript_from_expression(content)
+        } else {
+            String::from(content)
+        },
+        parse_error: false,
     }
 }
 

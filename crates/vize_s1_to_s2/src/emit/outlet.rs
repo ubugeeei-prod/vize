@@ -178,7 +178,7 @@ fn emit_fallback_units(
             emit_create_text_vnode(cx, core::slice::from_ref(op))
         }
         Op::Interpolation(interp) => emit_fallback_interp(cx, interp, compact, first),
-        Op::Element(element) if is_hoistable(element) => {
+        Op::Element(element) if is_hoistable(element, cx.is_ts) => {
             start_fallback_item(cx, compact, first);
             emit_hoisted_element(cx, element)
         }

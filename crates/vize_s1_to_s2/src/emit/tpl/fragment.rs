@@ -288,7 +288,9 @@ fn emit_gen_interp(
 
 fn emit_node_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     match op {
-        Op::Element(element) if is_hoistable(element) => emit_hoisted_element(cx, element),
+        Op::Element(element) if is_hoistable(element, cx.is_ts) => {
+            emit_hoisted_element(cx, element)
+        }
         _ => vnode::emit_array_child(cx, op, false, false),
     }
 }

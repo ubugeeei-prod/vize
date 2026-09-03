@@ -41,7 +41,7 @@ fn emit_children_inner(
     if !force_array
         && !hoist_static_children
         && cache_static_children
-        && super::hoist::cacheable_elements_array(ops)
+        && super::hoist::cacheable_elements_array(ops, cx.is_ts)
     {
         return super::hoist::emit_cached_elements_array(cx, ops);
     }

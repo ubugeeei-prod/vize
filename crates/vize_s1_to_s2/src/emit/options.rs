@@ -204,6 +204,10 @@ pub struct DomEmitOptions<'a> {
     /// The shipped lane's `prefix_identifiers`: free identifiers become
     /// member accesses (`emit::prefix`).
     pub prefix_identifiers: bool,
+    /// The shipped lane's `is_ts`: template expressions are TypeScript,
+    /// so each one is type-erased (`emit::prefix::typescript`) before the
+    /// identifier pass reads it.
+    pub is_ts: bool,
     /// The shipped lane's `binding_metadata`, honoured in non-inline mode:
     /// prefixed identifiers resolve to `$setup.` / `$props.` / `$data.` /
     /// `$options.`, components and directives resolve to `$setup` members,
@@ -219,6 +223,7 @@ impl DomEmitOptions<'static> {
         runtime_module_name: "vue",
         runtime_global_name: "Vue",
         prefix_identifiers: false,
+        is_ts: false,
         bindings: None,
     };
 }
@@ -242,6 +247,7 @@ mod tests {
                 runtime_module_name: "vue",
                 runtime_global_name: "Vue",
                 prefix_identifiers: false,
+                is_ts: false,
                 bindings: None,
             }
         );

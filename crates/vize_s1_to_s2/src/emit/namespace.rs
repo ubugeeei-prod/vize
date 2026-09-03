@@ -38,6 +38,7 @@ pub(super) fn crosses_boundary(
             element.namespace,
             &element.children,
             direct_static_children_hoisted,
+            cx.is_ts,
         )
 }
 
@@ -46,9 +47,12 @@ fn structural_children_cross_boundary(
     ns: Namespace,
     children: &Region<'_>,
     direct_static_children_hoisted: bool,
+    is_ts: bool,
 ) -> bool {
     children.ops.iter().any(|child| match child {
-        Op::Element(element) => child_crosses_direct(ns, element, direct_static_children_hoisted),
+        Op::Element(element) => {
+            child_crosses_direct(is_ts, ns, element, direct_static_children_hoisted)
+        }
         Op::If(if_op) => if_op.branches.iter().any(|branch| {
             ensure_sufficient_stack(|| {
                 !authored_template_branch(source, branch)
@@ -61,12 +65,13 @@ fn structural_children_cross_boundary(
 }
 
 fn child_crosses_direct(
+    is_ts: bool,
     ns: Namespace,
     element: &ElementOp<'_>,
     direct_static_children_hoisted: bool,
 ) -> bool {
     if element.namespace != ns {
-        return !(direct_static_children_hoisted && super::hoist::is_hoistable(element));
+        return !(direct_static_children_hoisted && super::hoist::is_hoistable(element, is_ts));
     }
     false
 }

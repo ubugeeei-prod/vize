@@ -49,15 +49,15 @@ pub(super) fn emit_cached_element(
     cx.buf.push(cache_index.as_str());
     cx.buf.push("] = ");
     cx.buf
-        .push(cached_element_rhs(element, true, cx.buf.indent_width()).as_str());
+        .push(cached_element_rhs(element, true, cx.buf.indent_width(), cx.is_ts).as_str());
     cx.buf.push(")");
     Ok(())
 }
 
-pub(super) fn cacheable_elements_array(ops: &[Op<'_>]) -> bool {
+pub(super) fn cacheable_elements_array(ops: &[Op<'_>], is_ts: bool) -> bool {
     !ops.is_empty()
         && ops.iter().all(|op| match op {
-            Op::Element(element) => is_hoistable(element),
+            Op::Element(element) => is_hoistable(element, is_ts),
             _ => false,
         })
 }
@@ -92,7 +92,7 @@ pub(super) fn emit_cached_elements_array(
             cx.buf.use_create_text();
         }
         cx.buf
-            .push(cached_element_rhs(element, true, cx.buf.indent_width()).as_str());
+            .push(cached_element_rhs(element, true, cx.buf.indent_width(), cx.is_ts).as_str());
     }
 
     cx.buf.deindent();
@@ -107,15 +107,16 @@ pub(super) fn hoist_static_element(cx: &mut EmitCx<'_>, element: &ElementOp<'_>)
     if hoist_needs_create_text(element) {
         cx.buf.use_create_text();
     }
-    cx.buf.push_hoist(hoist_element_rhs(element, true))
+    cx.buf
+        .push_hoist(hoist_element_rhs(element, true, cx.is_ts))
 }
 
-pub(super) fn is_hoistable(element: &ElementOp<'_>) -> bool {
-    is_static_element_tree(element)
+pub(super) fn is_hoistable(element: &ElementOp<'_>, is_ts: bool) -> bool {
+    is_static_element_tree(element, is_ts)
 }
 
-pub(super) fn is_static_element_tree(element: &ElementOp<'_>) -> bool {
-    super::vnode_static::can_whole_hoist_static_element(element)
+pub(super) fn is_static_element_tree(element: &ElementOp<'_>, is_ts: bool) -> bool {
+    super::vnode_static::can_whole_hoist_static_element(element, is_ts)
 }
 
 fn walk_hoisted(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {
@@ -134,7 +135,7 @@ fn walk_hoisted(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {
     }
 }
 
-fn hoist_element_rhs(element: &ElementOp<'_>, pure: bool) -> String {
+fn hoist_element_rhs(element: &ElementOp<'_>, pure: bool, is_ts: bool) -> String {
     let mut out = String::default();
     if pure {
         out.push_str("/*#__PURE__*/ ");
@@ -145,7 +146,7 @@ fn hoist_element_rhs(element: &ElementOp<'_>, pure: bool) -> String {
     out.push_str(element.tag);
     out.push('"');
     let kids = renderable_children(&element.children);
-    let props = static_vnode_props(element, true);
+    let props = static_vnode_props(element, true, is_ts);
     if props.is_some() || !kids.is_empty() {
         out.push_str(", ");
         if let Some(props) = props {
@@ -156,15 +157,20 @@ fn hoist_element_rhs(element: &ElementOp<'_>, pure: bool) -> String {
     }
     if !kids.is_empty() {
         out.push_str(", ");
-        append_hoist_kids(&mut out, &kids);
+        append_hoist_kids(&mut out, &kids, is_ts);
     }
     out.push(')');
     out
 }
 
-fn cached_element_rhs(element: &ElementOp<'_>, cached: bool, line_indent: usize) -> String {
+fn cached_element_rhs(
+    element: &ElementOp<'_>,
+    cached: bool,
+    line_indent: usize,
+    is_ts: bool,
+) -> String {
     let mut out = String::default();
-    append_cached_element_rhs(&mut out, element, cached, line_indent);
+    append_cached_element_rhs(&mut out, element, cached, line_indent, is_ts);
     out
 }
 
@@ -173,6 +179,7 @@ fn append_cached_element_rhs(
     element: &ElementOp<'_>,
     cached: bool,
     line_indent: usize,
+    is_ts: bool,
 ) {
     out.push_str(Buf::create_element_vnode_alias());
     out.push('(');
@@ -182,7 +189,7 @@ fn append_cached_element_rhs(
     out.push_str(", ");
     if element.bindings.is_empty() && !element.attributes.is_empty() {
         cached_props::push_object(out, element.attributes.iter(), line_indent);
-    } else if let Some(props) = cached_static_vnode_props(element, line_indent) {
+    } else if let Some(props) = cached_static_vnode_props(element, line_indent, is_ts) {
         out.push_str(props.as_str());
     } else {
         out.push_str("null");
@@ -192,7 +199,7 @@ fn append_cached_element_rhs(
     if kids.is_empty() {
         out.push_str("null");
     } else {
-        append_cached_kids(out, &kids, line_indent);
+        append_cached_kids(out, &kids, line_indent, is_ts);
     }
     if cached {
         out.push_str(", -1 /* CACHED */");
@@ -200,11 +207,19 @@ fn append_cached_element_rhs(
     out.push(')');
 }
 
-fn static_vnode_props(element: &ElementOp<'_>, include_bindings: bool) -> Option<String> {
+fn static_vnode_props(
+    element: &ElementOp<'_>,
+    include_bindings: bool,
+    is_ts: bool,
+) -> Option<String> {
     if include_bindings {
-        return super::props_static::root_hoist_props(&element.attributes, &element.bindings)
-            .ok()
-            .flatten();
+        return super::props_static::root_hoist_props(
+            &element.attributes,
+            &element.bindings,
+            is_ts,
+        )
+        .ok()
+        .flatten();
     }
     if element.attributes.is_empty() {
         return None;
@@ -212,11 +227,16 @@ fn static_vnode_props(element: &ElementOp<'_>, include_bindings: bool) -> Option
     Some(compact_props_object(element.attributes.iter()))
 }
 
-fn cached_static_vnode_props(element: &ElementOp<'_>, line_indent: usize) -> Option<String> {
+fn cached_static_vnode_props(
+    element: &ElementOp<'_>,
+    line_indent: usize,
+    is_ts: bool,
+) -> Option<String> {
     super::props_static::cached_root_hoist_props(
         &element.attributes,
         &element.bindings,
         line_indent,
+        is_ts,
     )
     .ok()
     .flatten()

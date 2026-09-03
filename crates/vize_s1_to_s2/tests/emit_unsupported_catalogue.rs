@@ -66,6 +66,10 @@ const PREFIX_LANE: &[Reason] = &[
     Reason::PrefixExpressionRejected,
 ];
 
+/// Build-shape refusals: the option is real but this build cannot honour
+/// it (`--no-default-features` drops the `std`-only TS lane).
+const PORTABILITY: &[Reason] = &[Reason::TypeScriptLaneUnavailable];
+
 const RETIRED: &[Reason] = &[
     Reason::CreateSlotsMissingSlotTemplate,
     Reason::DynamicOnHasModifiers,
@@ -81,6 +85,7 @@ fn reason_catalogue_is_fully_accounted_for() {
     accounted.extend_from_slice(GUARD_ONLY);
     accounted.extend_from_slice(RETIRED);
     accounted.extend_from_slice(PREFIX_LANE);
+    accounted.extend_from_slice(PORTABILITY);
 
     let mut accounted_codes = accounted
         .iter()
