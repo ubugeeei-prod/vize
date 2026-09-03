@@ -31,10 +31,26 @@ pub(in crate::emit) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) -> boo
         cx.buf.push(Buf::resolve_component_alias());
         cx.buf.push("(\"");
         cx.buf.push(name);
-        cx.buf.push("\")");
+        cx.buf.push("\"");
+        if cx
+            .component_name
+            .is_some_and(|own| is_self_reference(name, own))
+        {
+            cx.buf.push(", true");
+        }
+        cx.buf.push(")");
         cx.buf.newline();
     }
     resolved
+}
+
+/// `is_self_component_reference`: the tag verbatim, or its PascalCased
+/// spelling, equals the component's own name.
+fn is_self_reference(component: &str, own: &str) -> bool {
+    if component == own {
+        return true;
+    }
+    vize_s0::capitalize(&vize_s0::camelize(component)).as_str() == own
 }
 
 fn collect_from<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
