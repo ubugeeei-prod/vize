@@ -8,6 +8,7 @@ use vize_atelier_core::options::{
     BindingMetadata, BindingType, CodegenMode, CodegenOptions, ParserOptions, TransformOptions,
 };
 use vize_s0::Allocator;
+use vize_s0::profiler::global_profiler;
 use vize_s1_to_s2::{
     BindingKind, BindingTable, DomEmitMode, DomEmitOptions, EmitError, LegacyCaps,
 };
@@ -99,12 +100,35 @@ pub(super) fn emit_s2(
     dialect: vize_s0::config::VueVersion,
     options: &DomEmitOptions<'_>,
 ) -> Result<CodegenResultWithSections, EmitError> {
-    let emit = vize_s1_to_s2::emit_dom_source_with_options(
-        allocator,
-        source,
-        LegacyCaps::for_version(dialect),
-        options,
-    )?;
+    let caps = LegacyCaps::for_version(dialect);
+    let profiler = global_profiler();
+    let emit = if profiler.is_enabled() {
+        let observed =
+            vize_s1_to_s2::emit_dom_source_observed_with_options(allocator, source, caps, options)?;
+        let budget = observed.budget;
+        // P2-12b observes the compiler path that actually produced this DOM
+        // module. The regular entry point keeps the observer uninstantiated,
+        // preserving the no-observer cost law outside explicit profiling.
+        profiler.record_counter_enabled("davinci.s2_dom.files", 1);
+        profiler.record_counter_enabled(
+            "davinci.s2_dom.transform.walks",
+            u64::from(budget.transform.walks),
+        );
+        profiler.record_counter_enabled(
+            "davinci.s2_dom.transform.passes",
+            u64::from(budget.transform.passes),
+        );
+        profiler.record_counter_enabled("davinci.s2_dom.emit.walks", u64::from(budget.emit_walks));
+        profiler
+            .record_counter_enabled("davinci.s2_dom.emit.visits", u64::from(budget.emit_visits));
+        profiler.record_counter_enabled(
+            "davinci.s2_dom.total.walks",
+            u64::from(budget.total_walks()),
+        );
+        observed.emit
+    } else {
+        vize_s1_to_s2::emit_dom_source_with_options(allocator, source, caps, options)?
+    };
     Ok(CodegenResultWithSections {
         result: CodegenResult {
             code: emit.code,
