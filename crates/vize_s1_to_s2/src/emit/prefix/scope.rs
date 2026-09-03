@@ -13,21 +13,29 @@
 //!
 //! Both are stacks that follow the emit walk exactly where the shipped
 //! traversals entered and exited them.
+//!
+//! The default lane (no `prefix_identifiers`) only needs the codegen
+//! slot-param *membership* for its dynamic-key spellings, so it records
+//! the raw alias / slot patterns instead and asks
+//! [`super::params::destructure_params_contain`] per query: no list is
+//! materialised, and the allocation gate's window stays at its baseline.
 
 use alloc::vec::Vec as StdVec;
 
-use vize_s0::String;
+use vize_s0::{SmallVec, String};
 
 #[derive(Default)]
 pub(in crate::emit) struct PrefixScope {
     transform: StdVec<String>,
     slot_params: StdVec<String>,
+    patterns: SmallVec<[String; 4]>,
 }
 
 #[derive(Clone, Copy)]
 pub(in crate::emit) struct ScopeMark {
     transform: usize,
     slot_params: usize,
+    patterns: usize,
 }
 
 impl PrefixScope {
@@ -35,12 +43,29 @@ impl PrefixScope {
         ScopeMark {
             transform: self.transform.len(),
             slot_params: self.slot_params.len(),
+            patterns: self.patterns.len(),
         }
     }
 
     pub(in crate::emit) fn pop(&mut self, mark: ScopeMark) {
         self.transform.truncate(mark.transform);
         self.slot_params.truncate(mark.slot_params);
+        self.patterns.truncate(mark.patterns);
+    }
+
+    /// The default lane's record of a `v-for` alias or slot pattern.
+    pub(in crate::emit) fn push_pattern(&mut self, pattern: &str) {
+        let trimmed = pattern.trim();
+        if !trimmed.is_empty() {
+            self.patterns.push(String::from(trimmed));
+        }
+    }
+
+    /// `CodegenContext::is_slot_param` over the recorded patterns.
+    pub(in crate::emit) fn binds_in_pattern(&self, name: &str) -> bool {
+        self.patterns
+            .iter()
+            .any(|pattern| super::params::destructure_params_contain(pattern.as_str(), name))
     }
 
     /// `TransformContext::enter_v_for_scope` + the codegen callback params.

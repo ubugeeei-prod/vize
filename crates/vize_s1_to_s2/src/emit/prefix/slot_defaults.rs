@@ -17,10 +17,14 @@ use vize_s0::expression_guard::expression_is_safe_to_parse;
 use vize_s0::{Allocator, String};
 
 use super::globals::is_global_allowed;
+use crate::emit::js_comment::RawJs;
 
-pub(in crate::emit) fn prefix_slot_defaults(source: &str) -> String {
-    if !expression_is_safe_to_parse(source) {
-        return String::from(source);
+/// Borrowed when nothing was rewritten: a pattern without `=` has no
+/// default to prefix, so the default lane (the allocation gate's window)
+/// never parses it.
+pub(in crate::emit) fn prefix_slot_defaults(source: &str) -> RawJs<'_> {
+    if !source.contains('=') || !expression_is_safe_to_parse(source) {
+        return RawJs::Borrowed(source);
     }
     let mut wrapped = String::with_capacity(source.len() + 10);
     wrapped.push('(');
@@ -34,7 +38,7 @@ pub(in crate::emit) fn prefix_slot_defaults(source: &str) -> String {
         SourceType::ts().with_module(true),
     );
     let Ok(Expression::ArrowFunctionExpression(arrow)) = parser.parse_expression() else {
-        return String::from(source);
+        return RawJs::Borrowed(source);
     };
 
     let mut slot_params = StdVec::new();
@@ -50,7 +54,7 @@ pub(in crate::emit) fn prefix_slot_defaults(source: &str) -> String {
         collect_default_rewrites(&param.pattern, &mut visitor);
     }
     if visitor.insertions.is_empty() {
-        return String::from(source);
+        return RawJs::Borrowed(source);
     }
     // The shipped loop: descending positions, `insert_str` each (an
     // insertion beyond the text is dropped by the `pos <= len` guard).
@@ -63,7 +67,7 @@ pub(in crate::emit) fn prefix_slot_defaults(source: &str) -> String {
             result.insert_str(pos, text.as_str());
         }
     }
-    result
+    RawJs::Owned(result)
 }
 
 struct SlotDefaultPrefixVisitor {

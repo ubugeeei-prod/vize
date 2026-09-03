@@ -13,6 +13,22 @@ use vize_s0::{Allocator, SmallVec, String};
 /// Parameter names of a destructuring pattern string, in the shipped
 /// codegen's text-scanning order.
 pub(super) fn extract_destructure_params(trimmed: &str, params: &mut StdVec<String>) {
+    walk_destructure_params(trimmed, &mut |param| {
+        params.push(String::from(param));
+        false
+    });
+}
+
+/// Whether the shipped scanner would list `name` among the pattern's
+/// parameters. Allocation-free: the default lane asks this per dynamic
+/// key without materialising the list.
+pub(in crate::emit) fn destructure_params_contain(trimmed: &str, name: &str) -> bool {
+    walk_destructure_params(trimmed, &mut |param| param == name)
+}
+
+/// The shipped scanner's walk; `visit` returns `true` to stop early (the
+/// walk then reports `true`).
+fn walk_destructure_params(trimmed: &str, visit: &mut dyn FnMut(&str) -> bool) -> bool {
     let mut pending = SmallVec::<[&str; 8]>::new();
     pending.push(trimmed);
 
@@ -69,14 +85,15 @@ pub(super) fn extract_destructure_params(trimmed: &str, params: &mut StdVec<Stri
                     pending.push(part);
                 }
             }
-        } else if super::super::js::is_valid_js_identifier(trimmed) {
-            params.push(String::from(trimmed));
+        } else if super::super::js::is_valid_js_identifier(trimmed) && visit(trimmed) {
+            return true;
         }
     }
+    false
 }
 
-fn split_top_level(s: &str) -> StdVec<&str> {
-    let mut parts = StdVec::new();
+fn split_top_level(s: &str) -> SmallVec<[&str; 8]> {
+    let mut parts = SmallVec::new();
     let mut depth = 0i32;
     let mut quote = None;
     let mut start = 0;
@@ -193,7 +210,10 @@ fn collect_slot_binding_names(pattern: &BindingPattern<'_>, names: &mut StdVec<S
 
 #[cfg(test)]
 mod tests {
-    use super::{extract_destructure_params, extract_slot_prop_names, split_top_level};
+    use super::{
+        destructure_params_contain, extract_destructure_params, extract_slot_prop_names,
+        split_top_level,
+    };
     use alloc::vec::Vec as StdVec;
 
     #[test]
@@ -213,9 +233,20 @@ mod tests {
     }
 
     #[test]
+    fn destructure_params_contain_matches_the_list() {
+        let pattern = r#"{ id: itemId = fallback, user: { name = "a,b" }, tags: [firstTag] }"#;
+        assert!(destructure_params_contain(pattern, "itemId"));
+        assert!(destructure_params_contain(pattern, "firstTag"));
+        assert!(!destructure_params_contain(pattern, "fallback"));
+        assert!(!destructure_params_contain(pattern, "id"));
+        assert!(destructure_params_contain("item", "item"));
+        assert!(!destructure_params_contain("item.value", "item"));
+    }
+
+    #[test]
     fn split_top_level_ignores_commas_inside_strings() {
         assert_eq!(
-            split_top_level(r#"id = "a,b", name: label, nested: { value: "c,d" }"#),
+            split_top_level(r#"id = "a,b", name: label, nested: { value: "c,d" }"#).as_slice(),
             [
                 r#"id = "a,b""#,
                 " name: label",

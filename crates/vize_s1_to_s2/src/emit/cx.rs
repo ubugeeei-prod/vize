@@ -44,7 +44,11 @@ impl EmitCx<'_> {
     /// destructuring `v-for` alias or slot pattern binds.
     pub(super) fn is_scope_name(&self, source: &str) -> bool {
         self.scope_names.iter().any(|name| name.as_str() == source)
-            || self.scope.is_slot_param(source)
+            || if self.prefix_identifiers {
+                self.scope.is_slot_param(source)
+            } else {
+                self.scope.binds_in_pattern(source)
+            }
     }
 
     pub(super) fn with_static_vnode_hoist<T>(
@@ -91,15 +95,23 @@ impl EmitCx<'_> {
     }
 
     /// `TransformContext::enter_v_for_scope` + `add_slot_params` for the
-    /// callback params; pop with [`Self::leave_scope`].
+    /// callback params; pop with [`Self::leave_scope`]. The default lane
+    /// records only the raw patterns (see [`PrefixScope`]).
     pub(super) fn enter_for_scope(&mut self, for_op: &ForOp<'_>) -> ScopeMark {
         let mark = self.scope.mark();
         let binding = &for_op.binding;
-        self.scope.push_for([
+        let aliases = [
             Some(binding.value.source()),
             binding.key.as_ref().map(|expr| expr.source()),
             binding.index.as_ref().map(|expr| expr.source()),
-        ]);
+        ];
+        if self.prefix_identifiers {
+            self.scope.push_for(aliases);
+        } else {
+            for alias in aliases.into_iter().flatten() {
+                self.scope.push_pattern(alias);
+            }
+        }
         mark
     }
 
@@ -109,7 +121,11 @@ impl EmitCx<'_> {
         if let Some(params) = params
             && !params.trim().is_empty()
         {
-            self.scope.push_slot(params);
+            if self.prefix_identifiers {
+                self.scope.push_slot(params);
+            } else {
+                self.scope.push_pattern(params);
+            }
         }
         mark
     }
