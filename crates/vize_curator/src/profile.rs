@@ -101,6 +101,7 @@ pub fn render_profile_report(report: &ProfileReport<'_>) -> String {
     );
     render_counter_table(&mut out, report, "Source facts", "source.");
     render_counter_table(&mut out, report, "Davinci plan", "davinci.build.");
+    render_counter_table(&mut out, report, "S2 DOM traversal", "davinci.s2_dom.");
     render_counter_table(&mut out, report, "Product lanes", "lane.");
     render_counter_table(&mut out, report, "Vue dialects", "dialect.");
     render_counter_table(&mut out, report, "Template syntax", "template_syntax.");
