@@ -1,6 +1,9 @@
 //! S2 - the Davinci semantic IR (codename Disegno): the pivot stage and the
 //! primary consumer surface.
 //!
+//! **Experimental:** the stage API may change in any alpha release; record
+//! intentional breaking changes in the release notes.
+//!
 //! Named after Leonardo's *disegno*: the drawing that carries the idea,
 //! independent of the material it is later executed in.
 //!

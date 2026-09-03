@@ -27,8 +27,7 @@
 //! `vize_atelier_core` is published; the Davinci crates are not, and
 //! the release gate (`tests/tooling/moonbit-publish-crates.test.ts`)
 //! rejects a published crate whose release graph names an unpublished
-//! one. Dev-dependencies with no version requirement are stripped on
-//! publish — the exact carve-out the gate encodes — so the S2 lane and
+//! one. Dev-dependencies are stripped on publish, so the S2 lane and
 //! this comparator ride dev-deps, never the compile path. The P1-7
 //! in-`src` comparator shape does not apply here because the shipped
 //! path has no migrated read yet: the S2 lane runs *beside* the legacy

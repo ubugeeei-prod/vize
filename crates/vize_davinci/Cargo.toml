@@ -6,7 +6,6 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Davinci - dump/round-trip substrate (Folio) for the Vize compiler rearchitecture"
-publish = false
 metadata.vize.stability = "experimental"
 
 [dependencies]

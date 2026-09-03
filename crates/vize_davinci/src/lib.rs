@@ -1,6 +1,9 @@
 //! Davinci - the dump/round-trip substrate for the Vize compiler
 //! rearchitecture.
 //!
+//! **Experimental:** the public API and dump format may change in any alpha
+//! release; record intentional breaking changes in the release notes.
+//!
 //! Named after Leonardo's manuscripts, whose folios carried both the drawing
 //! and the notes needed to read it back.
 //!

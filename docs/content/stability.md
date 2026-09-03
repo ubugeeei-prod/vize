@@ -93,6 +93,8 @@ details are not compatibility surfaces.
 | `vize_armature`      | Alpha-supported       | Tools that parse Vue templates            | `vize_armature::{parse, Parser, Tokenizer}`     | One minor with `#[deprecated]`         |
 | `vize_croquis`       | Compatibility preview | Semantic and type-aware tooling authors   | `vize_croquis::{Croquis, Drawer}`               | One minor with `#[deprecated]`         |
 | `vize_croquis_cf`    | Experimental          | Opt-in whole-project analysis experiments | `vize_croquis_cf::CrossFileAnalyzer`            | No minimum; note breaks when practical |
+| `vize_davinci`       | Experimental          | Davinci pipeline and dump-format authors  | `vize_davinci::{Folio, Diagnostic, NodeId}`      | No minimum; note breaks when practical |
+| `vize_davinci_derive` | Experimental        | Davinci dump-format authors               | `vize_davinci_derive::Folio`                     | No minimum; note breaks when practical |
 | `vize_doctor`        | Experimental          | Application health analyzer authors       | `vize_doctor::{DoctorFinding, FindingEvidence}` | No minimum; note breaks when practical |
 | `vize_atelier_core`  | Alpha-supported       | Custom Vue compiler backend authors       | `vize_atelier_core::{transform, generate}`      | One minor with `#[deprecated]`         |
 | `vize_atelier_dom`   | Alpha-supported       | VDOM compiler and bundler integrations    | `vize_atelier_dom::compile_template`            | One minor with `#[deprecated]`         |
@@ -105,6 +107,9 @@ details are not compatibility surfaces.
 | `vize_fresco`        | Incubating            | TUI experiments                           | `vize_fresco::{RenderTree, LayoutEngine}`       | No minimum                             |
 | `vize_canon`         | Compatibility preview | Type-checker and editor integrations      | `vize_canon::{type_check_sfc, TypeChecker}`     | One minor with `#[deprecated]`         |
 | `vize_patina`        | Compatibility preview | Linter and Oxlint integrations            | `vize_patina::{lint, Linter}`                   | One minor with `#[deprecated]`         |
+| `vize_s1`            | Experimental          | Lossless Vue-template tooling authors     | `vize_s1::{parse, SurfaceTree}`                  | No minimum; note breaks when practical |
+| `vize_s1_to_s2`      | Experimental          | Vue lowering and compiler backend authors | `vize_s1_to_s2::{lower, emit_dom}`               | No minimum; note breaks when practical |
+| `vize_s2`            | Experimental          | Dialect-neutral compiler IR authors       | `vize_s2::{op, verify, S2Folio}`                 | No minimum; note breaks when practical |
 
 <!-- rust-crate-support:end -->
 

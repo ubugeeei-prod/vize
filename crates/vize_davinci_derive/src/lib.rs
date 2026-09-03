@@ -1,6 +1,9 @@
 //! `#[derive(Folio)]` - the mechanical half of the Davinci stage-dump
 //! contract.
 //!
+//! **Experimental:** generated format and macro API may change in any alpha
+//! release; record intentional breaking changes in the release notes.
+//!
 //! The derive generates `vize_davinci::folio::Folio`'s exact shape -
 //! `print(&self, w, mode)` and `parse(input) -> Result<Self, FolioError>` -
 //! for an owned document struct, following the normalization rules written
