@@ -35,7 +35,13 @@ pub(super) fn emit_bind_pair(
     let value = props_value::bind_value(bind)?;
     let static_style = static_style_piece(pieces);
     let skip_normalize = skip_normalize
-        || style::bind_skips_normalize(raw_name, is_plain_element, static_style.is_some(), &value);
+        || style::bind_skips_normalize(
+            raw_name,
+            is_plain_element,
+            static_style.is_some(),
+            &value,
+            &cx.scope,
+        );
     emit_ref_for(cx, key.as_str());
     push_ident_key(cx, key.as_str());
     cx.buf.push(": ");

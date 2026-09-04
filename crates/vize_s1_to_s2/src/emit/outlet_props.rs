@@ -172,7 +172,7 @@ fn emit_props_object(
                         value.emit_authored(cx, bind)?;
                         cx.buf.push(")");
                     } else if key.as_str() == "style"
-                        && !style::bind_skips_normalize("style", false, false, &value)
+                        && !style::bind_skips_normalize("style", false, false, &value, &cx.scope)
                     {
                         cx.buf.use_normalize_style();
                         cx.buf.push(Buf::normalize_style_alias());

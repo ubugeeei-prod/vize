@@ -45,6 +45,9 @@ export const expectedProductionAllocVec: StorageSummary = {
   files: 74,
   directPaths: 86,
   boundUses: 294,
+  files: 75,
+  directPaths: 87,
+  boundUses: 297,
 };
 
 function count(value: string, line: number): number {
