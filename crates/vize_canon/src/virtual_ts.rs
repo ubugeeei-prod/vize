@@ -28,6 +28,8 @@ mod legacy_vue2_vuetify_tests;
 mod macro_type_mappings;
 pub mod mapping;
 mod props;
+#[cfg(test)]
+mod public_instance_guard_tests;
 mod scope;
 mod semantic_links;
 #[cfg(test)]

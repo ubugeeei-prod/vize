@@ -39,6 +39,7 @@ function __setup() {
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
+    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = undefined as unknown as __Ctx;
     const $attrs = __ctx.$attrs;

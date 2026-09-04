@@ -51,6 +51,7 @@ function __setup() {
     type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
     var count: __U<__R_count> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
+    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = undefined as unknown as __Ctx;
     const $attrs = __ctx.$attrs;

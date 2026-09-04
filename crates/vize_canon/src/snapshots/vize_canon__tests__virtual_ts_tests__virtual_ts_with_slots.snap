@@ -58,6 +58,7 @@ type __VizeAuthoredKeyWitness<T> = { [K in keyof T]: unknown };
 type __VizeIsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
 type __VizeUsePublicInstance<T> = __VizeIsAny<T> extends true ? true : __VizeIsUnknown<T>;
 type __VizeStrictPublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? never : __EmitFn<T>;
+// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
 type __VizeComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;
 // @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.
 type __VizeNativeElements = import('vue').NativeElements;
@@ -101,7 +102,7 @@ function __setup() {
   
   const slots = useSlots()
   
-  // @vize-map: 9734:9770 -> 0:58
+  // @vize-map: 9869:9905 -> 0:58
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -113,6 +114,7 @@ function __setup() {
     type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
     var slots: __U<__R_slots> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
+    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = undefined as unknown as __Ctx;
     const $attrs = __ctx.$attrs;

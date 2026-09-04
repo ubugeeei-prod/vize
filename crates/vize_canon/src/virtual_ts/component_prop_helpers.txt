@@ -10,4 +10,5 @@ type __VizeAuthoredKeyWitness<T> = { [K in keyof T]: unknown };
 type __VizeIsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
 type __VizeUsePublicInstance<T> = __VizeIsAny<T> extends true ? true : __VizeIsUnknown<T>;
 type __VizeStrictPublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? never : __EmitFn<T>;
+// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
 type __VizeComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;
