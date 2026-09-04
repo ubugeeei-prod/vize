@@ -5,7 +5,7 @@
 > 2026-09-03 at `e9923c0f8`.
 
 This installment opens the production option surface. Through installment 83
-the S2 DOM lane only matched `compile_template`'s *defaults* - function mode,
+the S2 DOM lane only matched `compile_template`'s _defaults_ - function mode,
 no prefixing - while production SFC compiles go through
 `vize_atelier_sfc::compile_template_block`, which sets module mode,
 `prefix_identifiers`, binding metadata, `inline`, `cache_handlers`, `is_ts`
@@ -21,5 +21,5 @@ which returns once binding metadata is present. The runtime module and global
 names are options of their own.
 
 The allocation gate `s1_to_s2_emit_p2_11_dom_surface` is exact over the
-*default* lane, so every option added here must cost zero allocations while it
+_default_ lane, so every option added here must cost zero allocations while it
 is off.

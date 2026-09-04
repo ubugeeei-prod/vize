@@ -19,7 +19,7 @@ fallback and a dotted suffix kept; a `vFoo` directive reads
 reference; and module mode takes the six-argument render signature.
 
 **The shipped lane is asymmetric here**, and the port has to be too: the
-transform skips `resolveComponent` on a *verbatim* tag match while the codegen
+transform skips `resolveComponent` on a _verbatim_ tag match while the codegen
 skips the asset through the camelize / Pascal widening. The helper-preference
 walk therefore matches the verbatim form, or the import ordering diverges -
 seven corpus files said so.

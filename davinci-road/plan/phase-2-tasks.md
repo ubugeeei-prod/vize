@@ -215,7 +215,7 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 **Current series evidence (2026-09-03):** 89 installments have landed through
 [#5625](https://github.com/ubugeeei-prod/vize/pull/5625). Installments 84-89 open
 the production option surface the switch needs, since through 83 the lane only
-matched `compile_template`'s *defaults* while production compiles go through
+matched `compile_template`'s _defaults_ while production compiles go through
 `compile_template_block`: `DomEmitOptions` now carries module mode,
 `prefix_identifiers`, non-inline binding metadata, `is_ts` (an opt-in
 `typescript` feature — oxc's transformer needs `std`, and an `is_ts` emit

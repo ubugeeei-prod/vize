@@ -16,7 +16,7 @@ With it: the assignment-target paren scan, shorthand expansion
 patch-flag rules only an inlined render function can reach -
 `is_constant_interpolation` and `is_const_handler`.
 
-**`Helper::Unref`'s order**: the shipped lane registers it on the *transform*,
+**`Helper::Unref`'s order**: the shipped lane registers it on the _transform_,
 and the preamble lists transform helpers before codegen ones. The emit learns
 about it mid-walk, so it marks the helper after the body into the preference
 list rather than the used list.

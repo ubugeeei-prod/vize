@@ -19,8 +19,8 @@ Three further divergences it exposed:
 - the transform's scope chain is seeded with croquis' `JS_UNIVERSAL_GLOBALS`,
   a **wider** set than `is_global_allowed`, so `Intl.x()` stays bare while
   `Zork.x()` is prefixed - not a TypeScript property at all;
-- `process_inline_handler` checks *function* shape on the stripped text but
-  *reference* shape on the node's own bytes;
+- `process_inline_handler` checks _function_ shape on the stripped text but
+  _reference_ shape on the node's own bytes;
 - every downstream reader - patch-flag staticness, the hoist decision, the
   hoisted text - sees the erased text. `props::ts_view` is that view, and the
   static/hoist path threads an `is_ts` flag to it.
