@@ -384,6 +384,7 @@ fn install_arguments(manager: &str) -> Result<Vec<String>, String> {
             "--frozen-lockfile",
             "--ignore-scripts",
             "--prefer-offline",
+            "--ignore-workspace",
         ]
         .iter()
         .map(|value| (*value).to_string())

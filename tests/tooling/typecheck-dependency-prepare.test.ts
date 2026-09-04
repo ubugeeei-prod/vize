@@ -76,6 +76,28 @@ test("dependency prepare uses each pinned manager's immutable install command", 
   }
 });
 
+test("dependency prepare keeps pnpm fixtures out of parent workspaces", () => {
+  const packageManager = packageManagers.find((candidate) => candidate.name === "pnpm");
+  assert.ok(packageManager);
+  const fixture = setup(packageManager);
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const invocation = JSON.parse(fs.readFileSync(fixture.invocationPath, "utf8"));
+    assert.equal(invocation.cwd, fixture.fixtureRoot);
+    assert.equal(invocation.env.corepackProjectSpec, "0");
+    assert.deepEqual(invocation.managerArgs, [
+      "install",
+      "--frozen-lockfile",
+      "--ignore-scripts",
+      "--prefer-offline",
+      "--ignore-workspace",
+    ]);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("dependency prepare rejects a mismatched detected package manager version", () => {
   const fixture = setup();
   try {

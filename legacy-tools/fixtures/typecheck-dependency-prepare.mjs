@@ -235,7 +235,13 @@ async function runBaselineCommand(command, fixtureRoot, timeoutMs, managerRunner
 export function installArguments(manager) {
   return {
     npm: ["ci", "--ignore-scripts", "--prefer-offline", "--no-audit", "--no-fund"],
-    pnpm: ["install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
+    pnpm: [
+      "install",
+      "--frozen-lockfile",
+      "--ignore-scripts",
+      "--prefer-offline",
+      "--ignore-workspace",
+    ],
     yarn: ["install", "--immutable", "--mode=skip-build"],
   }[manager];
 }

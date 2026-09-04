@@ -36,6 +36,14 @@ export const script = path.join(
   "typecheck-divergence-report.rs",
 );
 export const commitSha = "a".repeat(40);
+export const pnpmInstallCommand = [
+  "pnpm",
+  "install",
+  "--frozen-lockfile",
+  "--ignore-scripts",
+  "--prefer-offline",
+  "--ignore-workspace",
+];
 
 /** The one diagnostic both sides report, so the default fixture diverges nowhere. */
 export const sharedVizeDiagnostic = "error:1:1 [TS2322] shared";
@@ -202,7 +210,7 @@ export function setup(options: FixtureOptions = {}) {
       sha256: sha256(fs.readFileSync(path.join(fixtureRoot, "pnpm-lock.yaml"))),
     },
     install: {
-      command: ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
+      command: pnpmInstallCommand,
       durationMs: 1,
       exitCode: 0,
       stdoutSha256: sha256("installed"),

@@ -27,7 +27,13 @@ export const packageManagers = [
     version: "10.0.0",
     lockfile: "pnpm-lock.yaml",
     lockfileContents: "lockfileVersion: '9.0'\n",
-    installArgs: ["install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
+    installArgs: [
+      "install",
+      "--frozen-lockfile",
+      "--ignore-scripts",
+      "--prefer-offline",
+      "--ignore-workspace",
+    ],
   },
   {
     name: "yarn",

@@ -7,6 +7,7 @@ import { test } from "node:test";
 import {
   cleanup,
   commitSha,
+  pnpmInstallCommand,
   readJson,
   root,
   run,
@@ -67,7 +68,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
           .digest("hex"),
       },
       install: {
-        command: ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
+        command: pnpmInstallCommand,
         exitCode: 0,
         stdoutSha256: createHash("sha256").update("installed").digest("hex"),
         stderrSha256: createHash("sha256").update("").digest("hex"),
