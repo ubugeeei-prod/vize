@@ -93,6 +93,25 @@ impl<'b> PrefixScope<'b> {
                 })
     }
 
+    /// `should_ref_runtime_binding`: an inline `ref="name"` naming a
+    /// setup binding the script can write is emitted as the
+    /// `ref_key: "name", ref: name` pair, so the runtime's `setRef` can
+    /// write back into `instance.refs` — what `useTemplateRef` reads.
+    /// The same three kinds as [`PrefixScope::writes_through_value`],
+    /// asked of a template ref rather than of an assignment target.
+    pub(in crate::emit) fn writes_template_ref(&self, name: &str) -> bool {
+        self.inline
+            && self
+                .bindings
+                .and_then(|table| table.kind(name))
+                .is_some_and(|kind| {
+                    matches!(
+                        kind,
+                        BindingKind::SetupLet | BindingKind::SetupMaybeRef | BindingKind::SetupRef
+                    )
+                })
+    }
+
     /// The codegen visitor's `needs_value`: an inline-mode assignment to
     /// a setup binding writes through `.value`.
     pub(super) fn writes_through_value(&self, name: &str) -> bool {

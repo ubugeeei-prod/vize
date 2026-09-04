@@ -251,6 +251,16 @@ fn root_binding_can_hoist(binding: &BindingOp<'_>, is_ts: bool) -> bool {
     !matches!(key.as_str(), "ref" | "class")
 }
 
+/// The inline lane's `ref_key` pair: `ref="name"` naming a writable
+/// setup binding is emitted as `ref_key: "name", ref: name` so the
+/// runtime's `setRef` writes back into `instance.refs`.
+fn inline_template_ref<'a>(cx: &EmitCx<'_>, attr: &'a Attribute<'a>) -> Option<&'a str> {
+    (attr.name == "ref")
+        .then_some(attr.value)
+        .flatten()
+        .filter(|name| cx.scope.writes_template_ref(name))
+}
+
 pub(super) fn emit_inline<'a>(
     cx: &mut EmitCx<'_>,
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
@@ -275,6 +285,13 @@ pub(super) fn emit_inline<'a>(
         }
         if cx.in_v_for && attr.name == "ref" {
             cx.buf.push("ref_for: true, ");
+        }
+        if let Some(name) = inline_template_ref(cx, attr) {
+            cx.buf.push("ref_key: \"");
+            cx.buf.push(name);
+            cx.buf.push("\", ref: ");
+            cx.buf.push(name);
+            continue;
         }
         let mut pair = String::default();
         push_attr_pair(&mut pair, attr);
