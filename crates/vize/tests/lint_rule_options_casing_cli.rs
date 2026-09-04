@@ -84,28 +84,44 @@ emit('keepOriginal');
         ])
         .output()
         .unwrap();
-    assert!(!output.status.success(), "{}", output_details(&output));
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    assert_eq!(output.stderr, b"", "{}", output_details(&output));
 
     let stdout = std::str::from_utf8(&output.stdout).unwrap();
-    assert!(
-        stdout.contains("vue/component-name-in-template-casing"),
-        "{stdout}"
-    );
-    assert!(
-        stdout.contains("Component should use kebab-case"),
-        "{stdout}"
-    );
-    assert!(
-        stdout.contains("script/custom-event-name-casing"),
-        "{stdout}"
-    );
-    assert!(
-        stdout.contains("Custom event name 'keepOriginal' is not kebab-case."),
-        "{stdout}"
-    );
-    assert!(
-        !stdout.contains("Custom event name 'keep-original' is not"),
-        "{stdout}"
+    let report: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    assert_eq!(
+        report,
+        serde_json::json!([
+            {
+                "file": "src/Casing.vue",
+                "messages": [
+                    {
+                        "ruleId": "vue/component-name-in-template-casing",
+                        "ruleDocsPath": "docs/content/rules/vue.md",
+                        "severity": 2,
+                        "message": "[vize:vue/component-name-in-template-casing] Component should use kebab-case",
+                        "line": 3,
+                        "column": 3,
+                        "endLine": 3,
+                        "endColumn": 15,
+                        "help": "Use kebab-case for component names"
+                    },
+                    {
+                        "ruleId": "script/custom-event-name-casing",
+                        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+                        "severity": 2,
+                        "message": "[vize:script/custom-event-name-casing] Custom event name 'keepOriginal' is not kebab-case.",
+                        "line": 12,
+                        "column": 6,
+                        "endLine": 12,
+                        "endColumn": 20,
+                        "help": "Rename this emitted event to kebab-case (e.g. my-event)."
+                    }
+                ],
+                "errorCount": 2,
+                "warningCount": 0
+            }
+        ])
     );
 
     let _ = fs::remove_dir_all(project_root);
