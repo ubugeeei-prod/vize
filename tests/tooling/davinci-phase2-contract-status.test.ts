@@ -1,0 +1,111 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { fileURLToPath } from "node:url";
+import { test } from "node:test";
+
+const docs = {
+  phase: new URL("../../davinci-road/plan/phase-2.md", import.meta.url),
+  tasks: new URL("../../davinci-road/plan/phase-2-tasks.md", import.meta.url),
+  tasksLater: new URL("../../davinci-road/plan/phase-2-tasks-later.md", import.meta.url),
+  records: new URL("../../davinci-road/plan/phase-2-records.md", import.meta.url),
+} as const;
+
+function read(url: URL): string {
+  return fs.readFileSync(url, "utf8");
+}
+
+const text = Object.fromEntries(Object.entries(docs).map(([name, url]) => [name, read(url)])) as {
+  [K in keyof typeof docs]: string;
+};
+
+function taskIndex(source: string): Map<string, boolean> {
+  const entries = [
+    ...source.matchAll(/^- \[(?<checked>[ x])\] \[(?<id>P2-[^\]]+)\]\([^\n]+\)/gmu),
+  ].map((match) => [match.groups!.id, match.groups!.checked === "x"] as const);
+  assert.equal(new Set(entries.map(([id]) => id)).size, entries.length, "duplicate P2 task id");
+  return new Map(entries);
+}
+
+function currentGroup(source: string, label: string): string[] {
+  const match = new RegExp(
+    `^- \\*\\*${label}: \\d+ of \\d+ [^\\n]*?(?<ids>P2-[\\s\\S]*?)\\.\\*\\*`,
+    "mu",
+  ).exec(source);
+  assert.ok(match?.groups, `missing ${label} current-ledger group`);
+  return match.groups.ids.match(/P2-\d+(?:[ab])?/gu) ?? [];
+}
+
+function taskSection(id: string): string {
+  const major = Number(/^P2-(?<major>\d+)/u.exec(id)?.groups?.major);
+  const source = major >= 15 ? text.tasksLater : text.tasks;
+  const start = new RegExp(`^## ${id} `, "mu").exec(source)?.index;
+  if (start == null) throw new Error(`missing ${id} contract`);
+  const tail = source.slice(start);
+  const next = /^## P2-/mu.exec(tail.slice(1))?.index;
+  return next == null ? tail : tail.slice(0, next + 1);
+}
+
+function currentEvidenceIds(): string[] {
+  const section = sectionBetween(
+    text.records,
+    /^## Current completion evidence /mu,
+    /^## Historical task records/mu,
+    "current completion evidence",
+  );
+  return [...section.matchAll(/^\| (?<id>P2-[^ |]+)\s+\| \[#\d+\]/gmu)].map(
+    (match) => match.groups!.id,
+  );
+}
+
+function historicalRecordIds(): string[] {
+  const section = sectionBetween(
+    text.records,
+    /^## Historical task records/mu,
+    /$a/mu,
+    "historical task records",
+  );
+  return [...section.matchAll(/^\| \[(?<id>P2-[^\]]+)\]/gmu)].map((match) => match.groups!.id);
+}
+
+function sectionBetween(source: string, start: RegExp, end: RegExp, label: string): string {
+  const startMatch = start.exec(source);
+  assert.ok(startMatch, `missing ${label}`);
+  const tail = source.slice(startMatch.index);
+  const endMatch = end.exec(tail.slice(startMatch[0].length));
+  if (endMatch == null) return tail;
+  return tail.slice(0, startMatch[0].length + endMatch.index);
+}
+
+function recordFile(id: string): string {
+  return fileURLToPath(
+    new URL(`../../davinci-road/plan/phase-2-records/${id.toLowerCase()}.md`, import.meta.url),
+  );
+}
+
+test("task contracts and record files reflect the current Phase 2 status", () => {
+  const tasks = taskIndex(text.phase);
+  const completed = new Set([...tasks].filter(([, checked]) => checked).map(([id]) => id));
+  const active = new Set(currentGroup(text.phase, "Active and blocked"));
+  const blocked = new Set(currentGroup(text.phase, "Open and dependency-blocked"));
+
+  assert.deepEqual(new Set(currentEvidenceIds()), completed);
+  assert.deepEqual(new Set(historicalRecordIds()), new Set([...completed, ...active]));
+
+  for (const [id, checked] of tasks) {
+    const section = taskSection(id);
+    if (checked) {
+      assert.match(section, new RegExp(`phase-2-records/${id.toLowerCase()}\\.md`, "u"));
+      assert.ok(fs.existsSync(recordFile(id)), `${id} needs an individual record file`);
+      continue;
+    }
+
+    assert.doesNotMatch(section, /^\*\*Landed /mu, `${id} must not claim landed status`);
+    if (active.has(id)) {
+      assert.match(section, /^\*\*Current series evidence/mu, `${id} needs series evidence`);
+      assert.ok(fs.existsSync(recordFile(id)), `${id} series record file must exist`);
+    }
+    if (blocked.has(id)) {
+      assert.ok(!fs.existsSync(recordFile(id)), `${id} must not get a record file before landing`);
+    }
+  }
+});
