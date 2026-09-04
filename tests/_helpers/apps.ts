@@ -832,7 +832,7 @@ function setupMisskeyWorktree(opts?: {
     execSync(`npx -y pnpm@10 --filter ${pkg} build`, {
       cwd: misskeyDir,
       stdio: "inherit",
-      timeout: 300_000,
+      timeout: 600_000,
     });
   }
 

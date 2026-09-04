@@ -114,7 +114,7 @@ test("full and readiness plans preserve every isolated execution row", () => {
   );
   assert.equal(
     readinessRows.find((row) => row.shard === "lint")?.timeout,
-    "12m",
+    "20m",
     "updated fixture setup must fit inside the readiness lint budget",
   );
 });

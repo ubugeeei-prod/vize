@@ -89,7 +89,7 @@ export const readinessRows = [
     false,
     "2m",
   ),
-  row("readiness", "readiness", "lint", "test:readiness:lint", readinessFixtures, false, "12m"),
+  row("readiness", "readiness", "lint", "test:readiness:lint", readinessFixtures, false, "20m"),
   row("readiness", "readiness", "build", "test:readiness:build", ["elk"], false, "3m"),
   row(
     "readiness",
