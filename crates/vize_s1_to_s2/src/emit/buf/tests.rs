@@ -3,7 +3,7 @@ use super::{Buf, Helper};
 
 #[test]
 fn helper_preamble_uses_final_body_order_within_one_rank() {
-    let mut buf = Buf::new();
+    let mut buf = Buf::new(false);
     buf.use_helper(Helper::NormalizeStyle);
     buf.use_helper(Helper::NormalizeClass);
     buf.push("_normalizeClass(cls); _normalizeStyle(style)");
@@ -16,7 +16,7 @@ fn helper_preamble_uses_final_body_order_within_one_rank() {
 
 #[test]
 fn helper_preamble_uses_final_hoist_order_within_one_rank() {
-    let mut buf = Buf::new();
+    let mut buf = Buf::new(false);
     buf.use_helper(Helper::NormalizeStyle);
     buf.use_helper(Helper::NormalizeClass);
     buf.push_hoist("_normalizeClass(cls)".into());
@@ -35,7 +35,7 @@ fn helper_preamble_uses_final_hoist_order_within_one_rank() {
 
 #[test]
 fn helper_preamble_uses_hoists_before_the_body() {
-    let mut buf = Buf::new();
+    let mut buf = Buf::new(false);
     buf.use_helper(Helper::NormalizeClass);
     buf.use_helper(Helper::NormalizeStyle);
     buf.push("_normalizeClass(cls)");
@@ -53,7 +53,7 @@ fn helper_preamble_uses_hoists_before_the_body() {
 
 #[test]
 fn helper_preamble_ignores_alias_shaped_authored_text() {
-    let mut buf = Buf::new();
+    let mut buf = Buf::new(false);
     buf.use_helper(Helper::NormalizeStyle);
     buf.use_helper(Helper::NormalizeClass);
     buf.push(
@@ -68,7 +68,7 @@ fn helper_preamble_ignores_alias_shaped_authored_text() {
 
 #[test]
 fn helper_preamble_keeps_preferred_before_body_order() {
-    let mut buf = Buf::new();
+    let mut buf = Buf::new(false);
     buf.prefer(Helper::WithDirectives);
     buf.use_helper(Helper::WithKeys);
     buf.use_helper(Helper::WithDirectives);
@@ -83,7 +83,7 @@ fn helper_preamble_keeps_preferred_before_body_order() {
 
 #[test]
 fn helper_preamble_keeps_preferred_directives_before_modifier_body_order() {
-    let mut buf = Buf::new();
+    let mut buf = Buf::new(false);
     buf.prefer(Helper::WithDirectives);
     buf.use_helper(Helper::WithModifiers);
     buf.use_helper(Helper::WithDirectives);
@@ -97,7 +97,7 @@ fn helper_preamble_keeps_preferred_directives_before_modifier_body_order() {
 
 #[test]
 fn helper_preamble_keeps_unpreferred_rank_two_in_first_use_order() {
-    let mut buf = Buf::new();
+    let mut buf = Buf::new(false);
     buf.use_helper(Helper::WithKeys);
     buf.use_helper(Helper::WithModifiers);
     buf.push("_withModifiers(handler, [\"stop\"]); _withKeys(handler, [\"enter\"])");
@@ -110,7 +110,7 @@ fn helper_preamble_keeps_unpreferred_rank_two_in_first_use_order() {
 
 #[test]
 fn helper_preamble_orders_codegen_only_directives_by_final_rank_two_use() {
-    let mut buf = Buf::new();
+    let mut buf = Buf::new(false);
     buf.use_helper(Helper::WithKeys);
     buf.use_helper(Helper::WithDirectives);
     buf.use_helper(Helper::WithModifiers);
@@ -124,7 +124,7 @@ fn helper_preamble_orders_codegen_only_directives_by_final_rank_two_use() {
 
 #[test]
 fn helper_preamble_orders_create_slots_before_v_show_for_textful_directive_slots() {
-    let mut buf = Buf::new();
+    let mut buf = Buf::new(false);
     buf.use_helper(Helper::ResolveDirective);
     buf.use_helper(Helper::CreateText);
     buf.use_helper(Helper::VShow);
@@ -136,7 +136,7 @@ fn helper_preamble_orders_create_slots_before_v_show_for_textful_directive_slots
         "const { resolveDirective: _resolveDirective, createTextVNode: _createTextVNode, createSlots: _createSlots, vShow: _vShow } = Vue\n"
     );
 
-    let mut buf = Buf::new();
+    let mut buf = Buf::new(false);
     buf.use_helper(Helper::VShow);
     buf.use_helper(Helper::CreateSlots);
     buf.push("[_vShow, visible]; _createSlots(slots, [])");
