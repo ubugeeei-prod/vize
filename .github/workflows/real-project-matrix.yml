@@ -257,13 +257,13 @@ jobs:
             glyph_exit_code=1
           fi
           exit "$glyph_exit_code"
-
       - name: Enforce typechecker baseline divergence
         id: typecheck_divergence
         if: ${{ !cancelled() }}
         continue-on-error: true
         env:
           BUDGET_MODE: ${{ inputs.typecheck_divergence_mode || 'enforce' }}
+          VIZE_TYPECHECK_DIVERGENCE_PROGRESS: "1"
         run: |
           rust-script tools/commands/fixtures/typecheck-divergence-report.rs \
             --report-dir "$FIXTURE_REPORT_DIR" \

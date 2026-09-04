@@ -82,6 +82,7 @@ fn run() -> Result<(), String> {
 
 fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<Value, String> {
     validate_performance(project)?;
+    let project_id = project_string(project, "id")?;
     let fixture_root = root.join(project_string(project, "fixturePath")?);
     let summary = read_and_validate_summary(root, &args.report_dir, project)?;
     let vize_run = read_and_validate_vize_run(root, &args.report_dir, project, &summary)?;
@@ -134,6 +135,10 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         .get("hangTimeoutMs")
         .and_then(Value::as_u64)
         .unwrap_or(5_000);
+    let progress_enabled = env::var_os("VIZE_TYPECHECK_DIVERGENCE_PROGRESS").is_some();
+    if progress_enabled {
+        eprintln!("[typecheck-divergence] start projectId={project_id} timeoutMs={timeout_ms}");
+    }
     let baseline_args = vec![
         "--noEmit".to_string(),
         "--pretty".to_string(),
@@ -149,6 +154,9 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         "-p".to_string(),
         baseline_config.path.display().to_string(),
     ];
+    if progress_enabled {
+        eprintln!("[typecheck-divergence] run projectId={project_id} command=baseline");
+    }
     let baseline = run_capture_limited(
         &args.vue_tsc_bin,
         &baseline_args,
@@ -157,6 +165,13 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         "vue-tsc baseline",
         &[0, 1, 2],
     )?;
+    if progress_enabled {
+        eprintln!(
+            "[typecheck-divergence] finish projectId={project_id} command=baseline durationMs={} status={}",
+            baseline.duration_ms, baseline.status
+        );
+        eprintln!("[typecheck-divergence] run projectId={project_id} command=coverage");
+    }
     let coverage_baseline = run_capture_limited(
         &args.vue_tsc_bin,
         &coverage_args,
@@ -165,9 +180,15 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         "vue-tsc coverage baseline",
         &[0, 1, 2],
     )?;
+    if progress_enabled {
+        eprintln!(
+            "[typecheck-divergence] finish projectId={project_id} command=coverage durationMs={} status={}",
+            coverage_baseline.duration_ms, coverage_baseline.status
+        );
+    }
     let documented_differences = read_documented_differences(root)?;
     let divergence = compare_typecheck_diagnostics(
-        project_string(project, "id")?,
+        project_id.clone(),
         &fixture_root,
         &vize_run.payload["parsed"],
         &baseline.output,
@@ -202,7 +223,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
     let artifact = json!({
         "schema": "vize.fixtureTypecheckDivergenceRun",
         "version": 6,
-        "project": project_string(project, "id")?,
+        "project": project_id.clone(),
         "revision": project.get("revision").cloned().unwrap_or(Value::Null),
         "tsconfig": source_project,
         "evidence": summary["evidence"],
@@ -231,7 +252,6 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         "budget": budget,
         "divergence": divergence,
     });
-    let project_id = project_string(project, "id")?;
     let json_path = args
         .report_dir
         .join(format!("{project_id}-typecheck-divergence.json"));

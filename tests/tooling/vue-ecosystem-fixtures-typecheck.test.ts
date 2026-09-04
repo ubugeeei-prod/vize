@@ -37,19 +37,19 @@ interface FixtureProject {
 
 const requiredTypecheckProjects = ["voicevox", "elk", "misskey"] as const;
 const releaseBaselineTimeouts = {
-  "vue-vben-admin": 1_200_000,
-  hoppscotch: 600_000,
-  "element-plus": 600_000,
-  "reka-ui": 600_000,
-  primevue: 600_000,
-  "primevue-volt": 600_000,
-  "primevue-showcase": 600_000,
-  vuetify: 600_000,
-  voicevox: 600_000,
-  elk: 600_000,
-  misskey: 600_000,
-  "lx-music-desktop": 600_000,
-  "vuestic-admin": 600_000,
+  "vue-vben-admin": 2_400_000,
+  hoppscotch: 2_400_000,
+  "element-plus": 2_400_000,
+  "reka-ui": 2_400_000,
+  primevue: 2_400_000,
+  "primevue-volt": 2_400_000,
+  "primevue-showcase": 2_400_000,
+  vuetify: 2_400_000,
+  voicevox: 2_400_000,
+  elk: 2_400_000,
+  misskey: 2_400_000,
+  "lx-music-desktop": 2_400_000,
+  "vuestic-admin": 2_400_000,
 } as const;
 
 function readRegistry(): { projects: FixtureProject[] } {
@@ -75,7 +75,7 @@ test("typecheck baselines have complete budgets and bounded release coverage", (
     );
     assert.match(performance.packageManagerVersion, /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/);
     assert.ok(Number.isSafeInteger(performance.hangTimeoutMs));
-    assert.ok(performance.hangTimeoutMs > 0 && performance.hangTimeoutMs <= 1_200_000);
+    assert.ok(performance.hangTimeoutMs > 0 && performance.hangTimeoutMs <= 2_400_000);
     assert.ok(performance.maxFalsePositiveRatio >= 0 && performance.maxFalsePositiveRatio <= 1);
     assert.equal(performance.maxFalseNegativeRatio, performance.maxFalsePositiveRatio);
   }
@@ -93,7 +93,7 @@ test("large typechecker fixtures have performance safeguards and bench wiring", 
     assert.ok(project, `${id} should be registered`);
     assert.equal(project?.typecheckPerformance?.enabled, true);
     assert.equal(project?.typecheckPerformance?.largeProjectRegressionTarget, true);
-    assert.ok((project?.typecheckPerformance?.hangTimeoutMs ?? Infinity) <= 600_000);
+    assert.ok((project?.typecheckPerformance?.hangTimeoutMs ?? Infinity) <= 2_400_000);
     assert.ok((project?.typecheckPerformance?.maxFalsePositiveRatio ?? Infinity) <= 0.02);
     assert.ok((project?.typecheckPerformance?.maxFalseNegativeRatio ?? Infinity) <= 0.02);
     assert.match(

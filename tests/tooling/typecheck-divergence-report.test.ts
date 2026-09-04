@@ -222,6 +222,33 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
   }
 });
 
+test("typecheck divergence progress logging is opt-in", () => {
+  const fixture = setup({ vizeDiagnostics: [], baselineOutput: "" });
+  try {
+    const quiet = run(fixture);
+    assert.equal(quiet.status, 0, quiet.stderr);
+    assert.doesNotMatch(quiet.stderr, /^\[typecheck-divergence\]/mu);
+
+    const result = run(fixture, { VIZE_TYPECHECK_DIVERGENCE_PROGRESS: "1" });
+    assert.equal(result.status, 0, result.stderr);
+    const progressLines = result.stderr.trimEnd().split("\n");
+    assert.equal(progressLines.length, 5);
+    assert.equal(progressLines[0], "[typecheck-divergence] start projectId=fixture timeoutMs=5000");
+    assert.equal(progressLines[1], "[typecheck-divergence] run projectId=fixture command=baseline");
+    assert.match(
+      progressLines[2],
+      /^\[typecheck-divergence\] finish projectId=fixture command=baseline durationMs=\d+ status=2$/u,
+    );
+    assert.equal(progressLines[3], "[typecheck-divergence] run projectId=fixture command=coverage");
+    assert.match(
+      progressLines[4],
+      /^\[typecheck-divergence\] finish projectId=fixture command=coverage durationMs=\d+ status=0$/u,
+    );
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("typecheck divergence report skips shards without typecheck performance targets", () => {
   const fixture = setup();
   try {

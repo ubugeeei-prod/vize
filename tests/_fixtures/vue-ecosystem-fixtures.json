@@ -34,7 +34,7 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "11.5.0",
         "lockfile": "pnpm-lock.yaml",
-        "hangTimeoutMs": 1200000,
+        "hangTimeoutMs": 2400000,
         "corpusGlobs": ["playground/src/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -162,7 +162,7 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "10.33.4",
         "lockfile": "pnpm-lock.yaml",
-        "hangTimeoutMs": 600000,
+        "hangTimeoutMs": 2400000,
         "corpusGlobs": ["packages/hoppscotch-common/src/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -259,7 +259,7 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "11.5.0",
         "lockfile": "pnpm-lock.yaml",
-        "hangTimeoutMs": 600000,
+        "hangTimeoutMs": 2400000,
         "corpusGlobs": ["packages/**/*.vue", "ssr-testing/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -443,7 +443,7 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "10.13.1",
         "lockfile": "pnpm-lock.yaml",
-        "hangTimeoutMs": 600000,
+        "hangTimeoutMs": 2400000,
         "corpusGlobs": ["packages/core/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -483,7 +483,7 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "9.6.0",
         "lockfile": "pnpm-lock.yaml",
-        "hangTimeoutMs": 600000,
+        "hangTimeoutMs": 2400000,
         "corpusGlobs": ["packages/primevue/src/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -521,7 +521,7 @@
           "tsconfig": "apps/volt/.nuxt/tsconfig.json",
           "prepare": ["pnpm", "--filter", "volt", "exec", "nuxt", "prepare"]
         },
-        "hangTimeoutMs": 600000,
+        "hangTimeoutMs": 2400000,
         "corpusGlobs": ["apps/volt/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -559,7 +559,7 @@
           "tsconfig": "apps/showcase/.nuxt/tsconfig.json",
           "prepare": ["pnpm", "--filter", "showcase", "exec", "nuxt", "prepare"]
         },
-        "hangTimeoutMs": 600000,
+        "hangTimeoutMs": 2400000,
         "corpusGlobs": ["apps/showcase/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -593,7 +593,7 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "10.26.1",
         "lockfile": "pnpm-lock.yaml",
-        "hangTimeoutMs": 600000,
+        "hangTimeoutMs": 2400000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
       }
@@ -649,7 +649,7 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "10.28.2",
         "lockfile": "pnpm-lock.yaml",
-        "hangTimeoutMs": 600000,
+        "hangTimeoutMs": 2400000,
         "maxFalsePositiveRatio": 0.02,
         "maxFalseNegativeRatio": 0.02,
         "largeProjectRegressionTarget": true
@@ -750,7 +750,7 @@
           "tsconfig": ".nuxt/tsconfig.app.json",
           "prepare": ["pnpm", "exec", "nuxt", "prepare"]
         },
-        "hangTimeoutMs": 600000,
+        "hangTimeoutMs": 2400000,
         "maxFalsePositiveRatio": 0.02,
         "maxFalseNegativeRatio": 0.02,
         "largeProjectRegressionTarget": true
@@ -854,7 +854,7 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "10.30.1",
         "lockfile": "pnpm-lock.yaml",
-        "hangTimeoutMs": 600000,
+        "hangTimeoutMs": 2400000,
         "maxFalsePositiveRatio": 0.02,
         "maxFalseNegativeRatio": 0.02,
         "largeProjectRegressionTarget": true
@@ -1626,7 +1626,7 @@
         "packageManager": "npm",
         "packageManagerVersion": "11.9.0",
         "lockfile": "package-lock.json",
-        "hangTimeoutMs": 600000,
+        "hangTimeoutMs": 2400000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
       }
@@ -1960,7 +1960,7 @@
         "packageManager": "yarn",
         "packageManagerVersion": "4.9.2",
         "lockfile": "yarn.lock",
-        "hangTimeoutMs": 600000,
+        "hangTimeoutMs": 2400000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
       }

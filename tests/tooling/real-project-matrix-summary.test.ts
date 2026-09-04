@@ -11,11 +11,13 @@ import {
 test("real-project workflow gates every measured surface on one verdict", () => {
   const steps = realProjectMatrixSteps();
   const divergenceIndex = steps.indexOf(findStep(steps, "Enforce typechecker baseline divergence"));
+  const divergence = steps[divergenceIndex];
   const verdict = findStep(steps, "Enforce all real-project surface verdicts");
   const verdictIndex = steps.indexOf(verdict);
   const summaryIndex = steps.indexOf(findStep(steps, "Publish shard summary"));
 
   assert.ok(divergenceIndex < verdictIndex && verdictIndex < summaryIndex);
+  assert.equal(divergence.env.VIZE_TYPECHECK_DIVERGENCE_PROGRESS, "1");
   assert.equal(verdict.if, "${{ always() }}");
   assert.equal(verdict.shell, "bash");
   assert.deepEqual(verdict.env, {
