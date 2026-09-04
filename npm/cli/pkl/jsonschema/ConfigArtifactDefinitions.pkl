@@ -232,12 +232,8 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     ["script/no-restricted-members"] = new JsonSchema {
       `$ref` = "#/definitions/NoRestrictedMembersOptions"
     }
-    ["vue/component-name-in-template-casing"] = new JsonSchema {
-      `$ref` = "#/definitions/ComponentNameInTemplateCasingOptions"
-    }
-    ["script/custom-event-name-casing"] = new JsonSchema {
-      `$ref` = "#/definitions/CustomEventNameCasingOptions"
-    }
+    ["vue/component-name-in-template-casing"] = componentNameInTemplateCasingOptionsDef
+    ["script/custom-event-name-casing"] = customEventNameCasingOptionsDef
   }
   additionalProperties = false
 }

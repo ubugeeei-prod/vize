@@ -224,8 +224,12 @@ export interface LinterConfig {
 export interface LintRuleOptions {
   "script/no-restricted-globals"?: NoRestrictedGlobalsOptions;
   "script/no-restricted-members"?: NoRestrictedMembersOptions;
-  "vue/component-name-in-template-casing"?: ComponentNameInTemplateCasingOptions;
-  "script/custom-event-name-casing"?: CustomEventNameCasingOptions;
+  "vue/component-name-in-template-casing"?: {
+    casing?: "PascalCase" | "kebab-case";
+  };
+  "script/custom-event-name-casing"?: {
+    casing?: "camelCase" | "kebab-case";
+  };
 }
 export interface NoRestrictedGlobalsOptions {
   globals?: RestrictedGlobal[];
@@ -241,12 +245,6 @@ export interface RestrictedMember {
   object: string;
   property: string;
   message?: string;
-}
-export interface ComponentNameInTemplateCasingOptions {
-  casing?: "PascalCase" | "kebab-case";
-}
-export interface CustomEventNameCasingOptions {
-  casing?: "camelCase" | "kebab-case";
 }
 export interface TypeCheckerConfig {
   /**

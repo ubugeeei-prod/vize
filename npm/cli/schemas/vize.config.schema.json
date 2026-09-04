@@ -301,28 +301,6 @@
       },
       "additionalProperties": false
     },
-    "ComponentNameInTemplateCasingOptions": {
-      "type": "object",
-      "properties": {
-        "casing": {
-          "default": "PascalCase",
-          "type": "string",
-          "enum": ["PascalCase", "kebab-case"]
-        }
-      },
-      "additionalProperties": false
-    },
-    "CustomEventNameCasingOptions": {
-      "type": "object",
-      "properties": {
-        "casing": {
-          "default": "camelCase",
-          "type": "string",
-          "enum": ["camelCase", "kebab-case"]
-        }
-      },
-      "additionalProperties": false
-    },
     "LintRuleOptions": {
       "type": "object",
       "properties": {
@@ -333,10 +311,26 @@
           "$ref": "#/definitions/NoRestrictedMembersOptions"
         },
         "vue/component-name-in-template-casing": {
-          "$ref": "#/definitions/ComponentNameInTemplateCasingOptions"
+          "type": "object",
+          "properties": {
+            "casing": {
+              "default": "PascalCase",
+              "type": "string",
+              "enum": ["PascalCase", "kebab-case"]
+            }
+          },
+          "additionalProperties": false
         },
         "script/custom-event-name-casing": {
-          "$ref": "#/definitions/CustomEventNameCasingOptions"
+          "type": "object",
+          "properties": {
+            "casing": {
+              "default": "camelCase",
+              "type": "string",
+              "enum": ["camelCase", "kebab-case"]
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

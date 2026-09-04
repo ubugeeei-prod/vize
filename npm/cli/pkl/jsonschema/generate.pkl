@@ -503,8 +503,6 @@ output {
       ["RestrictedMember"] = ConfigArtifactDefinitions.restrictedMemberDef
       ["NoRestrictedGlobalsOptions"] = ConfigArtifactDefinitions.noRestrictedGlobalsOptionsDef
       ["NoRestrictedMembersOptions"] = ConfigArtifactDefinitions.noRestrictedMembersOptionsDef
-      ["ComponentNameInTemplateCasingOptions"] = ConfigArtifactDefinitions.componentNameInTemplateCasingOptionsDef
-      ["CustomEventNameCasingOptions"] = ConfigArtifactDefinitions.customEventNameCasingOptionsDef
       ["LintRuleOptions"] = ConfigArtifactDefinitions.lintRuleOptionsDef
       ["TypeCheckerConfig"] = typeCheckerConfigDef
       ["FormatterConfig"] = formatterConfigDef

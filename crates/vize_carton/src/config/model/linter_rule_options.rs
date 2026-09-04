@@ -6,12 +6,17 @@
 //! sidecar ESLint. Options live under `linter.ruleOptions.<rule-name>` and are
 //! parsed into typed structs (no untyped `serde_json::Value`) so the schema is
 //! discoverable and option payload validation stays strict.
-//!
-//! Refs: #1891 (project-local custom rules during migration).
 
 use serde::{Deserialize, Serialize};
 
 use crate::String;
+
+mod casing;
+
+pub use casing::{
+    ComponentNameInTemplateCasingOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
+    TemplateComponentNameCasing,
+};
 
 /// Per-rule configuration keyed by rule name.
 ///
@@ -163,40 +168,6 @@ impl ConfigLintRuleOptions {
             self.custom_event_name_casing = Some(*options);
         }
     }
-}
-
-/// Options for `vue/component-name-in-template-casing`.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
-pub struct ComponentNameInTemplateCasingOptions {
-    pub casing: TemplateComponentNameCasing,
-}
-
-/// Component tag casing accepted by `vue/component-name-in-template-casing`.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub enum TemplateComponentNameCasing {
-    #[default]
-    #[serde(rename = "PascalCase")]
-    PascalCase,
-    #[serde(rename = "kebab-case")]
-    KebabCase,
-}
-
-/// Options for `script/custom-event-name-casing`.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
-pub struct CustomEventNameCasingOptions {
-    pub casing: CustomEventNameCasing,
-}
-
-/// Event name casing accepted by `script/custom-event-name-casing`.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub enum CustomEventNameCasing {
-    #[default]
-    #[serde(rename = "camelCase")]
-    CamelCase,
-    #[serde(rename = "kebab-case")]
-    KebabCase,
 }
 
 /// Options for `script/no-restricted-globals`.
