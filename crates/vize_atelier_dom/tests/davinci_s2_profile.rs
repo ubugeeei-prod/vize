@@ -113,7 +113,7 @@ fn profile_reports_ladder_s2_dom_walk_budget() {
 }
 
 #[test]
-fn source_map_disabled_scope_id_uses_compatibility_codegen() {
+fn source_map_disabled_scope_id_stays_on_s2_codegen() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
@@ -143,9 +143,9 @@ fn source_map_disabled_scope_id_uses_compatibility_codegen() {
     assert_eq!(result.preamble, compat.preamble);
     assert_eq!(result.code, compat.code);
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
-        None,
-        "direct scope_id compiles must not be routed through S2 yet"
+        counter(&counters, "davinci.s2_dom.files"),
+        1,
+        "direct scope_id compiles are covered by the S2 production option surface"
     );
 }
 

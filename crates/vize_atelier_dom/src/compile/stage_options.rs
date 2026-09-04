@@ -83,7 +83,6 @@ pub(super) fn s2_emit_supported(
     has_croquis: bool,
 ) -> bool {
     !codegen.source_map
-        && options.scope_id.is_none()
         && options.hoist_static
         && !options.ssr
         && !options.comments
