@@ -11,8 +11,8 @@ import {
   repoRoot,
   s2DomWitnessFiles,
   walkRustFiles,
+  workspaceDependencyDeclaration,
   workspacePackage,
-  type Package,
 } from "./support/davinci-stage-dependencies.ts";
 
 const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
@@ -29,11 +29,13 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
   ],
 ]);
 
-const unpublishedDavinciStages = new Set(["vize_davinci", "vize_s1", "vize_s2", "vize_s1_to_s2"]);
-
-function isPublishable(pkg: Package): boolean {
-  return pkg.publish === null || pkg.publish.length > 0;
-}
+const publishedDavinciStages = new Set([
+  "vize_davinci_derive",
+  "vize_davinci",
+  "vize_s1",
+  "vize_s2",
+  "vize_s1_to_s2",
+]);
 
 test("Davinci crates import retained packages through stage aliases", () => {
   for (const [packageName, expectedAliases] of aliases) {
@@ -89,33 +91,24 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
   }
 });
 
-test("Davinci stage crates stay out of published release graphs", () => {
-  for (const packageName of unpublishedDavinciStages) {
-    assert.deepEqual(
-      workspacePackage(metadata, packageName).publish,
-      [],
-      `${packageName} must stay publish=false until a dedicated stage-publication switch`,
-    );
-  }
-
-  const offenders: string[] = [];
-  const workspacePackages = new Set(metadata.packages.map((pkg) => pkg.name));
-
-  for (const pkg of metadata.packages.filter(isPublishable)) {
+test("Davinci stage crates are publishable with registry-resolvable dependencies", () => {
+  for (const packageName of publishedDavinciStages) {
+    const pkg = workspacePackage(metadata, packageName);
+    assert.equal(pkg.publish, null, `${packageName} must be publishable for the production switch`);
     for (const dependency of pkg.dependencies) {
-      if (!workspacePackages.has(dependency.name)) continue;
-      if (!unpublishedDavinciStages.has(dependency.name)) continue;
-      const strippedDevDependency = dependency.kind === "dev" && dependency.req === "*";
-      if (strippedDevDependency) continue;
-
-      offenders.push(
-        `${pkg.name} ${dependency.kind ?? "normal"} dependency ` +
-          `${dependency.rename ?? dependency.name}(${dependency.name}) req ${dependency.req}`,
+      if (dependency.kind === "dev" || !publishedDavinciStages.has(dependency.name)) continue;
+      assert.match(
+        dependency.req,
+        /^=\d+\.\d+\.\d+$/u,
+        `${packageName} must give ${dependency.name} an exact registry fallback`,
+      );
+      assert.equal(
+        dependency.req,
+        `=${workspacePackage(metadata, dependency.name).version}`,
+        `${packageName} must match ${dependency.name}'s published version`,
       );
     }
   }
-
-  assert.deepEqual(offenders, []);
 });
 
 test("Davinci fuzz harness imports stage packages through aliases", () => {
@@ -137,14 +130,20 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
 test("Davinci S2 uses the physical crate directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
   assert.match(workspaceManifest, /^\s*"crates\/vize_s2",$/m);
-  assert.match(workspaceManifest, /^vize_s2 = \{ path = "crates\/vize_s2" \}$/m);
+  assert.deepEqual(workspaceDependencyDeclaration("vize_s2"), {
+    path: "crates/vize_s2",
+    version: `=${workspacePackage(metadata, "vize_s2").version}`,
+  });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_disegno/u);
 });
 
 test("Davinci S1-to-S2 uses the physical crate package and directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
   assert.match(workspaceManifest, /^\s*"crates\/vize_s1_to_s2",$/m);
-  assert.match(workspaceManifest, /^vize_s1_to_s2 = \{ path = "crates\/vize_s1_to_s2" \}$/m);
+  assert.deepEqual(workspaceDependencyDeclaration("vize_s1_to_s2"), {
+    path: "crates/vize_s1_to_s2",
+    version: `=${workspacePackage(metadata, "vize_s1_to_s2").version}`,
+  });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_ricalco/u);
   assert.doesNotMatch(workspaceManifest, /^vize_ricalco = /m);
   assert.doesNotMatch(workspaceManifest, /package = "vize_ricalco"/u);

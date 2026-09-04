@@ -5,19 +5,17 @@
 /// already published, it skips the publish call and only waits until the crate
 /// becomes resolvable from crates.io index queries.
 
-/// Ordered list of publishable crates.
-/// The order matters because many of these crates depend on previously
-/// published workspace crates via exact-version dependencies. The accompanying
-/// test asserts that this list remains topologically valid.
-/// Crates in `manual_publish_crates` are intentionally omitted here:
-/// crates.io Trusted Publishing can publish only crates whose trusted-publisher
-/// handoff is configured for this repository/workflow/environment. First
-/// publishes and crates whose handoff has not been completed yet must be
-/// published manually once before this job can own subsequent versions.
+/// Ordered list of publishable crates. The order is topological because each
+/// crate can require exact versions of earlier workspace crates.
 let published_crates : Array[String] = [
   "vize_carton",
+  "vize_davinci_derive",
+  "vize_davinci",
   "vize_relief",
   "vize_armature",
+  "vize_s1",
+  "vize_s2",
+  "vize_s1_to_s2",
   "vize_croquis",
   "vize_atelier_core",
   "vize_atelier_dom",
@@ -28,8 +26,7 @@ let published_crates : Array[String] = [
   "vize_fresco",
 ]
 
-/// Publishable crates that need manual owner-token work before GitHub Trusted
-/// Publishing can publish them from the release workflow.
+/// Crates without a completed Trusted Publishing handoff.
 let manual_publish_crates : Array[String] = [
   "vize_croquis_cf",
   "vize_atelier_jsx",
@@ -37,8 +34,7 @@ let manual_publish_crates : Array[String] = [
   "vize_doctor",
 ]
 
-/// Existing crates whose current version depends on a crate that still needs a
-/// manual publish handoff.
+/// Existing crates that depend on a crate still awaiting manual publication.
 let blocked_by_manual_publish_crates : Array[String] = [
   "vize_canon",
   "vize_patina",

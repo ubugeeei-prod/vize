@@ -6,7 +6,6 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Davinci - #[derive(Folio)] for the stage-dump contract (host build dependency; the generated code is no_std)"
-publish = false
 metadata.vize.stability = "experimental"
 
 [lib]

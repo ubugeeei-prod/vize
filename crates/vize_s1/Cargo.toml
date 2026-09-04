@@ -13,7 +13,6 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "S1 - the lossless Vue-template surface tree (codename Sinopia, Davinci P2-7)"
-publish = false
 metadata.vize.stability = "experimental"
 
 [features]

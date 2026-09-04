@@ -3,10 +3,14 @@ import { test } from "node:test";
 
 import { metadata, workspacePackage, type Package } from "./support/davinci-stage-dependencies.ts";
 
-const unpublishedDavinciStages = new Set(["vize_davinci", "vize_s1", "vize_s2", "vize_s1_to_s2"]);
+const publishedDavinciStages = new Set(["vize_davinci", "vize_s1", "vize_s2", "vize_s1_to_s2"]);
 
 function isPublishable(pkg: Package): boolean {
   return pkg.publish === null || pkg.publish.length > 0;
+}
+
+function versionRequirement(packageName: string): string {
+  return `=${workspacePackage(metadata, packageName).version}`;
 }
 
 type FeatureOwner = Pick<Package, "dependencies">;
@@ -43,30 +47,23 @@ test("Feature values resolve unpublished stages through dependency keys", () => 
   assert.equal(referencedWorkspaceFeaturePackage(pkg, "local_feature"), null);
 });
 
-test("Published crates expose no feature that enables unpublished Davinci stages", () => {
-  const offenders: string[] = [];
-
-  for (const pkg of metadata.packages.filter(isPublishable)) {
-    for (const [featureName, featureValues] of Object.entries(pkg.features)) {
-      for (const featureValue of featureValues) {
-        const referencedPackage = referencedWorkspaceFeaturePackage(pkg, featureValue);
-        if (!unpublishedDavinciStages.has(referencedPackage)) continue;
-        offenders.push(`${pkg.name} feature ${featureName} includes ${featureValue}`);
-      }
-    }
+test("Davinci stage crates are published before a production feature can select them", () => {
+  for (const packageName of publishedDavinciStages) {
+    assert.ok(
+      isPublishable(workspacePackage(metadata, packageName)),
+      `${packageName} is not publishable`,
+    );
   }
-
-  assert.deepEqual(offenders, []);
 });
 
-test("DOM S2 witnesses keep their unpublished stage edges test-space only", () => {
+test("DOM S2 witnesses remain test-space only until the production switch", () => {
   const dom = workspacePackage(metadata, "vize_atelier_dom");
   assert.deepEqual(dom.features, {
     legacy: ["vize_atelier_core/legacy"],
   });
 
   const stageEdges = dom.dependencies
-    .filter((dependency) => unpublishedDavinciStages.has(dependency.name))
+    .filter((dependency) => publishedDavinciStages.has(dependency.name))
     .map((dependency) => ({
       name: dependency.name,
       kind: dependency.kind,
@@ -81,7 +78,7 @@ test("DOM S2 witnesses keep their unpublished stage edges test-space only", () =
     {
       name: "vize_davinci",
       kind: "dev",
-      req: "*",
+      req: versionRequirement("vize_davinci"),
       rename: null,
       optional: false,
       features: [],
@@ -89,14 +86,14 @@ test("DOM S2 witnesses keep their unpublished stage edges test-space only", () =
     {
       name: "vize_s1_to_s2",
       kind: "dev",
-      req: "*",
+      req: versionRequirement("vize_s1_to_s2"),
       rename: null,
       optional: false,
       // The P2-11 witness batteries compile TypeScript templates, which the
       // stage library keeps behind an opt-in feature (its type erasure is the
       // one `std` API it reaches). What keeps this edge out of the published
-      // graph is the rest of this shape — `dev`, `*`, unrenamed, not optional
-      // — so selecting a lane on it changes nothing there.
+      // graph is the rest of this shape — `dev`, unrenamed, not optional — so
+      // selecting a lane on it changes nothing there.
       features: ["typescript"],
     },
   ]);

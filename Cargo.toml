@@ -68,16 +68,20 @@ vize_vitrine = { path = "crates/vize_vitrine", default-features = false }
 vize_glyph = { path = "crates/vize_glyph" }
 vize_maestro = { path = "crates/vize_maestro" }
 vize_curator = { path = "crates/vize_curator" }
-vize_davinci = { path = "crates/vize_davinci" }
-vize_davinci_derive = { path = "crates/vize_davinci_derive" }
+
+# Publishable Davinci stage infrastructure. Stage crates keep their physical
+# names and version fallbacks so a publishable consumer can resolve the same
+# dependency graph from crates.io.
+vize_davinci = { path = "crates/vize_davinci", version = "=0.392.0" }
+vize_davinci_derive = { path = "crates/vize_davinci_derive", version = "=0.392.0" }
 
 # Davinci stage aliases. These are the preferred implementation names for new
 # code; S0 still aliases the published Carton package until a compatibility
 # change can move it to a physical stage name.
 vize_s0 = { package = "vize_carton", path = "crates/vize_carton", version = "=0.392.0" }
-vize_s1 = { path = "crates/vize_s1" }
-vize_s2 = { path = "crates/vize_s2" }
-vize_s1_to_s2 = { path = "crates/vize_s1_to_s2" }
+vize_s1 = { path = "crates/vize_s1", version = "=0.392.0" }
+vize_s2 = { path = "crates/vize_s2", version = "=0.392.0" }
+vize_s1_to_s2 = { path = "crates/vize_s1_to_s2", version = "=0.392.0" }
 
 # OXC dependencies (pinned to a specific upstream revision for reproducibility)
 oxc_parser = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
