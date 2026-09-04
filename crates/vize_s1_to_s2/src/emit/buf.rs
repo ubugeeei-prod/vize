@@ -6,6 +6,7 @@ use vize_s0::{String, ToCompactString};
 
 use super::helper::Helper;
 
+mod alias;
 mod call_position;
 mod helper_order;
 mod preamble;
@@ -37,6 +38,8 @@ pub(super) struct Buf {
 }
 
 impl Buf {
+    /// `track_visits` keeps [`Buf::preferred_visits`]; the emit turns it
+    /// on for `inline`, whose `_unref` is its only reader.
     pub(super) fn new(track_visits: bool) -> Self {
         Self {
             code: String::default(),
@@ -217,122 +220,6 @@ impl Buf {
     }
     pub(super) fn use_set_block_tracking(&mut self) {
         self.mark(Helper::SetBlockTracking);
-    }
-
-    pub(super) fn to_display_string_alias() -> &'static str {
-        Helper::ToDisplayString.alias()
-    }
-
-    pub(super) fn with_keys_alias() -> &'static str {
-        Helper::WithKeys.alias()
-    }
-
-    pub(super) fn with_modifiers_alias() -> &'static str {
-        Helper::WithModifiers.alias()
-    }
-
-    pub(super) fn open_block_alias() -> &'static str {
-        Helper::OpenBlock.alias()
-    }
-
-    pub(super) fn create_element_block_alias() -> &'static str {
-        Helper::CreateElementBlock.alias()
-    }
-
-    pub(super) fn create_element_vnode_alias() -> &'static str {
-        Helper::CreateElementVNode.alias()
-    }
-
-    pub(super) fn create_text_alias() -> &'static str {
-        Helper::CreateText.alias()
-    }
-
-    pub(super) fn normalize_class_alias() -> &'static str {
-        Helper::NormalizeClass.alias()
-    }
-
-    pub(super) fn normalize_style_alias() -> &'static str {
-        Helper::NormalizeStyle.alias()
-    }
-
-    pub(super) fn normalize_props_alias() -> &'static str {
-        Helper::NormalizeProps.alias()
-    }
-
-    pub(super) fn guard_reactive_props_alias() -> &'static str {
-        Helper::GuardReactiveProps.alias()
-    }
-
-    pub(super) fn merge_props_alias() -> &'static str {
-        Helper::MergeProps.alias()
-    }
-
-    pub(super) fn to_handlers_alias() -> &'static str {
-        Helper::ToHandlers.alias()
-    }
-
-    pub(super) fn to_handler_key_alias() -> &'static str {
-        Helper::ToHandlerKey.alias()
-    }
-
-    pub(super) fn camelize_alias() -> &'static str {
-        Helper::Camelize.alias()
-    }
-
-    pub(super) fn with_directives_alias() -> &'static str {
-        Helper::WithDirectives.alias()
-    }
-
-    pub(super) fn v_show_alias() -> &'static str {
-        Helper::VShow.alias()
-    }
-
-    pub(super) fn create_comment_alias() -> &'static str {
-        Helper::CreateComment.alias()
-    }
-
-    pub(super) fn fragment_alias() -> &'static str {
-        Helper::Fragment.alias()
-    }
-
-    pub(super) fn render_list_alias() -> &'static str {
-        Helper::RenderList.alias()
-    }
-
-    pub(super) fn resolve_component_alias() -> &'static str {
-        Helper::ResolveComponent.alias()
-    }
-
-    pub(super) fn resolve_directive_alias() -> &'static str {
-        Helper::ResolveDirective.alias()
-    }
-
-    pub(super) fn resolve_filter_alias() -> &'static str {
-        Helper::ResolveFilter.alias()
-    }
-
-    pub(super) fn create_vnode_alias() -> &'static str {
-        Helper::CreateVNode.alias()
-    }
-
-    pub(super) fn render_slot_alias() -> &'static str {
-        Helper::RenderSlot.alias()
-    }
-
-    pub(super) fn create_block_alias() -> &'static str {
-        Helper::CreateBlock.alias()
-    }
-
-    pub(super) fn with_ctx_alias() -> &'static str {
-        Helper::WithCtx.alias()
-    }
-
-    pub(super) fn create_slots_alias() -> &'static str {
-        Helper::CreateSlots.alias()
-    }
-
-    pub(super) fn set_block_tracking_alias() -> &'static str {
-        Helper::SetBlockTracking.alias()
     }
 
     pub(super) fn push_hoist(&mut self, rhs: String) -> String {

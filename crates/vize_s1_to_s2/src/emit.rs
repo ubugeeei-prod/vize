@@ -214,11 +214,8 @@ struct EmitCx<'facts> {
     prefix_identifiers: bool,
     /// The shipped lane's `is_ts`: expressions are type-erased first.
     is_ts: bool,
-    /// The op-visit count at which prefixing first needed `_unref`, or
-    /// `u32::MAX` while it never did. The shipped lane registers that
-    /// helper from `process_expression` — a transform call — so the emit
-    /// marks it once the body is written, but at the op the transform
-    /// would have reached it on (`Buf::prefer_at_visit`).
+    /// The op-visit count at which prefixing first needed `_unref`
+    /// (`u32::MAX`: never) — where the transform would register it.
     used_unref: core::cell::Cell<u32>,
     /// The shipped lane's `component_name`, for the self-reference flag
     /// on `resolveComponent`.
@@ -264,8 +261,6 @@ fn emit_dom_with_emit_budget<'f>(
     let static_cache =
         options.inline || static_cache::enabled(&lowered.root, facts, &lowered.wrappers);
     let mut cx = EmitCx {
-        // `_unref` is the one helper the emit registers mid-walk, and
-        // it is an inline-only spelling.
         buf: Buf::new(options.inline),
         source: lowered.source,
         facts,
@@ -339,10 +334,9 @@ fn emit_dom_with_emit_budget<'f>(
     cx.buf.deindent();
     cx.buf.newline();
     cx.buf.push("}");
-    // `_unref` is a *transform* registration, so it lists with the
-    // pre-walk's preferred helpers, not the emit's used ones — and at the
-    // op whose expression needed it, which is why it can precede a
-    // structural helper the same op registers later (`renderList`).
+    // `_unref` is a *transform* registration: it lists with the pre-walk's
+    // preferred helpers, at the op whose expression needed it — ahead of a
+    // structural helper that op registers later (`renderList`).
     let unref_visit = cx.used_unref.get();
     if unref_visit != u32::MAX {
         cx.buf.prefer_at_visit(Helper::Unref, unref_visit);
