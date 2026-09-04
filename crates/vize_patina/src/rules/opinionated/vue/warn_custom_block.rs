@@ -111,6 +111,7 @@ impl Rule for WarnCustomBlock {
         let spans: Vec<(u32, u32)> = descriptor
             .custom_blocks
             .iter()
+            .filter(|block| !is_known_musea_art_block(ctx.filename, block.block_type.as_ref()))
             .map(|block| (block.loc.tag_start as u32, block.loc.start as u32))
             .collect();
 
@@ -136,9 +137,13 @@ fn is_sfc_filename(filename: &str) -> bool {
     filename.rsplit('.').next() == Some("vue")
 }
 
+fn is_known_musea_art_block(filename: &str, block_type: &str) -> bool {
+    block_type == "art" && filename.ends_with(".art.vue")
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{WarnCustomBlock, is_sfc_filename};
+    use super::{WarnCustomBlock, is_known_musea_art_block, is_sfc_filename};
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -162,6 +167,14 @@ mod tests {
         assert!(!is_sfc_filename("page.htm"));
         assert!(!is_sfc_filename("script.ts"));
         assert!(!is_sfc_filename("noext"));
+    }
+
+    #[test]
+    fn detects_musea_art_files() {
+        assert!(is_known_musea_art_block("Button.art.vue", "art"));
+        assert!(is_known_musea_art_block("catalog/Button.art.vue", "art"));
+        assert!(!is_known_musea_art_block("Button.vue", "art"));
+        assert!(!is_known_musea_art_block("Button.art.vue", "docs"));
     }
 
     #[test]
@@ -210,6 +223,27 @@ mod tests {
         let result = linter.lint_sfc(
             "<template>\n  <div />\n</template>\n<i18n>\n{ \"en\": { \"hello\": \"Hello\" } }\n</i18n>\n",
             "Component.vue",
+        );
+        assert_eq!(result.warning_count, 1, "got: {:?}", result.diagnostics);
+        assert_eq!(result.diagnostics[0].rule_name, "vue/warn-custom-block");
+    }
+
+    #[test]
+    fn test_musea_art_file_art_block_is_known() {
+        let linter = create_linter();
+        let result = linter.lint_sfc(
+            "<script setup lang=\"ts\">\ndefineArt(\"./Button.vue\", { title: \"Button\" })\n</script>\n<art>\n  <variant name=\"Default\" default>\n    <Button>OK</Button>\n  </variant>\n</art>\n",
+            "Button.art.vue",
+        );
+        assert_eq!(result.warning_count, 0, "got: {:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_art_block_in_regular_sfc_still_warns() {
+        let linter = create_linter();
+        let result = linter.lint_sfc(
+            "<template>\n  <div />\n</template>\n<art>\n  <variant name=\"Default\" />\n</art>\n",
+            "Button.vue",
         );
         assert_eq!(result.warning_count, 1, "got: {:?}", result.diagnostics);
         assert_eq!(result.diagnostics[0].rule_name, "vue/warn-custom-block");
