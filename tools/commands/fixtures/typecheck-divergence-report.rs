@@ -17,6 +17,7 @@ use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
     env, fs,
+    io::Read,
     path::{Path, PathBuf},
     process::{Command, ExitCode, Stdio},
     thread,
@@ -2574,29 +2575,41 @@ fn run_capture_limited(
     let mut child = child_command
         .spawn()
         .map_err(|error| format!("{label} failed to run: {error}"))?;
-    loop {
-        if child
+    let stdout = child
+        .stdout
+        .take()
+        .ok_or_else(|| format!("{label} failed to capture stdout"))?;
+    let stderr = child
+        .stderr
+        .take()
+        .ok_or_else(|| format!("{label} failed to capture stderr"))?;
+    let stdout_reader = thread::spawn(move || read_child_output(stdout));
+    let stderr_reader = thread::spawn(move || read_child_output(stderr));
+    let status = loop {
+        if let Some(status) = child
             .try_wait()
             .map_err(|error| format!("{label} failed to run: {error}"))?
-            .is_some()
         {
-            break;
+            break status;
         }
         if started.elapsed() >= Duration::from_millis(timeout_ms) {
             kill_child_group(&mut child);
+            // Timeout artifacts only need the failure reason. Descendants may
+            // keep inherited stdio open, so this path must not join readers.
+            drop(stdout_reader);
+            drop(stderr_reader);
             return Err(timeout_error(label, timeout_ms));
         }
         thread::sleep(Duration::from_millis(5));
-    }
-    let output = child
-        .wait_with_output()
-        .map_err(|error| format!("{label} failed to run: {error}"))?;
-    let status = output.status.code().unwrap_or(1);
+    };
+    let status = status.code().unwrap_or(1);
+    let stdout = join_output_reader(stdout_reader, label, "stdout")?;
+    let stderr = join_output_reader(stderr_reader, label, "stderr")?;
     if !allowed_statuses.contains(&status) {
         return Err(format!("{label} exited with unsupported status {status}"));
     }
-    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
-    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+    let stdout = String::from_utf8_lossy(&stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&stderr).into_owned();
     Ok(ToolRun {
         command: display_command(command, args),
         status,
@@ -2606,6 +2619,24 @@ fn run_capture_limited(
         duration_ms: started.elapsed().as_millis(),
         parsed: None,
     })
+}
+
+fn read_child_output<R: Read>(mut pipe: R) -> Result<Vec<u8>, String> {
+    let mut output = Vec::new();
+    pipe.read_to_end(&mut output)
+        .map_err(|error| format!("failed to read child output: {error}"))?;
+    Ok(output)
+}
+
+fn join_output_reader(
+    reader: thread::JoinHandle<Result<Vec<u8>, String>>,
+    label: &str,
+    stream: &str,
+) -> Result<Vec<u8>, String> {
+    reader
+        .join()
+        .map_err(|_| format!("{label} {stream} reader panicked"))?
+        .map_err(|error| format!("{label} failed to run: {error}"))
 }
 
 fn timeout_error(label: &str, timeout_ms: u64) -> String {

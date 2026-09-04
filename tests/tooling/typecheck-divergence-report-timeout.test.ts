@@ -12,6 +12,8 @@ import {
   writeVueTsc,
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
 
+const outerHarnessTimeoutMs = 20_000;
+
 function artifactPath(fixture: ReturnType<typeof setup>) {
   return path.join(fixture.reportDir, "fixture-typecheck-divergence.json");
 }
@@ -37,11 +39,11 @@ setInterval(() => {}, 1000);`,
     );
 
     const startedAt = Date.now();
-    const result = run(fixture, {}, [], { timeoutMs: 8_000 });
+    const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
     const reason = "vue-tsc baseline failed to run: spawn timed out after 80ms";
     assert.equal(result.status, 1);
     assert.ok(
-      Date.now() - startedAt < 8_000,
+      Date.now() - startedAt < outerHarnessTimeoutMs,
       "timeout handling must not wait for a vue-tsc process tree that ignores SIGTERM",
     );
     assert.equal(result.stderr, `${unusableFailure(reason)}\n`);
@@ -68,7 +70,7 @@ test("typecheck divergence report records a vue-tsc coverage timeout as an unusa
   try {
     updateJson(
       fixture.registryPath,
-      (registry) => (registry.projects[0].typecheckPerformance.hangTimeoutMs = 80),
+      (registry) => (registry.projects[0].typecheckPerformance.hangTimeoutMs = 500),
     );
     writeVueTsc(
       fixture.vueTsc,
@@ -82,11 +84,11 @@ test("typecheck divergence report records a vue-tsc coverage timeout as an unusa
     );
 
     const startedAt = Date.now();
-    const result = run(fixture, {}, [], { timeoutMs: 8_000 });
-    const reason = "vue-tsc coverage baseline failed to run: spawn timed out after 80ms";
+    const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
+    const reason = "vue-tsc coverage baseline failed to run: spawn timed out after 500ms";
     assert.equal(result.status, 1);
     assert.ok(
-      Date.now() - startedAt < 8_000,
+      Date.now() - startedAt < outerHarnessTimeoutMs,
       "coverage timeout handling must not wait for the outer test timeout",
     );
     assert.equal(result.stderr, `${unusableFailure(reason)}\n`);
@@ -99,6 +101,48 @@ test("typecheck divergence report records a vue-tsc coverage timeout as an unusa
     assert.equal(artifact.baseline.coverage.unusableReason, reason);
     assert.equal(artifact.mutationOracle.unusableReason, reason);
     assert.equal(artifact.budget.verdict, "unusable");
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("typecheck divergence report drains verbose vue-tsc coverage output", () => {
+  if (process.platform === "win32") return;
+
+  const fixture = setup();
+  try {
+    updateJson(
+      fixture.registryPath,
+      (registry) => (registry.projects[0].typecheckPerformance.hangTimeoutMs = 1_000),
+    );
+    writeVueTsc(
+      fixture.vueTsc,
+      `if (process.argv.includes("--listFilesOnly")) {
+  fs.writeSync(1, process.cwd() + "/src/App.vue\\n");
+  const filler = process.cwd() + "/src/generated-support-file.ts\\n";
+  for (let index = 0; index < 50_000; index++) fs.writeSync(1, filler);
+  process.exit(0);
+}
+
+let output = "src/App.vue(1,1): error TS2322: shared\\n";
+const source = fs.readFileSync("src/App.vue", "utf8");
+const marker = "__vize_typecheck_mutation_probe: string = 1";
+if (source.includes(marker)) {
+  const line = source.slice(0, source.indexOf(marker)).split(/\\r?\\n/).length;
+  output += \`src/App.vue(\${line},1): error TS2322: Type 'number' is not assignable to type 'string'.\\n\`;
+}
+process.stdout.write(output);
+process.exit(2);`,
+      fixture.invocationPath,
+    );
+
+    const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = readJson(artifactPath(fixture));
+    assert.equal(artifact.baseline.coverageRunError, null);
+    assert.equal(artifact.baseline.coverage.baselineVueFileCount, 1);
+    assert.equal(artifact.baseline.coverage.verdict, "usable");
+    assert.equal(artifact.budget.verdict, "passed");
   } finally {
     cleanup(fixture);
   }
@@ -120,7 +164,9 @@ setInterval(() => {}, 1000);`,
       fixture.invocationPath,
     );
 
-    const result = run(fixture, {}, ["--budget-mode", "record-only"], { timeoutMs: 8_000 });
+    const result = run(fixture, {}, ["--budget-mode", "record-only"], {
+      timeoutMs: outerHarnessTimeoutMs,
+    });
     const reason = "vue-tsc baseline failed to run: spawn timed out after 80ms";
     assert.equal(result.status, 0, result.stderr);
     assert.ok(

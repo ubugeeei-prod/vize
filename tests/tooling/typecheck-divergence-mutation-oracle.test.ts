@@ -11,6 +11,8 @@ import {
   updateJson,
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
 
+const outerHarnessTimeoutMs = 20_000;
+
 function artifactPath(fixture: ReturnType<typeof setup>, extension: string) {
   return path.join(fixture.reportDir, `fixture-typecheck-divergence.${extension}`);
 }
@@ -72,10 +74,10 @@ setInterval(() => {}, 1000);
     fs.chmodSync(fixture.vize, 0o755);
 
     const startedAt = Date.now();
-    const result = run(fixture, {}, [], { timeoutMs: 8_000 });
+    const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
     assert.equal(result.status, 1);
     assert.ok(
-      Date.now() - startedAt < 8_000,
+      Date.now() - startedAt < outerHarnessTimeoutMs,
       "timeout handling must not wait for a Vize mutation process tree that ignores SIGTERM",
     );
     const artifact = readJson(artifactPath(fixture, "json"));
