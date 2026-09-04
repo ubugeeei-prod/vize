@@ -8,11 +8,14 @@
 )]
 
 use davinci_harness::fixtures::{LADDER, template_block};
+use vize_atelier_core::options::{CodegenOptions, TemplateSyntaxMode};
 use vize_atelier_dom::{
     DomCompilerOptions, compile_template, compile_template_with_options,
     compile_template_with_options_and_hoisted_scope_id,
+    compile_template_with_template_syntax_and_codegen_options,
 };
 use vize_s0::Allocator;
+use vize_s0::String;
 use vize_s0::profiler::{CounterSummary, global_profiler};
 
 static PROFILER_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
@@ -183,6 +186,51 @@ fn source_map_disabled_hoisted_scope_id_stays_on_s2_codegen() {
     assert_eq!(counter(&counters, "davinci.s2_dom.files"), 1);
     assert_eq!(result.preamble, compat.preamble);
     assert_eq!(result.code, compat.code);
+}
+
+#[test]
+fn source_map_disabled_runtime_global_name_stays_on_s2_codegen() {
+    let _guard = lock_profiler();
+    let profiler = global_profiler();
+    profiler.disable();
+    profiler.clear();
+    let source = r#"<button @click="go">{{ label }}</button>"#;
+    let codegen = CodegenOptions {
+        runtime_global_name: String::from("RuntimeVue"),
+        ..Default::default()
+    };
+    let compat_allocator = Allocator::new();
+    let (_, compat_errors, compat) = compile_template_with_template_syntax_and_codegen_options(
+        &compat_allocator,
+        source,
+        DomCompilerOptions {
+            source_map: true,
+            ..Default::default()
+        },
+        TemplateSyntaxMode::Standard,
+        codegen.clone(),
+    );
+    assert!(compat_errors.is_empty());
+
+    let profile = ProfileScope::enable();
+    let allocator = Allocator::new();
+    let (_, errors, result) = compile_template_with_template_syntax_and_codegen_options(
+        &allocator,
+        source,
+        DomCompilerOptions::default(),
+        TemplateSyntaxMode::Standard,
+        codegen,
+    );
+    let counters = profile.finish();
+
+    assert!(errors.is_empty());
+    assert_eq!(result.preamble, compat.preamble);
+    assert_eq!(result.code, compat.code);
+    assert_eq!(
+        counter(&counters, "davinci.s2_dom.files"),
+        1,
+        "custom runtime-global compiles are covered by the S2 production option surface"
+    );
 }
 
 #[test]
