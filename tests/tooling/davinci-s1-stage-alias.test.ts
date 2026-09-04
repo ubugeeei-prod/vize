@@ -15,11 +15,15 @@ test("Davinci S1 uses the physical crate package and directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
   assert.match(workspaceManifest, /^\s*"crates\/vize_s1",$/m);
   const manifest = parseToml(workspaceManifest) as {
-    workspace?: { dependencies?: { vize_s1?: unknown } };
+    workspace?: { dependencies?: { vize_s1?: unknown }; package?: { version?: unknown } };
   };
+  const workspaceVersion = manifest.workspace?.package?.version;
+  if (typeof workspaceVersion !== "string") {
+    assert.fail("workspace package version must be declared");
+  }
   assert.deepEqual(manifest.workspace?.dependencies?.vize_s1, {
     path: "crates/vize_s1",
-    version: "=0.390.0",
+    version: `=${workspaceVersion}`,
   });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_sinopia/u);
   assert.doesNotMatch(workspaceManifest, /^vize_sinopia = /m);

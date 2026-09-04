@@ -9,6 +9,10 @@ function isPublishable(pkg: Package): boolean {
   return pkg.publish === null || pkg.publish.length > 0;
 }
 
+function versionRequirement(packageName: string): string {
+  return `=${workspacePackage(metadata, packageName).version}`;
+}
+
 type FeatureOwner = Pick<Package, "dependencies">;
 
 function featureDependencyKey(featureValue: string): string {
@@ -74,7 +78,7 @@ test("DOM S2 witnesses remain test-space only until the production switch", () =
     {
       name: "vize_davinci",
       kind: "dev",
-      req: "=0.390.0",
+      req: versionRequirement("vize_davinci"),
       rename: null,
       optional: false,
       features: [],
@@ -82,7 +86,7 @@ test("DOM S2 witnesses remain test-space only until the production switch", () =
     {
       name: "vize_s1_to_s2",
       kind: "dev",
-      req: "=0.390.0",
+      req: versionRequirement("vize_s1_to_s2"),
       rename: null,
       optional: false,
       // The P2-11 witness batteries compile TypeScript templates, which the

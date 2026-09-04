@@ -132,7 +132,7 @@ test("Davinci S2 uses the physical crate directory", () => {
   assert.match(workspaceManifest, /^\s*"crates\/vize_s2",$/m);
   assert.deepEqual(workspaceDependencyDeclaration("vize_s2"), {
     path: "crates/vize_s2",
-    version: "=0.390.0",
+    version: `=${workspacePackage(metadata, "vize_s2").version}`,
   });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_disegno/u);
 });
@@ -142,7 +142,7 @@ test("Davinci S1-to-S2 uses the physical crate package and directory", () => {
   assert.match(workspaceManifest, /^\s*"crates\/vize_s1_to_s2",$/m);
   assert.deepEqual(workspaceDependencyDeclaration("vize_s1_to_s2"), {
     path: "crates/vize_s1_to_s2",
-    version: "=0.390.0",
+    version: `=${workspacePackage(metadata, "vize_s1_to_s2").version}`,
   });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_ricalco/u);
   assert.doesNotMatch(workspaceManifest, /^vize_ricalco = /m);
