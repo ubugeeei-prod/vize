@@ -44,14 +44,10 @@ fn profile_reports_real_s2_dom_walks() {
         "normal DOM compilation must not instantiate the profiling observer"
     );
 
-    profiler.clear();
-    profiler.enable();
-
+    let profile = ProfileScope::enable();
     let allocator = Allocator::new();
     let (_, errors, result) = compile_template(&allocator, "<div>{{ msg }}</div>");
-
-    profiler.disable();
-    let counters = profiler.counter_summary();
+    let counters = profile.finish();
 
     assert!(errors.is_empty());
     assert!(!result.code.is_empty());
@@ -70,6 +66,7 @@ fn profile_reports_ladder_s2_dom_walk_budget() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
+    profiler.clear();
 
     for fixture in &LADDER {
         let template =
@@ -83,14 +80,10 @@ fn profile_reports_ladder_s2_dom_walk_budget() {
             fixture.name
         );
 
-        profiler.clear();
-        profiler.enable();
-
+        let profile = ProfileScope::enable();
         let allocator = Allocator::new();
         let (_, errors, result) = compile_template(&allocator, template);
-
-        profiler.disable();
-        let counters = profiler.counter_summary();
+        let counters = profile.finish();
 
         assert!(
             errors.is_empty(),
@@ -117,8 +110,6 @@ fn profile_reports_ladder_s2_dom_walk_budget() {
             6 + expected.0
         );
     }
-
-    profiler.clear();
 }
 
 #[test]
@@ -126,6 +117,7 @@ fn source_map_disabled_scope_id_uses_compatibility_codegen() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
+    profiler.clear();
     let source = r#"<div class="scoped">{{ msg }}</div>"#;
     let scoped_options = DomCompilerOptions {
         scope_id: Some("data-v-direct".into()),
@@ -142,14 +134,10 @@ fn source_map_disabled_scope_id_uses_compatibility_codegen() {
     );
     assert!(compat_errors.is_empty());
 
-    profiler.clear();
-    profiler.enable();
-
+    let profile = ProfileScope::enable();
     let allocator = Allocator::new();
     let (_, errors, result) = compile_template_with_options(&allocator, source, scoped_options);
-
-    profiler.disable();
-    let counters = profiler.counter_summary();
+    let counters = profile.finish();
 
     assert!(errors.is_empty());
     assert_eq!(result.preamble, compat.preamble);
@@ -166,6 +154,7 @@ fn source_map_disabled_hoisted_scope_id_stays_on_s2_codegen() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
+    profiler.clear();
     let source = r#"<div :class="{ active }"><svg><rect class="marker" x="1" /></svg></div>"#;
     let compat_allocator = Allocator::new();
     let (_, compat_errors, compat) = compile_template_with_options_and_hoisted_scope_id(
@@ -179,9 +168,7 @@ fn source_map_disabled_hoisted_scope_id_stays_on_s2_codegen() {
     );
     assert!(compat_errors.is_empty());
 
-    profiler.clear();
-    profiler.enable();
-
+    let profile = ProfileScope::enable();
     let allocator = Allocator::new();
     let (_, errors, result) = compile_template_with_options_and_hoisted_scope_id(
         &allocator,
@@ -190,8 +177,7 @@ fn source_map_disabled_hoisted_scope_id_stays_on_s2_codegen() {
         Some("data-v-hoist".into()),
     );
 
-    profiler.disable();
-    let counters = profiler.counter_summary();
+    let counters = profile.finish();
 
     assert!(errors.is_empty());
     assert_eq!(counter(&counters, "davinci.s2_dom.files"), 1);
@@ -204,6 +190,7 @@ fn source_map_disabled_comments_use_compatibility_codegen() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
+    profiler.clear();
     let source = "<div><!--kept--><span>probe</span></div>";
     let options = DomCompilerOptions {
         comments: true,
@@ -220,14 +207,10 @@ fn source_map_disabled_comments_use_compatibility_codegen() {
     );
     assert!(compat_errors.is_empty());
 
-    profiler.clear();
-    profiler.enable();
-
+    let profile = ProfileScope::enable();
     let allocator = Allocator::new();
     let (_, errors, result) = compile_template_with_options(&allocator, source, options);
-
-    profiler.disable();
-    let counters = profiler.counter_summary();
+    let counters = profile.finish();
 
     assert!(errors.is_empty());
     assert_eq!(result.preamble, compat.preamble);
@@ -254,6 +237,31 @@ fn counter_total(counters: &CounterSummary, name: &str) -> Option<u64> {
         .iter()
         .find(|entry| entry.name == name)
         .map(|entry| entry.total)
+}
+
+struct ProfileScope;
+
+impl ProfileScope {
+    fn enable() -> Self {
+        let profiler = global_profiler();
+        profiler.clear();
+        profiler.enable();
+        Self
+    }
+
+    fn finish(self) -> CounterSummary {
+        let profiler = global_profiler();
+        profiler.disable();
+        profiler.counter_summary()
+    }
+}
+
+impl Drop for ProfileScope {
+    fn drop(&mut self) {
+        let profiler = global_profiler();
+        profiler.disable();
+        profiler.clear();
+    }
 }
 
 fn s2_dom_emit_count(fixture: &str) -> (u64, u64) {
