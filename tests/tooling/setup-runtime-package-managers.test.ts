@@ -31,6 +31,7 @@ test("setup-runtime-package-managers accepts package.json and matrix Node source
   const bun = actionStep(steps, "Install Bun package manager");
 
   assert.equal(parsed.inputs?.["node-version-file"]?.default, "package.json");
+  assert.ok(parsed.inputs?.["node-version"], "missing node-version input");
   assert.deepEqual(actionStep(steps, "Setup Vite+ and Node.js from version file"), {
     name: "Setup Vite+ and Node.js from version file",
     if: "inputs.node-version == ''",
