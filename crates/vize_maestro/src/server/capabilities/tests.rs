@@ -103,6 +103,29 @@ fn on_type_formatting_advertises_the_vue_language_server_trigger_set() {
 }
 
 #[test]
+fn auto_insertion_advertises_positional_vscode_configuration_sections() {
+    let experimental = server_capabilities(all_features())
+        .experimental
+        .expect("auto insertion should advertise a private client capability");
+
+    assert_eq!(
+        experimental,
+        serde_json::json!({
+            "autoInsertionProvider": {
+                "triggerCharacters": ["}", "=", ">", "/", "\\w"],
+                "configurationSections": [
+                    ["vize.autoInsert.bracketSpacing"],
+                    ["vize.autoInsert.autoCreateQuotes"],
+                    ["vize.autoInsert.autoClosingTags"],
+                    ["vize.autoInsert.autoClosingTags"],
+                    ["vize.autoInsert.dotValue"]
+                ]
+            }
+        })
+    );
+}
+
+#[test]
 fn all_features_skip_unimplemented_providers_and_keep_implemented_ones() {
     let capabilities = server_capabilities(all_features());
 
