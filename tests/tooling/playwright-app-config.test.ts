@@ -37,6 +37,14 @@ test("external fixture installs use the guarded helper", () => {
   assert.match(pnpmConfig, /minimumReleaseAgeExclude/);
 });
 
+test("misskey fixture install uses the cold-cache app readiness budget", () => {
+  const apps = readRepoFile("tests", "_helpers", "apps.ts");
+  assert.match(
+    apps,
+    /installPnpmDependencies\(misskeyDir,\s*\{[\s\S]*?ignoreScripts:\s*true,[\s\S]*?timeout:\s*900_000,/,
+  );
+});
+
 test("fixture pnpm workspace patch adds one release-age exclude", () => {
   const tempRoot = fs.mkdtempSync(path.join(root, ".fixture-pnpm-config-"));
   const workspacePath = path.join(tempRoot, "pnpm-workspace.yaml");
