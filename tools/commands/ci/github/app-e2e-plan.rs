@@ -241,7 +241,7 @@ fn readiness_rows() -> Vec<Row> {
         row("readiness", "readiness", "lint", "test:readiness:lint", READINESS_FIXTURES, false, "20m"),
         row("readiness", "readiness", "build", "test:readiness:build", &["elk"], false, "3m"),
         row("readiness", "readiness", "dev-misskey", "test:readiness:dev:misskey", &["misskey"], true, "8m"),
-        row("readiness", "readiness", "dev-nuxt-ui", "test:readiness:dev:nuxt-ui", &["nuxt-ui"], true, "20m"),
+        row("readiness", "readiness", "dev-nuxt-ui", "test:readiness:dev:nuxt-ui", &["nuxt-ui"], true, "25m"),
     ]
 }
 

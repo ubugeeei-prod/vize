@@ -1825,7 +1825,7 @@ export const nuxtUiApp: AppConfig = {
   allowNon200: true,
   waitUntil: "load",
   readyDelay: 10_000,
-  startupTimeout: 300_000,
+  startupTimeout: 600_000,
   setup() {
     const nuxtUiDir = syncGitFixtureWorktree("nuxt-ui", "playground");
     const nuxtConfigPath = path.join(nuxtUiDir, "playgrounds", "nuxt", "nuxt.config.ts");

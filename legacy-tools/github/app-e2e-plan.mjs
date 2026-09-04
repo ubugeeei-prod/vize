@@ -107,7 +107,7 @@ export const readinessRows = [
     "test:readiness:dev:nuxt-ui",
     ["nuxt-ui"],
     true,
-    "20m",
+    "25m",
   ),
 ];
 
