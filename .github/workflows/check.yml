@@ -146,22 +146,7 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Audit production npm dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-          for attempt in 1 2 3; do
-            if vp exec pnpm audit --prod --audit-level moderate; then
-              exit 0
-            else
-              audit_status=$?
-            fi
-            if [[ "$attempt" == 3 ]]; then
-              exit "$audit_status"
-            fi
-            delay_seconds=$((attempt * 20))
-            echo "pnpm audit attempt $attempt failed; retrying in ${delay_seconds}s..."
-            sleep "$delay_seconds"
-          done
+        run: rust-script tools/commands/ci/npm-audit.rs
       - name: Install cargo-audit
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
