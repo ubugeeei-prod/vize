@@ -134,7 +134,13 @@ pub(super) fn can_hoist_static_props(
     Ok((!transition_direct_slot_outlet
         && !is_template_for_root
         && dynamic_props_hoistable
-        && props_static::should_hoist_component(cx, id, position, &component.attributes, &component.bindings))
+        && props_static::should_hoist_component(
+            cx,
+            id,
+            position,
+            &component.attributes,
+            &component.bindings,
+        ))
         || (is_template_for_root
             && dynamic_props_hoistable
             && id.is_some_and(|id| {

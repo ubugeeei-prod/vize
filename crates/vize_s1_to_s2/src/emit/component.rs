@@ -104,8 +104,7 @@ pub(super) fn emit_call(
             props_static::PropHoistPosition::ForItem,
             &component.attributes,
             &component.bindings,
-        )
-            || (props.dynamic_values && !has_slots && !has_array))
+        ) || (props.dynamic_values && !has_slots && !has_array))
     {
         cx.buf.push_hoist(props.source.clone());
     }

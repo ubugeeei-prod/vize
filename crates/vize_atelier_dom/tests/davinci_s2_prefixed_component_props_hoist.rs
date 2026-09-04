@@ -193,7 +193,10 @@ fn only_the_component_path_takes_the_widened_rule() {
     };
     assert_eq!(
         hoists(r#"<MyComp :range="[new Date(2019, 2, 4), new Date(2019, 2, 24)]" />"#),
-        vec!["const _hoisted_1 = { range: [new Date(2019, 2, 4), new Date(2019, 2, 24)] }".to_string()]
+        vec![
+            "const _hoisted_1 = { range: [new Date(2019, 2, 4), new Date(2019, 2, 24)] }"
+                .to_string()
+        ]
     );
     // The element path is deliberately untouched here: it still answers
     // from the pass's unprefixed rule.

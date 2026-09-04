@@ -27,7 +27,8 @@ use vize_atelier_core::options::{
     CodegenMode, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
 };
 use vize_atelier_dom::{
-    DomCompilerOptions, compile_template_with_custom_elements_and_template_syntax_and_codegen_options,
+    DomCompilerOptions,
+    compile_template_with_custom_elements_and_template_syntax_and_codegen_options,
 };
 use vize_s0::{Allocator, String};
 use vize_s1_to_s2::{CustomElementPatterns, DomEmitMode, DomEmitOptions};
@@ -86,9 +87,8 @@ fn dom_options() -> DomCompilerOptions {
 
 fn shipped(src: &str, patterns: &[&str]) -> String {
     let allocator = Allocator::new();
-    let matcher = CustomElementMatcher::from_patterns(
-        patterns.iter().map(|p| String::from(*p)).collect(),
-    );
+    let matcher =
+        CustomElementMatcher::from_patterns(patterns.iter().map(|p| String::from(*p)).collect());
     let (_, errors, result) =
         compile_template_with_custom_elements_and_template_syntax_and_codegen_options(
             &allocator,
@@ -158,16 +158,37 @@ fn an_unset_rule_changes_nothing() {
 #[test]
 fn the_mirrored_glob_answers_like_the_shipped_matcher() {
     const PATTERNS: &[&str] = &[
-        "Tres*", "*-icon", "ion-button", "*", "", "a*z", "*mid*", "x*y*z",
+        "Tres*",
+        "*-icon",
+        "ion-button",
+        "*",
+        "",
+        "a*z",
+        "*mid*",
+        "x*y*z",
     ];
     const TAGS: &[&str] = &[
-        "TresMesh", "Tres", "MyTresMesh", "app-icon", "app-icons", "ion-button", "ion-buttons",
-        "abcz", "az", "abc", "amidz", "mid", "xyz", "xAyBz", "xz", "", "div",
+        "TresMesh",
+        "Tres",
+        "MyTresMesh",
+        "app-icon",
+        "app-icons",
+        "ion-button",
+        "ion-buttons",
+        "abcz",
+        "az",
+        "abc",
+        "amidz",
+        "mid",
+        "xyz",
+        "xAyBz",
+        "xz",
+        "",
+        "div",
     ];
     for pattern in PATTERNS {
         let mine = CustomElementPatterns::new(core::slice::from_ref(pattern));
-        let theirs =
-            CustomElementMatcher::from_patterns(vec![String::from(*pattern)]);
+        let theirs = CustomElementMatcher::from_patterns(vec![String::from(*pattern)]);
         for tag in TAGS {
             assert_eq!(
                 (pattern, tag, mine.matches(tag)),
