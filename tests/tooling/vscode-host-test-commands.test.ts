@@ -36,9 +36,9 @@ test("the hidden host completion command only exists for the host smoke", async 
     environment: { [HOST_TEST_COMMAND_ENVIRONMENT_FLAG]: "1" },
     getClient: () => undefined,
   });
-  assert.deepEqual(
-    new Set(commands.map((command) => command.command)),
-    new Set([HOST_TEST_COMPLETION_COMMAND, HOST_TEST_SERVER_INFO_COMMAND]),
+  assertExactCommandMembership(
+    commands.map((command) => command.command),
+    [HOST_TEST_COMPLETION_COMMAND, HOST_TEST_SERVER_INFO_COMMAND],
   );
   const completionCommand = findHostCommand(commands, HOST_TEST_COMPLETION_COMMAND);
   const serverInfoCommand = findHostCommand(commands, HOST_TEST_SERVER_INFO_COMMAND);
@@ -106,7 +106,9 @@ test("the host server info command returns the selected server evidence", async 
 
 test("registering the gated host commands leaves an executable command behind", async () => {
   const registry = new Map<string, (request?: unknown) => Promise<unknown>>();
+  const registerCalls: string[] = [];
   const register = (command: string, handler: (request?: unknown) => Promise<unknown>) => {
+    registerCalls.push(command);
     registry.set(command, handler);
     return { dispose: () => registry.delete(command) };
   };
@@ -117,16 +119,21 @@ test("registering the gated host commands leaves an executable command behind", 
     [],
   );
   assert.deepEqual([...registry.keys()], []);
+  assert.deepEqual(registerCalls, []);
 
   const registrations = bindHostTestCommands({
     environment: { [HOST_TEST_COMMAND_ENVIRONMENT_FLAG]: "1" },
     getClient: () => client,
     register,
   });
-  assert.deepEqual(
-    new Set(registry.keys()),
-    new Set([HOST_TEST_COMPLETION_COMMAND, HOST_TEST_SERVER_INFO_COMMAND]),
-  );
+  assertExactCommandMembership(registerCalls, [
+    HOST_TEST_COMPLETION_COMMAND,
+    HOST_TEST_SERVER_INFO_COMMAND,
+  ]);
+  assertExactCommandMembership(registry.keys(), [
+    HOST_TEST_COMPLETION_COMMAND,
+    HOST_TEST_SERVER_INFO_COMMAND,
+  ]);
 
   const execute = registry.get(HOST_TEST_COMPLETION_COMMAND);
   assert.ok(execute);
@@ -230,6 +237,10 @@ function findHostCommand(
   const command = commands.find((candidate) => candidate.command === commandId);
   assert.ok(command, `${commandId} must be registered`);
   return command;
+}
+
+function assertExactCommandMembership(actual: Iterable<string>, expected: readonly string[]) {
+  assert.deepEqual([...actual].sort(), [...expected].sort());
 }
 
 function createFakeClient(
