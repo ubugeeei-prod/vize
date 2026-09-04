@@ -84,7 +84,12 @@ pub fn load_config_and_linter_with_lint_features_and_source(
     path: Option<&Path>,
 ) -> (LoadedConfigWithFeatures, LinterConfig, LinterFeatureFlags) {
     let loaded = load_raw_config_with_source(path);
-    let compiler_compatibility_vue_version = loaded.config.compiler.compatibility.vue_version;
+    let compiler_compatibility_vue_version = loaded
+        .config
+        .compiler
+        .compatibility
+        .vue_version
+        .or(loaded.config.compatibility.vue_version);
     let compiler_vapor = loaded
         .config
         .compiler
@@ -118,7 +123,12 @@ pub fn load_config_and_linter_plan_with_lint_features_and_source(
     LinterFeatureFlags,
 ) {
     let loaded = load_raw_config_with_source(path);
-    let compiler_compatibility_vue_version = loaded.config.compiler.compatibility.vue_version;
+    let compiler_compatibility_vue_version = loaded
+        .config
+        .compiler
+        .compatibility
+        .vue_version
+        .or(loaded.config.compatibility.vue_version);
     let compiler_vapor = loaded
         .config
         .compiler
@@ -152,7 +162,12 @@ pub fn load_config_and_linter_plan_with_rule_options_and_lint_features_and_sourc
     LinterFeatureFlags,
 ) {
     let loaded = load_raw_config_with_source(path);
-    let compiler_compatibility_vue_version = loaded.config.compiler.compatibility.vue_version;
+    let compiler_compatibility_vue_version = loaded
+        .config
+        .compiler
+        .compatibility
+        .vue_version
+        .or(loaded.config.compatibility.vue_version);
     let compiler_vapor = loaded
         .config
         .compiler
