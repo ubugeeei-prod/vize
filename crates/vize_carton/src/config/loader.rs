@@ -169,9 +169,15 @@ pub fn load_linter_config(path: Option<&Path>) -> LinterConfig {
 }
 
 /// Load the typed per-rule lint options (`linter.ruleOptions`); defaults when unset.
-pub fn load_linter_rule_options(path: Option<&Path>) -> crate::config::LintRuleOptions {
+pub fn load_config_lint_rule_options(path: Option<&Path>) -> crate::config::ConfigLintRuleOptions {
     let loaded = load_raw_config_with_source(path);
     loaded.config.linter.rule_options().clone()
+}
+
+/// Load the stable per-rule lint options subset; defaults when unset.
+pub fn load_linter_rule_options(path: Option<&Path>) -> crate::config::LintRuleOptions {
+    let loaded = load_raw_config_with_source(path);
+    loaded.config.linter.rule_options().stable_options().clone()
 }
 
 pub fn load_config_entry_ignores_with_source(path: Option<&Path>) -> LoadedConfigEntryIgnores {

@@ -40,7 +40,7 @@ test("reusable release preflight verifies evidence and crate plans without regis
   const verify = workflow.jobs?.verify;
   assert.ok(verify);
   assert.match(verify["runs-on"] ?? "", new RegExp(`^${hostedOrBlacksmith("ubuntu-24.04")}$`));
-  assert.equal(verify["timeout-minutes"], 120);
+  assert.equal(verify["timeout-minutes"], 360);
   assert.deepEqual(verify.permissions, {
     actions: "write",
     contents: "read",

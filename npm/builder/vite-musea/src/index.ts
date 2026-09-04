@@ -17,6 +17,7 @@ export { musea } from "./plugin/index.js";
 
 export type {
   MuseaOptions,
+  MuseaVrtOptions,
   MuseaTokenPreviewConfig,
   MuseaTokenPreviewKind,
   MuseaTokenPreviewRule,

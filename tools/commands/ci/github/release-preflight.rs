@@ -5,6 +5,7 @@
 //! regex = "1"
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
+//! sha2 = "0.10"
 //! urlencoding = "2"
 //!
 //! [package]
@@ -13,9 +14,11 @@
 
 #[path = "../../../support/common.rs"]
 mod common;
+#[path = "../../../support/release/preflight_matrix_evidence.rs"]
+mod matrix_evidence;
 
 use regex::Regex;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::{
     collections::{BTreeMap, BTreeSet},
     env,
@@ -25,9 +28,22 @@ use std::{
     time::{Duration, Instant},
 };
 
-const REQUIRED_RELEASE_WORKFLOWS: &[&str] = &["Check", "Benchmark", "Fuzz", "Miri", "Docs build"];
-const PARENT_EVIDENCE_REUSABLE_WORKFLOWS: &[&str] =
-    &["Check", "Benchmark", "Fuzz", "Miri", "Docs build"];
+const REQUIRED_RELEASE_WORKFLOWS: &[&str] = &[
+    "Check",
+    "Benchmark",
+    "Fuzz",
+    "Miri",
+    "Real Project Matrix",
+    "Docs build",
+];
+const PARENT_EVIDENCE_REUSABLE_WORKFLOWS: &[&str] = &[
+    "Check",
+    "Benchmark",
+    "Fuzz",
+    "Miri",
+    "Real Project Matrix",
+    "Docs build",
+];
 const RELEASE_PACKAGE_ROOTS: &[&str] = &["editors", "npm"];
 const RELEASE_BLOCKING_LABELS: &[&str] = &["priority:p0", "priority:p1"];
 
@@ -155,6 +171,25 @@ fn verify_release_preflight(bootstrap: bool) -> Result<(), String> {
             None,
         )?;
         assert_required_workflow_jobs(workflow_name, &jobs)?;
+    }
+    if let Some(run) = selected.get(matrix_evidence::REAL_PROJECT_MATRIX_WORKFLOW_NAME) {
+        let run_id = run
+            .get("id")
+            .and_then(Value::as_i64)
+            .ok_or_else(|| "Real Project Matrix run is missing id".to_string())?;
+        let artifacts = github_api_pages(
+            &api_url,
+            &repository,
+            &token,
+            &format!("actions/runs/{run_id}/artifacts"),
+            None,
+        )?;
+        matrix_evidence::assert_real_project_matrix_release_artifacts(
+            &repo_root()?,
+            run,
+            &artifacts,
+            |artifact| matrix_evidence::download_artifact_entries(&token, artifact),
+        )?;
     }
     let blockers = find_release_blockers(&issues, Some(&target.tag))?;
     if !blockers.is_empty() {
@@ -469,6 +504,21 @@ fn create_release_gate_dispatch_plans(
             expected_run_name: format!("Fuzz replay @ {head_sha}"),
             accepts_scheduled_evidence: false,
         },
+        DispatchPlan {
+            workflow_name: "Real Project Matrix",
+            workflow_id: "real-project-matrix.yml",
+            ref_name: ref_name.to_string(),
+            inputs: json!({
+                "core_tools_mode": "record-only",
+                "typecheck_dependencies_mode": "record-only",
+                "lint_divergence_mode": "record-only",
+                "lsp_mode": "record-only",
+                "typecheck_divergence_mode": "enforce",
+                "davinci_dom_corpus_mode": "record-only",
+            }),
+            expected_run_name: format!("Real Project Matrix @ {head_sha}"),
+            accepts_scheduled_evidence: false,
+        },
     ])
 }
 
@@ -536,7 +586,7 @@ fn bootstrap_required_workflow_runs(
     }
 
     let started = Instant::now();
-    let timeout = Duration::from_secs(90 * 60);
+    let timeout = Duration::from_secs(345 * 60);
     let poll_interval = Duration::from_secs(15);
     let mut previous_wait_state = String::new();
     loop {
@@ -773,12 +823,20 @@ fn required_release_workflow_evidence(name: &str) -> Result<WorkflowEvidence, St
             events: &["push", "workflow_dispatch"],
             branches: &[("push", &["main"])],
         }),
+        "Real Project Matrix" => Ok(WorkflowEvidence {
+            path: ".github/workflows/real-project-matrix.yml",
+            events: &["schedule", "workflow_dispatch"],
+            branches: &[("schedule", &["main"])],
+        }),
         other => Err(format!("Release evidence is not configured for {other}")),
     }
 }
 
 fn workflow_requires_job_evidence(workflow_name: &str) -> bool {
-    matches!(workflow_name, "Check" | "Benchmark" | "Fuzz")
+    matches!(
+        workflow_name,
+        "Check" | "Benchmark" | "Fuzz" | "Real Project Matrix"
+    )
 }
 
 fn assert_required_workflow_jobs(
@@ -795,6 +853,14 @@ fn assert_required_workflow_jobs(
             "Fuzz css_parse".to_string(),
             "Fuzz template_compile".to_string(),
         ],
+        "Real Project Matrix" => (0..matrix_evidence::REQUIRED_REAL_PROJECT_MATRIX_SHARD_COUNT)
+            .map(|shard| {
+                format!(
+                    "real projects ({shard}/{})",
+                    matrix_evidence::REQUIRED_REAL_PROJECT_MATRIX_SHARD_COUNT
+                )
+            })
+            .collect(),
         _ => Vec::new(),
     };
     let mut jobs = flatten_collection(jobs_response, "jobs");
@@ -1070,6 +1136,8 @@ fn collection_for(resource: &str) -> &'static str {
         "workflow_runs"
     } else if resource.ends_with("/jobs") {
         "jobs"
+    } else if resource.ends_with("/artifacts") {
+        "artifacts"
     } else {
         ""
     }

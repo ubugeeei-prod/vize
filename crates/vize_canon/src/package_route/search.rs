@@ -3,14 +3,16 @@ use std::path::{Path, PathBuf};
 use serde_json::Value;
 use vize_carton::FxHashMap;
 
-use super::stamp::{InputStamp, manifest_path};
+use super::stamp::{InputStamp, InputStampCache, manifest_path};
 
 const MANIFEST_CACHE_CAPACITY: usize = 1_024;
 
 #[derive(Default)]
 pub(super) struct PackageSearchCache {
     manifests: FxHashMap<PathBuf, CachedManifest>,
+    stamp_snapshots: InputStampCache,
     manifest_reads: u64,
+    validation_epoch: u64,
     clock: u64,
     evictions: u64,
 }
@@ -19,14 +21,22 @@ struct CachedManifest {
     stamp: InputStamp,
     value: Option<Value>,
     last_used: u64,
+    last_validated_epoch: u64,
 }
 
 impl PackageSearchCache {
     pub(super) fn clear(&mut self) {
         self.manifests.clear();
+        self.stamp_snapshots.clear();
         self.manifest_reads = 0;
+        self.validation_epoch = 0;
         self.clock = 0;
         self.evictions = 0;
+    }
+
+    pub(super) fn begin_validation_epoch(&mut self) {
+        self.validation_epoch = self.validation_epoch.wrapping_add(1).max(1);
+        self.stamp_snapshots.clear();
     }
 
     pub(super) fn manifest_reads(&self) -> u64 {
@@ -43,20 +53,31 @@ impl PackageSearchCache {
 
     fn read_manifest(&mut self, root: &Path) -> Option<Value> {
         let path = manifest_path(root);
-        let cached = self
-            .manifests
-            .get(&path)
-            .filter(|cached| cached.stamp.is_current())
-            .map(|cached| cached.value.clone());
-        if let Some(cached) = cached {
-            self.clock = self.clock.wrapping_add(1);
-            if let Some(entry) = self.manifests.get_mut(&path) {
-                entry.last_used = self.clock;
+        let validation_epoch = self.validation_epoch;
+        if let Some(cached) = self.manifests.get_mut(&path) {
+            let current = validation_epoch != 0 && cached.last_validated_epoch == validation_epoch
+                || if validation_epoch == 0 {
+                    cached.stamp.is_current()
+                } else {
+                    cached
+                        .stamp
+                        .is_current_with_cache(&mut self.stamp_snapshots)
+                };
+            if current {
+                if validation_epoch != 0 {
+                    cached.last_validated_epoch = validation_epoch;
+                }
+                self.clock = self.clock.wrapping_add(1);
+                cached.last_used = self.clock;
+                return cached.value.clone();
             }
-            return cached;
         }
         self.manifests.remove(&path);
-        let stamp = InputStamp::capture(&path);
+        let stamp = if self.validation_epoch == 0 {
+            InputStamp::capture(&path)
+        } else {
+            self.stamp_snapshots.capture(&path)
+        };
         self.manifest_reads += 1;
         let value = std::fs::read_to_string(&path)
             .ok()
@@ -79,6 +100,7 @@ impl PackageSearchCache {
                 stamp,
                 value: value.clone(),
                 last_used: self.clock,
+                last_validated_epoch: self.validation_epoch,
             },
         );
         value

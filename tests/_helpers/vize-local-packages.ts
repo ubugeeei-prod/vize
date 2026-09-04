@@ -110,7 +110,13 @@ export function ensureLocalVizePackagesBuilt(): void {
       execFileSync("npx", ["-y", "pnpm@10", "--filter", target.filter, "build"], {
         cwd: REPO_ROOT,
         stdio: "inherit",
-        timeout: 300_000,
+        // Every App E2E row runs this before its own fixture setup, and a
+        // release commit lands every pull request on a cold cache at once
+        // — where `@vizejs/vite-plugin` alone has passed five minutes. A
+        // build that overruns should slow the row down, not fail it with
+        // `spawnSync npx ETIMEDOUT`; the row's own budget is the limit
+        // that means something.
+        timeout: 900_000,
       });
     }
 

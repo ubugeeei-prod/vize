@@ -66,6 +66,8 @@ static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
 // configured boxed instances threaded through the linter (see #1891).
 static NO_RESTRICTED_GLOBALS_RULE: NoRestrictedGlobals = NoRestrictedGlobals::new();
 static NO_RESTRICTED_MEMBERS_RULE: NoRestrictedMembers = NoRestrictedMembers::new();
+static CUSTOM_EVENT_NAME_CASING_RULE: CustomEventNameCasing =
+    CustomEventNameCasing::new(crate::rules::script::EventNameCasing::CamelCase);
 
 /// The full ordered set of built-in script rules. The first 8 engine-reachable
 /// rules stay first to preserve default diagnostic ordering; the rest are
@@ -136,7 +138,7 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
     BuiltinScriptRuleEntry { rule_name: RULE_VALID_DEFINE_EMITS, profile_name: "patina.script_rule.valid_define_emits", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &ValidDefineEmits },
     BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_VALID_DEFAULT_PROP, profile_name: "patina.script_rule.require_valid_default_prop", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &RequireValidDefaultProp },
     BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_TYPED_OBJECT_PROP, profile_name: "patina.script_rule.require_typed_object_prop", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &RequireTypedObjectProp },
-    BuiltinScriptRuleEntry { rule_name: RULE_CUSTOM_EVENT_NAME_CASING, profile_name: "patina.script_rule.custom_event_name_casing", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &CustomEventNameCasing },
+    BuiltinScriptRuleEntry { rule_name: RULE_CUSTOM_EVENT_NAME_CASING, profile_name: "patina.script_rule.custom_event_name_casing", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &CUSTOM_EVENT_NAME_CASING_RULE },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_REF_AS_OPERAND, profile_name: "patina.script_rule.no_ref_as_operand", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoRefAsOperand },
     BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_EXPLICIT_SLOTS, profile_name: "patina.script_rule.require_explicit_slots", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &RequireExplicitSlots },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_DUPLICATE_ATTR_INHERITANCE, profile_name: "patina.script_rule.no_duplicate_attr_inheritance", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoDuplicateAttrInheritance },

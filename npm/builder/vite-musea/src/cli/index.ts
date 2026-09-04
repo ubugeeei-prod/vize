@@ -21,9 +21,13 @@
  *   -h, --help       Show help
  */
 
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { ArtFileInfo } from "../types/index.js";
 import { scanArtFiles, parseArtFile } from "./utils.js";
 import { runVrt, runApprove, runClean, runGenerate } from "./commands.js";
+import { loadMuseaVrtOptions } from "./config.js";
+import type { MuseaVrtOptions } from "../types/index.js";
 
 type Command = "run" | "approve" | "clean" | "generate";
 
@@ -33,6 +37,7 @@ export interface CliOptions {
   config: string;
   output: string;
   threshold: number;
+  thresholdProvided: boolean;
   json: boolean;
   ci: boolean;
   a11y: boolean;
@@ -40,15 +45,17 @@ export interface CliOptions {
   baseUrl: string;
   pattern?: string;
   componentPath?: string;
+  vrt?: MuseaVrtOptions;
 }
 
-function parseArgs(args: string[]): CliOptions {
+export function parseArgs(args: string[]): CliOptions {
   const options: CliOptions = {
     command: "run",
     update: false,
     config: "vite.config.ts",
     output: ".vize",
     threshold: 0.1,
+    thresholdProvided: false,
     json: false,
     ci: false,
     a11y: false,
@@ -100,7 +107,8 @@ function parseArgs(args: string[]): CliOptions {
         break;
       case "-t":
       case "--threshold":
-        options.threshold = parseFloat(args[++i]) || 0.1;
+        options.threshold = parseThreshold(args[++i]);
+        options.thresholdProvided = true;
         break;
       case "--json":
         options.json = true;
@@ -123,6 +131,11 @@ function parseArgs(args: string[]): CliOptions {
   }
 
   return options;
+}
+
+function parseThreshold(value: string | undefined): number {
+  const threshold = Number.parseFloat(value ?? "");
+  return Number.isFinite(threshold) ? threshold : 0.1;
 }
 
 function printHelp(): void {
@@ -208,6 +221,8 @@ async function main(): Promise<void> {
     return;
   }
 
+  options.vrt = await loadMuseaVrtOptions(options.config, cwd);
+
   // Scan for art files
   console.log("  Scanning for art files...");
   const artFilePaths = await scanArtFiles(cwd);
@@ -249,7 +264,14 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((error) => {
-  console.error("Fatal error:", error);
-  process.exit(1);
-});
+if (isDirectRun()) {
+  main().catch((error) => {
+    console.error("Fatal error:", error);
+    process.exit(1);
+  });
+}
+
+function isDirectRun(): boolean {
+  const entrypoint = process.argv[1];
+  return entrypoint ? fileURLToPath(import.meta.url) === path.resolve(entrypoint) : false;
+}

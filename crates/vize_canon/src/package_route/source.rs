@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::cstr;
 
-use super::{PackageSourceOptions, canonical_path};
+use super::{PackagePathCache, PackageSourceOptions, canonical_path};
 
 pub(super) struct ResolvedPackageSource {
     pub(super) source_path: PathBuf,
@@ -26,18 +26,28 @@ pub(super) fn resolve_sources(
     base: &Path,
     options: PackageSourceOptions,
     consulted: &mut Vec<PathBuf>,
+    canonical_paths: &mut PackagePathCache,
 ) -> Vec<ResolvedPackageSource> {
     let mut resolved = Vec::new();
     // A declaration sidecar stands in for its runtime module even when that
     // module is absent, so probe it before requiring `base` on disk.
     for sidecar in declaration_sidecars(base) {
-        record_if_file(&sidecar, &sidecar, consulted, &mut resolved);
+        record_if_file(
+            &sidecar,
+            &sidecar,
+            consulted,
+            &mut resolved,
+            canonical_paths,
+        );
     }
-    consulted.push(canonical_path(base));
+    consulted.push(canonical_path(base, canonical_paths));
     if base.is_file() && accepted_source(base, options) {
         resolved.push(ResolvedPackageSource {
-            source_path: canonical_path(base),
-            native_probe_path: canonical_path(&native_probe_for_source(base, base)),
+            source_path: canonical_path(base, canonical_paths),
+            native_probe_path: canonical_path(
+                &native_probe_for_source(base, base),
+                canonical_paths,
+            ),
         });
     }
     // A manifest may name the built runtime target (`./dist/index.js`) that a
@@ -45,17 +55,29 @@ pub(super) fn resolve_sources(
     // extension in the same place, so swap the extension before appending one.
     for twin in typescript_twins(base) {
         let probe = native_probe_for_source(base, &twin);
-        record_if_file(&twin, &probe, consulted, &mut resolved);
+        record_if_file(&twin, &probe, consulted, &mut resolved, canonical_paths);
     }
     for extension in source_extensions(options) {
         let candidate = append_extension(base, extension);
         let probe = native_probe_for_source(base, &candidate);
-        record_if_file(&candidate, &probe, consulted, &mut resolved);
+        record_if_file(
+            &candidate,
+            &probe,
+            consulted,
+            &mut resolved,
+            canonical_paths,
+        );
     }
     for extension in source_extensions(options) {
         let candidate = base.join(cstr!("index{extension}").as_str());
         let probe = native_probe_for_source(base, &candidate);
-        record_if_file(&candidate, &probe, consulted, &mut resolved);
+        record_if_file(
+            &candidate,
+            &probe,
+            consulted,
+            &mut resolved,
+            canonical_paths,
+        );
     }
     resolved.sort_by(|left, right| {
         (&left.source_path, &left.native_probe_path)
@@ -72,13 +94,14 @@ fn record_if_file(
     native_probe: &Path,
     consulted: &mut Vec<PathBuf>,
     resolved: &mut Vec<ResolvedPackageSource>,
+    canonical_paths: &mut PackagePathCache,
 ) {
-    let path = canonical_path(path);
+    let path = canonical_path(path, canonical_paths);
     consulted.push(path.clone());
     if path.is_file() {
         resolved.push(ResolvedPackageSource {
             source_path: path,
-            native_probe_path: canonical_path(native_probe),
+            native_probe_path: canonical_path(native_probe, canonical_paths),
         });
     }
 }

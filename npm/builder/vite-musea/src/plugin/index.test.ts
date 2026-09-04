@@ -6,6 +6,8 @@ import {
   assertStaticPreviewRuntimeSupported,
   resolveStaticPreviewVueVersion,
 } from "./static-preview.js";
+import { musea } from "./index.js";
+import { readMuseaOptions } from "./options.js";
 
 void test("musea plugin is inactive in Vite test mode", () => {
   assert.equal(shouldApplyMuseaPlugin({ command: "serve", mode: "test" }), false);
@@ -17,6 +19,14 @@ void test("musea plugin remains active during Vite serve outside test mode", () 
 
 void test("musea plugin remains active during production builds", () => {
   assert.equal(shouldApplyMuseaPlugin({ command: "build", mode: "production" }), true);
+});
+
+void test("musea plugin carries VRT options for the CLI config loader", () => {
+  const [plugin] = musea({ vrt: { threshold: 0, comparison: { antiAliasing: false } } });
+
+  assert.deepEqual(readMuseaOptions(plugin), {
+    vrt: { threshold: 0, comparison: { antiAliasing: false } },
+  });
 });
 
 void test("storybook compatibility build does not inject static gallery input by default", () => {
