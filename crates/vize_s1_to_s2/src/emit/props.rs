@@ -14,7 +14,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::on::{admit_on, event_key_for, needs_hydration};
-use constness::handler_is_constant;
+pub(in crate::emit) use constness::handler_is_constant;
 pub(super) use constness::{bind_value_is_static_patchless, bind_value_text};
 use static_expr::{
     bind_value_uses_legacy_patchless_bounded_string_concat,
@@ -129,7 +129,14 @@ pub(super) fn bind_patch(
     constant_handler: &dyn Fn(&str) -> bool,
 ) -> Patch {
     if super::merge::has_object_spread(bindings) {
-        return super::merge::object_patch(bindings, is_component, if_key, for_item, is_ts);
+        return super::merge::object_patch(
+            bindings,
+            is_component,
+            if_key,
+            for_item,
+            is_ts,
+            constant_handler,
+        );
     }
     let mut flag = 0i32;
     let mut dynamic_props = StdVec::new();

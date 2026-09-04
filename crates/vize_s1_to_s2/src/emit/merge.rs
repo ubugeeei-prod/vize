@@ -59,6 +59,7 @@ pub(super) fn object_patch(
     if_key: Option<&str>,
     for_item: bool,
     is_ts: bool,
+    constant_handler: &dyn Fn(&str) -> bool,
 ) -> Patch {
     let mut dynamic_props = StdVec::new();
     let mut flag = 16i32;
@@ -105,7 +106,12 @@ pub(super) fn object_patch(
                 let Ok(key) = event_key_for(on, !is_component) else {
                     continue;
                 };
-                if !dynamic_props.contains(&key) {
+                // `is_const_handler` reads the same on the merged path: the
+                // shipped lane runs one per-prop loop whether or not the
+                // element ends up in `mergeProps`.
+                if !super::props::handler_is_constant(on, constant_handler)
+                    && !dynamic_props.contains(&key)
+                {
                     dynamic_props.push(key.clone());
                 }
                 if !is_component && needs_hydration(key.as_str(), on) {
