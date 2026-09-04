@@ -123,7 +123,9 @@ fn register_unwrapped_if_child_props_hoist(
     if !super::props_static::should_hoist(cx, id, PropHoistPosition::Nested) {
         return Ok(());
     }
-    if let Some(props) = super::props_static::root_hoist_props(attributes, bindings, cx.is_ts)? {
+    if let Some(props) =
+        super::props_static::root_hoist_props(attributes, bindings, cx.is_ts, cx.scope_id)?
+    {
         let _ = cx.buf.push_hoist(props);
     }
     Ok(())

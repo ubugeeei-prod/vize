@@ -160,12 +160,29 @@ pub(super) fn emit_spread_props(
         skip_is,
         cx.suppress_template_for_child_key,
     )?;
+    let scope_id = cx.scope_id_here();
     if let Some(lone) = lone_kind_spread(&args) {
-        return match lone {
-            Arg::BindSpread(bind) => emit_normalize_guard(cx, bind),
-            Arg::OnSpread(on) => emit_to_handlers(cx, on),
-            Arg::Object { .. } => Err(EmitError::unsupported(Reason::LoneObjectArgument)),
-        };
+        // A scope id turns the lone spread into a merge: the shipped lane
+        // writes `_mergeProps(_normalizeProps(_guardReactiveProps(obj)),
+        // { "data-v-x": "" })` rather than the bare wrapper.
+        if scope_id.is_some() {
+            cx.buf.use_merge_props();
+            cx.buf.push(Buf::merge_props_alias());
+            cx.buf.push("(");
+        }
+        match lone {
+            Arg::BindSpread(bind) => emit_normalize_guard(cx, bind)?,
+            Arg::OnSpread(on) => emit_to_handlers(cx, on)?,
+            Arg::Object { .. } => {
+                return Err(EmitError::unsupported(Reason::LoneObjectArgument));
+            }
+        }
+        if let Some(sid) = scope_id {
+            cx.buf.push(", ");
+            push_scope_object(cx, sid);
+            cx.buf.push(")");
+        }
+        return Ok(());
     }
     let normalize_keyed_bind_spread = !for_item && key_and_bind_spread(&args);
     if normalize_keyed_bind_spread {
@@ -177,6 +194,10 @@ pub(super) fn emit_spread_props(
     cx.buf.use_merge_props();
     cx.buf.push(Buf::merge_props_alias());
     cx.buf.push("(");
+    // `skip_scope_id`: the pair rides one trailing argument, never each
+    // segment.
+    let previous_skip = cx.skip_scope_id;
+    cx.skip_scope_id = true;
     for (i, arg) in args.iter().enumerate() {
         if i > 0 {
             cx.buf.push(", ");
@@ -202,11 +223,23 @@ pub(super) fn emit_spread_props(
             }
         }
     }
+    cx.skip_scope_id = previous_skip;
+    if let Some(sid) = scope_id {
+        cx.buf.push(", ");
+        push_scope_object(cx, sid);
+    }
     cx.buf.push(")");
     if normalize_keyed_bind_spread {
         cx.buf.push(")");
     }
     Ok(())
+}
+
+/// The trailing `{ "data-v-x": "" }` argument a scoped SFC merges in.
+fn push_scope_object(cx: &mut EmitCx<'_>, scope_id: &str) {
+    cx.buf.push("{ \"");
+    cx.buf.push(scope_id);
+    cx.buf.push("\": \"\" }");
 }
 
 fn emit_normalize_guard(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), EmitError> {

@@ -59,8 +59,10 @@ pub(super) fn emit_props_object(
             ) && !(suppress_once_cache_dynamic && skip_once_cache_piece(piece))
         })
         .collect();
+    let scope_id = cx.scope_id_here();
     if let Some(key) = if_key
         && visible.is_empty()
+        && scope_id.is_none()
     {
         if empty_key_multiline {
             cx.buf.push("{");
@@ -78,7 +80,7 @@ pub(super) fn emit_props_object(
         }
         return Ok(());
     }
-    let extra = usize::from(if_key.is_some());
+    let extra = usize::from(if_key.is_some()) + usize::from(scope_id.is_some());
     let compact_multiline = if_key.is_none() && pieces_are_dynamic_model_products(&visible);
     let v_for_merge_arg_multiline = skip_normalize && for_item && visible.len() + extra > 1;
     let multiline = !compact_multiline
@@ -170,6 +172,19 @@ pub(super) fn emit_props_object(
             } => super::model_key::emit_modifiers(cx, name, modifiers)?,
         }
         i += 1;
+    }
+    if let Some(sid) = scope_id {
+        if i > 0 {
+            cx.buf.push(",");
+        }
+        if multiline {
+            cx.buf.newline();
+        } else if i > 0 {
+            cx.buf.push(" ");
+        }
+        cx.buf.push("\"");
+        cx.buf.push(sid);
+        cx.buf.push("\": \"\"");
     }
     if multiline {
         cx.buf.deindent();

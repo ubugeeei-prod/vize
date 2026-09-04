@@ -21,7 +21,7 @@ pub(super) fn append_hoist_kids(
     out: &mut String,
     kids: &[&Op<'_>],
     is_ts: bool,
-    hoisted_scope_id: Option<&str>,
+    scope_id: Option<&str>,
 ) {
     if kids.iter().all(|op| matches!(op, Op::Text(_))) {
         out.push('"');
@@ -48,9 +48,7 @@ pub(super) fn append_hoist_kids(
                 out.push(')');
             }
             Op::Element(element) => {
-                out.push_str(
-                    hoist_descendant_element_rhs(element, is_ts, hoisted_scope_id).as_str(),
-                );
+                out.push_str(hoist_descendant_element_rhs(element, is_ts, scope_id).as_str());
             }
             _ => {}
         }
@@ -61,7 +59,7 @@ pub(super) fn append_hoist_kids(
 fn hoist_descendant_element_rhs(
     element: &ElementOp<'_>,
     is_ts: bool,
-    hoisted_scope_id: Option<&str>,
+    scope_id: Option<&str>,
 ) -> String {
     let mut out = String::default();
     out.push_str(Buf::create_element_vnode_alias());
@@ -70,7 +68,7 @@ fn hoist_descendant_element_rhs(
     out.push_str(element.tag);
     out.push('"');
     let kids = renderable_children(&element.children);
-    let props = super::static_vnode_props(element, false, is_ts, hoisted_scope_id);
+    let props = super::static_vnode_props(element, false, is_ts, scope_id);
     if props.is_some() || !kids.is_empty() {
         out.push_str(", ");
         if let Some(props) = props {
@@ -81,7 +79,7 @@ fn hoist_descendant_element_rhs(
     }
     if !kids.is_empty() {
         out.push_str(", ");
-        append_hoist_kids(&mut out, &kids, is_ts, hoisted_scope_id);
+        append_hoist_kids(&mut out, &kids, is_ts, scope_id);
     }
     out.push(')');
     out
@@ -92,6 +90,7 @@ pub(super) fn append_cached_kids(
     kids: &[&Op<'_>],
     line_indent: usize,
     is_ts: bool,
+    scope_id: Option<&str>,
 ) {
     if kids.iter().all(|op| matches!(op, Op::Text(_))) {
         out.push('"');
@@ -115,7 +114,14 @@ pub(super) fn append_cached_kids(
                 push_cached_create_text_call(out, text.content);
             }
             Op::Element(element) => {
-                super::append_cached_element_rhs(out, element, false, line_indent + 2, is_ts);
+                super::append_cached_element_rhs(
+                    out,
+                    element,
+                    false,
+                    line_indent + 2,
+                    is_ts,
+                    scope_id,
+                );
             }
             _ => {}
         }

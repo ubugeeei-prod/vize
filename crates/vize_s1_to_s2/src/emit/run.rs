@@ -86,6 +86,8 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
         is_ts: options.is_ts,
         cache_handlers: options.cache_handlers,
         hoisted_scope_id: options.hoisted_scope_id,
+        scope_id: options.scope_id,
+        skip_scope_id: false,
         cache_sites: StdVec::new(),
         used_unref: core::cell::Cell::new(u32::MAX),
         component_name: options.component_name,

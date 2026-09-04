@@ -123,6 +123,7 @@ pub(super) fn s2_emit_options<'a>(
         component_name: options.component_name.as_deref(),
         cache_handlers: options.cache_handlers,
         hoisted_scope_id,
+        scope_id: options.scope_id.as_deref(),
         is_ts: options.is_ts,
         bindings,
     }

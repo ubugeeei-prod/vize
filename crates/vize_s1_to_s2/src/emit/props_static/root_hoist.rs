@@ -16,17 +16,9 @@ pub(in crate::emit) fn root_hoist_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     is_ts: bool,
+    scope_id: Option<&str>,
 ) -> Result<Option<String>, EmitError> {
-    root_hoist_props_with_layout(attributes, bindings, None, None, is_ts)
-}
-
-pub(in crate::emit) fn root_hoist_props_with_scope(
-    attributes: &[Attribute<'_>],
-    bindings: &[BindingOp<'_>],
-    hoisted_scope_id: Option<&str>,
-    is_ts: bool,
-) -> Result<Option<String>, EmitError> {
-    root_hoist_props_with_layout(attributes, bindings, None, hoisted_scope_id, is_ts)
+    root_hoist_props_with_layout(attributes, bindings, None, is_ts, scope_id)
 }
 
 pub(in crate::emit) fn cached_root_hoist_props(
@@ -34,8 +26,9 @@ pub(in crate::emit) fn cached_root_hoist_props(
     bindings: &[BindingOp<'_>],
     line_indent: usize,
     is_ts: bool,
+    scope_id: Option<&str>,
 ) -> Result<Option<String>, EmitError> {
-    root_hoist_props_with_layout(attributes, bindings, Some(line_indent), None, is_ts)
+    root_hoist_props_with_layout(attributes, bindings, Some(line_indent), is_ts, scope_id)
 }
 
 /// The shipped `genObjectExpression`'s second multiline arm: a property
@@ -54,10 +47,10 @@ fn root_hoist_props_with_layout(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     multiline_indent: Option<usize>,
-    hoisted_scope_id: Option<&str>,
     is_ts: bool,
+    scope_id: Option<&str>,
 ) -> Result<Option<String>, EmitError> {
-    let scope = hoisted_scope_id.filter(|scope| !attributes.iter().any(|attr| attr.name == *scope));
+    let scope = scope_id.filter(|scope| !attributes.iter().any(|attr| attr.name == *scope));
     if !can_root_hoist_props(attributes, bindings, is_ts)
         && !(attributes.is_empty() && bindings.is_empty() && scope.is_some())
     {

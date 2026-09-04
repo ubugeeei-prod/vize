@@ -339,3 +339,9 @@ impl EmitCx<'_> {
         Ok(())
     }
 }
+
+impl<'facts> EmitCx<'facts> {
+    pub(super) fn scope_id_here(&self) -> Option<&'facts str> {
+        (!self.skip_scope_id).then_some(self.scope_id).flatten()
+    }
+}

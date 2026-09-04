@@ -35,7 +35,15 @@
 //! `v-text`, `v-bind` modifiers, dynamic `v-bind` keys / modifiers, and
 //! Vue 2 pipe filters legalized by `legacy-sugar`, and **module mode**
 //! ([`DomEmitOptions`]: `import { … } from "vue"` + `export function
-//! render(_ctx, _cache)`, custom runtime module / global names).
+//! render(_ctx, _cache)`, custom runtime module / global names), and
+//! **`cache_handlers`** (`_cache[n] || (_cache[n] = …)` around a `v-on`
+//! handler, guarded-and-forwarded when it is a reference, dropping the
+//! handler from the patch flag; suppressed under `v-for` / slot params),
+//! and **`scope_id`** (`<style scoped>`'s `"data-v-abc123": ""` pair on
+//! every props object — inline, hoisted and component alike, and once as a
+//! trailing `mergeProps` argument rather than per spread segment).
+//! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
+//! is named here and *read* in the atelier_dom witness.
 
 mod budget;
 mod buf;
@@ -188,6 +196,11 @@ struct EmitCx<'facts> {
     /// Scoped-style attr that only module-level static VNode hoists bake into
     /// props; runtime VNodes rely on Vue's current scope id.
     hoisted_scope_id: Option<&'facts str>,
+    /// The shipped lane's `scope_id`, emitted as the trailing props pair.
+    scope_id: Option<&'facts str>,
+    /// `CodegenContext::skip_scope_id`: inside a `mergeProps` call the scope
+    /// pair is emitted once as a trailing argument, never per segment.
+    skip_scope_id: bool,
     /// `(digit offset in `buf.code`, ordering key, slot number)` for
     /// every `_cache` index written so far. The shipped codegen takes a
     /// slot when it *reaches* the construct, so the ordering key is where

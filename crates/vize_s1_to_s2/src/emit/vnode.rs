@@ -227,7 +227,12 @@ pub(super) fn emit_call(
     let hoisted_props =
         if allow_hoist && if_key.is_none() && !conditional_v_for_dynamic_text && should_hoist_props
         {
-            super::props_static::root_hoist_props(&element.attributes, &element.bindings, cx.is_ts)?
+            super::props_static::root_hoist_props(
+                &element.attributes,
+                &element.bindings,
+                cx.is_ts,
+                cx.scope_id,
+            )?
         } else {
             None
         };

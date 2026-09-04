@@ -9,21 +9,11 @@ use super::super::js::{escape_js_string, is_valid_js_identifier};
 /// hoisted `JsChildNode::Object` emission.
 pub(in crate::emit) fn compact_props_object<'a>(
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
+    scope_id: Option<&str>,
 ) -> String {
     let unique = unique_attrs(attributes);
-    compact_props_object_from_unique(&unique, None)
-}
-
-pub(in crate::emit) fn compact_props_object_with_scope<'a>(
-    attributes: impl Iterator<Item = &'a Attribute<'a>>,
-    hoisted_scope_id: Option<&str>,
-) -> Option<String> {
-    let unique = unique_attrs(attributes);
-    let scope = hoisted_scope_id.filter(|scope| !unique.iter().any(|attr| attr.name == *scope));
-    if unique.is_empty() && scope.is_none() {
-        return None;
-    }
-    Some(compact_props_object_from_unique(&unique, scope))
+    let scope = scope_id.filter(|scope| !unique.iter().any(|attr| attr.name == *scope));
+    compact_props_object_from_unique(&unique, scope)
 }
 
 fn compact_props_object_from_unique(

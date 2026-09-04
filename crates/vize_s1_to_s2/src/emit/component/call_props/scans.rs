@@ -72,8 +72,13 @@ fn component_has_static_bind_props(
     component: &ComponentOp<'_>,
     is_ts: bool,
 ) -> Result<bool, EmitError> {
-    Ok(
-        props_static::component_hoist_props(&component.attributes, &component.bindings, is_ts)?
-            .is_some_and(|props| props.all_static_binds && props.valued_prop),
-    )
+    // A predicate over the component's own bind props: the scope pair is
+    // neither a bind nor dynamic, so it is deliberately not supplied here.
+    Ok(props_static::component_hoist_props(
+        &component.attributes,
+        &component.bindings,
+        is_ts,
+        None,
+    )?
+    .is_some_and(|props| props.all_static_binds && props.valued_prop))
 }

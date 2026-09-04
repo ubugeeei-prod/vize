@@ -223,6 +223,10 @@ pub struct DomEmitOptions<'a> {
     /// VNodes receive scope attrs from Vue; only import-time hoists need it
     /// baked into generated props.
     pub hoisted_scope_id: Option<&'a str>,
+    /// The shipped lane's `scope_id`: `<style scoped>` gives the SFC an
+    /// attribute name (`data-v-abc123`) that every element's props object
+    /// carries as a trailing `"data-v-abc123": ""` pair.
+    pub scope_id: Option<&'a str>,
     /// The shipped lane's `is_ts`: template expressions are TypeScript,
     /// so each one is type-erased (`emit::prefix::typescript`) before the
     /// identifier pass reads it.
@@ -246,6 +250,7 @@ impl DomEmitOptions<'static> {
         component_name: None,
         cache_handlers: false,
         hoisted_scope_id: None,
+        scope_id: None,
         is_ts: false,
         bindings: None,
     };
@@ -274,6 +279,7 @@ mod tests {
                 component_name: None,
                 cache_handlers: false,
                 hoisted_scope_id: None,
+                scope_id: None,
                 is_ts: false,
                 bindings: None,
             }

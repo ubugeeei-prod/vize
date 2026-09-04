@@ -19,8 +19,7 @@ use hoist_pair::{
     has_prior_component_hoist_key, has_prior_for_item_hoist_key,
 };
 pub(super) use root_hoist::{
-    cached_root_hoist_props, root_hoist_props, root_hoist_props_with_scope,
-    static_vnode_surface_can_hoist,
+    cached_root_hoist_props, root_hoist_props, static_vnode_surface_can_hoist,
 };
 
 #[derive(Clone, Copy)]
@@ -104,6 +103,7 @@ pub(super) fn component_hoist_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     is_ts: bool,
+    scope_id: Option<&str>,
 ) -> Result<Option<ComponentHoistProps>, EmitError> {
     let pieces = pieces(attributes, bindings, false)?;
     let mut out = String::from("{ ");
@@ -132,6 +132,15 @@ pub(super) fn component_hoist_props(
             out.push_str(", ");
         }
         out.push_str(prop.as_str());
+        emitted += 1;
+    }
+    if let Some(sid) = scope_id {
+        if emitted > 0 {
+            out.push_str(", ");
+        }
+        out.push_str("\"");
+        out.push_str(sid);
+        out.push_str("\": \"\"");
         emitted += 1;
     }
     if emitted == 0 {
@@ -192,7 +201,8 @@ pub(super) fn emit_inline<'a>(
     force_multiline: bool,
 ) {
     let unique = unique_attrs(attributes);
-    let multiline = unique.len() > 1 || force_multiline;
+    let scope_id = cx.scope_id_here();
+    let multiline = unique.len() + usize::from(scope_id.is_some()) > 1 || force_multiline;
     if multiline {
         cx.buf.push("{");
         cx.buf.indent();
@@ -221,6 +231,19 @@ pub(super) fn emit_inline<'a>(
         let mut pair = String::default();
         push_attr_pair(&mut pair, attr);
         cx.buf.push(pair.as_str());
+    }
+    if let Some(sid) = scope_id {
+        if !unique.is_empty() {
+            cx.buf.push(",");
+        }
+        if multiline {
+            cx.buf.newline();
+        } else if !unique.is_empty() {
+            cx.buf.push(" ");
+        }
+        cx.buf.push("\"");
+        cx.buf.push(sid);
+        cx.buf.push("\": \"\"");
     }
     if multiline {
         cx.buf.deindent();

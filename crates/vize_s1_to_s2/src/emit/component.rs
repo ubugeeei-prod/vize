@@ -92,7 +92,7 @@ pub(super) fn emit_call(
     let hoistable_static_props = if cx.hoisted_scope_id.is_some() {
         None
     } else {
-        call_props::hoistable_static_props(component, skip_is, &hoist_attrs, cx.is_ts)?
+        call_props::hoistable_static_props(component, skip_is, &hoist_attrs, cx.is_ts, cx.scope_id)?
     };
     if for_item
         && !has_component_root_slot

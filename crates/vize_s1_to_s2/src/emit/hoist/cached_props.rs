@@ -12,10 +12,11 @@ pub(super) fn push_object<'a>(
     out: &mut String,
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
     line_indent: usize,
+    scope_id: Option<&str>,
 ) {
     let unique = unique_attrs(attributes);
     if unique.len() <= 1 {
-        out.push_str(compact_props_object(unique.iter().copied()).as_str());
+        out.push_str(compact_props_object(unique.iter().copied(), scope_id).as_str());
         return;
     }
 
