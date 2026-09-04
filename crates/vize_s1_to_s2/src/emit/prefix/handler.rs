@@ -72,7 +72,9 @@ pub(super) fn process_inline_handler(
     }
     RewriteResult {
         code,
-        used_unref: false,
+        // The wrap is the shipped lane's `$event => (…)`; the helper the
+        // rewritten *body* needed is still the transform's registration.
+        used_unref: rewritten.used_unref,
         parse_error: rewritten.parse_error,
     }
 }

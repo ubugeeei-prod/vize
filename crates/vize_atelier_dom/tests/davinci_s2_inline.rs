@@ -15,8 +15,7 @@ mod support;
 
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
-use vize_s0::FxHashMap;
-use vize_s1_to_s2::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
+use vize_s1_to_s2::{DomEmitMode, DomEmitOptions};
 
 const BATTERY: &[(&str, &str)] = &[
     ("setup_ref_read", "<div>{{ count }}</div>"),
@@ -96,7 +95,7 @@ const BATTERY: &[(&str, &str)] = &[
 ];
 
 fn metadata() -> BindingMetadata {
-    let entries: &[(&str, BindingType)] = &[
+    support::bindings::script_setup_metadata(&[
         ("count", BindingType::SetupRef),
         ("msg", BindingType::SetupLet),
         ("theme", BindingType::SetupMaybeRef),
@@ -114,55 +113,13 @@ fn metadata() -> BindingMetadata {
         ("vMyDir", BindingType::SetupLet),
         ("items", BindingType::SetupConst),
         ("key", BindingType::SetupRef),
-    ];
-    let mut bindings = FxHashMap::default();
-    for (name, kind) in entries {
-        bindings.insert((*name).into(), *kind);
-    }
-    BindingMetadata {
-        bindings,
-        props_aliases: FxHashMap::default(),
-        is_script_setup: true,
-    }
-}
-
-fn binding_kind(kind: BindingType) -> BindingKind {
-    match kind {
-        BindingType::SetupLet => BindingKind::SetupLet,
-        BindingType::SetupMaybeRef => BindingKind::SetupMaybeRef,
-        BindingType::SetupRef => BindingKind::SetupRef,
-        BindingType::SetupReactiveConst => BindingKind::SetupReactiveConst,
-        BindingType::SetupConst => BindingKind::SetupConst,
-        BindingType::Props => BindingKind::Props,
-        BindingType::PropsAliased => BindingKind::PropsAliased,
-        BindingType::Data => BindingKind::Data,
-        BindingType::Options => BindingKind::Options,
-        BindingType::LiteralConst => BindingKind::LiteralConst,
-        BindingType::JsGlobalUniversal => BindingKind::JsGlobalUniversal,
-        BindingType::JsGlobalBrowser => BindingKind::JsGlobalBrowser,
-        BindingType::JsGlobalNode => BindingKind::JsGlobalNode,
-        BindingType::JsGlobalDeno => BindingKind::JsGlobalDeno,
-        BindingType::JsGlobalBun => BindingKind::JsGlobalBun,
-        BindingType::VueGlobal => BindingKind::VueGlobal,
-        BindingType::ExternalModule => BindingKind::ExternalModule,
-    }
-}
-
-fn table(metadata: &BindingMetadata) -> BindingTable {
-    BindingTable::new(
-        metadata
-            .bindings
-            .iter()
-            .map(|(name, kind)| (name.as_str(), binding_kind(*kind))),
-        [],
-        metadata.is_script_setup,
-    )
+    ])
 }
 
 #[test]
 fn inline_mode_matches_the_shipped_dom_lane() {
     let metadata = metadata();
-    let table = table(&metadata);
+    let table = support::bindings::binding_table(&metadata);
     support::assert_s2_matches_shipped_with_options(
         BATTERY,
         &DomCompilerOptions {
@@ -189,7 +146,7 @@ fn inline_mode_matches_the_shipped_dom_lane() {
 #[test]
 fn inline_spellings_are_pinned() {
     let metadata = metadata();
-    let table = table(&metadata);
+    let table = support::bindings::binding_table(&metadata);
     let allocator = vize_s0::Allocator::new();
     let options = DomEmitOptions {
         mode: DomEmitMode::Module,

@@ -138,7 +138,6 @@ pub struct RuleRegistry {
 impl RuleRegistry {
     const ESSENTIAL_CAPACITY: usize = 32;
     const HAPPY_PATH_CAPACITY: usize = 90;
-    /// Create a new empty registry
     pub fn new() -> Self {
         Self {
             rules: Vec::new(),
@@ -162,32 +161,35 @@ impl RuleRegistry {
         self.rules.push(rule);
     }
 
-    /// Add a rule (alias for register)
+    pub(crate) fn replace(&mut self, rule: Box<dyn Rule>) {
+        let rule_name = rule.meta().name;
+        if let Some(index) = self.rule_names.iter().position(|name| *name == rule_name) {
+            self.rules[index] = rule;
+            return;
+        }
+        self.register(rule);
+    }
+
     pub fn add(&mut self, rule: Box<dyn Rule>) {
         self.register(rule);
     }
 
-    /// Get all registered rules
     pub fn rules(&self) -> &[Box<dyn Rule>] {
         &self.rules
     }
 
-    /// Get all registered rule names in the same order as [`Self::rules`].
     pub fn rule_names(&self) -> &[&'static str] {
         &self.rule_names
     }
 
-    /// Whether this registry may contain rules that need exit-element hooks.
     pub fn has_exit_element_rules(&self) -> bool {
         self.has_exit_element_rules
     }
 
-    /// Mark the registry as potentially containing exit-element hooks.
     pub(crate) fn mark_has_exit_element_rules(&mut self) {
         self.has_exit_element_rules = true;
     }
 
-    /// Check whether a rule with the given name is registered.
     pub fn has_rule(&self, name: &str) -> bool {
         self.rule_names.contains(&name)
     }
@@ -349,9 +351,7 @@ impl RuleRegistry {
         Self::with_happy_path()
     }
 
-    /// Create registry with only essential rules (errors only)
-    ///
-    /// Use this for minimal checking that only catches definite errors.
+    /// Create registry with only essential rules.
     pub fn with_essential() -> Self {
         let mut registry = Self::with_capacity(Self::ESSENTIAL_CAPACITY);
         // Vue Essential Rules only

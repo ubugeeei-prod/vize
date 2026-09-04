@@ -45,7 +45,7 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
 
   for (const [jobName, minutes] of [
     ["app-readiness-plan", 10],
-    ["app-readiness-producer", 30],
+    ["app-readiness-producer", 40],
     ["app-readiness", 5],
   ] as const) {
     assert.match(
@@ -270,7 +270,7 @@ test("check workflow runs JS package unit tests and production dependency audit"
   );
   assert.match(jsPackageJob, /vp run --workspace-root test:js/);
   assert.match(jsPackageJob, /key:\s*test-js-packages/);
-  assert.match(auditJob, /vp exec pnpm audit --prod --audit-level moderate/);
+  assert.match(auditJob, /setup-rust-script[\s\S]*rust-script tools\/commands\/ci\/npm-audit\.rs/);
   assert.match(auditJob, /tool:\s*cargo-audit/);
   assert.match(auditJob, /cargo audit --deny warnings/);
   assert.doesNotMatch(auditJob, /continue-on-error:\s*true/);

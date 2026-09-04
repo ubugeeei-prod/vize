@@ -1,5 +1,5 @@
 pub use super::component_options_name_casing::ComponentOptionsNameCasing;
-pub use super::custom_event_name_casing::CustomEventNameCasing;
+pub use super::custom_event_name_casing::{CustomEventNameCasing, EventNameCasing};
 pub use super::define_emits_declaration::DefineEmitsDeclaration;
 pub use super::define_macros_order::DefineMacrosOrder;
 pub use super::define_props_declaration::DefinePropsDeclaration;

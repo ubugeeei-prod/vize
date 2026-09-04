@@ -22,6 +22,7 @@ fn unique_case_dir(name: &str) -> PathBuf {
 }
 
 mod nuxt_root;
+mod retained_files;
 #[test]
 fn suppresses_nuxt_nitro_import_meta_conflict_false_positive() {
     let diagnostic = vize_canon::BatchDiagnostic {

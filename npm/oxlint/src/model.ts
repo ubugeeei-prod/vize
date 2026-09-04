@@ -44,6 +44,8 @@ export interface PatinaBinding {
       enabledRules?: string[];
       typeAware?: boolean;
       corsaPath?: string;
+      componentNameInTemplateCasing?: ComponentNameInTemplateCasingOption;
+      customEventNameCasing?: CustomEventNameCasingOption;
     },
   ): PatinaLintResult;
   getPatinaRules(): PatinaRuleMeta[];
@@ -66,10 +68,18 @@ export interface PatinaSettings {
   corsaPath?: string;
 }
 
+export interface PatinaRuleOptions {
+  componentNameInTemplateCasing?: ComponentNameInTemplateCasingOption;
+  customEventNameCasing?: CustomEventNameCasingOption;
+}
+
 export interface LineColumn {
   line: number;
   column: number;
 }
+
+export type ComponentNameInTemplateCasingOption = "PascalCase" | "kebab-case";
+export type CustomEventNameCasingOption = "camelCase" | "kebab-case";
 
 export type SfcBlockKind = "template" | "script" | "script-setup" | "style" | "custom";
 

@@ -96,8 +96,8 @@ impl EmitCx<'_> {
     /// Fold a prefixed result's `_unref` use into the emit and hand back
     /// its text.
     fn record_unref(&self, prefixed: prefix::Prefixed) -> String {
-        if prefixed.used_unref {
-            self.used_unref.set(true);
+        if prefixed.used_unref && self.used_unref.get() == u32::MAX {
+            self.used_unref.set(self.walk.visits());
         }
         prefixed.text
     }

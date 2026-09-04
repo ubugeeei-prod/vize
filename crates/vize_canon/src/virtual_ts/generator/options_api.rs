@@ -13,11 +13,9 @@ use super::options_api_support::is_safe_value_identifier;
 use crate::virtual_ts::types::VirtualTsOptions;
 use vize_carton::{FxHashSet, String, append};
 
-// Emit declarations for Options API template bindings
-// (`data`/`computed`/`methods`/`inject`/`setup`/`props`, plus any Nuxt 2 globals
-// the legacy path collected). Options API is officially supported in Vue 3, so
-// this is part of the standard build and driven by a runtime opt-in — it costs
-// nothing unless the caller enables Options API / legacy checking.
+// Emit declarations for Options API template bindings (`data`/`computed`/
+// `methods`/`inject`/`setup`/`props`, plus legacy globals) when the caller
+// enables Options API / legacy checking.
 pub(super) fn generate_options_api_variables(
     mut ts: &mut String,
     summary: &Croquis,
@@ -47,23 +45,24 @@ pub(super) fn generate_options_api_variables(
         .iter()
         .map(|global| global.name.as_str())
         .collect();
-    let mut names: Vec<&str> = summary
+    let mut names: Vec<(&str, bool)> = summary
         .bindings
         .bindings
         .iter()
         .filter_map(|(name, binding_type)| {
             let name = name.as_str();
             match binding_type {
-                BindingType::Data | BindingType::Options | BindingType::VueGlobal => Some(name),
-                BindingType::Props if !macro_prop_names.contains(name) => Some(name),
+                BindingType::Data => Some((name, true)),
+                BindingType::Options | BindingType::VueGlobal => Some((name, false)),
+                BindingType::Props if !macro_prop_names.contains(name) => Some((name, false)),
                 _ => None,
             }
         })
-        .filter(|name| !configured_globals.contains(name))
-        .filter(|name| is_safe_value_identifier(name))
+        .filter(|(name, _)| !configured_globals.contains(name))
+        .filter(|(name, _)| is_safe_value_identifier(name))
         .collect();
-    names.sort_unstable();
-    names.dedup();
+    names.sort_unstable_by_key(|(name, _)| *name);
+    names.dedup_by(|left, right| left.0 == right.0);
     let inherited_unknown_names =
         unresolved_extends_template_names(summary, &configured_globals, script);
 
@@ -78,10 +77,11 @@ pub(super) fn generate_options_api_variables(
     ts.push_str(
         "  type __VizeOptionsBinding<T, K extends string> = K extends keyof __VizeOptionsInstance<T> ? __VizeOptionsInstance<T>[K] : any;\n",
     );
-    for name in &names {
+    for (name, mutable) in &names {
         append!(
             ts,
-            "  const {name}: __VizeOptionsBinding<typeof __default__, \"{name}\"> = undefined as any;\n"
+            "  {} {name}: __VizeOptionsBinding<typeof __default__, \"{name}\"> = undefined as any;\n",
+            if *mutable { "var" } else { "const" }
         );
     }
     if !inherited_unknown_names.is_empty() {
@@ -91,7 +91,7 @@ pub(super) fn generate_options_api_variables(
         }
     }
     ts.push_str("  ");
-    for name in &names {
+    for (name, _) in &names {
         append!(ts, "void {name};");
     }
     for name in &inherited_unknown_names {

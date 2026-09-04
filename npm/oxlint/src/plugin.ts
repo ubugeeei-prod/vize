@@ -11,9 +11,12 @@ import {
 } from "./file-state.js";
 import { formatPatinaMessage } from "./format.js";
 import type {
+  ComponentNameInTemplateCasingOption,
   HelpLevel,
   PatinaDiagnostic,
+  PatinaRuleOptions,
   PatinaRuleMeta,
+  CustomEventNameCasingOption,
   SfcBlock,
   SingleScriptMap,
 } from "./model.js";
@@ -82,6 +85,7 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
       docs: {
         description: ruleMeta.description,
       },
+      schema: ruleOptionsSchema(ruleMeta.name),
     },
     createOnce(context) {
       return {
@@ -103,9 +107,13 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
           const helpLevel = settings.helpLevel ?? "full";
           const state = getFileState(context);
           const scriptMap = getScriptMap(state);
-          const diagnostics = getDiagnosticsForRule(context, state, ruleMeta.name).filter(
-            (diagnostic) => shouldReportForCurrentProgram(diagnostic, state, scriptMap),
-          );
+          const ruleOptions = getRuleOptions(ruleMeta.name, contextOptions(context));
+          const diagnostics = getDiagnosticsForRule(
+            context,
+            state,
+            ruleMeta.name,
+            ruleOptions,
+          ).filter((diagnostic) => shouldReportForCurrentProgram(diagnostic, state, scriptMap));
           if (diagnostics.length === 0) {
             return;
           }
@@ -121,6 +129,52 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
       };
     },
   });
+}
+
+function ruleOptionsSchema(ruleName: string): unknown[] {
+  switch (ruleName) {
+    case "vue/component-name-in-template-casing":
+      return [{ enum: ["PascalCase", "kebab-case"] }];
+    case "script/custom-event-name-casing":
+      return [{ enum: ["camelCase", "kebab-case"] }];
+    default:
+      return [];
+  }
+}
+
+function contextOptions(context: unknown): readonly unknown[] {
+  const options = (context as { options?: unknown }).options;
+  return Array.isArray(options) ? options : [];
+}
+
+function getRuleOptions(
+  ruleName: string,
+  options: readonly unknown[],
+): PatinaRuleOptions | undefined {
+  const firstOption = options[0];
+  switch (ruleName) {
+    case "vue/component-name-in-template-casing":
+      if (isComponentNameInTemplateCasingOption(firstOption)) {
+        return { componentNameInTemplateCasing: firstOption };
+      }
+      break;
+    case "script/custom-event-name-casing":
+      if (isCustomEventNameCasingOption(firstOption)) {
+        return { customEventNameCasing: firstOption };
+      }
+      break;
+  }
+  return undefined;
+}
+
+function isComponentNameInTemplateCasingOption(
+  value: unknown,
+): value is ComponentNameInTemplateCasingOption {
+  return value === "PascalCase" || value === "kebab-case";
+}
+
+function isCustomEventNameCasingOption(value: unknown): value is CustomEventNameCasingOption {
+  return value === "camelCase" || value === "kebab-case";
 }
 
 const patinaRules = Object.fromEntries(

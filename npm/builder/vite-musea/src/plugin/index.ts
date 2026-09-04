@@ -38,6 +38,7 @@ import { processMuseaArtFile } from "./art-processing.js";
 import { transformMuseaVirtualModule } from "./virtual-transform.js";
 import { resolvePreviewCssPath } from "./preview-css.js";
 import { resolveStaticPreviewVueVersion } from "./static-preview.js";
+import { attachMuseaOptions } from "./options.js";
 
 export function musea(options: MuseaOptions = {}): Plugin[] {
   let include = options.include ?? ["**/*.art.vue"];
@@ -311,7 +312,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     if (info) artFiles.set(filePath, info);
   }
 
-  return [mainPlugin];
+  return [attachMuseaOptions(mainPlugin, options)];
 }
 
 function resolveProjectRoot(projectRoot: string | undefined, viteRoot: string): string | undefined {

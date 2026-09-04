@@ -7,6 +7,8 @@
     clippy::disallowed_methods
 )]
 
+pub mod bindings;
+
 use vize_atelier_core::options::{CodegenOptions, TemplateSyntaxMode};
 use vize_atelier_dom::{
     DomCompilerOptions, compile_template, compile_template_with_options,

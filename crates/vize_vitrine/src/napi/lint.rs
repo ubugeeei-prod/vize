@@ -23,9 +23,9 @@ mod file_collection;
 mod lint_options;
 mod rule_metadata;
 use lint_options::{
-    LintOptionsNapi, LintResultNapi, PatinaLintOptionsNapi, configure_type_aware_lint,
-    create_patina_linter, patina_help_level_from_option, patina_locale_from_option,
-    patina_preset_from_option,
+    LintOptionsNapi, LintResultNapi, PatinaLintOptionsNapi, configure_patina_rule_options,
+    configure_type_aware_lint, create_patina_linter, patina_help_level_from_option,
+    patina_locale_from_option, patina_preset_from_option,
 };
 use rule_metadata::collect_patina_rule_metadata;
 
@@ -61,17 +61,23 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
     let locale = patina_locale_from_option(opts.locale.as_deref());
     let help_level = patina_help_level_from_option(opts.help_level.as_deref());
     let preset = patina_preset_from_option(opts.preset.as_deref());
+    let component_casing = opts.component_name_in_template_casing.as_deref();
+    let event_casing = opts.custom_event_name_casing.as_deref();
     let enabled_rules = opts
         .enabled_rules
         .map(|rules| rules.into_iter().map(Into::into).collect());
-    let linter = configure_type_aware_lint(
-        create_patina_linter(preset)
-            .with_locale(locale)
-            .with_help_level(help_level),
-        opts.type_aware,
-        opts.corsa_path,
-    )
-    .with_enabled_rules(enabled_rules);
+    let linter = configure_patina_rule_options(
+        configure_type_aware_lint(
+            create_patina_linter(preset)
+                .with_locale(locale)
+                .with_help_level(help_level),
+            opts.type_aware,
+            opts.corsa_path,
+        )
+        .with_enabled_rules(enabled_rules),
+        component_casing,
+        event_casing,
+    );
     let result = lint_source(&linter, &source, &filename);
     let lsp_diagnostics = LspEmitter::to_lsp_diagnostics_with_source(&result, &source);
 

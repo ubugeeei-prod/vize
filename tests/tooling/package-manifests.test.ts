@@ -576,15 +576,15 @@ test("workspace TypeScript package builds use vp pack", () => {
     }
   }
 
-  const oxlintPackage = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/oxlint/package.json"), "utf-8"),
-  ) as {
+  const oxlintPackage = JSON.parse(readRepoFile("npm/oxlint/package.json")) as {
     engines?: Record<string, string>;
     scripts?: Record<string, string>;
   };
   assert.equal(oxlintPackage.engines?.node, "^22 || >= 24");
-  const oxlintTest = "vp pack && vp test run src/file-state.test.ts && node src/test.ts";
-  assert.equal(oxlintPackage.scripts?.test, `${oxlintTest} && node src/script-location.test.ts`);
+  assert.equal(
+    oxlintPackage.scripts?.test,
+    "vp pack && vp test run src/file-state.test.ts && node src/test.ts && node src/script-location.test.ts && node src/casing-options.test.ts",
+  );
   const rootTasks = readRepoFile("tools/config/vite-plus/tasks/build.ts");
   assert.match(rootTasks, /vscodeExtensionPackageBin\("vite-plus", "vp"\)[\s\S]*pack/);
 });

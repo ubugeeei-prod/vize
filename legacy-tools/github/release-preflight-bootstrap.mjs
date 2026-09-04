@@ -44,6 +44,21 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       // is not replay evidence: it must not stand in for the dispatched replay.
       acceptsScheduledEvidence: false,
     },
+    {
+      workflowName: "Real Project Matrix",
+      workflowId: "real-project-matrix.yml",
+      ref,
+      inputs: {
+        core_tools_mode: "record-only",
+        typecheck_dependencies_mode: "record-only",
+        lint_divergence_mode: "record-only",
+        lsp_mode: "record-only",
+        typecheck_divergence_mode: "enforce",
+        davinci_dom_corpus_mode: "record-only",
+      },
+      expectedRunName: `Real Project Matrix @ ${headSha}`,
+      acceptsScheduledEvidence: false,
+    },
   ];
 }
 
@@ -69,11 +84,9 @@ export async function bootstrapRequiredWorkflowRuns({
   evidenceShas = new Map(),
   sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
   now = Date.now,
-  // Real Project Matrix is no longer a release gate (#4461), so the budget no
-  // longer has to cover its two 240-minute waves. Native Smoke is the long pole
-  // at 12-40 minutes, App E2E next at 21; 90 minutes leaves room for queueing
-  // and a slow runner without letting one stuck gate hold a release all day.
-  timeoutMs = 90 * 60 * 1000,
+  // Real Project Matrix is a release gate again, so the wait budget covers its
+  // full 22-shard run and still fails before the workflow-level 360 minute cap.
+  timeoutMs = 345 * 60 * 1000,
   pollIntervalMs = 15_000,
   onWait = () => {},
 }) {

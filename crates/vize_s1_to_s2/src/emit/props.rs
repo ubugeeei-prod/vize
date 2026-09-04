@@ -194,12 +194,9 @@ pub(super) fn bind_patch(
                 let Ok(key) = event_key_for(on, !is_component) else {
                     continue;
                 };
-                // `is_const_handler` / `handler_is_cached`: a handler that
-                // is just a constant binding never changes, and a cached
-                // one is created once — neither is a patch target. The
-                // cache rule reads the option alone, without the
-                // const-reference carve-out `needs_von_handler_cache`
-                // applies to the emission itself.
+                // Constant and cached handlers are both created outside this patch path. The
+                // cache rule reads only the option, without the const-reference carve-out used by
+                // `needs_von_handler_cache`.
                 if !handler_is_constant(on, constant_handler)
                     && !(caches_handlers && on.handler.is_some())
                 {
@@ -333,7 +330,12 @@ pub(super) fn emit_bind_props(
 
 pub(super) fn apply_static_ref_patch(attributes: &[Attribute<'_>], flag: &mut i32) {
     let has_static_ref = attributes.iter().any(|attr| attr.name == "ref");
-    if has_static_ref && *flag & (2 | 4 | 8 | 16 | 32) == 0 {
+    // The shipped gate is the *normal prop* flags alone: NEED_PATCH still
+    // combines with TEXT and NEED_HYDRATION, because neither of those
+    // updates a ref on its own. Only an inlined render function reaches
+    // the difference — elsewhere a handler that sets NEED_HYDRATION is
+    // dynamic and sets PROPS with it.
+    if has_static_ref && *flag & (2 | 4 | 8 | 16) == 0 {
         *flag |= 512;
     }
 }

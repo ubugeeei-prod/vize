@@ -48,11 +48,15 @@ pub struct ComponentNameInTemplateCasing {
     pub casing: ComponentCasing,
 }
 
+impl ComponentNameInTemplateCasing {
+    pub const fn new(casing: ComponentCasing) -> Self {
+        Self { casing }
+    }
+}
+
 impl Default for ComponentNameInTemplateCasing {
     fn default() -> Self {
-        Self {
-            casing: ComponentCasing::PascalCase,
-        }
+        Self::new(ComponentCasing::PascalCase)
     }
 }
 
@@ -79,11 +83,15 @@ pub(crate) struct ComponentNameInTemplateCasingNuxt {
     casing: ComponentCasing,
 }
 
+impl ComponentNameInTemplateCasingNuxt {
+    pub(crate) const fn new(casing: ComponentCasing) -> Self {
+        Self { casing }
+    }
+}
+
 impl Default for ComponentNameInTemplateCasingNuxt {
     fn default() -> Self {
-        Self {
-            casing: ComponentCasing::PascalCase,
-        }
+        Self::new(ComponentCasing::PascalCase)
     }
 }
 
@@ -192,7 +200,9 @@ fn is_vuetify_tag(tag: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{ComponentNameInTemplateCasing, ComponentNameInTemplateCasingNuxt};
+    use super::{
+        ComponentCasing, ComponentNameInTemplateCasing, ComponentNameInTemplateCasingNuxt,
+    };
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -213,6 +223,28 @@ mod tests {
     fn test_invalid_kebab_case() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<my-component />"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_configured_kebab_case_allows_kebab_tags() {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(ComponentNameInTemplateCasing::new(
+            ComponentCasing::KebabCase,
+        )));
+        let linter = Linter::with_registry(registry);
+        let result = linter.lint_template(r#"<my-component />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_configured_kebab_case_reports_pascal_tags() {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(ComponentNameInTemplateCasing::new(
+            ComponentCasing::KebabCase,
+        )));
+        let linter = Linter::with_registry(registry);
+        let result = linter.lint_template(r#"<MyComponent />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
     }
 

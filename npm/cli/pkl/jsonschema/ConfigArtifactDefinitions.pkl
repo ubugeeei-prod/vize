@@ -199,6 +199,30 @@ noRestrictedMembersOptionsDef: JsonSchema = new JsonSchema {
   additionalProperties = false
 }
 
+componentNameInTemplateCasingOptionsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["casing"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "PascalCase"; "kebab-case" }
+      default = "PascalCase"
+    }
+  }
+  additionalProperties = false
+}
+
+customEventNameCasingOptionsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["casing"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "camelCase"; "kebab-case" }
+      default = "camelCase"
+    }
+  }
+  additionalProperties = false
+}
+
 lintRuleOptionsDef: JsonSchema = new JsonSchema {
   type = "object"
   properties {
@@ -208,6 +232,8 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     ["script/no-restricted-members"] = new JsonSchema {
       `$ref` = "#/definitions/NoRestrictedMembersOptions"
     }
+    ["vue/component-name-in-template-casing"] = componentNameInTemplateCasingOptionsDef
+    ["script/custom-event-name-casing"] = customEventNameCasingOptionsDef
   }
   additionalProperties = false
 }

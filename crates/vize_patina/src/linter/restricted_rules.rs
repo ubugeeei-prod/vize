@@ -1,5 +1,4 @@
-//! Builder methods that thread project-local options into the two configurable
-//! script rules (`script/no-restricted-globals`, `script/no-restricted-members`).
+//! Builder methods that thread project-local options into configurable rules.
 //!
 //! These rules are `&'static` singletons in the registry, so a configured rule
 //! is built as a boxed instance and stored in [`Linter::script_rule_overrides`];
@@ -8,6 +7,11 @@
 //! Refs: #1891 (project-local custom rules during migration).
 
 use super::config::Linter;
+use crate::preset::LintPreset;
+use crate::rules::opinionated::vue::{
+    ComponentCasing, ComponentNameInTemplateCasing, ComponentNameInTemplateCasingNuxt,
+};
+use crate::rules::script::{CustomEventNameCasing, EventNameCasing};
 use crate::rules::script::{NoRestrictedMembers, RestrictedGlobals};
 use vize_s0::String;
 
@@ -58,5 +62,28 @@ impl Linter {
     ) -> Self {
         self.with_restricted_globals(globals)
             .with_restricted_members(members)
+    }
+
+    /// Configure `vue/component-name-in-template-casing`.
+    #[inline]
+    pub fn with_component_name_in_template_casing(mut self, casing: ComponentCasing) -> Self {
+        if matches!(self.preset, Some(LintPreset::Nuxt)) {
+            self.registry
+                .replace(Box::new(ComponentNameInTemplateCasingNuxt::new(casing)));
+        } else {
+            self.registry
+                .replace(Box::new(ComponentNameInTemplateCasing::new(casing)));
+        }
+        self
+    }
+
+    /// Configure `script/custom-event-name-casing`.
+    #[inline]
+    pub fn with_custom_event_name_casing(mut self, casing: EventNameCasing) -> Self {
+        self.script_rule_overrides.insert(
+            "script/custom-event-name-casing",
+            Box::new(CustomEventNameCasing::new(casing)),
+        );
+        self
     }
 }

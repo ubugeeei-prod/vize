@@ -1,6 +1,6 @@
 {
   "name": "oxlint-plugin-vize",
-  "version": "0.390.0",
+  "version": "0.392.0",
   "description": "Oxlint JS plugin bridge for Vize Patina",
   "keywords": [
     "lint",
@@ -40,7 +40,7 @@
   },
   "scripts": {
     "build": "vp pack",
-    "test": "vp pack && vp test run src/file-state.test.ts && node src/test.ts && node src/script-location.test.ts",
+    "test": "vp pack && vp test run src/file-state.test.ts && node src/test.ts && node src/script-location.test.ts && node src/casing-options.test.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"
