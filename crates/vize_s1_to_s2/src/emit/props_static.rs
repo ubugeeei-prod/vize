@@ -77,6 +77,18 @@ pub(super) fn cached_root_hoist_props(
     root_hoist_props_with_layout(attributes, bindings, Some(line_indent), is_ts)
 }
 
+/// The shipped `genObjectExpression`'s second multiline arm: a property
+/// whose value is not a `SimpleExpression`. `class` and `style` reach
+/// codegen as the objects `transformElement` normalized them into, and
+/// `v-text` as a `toDisplayString` call, so a lone one of those still
+/// breaks the object over lines. The single-line assembly below is the
+/// first arm's `properties.length > 1` half.
+fn has_non_simple_value(pieces: &[Piece<'_>]) -> bool {
+    super::props_object::pieces_have_named(pieces, "class")
+        || super::props_object::pieces_have_named(pieces, "style")
+        || super::props_object::pieces_have_vue_text(pieces)
+}
+
 fn root_hoist_props_with_layout(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
@@ -103,7 +115,7 @@ fn root_hoist_props_with_layout(
         return Ok(None);
     }
     if let Some(line_indent) = multiline_indent
-        && props.len() > 1
+        && (props.len() > 1 || has_non_simple_value(&pieces))
     {
         return Ok(Some(multiline_props_object(&props, line_indent)));
     }
