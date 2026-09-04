@@ -32,18 +32,36 @@ const childValue = 1
   fs.writeFileSync(dependencyPath, dependencySource);
   const importerUri = pathToFileURL(importerPath).href;
   const oracle = fixtureOracle();
-  const session = new FakeAuthoredLspSession(workspace, null, false, {
-    copiedFile: oracle.fileLifecycle.copiedFile,
-    copiedImportSpecifier: oracle.fileLifecycle.copiedImportSpecifier,
-    importerFile: oracle.componentBoundary.importerFile,
-    renamedFile: oracle.fileLifecycle.renamedFile,
-    renamedImportSpecifier: oracle.fileLifecycle.renamedImportSpecifier,
-  });
+  const session = new FakeAuthoredLspSession(
+    workspace,
+    null,
+    false,
+    {
+      copiedFile: oracle.fileLifecycle.copiedFile,
+      copiedImportSpecifier: oracle.fileLifecycle.copiedImportSpecifier,
+      importerFile: oracle.componentBoundary.importerFile,
+      renamedFile: oracle.fileLifecycle.renamedFile,
+      renamedImportSpecifier: oracle.fileLifecycle.renamedImportSpecifier,
+    },
+    true,
+    true,
+  );
   session.seedDocument(oracle.componentBoundary.importerFile, importerSource);
   const tagOffset = importerSource.indexOf("Child />");
   const tagRange = rangeAt(importerSource, tagOffset, "Child".length);
   const baselineDiagnostics: PublishDiagnosticsParams = {
-    diagnostics: [],
+    diagnostics: [
+      {
+        code: 2307,
+        message: "Cannot find module '@transient/package' or its corresponding type declarations.",
+        range: {
+          end: { character: 34, line: 1 },
+          start: { character: 14, line: 1 },
+        },
+        severity: 1,
+        source: "vize/types",
+      },
+    ],
     uri: importerUri,
     version: 1,
   };
@@ -75,6 +93,10 @@ const childValue = 1
       count: 0,
       sha256: "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
     });
+    assert.ok(
+      session.events.some((event) => event.endsWith(":stale-delete-skipped")),
+      "delete diagnostics wait must skip stale same-version payloads",
+    );
     assert.equal(fs.existsSync(path.join(workspace, "__VizeOracleChild.vue")), false);
     assert.equal(fs.existsSync(path.join(workspace, "__VizeOracleRenamedChild.vue")), false);
     assertOrderedEvents(session.events, [

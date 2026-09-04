@@ -124,11 +124,7 @@ export function assertMissingModuleDiagnostic(
   source: string,
   specifier: string,
 ): void {
-  const matching = published.diagnostics.filter(
-    (diagnostic) =>
-      String(diagnostic.code).replace(/^TS/, "") === "2307" &&
-      diagnostic.message?.includes(specifier),
-  );
+  const matching = missingModuleDiagnostics(published, specifier);
   assert.equal(matching.length, 1, `deleted dependency must produce one TS2307: ${specifier}`);
   const offset = uniqueAnchorOffset(source, specifier, "deleted dependency import");
   assert.deepEqual(matching[0], {
@@ -141,6 +137,24 @@ export function assertMissingModuleDiagnostic(
     severity: 1,
     source: "vize/types",
   });
+}
+
+export function hasMissingModuleDiagnostic(
+  published: PublishDiagnosticsParams,
+  specifier: string,
+): boolean {
+  return missingModuleDiagnostics(published, specifier).length > 0;
+}
+
+function missingModuleDiagnostics(
+  published: PublishDiagnosticsParams,
+  specifier: string,
+): LspDiagnostic[] {
+  return published.diagnostics.filter(
+    (diagnostic) =>
+      String(diagnostic.code).replace(/^TS/, "") === "2307" &&
+      diagnostic.message?.includes(specifier),
+  );
 }
 
 export function assertRankedLabels(

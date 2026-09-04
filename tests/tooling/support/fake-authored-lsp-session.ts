@@ -28,9 +28,11 @@ export class FakeAuthoredLspSession {
   private readonly lifecycle: FakeAuthoredLspLifecycle;
   private readonly nullMethod: string | null;
   private readonly emitDeletedDependencyDiagnostics: boolean;
+  private readonly emitStaleDeletedDependencyDiagnostics: boolean;
   private readonly throwOnClose: boolean;
   private readonly workspace: string;
   private fileDeleted = false;
+  private staleDeletedDependencyDiagnosticsPending = false;
 
   constructor(
     workspace: string,
@@ -38,12 +40,14 @@ export class FakeAuthoredLspSession {
     throwOnClose = false,
     lifecycle: FakeAuthoredLspLifecycle = DEFAULT_LIFECYCLE,
     emitDeletedDependencyDiagnostics = true,
+    emitStaleDeletedDependencyDiagnostics = false,
   ) {
     this.workspace = workspace;
     this.nullMethod = nullMethod;
     this.throwOnClose = throwOnClose;
     this.lifecycle = lifecycle;
     this.emitDeletedDependencyDiagnostics = emitDeletedDependencyDiagnostics;
+    this.emitStaleDeletedDependencyDiagnostics = emitStaleDeletedDependencyDiagnostics;
   }
 
   seedDocument(relativeFile: string, text: string, version = 1): void {
@@ -56,7 +60,10 @@ export class FakeAuthoredLspSession {
   notify(method: string, params: unknown): void {
     if (method === "workspace/didCreateFiles" || method === "workspace/didDeleteFiles") {
       const uri = (params as { files: Array<{ uri: string }> }).files[0]!.uri;
-      if (method === "workspace/didDeleteFiles") this.fileDeleted = true;
+      if (method === "workspace/didDeleteFiles") {
+        this.fileDeleted = true;
+        this.staleDeletedDependencyDiagnosticsPending = this.emitStaleDeletedDependencyDiagnostics;
+      }
       this.events.push(`${method}:${fileName(uri)}`);
       return;
     }
@@ -141,17 +148,33 @@ export class FakeAuthoredLspSession {
   async waitForNotification(method: string, predicate: (params: unknown) => boolean) {
     assert.equal(method, "textDocument/publishDiagnostics");
     assert.ok(predicate, "fake diagnostics waits require an exact URI/version predicate");
-    const notification = [...this.documents.entries()]
-      .reverse()
-      .map(([uri, document]) => {
-        const diagnostics = this.deletedDependencyDiagnostics(document.text);
-        return {
-          document,
-          payload: { diagnostics, uri, version: document.version } as PublishDiagnosticsParams,
-          uri,
-        };
-      })
-      .find(({ payload }) => predicate(payload));
+    const notifications = [...this.documents.entries()].reverse().map(([uri, document]) => {
+      const diagnostics = this.deletedDependencyDiagnostics(document.text);
+      return {
+        document,
+        payload: { diagnostics, uri, version: document.version } as PublishDiagnosticsParams,
+        uri,
+      };
+    });
+    if (this.staleDeletedDependencyDiagnosticsPending) {
+      this.staleDeletedDependencyDiagnosticsPending = false;
+      const stale = notifications.find(({ document }) =>
+        document.text.includes(this.lifecycle.renamedImportSpecifier),
+      );
+      if (stale != null) {
+        const stalePayload = { ...stale.payload, diagnostics: [] };
+        if (predicate(stalePayload)) {
+          this.events.push(
+            `${method}:${stale.document.version}:${fileName(stale.uri)}:stale-delete`,
+          );
+          return stalePayload;
+        }
+        this.events.push(
+          `${method}:${stale.document.version}:${fileName(stale.uri)}:stale-delete-skipped`,
+        );
+      }
+    }
+    const notification = notifications.find(({ payload }) => predicate(payload));
     assert.ok(notification, "fake session must have a matching diagnostic notification");
     const { document, payload, uri } = notification;
     this.events.push(`${method}:${document.version}:${fileName(uri)}`);

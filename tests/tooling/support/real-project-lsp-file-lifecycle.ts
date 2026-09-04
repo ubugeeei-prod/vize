@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import path from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { pathToFileURL } from "node:url";
 
@@ -11,8 +10,8 @@ import {
   assertRangeInDocument,
   diagnosticEvidence,
   diagnosticPayload,
+  hasMissingModuleDiagnostic,
   locations,
-  normalizeDiagnostics,
   replaceUniqueAnchor,
   responseEvidence,
   sortTextEdits,
@@ -24,6 +23,10 @@ import type {
   AuthoredFileLifecycleEvidence,
   LspAuthoredOracle,
 } from "./real-project-lsp-report.ts";
+import {
+  normalizeLifecycleRepairDiagnostics,
+  reservedPath,
+} from "./real-project-lsp-file-lifecycle-utils.ts";
 
 type OracleDocument = { source: string; uri: string };
 type SymbolInformation = { location?: { range?: LspRange; uri?: string }; name?: string };
@@ -128,13 +131,16 @@ export async function exerciseAuthoredFileLifecycle(
 
     fs.rmSync(renamedPath);
     session.notify("workspace/didDeleteFiles", { files: [{ uri: renamedUri }] });
+    const renamedImport = lifecycle.renamedImportSpecifier;
     const deletedDiagnostics = await waitForDiagnostics(
       session,
       importer.uri,
       currentVersion,
       timeoutMs(),
+      (lifecycle.requireDeletedImportDiagnostic ?? true)
+        ? (diagnostics) => hasMissingModuleDiagnostic(diagnostics, renamedImport)
+        : undefined,
     );
-    const renamedImport = lifecycle.renamedImportSpecifier;
     if (lifecycle.requireDeletedImportDiagnostic ?? true) {
       assertMissingModuleDiagnostic(deletedDiagnostics, renamedImporterSource, renamedImport);
     }
@@ -162,9 +168,9 @@ export async function exerciseAuthoredFileLifecycle(
     changeDocument(session, importer.uri, importer.source, currentVersion);
     const repaired = await waitForDiagnostics(session, importer.uri, currentVersion, timeoutMs());
     assert.deepEqual(
-      normalizeDiagnostics(repaired.diagnostics),
-      normalizeDiagnostics(baselineDiagnostics.diagnostics),
-      "file lifecycle repair must restore importer diagnostics exactly",
+      normalizeLifecycleRepairDiagnostics(repaired, lifecycle),
+      normalizeLifecycleRepairDiagnostics(baselineDiagnostics, lifecycle),
+      "file lifecycle repair must restore owned importer diagnostics exactly",
     );
     const restoredDefinition = await expectDefinition(
       session,
@@ -329,21 +335,14 @@ async function waitForDiagnostics(
   uri: string,
   version: number,
   timeoutMs: number,
+  predicate?: (diagnostics: PublishDiagnosticsParams) => boolean,
 ): Promise<PublishDiagnosticsParams> {
   return (await session.waitForNotification(
     "textDocument/publishDiagnostics",
-    (value) => diagnosticPayload(value, uri, version) != null,
+    (value) => {
+      const diagnostics = diagnosticPayload(value, uri, version);
+      return diagnostics != null && (predicate == null || predicate(diagnostics));
+    },
     timeoutMs,
   )) as PublishDiagnosticsParams;
-}
-
-function reservedPath(workspaceDir: string, relativeFile: string, label: string): string {
-  assert.equal(path.isAbsolute(relativeFile), false, `${label} lifecycle file must be relative`);
-  const absolute = path.resolve(workspaceDir, relativeFile);
-  const relative = path.relative(workspaceDir, absolute);
-  assert.ok(
-    relative.length > 0 && relative !== ".." && !relative.startsWith(`..${path.sep}`),
-    `${label} lifecycle file escapes the fixture: ${relativeFile}`,
-  );
-  return absolute;
 }

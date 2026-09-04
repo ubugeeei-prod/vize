@@ -1,13 +1,12 @@
 import assert from "node:assert/strict";
 
 import { completionLabels, hoverToText, offsetToPosition } from "./lsp/assertions.ts";
-import type { LspRange, PublishDiagnosticsParams, WorkspaceEdit } from "./lsp/protocol.ts";
+import type { LspRange, WorkspaceEdit } from "./lsp/protocol.ts";
 import {
   anchoredSymbolRange,
   assertRankedLabels,
   assertRangeInDocument,
   diagnosticEvidence,
-  diagnosticPayload,
   locations,
   normalizeDiagnostics,
   readOracleDocument,
@@ -22,6 +21,12 @@ import {
   type Hover,
   type OracleSession,
 } from "./real-project-lsp-authored-utils.ts";
+import {
+  change,
+  open,
+  requestCompletion,
+  waitForDiagnostics,
+} from "./real-project-lsp-authored-oracle-session.ts";
 import type { FixtureProject, LspAuthoredOracle } from "./real-project-lsp-report.ts";
 import { exerciseAuthoredFileLifecycle } from "./real-project-lsp-file-lifecycle.ts";
 
@@ -203,8 +208,25 @@ export async function exerciseAuthoredLspOracle(
     const baselineContainsProbe = baselineLabels.includes(probe);
     assert.equal(baselineContainsProbe, false, "probe must start absent");
 
-    change(session, childDocument.uri, changedChildSource, 2);
-    await waitForDiagnostics(session, childDocument.uri, 2, timeoutMs());
+    const importerSettledVersion = (initialImporterDiagnostics.version ?? 1) + 1;
+    change(session, importerDocument.uri, importerDocument.source, importerSettledVersion);
+    await waitForDiagnostics(session, importerDocument.uri, importerSettledVersion, timeoutMs());
+
+    // Component-boundary requests can settle the backend project view after
+    // the child file's first diagnostics. Re-baseline the unchanged dependency
+    // immediately before editing it so repair compares against that same view.
+    const dependencyBaselineVersion = (fixedChildDiagnostics.version ?? 1) + 1;
+    change(session, childDocument.uri, childDocument.source, dependencyBaselineVersion);
+    const dependencyBaselineDiagnostics = await waitForDiagnostics(
+      session,
+      childDocument.uri,
+      dependencyBaselineVersion,
+      timeoutMs(),
+    );
+
+    const changedChildVersion = dependencyBaselineVersion + 1;
+    change(session, childDocument.uri, changedChildSource, changedChildVersion);
+    await waitForDiagnostics(session, childDocument.uri, changedChildVersion, timeoutMs());
     const changedLabels = await requestCompletion(
       session,
       importerDocument.uri,
@@ -214,11 +236,17 @@ export async function exerciseAuthoredLspOracle(
     const changedContainsProbe = changedLabels.includes(probe);
     assert.ok(changedContainsProbe, "completion must observe an unsaved dependency edit");
 
-    change(session, childDocument.uri, childDocument.source, 3);
-    const repaired = await waitForDiagnostics(session, childDocument.uri, 3, timeoutMs());
+    const repairedChildVersion = changedChildVersion + 1;
+    change(session, childDocument.uri, childDocument.source, repairedChildVersion);
+    const repaired = await waitForDiagnostics(
+      session,
+      childDocument.uri,
+      repairedChildVersion,
+      timeoutMs(),
+    );
     assert.deepEqual(
       normalizeDiagnostics(repaired.diagnostics),
-      normalizeDiagnostics(fixedChildDiagnostics.diagnostics),
+      normalizeDiagnostics(dependencyBaselineDiagnostics.diagnostics),
       "dependency repair must restore diagnostics exactly",
     );
     const repairedLabels = await requestCompletion(
@@ -234,16 +262,17 @@ export async function exerciseAuthoredLspOracle(
       false,
       "dependency repair must remove the probe completion",
     );
-    const repairedImporterDiagnostics = await waitForDiagnostics(
+    // Type diagnostics can arrive after the importer opened with an initial
+    // lint-only publish. Recompute the unchanged importer immediately before
+    // the create/rename/delete lifecycle so the final repair is compared
+    // against the server's settled baseline for that exact source.
+    const lifecycleImporterVersion = importerSettledVersion + 1;
+    change(session, importerDocument.uri, importerDocument.source, lifecycleImporterVersion);
+    const lifecycleImporterDiagnostics = await waitForDiagnostics(
       session,
       importerDocument.uri,
-      initialImporterDiagnostics.version ?? 1,
+      lifecycleImporterVersion,
       timeoutMs(),
-    );
-    assert.deepEqual(
-      normalizeDiagnostics(repairedImporterDiagnostics.diagnostics),
-      normalizeDiagnostics(initialImporterDiagnostics.diagnostics),
-      "dependency repair must restore importer diagnostics exactly",
     );
     const fileLifecycle = await exerciseAuthoredFileLifecycle(
       session,
@@ -252,7 +281,7 @@ export async function exerciseAuthoredLspOracle(
       importerDocument,
       childDocument,
       tagRange,
-      repairedImporterDiagnostics,
+      lifecycleImporterDiagnostics,
       timeoutMs,
     );
     const evidence = (request: { durationMs: number }, response: unknown, count: number) =>
@@ -303,46 +332,4 @@ export function assertOracleFilesAreInCorpus(
       `${project.id} authored LSP oracle file is outside vueGlobs: ${file}`,
     );
   }
-}
-
-function open(session: OracleSession, uri: string, text: string, version: number, uris: string[]) {
-  session.notify("textDocument/didOpen", {
-    textDocument: { languageId: "vue", text, uri, version },
-  });
-  uris.push(uri);
-}
-
-function change(session: OracleSession, uri: string, text: string, version: number) {
-  session.notify("textDocument/didChange", {
-    contentChanges: [{ text }],
-    textDocument: { uri, version },
-  });
-}
-
-async function waitForDiagnostics(
-  session: OracleSession,
-  uri: string,
-  version: number,
-  timeoutMs: number,
-): Promise<PublishDiagnosticsParams> {
-  return (await session.waitForNotification(
-    "textDocument/publishDiagnostics",
-    (value) => diagnosticPayload(value, uri, version) != null,
-    timeoutMs,
-  )) as PublishDiagnosticsParams;
-}
-
-async function requestCompletion(
-  session: OracleSession,
-  uri: string,
-  position: LspRange["start"],
-  timeoutMs: number,
-) {
-  return completionLabels(
-    (await session.request(
-      "textDocument/completion",
-      textDocumentPosition(uri, position),
-      timeoutMs,
-    )) as CompletionResponse,
-  );
 }
