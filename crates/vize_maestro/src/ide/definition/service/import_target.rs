@@ -19,6 +19,8 @@ use crate::ide::definition::{helpers, import_resolver::resolve_import_specifier,
 
 #[cfg(any(test, feature = "native"))]
 mod alias;
+#[cfg(test)]
+mod pug_tests;
 
 #[cfg(any(test, feature = "native"))]
 pub(super) use alias::normalize_bound_name_definition;

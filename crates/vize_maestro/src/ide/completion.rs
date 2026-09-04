@@ -28,6 +28,8 @@ mod component_lower_camel_props_tests;
 #[cfg(test)]
 mod component_props_tests;
 #[cfg(test)]
+mod component_pug_props_tests;
+#[cfg(test)]
 mod dedup_tests;
 #[cfg(test)]
 mod split_component_props_tests;

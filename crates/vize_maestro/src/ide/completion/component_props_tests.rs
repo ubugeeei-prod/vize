@@ -62,48 +62,6 @@ import Child from './Child.vue'
 }
 
 #[test]
-fn template_component_prop_completion_resolves_pug_imported_props() {
-    let dir = tempfile::tempdir().unwrap();
-    let child_path = dir.path().join("HighlightMessage.vue");
-    fs::write(
-        &child_path,
-        r#"<script setup lang="ts">
-defineProps<{
-  type?: string
-  noIcon?: boolean
-}>()
-</script>
-"#,
-    )
-    .unwrap();
-
-    let source = r#"<script setup lang="ts">
-import HighlightMessage from './HighlightMessage.vue'
-</script>
-
-<template lang="pug">
-  highlight-message(type="success")
-</template>
-"#;
-    let parent_path = dir.path().join("Parent.vue");
-    fs::write(&parent_path, source).unwrap();
-
-    let uri = Url::from_file_path(&parent_path).unwrap();
-    let state = ServerState::new();
-    state
-        .documents
-        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
-    state.update_virtual_docs(&uri, source);
-
-    let offset = source.find("highlight-message").unwrap() + "highlight-message".len();
-    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
-
-    assert!(has_label(&labels, "type"), "{labels:?}");
-    assert!(has_label(&labels, "no-icon"), "{labels:?}");
-}
-
-#[test]
 fn template_component_prop_completion_replaces_dynamic_prefix() {
     let dir = tempfile::tempdir().unwrap();
     let child_path = dir.path().join("Child.vue");

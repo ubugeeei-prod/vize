@@ -12,6 +12,8 @@ mod manual_tests;
 #[cfg(test)]
 mod merge_tests;
 mod resources;
+#[cfg(all(test, feature = "native"))]
+mod source_alias_tests;
 
 use tower_lsp::lsp_types::{
     DocumentChangeOperation, DocumentChanges, OneOf, OptionalVersionedTextDocumentIdentifier,

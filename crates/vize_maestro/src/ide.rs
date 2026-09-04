@@ -25,6 +25,7 @@ pub mod jsx;
 pub mod linked_editing;
 pub(crate) mod markup;
 pub(crate) mod musea;
+pub(crate) mod pug;
 pub mod references;
 pub mod rename;
 pub mod selection_range;
