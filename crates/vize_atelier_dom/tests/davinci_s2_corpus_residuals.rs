@@ -33,6 +33,10 @@ const BATTERY: &[(&str, &str)] = &[
         "foreign_defs_with_static_bound_gradient_caches_as_legacy",
         r##"<svg class="va-icon-vuestic"><defs><linearGradient :id="'ORIGINAL'" x1="0%" y1="50%" y2="50%"><stop offset="0%" stop-color="#4AE387" /><stop offset="100%" stop-color="#C8EA13" /></linearGradient></defs><path :fill="textColor" /></svg>"##,
     ),
+    (
+        "consul_key_browser_v_for_item_in_conditional_class_keeps_patch_flag",
+        r#"<div v-for="row in rows" :key="row.key" class="row" :class="'session' in row && row.session ? 'locked' : ''"></div>"#,
+    ),
 ];
 
 #[test]

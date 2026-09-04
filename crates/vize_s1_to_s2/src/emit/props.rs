@@ -151,11 +151,13 @@ pub(super) fn bind_patch(
                     "ref" => flag |= 512,
                     "class"
                         if bind_value_is_static_patchless(bind, is_ts)
-                            || bind_value_uses_legacy_patchless_runtime_expr(bind) => {}
+                            || (!for_item
+                                && bind_value_uses_legacy_patchless_runtime_expr(bind)) => {}
                     "class" if !is_component => flag |= 2,
                     "style"
                         if bind_value_is_static_patchless(bind, is_ts)
-                            || bind_value_uses_legacy_patchless_runtime_expr(bind) => {}
+                            || (!for_item
+                                && bind_value_uses_legacy_patchless_runtime_expr(bind)) => {}
                     "style" if !is_component => flag |= 4,
                     "key" => {}
                     key if key.ends_with("Modifiers")

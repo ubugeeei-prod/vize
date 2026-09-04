@@ -164,6 +164,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn v_for_item_with_in_conditional_class_keeps_the_legacy_patch_flag() {
+    assert_shipped_parity(
+        r#"<div v-for="row in rows" :key="row.key" class="row" :class="'session' in row && row.session ? 'locked' : ''"></div>"#,
+    );
+}
+
+#[test]
 fn a_destructured_v_for_component_uses_the_pattern() {
     assert_eq!(
         assembled(r#"<Foo v-for="{ id } in list" :key="id" />"#),
