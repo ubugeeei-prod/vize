@@ -100,6 +100,35 @@ const BATTERY: &[(&str, &str)] = &[
         "model_then_named",
         r#"<MyComp><input v-model="msg"><template #x><input v-model="msg"></template></MyComp>"#,
     ),
+    // `_createSlots`: a conditional or dynamically named slot leaves the
+    // object and prints in the `{ name, fn }` array *after* the `default:`
+    // bucket, so a body authored second still prints first. The entry is
+    // captured like every other piece, so it has to be re-registered
+    // where it prints or the whole renumbering goes uncovered.
+    (
+        "create_slots_conditional_then_default",
+        r#"<MyComp><template #x v-if="ok"><i @click="go(2)">x</i></template><b @click="go(1)">d</b></MyComp>"#,
+    ),
+    (
+        "create_slots_dynamic_name_then_default",
+        r#"<MyComp><template #[name]><i @click="go(2)">x</i></template><b @click="go(1)">d</b></MyComp>"#,
+    ),
+    (
+        "create_slots_two_entries_then_default",
+        r#"<MyComp><template #x v-if="ok"><i @click="go(2)">x</i></template><template #[name]><i @click="go(3)">y</i></template><b @click="go(1)">d</b></MyComp>"#,
+    ),
+    (
+        "create_slots_default_then_conditional",
+        r#"<MyComp><b @click="go(1)">d</b><template #x v-if="ok"><i @click="go(2)">x</i></template></MyComp>"#,
+    ),
+    (
+        "create_slots_model_in_entry",
+        r#"<MyComp><template #x v-if="ok"><input v-model="msg"></template><input v-model="msg"></MyComp>"#,
+    ),
+    (
+        "create_slots_nested_entry",
+        r#"<MyComp><template #x v-if="ok"><Inner><b @click="go(2)">i</b><template #y><i @click="go(3)">y</i></template></Inner></template><b @click="go(1)">d</b></MyComp>"#,
+    ),
 ];
 
 fn metadata() -> BindingMetadata {
@@ -108,6 +137,8 @@ fn metadata() -> BindingMetadata {
         ("count", BindingType::SetupRef),
         ("msg", BindingType::SetupLet),
         ("items", BindingType::SetupConst),
+        ("ok", BindingType::SetupRef),
+        ("name", BindingType::SetupRef),
         ("MyComp", BindingType::SetupConst),
         ("Inner", BindingType::SetupConst),
     ];

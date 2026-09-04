@@ -55,7 +55,7 @@ pub(super) fn emit_create_slots(
             cx.buf.push(",");
         }
         cx.buf.newline();
-        cx.buf.push(entry.as_str());
+        cx.push_captured(entry);
     }
     cx.buf.deindent();
     cx.buf.newline();
