@@ -32,6 +32,10 @@ test("authored LSP feature oracles are explicit and ratcheted", () => {
     configured.some((project) => project.id === "misskey"),
     "misskey must keep an authored LSP feature oracle",
   );
+  assert.ok(
+    configured.some((project) => project.id === "vue-flow"),
+    "vue-flow must keep an authored LSP feature oracle",
+  );
 
   const budgetOwnerIds = registry.projects
     .filter((project) => project.lspIncrementalBudget != null)
