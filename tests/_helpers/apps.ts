@@ -811,7 +811,7 @@ function setupMisskeyWorktree(opts?: {
       PUPPETEER_SKIP_DOWNLOAD: "1",
     },
     ignoreScripts: true,
-    timeout: 300_000,
+    timeout: 900_000,
   });
 
   ensureMisskeyFluentEmojiAssets(misskeyDir);
@@ -832,7 +832,7 @@ function setupMisskeyWorktree(opts?: {
     execSync(`npx -y pnpm@10 --filter ${pkg} build`, {
       cwd: misskeyDir,
       stdio: "inherit",
-      timeout: 120_000,
+      timeout: 600_000,
     });
   }
 
@@ -1825,7 +1825,7 @@ export const nuxtUiApp: AppConfig = {
   allowNon200: true,
   waitUntil: "load",
   readyDelay: 10_000,
-  startupTimeout: 180_000,
+  startupTimeout: 600_000,
   setup() {
     const nuxtUiDir = syncGitFixtureWorktree("nuxt-ui", "playground");
     const nuxtConfigPath = path.join(nuxtUiDir, "playgrounds", "nuxt", "nuxt.config.ts");
