@@ -11,12 +11,39 @@ pub(in crate::emit) fn compact_props_object<'a>(
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
 ) -> String {
     let unique = unique_attrs(attributes);
+    compact_props_object_from_unique(&unique, None)
+}
+
+pub(in crate::emit) fn compact_props_object_with_scope<'a>(
+    attributes: impl Iterator<Item = &'a Attribute<'a>>,
+    hoisted_scope_id: Option<&str>,
+) -> Option<String> {
+    let unique = unique_attrs(attributes);
+    let scope = hoisted_scope_id.filter(|scope| !unique.iter().any(|attr| attr.name == *scope));
+    if unique.is_empty() && scope.is_none() {
+        return None;
+    }
+    Some(compact_props_object_from_unique(&unique, scope))
+}
+
+fn compact_props_object_from_unique(
+    unique: &[&Attribute<'_>],
+    hoisted_scope_id: Option<&str>,
+) -> String {
     let mut out = String::from("{ ");
-    for (i, attr) in unique.iter().enumerate() {
-        if i > 0 {
+    let mut emitted = 0usize;
+    for attr in unique.iter() {
+        if emitted > 0 {
             out.push_str(", ");
         }
         push_attr_pair(&mut out, attr);
+        emitted += 1;
+    }
+    if let Some(scope_id) = hoisted_scope_id {
+        if emitted > 0 {
+            out.push_str(", ");
+        }
+        push_empty_attr_pair(&mut out, scope_id);
     }
     out.push_str(" }");
     out
@@ -36,17 +63,23 @@ pub(in crate::emit) fn unique_attrs<'a>(
 }
 
 pub(in crate::emit) fn push_attr_pair(out: &mut String, attr: &Attribute<'_>) {
-    let quoted = !is_valid_js_identifier(attr.name);
+    push_pair(out, attr.name, attr.value.unwrap_or_default());
+}
+
+pub(in crate::emit) fn push_empty_attr_pair(out: &mut String, name: &str) {
+    push_pair(out, name, "");
+}
+
+fn push_pair(out: &mut String, name: &str, value: &str) {
+    let quoted = !is_valid_js_identifier(name);
     if quoted {
         out.push('"');
     }
-    out.push_str(attr.name);
+    out.push_str(name);
     if quoted {
         out.push('"');
     }
     out.push_str(": \"");
-    if let Some(value) = attr.value {
-        out.push_str(escape_js_string(value).as_str());
-    }
+    out.push_str(escape_js_string(value).as_str());
     out.push('"');
 }

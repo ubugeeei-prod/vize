@@ -8,7 +8,10 @@ mod cached_props;
 mod kids;
 mod props;
 
-pub(super) use props::{compact_props_object, push_attr_pair, unique_attrs};
+pub(super) use props::{
+    compact_props_object, compact_props_object_with_scope, push_attr_pair, push_empty_attr_pair,
+    unique_attrs,
+};
 
 use vize_s0::String;
 use vize_s2::op::{ElementOp, Op};
@@ -105,8 +108,12 @@ pub(super) fn hoist_static_element(cx: &mut EmitCx<'_>, element: &ElementOp<'_>)
     if hoist_needs_create_text(element) {
         cx.buf.use_create_text();
     }
-    cx.buf
-        .push_hoist(hoist_element_rhs(element, true, cx.is_ts))
+    cx.buf.push_hoist(hoist_element_rhs(
+        element,
+        true,
+        cx.is_ts,
+        cx.hoisted_scope_id,
+    ))
 }
 
 pub(super) fn is_hoistable(element: &ElementOp<'_>, is_ts: bool) -> bool {
@@ -133,7 +140,12 @@ fn walk_hoisted(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {
     }
 }
 
-fn hoist_element_rhs(element: &ElementOp<'_>, pure: bool, is_ts: bool) -> String {
+fn hoist_element_rhs(
+    element: &ElementOp<'_>,
+    pure: bool,
+    is_ts: bool,
+    hoisted_scope_id: Option<&str>,
+) -> String {
     let mut out = String::default();
     if pure {
         out.push_str("/*#__PURE__*/ ");
@@ -144,7 +156,7 @@ fn hoist_element_rhs(element: &ElementOp<'_>, pure: bool, is_ts: bool) -> String
     out.push_str(element.tag);
     out.push('"');
     let kids = renderable_children(&element.children);
-    let props = static_vnode_props(element, true, is_ts);
+    let props = static_vnode_props(element, true, is_ts, hoisted_scope_id);
     if props.is_some() || !kids.is_empty() {
         out.push_str(", ");
         if let Some(props) = props {
@@ -155,7 +167,7 @@ fn hoist_element_rhs(element: &ElementOp<'_>, pure: bool, is_ts: bool) -> String
     }
     if !kids.is_empty() {
         out.push_str(", ");
-        append_hoist_kids(&mut out, &kids, is_ts);
+        append_hoist_kids(&mut out, &kids, is_ts, hoisted_scope_id);
     }
     out.push(')');
     out
@@ -209,20 +221,19 @@ fn static_vnode_props(
     element: &ElementOp<'_>,
     include_bindings: bool,
     is_ts: bool,
+    hoisted_scope_id: Option<&str>,
 ) -> Option<String> {
     if include_bindings {
-        return super::props_static::root_hoist_props(
+        return super::props_static::root_hoist_props_with_scope(
             &element.attributes,
             &element.bindings,
+            hoisted_scope_id,
             is_ts,
         )
         .ok()
         .flatten();
     }
-    if element.attributes.is_empty() {
-        return None;
-    }
-    Some(compact_props_object(element.attributes.iter()))
+    compact_props_object_with_scope(element.attributes.iter(), hoisted_scope_id)
 }
 
 fn cached_static_vnode_props(

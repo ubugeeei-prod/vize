@@ -17,7 +17,12 @@ pub(super) fn hoist_needs_create_text(element: &ElementOp<'_>) -> bool {
         })
 }
 
-pub(super) fn append_hoist_kids(out: &mut String, kids: &[&Op<'_>], is_ts: bool) {
+pub(super) fn append_hoist_kids(
+    out: &mut String,
+    kids: &[&Op<'_>],
+    is_ts: bool,
+    hoisted_scope_id: Option<&str>,
+) {
     if kids.iter().all(|op| matches!(op, Op::Text(_))) {
         out.push('"');
         for op in kids.iter() {
@@ -43,7 +48,9 @@ pub(super) fn append_hoist_kids(out: &mut String, kids: &[&Op<'_>], is_ts: bool)
                 out.push(')');
             }
             Op::Element(element) => {
-                out.push_str(hoist_descendant_element_rhs(element, is_ts).as_str());
+                out.push_str(
+                    hoist_descendant_element_rhs(element, is_ts, hoisted_scope_id).as_str(),
+                );
             }
             _ => {}
         }
@@ -51,7 +58,11 @@ pub(super) fn append_hoist_kids(out: &mut String, kids: &[&Op<'_>], is_ts: bool)
     out.push(']');
 }
 
-fn hoist_descendant_element_rhs(element: &ElementOp<'_>, is_ts: bool) -> String {
+fn hoist_descendant_element_rhs(
+    element: &ElementOp<'_>,
+    is_ts: bool,
+    hoisted_scope_id: Option<&str>,
+) -> String {
     let mut out = String::default();
     out.push_str(Buf::create_element_vnode_alias());
     out.push('(');
@@ -59,7 +70,7 @@ fn hoist_descendant_element_rhs(element: &ElementOp<'_>, is_ts: bool) -> String 
     out.push_str(element.tag);
     out.push('"');
     let kids = renderable_children(&element.children);
-    let props = super::static_vnode_props(element, false, is_ts);
+    let props = super::static_vnode_props(element, false, is_ts, hoisted_scope_id);
     if props.is_some() || !kids.is_empty() {
         out.push_str(", ");
         if let Some(props) = props {
@@ -70,7 +81,7 @@ fn hoist_descendant_element_rhs(element: &ElementOp<'_>, is_ts: bool) -> String 
     }
     if !kids.is_empty() {
         out.push_str(", ");
-        append_hoist_kids(&mut out, &kids, is_ts);
+        append_hoist_kids(&mut out, &kids, is_ts, hoisted_scope_id);
     }
     out.push(')');
     out

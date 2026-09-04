@@ -185,6 +185,9 @@ struct EmitCx<'facts> {
     is_ts: bool,
     /// The shipped lane's `cache_handlers`.
     cache_handlers: bool,
+    /// Scoped-style attr that only module-level static VNode hoists bake into
+    /// props; runtime VNodes rely on Vue's current scope id.
+    hoisted_scope_id: Option<&'facts str>,
     /// `(digit offset in `buf.code`, ordering key, slot number)` for
     /// every `_cache` index written so far. The shipped codegen takes a
     /// slot when it *reaches* the construct, so the ordering key is where
@@ -270,6 +273,7 @@ fn emit_dom_with_emit_budget<'f>(
         prefix_identifiers: options.prefix_identifiers,
         is_ts: options.is_ts,
         cache_handlers: options.cache_handlers,
+        hoisted_scope_id: options.hoisted_scope_id,
         cache_sites: StdVec::new(),
         used_unref: core::cell::Cell::new(u32::MAX),
         component_name: options.component_name,

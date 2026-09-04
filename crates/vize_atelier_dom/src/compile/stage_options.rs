@@ -61,6 +61,7 @@ pub(super) fn s2_emit_options<'a>(
     options: &'a DomCompilerOptions,
     codegen: &'a CodegenOptions,
     bindings: Option<&'a BindingTable>,
+    hoisted_scope_id: Option<&'a str>,
 ) -> DomEmitOptions<'a> {
     DomEmitOptions {
         mode: match options.mode {
@@ -72,6 +73,8 @@ pub(super) fn s2_emit_options<'a>(
         prefix_identifiers: options.prefix_identifiers,
         inline: options.inline,
         component_name: options.component_name.as_deref(),
+        cache_handlers: options.cache_handlers,
+        hoisted_scope_id,
         is_ts: options.is_ts,
         bindings,
     }

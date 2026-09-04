@@ -12,7 +12,7 @@ use crate::pass::{StaticFacts, StaticLevel};
 
 use super::EmitCx;
 use super::EmitError;
-use super::hoist::{push_attr_pair, unique_attrs};
+use super::hoist::{push_attr_pair, push_empty_attr_pair, unique_attrs};
 use super::props::{Piece, pieces, static_bind_key};
 use super::props_bind::StaticBindKeyCasing;
 use hoist_pair::{
@@ -95,7 +95,16 @@ pub(super) fn root_hoist_props(
     bindings: &[BindingOp<'_>],
     is_ts: bool,
 ) -> Result<Option<String>, EmitError> {
-    root_hoist_props_with_layout(attributes, bindings, None, is_ts)
+    root_hoist_props_with_layout(attributes, bindings, None, None, is_ts)
+}
+
+pub(super) fn root_hoist_props_with_scope(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+    hoisted_scope_id: Option<&str>,
+    is_ts: bool,
+) -> Result<Option<String>, EmitError> {
+    root_hoist_props_with_layout(attributes, bindings, None, hoisted_scope_id, is_ts)
 }
 
 pub(super) fn cached_root_hoist_props(
@@ -104,7 +113,7 @@ pub(super) fn cached_root_hoist_props(
     line_indent: usize,
     is_ts: bool,
 ) -> Result<Option<String>, EmitError> {
-    root_hoist_props_with_layout(attributes, bindings, Some(line_indent), is_ts)
+    root_hoist_props_with_layout(attributes, bindings, Some(line_indent), None, is_ts)
 }
 
 /// The shipped `genObjectExpression`'s second multiline arm: a property
@@ -123,9 +132,13 @@ fn root_hoist_props_with_layout(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     multiline_indent: Option<usize>,
+    hoisted_scope_id: Option<&str>,
     is_ts: bool,
 ) -> Result<Option<String>, EmitError> {
-    if !can_root_hoist_props(attributes, bindings, is_ts) {
+    let scope = hoisted_scope_id.filter(|scope| !attributes.iter().any(|attr| attr.name == *scope));
+    if !can_root_hoist_props(attributes, bindings, is_ts)
+        && !(attributes.is_empty() && bindings.is_empty() && scope.is_some())
+    {
         return Ok(None);
     }
 
@@ -139,6 +152,11 @@ fn root_hoist_props_with_layout(
         if has_prior_hoist_key(&pieces[..index], key.as_str(), is_ts)? {
             continue;
         }
+        props.push(prop);
+    }
+    if let Some(scope_id) = scope {
+        let mut prop = String::default();
+        push_empty_attr_pair(&mut prop, scope_id);
         props.push(prop);
     }
     if props.is_empty() {

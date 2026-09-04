@@ -218,6 +218,11 @@ pub struct DomEmitOptions<'a> {
     /// is created once instead of on every render. Turned on with
     /// [`DomEmitOptions::inline`] by `compile_template_block`.
     pub cache_handlers: bool,
+    /// SFC scoped-style attr for module-level static VNode hoists. The DOM
+    /// SFC wrapper passes this separately from `scope_id` because runtime
+    /// VNodes receive scope attrs from Vue; only import-time hoists need it
+    /// baked into generated props.
+    pub hoisted_scope_id: Option<&'a str>,
     /// The shipped lane's `is_ts`: template expressions are TypeScript,
     /// so each one is type-erased (`emit::prefix::typescript`) before the
     /// identifier pass reads it.
@@ -240,6 +245,7 @@ impl DomEmitOptions<'static> {
         inline: false,
         component_name: None,
         cache_handlers: false,
+        hoisted_scope_id: None,
         is_ts: false,
         bindings: None,
     };
@@ -267,6 +273,7 @@ mod tests {
                 inline: false,
                 component_name: None,
                 cache_handlers: false,
+                hoisted_scope_id: None,
                 is_ts: false,
                 bindings: None,
             }

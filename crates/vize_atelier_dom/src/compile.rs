@@ -296,12 +296,17 @@ fn compile_template_inner_with_sections<'a>(
         ..codegen_options
     };
     let binding_table = stage_options::s2_binding_table(options.binding_metadata.as_ref());
+    let s2_hoisted_scope_id = hoisted_scope_id.clone();
     // `DomCompilerOptions::clone` deliberately drops Croquis. That makes a
     // compact option projection we can retain across the one-way Croquis
     // hand-off to the legacy AST transform below.
     let s2_option_source = options.clone();
-    let s2_options =
-        stage_options::s2_emit_options(&s2_option_source, &codegen_opts, binding_table.as_ref());
+    let s2_options = stage_options::s2_emit_options(
+        &s2_option_source,
+        &codegen_opts,
+        binding_table.as_ref(),
+        s2_hoisted_scope_id.as_deref(),
+    );
 
     let transform_opts = stage_options::transform_options(&options);
     let template_syntax_quirks = template_syntax.is_quirks();
@@ -327,7 +332,8 @@ fn compile_template_inner_with_sections<'a>(
     errors.extend(transform_errors);
 
     // Codegen
-    let s2_emit = (!codegen_opts.source_map).then(|| {
+    let use_s2_emit = !codegen_opts.source_map && s2_option_source.scope_id.is_none();
+    let s2_emit = use_s2_emit.then(|| {
         profile!(
             "atelier.dom.template.s2_codegen",
             stage_options::emit_s2(allocator, source, s2_option_source.dialect, &s2_options)
