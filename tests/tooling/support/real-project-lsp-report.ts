@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveVizeLaunchCommand } from "./lsp/launch.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const reportName = "lsp-lifecycle-summary.json";
@@ -60,6 +62,16 @@ export type LspResponseEvidence = {
   count: number;
   durationMs: number;
   sha256: string;
+};
+
+export type LspReportEvidence = {
+  commitSha: string;
+  runtime: { name: "node"; version: string };
+  vizeBinary: {
+    command: string[];
+    path: string | null;
+    sha256: string | null;
+  };
 };
 
 export type AuthoredFileLifecycleEvidence = {
@@ -139,11 +151,16 @@ export function createLspReport(
   selection: ReturnType<typeof selectProjects>,
   projects: LspProjectEvidence[],
   environment: NodeJS.ProcessEnv,
+  dependencies: {
+    resolveLaunchCommand?: (environment: NodeJS.ProcessEnv) => string[];
+  } = {},
 ) {
+  const evidence = createReportEvidence(environment, dependencies);
   return {
     schema: "vize.realProjectLspLifecycle",
-    version: 3,
-    commitSha: resolveCommitSha(environment),
+    version: 4,
+    commitSha: evidence.commitSha,
+    evidence,
     shard: { count: selection.shardCount, index: selection.shardIndex },
     summary: {
       projectCount: projects.length,
@@ -158,6 +175,49 @@ export function createLspReport(
     },
     projects,
   };
+}
+
+function createReportEvidence(
+  environment: NodeJS.ProcessEnv,
+  dependencies: {
+    resolveLaunchCommand?: (environment: NodeJS.ProcessEnv) => string[];
+  },
+): LspReportEvidence {
+  const command =
+    dependencies.resolveLaunchCommand?.(environment) ??
+    resolveVizeLaunchCommand(
+      (candidate) =>
+        spawnSync(candidate, ["--version"], {
+          cwd: root,
+          encoding: "utf8",
+        }).status === 0,
+      environment.VIZE_LSP_BIN,
+    );
+  const binaryPath = resolvedBinaryPath(command[0]);
+  return {
+    commitSha: resolveCommitSha(environment),
+    runtime: { name: "node", version: process.versions.node },
+    vizeBinary: {
+      command,
+      path: binaryPath == null ? null : displayBinaryPath(binaryPath),
+      sha256: binaryPath == null ? null : sha256File(binaryPath),
+    },
+  };
+}
+
+function resolvedBinaryPath(command: string): string | null {
+  if (command === "cargo") return null;
+  const resolved = path.isAbsolute(command) ? command : path.resolve(root, command);
+  return fs.existsSync(resolved) && fs.statSync(resolved).isFile() ? resolved : null;
+}
+
+function displayBinaryPath(binaryPath: string): string {
+  const relative = path.relative(root, binaryPath);
+  return relative.startsWith("..") ? binaryPath : relative;
+}
+
+function sha256File(binaryPath: string): string {
+  return createHash("sha256").update(fs.readFileSync(binaryPath)).digest("hex");
 }
 
 export function writeLspReport(

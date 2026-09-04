@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -43,12 +44,36 @@ test("LSP report summarizes authored feature coverage from project evidence", ()
   );
 
   assert.equal(report.summary.projectCount, 3);
-  assert.equal(report.version, 3);
+  assert.equal(report.version, 4);
+  assert.equal(report.commitSha, "0".repeat(40));
+  assert.equal(report.evidence.commitSha, "0".repeat(40));
+  assert.deepEqual(report.evidence.runtime, { name: "node", version: process.versions.node });
   assert.equal(report.summary.authoredFeatureProjectCount, 1);
   assert.deepEqual(report.summary.missingAuthoredFeatureProjectIds, [
     "missing-oracle",
     "also-missing-oracle",
   ]);
+});
+
+test("LSP report records resolved server binary provenance", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-lsp-report-provenance-"));
+  try {
+    const binary = path.join(workspace, "vize");
+    fs.writeFileSync(binary, "fake vize binary");
+    const report = createLspReport(
+      { enforced: true, projects: [], shardCount: 1, shardIndex: 0 },
+      [],
+      { GITHUB_SHA: "1".repeat(40), VIZE_LSP_BIN: binary },
+      { resolveLaunchCommand: () => [binary, "lsp"] },
+    );
+    assert.deepEqual(report.evidence.vizeBinary, {
+      command: [binary, "lsp"],
+      path: binary,
+      sha256: createHash("sha256").update("fake vize binary").digest("hex"),
+    });
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
 });
 
 test("real-project LSP lifecycle opens an authored file and restores exact diagnostics", async () => {
