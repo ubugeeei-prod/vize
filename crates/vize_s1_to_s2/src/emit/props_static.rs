@@ -33,10 +33,36 @@ pub(super) fn should_hoist(
     id: Option<NodeId>,
     position: PropHoistPosition,
 ) -> bool {
+    should_hoist_inner(cx, id, position, false)
+}
+
+/// The same question for a component, which reaches the shipped
+/// props-hoist through the component branch rather than the plain
+/// element one — the branch that reads the prefixed constant rule. A
+/// plain element keeps the pass's answer: a `v-bind` whose value is a
+/// global still lands in `dynamicProps`, and the element branch declines
+/// a props hoist once the patch flag carries `PROPS`.
+pub(super) fn should_hoist_component(
+    cx: &EmitCx<'_>,
+    id: Option<NodeId>,
+    position: PropHoistPosition,
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+) -> bool {
+    let widened = prefixed_props_hoistable(cx, attributes, bindings);
+    should_hoist_inner(cx, id, position, widened)
+}
+
+fn should_hoist_inner(
+    cx: &EmitCx<'_>,
+    id: Option<NodeId>,
+    position: PropHoistPosition,
+    prefixed_hoistable: bool,
+) -> bool {
     let Some(fact) = id.and_then(|id| cx.facts.static_facts.get(id)) else {
         return false;
     };
-    if !fact.props_hoistable {
+    if !fact.props_hoistable && !prefixed_hoistable {
         return false;
     }
     match position {
@@ -51,6 +77,49 @@ pub(super) fn should_hoist(
         }
         PropHoistPosition::ForItem => true,
     }
+}
+
+/// The pass publishes `props_hoistable` under the *unprefixed* constant
+/// rule, and by its own contract stays option-free: any identifier
+/// reference makes an expression dynamic there. The shipped lane reads
+/// an expression's constness off `processExpression`, which only runs
+/// with `prefix_identifiers` — so with prefixing on a prop the pass
+/// called dynamic gets asked again, against the same runtime-dependency
+/// rule the emit already ports for `normalizeStyle`. That is how
+/// `:range="[new Date(2019, 2, 4), new Date(2019, 2, 24)]"` hoists: its
+/// only free name is an allowed global.
+fn prefixed_props_hoistable(
+    cx: &EmitCx<'_>,
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+) -> bool {
+    cx.scope.prefixes_identifiers()
+        && !(attributes.is_empty() && bindings.is_empty())
+        && attributes.iter().all(|attribute| attribute.name != "ref")
+        && bindings
+            .iter()
+            .all(|binding| prefixed_hoistable_binding(cx, binding))
+}
+
+/// The pass's `hoistable_binding` shape gates, with its value question
+/// answered by the prefixed rule instead of the unprefixed walk.
+fn prefixed_hoistable_binding(cx: &EmitCx<'_>, binding: &BindingOp<'_>) -> bool {
+    let BindingOp::Bind(bind) = binding else {
+        return false;
+    };
+    if !matches!(bind.name, Some(DynamicName::Static(_))) {
+        return false;
+    }
+    let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
+        return false;
+    };
+    if matches!(key.as_str(), "ref" | "class") {
+        return false;
+    }
+    let Some(vize_s2::expr::ExprRef::Js(js)) = bind.value else {
+        return false;
+    };
+    super::constant_expr::is_constant_expression(js.ast, &cx.scope)
 }
 
 /// The shipped `hoist_static_inner` arm only an inlined render function
@@ -74,11 +143,14 @@ pub(super) fn inline_root_hoist(
     cx: &EmitCx<'_>,
     id: Option<NodeId>,
     position: PropHoistPosition,
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
 ) -> bool {
+    let widened = prefixed_props_hoistable(cx, attributes, bindings);
     matches!(position, PropHoistPosition::Root)
         && id
             .and_then(|id| cx.facts.static_facts.get(id))
-            .is_some_and(|fact| fact.props_hoistable && inline_root_arm(cx, fact))
+            .is_some_and(|fact| (fact.props_hoistable || widened) && inline_root_arm(cx, fact))
 }
 
 pub(super) fn props_hoistable(cx: &EmitCx<'_>, id: Option<NodeId>) -> bool {
@@ -107,6 +179,18 @@ pub(super) fn cached_root_hoist_props(
     root_hoist_props_with_layout(attributes, bindings, Some(line_indent), is_ts)
 }
 
+/// The shipped `genObjectExpression`'s second multiline arm: a property
+/// whose value is not a `SimpleExpression`. `class` and `style` reach
+/// codegen as the objects `transformElement` normalized them into, and
+/// `v-text` as a `toDisplayString` call, so a lone one of those still
+/// breaks the object over lines. The single-line assembly below is the
+/// first arm's `properties.length > 1` half.
+fn has_non_simple_value(pieces: &[Piece<'_>]) -> bool {
+    super::props_object::pieces_have_named(pieces, "class")
+        || super::props_object::pieces_have_named(pieces, "style")
+        || super::props_object::pieces_have_vue_text(pieces)
+}
+
 fn root_hoist_props_with_layout(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
@@ -133,7 +217,7 @@ fn root_hoist_props_with_layout(
         return Ok(None);
     }
     if let Some(line_indent) = multiline_indent
-        && props.len() > 1
+        && (props.len() > 1 || has_non_simple_value(&pieces))
     {
         return Ok(Some(multiline_props_object(&props, line_indent)));
     }

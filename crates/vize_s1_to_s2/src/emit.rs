@@ -124,7 +124,9 @@ pub use self::entry::{
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
 use self::fragment::emit_root;
 use self::helper::Helper;
-pub use self::options::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
+pub use self::options::{
+    BindingKind, BindingTable, CustomElementPatterns, DomEmitMode, DomEmitOptions,
+};
 
 /// Per-emit numbering + helper buffer. Page-order ids re-derive the
 /// same arithmetic the S2 passes use so compound text facts resolve.

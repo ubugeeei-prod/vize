@@ -11,6 +11,10 @@ use alloc::vec::Vec as StdVec;
 
 use vize_s0::String;
 
+mod custom_elements;
+
+pub use custom_elements::CustomElementPatterns;
+
 /// Which module form the render function is emitted in — the shipped
 /// lane's `CodegenMode`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -222,6 +226,11 @@ pub struct DomEmitOptions<'a> {
     /// so each one is type-erased (`emit::prefix::typescript`) before the
     /// identifier pass reads it.
     pub is_ts: bool,
+    /// The shipped lane's `isCustomElement`: a matching tag stays an
+    /// element instead of resolving as a component. The rule reaches the
+    /// *lowering*, not just the emit — the shipped lane settles
+    /// `tag_type` before its transform runs.
+    pub custom_elements: Option<CustomElementPatterns<'a>>,
     /// The shipped lane's `binding_metadata`, honoured in non-inline mode:
     /// prefixed identifiers resolve to `$setup.` / `$props.` / `$data.` /
     /// `$options.`, components and directives resolve to `$setup` members,
@@ -241,6 +250,7 @@ impl DomEmitOptions<'static> {
         component_name: None,
         cache_handlers: false,
         is_ts: false,
+        custom_elements: None,
         bindings: None,
     };
 }
@@ -268,6 +278,7 @@ mod tests {
                 component_name: None,
                 cache_handlers: false,
                 is_ts: false,
+                custom_elements: None,
                 bindings: None,
             }
         );

@@ -21,6 +21,12 @@ pub(super) fn prefer_slot_helpers(buf: &mut Buf, children: &Region<'_>) {
     if conditional_slot_template_has_direct_v_for(children) {
         buf.prefer(Helper::RenderList);
     }
+}
+
+/// The explicit-`Transition`-slot arm, deferred: the shipped transform
+/// registers these four at the ops that carry them, which sit *inside*
+/// this carrier's children, so they belong after the walk has descended.
+pub(super) fn prefer_deferred_slot_helpers(buf: &mut Buf, children: &Region<'_>) {
     if explicit_transition_slot_with_implicit_transition_group(children) {
         buf.prefer(Helper::RenderList);
         buf.prefer(Helper::WithCtx);

@@ -2,7 +2,7 @@ use vize_davinci::pass::BudgetObserver;
 use vize_s0::Allocator;
 use vize_s1::parse;
 
-use crate::lower::{LegacyCaps, lower_with_caps};
+use crate::lower::{LegacyCaps, lower_with_custom_elements};
 use crate::pass::run_transform;
 
 use super::{DomEmit, DomEmitOptions, EmitError, emit_dom_with_emit_budget};
@@ -55,7 +55,13 @@ pub fn emit_dom_source_observed_with_options<'a>(
     options: &DomEmitOptions<'_>,
 ) -> Result<ObservedDomEmit, EmitError> {
     let (tree, errors) = parse(allocator, source);
-    let mut lowered = lower_with_caps(allocator, &tree, &errors, caps);
+    let mut lowered = lower_with_custom_elements(
+        allocator,
+        &tree,
+        &errors,
+        caps,
+        options.custom_elements.unwrap_or_default(),
+    );
     let mut transform = BudgetObserver::new();
     let facts = run_transform(&mut lowered, &mut transform);
     let (emit, emit_visits) = emit_dom_with_emit_budget(&lowered, &facts, options)?;

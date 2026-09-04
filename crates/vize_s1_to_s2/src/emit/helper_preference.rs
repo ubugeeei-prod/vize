@@ -15,7 +15,7 @@ use super::options::BindingTable;
 use super::{builtin, directive, sfc_style, slots};
 use slot_order::{
     component_slot_content, direct_slot_carrier_precedes_slot_outlet, has_slot_outlet,
-    op_is_direct_slot_carrier, prefer_slot_helpers,
+    op_is_direct_slot_carrier, prefer_deferred_slot_helpers, prefer_slot_helpers,
 };
 
 /// What the preference walk reads besides the region it is walking.
@@ -114,10 +114,15 @@ fn prefer_op_helpers(
                 buf.prefer(Helper::ResolveComponent);
             }
             walk.skip(bindings.len());
-            if id.and_then(|id| cx.facts.slot_facts.get(id)).is_some() {
+            let slot_carrier = id.and_then(|id| cx.facts.slot_facts.get(id)).is_some();
+            if slot_carrier {
                 prefer_slot_helpers(buf, &component.children);
             }
             prefer_region_helpers(buf, cx, walk, &component.children, slot_context, false);
+            if slot_carrier {
+                buf.set_prefer_visit(walk.visits());
+                prefer_deferred_slot_helpers(buf, &component.children);
+            }
         }
         Op::Slot(slot) => {
             buf.prefer(Helper::RenderSlot);

@@ -50,6 +50,9 @@ pub(crate) struct Cx<'a> {
     pub wrappers: SideTable<super::structural::WrapperKeys>,
     pub for_wrappers: SideTable<super::structural::ForWrapper>,
     pub caps: super::caps::LegacyCaps,
+    /// The shipped `isCustomElement` rule: a match keeps a non-native
+    /// tag an element instead of a component.
+    pub custom_elements: crate::emit::CustomElementPatterns<'a>,
 }
 
 impl<'a> Cx<'a> {
@@ -57,6 +60,7 @@ impl<'a> Cx<'a> {
         allocator: &'a Allocator,
         block: SourceBlock<'a>,
         caps: super::caps::LegacyCaps,
+        custom_elements: crate::emit::CustomElementPatterns<'a>,
     ) -> Self {
         Self {
             allocator,
@@ -74,6 +78,7 @@ impl<'a> Cx<'a> {
             wrappers: SideTable::new(),
             for_wrappers: SideTable::new(),
             caps,
+            custom_elements,
         }
     }
 

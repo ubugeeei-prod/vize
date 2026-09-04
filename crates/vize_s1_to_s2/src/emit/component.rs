@@ -98,7 +98,13 @@ pub(super) fn emit_call(
         && cx.slot_param_depth == 0
         && let Some(props) = hoistable_static_props.as_ref()
         && props.non_key
-        && (props_static::should_hoist(cx, id, props_static::PropHoistPosition::ForItem)
+        && (props_static::should_hoist_component(
+            cx,
+            id,
+            props_static::PropHoistPosition::ForItem,
+            &component.attributes,
+            &component.bindings,
+        )
             || (props.dynamic_values && !has_slots && !has_array))
     {
         cx.buf.push_hoist(props.source.clone());
@@ -118,7 +124,13 @@ pub(super) fn emit_call(
     let foreign_static_props = id
         .and_then(|id| cx.facts.static_facts.get(id))
         .is_some_and(|fact| fact.foreign && fact.props_hoistable);
-    let inline_root_hoist = props_static::inline_root_hoist(cx, id, position);
+    let inline_root_hoist = props_static::inline_root_hoist(
+        cx,
+        id,
+        position,
+        &component.attributes,
+        &component.bindings,
+    );
     let hoisted_static_props = if can_hoist_static_props
         && (inline_root_hoist
             || (!array
