@@ -4,17 +4,22 @@ use std::{
     process::Command,
 };
 
+use vize_s0::cstr;
+
 fn temp_project_dir(test_name: &str) -> PathBuf {
     let nonce = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    std::env::temp_dir().join(format!(
-        "vize-build-profile-cli-{}-{}-{}",
-        std::process::id(),
-        test_name,
-        nonce
-    ))
+    std::env::temp_dir().join(
+        cstr!(
+            "vize-build-profile-cli-{}-{}-{}",
+            std::process::id(),
+            test_name,
+            nonce
+        )
+        .as_str(),
+    )
 }
 
 fn write_project_file(root: &Path, path: &str, content: &str) {
@@ -55,11 +60,11 @@ fn build_stats_profile_reports_source_plate_facts() {
     assert!(
         output.status.success(),
         "stdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr)
+        std::str::from_utf8(&output.stdout).unwrap_or("<non-utf8 stdout>"),
+        std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>")
     );
 
-    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stderr = std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>");
     for expected in [
         "Stats compile cache",
         "cache.stats_compile.hits",
