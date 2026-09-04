@@ -5,8 +5,8 @@ use vize_patina::{HelpLevel, LintPreset, Linter, Severity};
 use vize_s0::{
     FxHashMap, String,
     config::{
-        CustomEventNameCasing as ConfigEventNameCasing, LintRuleOptions, LintRuleSeverity,
-        LinterConfigPlanWithRuleOptions, LinterFeatureFlags, TemplateComponentNameCasing,
+        ConfigLintRuleOptions, CustomEventNameCasing as ConfigEventNameCasing, LintRuleSeverity,
+        LinterConfigPlanWithConfigRuleOptions, LinterFeatureFlags, TemplateComponentNameCasing,
     },
 };
 
@@ -20,7 +20,7 @@ const SCRIPT_NO_RESTRICTED_MEMBERS: &str = "script/no-restricted-members";
 
 pub(super) struct ResolvedLinterRuleGroups {
     pub(super) configs: Vec<crate::config::LinterConfig>,
-    rule_options: Vec<LintRuleOptions>,
+    rule_options: Vec<ConfigLintRuleOptions>,
     pub(super) file_config_indices: Vec<usize>,
     pinia_available: Vec<bool>,
 }
@@ -120,13 +120,13 @@ fn severity_overrides(entries: Vec<(String, LintRuleSeverity)>) -> Vec<(String, 
 }
 
 pub(super) struct LinterRuleResolver {
-    plan: LinterConfigPlanWithRuleOptions,
+    plan: LinterConfigPlanWithConfigRuleOptions,
     scopes: Vec<LintPlanScope>,
 }
 
 impl LinterRuleResolver {
     pub(super) fn new(
-        plan: impl Into<LinterConfigPlanWithRuleOptions>,
+        plan: impl Into<LinterConfigPlanWithConfigRuleOptions>,
         config_dir: &Path,
         cwd: &Path,
     ) -> Self {

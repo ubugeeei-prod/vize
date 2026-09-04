@@ -21,7 +21,8 @@ pub use compiler::{JsxCompat, JsxMode};
 pub(crate) use entries::RawConfigEntry;
 pub use entries::{
     ConfigEntryFiles, ConfigEntryIgnore, LinterConfigEntry, LinterConfigPlan,
-    LinterConfigPlanWithRuleOptions, ResolvedLinterConfig,
+    LinterConfigPlanWithConfigRuleOptions, LinterConfigPlanWithRuleOptions, ResolvedLinterConfig,
+    ResolvedLinterConfigWithConfigRuleOptions,
 };
 
 use crate::String;
@@ -36,9 +37,9 @@ pub(crate) use linter::RawLinterConfig;
 pub use linter::{LintRuleSeverity, LinterConfig};
 #[allow(unused_imports)]
 pub use linter_rule_options::{
-    ComponentNameInTemplateCasingOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
-    LintRuleOptions, NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, RestrictedGlobal,
-    RestrictedMember, TemplateComponentNameCasing,
+    ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, CustomEventNameCasing,
+    CustomEventNameCasingOptions, LintRuleOptions, NoRestrictedGlobalsOptions,
+    NoRestrictedMembersOptions, RestrictedGlobal, RestrictedMember, TemplateComponentNameCasing,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};

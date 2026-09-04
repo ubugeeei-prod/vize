@@ -59,7 +59,7 @@ impl ServerState {
 
     /// Get a clone of the current per-rule lint options.
     #[inline]
-    pub fn get_linter_rule_options(&self) -> vize_s0::config::LintRuleOptions {
+    pub fn get_linter_rule_options(&self) -> vize_s0::config::ConfigLintRuleOptions {
         self.linter_rule_options.read().clone()
     }
 
@@ -154,7 +154,7 @@ impl ServerState {
             }
             self.apply_linter_config(linter_config, &source);
             *self.linter_rule_options.write() =
-                vize_s0::config::load_linter_rule_options(Some(dir));
+                vize_s0::config::load_config_lint_rule_options(Some(dir));
             self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(config.type_checker, &source);
             self.apply_config_features(loaded.features);
@@ -178,7 +178,7 @@ impl ServerState {
             let config = loaded.config;
             self.apply_linter_config(linter_config, &source);
             *self.linter_rule_options.write() =
-                vize_s0::config::load_linter_rule_options(Some(dir));
+                vize_s0::config::load_config_lint_rule_options(Some(dir));
             self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(config.type_checker, &source);
             self.apply_config_features(loaded.features);

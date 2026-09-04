@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::linter_rule_options::LintRuleOptions;
+use super::linter_rule_options::ConfigLintRuleOptions;
 use crate::{FxHashMap, String};
 
 const CATEGORY_LINT_MARKER_PREFIX: &str = "__vize_internal/category/";
@@ -38,12 +38,12 @@ pub(crate) struct RawLinterConfig {
     config: LinterConfig,
     type_aware: bool,
     categories: FxHashMap<String, LintRuleSeverity>,
-    rule_options: LintRuleOptions,
+    rule_options: ConfigLintRuleOptions,
 }
 
 impl RawLinterConfig {
     /// Borrow the typed per-rule options parsed from this raw config.
-    pub(crate) fn rule_options(&self) -> &LintRuleOptions {
+    pub(crate) fn rule_options(&self) -> &ConfigLintRuleOptions {
         &self.rule_options
     }
 }

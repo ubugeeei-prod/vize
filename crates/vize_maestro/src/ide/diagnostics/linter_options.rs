@@ -1,6 +1,6 @@
 pub(super) fn apply_rule_options(
     mut linter: vize_patina::Linter,
-    options: &vize_s0::config::LintRuleOptions,
+    options: &vize_s0::config::ConfigLintRuleOptions,
 ) -> vize_patina::Linter {
     if let Some(casing) = options.component_name_in_template_casing() {
         linter = linter.with_component_name_in_template_casing(component_casing(casing));
