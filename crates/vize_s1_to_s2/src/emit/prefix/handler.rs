@@ -101,7 +101,11 @@ fn process(
 /// `generate_event_handler` over an `is_ref_transformed` node: strip the
 /// slot-param prefixes, then re-derive the shape from the processed text
 /// (the retained AST no longer applies to rewritten bytes).
-pub(super) fn finish_event_handler(processed: String, scope: &PrefixScope<'_>) -> String {
+pub(super) fn finish_event_handler(
+    processed: String,
+    scope: &PrefixScope<'_>,
+    for_caching: bool,
+) -> String {
     let processed = if scope.has_slot_params() {
         strip_scope_prefixes_for_slot_params(scope, processed.as_str())
     } else {
@@ -113,7 +117,19 @@ pub(super) fn finish_event_handler(processed: String, scope: &PrefixScope<'_>) -
     if is_simple_identifier(processed.as_str())
         || is_event_handler_reference_expression(processed.as_str())
     {
-        return processed;
+        // A cached reference is guarded and forwarded, so the slot holds
+        // a stable closure rather than whatever the name held on the
+        // first render.
+        if !for_caching {
+            return processed;
+        }
+        let mut code = String::with_capacity(processed.len() * 2 + 24);
+        code.push_str("(...args) => (");
+        code.push_str(processed.as_str());
+        code.push_str(" && ");
+        code.push_str(processed.as_str());
+        code.push_str("(...args))");
+        return code;
     }
     let mut code = String::with_capacity(processed.len() + 13);
     if processed.contains(';') {

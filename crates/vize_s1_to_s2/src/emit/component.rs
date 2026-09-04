@@ -259,6 +259,7 @@ fn emit_call(
         for_item,
         cx.is_ts,
         &|name| cx.reads_constant_binding_name(name),
+        cx.caches_handlers(),
     );
     if skip_is {
         patch.dynamic_props.retain(|name| name.as_str() != "is");

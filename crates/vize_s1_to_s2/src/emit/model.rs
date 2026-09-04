@@ -67,19 +67,26 @@ pub(super) fn patch(
     is_component: bool,
     flag: &mut i32,
     dynamic_props: &mut StdVec<String>,
+    caches_handlers: bool,
 ) {
     if has_dynamic_argument(model) {
         *flag |= 16;
-    } else {
-        *flag |= 8;
-        patch_keys(model, is_component, dynamic_props);
+        return;
     }
+    // The synthesized `onUpdate:` closure is cached like any other
+    // handler, so it stops being a patch target; a component's value
+    // prop still is.
+    if is_component || !caches_handlers {
+        *flag |= 8;
+    }
+    patch_keys(model, is_component, dynamic_props, caches_handlers);
 }
 
 pub(super) fn patch_keys(
     model: &ModelOp<'_>,
     is_component: bool,
     dynamic_props: &mut StdVec<String>,
+    caches_handlers: bool,
 ) {
     if has_dynamic_argument(model) {
         return;
@@ -87,8 +94,10 @@ pub(super) fn patch_keys(
     if is_component {
         let prop = static_argument(model).unwrap_or("modelValue");
         push_dynamic(dynamic_props, prop);
-        push_dynamic(dynamic_props, model_key::static_update_key(prop).as_str());
-    } else {
+        if !caches_handlers {
+            push_dynamic(dynamic_props, model_key::static_update_key(prop).as_str());
+        }
+    } else if !caches_handlers {
         push_dynamic(dynamic_props, "onUpdate:modelValue");
     }
 }

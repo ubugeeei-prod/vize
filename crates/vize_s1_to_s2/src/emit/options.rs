@@ -213,6 +213,11 @@ pub struct DomEmitOptions<'a> {
     /// stem). A component tag that resolves to it is a self-reference, and
     /// the shipped lane asks the runtime to resolve it as one.
     pub component_name: Option<&'a str>,
+    /// The shipped lane's `cache_handlers`: an inline `v-on` handler is
+    /// hoisted into the render function's `_cache` array, so the closure
+    /// is created once instead of on every render. Turned on with
+    /// [`DomEmitOptions::inline`] by `compile_template_block`.
+    pub cache_handlers: bool,
     /// The shipped lane's `is_ts`: template expressions are TypeScript,
     /// so each one is type-erased (`emit::prefix::typescript`) before the
     /// identifier pass reads it.
@@ -234,6 +239,7 @@ impl DomEmitOptions<'static> {
         prefix_identifiers: false,
         inline: false,
         component_name: None,
+        cache_handlers: false,
         is_ts: false,
         bindings: None,
     };
@@ -260,6 +266,7 @@ mod tests {
                 prefix_identifiers: false,
                 inline: false,
                 component_name: None,
+                cache_handlers: false,
                 is_ts: false,
                 bindings: None,
             }

@@ -127,6 +127,7 @@ pub(super) fn bind_patch(
     for_item: bool,
     is_ts: bool,
     constant_handler: &dyn Fn(&str) -> bool,
+    caches_handlers: bool,
 ) -> Patch {
     if super::merge::has_object_spread(bindings) {
         return super::merge::object_patch(
@@ -136,6 +137,7 @@ pub(super) fn bind_patch(
             for_item,
             is_ts,
             constant_handler,
+            caches_handlers,
         );
     }
     let mut flag = 0i32;
@@ -192,9 +194,15 @@ pub(super) fn bind_patch(
                 let Ok(key) = event_key_for(on, !is_component) else {
                     continue;
                 };
-                // `is_const_handler`: a handler that is just a constant
-                // binding never changes, so it is not a patch target.
-                if !handler_is_constant(on, constant_handler) {
+                // `is_const_handler` / `handler_is_cached`: a handler that
+                // is just a constant binding never changes, and a cached
+                // one is created once — neither is a patch target. The
+                // cache rule reads the option alone, without the
+                // const-reference carve-out `needs_von_handler_cache`
+                // applies to the emission itself.
+                if !handler_is_constant(on, constant_handler)
+                    && !(caches_handlers && on.handler.is_some())
+                {
                     flag |= 8;
                     if !dynamic_props.contains(&key) {
                         dynamic_props.push(key.clone());
@@ -205,7 +213,13 @@ pub(super) fn bind_patch(
                 }
             }
             BindingOp::Model(model) => {
-                super::model::patch(model, is_component, &mut flag, &mut dynamic_props);
+                super::model::patch(
+                    model,
+                    is_component,
+                    &mut flag,
+                    &mut dynamic_props,
+                    caches_handlers,
+                );
             }
             BindingOp::VueHtml(_) => {
                 flag |= 8;
@@ -224,7 +238,14 @@ pub(super) fn bind_patch(
             _ => {}
         }
     }
-    if super::directive::has_runtime(bindings) && flag & (2 | 4 | 8 | 16) == 0 {
+    // The shipped `NEED_PATCH` gate names `v-model` beside `v-show`, the
+    // custom directives and `ref`. Only a *cached* update handler reaches
+    // the difference: without caching the model always sets `PROPS`,
+    // which suppresses `NEED_PATCH` on both sides.
+    let has_model = bindings
+        .iter()
+        .any(|binding| matches!(binding, BindingOp::Model(_)));
+    if (super::directive::has_runtime(bindings) || has_model) && flag & (2 | 4 | 8 | 16) == 0 {
         flag |= 512;
     }
     if flag & 16 != 0 {

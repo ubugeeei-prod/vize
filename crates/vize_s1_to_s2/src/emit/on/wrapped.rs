@@ -1,5 +1,5 @@
 use oxc_ast::ast::{ChainElement, Expression};
-use vize_s0::Span;
+use vize_s0::{Span, ToCompactString};
 use vize_s2::expr::{ExprRef, JsExpr, OpaqueReason};
 use vize_s2::op::OnOp;
 
@@ -12,6 +12,17 @@ pub(in crate::emit) fn emit_wrapped_handler(
     classified: &Classified<'_>,
     is_plain_element: bool,
 ) -> Result<(), EmitError> {
+    let cached = needs_handler_cache(cx, on);
+    if cached {
+        let index = cx.once_cache_index;
+        cx.once_cache_index += 1;
+        let index = index.to_compact_string();
+        cx.buf.push("_cache[");
+        cx.buf.push(index.as_str());
+        cx.buf.push("] || (_cache[");
+        cx.buf.push(index.as_str());
+        cx.buf.push("] = ");
+    }
     if !classified.keys.is_empty() {
         cx.buf.use_with_keys();
         cx.buf.push(Buf::with_keys_alias());
@@ -36,10 +47,10 @@ pub(in crate::emit) fn emit_wrapped_handler(
             cx.buf.push("(...args))");
         }
         (None, Some(expr)) if cx.prefixing() => {
-            let text = cx.prefixed_handler(&expr)?;
+            let text = cx.prefixed_handler(&expr, cached)?;
             cx.buf.push(text.as_str());
         }
-        (None, Some(ExprRef::Js(js))) => emit_handler(cx, on, js, is_plain_element),
+        (None, Some(ExprRef::Js(js))) => emit_handler(cx, on, js, is_plain_element, cached),
         (None, Some(ExprRef::Opaque(opaque))) if opaque.reason == OpaqueReason::MultiStatement => {
             let padding = authored_handler_padding(cx.source, on, opaque.source, opaque.span);
             // The shipped codegen prefix-parses the text: `a; b` reads as the
@@ -83,7 +94,43 @@ pub(in crate::emit) fn emit_wrapped_handler(
         emit_mod_array(cx, &classified.keys);
         cx.buf.push(")");
     }
+    if cached {
+        cx.buf.push(")");
+    }
     Ok(())
+}
+
+/// `needs_von_handler_cache`: the option is on, no template-scope param
+/// is in play, the directive has an expression, and that expression is
+/// not a bare `SetupConst` reference — a name the script cannot rebind
+/// needs no cache slot of its own.
+pub(in crate::emit) fn needs_handler_cache(cx: &EmitCx<'_>, on: &OnOp<'_>) -> bool {
+    let Some(handler) = on.handler else {
+        return false;
+    };
+    if !cx.caches_handlers() {
+        return false;
+    }
+    !is_setup_const_handler(cx, &handler)
+}
+
+/// `is_setup_const_handler`: the processed handler text is a simple
+/// identifier the binding table records as `SetupConst`. Only an inlined
+/// render function leaves the name bare enough to read.
+fn is_setup_const_handler(cx: &EmitCx<'_>, expr: &ExprRef<'_>) -> bool {
+    let source = match expr {
+        ExprRef::Js(js) => js.source,
+        ExprRef::Opaque(opaque) => opaque.source,
+        ExprRef::Foreign(_) | ExprRef::Filter(_) => return false,
+    }
+    .trim();
+    if !cx.scope.inline() || !super::super::prefix::is_simple_identifier(source) {
+        return false;
+    }
+    cx.scope
+        .bindings()
+        .and_then(|table| table.kind(source))
+        .is_some_and(|kind| kind == super::super::options::BindingKind::SetupConst)
 }
 
 /// `options_api_handler_name`: the trimmed authored text is a simple
@@ -118,7 +165,23 @@ fn emit_mod_array(cx: &mut EmitCx<'_>, mods: &[&str]) {
     cx.buf.push("]");
 }
 
-fn emit_handler(cx: &mut EmitCx<'_>, on: &OnOp<'_>, js: &JsExpr<'_>, is_plain_element: bool) {
+fn emit_handler(
+    cx: &mut EmitCx<'_>,
+    on: &OnOp<'_>,
+    js: &JsExpr<'_>,
+    is_plain_element: bool,
+    for_caching: bool,
+) {
+    if for_caching && is_handler_reference(js.ast) {
+        // `generate_event_handler(for_caching)`: a cached reference is
+        // guarded and forwarded instead of stored bare.
+        cx.buf.push("(...args) => (");
+        emit_raw_handler(cx, on, js);
+        cx.buf.push(" && ");
+        emit_raw_handler(cx, on, js);
+        cx.buf.push("(...args))");
+        return;
+    }
     if is_handler_reference(js.ast)
         || (super::super::on_body::preserves_raw_function_handler(js)
             && !super::super::on_typed::uses_ts_only_syntax(js.ast))

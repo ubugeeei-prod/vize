@@ -60,6 +60,7 @@ pub(super) fn object_patch(
     for_item: bool,
     is_ts: bool,
     constant_handler: &dyn Fn(&str) -> bool,
+    caches_handlers: bool,
 ) -> Patch {
     let mut dynamic_props = StdVec::new();
     let mut flag = 16i32;
@@ -110,6 +111,7 @@ pub(super) fn object_patch(
                 // shipped lane runs one per-prop loop whether or not the
                 // element ends up in `mergeProps`.
                 if !super::props::handler_is_constant(on, constant_handler)
+                    && !(caches_handlers && on.handler.is_some())
                     && !dynamic_props.contains(&key)
                 {
                     dynamic_props.push(key.clone());
@@ -119,7 +121,7 @@ pub(super) fn object_patch(
                 }
             }
             BindingOp::Model(model) => {
-                super::model::patch_keys(model, is_component, &mut dynamic_props);
+                super::model::patch_keys(model, is_component, &mut dynamic_props, caches_handlers);
             }
             BindingOp::VueHtml(_) => {
                 let key = String::from("innerHTML");

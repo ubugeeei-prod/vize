@@ -126,6 +126,13 @@ impl EmitCx<'_> {
         self.prefix_identifiers || self.is_ts
     }
 
+    /// `cache_handlers_in_current_scope`: handler caching is unsafe while
+    /// template-scope params are in play, because a cached closure would
+    /// capture the first scoped value.
+    pub(super) fn caches_handlers(&self) -> bool {
+        self.cache_handlers && !self.scope.has_slot_params()
+    }
+
     /// `TransformContext::enter_v_for_scope` + `add_slot_params` for the
     /// callback params; pop with [`Self::leave_scope`]. The default lane
     /// records only the raw patterns (see [`PrefixScope`]).
@@ -257,7 +264,11 @@ impl EmitCx<'_> {
     }
 
     /// `process_inline_handler` + `generate_event_handler` over `expr`.
-    pub(super) fn prefixed_handler(&self, expr: &ExprRef<'_>) -> Result<String, EmitError> {
+    pub(super) fn prefixed_handler(
+        &self,
+        expr: &ExprRef<'_>,
+        for_caching: bool,
+    ) -> Result<String, EmitError> {
         let (source, js) = match expr {
             ExprRef::Js(js) => (js.source, Some(*js)),
             ExprRef::Opaque(opaque) => (opaque.source, None),
@@ -269,7 +280,7 @@ impl EmitCx<'_> {
             }
         };
         let content = prefix::node_content(self.source, source, expr.span());
-        prefix::prefix_handler(&self.scope, &content, js)
+        prefix::prefix_handler(&self.scope, &content, js, for_caching)
             .map(|prefixed| self.record_unref(prefixed))
             .map_err(|_| EmitError::unsupported_at(Reason::PrefixExpressionRejected, expr.span()))
     }
@@ -280,7 +291,7 @@ impl EmitCx<'_> {
             text: RawJs::Borrowed(text),
             offset: None,
         };
-        prefix::prefix_handler(&self.scope, &content, None)
+        prefix::prefix_handler(&self.scope, &content, None, false)
             .map(|prefixed| self.record_unref(prefixed))
             .map_err(|_| EmitError::unsupported(Reason::PrefixExpressionRejected))
     }
