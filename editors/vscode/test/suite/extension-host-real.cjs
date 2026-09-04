@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const { execFileSync } = require("node:child_process");
 const fs = require("node:fs");
 const vscode = require("vscode");
 
@@ -58,7 +59,7 @@ exports.run = async function run() {
   logProgress("didChange repair");
   await runRealDidChangeRepairSmoke(mismatchDocument, extension);
   logProgress("pinned create-vue oracle");
-  await runPinnedCreateVuePatchOracle(extension);
+  await runPinnedCreateVuePatchOracle(extension, serverPath);
 
   logProgress("scorecard scenario");
   await runRealServerScenario();
@@ -165,7 +166,7 @@ async function runRealDidChangeRepairSmoke(mismatchDocument, extension) {
   assert.equal(extension.isActive, true);
 }
 
-async function runPinnedCreateVuePatchOracle(extension) {
+async function runPinnedCreateVuePatchOracle(extension, serverPath) {
   const document = await openWorkspaceDocument("template", "bare", "typescript", "src", "App.vue");
   await vscode.window.showTextDocument(document);
   await assertStaysDiagnosticFree(document.uri, "clean pinned create-vue SFC");
@@ -212,6 +213,7 @@ async function runPinnedCreateVuePatchOracle(extension) {
   assert.equal(document.getText(), cleanSource.replace(cleanCount, repairedCount));
   assert.equal(document.isDirty, true);
   assert.equal(extension.isActive, true);
+  const serverInfo = await readSelectedServerInfo(extension, serverPath);
 
   const resultPath = process.env.VIZE_TEST_PINNED_CREATE_VUE_RESULT_PATH;
   assert.ok(resultPath, "missing pinned create-vue host result path");
@@ -224,8 +226,23 @@ async function runPinnedCreateVuePatchOracle(extension) {
       fixtureId: "create-vue",
       repairedDiagnostics: repairedDiagnostics.map(describeDiagnostic),
       schemaVersion: 1,
+      serverInfo,
     })}\n`,
   );
+}
+
+async function readSelectedServerInfo(extension, serverPath) {
+  const { HOST_TEST_SERVER_INFO_COMMAND, assertRealHostServerInfo, parseVizeVersion } =
+    await import("../real-host-server-info-oracle.mjs");
+  const actual = await vscode.commands.executeCommand(HOST_TEST_SERVER_INFO_COMMAND);
+  const serverVersion = parseVizeVersion(
+    execFileSync(serverPath, ["--version"], { encoding: "utf8" }),
+  );
+  return assertRealHostServerInfo(actual, {
+    extensionVersion: extension.packageJSON.version,
+    serverPath,
+    serverVersion,
+  });
 }
 
 function rangeForExactText(document, needle) {

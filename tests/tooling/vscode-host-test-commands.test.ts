@@ -1,18 +1,25 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import { test } from "node:test";
 
 import {
   HOST_TEST_COMMAND_ENVIRONMENT_FLAG,
   HOST_TEST_COMPLETION_COMMAND,
+  HOST_TEST_SERVER_INFO_COMMAND,
   bindHostTestCommands,
   createHostTestCommands,
   type HostTestLanguageClient,
+  type HostTestServerInfo,
   type TestCompletionRequest,
 } from "../../editors/vscode/src/extension-core.ts";
 import {
   HOST_TEST_COMPLETION_COMMAND as suiteHostCompletionCommand,
   assertRealHostCompletionLabels,
 } from "../../editors/vscode/test/real-host-completion-oracle.mjs";
+import {
+  HOST_TEST_SERVER_INFO_COMMAND as suiteHostServerInfoCommand,
+  assertRealHostServerInfo,
+} from "../../editors/vscode/test/real-host-server-info-oracle.mjs";
 
 test("the hidden host completion command only exists for the host smoke", async () => {
   const client = createFakeClient([{ label: "label" }]);
@@ -31,12 +38,13 @@ test("the hidden host completion command only exists for the host smoke", async 
   });
   assert.deepEqual(
     commands.map((command) => command.command),
-    [HOST_TEST_COMPLETION_COMMAND],
+    [HOST_TEST_COMPLETION_COMMAND, HOST_TEST_SERVER_INFO_COMMAND],
   );
   await assert.rejects(
     commands[0].handler({ character: 8, line: 3, uri: "file:///App.vue" }),
     /requires an active language client/,
   );
+  await assert.rejects(commands[1].handler(), /requires selected server evidence/);
 });
 
 test("the host completion command forwards the request to the Vize language client", async () => {
@@ -73,12 +81,29 @@ test("the host completion command forwards the request to the Vize language clie
   assert.equal(client.requests.length, 1);
 });
 
+test("the host server info command returns the selected server evidence", async () => {
+  const serverInfo = {
+    extensionVersion: "0.392.0",
+    path: "/repo/target/ci/vize",
+    source: "configured",
+    status: "ready",
+    version: "0.392.0",
+  } satisfies HostTestServerInfo;
+  const commands = createHostTestCommands({
+    environment: { [HOST_TEST_COMMAND_ENVIRONMENT_FLAG]: "1" },
+    getClient: () => createFakeClient([]),
+    getServerInfo: () => serverInfo,
+  });
+
+  const execute = commands.find((command) => command.command === HOST_TEST_SERVER_INFO_COMMAND);
+
+  assert.ok(execute);
+  assert.deepEqual(await execute.handler(), serverInfo);
+});
+
 test("registering the gated host commands leaves an executable command behind", async () => {
-  const registry = new Map<string, (request: TestCompletionRequest) => Promise<unknown>>();
-  const register = (
-    command: string,
-    handler: (request: TestCompletionRequest) => Promise<unknown>,
-  ) => {
+  const registry = new Map<string, (request?: unknown) => Promise<unknown>>();
+  const register = (command: string, handler: (request?: unknown) => Promise<unknown>) => {
     registry.set(command, handler);
     return { dispose: () => registry.delete(command) };
   };
@@ -95,7 +120,10 @@ test("registering the gated host commands leaves an executable command behind", 
     getClient: () => client,
     register,
   });
-  assert.deepEqual([...registry.keys()], [HOST_TEST_COMPLETION_COMMAND]);
+  assert.deepEqual(
+    [...registry.keys()],
+    [HOST_TEST_COMPLETION_COMMAND, HOST_TEST_SERVER_INFO_COMMAND],
+  );
 
   const execute = registry.get(HOST_TEST_COMPLETION_COMMAND);
   assert.ok(execute);
@@ -144,6 +172,53 @@ test("the real host completion oracle keeps the smoke on the Vize server answer"
   assert.throws(
     () => assertRealHostCompletionLabels({ items: [...serverItems, { label: "v-if" }] }),
     /must not surface "v-if"/,
+  );
+});
+
+test("the real host server info oracle pins the selected server identity", () => {
+  assert.equal(HOST_TEST_SERVER_INFO_COMMAND, suiteHostServerInfoCommand);
+  const serverPath = fs.realpathSync(process.execPath);
+
+  assert.deepEqual(
+    assertRealHostServerInfo(
+      {
+        extensionVersion: "0.392.0",
+        path: serverPath,
+        source: "configured",
+        status: "ready",
+        version: "0.392.0",
+      },
+      {
+        extensionVersion: "0.392.0",
+        serverPath,
+        serverVersion: "0.392.0",
+      },
+    ),
+    {
+      extensionVersion: "0.392.0",
+      path: serverPath,
+      source: "configured",
+      status: "ready",
+      version: "0.392.0",
+    },
+  );
+  assert.throws(
+    () =>
+      assertRealHostServerInfo(
+        {
+          extensionVersion: "0.392.0",
+          path: serverPath,
+          source: "configured",
+          status: "ready",
+          version: "0.391.0",
+        },
+        {
+          extensionVersion: "0.392.0",
+          serverPath,
+          serverVersion: "0.392.0",
+        },
+      ),
+    /Expected values to be strictly deep-equal/,
   );
 });
 

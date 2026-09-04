@@ -125,46 +125,46 @@ export async function activate(context: ExtensionContext): Promise<void> {
       await applyRecommendedConfiguration();
       await syncClientToConfiguration(context, "recommended profile applied");
     }),
-
     commands.registerCommand("vize.enableLintOnlyProfile", async () => {
       await applyLintOnlyConfiguration();
       await syncClientToConfiguration(context, "lint-only profile applied");
     }),
-
     commands.registerCommand("vize.selectServerPath", async () => {
       await selectServerExecutable(context);
     }),
-
     commands.registerCommand("vize.showStatus", async () => {
       await showStatus(context);
     }),
-
     commands.registerCommand("vize.disable", async () => {
       await disableVize(context);
     }),
-
     commands.registerCommand("vize.restartServer", async () => {
       outputChannel.appendLine("Restarting language server...");
       await syncClientToConfiguration(context, "manual restart");
     }),
-
     commands.registerCommand("vize.showOutput", () => {
       outputChannel.show();
     }),
-
     commands.registerCommand("vize.findReferences", async () => {
       const editor = window.activeTextEditor;
       if (editor) {
         await commands.executeCommand("editor.action.referenceSearch.trigger");
       }
     }),
-
-    ...registerHostTestCommands(() => client),
+    ...registerHostTestCommands(
+      () => client,
+      process.env,
+      () =>
+        selectedServerCandidate && {
+          ...selectedServerCandidate,
+          extensionVersion: getExtensionVersion(context),
+          path: fs.realpathSync(selectedServerCandidate.path),
+          status: currentStatus,
+        },
+    ),
   );
-
   await syncClientToConfiguration(context, "initial activation");
 }
-
 function scheduleClientSync(context: ExtensionContext, reason: string): void {
   if (configurationSyncTimer) {
     clearTimeout(configurationSyncTimer);
@@ -953,10 +953,8 @@ async function resolveReleaseServerCandidate(
     await fs.promises.mkdir(installDir, { recursive: true });
     await downloadFile(downloadUrl, archivePath);
 
-    // Verify integrity: the release pipeline publishes a SHA-256 checksum
-    // alongside each archive. Fetch it and compare against a hash of the
-    // local file; fail closed if the checksum is unavailable or mismatched
-    // so a tampered mirror/CDN/MITM can't get a binary executed. (#969)
+    // Verify SHA-256 sidecars before executing downloaded servers.
+    // Missing, malformed, or mismatched checksums fail closed. (#969)
     await downloadFile(checksumUrl, checksumPath);
     await verifyArchiveChecksum(archivePath, checksumPath);
 
@@ -1044,12 +1042,8 @@ function createReleaseDownloadUrl(version: string, archiveName: string): string 
   return `https://github.com/ubugeeei-prod/vize/releases/download/v${version}/${archiveName}`;
 }
 
-/// Verify that the SHA-256 of `archivePath` matches the hash declared in
-/// `checksumPath`. The checksum file is the GNU sha256sum format
-/// (`<hex>  <name>`), so we accept either bare hex or that shape. Throws
-/// if the file is missing, malformed, or mismatched — caller's catch
-/// surfaces the failure in the output channel and falls back to other
-/// sources. (#969)
+/// Verify that `archivePath` matches the declared SHA-256 in `checksumPath`.
+/// Accepts bare hex or GNU sha256sum shape; malformed or mismatched files throw. (#969)
 async function verifyArchiveChecksum(archivePath: string, checksumPath: string): Promise<void> {
   const declared = (await fs.promises.readFile(checksumPath, "utf8"))
     .trim()
