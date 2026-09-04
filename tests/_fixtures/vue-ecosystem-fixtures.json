@@ -2,7 +2,7 @@
   "schemaVersion": 8,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
-    "minimumProjectCount": 20,
+    "minimumProjectCount": 21,
     "trackingIssue": 3952
   },
   "projects": [
@@ -1094,7 +1094,77 @@
       "vueGlobs": ["packages/**/*.vue", "docs/**/*.vue", "playground/**/*.vue"],
       "tsconfig": "tsconfig.json",
       "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
-      "diff": "curator-compare"
+      "diff": "curator-compare",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "playground/nuxt/app/components/area-charts/AreaChartDefault.vue",
+          "symbol": "chartData",
+          "usageAnchor": ":data=\"chartData\"",
+          "declarationAnchor": "const chartData = [",
+          "hoverContains": ["const chartData:", "desktop: number"],
+          "renameTo": "__vizeRenamedChartData"
+        },
+        "componentBoundary": {
+          "importerFile": "playground/nuxt/app/components/bar-charts/BarChartLabel.vue",
+          "componentFile": "playground/nuxt/app/components/ui/chart/ChartTooltipContent.vue",
+          "tagName": "ChartTooltipContent",
+          "tagAnchor": "<ChartTooltipContent\n                ",
+          "completionItemCount": 37,
+          "completionItems": [
+            { "label": "v-if", "rank": 0 },
+            { "label": "v-else-if", "rank": 1 },
+            { "label": "v-else", "rank": 2 },
+            { "label": "v-for", "rank": 3 },
+            { "label": "v-on", "rank": 4 },
+            { "label": "v-bind", "rank": 5 },
+            { "label": "v-model", "rank": 6 },
+            { "label": "v-slot", "rank": 7 },
+            { "label": "v-show", "rank": 8 },
+            { "label": "v-pre", "rank": 9 },
+            { "label": "v-once", "rank": 10 },
+            { "label": "v-memo", "rank": 11 },
+            { "label": "v-cloak", "rank": 12 },
+            { "label": "v-text", "rank": 13 },
+            { "label": "v-html", "rank": 14 },
+            { "label": "@", "rank": 15 },
+            { "label": ":", "rank": 16 },
+            { "label": "#", "rank": 17 },
+            { "label": "@click", "rank": 18 },
+            { "label": "@input", "rank": 19 },
+            { "label": "@change", "rank": 20 },
+            { "label": "@submit", "rank": 21 },
+            { "label": "@keydown", "rank": 22 },
+            { "label": "@keyup", "rank": 23 },
+            { "label": "@focus", "rank": 24 },
+            { "label": "@blur", "rank": 25 },
+            { "label": "@mouseenter", "rank": 26 },
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "active", "rank": 28 },
+            { "label": "payload", "rank": 29 },
+            { "label": "label", "rank": 30 },
+            { "label": "label-formatter", "rank": 31 },
+            { "label": "name-key", "rank": 32 },
+            { "label": "indicator", "rank": 33 },
+            { "label": "hide-label", "rank": 34 },
+            { "label": "hide-indicator", "rank": 35 },
+            { "label": "label-key", "rank": 36 }
+          ],
+          "dependencyEdit": {
+            "anchor": "  labelKey?: string\n",
+            "replacement": "  labelKey?: string\n  vizeOracleProbe?: boolean\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "playground/nuxt/app/components/ui/chart/__VizeOracleChartTooltipContent.vue",
+          "renamedFile": "playground/nuxt/app/components/ui/chart/__VizeOracleRenamedChartTooltipContent.vue",
+          "originalImportSpecifier": "~/components/ui/chart/ChartTooltipContent.vue",
+          "copiedImportSpecifier": "~/components/ui/chart/__VizeOracleChartTooltipContent.vue",
+          "renamedImportSpecifier": "~/components/ui/chart/__VizeOracleRenamedChartTooltipContent.vue",
+          "markerInsertionAnchor": "import type { ChartConfig } from './types'\n\n",
+          "markerSymbol": "__vizeVueChartsFileLifecycleMarker__"
+        }
+      }
     },
     {
       "id": "vaul-vue",
