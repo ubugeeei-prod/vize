@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { parse } from "yaml";
 
 // @ts-expect-error plain-JS bench module without type declarations
 import {
@@ -11,8 +12,13 @@ import {
   scoreCase,
   UPSTREAM,
 } from "../../tools/benchmarks/scripts/vue-benchmarks-replay.mjs";
+import { readRepoFile } from "./support/github-workflows.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+type WorkflowJob = {
+  steps?: Array<{ uses?: string; with?: Record<string, unknown> }>;
+};
 
 test("replay scoring follows the upstream meta contract", () => {
   const report = (errorCount: number) => ({
@@ -117,4 +123,16 @@ test("replay expectation tables stay pinned to the upstream corpus", () => {
   assert.equal(release.table["literal-union-prop-bad"], "pass");
   assert.equal(main.table["script-type-error"], "pass");
   assert.equal(release.table["script-type-error"], "pass");
+});
+
+test("replay workflow reads the manifest runtime in both lanes", () => {
+  const source = readRepoFile(".github", "workflows", "vue-benchmarks-replay.yml");
+  const workflow = parse(source) as { jobs?: Record<string, WorkflowJob> };
+
+  for (const jobName of ["replay-main", "replay-release"]) {
+    const setup = workflow.jobs?.[jobName]?.steps?.find((step) =>
+      step.uses?.startsWith("voidzero-dev/setup-vp@"),
+    );
+    assert.equal(setup?.with?.["node-version-file"], "package.json", jobName);
+  }
 });

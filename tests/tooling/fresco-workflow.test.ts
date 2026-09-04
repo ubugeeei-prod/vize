@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
@@ -20,6 +21,10 @@ const RELEVANT_PATHS = [
   '"pnpm-lock.yaml"',
   '"pnpm-workspace.yaml"',
 ];
+
+type WorkflowJob = {
+  steps?: Array<{ uses?: string; with?: Record<string, unknown> }>;
+};
 
 function assertPlatformMatrix(job: string): void {
   for (const [runner, target] of PLATFORM_MATRIX) {
@@ -56,13 +61,17 @@ test("fresco workflow runs on fresco source changes across both trigger events",
 
 test("fresco JS lane checks, builds, and tests the package on all three platforms", () => {
   const workflow = readRepoFile(".github", "workflows", "fresco.yml");
+  const parsed = parse(workflow) as { jobs?: Record<string, WorkflowJob> };
   const job = workflowJobBody(workflow, "fresco-js");
+  const setup = parsed.jobs?.["fresco-js"]?.steps?.find((step) =>
+    step.uses?.startsWith("voidzero-dev/setup-vp@"),
+  );
 
   assertPlatformMatrix(job);
   assertLfCheckout(job);
   assert.match(job, /timeout-minutes:\s*20\b/);
   assert.match(job, /fail-fast:\s*false/);
-  assert.match(job, /node-version-file:\s*"package\.json"/);
+  assert.equal(setup?.with?.["node-version-file"], "package.json");
   assert.match(
     job,
     /vp install --frozen-lockfile --prefer-offline --filter '\.\/npm\/fresco\.\.\.'/,

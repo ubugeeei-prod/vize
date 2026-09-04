@@ -50,6 +50,12 @@ test("reusable release preflight verifies evidence and crate plans without regis
   assert.ok(verifyCheckout);
   assert.equal(verifyCheckout.with?.["fetch-depth"], 0);
   assert.equal(verifyCheckout.with?.["persist-credentials"], false);
+  const nodeSetup = verify.steps?.find((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
+  assert.ok(nodeSetup);
+  assert.deepEqual(nodeSetup.with, {
+    "node-version-file": "package.json",
+    "run-install": false,
+  });
   const verification = verify.steps?.find((step) => step.run != null);
   assert.equal(verification?.run, "rust-script tools/commands/ci/github/release-preflight.rs");
   assert.equal(verification?.env?.GITHUB_TOKEN, "${{ github.token }}");

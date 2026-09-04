@@ -42,6 +42,10 @@ function publicationJobNames(jobs: Record<string, ReleaseJob>): string[] {
     .sort();
 }
 
+function setupVpSteps(job: ReleaseJob): NonNullable<ReleaseJob["steps"]> {
+  return (job.steps ?? []).filter((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
+}
+
 test("every publication edge waits for credential-free release preflight", () => {
   const source = readRepoFile(".github", "workflows", "release.yml");
   const workflow = parse(source) as { jobs?: Record<string, ReleaseJob> };
@@ -86,11 +90,18 @@ test("every publication edge waits for credential-free release preflight", () =>
   assert.doesNotMatch(JSON.stringify(preflight), /environment|id-token|secrets\./);
 });
 
-test("release workflow does not pin a separate hard-coded Node version for VS Code publishing", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
+test("release workflow runtime setup reads the manifest for every publishing job", () => {
+  const source = readRepoFile(".github", "workflows", "release.yml");
+  const workflow = parse(source) as { jobs?: Record<string, ReleaseJob> };
+  const jobs = workflow.jobs ?? {};
 
-  assert.doesNotMatch(workflow, /node-version:\s*"24\.14\.0"/);
-  assert.match(workflow, /node-version-file:\s*"package\.json"/);
+  assert.doesNotMatch(source, /node-version:\s*"24\.14\.0"/);
+  for (const jobName of publicationJobNames(jobs)) {
+    for (const step of setupVpSteps(jobs[jobName])) {
+      assert.equal(step.with?.["node-version-file"], "package.json", jobName);
+      assert.equal(step.with?.["node-version"], undefined, jobName);
+    }
+  }
 });
 
 test("release workflow overwrites existing GitHub release assets when a tag is re-driven", () => {

@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+
+type WorkflowJob = {
+  steps?: Array<{ uses?: string; with?: Record<string, unknown> }>;
+  strategy?: { matrix?: Record<string, unknown> };
+};
 
 test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () => {
   const action = readRepoFile(".github", "actions", "setup-ubuntu-archive", "action.yml");
@@ -229,7 +235,12 @@ test("native smoke workflow covers host platforms before release tags", () => {
 
 test("native smoke workflow fresh-installs runtime tarballs across supported targets", () => {
   const workflow = readRepoFile(".github", "workflows", "native-smoke.yml");
+  const parsed = parse(workflow) as { jobs?: Record<string, WorkflowJob> };
+  const parsedJob = parsed.jobs?.["fresh-install-smoke"];
   const job = workflowJobBody(workflow, "fresh-install-smoke");
+  const runtimeSetup = parsedJob?.steps?.find(
+    (step) => step.uses === "./.github/actions/setup-runtime-package-managers",
+  );
 
   for (const [runner, target] of [
     [hostedOrBlacksmith("ubuntu-22.04"), "linux-x64-gnu"],
@@ -241,9 +252,9 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
   ] as const) {
     assert.match(job, new RegExp(`runner:\\s*${runner}[\\s\\S]*target:\\s*${target}`));
   }
-  assert.match(job, /node-version:\s*\["22", "24"\]/);
+  assert.deepEqual(parsedJob?.strategy?.matrix?.["node-version"], ["22", "24"]);
   assert.doesNotMatch(job, /\.node-version\.ci/);
-  assert.match(job, /node-version:\s*\$\{\{\s*matrix\.node-version\s*\}\}/);
+  assert.equal(runtimeSetup?.with?.["node-version"], "${{ matrix.node-version }}");
   assert.match(job, /vp exec napi create-npm-dirs/);
   assert.match(job, /vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish/);
   assert.match(
