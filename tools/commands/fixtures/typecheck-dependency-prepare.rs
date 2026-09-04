@@ -220,14 +220,18 @@ fn select_typecheck_performance_projects(
         .enumerate()
         .filter_map(|(index, project)| {
             (index % shard_count == shard_index
-                && project
-                    .get("typecheckPerformance")
-                    .and_then(|value| value.get("enabled"))
-                    .and_then(Value::as_bool)
-                    == Some(true))
+                && has_enabled_typecheck_performance(project))
             .then_some(project)
         })
         .collect())
+}
+
+fn has_enabled_typecheck_performance(project: &Value) -> bool {
+    project
+        .get("typecheckPerformance")
+        .and_then(|value| value.get("enabled"))
+        .and_then(Value::as_bool)
+        == Some(true)
 }
 
 fn validate_typecheck_performance_target(

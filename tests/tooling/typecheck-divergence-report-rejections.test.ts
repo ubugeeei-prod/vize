@@ -264,3 +264,32 @@ test("typecheck divergence report skips shards with no registered performance pr
     cleanup(fixture);
   }
 });
+
+test("typecheck divergence report shards the full fixture registry before filtering typecheck targets", () => {
+  const fixture = setup();
+  try {
+    updateJson(fixture.registryPath, (registry) => {
+      registry.projects = [
+        { ...registry.projects[0], id: "padding", typecheckPerformance: { enabled: false } },
+        registry.projects[0],
+      ];
+    });
+
+    const empty = run(fixture, {}, ["--shard-index", "0", "--shard-count", "2"]);
+    assert.equal(empty.status, 0, empty.stderr);
+    assert.match(empty.stdout, /No typecheck performance projects selected/);
+    assert.equal(
+      fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
+      false,
+    );
+
+    const selected = run(fixture, {}, ["--shard-index", "1", "--shard-count", "2"]);
+    assert.equal(selected.status, 0, selected.stderr);
+    assert.equal(
+      fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
+      true,
+    );
+  } finally {
+    cleanup(fixture);
+  }
+});
