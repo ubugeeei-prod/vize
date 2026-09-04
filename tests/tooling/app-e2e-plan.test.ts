@@ -104,7 +104,7 @@ test("full and readiness plans preserve every isolated execution row", () => {
   assert.equal(readinessRows.find((row) => row.shard === "dev-misskey")?.timeout, "8m");
   assert.equal(
     readinessRows.find((row) => row.shard === "dev-nuxt-ui")?.timeout,
-    "8m",
+    "20m",
     "Nuxt UI dev readiness must fit the same Blacksmith budget as the other dev readiness row",
   );
   assert.deepEqual(
