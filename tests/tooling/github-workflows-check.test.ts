@@ -271,6 +271,8 @@ test("check workflow runs JS package unit tests and production dependency audit"
   assert.match(jsPackageJob, /vp run --workspace-root test:js/);
   assert.match(jsPackageJob, /key:\s*test-js-packages/);
   assert.match(auditJob, /vp exec pnpm audit --prod --audit-level moderate/);
+  assert.match(auditJob, /for attempt in 1 2 3/);
+  assert.match(auditJob, /exit "\$audit_status"/);
   assert.match(auditJob, /tool:\s*cargo-audit/);
   assert.match(auditJob, /cargo audit --deny warnings/);
   assert.doesNotMatch(auditJob, /continue-on-error:\s*true/);
