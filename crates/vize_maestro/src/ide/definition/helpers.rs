@@ -43,7 +43,8 @@ pub(crate) fn skip_virtual_header(content: &str) -> usize {
 /// Get the tag name at the given offset (if cursor is on a tag).
 pub(crate) fn get_tag_at_offset(content: &str, offset: usize) -> Option<String> {
     let cursor = offset.min(content.len());
-    let (_, _, name_start, name_end) = find_tag_name_span(content, cursor)?;
+    let (_, _, name_start, name_end) =
+        find_tag_name_span(content, cursor).or_else(|| find_pug_tag_name_span(content, cursor))?;
 
     if cursor < name_start || cursor > name_end {
         return None;
@@ -198,6 +199,136 @@ fn find_tag_name_span(content: &str, offset: usize) -> Option<(usize, usize, usi
     None
 }
 
+fn find_pug_tag_name_span(content: &str, offset: usize) -> Option<(usize, usize, usize, usize)> {
+    let cursor = offset.min(content.len());
+    if !is_in_pug_template_region(content, cursor) {
+        return None;
+    }
+
+    let line_start = content[..cursor].rfind('\n').map_or(0, |index| index + 1);
+    let line_end = content[cursor..]
+        .find('\n')
+        .map_or(content.len(), |index| cursor + index);
+    let bytes = content.as_bytes();
+    let mut name_start = line_start;
+
+    while name_start < line_end && matches!(bytes[name_start], b' ' | b'\t') {
+        name_start += 1;
+    }
+
+    if matches!(
+        bytes.get(name_start),
+        None | Some(b'.' | b'#' | b'/' | b'|' | b':' | b'-' | b'+')
+    ) {
+        return None;
+    }
+
+    let mut name_end = name_start;
+    while name_end < line_end && is_pug_tag_name_byte(bytes[name_end]) {
+        name_end += 1;
+    }
+
+    (name_start != name_end).then_some((name_start, line_end, name_start, name_end))
+}
+
+fn is_pug_tag_name_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_')
+}
+
+fn is_in_pug_template_region(content: &str, cursor: usize) -> bool {
+    let before = &content[..cursor.min(content.len())];
+    let Some(template_start) = before.rfind("<template") else {
+        return false;
+    };
+
+    if before[template_start..].rfind("</template").is_some() {
+        return false;
+    }
+
+    let Some(tag_end) = content[template_start..].find('>') else {
+        return false;
+    };
+    let tag_end = template_start + tag_end;
+    if cursor <= tag_end {
+        return false;
+    }
+
+    template_start_tag_lang_is_pug(&content[template_start..=tag_end])
+}
+
+fn template_start_tag_lang_is_pug(start_tag: &str) -> bool {
+    let lower = start_tag.to_ascii_lowercase();
+    let bytes = lower.as_bytes();
+    let mut search = 0usize;
+
+    while let Some(relative) = lower[search..].find("lang") {
+        let name_start = search + relative;
+        let name_end = name_start + "lang".len();
+        search = name_end;
+
+        if name_start > 0 && is_attribute_name_byte(bytes[name_start - 1]) {
+            continue;
+        }
+        if bytes
+            .get(name_end)
+            .is_some_and(|byte| is_attribute_name_byte(*byte))
+        {
+            continue;
+        }
+
+        let mut pos = name_end;
+        while bytes
+            .get(pos)
+            .is_some_and(|byte| byte.is_ascii_whitespace())
+        {
+            pos += 1;
+        }
+        if bytes.get(pos) != Some(&b'=') {
+            continue;
+        }
+        pos += 1;
+        while bytes
+            .get(pos)
+            .is_some_and(|byte| byte.is_ascii_whitespace())
+        {
+            pos += 1;
+        }
+
+        let value = match bytes.get(pos) {
+            Some(b'"' | b'\'') => {
+                let quote = bytes[pos];
+                pos += 1;
+                let value_start = pos;
+                while bytes.get(pos).is_some_and(|byte| *byte != quote) {
+                    pos += 1;
+                }
+                &lower[value_start..pos]
+            }
+            Some(_) => {
+                let value_start = pos;
+                while bytes
+                    .get(pos)
+                    .is_some_and(|byte| !byte.is_ascii_whitespace() && *byte != b'>')
+                {
+                    pos += 1;
+                }
+                &lower[value_start..pos]
+            }
+            None => continue,
+        };
+
+        if value == "pug" {
+            return true;
+        }
+    }
+
+    false
+}
+
+fn is_attribute_name_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b':')
+}
+
 fn find_tag_end_from(content: &str, tag_start: usize) -> Option<usize> {
     let bytes = content.as_bytes();
     let mut tag_end = tag_start;
@@ -321,4 +452,37 @@ pub(crate) fn extract_import_path_from_pos(content: &str, pos: usize) -> Option<
 /// Resolve a relative, package, or tsconfig-path import from the current file.
 pub(crate) fn resolve_import_path(current_uri: &Url, import_path: &str) -> Option<PathBuf> {
     super::import_resolver::resolve_import_specifier(current_uri, import_path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::get_tag_at_offset;
+
+    #[test]
+    fn get_tag_at_offset_reads_pug_component_tags() {
+        let source = r#"<script setup>
+import HighlightMessage from "./HighlightMessage.vue"
+</script>
+<template lang="pug">
+  highlight-message(type="success")
+</template>
+"#;
+        let offset = source.find("highlight-message").unwrap();
+
+        assert_eq!(
+            get_tag_at_offset(source, offset),
+            Some("highlight-message".to_string())
+        );
+    }
+
+    #[test]
+    fn get_tag_at_offset_does_not_treat_html_text_as_pug() {
+        let source = r#"<template>
+  highlight-message text
+</template>
+"#;
+        let offset = source.find("highlight-message").unwrap();
+
+        assert_eq!(get_tag_at_offset(source, offset), None);
+    }
 }

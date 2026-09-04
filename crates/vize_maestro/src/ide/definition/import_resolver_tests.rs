@@ -101,6 +101,35 @@ import AccountSearchResult from '~/components/AccountSearchResult.vue'
     );
 }
 
+#[test]
+fn project_source_alias_resolves_nearest_src_root() {
+    let workspace = tempdir().unwrap();
+    let source = workspace.path().join("src/views/Docs.vue");
+    let component = workspace.path().join("src/components/HighlightMessage.vue");
+    write(
+        &workspace.path().join("package.json"),
+        r#"{"type":"module"}"#,
+    );
+    write(
+        &source,
+        r#"<script setup>
+import HighlightMessage from '@/components/HighlightMessage.vue'
+</script>
+<template><highlight-message /></template>
+"#,
+    );
+    write(&component, "<template />\n");
+
+    let uri = Url::from_file_path(&source).unwrap();
+    assert_eq!(
+        resolve_import_specifier(&uri, "@/components/HighlightMessage.vue")
+            .unwrap()
+            .canonicalize()
+            .unwrap(),
+        component.canonicalize().unwrap()
+    );
+}
+
 fn write(path: &Path, content: &str) {
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
     std::fs::write(path, content).unwrap();

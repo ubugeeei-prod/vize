@@ -174,6 +174,12 @@ fn project_aliases(source_path: &Path) -> Option<Vec<AliasEntry>> {
             }
         }
     }
+    if let Some(root) = nearest_project_src_root(source_path) {
+        aliases.push(AliasEntry {
+            pattern_prefix: "@/".to_string(),
+            target_base: normalize_path_buf(&root.join("src")),
+        });
+    }
     (!aliases.is_empty()).then_some(aliases)
 }
 
@@ -191,4 +197,24 @@ fn nearest_nuxt_root(file: &Path) -> Option<PathBuf> {
             .any(|config| dir.join(config).is_file())
         })
         .map(Path::to_path_buf)
+}
+
+fn nearest_project_src_root(file: &Path) -> Option<PathBuf> {
+    file.ancestors()
+        .skip(1)
+        .find(|dir| dir.join("src").is_dir() && has_project_source_alias_marker(dir))
+        .map(Path::to_path_buf)
+}
+
+fn has_project_source_alias_marker(dir: &Path) -> bool {
+    dir.join("package.json").is_file()
+        || [
+            "vite.config.ts",
+            "vite.config.mts",
+            "vite.config.js",
+            "vite.config.mjs",
+            "vue.config.js",
+        ]
+        .iter()
+        .any(|config| dir.join(config).is_file())
 }

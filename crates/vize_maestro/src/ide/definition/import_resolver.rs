@@ -53,6 +53,9 @@ pub(crate) fn resolve_import_specifier(uri: &Url, specifier: &str) -> Option<Pat
     if let Some(path) = resolve_nuxt_source_alias(&file, specifier) {
         return Some(path);
     }
+    if let Some(path) = resolve_project_source_alias(&file, specifier) {
+        return Some(path);
+    }
     module_specifier::resolve_specifier(uri, specifier)
 }
 
@@ -84,6 +87,32 @@ fn nearest_nuxt_root(file: &Path) -> Option<PathBuf> {
             .any(|config| dir.join(config).is_file())
         })
         .map(Path::to_path_buf)
+}
+
+fn resolve_project_source_alias(file: &Path, specifier: &str) -> Option<PathBuf> {
+    let rest = specifier.strip_prefix("@/")?;
+    let root = nearest_project_src_root(file)?;
+    probe(&root.join("src").join(rest))
+}
+
+fn nearest_project_src_root(file: &Path) -> Option<PathBuf> {
+    file.ancestors()
+        .skip(1)
+        .find(|dir| dir.join("src").is_dir() && has_project_source_alias_marker(dir))
+        .map(Path::to_path_buf)
+}
+
+fn has_project_source_alias_marker(dir: &Path) -> bool {
+    dir.join("package.json").is_file()
+        || [
+            "vite.config.ts",
+            "vite.config.mts",
+            "vite.config.js",
+            "vite.config.mjs",
+            "vue.config.js",
+        ]
+        .iter()
+        .any(|config| dir.join(config).is_file())
 }
 
 fn probe(base: &Path) -> Option<PathBuf> {
