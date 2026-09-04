@@ -1,5 +1,6 @@
 ---
-source: crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs
+source: crates/vize_patina/src/rules/opinionated/vue/no_array_index_key/tests.rs
+assertion_line: 19
 expression: result.diagnostics
 ---
 [

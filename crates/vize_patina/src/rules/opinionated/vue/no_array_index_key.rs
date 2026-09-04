@@ -26,7 +26,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-array-index-key",
@@ -48,42 +48,90 @@ impl Rule for NoArrayIndexKey {
         // Find the `v-for` index alias and the `:key` expression on this same
         // element. Both must be present for the anti-pattern to apply.
         let mut index_alias: Option<&str> = None;
-        let mut key_binding: Option<(&str, &vize_relief::SourceLocation)> = None;
 
         for prop in element.props.iter() {
             let PropNode::Directive(dir) = prop else {
                 continue;
             };
-            match dir.name {
-                "for" => {
-                    if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
-                        index_alias = v_for_index_alias(exp.content);
-                    }
-                }
-                "bind" => {
-                    // `:key` / `v-bind:key` with a dynamic expression.
-                    if let Some(ExpressionNode::Simple(arg)) = &dir.arg
-                        && arg.is_static
-                        && arg.content == "key"
-                        && let Some(ExpressionNode::Simple(exp)) = &dir.exp
-                    {
-                        key_binding = Some((exp.content, &dir.loc));
-                    }
-                }
-                _ => {}
+            if dir.name == "for"
+                && let Some(ExpressionNode::Simple(exp)) = &dir.exp
+            {
+                index_alias = v_for_index_alias(exp.content);
             }
         }
 
-        if let (Some(index), Some((key_exp, key_loc))) = (index_alias, key_binding)
+        if let (Some(index), Some((key_exp, key_loc))) = (index_alias, key_binding(element))
             && expression_is_only_identifier(key_exp, index)
         {
-            ctx.warn_with_help(
-                ctx.t("vue/no-array-index-key.message"),
-                key_loc,
-                ctx.t("vue/no-array-index-key.help"),
-            );
+            report_index_key(ctx, key_loc);
         }
     }
+
+    fn check_directive<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        element: &ElementNode<'a>,
+        directive: &DirectiveNode<'a>,
+    ) {
+        if element.tag != "template" || directive.name != "for" {
+            return;
+        }
+
+        let Some(ExpressionNode::Simple(exp)) = &directive.exp else {
+            return;
+        };
+        let Some(index) = v_for_index_alias(exp.content) else {
+            return;
+        };
+
+        for child in element.children.iter() {
+            let TemplateChildNode::Element(child_element) = child else {
+                continue;
+            };
+            if has_v_for(child_element) {
+                continue;
+            }
+            if let Some((key_exp, key_loc)) = key_binding(child_element)
+                && expression_is_only_identifier(key_exp, index)
+            {
+                report_index_key(ctx, key_loc);
+            }
+        }
+    }
+}
+
+fn has_v_for(element: &ElementNode<'_>) -> bool {
+    element
+        .props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "for"))
+}
+
+fn key_binding<'a>(
+    element: &'a ElementNode<'a>,
+) -> Option<(&'a str, &'a vize_relief::SourceLocation)> {
+    for prop in element.props.iter() {
+        let PropNode::Directive(dir) = prop else {
+            continue;
+        };
+        if dir.name == "bind"
+            && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+            && arg.is_static
+            && arg.content == "key"
+            && let Some(ExpressionNode::Simple(exp)) = &dir.exp
+        {
+            return Some((exp.content, &dir.loc));
+        }
+    }
+    None
+}
+
+fn report_index_key(ctx: &mut LintContext<'_>, loc: &vize_relief::SourceLocation) {
+    ctx.warn_with_help(
+        ctx.t("vue/no-array-index-key.message"),
+        loc,
+        ctx.t("vue/no-array-index-key.help"),
+    );
 }
 
 /// Extract the index alias from a `v-for` expression string, if any.
@@ -169,153 +217,4 @@ fn find_pattern(haystack: &[u8], needle: &[u8]) -> Option<usize> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::NoArrayIndexKey;
-    use crate::linter::Linter;
-    use crate::rule::RuleRegistry;
-
-    fn create_linter() -> Linter {
-        let mut registry = RuleRegistry::new();
-        registry.register(Box::new(NoArrayIndexKey));
-        Linter::with_registry(registry)
-    }
-
-    #[test]
-    fn reports_index_used_as_key() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<li v-for="(item, index) in list" :key="index">{{ item }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
-    }
-
-    #[test]
-    fn allows_dynamic_key_argument() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<li v-for="(item, index) in list" :[key]="index">{{ item }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn reports_object_iteration_index_used_as_key() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<li v-for="(value, key, index) in obj" :key="index">{{ value }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn reports_index_with_spaces_in_key() {
-        let linter = create_linter();
-        // `:key=" index "` is still just the index identifier.
-        let result = linter.lint_template(
-            r#"<li v-for="(item, index) in list" :key=" index ">{{ item }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn reports_v_bind_key_long_form() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<li v-for="(item, index) in list" v-bind:key="index">{{ item }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn allows_stable_id_key() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<li v-for="(item, index) in list" :key="item.id">{{ item }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn allows_index_composed_into_key() {
-        let linter = create_linter();
-        // Using the index as part of a larger key string is not a bare index.
-        let result = linter.lint_template(
-            r#"<li v-for="(item, index) in list" :key="`row-${index}`">{{ item }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn allows_object_3tuple_key_used_as_key() {
-        // For object iteration `(value, key, index)`, the *second* binding is
-        // the stable object key (not a positional index), so `:key="key"` is
-        // fine — only the third binding (`index`) is the positional counter.
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<li v-for="(value, key, index) in obj" :key="key">{{ value }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn allows_no_index_alias() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<li v-for="item in list" :key="item.id">{{ item }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn ignores_index_like_identifier_that_is_not_the_alias() {
-        // `idx` is the v-for index; `:key="index"` references some unrelated
-        // outer `index`, not the loop index, so it must not be flagged.
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<li v-for="(item, idx) in list" :key="index">{{ item }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn allows_of_delimiter_with_stable_key() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<li v-for="(item, index) of list" :key="item.id">{{ item }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn reports_of_delimiter_index_as_key() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<li v-for="(item, index) of list" :key="index">{{ item }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn ignores_object_destructuring_value_used_as_key() {
-        // `{ id }` destructures the value; `id` is not a positional index.
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<li v-for="{ id } in list" :key="id">{{ id }}</li>"#,
-            "App.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-}
+mod tests;
