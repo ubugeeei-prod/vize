@@ -11,7 +11,9 @@ mod support;
 use support::with_transformed_caps;
 use vize_s0::Allocator;
 use vize_s0::config::VueVersion;
-use vize_s1_to_s2::{LegacyCaps, emit_dom, emit_dom_source_with_caps};
+use vize_s1_to_s2::{
+    DomEmitOptions, LegacyCaps, emit_dom, emit_dom_source_with_caps, emit_dom_source_with_options,
+};
 
 fn vue2() -> LegacyCaps {
     LegacyCaps::for_version(VueVersion::V2)
@@ -24,6 +26,22 @@ fn assembled(source: &str) -> String {
             .assembled()
             .to_string()
     })
+}
+
+fn assembled_prefixed(source: &str) -> String {
+    let allocator = Allocator::new();
+    emit_dom_source_with_options(
+        &allocator,
+        source,
+        vue2(),
+        &DomEmitOptions {
+            prefix_identifiers: true,
+            ..DomEmitOptions::DEFAULT
+        },
+    )
+    .unwrap_or_else(|error| panic!("emit refused {source:?}: {error:?}"))
+    .assembled()
+    .to_string()
 }
 
 #[test]
@@ -66,6 +84,42 @@ fn vue2_filter_names_use_the_shipped_asset_identifier_rule() {
             "  \n",
             "  return (_openBlock(), _createElementBlock(\"div\", null, ",
             "_toDisplayString(_filter_36cash(_filter_foo_bar(x))), 1 /* TEXT */))\n",
+            "}"
+        )
+    );
+}
+
+#[test]
+fn vue2_prefixed_filters_keep_generated_helpers_local() {
+    assert_eq!(
+        assembled_prefixed("<div>{{ msg | cap }}</div>"),
+        concat!(
+            "const { resolveFilter: _resolveFilter, toDisplayString: _toDisplayString, ",
+            "openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n",
+            "\n",
+            "function render(_ctx, _cache, $props, $setup, $data, $options) {\n",
+            "  const _filter_cap = _resolveFilter(\"cap\")\n",
+            "  \n",
+            "  return (_openBlock(), _createElementBlock(\"div\", null, ",
+            "_toDisplayString(_filter_cap(_ctx.msg)), 1 /* TEXT */))\n",
+            "}"
+        )
+    );
+}
+
+#[test]
+fn vue2_filter_inside_mixed_text_run_resolves_filter_asset() {
+    assert_eq!(
+        assembled_prefixed("<div>USD {{ price | money }}</div>"),
+        concat!(
+            "const { resolveFilter: _resolveFilter, toDisplayString: _toDisplayString, ",
+            "openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n",
+            "\n",
+            "function render(_ctx, _cache, $props, $setup, $data, $options) {\n",
+            "  const _filter_money = _resolveFilter(\"money\")\n",
+            "  \n",
+            "  return (_openBlock(), _createElementBlock(\"div\", null, ",
+            "\"USD \" + _toDisplayString(_filter_money(_ctx.price)), 1 /* TEXT */))\n",
             "}"
         )
     );

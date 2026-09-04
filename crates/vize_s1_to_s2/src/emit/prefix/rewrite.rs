@@ -14,7 +14,7 @@ use vize_s0::{Allocator, String};
 
 use super::collector::IdentifierCollector;
 use super::compat::js_module_compatible;
-use super::globals::is_simple_identifier;
+use super::globals::{is_generated_filter_helper, is_simple_identifier};
 use super::scope::PrefixScope;
 use super::splice::splice_insertions;
 use super::strip_typescript_from_expression;
@@ -182,6 +182,13 @@ fn rewrite_reparsed(
     }
 
     if is_simple_identifier(content) {
+        if is_generated_filter_helper(content) {
+            return RewriteResult {
+                code: String::from(content),
+                used_unref: false,
+                parse_error: false,
+            };
+        }
         // The same three-way read the collector makes: prefix, `.value`
         // for an inline ref, `_unref(…)` for an inline `let`.
         let needs_unref = scope.needs_unref(content);

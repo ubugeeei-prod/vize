@@ -58,6 +58,11 @@ pub(crate) fn is_global_allowed(name: &str) -> bool {
     )
 }
 
+pub(super) fn is_generated_filter_helper(name: &str) -> bool {
+    name.strip_prefix("_filter_")
+        .is_some_and(|suffix| !suffix.is_empty())
+}
+
 /// `vize_atelier_core::steps::is_simple_identifier`: Unicode-alphabetic
 /// start, alphanumeric continuation, `_` and `$` allowed everywhere.
 pub(crate) fn is_simple_identifier(s: &str) -> bool {

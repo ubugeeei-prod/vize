@@ -2,46 +2,103 @@
 
 use alloc::vec::Vec as StdVec;
 
+use vize_davinci::side_table::SideTable;
 use vize_s0::{Allocator, String};
 use vize_s2::expr::{ExprRef, VueFilterApp, VueFilterExpr};
 use vize_s2::op::{BindingOp, DynamicName, Op};
 
 use crate::emit::js::asset_ident;
+use crate::lower::TextParts;
+use crate::pass::walk::PageWalk;
 
 use super::LegacyFacts;
 
+mod compound;
+
 /// Rewrite every [`ExprRef::Filter`] in the tree into the Vue 2 wrap
-/// (`a | f` → `_filter_f(a)`, `a | f(b)` → `_filter_f(a,b)`). Mixed
-/// text-runs that absorbed a pipe into a compound opaque stay as
-/// authored — those parts are not `ExprRef::Filter` (recorded gap).
-pub(super) fn rewrite<'a>(allocator: &'a Allocator, ops: &mut [Op<'a>], facts: &mut LegacyFacts) {
+/// (`a | f` → `_filter_f(a)`, `a | f(b)` → `_filter_f(a,b)`). Mixed text
+/// runs carry their dynamic parts in the text side table, so the pass
+/// rewrites those part expressions and refreshes the compound spelling
+/// before the text pass validates the rebuild law.
+pub(super) fn rewrite<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    ops: &mut [Op<'a>],
+    texts: &mut SideTable<TextParts>,
+    facts: &mut LegacyFacts,
+) {
+    let mut walk = PageWalk::new();
+    rewrite_ops(allocator, source, &mut walk, ops, texts, facts);
+}
+
+fn rewrite_ops<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    walk: &mut PageWalk,
+    ops: &mut [Op<'a>],
+    texts: &mut SideTable<TextParts>,
+    facts: &mut LegacyFacts,
+) {
     for op in ops.iter_mut() {
+        let id = walk.mint();
         match op {
             Op::Element(element) => {
                 rewrite_bindings(allocator, &mut element.bindings, &mut facts.filters);
-                rewrite(allocator, &mut element.children.ops, facts);
+                walk.skip(element.bindings.len());
+                rewrite_ops(
+                    allocator,
+                    source,
+                    walk,
+                    &mut element.children.ops,
+                    texts,
+                    facts,
+                );
             }
             Op::Component(component) => {
                 if bindings_contain_filter(&component.bindings) {
                     facts.filter_helper_precedes_components = true;
                 }
                 rewrite_bindings(allocator, &mut component.bindings, &mut facts.filters);
-                rewrite(allocator, &mut component.children.ops, facts);
+                walk.skip(component.bindings.len());
+                rewrite_ops(
+                    allocator,
+                    source,
+                    walk,
+                    &mut component.children.ops,
+                    texts,
+                    facts,
+                );
             }
             Op::Slot(slot) => {
                 rewrite_name(allocator, &mut slot.name, &mut facts.filters);
                 rewrite_bindings(allocator, &mut slot.bindings, &mut facts.filters);
-                rewrite(allocator, &mut slot.fallback.ops, facts);
+                walk.skip(slot.bindings.len());
+                rewrite_ops(
+                    allocator,
+                    source,
+                    walk,
+                    &mut slot.fallback.ops,
+                    texts,
+                    facts,
+                );
             }
             Op::Interpolation(interp) => {
                 rewrite_expr(allocator, &mut interp.expression, &mut facts.filters);
+                compound::rewrite(allocator, source, id, interp, texts, &mut facts.filters);
             }
             Op::If(if_op) => {
                 for branch in if_op.branches.iter_mut() {
                     if let Some(condition) = &mut branch.condition {
                         rewrite_expr(allocator, condition, &mut facts.filters);
                     }
-                    rewrite(allocator, &mut branch.region.ops, facts);
+                    rewrite_ops(
+                        allocator,
+                        source,
+                        walk,
+                        &mut branch.region.ops,
+                        texts,
+                        facts,
+                    );
                 }
             }
             Op::For(for_op) => {
@@ -53,7 +110,14 @@ pub(super) fn rewrite<'a>(allocator: &'a Allocator, ops: &mut [Op<'a>], facts: &
                 if let Some(index) = &mut for_op.binding.index {
                     rewrite_expr(allocator, index, &mut facts.filters);
                 }
-                rewrite(allocator, &mut for_op.region.ops, facts);
+                rewrite_ops(
+                    allocator,
+                    source,
+                    walk,
+                    &mut for_op.region.ops,
+                    texts,
+                    facts,
+                );
             }
             Op::Text(_) => {}
         }
@@ -208,12 +272,17 @@ fn record_filters(filter: &VueFilterExpr<'_>, filters: &mut StdVec<String>) {
 }
 
 fn wrap<'a>(allocator: &'a Allocator, filter: &VueFilterExpr<'a>) -> ExprRef<'a> {
+    let out = wrap_source(filter);
+    let text = allocator.alloc_str(out.as_str());
+    ExprRef::parse_js_in(allocator, text, filter.span)
+}
+
+fn wrap_source(filter: &VueFilterExpr<'_>) -> String {
     let mut out = String::from(filter.base.source());
     for app in &filter.filters {
         out = wrap_one(out.as_str(), app);
     }
-    let text = allocator.alloc_str(out.as_str());
-    ExprRef::parse_js_in(allocator, text, filter.span)
+    out
 }
 
 fn wrap_one(exp: &str, app: &VueFilterApp<'_>) -> String {

@@ -86,10 +86,16 @@ pub fn run(lowered: &mut Lowered<'_>) -> LegacyFacts {
             on::rewrite(allocator, bindings);
         }
     });
-    if lowered.caps.supports_filters {
-        filter::rewrite(allocator, &mut lowered.root.ops, &mut facts);
-    }
     ids::rekey(lowered, &sync_ids);
+    if lowered.caps.supports_filters {
+        filter::rewrite(
+            allocator,
+            lowered.source,
+            &mut lowered.root.ops,
+            &mut lowered.texts,
+            &mut facts,
+        );
+    }
     ids::recount(lowered);
     facts
 }

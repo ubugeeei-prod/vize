@@ -5,7 +5,8 @@
 
 use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections};
 use vize_atelier_core::options::{
-    BindingMetadata, BindingType, CodegenMode, CodegenOptions, ParserOptions, TransformOptions,
+    BindingMetadata, BindingType, CodegenMode, CodegenOptions, ParserOptions, TemplateSyntaxMode,
+    TransformOptions,
 };
 use vize_s0::Allocator;
 use vize_s0::profiler::global_profiler;
@@ -49,6 +50,49 @@ pub(super) fn transform_options(options: &DomCompilerOptions) -> TransformOption
         dialect: options.dialect,
         ..Default::default()
     }
+}
+
+pub(super) fn codegen_options(
+    options: &DomCompilerOptions,
+    defaults: CodegenOptions,
+) -> CodegenOptions {
+    CodegenOptions {
+        mode: options.mode,
+        source_map: options.source_map,
+        component_name: options.component_name.clone(),
+        scope_id: options.scope_id.clone(),
+        ssr: options.ssr,
+        is_ts: options.is_ts,
+        inline: options.inline,
+        cache_handlers: options.cache_handlers,
+        binding_metadata: options.binding_metadata.clone(),
+        // Compound dynamic `v-bind` / `v-on` keys (`:[prefix+suffix]`) only
+        // walk identifiers when this flag is set. Transform already receives
+        // it; omitting it here left SFC module-mode render functions with
+        // bare `prefix+suffix` and a runtime ReferenceError.
+        prefix_identifiers: options.prefix_identifiers,
+        ..defaults
+    }
+}
+
+pub(super) fn s2_emit_supported(
+    options: &DomCompilerOptions,
+    codegen: &CodegenOptions,
+    has_custom_element_matcher: bool,
+    template_syntax: TemplateSyntaxMode,
+    has_croquis: bool,
+) -> bool {
+    !codegen.source_map
+        && options.scope_id.is_none()
+        && options.hoist_static
+        && !options.ssr
+        && !options.comments
+        && !options.experimental_in_tag_comments
+        && !options.experimental_patterned_template
+        && !options.custom_renderer
+        && template_syntax == TemplateSyntaxMode::Standard
+        && !has_custom_element_matcher
+        && !has_croquis
 }
 
 /// The published DOM option surface projected onto the S2 emitter.

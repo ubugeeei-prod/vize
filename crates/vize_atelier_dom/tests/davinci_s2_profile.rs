@@ -26,13 +26,11 @@ fn profile_reports_real_s2_dom_walks() {
     let unobserved_allocator = Allocator::new();
     let (_, unobserved_errors, unobserved) =
         compile_template(&unobserved_allocator, "<div>{{ msg }}</div>");
+    let unobserved_counters = profiler.counter_summary();
     assert!(unobserved_errors.is_empty());
-    assert!(
-        profiler
-            .counter_summary()
-            .entries
-            .iter()
-            .all(|entry| !entry.name.starts_with("davinci.s2_dom.")),
+    assert_eq!(
+        counter_total(&unobserved_counters, "davinci.s2_dom.files"),
+        None,
         "normal DOM compilation must not instantiate the profiling observer"
     );
 
@@ -62,31 +60,37 @@ fn source_map_disabled_scope_id_uses_compatibility_codegen() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
+    let source = r#"<div class="scoped">{{ msg }}</div>"#;
+    let scoped_options = DomCompilerOptions {
+        scope_id: Some("data-v-direct".into()),
+        ..Default::default()
+    };
+    let compat_allocator = Allocator::new();
+    let (_, compat_errors, compat) = compile_template_with_options(
+        &compat_allocator,
+        source,
+        DomCompilerOptions {
+            source_map: true,
+            ..scoped_options.clone()
+        },
+    );
+    assert!(compat_errors.is_empty());
+
     profiler.clear();
     profiler.enable();
 
     let allocator = Allocator::new();
-    let (_, errors, result) = compile_template_with_options(
-        &allocator,
-        r#"<div class="scoped">{{ msg }}</div>"#,
-        DomCompilerOptions {
-            scope_id: Some("data-v-direct".into()),
-            ..Default::default()
-        },
-    );
+    let (_, errors, result) = compile_template_with_options(&allocator, source, scoped_options);
 
     profiler.disable();
     let counters = profiler.counter_summary();
 
     assert!(errors.is_empty());
-    let program = format!("{}\n{}", result.preamble, result.code);
-    assert!(
-        program.contains("\"data-v-direct\": \"\""),
-        "direct scope_id must stay on compatibility codegen until S2 owns runtime scoped attrs:\n{}",
-        program
-    );
-    assert!(
-        !has_counter(&counters, "davinci.s2_dom.files"),
+    assert_eq!(result.preamble, compat.preamble);
+    assert_eq!(result.code, compat.code);
+    assert_eq!(
+        counter_total(&counters, "davinci.s2_dom.files"),
+        None,
         "direct scope_id compiles must not be routed through S2 yet"
     );
 }
@@ -96,13 +100,26 @@ fn source_map_disabled_hoisted_scope_id_stays_on_s2_codegen() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
+    let source = r#"<div :class="{ active }"><svg><rect class="marker" x="1" /></svg></div>"#;
+    let compat_allocator = Allocator::new();
+    let (_, compat_errors, compat) = compile_template_with_options_and_hoisted_scope_id(
+        &compat_allocator,
+        source,
+        DomCompilerOptions {
+            source_map: true,
+            ..Default::default()
+        },
+        Some("data-v-hoist".into()),
+    );
+    assert!(compat_errors.is_empty());
+
     profiler.clear();
     profiler.enable();
 
     let allocator = Allocator::new();
     let (_, errors, result) = compile_template_with_options_and_hoisted_scope_id(
         &allocator,
-        r#"<div :class="{ active }"><svg><rect class="marker" x="1" /></svg></div>"#,
+        source,
         DomCompilerOptions::default(),
         Some("data-v-hoist".into()),
     );
@@ -112,10 +129,47 @@ fn source_map_disabled_hoisted_scope_id_stays_on_s2_codegen() {
 
     assert!(errors.is_empty());
     assert_eq!(counter(&counters, "davinci.s2_dom.files"), 1);
-    assert!(
-        result.preamble.contains("\"data-v-hoist\""),
-        "hoisted_scope_id must be baked into static VNode hoists emitted by S2:\n{}",
-        result.preamble
+    assert_eq!(result.preamble, compat.preamble);
+    assert_eq!(result.code, compat.code);
+}
+
+#[test]
+fn source_map_disabled_comments_use_compatibility_codegen() {
+    let _guard = lock_profiler();
+    let profiler = global_profiler();
+    profiler.disable();
+    let source = "<div><!--kept--><span>probe</span></div>";
+    let options = DomCompilerOptions {
+        comments: true,
+        ..Default::default()
+    };
+    let compat_allocator = Allocator::new();
+    let (_, compat_errors, compat) = compile_template_with_options(
+        &compat_allocator,
+        source,
+        DomCompilerOptions {
+            source_map: true,
+            ..options.clone()
+        },
+    );
+    assert!(compat_errors.is_empty());
+
+    profiler.clear();
+    profiler.enable();
+
+    let allocator = Allocator::new();
+    let (_, errors, result) = compile_template_with_options(&allocator, source, options);
+
+    profiler.disable();
+    let counters = profiler.counter_summary();
+
+    assert!(errors.is_empty());
+    assert_eq!(result.preamble, compat.preamble);
+    assert_eq!(result.code, compat.code);
+    assert_eq!(
+        counter_total(&counters, "davinci.s2_dom.files"),
+        None,
+        "comment-preserving compiles must stay on compatibility codegen"
     );
 }
 
@@ -128,8 +182,12 @@ fn counter(counters: &CounterSummary, name: &str) -> u64 {
         .total
 }
 
-fn has_counter(counters: &CounterSummary, name: &str) -> bool {
-    counters.entries.iter().any(|entry| entry.name == name)
+fn counter_total(counters: &CounterSummary, name: &str) -> Option<u64> {
+    counters
+        .entries
+        .iter()
+        .find(|entry| entry.name == name)
+        .map(|entry| entry.total)
 }
 
 fn lock_profiler() -> std::sync::MutexGuard<'static, ()> {

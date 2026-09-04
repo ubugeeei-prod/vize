@@ -14,7 +14,7 @@ use oxc_span::SourceType;
 use vize_s0::{Allocator, String};
 
 use super::compat::js_module_compatible;
-use super::globals::is_global_allowed;
+use super::globals::{is_generated_filter_helper, is_global_allowed};
 use super::rewrite::Retained;
 use super::scope::PrefixScope;
 use super::splice::splice_replacements;
@@ -114,7 +114,11 @@ impl IdentifierVisitor<'_> {
 impl Visit<'_> for IdentifierVisitor<'_> {
     fn visit_identifier_reference(&mut self, ident: &oxc_ast::ast::IdentifierReference<'_>) {
         let name = ident.name.as_str();
-        if self.is_local(name) || is_global_allowed(name) || self.scope.is_slot_param(name) {
+        if self.is_local(name)
+            || is_global_allowed(name)
+            || is_generated_filter_helper(name)
+            || self.scope.is_slot_param(name)
+        {
             return;
         }
         let start = (ident.span.start - self.offset) as usize;
@@ -159,7 +163,11 @@ impl Visit<'_> for IdentifierVisitor<'_> {
             && let oxc_ast::ast::PropertyKey::StaticIdentifier(ident) = &prop.key
         {
             let name = ident.name.as_str();
-            if self.is_local(name) || is_global_allowed(name) || self.scope.is_slot_param(name) {
+            if self.is_local(name)
+                || is_global_allowed(name)
+                || is_generated_filter_helper(name)
+                || self.scope.is_slot_param(name)
+            {
                 return;
             }
             let prefix = self.scope.codegen_prefix(name);

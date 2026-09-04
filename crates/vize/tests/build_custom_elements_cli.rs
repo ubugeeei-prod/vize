@@ -3,6 +3,7 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
+use vize_s0::cstr;
 
 const TRES_SCENE: &str = r#"<script setup lang="ts">
 import { TresCanvas } from '@tresjs/core'
@@ -23,12 +24,13 @@ fn temp_project_dir(test_name: &str) -> PathBuf {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    std::env::temp_dir().join(format!(
-        "vize-build-custom-elements-cli-{}-{}-{}",
-        std::process::id(),
-        test_name,
-        nonce
-    ))
+    std::env::temp_dir().join(
+        cstr!(
+            "vize-build-custom-elements-cli-{}-{test_name}-{nonce}",
+            std::process::id()
+        )
+        .as_str(),
+    )
 }
 
 fn write_project_file(root: &Path, path: &str, content: &str) {
@@ -39,19 +41,17 @@ fn write_project_file(root: &Path, path: &str, content: &str) {
     fs::write(file_path, content).unwrap();
 }
 
-fn output_details(output: &std::process::Output) -> String {
-    format!(
-        "stdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr)
-    )
+fn output_details(output: &std::process::Output) -> vize_s0::String {
+    let stdout = std::str::from_utf8(&output.stdout).unwrap_or("<non-utf8 stdout>");
+    let stderr = std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>");
+    cstr!("stdout:\n{}\nstderr:\n{}", stdout, stderr)
 }
 
 fn needle_count(source: &str, needle: &str) -> usize {
     source.match_indices(needle).count()
 }
 
-fn build_js(project_root: &Path, extra_args: &[&str]) -> String {
+fn build_js(project_root: &Path, extra_args: &[&str]) -> vize_s0::String {
     write_project_file(project_root, "src/Scene.vue", TRES_SCENE);
     let mut args = vec![
         "build",
@@ -68,7 +68,9 @@ fn build_js(project_root: &Path, extra_args: &[&str]) -> String {
         .output()
         .unwrap();
     assert!(output.status.success(), "{}", output_details(&output));
-    fs::read_to_string(project_root.join("dist/Scene.js")).unwrap()
+    fs::read_to_string(project_root.join("dist/Scene.js"))
+        .unwrap()
+        .into()
 }
 
 #[test]

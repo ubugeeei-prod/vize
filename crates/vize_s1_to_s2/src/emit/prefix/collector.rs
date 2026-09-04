@@ -21,7 +21,7 @@ use oxc_ast_visit::{
 use oxc_syntax::scope::ScopeFlags;
 use vize_s0::String;
 
-use super::globals::is_global_allowed;
+use super::globals::{is_generated_filter_helper, is_global_allowed};
 use super::scope::PrefixScope;
 
 pub(super) struct IdentifierCollector<'s, 'a> {
@@ -158,7 +158,7 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
 impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
     fn visit_identifier_reference(&mut self, ident: &oxc_ast_types::IdentifierReference<'_>) {
         let name = ident.name.as_str();
-        if self.is_local(name) {
+        if self.is_local(name) || is_generated_filter_helper(name) {
             return;
         }
         let start = self.at(ident.span.start);
@@ -281,7 +281,7 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
             && let oxc_ast_types::PropertyKey::StaticIdentifier(ident) = &prop.key
         {
             let name = ident.name.as_str();
-            if self.is_local(name) || is_global_allowed(name) {
+            if self.is_local(name) || is_global_allowed(name) || is_generated_filter_helper(name) {
                 return;
             }
             if self.scope.is_in_transform_scope(name) {

@@ -35,6 +35,10 @@ const V2_LITERAL_BATTERY: &[(&str, &str)] = &[
         "slot_outlet_prop_literal",
         r#"<slot :value="1 | formatId"></slot>"#,
     ),
+    (
+        "interpolation_mixed_text_literal",
+        "<div>USD {{ 1 | money }}</div>",
+    ),
 ];
 
 const V3_BATTERY: &[(&str, &str)] = &[("v3_bitwise_or", "<div>{{ message | capitalize }}</div>")];
