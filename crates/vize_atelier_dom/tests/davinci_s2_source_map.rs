@@ -1,5 +1,5 @@
 //! P2-11 witness: source-map requests retain their compatibility contract
-//! while normal DOM templates use the S2 backend.
+//! while profiled source-map-free DOM templates can use the S2 backend.
 
 #![allow(
     clippy::disallowed_macros,

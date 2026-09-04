@@ -15,9 +15,10 @@ legacy = ["vize_atelier_core/legacy"]
 vize_s0 = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_croquis = { workspace = true }
-# The shipped DOM renderer is the S2 backend. TypeScript expression erasure is
-# part of the public DOM option surface, so keep the stage library's opt-in
-# implementation available in the production graph.
+# Profiled source-map-free DOM compiles can render through the S2 backend.
+# TypeScript expression erasure is part of the public DOM option surface, so
+# keep the stage library's opt-in implementation available in the production
+# graph.
 vize_s1_to_s2 = { workspace = true, features = ["typescript"] }
 
 phf = { workspace = true }

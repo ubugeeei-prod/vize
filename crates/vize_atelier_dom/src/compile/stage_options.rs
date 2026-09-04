@@ -95,12 +95,16 @@ pub(super) fn s2_emit_supported(
         && !has_croquis
 }
 
+pub(super) fn s2_profile_enabled() -> bool {
+    global_profiler().is_enabled()
+}
+
 /// The published DOM option surface projected onto the S2 emitter.
 ///
 /// Keep this conversion beside the legacy parse/transform wiring: the public
-/// compiler still returns its AST and diagnostics, while S2 owns normal DOM
-/// emission. A field missing here must stay on the legacy source-map path
-/// rather than becoming an accidental S2 default.
+/// compiler still returns its AST and diagnostics, while S2 owns the profiled
+/// source-map-free traversal surface. A field missing here must stay on the
+/// compatibility path rather than becoming an accidental S2 default.
 pub(super) fn s2_emit_options<'a>(
     options: &'a DomCompilerOptions,
     codegen: &'a CodegenOptions,

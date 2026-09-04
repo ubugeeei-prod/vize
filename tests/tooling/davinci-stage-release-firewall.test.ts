@@ -56,7 +56,7 @@ test("Davinci stage crates are published before a production feature can select 
   }
 });
 
-test("DOM production depends on the published S2 renderer", () => {
+test("DOM production keeps the published S2 renderer available for profiling", () => {
   const dom = workspacePackage(metadata, "vize_atelier_dom");
   assert.deepEqual(dom.features, {
     legacy: ["vize_atelier_core/legacy"],
@@ -90,7 +90,7 @@ test("DOM production depends on the published S2 renderer", () => {
       rename: null,
       optional: false,
       // TypeScript templates are part of the public DOM compiler contract, so
-      // the production renderer enables the stage library's opt-in erasure.
+      // the profiled DOM renderer enables the stage library's opt-in erasure.
       features: ["typescript"],
     },
   ]);

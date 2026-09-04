@@ -8,7 +8,7 @@ import { metadata, repoRoot, workspacePackage } from "./support/davinci-stage-de
 
 const domStageDeps = new Set(["vize_davinci", "vize_s1_to_s2", "vize_s2"]);
 
-test("DOM compiler depends on the published S2 renderer", () => {
+test("DOM compiler keeps the published S2 renderer available for profiling", () => {
   const dependencies = workspacePackage(metadata, "vize_atelier_dom").dependencies;
   const productionStageDeps = dependencies
     .filter((dependency) => dependency.kind === null && domStageDeps.has(dependency.name))

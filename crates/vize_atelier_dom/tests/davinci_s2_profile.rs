@@ -1,5 +1,5 @@
-//! P2-12b witness: profile counters describe the S2 emitter that produced the
-//! normal DOM output, rather than a separately planned legacy pipeline.
+//! P2-12b witness: profile counters describe the S2 emitter used by the
+//! profiled source-map-free DOM output.
 
 #![allow(
     clippy::disallowed_macros,
