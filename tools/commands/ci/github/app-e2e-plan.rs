@@ -227,12 +227,18 @@ fn full_rows() -> Vec<Row> {
     ]
 }
 
+/// The shared local-package prelude now runs before the row (see the
+/// "Build local Vize packages" step), so a row pays only for its own
+/// fixture setup and work. `check` and `lint` still carry misskey's
+/// workspace builds inside them, which a release commit lands on a cold
+/// cache; both are sized for that, the rest for the warm path they
+/// already meet.
 #[rustfmt::skip]
 fn readiness_rows() -> Vec<Row> {
     vec![
-        row("readiness", "readiness", "check", "test:readiness:check", READINESS_FIXTURES, false, "8m"),
+        row("readiness", "readiness", "check", "test:readiness:check", READINESS_FIXTURES, false, "15m"),
         row("readiness", "readiness", "check-vuefes", "test:readiness:check:vuefes", &["vuefes-2025"], false, "2m"),
-        row("readiness", "readiness", "lint", "test:readiness:lint", READINESS_FIXTURES, false, "5m"),
+        row("readiness", "readiness", "lint", "test:readiness:lint", READINESS_FIXTURES, false, "12m"),
         row("readiness", "readiness", "build", "test:readiness:build", &["elk"], false, "3m"),
         row("readiness", "readiness", "dev-misskey", "test:readiness:dev:misskey", &["misskey"], true, "8m"),
         row("readiness", "readiness", "dev-nuxt-ui", "test:readiness:dev:nuxt-ui", &["nuxt-ui"], true, "8m"),
