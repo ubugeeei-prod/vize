@@ -250,7 +250,29 @@ test("shared row action validates the plan and never parallelizes fixture proces
     hydration.run ?? "",
     /git submodule update --init --recursive --depth 1 -- "\$\{fixture_paths\[@\]\}"/,
   );
+  const install = namedStep({ steps: action.runs?.steps }, "Install JavaScript dependencies");
+  assert.match(install.run ?? "", /--filter '\.\/npm\/oxlint\.\.\.'/);
+  const build = namedStep({ steps: action.runs?.steps }, "Build local Vize packages");
+  assert.match(build.run ?? "", /run-many\.rs/);
+  for (const packagePath of [
+    "./npm/cli",
+    "./npm/builder/vite",
+    "./npm/framework/nuxt-lint-config",
+    "./npm/oxlint",
+    "./npm/builder/vite-musea",
+    "./npm/framework/nuxt",
+    "./npm/framework/musea-nuxt",
+  ]) {
+    assert.match(
+      build.run ?? "",
+      new RegExp(`vp run --filter '${packagePath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}' build`),
+    );
+  }
   const run = namedStep({ steps: action.runs?.steps }, "Run planned App E2E row");
+  assert.ok(
+    action.runs?.steps && action.runs.steps.indexOf(build) < action.runs.steps.indexOf(run),
+    "local Vize packages must be built before the row timeout starts",
+  );
   assert.equal(run["continue-on-error"], true);
   assert.doesNotMatch(run.run ?? "", /VIZE_BATCH_CHECK_BUDGET_SCALE/);
   assert.equal(run.env?.VIZE_BATCH_CHECK_BUDGET_SCALE, undefined);
