@@ -2,7 +2,7 @@
   "schemaVersion": 8,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
-    "minimumProjectCount": 17,
+    "minimumProjectCount": 18,
     "trackingIssue": 3952
   },
   "projects": [
@@ -3543,6 +3543,164 @@
         "syntax-highlighter",
         "lsp"
       ],
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "src/components/splitpanes/pane.vue",
+          "symbol": "styles",
+          "usageAnchor": ":style=\"styles\"",
+          "declarationAnchor": "const styles = computed(() => {",
+          "hoverContains": ["const styles: string"],
+          "renameTo": "__vizeRenamedStyles"
+        },
+        "componentBoundary": {
+          "importerFile": "src/views/documentation.vue",
+          "componentFile": "src/components/highlight-message.vue",
+          "tagName": "highlight-message",
+          "tagAnchor": "    &lt;/splitpanes&gt;\n\n  highlight-message",
+          "completionItemCount": 31,
+          "completionItems": [
+            {
+              "label": "v-if",
+              "rank": 0
+            },
+            {
+              "label": "v-else-if",
+              "rank": 1
+            },
+            {
+              "label": "v-else",
+              "rank": 2
+            },
+            {
+              "label": "v-for",
+              "rank": 3
+            },
+            {
+              "label": "v-on",
+              "rank": 4
+            },
+            {
+              "label": "v-bind",
+              "rank": 5
+            },
+            {
+              "label": "v-model",
+              "rank": 6
+            },
+            {
+              "label": "v-slot",
+              "rank": 7
+            },
+            {
+              "label": "v-show",
+              "rank": 8
+            },
+            {
+              "label": "v-pre",
+              "rank": 9
+            },
+            {
+              "label": "v-once",
+              "rank": 10
+            },
+            {
+              "label": "v-memo",
+              "rank": 11
+            },
+            {
+              "label": "v-cloak",
+              "rank": 12
+            },
+            {
+              "label": "v-text",
+              "rank": 13
+            },
+            {
+              "label": "v-html",
+              "rank": 14
+            },
+            {
+              "label": "@",
+              "rank": 15
+            },
+            {
+              "label": ":",
+              "rank": 16
+            },
+            {
+              "label": "#",
+              "rank": 17
+            },
+            {
+              "label": "@click",
+              "rank": 18
+            },
+            {
+              "label": "@input",
+              "rank": 19
+            },
+            {
+              "label": "@change",
+              "rank": 20
+            },
+            {
+              "label": "@submit",
+              "rank": 21
+            },
+            {
+              "label": "@keydown",
+              "rank": 22
+            },
+            {
+              "label": "@keyup",
+              "rank": 23
+            },
+            {
+              "label": "@focus",
+              "rank": 24
+            },
+            {
+              "label": "@blur",
+              "rank": 25
+            },
+            {
+              "label": "@mouseenter",
+              "rank": 26
+            },
+            {
+              "label": "@mouseleave",
+              "rank": 27
+            },
+            {
+              "label": "tag",
+              "rank": 28
+            },
+            {
+              "label": "type",
+              "rank": 29
+            },
+            {
+              "label": "no-icon",
+              "rank": 30
+            }
+          ],
+          "dependencyEdit": {
+            "anchor": "  noIcon: { type: Boolean, default: false }\n",
+            "replacement": "  noIcon: { type: Boolean, default: false },\n  vizeOracleProbe: { type: Boolean, default: false }\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "src/components/__VizeOracleHighlightMessage.vue",
+          "renamedFile": "src/components/__VizeOracleRenamedHighlightMessage.vue",
+          "originalImportSpecifier": "@/components/highlight-message.vue",
+          "copiedImportSpecifier": "@/components/__VizeOracleHighlightMessage.vue",
+          "renamedImportSpecifier": "@/components/__VizeOracleRenamedHighlightMessage.vue",
+          "markerInsertionAnchor": "<script setup>\n",
+          "markerSymbol": "__vizeSplitpanesHighlightMessageMarker__",
+          "requireDeletedImportDiagnostic": false
+        }
+      },
       "diff": "curator-compare"
     },
     {
