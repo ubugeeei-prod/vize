@@ -14,7 +14,7 @@
 
 #[path = "../../../support/common.rs"]
 mod common;
-#[path = "release-preflight-matrix-evidence.rs"]
+#[path = "../../../support/release/preflight_matrix_evidence.rs"]
 mod matrix_evidence;
 
 use regex::Regex;
