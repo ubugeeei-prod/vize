@@ -205,18 +205,6 @@ async fn run_app() -> Int {
   }
 
   if dry_run {
-    let package_args = ["package", "--locked", "--no-verify"]
-    for crate_name in publish_targets {
-      package_args.push("-p")
-      package_args.push(crate_name)
-    }
-    let plan_label = if selected_crates.is_empty() { "complete supported" } else { "selected" }
-    println("Packaging the \{plan_label} crate plan for v\{version}...")
-    if @process.run("cargo", package_args) != 0 {
-      @stdio.stderr.write("Crate package validation failed for v\{version}.\n")
-      return 1
-    }
-
     let mut frontier : String? = None
     for crate_name in publish_targets {
       match query_crate_version(crate_name, version) {
@@ -259,7 +247,7 @@ async fn run_app() -> Int {
       return 1
     }
     println(
-      "Package validation covered all supported crates; registry dry-run covered \{frontier}.",
+      "Registry dry-run covered \{frontier}; downstream crates are validated after each serial publish step.",
     )
     return 0
   }

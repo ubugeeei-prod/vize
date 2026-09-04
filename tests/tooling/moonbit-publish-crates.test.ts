@@ -126,7 +126,7 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
         "const args = process.argv.slice(2);",
         "fs.appendFileSync(process.env.CARGO_LOG, args.join(' ') + '\\n');",
         "const [command] = args;",
-        "if (command === 'package' && process.env.TEST_FAIL_PACKAGE) process.exit(1);",
+        "if (command === 'publish' && args.includes('--dry-run') && process.env.TEST_FAIL_PUBLISH_DRY_RUN) process.exit(1);",
         "const unresolved = (process.env.TEST_UNRESOLVED_CRATES || '').split(',');",
         "if (command === 'info' && unresolved.includes(args.at(-1).split('@')[0])) { console.error('not in registry index'); process.exit(1); }",
         "if (command === 'package' || command === 'publish' || command === 'info') process.exit(0);",
@@ -186,12 +186,6 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
         },
       });
     };
-    const expectedPackage = [
-      "package",
-      "--locked",
-      "--no-verify",
-      ...publishedCrates.flatMap((name) => ["-p", name]),
-    ].join(" ");
     const expectedFrontier = (crateName: string) =>
       ["publish", "--dry-run", "--locked", "-p", crateName].join(" ");
     const expectedInfo = (crateName: string) => `info --registry crates-io ${crateName}@${version}`;
@@ -199,7 +193,6 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
     const nonePublished = runDryRun([]);
     assert.equal(nonePublished.status, 0, nonePublished.stderr);
     assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
-      expectedPackage,
       expectedFrontier(publishedCrates[0]),
     ]);
     const curlCalls = fs.readFileSync(curlLogPath, "utf8").trim().split("\n");
@@ -221,7 +214,6 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
     const partial = runDryRun(somePublished);
     assert.equal(partial.status, 0, partial.stderr);
     assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
-      expectedPackage,
       ...somePublished.map(expectedInfo),
       expectedFrontier(publishedCrates[5]),
     ]);
@@ -231,10 +223,10 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
 
     const allPublished = runDryRun(publishedCrates);
     assert.equal(allPublished.status, 0, allPublished.stderr);
-    assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
-      expectedPackage,
-      ...publishedCrates.map(expectedInfo),
-    ]);
+    assert.deepEqual(
+      fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"),
+      publishedCrates.map(expectedInfo),
+    );
     assert.match(allPublished.stdout, /Every crate .* already published and resolvable/);
 
     for (const [envName, diagnostic] of [
@@ -246,7 +238,7 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       const failedQuery = runDryRun([], { [envName]: publishedCrates[0] });
       assert.notEqual(failedQuery.status, 0);
       assert.match(failedQuery.stderr, diagnostic);
-      assert.equal(fs.readFileSync(cargoLogPath, "utf8").trim(), expectedPackage);
+      assert.equal(fs.readFileSync(cargoLogPath, "utf8"), "");
       assert.equal(fs.readFileSync(curlLogPath, "utf8").trim().split("\n").length, 1);
     }
 
@@ -255,10 +247,10 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
     });
     assert.notEqual(unresolvedPrefix.status, 0);
     assert.match(unresolvedPrefix.stderr, /could not resolve .*vize_davinci/i);
-    assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
-      expectedPackage,
-      ...somePublished.slice(0, 3).map(expectedInfo),
-    ]);
+    assert.deepEqual(
+      fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"),
+      somePublished.slice(0, 3).map(expectedInfo),
+    );
     assert.equal(fs.readFileSync(curlLogPath, "utf8").trim().split("\n").length, 3);
 
     const unresolvedAll = runDryRun(publishedCrates, {
@@ -274,11 +266,16 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
     );
     assert.doesNotMatch(unresolvedAllCargo, /^publish --dry-run/m);
 
-    const packageFailure = runDryRun([], { TEST_FAIL_PACKAGE: "1" });
-    assert.notEqual(packageFailure.status, 0);
-    assert.match(packageFailure.stderr, /Crate package validation failed/);
-    assert.equal(fs.readFileSync(cargoLogPath, "utf8").trim(), expectedPackage);
-    assert.equal(fs.readFileSync(curlLogPath, "utf8"), "");
+    const frontierFailure = runDryRun([], { TEST_FAIL_PUBLISH_DRY_RUN: "1" });
+    assert.notEqual(frontierFailure.status, 0);
+    assert.match(frontierFailure.stderr, /Crate publish dry-run failed/);
+    assert.equal(
+      fs.readFileSync(cargoLogPath, "utf8").trim(),
+      expectedFrontier(publishedCrates[0]),
+    );
+    const frontierCurlLog = fs.readFileSync(curlLogPath, "utf8").trim();
+    assert.notEqual(frontierCurlLog, "");
+    assert.equal(frontierCurlLog.split("\n").length, 1);
 
     for (const invalidArgs of [["--unknown"], ["--dry-run", "extra"]]) {
       fs.writeFileSync(cargoLogPath, "");
