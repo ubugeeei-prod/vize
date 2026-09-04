@@ -811,7 +811,7 @@ function setupMisskeyWorktree(opts?: {
       PUPPETEER_SKIP_DOWNLOAD: "1",
     },
     ignoreScripts: true,
-    timeout: 300_000,
+    timeout: 900_000,
   });
 
   ensureMisskeyFluentEmojiAssets(misskeyDir);
