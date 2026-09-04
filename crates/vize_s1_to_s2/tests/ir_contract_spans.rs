@@ -7,6 +7,8 @@ use std::fs;
 
 use davinci_test_support::surface_fixture as battery;
 use support::{assert_folio_spans_resolve, with_lowered, with_transformed};
+use vize_s0::{Allocator, SourceRoot, Span, String};
+use vize_s2::folio::{DisegnoFolio, FolioExpr, FolioInterpolation, FolioOp};
 
 #[test]
 fn owned_folio_spans_resolve_for_committed_battery() {
@@ -53,4 +55,39 @@ fn owned_folio_spans_resolve_for_optional_corpus() {
         sweep.files.len(),
         checked
     );
+}
+
+#[test]
+fn owned_folio_expression_sources_resolve_through_sfc_block_offsets() {
+    let source = "é prefix\n<template><p :id=\"item.id\">{{ item.name }}</p></template>";
+    let template_start = source.find("<p").expect("template body starts");
+    let template_end = source.find("</template>").expect("template closes");
+    let template = &source[template_start..template_end];
+    let root = SourceRoot::new(source).expect("source is small");
+    let block = root
+        .block(template, template_start as u32)
+        .expect("template block is an authored slice");
+
+    let allocator = Allocator::new();
+    let (tree, errors) = vize_s1::parse(&allocator, template);
+    let lowered = vize_s1_to_s2::lower_source_block(&allocator, &tree, &errors, block);
+    let folio = DisegnoFolio::of(&lowered.root.ops);
+
+    assert_folio_spans_resolve(source, &folio, "sfc-block-expression-slices");
+}
+
+#[test]
+#[should_panic(expected = "expression source is not authored")]
+fn owned_folio_rejects_same_length_expression_source_mismatches() {
+    let folio = DisegnoFolio {
+        ops: vec![FolioOp::Interpolation(FolioInterpolation {
+            expression: FolioExpr::Js {
+                source: String::from("y"),
+                span: Span::new(3, 4),
+            },
+            span: Span::new(0, 7),
+        })],
+    };
+
+    assert_folio_spans_resolve("{{ x }}", &folio, "corrupt-expression-source");
 }

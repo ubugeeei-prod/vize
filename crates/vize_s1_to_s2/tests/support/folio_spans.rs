@@ -2,6 +2,7 @@
 //! S2 folio must resolve against the authored source.
 
 use vize_s0::{SourceRoot, Span};
+use vize_s2::expr::OpaqueReason;
 use vize_s2::folio::{
     DisegnoFolio, FolioAttribute, FolioBinding, FolioExpr, FolioForBinding, FolioName, FolioOp,
 };
@@ -184,12 +185,43 @@ fn assert_for_binding(
 
 fn assert_expr(source: &str, root: SourceRoot<'_>, expr: &FolioExpr, context: &str) {
     match expr {
-        FolioExpr::Js { span, .. }
-        | FolioExpr::Foreign { span, .. }
-        | FolioExpr::Opaque { span, .. }
-        | FolioExpr::Filter { span, .. } => {
-            assert_span(source, root, *span, "expression", context);
+        FolioExpr::Js {
+            source: expr_source,
+            span,
         }
+        | FolioExpr::Foreign {
+            source: expr_source,
+            span,
+            ..
+        }
+        | FolioExpr::Filter {
+            source: expr_source,
+            span,
+        } => {
+            assert_span(source, root, *span, "expression", context);
+            assert_expr_source(source, *span, expr_source.as_str(), context);
+        }
+        FolioExpr::Opaque {
+            reason,
+            source: expr_source,
+            span,
+        } => {
+            assert_span(source, root, *span, "expression", context);
+            if *reason != OpaqueReason::Compound {
+                assert_expr_source(source, *span, expr_source.as_str(), context);
+            }
+        }
+    }
+}
+
+fn assert_expr_source(source: &str, span: Span, expr_source: &str, context: &str) {
+    let slice = exact_slice(source, span);
+    if slice.len() == expr_source.len() {
+        assert_eq!(
+            slice, expr_source,
+            "expression source is not authored at @{}:{}: {context}",
+            span.start, span.end
+        );
     }
 }
 
@@ -201,4 +233,8 @@ fn assert_span(source: &str, root: SourceRoot<'_>, span: Span, label: &str, cont
         span.end,
         source.len()
     );
+}
+
+fn exact_slice(source: &str, span: Span) -> &str {
+    &source[span.start as usize..span.end as usize]
 }
