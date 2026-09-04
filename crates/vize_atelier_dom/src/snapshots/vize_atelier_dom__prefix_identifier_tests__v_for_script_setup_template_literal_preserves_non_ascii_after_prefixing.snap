@@ -1,0 +1,9 @@
+---
+source: crates/vize_atelier_dom/src/prefix_identifier_tests.rs
+expression: result.code.as_str()
+---
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => {
+    return _createElementVNode("span", { title: `➕ ${$setup.n}` }, null, 8 /* PROPS */, ["title"])
+  }), 64 /* STABLE_FRAGMENT */))
+}
