@@ -1,5 +1,6 @@
 //! Shared config model.
 
+mod compatibility;
 mod compiler;
 mod entries;
 mod experimentals;
@@ -40,13 +41,6 @@ pub use linter_rule_options::{
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};
-
-/// Legacy top-level compatibility aliases accepted by older config examples.
-#[derive(Debug, Clone, Default, Deserialize)]
-#[serde(default, rename_all = "camelCase")]
-pub(crate) struct RawCompatibilityConfig {
-    pub(crate) vue_version: Option<vue::VueVersion>,
-}
 
 /// Effective shared configuration.
 #[derive(Debug, Clone, Default, Serialize)]
@@ -186,7 +180,7 @@ pub(crate) struct RawVizeConfig {
     pub dialect: Option<VueDialect>,
     pub formatter: FormatterConfig,
     pub(crate) compiler: RawCompilerConfig,
-    pub(crate) compatibility: RawCompatibilityConfig,
+    pub(crate) compatibility: compatibility::RawCompatibilityConfig,
     pub(crate) experimentals: RawExperimentalsConfig,
     pub(crate) vue: RawVueConfig,
     pub linter: RawLinterConfig,
