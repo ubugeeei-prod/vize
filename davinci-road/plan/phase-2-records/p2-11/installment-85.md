@@ -20,6 +20,6 @@ entity-decoded, interpolations trimmed, `modelValue` trimmed and the native
 
 The allocation gate caught the first shape at 73 against a budget of 60: the
 scope stacks and `prefix_slot_defaults` ran unconditionally. The prefix-only
-bookkeeping is gated on the option, `RawJs::Borrowed` carries text nothing
-rewrote, and the default lane's remaining membership questions are answered
+bookkeeping is gated on the option, `RawJs::Borrowed` carries the authored text
+unchanged when no rewrite fires, and the default lane's remaining membership questions are answered
 without allocating (`destructure_params_contain`).

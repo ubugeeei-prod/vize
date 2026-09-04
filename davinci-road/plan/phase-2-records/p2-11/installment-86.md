@@ -16,7 +16,9 @@ aliases project through `rewrite_props_aliases`; a component tag resolves
 exact, camelized or PascalCased to `$setup.Name`, with props only as a
 fallback and a dotted suffix kept; a `vFoo` directive reads
 `$setup["vFoo"]`; an Options API handler is the guarded `(...args) =>`
-reference; and module mode takes the six-argument render signature.
+reference; and module mode takes the six-argument render
+signature once bindings are present (installment 84 pinned its
+binding-free `export function render(_ctx, _cache)` form).
 
 **The shipped lane is asymmetric here**, and the port has to be too: the
 transform skips `resolveComponent` on a _verbatim_ tag match while the codegen
