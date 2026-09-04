@@ -143,6 +143,7 @@ jobs:
           cache: true
           run-install: false
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-script
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Audit production npm dependencies
@@ -153,7 +154,6 @@ jobs:
           tool: cargo-audit
       - name: Audit Rust dependencies
         run: cargo audit --deny warnings
-
   node-engine-compat:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
