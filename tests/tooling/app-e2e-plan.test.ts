@@ -98,7 +98,7 @@ test("full and readiness plans preserve every isolated execution row", () => {
   );
   assert.equal(
     readinessRows.find((row) => row.shard === "check")?.timeout,
-    "15m",
+    "25m",
     "cold readiness check rows must finish on Blacksmith without timing out",
   );
   assert.equal(readinessRows.find((row) => row.shard === "dev-misskey")?.timeout, "8m");

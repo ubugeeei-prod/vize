@@ -236,7 +236,7 @@ fn full_rows() -> Vec<Row> {
 #[rustfmt::skip]
 fn readiness_rows() -> Vec<Row> {
     vec![
-        row("readiness", "readiness", "check", "test:readiness:check", READINESS_FIXTURES, false, "15m"),
+        row("readiness", "readiness", "check", "test:readiness:check", READINESS_FIXTURES, false, "25m"),
         row("readiness", "readiness", "check-vuefes", "test:readiness:check:vuefes", &["vuefes-2025"], false, "2m"),
         row("readiness", "readiness", "lint", "test:readiness:lint", READINESS_FIXTURES, false, "20m"),
         row("readiness", "readiness", "build", "test:readiness:build", &["elk"], false, "3m"),

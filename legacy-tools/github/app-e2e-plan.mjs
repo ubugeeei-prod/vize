@@ -79,7 +79,7 @@ export const fullAppE2eRows = [
 ];
 
 export const readinessRows = [
-  row("readiness", "readiness", "check", "test:readiness:check", readinessFixtures, false, "15m"),
+  row("readiness", "readiness", "check", "test:readiness:check", readinessFixtures, false, "25m"),
   row(
     "readiness",
     "readiness",
