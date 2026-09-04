@@ -18,6 +18,8 @@ use compiler::RawCompilerConfig;
 use experimentals::RawExperimentalsConfig;
 use vue::RawVueConfig;
 
+use crate::String;
+use crate::dialect::VueDialect;
 pub use compiler::{JsxCompat, JsxMode};
 pub(crate) use entries::RawConfigEntry;
 pub use entries::{
@@ -25,9 +27,6 @@ pub use entries::{
     LinterConfigPlanWithConfigRuleOptions, LinterConfigPlanWithRuleOptions, ResolvedLinterConfig,
     ResolvedLinterConfigWithConfigRuleOptions,
 };
-
-use crate::String;
-use crate::dialect::VueDialect;
 pub use formatter::{
     ArrowParens, AttributeSortOrder, EndOfLine, FormatterConfig, QuoteProps, TrailingComma,
 };
