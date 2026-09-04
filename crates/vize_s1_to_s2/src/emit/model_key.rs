@@ -1,7 +1,7 @@
 //! Object key spelling for component `ui.model` product props.
 
 use oxc_ast::ast as js;
-use vize_s0::{Span, String, camelize};
+use vize_s0::{Span, String, ToCompactString, camelize};
 use vize_s2::expr::{ExprRef, JsExpr};
 use vize_s2::op::ModelOp;
 
@@ -44,7 +44,34 @@ pub(super) fn emit_update(
 ) -> Result<(), EmitError> {
     emit_update_key(cx, key)?;
     cx.buf.push(": ");
-    emit_assignment(cx, model, source)
+    emit_cached_assignment(cx, model, source)
+}
+
+/// The synthesized `onUpdate:` assignment is an inline handler, so
+/// `cache_handlers` hoists it into the same `_cache` array the authored
+/// ones use. Shared with the merged-handler array, where a `v-model` and
+/// an authored listener on the same key both take a slot.
+pub(super) fn emit_cached_assignment(
+    cx: &mut EmitCx<'_>,
+    model: &ModelOp<'_>,
+    source: &str,
+) -> Result<(), EmitError> {
+    let cached = cx.caches_handlers();
+    if cached {
+        let index = cx.once_cache_index;
+        cx.once_cache_index += 1;
+        let index = index.to_compact_string();
+        cx.buf.push("_cache[");
+        cx.buf.push(index.as_str());
+        cx.buf.push("] || (_cache[");
+        cx.buf.push(index.as_str());
+        cx.buf.push("] = ");
+    }
+    emit_assignment(cx, model, source)?;
+    if cached {
+        cx.buf.push(")");
+    }
+    Ok(())
 }
 
 pub(super) fn emit_modifiers(

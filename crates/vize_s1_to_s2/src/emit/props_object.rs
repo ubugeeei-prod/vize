@@ -242,7 +242,11 @@ pub(super) fn pieces_have_static_attr(pieces: &[Piece<'_>], name: &str) -> bool 
 /// value — so `@click=" go "` is an inline handler by its spaces alone.
 fn pieces_have_inline_on(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
     pieces.iter().any(|piece| match piece {
-        Piece::On(event) => on::forces_inline_on(event)
+        // `has_inline_handler`'s first arm: a handler the lane will cache
+        // spells a `_cache[n] || (…)` slot, which the shipped layout
+        // always breaks onto its own line.
+        Piece::On(event) => on::caches_handler(cx, event)
+            || on::forces_inline_on(event)
             || matches!(event.handler, Some(ExprRef::Js(js)) if on::is_inline_handler_source(
                 super::prefix::node_content(cx.source, js.source, js.span).text.as_str()
             ))

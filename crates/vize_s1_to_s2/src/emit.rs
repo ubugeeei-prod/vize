@@ -51,6 +51,7 @@ mod create_slots;
 mod create_slots_walk;
 mod cx;
 mod directive;
+mod dispatch;
 mod entity;
 mod entry;
 mod error;
@@ -115,6 +116,7 @@ pub use self::budget::{
     emit_dom_source_observed_with_options, emit_dom_source_with_caps_observed,
 };
 use self::buf::Buf;
+use self::dispatch::{emit_for_item_call, emit_for_op, emit_if_branch_call, emit_if_op};
 pub use self::entry::{
     DomEmit, emit_dom_source, emit_dom_source_with_caps, emit_dom_source_with_options,
 };
@@ -122,37 +124,6 @@ pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
 use self::fragment::emit_root;
 use self::helper::Helper;
 pub use self::options::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
-
-fn emit_if_op(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Result<(), EmitError> {
-    vif::emit_if(cx, if_op, id)
-}
-
-fn emit_if_branch_call(
-    cx: &mut EmitCx<'_>,
-    element: &ElementOp<'_>,
-    key: &str,
-) -> Result<(), EmitError> {
-    vnode::emit_if_branch_element(cx, element, key)
-}
-
-fn emit_for_op(
-    cx: &mut EmitCx<'_>,
-    for_op: &ForOp<'_>,
-    id: Option<NodeId>,
-    fragment_key: Option<&str>,
-) -> Result<(), EmitError> {
-    vfor::emit_for(cx, for_op, id, fragment_key)
-}
-
-fn emit_for_item_call(
-    cx: &mut EmitCx<'_>,
-    element: &ElementOp<'_>,
-    id: Option<NodeId>,
-    stable: bool,
-    key: Option<&str>,
-) -> Result<(), EmitError> {
-    vfor_item::emit_element(cx, element, id, stable, key)
-}
 
 /// Per-emit numbering + helper buffer. Page-order ids re-derive the
 /// same arithmetic the S2 passes use so compound text facts resolve.
@@ -215,6 +186,8 @@ struct EmitCx<'facts> {
     prefix_identifiers: bool,
     /// The shipped lane's `is_ts`: expressions are type-erased first.
     is_ts: bool,
+    /// The shipped lane's `cache_handlers`.
+    cache_handlers: bool,
     /// The op-visit count at which prefixing first needed `_unref`
     /// (`u32::MAX`: never) — where the transform would register it.
     used_unref: core::cell::Cell<u32>,
@@ -289,6 +262,7 @@ fn emit_dom_with_emit_budget<'f>(
         parent_ns: Namespace::Html,
         prefix_identifiers: options.prefix_identifiers,
         is_ts: options.is_ts,
+        cache_handlers: options.cache_handlers,
         used_unref: core::cell::Cell::new(u32::MAX),
         component_name: options.component_name,
         scope: prefix::PrefixScope::new(

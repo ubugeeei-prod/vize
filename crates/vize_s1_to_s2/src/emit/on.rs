@@ -11,6 +11,7 @@ use vize_s0::{SmallVec, String, camelize, capitalize};
 use vize_s2::expr::{ExprRef, OpaqueReason};
 use vize_s2::op::{DynamicName, OnOp};
 pub(super) use wrapped::emit_wrapped_handler;
+pub(super) use wrapped::needs_handler_cache as caches_handler;
 
 use super::{EmitCx, EmitError, UnsupportedReason as Reason};
 

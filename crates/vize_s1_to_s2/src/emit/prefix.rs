@@ -214,6 +214,7 @@ pub(super) fn prefix_handler(
     scope: &PrefixScope<'_>,
     content: &Content<'_>,
     js: Option<&JsExpr<'_>>,
+    for_caching: bool,
 ) -> Result<Prefixed, Refused> {
     let retained = content.retained(js);
     let processed = handler::process_inline_handler(content.text.as_str(), retained, scope);
@@ -221,7 +222,7 @@ pub(super) fn prefix_handler(
         return Err(Refused);
     }
     Ok(Prefixed {
-        text: handler::finish_event_handler(processed.code, scope),
+        text: handler::finish_event_handler(processed.code, scope, for_caching),
         used_unref: processed.used_unref,
     })
 }
