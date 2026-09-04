@@ -229,6 +229,32 @@ test("dependency prepare skips empty typecheck shards", () => {
   }
 });
 
+test("dependency prepare shards the full fixture registry before filtering typecheck targets", () => {
+  const fixture = setup();
+  try {
+    writeJson(fixture.registryPath, {
+      projects: [
+        { ...fixture.project, id: "padding", typecheckPerformance: { enabled: false } },
+        fixture.project,
+      ],
+    });
+    git(fixture.fixtureRoot, ["add", "registry.json"]);
+    commit(fixture.fixtureRoot, "align typecheck shard selection");
+
+    const empty = run(fixture, ["--shard-index", "0", "--shard-count", "2"]);
+    assert.equal(empty.status, 0, empty.stderr);
+    assert.match(empty.stdout, /No typecheck performance projects selected/);
+    assert.equal(fs.existsSync(fixture.invocationPath), false);
+    assert.equal(fs.existsSync(artifactPath(fixture)), false);
+
+    const selected = run(fixture, ["--shard-index", "1", "--shard-count", "2"]);
+    assert.equal(selected.status, 0, selected.stderr);
+    assert.equal(fs.existsSync(artifactPath(fixture)), true);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("dependency prepare prepares every selected typecheck target", () => {
   const selectedFixture = setup();
   try {

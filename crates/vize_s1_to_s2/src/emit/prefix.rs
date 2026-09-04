@@ -16,7 +16,7 @@ mod aliases;
 mod codegen_visitor;
 mod collector;
 mod compat;
-mod globals;
+pub(in crate::emit) mod globals;
 mod handler;
 mod params;
 mod rewrite;

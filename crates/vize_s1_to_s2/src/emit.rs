@@ -46,6 +46,7 @@ mod buf;
 mod builtin;
 mod children;
 mod component;
+mod constant_expr;
 mod create_slots;
 mod create_slots_walk;
 mod cx;
@@ -103,7 +104,7 @@ use vize_davinci::diagnostic::Severity;
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
 use vize_s0::String;
-use vize_s2::op::{ElementOp, ForOp, IfOp, Namespace};
+use vize_s2::op::Namespace;
 use vize_s2::scope::ScopeFacts;
 
 use crate::lower::{ForWrapper, Lowered, WrapperKeys};

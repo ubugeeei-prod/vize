@@ -44,11 +44,16 @@ pub(super) fn children_need_text_flag(cx: &EmitCx<'_>, children: &Region<'_>) ->
     }
     let mut any_interp = false;
     let mut all_constant = true;
+    // The children have not been walked yet, so their ids come from a
+    // clone: a text-run op mints exactly one and carries no bindings or
+    // children of its own.
+    let mut walk = cx.walk.clone();
     for op in ops.iter() {
+        let id = walk.mint();
         match op {
             Op::Interpolation(interp) => {
                 any_interp = true;
-                all_constant &= cx.reads_constant_binding(&interp.expression);
+                all_constant &= interpolation_is_constant(cx, interp, id);
             }
             Op::Text(_) => {}
             _ => return false,
@@ -59,6 +64,32 @@ pub(super) fn children_need_text_flag(cx: &EmitCx<'_>, children: &Region<'_>) ->
     // an inlined render function ever sees such a bare name — everywhere
     // else the transform has already written `$setup.` in front of it.
     any_interp && !all_constant
+}
+
+/// `is_constant_interpolation` over one interpolation op. The shipped
+/// lane asks it of every interpolation *child* of the element; S2 folds
+/// a text run into a single compound op, so the compound shape answers
+/// per dynamic part instead of over the joined source, which never
+/// names a binding.
+fn interpolation_is_constant(
+    cx: &EmitCx<'_>,
+    interp: &InterpolationOp<'_>,
+    id: Option<NodeId>,
+) -> bool {
+    if !matches!(
+        interp.expression,
+        ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound
+    ) {
+        return cx.reads_constant_binding(&interp.expression);
+    }
+    let Some(facts) = id.and_then(|id| cx.facts.text_facts.get(id)) else {
+        return false;
+    };
+    facts
+        .parts
+        .iter()
+        .filter(|part| part.dynamic)
+        .all(|part| cx.reads_constant_binding_name(part.text.as_str().trim()))
 }
 
 pub(super) fn emit_interpolation(

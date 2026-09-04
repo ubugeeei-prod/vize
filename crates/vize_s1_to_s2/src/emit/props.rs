@@ -194,12 +194,9 @@ pub(super) fn bind_patch(
                 let Ok(key) = event_key_for(on, !is_component) else {
                     continue;
                 };
-                // `is_const_handler` / `handler_is_cached`: a handler that
-                // is just a constant binding never changes, and a cached
-                // one is created once — neither is a patch target. The
-                // cache rule reads the option alone, without the
-                // const-reference carve-out `needs_von_handler_cache`
-                // applies to the emission itself.
+                // Constant and cached handlers are both created outside this patch path. The
+                // cache rule reads only the option, without the const-reference carve-out used by
+                // `needs_von_handler_cache`.
                 if !handler_is_constant(on, constant_handler)
                     && !(caches_handlers && on.handler.is_some())
                 {

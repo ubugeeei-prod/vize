@@ -3341,17 +3341,20 @@ fn select_typecheck_projects<'a>(
         .ok_or_else(|| "registry must list projects".to_string())?;
     Ok(projects
         .iter()
-        .filter(|project| {
-            project
-                .pointer("/typecheckPerformance/enabled")
-                .and_then(Value::as_bool)
-                == Some(true)
-        })
         .enumerate()
         .filter_map(|(index, project)| {
-            (index % args.shard_count == args.shard_index).then_some(project)
+            (index % args.shard_count == args.shard_index
+                && has_enabled_typecheck_performance(project))
+            .then_some(project)
         })
         .collect())
+}
+
+fn has_enabled_typecheck_performance(project: &Value) -> bool {
+    project
+        .pointer("/typecheckPerformance/enabled")
+        .and_then(Value::as_bool)
+        == Some(true)
 }
 
 fn validate_performance(project: &Value) -> Result<(), String> {
