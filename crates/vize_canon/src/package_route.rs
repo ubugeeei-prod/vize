@@ -8,7 +8,7 @@
 use std::path::{Component, Path, PathBuf};
 
 use serde_json::Value;
-use vize_carton::cstr;
+use vize_carton::{FxHashMap, cstr};
 
 #[path = "package_route/cache.rs"]
 mod cache;
@@ -60,11 +60,37 @@ impl PackageSourceOptions {
     }
 }
 
+#[derive(Default)]
+pub(super) struct PackagePathCache {
+    paths: FxHashMap<PathBuf, PathBuf>,
+}
+
+impl PackagePathCache {
+    fn clear(&mut self) {
+        self.paths.clear();
+    }
+
+    fn canonicalize(&mut self, path: &Path) -> PathBuf {
+        if let Some(cached) = self.paths.get(path) {
+            return cached.clone();
+        }
+        let canonical = vize_carton::path::canonicalize_non_verbatim(path);
+        self.paths.insert(path.to_path_buf(), canonical.clone());
+        canonical
+    }
+
+    #[cfg(test)]
+    fn len(&self) -> usize {
+        self.paths.len()
+    }
+}
+
 fn lookup_uncached(
     importer_dir: &Path,
     specifier: &str,
     options: PackageSourceOptions,
     search: &mut PackageSearchCache,
+    canonical_paths: &mut PackagePathCache,
 ) -> PackageRouteLookup {
     let mut invalidation_paths = Vec::new();
     let mut watchable_negative = false;
@@ -75,6 +101,7 @@ fn lookup_uncached(
         &mut invalidation_paths,
         search,
         &mut watchable_negative,
+        canonical_paths,
     );
     if let Some(route) = route.as_ref() {
         invalidation_paths.extend(route.invalidation_paths());
@@ -97,6 +124,7 @@ fn resolve_uncached(
     invalidation_paths: &mut Vec<PathBuf>,
     search: &mut PackageSearchCache,
     watchable_negative: &mut bool,
+    canonical_paths: &mut PackagePathCache,
 ) -> Option<PackageRoute> {
     let (package_link_root, manifest, request, package_name) = if specifier.starts_with('#') {
         let (root, manifest) = nearest_package_manifest(importer_dir, invalidation_paths, search)?;
@@ -123,8 +151,8 @@ fn resolve_uncached(
             .map_or_else(|| ".".to_owned(), |subpath| cstr!("./{subpath}").into());
         (root, manifest, request, Some(package_name))
     };
-    let package_root = canonical_path(&package_link_root);
-    let manifest_path = canonical_path(&package_root.join("package.json"));
+    let package_root = canonical_path(&package_link_root, canonical_paths);
+    let manifest_path = canonical_path(&package_root.join("package.json"), canonical_paths);
     let mappings = if specifier.starts_with('#') {
         manifest.get("imports")
     } else {
@@ -150,6 +178,7 @@ fn resolve_uncached(
                 invalidation_paths,
                 search,
                 watchable_negative,
+                canonical_paths,
             ) {
                 nested_routes.push(route);
             }
@@ -165,16 +194,19 @@ fn resolve_uncached(
     let mut source_targets = Vec::new();
     for candidate in &candidates {
         invalidation_paths.push(candidate.clone());
-        let mut resolved = resolve_sources(candidate, options, invalidation_paths);
+        let mut resolved = resolve_sources(candidate, options, invalidation_paths, canonical_paths);
         if resolved.is_empty() && candidate.extension().is_some_and(|ext| ext == "vue") {
             resolved.push(source::ResolvedPackageSource {
-                source_path: canonical_path(candidate),
-                native_probe_path: canonical_path(&candidate.with_extension("d.vue.ts")),
+                source_path: canonical_path(candidate, canonical_paths),
+                native_probe_path: canonical_path(
+                    &candidate.with_extension("d.vue.ts"),
+                    canonical_paths,
+                ),
             });
         }
         for source in resolved {
             let route_source = PackageRouteSource {
-                target_path: canonical_path(candidate),
+                target_path: canonical_path(candidate, canonical_paths),
                 source_path: source.source_path,
                 native_probe_path: source.native_probe_path,
             };
@@ -217,8 +249,8 @@ fn inside_node_modules(path: &Path) -> bool {
         .any(|component| matches!(component, Component::Normal(part) if part == "node_modules"))
 }
 
-fn canonical_path(path: &Path) -> PathBuf {
-    vize_carton::path::canonicalize_non_verbatim(path)
+fn canonical_path(path: &Path, cache: &mut PackagePathCache) -> PathBuf {
+    cache.canonicalize(path)
 }
 
 /// Preserve the logical package spelling, including a workspace symlink.
