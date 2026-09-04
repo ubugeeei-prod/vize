@@ -1,5 +1,8 @@
 use super::BatchTypeChecker;
-use crate::batch::{TypeCheckResult, TypeChecker};
+use crate::batch::{
+    TypeCheckResult, TypeChecker,
+    runtime_deps::{write_vue_facade, write_vue_runtime_dom_stub},
+};
 use std::{
     path::Path,
     sync::{Arc, Barrier},
@@ -80,14 +83,32 @@ pub(super) fn populate_shared_dependency_tree(shared_node_modules: &Path) {
         .expect("workspace root should exist")
         .join("node_modules");
     std::fs::create_dir_all(shared_node_modules).unwrap();
-    for entry in std::fs::read_dir(workspace_node_modules).unwrap() {
-        let entry = entry.unwrap();
-        if entry.file_name() == ".vize" {
-            continue;
+    if let Ok(entries) = std::fs::read_dir(workspace_node_modules) {
+        for entry in entries {
+            let entry = entry.unwrap();
+            if entry.file_name() == ".vize" {
+                continue;
+            }
+            std::os::unix::fs::symlink(entry.path(), shared_node_modules.join(entry.file_name()))
+                .unwrap();
         }
-        std::os::unix::fs::symlink(entry.path(), shared_node_modules.join(entry.file_name()))
-            .unwrap();
+        return;
     }
+
+    write_vue_facade(shared_node_modules).unwrap();
+    write_vue_runtime_dom_stub(shared_node_modules).unwrap();
+    write_vite_stub(shared_node_modules);
+}
+
+fn write_vite_stub(shared_node_modules: &Path) {
+    let vite = shared_node_modules.join("vite");
+    std::fs::create_dir_all(&vite).unwrap();
+    std::fs::write(
+        vite.join("package.json"),
+        r#"{"name":"vite","types":"client.d.ts"}"#,
+    )
+    .unwrap();
+    std::fs::write(vite.join("client.d.ts"), "").unwrap();
 }
 
 pub(super) fn link_shared_node_modules(project_root: &Path, shared_node_modules: &Path) {

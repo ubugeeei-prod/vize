@@ -21,7 +21,7 @@ fn concurrent_projects_share_dependencies_without_sharing_mutable_state() {
     let _ = std::fs::remove_dir_all(&case_root);
     let first_root = case_root.join("first");
     let second_root = case_root.join("second");
-    let shared_node_modules = case_root.join("shared-node-modules");
+    let shared_node_modules = case_root.join("node_modules");
     populate_shared_dependency_tree(&shared_node_modules);
     create_project(&first_root, "first");
     create_project(&second_root, "second");
@@ -134,7 +134,7 @@ fn persistent_sessions_refresh_independently_over_shared_dependencies() {
     let _ = std::fs::remove_dir_all(&case_root);
     let first_root = case_root.join("first");
     let second_root = case_root.join("second");
-    let shared_node_modules = case_root.join("shared-node-modules");
+    let shared_node_modules = case_root.join("node_modules");
     populate_shared_dependency_tree(&shared_node_modules);
     create_relative_project(&first_root, "first");
     create_relative_project(&second_root, "second");
