@@ -173,7 +173,7 @@
           "symbol": "classes",
           "usageAnchor": ":class=\"classes\"",
           "declarationAnchor": "const classes = computed(() => {",
-          "hoverContains": ["const classes: any"],
+          "hoverContains": ["const classes: string"],
           "renameTo": "__vizeRenamedClasses"
         },
         "componentBoundary": {
