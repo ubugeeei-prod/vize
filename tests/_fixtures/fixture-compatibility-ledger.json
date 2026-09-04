@@ -782,7 +782,8 @@
           "tests/_fixtures/_git/vue-bits",
           "tests/_fixtures/_git/shadcn-vue",
           "tests/_fixtures/_git/splitpanes",
-          "tests/_fixtures/_git/vue-datepicker"
+          "tests/_fixtures/_git/vue-datepicker",
+          "tests/_fixtures/_git/vue-sonner"
         ]
       },
       "evidence": {
