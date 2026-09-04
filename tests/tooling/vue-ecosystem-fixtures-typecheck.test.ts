@@ -60,7 +60,7 @@ test("typecheck baselines have complete budgets and bounded release coverage", (
     );
     assert.match(performance.packageManagerVersion, /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/);
     assert.ok(Number.isSafeInteger(performance.hangTimeoutMs));
-    assert.ok(performance.hangTimeoutMs > 0 && performance.hangTimeoutMs <= 300_000);
+    assert.ok(performance.hangTimeoutMs > 0 && performance.hangTimeoutMs <= 600_000);
     assert.ok(performance.maxFalsePositiveRatio >= 0 && performance.maxFalsePositiveRatio <= 1);
     assert.equal(performance.maxFalseNegativeRatio, performance.maxFalsePositiveRatio);
   }

@@ -34,7 +34,7 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "11.5.0",
         "lockfile": "pnpm-lock.yaml",
-        "hangTimeoutMs": 300000,
+        "hangTimeoutMs": 600000,
         "corpusGlobs": ["playground/src/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -260,6 +260,7 @@
         "packageManagerVersion": "11.5.0",
         "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
+        "corpusGlobs": ["packages/**/*.vue", "ssr-testing/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
       }

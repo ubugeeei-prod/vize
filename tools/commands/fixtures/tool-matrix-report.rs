@@ -17,7 +17,7 @@
 mod common;
 
 use serde::Serialize;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{
     env, fs,
@@ -52,6 +52,19 @@ struct Launch {
     command: String,
     prefix: Vec<String>,
     label: String,
+}
+
+struct FixtureTypecheckTsconfig {
+    relative_path: String,
+    cleanup_path: Option<PathBuf>,
+}
+
+impl Drop for FixtureTypecheckTsconfig {
+    fn drop(&mut self) {
+        if let Some(path) = &self.cleanup_path {
+            let _ = fs::remove_file(path);
+        }
+    }
 }
 
 #[derive(Serialize)]
@@ -523,8 +536,17 @@ fn run_tool(
         .as_ref()
         .map(|dir| dir.path().to_string_lossy().into_owned())
         .unwrap_or_else(|| "<compiler-output>".to_string());
+    let typechecker_fixture_tsconfig =
+        prepare_typechecker_fixture_tsconfig(project, tool, args.dry_run, &cwd, fixture_exists)?;
     let mut command_args = launch.prefix.clone();
-    command_args.extend(tool_args(project, tool, &compiler_output)?);
+    command_args.extend(tool_args(
+        project,
+        tool,
+        &compiler_output,
+        typechecker_fixture_tsconfig
+            .as_ref()
+            .map(|tsconfig| tsconfig.relative_path.as_str()),
+    )?);
     let base = json!({
         "tool": tool,
         "command": display_command(&launch.command, &command_args),
@@ -684,6 +706,7 @@ fn tool_args(
     project: &Value,
     tool: &str,
     compiler_output_dir: &str,
+    typecheck_tsconfig_override: Option<&str>,
 ) -> Result<Vec<String>, String> {
     let vue_globs = project
         .get("vueGlobs")
@@ -738,7 +761,10 @@ fn tool_args(
                     .iter()
                     .map(|value| (*value).to_string()),
             );
-            if let Some(tsconfig) = typecheck_tsconfig_path(project) {
+            if let Some(tsconfig) = typecheck_tsconfig_override
+                .map(str::to_string)
+                .or_else(|| typecheck_tsconfig_path(project))
+            {
                 values.extend(["--tsconfig".to_string(), tsconfig]);
             }
             Ok(values)
@@ -772,6 +798,10 @@ fn typecheck_corpus_globs(project: &Value) -> Result<Vec<String>, String> {
 }
 
 fn typecheck_tsconfig_path(project: &Value) -> Option<String> {
+    typecheck_source_tsconfig_path(project)
+}
+
+fn typecheck_source_tsconfig_path(project: &Value) -> Option<String> {
     project
         .get("typecheckPerformance")
         .and_then(|value| value.get("baseline"))
@@ -779,6 +809,52 @@ fn typecheck_tsconfig_path(project: &Value) -> Option<String> {
         .and_then(Value::as_str)
         .or_else(|| project.get("tsconfig").and_then(Value::as_str))
         .map(str::to_string)
+}
+
+fn prepare_typechecker_fixture_tsconfig(
+    project: &Value,
+    tool: &str,
+    dry_run: bool,
+    cwd: &Path,
+    fixture_exists: bool,
+) -> Result<Option<FixtureTypecheckTsconfig>, String> {
+    if tool != "typechecker" || typecheck_source_tsconfig_path(project).is_some() {
+        return Ok(None);
+    }
+    let relative_path = format!(
+        ".vize-fixture-typecheck-{}.tsconfig.json",
+        fixture_project_id(project)?
+    );
+    if !fixture_exists || dry_run {
+        return Ok(Some(FixtureTypecheckTsconfig {
+            relative_path,
+            cleanup_path: None,
+        }));
+    }
+    let absolute_path = cwd.join(&relative_path);
+    fs::write(&absolute_path, "{\n  \"compilerOptions\": {}\n}\n").map_err(|error| {
+        format!(
+            "cannot write fixture-local typechecker tsconfig {}: {error}",
+            absolute_path.display()
+        )
+    })?;
+    Ok(Some(FixtureTypecheckTsconfig {
+        relative_path,
+        cleanup_path: Some(absolute_path),
+    }))
+}
+
+fn fixture_project_id(project: &Value) -> Result<String, String> {
+    Ok(project_string(project, "id")?
+        .chars()
+        .map(|ch| {
+            if ch.is_ascii_alphanumeric() || matches!(ch, '_' | '.' | '-') {
+                ch
+            } else {
+                '_'
+            }
+        })
+        .collect())
 }
 
 fn resolve_vize_launch(

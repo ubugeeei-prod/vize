@@ -10,6 +10,7 @@ const registryPath = path.join(root, "tests", "_fixtures", "vue-ecosystem-fixtur
 const expectedCorpus = {
   "vue-vben-admin": ["playground/src/**/*.vue"],
   hoppscotch: ["packages/hoppscotch-common/src/**/*.vue"],
+  "element-plus": ["packages/**/*.vue", "ssr-testing/**/*.vue"],
   "reka-ui": ["packages/core/**/*.vue"],
   primevue: ["packages/primevue/src/**/*.vue"],
   "primevue-volt": ["apps/volt/**/*.vue"],

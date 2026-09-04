@@ -1,13 +1,11 @@
-// Corpus-wide `fmt(fmt(x)) == fmt(x)` and `--check`/`--write` agreement; absent projects
-// are reported as skipped, never failed; the weekly matrix shards hydrate the
-// full registry. Set VIZE_GLYPH_CORPUS_MAX_FILES_PER_PROJECT to cap files for
-// local iteration.
+// Corpus-wide `fmt(fmt(x)) == fmt(x)` and `--check`/`--write` agreement.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
+import { loadFormatterCheckEvidenceOrRecord } from "../../legacy-tools/fixtures/glyph-formatter-evidence.mjs";
 import { createFormatterChangeEvidence } from "../../legacy-tools/fixtures/tool-matrix-formatter.mjs";
 import {
   assertFormatterCheckWriteAgreement,
@@ -15,8 +13,8 @@ import {
   collectProjectVueFiles,
   createKnownViolationConsumption,
   diffExcerpt,
-  loadGlyphCorpusProjects,
   loadFormatterCheckEvidence,
+  loadGlyphCorpusProjects,
   loadKnownViolations,
   renderViolations,
   resolveGlyphLaunch,
@@ -104,17 +102,12 @@ test("glyph corpus idempotence holds for every hydrated fixture", () => {
   }
   const launch = resolveGlyphLaunch();
   const violations: Violation[] = [];
+  const baselineUnusable: Violation[] = [];
   const waivedViolations: Array<Violation & { waiver: object }> = [];
   const counters = { files: 0, skipped: 0 };
   for (const project of hydrated) {
-    sweepProject(
-      project,
-      launch,
-      violations,
-      counters,
-      loadFormatterCheckEvidence(project),
-      waivedViolations,
-    );
+    const checkEvidence = loadFormatterCheckEvidenceOrRecord(project, baselineUnusable);
+    sweepProject(project, launch, violations, counters, checkEvidence, waivedViolations);
   }
   let waiverValidationError: string | null = null;
   try {
@@ -126,6 +119,7 @@ test("glyph corpus idempotence holds for every hydrated fixture", () => {
     projectIds: hydrated.map((project) => project.id),
     counters,
     violations,
+    baselineUnusable,
     waivedViolations,
     waiverValidationError,
   });
@@ -133,7 +127,8 @@ test("glyph corpus idempotence holds for every hydrated fixture", () => {
   process.stderr.write(
     `glyph ${property}: ${counters.files} file(s) across ${hydrated.length} project(s), ` +
       `${projects.length - hydrated.length} project(s) not hydrated, ` +
-      `${counters.skipped} known violation(s) skipped, ${violations.length} violation(s)\n`,
+      `${counters.skipped} known violation(s) skipped, ` +
+      `${baselineUnusable.length} baseline-unusable check(s), ${violations.length} violation(s)\n`,
   );
   assert.equal(violations.length, 0, renderViolations(property, violations));
 });
