@@ -95,6 +95,7 @@ runs:
           --filter './npm/cli...' \
           --filter './npm/builder/vite...' \
           --filter './npm/framework/nuxt-lint-config...' \
+          --filter './npm/oxlint...' \
           --filter './npm/framework/nuxt...' \
           --filter './npm/builder/vite-musea...' \
           --filter './npm/framework/musea-nuxt...'
@@ -106,6 +107,18 @@ runs:
     - name: Build Vize CLI
       shell: bash
       run: cargo build --profile ci -p vize
+
+    - name: Build local Vize packages
+      shell: bash
+      run: |
+        rust-script tools/commands/ci/github/run-many.rs \
+          vp run --filter './npm/cli' build -- \
+          vp run --filter './npm/builder/vite' build -- \
+          vp run --filter './npm/framework/nuxt-lint-config' build -- \
+          vp run --filter './npm/oxlint' build -- \
+          vp run --filter './npm/builder/vite-musea' build -- \
+          vp run --filter './npm/framework/nuxt' build -- \
+          vp run --filter './npm/framework/musea-nuxt' build
 
     - name: Stabilize Ubuntu package archive
       if: inputs.needs-playwright == 'true'
