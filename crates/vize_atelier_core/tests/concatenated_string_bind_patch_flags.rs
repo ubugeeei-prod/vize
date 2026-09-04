@@ -33,45 +33,74 @@ fn compile(source: &str, prefix_identifiers: bool) -> String {
     ))
 }
 
-fn assert_has_props_patch_flag(output: &str, key: &str) {
-    assert!(
-        output.contains("8 /* PROPS */") && output.contains(key),
-        "bind must stay dynamic so Vue patches the attr. Got:\n{output}"
-    );
-}
-
 #[test]
 fn concatenated_quoted_bind_keeps_props_patch_flag() {
     let output = compile(r#"<div :title="'Hello, ' + name + '!'"></div>"#, false);
-    assert_has_props_patch_flag(&output, "\"title\"");
+    assert_eq!(
+        output,
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", { title: 'Hello, ' + name + '!' }, null, 8 /* PROPS */, [\"title\"]))
+}"
+    );
 }
 
 #[test]
 fn concatenated_template_bind_keeps_props_patch_flag() {
     let output = compile("<div :id=\"`item-` + id + `!`\"></div>", false);
-    assert_has_props_patch_flag(&output, "\"id\"");
+    assert_eq!(
+        output,
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", { id: `item-` + id + `!` }, null, 8 /* PROPS */, [\"id\"]))
+}"
+    );
 }
 
 #[test]
 fn concatenated_class_bind_keeps_class_patch_flag() {
     let output = compile(r#"<div :class="'card ' + variant"></div>"#, false);
-    assert!(
-        output.contains("2 /* CLASS */"),
-        "class concat must keep CLASS so Vue patches className. Got:\n{output}"
+    assert_eq!(
+        output,
+        "\
+const { normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    class: _normalizeClass('card ' + variant)
+  }, null, 2 /* CLASS */))
+}"
     );
 }
 
 #[test]
 fn static_quoted_bind_stays_patchless() {
     let output = compile(r#"<div :title="'hello'"></div>"#, false);
-    assert!(
-        !output.contains("/* PROPS */") && !output.contains("/* CLASS */"),
-        "a single quoted literal bind should stay patchless. Got:\n{output}"
+    assert_eq!(
+        output,
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", { title: 'hello' }))
+}"
     );
 }
 
 #[test]
 fn prefixed_concatenated_string_bind_keeps_props_patch_flag() {
     let output = compile(r#"<div :title="'Hello, ' + name + '!'"></div>"#, true);
-    assert_has_props_patch_flag(&output, "\"title\"");
+    assert_eq!(
+        output,
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", { title: 'Hello, ' + _ctx.name + '!' }, null, 8 /* PROPS */, [\"title\"]))
+}"
+    );
 }

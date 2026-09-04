@@ -14,7 +14,7 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<Handle><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" :width="10" :height="10"><circle cx="8" cy="8" r="7" fill="hotpink" /></svg></Handle>"#,
     ),
     (
-        "component_slot_static_global_constant_prop_is_patchless",
+        "component_slot_static_global_constant_prop_uses_props_flag",
         r#"<md-tabs><md-tab :id="NaN" md-label="Tab id=NaN">NaN</md-tab></md-tabs>"#,
     ),
     (

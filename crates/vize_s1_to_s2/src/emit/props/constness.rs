@@ -6,7 +6,7 @@ use vize_s0::String;
 
 use super::super::js::js_expr_source;
 use super::super::props_value::bind_value;
-use super::static_expr::{is_legacy_static_global_constant, is_static_bound_expr};
+use super::static_expr::is_static_bound_expr;
 use super::ts_view::ts_view;
 
 /// `is_const_handler`: the handler text the codegen reads is a lone
@@ -37,7 +37,7 @@ pub(in crate::emit) fn bind_value_is_static_patchless(
     match bind_value(bind) {
         Ok(value) => value.js().is_some_and(|js| match ts_view(js, is_ts) {
             Some(view) => view.is_static(),
-            None => is_static_bound_expr(js.ast) || is_legacy_static_global_constant(js.ast),
+            None => is_static_bound_expr(js.ast),
         }),
         Err(_) => false,
     }
