@@ -40,9 +40,8 @@
 //!   the pre-legalize spelling; S2 `legacy-sugar` always wraps. They
 //!   agree when wrap(authored) equals the S2 text — one side was
 //!   reading the earlier stage. Mixed runs that absorbed a pipe into a
-//!   compound opaque are not this class: both sides keep the authored
-//!   pipe and compare exactly (installment 7: those parts are not
-//!   `ExprRef::Filter`).
+//!   compound opaque are included once the legacy filter pass refreshes
+//!   their dynamic text side-table entries.
 
 use vize_s0::{Allocator, Span, String};
 use vize_s2::expr::VueFilterExpr;

@@ -10,8 +10,8 @@
 //!
 //! Interpolation filters are in this battery (installment 9): a lone
 //! `{{ msg | cap }}` wrap-equals `_filter_cap(msg)`; a mixed run that
-//! absorbed a pipe into a compound opaque compares the authored pipe
-//! exactly. Neither is silently skipped.
+//! absorbed a pipe into a compound opaque now refreshes its dynamic part
+//! before the rebuilt compound text compares. Neither is silently skipped.
 
 #![cfg(feature = "legacy")]
 #![allow(clippy::disallowed_types, clippy::disallowed_macros)]
@@ -89,7 +89,7 @@ fn expected() -> Counters {
             entity_templates: 0,
             rawtext_excluded: 0,
             parts_compound: 0,
-            parts_filter: 2,
+            parts_filter: 3,
         },
         surfaces: SurfaceCounters {
             owners: 8,
