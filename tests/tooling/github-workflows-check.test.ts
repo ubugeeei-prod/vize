@@ -45,7 +45,7 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
 
   for (const [jobName, minutes] of [
     ["app-readiness-plan", 10],
-    ["app-readiness-producer", 30],
+    ["app-readiness-producer", 40],
     ["app-readiness", 5],
   ] as const) {
     assert.match(
