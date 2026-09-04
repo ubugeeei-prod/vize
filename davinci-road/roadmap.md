@@ -113,26 +113,22 @@ holds or improves — this phase should be a measurable win, not a wash.
   timing, remark emission) land with the pass manager itself, so the DevTool's
   data feed exists from the first S2 build.
 
-**Current execution ledger (2026-09-03):** [17 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-09-03).
+**Current execution ledger (2026-09-04):** [17 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-09-04).
 P2-9 is now complete: the hydrated corpus run compiled 41,580 files at zero
 divergence and measured the retained-`None` residual at 11.73%. P2-11 remains
 the active blocked series; P2-12b, P2-16, P2-17 and P2-20 remain open because
 their dependency gates remain open. P2-12b has TS-22 groundwork for observed
-S2 DOM emit walks, but not the fused build-path switch. P2-11 has 89 landed
-installments through [#5625](https://github.com/ubugeeei-prod/vize/pull/5625). Installments
-84-89 open the production option surface the switch needs: `DomEmitOptions`
-now carries module mode, `prefix_identifiers`, non-inline binding metadata,
-`is_ts` (an opt-in `typescript` feature, since oxc's transformer needs
-`std`), the SFC's own `component_name` for self-references, and `inline` -
-the `<script setup>` read shape where refs go through `.value`, `let` and
-maybe-ref bindings through `_unref`, and props through `__props.`. The
-earlier increments pin nested interactive recovery identity, raw
-handler-expression parity, dynamic-component directive patch flags,
-template-wrapper component props, component class binds, residual component
-prop hoists, helper preamble ordering, slot branch key reservations, foreign
-SVG hoists, `v-pre` inert text and the final DOM corpus residuals. Real Project Matrix run `33531193323`
-recorded canonical hydrated zero-divergence evidence over 146 gitlinks, 42,668
-files and 42,279 compared templates; the production-lane switch is still open.
+S2 DOM emit walks, but not the fused build-path switch. P2-11 has 98 landed
+installments through [#5649](https://github.com/ubugeeei-prod/vize/pull/5649). Installments
+84-98 open the production option surface the switch needs: module output,
+identifier prefixing, binding metadata, TypeScript erasure, component-name
+self references, inline setup reads, inline root prop hoists, helper order,
+template refs, constant-handler and constant-text decisions, `cache_handlers`
+and printed-order cache slots. The earlier increments pin the late directive,
+patch-site, component, hoist-order and residual DOM corpus witnesses. Real
+Project Matrix run `33531193323` recorded canonical hydrated zero-divergence
+evidence over 146 gitlinks, 142 ecosystem projects, 42,668 files and 42,279
+compared templates; the production-lane switch is still open.
 The executable fixture inventory is 146 gitlinks / 142 ecosystem projects;
 fixture checkout hydration is deliberately not a project-count source.
 

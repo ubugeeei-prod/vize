@@ -12,7 +12,7 @@ export function p2_11Installment(number: number): URL {
   );
 }
 
-export const P2_11_CURRENT = { number: 89, pr: 5625, sha: "bd9c5d1fb" } as const;
+export const P2_11_CURRENT = { number: 98, pr: 5649, sha: "74c64d33d" } as const;
 
 export const p2_11TableRows = [
   [41, 5359, "5b5ac0924"],
@@ -64,6 +64,15 @@ export const p2_11TableRows = [
   [87, 5621, "e9923c0f8"],
   [88, 5622, "e9923c0f8"],
   [89, 5625, "bd9c5d1fb"],
+  [90, 5634, "d6552b53d"],
+  [91, 5635, "c1e5c7245"],
+  [92, 5636, "741f05750"],
+  [93, 5640, "3ce792355"],
+  [94, 5653, "d4e1ce25b"],
+  [95, 5641, "58afa0ca0"],
+  [96, 5648, "7b002f744"],
+  [97, 5643, "8bd1bf72c"],
+  [98, 5649, "74c64d33d"],
 ] as const;
 
 export const p2_11FileExpectations = [
@@ -153,4 +162,22 @@ export const p2_11FileExpectations = [
   [66, /d7040e03d/],
   [67, /Component Class Binds/],
   [67, /da97fe2d70/],
+  [90, /Inline Root Prop Hoist/],
+  [90, /d6552b53d/],
+  [91, /Unref Helper Order/],
+  [91, /c1e5c7245/],
+  [92, /Inline Template Refs/],
+  [92, /741f05750/],
+  [93, /Merged Const Handler/],
+  [93, /3ce792355/],
+  [94, /Cached Props Multiline/],
+  [94, /d4e1ce25b/],
+  [95, /Constant Style Binding/],
+  [95, /58afa0ca0/],
+  [96, /Constant Text Runs/],
+  [96, /7b002f744/],
+  [97, /Cached Event Handlers/],
+  [97, /8bd1bf72c/],
+  [98, /Printed Cache Slot Order/],
+  [98, /74c64d33d/],
 ] as const;

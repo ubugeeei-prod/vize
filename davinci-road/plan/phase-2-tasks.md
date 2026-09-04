@@ -212,32 +212,26 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-09-03):** 89 installments have landed through
-[#5625](https://github.com/ubugeeei-prod/vize/pull/5625). Installments 84-89 open
+**Current series evidence (2026-09-04):** 98 installments have landed through
+[#5649](https://github.com/ubugeeei-prod/vize/pull/5649). Installments 84-98 open
 the production option surface the switch needs, since through 83 the lane only
 matched `compile_template`'s _defaults_ while production compiles go through
 `compile_template_block`: `DomEmitOptions` now carries module mode,
 `prefix_identifiers`, non-inline binding metadata, `is_ts` (an opt-in
 `typescript` feature — oxc's transformer needs `std`, and an `is_ts` emit
 without it refuses rather than emitting un-erased TypeScript), the SFC's own
-`component_name` for self-references, and `inline`. A field missing from that
-struct is not a default the emitter assumes; it is surface the series has not
-reached. The S2 DOM lane also
-covers the late directive/object-spread set, event/model/slot residuals,
-structural `v-if`/`v-for` cases, expression-edge admission, keyed slot
-forwarding, component `v-once` wrappers, slot text fact alignment, and the
-corpus-runnable plus CI DOM lanes. The per-node patch-site witness program now
-covers the late directive/object-spread, `v-memo`, `v-once`, slot outlet and
-`createSlots` cases. Nested interactive recovery identity, raw
-handler-expression parity, dynamic-component directive patch flags,
-template-wrapper component props, component class binds, residual component
-prop hoists, helper preamble ordering, slot branch key reservations, foreign
-SVG hoists, `v-pre` inert text and final DOM corpus residuals have reduced
-real-project witnesses, while the 144 DOM-output comparisons contract remains
-pinned. Real Project Matrix run `33531193323` recorded canonical hydrated
-zero-divergence evidence over 146 gitlinks, 42,668 files and 42,279 compared
-templates. The task remains blocked on the production-lane switch; the old lane
-remains the production path. See the
+`component_name` for self-references, `inline`, inline root prop hoists,
+transform-time `_unref` helper order, inline template refs, merged
+const-handler rules, non-simple cached prop layout, constant style and text-run
+shortcuts, `cache_handlers`, and printed-order cache slots. A field missing
+from that struct is not a default the emitter assumes; it is surface the series
+has not reached. The earlier S2 DOM lane also covers the late directive and
+patch-site witnesses, residual component and hoist-order witnesses, and the
+corpus-runnable plus CI DOM lanes. Real Project Matrix run `33531193323`
+recorded canonical hydrated zero-divergence evidence over 146 gitlinks,
+142 ecosystem projects, 42,668 files and 42,279 compared templates. The task
+remains blocked on the production-lane switch; the old lane remains the
+production path. See the
 [series record](./phase-2-records/p2-11.md).
 
 **Steps:**
