@@ -153,12 +153,10 @@ impl DiagnosticService {
                 continue;
             }
 
-            // Reconstruct the art block content including tags for the linter
-            // The linter expects a full art file, so we wrap the content
+            // The linter expects a full art file, so wrap the block content.
             #[allow(clippy::disallowed_macros)]
             let art_content = format!(
                 "<art{}>\n{}\n</art>",
-                // Reconstruct attributes
                 custom.attrs.iter().fold(String::new(), |mut acc, (k, v)| {
                     append!(acc, " {k}=\"{v}\"");
                     acc
@@ -168,17 +166,12 @@ impl DiagnosticService {
 
             let result = linter.lint(&art_content);
 
-            // Map diagnostics back to the original file positions
             let block_content_start = custom.loc.start;
 
             for lint_diag in result.diagnostics {
-                // The lint_diag offsets are relative to art_content
-                // We need to adjust: skip the reconstructed <art ...>\n prefix
                 let art_tag_prefix_len = art_content.find('\n').unwrap_or(0) + 1;
 
-                // Only process diagnostics that fall within the content area
                 if (lint_diag.start as usize) < art_tag_prefix_len {
-                    // Diagnostic is on the <art> tag itself - map to the original tag
                     let (start_line, start_col) = line_index.line_col(custom.loc.tag_start);
                     let (end_line, end_col) =
                         line_index.line_col(custom.loc.tag_end.min(content.len()));
@@ -215,7 +208,6 @@ impl DiagnosticService {
                         ..Default::default()
                     });
                 } else {
-                    // Diagnostic is in the content area - map offset to original file
                     let content_relative_start =
                         (lint_diag.start as usize).saturating_sub(art_tag_prefix_len);
                     let content_relative_end =
@@ -497,6 +489,8 @@ impl DiagnosticService {
         }
         .with_additional_rules(lint_options.additional_rules)
         .with_disabled_rules(lint_options.disabled_rules)
+        .with_category_severity_overrides(lint_options.category_severity_overrides)
+        .with_rule_severity_overrides(lint_options.rule_severity_overrides)
         .with_restricted_globals(lint_options.restricted_globals)
         .with_restricted_members(lint_options.restricted_members)
         .with_musea_design_tokens(lint_options.musea_design_tokens);

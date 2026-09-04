@@ -1,8 +1,11 @@
 use tower_lsp::lsp_types::Url;
-use vize_patina::rules::musea::{MuseaLinter, PreferDesignTokensConfig};
+use vize_patina::{
+    Severity,
+    rules::musea::{MuseaLintResult, MuseaLinter, PreferDesignTokensConfig},
+};
 use vize_s0::{
     String,
-    config::{ConfigLintRuleOptions, LinterConfig},
+    config::{ConfigLintRuleOptions, LintRuleSeverity, LinterConfig},
 };
 
 const MUSEA_PREFER_DESIGN_TOKENS: &str = "musea/prefer-design-tokens";
@@ -14,6 +17,43 @@ pub(super) struct PatinaLintOptions {
     pub(super) restricted_globals: Vec<(String, Option<String>)>,
     pub(super) restricted_members: Vec<(String, String, Option<String>)>,
     pub(super) musea_design_tokens: Vec<(String, String, String)>,
+    pub(super) category_severity_overrides: Vec<(String, Severity)>,
+    pub(super) rule_severity_overrides: Vec<(String, Severity)>,
+}
+
+pub(super) struct MuseaLintOptions {
+    linter: MuseaLinter,
+    rule_severity_overrides: Vec<(String, Severity)>,
+}
+
+impl MuseaLintOptions {
+    pub(super) fn lint(&self, source: &str) -> MuseaLintResult {
+        let mut result = self.linter.lint(source);
+        if self.rule_severity_overrides.is_empty() {
+            return result;
+        }
+
+        for diagnostic in &mut result.diagnostics {
+            if let Some((_, severity)) = self
+                .rule_severity_overrides
+                .iter()
+                .find(|(rule, _)| rule.as_str() == diagnostic.rule_name)
+            {
+                diagnostic.severity = *severity;
+            }
+        }
+        result.error_count = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.severity == Severity::Error)
+            .count();
+        result.warning_count = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.severity == Severity::Warning)
+            .count();
+        result
+    }
 }
 
 pub(super) fn resolve_patina_options(
@@ -44,18 +84,23 @@ pub(super) fn resolve_patina_options(
         restricted_globals: rule_options.restricted_globals(),
         restricted_members,
         musea_design_tokens,
+        category_severity_overrides: severity_overrides(
+            linter_config.category_severity_overrides(),
+        ),
+        rule_severity_overrides: severity_overrides(linter_config.rule_severity_overrides()),
     }
 }
 
 pub(super) fn musea_linter_for_uri(
     state: &crate::server::ServerState,
     uri: &Url,
-) -> Option<MuseaLinter> {
+) -> Option<MuseaLintOptions> {
     let (linter_config, rule_options) = state.linter_settings_for_uri(uri);
     if !linter_config.enabled {
         return None;
     }
 
+    let rule_severity_overrides = severity_overrides(linter_config.rule_severity_overrides());
     let tokens = rule_options.musea_design_tokens();
     if tokens.is_empty()
         || linter_config
@@ -63,14 +108,20 @@ pub(super) fn musea_linter_for_uri(
             .iter()
             .any(|rule| rule.as_str() == MUSEA_PREFER_DESIGN_TOKENS)
     {
-        return Some(MuseaLinter::new());
+        return Some(MuseaLintOptions {
+            linter: MuseaLinter::new(),
+            rule_severity_overrides,
+        });
     }
 
     let mut config = PreferDesignTokensConfig::default();
     for (value, path, tier) in tokens {
         config.add_token(&value, &path, &tier);
     }
-    Some(MuseaLinter::new().with_design_tokens(config))
+    Some(MuseaLintOptions {
+        linter: MuseaLinter::new().with_design_tokens(config),
+        rule_severity_overrides,
+    })
 }
 
 pub(super) fn apply_rule_options(
@@ -100,6 +151,17 @@ fn add_project_local_rule(
     {
         additional_rules.push(rule_name.into());
     }
+}
+
+fn severity_overrides(entries: Vec<(String, LintRuleSeverity)>) -> Vec<(String, Severity)> {
+    entries
+        .into_iter()
+        .filter_map(|(name, severity)| match severity {
+            LintRuleSeverity::Off => None,
+            LintRuleSeverity::Warn => Some((name, Severity::Warning)),
+            LintRuleSeverity::Error => Some((name, Severity::Error)),
+        })
+        .collect()
 }
 
 fn component_casing(

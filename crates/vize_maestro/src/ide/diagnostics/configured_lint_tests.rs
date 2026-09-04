@@ -1,4 +1,4 @@
-use tower_lsp::lsp_types::{Diagnostic, NumberOrString, Url};
+use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Url};
 
 use super::DiagnosticService;
 use crate::server::ServerState;
@@ -13,6 +13,10 @@ fn collect_lints_configured_project_local_rule_options() {
             "lsp": { "lint": true },
             "linter": {
                 "preset": "incremental",
+                "rules": {
+                    "musea/prefer-design-tokens": "error",
+                    "script/no-restricted-members": "error"
+                },
                 "ruleOptions": {
                     "script/no-restricted-members": {
                         "members": [
@@ -88,27 +92,30 @@ window.localStorage.getItem("token")
         "vue".to_string(),
     );
 
-    let app_codes = diagnostic_codes(&DiagnosticService::collect_lint_only(&state, &app_uri));
-    let art_codes = diagnostic_codes(&DiagnosticService::collect_lint_only(&state, &art_uri));
-    let inline_art_codes = diagnostic_codes(&DiagnosticService::collect_lint_only(
-        &state,
-        &inline_art_uri,
-    ));
+    let app_diagnostics = DiagnosticService::collect_lint_only(&state, &app_uri);
+    let art_diagnostics = DiagnosticService::collect_lint_only(&state, &art_uri);
+    let inline_art_diagnostics = DiagnosticService::collect_lint_only(&state, &inline_art_uri);
 
     assert_eq!(
-        app_codes,
+        diagnostic_codes(&app_diagnostics),
         ["script/no-restricted-members"],
         "configured restricted members must run through the LSP lint path"
     );
     assert_eq!(
-        art_codes,
+        diagnostic_codes(&art_diagnostics),
         ["musea/prefer-design-tokens"],
         "configured Musea design tokens must run through the Art LSP lint path"
     );
     assert_eq!(
-        inline_art_codes,
+        diagnostic_codes(&inline_art_diagnostics),
         ["musea/prefer-design-tokens"],
         "configured Musea design tokens must run through inline <art> blocks"
+    );
+    assert_eq!(app_diagnostics[0].severity, Some(DiagnosticSeverity::ERROR));
+    assert_eq!(art_diagnostics[0].severity, Some(DiagnosticSeverity::ERROR));
+    assert_eq!(
+        inline_art_diagnostics[0].severity,
+        Some(DiagnosticSeverity::ERROR)
     );
 }
 
