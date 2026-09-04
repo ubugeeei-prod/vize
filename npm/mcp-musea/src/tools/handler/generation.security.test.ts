@@ -25,9 +25,5 @@ test("generate_variants only reads Vue component sources", () => {
     path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../vue-source-path.ts"),
     "utf8",
   );
-  assert.match(
-    helper,
-    /must be a \.vue file/,
-    "the rejection must name the .vue requirement",
-  );
+  assert.match(helper, /must be a \.vue file/, "the rejection must name the .vue requirement");
 });
