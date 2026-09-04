@@ -17,6 +17,18 @@ pub(super) struct Buf {
     used: u64,
     /// Transform-analogue registration order (`root.helpers`).
     preferred: StdVec<Helper>,
+    /// The op-visit count each [`Buf::preferred`] entry was registered
+    /// at, so a helper the *emit* only learns about mid-walk can still
+    /// take the transform's place in that order
+    /// ([`Buf::prefer_at_visit`]). Kept only while [`Buf::track_visits`]
+    /// is on — `_unref` is its one reader and an inline-only spelling, so
+    /// the default lane never spends the allocation.
+    preferred_visits: StdVec<u32>,
+    /// Whether [`Buf::preferred_visits`] is being kept.
+    track_visits: bool,
+    /// The visit count [`Buf::prefer`] records; the preference walk sets
+    /// it per op.
+    prefer_visit: u32,
     /// First `use_*` order (`used_helpers`), with modifier and normalize
     /// helpers reordered by final alias use to match shipped output.
     used_order: StdVec<Helper>,
@@ -25,12 +37,15 @@ pub(super) struct Buf {
 }
 
 impl Buf {
-    pub(super) fn new() -> Self {
+    pub(super) fn new(track_visits: bool) -> Self {
         Self {
             code: String::default(),
             indent: 0,
             used: 0,
             preferred: StdVec::new(),
+            preferred_visits: StdVec::new(),
+            track_visits,
+            prefer_visit: 0,
             used_order: StdVec::new(),
             hoists: StdVec::new(),
         }
@@ -74,10 +89,46 @@ impl Buf {
     }
 
     pub(super) fn prefer(&mut self, helper: Helper) {
-        if self.preferred.iter().any(|seen| seen.bit() == helper.bit()) {
+        if self.is_preferred(helper) {
             return;
         }
         self.preferred.push(helper);
+        if self.track_visits {
+            self.preferred_visits.push(self.prefer_visit);
+        }
+    }
+
+    fn is_preferred(&self, helper: Helper) -> bool {
+        self.preferred.iter().any(|seen| seen.bit() == helper.bit())
+    }
+
+    /// Which op the following [`Buf::prefer`] calls stand at, as the
+    /// preference walk's op-visit count. The emit walks the same ops in
+    /// the same order, so the two counts name the same op.
+    pub(super) fn set_prefer_visit(&mut self, visit: u32) {
+        self.prefer_visit = visit;
+    }
+
+    /// Register `helper` in the transform-analogue order at the op the
+    /// emit reached it on, rather than at the end. The shipped lane
+    /// registers `_unref` from `process_expression` — a *transform* call
+    /// the emit only makes while writing the body — so its place in
+    /// `root.helpers` is the op whose expression needed it, ahead of the
+    /// helpers that op's own transform step registers afterwards
+    /// (`v-for` registers `renderList` *after* processing its source).
+    pub(super) fn prefer_at_visit(&mut self, helper: Helper, visit: u32) {
+        if self.is_preferred(helper) {
+            return;
+        }
+        let at = self
+            .preferred_visits
+            .iter()
+            .position(|seen| *seen >= visit)
+            .unwrap_or(self.preferred.len());
+        self.preferred.insert(at, helper);
+        if self.track_visits {
+            self.preferred_visits.insert(at, visit);
+        }
     }
 
     pub(super) fn use_to_display_string(&mut self) {
