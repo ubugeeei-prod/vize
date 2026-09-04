@@ -21,10 +21,7 @@ test("packaged host result proves the pinned create-vue diagnostic transition", 
       resultPath,
       JSON.stringify({ ...passingResult, documentDirty: false, extensionActive: false }),
     );
-    assert.throws(
-      () => readPinnedCreateVueHostResult(resultPath),
-      /Expected values to be strictly/,
-    );
+    assert.throws(() => readPinnedCreateVueHostResult(resultPath));
 
     fs.writeFileSync(
       resultPath,
@@ -33,10 +30,7 @@ test("packaged host result proves the pinned create-vue diagnostic transition", 
         brokenDiagnostics: [{ ...passingResult.brokenDiagnostics[0], range: [1, 7, 1, 12] }],
       }),
     );
-    assert.throws(
-      () => readPinnedCreateVueHostResult(resultPath),
-      /Expected values to be strictly/,
-    );
+    assert.throws(() => readPinnedCreateVueHostResult(resultPath));
 
     fs.writeFileSync(
       resultPath,

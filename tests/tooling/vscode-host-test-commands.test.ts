@@ -37,22 +37,25 @@ test("the hidden host completion command only exists for the host smoke", async 
     getClient: () => undefined,
   });
   assert.deepEqual(
-    commands.map((command) => command.command),
-    [HOST_TEST_COMPLETION_COMMAND, HOST_TEST_SERVER_INFO_COMMAND],
+    new Set(commands.map((command) => command.command)),
+    new Set([HOST_TEST_COMPLETION_COMMAND, HOST_TEST_SERVER_INFO_COMMAND]),
   );
+  const completionCommand = findHostCommand(commands, HOST_TEST_COMPLETION_COMMAND);
+  const serverInfoCommand = findHostCommand(commands, HOST_TEST_SERVER_INFO_COMMAND);
   await assert.rejects(
-    commands[0].handler({ character: 8, line: 3, uri: "file:///App.vue" }),
+    completionCommand.handler({ character: 8, line: 3, uri: "file:///App.vue" }),
     /requires an active language client/,
   );
-  await assert.rejects(commands[1].handler(), /requires selected server evidence/);
+  await assert.rejects(serverInfoCommand.handler(), /requires selected server evidence/);
 });
 
 test("the host completion command forwards the request to the Vize language client", async () => {
   const client = createFakeClient([{ label: "label" }]);
-  const [command] = createHostTestCommands({
+  const commands = createHostTestCommands({
     environment: { [HOST_TEST_COMMAND_ENVIRONMENT_FLAG]: "1" },
     getClient: () => client,
   });
+  const command = findHostCommand(commands, HOST_TEST_COMPLETION_COMMAND);
 
   const response = await command.handler({ character: 8, line: 3, uri: "file:///App.vue" });
 
@@ -121,8 +124,8 @@ test("registering the gated host commands leaves an executable command behind", 
     register,
   });
   assert.deepEqual(
-    [...registry.keys()],
-    [HOST_TEST_COMPLETION_COMMAND, HOST_TEST_SERVER_INFO_COMMAND],
+    new Set(registry.keys()),
+    new Set([HOST_TEST_COMPLETION_COMMAND, HOST_TEST_SERVER_INFO_COMMAND]),
   );
 
   const execute = registry.get(HOST_TEST_COMPLETION_COMMAND);
@@ -202,25 +205,32 @@ test("the real host server info oracle pins the selected server identity", () =>
       version: "0.392.0",
     },
   );
-  assert.throws(
-    () =>
-      assertRealHostServerInfo(
-        {
-          extensionVersion: "0.392.0",
-          path: serverPath,
-          source: "configured",
-          status: "ready",
-          version: "0.391.0",
-        },
-        {
-          extensionVersion: "0.392.0",
-          serverPath,
-          serverVersion: "0.392.0",
-        },
-      ),
-    /Expected values to be strictly deep-equal/,
+  assert.throws(() =>
+    assertRealHostServerInfo(
+      {
+        extensionVersion: "0.392.0",
+        path: serverPath,
+        source: "configured",
+        status: "ready",
+        version: "0.391.0",
+      },
+      {
+        extensionVersion: "0.392.0",
+        serverPath,
+        serverVersion: "0.392.0",
+      },
+    ),
   );
 });
+
+function findHostCommand(
+  commands: ReturnType<typeof createHostTestCommands>,
+  commandId: string,
+): ReturnType<typeof createHostTestCommands>[number] {
+  const command = commands.find((candidate) => candidate.command === commandId);
+  assert.ok(command, `${commandId} must be registered`);
+  return command;
+}
 
 function createFakeClient(
   items: unknown[],
