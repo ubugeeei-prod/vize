@@ -1,6 +1,6 @@
 {
   "name": "oxlint-plugin-vize",
-  "version": "0.390.0",
+  "version": "0.391.0",
   "description": "Oxlint JS plugin bridge for Vize Patina",
   "keywords": [
     "lint",

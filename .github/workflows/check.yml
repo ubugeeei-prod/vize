@@ -143,17 +143,17 @@ jobs:
           cache: true
           run-install: false
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-script
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Audit production npm dependencies
-        run: vp exec pnpm audit --prod --audit-level moderate
+        run: rust-script tools/commands/ci/npm-audit.rs
       - name: Install cargo-audit
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: cargo-audit
       - name: Audit Rust dependencies
         run: cargo audit --deny warnings
-
   node-engine-compat:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
