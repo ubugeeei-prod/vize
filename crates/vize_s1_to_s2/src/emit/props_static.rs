@@ -8,7 +8,7 @@ use vize_davinci::id::NodeId;
 use vize_s0::String;
 use vize_s2::op::{Attribute, BindingOp, DynamicName};
 
-use crate::pass::StaticLevel;
+use crate::pass::{StaticFacts, StaticLevel};
 
 use super::EmitCx;
 use super::EmitError;
@@ -42,13 +42,43 @@ pub(super) fn should_hoist(
     match position {
         PropHoistPosition::Root => match fact.level {
             StaticLevel::FullyStatic | StaticLevel::HasDynamicText => true,
-            StaticLevel::NotStatic => fact.foreign || fact.nested_static,
+            StaticLevel::NotStatic => {
+                fact.foreign || fact.nested_static || inline_root_arm(cx, fact)
+            }
         },
         PropHoistPosition::Nested => {
             fact.level == StaticLevel::NotStatic && (fact.foreign || fact.nested_static)
         }
         PropHoistPosition::ForItem => true,
     }
+}
+
+/// The shipped `hoist_static_inner` arm only an inlined render function
+/// reaches: `is_root && ctx.options.inline && has_only_native_element_descendants(el)`.
+/// Position is the caller's ([`PropHoistPosition::Root`]), the predicate
+/// is the pass's, and the option is the emit's — so a template whose
+/// root has static props and no component/structural descendant hoists
+/// them where a non-inlined render function would keep them inline.
+fn inline_root_arm(cx: &EmitCx<'_>, fact: &StaticFacts) -> bool {
+    cx.scope.inline() && fact.native_descendants
+}
+
+/// The same arm asked as its own question, for the component gate.
+/// A component's own hoist decision is reconstructed from the codegen
+/// shape it ends up in (slots, builtin helpers, array children); the
+/// inline root arm sits *before* all of that in the shipped lane — the
+/// transform hoists the props and codegen then always spells them
+/// `_hoisted_N` — so the component gate takes it as a separate
+/// disjunct rather than through that reconstruction.
+pub(super) fn inline_root_hoist(
+    cx: &EmitCx<'_>,
+    id: Option<NodeId>,
+    position: PropHoistPosition,
+) -> bool {
+    matches!(position, PropHoistPosition::Root)
+        && id
+            .and_then(|id| cx.facts.static_facts.get(id))
+            .is_some_and(|fact| fact.props_hoistable && inline_root_arm(cx, fact))
 }
 
 pub(super) fn props_hoistable(cx: &EmitCx<'_>, id: Option<NodeId>) -> bool {

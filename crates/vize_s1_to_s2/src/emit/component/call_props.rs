@@ -73,7 +73,7 @@ pub(super) fn can_hoist_static_props(
     cx: &EmitCx<'_>,
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
-    blocked_by_context: bool,
+    position: props_static::PropHoistPosition,
     has_slots: bool,
     creates_slots: bool,
     props: Option<&ComponentHoistProps>,
@@ -81,9 +81,6 @@ pub(super) fn can_hoist_static_props(
     let Some(props) = props else {
         return Ok(false);
     };
-    if blocked_by_context {
-        return Ok(false);
-    }
     if cx.conditional_v_for_item {
         return Ok(false);
     }
@@ -137,7 +134,7 @@ pub(super) fn can_hoist_static_props(
     Ok((!transition_direct_slot_outlet
         && !is_template_for_root
         && dynamic_props_hoistable
-        && props_static::should_hoist(cx, id, props_static::PropHoistPosition::Nested))
+        && props_static::should_hoist(cx, id, position))
         || (is_template_for_root
             && dynamic_props_hoistable
             && id.is_some_and(|id| {

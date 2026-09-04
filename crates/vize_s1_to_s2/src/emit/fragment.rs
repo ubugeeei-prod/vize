@@ -169,7 +169,7 @@ fn emit_units(cx: &mut EmitCx<'_>, op: &Op<'_>, first: &mut bool) -> Result<(), 
             start_item(cx, first);
             let id = cx.walk.mint();
             cx.walk.skip(component.bindings.len());
-            super::component::emit_nested(cx, component, id)
+            super::component::emit_fragment_root(cx, component, id)
         }
         Op::If(if_op) => {
             start_item(cx, first);

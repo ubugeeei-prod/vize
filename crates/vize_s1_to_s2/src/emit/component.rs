@@ -29,24 +29,36 @@ use super::props::{
     prune_legacy_patchless_dynamic_props,
 };
 use super::props_static;
+use super::props_static::PropHoistPosition as Position;
 use super::slots;
 
 pub(super) use preamble::{collect_names, emit_resolves};
 
+/// The template root's single component: the shipped
+/// `hoist_static(children, is_root = true)` position.
 pub(super) fn emit_root(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
+) -> Result<(), EmitError> {
+    emit_top(cx, component, id, Position::Root)
+}
+
+fn emit_top(
+    cx: &mut EmitCx<'_>,
+    component: &ComponentOp<'_>,
+    id: Option<NodeId>,
+    position: Position,
 ) -> Result<(), EmitError> {
     if super::once::has(&component.bindings) {
         return super::once::emit_component(cx, component, None, false, id);
     }
     if super::memo::has(&component.bindings) && !cx.skip_memo {
         return super::memo::emit_cached(cx, &component.bindings, |cx| {
-            emit_vnode(cx, component, None, false, id)
+            emit_vnode(cx, component, None, false, id, position)
         });
     }
-    emit_block(cx, component, None, false, id)
+    emit_block(cx, component, None, false, id, position)
 }
 
 fn emit_block(
@@ -55,6 +67,7 @@ fn emit_block(
     if_key: Option<&str>,
     for_item: bool,
     id: Option<NodeId>,
+    position: Position,
 ) -> Result<(), EmitError> {
     directive::wrap_component(cx, component, |cx| {
         cx.buf.use_open_block();
@@ -62,7 +75,9 @@ fn emit_block(
         cx.buf.push("(");
         cx.buf.push(Buf::open_block_alias());
         cx.buf.push("(), ");
-        emit_call(cx, component, /* block */ true, if_key, for_item, id)?;
+        emit_call(
+            cx, component, /* block */ true, if_key, for_item, id, position,
+        )?;
         cx.buf.push(")");
         Ok(())
     })
@@ -74,10 +89,11 @@ fn emit_vnode(
     if_key: Option<&str>,
     for_item: bool,
     id: Option<NodeId>,
+    position: Position,
 ) -> Result<(), EmitError> {
     directive::wrap_component(cx, component, |cx| {
         cx.buf.use_create_vnode();
-        emit_call(cx, component, false, if_key, for_item, id)
+        emit_call(cx, component, false, if_key, for_item, id, position)
     })
 }
 
@@ -86,21 +102,41 @@ pub(super) fn emit_nested(
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
+    emit_at(cx, component, id, Position::Nested)
+}
+
+/// A component child of the root fragment. The shipped lane hoists the
+/// root children as one list, so every one of them is visited at
+/// `is_root = true` — the multi-root sibling of [`emit_root`].
+pub(super) fn emit_fragment_root(
+    cx: &mut EmitCx<'_>,
+    component: &ComponentOp<'_>,
+    id: Option<NodeId>,
+) -> Result<(), EmitError> {
+    emit_at(cx, component, id, Position::Root)
+}
+
+fn emit_at(
+    cx: &mut EmitCx<'_>,
+    component: &ComponentOp<'_>,
+    id: Option<NodeId>,
+    position: Position,
+) -> Result<(), EmitError> {
     if super::once::has(&component.bindings) {
         return super::once::emit_component(cx, component, None, false, id);
     }
     if super::memo::has(&component.bindings) && !cx.skip_memo {
         return super::memo::emit_cached(cx, &component.bindings, |cx| {
-            emit_vnode(cx, component, None, false, id)
+            emit_vnode(cx, component, None, false, id, position)
         });
     }
     if builtin::forces_block(component) {
-        return emit_root(cx, component, id);
+        return emit_top(cx, component, id, position);
     }
     if has_dynamic_key_binding(component) {
-        return emit_block(cx, component, None, false, id);
+        return emit_block(cx, component, None, false, id, position);
     }
-    emit_vnode(cx, component, None, false, id)
+    emit_vnode(cx, component, None, false, id, position)
 }
 
 pub(super) fn emit_if_branch(
@@ -109,7 +145,7 @@ pub(super) fn emit_if_branch(
     key: &str,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
-    emit_block(cx, component, Some(key), false, id)
+    emit_block(cx, component, Some(key), false, id, Position::Nested)
 }
 
 pub(super) fn emit_for_item(
@@ -122,10 +158,10 @@ pub(super) fn emit_for_item(
         && !cx.skip_memo
     {
         return super::memo::emit_cached_with_key(cx, memo, key.unwrap_or("0"), |cx| {
-            emit_block(cx, component, key, true, id)
+            emit_block(cx, component, key, true, id, Position::Nested)
         });
     }
-    emit_block(cx, component, key, true, id)
+    emit_block(cx, component, key, true, id, Position::Nested)
 }
 
 fn emit_call(
@@ -135,6 +171,7 @@ fn emit_call(
     if_key: Option<&str>,
     for_item: bool,
     id: Option<NodeId>,
+    position: Position,
 ) -> Result<(), EmitError> {
     admit(cx, component)?;
     let facts = id.and_then(|id| cx.facts.slot_facts.get(id));
@@ -196,29 +233,32 @@ fn emit_call(
     }
     let static_props_hoist_blocked =
         has_custom || for_item || if_key.is_some() || has_component_root_slot;
-    let can_hoist_static_props = call_props::can_hoist_static_props(
-        cx,
-        component,
-        id,
-        static_props_hoist_blocked,
-        has_slots,
-        create,
-        hoistable_static_props.as_ref(),
-    )?;
+    let can_hoist_static_props = !static_props_hoist_blocked
+        && call_props::can_hoist_static_props(
+            cx,
+            component,
+            id,
+            position,
+            has_slots,
+            create,
+            hoistable_static_props.as_ref(),
+        )?;
     let foreign_static_props = id
         .and_then(|id| cx.facts.static_facts.get(id))
         .is_some_and(|fact| fact.foreign && fact.props_hoistable);
+    let inline_root_hoist = props_static::inline_root_hoist(cx, id, position);
     let hoisted_static_props = if can_hoist_static_props
-        && ((!array
-            && (facts.is_some() || create || foreign_static_props)
-            && (!builtin_helper
-                || static_nested
-                || call_props::children_are_direct_static_vnode_hoists(
-                    &component.children,
-                    cx.is_ts,
-                )
-                || transition_props_slot_hoist
-                || foreign_static_props))
+        && (inline_root_hoist
+            || (!array
+                && (facts.is_some() || create || foreign_static_props)
+                && (!builtin_helper
+                    || static_nested
+                    || call_props::children_are_direct_static_vnode_hoists(
+                        &component.children,
+                        cx.is_ts,
+                    )
+                    || transition_props_slot_hoist
+                    || foreign_static_props))
             || (array && static_nested))
     {
         Some(
