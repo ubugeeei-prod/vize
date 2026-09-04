@@ -41,6 +41,10 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div v-for="item in items" :key="item.id" v-memo="[item.selected]">{{ item.name }}</div>"#,
     ),
     (
+        "native_v_for_static_key",
+        r#"<div v-for="item in items" key="row" v-memo="[item.selected]">{{ item.name }}</div>"#,
+    ),
+    (
         "component_v_for",
         r#"<Foo v-for="item in items" :key="item.id" v-memo="[item.selected]" :prop="item.prop" />"#,
     ),
@@ -85,6 +89,11 @@ const PATCH_CASES: &[PatchCase] = &[
         name: "native_v_for",
         src: r#"<div v-for="item in items" :key="item.id" v-memo="[item.selected]">{{ item.name }}</div>"#,
         sites: &["1 /* TEXT */", "128 /* KEYED_FRAGMENT */"],
+    },
+    PatchCase {
+        name: "native_v_for_static_key",
+        src: r#"<div v-for="item in items" key="row" v-memo="[item.selected]">{{ item.name }}</div>"#,
+        sites: &["1 /* TEXT */", "256 /* UNKEYED_FRAGMENT */"],
     },
     PatchCase {
         name: "component_v_for",

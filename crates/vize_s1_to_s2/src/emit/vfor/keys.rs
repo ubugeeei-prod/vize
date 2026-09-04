@@ -12,15 +12,14 @@ pub(super) fn memo_item_key_js(
     ops: &[Op<'_>],
 ) -> Result<Option<String>, EmitError> {
     match ops {
-        [Op::Element(element)] => item_key_js(cx, &element.attributes, &element.bindings),
-        [Op::Component(component)] => item_key_js(cx, &component.attributes, &component.bindings),
+        [Op::Element(element)] => dynamic_item_key_js(cx, &element.bindings),
+        [Op::Component(component)] => dynamic_item_key_js(cx, &component.bindings),
         _ => Ok(None),
     }
 }
 
-pub(super) fn item_key_js(
+fn dynamic_item_key_js(
     cx: &EmitCx<'_>,
-    attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
 ) -> Result<Option<String>, EmitError> {
     for binding in bindings {
@@ -35,6 +34,17 @@ pub(super) fn item_key_js(
             return Ok(Some(String::from(source.as_str())));
         }
     }
+    Ok(None)
+}
+
+pub(super) fn item_key_js(
+    cx: &EmitCx<'_>,
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+) -> Result<Option<String>, EmitError> {
+    if let Some(key) = dynamic_item_key_js(cx, bindings)? {
+        return Ok(Some(key));
+    }
     for attr in attributes {
         if attr.name == "key" {
             let mut out = String::from("\"");
@@ -46,12 +56,11 @@ pub(super) fn item_key_js(
     Ok(None)
 }
 
-pub(super) fn has_item_key(attributes: &[Attribute<'_>], bindings: &[BindingOp<'_>]) -> bool {
-    attributes.iter().any(|attr| attr.name == "key")
-        || bindings.iter().any(|binding| {
-            matches!(
-                binding,
-                BindingOp::Bind(bind) if crate::emit::props_bind::is_key_bind_name(bind)
-            )
-        })
+pub(super) fn has_dynamic_item_key(bindings: &[BindingOp<'_>]) -> bool {
+    bindings.iter().any(|binding| {
+        matches!(
+            binding,
+            BindingOp::Bind(bind) if crate::emit::props_bind::is_key_bind_name(bind)
+        )
+    })
 }

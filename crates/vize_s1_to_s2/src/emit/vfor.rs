@@ -14,7 +14,7 @@ use super::buf::Buf;
 use super::helper::Helper;
 use super::js::{RawJs, expr_source};
 use super::prefix::Site;
-use keys::{has_item_key, item_key_js, memo_item_key_js};
+use keys::{has_dynamic_item_key, item_key_js, memo_item_key_js};
 
 pub(super) fn emit_for(
     cx: &mut EmitCx<'_>,
@@ -82,16 +82,13 @@ fn emit_for_scoped(
         match for_op.region.ops.as_slice() {
             [Op::Element(element)] => (
                 element.bindings.len(),
-                has_item_key(&element.attributes, &element.bindings),
+                has_dynamic_item_key(&element.bindings),
             ),
             [Op::Component(component)] => (
                 component.bindings.len(),
-                has_item_key(&component.attributes, &component.bindings),
+                has_dynamic_item_key(&component.bindings),
             ),
-            [Op::Slot(slot)] => (
-                slot.bindings.len(),
-                has_item_key(&slot.attributes, &slot.bindings),
-            ),
+            [Op::Slot(slot)] => (slot.bindings.len(), has_dynamic_item_key(&slot.bindings)),
             _ => return Err(EmitError::unsupported_at(Reason::ForItemShape, for_op.span)),
         }
     };

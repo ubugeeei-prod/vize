@@ -11,6 +11,10 @@ mod support;
 
 const BATTERY: &[(&str, &str)] = &[
     (
+        "static_key",
+        r#"<div v-for="item in list" key="row">{{ item }}</div>"#,
+    ),
+    (
         "obj",
         r#"<div v-for="{ id } in list" :key="id">{{ id }}</div>"#,
     ),

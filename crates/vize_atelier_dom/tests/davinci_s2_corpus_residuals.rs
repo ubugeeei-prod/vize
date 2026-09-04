@@ -37,6 +37,10 @@ const BATTERY: &[(&str, &str)] = &[
         "consul_key_browser_v_for_item_in_conditional_class_keeps_patch_flag",
         r#"<div v-for="row in rows" :key="row.key" class="row" :class="'session' in row && row.session ? 'locked' : ''"></div>"#,
     ),
+    (
+        "template_else_if_static_keyed_v_for_item_keeps_unkeyed_fragment",
+        r#"<article v-if="kind === 'story'" key="story"><h1>{{ title }}</h1></article><template v-else-if="kind === 'gallery'"><img v-for="src in images" key="img"></template><aside v-else key="fallback">none</aside>"#,
+    ),
 ];
 
 #[test]
