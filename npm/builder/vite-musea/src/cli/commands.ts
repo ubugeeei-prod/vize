@@ -9,8 +9,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { MuseaVrtRunner, generateVrtReport, generateVrtJsonReport } from "../vrt.js";
-import type { VrtSummary } from "../vrt.js";
-import type { ArtFileInfo, VrtOptions } from "../types/index.js";
+import type { ExtendedVrtOptions, VrtSummary } from "../vrt.js";
+import type { ArtFileInfo } from "../types/index.js";
 
 import type { CliOptions } from "./index.js";
 
@@ -22,6 +22,17 @@ export function isArtFileInput(filePath: string): boolean {
   return filePath.endsWith(".art.vue");
 }
 
+export function createVrtOptions(options: CliOptions): ExtendedVrtOptions {
+  const configured = options.vrt ?? {};
+  return {
+    ...configured,
+    snapshotDir: path.join(options.output, "snapshots"),
+    threshold: options.thresholdProvided
+      ? options.threshold
+      : (configured.threshold ?? options.threshold),
+  };
+}
+
 export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Promise<void> {
   const totalVariants = artFiles.reduce(
     (sum, art) => sum + art.variants.filter((v) => !v.skipVrt).length,
@@ -30,14 +41,8 @@ export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Prom
 
   console.log(`  Testing ${totalVariants} variant(s) across ${artFiles.length} art file(s)\n`);
 
-  // Initialize VRT runner
-  const vrtOptions: VrtOptions = {
-    snapshotDir: path.join(options.output, "snapshots"),
-    threshold: options.threshold,
-  };
-
   const runner = new MuseaVrtRunner({
-    ...vrtOptions,
+    ...createVrtOptions(options),
     ci: options.ci ? { failOnDiff: true, jsonReport: options.json } : undefined,
   });
 
@@ -139,12 +144,7 @@ export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Prom
 }
 
 export async function runApprove(options: CliOptions, artFiles: ArtFileInfo[]): Promise<void> {
-  const vrtOptions: VrtOptions = {
-    snapshotDir: path.join(options.output, "snapshots"),
-    threshold: options.threshold,
-  };
-
-  const runner = new MuseaVrtRunner(vrtOptions);
+  const runner = new MuseaVrtRunner(createVrtOptions(options));
 
   try {
     console.log("  Launching browser...");
@@ -175,12 +175,7 @@ export async function runApprove(options: CliOptions, artFiles: ArtFileInfo[]): 
 }
 
 export async function runClean(options: CliOptions, artFiles: ArtFileInfo[]): Promise<void> {
-  const vrtOptions: VrtOptions = {
-    snapshotDir: path.join(options.output, "snapshots"),
-    threshold: options.threshold,
-  };
-
-  const runner = new MuseaVrtRunner(vrtOptions);
+  const runner = new MuseaVrtRunner(createVrtOptions(options));
 
   console.log("  Scanning for orphaned snapshots...\n");
 

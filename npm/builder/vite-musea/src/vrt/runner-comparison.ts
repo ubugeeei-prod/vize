@@ -229,6 +229,7 @@ export async function compareImages(
         // Anti-aliasing detection: check if pixel is likely AA
         if (useAntiAliasing && isAntiAliased(baseline, current, x, y, width, height)) {
           // Mark as AA (yellow)
+          diffPixels++;
           diff.data[idx] = 255;
           diff.data[idx + 1] = 200;
           diff.data[idx + 2] = 0;

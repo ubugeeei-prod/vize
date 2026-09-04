@@ -1,4 +1,4 @@
-export type { MuseaThemeColors, MuseaTheme, MuseaOptions } from "./plugin.js";
+export type { MuseaThemeColors, MuseaTheme, MuseaOptions, MuseaVrtOptions } from "./plugin.js";
 
 export type {
   MuseaTokenPreviewConfig,
