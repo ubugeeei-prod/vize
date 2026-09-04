@@ -5,7 +5,8 @@ use vize_patina::{HelpLevel, LintPreset, Linter, Severity};
 use vize_s0::{
     FxHashMap, String,
     config::{
-        LintRuleOptions, LintRuleSeverity, LinterConfigPlanWithRuleOptions, LinterFeatureFlags,
+        CustomEventNameCasing as ConfigEventNameCasing, LintRuleOptions, LintRuleSeverity,
+        LinterConfigPlanWithRuleOptions, LinterFeatureFlags, TemplateComponentNameCasing,
     },
 };
 
@@ -70,6 +71,13 @@ impl ResolvedLinterRuleGroups {
                     .with_vapor_mode(features.vapor)
                     .with_restricted_globals(restricted_globals)
                     .with_restricted_members(restricted_members);
+                if let Some(casing) = rule_options.component_name_in_template_casing() {
+                    linter =
+                        linter.with_component_name_in_template_casing(component_casing(casing));
+                }
+                if let Some(casing) = rule_options.custom_event_name_casing() {
+                    linter = linter.with_custom_event_name_casing(event_name_casing(casing));
+                }
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     linter = linter.with_corsa_path(configured_corsa_path.clone());
@@ -83,6 +91,20 @@ impl ResolvedLinterRuleGroups {
                 linter
             })
             .collect()
+    }
+}
+
+fn component_casing(casing: TemplateComponentNameCasing) -> vize_patina::rules::ComponentCasing {
+    match casing {
+        TemplateComponentNameCasing::PascalCase => vize_patina::rules::ComponentCasing::PascalCase,
+        TemplateComponentNameCasing::KebabCase => vize_patina::rules::ComponentCasing::KebabCase,
+    }
+}
+
+fn event_name_casing(casing: ConfigEventNameCasing) -> vize_patina::rules::script::EventNameCasing {
+    match casing {
+        ConfigEventNameCasing::CamelCase => vize_patina::rules::script::EventNameCasing::CamelCase,
+        ConfigEventNameCasing::KebabCase => vize_patina::rules::script::EventNameCasing::KebabCase,
     }
 }
 

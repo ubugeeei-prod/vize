@@ -27,13 +27,22 @@ pub struct LintRuleOptions {
     /// Options for `script/no-restricted-members`.
     #[serde(rename = "script/no-restricted-members")]
     pub no_restricted_members: Option<NoRestrictedMembersOptions>,
+    /// Options for `vue/component-name-in-template-casing`.
+    #[serde(rename = "vue/component-name-in-template-casing")]
+    pub component_name_in_template_casing: Option<ComponentNameInTemplateCasingOptions>,
+    /// Options for `script/custom-event-name-casing`.
+    #[serde(rename = "script/custom-event-name-casing")]
+    pub custom_event_name_casing: Option<CustomEventNameCasingOptions>,
 }
 
 impl LintRuleOptions {
     /// Whether no rule options are configured.
     #[inline]
     pub fn is_empty(&self) -> bool {
-        self.no_restricted_globals.is_none() && self.no_restricted_members.is_none()
+        self.no_restricted_globals.is_none()
+            && self.no_restricted_members.is_none()
+            && self.component_name_in_template_casing.is_none()
+            && self.custom_event_name_casing.is_none()
     }
 
     /// Configured deny list for `script/no-restricted-globals` as
@@ -72,6 +81,22 @@ impl LintRuleOptions {
             .unwrap_or_default()
     }
 
+    /// Configured casing for `vue/component-name-in-template-casing`.
+    #[inline]
+    pub fn component_name_in_template_casing(&self) -> Option<TemplateComponentNameCasing> {
+        self.component_name_in_template_casing
+            .as_ref()
+            .map(|options| options.casing)
+    }
+
+    /// Configured casing for `script/custom-event-name-casing`.
+    #[inline]
+    pub fn custom_event_name_casing(&self) -> Option<CustomEventNameCasing> {
+        self.custom_event_name_casing
+            .as_ref()
+            .map(|options| options.casing)
+    }
+
     /// Apply a later config layer to this option set.
     pub fn merge_from(&mut self, overlay: &Self) {
         if let Some(options) = &overlay.no_restricted_globals {
@@ -80,7 +105,47 @@ impl LintRuleOptions {
         if let Some(options) = &overlay.no_restricted_members {
             self.no_restricted_members = Some(options.clone());
         }
+        if let Some(options) = &overlay.component_name_in_template_casing {
+            self.component_name_in_template_casing = Some(*options);
+        }
+        if let Some(options) = &overlay.custom_event_name_casing {
+            self.custom_event_name_casing = Some(*options);
+        }
     }
+}
+
+/// Options for `vue/component-name-in-template-casing`.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+pub struct ComponentNameInTemplateCasingOptions {
+    pub casing: TemplateComponentNameCasing,
+}
+
+/// Component tag casing accepted by `vue/component-name-in-template-casing`.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TemplateComponentNameCasing {
+    #[default]
+    #[serde(rename = "PascalCase")]
+    PascalCase,
+    #[serde(rename = "kebab-case")]
+    KebabCase,
+}
+
+/// Options for `script/custom-event-name-casing`.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+pub struct CustomEventNameCasingOptions {
+    pub casing: CustomEventNameCasing,
+}
+
+/// Event name casing accepted by `script/custom-event-name-casing`.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CustomEventNameCasing {
+    #[default]
+    #[serde(rename = "camelCase")]
+    CamelCase,
+    #[serde(rename = "kebab-case")]
+    KebabCase,
 }
 
 /// Options for `script/no-restricted-globals`.
@@ -133,7 +198,10 @@ pub struct RestrictedMember {
 
 #[cfg(test)]
 mod tests {
-    use super::{LintRuleOptions, RestrictedGlobal, RestrictedMember};
+    use super::{
+        ComponentNameInTemplateCasingOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
+        LintRuleOptions, RestrictedGlobal, RestrictedMember, TemplateComponentNameCasing,
+    };
 
     #[test]
     fn empty_options_deserialize_to_default() {
@@ -198,6 +266,35 @@ mod tests {
             ]
         );
         assert!(options.no_restricted_globals.is_none());
+    }
+
+    #[test]
+    fn deserializes_casing_options() {
+        let json = r#"{
+            "vue/component-name-in-template-casing": { "casing": "kebab-case" },
+            "script/custom-event-name-casing": { "casing": "camelCase" }
+        }"#;
+        let options = serde_json::from_str::<LintRuleOptions>(json).unwrap();
+        assert_eq!(
+            options.component_name_in_template_casing,
+            Some(ComponentNameInTemplateCasingOptions {
+                casing: TemplateComponentNameCasing::KebabCase
+            })
+        );
+        assert_eq!(
+            options.custom_event_name_casing,
+            Some(CustomEventNameCasingOptions {
+                casing: CustomEventNameCasing::CamelCase
+            })
+        );
+        assert_eq!(
+            options.component_name_in_template_casing(),
+            Some(TemplateComponentNameCasing::KebabCase)
+        );
+        assert_eq!(
+            options.custom_event_name_casing(),
+            Some(CustomEventNameCasing::CamelCase)
+        );
     }
 
     #[test]

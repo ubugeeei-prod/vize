@@ -34,9 +34,11 @@ pub use language_server::{LanguageServerConfig, LanguageServerUnstableFlags, Lsp
 #[allow(unused_imports)]
 pub(crate) use linter::RawLinterConfig;
 pub use linter::{LintRuleSeverity, LinterConfig};
+#[allow(unused_imports)]
 pub use linter_rule_options::{
+    ComponentNameInTemplateCasingOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
     LintRuleOptions, NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, RestrictedGlobal,
-    RestrictedMember,
+    RestrictedMember, TemplateComponentNameCasing,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};

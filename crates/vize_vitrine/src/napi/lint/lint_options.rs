@@ -56,6 +56,10 @@ pub struct PatinaLintOptionsNapi {
     pub type_aware: Option<bool>,
     /// Path to the Corsa executable used by type-aware lint rules
     pub corsa_path: Option<String>,
+    /// Casing for `vue/component-name-in-template-casing`: "PascalCase" or "kebab-case"
+    pub component_name_in_template_casing: Option<String>,
+    /// Casing for `script/custom-event-name-casing`: "camelCase" or "kebab-case"
+    pub custom_event_name_casing: Option<String>,
 }
 
 pub(super) enum PatinaPresetSelection {
@@ -113,4 +117,38 @@ pub(super) fn configure_type_aware_lint(
     linter
         .with_type_aware_lint(type_aware.unwrap_or(false))
         .with_corsa_path(corsa_path.map(PathBuf::from))
+}
+
+pub(super) fn configure_patina_rule_options(
+    mut linter: vize_patina::Linter,
+    component_name_in_template_casing: Option<&str>,
+    custom_event_name_casing: Option<&str>,
+) -> vize_patina::Linter {
+    if let Some(casing) = component_name_in_template_casing.and_then(component_casing_from_option) {
+        linter = linter.with_component_name_in_template_casing(casing);
+    }
+    if let Some(casing) = custom_event_name_casing.and_then(event_name_casing_from_option) {
+        linter = linter.with_custom_event_name_casing(casing);
+    }
+    linter
+}
+
+pub(super) fn component_casing_from_option(
+    value: &str,
+) -> Option<vize_patina::rules::ComponentCasing> {
+    match value {
+        "PascalCase" => Some(vize_patina::rules::ComponentCasing::PascalCase),
+        "kebab-case" => Some(vize_patina::rules::ComponentCasing::KebabCase),
+        _ => None,
+    }
+}
+
+pub(super) fn event_name_casing_from_option(
+    value: &str,
+) -> Option<vize_patina::rules::script::EventNameCasing> {
+    match value {
+        "camelCase" => Some(vize_patina::rules::script::EventNameCasing::CamelCase),
+        "kebab-case" => Some(vize_patina::rules::script::EventNameCasing::KebabCase),
+        _ => None,
+    }
 }

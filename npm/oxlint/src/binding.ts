@@ -1,4 +1,9 @@
-import type { PatinaLintResult, PatinaRuleMeta, PatinaSettings } from "./model.js";
+import type {
+  PatinaLintResult,
+  PatinaRuleMeta,
+  PatinaRuleOptions,
+  PatinaSettings,
+} from "./model.js";
 import { loadBinding } from "./native.js";
 
 export function lintPatina(
@@ -6,6 +11,7 @@ export function lintPatina(
   filename: string,
   settings: PatinaSettings,
   enabledRules?: readonly string[],
+  ruleOptions?: PatinaRuleOptions,
 ): PatinaLintResult {
   return loadBinding().lintPatinaSfc(source, {
     filename,
@@ -15,6 +21,7 @@ export function lintPatina(
     enabledRules: enabledRules ? [...enabledRules] : undefined,
     typeAware: settings.typeAware,
     corsaPath: settings.corsaPath,
+    ...ruleOptions,
   });
 }
 

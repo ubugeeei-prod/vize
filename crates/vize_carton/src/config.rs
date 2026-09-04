@@ -19,13 +19,14 @@ pub use loader::{
     validate_explicit_config_path,
 };
 pub use model::{
-    ArrowParens, AttributeSortOrder, ConfigEntryFiles, ConfigEntryIgnore, ConfigFeatureFlags,
+    ArrowParens, AttributeSortOrder, ComponentNameInTemplateCasingOptions, ConfigEntryFiles,
+    ConfigEntryIgnore, ConfigFeatureFlags, CustomEventNameCasing, CustomEventNameCasingOptions,
     EndOfLine, FormatterConfig, GlobalTypeDeclaration, GlobalTypesConfig, JsxCompat, JsxMode,
     LanguageServerConfig, LanguageServerUnstableFlags, LintRuleOptions, LintRuleSeverity,
     LinterConfig, LinterConfigEntry, LinterConfigPlan, LinterConfigPlanWithRuleOptions,
     LinterFeatureFlags, LspConfig, NoRestrictedGlobalsOptions, NoRestrictedMembersOptions,
     ParseVueVersionError, QuoteProps, ResolvedLinterConfig, RestrictedGlobal, RestrictedMember,
-    TrailingComma, TypeCheckerConfig, VizeConfig, VueVersion,
+    TemplateComponentNameCasing, TrailingComma, TypeCheckerConfig, VizeConfig, VueVersion,
 };
 pub use normalize::normalize_public_config_value;
 

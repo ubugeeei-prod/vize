@@ -15,6 +15,8 @@ typealias JsxCompat = "native" | "babel"
 typealias ScriptExt = "ts" | "js"
 typealias RuleSeverity = "off" | "warn" | "error"
 typealias LintPreset = "happy-path" | "opinionated" | "essential" | "incremental" | "ecosystem" | "nuxt"
+typealias TemplateComponentNameCasing = "PascalCase" | "kebab-case"
+typealias CustomEventNameCasing = "camelCase" | "kebab-case"
 typealias TrailingComma = "all" | "none" | "es5"
 typealias FilterPattern = String | Listing<String>
 typealias GlobalTypeValue = String | GlobalTypeDeclaration
@@ -86,9 +88,19 @@ class NoRestrictedMembersOptions {
   members: Listing<RestrictedMember>? = null
 }
 
+class ComponentNameInTemplateCasingOptions {
+  casing: TemplateComponentNameCasing = "PascalCase"
+}
+
+class CustomEventNameCasingOptions {
+  casing: CustomEventNameCasing = "camelCase"
+}
+
 class LintRuleOptions {
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null
+  `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
+  `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
 }
 
 class LinterConfig {

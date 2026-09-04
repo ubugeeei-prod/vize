@@ -6,6 +6,8 @@ typealias RuleSeverity = "off"|"warn"|"error"
 typealias RuleCategory = "correctness"|"suspicious"|"style"|"perf"|"a11y"|"security"
 
 typealias LintPreset = "happy-path"|"opinionated"|"essential"|"incremental"|"ecosystem"|"nuxt"
+typealias TemplateComponentNameCasing = "PascalCase"|"kebab-case"
+typealias CustomEventNameCasing = "camelCase"|"kebab-case"
 
 /// A restricted global identifier for `script/no-restricted-globals`.
 class RestrictedGlobal {
@@ -40,10 +42,22 @@ class NoRestrictedMembersOptions {
   members: Listing<RestrictedMember>? = null
 }
 
+/// Options for `vue/component-name-in-template-casing`.
+class ComponentNameInTemplateCasingOptions {
+  casing: TemplateComponentNameCasing = "PascalCase"
+}
+
+/// Options for `script/custom-event-name-casing`.
+class CustomEventNameCasingOptions {
+  casing: CustomEventNameCasing = "camelCase"
+}
+
 /// Typed per-rule options for rules that accept project-local configuration.
 class LintRuleOptions {
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null
+  `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
+  `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
 }
 
 class LinterConfig {
