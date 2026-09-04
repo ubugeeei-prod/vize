@@ -34,7 +34,7 @@ export function createReleasePreflightVerifyOnlyFixture(tempDir: string) {
   fs.mkdirSync(binDir, { recursive: true });
   fs.mkdirSync(dataDir, { recursive: true });
   fs.mkdirSync(artifactDir, { recursive: true });
-  for (const [shard, artifact] of artifacts.entries()) {
+  for (const shard of artifacts.keys()) {
     fs.writeFileSync(
       path.join(artifactDir, `${shard}.zip`),
       storedZip(
