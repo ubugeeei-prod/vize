@@ -309,6 +309,28 @@
         },
         "script/no-restricted-members": {
           "$ref": "#/definitions/NoRestrictedMembersOptions"
+        },
+        "vue/component-name-in-template-casing": {
+          "type": "object",
+          "properties": {
+            "casing": {
+              "default": "PascalCase",
+              "type": "string",
+              "enum": ["PascalCase", "kebab-case"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "script/custom-event-name-casing": {
+          "type": "object",
+          "properties": {
+            "casing": {
+              "default": "camelCase",
+              "type": "string",
+              "enum": ["camelCase", "kebab-case"]
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

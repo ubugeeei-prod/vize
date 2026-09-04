@@ -3,11 +3,18 @@ use std::path::{Path, PathBuf};
 use vize_carton::{FxHashMap, String};
 
 use super::search::PackageSearchCache;
-use super::stamp::{InputStamp, stamp_paths, stamps_are_current};
-use super::{
-    PackageResolutionContext, PackageRoute, PackageRouteMetrics, PackageSourceOptions,
-    logical_absolute, lookup_uncached,
+use super::stamp::{
+    InputStamp, InputStampCache, stamp_paths, stamp_paths_with_cache, stamps_are_current,
+    stamps_are_current_with_cache,
 };
+use super::{
+    PackagePathCache, PackageResolutionContext, PackageRoute, PackageRouteMetrics,
+    PackageSourceOptions, logical_absolute, lookup_uncached,
+};
+pub use lookup::PackageRouteLookup;
+
+#[path = "cache_lookup.rs"]
+mod lookup;
 
 type ResolutionKey = (
     PathBuf,
@@ -31,6 +38,9 @@ pub struct PackageRouteResolver {
 struct PackageRouteResolverState {
     resolutions: FxHashMap<ResolutionKey, CachedPackageRouteLookup>,
     search: PackageSearchCache,
+    canonical_paths: PackagePathCache,
+    stamp_snapshots: InputStampCache,
+    validation_epoch: u64,
     cache_hits: u64,
     cache_misses: u64,
     refresh_considered_routes: u64,
@@ -53,26 +63,21 @@ struct CachedPackageRouteLookup {
     lookup: PackageRouteLookup,
     stamps: Vec<InputStamp>,
     last_used: u64,
-}
-
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct PackageRouteLookup {
-    pub(super) route: Option<PackageRoute>,
-    pub(super) invalidation_paths: Vec<PathBuf>,
-    pub(super) watchable_negative: bool,
-}
-
-impl PackageRouteLookup {
-    pub fn into_parts(self) -> (Option<PackageRoute>, Vec<PathBuf>) {
-        (self.route, self.invalidation_paths)
-    }
-
-    pub fn is_watchable_negative(&self) -> bool {
-        self.route.is_none() && self.watchable_negative
-    }
+    last_validated_epoch: u64,
 }
 
 impl PackageRouteResolver {
+    pub fn begin_validation_epoch(&mut self) {
+        let mut state = self
+            .state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        state.validation_epoch = state.validation_epoch.wrapping_add(1).max(1);
+        state.canonical_paths.clear();
+        state.stamp_snapshots.clear();
+        state.search.begin_validation_epoch();
+    }
+
     /// Derive one importer occurrence context through the resolver-owned
     /// manifest cache. The returned inputs join the binding's reverse index.
     pub fn resolution_context(
@@ -148,11 +153,32 @@ impl PackageRouteResolver {
             options,
             context,
         );
-        let cached = state
-            .resolutions
-            .get(&key)
-            .filter(|cached| stamps_are_current(&cached.stamps))
-            .map(|cached| cached.lookup.clone());
+        let validation_epoch = state.validation_epoch;
+        let cached_entry = state.resolutions.get(&key).map(|cached| {
+            (
+                cached.last_validated_epoch,
+                cached.stamps.clone(),
+                cached.lookup.clone(),
+            )
+        });
+        let cached = cached_entry.and_then(|(last_validated_epoch, stamps, lookup)| {
+            let current = validation_epoch != 0 && last_validated_epoch == validation_epoch
+                || if validation_epoch == 0 {
+                    stamps_are_current(&stamps)
+                } else {
+                    stamps_are_current_with_cache(&stamps, &mut state.stamp_snapshots)
+                };
+            if current {
+                if validation_epoch != 0
+                    && let Some(cached) = state.resolutions.get_mut(&key)
+                {
+                    cached.last_validated_epoch = validation_epoch;
+                }
+                Some(lookup)
+            } else {
+                None
+            }
+        });
         if let Some(cached) = cached {
             state.clock = state.clock.wrapping_add(1);
             let clock = state.clock;
@@ -164,8 +190,23 @@ impl PackageRouteResolver {
         }
         state.cache_misses += 1;
         state.resolutions.remove(&key);
-        let lookup = lookup_uncached(&logical_importer_dir, specifier, options, &mut state.search);
-        let stamps = stamp_paths(&lookup.invalidation_paths);
+        if state.validation_epoch == 0 {
+            state.canonical_paths.clear();
+        }
+        let mut canonical_paths = std::mem::take(&mut state.canonical_paths);
+        let lookup = lookup_uncached(
+            &logical_importer_dir,
+            specifier,
+            options,
+            &mut state.search,
+            &mut canonical_paths,
+        );
+        state.canonical_paths = canonical_paths;
+        let stamps = if state.validation_epoch == 0 {
+            stamp_paths(&lookup.invalidation_paths)
+        } else {
+            stamp_paths_with_cache(&lookup.invalidation_paths, &mut state.stamp_snapshots)
+        };
         if state.resolutions.len() >= RESOLUTION_CACHE_CAPACITY {
             let oldest = state
                 .resolutions
@@ -179,12 +220,14 @@ impl PackageRouteResolver {
         }
         state.clock = state.clock.wrapping_add(1);
         let clock = state.clock;
+        let validation_epoch = state.validation_epoch;
         state.resolutions.insert(
             key,
             CachedPackageRouteLookup {
                 lookup: lookup.clone(),
                 stamps,
                 last_used: clock,
+                last_validated_epoch: validation_epoch,
             },
         );
         lookup
@@ -197,6 +240,9 @@ impl PackageRouteResolver {
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         state.resolutions.clear();
         state.search.clear();
+        state.canonical_paths.clear();
+        state.stamp_snapshots.clear();
+        state.validation_epoch = 0;
         state.cache_hits = 0;
         state.cache_misses = 0;
         state.refresh_considered_routes = 0;
@@ -283,31 +329,21 @@ impl PackageRouteResolver {
             last_reachability_packages: state.last_reachability_packages,
         }
     }
+
+    #[cfg(test)]
+    fn debug_validation_cache_counts(&self) -> (usize, usize, usize) {
+        let state = self
+            .state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        (
+            state.canonical_paths.len(),
+            state.stamp_snapshots.len(),
+            state.stamp_snapshots.captures(),
+        )
+    }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{PackageRouteResolver, RESOLUTION_CACHE_CAPACITY};
-
-    #[test]
-    fn route_cache_has_a_measured_hard_bound() {
-        let root = tempfile::tempdir().unwrap();
-        let importer = root.path().join("src");
-        std::fs::create_dir_all(&importer).unwrap();
-        let mut resolver = PackageRouteResolver::default();
-        for index in 0..=RESOLUTION_CACHE_CAPACITY {
-            let _ = resolver.lookup(
-                &importer,
-                &format!("package-{index}"),
-                crate::PackageSourceOptions::new(false, false),
-            );
-        }
-
-        let metrics = resolver.metrics();
-        assert_eq!(
-            metrics.resolution_cache_entries,
-            RESOLUTION_CACHE_CAPACITY as u64
-        );
-        assert_eq!(metrics.resolution_cache_evictions, 1);
-    }
-}
+#[path = "cache_tests.rs"]
+mod tests;

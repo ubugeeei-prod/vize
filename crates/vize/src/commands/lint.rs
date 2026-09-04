@@ -55,11 +55,11 @@ pub fn run(args: LintArgs) {
     let (loaded_config, linter_plan, linter_features) = if args.no_config {
         (
             crate::config::LoadedConfigWithFeatures::default(),
-            crate::config::LinterConfigPlanWithRuleOptions::default(),
+            crate::config::LinterConfigPlanWithConfigRuleOptions::default(),
             crate::config::LinterFeatureFlags::default(),
         )
     } else {
-        crate::config::load_config_and_linter_plan_with_rule_options_and_lint_features_and_source(
+        crate::config::load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source(
             args.config.as_deref(),
         )
     };

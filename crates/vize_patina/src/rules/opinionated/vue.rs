@@ -34,8 +34,8 @@ mod warn_custom_directive;
 
 use crate::rule::RuleRegistry;
 
-pub use component_name_in_template_casing::ComponentNameInTemplateCasing;
-use component_name_in_template_casing::ComponentNameInTemplateCasingNuxt;
+pub(crate) use component_name_in_template_casing::ComponentNameInTemplateCasingNuxt;
+pub use component_name_in_template_casing::{ComponentCasing, ComponentNameInTemplateCasing};
 pub use html_button_has_type::HtmlButtonHasType;
 pub use html_self_closing::HtmlSelfClosing;
 use html_self_closing::HtmlSelfClosingNuxt;

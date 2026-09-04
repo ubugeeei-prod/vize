@@ -107,7 +107,7 @@ pub struct ServerState {
     linter_config: RwLock<LinterConfig>,
     /// Typed per-rule lint options (`linter.ruleOptions`) for configurable
     /// script rules; loaded alongside `linter_config` (#1891).
-    linter_rule_options: RwLock<vize_s0::config::LintRuleOptions>,
+    linter_rule_options: RwLock<vize_s0::config::ConfigLintRuleOptions>,
     /// Explicit Vue dialect from config (`dialect` key). `None` means the
     /// dialect is detected structurally per document.
     dialect_config: RwLock<Option<VueDialect>>,
@@ -197,7 +197,7 @@ impl ServerState {
             // JSX/TSX stays off so React sources remain untouched (#1498).
             type_checker_jsx_typecheck: RwLock::new(false),
             linter_config: RwLock::new(LinterConfig::default()),
-            linter_rule_options: RwLock::new(vize_s0::config::LintRuleOptions::default()),
+            linter_rule_options: RwLock::new(vize_s0::config::ConfigLintRuleOptions::default()),
             dialect_config: RwLock::new(None),
             workspace_folder_configs: RwLock::new(Vec::new()),
             #[cfg(feature = "glyph")]

@@ -826,6 +826,10 @@ export interface PatinaLintOptionsNapi {
   typeAware?: boolean;
   /** Path to the Corsa executable used by type-aware lint rules */
   corsaPath?: string;
+  /** Casing for `vue/component-name-in-template-casing`: "PascalCase" or "kebab-case" */
+  componentNameInTemplateCasing?: string;
+  /** Casing for `script/custom-event-name-casing`: "camelCase" or "kebab-case" */
+  customEventNameCasing?: string;
 }
 
 export declare function printCssAst(

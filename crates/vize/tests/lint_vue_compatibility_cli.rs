@@ -86,3 +86,49 @@ const title = 'legacy'
 
     let _ = fs::remove_dir_all(project_root);
 }
+
+#[test]
+fn lint_top_level_vue2_compatibility_disables_vue34_props_shorthand() {
+    let project_root = temp_project_dir();
+    write_project_file(
+        &project_root,
+        "src/DataCard.vue",
+        r#"<script setup lang="ts">
+interface Props {
+  height?: string
+}
+withDefaults(defineProps<Props>(), { height: '' })
+</script>
+
+<template>
+  <v-card :height="height">sample</v-card>
+</template>
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "vize.config.ts",
+        r#"export default {
+  compatibility: { vueVersion: '2.7' }
+}
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "lint",
+            "--preset",
+            "opinionated",
+            "--config",
+            "vize.config.ts",
+            "src/DataCard.vue",
+        ])
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{}", output_details(&output));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(!stdout.contains("vue/prefer-props-shorthand"), "{stdout}");
+
+    let _ = fs::remove_dir_all(project_root);
+}

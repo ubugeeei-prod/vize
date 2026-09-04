@@ -310,7 +310,7 @@ export default class Counter extends Vue {
     assert!(
         output
             .code
-            .contains("const count: __VizeOptionsBinding<typeof __default__, \"count\">"),
+            .contains("var count: __VizeOptionsBinding<typeof __default__, \"count\">"),
         "class members must be typed from the class instance:\n{}",
         output.code
     );

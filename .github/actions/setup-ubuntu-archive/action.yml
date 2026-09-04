@@ -13,3 +13,8 @@ runs:
           exit 0
         fi
         printf '%s\n' 'http://archive.ubuntu.com/ubuntu' | sudo tee "$mirror_list" >/dev/null
+        sudo tee /etc/apt/apt.conf.d/80-vize-retry-downloads >/dev/null <<'APT'
+        Acquire::Retries "5";
+        Acquire::http::Timeout "30";
+        Acquire::https::Timeout "30";
+        APT

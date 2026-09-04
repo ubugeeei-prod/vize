@@ -187,10 +187,9 @@ struct EmitCx<'facts> {
     is_ts: bool,
     /// The shipped lane's `cache_handlers`.
     cache_handlers: bool,
-    /// Set while prefixing when a binding needed `_unref`; the shipped
-    /// lane registers that helper on the transform and appends it after
-    /// every used helper, so the emit marks it once the body is written.
-    used_unref: core::cell::Cell<bool>,
+    /// The op-visit count at which prefixing first needed `_unref`
+    /// (`u32::MAX`: never) — where the transform would register it.
+    used_unref: core::cell::Cell<u32>,
     /// The shipped lane's `component_name`, for the self-reference flag
     /// on `resolveComponent`.
     component_name: Option<&'facts str>,
@@ -235,7 +234,7 @@ fn emit_dom_with_emit_budget<'f>(
     let static_cache =
         options.inline || static_cache::enabled(&lowered.root, facts, &lowered.wrappers);
     let mut cx = EmitCx {
-        buf: Buf::new(),
+        buf: Buf::new(options.inline),
         source: lowered.source,
         facts,
         scopes: &lowered.scopes,
@@ -263,7 +262,7 @@ fn emit_dom_with_emit_budget<'f>(
         prefix_identifiers: options.prefix_identifiers,
         is_ts: options.is_ts,
         cache_handlers: options.cache_handlers,
-        used_unref: core::cell::Cell::new(false),
+        used_unref: core::cell::Cell::new(u32::MAX),
         component_name: options.component_name,
         scope: prefix::PrefixScope::new(
             options.bindings,
@@ -309,11 +308,12 @@ fn emit_dom_with_emit_budget<'f>(
     cx.buf.deindent();
     cx.buf.newline();
     cx.buf.push("}");
-    // `_unref` is a *transform* registration, so it lists with the
-    // pre-walk's preferred helpers, not the emit's used ones: before
-    // `vShow` (codegen) and after `renderList` (transform).
-    if cx.used_unref.get() {
-        cx.buf.prefer(Helper::Unref);
+    // `_unref` is a *transform* registration: it lists with the pre-walk's
+    // preferred helpers, at the op whose expression needed it — ahead of a
+    // structural helper that op registers later (`renderList`).
+    let unref_visit = cx.used_unref.get();
+    if unref_visit != u32::MAX {
+        cx.buf.prefer_at_visit(Helper::Unref, unref_visit);
         cx.buf.use_helper(Helper::Unref);
     }
     let emit_visits = cx.walk.visits();

@@ -71,6 +71,7 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
     aliases: Option<&PathAliasResolver>,
     packages: &mut PackageRouteResolver,
 ) -> TransitiveLocalImports {
+    packages.begin_validation_epoch();
     let options = options.into();
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registered: FxHashSet<PathBuf> = FxHashSet::default();

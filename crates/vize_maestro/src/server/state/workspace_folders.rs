@@ -14,7 +14,7 @@
 use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{InitializeParams, Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
-use vize_s0::config::{LintRuleOptions, LinterConfig};
+use vize_s0::config::{ConfigLintRuleOptions, LinterConfig};
 
 use super::ServerState;
 
@@ -22,7 +22,7 @@ use super::ServerState;
 pub(super) struct WorkspaceFolderConfig {
     root: PathBuf,
     linter: LinterConfig,
-    rule_options: LintRuleOptions,
+    rule_options: ConfigLintRuleOptions,
 }
 
 impl WorkspaceFolderConfig {
@@ -31,7 +31,7 @@ impl WorkspaceFolderConfig {
     fn load(root: PathBuf) -> Self {
         let (loaded, linter) = vize_s0::config::load_config_and_linter_with_source(Some(&root));
         if loaded.source_path.is_some() {
-            let rule_options = vize_s0::config::load_linter_rule_options(Some(&root));
+            let rule_options = vize_s0::config::load_config_lint_rule_options(Some(&root));
             Self {
                 root,
                 linter,
@@ -41,7 +41,7 @@ impl WorkspaceFolderConfig {
             Self {
                 root,
                 linter: LinterConfig::default(),
-                rule_options: LintRuleOptions::default(),
+                rule_options: ConfigLintRuleOptions::default(),
             }
         }
     }
@@ -115,7 +115,10 @@ impl ServerState {
 
     /// Linter settings for a document: its deepest enclosing workspace folder
     /// wins; documents outside every folder use the process-wide settings.
-    pub(crate) fn linter_settings_for_uri(&self, uri: &Url) -> (LinterConfig, LintRuleOptions) {
+    pub(crate) fn linter_settings_for_uri(
+        &self,
+        uri: &Url,
+    ) -> (LinterConfig, ConfigLintRuleOptions) {
         if let Ok(path) = uri.to_file_path() {
             let contexts = self.workspace_folder_configs.read();
             if let Some(context) = deepest_enclosing_folder(&contexts, &path) {

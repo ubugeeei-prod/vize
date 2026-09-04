@@ -65,7 +65,29 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 };
 
 /// Enforce camelCase for emitted custom event names.
-pub struct CustomEventNameCasing;
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum EventNameCasing {
+    #[default]
+    CamelCase,
+    KebabCase,
+}
+
+/// Enforce configured casing for emitted custom event names.
+pub struct CustomEventNameCasing {
+    casing: EventNameCasing,
+}
+
+impl CustomEventNameCasing {
+    pub const fn new(casing: EventNameCasing) -> Self {
+        Self { casing }
+    }
+}
+
+impl Default for CustomEventNameCasing {
+    fn default() -> Self {
+        Self::new(EventNameCasing::CamelCase)
+    }
+}
 
 impl ScriptRule for CustomEventNameCasing {
     fn meta(&self) -> &'static ScriptRuleMeta {
@@ -111,16 +133,18 @@ impl ScriptRule for CustomEventNameCasing {
             offset,
             result,
             emit_binding,
+            casing: self.casing,
         };
         visitor.visit_program(program);
 
-        check_template(emit_binding, sfc, result);
+        check_template(emit_binding, self.casing, sfc, result);
     }
 }
 
 /// The template half: `$emit('foo-bar')`, or a call of the captured binding.
 fn check_template(
     emit_binding: Option<&str>,
+    casing: EventNameCasing,
     sfc: SfcScriptContext<'_>,
     result: &mut ScriptLintResult,
 ) {
@@ -137,11 +161,12 @@ fn check_template(
         let Some(event) = call.first_string_argument else {
             return;
         };
-        if is_camel_case_event(event.value) {
+        if is_valid_event_name(event.value, casing) {
             return;
         }
         report(
             event.value,
+            casing,
             template_offset + event.start,
             template_offset + event.end,
             result,
@@ -153,6 +178,7 @@ struct CustomEventNameCasingVisitor<'a, 'result> {
     offset: usize,
     result: &'result mut ScriptLintResult,
     emit_binding: Option<&'a str>,
+    casing: EventNameCasing,
 }
 
 impl<'a> Visit<'a> for CustomEventNameCasingVisitor<'a, '_> {
@@ -184,11 +210,12 @@ impl<'a> CustomEventNameCasingVisitor<'a, '_> {
 
     fn check_event_name(&mut self, literal: &StringLiteral<'_>) {
         let value = literal.value.as_str();
-        if is_camel_case_event(value) {
+        if is_valid_event_name(value, self.casing) {
             return;
         }
         report(
             value,
+            self.casing,
             self.offset as u32 + literal.span.start,
             self.offset as u32 + literal.span.end,
             self.result,
@@ -196,19 +223,42 @@ impl<'a> CustomEventNameCasingVisitor<'a, '_> {
     }
 }
 
-fn report(value: &str, start: u32, end: u32, result: &mut ScriptLintResult) {
+fn report(
+    value: &str,
+    casing: EventNameCasing,
+    start: u32,
+    end: u32,
+    result: &mut ScriptLintResult,
+) {
+    let casing_name = match casing {
+        EventNameCasing::CamelCase => "camelCase",
+        EventNameCasing::KebabCase => "kebab-case",
+    };
     let mut message = CompactString::with_capacity(value.len() + 40);
     message.push_str("Custom event name '");
     message.push_str(value);
-    message.push_str("' is not camelCase.");
+    message.push_str("' is not ");
+    message.push_str(casing_name);
+    message.push('.');
 
-    let diagnostic = LintDiagnostic::error(META.name, message, start, end)
-        .with_label("expected camelCase", start, end)
-        .with_help(
+    let help = match casing {
+        EventNameCasing::CamelCase => {
             "Vue 3 recommends camelCase for emitted event names; rename this event \
-             to camelCase (e.g. `myEvent`).",
-        );
+             to camelCase (e.g. `myEvent`)."
+        }
+        EventNameCasing::KebabCase => "Rename this emitted event to kebab-case (e.g. `my-event`).",
+    };
+    let diagnostic = LintDiagnostic::error(META.name, message, start, end)
+        .with_label(vize_s0::cstr!("expected {casing_name}"), start, end)
+        .with_help(help);
     result.add_diagnostic(diagnostic);
+}
+
+fn is_valid_event_name(value: &str, casing: EventNameCasing) -> bool {
+    match casing {
+        EventNameCasing::CamelCase => is_camel_case_event(value),
+        EventNameCasing::KebabCase => is_kebab_case_event(value),
+    }
 }
 
 /// Whether `value` is an acceptable camelCase event name. Each `:`-separated
@@ -226,6 +276,29 @@ fn is_camel_case_segment(segment: &str) -> bool {
         _ => return false,
     }
     chars.all(|c| c.is_ascii_alphanumeric())
+}
+
+fn is_kebab_case_event(value: &str) -> bool {
+    !value.is_empty() && value.split(':').all(is_kebab_case_segment)
+}
+
+fn is_kebab_case_segment(segment: &str) -> bool {
+    let mut bytes = segment.bytes();
+    let Some(first) = bytes.next() else {
+        return false;
+    };
+    if !first.is_ascii_lowercase() {
+        return false;
+    }
+    let mut previous_hyphen = false;
+    for byte in bytes {
+        match byte {
+            b'a'..=b'z' | b'0'..=b'9' => previous_hyphen = false,
+            b'-' if !previous_hyphen => previous_hyphen = true,
+            _ => return false,
+        }
+    }
+    !previous_hyphen
 }
 
 /// The identifier a top-level `const <id> = defineEmits(...)` binds the emit

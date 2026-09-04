@@ -5,13 +5,18 @@
 //! `process` or `window.localStorage`) through `vize lint` instead of running a
 //! sidecar ESLint. Options live under `linter.ruleOptions.<rule-name>` and are
 //! parsed into typed structs (no untyped `serde_json::Value`) so the schema is
-//! discoverable and validation stays strict.
-//!
-//! Refs: #1891 (project-local custom rules during migration).
+//! discoverable and option payload validation stays strict.
 
 use serde::{Deserialize, Serialize};
 
 use crate::String;
+
+mod casing;
+
+pub use casing::{
+    ComponentNameInTemplateCasingOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
+    TemplateComponentNameCasing,
+};
 
 /// Per-rule configuration keyed by rule name.
 ///
@@ -83,6 +88,88 @@ impl LintRuleOptions {
     }
 }
 
+/// Full typed lint rule options parsed from config.
+///
+/// This wraps the stable public [`LintRuleOptions`] shape with new config-only
+/// options, so existing Rust consumers can still construct `LintRuleOptions`
+/// using the previous fields while the CLI and LSP can read newer rule options.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, rename_all = "kebab-case")]
+pub struct ConfigLintRuleOptions {
+    #[serde(flatten)]
+    stable: LintRuleOptions,
+    /// Options for `vue/component-name-in-template-casing`.
+    #[serde(rename = "vue/component-name-in-template-casing")]
+    component_name_in_template_casing: Option<ComponentNameInTemplateCasingOptions>,
+    /// Options for `script/custom-event-name-casing`.
+    #[serde(rename = "script/custom-event-name-casing")]
+    custom_event_name_casing: Option<CustomEventNameCasingOptions>,
+}
+
+impl ConfigLintRuleOptions {
+    /// Build full config options from the stable public subset.
+    #[inline]
+    pub fn from_stable_options(stable: LintRuleOptions) -> Self {
+        Self {
+            stable,
+            ..Self::default()
+        }
+    }
+
+    /// Stable subset exposed by the original `load_linter_rule_options` API.
+    #[inline]
+    pub fn stable_options(&self) -> &LintRuleOptions {
+        &self.stable
+    }
+
+    /// Whether no rule options are configured.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.stable.is_empty()
+            && self.component_name_in_template_casing.is_none()
+            && self.custom_event_name_casing.is_none()
+    }
+
+    /// Configured deny list for `script/no-restricted-globals`.
+    #[inline]
+    pub fn restricted_globals(&self) -> Vec<(String, Option<String>)> {
+        self.stable.restricted_globals()
+    }
+
+    /// Configured deny list for `script/no-restricted-members`.
+    #[inline]
+    pub fn restricted_members(&self) -> Vec<(String, String, Option<String>)> {
+        self.stable.restricted_members()
+    }
+
+    /// Configured casing for `vue/component-name-in-template-casing`.
+    #[inline]
+    pub fn component_name_in_template_casing(&self) -> Option<TemplateComponentNameCasing> {
+        self.component_name_in_template_casing
+            .as_ref()
+            .map(|options| options.casing)
+    }
+
+    /// Configured casing for `script/custom-event-name-casing`.
+    #[inline]
+    pub fn custom_event_name_casing(&self) -> Option<CustomEventNameCasing> {
+        self.custom_event_name_casing
+            .as_ref()
+            .map(|options| options.casing)
+    }
+
+    /// Apply a later config layer to this option set.
+    pub fn merge_from(&mut self, overlay: &Self) {
+        self.stable.merge_from(&overlay.stable);
+        if let Some(options) = &overlay.component_name_in_template_casing {
+            self.component_name_in_template_casing = Some(*options);
+        }
+        if let Some(options) = &overlay.custom_event_name_casing {
+            self.custom_event_name_casing = Some(*options);
+        }
+    }
+}
+
 /// Options for `script/no-restricted-globals`.
 ///
 /// When `globals` is non-empty it **replaces** the rule's built-in deny list;
@@ -133,7 +220,11 @@ pub struct RestrictedMember {
 
 #[cfg(test)]
 mod tests {
-    use super::{LintRuleOptions, RestrictedGlobal, RestrictedMember};
+    use super::{
+        ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, CustomEventNameCasing,
+        CustomEventNameCasingOptions, LintRuleOptions, RestrictedGlobal, RestrictedMember,
+        TemplateComponentNameCasing,
+    };
 
     #[test]
     fn empty_options_deserialize_to_default() {
@@ -198,6 +289,51 @@ mod tests {
             ]
         );
         assert!(options.no_restricted_globals.is_none());
+    }
+
+    #[test]
+    fn deserializes_casing_options() {
+        let json = r#"{
+            "vue/component-name-in-template-casing": { "casing": "kebab-case" },
+            "script/custom-event-name-casing": { "casing": "camelCase" }
+        }"#;
+        let options = serde_json::from_str::<ConfigLintRuleOptions>(json).unwrap();
+        assert_eq!(
+            options.component_name_in_template_casing,
+            Some(ComponentNameInTemplateCasingOptions {
+                casing: TemplateComponentNameCasing::KebabCase
+            })
+        );
+        assert_eq!(
+            options.custom_event_name_casing,
+            Some(CustomEventNameCasingOptions {
+                casing: CustomEventNameCasing::CamelCase
+            })
+        );
+        assert_eq!(
+            options.component_name_in_template_casing(),
+            Some(TemplateComponentNameCasing::KebabCase)
+        );
+        assert_eq!(
+            options.custom_event_name_casing(),
+            Some(CustomEventNameCasing::CamelCase)
+        );
+    }
+
+    #[test]
+    fn stable_lint_rule_options_keep_legacy_shape() {
+        let json = r#"{
+            "script/no-restricted-globals": {
+                "globals": [{ "name": "process" }]
+            },
+            "vue/component-name-in-template-casing": { "casing": "kebab-case" }
+        }"#;
+        let options = serde_json::from_str::<ConfigLintRuleOptions>(json).unwrap();
+        assert_eq!(
+            options.stable_options().restricted_globals(),
+            [("process".into(), None)]
+        );
+        assert!(options.component_name_in_template_casing().is_some());
     }
 
     #[test]

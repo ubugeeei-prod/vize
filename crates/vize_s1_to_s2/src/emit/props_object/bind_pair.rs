@@ -9,6 +9,9 @@ use super::Piece;
 
 pub(super) fn emit_static_pair(cx: &mut EmitCx<'_>, attr: &Attribute<'_>) {
     emit_ref_for(cx, attr.name);
+    if emit_template_ref_pair(cx, attr) {
+        return;
+    }
     push_ident_key(cx, attr.name);
     cx.buf.push(": \"");
     if let Some(value) = attr.value {
@@ -66,6 +69,24 @@ pub(super) fn emit_bind_pair(
         _ => value.emit_authored(cx, bind)?,
     }
     Ok(())
+}
+
+/// The inline lane's `ref_key` pair: `ref="name"` naming a writable
+/// setup binding becomes `ref_key: "name", ref: name` instead of the
+/// attribute's own string value. `ref_for` is already written when this
+/// runs, matching the shipped order.
+fn emit_template_ref_pair(cx: &mut EmitCx<'_>, attr: &Attribute<'_>) -> bool {
+    if attr.name != "ref" {
+        return false;
+    }
+    let Some(name) = attr.value.filter(|name| cx.scope.writes_template_ref(name)) else {
+        return false;
+    };
+    cx.buf.push("ref_key: \"");
+    cx.buf.push(name);
+    cx.buf.push("\", ref: ");
+    cx.buf.push(name);
+    true
 }
 
 fn emit_ref_for(cx: &mut EmitCx<'_>, name: &str) {

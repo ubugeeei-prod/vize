@@ -21,6 +21,7 @@ mod editor_typecheck_fixture;
 #[cfg(all(test, feature = "native"))]
 mod editor_typecheck_tests;
 mod line_index;
+mod linter_options;
 mod service;
 mod severity;
 #[cfg(all(test, feature = "native"))]

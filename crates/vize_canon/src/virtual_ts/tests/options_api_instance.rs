@@ -6,6 +6,8 @@ use crate::virtual_ts::{
     TemplateGlobal, VirtualTsOptions, generate_virtual_ts_with_offsets_options_api,
 };
 
+mod data_assignment;
+
 #[test]
 fn test_options_api_template_bindings_use_default_instance_type() {
     let script = r#"export default {
@@ -51,7 +53,7 @@ fn test_options_api_template_bindings_use_default_instance_type() {
     assert!(
         output
             .code
-            .contains("const count: __VizeOptionsBinding<typeof __default__, \"count\">"),
+            .contains("var count: __VizeOptionsBinding<typeof __default__, \"count\">"),
         "expected data binding to reference the default component instance:\n{}",
         output.code
     );

@@ -215,7 +215,7 @@ fn reserve_skipped_once_helpers(
     Ok(())
 }
 
-fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
+pub(super) fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
     pieces.iter().any(|piece| match piece {
         Piece::Bind(bind) => matches!(bind.name, Some(DynamicName::Static(n)) if n == name),
         Piece::ModelValue {
@@ -256,7 +256,7 @@ fn pieces_have_inline_on(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
     })
 }
 
-fn pieces_have_vue_text(pieces: &[Piece<'_>]) -> bool {
+pub(super) fn pieces_have_vue_text(pieces: &[Piece<'_>]) -> bool {
     pieces
         .iter()
         .any(|piece| matches!(piece, Piece::VueText(_)))

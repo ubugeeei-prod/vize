@@ -333,7 +333,12 @@ pub(super) fn emit_bind_props(
 
 pub(super) fn apply_static_ref_patch(attributes: &[Attribute<'_>], flag: &mut i32) {
     let has_static_ref = attributes.iter().any(|attr| attr.name == "ref");
-    if has_static_ref && *flag & (2 | 4 | 8 | 16 | 32) == 0 {
+    // The shipped gate is the *normal prop* flags alone: NEED_PATCH still
+    // combines with TEXT and NEED_HYDRATION, because neither of those
+    // updates a ref on its own. Only an inlined render function reaches
+    // the difference — elsewhere a handler that sets NEED_HYDRATION is
+    // dynamic and sets PROPS with it.
+    if has_static_ref && *flag & (2 | 4 | 8 | 16) == 0 {
         *flag |= 512;
     }
 }

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import type { Context } from "@oxlint/plugins";
 
 import { lintPatina } from "./binding.js";
-import type { PatinaDiagnostic, SfcBlock, SingleScriptMap } from "./model.js";
+import type { PatinaDiagnostic, PatinaRuleOptions, SfcBlock, SingleScriptMap } from "./model.js";
 import { extractSfcBlocks } from "./sfc-blocks.js";
 import { createSingleScriptMap } from "./script-map.js";
 import {
@@ -109,7 +109,12 @@ export function getDiagnosticsForRule(
   context: Context,
   state: FileState,
   ruleName: string,
+  ruleOptions?: PatinaRuleOptions,
 ): readonly PatinaDiagnostic[] {
+  if (ruleOptions != null) {
+    return getConfiguredRuleDiagnostics(context, state, ruleName, ruleOptions);
+  }
+
   if (state.allDiagnosticsByRule) {
     if (isTypeAwareRuleName(ruleName) && !state.allDiagnosticsIncludesTypeAware) {
       const settings = getVizeSettings(context);
@@ -161,6 +166,41 @@ export function getDiagnosticsForRule(
   state.allDiagnosticsIncludesTypeAware = fullPassTypeAware;
   state.partialDiagnosticsByRule.clear();
   return diagnosticsForRule(state, state.allDiagnosticsByRule, ruleName);
+}
+
+function getConfiguredRuleDiagnostics(
+  context: Context,
+  state: FileState,
+  ruleName: string,
+  ruleOptions: PatinaRuleOptions,
+): readonly PatinaDiagnostic[] {
+  const cacheKey = configuredRuleCacheKey(ruleName, ruleOptions);
+  const cached = state.partialDiagnosticsByRule.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const settings = getVizeSettings(context);
+  const ruleSettings = isTypeAwareRuleName(ruleName) ? { ...settings, typeAware: true } : settings;
+  const diagnostics = lintPatina(
+    state.source,
+    state.filename,
+    ruleSettings,
+    [ruleName],
+    ruleOptions,
+  ).diagnostics;
+  const indexedDiagnostics = indexDiagnosticsByRule(diagnostics);
+  const ruleDiagnostics = diagnosticsForRule(state, indexedDiagnostics, ruleName);
+  state.partialDiagnosticsByRule.set(cacheKey, ruleDiagnostics);
+  return ruleDiagnostics;
+}
+
+function configuredRuleCacheKey(ruleName: string, ruleOptions: PatinaRuleOptions): string {
+  return [
+    ruleName,
+    ruleOptions.componentNameInTemplateCasing ?? "",
+    ruleOptions.customEventNameCasing ?? "",
+  ].join("\0");
 }
 
 export function getScriptMap(state: FileState): SingleScriptMap | null {

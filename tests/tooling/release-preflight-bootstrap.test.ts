@@ -67,6 +67,19 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         inputs: { mode: "replay" },
         expectedRunName: `Fuzz replay @ ${releaseSha}`,
       },
+      {
+        workflowName: "Real Project Matrix",
+        workflowId: "real-project-matrix.yml",
+        inputs: {
+          core_tools_mode: "record-only",
+          typecheck_dependencies_mode: "record-only",
+          lint_divergence_mode: "record-only",
+          lsp_mode: "record-only",
+          typecheck_divergence_mode: "enforce",
+          davinci_dom_corpus_mode: "record-only",
+        },
+        expectedRunName: `Real Project Matrix @ ${releaseSha}`,
+      },
     ].map((plan) => ({ ref: "v1.2.3", ...plan })),
   );
 });
@@ -155,7 +168,7 @@ test("on-demand gates correlate expanded display titles, never workflow names", 
 test("release gate bootstrap reuses evidence that already exists at the SHA", async () => {
   const plans = releasePlans();
   const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
-  for (const workflowName of ["Benchmark", "Fuzz"]) {
+  for (const workflowName of ["Benchmark", "Fuzz", "Real Project Matrix"]) {
     const run = findEvidenceRun(runs, workflowName);
     run.display_title = findReleasePlan(workflowName).expectedRunName;
     run.event = "workflow_dispatch";
@@ -228,12 +241,10 @@ test("release gate bootstrap attempts every missing dispatch before reporting fa
       listRuns: async () => [],
       dispatchWorkflow: async (plan) => {
         attempts.push(plan.workflowName);
-        if (["Benchmark", "Fuzz"].includes(plan.workflowName)) {
-          throw new Error(`dispatch denied for ${plan.workflowName}`);
-        }
+        throw new Error(`dispatch denied for ${plan.workflowName}`);
       },
     }),
-    /Failed to dispatch release gates:[\s\S]*Benchmark: dispatch denied[\s\S]*Fuzz: dispatch denied/,
+    /Failed to dispatch release gates:[\s\S]*Benchmark: dispatch denied[\s\S]*Fuzz: dispatch denied[\s\S]*Real Project Matrix: dispatch denied/,
   );
   assert.deepEqual(
     attempts,
