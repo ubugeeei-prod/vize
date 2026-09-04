@@ -1,40 +1,18 @@
 import { requiredRealProjectMatrixShardCount } from "./release-preflight-matrix-evidence.mjs";
 
 /**
- * TEMPORARY — three gates were removed here. Tracked in #4461.
- *
- * A release used to wait hours. Measured wall-clock, recent runs:
- *
- *   Real Project Matrix   123, 125, 126, 303, 317 minutes
- *   App E2E               21
- *   Native Smoke          12-40
- *   Check                 8-11
- *   Benchmark             4-5
- *   Fuzz (replay)         3
- *
- * The release workflow's own build matrix finishes in ~17 minutes, bounded by
- * the Windows native target, so anything slower than that is pure added
- * latency on the critical path.
- *
- * Removed, and why each one is affordable to remove right now:
- *
- * - `Real Project Matrix` — hours, and it currently proves nothing. Every
- *   surface the release dispatches is `record-only` (#4462) and the artifact
- *   parity proof is advisory (#4463), so it cannot fail a release on a finding.
- *   It can only add latency and flakiness: 4 of its 22 shards were cancelled by
- *   fail-fast in run 32217699071, which alone would have failed the artifact
- *   completeness check. Restore it with its verdicts, not before.
- * - `Native Smoke` — the release workflow already runs `Smoke release npm
- *   package installs` against the artifacts this tag built, in-run, at the tag.
- *   The separate gate re-proves that on a slower path.
- * - `App E2E` — 21 minutes, and it runs on its own schedule.
- *
- * What still gates a publish: `Check` (the full suite), `Miri`, `Docs build` —
- * all push-triggered, so they are already green on the release commit's parent
- * and cost nothing to confirm — plus `Benchmark` and `Fuzz` replay, which are
- * dispatched but finish inside the build matrix's own 17 minutes.
+ * Real Project Matrix is a required release gate again because the
+ * typecheck-divergence surface now runs in enforce mode and the release
+ * preflight validates every shard artifact before publishing.
  */
-export const requiredReleaseWorkflows = ["Check", "Benchmark", "Fuzz", "Miri", "Docs build"];
+export const requiredReleaseWorkflows = [
+  "Check",
+  "Benchmark",
+  "Fuzz",
+  "Miri",
+  "Real Project Matrix",
+  "Docs build",
+];
 
 export const requiredReleaseWorkflowEvidence = new Map([
   [

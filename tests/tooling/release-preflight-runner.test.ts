@@ -12,6 +12,7 @@ import {
 import { workspaceVersionFromCargoToml } from "../../legacy-tools/github/release-preflight-core.mjs";
 import { repoRoot } from "./_helpers/moonbit.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
+import { createReleasePreflightVerifyOnlyFixture } from "./support/release-preflight-runner-fixture.ts";
 
 const sha = "a".repeat(40);
 
@@ -161,105 +162,8 @@ test("release metadata inventory discovers every non-private npm and editor pack
 
 test("verify-only mode accepts flat job evidence returned by pagination", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-jobs-"));
-  const binDir = path.join(tempDir, "bin");
-  const version = workspaceVersionFromCargoToml(
-    fs.readFileSync(path.join(repoRoot, "Cargo.toml"), "utf8"),
-  );
-  const trackedManifests = spawnSync("git", ["ls-files", "-z", "--", "editors", "npm"], {
-    cwd: repoRoot,
-    encoding: "utf8",
-  });
-  assert.equal(trackedManifests.status, 0, trackedManifests.stderr);
-  const baseSha = "b".repeat(40);
-  const tag = `v${version}`;
-  const run = (
-    id: number,
-    name: string,
-    path: string,
-    event: string,
-    displayTitle = `${name} release evidence`,
-  ) => ({
-    id,
-    name,
-    display_title: displayTitle,
-    path,
-    event,
-    head_branch: event === "push" ? "main" : tag,
-    head_sha: sha,
-    status: "completed",
-    conclusion: "success",
-    html_url: `https://example.test/runs/${id}`,
-    created_at: `2026-07-12T00:${id}:00Z`,
-    run_started_at: `2026-07-12T00:${id}:00Z`,
-    updated_at: `2026-07-12T00:${id}:00Z`,
-  });
-  const jobs = Object.fromEntries(
-    [
-      [101, ["test-scripts"]],
-      [102, ["pr-benchmark-budget"]],
-      [
-        103,
-        [
-          "Fuzz sfc_parse",
-          "Fuzz template_lexer",
-          "Fuzz js_ts_expression",
-          "Fuzz css_parse",
-          "Fuzz template_compile",
-        ],
-      ],
-    ].map(([id, names]) => [
-      id,
-      (names as string[]).map((name) => ({ name, status: "completed", conclusion: "success" })),
-    ]),
-  );
-  const runs = [
-    run(101, "Check", ".github/workflows/check.yml", "push"),
-    run(
-      102,
-      "Benchmark",
-      ".github/workflows/benchmark.yml",
-      "workflow_dispatch",
-      `Benchmark ${baseSha}...${sha}`,
-    ),
-    run(103, "Fuzz", ".github/workflows/fuzz.yml", "workflow_dispatch", `Fuzz replay @ ${sha}`),
-    run(104, "Miri", ".github/workflows/miri.yml", "push"),
-    run(105, "Docs build", ".github/workflows/build-docs.yml", "push"),
-  ];
-  fs.mkdirSync(binDir, { recursive: true });
-  writeFakeCommand(
-    binDir,
-    "git",
-    [
-      "const args = process.argv.slice(2);",
-      "const command = args.join(' ');",
-      "if (command === 'rev-parse HEAD') console.log(process.env.TEST_RELEASE_SHA);",
-      "else if (command === 'rev-parse refs/remotes/origin/main') console.log(process.env.TEST_RELEASE_SHA);",
-      "else if (command === 'rev-list --first-parent refs/remotes/origin/main') console.log(process.env.TEST_RELEASE_SHA);",
-      "else if (command === 'show refs/remotes/origin/main:Cargo.toml') process.stdout.write(process.env.TEST_MAIN_CARGO_TOML);",
-      "else if (args[0] === 'ls-files') process.stdout.write(JSON.parse(process.env.TEST_PACKAGE_MANIFESTS).join('\\0') + '\\0');",
-      "else if (args[0] === 'ls-remote') console.log(`${process.env.TEST_TAG_SHA}\\trefs/tags/${process.env.TEST_TAG}`);",
-      "else if (args[0] === 'rev-list') console.log(`${process.env.TEST_RELEASE_SHA} ${process.env.TEST_BASE_SHA}`);",
-      "else if (args[0] === 'merge-base') process.exit(0);",
-      "else if (args[0] === 'diff') console.log('crates/vize/src/lib.rs');",
-      "else process.exit(2);",
-    ].join("\n"),
-  );
-  writeFakeCommand(
-    binDir,
-    "curl",
-    [
-      "const url = process.argv.at(-1);",
-      "const send = (value) => process.stdout.write(JSON.stringify(value));",
-      "if (url.includes('/actions/runs?')) send({ workflow_runs: JSON.parse(process.env.TEST_RUNS) });",
-      "else if (url.includes('/actions/runs/')) {",
-      "  const id = url.match(/\\/actions\\/runs\\/(\\d+)\\/jobs/)?.[1];",
-      "  send({ jobs: JSON.parse(process.env.TEST_JOBS)[id] ?? [] });",
-      "} else if (url.includes('/issues?')) send([]);",
-      "else { console.error(`unexpected curl url: ${url}`); process.exit(22); }",
-    ].join("\n"),
-  );
-
   try {
+    const fixture = createReleasePreflightVerifyOnlyFixture(tempDir);
     const result = spawnSync(
       "rust-script",
       ["tools/commands/ci/github/release-preflight.rs", "--verify-only"],
@@ -268,28 +172,14 @@ test("verify-only mode accepts flat job evidence returned by pagination", () => 
         encoding: "utf8",
         env: {
           ...process.env,
-          PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
-          GITHUB_API_URL: "https://api.github.test",
-          GITHUB_REPOSITORY: "owner/repository",
-          GITHUB_REF_NAME: tag,
-          GITHUB_REF_TYPE: "tag",
-          GITHUB_SHA: sha,
-          GITHUB_TOKEN: "secret",
-          TEST_BASE_SHA: baseSha,
-          TEST_JOBS: JSON.stringify(jobs),
-          TEST_MAIN_CARGO_TOML: `[workspace.package]\nversion = "${version}"\n`,
-          TEST_PACKAGE_MANIFESTS: JSON.stringify(
-            trackedManifests.stdout.split("\0").filter(Boolean),
-          ),
-          TEST_RELEASE_SHA: sha,
-          TEST_RUNS: JSON.stringify(runs),
-          TEST_TAG: tag,
-          TEST_TAG_SHA: sha,
+          PATH: `${fixture.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+          ...fixture.env,
         },
       },
     );
+    assert.ifError(result.error);
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    assert.match(result.stdout, new RegExp(`Release preflight passed for ${tag}`));
+    assert.match(result.stdout, new RegExp(`Release preflight passed for ${fixture.tag}`));
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }

@@ -54,9 +54,28 @@ pub(crate) fn strip_scope_prefixes_for_slot_params(ctx: &CodegenContext, content
             continue;
         }
 
-        result.push(bytes[i] as char);
-        i += 1;
+        let character = content[i..].chars().next().expect("valid UTF-8 boundary");
+        result.push(character);
+        i += character.len_utf8();
     }
 
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::strip_scope_prefixes_for_slot_params;
+    use crate::{codegen::CodegenContext, options::CodegenOptions};
+    use vize_s0::String;
+
+    #[test]
+    fn preserves_utf8_while_stripping_scope_prefixes() {
+        let mut ctx = CodegenContext::new(CodegenOptions::default());
+        ctx.add_slot_params(&[String::new("i")]);
+
+        let content = "`\u{2795} ${$setup.n}`";
+
+        assert_eq!(strip_scope_prefixes_for_slot_params(&ctx, content), content);
+        assert_eq!(strip_scope_prefixes_for_slot_params(&ctx, "$setup.i"), "i");
+    }
 }

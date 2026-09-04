@@ -116,6 +116,27 @@ const BATTERY: &[(&str, &str)] = &[
     ("component_style_ref", r#"<MyComp :style="count" />"#),
     // `class` has its own helper and is untouched by this rule.
     ("class_const_binding", r#"<div :class="theme"></div>"#),
+    // Shadowing, pinned against the shipped visitor rather than against
+    // intuition. `RuntimeDependencyVisitor` tracks what a *function*
+    // binds, so a name a parameter or a declaration inside one shadows
+    // is not a script binding while that shadow is in view, and the
+    // expression is constant on the strength of the shadow alone.
+    (
+        "style_shadowed_by_arrow_param",
+        r#"<div :style="items.map(theme => theme.color)"></div>"#,
+    ),
+    (
+        "style_block_scoped_shadow",
+        r#"<div :style="(() => { { const theme = count; return theme } })()"></div>"#,
+    ),
+    (
+        "style_loop_scoped_shadow",
+        r#"<div :style="(() => { for (const theme of items) { return theme } return count })()"></div>"#,
+    ),
+    (
+        "style_catch_scoped_shadow",
+        r#"<div :style="(() => { try { return count } catch (theme) { return theme } })()"></div>"#,
+    ),
 ];
 
 fn metadata() -> BindingMetadata {

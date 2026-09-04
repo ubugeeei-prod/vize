@@ -26,7 +26,6 @@
     {
       "file": "src/components/common/computeTime.vue",
       "diagnostics": [
-        "error:6:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:31:22 [TS2339] Property '$emit' does not exist on type '__VizeThis'.",
         "error:35:36 [TS2551] Property 'timer' does not exist on type '__VizeThis'. Did you mean 'time'?",
         "error:36:22 [TS2551] Property 'timer' does not exist on type '__VizeThis'. Did you mean 'time'?",
@@ -109,9 +108,7 @@
     },
     {
       "file": "src/page/balance/balance.vue",
-      "diagnostics": [
-        "error:25:48 [TS2588] Cannot assign to 'showAlert' because it is a constant."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/page/balance/children/detail.vue",
@@ -122,9 +119,6 @@
     {
       "file": "src/page/benefit/benefit.vue",
       "diagnostics": [
-        "error:6:70 [TS2588] Cannot assign to 'categoryType' because it is a constant.",
-        "error:7:70 [TS2588] Cannot assign to 'categoryType' because it is a constant.",
-        "error:77:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:87:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:121:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
         "error:122:65 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
@@ -133,7 +127,6 @@
     {
       "file": "src/page/benefit/children/commend.vue",
       "diagnostics": [
-        "error:36:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:42:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
@@ -146,7 +139,6 @@
     {
       "file": "src/page/benefit/children/exchange.vue",
       "diagnostics": [
-        "error:18:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:24:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:63:58 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
       ]
@@ -177,10 +169,8 @@
     {
       "file": "src/page/confirmOrder/children/children/addAddress.vue",
       "diagnostics": [
-        "error:30:100 [TS2588] Cannot assign to 'phone_bk' because it is a constant.",
         "error:38:127 [TS2304] Cannot find name 'searchAddress'.",
         "error:38:142 [TS2304] Cannot find name 'searchAddress'.",
-        "error:51:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:60:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:102:28 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
         "error:102:45 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
@@ -203,7 +193,6 @@
     {
       "file": "src/page/confirmOrder/children/chooseAddress.vue",
       "diagnostics": [
-        "error:51:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:60:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:63:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
         "error:92:26 [TS2339] Property 'addressIndex' does not exist on type '__VizeThis'.",
@@ -228,8 +217,6 @@
       "diagnostics": [
         "error:10:31 [TS2304] Cannot find name 'cartPrice'.",
         "error:10:42 [TS2304] Cannot find name 'cartPrice'.",
-        "error:23:50 [TS2588] Cannot assign to 'payWay' because it is a constant.",
-        "error:34:50 [TS2588] Cannot assign to 'payWay' because it is a constant.",
         "error:46:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:85:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
         "error:87:21 [TS2322] Type 'string' is not assignable to type 'number'.",
@@ -254,7 +241,6 @@
     {
       "file": "src/page/confirmOrder/children/userValidation.vue",
       "diagnostics": [
-        "error:20:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:26:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:70:36 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
         "error:71:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
@@ -283,7 +269,6 @@
         "error:19:55 [TS2304] Cannot find name 'choosedAddress'.",
         "error:88:50 [TS2304] Cannot find name 'remarkText'.",
         "error:88:62 [TS2304] Cannot find name 'inputText'.",
-        "error:126:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:134:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:188:26 [TS2339] Property 'remarkText' does not exist on type '__VizeThis'.",
         "error:189:40 [TS2339] Property 'remarkText' does not exist on type '__VizeThis'.",
@@ -318,9 +303,7 @@
     },
     {
       "file": "src/page/download/download.vue",
-      "diagnostics": [
-        "error:9:48 [TS2588] Cannot assign to 'showAlert' because it is a constant."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/page/find/find.vue",
@@ -440,9 +423,7 @@
     },
     {
       "file": "src/page/points/points.vue",
-      "diagnostics": [
-        "error:26:48 [TS2588] Cannot assign to 'showAlert' because it is a constant."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/page/profile/children/children/address.vue",
@@ -464,7 +445,6 @@
       "file": "src/page/profile/children/children/children/add.vue",
       "diagnostics": [
         "error:13:87 [TS2304] Cannot find name 'addAddress'.",
-        "error:37:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:44:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:139:53 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
         "error:139:91 [TS2339] Property 'addAddress' does not exist on type '__VizeThis'.",
@@ -497,7 +477,6 @@
         "error:9:33 [TS2304] Cannot find name 'userInfo'.",
         "error:9:50 [TS2304] Cannot find name 'userInfo'.",
         "error:9:62 [TS2304] Cannot find name 'userInfo'.",
-        "error:98:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:106:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:154:35 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
         "error:157:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
@@ -606,15 +585,12 @@
         "error:55:24 [TS2304] Cannot find name 'shopDetail'.",
         "error:56:39 [TS2304] Cannot find name 'shopDetail'.",
         "error:61:39 [TS2304] Cannot find name 'shopDetail'.",
-        "error:69:78 [TS2588] Cannot assign to 'showlicenseImg' because it is a constant.",
         "error:81:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/shop/shop.vue",
       "diagnostics": [
-        "error:68:85 [TS2588] Cannot assign to 'changeShowType' because it is a constant.",
-        "error:71:87 [TS2588] Cannot assign to 'changeShowType' because it is a constant.",
         "error:80:48 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
         "error:109:67 [TS2304] Cannot find name 'attribute'.",
         "error:234:48 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
@@ -656,7 +632,6 @@
       "file": "src/page/vipcard/children/useCart.vue",
       "diagnostics": [
         "error:4:51 [TS2304] Cannot find name 'userInfo'.",
-        "error:18:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:24:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:55:44 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
       ]
@@ -746,7 +721,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 448,
+  "errorCount": 426,
   "warningCount": 0,
   "fileCount": 61
 }

@@ -80,6 +80,8 @@ fn prefer_op_helpers(
     suppress_runtime_directives: bool,
 ) {
     let id = walk.mint();
+    let visit = walk.visits();
+    buf.set_prefer_visit(visit);
     match op {
         Op::Element(element) if sfc_style::is_carrier_element(element) => {
             walk.skip(element.bindings.len())
@@ -98,6 +100,7 @@ fn prefer_op_helpers(
             let child_slot_context = slot_context || slot_template;
             prefer_region_helpers(buf, cx, walk, &element.children, child_slot_context, false);
             if slot_context && !slot_template && !early_element_vnode {
+                buf.set_prefer_visit(visit);
                 buf.prefer(Helper::CreateElementVNode);
             }
         }

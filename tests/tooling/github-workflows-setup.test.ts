@@ -7,6 +7,9 @@ test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () =>
   const action = readRepoFile(".github", "actions", "setup-ubuntu-archive", "action.yml");
   assert.match(action, /\/etc\/apt\/blacksmith-ubuntu-mirrors\.txt/);
   assert.match(action, /http:\/\/archive\.ubuntu\.com\/ubuntu/);
+  assert.match(action, /Acquire::Retries "5";/);
+  assert.match(action, /Acquire::http::Timeout "30";/);
+  assert.match(action, /Acquire::https::Timeout "30";/);
 
   const row = readRepoFile(".github", "actions", "app-e2e-row", "action.yml");
   const rowSetup = row.indexOf("uses: ./.github/actions/setup-ubuntu-archive");

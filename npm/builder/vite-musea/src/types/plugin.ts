@@ -1,4 +1,4 @@
-import type { VrtOptions } from "./vrt.js";
+import type { CaptureConfig, CiConfig, ComparisonConfig, VrtOptions } from "./vrt.js";
 import type { MuseaTokenPreviewConfig } from "../tokens/preview.js";
 
 export type MuseaVueVersion = 0.11 | 1 | 2 | "2.7" | 3 | "legacy";
@@ -38,6 +38,12 @@ export interface MuseaTheme {
   base?: "dark" | "light";
   /** Color overrides. */
   colors: MuseaThemeColors;
+}
+
+export interface MuseaVrtOptions extends VrtOptions {
+  capture?: CaptureConfig;
+  comparison?: ComparisonConfig;
+  ci?: CiConfig;
 }
 
 /**
@@ -85,7 +91,7 @@ export interface MuseaOptions {
   /**
    * VRT (Visual Regression Testing) configuration.
    */
-  vrt?: VrtOptions;
+  vrt?: MuseaVrtOptions;
 
   /**
    * Path to a Style Dictionary tokens JSON file/directory or Tailwind CSS theme file.

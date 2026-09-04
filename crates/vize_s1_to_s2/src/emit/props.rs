@@ -14,7 +14,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::on::{admit_on, event_key_for, needs_hydration};
-use constness::handler_is_constant;
+pub(in crate::emit) use constness::handler_is_constant;
 pub(super) use constness::{bind_value_is_static_patchless, bind_value_text};
 use static_expr::{
     bind_value_uses_legacy_patchless_bounded_string_concat,
@@ -129,7 +129,14 @@ pub(super) fn bind_patch(
     constant_handler: &dyn Fn(&str) -> bool,
 ) -> Patch {
     if super::merge::has_object_spread(bindings) {
-        return super::merge::object_patch(bindings, is_component, if_key, for_item, is_ts);
+        return super::merge::object_patch(
+            bindings,
+            is_component,
+            if_key,
+            for_item,
+            is_ts,
+            constant_handler,
+        );
     }
     let mut flag = 0i32;
     let mut dynamic_props = StdVec::new();
@@ -305,7 +312,12 @@ pub(super) fn emit_bind_props(
 
 pub(super) fn apply_static_ref_patch(attributes: &[Attribute<'_>], flag: &mut i32) {
     let has_static_ref = attributes.iter().any(|attr| attr.name == "ref");
-    if has_static_ref && *flag & (2 | 4 | 8 | 16 | 32) == 0 {
+    // The shipped gate is the *normal prop* flags alone: NEED_PATCH still
+    // combines with TEXT and NEED_HYDRATION, because neither of those
+    // updates a ref on its own. Only an inlined render function reaches
+    // the difference — elsewhere a handler that sets NEED_HYDRATION is
+    // dynamic and sets PROPS with it.
+    if has_static_ref && *flag & (2 | 4 | 8 | 16) == 0 {
         *flag |= 512;
     }
 }

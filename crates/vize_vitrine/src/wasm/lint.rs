@@ -56,6 +56,34 @@ fn parse_enabled_rules(options: &JsValue) -> Option<Vec<vize_s0::CompactString>>
         })
 }
 
+fn parse_component_name_in_template_casing(
+    options: &JsValue,
+) -> Option<vize_patina::rules::ComponentCasing> {
+    match js_sys::Reflect::get(options, &JsValue::from_str("componentNameInTemplateCasing"))
+        .ok()
+        .and_then(|v| v.as_string())
+        .as_deref()
+    {
+        Some("PascalCase") => Some(vize_patina::rules::ComponentCasing::PascalCase),
+        Some("kebab-case") => Some(vize_patina::rules::ComponentCasing::KebabCase),
+        _ => None,
+    }
+}
+
+fn parse_custom_event_name_casing(
+    options: &JsValue,
+) -> Option<vize_patina::rules::script::EventNameCasing> {
+    match js_sys::Reflect::get(options, &JsValue::from_str("customEventNameCasing"))
+        .ok()
+        .and_then(|v| v.as_string())
+        .as_deref()
+    {
+        Some("camelCase") => Some(vize_patina::rules::script::EventNameCasing::CamelCase),
+        Some("kebab-case") => Some(vize_patina::rules::script::EventNameCasing::KebabCase),
+        _ => None,
+    }
+}
+
 fn create_linter(locale: vize_patina::Locale, options: &JsValue) -> vize_patina::Linter {
     let enabled_rules = parse_enabled_rules(options);
     let preset = if enabled_rules.is_some() {
@@ -64,12 +92,19 @@ fn create_linter(locale: vize_patina::Locale, options: &JsValue) -> vize_patina:
         parse_lint_preset(options)
     };
 
-    let linter = match preset {
+    let mut linter = match preset {
         WasmPresetSelection::Builtin(preset) => vize_patina::Linter::with_preset(preset),
         WasmPresetSelection::Ecosystem => vize_patina::Linter::with_ecosystem(),
-    };
-
-    linter.with_locale(locale).with_enabled_rules(enabled_rules)
+    }
+    .with_locale(locale)
+    .with_enabled_rules(enabled_rules);
+    if let Some(casing) = parse_component_name_in_template_casing(options) {
+        linter = linter.with_component_name_in_template_casing(casing);
+    }
+    if let Some(casing) = parse_custom_event_name_casing(options) {
+        linter = linter.with_custom_event_name_casing(casing);
+    }
+    linter
 }
 
 /// Lint Vue SFC template

@@ -2,6 +2,8 @@
 
 use std::path::{Path, PathBuf};
 
+use vize_carton::FxHashMap;
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct InputStamp {
     path: PathBuf,
@@ -18,6 +20,46 @@ enum InputKind {
     Directory,
     Symlink,
     Other,
+}
+
+#[derive(Default)]
+pub(crate) struct InputStampCache {
+    snapshots: FxHashMap<PathBuf, InputStamp>,
+    #[cfg(test)]
+    captures: usize,
+}
+
+impl InputStampCache {
+    pub(crate) fn clear(&mut self) {
+        self.snapshots.clear();
+        #[cfg(test)]
+        {
+            self.captures = 0;
+        }
+    }
+
+    pub(crate) fn capture(&mut self, path: &Path) -> InputStamp {
+        if let Some(stamp) = self.snapshots.get(path) {
+            return stamp.clone();
+        }
+        #[cfg(test)]
+        {
+            self.captures += 1;
+        }
+        let stamp = InputStamp::capture(path);
+        self.snapshots.insert(path.to_path_buf(), stamp.clone());
+        stamp
+    }
+
+    #[cfg(test)]
+    pub(crate) fn captures(&self) -> usize {
+        self.captures
+    }
+
+    #[cfg(test)]
+    pub(crate) fn len(&self) -> usize {
+        self.snapshots.len()
+    }
 }
 
 impl InputStamp {
@@ -64,6 +106,10 @@ impl InputStamp {
     pub(crate) fn is_current(&self) -> bool {
         *self == Self::capture(&self.path)
     }
+
+    pub(crate) fn is_current_with_cache(&self, cache: &mut InputStampCache) -> bool {
+        *self == cache.capture(&self.path)
+    }
 }
 
 /// Canonicalize a changed path even after its final components were deleted.
@@ -108,10 +154,45 @@ pub(super) fn stamp_paths(paths: &[PathBuf]) -> Vec<InputStamp> {
     paths.iter().cloned().map(InputStamp::capture).collect()
 }
 
+pub(super) fn stamp_paths_with_cache(
+    paths: &[PathBuf],
+    cache: &mut InputStampCache,
+) -> Vec<InputStamp> {
+    paths.iter().map(|path| cache.capture(path)).collect()
+}
+
 pub(super) fn stamps_are_current(stamps: &[InputStamp]) -> bool {
     stamps.iter().all(InputStamp::is_current)
 }
 
+pub(super) fn stamps_are_current_with_cache(
+    stamps: &[InputStamp],
+    cache: &mut InputStampCache,
+) -> bool {
+    stamps
+        .iter()
+        .all(|stamp| stamp.is_current_with_cache(cache))
+}
+
 pub(super) fn manifest_path(root: &Path) -> PathBuf {
     root.join("package.json")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{InputStamp, InputStampCache};
+
+    #[test]
+    fn stamp_cache_captures_each_path_once_per_epoch() {
+        let root = tempfile::tempdir().unwrap();
+        let file = root.path().join("package.json");
+        std::fs::write(&file, r#"{"name":"pkg"}"#).unwrap();
+        let stamp = InputStamp::capture(&file);
+        let mut cache = InputStampCache::default();
+
+        assert!(stamp.is_current_with_cache(&mut cache));
+        assert!(stamp.is_current_with_cache(&mut cache));
+        assert_eq!(cache.len(), 1);
+        assert_eq!(cache.captures(), 1);
+    }
 }

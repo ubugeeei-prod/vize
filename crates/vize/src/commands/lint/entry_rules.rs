@@ -5,7 +5,8 @@ use vize_patina::{HelpLevel, LintPreset, Linter, Severity};
 use vize_s0::{
     FxHashMap, String,
     config::{
-        LintRuleOptions, LintRuleSeverity, LinterConfigPlanWithRuleOptions, LinterFeatureFlags,
+        ConfigLintRuleOptions, CustomEventNameCasing as ConfigEventNameCasing, LintRuleSeverity,
+        LinterConfigPlanWithConfigRuleOptions, LinterFeatureFlags, TemplateComponentNameCasing,
     },
 };
 
@@ -19,7 +20,7 @@ const SCRIPT_NO_RESTRICTED_MEMBERS: &str = "script/no-restricted-members";
 
 pub(super) struct ResolvedLinterRuleGroups {
     pub(super) configs: Vec<crate::config::LinterConfig>,
-    rule_options: Vec<LintRuleOptions>,
+    rule_options: Vec<ConfigLintRuleOptions>,
     pub(super) file_config_indices: Vec<usize>,
     pinia_available: Vec<bool>,
 }
@@ -70,6 +71,13 @@ impl ResolvedLinterRuleGroups {
                     .with_vapor_mode(features.vapor)
                     .with_restricted_globals(restricted_globals)
                     .with_restricted_members(restricted_members);
+                if let Some(casing) = rule_options.component_name_in_template_casing() {
+                    linter =
+                        linter.with_component_name_in_template_casing(component_casing(casing));
+                }
+                if let Some(casing) = rule_options.custom_event_name_casing() {
+                    linter = linter.with_custom_event_name_casing(event_name_casing(casing));
+                }
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     linter = linter.with_corsa_path(configured_corsa_path.clone());
@@ -86,6 +94,20 @@ impl ResolvedLinterRuleGroups {
     }
 }
 
+fn component_casing(casing: TemplateComponentNameCasing) -> vize_patina::rules::ComponentCasing {
+    match casing {
+        TemplateComponentNameCasing::PascalCase => vize_patina::rules::ComponentCasing::PascalCase,
+        TemplateComponentNameCasing::KebabCase => vize_patina::rules::ComponentCasing::KebabCase,
+    }
+}
+
+fn event_name_casing(casing: ConfigEventNameCasing) -> vize_patina::rules::script::EventNameCasing {
+    match casing {
+        ConfigEventNameCasing::CamelCase => vize_patina::rules::script::EventNameCasing::CamelCase,
+        ConfigEventNameCasing::KebabCase => vize_patina::rules::script::EventNameCasing::KebabCase,
+    }
+}
+
 fn severity_overrides(entries: Vec<(String, LintRuleSeverity)>) -> Vec<(String, Severity)> {
     entries
         .into_iter()
@@ -98,13 +120,13 @@ fn severity_overrides(entries: Vec<(String, LintRuleSeverity)>) -> Vec<(String, 
 }
 
 pub(super) struct LinterRuleResolver {
-    plan: LinterConfigPlanWithRuleOptions,
+    plan: LinterConfigPlanWithConfigRuleOptions,
     scopes: Vec<LintPlanScope>,
 }
 
 impl LinterRuleResolver {
     pub(super) fn new(
-        plan: impl Into<LinterConfigPlanWithRuleOptions>,
+        plan: impl Into<LinterConfigPlanWithConfigRuleOptions>,
         config_dir: &Path,
         cwd: &Path,
     ) -> Self {

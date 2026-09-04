@@ -307,7 +307,7 @@ export default {
     assert!(
         enabled
             .text
-            .contains("const count: __VizeOptionsBinding<typeof __default__, \"count\">")
+            .contains("var count: __VizeOptionsBinding<typeof __default__, \"count\">")
     );
     assert!(!disabled.text.contains("__VizeOptionsBinding"));
 }

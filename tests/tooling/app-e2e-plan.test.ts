@@ -98,13 +98,13 @@ test("full and readiness plans preserve every isolated execution row", () => {
   );
   assert.equal(
     readinessRows.find((row) => row.shard === "check")?.timeout,
-    "8m",
+    "25m",
     "cold readiness check rows must finish on Blacksmith without timing out",
   );
   assert.equal(readinessRows.find((row) => row.shard === "dev-misskey")?.timeout, "8m");
   assert.equal(
     readinessRows.find((row) => row.shard === "dev-nuxt-ui")?.timeout,
-    "8m",
+    "25m",
     "Nuxt UI dev readiness must fit the same Blacksmith budget as the other dev readiness row",
   );
   assert.deepEqual(
@@ -114,7 +114,7 @@ test("full and readiness plans preserve every isolated execution row", () => {
   );
   assert.equal(
     readinessRows.find((row) => row.shard === "lint")?.timeout,
-    "5m",
+    "20m",
     "updated fixture setup must fit inside the readiness lint budget",
   );
 });

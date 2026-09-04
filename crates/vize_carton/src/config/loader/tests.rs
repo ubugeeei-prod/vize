@@ -128,6 +128,22 @@ fn load_compiler_vue_version_reads_compiler_compatibility_key() {
 }
 
 #[test]
+fn load_compiler_vue_version_reads_top_level_compatibility_key() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{ "compatibility": { "vueVersion": "2.7" } }"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        load_compiler_vue_version(Some(&config_path)),
+        Some(VueVersion::V2_7)
+    );
+}
+
+#[test]
 fn load_compiler_vue_version_defaults_to_unset_for_vue3() {
     let dir = tempfile::tempdir().unwrap();
     let config_path = dir.path().join("vize.config.json");
