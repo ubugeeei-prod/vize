@@ -2,7 +2,7 @@
   "schemaVersion": 8,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
-    "minimumProjectCount": 18,
+    "minimumProjectCount": 19,
     "trackingIssue": 3952
   },
   "projects": [
@@ -3962,6 +3962,169 @@
         "syntax-highlighter",
         "lsp"
       ],
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "packages/playground/src/App.vue",
+          "symbol": "date",
+          "usageAnchor": "v-model=\"date\"",
+          "declarationAnchor": "const date = ref(new Date());",
+          "hoverContains": [
+            "const date: Date"
+          ],
+          "renameTo": "__vizeRenamedDate"
+        },
+        "componentBoundary": {
+          "importerFile": "packages/lib/src/VueDatePicker/components/DatePicker/DpHeader.vue",
+          "componentFile": "packages/lib/src/VueDatePicker/components/Common/ArrowBtn.vue",
+          "tagName": "ArrowBtn",
+          "tagAnchor": "class=\"dp--month-year-wrap\">\n        <ArrowBtn\n          ",
+          "completionItemCount": 32,
+          "completionItems": [
+            {
+              "label": "v-if",
+              "rank": 0
+            },
+            {
+              "label": "v-else-if",
+              "rank": 1
+            },
+            {
+              "label": "v-else",
+              "rank": 2
+            },
+            {
+              "label": "v-for",
+              "rank": 3
+            },
+            {
+              "label": "v-on",
+              "rank": 4
+            },
+            {
+              "label": "v-bind",
+              "rank": 5
+            },
+            {
+              "label": "v-model",
+              "rank": 6
+            },
+            {
+              "label": "v-slot",
+              "rank": 7
+            },
+            {
+              "label": "v-show",
+              "rank": 8
+            },
+            {
+              "label": "v-pre",
+              "rank": 9
+            },
+            {
+              "label": "v-once",
+              "rank": 10
+            },
+            {
+              "label": "v-memo",
+              "rank": 11
+            },
+            {
+              "label": "v-cloak",
+              "rank": 12
+            },
+            {
+              "label": "v-text",
+              "rank": 13
+            },
+            {
+              "label": "v-html",
+              "rank": 14
+            },
+            {
+              "label": "@",
+              "rank": 15
+            },
+            {
+              "label": ":",
+              "rank": 16
+            },
+            {
+              "label": "#",
+              "rank": 17
+            },
+            {
+              "label": "@click",
+              "rank": 18
+            },
+            {
+              "label": "@input",
+              "rank": 19
+            },
+            {
+              "label": "@change",
+              "rank": 20
+            },
+            {
+              "label": "@submit",
+              "rank": 21
+            },
+            {
+              "label": "@keydown",
+              "rank": 22
+            },
+            {
+              "label": "@keyup",
+              "rank": 23
+            },
+            {
+              "label": "@focus",
+              "rank": 24
+            },
+            {
+              "label": "@blur",
+              "rank": 25
+            },
+            {
+              "label": "@mouseenter",
+              "rank": 26
+            },
+            {
+              "label": "@mouseleave",
+              "rank": 27
+            },
+            {
+              "label": "aria-label",
+              "rank": 28
+            },
+            {
+              "label": "el-name",
+              "rank": 29
+            },
+            {
+              "label": "disabled",
+              "rank": 30
+            },
+            {
+              "label": "inactive",
+              "rank": 31
+            }
+          ],
+          "dependencyEdit": {
+            "anchor": "    inactive?: boolean;\n",
+            "replacement": "    inactive?: boolean;\n    vizeOracleProbe?: boolean;\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "packages/lib/src/VueDatePicker/components/Common/__VizeOracleArrowBtn.vue",
+          "renamedFile": "packages/lib/src/VueDatePicker/components/Common/__VizeOracleRenamedArrowBtn.vue",
+          "originalImportSpecifier": "@/components/Common/ArrowBtn.vue",
+          "copiedImportSpecifier": "@/components/Common/__VizeOracleArrowBtn.vue",
+          "renamedImportSpecifier": "@/components/Common/__VizeOracleRenamedArrowBtn.vue",
+          "markerInsertionAnchor": "<script lang=\"ts\" setup>\n",
+          "markerSymbol": "__vizeVueDatepickerArrowBtnMarker__"
+        }
+      },
       "diff": "curator-compare"
     },
     {
