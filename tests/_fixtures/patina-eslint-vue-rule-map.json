@@ -411,8 +411,10 @@
       "status": "mapped"
     },
     "vue/no-deprecated-inline-template": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-deprecated-inline-template",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-deprecated-model-definition": {
       "issue": 3223,
@@ -1674,8 +1676,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 121,
-    "unimplemented": 129
+    "mapped": 122,
+    "unimplemented": 128
   },
   "upstream": {
     "package": "eslint-plugin-vue",

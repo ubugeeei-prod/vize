@@ -4,7 +4,7 @@ title: All Patina Rules
 
 # All Patina Rules
 
-This page lists all 245 Patina rule implementations declared under `crates/vize_patina/src/rules`. The category pages keep the longer examples; this page is the compact reference for coverage, default severity, preset membership, fixability, and source implementation.
+This page lists all 246 Patina rule implementations declared under `crates/vize_patina/src/rules`. The category pages keep the longer examples; this page is the compact reference for coverage, default severity, preset membership, fixability, and source implementation.
 
 Preset names use Vize CLI terminology. The oxlint plugin metadata name `general-recommended` is shown here as `happy-path`. `_none_` means the rule is opt-in, host-driven, or outside the bundled lint presets.
 
@@ -12,7 +12,7 @@ Preset names use Vize CLI terminology. The oxlint plugin metadata name `general-
 
 | Category | Rules |
 | --- | ---: |
-| [Essential](#essential-49) | 49 |
+| [Essential](#essential-50) | 50 |
 | [Strongly Recommended](#strongly-recommended-12) | 12 |
 | [Recommended](#recommended-42) | 42 |
 | [Accessibility](#accessibility-31) | 31 |
@@ -25,7 +25,7 @@ Preset names use Vize CLI terminology. The oxlint plugin metadata name `general-
 | [Script](#script-61) | 61 |
 | [Nuxt](#nuxt-4) | 4 |
 
-## Essential (49)
+## Essential (50)
 
 | Rule | Severity | Presets | Fixable | Implementation | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -37,6 +37,7 @@ Preset names use Vize CLI terminology. The oxlint plugin metadata name `general-
 | `vue/no-deprecated-filter` | `error` | _none_ | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_filter.rs#L45) | Disallow deprecated Vue 2 filter syntax using the pipe operator |
 | `vue/no-deprecated-functional-template` | `error` | _none_ | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs#L57) | Disallow the `functional` attribute on the SFC `&lt;template&gt;` |
 | `vue/no-deprecated-html-element-is` | `error` | _none_ | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_html_element_is.rs#L39) | Disallow the `is` attribute on native HTML elements |
+| `vue/no-deprecated-inline-template` | `error` | _none_ | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs#L20) | Disallow the deprecated `inline-template` attribute |
 | `vue/no-deprecated-router-link-tag-prop` | `error` | _none_ | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_router_link_tag_prop.rs#L37) | Disallow the `tag` prop on &lt;router-link&gt; |
 | `vue/no-deprecated-scope-attribute` | `error` | _none_ | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs#L38) | Disallow the deprecated `scope` attribute on &lt;template&gt; |
 | `vue/no-deprecated-slot-attribute` | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L38) | Disallow the deprecated `slot` attribute |

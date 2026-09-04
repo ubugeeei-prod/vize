@@ -166,6 +166,7 @@ export const LINT_RULE_NAMES = [
   "vue/no-deprecated-filter",
   "vue/no-deprecated-functional-template",
   "vue/no-deprecated-html-element-is",
+  "vue/no-deprecated-inline-template",
   "vue/no-deprecated-router-link-tag-prop",
   "vue/no-deprecated-scope-attribute",
   "vue/no-deprecated-slot-attribute",

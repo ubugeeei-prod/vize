@@ -137,6 +137,25 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "動的コンポーネントには`<component :is=\"...\">`を使うか、カスタマイズされた組み込み要素には値に`vue:`を付けてください（例: `is=\"vue:MyComponent\"`）。",
         "对于动态组件请使用`<component :is=\"...\">`，对于定制内置元素请在值前加`vue:`前缀（例如 `is=\"vue:MyComponent\"`）。",
     ),
+    // vue/no-deprecated-inline-template
+    (
+        "vue/no-deprecated-inline-template.description",
+        "Disallow the deprecated `inline-template` attribute",
+        "非推奨の`inline-template`属性を禁止する",
+        "禁止使用已弃用的`inline-template`属性",
+    ),
+    (
+        "vue/no-deprecated-inline-template.message",
+        "the `inline-template` attribute was removed in Vue 3",
+        "`inline-template`属性はVue 3で削除されました",
+        "`inline-template`属性已在Vue 3中移除",
+    ),
+    (
+        "vue/no-deprecated-inline-template.help",
+        "Move the markup into the child component or pass it through slots instead of `inline-template`.",
+        "マークアップを子コンポーネントへ移すか、`inline-template`の代わりにスロットで渡してください。",
+        "请将标记移入子组件，或通过插槽传递，而不是使用`inline-template`。",
+    ),
     // vue/no-empty-component-block
     (
         "vue/no-empty-component-block.description",

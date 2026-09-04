@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-deprecated-inline-template",
+        severity: Error,
+        message: "the `inline-template` attribute was removed in Vue 3",
+        start: 13,
+        end: 28,
+        help: Some(
+            "Move the markup into the child component or pass it through slots instead of `inline-template`.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

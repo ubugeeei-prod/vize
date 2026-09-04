@@ -17,6 +17,7 @@ mod no_child_content;
 mod no_deprecated_filter;
 mod no_deprecated_functional_template;
 mod no_deprecated_html_element_is;
+mod no_deprecated_inline_template;
 mod no_deprecated_router_link_tag_prop;
 mod no_deprecated_scope_attribute;
 mod no_deprecated_slot_attribute;
@@ -101,6 +102,7 @@ pub use no_child_content::NoChildContent;
 pub use no_deprecated_filter::NoDeprecatedFilter;
 pub use no_deprecated_functional_template::NoDeprecatedFunctionalTemplate;
 pub use no_deprecated_html_element_is::NoDeprecatedHtmlElementIs;
+pub use no_deprecated_inline_template::NoDeprecatedInlineTemplate;
 pub use no_deprecated_router_link_tag_prop::NoDeprecatedRouterLinkTagProp;
 pub use no_deprecated_scope_attribute::NoDeprecatedScopeAttribute;
 pub use no_deprecated_slot_attribute::NoDeprecatedSlotAttribute;
@@ -261,6 +263,9 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     }
     if !registry.has_rule("vue/no-deprecated-html-element-is") {
         registry.register(Box::new(NoDeprecatedHtmlElementIs));
+    }
+    if !registry.has_rule("vue/no-deprecated-inline-template") {
+        registry.register(Box::new(NoDeprecatedInlineTemplate));
     }
     if !registry.has_rule("vue/no-deprecated-functional-template") {
         registry.register(Box::new(NoDeprecatedFunctionalTemplate));
