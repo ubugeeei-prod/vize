@@ -42,8 +42,8 @@ export const categoryReasons: Record<VecCategory, string> = {
 };
 
 export const expectedProductionAllocVec: StorageSummary = {
-  files: 77,
-  directPaths: 89,
+  files: 78,
+  directPaths: 90,
   boundUses: 305,
 };
 
