@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
+import { Buffer } from "node:buffer";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
+import { crc32 } from "node:zlib";
 
 import {
   parseReleasePreflightMode,
@@ -11,6 +13,10 @@ import {
 } from "../../legacy-tools/github/release-preflight.mjs";
 import { workspaceVersionFromCargoToml } from "../../legacy-tools/github/release-preflight-core.mjs";
 import { repoRoot } from "./_helpers/moonbit.ts";
+import {
+  realProjectArtifacts,
+  shardEntries,
+} from "./_helpers/release-preflight-matrix-evidence-fixture.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 const sha = "a".repeat(40);
@@ -207,6 +213,7 @@ test("verify-only mode accepts flat job evidence returned by pagination", () => 
           "Fuzz template_compile",
         ],
       ],
+      [106, Array.from({ length: 22 }, (_, shard) => `real projects (${shard}/22)`)],
     ].map(([id, names]) => [
       id,
       (names as string[]).map((name) => ({ name, status: "completed", conclusion: "success" })),
@@ -224,7 +231,26 @@ test("verify-only mode accepts flat job evidence returned by pagination", () => 
     run(103, "Fuzz", ".github/workflows/fuzz.yml", "workflow_dispatch", `Fuzz replay @ ${sha}`),
     run(104, "Miri", ".github/workflows/miri.yml", "push"),
     run(105, "Docs build", ".github/workflows/build-docs.yml", "push"),
+    run(
+      106,
+      "Real Project Matrix",
+      ".github/workflows/real-project-matrix.yml",
+      "workflow_dispatch",
+      `Real Project Matrix @ ${sha}`,
+    ),
   ];
+  const matrixRun = runs.find((candidate) => candidate.name === "Real Project Matrix");
+  assert.ok(matrixRun);
+  const typecheckIds = typecheckProjectIds();
+  const artifacts = realProjectArtifacts(matrixRun);
+  const artifactZips = Object.fromEntries(
+    artifacts.map((artifact, shard) => [
+      String(shard),
+      storedZip(
+        Object.entries(shardEntries(shard, { typecheckProject: typecheckIds[shard] ?? null })),
+      ).toString("base64"),
+    ]),
+  );
   fs.mkdirSync(binDir, { recursive: true });
   writeFakeCommand(
     binDir,
@@ -248,10 +274,19 @@ test("verify-only mode accepts flat job evidence returned by pagination", () => 
     binDir,
     "curl",
     [
+      "const fs = require('node:fs');",
       "const url = process.argv.at(-1);",
+      "const args = process.argv.slice(2);",
       "const send = (value) => process.stdout.write(JSON.stringify(value));",
       "if (url.includes('/actions/runs?')) send({ workflow_runs: JSON.parse(process.env.TEST_RUNS) });",
-      "else if (url.includes('/actions/runs/')) {",
+      "else if (url.includes('/actions/runs/') && url.includes('/artifacts')) send({ artifacts: JSON.parse(process.env.TEST_ARTIFACTS) });",
+      "else if (url.startsWith('https://example.test/artifacts/')) {",
+      "  const output = args[args.indexOf('--output') + 1];",
+      "  const shard = url.match(/\\/artifacts\\/(\\d+)\\.zip$/)?.[1];",
+      "  const zip = JSON.parse(process.env.TEST_ARTIFACT_ZIPS)[shard];",
+      "  if (output == null || shard == null || zip == null) process.exit(22);",
+      "  fs.writeFileSync(output, Buffer.from(zip, 'base64'));",
+      "} else if (url.includes('/actions/runs/')) {",
       "  const id = url.match(/\\/actions\\/runs\\/(\\d+)\\/jobs/)?.[1];",
       "  send({ jobs: JSON.parse(process.env.TEST_JOBS)[id] ?? [] });",
       "} else if (url.includes('/issues?')) send([]);",
@@ -275,6 +310,8 @@ test("verify-only mode accepts flat job evidence returned by pagination", () => 
           GITHUB_REF_TYPE: "tag",
           GITHUB_SHA: sha,
           GITHUB_TOKEN: "secret",
+          TEST_ARTIFACT_ZIPS: JSON.stringify(artifactZips),
+          TEST_ARTIFACTS: JSON.stringify(artifacts),
           TEST_BASE_SHA: baseSha,
           TEST_JOBS: JSON.stringify(jobs),
           TEST_MAIN_CARGO_TOML: `[workspace.package]\nversion = "${version}"\n`,
@@ -311,3 +348,58 @@ test("release metadata inventory ignores untracked package manifests", () => {
     fs.rmSync(untrackedDirectory, { recursive: true, force: true });
   }
 });
+
+function typecheckProjectIds() {
+  const registry = JSON.parse(
+    fs.readFileSync(path.join(repoRoot, "tests/_fixtures/vue-ecosystem-fixtures.json"), "utf8"),
+  );
+  return registry.projects
+    .filter(
+      (project: { typecheckPerformance?: { enabled?: boolean } }) =>
+        project.typecheckPerformance?.enabled === true,
+    )
+    .map((project: { id: string }) => project.id);
+}
+
+// Minimal stored ZIP writer so the Rust release-preflight path validates a real
+// archive without depending on the system `zip` command.
+function storedZip(files: [string, string][]) {
+  const locals: Buffer[] = [];
+  const central: Buffer[] = [];
+  let offset = 0;
+  for (const [name, text] of files) {
+    const nameBytes = Buffer.from(name, "utf8");
+    const data = Buffer.from(text, "utf8");
+    const checksum = crc32(data);
+    const local = Buffer.alloc(30 + nameBytes.byteLength);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt32LE(checksum, 14);
+    local.writeUInt32LE(data.byteLength, 18);
+    local.writeUInt32LE(data.byteLength, 22);
+    local.writeUInt16LE(nameBytes.byteLength, 26);
+    nameBytes.copy(local, 30);
+    locals.push(local, data);
+
+    const header = Buffer.alloc(46 + nameBytes.byteLength);
+    header.writeUInt32LE(0x02014b50, 0);
+    header.writeUInt16LE(20, 4);
+    header.writeUInt16LE(20, 6);
+    header.writeUInt32LE(checksum, 16);
+    header.writeUInt32LE(data.byteLength, 20);
+    header.writeUInt32LE(data.byteLength, 24);
+    header.writeUInt16LE(nameBytes.byteLength, 28);
+    header.writeUInt32LE(offset, 42);
+    nameBytes.copy(header, 46);
+    central.push(header);
+    offset += local.byteLength + data.byteLength;
+  }
+  const directory = Buffer.concat(central);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(files.length, 8);
+  end.writeUInt16LE(files.length, 10);
+  end.writeUInt32LE(directory.byteLength, 12);
+  end.writeUInt32LE(offset, 16);
+  return Buffer.concat([...locals, directory, end]);
+}

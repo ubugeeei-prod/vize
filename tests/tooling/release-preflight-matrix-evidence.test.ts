@@ -125,9 +125,6 @@ test("release preflight rejects missing or foreign real-project shard artifacts"
   );
 });
 
-// `enforceParity: true` is passed explicitly because the shipped default is
-// waived while #4461 is open. These cases keep proving the strict path works,
-// so flipping `releaseTypecheckParityEnforced` back to `true` needs no new test.
 test("release preflight rejects record-only and non-zero typecheck parity artifacts", async () => {
   for (const [label, mutate, message] of [
     [
@@ -170,7 +167,6 @@ test("release preflight rejects record-only and non-zero typecheck parity artifa
         run,
         artifacts: realProjectArtifacts(run),
         registry: typecheckRegistry(),
-        enforceParity: true,
         readArtifactEntries: async (artifact) => {
           const entries = shardEntries(Number(artifact.name.split("-").pop()));
           if (artifact.name === "real-project-matrix-0") mutate(entries);
@@ -183,7 +179,7 @@ test("release preflight rejects record-only and non-zero typecheck parity artifa
   }
 });
 
-test("release preflight waives typecheck parity by default and still binds the evidence", async () => {
+test("release preflight can explicitly waive typecheck parity for ad hoc artifact inspection", async () => {
   const run = successfulReleaseRun("Real Project Matrix", 515);
   const warnings: string[] = [];
   const restore = console.warn;
@@ -193,6 +189,7 @@ test("release preflight waives typecheck parity by default and still binds the e
       run,
       artifacts: realProjectArtifacts(run),
       registry: typecheckRegistry(),
+      enforceParity: false,
       readArtifactEntries: async (artifact) => {
         const entries = shardEntries(Number(artifact.name.split("-").pop()));
         if (artifact.name === "real-project-matrix-0") {
@@ -208,7 +205,7 @@ test("release preflight waives typecheck parity by default and still binds the e
     console.warn = restore;
   }
   assert.equal(warnings.length, 1);
-  assert.match(warnings[0], /waived typecheck parity \(#4461\)/);
+  assert.match(warnings[0], /waived typecheck parity/);
   assert.match(warnings[0], /must not be record-only/);
 });
 
@@ -219,6 +216,7 @@ test("release preflight still rejects unbound typecheck evidence while parity is
       run,
       artifacts: realProjectArtifacts(run),
       registry: typecheckRegistry(),
+      enforceParity: false,
       readArtifactEntries: async (artifact) => {
         const entries = shardEntries(Number(artifact.name.split("-").pop()));
         if (artifact.name === "real-project-matrix-0") {

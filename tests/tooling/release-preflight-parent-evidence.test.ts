@@ -52,8 +52,7 @@ test("every required gate reuses the parent; artifact gates never do", () => {
   for (const gate of requiredReleaseWorkflows) {
     assert.deepEqual(shas.get(gate), [tagSha, parentSha], gate);
   }
-  // Its subject is the artifact the tag built, so it must never be reused even
-  // if #4461 makes it a required gate again.
+  // Its subject is the artifact the tag built, so it must never be reused.
   assert.equal(shas.get("Native Smoke"), undefined);
   assert.equal(
     releaseEvidenceShas({ sha: tagSha, baseSha: parentSha, versionOnly: false }).size,
@@ -93,6 +92,11 @@ test("a version-only release never dispatches a gate the parent already proved",
     greenRun(".github/workflows/build-docs.yml", parentSha, "Docs build", "push"),
     greenRun(".github/workflows/benchmark.yml", parentSha, `Benchmark ${parentSha}...${tagSha}`),
     greenRun(".github/workflows/fuzz.yml", parentSha, `Fuzz replay @ ${tagSha}`),
+    greenRun(
+      ".github/workflows/real-project-matrix.yml",
+      parentSha,
+      `Real Project Matrix @ ${tagSha}`,
+    ),
   ];
   const dispatched: string[] = [];
   const selected = await bootstrapRequiredWorkflowRuns({
@@ -136,5 +140,5 @@ test("without the reuse the same parent evidence does not satisfy the gates", as
     }),
     /Required release gates are not green/,
   );
-  assert.deepEqual(dispatched.sort(byCodeUnit), ["Benchmark", "Fuzz"]);
+  assert.deepEqual(dispatched.sort(byCodeUnit), ["Benchmark", "Fuzz", "Real Project Matrix"]);
 });

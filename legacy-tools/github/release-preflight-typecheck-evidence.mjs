@@ -1,30 +1,8 @@
 import { parseJsonText, readTextEntry, sha256 } from "./release-preflight-artifact-entries.mjs";
 
-/**
- * TEMPORARY — restore to `true`. Tracked in #4461.
- *
- * The parity proof below (budget mode, budget verdict, zero unexplained
- * divergence, shared-corpus coverage, seeded mutation oracle) was added on
- * 2026-08-13 in `bdfc1a13d`, two days after the last successful publish, and it
- * has never let a release through. Measured on run 32217699071, only 3 of the
- * 11 registered typecheck fixtures clear it: `lx-music-desktop`, `voicevox` and
- * `vuestic-admin`. `primevue` (8 FP / 204 FN), `reka-ui` (60/26) and `elk`
- * (10/894) are mis-measured — their baselines do not run under the fixture's
- * own type environment — and `misskey` (3/3) passes its own 0.02 budget yet
- * still fails, because this bar is exact parity with vue-tsc rather than
- * "within budget".
- *
- * So repairing the three broken baselines would still not open the gate. Until
- * #4461 decides what the corpus-wide bar should be, the parity proof is
- * recorded and reported instead of enforced.
- *
- * Everything that makes the evidence *trustworthy* stays enforced: the artifact
- * must exist for every shard, be bound to the exact tag SHA with the expected
- * schema and version, link to its dependency-install evidence, cover every
- * registered project, and contain no duplicates or unregistered projects. Only
- * the quality bar is advisory.
- */
-export const releaseTypecheckParityEnforced = false;
+// Release evidence must prove exact typecheck parity. Ad hoc callers can still
+// pass `enforceParity: false` when they intentionally inspect a broken artifact.
+export const releaseTypecheckParityEnforced = true;
 
 export function assertReleaseTypecheckShardArtifacts({
   artifactName,
@@ -152,7 +130,7 @@ function assertReleaseTypecheckParity({ artifactName, divergence, enforceParity 
     assertReleaseMutationOracle(artifactName, divergence.mutationOracle);
   } catch (error) {
     if (enforceParity) throw error;
-    console.warn(`waived typecheck parity (#4461): ${error.message}`);
+    console.warn(`waived typecheck parity: ${error.message}`);
   }
 }
 
