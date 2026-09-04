@@ -103,6 +103,7 @@ impl ScriptRule for NoOptionsApi {
 #[derive(Clone, Copy)]
 struct ComponentOptionsRef<'a> {
     object: &'a ObjectExpression<'a>,
+    explicit_component: bool,
 }
 
 #[derive(Default)]
@@ -126,9 +127,13 @@ struct OptionLabel {
 fn find_component_options<'a>(program: &'a Program<'a>) -> Option<ComponentOptionsMatch> {
     let mut bindings = FxHashMap::default();
     let mut petite_vue = PetiteVueBindings::default();
+    let mut imports_vue_runtime = false;
 
     for statement in program.body.iter() {
         collect_petite_vue_imports(statement, &mut petite_vue);
+        if imports_vue_runtime_module(statement) {
+            imports_vue_runtime = true;
+        }
     }
 
     for statement in program.body.iter() {
@@ -155,9 +160,12 @@ fn find_component_options<'a>(program: &'a Program<'a>) -> Option<ComponentOptio
         let Statement::ExportDefaultDeclaration(export) = statement else {
             continue;
         };
-        let Some(options) =
-            extract_component_options_from_export(&export.declaration, &bindings, &petite_vue)
-        else {
+        let Some(options) = extract_component_options_from_export(
+            &export.declaration,
+            &bindings,
+            &petite_vue,
+            imports_vue_runtime,
+        ) else {
             continue;
         };
         return Some(build_component_options_match(options.object));
@@ -179,11 +187,13 @@ fn extract_component_options_from_export<'a>(
     declaration: &'a ExportDefaultDeclarationKind<'a>,
     bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
     petite_vue: &PetiteVueBindings<'a>,
+    imports_vue_runtime: bool,
 ) -> Option<ComponentOptionsRef<'a>> {
-    match declaration {
-        ExportDefaultDeclarationKind::ObjectExpression(object) => {
-            Some(ComponentOptionsRef { object })
-        }
+    let options = match declaration {
+        ExportDefaultDeclarationKind::ObjectExpression(object) => Some(ComponentOptionsRef {
+            object,
+            explicit_component: false,
+        }),
         ExportDefaultDeclarationKind::CallExpression(call) => {
             extract_component_options_from_call(call, bindings, petite_vue)
         }
@@ -207,6 +217,13 @@ fn extract_component_options_from_export<'a>(
             extract_component_options_from_expression(&ts_non_null.expression, bindings, petite_vue)
         }
         _ => None,
+    }?;
+
+    if options.explicit_component || imports_vue_runtime || has_component_option_key(options.object)
+    {
+        Some(options)
+    } else {
+        None
     }
 }
 
@@ -216,7 +233,10 @@ fn extract_component_options_from_expression<'a>(
     petite_vue: &PetiteVueBindings<'a>,
 ) -> Option<ComponentOptionsRef<'a>> {
     match expression {
-        Expression::ObjectExpression(object) => Some(ComponentOptionsRef { object }),
+        Expression::ObjectExpression(object) => Some(ComponentOptionsRef {
+            object,
+            explicit_component: false,
+        }),
         Expression::CallExpression(call) => {
             extract_component_options_from_call(call, bindings, petite_vue)
         }
@@ -254,7 +274,12 @@ fn extract_component_options_from_call<'a>(
     }
 
     let first_arg = call.arguments.first()?;
-    extract_component_options_from_argument(first_arg, bindings, petite_vue)
+    extract_component_options_from_argument(first_arg, bindings, petite_vue).map(|options| {
+        ComponentOptionsRef {
+            explicit_component: true,
+            ..options
+        }
+    })
 }
 
 fn extract_create_app_options_from_statement<'a>(
@@ -328,7 +353,12 @@ fn extract_create_app_options_from_create_app_call<'a>(
     }
 
     let first_arg = call.arguments.first()?;
-    extract_component_options_from_argument(first_arg, bindings, petite_vue)
+    extract_component_options_from_argument(first_arg, bindings, petite_vue).map(|options| {
+        ComponentOptionsRef {
+            explicit_component: true,
+            ..options
+        }
+    })
 }
 
 fn is_create_app_callee(callee: &Expression<'_>, petite_vue: &PetiteVueBindings<'_>) -> bool {
@@ -358,7 +388,10 @@ fn extract_component_options_from_argument<'a>(
     petite_vue: &PetiteVueBindings<'a>,
 ) -> Option<ComponentOptionsRef<'a>> {
     match argument {
-        Argument::ObjectExpression(object) => Some(ComponentOptionsRef { object }),
+        Argument::ObjectExpression(object) => Some(ComponentOptionsRef {
+            object,
+            explicit_component: false,
+        }),
         Argument::CallExpression(call) => {
             extract_component_options_from_call(call, bindings, petite_vue)
         }
@@ -379,6 +412,16 @@ fn extract_component_options_from_argument<'a>(
         }
         _ => None,
     }
+}
+
+fn imports_vue_runtime_module(statement: &Statement<'_>) -> bool {
+    let Statement::ImportDeclaration(import) = statement else {
+        return false;
+    };
+    matches!(
+        import.source.value.as_str(),
+        "vue" | "@vue/runtime-core" | "@vue/runtime-dom"
+    )
 }
 
 fn collect_petite_vue_imports<'a>(
@@ -515,6 +558,59 @@ fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
     }
 }
 
+fn has_component_option_key(object: &ObjectExpression<'_>) -> bool {
+    object.properties.iter().any(|property| {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return false;
+        };
+        if property.computed {
+            return false;
+        }
+        property_key_name(&property.key).is_some_and(is_component_option_name)
+    })
+}
+
+fn is_component_option_name(name: &str) -> bool {
+    matches!(
+        name,
+        "name"
+            | "inheritAttrs"
+            | "components"
+            | "directives"
+            | "props"
+            | "emits"
+            | "expose"
+            | "setup"
+            | "data"
+            | "computed"
+            | "methods"
+            | "watch"
+            | "provide"
+            | "inject"
+            | "template"
+            | "render"
+            | "mixins"
+            | "extends"
+            | "compilerOptions"
+            | "model"
+            | "filters"
+            | "beforeCreate"
+            | "created"
+            | "beforeMount"
+            | "mounted"
+            | "beforeUpdate"
+            | "updated"
+            | "beforeUnmount"
+            | "unmounted"
+            | "beforeDestroy"
+            | "destroyed"
+            | "activated"
+            | "deactivated"
+            | "errorCaptured"
+            | "serverPrefetch"
+    )
+}
+
 fn option_label(name: &str) -> CompactString {
     match name {
         "data" => "data() option (use ref()/reactive())".into(),
@@ -538,7 +634,40 @@ fn option_label(name: &str) -> CompactString {
 
 #[cfg(test)]
 mod tests {
-    use super::{NoOptionsApi, ScriptLintResult, ScriptRule};
+    use super::{
+        NoOptionsApi, ScriptLintResult, ScriptRule, has_component_option_key,
+        imports_vue_runtime_module, is_component_option_name,
+    };
+    use oxc_allocator::Allocator;
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
+
+    fn parse_program<'a>(allocator: &'a Allocator, source: &'a str) -> oxc_ast::ast::Program<'a> {
+        Parser::new(allocator, source, SourceType::ts())
+            .parse()
+            .program
+    }
+
+    #[test]
+    fn test_component_option_names_cover_vue_options() {
+        for name in ["data", "props", "methods", "mounted", "render", "filters"] {
+            assert!(is_component_option_name(name));
+        }
+        for name in ["signInConfirm", "breakpoint", "alert"] {
+            assert!(!is_component_option_name(name));
+        }
+    }
+
+    #[test]
+    fn test_vue_runtime_import_detection() {
+        let allocator = Allocator::default();
+        let program = parse_program(&allocator, "import { h } from 'vue'\n");
+        assert!(program.body.iter().any(imports_vue_runtime_module));
+
+        let allocator = Allocator::default();
+        let program = parse_program(&allocator, "import { createApp } from 'petite-vue'\n");
+        assert!(!program.body.iter().any(imports_vue_runtime_module));
+    }
 
     #[test]
     fn test_valid_composition_api() {
@@ -551,6 +680,56 @@ const doubled = computed(() => count.value * 2)
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_plain_default_exported_i18n_catalog_is_not_options_api() {
+        let source = r#"
+export default {
+  signInConfirm: {
+    teacherName: "Sign in as {name}."
+  },
+  alert: {
+    default: "Something went wrong."
+  }
+}
+"#;
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 0, "got: {:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_plain_default_exported_design_tokens_are_not_options_api() {
+        let source = r#"
+export default {
+  breakpoint: {
+    s: { value: 600 },
+    m: { value: 1200 }
+  }
+}
+"#;
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 0, "got: {:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_default_export_with_vue_import_is_component_options() {
+        let source = r#"
+import { h } from 'vue'
+
+export default {
+  customOption: true
+}
+"#;
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 1);
+        assert_eq!(result.diagnostics[0].rule_name, "script/no-options-api");
     }
 
     #[test]
@@ -567,6 +746,41 @@ export default {
         rule.check(source, 0, &mut result);
         assert_eq!(result.error_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn test_plain_default_export_with_component_option_key_is_options_api() {
+        let source = r#"
+export default {
+  props: {
+    value: String
+  }
+}
+"#;
+        let allocator = Allocator::default();
+        let program = parse_program(&allocator, source);
+        let export = program
+            .body
+            .iter()
+            .find_map(|statement| match statement {
+                oxc_ast::ast::Statement::ExportDefaultDeclaration(export) => {
+                    match &export.declaration {
+                        oxc_ast::ast::ExportDefaultDeclarationKind::ObjectExpression(object) => {
+                            Some(object)
+                        }
+                        _ => None,
+                    }
+                }
+                _ => None,
+            })
+            .expect("default object export");
+        assert!(has_component_option_key(export));
+
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 1);
+        assert_eq!(result.diagnostics[0].rule_name, "script/no-options-api");
     }
 
     #[test]
