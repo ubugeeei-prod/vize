@@ -7,7 +7,6 @@ mod entry;
 
 use alloc::vec::Vec as StdVec;
 
-use vize_s0::String;
 use vize_s2::op::{Op, Region};
 
 use self::branch_keys::{
@@ -20,7 +19,7 @@ use super::create_slots_walk::{
     advance_after_op, first_slot_template, is_slot_for, is_slot_if, slot_template_content,
 };
 use super::js::RawJs;
-use super::slots::{capture, capture_child, is_whitespace_text};
+use super::slots::{SlotPiece, capture, capture_child, is_whitespace_text};
 
 pub(super) fn needs_create_slots(cx: &EmitCx<'_>, children: &Region<'_>) -> bool {
     let mut walk = cx.walk.clone();
@@ -67,7 +66,7 @@ pub(super) fn emit_create_slots(
 fn collect(
     cx: &mut EmitCx<'_>,
     children: &Region<'_>,
-) -> Result<(StdVec<String>, StdVec<String>), EmitError> {
+) -> Result<(StdVec<SlotPiece>, StdVec<SlotPiece>), EmitError> {
     let mut defaults = StdVec::new();
     let mut entries = StdVec::new();
     let first_branch_key = cx.if_branch_key;
@@ -158,7 +157,7 @@ fn collect(
 
 fn collect_default(
     cx: &mut EmitCx<'_>,
-    defaults: &mut StdVec<String>,
+    defaults: &mut StdVec<SlotPiece>,
     op: &Op<'_>,
 ) -> Result<(), EmitError> {
     cx.buf.indent();
@@ -167,7 +166,7 @@ fn collect_default(
     Ok(())
 }
 
-fn emit_base(cx: &mut EmitCx<'_>, defaults: &[String], spread: Option<&RawJs<'_>>) {
+fn emit_base(cx: &mut EmitCx<'_>, defaults: &[SlotPiece], spread: Option<&RawJs<'_>>) {
     if defaults.is_empty() && spread.is_none() {
         cx.buf.push("{ _: 2 /* DYNAMIC */ }");
         return;
@@ -185,7 +184,7 @@ fn emit_base(cx: &mut EmitCx<'_>, defaults: &[String], spread: Option<&RawJs<'_>
                 cx.buf.push(",");
             }
             cx.buf.newline();
-            cx.buf.push(piece.as_str());
+            cx.push_captured(piece);
         }
         cx.buf.deindent();
         cx.buf.newline();

@@ -1,7 +1,6 @@
 //! `vue.once` realization.
 
 use vize_davinci::id::NodeId;
-use vize_s0::ToCompactString;
 use vize_s2::op::{BindingOp, ComponentOp, ElementOp, Op};
 
 use super::buf::Buf;
@@ -119,12 +118,11 @@ fn emit_cached(
     cx: &mut EmitCx<'_>,
     emit: impl FnOnce(&mut EmitCx<'_>) -> Result<(), EmitError>,
 ) -> Result<(), EmitError> {
-    let cache_index = cx.once_cache_index;
+    let cache_slot = cx.once_cache_index;
     cx.once_cache_index += 1;
-    let cache_index = cache_index.to_compact_string();
     cx.buf.use_set_block_tracking();
     cx.buf.push("_cache[");
-    cx.buf.push(cache_index.as_str());
+    cx.push_cache_index(cache_slot);
     cx.buf.push("] || (");
     cx.buf.indent();
     cx.buf.newline();
@@ -132,18 +130,18 @@ fn emit_cached(
     cx.buf.push("(-1, true),");
     cx.buf.newline();
     cx.buf.push("(_cache[");
-    cx.buf.push(cache_index.as_str());
+    cx.push_cache_index(cache_slot);
     cx.buf.push("] = ");
     emit(cx)?;
     cx.buf.push(").cacheIndex = ");
-    cx.buf.push(cache_index.as_str());
+    cx.push_cache_index(cache_slot);
     cx.buf.push(",");
     cx.buf.newline();
     cx.buf.push(Buf::set_block_tracking_alias());
     cx.buf.push("(1),");
     cx.buf.newline();
     cx.buf.push("_cache[");
-    cx.buf.push(cache_index.as_str());
+    cx.push_cache_index(cache_slot);
     cx.buf.push("]");
     cx.buf.deindent();
     cx.buf.newline();

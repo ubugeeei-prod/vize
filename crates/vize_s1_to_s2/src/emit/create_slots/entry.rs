@@ -241,7 +241,7 @@ pub(super) fn emit_slot_object(
             cx.buf.push(",");
         }
         cx.buf.newline();
-        cx.buf.push(piece.as_str());
+        cx.push_captured(piece);
     }
     cx.buf.deindent();
     cx.buf.newline();

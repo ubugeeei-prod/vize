@@ -10,7 +10,7 @@ mod props;
 
 pub(super) use props::{compact_props_object, push_attr_pair, unique_attrs};
 
-use vize_s0::{String, ToCompactString};
+use vize_s0::String;
 use vize_s2::op::{ElementOp, Op};
 
 use super::buf::Buf;
@@ -40,13 +40,12 @@ pub(super) fn emit_cached_element(
     if hoist_needs_create_text(element) {
         cx.buf.use_create_text();
     }
-    let cache_index = cx.once_cache_index;
+    let cache_slot = cx.once_cache_index;
     cx.once_cache_index += 1;
-    let cache_index = cache_index.to_compact_string();
     cx.buf.push("_cache[");
-    cx.buf.push(cache_index.as_str());
+    cx.push_cache_index(cache_slot);
     cx.buf.push("] || (_cache[");
-    cx.buf.push(cache_index.as_str());
+    cx.push_cache_index(cache_slot);
     cx.buf.push("] = ");
     cx.buf
         .push(cached_element_rhs(element, true, cx.buf.indent_width(), cx.is_ts).as_str());
@@ -66,13 +65,12 @@ pub(super) fn emit_cached_elements_array(
     cx: &mut EmitCx<'_>,
     ops: &[Op<'_>],
 ) -> Result<(), EmitError> {
-    let cache_index = cx.once_cache_index;
+    let cache_slot = cx.once_cache_index;
     cx.once_cache_index += 1;
-    let cache_index = cache_index.to_compact_string();
     cx.buf.push("[...(_cache[");
-    cx.buf.push(cache_index.as_str());
+    cx.push_cache_index(cache_slot);
     cx.buf.push("] || (_cache[");
-    cx.buf.push(cache_index.as_str());
+    cx.push_cache_index(cache_slot);
     cx.buf.push("] = [");
     cx.buf.indent();
 

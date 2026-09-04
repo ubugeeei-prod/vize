@@ -1,5 +1,5 @@
 use oxc_ast::ast::{ChainElement, Expression};
-use vize_s0::{Span, ToCompactString};
+use vize_s0::Span;
 use vize_s2::expr::{ExprRef, JsExpr, OpaqueReason};
 use vize_s2::op::OnOp;
 
@@ -14,13 +14,12 @@ pub(in crate::emit) fn emit_wrapped_handler(
 ) -> Result<(), EmitError> {
     let cached = needs_handler_cache(cx, on);
     if cached {
-        let index = cx.once_cache_index;
+        let slot = cx.once_cache_index;
         cx.once_cache_index += 1;
-        let index = index.to_compact_string();
         cx.buf.push("_cache[");
-        cx.buf.push(index.as_str());
+        cx.push_cache_index(slot);
         cx.buf.push("] || (_cache[");
-        cx.buf.push(index.as_str());
+        cx.push_cache_index(slot);
         cx.buf.push("] = ");
     }
     if !classified.keys.is_empty() {

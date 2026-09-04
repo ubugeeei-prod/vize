@@ -11,13 +11,12 @@ mod params;
 
 use alloc::vec::Vec as StdVec;
 
-use vize_s0::String;
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{BindingOp, DynamicName, Op, Region};
 use vize_s2::scope::ScopeOrigin;
 
 pub(super) use self::capture::{
-    capture, capture_child, emit_template_pieces, is_slot_template, is_whitespace_text,
+    SlotPiece, capture, capture_child, emit_template_pieces, is_slot_template, is_whitespace_text,
 };
 use self::params::{emit_slot_key, emit_slot_params, group_slot_content};
 use super::EmitCx;
@@ -170,7 +169,8 @@ pub(super) fn emit_slots(
     cx.buf.use_with_ctx();
     cx.buf.indent();
     cx.buf.indent();
-    let mut buckets: StdVec<StdVec<String>> = facts.groups.iter().map(|_| StdVec::new()).collect();
+    let mut buckets: StdVec<StdVec<SlotPiece>> =
+        facts.groups.iter().map(|_| StdVec::new()).collect();
     let start_walk = cx.walk.clone();
     group::collect_pieces(cx, children, facts, &mut buckets)?;
     cx.buf.deindent();
@@ -192,7 +192,7 @@ pub(super) fn emit_slots(
                 cx.buf.push(",");
             }
             cx.buf.newline();
-            cx.buf.push(piece.as_str());
+            cx.push_captured(piece);
         }
         cx.buf.deindent();
         cx.buf.newline();
