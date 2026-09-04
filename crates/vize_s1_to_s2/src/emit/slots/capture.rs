@@ -8,10 +8,29 @@ use crate::emit::hoist::{emit_hoisted_element, is_static_element_tree};
 use crate::emit::vnode::emit_array_child;
 use crate::emit::{EmitCx, EmitError};
 
+/// A slot body rendered away from where it prints, with the `_cache`
+/// slot numbers it wrote. The shipped codegen numbers a cache slot as it
+/// prints one, so the sites travel with the piece and are re-registered
+/// when it is pushed back ([`EmitCx::push_captured`]).
+pub(in crate::emit) struct SlotPiece {
+    text: String,
+    sites: StdVec<(usize, usize, u32)>,
+}
+
+impl SlotPiece {
+    pub(in crate::emit) fn as_str(&self) -> &str {
+        self.text.as_str()
+    }
+
+    pub(in crate::emit) fn sites(&self) -> &[(usize, usize, u32)] {
+        &self.sites
+    }
+}
+
 pub(in crate::emit) fn emit_template_pieces(
     cx: &mut EmitCx<'_>,
     children: &Region<'_>,
-    bucket: &mut StdVec<String>,
+    bucket: &mut StdVec<SlotPiece>,
 ) -> Result<(), EmitError> {
     if children.ops.iter().all(is_whitespace_text) {
         for op in children.ops.iter() {
@@ -40,19 +59,26 @@ pub(in crate::emit) fn emit_template_pieces(
 pub(in crate::emit) fn capture_child(
     cx: &mut EmitCx<'_>,
     op: &Op<'_>,
-) -> Result<String, EmitError> {
+) -> Result<SlotPiece, EmitError> {
     capture(cx, |cx| emit_slot_child(cx, op))
 }
 
 pub(in crate::emit) fn capture(
     cx: &mut EmitCx<'_>,
     write: impl FnOnce(&mut EmitCx<'_>) -> Result<(), EmitError>,
-) -> Result<String, EmitError> {
+) -> Result<SlotPiece, EmitError> {
     let start = cx.buf.code.len();
+    let site_start = cx.cache_sites.len();
     write(cx)?;
-    let piece = String::from(&cx.buf.code.as_str()[start..]);
+    let text = String::from(&cx.buf.code.as_str()[start..]);
+    let sites = cx
+        .cache_sites
+        .split_off(site_start)
+        .into_iter()
+        .map(|(offset, order_key, slot)| (offset - start, order_key - start, slot))
+        .collect();
     cx.buf.code.truncate(start);
-    Ok(piece)
+    Ok(SlotPiece { text, sites })
 }
 
 fn emit_slot_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {

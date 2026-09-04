@@ -1,7 +1,7 @@
 //! Shared emitter context helpers kept out of `emit.rs` for the source budget.
 
 use vize_davinci::id::NodeId;
-use vize_s0::String;
+use vize_s0::{String, ToCompactString};
 use vize_s2::expr::{ExprRef, JsExpr};
 use vize_s2::op::ForOp;
 
@@ -120,6 +120,34 @@ impl EmitCx<'_> {
     /// trimmed out of the op.
     pub(super) fn reads_constant_binding_name(&self, name: &str) -> bool {
         self.scope.reads_constant_binding(name)
+    }
+
+    /// Push a `_cache` slot number and record where its digits landed,
+    /// so [`super::cache_slots::renumber`] can re-derive the numbering in
+    /// printed order.
+    pub(super) fn push_cache_index(&mut self, slot: u32) {
+        let at = self.buf.code.len();
+        self.push_cache_index_at(slot, at);
+    }
+
+    /// [`Self::push_cache_index`] for a construct whose slot number
+    /// prints after its body (`withMemo`): the ordering key is where the
+    /// construct began, which is where the shipped codegen took the slot.
+    pub(super) fn push_cache_index_at(&mut self, slot: u32, order_key: usize) {
+        self.cache_sites
+            .push((self.buf.code.len(), order_key, slot));
+        self.buf.push(slot.to_compact_string().as_str());
+    }
+
+    /// Push a captured slot body back into the buffer, re-registering the
+    /// `_cache` sites it carries at their new offsets.
+    pub(super) fn push_captured(&mut self, piece: &super::slots::SlotPiece) {
+        let base = self.buf.code.len();
+        self.buf.push(piece.as_str());
+        for (offset, order_key, slot) in piece.sites().iter().copied() {
+            self.cache_sites
+                .push((base + offset, base + order_key, slot));
+        }
     }
 
     pub(super) fn prefixing(&self) -> bool {

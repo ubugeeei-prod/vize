@@ -79,6 +79,9 @@ or count and fails the gate instead of becoming a `no_std` escape from S0.
 | s1_to_s2 | `alloc::string::String` |     0 |            0 |          0 |
 | s1_to_s2 | `vize_s0::String`       |    84 |           89 |        416 |
 | s1_to_s2 | `vize_s0::String`       |    83 |           88 |        415 |
+| s1_to_s2 | `alloc::vec::Vec`       |    55 |           55 |        215 |
+| s1_to_s2 | `alloc::string::String` |     0 |            0 |          0 |
+| s1_to_s2 | `vize_s0::String`       |    81 |           85 |        408 |
 | s1_to_s2 | `vize_s0::Vec`          |    15 |           16 |         67 |
 | s1_to_s2 | `vize_s0::SmallVec`     |     4 |            4 |          9 |
 

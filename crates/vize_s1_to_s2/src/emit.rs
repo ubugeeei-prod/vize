@@ -44,6 +44,7 @@
 mod budget;
 mod buf;
 mod builtin;
+mod cache_slots;
 mod children;
 mod component;
 mod constant_expr;
@@ -104,7 +105,7 @@ use vize_davinci::diagnostic::Severity;
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
 use vize_s0::String;
-use vize_s2::op::{ElementOp, ForOp, IfOp, Namespace};
+use vize_s2::op::Namespace;
 use vize_s2::scope::ScopeFacts;
 
 use crate::lower::{ForWrapper, Lowered, WrapperKeys};
@@ -188,6 +189,16 @@ struct EmitCx<'facts> {
     is_ts: bool,
     /// The shipped lane's `cache_handlers`.
     cache_handlers: bool,
+    /// `(digit offset in `buf.code`, ordering key, slot number)` for
+    /// every `_cache` index written so far. The shipped codegen takes a
+    /// slot when it *reaches* the construct, so the ordering key is where
+    /// that construct starts — the same place for every shape but
+    /// `withMemo`, whose slot number prints after the body it wraps. Slot
+    /// bodies here are rendered in source order, which is what the
+    /// `_hoisted_N` numbering needs (the shipped lane assigns *those* in
+    /// the transform), so the sites are recorded and the numbering is
+    /// re-derived once the printed order is known.
+    cache_sites: StdVec<(usize, usize, u32)>,
     /// The op-visit count at which prefixing first needed `_unref`
     /// (`u32::MAX`: never) — where the transform would register it.
     used_unref: core::cell::Cell<u32>,
@@ -263,6 +274,7 @@ fn emit_dom_with_emit_budget<'f>(
         prefix_identifiers: options.prefix_identifiers,
         is_ts: options.is_ts,
         cache_handlers: options.cache_handlers,
+        cache_sites: StdVec::new(),
         used_unref: core::cell::Cell::new(u32::MAX),
         component_name: options.component_name,
         scope: prefix::PrefixScope::new(
@@ -317,6 +329,7 @@ fn emit_dom_with_emit_budget<'f>(
         cx.buf.prefer_at_visit(Helper::Unref, unref_visit);
         cx.buf.use_helper(Helper::Unref);
     }
+    cache_slots::renumber(&mut cx);
     let emit_visits = cx.walk.visits();
     let preamble = cx.buf.preamble(options);
     let code = cx.buf.code;

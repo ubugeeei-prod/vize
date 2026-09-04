@@ -1,9 +1,8 @@
 use alloc::vec::Vec as StdVec;
 
-use vize_s0::String;
 use vize_s2::op::{IfOp, Op, Region};
 
-use super::{capture_child, emit_template_pieces, is_slot_template};
+use super::{SlotPiece, capture_child, emit_template_pieces, is_slot_template};
 use crate::emit::create_slots_walk::{advance_after_op, first_slot_template};
 use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
 use crate::pass::walk::PageWalk;
@@ -13,7 +12,7 @@ pub(super) fn collect_pieces(
     cx: &mut EmitCx<'_>,
     children: &Region<'_>,
     facts: &SlotFacts,
-    buckets: &mut [StdVec<String>],
+    buckets: &mut [StdVec<SlotPiece>],
 ) -> Result<(), EmitError> {
     let mut group_keys = group_branch_key_starts(cx, children, facts);
     if children

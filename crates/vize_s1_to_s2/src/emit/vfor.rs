@@ -114,6 +114,9 @@ fn emit_for_scoped(
     cx.buf.use_create_element_block();
     cx.buf.use_fragment();
     cx.buf.use_render_list();
+    // The memo slot this loop may take prints after the whole callback,
+    // so its ordering key is the start of the `renderList` construct.
+    let construct_start = cx.buf.code.len();
     cx.buf.push("(");
     cx.buf.push(Buf::open_block_alias());
     if stable {
@@ -161,8 +164,9 @@ fn emit_for_scoped(
         cx.buf.deindent();
         cx.buf.newline();
         cx.buf.push("}, _cache, ");
-        let cache_index = super::memo::next_cache_index(cx);
-        cx.buf.push(cache_index.as_str());
+        let cache_slot = cx.once_cache_index;
+        cx.once_cache_index += 1;
+        cx.push_cache_index_at(cache_slot, construct_start);
         cx.buf.push("), ");
         cx.buf.push(flag.to_compact_string().as_str());
         cx.buf.push(" /* ");

@@ -1,6 +1,5 @@
 //! `vue.memo` (`v-memo`) realization.
 
-use vize_s0::ToCompactString;
 use vize_s2::op::{BindingOp, VueMemoOp};
 
 use super::helper::Helper;
@@ -38,12 +37,6 @@ pub(super) fn deps_source(
     Ok(vize_s0::String::from(raw.as_str()))
 }
 
-pub(super) fn next_cache_index(cx: &mut EmitCx<'_>) -> vize_s0::String {
-    let cache_index = cx.once_cache_index;
-    cx.once_cache_index += 1;
-    cache_index.to_compact_string()
-}
-
 pub(super) fn emit_cached(
     cx: &mut EmitCx<'_>,
     bindings: &[BindingOp<'_>],
@@ -55,14 +48,33 @@ pub(super) fn emit_cached(
     if cx.skip_memo {
         return emit(cx);
     }
-    let cache_index = next_cache_index(cx);
-    emit_cached_with_key(cx, memo, cache_index.as_str(), emit)
+    let cache_slot = cx.once_cache_index;
+    cx.once_cache_index += 1;
+    emit_cached_slot(cx, memo, cache_slot, emit)
 }
 
-pub(super) fn emit_cached_with_key(
+/// [`emit_cached_with_key`] over a real cache slot, whose number is
+/// recorded so the printed-order renumbering can move it.
+pub(super) fn emit_cached_slot(
     cx: &mut EmitCx<'_>,
     memo: &VueMemoOp<'_>,
-    cache_index: &str,
+    slot: u32,
+    emit: impl FnOnce(&mut EmitCx<'_>) -> Result<(), EmitError>,
+) -> Result<(), EmitError> {
+    // The shipped codegen takes the slot before it writes the wrapper, so
+    // the ordering key is the `_withMemo(` position, not the digits at
+    // the far end of the body.
+    let start = cx.buf.code.len();
+    emit_cached_prefix(cx, memo, emit)?;
+    cx.push_cache_index_at(slot, start);
+    cx.buf.push(")");
+    Ok(())
+}
+
+/// `_withMemo(deps, () => …, _cache, ` — everything up to the index.
+fn emit_cached_prefix(
+    cx: &mut EmitCx<'_>,
+    memo: &VueMemoOp<'_>,
     emit: impl FnOnce(&mut EmitCx<'_>) -> Result<(), EmitError>,
 ) -> Result<(), EmitError> {
     let deps = deps_source(cx, memo)?;
@@ -73,6 +85,18 @@ pub(super) fn emit_cached_with_key(
     cx.buf.push(", () => ");
     emit(cx)?;
     cx.buf.push(", _cache, ");
+    Ok(())
+}
+
+/// The `v-for` shape, whose index is the loop's own — a render-list
+/// position, not a cache slot, so it is not renumbered.
+pub(super) fn emit_cached_with_key(
+    cx: &mut EmitCx<'_>,
+    memo: &VueMemoOp<'_>,
+    cache_index: &str,
+    emit: impl FnOnce(&mut EmitCx<'_>) -> Result<(), EmitError>,
+) -> Result<(), EmitError> {
+    emit_cached_prefix(cx, memo, emit)?;
     cx.buf.push(cache_index);
     cx.buf.push(")");
     Ok(())
