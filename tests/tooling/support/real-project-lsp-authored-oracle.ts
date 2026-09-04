@@ -234,17 +234,16 @@ export async function exerciseAuthoredLspOracle(
       false,
       "dependency repair must remove the probe completion",
     );
-    // Type diagnostics can arrive after the importer opened with an initial
-    // lint-only publish. Recompute the unchanged importer immediately before
-    // the create/rename/delete lifecycle so the final repair is compared
-    // against the server's settled baseline for that exact source.
-    const lifecycleImporterVersion = (initialImporterDiagnostics.version ?? 1) + 1;
-    change(session, importerDocument.uri, importerDocument.source, lifecycleImporterVersion);
-    const lifecycleImporterDiagnostics = await waitForDiagnostics(
+    const repairedImporterDiagnostics = await waitForDiagnostics(
       session,
       importerDocument.uri,
-      lifecycleImporterVersion,
+      initialImporterDiagnostics.version ?? 1,
       timeoutMs(),
+    );
+    assert.deepEqual(
+      normalizeDiagnostics(repairedImporterDiagnostics.diagnostics),
+      normalizeDiagnostics(initialImporterDiagnostics.diagnostics),
+      "dependency repair must restore importer diagnostics exactly",
     );
     const fileLifecycle = await exerciseAuthoredFileLifecycle(
       session,
@@ -253,7 +252,7 @@ export async function exerciseAuthoredLspOracle(
       importerDocument,
       childDocument,
       tagRange,
-      lifecycleImporterDiagnostics,
+      repairedImporterDiagnostics,
       timeoutMs,
     );
     const evidence = (request: { durationMs: number }, response: unknown, count: number) =>
