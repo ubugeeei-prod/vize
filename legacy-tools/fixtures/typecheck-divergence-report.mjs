@@ -138,7 +138,7 @@ export async function runTypecheckDivergenceReport(argv = process.argv.slice(2))
     );
     const artifact = {
       schema: "vize.fixtureTypecheckDivergenceRun",
-      version: 6,
+      version: 7,
       project: project.id,
       revision: project.revision,
       tsconfig: baselineProject.sourceProject,
@@ -160,6 +160,8 @@ export async function runTypecheckDivergenceReport(argv = process.argv.slice(2))
         coverageDurationMs: coverageBaseline.durationMs,
         exitCode: baseline.exitCode,
         coverageExitCode: coverageBaseline.exitCode,
+        runError: null,
+        coverageRunError: null,
         ambient,
         configuration,
         coverage,

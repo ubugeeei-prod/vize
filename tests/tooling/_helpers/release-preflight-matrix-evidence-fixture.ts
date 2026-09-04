@@ -79,7 +79,7 @@ export function shardEntries(
   entries[`${projectId}-typecheck-dependencies.json`] = dependencyText;
   entries[`${projectId}-typecheck-divergence.json`] = json({
     schema: "vize.fixtureTypecheckDivergenceRun",
-    version: 6,
+    version: 7,
     project: projectId,
     revision: "b".repeat(40),
     evidence: { commitSha: releaseSha },

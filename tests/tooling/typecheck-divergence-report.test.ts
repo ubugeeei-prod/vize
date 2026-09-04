@@ -49,7 +49,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "version",
     ]);
     assert.equal(artifact.schema, "vize.fixtureTypecheckDivergenceRun");
-    assert.equal(artifact.version, 6);
+    assert.equal(artifact.version, 7);
     assert.equal(artifact.tsconfig, ".generated/tsconfig.json");
     assert.equal(artifact.evidence.commitSha, commitSha);
     assert.deepEqual(artifact.enforcement, { budgetMode: "enforce" });
@@ -87,10 +87,12 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "coverageCommand",
       "coverageDurationMs",
       "coverageExitCode",
+      "coverageRunError",
       "coverageStderrSha256",
       "coverageStdoutSha256",
       "durationMs",
       "exitCode",
+      "runError",
       "sourceConfigSha256",
       "stderrSha256",
       "stdoutSha256",
@@ -98,6 +100,8 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     ]);
     assert.equal(artifact.baseline.exitCode, 2);
     assert.equal(artifact.baseline.coverageExitCode, 0);
+    assert.equal(artifact.baseline.runError, null);
+    assert.equal(artifact.baseline.coverageRunError, null);
     assert.equal(artifact.baseline.version, "3.3.4");
     assert.equal(
       artifact.baseline.sourceConfigSha256,

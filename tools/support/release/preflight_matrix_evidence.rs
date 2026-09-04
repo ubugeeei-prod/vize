@@ -449,7 +449,7 @@ fn assert_release_typecheck_divergence_artifact(
 ) -> Result<(), String> {
     let run_head_sha = run_head_sha(run)?;
     if string_field(divergence, "schema") != Some("vize.fixtureTypecheckDivergenceRun")
-        || integer_field(divergence, "version") != Some(6)
+        || integer_field(divergence, "version") != Some(7)
         || string_field(nested(divergence, &["evidence"]), "commitSha") != Some(run_head_sha)
     {
         return Err(format!(

@@ -12,7 +12,7 @@
 //! ```
 
 use regex::Regex;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
@@ -157,7 +157,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
     if progress_enabled {
         eprintln!("[typecheck-divergence] run projectId={project_id} command=baseline");
     }
-    let baseline = run_capture_limited(
+    let baseline = run_baseline_command(
         &args.vue_tsc_bin,
         &baseline_args,
         &fixture_root,
@@ -168,22 +168,31 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
     if progress_enabled {
         eprintln!(
             "[typecheck-divergence] finish projectId={project_id} command=baseline durationMs={} status={}",
-            baseline.duration_ms, baseline.status
+            baseline.run.duration_ms, baseline.run.status
         );
         eprintln!("[typecheck-divergence] run projectId={project_id} command=coverage");
     }
-    let coverage_baseline = run_capture_limited(
-        &args.vue_tsc_bin,
-        &coverage_args,
-        &fixture_root,
-        timeout_ms,
-        "vue-tsc coverage baseline",
-        &[0, 1, 2],
-    )?;
+    let coverage_baseline = if let Some(reason) = baseline.run_error.as_deref() {
+        skipped_baseline_command(
+            &args.vue_tsc_bin,
+            &coverage_args,
+            "vue-tsc coverage baseline",
+            &format!("vue-tsc coverage baseline skipped because {reason}"),
+        )
+    } else {
+        run_baseline_command(
+            &args.vue_tsc_bin,
+            &coverage_args,
+            &fixture_root,
+            timeout_ms,
+            "vue-tsc coverage baseline",
+            &[0, 1, 2],
+        )?
+    };
     if progress_enabled {
         eprintln!(
             "[typecheck-divergence] finish projectId={project_id} command=coverage durationMs={} status={}",
-            coverage_baseline.duration_ms, coverage_baseline.status
+            coverage_baseline.run.duration_ms, coverage_baseline.run.status
         );
     }
     let documented_differences = read_documented_differences(root)?;
@@ -191,16 +200,32 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         project_id.clone(),
         &fixture_root,
         &vize_run.payload["parsed"],
-        &baseline.output,
+        &baseline.run.output,
         &documented_differences,
     )?;
-    let coverage = evaluate_vue_program_coverage(
-        &vize_run.payload["parsed"],
-        &coverage_baseline.output,
-        &fixture_root,
-    )?;
-    let configuration = evaluate_baseline_configuration(&baseline.output)?;
-    let ambient = evaluate_baseline_ambient_environment(&coverage_baseline.output, &fixture_root)?;
+    let coverage = if let Some(reason) = baseline
+        .run_error
+        .as_deref()
+        .or(coverage_baseline.run_error.as_deref())
+    {
+        unavailable_vue_program_coverage(&vize_run.payload["parsed"], &fixture_root, reason)?
+    } else {
+        evaluate_vue_program_coverage(
+            &vize_run.payload["parsed"],
+            &coverage_baseline.run.output,
+            &fixture_root,
+        )?
+    };
+    let configuration = if let Some(reason) = baseline.run_error.as_deref() {
+        unavailable_baseline_configuration(reason)
+    } else {
+        evaluate_baseline_configuration(&baseline.run.output)?
+    };
+    let ambient = if let Some(reason) = coverage_baseline.run_error.as_deref() {
+        unavailable_baseline_ambient_environment(reason)
+    } else {
+        evaluate_baseline_ambient_environment(&coverage_baseline.run.output, &fixture_root)?
+    };
     let mutation_oracle = create_seeded_mutation_oracle(MutationContext {
         project,
         fixture_root: &fixture_root,
@@ -222,7 +247,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
     )?;
     let artifact = json!({
         "schema": "vize.fixtureTypecheckDivergenceRun",
-        "version": 6,
+        "version": 7,
         "project": project_id.clone(),
         "revision": project.get("revision").cloned().unwrap_or(Value::Null),
         "tsconfig": source_project,
@@ -236,17 +261,19 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
             "configSha256": sha256(&baseline_config.source),
             "sourceConfigSha256": sha256(&source_config),
             "version": vue_tsc_version,
-            "durationMs": baseline.duration_ms,
-            "coverageDurationMs": coverage_baseline.duration_ms,
-            "exitCode": baseline.status,
-            "coverageExitCode": coverage_baseline.status,
+            "durationMs": baseline.run.duration_ms,
+            "coverageDurationMs": coverage_baseline.run.duration_ms,
+            "exitCode": captured_exit_code(&baseline),
+            "coverageExitCode": captured_exit_code(&coverage_baseline),
+            "runError": baseline.run_error,
+            "coverageRunError": coverage_baseline.run_error,
             "ambient": ambient,
             "configuration": configuration,
             "coverage": coverage,
-            "stdoutSha256": sha256(&baseline.stdout),
-            "stderrSha256": sha256(&baseline.stderr),
-            "coverageStdoutSha256": sha256(&coverage_baseline.stdout),
-            "coverageStderrSha256": sha256(&coverage_baseline.stderr),
+            "stdoutSha256": sha256(&baseline.run.stdout),
+            "stderrSha256": sha256(&baseline.run.stderr),
+            "coverageStdoutSha256": sha256(&coverage_baseline.run.stdout),
+            "coverageStderrSha256": sha256(&coverage_baseline.run.stderr),
         },
         "mutationOracle": mutation_oracle,
         "budget": budget,
@@ -641,6 +668,11 @@ struct ToolRun {
     parsed: Option<Value>,
 }
 
+struct CapturedToolRun {
+    run: ToolRun,
+    run_error: Option<String>,
+}
+
 struct MutationContext<'a> {
     project: &'a Value,
     fixture_root: &'a Path,
@@ -979,6 +1011,52 @@ fn evaluate_vue_program_coverage(
     }))
 }
 
+fn unavailable_vue_program_coverage(
+    vize_report: &Value,
+    cwd: &Path,
+    reason: &str,
+) -> Result<Value, String> {
+    let mut vize_vue_files = vize_report
+        .get("files")
+        .and_then(Value::as_array)
+        .unwrap_or(&Vec::new())
+        .iter()
+        .take(
+            vize_report
+                .get("fileCount")
+                .and_then(Value::as_u64)
+                .unwrap_or(0) as usize,
+        )
+        .enumerate()
+        .map(|(index, entry)| {
+            normalize_vize_path(
+                entry.get("file").and_then(Value::as_str),
+                cwd,
+                &format!("Vize files[{index}].file"),
+            )
+        })
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .filter(|file| file.ends_with(".vue"))
+        .collect::<Vec<_>>();
+    sort_bytes_dedup(&mut vize_vue_files);
+    Ok(json!({
+        "baselineVueFileCount": 0,
+        "baselineVueFilesSha256": file_list_hash(&[]),
+        "ignoredDependencyVueFileCount": 0,
+        "ignoredDependencyVueFilesSha256": file_list_hash(&[]),
+        "ignoredSupportVueFileCount": 0,
+        "ignoredSupportVueFilesSha256": file_list_hash(&[]),
+        "missingVueFiles": vize_vue_files,
+        "sharedVueFileCount": 0,
+        "unexpectedVueFiles": [],
+        "unusableReason": reason,
+        "verdict": "unusable",
+        "vizeVueFileCount": vize_vue_files.len(),
+        "vizeVueFilesSha256": file_list_hash(&vize_vue_files),
+    }))
+}
+
 fn collect_vue_tsc_program_files(
     output: &str,
     cwd: &Path,
@@ -1077,6 +1155,15 @@ fn evaluate_baseline_configuration(output: &str) -> Result<Value, String> {
     }))
 }
 
+fn unavailable_baseline_configuration(reason: &str) -> Value {
+    json!({
+        "diagnostics": [],
+        "errorCount": 0,
+        "unusableReason": reason,
+        "verdict": "unusable",
+    })
+}
+
 fn evaluate_baseline_ambient_environment(
     output: &str,
     fixture_root: &Path,
@@ -1119,6 +1206,16 @@ fn evaluate_baseline_ambient_environment(
         "verdict": if unusable_reason.is_some() { "contaminated" } else { "isolated" },
         "vueRuntime": vue_runtime,
     }))
+}
+
+fn unavailable_baseline_ambient_environment(reason: &str) -> Value {
+    json!({
+        "externalFileCount": 0,
+        "externalPackages": [],
+        "unusableReason": reason,
+        "verdict": "unavailable",
+        "vueRuntime": [],
+    })
 }
 
 fn create_seeded_mutation_oracle(ctx: MutationContext<'_>) -> Result<Value, String> {
@@ -2400,6 +2497,60 @@ fn assert_source_unchanged(
     Ok(())
 }
 
+fn run_baseline_command(
+    command: &Path,
+    args: &[String],
+    cwd: &Path,
+    timeout_ms: u64,
+    label: &str,
+    allowed_statuses: &[i32],
+) -> Result<CapturedToolRun, String> {
+    match run_capture_limited(command, args, cwd, timeout_ms, label, allowed_statuses) {
+        Ok(run) => Ok(CapturedToolRun {
+            run,
+            run_error: None,
+        }),
+        Err(error) if error == timeout_error(label, timeout_ms) => Ok(CapturedToolRun {
+            run: failed_tool_run(command, args, timeout_ms as u128, &error),
+            run_error: Some(error),
+        }),
+        Err(error) => Err(error),
+    }
+}
+
+fn skipped_baseline_command(
+    command: &Path,
+    args: &[String],
+    label: &str,
+    reason: &str,
+) -> CapturedToolRun {
+    let _ = label;
+    CapturedToolRun {
+        run: failed_tool_run(command, args, 0, reason),
+        run_error: Some(reason.to_string()),
+    }
+}
+
+fn failed_tool_run(command: &Path, args: &[String], duration_ms: u128, reason: &str) -> ToolRun {
+    ToolRun {
+        command: display_command(command, args),
+        status: -1,
+        stdout: String::new(),
+        stderr: reason.to_string(),
+        output: format!("\n{reason}"),
+        duration_ms,
+        parsed: None,
+    }
+}
+
+fn captured_exit_code(captured: &CapturedToolRun) -> Value {
+    if captured.run_error.is_some() {
+        Value::Null
+    } else {
+        json!(captured.run.status)
+    }
+}
+
 fn run_capture_limited(
     command: &Path,
     args: &[String],
@@ -2433,9 +2584,7 @@ fn run_capture_limited(
         }
         if started.elapsed() >= Duration::from_millis(timeout_ms) {
             kill_child_group(&mut child);
-            return Err(format!(
-                "{label} failed to run: spawn timed out after {timeout_ms}ms"
-            ));
+            return Err(timeout_error(label, timeout_ms));
         }
         thread::sleep(Duration::from_millis(5));
     }
@@ -2457,6 +2606,10 @@ fn run_capture_limited(
         duration_ms: started.elapsed().as_millis(),
         parsed: None,
     })
+}
+
+fn timeout_error(label: &str, timeout_ms: u64) -> String {
+    format!("{label} failed to run: spawn timed out after {timeout_ms}ms")
 }
 
 fn kill_child_group(child: &mut std::process::Child) {
