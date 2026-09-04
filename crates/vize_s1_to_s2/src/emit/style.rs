@@ -17,19 +17,34 @@ pub(super) fn bind_skips_normalize(
     is_plain_element: bool,
     has_static_style: bool,
     value: &BindValue<'_>,
+    scope: &super::prefix::PrefixScope<'_>,
 ) -> bool {
     if raw_name != "style" {
         return false;
     }
     let static_value = static_bind_value(value) || legacy_static_style_object(value);
+    // The identifier arm is the shipped `is_constant_simple_expression`
+    // proper, and it never looks at a static `style` attribute beside the
+    // bound one. The literal arms keep the merge condition they were
+    // measured with.
+    let constant_value = !static_value && constant_bind_value(value, scope);
     if !is_plain_element {
-        return static_value;
+        return static_value || constant_value;
     }
-    !has_static_style && static_value
+    (!has_static_style && static_value) || constant_value
 }
 
 fn static_bind_value(value: &BindValue<'_>) -> bool {
     value.js().is_some_and(|js| static_expression(js.ast))
+}
+
+/// The shipped gate is `is_constant_simple_expression`, not a literal
+/// check: a `:style` naming a constant script binding never changes, so
+/// the codegen skips `normalizeStyle` for it too.
+fn constant_bind_value(value: &BindValue<'_>, scope: &super::prefix::PrefixScope<'_>) -> bool {
+    value
+        .js()
+        .is_some_and(|js| super::constant_expr::is_constant_expression(js.ast, scope))
 }
 
 pub(super) fn legacy_static_style_object(value: &BindValue<'_>) -> bool {

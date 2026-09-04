@@ -46,6 +46,7 @@ mod buf;
 mod builtin;
 mod children;
 mod component;
+mod constant_expr;
 mod create_slots;
 mod create_slots_walk;
 mod cx;

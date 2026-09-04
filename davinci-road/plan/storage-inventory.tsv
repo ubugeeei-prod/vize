@@ -47,6 +47,7 @@ s1_to_s2	-	crates/vize_s1_to_s2/src/emit/buf/preamble.rs	0	0	1	3	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/component/binding.rs	0	0	1	6	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/component/call_props.rs	1	1	1	1	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/component/preamble.rs	1	3	0	0	0	0	0	0
+s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/constant_expr.rs	1	5	1	2	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/create_slots.rs	1	5	1	4	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/create_slots/entry.rs	1	1	1	2	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/cx.rs	0	0	1	11	0	0	0	0
