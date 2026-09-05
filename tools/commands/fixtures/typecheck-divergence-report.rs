@@ -598,6 +598,7 @@ fn materialize_baseline_project(
     let mut include_roots = source_roots.clone();
     include_roots.extend(dot_roots.clone());
     dedup_paths(&mut include_roots);
+    let dot_vue_roots = dot_vue_include_roots(&source_roots, &dot_roots);
     let mut compiler_options = serde_json::Map::new();
     compiler_options.insert("ignoreDeprecations".to_string(), json!("6.0"));
     compiler_options.insert(
@@ -621,7 +622,7 @@ fn materialize_baseline_project(
         "extends": config_relative_path(&config_dir, &source_path),
         "compilerOptions": Value::Object(compiler_options),
         "files": vize_report.get("files").and_then(Value::as_array).unwrap_or(&Vec::new()).iter().take(vize_report.get("fileCount").and_then(Value::as_u64).unwrap_or(0) as usize).filter_map(|entry| entry.get("file").and_then(Value::as_str)).map(|file| config_relative_path(&config_dir, &fixture_root.join(file))).collect::<Vec<_>>(),
-        "include": include_globs(&config_dir, &ambient_roots, &include_roots, &dot_roots),
+        "include": include_globs(&config_dir, &ambient_roots, &include_roots, &dot_vue_roots),
         "exclude": ambient_roots.iter().flat_map(|root_path| {
             let root = config_relative_path(&config_dir, root_path);
             vec![format!("{root}/**/node_modules/**"), format!("{root}/**/dist/**")]
@@ -3674,7 +3675,7 @@ fn include_globs(
     config_dir: &Path,
     ambient_roots: &[PathBuf],
     source_roots: &[PathBuf],
-    dot_roots: &[PathBuf],
+    dot_vue_roots: &[PathBuf],
 ) -> Vec<String> {
     let mut values = Vec::new();
     for root in ambient_roots {
@@ -3697,13 +3698,27 @@ fn include_globs(
             format!("{root}/**/*.json"),
         ]);
     }
-    for root in dot_roots {
+    for root in dot_vue_roots {
         values.push(format!(
             "{}/**/*.vue",
             config_relative_path(config_dir, root)
         ));
     }
     values
+}
+
+fn dot_vue_include_roots(source_roots: &[PathBuf], dot_roots: &[PathBuf]) -> Vec<PathBuf> {
+    let mut roots = dot_roots
+        .iter()
+        .filter(|dot_root| {
+            source_roots
+                .iter()
+                .any(|source_root| path_is_or_stays_inside(source_root, dot_root))
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+    dedup_paths(&mut roots);
+    roots
 }
 
 fn tsconfig_include_dot_roots(
@@ -3943,9 +3958,13 @@ fn extend_local_vue_runtime_paths(
     let runtime_names = ["@vue/runtime-core", "@vue/runtime-dom", "vue"];
     let vue_root = local_package_root(fixture_root, "vue")?;
     for name in runtime_names {
-        let root = match local_package_root(fixture_root, name)? {
-            Some(root) => Some(root),
-            None => local_vue_dependency_package_root(fixture_root, vue_root.as_deref(), name)?,
+        let root = if name == "vue" {
+            vue_root.clone()
+        } else {
+            match local_vue_dependency_package_root(fixture_root, vue_root.as_deref(), name)? {
+                Some(root) => Some(root),
+                None => local_package_root(fixture_root, name)?,
+            }
         };
         if let Some(root) = root {
             paths.insert(
@@ -4018,6 +4037,9 @@ fn unique_pnpm_store_package_root(
         if entry_name.starts_with('.') {
             continue;
         }
+        if !pnpm_store_entry_matches_package(&entry_name, name) {
+            continue;
+        }
         let candidate = name
             .split('/')
             .fold(entry.path().join("node_modules"), |path, segment| {
@@ -4037,6 +4059,22 @@ fn unique_pnpm_store_package_root(
         matches.into_values().next()
     } else {
         None
+    })
+}
+
+fn pnpm_store_entry_matches_package(entry_name: &str, name: &str) -> bool {
+    let encoded = name.replace('/', "+");
+    entry_name
+        .strip_prefix(&encoded)
+        .is_some_and(|suffix| suffix.starts_with('@'))
+}
+
+fn path_is_or_stays_inside(root: &Path, path: &Path) -> bool {
+    pathdiff::diff_paths(path, root).is_some_and(|relative| {
+        relative.as_os_str().is_empty()
+            || relative
+                .components()
+                .all(|component| matches!(component, std::path::Component::Normal(_)))
     })
 }
 

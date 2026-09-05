@@ -115,10 +115,12 @@ test("Vue dependency runtimes are pinned from the selected pnpm Vue store entry"
   try {
     const store = path.join(fixture.fixtureRoot, "node_modules/.pnpm");
     const vueNodeModules = path.join(store, "vue@3.5.30/node_modules");
+    const nestedVueNodeModules = path.join(store, "motion-v@2.2.0_vue@3.5.30/node_modules");
     const staleNodeModules = path.join(store, "@vue+runtime-core@3.6.0/node_modules");
     writePackage(path.join(vueNodeModules, "vue"), "vue");
     writePackage(path.join(vueNodeModules, "@vue/runtime-core"), "@vue/runtime-core");
     writePackage(path.join(vueNodeModules, "@vue/runtime-dom"), "@vue/runtime-dom");
+    writePackage(path.join(nestedVueNodeModules, "vue"), "vue");
     writePackage(path.join(staleNodeModules, "@vue/runtime-core"), "@vue/runtime-core");
 
     const result = run(fixture);

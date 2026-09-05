@@ -61,7 +61,7 @@ test("typecheck divergence report includes tsconfig dot-directory support roots"
     assert.equal(config.include.includes("../docs/.vitepress/**/*.ts"), true);
     assert.equal(config.include.includes("../docs/.vitepress/**/*.js"), true);
     assert.equal(config.include.includes("../docs/.vitepress/**/*.json"), true);
-    assert.equal(config.include.includes("../docs/.vitepress/**/*.vue"), true);
+    assert.equal(config.include.includes("../docs/.vitepress/**/*.vue"), false);
   } finally {
     cleanup(fixture);
   }
@@ -86,7 +86,7 @@ test("typecheck divergence report includes fixture dot-directory support roots",
     assert.equal(config.include.includes("../docs/.vitepress/**/*.ts"), true);
     assert.equal(config.include.includes("../docs/.vitepress/**/*.js"), true);
     assert.equal(config.include.includes("../docs/.vitepress/**/*.json"), true);
-    assert.equal(config.include.includes("../docs/.vitepress/**/*.vue"), true);
+    assert.equal(config.include.includes("../docs/.vitepress/**/*.vue"), false);
   } finally {
     cleanup(fixture);
   }
