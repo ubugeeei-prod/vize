@@ -2,7 +2,7 @@
   "schemaVersion": 8,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
-    "minimumProjectCount": 23,
+    "minimumProjectCount": 24,
     "trackingIssue": 3952
   },
   "projects": [
@@ -1081,6 +1081,67 @@
       "vueGlobs": ["app/**/*.vue"],
       "tsconfig": "tsconfig.json",
       "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "app/components/common/config-slider/ConfigSlider.vue",
+          "symbol": "valueLabel",
+          "usageAnchor": "{{ valueLabel }}",
+          "declarationAnchor": "const valueLabel = computed(() =>",
+          "hoverContains": ["const valueLabel: any"],
+          "renameTo": "__vizeRenamedValueLabel"
+        },
+        "componentBoundary": {
+          "importerFile": "app/components/inspira/configs/shimmer-button/ShimmerButtonConfig.vue",
+          "componentFile": "app/components/common/dial-kit/DialKitConfigPanel.vue",
+          "tagName": "DialKitConfigPanel",
+          "tagAnchor": "      <DialKitConfigPanel ",
+          "completionItemCount": 28,
+          "completionItems": [
+            { "label": "v-if", "rank": 0 },
+            { "label": "v-else-if", "rank": 1 },
+            { "label": "v-else", "rank": 2 },
+            { "label": "v-for", "rank": 3 },
+            { "label": "v-on", "rank": 4 },
+            { "label": "v-bind", "rank": 5 },
+            { "label": "v-model", "rank": 6 },
+            { "label": "v-slot", "rank": 7 },
+            { "label": "v-show", "rank": 8 },
+            { "label": "v-pre", "rank": 9 },
+            { "label": "v-once", "rank": 10 },
+            { "label": "v-memo", "rank": 11 },
+            { "label": "v-cloak", "rank": 12 },
+            { "label": "v-text", "rank": 13 },
+            { "label": "v-html", "rank": 14 },
+            { "label": "@", "rank": 15 },
+            { "label": ":", "rank": 16 },
+            { "label": "#", "rank": 17 },
+            { "label": "@click", "rank": 18 },
+            { "label": "@input", "rank": 19 },
+            { "label": "@change", "rank": 20 },
+            { "label": "@submit", "rank": 21 },
+            { "label": "@keydown", "rank": 22 },
+            { "label": "@keyup", "rank": 23 },
+            { "label": "@focus", "rank": 24 },
+            { "label": "@blur", "rank": 25 },
+            { "label": "@mouseenter", "rank": 26 },
+            { "label": "@mouseleave", "rank": 27 }
+          ],
+          "dependencyEdit": {
+            "anchor": "import { DialRoot } from \"dialkit/vue\";\n",
+            "replacement": "import { DialRoot } from \"dialkit/vue\";\n\nconst props = defineProps<{ vizeOracleProbe?: boolean }>();\nvoid props;\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "app/components/common/dial-kit/__VizeOracleDialKitConfigPanel.vue",
+          "renamedFile": "app/components/common/dial-kit/__VizeOracleRenamedDialKitConfigPanel.vue",
+          "originalImportSpecifier": "../../../common/dial-kit/DialKitConfigPanel.vue",
+          "copiedImportSpecifier": "../../../common/dial-kit/__VizeOracleDialKitConfigPanel.vue",
+          "renamedImportSpecifier": "../../../common/dial-kit/__VizeOracleRenamedDialKitConfigPanel.vue",
+          "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
+          "markerSymbol": "__vizeInspiraUiDialKitPanelMarker__"
+        }
+      },
       "diff": "curator-compare"
     },
     {

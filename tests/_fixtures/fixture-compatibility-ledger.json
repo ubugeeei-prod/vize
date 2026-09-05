@@ -766,6 +766,7 @@
         "fixturePaths": [
           "tests/_fixtures/_git/ant-design-vue",
           "tests/_fixtures/_git/hoppscotch",
+          "tests/_fixtures/_git/inspira-ui",
           "tests/_fixtures/_git/reka-ui",
           "tests/_fixtures/_git/elk",
           "tests/_fixtures/_git/misskey",
