@@ -4,9 +4,48 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
-import { metadata, repoRoot, workspacePackage } from "./support/davinci-stage-dependencies.ts";
+import {
+  metadata,
+  readRepoFile,
+  repoRoot,
+  workspacePackage,
+} from "./support/davinci-stage-dependencies.ts";
 
 const domStageDeps = new Set(["vize_davinci", "vize_s1_to_s2", "vize_s2"]);
+const compilerOptionsProjectedToS2 = [
+  "mode",
+  "prefix_identifiers",
+  "cache_handlers",
+  "scope_id",
+  "component_name",
+  "inline",
+  "binding_metadata",
+  "is_ts",
+  "dialect",
+];
+const compilerOptionsHeldAtDefault = [
+  "hoist_static",
+  "ssr",
+  "source_map",
+  "comments",
+  "experimental_in_tag_comments",
+  "experimental_patterned_template",
+  "custom_renderer",
+  "croquis",
+];
+const s2EmitOptionFields = [
+  "mode",
+  "runtime_module_name",
+  "runtime_global_name",
+  "prefix_identifiers",
+  "inline",
+  "component_name",
+  "cache_handlers",
+  "hoisted_scope_id",
+  "scope_id",
+  "is_ts",
+  "bindings",
+];
 
 test("DOM compiler keeps the published S2 renderer available for profiling", () => {
   const dependencies = workspacePackage(metadata, "vize_atelier_dom").dependencies;
@@ -50,3 +89,78 @@ test("source-map-disabled DOM compile records the S2 profiling counter", () => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /profile_reports_real_s2_dom_walks \.\.\. ok/u);
 });
+
+test("DOM S2 production switch classifies every compiler option", () => {
+  const fields = publicStructFieldNames(
+    readRepoFile("crates", "vize_atelier_dom", "src", "options.rs"),
+    "DomCompilerOptions",
+  );
+
+  assert.deepEqual(fields, [
+    "mode",
+    "prefix_identifiers",
+    "hoist_static",
+    "cache_handlers",
+    "scope_id",
+    "ssr",
+    "source_map",
+    "comments",
+    "experimental_in_tag_comments",
+    "experimental_patterned_template",
+    "component_name",
+    "inline",
+    "custom_renderer",
+    "binding_metadata",
+    "is_ts",
+    "dialect",
+    "croquis",
+  ]);
+
+  assert.deepEqual(
+    sortedUnique([...compilerOptionsProjectedToS2, ...compilerOptionsHeldAtDefault]),
+    [...fields].sort(),
+  );
+});
+
+test("DOM S2 emit options stay scoped to the supported switch surface", () => {
+  assert.deepEqual(
+    publicStructFieldNames(
+      readRepoFile("crates", "vize_s1_to_s2", "src", "emit", "options.rs"),
+      "DomEmitOptions",
+    ),
+    s2EmitOptionFields,
+  );
+});
+
+function sortedUnique(values: string[]): string[] {
+  const unique = new Set(values);
+  assert.equal(unique.size, values.length, "option classification has duplicates");
+  return [...unique].sort();
+}
+
+function publicStructFieldNames(source: string, structName: string): string[] {
+  const declaration = new RegExp(String.raw`pub struct ${structName}(?:<[^>]+>)?\s*\{`, "u").exec(
+    source,
+  );
+  assert.ok(declaration, `missing ${structName} declaration`);
+
+  const bodyStart = source.indexOf("{", declaration.index);
+  const bodyEnd = matchingBraceIndex(source, bodyStart);
+  const body = source.slice(bodyStart + 1, bodyEnd);
+  return [...body.matchAll(/^\s*pub\s+([A-Za-z_][A-Za-z0-9_]*)\s*:/gmu)].map(([, field]) => field);
+}
+
+function matchingBraceIndex(source: string, start: number): number {
+  let depth = 0;
+  for (let index = start; index < source.length; index += 1) {
+    if (source[index] === "{") {
+      depth += 1;
+    } else if (source[index] === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return index;
+      }
+    }
+  }
+  assert.fail("unterminated struct body");
+}
