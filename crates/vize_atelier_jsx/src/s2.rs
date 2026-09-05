@@ -14,7 +14,7 @@ use vize_s0::{Allocator, Box, Vec};
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{
     Attribute, BindOp, BindingOp, ComponentOp, DynamicName, ElementOp, InterpolationOp, Namespace,
-    Op, Region, TextOp,
+    OnOp, Op, Region, TextOp,
 };
 
 /// A JSX render root represented as S2 operations.
@@ -182,30 +182,50 @@ fn lower_binding<'a>(
     allocator: &'a Allocator,
     directive: &vize_relief::DirectiveNode<'a>,
 ) -> Result<BindingOp<'a>, S2Refusal> {
-    if directive.name != "bind" {
+    if !matches!(directive.name, "bind" | "on") {
         return Err(S2Refusal::Directive);
     }
 
     let name = lower_dynamic_name(allocator, directive.arg.as_ref())?;
-    let mut modifiers = Vec::new_in(&allocator);
-    for modifier in &directive.modifiers {
-        modifiers.push(modifier.content);
-    }
-    let value = directive
+    let modifiers = lower_modifiers(allocator, directive);
+    let expression = directive
         .exp
         .as_ref()
         .map(|expression| lower_expression(allocator, expression))
         .transpose()?;
 
-    Ok(BindingOp::Bind(Box::new_in(
-        BindOp {
-            name,
-            modifiers,
-            value,
-            span: directive.loc.span,
-        },
-        &allocator,
-    )))
+    match directive.name {
+        "bind" => Ok(BindingOp::Bind(Box::new_in(
+            BindOp {
+                name,
+                modifiers,
+                value: expression,
+                span: directive.loc.span,
+            },
+            &allocator,
+        ))),
+        "on" => Ok(BindingOp::On(Box::new_in(
+            OnOp {
+                name,
+                modifiers,
+                handler: expression,
+                span: directive.loc.span,
+            },
+            &allocator,
+        ))),
+        _ => unreachable!("directive name was admitted above"),
+    }
+}
+
+fn lower_modifiers<'a>(
+    allocator: &'a Allocator,
+    directive: &vize_relief::DirectiveNode<'a>,
+) -> Vec<'a, &'a str> {
+    let mut modifiers = Vec::new_in(&allocator);
+    for modifier in &directive.modifiers {
+        modifiers.push(modifier.content);
+    }
+    modifiers
 }
 
 fn lower_dynamic_name<'a>(

@@ -42,3 +42,75 @@ fn dynamic_bind_props_project_to_s2_bindings() {
     );
     assert_eq!(spread.span.start, source.find("{...attrs}").unwrap() as u32);
 }
+
+#[test]
+fn v_on_directives_project_to_s2_on_bindings() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <button v-on:click={handle} />";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    assert!(!lowered.has_errors(), "{:?}", lowered.diagnostics);
+    let root = lowered.roots.first().expect("one JSX root");
+
+    let s2 = root.s2.as_ref().expect("event binding is admitted");
+    assert_eq!(s2.op_count, 2);
+    let Op::Element(element) = &s2.root.ops[0] else {
+        panic!("root is an element");
+    };
+    assert_eq!(element.bindings.len(), 1);
+
+    let BindingOp::On(click) = &element.bindings[0] else {
+        panic!("binding is ui.on");
+    };
+    assert!(matches!(click.name, Some(DynamicName::Static("click"))));
+    assert!(click.modifiers.is_empty());
+    let handler = click.handler.expect("event binding has a handler");
+    assert_eq!(handler.source(), "handle");
+    assert_eq!(handler.span().start, source.find("handle").unwrap() as u32);
+    let event_attr = "v-on:click={handle}";
+    let event_attr_start = source.find(event_attr).unwrap() as u32;
+    assert_eq!(click.span.start, event_attr_start);
+    assert_eq!(click.span.end, event_attr_start + event_attr.len() as u32);
+}
+
+#[test]
+fn event_handler_directives_project_to_s2_on_bindings() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <button id=\"save\" disabled={isDisabled} \
+                  onClickPassiveCapture={handle} />";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    assert!(!lowered.has_errors(), "{:?}", lowered.diagnostics);
+    let root = lowered.roots.first().expect("one JSX root");
+
+    let s2 = root.s2.as_ref().expect("event bindings are admitted");
+    assert_eq!(s2.op_count, 3);
+    let Op::Element(element) = &s2.root.ops[0] else {
+        panic!("root is an element");
+    };
+    assert_eq!(element.attributes.len(), 1);
+    assert_eq!(element.attributes[0].name, "id");
+    assert_eq!(element.attributes[0].value, Some("save"));
+    assert_eq!(element.bindings.len(), 2);
+
+    let BindingOp::Bind(disabled) = &element.bindings[0] else {
+        panic!("first binding is ui.bind");
+    };
+    assert!(matches!(
+        disabled.name,
+        Some(DynamicName::Static("disabled"))
+    ));
+    let disabled_value = disabled.value.expect("disabled binding has a value");
+    assert_eq!(disabled_value.source(), "isDisabled");
+
+    let BindingOp::On(click) = &element.bindings[1] else {
+        panic!("second binding is ui.on");
+    };
+    assert!(matches!(click.name, Some(DynamicName::Static("click"))));
+    assert_eq!(click.modifiers.as_slice(), ["passive", "capture"]);
+    let handler = click.handler.expect("event binding has a handler");
+    assert_eq!(handler.source(), "handle");
+    assert_eq!(handler.span().start, source.find("handle").unwrap() as u32);
+    let event_attr = "onClickPassiveCapture={handle}";
+    let event_attr_start = source.find(event_attr).unwrap() as u32;
+    assert_eq!(click.span.start, event_attr_start);
+    assert_eq!(click.span.end, event_attr_start + event_attr.len() as u32);
+}
