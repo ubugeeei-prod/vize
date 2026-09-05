@@ -128,7 +128,7 @@
   "vue/no-unsafe-url.help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
   "vue/no-template-target-blank.description": "Disallow target=\"_blank\" without rel=\"noopener noreferrer\"",
   "vue/no-template-target-blank.message": "Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
-  "vue/no-template-target-blank.help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener",
+  "vue/no-template-target-blank.help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data",
   "vue/no-unsandboxed-iframe.description": "Require a sandbox attribute on iframe elements",
   "vue/no-unsandboxed-iframe.message": "<iframe> is missing a sandbox attribute",
   "vue/no-unsandboxed-iframe.help": "Add a sandbox attribute (e.g. sandbox=\"\" for the most restrictive policy) and re-grant only the capabilities the embedded content needs",

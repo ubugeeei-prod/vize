@@ -128,7 +128,7 @@
   "vue/no-unsafe-url.help": "javascript:プロトコルによるXSSを防ぐため、バインディング前にURLをサニタイズしてください",
   "vue/no-template-target-blank.description": "rel=\"noopener noreferrer\"のないtarget=\"_blank\"を禁止する",
   "vue/no-template-target-blank.message": "rel=\"noopener noreferrer\"のないtarget=\"_blank\"はセキュリティリスクです",
-  "vue/no-template-target-blank.help": "新しいタブで開くリンクにはrel=\"noopener noreferrer\"を追加し、window.opener経由のリバースタブナビングを防いでください",
+  "vue/no-template-target-blank.help": "新しいタブで開くリンクにはrel=\"noopener noreferrer\"を追加してください。noopenerはwindow.openerを保護し、noreferrerはリファラー情報を送信しません",
   "vue/no-unsandboxed-iframe.description": "iframe要素にsandbox属性を必須にする",
   "vue/no-unsandboxed-iframe.message": "<iframe>にsandbox属性がありません",
   "vue/no-unsandboxed-iframe.help": "sandbox属性（最も制限的にするにはsandbox=\"\"）を追加し、埋め込みコンテンツに必要な権限だけを再付与してください",
