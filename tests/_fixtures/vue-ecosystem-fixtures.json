@@ -2168,7 +2168,7 @@
       "revision": "220341f4c15d9f6ddb8d5e4c2fd225f5dd4d6f76",
       "license": { "spdx": "MIT", "files": ["LICENSE.md"] },
       "vueGlobs": ["**/*.vue"],
-      "expectedVueFileCount": 45,
+      "expectedVueFileCount": 48,
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "e2e-vrt"
     },
