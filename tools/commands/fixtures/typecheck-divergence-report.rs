@@ -200,6 +200,8 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         );
     }
     let documented_differences = read_documented_differences(&args.documented_differences)?;
+    let expected_documented_differences =
+        select_documented_differences(&documented_differences, &project_id, &fixture_root)?;
     let divergence = compare_typecheck_diagnostics(
         project_id.clone(),
         &fixture_root,
@@ -208,6 +210,13 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         &typecheck_source_roots,
         &documented_differences,
     )?;
+    if args.budget_mode == "enforce" {
+        reject_stale_documented_differences(
+            &project_id,
+            &expected_documented_differences,
+            &divergence,
+        )?;
+    }
     let coverage = if let Some(reason) = baseline
         .run_error
         .as_deref()
@@ -1884,6 +1893,45 @@ fn documented_json(record: &DocumentedDifference) -> Value {
         "issue": record.issue,
         "reason": record.reason,
     })
+}
+
+fn reject_stale_documented_differences(
+    project_id: &str,
+    expected: &[DocumentedDifference],
+    divergence: &Value,
+) -> Result<(), String> {
+    if expected.is_empty() {
+        return Ok(());
+    }
+    let observed = divergence
+        .get("documentedDifferences")
+        .and_then(Value::as_array)
+        .ok_or_else(|| divergence_error("comparison is missing documented differences"))?;
+    if observed.len() == expected.len() {
+        return Ok(());
+    }
+    let observed_keys = observed.iter().map(documented_key).collect::<BTreeSet<_>>();
+    let stale = expected
+        .iter()
+        .filter(|difference| {
+            let value = documented_json(difference);
+            !observed_keys.contains(&documented_key(&value))
+        })
+        .collect::<Vec<_>>();
+    if stale.is_empty() {
+        return Ok(());
+    }
+    let examples = stale
+        .iter()
+        .take(3)
+        .map(|difference| format!("{}:{}:{}", difference.file, difference.line, difference.column))
+        .collect::<Vec<_>>()
+        .join(", ");
+    Err(format!(
+        "Documented typecheck difference ledger is stale for {project_id}: {} of {} entries did not reproduce; remove converged rows from tests/_fixtures/compat-documented-differences.json ({examples})",
+        stale.len(),
+        expected.len(),
+    ))
 }
 
 fn pair_documented_differences(
