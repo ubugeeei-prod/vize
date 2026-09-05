@@ -251,6 +251,85 @@ function takesString(value: string) {
 }
 
 #[test]
+fn unnamed_inner_slot_does_not_shadow_outer_scoped_slot_payload() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "external-slot-payload-unnamed-inner-slot",
+        &[
+            (
+                "src/List.vue",
+                r#"<script setup lang="ts">
+defineSlots<{
+  default(props: { item: { title: string }; index: number }): any;
+}>();
+
+defineProps<{ items: Array<{ title: string }> }>();
+</script>
+
+<template>
+  <div v-for="(item, index) in items" :key="item.title">
+    <slot :item="item" :index="index" />
+  </div>
+</template>
+"#,
+            ),
+            (
+                "src/Card.vue",
+                r#"<script setup lang="ts">
+defineSlots<{
+  title(): any;
+}>();
+</script>
+
+<template>
+  <section>
+    <slot name="title" />
+  </section>
+</template>
+"#,
+            ),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import List from './List.vue';
+import Card from './Card.vue';
+
+const items = [{ title: 'Ready' }];
+
+function takesString(value: string) {
+  return value;
+}
+</script>
+
+<template>
+  <List :items="items">
+    <template #default="slotProps">
+      <Card>
+        <template #title>{{ takesString(slotProps.item.title) }}</template>
+      </Card>
+    </template>
+  </List>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    assert!(
+        snapshot.is_empty(),
+        "a slot without authored props must not shadow outer scoped-slot payloads: {snapshot:#?}"
+    );
+}
+
+#[test]
 fn any_v_for_key_matches_vue_tsc_object_fallback() {
     if resolve_test_tsgo_binary().is_none() {
         return;
