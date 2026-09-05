@@ -1,8 +1,8 @@
 # P2-11 Installment 103 - S2 Option Combination Matrix
 
 > Part of the [P2-11 series record](../p2-11.md), split per installment.
-> PR: _pending - the number, merge date and squash SHA are filled in at
-> merge, as every prior installment's line was._
+> PR: [#5695](https://github.com/ubugeeei-prod/vize/pull/5695), merged
+> 2026-09-05 as `725b3313b`.
 
 This installment adds the first production-option combination matrix for the
 S2 DOM emitter. The individual witnesses already cover `cache_handlers`,

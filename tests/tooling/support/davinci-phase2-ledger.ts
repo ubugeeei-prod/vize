@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   P2_11_CURRENT,
@@ -106,6 +108,13 @@ export function p2_11CurrentRecordEvidence(source: string): string {
 }
 
 export function assertP2_11InstallmentFiles(): void {
+  const expectedNumbers = Array.from({ length: P2_11_CURRENT.number }, (_, index) => index + 1);
+  assert.deepEqual(
+    existingP2_11InstallmentNumbers(),
+    expectedNumbers,
+    "P2-11 installment files must be contiguous through the current ledger pin",
+  );
+
   const installments = new Map(
     [...new Set(p2_11FileExpectations.map(([number]) => number))].map((number) => [
       number,
@@ -115,6 +124,16 @@ export function assertP2_11InstallmentFiles(): void {
   for (const [number, pattern] of p2_11FileExpectations) {
     assert.match(installments.get(number)!, pattern);
   }
+}
+
+function existingP2_11InstallmentNumbers(): number[] {
+  const directory = path.dirname(fileURLToPath(p2_11Installment(1)));
+  return fs
+    .readdirSync(directory)
+    .map((entry) => /^installment-(\d+)\.md$/u.exec(entry)?.[1])
+    .filter((number): number is string => number != null)
+    .map((number) => Number(number))
+    .sort((left, right) => left - right);
 }
 
 function phaseTaskSection(source: string, id: string): string {

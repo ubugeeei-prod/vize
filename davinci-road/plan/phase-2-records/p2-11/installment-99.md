@@ -1,8 +1,8 @@
 # P2-11 Installment 99 - Scoped-CSS Scope Id
 
 > Part of the [P2-11 series record](../p2-11.md), split per installment.
-> PR: _pending - the number, merge date and squash SHA are filled in at
-> merge, as every prior installment's line was._
+> PR: [#5677](https://github.com/ubugeeei-prod/vize/pull/5677), merged
+> 2026-09-04 as `df7a14809`.
 
 This installment lands `scope_id`, which completes the DOM-relevant half of
 `CodegenOptions` in `DomEmitOptions`. What remains outside the emitter's

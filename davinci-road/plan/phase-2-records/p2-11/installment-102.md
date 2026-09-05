@@ -1,8 +1,8 @@
 # P2-11 Installment 102 - Static V-For Key Fragment Flags
 
 > Part of the [P2-11 series record](../p2-11.md), split per installment.
-> PR: _pending - the number, merge date and squash SHA are filled in at
-> merge, as every prior installment's line was._
+> PR: [#5691](https://github.com/ubugeeei-prod/vize/pull/5691), merged
+> 2026-09-05 as `60b794f97`.
 
 This installment closes a reduced S2 DOM residual from the committed fixture
 tree: a `v-for` item with static `key="..."` must still emit the static key on

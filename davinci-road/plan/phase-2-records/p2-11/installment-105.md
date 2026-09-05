@@ -1,8 +1,8 @@
 # P2-11 Installment 105 - Shared DOM Battery For Production Options
 
 > Part of the [P2-11 series record](../p2-11.md), split per installment.
-> PR: _pending - the number, merge date and squash SHA are filled in at
-> merge, as every prior installment's line was._
+> PR: [#5695](https://github.com/ubugeeei-prod/vize/pull/5695), merged
+> 2026-09-05 as `725b3313b`.
 
 This installment makes the curated S2 DOM differential battery reusable by
 moving it under the shared test support tree, then feeds that same battery into

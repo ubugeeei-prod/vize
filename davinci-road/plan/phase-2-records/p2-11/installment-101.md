@@ -1,8 +1,8 @@
 # P2-11 Installment 101 - Runtime Global Profiling
 
 > Part of the [P2-11 series record](../p2-11.md), split per installment.
-> PR: _pending - the number, merge date and squash SHA are filled in at
-> merge, as every prior installment's line was._
+> PR: [#5685](https://github.com/ubugeeei-prod/vize/pull/5685), merged
+> 2026-09-04 as `911496226`.
 
 This installment connects installment 84's custom runtime global-name emitter
 parity witness to the production-side S2 selector. Adapter-provided

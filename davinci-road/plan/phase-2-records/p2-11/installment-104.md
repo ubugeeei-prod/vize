@@ -1,8 +1,8 @@
 # P2-11 Installment 104 - Model And Outlet Option Families
 
 > Part of the [P2-11 series record](../p2-11.md), split per installment.
-> PR: _pending - the number, merge date and squash SHA are filled in at
-> merge, as every prior installment's line was._
+> PR: [#5695](https://github.com/ubugeeei-prod/vize/pull/5695), merged
+> 2026-09-05 as `725b3313b`.
 
 This installment extends the production-option combination witness from the
 generic DOM matrix into the two late P2-11 families that most often combine

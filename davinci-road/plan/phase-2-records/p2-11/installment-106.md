@@ -1,8 +1,8 @@
 # P2-11 Installment 106 - Runtime Module Profiling
 
 > Part of the [P2-11 series record](../p2-11.md), split per installment.
-> PR: _pending - the number, merge date and squash SHA are filled in at
-> merge, as every prior installment's line was._
+> PR: [#5744](https://github.com/ubugeeei-prod/vize/pull/5744), merged
+> 2026-09-05 as `426d2becf`.
 
 This installment connects installment 84's custom runtime module-name emitter
 parity witness to the production-side S2 selector. Module output can import

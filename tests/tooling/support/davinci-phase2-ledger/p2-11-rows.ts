@@ -12,7 +12,7 @@ export function p2_11Installment(number: number): URL {
   );
 }
 
-export const P2_11_CURRENT = { number: 98, pr: 5649, sha: "74c64d33d" } as const;
+export const P2_11_CURRENT = { number: 106, pr: 5744, sha: "426d2becf" } as const;
 
 export const p2_11TableRows = [
   [41, 5359, "5b5ac0924"],
@@ -73,6 +73,14 @@ export const p2_11TableRows = [
   [96, 5648, "7b002f744"],
   [97, 5643, "8bd1bf72c"],
   [98, 5649, "74c64d33d"],
+  [99, 5677, "df7a14809"],
+  [100, 5681, "8b91e071b"],
+  [101, 5685, "911496226"],
+  [102, 5691, "60b794f97"],
+  [103, 5695, "725b3313b"],
+  [104, 5695, "725b3313b"],
+  [105, 5695, "725b3313b"],
+  [106, 5744, "426d2becf"],
 ] as const;
 
 export const p2_11FileExpectations = [
@@ -180,4 +188,20 @@ export const p2_11FileExpectations = [
   [97, /8bd1bf72c/],
   [98, /Printed Cache Slot Order/],
   [98, /74c64d33d/],
+  [99, /Scoped-CSS Scope Id/],
+  [99, /df7a14809/],
+  [100, /Scoped Compile Profiling/],
+  [100, /8b91e071b/],
+  [101, /Runtime Global Profiling/],
+  [101, /911496226/],
+  [102, /Static V-For Key Fragment Flags/],
+  [102, /60b794f97/],
+  [103, /S2 Option Combination Matrix/],
+  [103, /725b3313b/],
+  [104, /Model And Outlet Option Families/],
+  [104, /725b3313b/],
+  [105, /Shared DOM Battery For Production Options/],
+  [105, /725b3313b/],
+  [106, /Runtime Module Profiling/],
+  [106, /426d2becf/],
 ] as const;

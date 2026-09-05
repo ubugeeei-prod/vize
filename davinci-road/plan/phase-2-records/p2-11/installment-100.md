@@ -1,8 +1,8 @@
 # P2-11 Installment 100 - Scoped Compile Profiling
 
 > Part of the [P2-11 series record](../p2-11.md), split per installment.
-> PR: _pending - the number, merge date and squash SHA are filled in at
-> merge, as every prior installment's line was._
+> PR: [#5681](https://github.com/ubugeeei-prod/vize/pull/5681), merged
+> 2026-09-04 as `8b91e071b`.
 
 This installment connects installment 99's `scope_id` emitter parity witness to
 the production-side S2 selector. Direct scoped DOM compiles no longer stay on
