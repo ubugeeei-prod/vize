@@ -1653,6 +1653,7 @@ fn validate_linter_output(
                     "column",
                     "endColumn",
                     "endLine",
+                    "line",
                     "message",
                     "ruleDocsPath",
                     "ruleId",
@@ -2339,4 +2340,70 @@ fn repo_root() -> Result<PathBuf, String> {
             .map(Path::to_path_buf)
             .ok_or_else(|| "cannot resolve Vize repository root from script path".to_string())
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn linter_project() -> Value {
+        json!({ "id": "fixture" })
+    }
+
+    fn linter_output(message: Value) -> Value {
+        json!([
+            {
+                "file": "src/App.vue",
+                "messages": [message],
+                "errorCount": 1,
+                "warningCount": 0
+            }
+        ])
+    }
+
+    fn linter_message() -> Value {
+        json!({
+            "ruleId": "vue/permitted-contents",
+            "ruleDocsPath": "docs/content/rules/vue.md",
+            "severity": 2,
+            "message": "[vize:vue/permitted-contents] synthetic diagnostic",
+            "line": 4,
+            "column": 5,
+            "endLine": 4,
+            "endColumn": 9
+        })
+    }
+
+    #[test]
+    fn linter_validator_accepts_required_line_without_help() {
+        let output = linter_output(linter_message());
+
+        validate_linter_output(
+            &linter_project(),
+            &output,
+            1,
+            Some(&[String::from("src/App.vue")]),
+        )
+        .expect("line is required even when help is absent");
+    }
+
+    #[test]
+    fn linter_validator_rejects_missing_line_without_help() {
+        let mut message = linter_message();
+        message.as_object_mut().unwrap().remove("line");
+        let output = linter_output(message);
+
+        let error = validate_linter_output(
+            &linter_project(),
+            &output,
+            1,
+            Some(&[String::from("src/App.vue")]),
+        )
+        .expect_err("line must remain part of the linter message schema");
+
+        assert!(
+            error.contains("messages[0] keys must be"),
+            "unexpected error: {error}"
+        );
+    }
 }
