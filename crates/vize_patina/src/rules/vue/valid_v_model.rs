@@ -31,7 +31,7 @@ use oxc_ast::ast::Expression as OxcExpression;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
-use vize_s0::is_html_tag;
+use vize_s0::is_native_tag;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-model",
@@ -146,7 +146,7 @@ fn is_component_like_tag(element: &ElementNode<'_>) -> bool {
     }
 
     let tag = element.tag;
-    tag == "component" || (tag.contains('-') && !is_html_tag(tag))
+    tag == "component" || !is_native_tag(tag)
 }
 
 fn is_static_file_input(element: &ElementNode<'_>) -> bool {
@@ -300,6 +300,13 @@ mod tests {
     fn test_valid_v_model_on_custom_element_like_component() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<my-widget v-model="value"></my-widget>"#, "test.vue");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_v_model_on_lowercase_custom_component() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<multiselect v-model="selected" />"#, "test.vue");
         assert_eq!(result.error_count, 0);
     }
 
