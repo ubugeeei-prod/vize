@@ -159,6 +159,27 @@ test("feature setting keys are backed by the VS Code manifest", () => {
   }
 });
 
+test("every direct VS Code feature switch forwards explicit LSP option values", () => {
+  for (const key of FEATURE_SETTING_KEYS) {
+    if (key === "diagnostics.enable") {
+      continue;
+    }
+
+    const option = key.slice(0, -".enable".length);
+
+    assert.deepEqual(
+      getInitializationOptions(new FakeConfig({ enable: true, [key]: true })),
+      { [option]: true },
+      `${key} should enable ${option}`,
+    );
+    assert.deepEqual(
+      getInitializationOptions(new FakeConfig({ enable: true, [key]: false })),
+      { [option]: false },
+      `${key} should disable ${option}`,
+    );
+  }
+});
+
 test("document selector covers supported language and URI scheme product", () => {
   assert.deepEqual(createDocumentSelector(), [
     { scheme: "file", language: "vue" },
