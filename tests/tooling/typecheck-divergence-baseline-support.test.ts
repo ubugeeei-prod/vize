@@ -14,17 +14,17 @@ import {
 test("typecheck divergence report includes dot-directory support roots", () => {
   const fixture = setup();
   try {
-    fs.mkdirSync(path.join(fixture.fixtureRoot, "src/.vitepress/vitepress/utils"), {
-      recursive: true,
-    });
+    const supportRoot = path.join(fixture.fixtureRoot, "src/.vitepress/vitepress/utils");
+    fs.mkdirSync(supportRoot, { recursive: true });
     fs.writeFileSync(
-      path.join(fixture.fixtureRoot, "src/.vitepress/vitepress/utils/index.ts"),
+      path.join(supportRoot, "index.ts"),
       "export const label = 'ok';\n",
     );
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
 
-    const config = readJson(path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"));
+    const configPath = path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json");
+    const config = readJson(configPath);
     assert.equal(config.include.includes("../src/.vitepress/**/*.d.ts"), true);
     assert.equal(config.include.includes("../src/.vitepress/**/*.ts"), true);
     assert.equal(config.include.includes("../src/.vitepress/**/*.js"), true);
@@ -38,11 +38,10 @@ test("typecheck divergence report includes dot-directory support roots", () => {
 test("typecheck divergence report includes tsconfig dot-directory support roots", () => {
   const fixture = setup();
   try {
-    fs.mkdirSync(path.join(fixture.fixtureRoot, "docs/.vitepress/vitepress/utils"), {
-      recursive: true,
-    });
+    const supportRoot = path.join(fixture.fixtureRoot, "docs/.vitepress/vitepress/utils");
+    fs.mkdirSync(supportRoot, { recursive: true });
     fs.writeFileSync(
-      path.join(fixture.fixtureRoot, "docs/.vitepress/vitepress/utils/index.ts"),
+      path.join(supportRoot, "index.ts"),
       "export const label = 'ok';\n",
     );
     fs.writeFileSync(
@@ -56,7 +55,8 @@ test("typecheck divergence report includes tsconfig dot-directory support roots"
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
 
-    const config = readJson(path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"));
+    const configPath = path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json");
+    const config = readJson(configPath);
     assert.equal(config.include.includes("../docs/.vitepress/**/*.d.ts"), true);
     assert.equal(config.include.includes("../docs/.vitepress/**/*.ts"), true);
     assert.equal(config.include.includes("../docs/.vitepress/**/*.js"), true);
