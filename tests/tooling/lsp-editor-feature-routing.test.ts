@@ -25,6 +25,7 @@ const ALL_EDITOR_FEATURES_OFF: LspInitializationOptions = {
   references: false,
   rename: false,
   semanticTokens: false,
+  signatureHelp: false,
   typecheck: false,
   workspaceSymbols: false,
 };
@@ -66,6 +67,14 @@ const DISABLED_REQUESTS: RequestCase[] = [
   {
     method: "textDocument/completion",
     params: (uri) => ({ textDocument: { uri }, position }),
+  },
+  {
+    method: "textDocument/signatureHelp",
+    params: (uri) => ({
+      textDocument: { uri },
+      position,
+      context: { triggerKind: 1, isRetrigger: false },
+    }),
   },
   {
     method: "textDocument/documentSymbol",

@@ -274,12 +274,14 @@ test("vize lsp per-feature init flags toggle individual providers independently"
     {
       editor: true,
       completion: false,
+      signatureHelp: false,
       hover: false,
       definition: false,
       references: false,
     },
     (capabilities) => {
       assert.equal(capabilities.completionProvider, undefined);
+      assert.equal(capabilities.signatureHelpProvider, undefined);
       assert.equal(capabilities.hoverProvider, undefined);
       assert.equal(capabilities.definitionProvider, undefined);
       assert.equal(capabilities.typeDefinitionProvider, undefined);

@@ -29,6 +29,7 @@ export type LspInitializationOptions = {
   references?: boolean;
   rename?: boolean;
   semanticTokens?: boolean;
+  signatureHelp?: boolean;
   typecheck?: boolean;
   workspaceSymbols?: boolean;
   autoInsert?: boolean;
