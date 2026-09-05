@@ -132,6 +132,13 @@ fn unsupported_options_stay_on_compatibility_without_profiler() {
             },
         ),
         (
+            "in_tag_comments",
+            DomCompilerOptions {
+                experimental_in_tag_comments: true,
+                ..Default::default()
+            },
+        ),
+        (
             "custom_renderer",
             DomCompilerOptions {
                 custom_renderer: true,
@@ -144,7 +151,12 @@ fn unsupported_options_stay_on_compatibility_without_profiler() {
         profiler.disable();
         profiler.clear();
 
-        let result = compile(r#"<button @click="go">{{ label }}</button>"#, options);
+        let source = if label == "in_tag_comments" {
+            "<button // keep the parse extension covered\n  @click=\"go\">{{ label }}</button>"
+        } else {
+            r#"<button @click="go">{{ label }}</button>"#
+        };
+        let result = compile(source, options);
         let counters = profiler.counter_summary();
 
         assert!(
