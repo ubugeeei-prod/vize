@@ -17,7 +17,7 @@ pub(super) fn push_object<'a>(
     let unique = unique_attrs(attributes);
     let scope = scope_id.filter(|scope| !unique.iter().any(|attr| attr.name == *scope));
     if unique.len() + usize::from(scope.is_some()) <= 1 {
-        out.push_str(compact_props_object(unique.iter().copied(), scope_id).as_str());
+        out.push_str(compact_props_object(unique.iter().copied(), scope).as_str());
         return;
     }
 

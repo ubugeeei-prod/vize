@@ -140,7 +140,7 @@ fn walk_hoisted(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {
 
 fn cached_scope_id<'facts>(cx: &EmitCx<'facts>, element: &ElementOp<'_>) -> Option<&'facts str> {
     (!element.attributes.is_empty() || !element.bindings.is_empty())
-        .then_some(cx.scope_id)
+        .then(|| cx.scope_id_here())
         .flatten()
 }
 

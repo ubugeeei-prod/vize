@@ -43,6 +43,7 @@ const BATTERY: &[(&str, &str)] = &[
         "v_for_static_child",
         r#"<li v-for="i in items" :key="i"><b>x</b></li>"#,
     ),
+    ("empty_v_for", r#"<div v-for="item in items"></div>"#),
     ("component", "<MyComp />"),
     ("component_with_prop", r#"<MyComp :a="x" />"#),
     ("component_static_prop", r#"<MyComp a="1" />"#),
