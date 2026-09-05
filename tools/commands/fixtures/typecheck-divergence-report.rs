@@ -580,10 +580,11 @@ fn materialize_baseline_project(
     let artifact_path = report_dir.join(format!("{project_id}-vue-tsc.tsconfig.json"));
     fs::create_dir_all(&config_dir)
         .map_err(|error| format!("cannot create {}: {error}", config_dir.display()))?;
-    let source_document = common::read_json(&source_path)?;
+    let source_document = read_tsconfig_jsonc(&source_path)?;
     let source_roots = source_roots(fixture_root, project, vize_report)?;
     let mut dot_roots = dot_directory_include_roots(fixture_root, vize_report);
-    dot_roots.extend(discover_dot_directory_include_roots(&source_roots)?);
+    let fixture_roots = [fixture_root.to_path_buf()];
+    dot_roots.extend(discover_dot_directory_include_roots(&fixture_roots)?);
     dot_roots.extend(tsconfig_include_dot_roots(
         fixture_root,
         source_dir,
@@ -3820,7 +3821,72 @@ fn collect_dot_directories(directory: &Path, roots: &mut Vec<PathBuf>) -> Result
 }
 
 fn ignored_directory(name: &str) -> bool {
-    matches!(name, "node_modules" | "dist" | ".git" | ".vize-baseline")
+    matches!(
+        name,
+        "node_modules" | "dist" | ".git" | ".generated" | ".vize-baseline"
+    )
+}
+
+fn read_tsconfig_jsonc(path: &Path) -> Result<Value, String> {
+    let source = common::read_text(path)?;
+    serde_json::from_str(&source)
+        .or_else(|_| serde_json::from_str(&strip_jsonc_sugar(&source)))
+        .map_err(|error| format!("cannot parse JSON {}: {error}", path.display()))
+}
+
+fn strip_jsonc_sugar(source: &str) -> String {
+    let mut out = String::with_capacity(source.len());
+    let mut chars = source.chars().peekable();
+    let mut in_string = false;
+    let mut escaped = false;
+    while let Some(c) = chars.next() {
+        if in_string {
+            out.push(c);
+            if escaped {
+                escaped = false;
+            } else if c == '\\' {
+                escaped = true;
+            } else if c == '"' {
+                in_string = false;
+            }
+            continue;
+        }
+        match c {
+            '"' => {
+                in_string = true;
+                out.push(c);
+            }
+            '/' if chars.peek() == Some(&'/') => {
+                for c in chars.by_ref() {
+                    if c == '\n' {
+                        out.push('\n');
+                        break;
+                    }
+                }
+            }
+            '/' if chars.peek() == Some(&'*') => {
+                chars.next();
+                let mut last = ' ';
+                for c in chars.by_ref() {
+                    if last == '*' && c == '/' {
+                        break;
+                    }
+                    last = c;
+                }
+            }
+            '}' | ']' => {
+                while out.ends_with(char::is_whitespace) {
+                    out.pop();
+                }
+                if out.ends_with(',') {
+                    out.pop();
+                }
+                out.push(c);
+            }
+            _ => out.push(c),
+        }
+    }
+    out
 }
 
 fn is_dot_directory(name: &str) -> bool {
@@ -3875,8 +3941,13 @@ fn extend_local_vue_runtime_paths(
     paths: &mut serde_json::Map<String, Value>,
 ) -> Result<(), String> {
     let runtime_names = ["@vue/runtime-core", "@vue/runtime-dom", "vue"];
+    let vue_root = local_package_root(fixture_root, "vue")?;
     for name in runtime_names {
-        if let Some(root) = local_package_root(fixture_root, name)? {
+        let root = match local_package_root(fixture_root, name)? {
+            Some(root) => Some(root),
+            None => local_vue_dependency_package_root(fixture_root, vue_root.as_deref(), name)?,
+        };
+        if let Some(root) = root {
             paths.insert(
                 name.to_string(),
                 json!([config_relative_path(config_dir, &root)]),
@@ -3884,6 +3955,38 @@ fn extend_local_vue_runtime_paths(
         }
     }
     Ok(())
+}
+
+fn local_vue_dependency_package_root(
+    fixture_root: &Path,
+    vue_root: Option<&Path>,
+    name: &str,
+) -> Result<Option<PathBuf>, String> {
+    if name == "vue" {
+        return Ok(None);
+    }
+    let Some(vue_root) = vue_root else {
+        return Ok(None);
+    };
+    let real_vue_root = fs::canonicalize(vue_root)
+        .map_err(|error| format!("cannot resolve {}: {error}", vue_root.display()))?;
+    let Some(store_node_modules) = real_vue_root.parent() else {
+        return Ok(None);
+    };
+    let candidate = name
+        .split('/')
+        .fold(store_node_modules.to_path_buf(), |path, segment| {
+            path.join(segment)
+        });
+    if !candidate.join("package.json").exists() {
+        return Ok(None);
+    }
+    let real = fs::canonicalize(&candidate)
+        .map_err(|error| format!("cannot resolve {}: {error}", candidate.display()))?;
+    if !path_stays_inside(fixture_root, &real) {
+        return Ok(None);
+    }
+    Ok(Some(candidate))
 }
 
 fn local_package_root(fixture_root: &Path, name: &str) -> Result<Option<PathBuf>, String> {
