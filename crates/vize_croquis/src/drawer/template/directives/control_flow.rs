@@ -5,9 +5,9 @@
 
 use crate::ScopeBinding;
 use crate::drawer::Drawer;
-use crate::drawer::helpers::build_branch_guard;
+use crate::drawer::helpers::{VForScopeAliases, build_branch_guard, parse_v_for_scope_expression};
 use crate::scope::VForScopeData;
-use vize_carton::{CompactString, SmallVec, profile, smallvec};
+use vize_carton::{CompactString, SmallVec, appends, profile};
 use vize_relief::BindingType;
 use vize_relief::{ExpressionNode, ForNode, IfNode, PropNode};
 
@@ -88,32 +88,32 @@ impl Drawer {
         for_node: &ForNode<'_>,
         scope_vars: &mut Vec<CompactString>,
     ) {
-        let vars_added = profile!(
-            "croquis.template.v_for.extract_vars",
-            self.extract_for_vars(for_node)
-        );
+        let aliases = self.options.analyze_template_scopes.then(|| {
+            profile!(
+                "croquis.template.v_for.parse_scope_aliases",
+                self.extract_for_scope_aliases(for_node)
+            )
+        });
+        let vars_added = aliases
+            .as_ref()
+            .and_then(Option::as_ref)
+            .map(v_for_scope_bindings)
+            .unwrap_or_else(|| {
+                profile!(
+                    "croquis.template.v_for.extract_vars",
+                    self.extract_for_vars(for_node)
+                )
+            });
         let vars_count = vars_added.len();
 
-        if self.options.analyze_template_scopes && !vars_added.is_empty() {
-            let source_content = match &for_node.source {
-                ExpressionNode::Simple(s) => CompactString::new(s.content),
-                ExpressionNode::Compound(c) => {
-                    CompactString::new(c.loc.span.slice(&self.template_source))
-                }
-            };
-
-            let value_alias = vars_added
-                .first()
-                .cloned()
-                .unwrap_or_else(|| CompactString::const_new("_"));
-
+        if let Some(Some(aliases)) = aliases {
             let scope_id = self.croquis.scopes.enter_v_for_scope(
                 VForScopeData {
-                    value_alias: value_alias.clone(),
-                    value_bindings: smallvec![value_alias],
-                    key_alias: vars_added.get(1).cloned(),
-                    index_alias: vars_added.get(2).cloned(),
-                    source: source_content,
+                    value_alias: aliases.value_pattern,
+                    value_bindings: aliases.value_bindings,
+                    key_alias: aliases.key_alias,
+                    index_alias: aliases.index_alias,
+                    source: aliases.source,
                     key_expression: None,
                 },
                 for_node.loc.span.start,
@@ -176,5 +176,55 @@ impl Drawer {
         }
 
         vars
+    }
+
+    fn extract_for_scope_aliases(&self, for_node: &ForNode<'_>) -> Option<VForScopeAliases> {
+        let value = for_node
+            .value_alias
+            .as_ref()
+            .map(|alias| expression_content(alias, &self.template_source))?;
+        let source = expression_content(&for_node.source, &self.template_source);
+        let alias = match (&for_node.key_alias, &for_node.object_index_alias) {
+            (None, None) => CompactString::new(value),
+            (key, index) => {
+                let key = key
+                    .as_ref()
+                    .map(|alias| expression_content(alias, &self.template_source))
+                    .unwrap_or("");
+                let index = index
+                    .as_ref()
+                    .map(|alias| expression_content(alias, &self.template_source))
+                    .unwrap_or("");
+                let mut alias = CompactString::new("");
+                appends!(alias, "(", value, ", ", key, ", ", index, ")");
+                alias
+            }
+        };
+        let mut expr = CompactString::new("");
+        appends!(expr, &alias, " in ", source);
+        parse_v_for_scope_expression(&expr)
+    }
+}
+
+fn v_for_scope_bindings(aliases: &VForScopeAliases) -> Vec<CompactString> {
+    let mut bindings = Vec::with_capacity(
+        aliases.value_bindings.len()
+            + usize::from(aliases.key_alias.is_some())
+            + usize::from(aliases.index_alias.is_some()),
+    );
+    bindings.extend(aliases.value_bindings.iter().cloned());
+    if let Some(key) = &aliases.key_alias {
+        bindings.push(key.clone());
+    }
+    if let Some(index) = &aliases.index_alias {
+        bindings.push(index.clone());
+    }
+    bindings
+}
+
+fn expression_content<'a>(exp: &'a ExpressionNode<'_>, source: &'a str) -> &'a str {
+    match exp {
+        ExpressionNode::Simple(s) => s.content,
+        ExpressionNode::Compound(c) => c.loc.span.slice(source),
     }
 }
