@@ -102,8 +102,11 @@ test("fixture-local Vue runtimes are pinned into the baseline config", () => {
     assert.deepEqual(config.compilerOptions.paths, {
       "#app": ["../src/app"],
       "@vue/runtime-core": ["../node_modules/@vue/runtime-core"],
+      "@vue/runtime-core/*": ["../node_modules/@vue/runtime-core/*"],
       "@vue/runtime-dom": ["../node_modules/@vue/runtime-dom"],
+      "@vue/runtime-dom/*": ["../node_modules/@vue/runtime-dom/*"],
       vue: ["../node_modules/vue"],
+      "vue/*": ["../node_modules/vue/*"],
     });
   } finally {
     cleanup(fixture);
@@ -153,8 +156,11 @@ test("Vue dependency runtimes are pinned from the selected pnpm Vue store entry"
     const config = readJson(path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"));
     assert.deepEqual(config.compilerOptions.paths, {
       "@vue/runtime-core": ["../node_modules/.pnpm/vue@3.5.30/node_modules/@vue/runtime-core"],
+      "@vue/runtime-core/*": ["../node_modules/.pnpm/vue@3.5.30/node_modules/@vue/runtime-core/*"],
       "@vue/runtime-dom": ["../node_modules/.pnpm/vue@3.5.30/node_modules/@vue/runtime-dom"],
+      "@vue/runtime-dom/*": ["../node_modules/.pnpm/vue@3.5.30/node_modules/@vue/runtime-dom/*"],
       vue: ["../node_modules/.pnpm/vue@3.5.30/node_modules/vue"],
+      "vue/*": ["../node_modules/.pnpm/vue@3.5.30/node_modules/vue/*"],
     });
   } finally {
     cleanup(fixture);

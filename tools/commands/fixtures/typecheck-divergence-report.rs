@@ -4045,10 +4045,9 @@ fn extend_local_vue_runtime_paths(
             }
         };
         if let Some(root) = root {
-            paths.insert(
-                name.to_string(),
-                json!([config_relative_path(config_dir, &root)]),
-            );
+            let root = config_relative_path(config_dir, &root);
+            paths.insert(name.to_string(), json!([root.clone()]));
+            paths.insert(format!("{name}/*"), json!([format!("{root}/*")]));
         }
     }
     Ok(())
