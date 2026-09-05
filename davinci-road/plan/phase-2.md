@@ -84,9 +84,9 @@ counts or fixture availability changes.
   Each completion is joined to its merged PR and current evidence in the
   [evidence index](./phase-2-records.md#current-completion-evidence-2026-09-03);
   review-only evidence is labeled there rather than presented as executable.
-- **Active and blocked: 1 of 22 — P2-11.** P2-11 has 106 landed installments
+- **Active and blocked: 1 of 22 — P2-11.** P2-11 has 108 landed installments
   through
-  [#5744](https://github.com/ubugeeei-prod/vize/pull/5744), including the
+  [#5765](https://github.com/ubugeeei-prod/vize/pull/5765), including the
   late directive/object-spread set, event/model/slot residuals, structural
   `v-if`/`v-for` cases, expression-edge admission, keyed slot forwarding,
   component `v-once` wrappers, slot text fact alignment, the corpus-runnable
@@ -94,13 +94,14 @@ counts or fixture availability changes.
   hoist-order witnesses, the production option surface through inline setup
   reads, `cache_handlers`, constant text/style shortcuts and printed-order
   cache slot numbering, scoped CSS ids, runtime names, option bundles,
-  model/outlet families and the shared DOM battery. The comparison count remains
-  pinned at 144 DOM-output comparisons. Real Project Matrix run `33531193323`
-  produced canonical hydrated
+  model/outlet families, the shared DOM battery and the source-map-free
+  production selector. The comparison count remains pinned at 144 DOM-output comparisons.
+  Real Project Matrix run `33531193323` produced canonical hydrated
   zero-divergence evidence over 146 gitlinks and 142 ecosystem projects:
   42,668 files, 42,279 compared templates, zero S2 refusals and zero
-  divergences. The production-lane switch remains open. The old DOM lane is
-  still the shipped compiler path.
+  divergences. The full production-lane switch remains open for source maps,
+  comments, unsupported option shapes and the explicit legacy flag; the old DOM
+  lane remains the compatibility path.
 - **Open and dependency-blocked: 4 of 22 — P2-12b, P2-16, P2-17 and
   P2-20.** P2-12b depends on P2-12a, P2-11 and P2-3; TS-22 groundwork now
   exposes `emit_dom_source_observed` and `emit_budget_observer` for the one

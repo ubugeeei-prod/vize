@@ -12,7 +12,7 @@ export function p2_11Installment(number: number): URL {
   );
 }
 
-export const P2_11_CURRENT = { number: 106, pr: 5744, sha: "426d2becf" } as const;
+export const P2_11_CURRENT = { number: 108, pr: 5765, sha: "8be4517e" } as const;
 
 export const p2_11TableRows = [
   [41, 5359, "5b5ac0924"],
@@ -81,6 +81,8 @@ export const p2_11TableRows = [
   [104, 5695, "725b3313b"],
   [105, 5695, "725b3313b"],
   [106, 5744, "426d2becf"],
+  [107, 5764, "4857d3e75"],
+  [108, 5765, "8be4517e"],
 ] as const;
 
 export const p2_11FileExpectations = [
@@ -204,4 +206,8 @@ export const p2_11FileExpectations = [
   [105, /725b3313b/],
   [106, /Runtime Module Profiling/],
   [106, /426d2becf/],
+  [107, /Shared Model And Outlet Batteries/],
+  [107, /4857d3e75/],
+  [108, /Source-Map-Free Production Selector/],
+  [108, /8be4517e/],
 ] as const;
