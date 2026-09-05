@@ -98,6 +98,36 @@ test("dependency prepare keeps pnpm fixtures out of parent workspaces", () => {
   }
 });
 
+test("dependency prepare preserves a pnpm fixture's own workspace manifest", () => {
+  const packageManager = packageManagers.find((candidate) => candidate.name === "pnpm");
+  assert.ok(packageManager);
+  const fixture = setup(packageManager);
+  try {
+    fs.writeFileSync(path.join(fixture.fixtureRoot, "pnpm-workspace.yaml"), "packages: []\n");
+    git(fixture.fixtureRoot, ["add", "pnpm-workspace.yaml"]);
+    commit(fixture.fixtureRoot, "add fixture workspace");
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = JSON.parse(fs.readFileSync(artifactPath(fixture), "utf8"));
+    assert.deepEqual(artifact.install.command, [
+      "pnpm",
+      "install",
+      "--frozen-lockfile",
+      "--ignore-scripts",
+      "--prefer-offline",
+    ]);
+    const invocation = JSON.parse(fs.readFileSync(fixture.invocationPath, "utf8"));
+    assert.deepEqual(invocation.managerArgs, [
+      "install",
+      "--frozen-lockfile",
+      "--ignore-scripts",
+      "--prefer-offline",
+    ]);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("dependency prepare rejects a mismatched detected package manager version", () => {
   const fixture = setup();
   try {

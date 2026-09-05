@@ -13,7 +13,7 @@
 #[path = "../../support/common.rs"]
 mod common;
 
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{
     env, fs,
@@ -146,7 +146,7 @@ fn prepare_project_dependencies(
             "Detected {manager} version {detected_version} does not match {manager_version}"
         ));
     }
-    let install_args = install_arguments(&manager)?;
+    let install_args = install_arguments(&manager, &fixture_root)?;
     let started = Instant::now();
     let install = run_package_manager(&runner, &install_args, &fixture_root, args.timeout_ms)
         .map_err(|error| format!("{} install failed to run: {error}", runner.label))?;
@@ -219,9 +219,8 @@ fn select_typecheck_performance_projects(
         .iter()
         .enumerate()
         .filter_map(|(index, project)| {
-            (index % shard_count == shard_index
-                && has_enabled_typecheck_performance(project))
-            .then_some(project)
+            (index % shard_count == shard_index && has_enabled_typecheck_performance(project))
+                .then_some(project)
         })
         .collect())
 }
@@ -367,7 +366,7 @@ fn run_baseline_prepare(
     }))
 }
 
-fn install_arguments(manager: &str) -> Result<Vec<String>, String> {
+fn install_arguments(manager: &str, fixture_root: &Path) -> Result<Vec<String>, String> {
     match manager {
         "npm" => Ok([
             "ci",
@@ -379,16 +378,21 @@ fn install_arguments(manager: &str) -> Result<Vec<String>, String> {
         .iter()
         .map(|value| (*value).to_string())
         .collect()),
-        "pnpm" => Ok([
-            "install",
-            "--frozen-lockfile",
-            "--ignore-scripts",
-            "--prefer-offline",
-            "--ignore-workspace",
-        ]
-        .iter()
-        .map(|value| (*value).to_string())
-        .collect()),
+        "pnpm" => {
+            let mut args = [
+                "install",
+                "--frozen-lockfile",
+                "--ignore-scripts",
+                "--prefer-offline",
+            ]
+            .iter()
+            .map(|value| (*value).to_string())
+            .collect::<Vec<_>>();
+            if !fixture_root.join("pnpm-workspace.yaml").is_file() {
+                args.push("--ignore-workspace".to_string());
+            }
+            Ok(args)
+        }
         "yarn" => Ok(["install", "--immutable", "--mode=skip-build"]
             .iter()
             .map(|value| (*value).to_string())
