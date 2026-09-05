@@ -1,25 +1,19 @@
 import { spawnSync } from "node:child_process";
 import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
-import { globSync, readFileSync, statSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
+
+import { collectInputPaths } from "./tool-matrix-inputs.mjs";
 
 const noFilesMessage =
   "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found matching the patterns";
 
 export function snapshotFormatterInputs(cwd, patterns) {
-  const inputPaths = [
-    ...new Set(
-      patterns.flatMap((pattern) =>
-        globSync(pattern, { cwd, exclude: [".yarn/**", "**/node_modules/**"] }),
-      ),
-    ),
-  ].sort(byteOrder);
   const digest = createHash("sha256");
-  for (const inputPath of inputPaths) {
+  for (const inputPath of collectInputPaths(cwd, patterns)) {
     const absolute = resolve(cwd, inputPath);
     const metadata = statSync(absolute, { bigint: true });
-    if (!metadata.isFile()) continue;
     digest.update(inputPath.replaceAll("\\", "/"));
     digest.update("\0");
     digest.update(String(metadata.mode));
