@@ -20,13 +20,15 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupList, MarkupRule};
+use crate::markup::{
+    MarkupBindingKind, MarkupContext, MarkupElement, MarkupList, MarkupNode, MarkupRule,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, PropertyKey};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/require-v-for-key",
@@ -46,14 +48,14 @@ impl RequireVForKey {
         if ctx.lint().is_petite_vue() {
             return;
         }
-        // `<template v-for>` carries the key on its children, not itself.
-        if element.is_tag("template") {
-            return;
-        }
         if element.is_tag("slot") {
             return;
         }
-        if element.has_key_binding() || has_object_bound_key(element) {
+        if element.is_tag("template") {
+            if has_markup_template_v_for_key(element) {
+                return;
+            }
+        } else if has_markup_key(element) {
             return;
         }
 
@@ -65,6 +67,27 @@ impl RequireVForKey {
         ctx.lint()
             .error_at_with_help(message, element.range(), help);
     }
+}
+
+fn has_markup_key(element: &MarkupElement<'_>) -> bool {
+    element.has_key_binding() || has_object_bound_key(element)
+}
+
+fn has_markup_template_v_for_key(element: &MarkupElement<'_>) -> bool {
+    if has_markup_key(element) {
+        return true;
+    }
+
+    let mut found = false;
+    element.walk_children(&mut |child| {
+        if found {
+            return;
+        }
+        if let MarkupNode::Element(child) = child {
+            found = child.binding(MarkupBindingKind::Bind, "key").is_some();
+        }
+    });
+    found
 }
 
 fn has_object_bound_key(element: &MarkupElement<'_>) -> bool {
@@ -140,6 +163,41 @@ fn is_static_key(key: &PropertyKey<'_>) -> bool {
     }
 }
 
+fn relief_element_has_key(element: &ElementNode<'_>) -> bool {
+    element.props.iter().any(|prop| match prop {
+        PropNode::Attribute(attr) => attr.name == "key",
+        PropNode::Directive(dir) => {
+            if relief_directive_is_bound_key(dir) {
+                return true;
+            }
+            dir.name == "bind"
+                && dir.arg.is_none()
+                && matches!(&dir.exp, Some(ExpressionNode::Simple(expression)) if object_has_static_key(expression.content))
+        }
+    })
+}
+
+fn relief_directive_is_bound_key(directive: &DirectiveNode<'_>) -> bool {
+    directive.name == "bind"
+        && matches!(
+            directive.arg.as_ref(),
+            Some(ExpressionNode::Simple(arg)) if arg.content == "key"
+        )
+}
+
+fn relief_template_v_for_has_key(element: &ElementNode<'_>) -> bool {
+    relief_element_has_key(element)
+        || element.children.iter().any(|child| {
+            matches!(
+                child,
+                TemplateChildNode::Element(child) if child
+                    .props
+                    .iter()
+                    .any(|prop| matches!(prop, PropNode::Directive(dir) if relief_directive_is_bound_key(dir)))
+            )
+        })
+}
+
 /// Markup-IR entry point for `vue/require-v-for-key`.
 ///
 /// Demonstrates the unified rule IR: the same logic runs over a Vue template
@@ -206,145 +264,22 @@ impl Rule for RequireVForKey {
             return;
         }
 
-        // Skip <template> tags - key should be on children instead
-        // (though on <template v-for>, the key can be on the template itself)
         if element.tag == "template" {
-            // For <template v-for>, we still require a key if it has meaningful content
-            // But we'll be lenient here since the pattern varies
-            return;
-        }
-
-        if element.tag == "slot" {
-            return;
-        }
-
-        // Check if element has :key or key attribute
-        let has_key = element.props.iter().any(|prop| match prop {
-            PropNode::Attribute(attr) => attr.name == "key",
-            PropNode::Directive(dir) => {
-                // Check for v-bind:key or :key
-                if dir.name == "bind"
-                    && let Some(ExpressionNode::Simple(s)) = &dir.arg
-                {
-                    return s.content == "key";
-                }
-                dir.name == "bind"
-                    && dir.arg.is_none()
-                    && matches!(&dir.exp, Some(ExpressionNode::Simple(expression)) if object_has_static_key(expression.content))
+            if relief_template_v_for_has_key(element) {
+                return;
             }
-        });
-
-        if !has_key {
-            ctx.error_with_help(
-                ctx.t_fmt("vue/require-v-for-key.message", &[("tag", element.tag)]),
-                &directive.loc,
-                ctx.t("vue/require-v-for-key.help"),
-            );
+        } else if element.tag == "slot" || relief_element_has_key(element) {
+            return;
         }
+
+        ctx.error_with_help(
+            ctx.t_fmt("vue/require-v-for-key.message", &[("tag", element.tag)]),
+            &directive.loc,
+            ctx.t("vue/require-v-for-key.help"),
+        );
     }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::RequireVForKey;
-    use crate::linter::Linter;
-    use crate::rule::RuleRegistry;
-
-    fn create_linter() -> Linter {
-        let mut registry = RuleRegistry::new();
-        registry.register(Box::new(RequireVForKey));
-        Linter::with_registry(registry)
-    }
-
-    #[test]
-    fn test_valid_v_for_with_key() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<ul><li v-for="item in items" :key="item.id">{{ item.name }}</li></ul>"#,
-            "test.vue",
-        );
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_v_for_without_key() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<ul><li v-for="item in items">{{ item.name }}</li></ul>"#,
-            "test.vue",
-        );
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
-    }
-
-    #[test]
-    fn test_valid_v_for_with_static_key() {
-        let linter = create_linter();
-        // Static key is unusual but technically valid
-        let result = linter.lint_template(
-            r#"<div v-for="item in items" key="static"></div>"#,
-            "test.vue",
-        );
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_slot_outlet_v_for_without_key() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div><slot v-for="(item, index) in items" name="item" :item="item" :index="index" /></div>"#,
-            "test.vue",
-        );
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_petite_vue_keyless_v_for_allowed() {
-        let linter = create_linter();
-        // Structurally detected petite-vue document (script src resolves to the
-        // petite-vue package). petite-vue allows keyless v-for.
-        let result = linter.lint_standalone_html(
-            r#"<!DOCTYPE html>
-<html>
-  <body>
-    <ul v-scope="{ items: [1, 2, 3] }">
-      <li v-for="item in items">{{ item }}</li>
-    </ul>
-    <script src="https://unpkg.com/petite-vue" init></script>
-  </body>
-</html>"#,
-            "index.html",
-        );
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_non_petite_html_keyless_v_for_still_reports() {
-        let linter = create_linter();
-        // A plain HTML document (no petite-vue) keeps the Vue-3 requirement.
-        let result = linter.lint_standalone_html(
-            r#"<!DOCTYPE html>
-<html>
-  <body>
-    <ul>
-      <li v-for="item in items">{{ item }}</li>
-    </ul>
-    <script src="https://unpkg.com/vue"></script>
-  </body>
-</html>"#,
-            "index.html",
-        );
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_template_v_for_ignored() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<template v-for="item in items"><div :key="item.id">{{ item }}</div></template>"#,
-            "test.vue",
-        );
-        // <template> itself doesn't need key, but children should
-        assert_eq!(result.error_count, 0);
-    }
-}
+#[path = "require_v_for_key_tests.rs"]
+mod tests;

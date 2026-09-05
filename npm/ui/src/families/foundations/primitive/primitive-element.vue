@@ -24,7 +24,7 @@ defineExpose({ element });
 
 <template>
   <component :is="as" ref="element" data-vize-ui="primitive">
-    <template v-for="name in getSlotNames()" #[name]>
+    <template v-for="name in getSlotNames()" :key="name" #[name]>
       <slot :name="name" />
     </template>
   </component>

@@ -67,8 +67,20 @@
   },
   {
     "file": "src/runtime/components/BlogPosts.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 73,
+        "column": 19,
+        "endLine": 73,
+        "endColumn": 55,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -121,8 +133,20 @@
   },
   {
     "file": "src/runtime/components/ChangelogVersions.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 101,
+        "column": 21,
+        "endLine": 101,
+        "endColumn": 57,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -135,6 +159,17 @@
     "file": "src/runtime/components/ChatMessages.vue",
     "messages": [
       {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 343,
+        "column": 21,
+        "endLine": 343,
+        "endColumn": 57,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      },
+      {
         "ruleId": "a11y/aria-role",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 2,
@@ -146,7 +181,7 @@
         "help": "Why: Invalid ARIA roles prevent assistive technologies from conveying the intended meaning to users.\nValid ARIA roles are defined in the WAI-ARIA specification:\nhttps://www.w3.org/TR/wai-aria/#role_definitions\nCommon roles:\n  <!-- Widget roles -->\n  <div role=\"button\">Click me</div>\n  <div role=\"dialog\">Modal content</div>\n  <div role=\"checkbox\">Toggle</div>\n  \n  <!-- Landmark roles -->\n  <nav role=\"navigation\">...</nav>\n  <main role=\"main\">...</main>\n  <aside role=\"complementary\">...</aside>\n  \n  <!-- Document structure roles -->\n  <div role=\"heading\" aria-level=\"2\">Title</div>\n  <div role=\"list\">...</div>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -157,14 +192,38 @@
   },
   {
     "file": "src/runtime/components/ChatPrompt.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 168,
+        "column": 19,
+        "endLine": 168,
+        "endColumn": 55,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/ChatPromptSubmit.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 171,
+        "column": 15,
+        "endLine": 171,
+        "endColumn": 41,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -193,8 +252,20 @@
   },
   {
     "file": "src/runtime/components/CheckboxGroup.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 200,
+        "column": 19,
+        "endLine": 200,
+        "endColumn": 55,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -263,14 +334,38 @@
   },
   {
     "file": "src/runtime/components/ContextMenu.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 169,
+        "column": 17,
+        "endLine": 169,
+        "endColumn": 53,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/ContextMenuContent.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 160,
+        "column": 29,
+        "endLine": 160,
+        "endColumn": 65,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -299,14 +394,38 @@
   },
   {
     "file": "src/runtime/components/DashboardSearch.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 219,
+        "column": 21,
+        "endLine": 219,
+        "endColumn": 57,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/DashboardSearchButton.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 118,
+        "column": 17,
+        "endLine": 118,
+        "endColumn": 53,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -341,14 +460,38 @@
   },
   {
     "file": "src/runtime/components/DropdownMenu.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 211,
+        "column": 17,
+        "endLine": 211,
+        "endColumn": 53,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/DropdownMenuContent.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 225,
+        "column": 29,
+        "endLine": 225,
+        "endColumn": 65,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -719,8 +862,20 @@
   },
   {
     "file": "src/runtime/components/PricingPlans.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 100,
+        "column": 19,
+        "endLine": 100,
+        "endColumn": 55,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -1030,20 +1185,56 @@
   },
   {
     "file": "src/runtime/components/content/ContentNavigation.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 247,
+        "column": 25,
+        "endLine": 247,
+        "endColumn": 51,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/content/ContentSearch.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 376,
+        "column": 21,
+        "endLine": 376,
+        "endColumn": 57,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/content/ContentSearchButton.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 118,
+        "column": 17,
+        "endLine": 118,
+        "endColumn": 53,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
