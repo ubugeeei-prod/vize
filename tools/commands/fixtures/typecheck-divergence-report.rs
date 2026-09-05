@@ -12,7 +12,7 @@
 //! ```
 
 use regex::Regex;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
@@ -4148,10 +4148,9 @@ fn pnpm_store_entry_matches_package(entry_name: &str, name: &str) -> bool {
 
 fn path_stays_inside(root: &Path, path: &Path) -> bool {
     pathdiff::diff_paths(path, root).is_some_and(|relative| {
-        !relative.as_os_str().is_empty()
-            && relative
-                .components()
-                .all(|component| matches!(component, std::path::Component::Normal(_)))
+        relative
+            .components()
+            .all(|component| matches!(component, std::path::Component::Normal(_)))
     })
 }
 
