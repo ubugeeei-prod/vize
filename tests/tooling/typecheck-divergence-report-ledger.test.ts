@@ -76,3 +76,23 @@ test("typecheck divergence report rejects a stale documented difference", () => 
     cleanup(fixture);
   }
 });
+
+test("typecheck divergence report rejects stale documented differences in record-only mode", () => {
+  const fixture = setup();
+  try {
+    const result = run(fixture, {}, [
+      "--budget-mode",
+      "record-only",
+      "--documented-differences",
+      writeDocumentedDifferences(fixture),
+    ]);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Documented typecheck difference ledger is stale for fixture/);
+    assert.equal(
+      fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
+      false,
+    );
+  } finally {
+    cleanup(fixture);
+  }
+});

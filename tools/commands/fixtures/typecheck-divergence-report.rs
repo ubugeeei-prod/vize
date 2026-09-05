@@ -210,13 +210,6 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         &typecheck_source_roots,
         &documented_differences,
     )?;
-    if args.budget_mode == "enforce" {
-        reject_stale_documented_differences(
-            &project_id,
-            &expected_documented_differences,
-            &divergence,
-        )?;
-    }
     let coverage = if let Some(reason) = baseline
         .run_error
         .as_deref()
@@ -252,6 +245,12 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         baseline_args: &baseline_args,
         documented_differences: &documented_differences,
     })?;
+    reject_stale_documented_differences(
+        &project_id,
+        &expected_documented_differences,
+        &divergence,
+        &mutation_oracle,
+    )?;
     let budget = evaluate_budget(
         performance,
         &divergence,
@@ -1612,6 +1611,11 @@ fn summarize_mutation_observations(
         && states[2].get("falsePositiveCount").and_then(Value::as_u64) == Some(0)
         && states[2].get("falseNegativeCount").and_then(Value::as_u64) == Some(0)
         && !repaired_expected;
+    let documented_differences = observed_documented_differences(&[
+        &clean.comparison,
+        &broken.comparison,
+        &repaired.comparison,
+    ]);
     Ok(json!({
         "schema": "vize.fixtureTypecheckSeededMutationOracle",
         "version": 1,
@@ -1626,8 +1630,23 @@ fn summarize_mutation_observations(
         "cleanExpectedDiagnosticPresent": clean_expected,
         "expectedDiagnosticMatched": expected_matched,
         "repairedExpectedDiagnosticPresent": repaired_expected,
+        "documentedDifferences": documented_differences,
         "states": states,
     }))
+}
+
+fn observed_documented_differences(comparisons: &[&Value]) -> Vec<Value> {
+    let mut observed = BTreeMap::new();
+    for comparison in comparisons {
+        for difference in comparison
+            .get("documentedDifferences")
+            .and_then(Value::as_array)
+            .unwrap_or(&Vec::new())
+        {
+            observed.insert(documented_key(difference), difference.clone());
+        }
+    }
+    observed.into_values().collect()
 }
 
 fn mutation_state_json(
@@ -1899,18 +1918,26 @@ fn reject_stale_documented_differences(
     project_id: &str,
     expected: &[DocumentedDifference],
     divergence: &Value,
+    mutation_oracle: &Value,
 ) -> Result<(), String> {
     if expected.is_empty() {
         return Ok(());
     }
-    let observed = divergence
+    let divergence_observed = divergence
         .get("documentedDifferences")
         .and_then(Value::as_array)
         .ok_or_else(|| divergence_error("comparison is missing documented differences"))?;
-    if observed.len() == expected.len() {
-        return Ok(());
-    }
-    let observed_keys = observed.iter().map(documented_key).collect::<BTreeSet<_>>();
+    let empty_mutation_observed = Vec::new();
+    let mutation_observed = mutation_oracle
+        .get("documentedDifferences")
+        .and_then(Value::as_array)
+        .unwrap_or(&empty_mutation_observed)
+        .iter();
+    let observed_keys = divergence_observed
+        .iter()
+        .chain(mutation_observed)
+        .map(documented_key)
+        .collect::<BTreeSet<_>>();
     let stale = expected
         .iter()
         .filter(|difference| {
