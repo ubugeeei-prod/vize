@@ -86,6 +86,9 @@ test("shard summary script records every surface, present or missing", () => {
     /append_unique_typecheck_divergence/,
     /glyph-waiver-issues\.json/,
     /surface-verdict\.json/,
+    /dehydrate_selected_fixture_shard/,
+    /selected-fixtures\.txt/,
+    /"submodule", "deinit", "--force", "--"/,
   ]) {
     assert.match(script, pattern);
   }

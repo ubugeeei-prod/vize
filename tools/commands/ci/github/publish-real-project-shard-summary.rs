@@ -13,14 +13,21 @@ use std::{
     fs::OpenOptions,
     io::Write,
     path::{Path, PathBuf},
-    process::ExitCode,
+    process::{Command, ExitCode, Stdio},
 };
 
 fn main() -> ExitCode {
-    match publish() {
-        Ok(()) => ExitCode::SUCCESS,
-        Err(error) => {
+    let publish_result = publish();
+    let cleanup_result = dehydrate_selected_fixture_shard();
+    match (publish_result, cleanup_result) {
+        (Ok(()), Ok(())) => ExitCode::SUCCESS,
+        (Err(error), Ok(())) | (Ok(()), Err(error)) => {
             eprintln!("{error}");
+            ExitCode::from(1)
+        }
+        (Err(publish_error), Err(cleanup_error)) => {
+            eprintln!("{publish_error}");
+            eprintln!("{cleanup_error}");
             ExitCode::from(1)
         }
     }
@@ -84,6 +91,39 @@ fn publish() -> Result<(), String> {
         surface_summary,
         true,
     )
+}
+
+fn dehydrate_selected_fixture_shard() -> Result<(), String> {
+    let Some(report_dir) = env::var_os("FIXTURE_REPORT_DIR") else {
+        return Ok(());
+    };
+    let selected_path = PathBuf::from(report_dir).join("selected-fixtures.txt");
+    if !is_nonempty(&selected_path) {
+        return Ok(());
+    }
+    let selected = fs::read_to_string(&selected_path)
+        .map_err(|error| format!("failed to read {}: {error}", selected_path.display()))?;
+    let fixture_paths = selected
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .collect::<Vec<_>>();
+    if fixture_paths.is_empty() {
+        return Ok(());
+    }
+    let status = Command::new("git")
+        .args(["submodule", "deinit", "--force", "--"])
+        .args(fixture_paths)
+        .stdin(Stdio::null())
+        .status()
+        .map_err(|error| format!("failed to run git submodule deinit: {error}"))?;
+    if !status.success() {
+        return Err(format!(
+            "git submodule deinit failed with exit code {}",
+            status.code().unwrap_or(1)
+        ));
+    }
+    Ok(())
 }
 
 fn append_file_or_line(out: &mut fs::File, path: &Path, fallback: &str) -> Result<(), String> {

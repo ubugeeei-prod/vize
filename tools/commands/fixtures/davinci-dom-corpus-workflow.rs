@@ -14,7 +14,7 @@ mod common;
 
 use regex::Regex;
 use serde::Serialize;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::{
     collections::BTreeMap,
     env, fs,
@@ -47,8 +47,12 @@ fn run() -> Result<u8, String> {
         [command] if command == "hydrate" => hydrate_corpus(ARTIFACT_DIR),
         [command] if command == "run" => run_corpus(),
         [command] if command == "finalize" => finalize_corpus(ARTIFACT_DIR),
+        [command] if command == "finalize-and-dehydrate" => {
+            finalize_and_dehydrate_corpus(ARTIFACT_DIR)
+        }
+        [command] if command == "dehydrate" => dehydrate_corpus(ARTIFACT_DIR),
         _ => Err(
-            "usage: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs hydrate|run|finalize"
+            "usage: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs hydrate|run|finalize|finalize-and-dehydrate|dehydrate"
                 .to_string(),
         ),
     }
@@ -129,6 +133,43 @@ fn hydrate_fixture_serially(fixture_path: &str) -> Result<(), String> {
         .map(str::to_string),
     )?;
     Ok(())
+}
+
+fn dehydrate_corpus(artifact: &str) -> Result<u8, String> {
+    let selected_path = Path::new(artifact).join("selected-gitlinks.txt");
+    if !selected_path.exists() {
+        return Ok(0);
+    }
+    let selected = common::read_text(&selected_path)?;
+    let fixture_paths = selected
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .map(str::to_string)
+        .collect::<Vec<_>>();
+    if fixture_paths.is_empty() {
+        return Ok(0);
+    }
+    let mut args = vec!["submodule", "deinit", "--force", "--"]
+        .into_iter()
+        .map(str::to_string)
+        .collect::<Vec<_>>();
+    args.extend(fixture_paths);
+    run_git(&args)?;
+    Ok(0)
+}
+
+fn finalize_and_dehydrate_corpus(artifact: &str) -> Result<u8, String> {
+    let finalize_result = finalize_corpus(artifact);
+    let dehydrate_result = dehydrate_corpus(artifact);
+    match (finalize_result, dehydrate_result) {
+        (Ok(code), Ok(_)) => Ok(code),
+        (Err(error), Ok(_)) => Err(error),
+        (Ok(_), Err(error)) => Err(error),
+        (Err(finalize_error), Err(dehydrate_error)) => Err(format!(
+            "{finalize_error}\nfailed to dehydrate Davinci DOM corpus fixtures: {dehydrate_error}"
+        )),
+    }
 }
 
 fn run_corpus() -> Result<u8, String> {
@@ -451,10 +492,7 @@ fn expected_old_error_reasons() -> BTreeMap<String, usize> {
     .collect()
 }
 
-fn same_reason_counts(
-    left: &BTreeMap<String, usize>,
-    right: &BTreeMap<String, usize>,
-) -> bool {
+fn same_reason_counts(left: &BTreeMap<String, usize>, right: &BTreeMap<String, usize>) -> bool {
     left == right
 }
 

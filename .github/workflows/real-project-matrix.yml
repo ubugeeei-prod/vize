@@ -339,7 +339,7 @@ jobs:
         if: ${{ always() }}
         env:
           VIZE_DAVINCI_DOM_CORPUS_OUTCOME: ${{ steps.davinci_dom_corpus.outcome }}
-        run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs finalize
+        run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs finalize-and-dehydrate
       - name: Upload S2 DOM corpus evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

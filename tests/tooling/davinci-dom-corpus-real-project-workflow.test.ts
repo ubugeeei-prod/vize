@@ -81,7 +81,7 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
   });
   assert.equal(
     finalize.run,
-    "rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs finalize",
+    "rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs finalize-and-dehydrate",
   );
   assert.match(helperSource, /"record-only"/);
   assert.match(helperSource, /EXPECTED_DOM_OUTPUT_COMPARISONS: usize = 144/);
@@ -94,6 +94,10 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
   assert.match(helperSource, /line\.contains\("davinci DOM corpus sweep"\)/);
   assert.match(helperSource, /davinci DOM corpus old-lane error reasons/);
   assert.match(helperSource, /Davinci S2 DOM corpus failed/);
+  assert.match(helperSource, /fn finalize_and_dehydrate_corpus/);
+  assert.match(helperSource, /fn dehydrate_corpus/);
+  assert.match(helperSource, /selected-gitlinks\.txt/);
+  assert.match(helperSource, /"submodule", "deinit", "--force", "--"/);
 
   const upload = findStep(steps, "Upload S2 DOM corpus evidence");
   assert.equal(upload.if, "${{ always() }}");

@@ -272,6 +272,27 @@ export function hydrateCorpus({ artifact = artifactDir, runCommand = run } = {})
   return 0;
 }
 
+export function dehydrateCorpus({ artifact = artifactDir, runCommand = run } = {}) {
+  const fixturePaths = readOptional(`${artifact}/selected-gitlinks.txt`)
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (fixturePaths.length === 0) return 0;
+  runCommand("git", ["submodule", "deinit", "--force", "--", ...fixturePaths]);
+  return 0;
+}
+
+export async function finalizeAndDehydrateCorpus(environment = process.env) {
+  const finalizeStatus = await finalizeCorpus(environment);
+  try {
+    const dehydrateStatus = dehydrateCorpus();
+    return finalizeStatus === 0 ? dehydrateStatus : finalizeStatus;
+  } catch (error) {
+    console.error(errorMessage(error));
+    return 1;
+  }
+}
+
 export async function runCorpus() {
   mkdirSync(artifactDir, { recursive: true });
   const log = createWriteStream(`${artifactDir}/dom-corpus.log`, { flags: "w" });
@@ -397,7 +418,11 @@ async function main() {
   if (command === "hydrate") return hydrateCorpus();
   if (command === "run") return await runCorpus();
   if (command === "finalize") return await finalizeCorpus();
-  console.error("usage: davinci-dom-corpus-workflow.mjs hydrate|run|finalize");
+  if (command === "finalize-and-dehydrate") return await finalizeAndDehydrateCorpus();
+  if (command === "dehydrate") return dehydrateCorpus();
+  console.error(
+    "usage: davinci-dom-corpus-workflow.mjs hydrate|run|finalize|finalize-and-dehydrate|dehydrate",
+  );
   return 1;
 }
 
