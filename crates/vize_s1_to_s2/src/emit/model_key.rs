@@ -44,19 +44,25 @@ pub(super) fn emit_update(
 ) -> Result<(), EmitError> {
     emit_update_key(cx, key)?;
     cx.buf.push(": ");
-    emit_cached_assignment(cx, model, source)
+    if matches!(key, ModelUpdateKey::Dynamic(_)) && cx.prefixing() {
+        return emit_dynamic_assignment(cx, model);
+    }
+    emit_cached_assignment(cx, model, source, matches!(key, ModelUpdateKey::Static(_)))
 }
 
 /// The synthesized `onUpdate:` assignment is an inline handler, so
-/// `cache_handlers` hoists it into the same `_cache` array the authored
-/// ones use. Shared with the merged-handler array, where a `v-model` and
-/// an authored listener on the same key both take a slot.
+/// `cache_handlers` hoists static update keys into the same `_cache` array the
+/// authored ones use. Dynamic model arguments stay uncached in the shipped
+/// lane because the key expression and modifier object share one normalized
+/// props object. Shared with the merged-handler array, where a `v-model` and an
+/// authored listener on the same static key both take a slot.
 pub(super) fn emit_cached_assignment(
     cx: &mut EmitCx<'_>,
     model: &ModelOp<'_>,
     source: &str,
+    cacheable: bool,
 ) -> Result<(), EmitError> {
-    let cached = cx.caches_handlers();
+    let cached = cacheable && cx.caches_handlers();
     if cached {
         let slot = cx.once_cache_index;
         cx.once_cache_index += 1;
@@ -70,6 +76,14 @@ pub(super) fn emit_cached_assignment(
     if cached {
         cx.buf.push(")");
     }
+    Ok(())
+}
+
+fn emit_dynamic_assignment(cx: &mut EmitCx<'_>, model: &ModelOp<'_>) -> Result<(), EmitError> {
+    let source = super::model::value_source(cx, model, Site::Raw)?;
+    cx.buf.push("$event => ((");
+    cx.buf.push(source.as_str());
+    cx.buf.push(") = $event)");
     Ok(())
 }
 

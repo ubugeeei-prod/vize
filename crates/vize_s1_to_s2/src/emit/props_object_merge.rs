@@ -46,7 +46,7 @@ pub(super) fn emit_handlers(
             Piece::On(event) => on::emit_on_value(cx, event, is_plain_element)?,
             Piece::ModelUpdate { model, .. } => {
                 let source = super::model::js_source(model)?;
-                super::model_key::emit_cached_assignment(cx, model, source.as_str())?;
+                super::model_key::emit_cached_assignment(cx, model, source.as_str(), true)?;
             }
             _ => {}
         }
