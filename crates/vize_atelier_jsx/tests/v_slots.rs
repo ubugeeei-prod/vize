@@ -294,5 +294,17 @@ fn spreads_keep_their_object_children_warning() {
         diagnostics("const A = () => <B v-slots={{...rest}}/>;"),
         vec!["spread in a JSX slot object is not supported and was ignored".to_string()]
     );
-    assert!(diagnostics("const A = () => <B v-slots={{[n]: () => <i/>}}/>;").is_empty());
+    let dynamic_source = "const π = n; const A = () => <B v-slots={{[π]: () => <i/>}}/>;";
+    assert_eq!(diagnostics(dynamic_source), Vec::<String>::new());
+    assert_eq!(
+        render_code(dynamic_source),
+        "export function render(_ctx, _cache) {\n  \
+         const _component_B = _resolveComponent(\"B\")\n  \n  \
+         return (_openBlock(), _createBlock(_component_B, null, {\n    \
+         [π]: _withCtx(() => [\n      \
+         _createElementVNode(\"i\")\n    \
+         ]),\n    \
+         _: 2 /* DYNAMIC */\n  \
+         }, 1024 /* DYNAMIC_SLOTS */))\n}"
+    );
 }
