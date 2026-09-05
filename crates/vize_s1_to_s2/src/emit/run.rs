@@ -128,9 +128,10 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
         filter::emit_resolves(&mut cx, filters);
         resolved_assets = true;
     }
-    let assets_end = cx.buf.code.len();
+    let mut assets_end = cx.buf.code.len();
     if resolved_assets {
         cx.buf.newline();
+        assets_end = cx.buf.code.len();
     }
     cx.buf.push("return ");
     let return_expr_start = cx.buf.code.len();

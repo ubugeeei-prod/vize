@@ -97,8 +97,8 @@ fn source_contains_non_void_native_self_closing_tag(source: &str) -> bool {
     let mut tags = Vec::new();
     let mut index = 0;
 
-    while let Some(offset) = source[index..].find('<') {
-        let name_start = index + offset + 1;
+    while let Some(tag_start) = find_byte(bytes, index, b'<') {
+        let name_start = tag_start + 1;
         if name_start >= bytes.len() {
             break;
         }
@@ -108,13 +108,13 @@ fn source_contains_non_void_native_self_closing_tag(source: &str) -> bool {
             let closing_name_end = scan_tag_name(bytes, closing_name_start);
             if closing_name_end > closing_name_start {
                 pop_closed_tag(&mut tags, &source[closing_name_start..closing_name_end]);
-                index = closing_name_end;
+                index = scan_tag_end(bytes, closing_name_end);
                 continue;
             }
         }
 
         if matches!(bytes[name_start], b'!' | b'?') {
-            index = name_start + 1;
+            index = scan_special_tag_end(bytes, name_start);
             continue;
         }
 
@@ -126,7 +126,8 @@ fn source_contains_non_void_native_self_closing_tag(source: &str) -> bool {
 
         let name = &source[name_start..name_end];
         let namespace = tag_namespace(name, tags.last().copied());
-        let self_closing = tag_closes_self_closing(bytes, name_end);
+        let tag_end = scan_tag_end(bytes, name_end);
+        let self_closing = tag_closes_self_closing(bytes, name_end, tag_end);
         if namespace == SourceNamespace::Html
             && is_plain_native_html_tag_name(name)
             && !is_html_void_tag_name(name)
@@ -137,17 +138,24 @@ fn source_contains_non_void_native_self_closing_tag(source: &str) -> bool {
         }
 
         if !self_closing {
-            tags.push(name);
+            tags.push(SourceOpenTag { name, namespace });
         }
 
-        index = name_end;
+        index = tag_end;
     }
 
     false
 }
 
-fn pop_closed_tag(tags: &mut Vec<&str>, name: &str) {
-    if tags.last().is_some_and(|tag| *tag == name) {
+fn find_byte(bytes: &[u8], start: usize, needle: u8) -> Option<usize> {
+    bytes[start..]
+        .iter()
+        .position(|byte| *byte == needle)
+        .map(|offset| start + offset)
+}
+
+fn pop_closed_tag(tags: &mut Vec<SourceOpenTag<'_>>, name: &str) {
+    if tags.last().is_some_and(|tag| tag.name == name) {
         tags.pop();
     }
 }
@@ -155,32 +163,52 @@ fn pop_closed_tag(tags: &mut Vec<&str>, name: &str) {
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum SourceNamespace {
     Html,
-    Foreign,
+    Svg,
+    MathMl,
 }
 
-fn tag_namespace(tag: &str, parent: Option<&str>) -> SourceNamespace {
-    if vize_s0::is_svg_tag(tag) || vize_s0::is_math_ml_tag(tag) {
-        return SourceNamespace::Foreign;
+#[derive(Clone, Copy)]
+struct SourceOpenTag<'source> {
+    name: &'source str,
+    namespace: SourceNamespace,
+}
+
+fn tag_namespace(tag: &str, parent: Option<SourceOpenTag<'_>>) -> SourceNamespace {
+    match parent {
+        None => html_child_namespace(tag),
+        Some(parent) if parent.namespace == SourceNamespace::Html => html_child_namespace(tag),
+        Some(parent)
+            if parent.namespace == SourceNamespace::Svg
+                && is_svg_html_integration_point(parent.name) =>
+        {
+            html_child_namespace(tag)
+        }
+        Some(parent)
+            if parent.namespace == SourceNamespace::MathMl
+                && is_mathml_html_integration_point(parent.name) =>
+        {
+            html_child_namespace(tag)
+        }
+        Some(parent) => parent.namespace,
     }
+}
 
-    let Some(parent) = parent else {
-        return SourceNamespace::Html;
-    };
-
-    let svg_to_html = matches!(parent, "foreignObject" | "desc" | "title");
-    if vize_s0::is_svg_tag(parent) && !svg_to_html {
-        return SourceNamespace::Foreign;
+fn html_child_namespace(tag: &str) -> SourceNamespace {
+    if tag.eq_ignore_ascii_case("svg") {
+        SourceNamespace::Svg
+    } else if tag.eq_ignore_ascii_case("math") {
+        SourceNamespace::MathMl
+    } else {
+        SourceNamespace::Html
     }
+}
 
-    let mathml_to_html = matches!(
-        parent,
-        "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext"
-    );
-    if vize_s0::is_math_ml_tag(parent) && !mathml_to_html {
-        return SourceNamespace::Foreign;
-    }
+fn is_svg_html_integration_point(tag: &str) -> bool {
+    matches!(tag, "foreignObject" | "desc" | "title")
+}
 
-    SourceNamespace::Html
+fn is_mathml_html_integration_point(tag: &str) -> bool {
+    matches!(tag, "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext")
 }
 
 fn scan_tag_name(bytes: &[u8], start: usize) -> usize {
@@ -224,12 +252,58 @@ fn is_allowed_self_closing_special_tag_name(name: &str) -> bool {
     matches!(name, "component" | "slot")
 }
 
-fn tag_closes_self_closing(bytes: &[u8], start: usize) -> bool {
+fn scan_special_tag_end(bytes: &[u8], start: usize) -> usize {
+    if bytes.get(start..start + 3) == Some(b"!--") {
+        return scan_comment_end(bytes, start + 3);
+    }
+
+    scan_tag_end(bytes, start + 1)
+}
+
+fn scan_comment_end(bytes: &[u8], start: usize) -> usize {
+    let mut index = start;
+    while index + 2 < bytes.len() {
+        if &bytes[index..index + 3] == b"-->" {
+            return index + 3;
+        }
+        index += 1;
+    }
+    bytes.len()
+}
+
+fn scan_tag_end(bytes: &[u8], start: usize) -> usize {
+    let mut index = start;
+    let mut quote = None;
+
+    while index < bytes.len() {
+        let byte = bytes[index];
+
+        if let Some(quote_byte) = quote {
+            if byte == quote_byte {
+                quote = None;
+            }
+            index += 1;
+            continue;
+        }
+
+        match byte {
+            b'\'' | b'"' => quote = Some(byte),
+            b'>' => return index + 1,
+            _ => {}
+        }
+
+        index += 1;
+    }
+
+    bytes.len()
+}
+
+fn tag_closes_self_closing(bytes: &[u8], start: usize, end: usize) -> bool {
     let mut index = start;
     let mut quote = None;
     let mut last_non_whitespace = None;
 
-    while index < bytes.len() {
+    while index < end {
         let byte = bytes[index];
 
         if let Some(quote_byte) = quote {
