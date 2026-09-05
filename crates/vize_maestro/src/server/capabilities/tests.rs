@@ -82,6 +82,10 @@ fn default_features_advertise_non_opinionated_providers() {
         capabilities.declaration_provider.is_some(),
         cfg!(feature = "native")
     );
+    assert_eq!(
+        capabilities.call_hierarchy_provider.is_some(),
+        cfg!(feature = "native")
+    );
     assert!(matches!(
         capabilities.selection_range_provider,
         Some(SelectionRangeProviderCapability::Simple(true))
@@ -173,6 +177,10 @@ fn all_features_skip_unimplemented_providers_and_keep_implemented_ones() {
     );
     assert_eq!(
         capabilities.declaration_provider.is_some(),
+        cfg!(feature = "native")
+    );
+    assert_eq!(
+        capabilities.call_hierarchy_provider.is_some(),
         cfg!(feature = "native")
     );
     assert!(capabilities.references_provider.is_some());

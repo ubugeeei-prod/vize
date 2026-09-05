@@ -100,6 +100,15 @@ impl CorsaProjectClient {
         self.implementation_via_editor_lsp(uri, line, character)
     }
 
+    pub(crate) fn prepare_call_hierarchy_raw(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        self.prepare_call_hierarchy_via_editor_lsp(uri, line, character)
+    }
+
     pub(crate) fn references_raw(
         &mut self,
         uri: &str,

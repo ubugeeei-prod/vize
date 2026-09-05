@@ -54,6 +54,14 @@ impl lsp_types::request::Request for RawImplementationRequest {
     const METHOD: &'static str = "textDocument/implementation";
 }
 
+pub(super) struct RawPrepareCallHierarchyRequest;
+
+impl lsp_types::request::Request for RawPrepareCallHierarchyRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/prepareCallHierarchy";
+}
+
 pub(super) struct RawReferencesRequest;
 
 impl lsp_types::request::Request for RawReferencesRequest {

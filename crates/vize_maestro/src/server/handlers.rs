@@ -18,8 +18,8 @@ use tower_lsp::{
         LinkedEditingRanges, Location, PrepareRenameResponse, ReferenceParams, RenameFilesParams,
         RenameParams, SelectionRange, SelectionRangeParams, SemanticTokensParams,
         SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
-        SignatureHelp, SignatureHelpParams, SymbolInformation, TextDocumentPositionParams,
-        TextEdit, WorkspaceEdit, WorkspaceSymbolParams,
+        SymbolInformation, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
+        WorkspaceSymbolParams,
     },
 };
 
@@ -28,18 +28,23 @@ use tower_lsp::{
 use tower_lsp::lsp_types::{Position, Range};
 
 use super::{MaestroServer, server_capabilities};
-#[cfg(feature = "native")]
-use crate::ide::SignatureHelpService;
 use crate::ide::{
     CompletionService, DocumentHighlightService, DocumentLinkService, HoverService, IdeContext,
     ReferencesService, RenameService, SemanticTokensService, position_to_offset,
 };
 
+mod call_hierarchy;
 mod navigation;
+mod signature_help;
+use call_hierarchy::{
+    CHIncomingParams, CHIncomingResponse, CHItems, CHOutgoingParams, CHOutgoingResponse,
+    CHPrepareParams,
+};
 use navigation::{
     DeclParams, DeclResponse, DefParams, DefResponse, ImplParams, ImplResponse, TypeDefParams,
     TypeDefResponse,
 };
+use signature_help::{SigHelp, SigHelpParams};
 
 #[tower_lsp::async_trait]
 impl LanguageServer for MaestroServer {
@@ -232,55 +237,8 @@ impl LanguageServer for MaestroServer {
         Ok(item)
     }
 
-    async fn signature_help(&self, params: SignatureHelpParams) -> Result<Option<SignatureHelp>> {
-        if !self.state.lsp_features().signature_help {
-            return Ok(None);
-        }
-
-        #[cfg(feature = "native")]
-        {
-            let context = params
-                .context
-                .and_then(|context| serde_json::to_value(context).ok());
-            let uri = &params.text_document_position_params.text_document.uri;
-            let position = params.text_document_position_params.position;
-
-            let Some(content) = self.state.documents.text(uri) else {
-                return Ok(None);
-            };
-            let Some(offset) = position_to_offset(&content, position.line, position.character)
-            else {
-                return Ok(None);
-            };
-
-            let ctx = IdeContext::with_content(&self.state, uri, offset, content);
-            let corsa_bridge = self.state.get_corsa_bridge().await;
-
-            if crate::utils::is_jsx_path(uri.path()) {
-                if self.state.jsx_typecheck_enabled() {
-                    return Ok(crate::ide::JsxService::signature_help_with_context(
-                        &ctx,
-                        corsa_bridge,
-                        context,
-                    )
-                    .await);
-                }
-                return Ok(None);
-            }
-
-            return Ok(SignatureHelpService::signature_help_with_corsa_context(
-                &ctx,
-                corsa_bridge,
-                context,
-            )
-            .await);
-        }
-
-        #[cfg(not(feature = "native"))]
-        {
-            let _ = params;
-            Ok(None)
-        }
+    async fn signature_help(&self, params: SigHelpParams) -> Result<Option<SigHelp>> {
+        signature_help::signature_help(self, params).await
     }
 
     async fn goto_definition(&self, params: DefParams) -> Result<Option<DefResponse>> {
@@ -297,6 +255,20 @@ impl LanguageServer for MaestroServer {
 
     async fn goto_implementation(&self, params: ImplParams) -> Result<Option<ImplResponse>> {
         navigation::goto_implementation(self, params).await
+    }
+
+    async fn prepare_call_hierarchy(&self, params: CHPrepareParams) -> Result<Option<CHItems>> {
+        call_hierarchy::prepare(self, params).await
+    }
+
+    async fn incoming_calls(&self, params: CHIncomingParams) -> Result<Option<CHIncomingResponse>> {
+        let _ = params;
+        Ok(None)
+    }
+
+    async fn outgoing_calls(&self, params: CHOutgoingParams) -> Result<Option<CHOutgoingResponse>> {
+        let _ = params;
+        Ok(None)
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {

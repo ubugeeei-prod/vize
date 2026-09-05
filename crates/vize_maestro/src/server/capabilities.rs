@@ -2,11 +2,11 @@
 #![allow(clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::{
-    CodeActionKind, CodeActionOptions, CodeActionProviderCapability, CodeLensOptions,
-    ColorProviderCapability, CompletionOptions, DeclarationCapability, DocumentLinkOptions,
-    DocumentOnTypeFormattingOptions, FileOperationFilter, FileOperationPattern,
-    FileOperationPatternKind, FileOperationRegistrationOptions, FoldingRangeProviderCapability,
-    HoverProviderCapability, ImplementationProviderCapability,
+    CallHierarchyServerCapability, CodeActionKind, CodeActionOptions, CodeActionProviderCapability,
+    CodeLensOptions, ColorProviderCapability, CompletionOptions, DeclarationCapability,
+    DocumentLinkOptions, DocumentOnTypeFormattingOptions, FileOperationFilter,
+    FileOperationPattern, FileOperationPatternKind, FileOperationRegistrationOptions,
+    FoldingRangeProviderCapability, HoverProviderCapability, ImplementationProviderCapability,
     LinkedEditingRangeServerCapabilities, OneOf, RenameOptions, SaveOptions,
     SelectionRangeProviderCapability, SemanticTokenModifier, SemanticTokenType,
     SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
@@ -225,9 +225,12 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
             && features.typecheck
             && cfg!(feature = "native"))
         .then_some(DeclarationCapability::Simple(true)),
+        call_hierarchy_provider: (features.definition
+            && features.typecheck
+            && cfg!(feature = "native"))
+        .then_some(CallHierarchyServerCapability::Simple(true)),
         // Features not yet implemented
         execute_command_provider: None,
-        call_hierarchy_provider: None,
         moniker_provider: None,
         experimental: features.auto_insert.then(|| {
             serde_json::json!({

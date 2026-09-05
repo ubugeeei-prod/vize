@@ -88,6 +88,20 @@ impl CorsaProjectClient {
         })
     }
 
+    pub(in crate::lsp_client) fn prepare_call_hierarchy_via_editor_lsp(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        if !self.document_texts.contains_key(uri) {
+            return Ok(None);
+        }
+        self.request_with_editor_lsp_recovery(|session| {
+            session.prepare_call_hierarchy(uri, line, character)
+        })
+    }
+
     pub(in crate::lsp_client) fn references_via_editor_lsp(
         &mut self,
         uri: &str,

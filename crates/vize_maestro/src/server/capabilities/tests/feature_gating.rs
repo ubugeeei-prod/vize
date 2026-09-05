@@ -34,6 +34,7 @@ fn individual_feature_flags_gate_matching_providers() {
                     || capabilities.type_definition_provider.is_some()
                     || capabilities.implementation_provider.is_some()
                     || capabilities.declaration_provider.is_some()
+                    || capabilities.call_hierarchy_provider.is_some()
             },
         ),
         (
@@ -43,6 +44,7 @@ fn individual_feature_flags_gate_matching_providers() {
                 capabilities.type_definition_provider.is_some()
                     || capabilities.implementation_provider.is_some()
                     || capabilities.declaration_provider.is_some()
+                    || capabilities.call_hierarchy_provider.is_some()
             },
         ),
         (

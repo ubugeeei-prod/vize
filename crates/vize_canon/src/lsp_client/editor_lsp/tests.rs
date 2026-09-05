@@ -1,6 +1,56 @@
 use super::*;
 
 #[test]
+fn prepare_call_hierarchy_uses_editor_lsp_runtime_items() {
+    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
+        return;
+    }
+    let Some(corsa_path) = resolve_tsgo_binary() else {
+        return;
+    };
+
+    let project = tempfile::TempDir::new().expect("temp project");
+    std::fs::write(
+        project.path().join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .expect("tsconfig");
+    let src = project.path().join("src");
+    std::fs::create_dir_all(&src).expect("src");
+    let source = "export function run(value: string): string { return value }\nrun('x')\n";
+    let path = src.join("call-hierarchy.ts");
+    std::fs::write(&path, source).expect("source");
+    let uri = format!("file://{}", path.display());
+    let mut documents = FxHashMap::default();
+    documents.insert(uri.clone().into(), source.into());
+
+    let mut session = EditorLspSession::spawn(
+        corsa_path.to_str().expect("utf8 path"),
+        project.path(),
+        project.path(),
+    )
+    .expect("editor LSP session");
+    session.synchronize(&documents).expect("synchronize source");
+    let response = session.prepare_call_hierarchy(&uri, 0, "export function ".len() as u32);
+    session.shutdown().expect("shutdown");
+
+    let items = response
+        .expect("prepareCallHierarchy request should succeed")
+        .expect("runtime should return call hierarchy items");
+    assert_eq!(items[0]["name"], "run");
+    assert_eq!(items[0]["selectionRange"]["start"]["character"], 16);
+}
+
+#[test]
 fn signature_help_request_defaults_to_manual_invocation() {
     let uri = Uri::from_str("file:///workspace/App.vue.ts").unwrap();
     let params = signature_help_request_params(&uri, 4, 7, None);
@@ -9,6 +59,19 @@ fn signature_help_request_defaults_to_manual_invocation() {
         params["context"],
         serde_json::json!({"triggerKind": 1, "isRetrigger": false})
     );
+}
+
+fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
+    let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(std::path::Path::parent)?;
+    vize_s0::corsa_resolver::resolve_corsa_executable(
+        vize_s0::corsa_resolver::CorsaResolveRequest {
+            project_root: Some(workspace_root),
+            ..Default::default()
+        },
+    )
+    .ok()
 }
 
 #[test]

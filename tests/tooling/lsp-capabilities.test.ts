@@ -111,6 +111,7 @@ const EDITOR_BUNDLE_CAPABILITIES = {
   declarationProvider: true,
   typeDefinitionProvider: true,
   implementationProvider: true,
+  callHierarchyProvider: true,
   referencesProvider: true,
   documentHighlightProvider: true,
   documentSymbolProvider: true,
@@ -184,8 +185,8 @@ const EDITOR_BUNDLE_CAPABILITIES = {
   },
   // Absent on purpose, and therefore absent from this object: the three
   // formatting providers (opt-in, see below),
-  // `executeCommandProvider`, `callHierarchyProvider`, `monikerProvider` and
-  // `experimental` is absent unless the private client explicitly opts in.
+  // `executeCommandProvider`, `monikerProvider` and `experimental` is absent
+  // unless the private client explicitly opts in.
 };
 
 test("vize lsp advertises exactly this capability set for the default editor bundle", async () => {
