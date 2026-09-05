@@ -53,6 +53,7 @@ pub(super) fn admit_object_on(on: &OnOp<'_>) -> Result<(), EmitError> {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn object_patch<'a>(
     bindings: &[BindingOp<'a>],
     is_component: bool,

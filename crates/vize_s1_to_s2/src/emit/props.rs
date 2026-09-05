@@ -117,6 +117,7 @@ fn admit_bindings_inner(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn bind_patch<'a>(
     bindings: &[BindingOp<'a>],
     is_component: bool,
