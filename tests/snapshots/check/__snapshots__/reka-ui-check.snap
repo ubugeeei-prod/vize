@@ -17,8 +17,8 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:8:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:9:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
-        "error:25:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<AccordionHeaderProps, never>, \"as\"> & {}'.",
-        "error:26:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<AccordionHeaderProps, never>, \"as\"> & {}'."
+        "error:25:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<AccordionHeaderProps>, \"as\"> & {}'.",
+        "error:26:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<AccordionHeaderProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -38,7 +38,7 @@
         "error:5:63 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:71:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:72:42 [TS2307] Cannot find module '@/shared/useSingleOrMultipleValue' or its corresponding type declarations.",
-        "error:114:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props<T, ExplicitType>, keyof Props<T, ExplicitType>>, \"collapsible\" | \"disabled\" | \"orientation\" | \"unmountOnHide\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props<T, ExplicitType>, keyof Props<T, ExplicitType>>, \"collapsible\" | \"disabled\" | \"orientation\" | \"unmountOnHide\"> & { ...; }'."
+        "error:114:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props<T, ExplicitType>>, \"collapsible\" | \"disabled\" | \"orientation\" | \"unmountOnHide\"> & { collapsible: boolean; disabled: boolean; orientation: any; unmountOnHide: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props<T, ExplicitType>>, \"collapsible\" | \"disabled\" | \"orientation\" | \"unmountOnHide\"> & { collapsible: boolean; disabled: boolean; orientation: any; unmountOnHide: boolean; }'."
       ]
     },
     {
@@ -191,7 +191,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:16:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:47:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<AspectRatioProps, never>, \"ratio\"> & { ratio: number; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<AspectRatioProps, never>, \"ratio\"> & { ratio: number; }'."
+        "error:47:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<AspectRatioProps>, \"ratio\"> & { ratio: number; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<AspectRatioProps>, \"ratio\"> & { ratio: number; }'."
       ]
     },
     {
@@ -219,7 +219,7 @@
         "error:41:128 [TS7006] Parameter 'event' implicitly has an 'any' type.",
         "error:93:5 [TS2322] Type 'any' is not assignable to type 'never'.",
         "error:98:3 [TS2322] Type 'any' is not assignable to type 'never'.",
-        "error:112:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<AutocompleteInputProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<AutocompleteInputProps, never>, \"as\"> & {}'."
+        "error:112:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<AutocompleteInputProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<AutocompleteInputProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -234,7 +234,7 @@
         "error:70:28 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
         "error:226:25 [TS7006] Parameter 'val' implicitly has an 'any' type.",
         "error:228:27 [TS7006] Parameter 'val' implicitly has an 'any' type.",
-        "error:257:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<AutocompleteRootProps, \"defaultOpen\" | \"dir\" | \"disabled\" | \"highlightOnHover\" | \"ignoreFilter\" | \"open\" | \"openOnClick\" | \"openOnFocus\" | \"required\" | \"resetSearchTermOnBlur\">, \"highlightOnHover\" | ... 2 more ... | \"resetSearchTermOnBlur\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<AutocompleteRootProps, \"defaultOpen\" | \"dir\" | \"disabled\" | \"highlightOnHover\" | \"ignoreFilter\" | \"open\" | \"openOnClick\" | \"openOnFocus\" | \"required\" | \"resetSearchTermOnBlur\">, \"highlightOnHover\" | ... 2 more ... | \"resetSearchTermOnBlur\"> & { ...; }'."
+        "error:257:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<AutocompleteRootProps>, \"highlightOnHover\" | \"openOnClick\" | \"openOnFocus\" | \"resetSearchTermOnBlur\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<AutocompleteRootProps>, \"highlightOnHover\" | \"openOnClick\" | \"openOnFocus\" | \"resetSearchTermOnBlur\"> & { ...; }'."
       ]
     },
     {
@@ -275,7 +275,7 @@
         "error:4:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:14:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:18:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<AvatarFallbackProps>'.",
-        "error:43:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<AvatarFallbackProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<AvatarFallbackProps, never>, \"as\"> & {}'."
+        "error:43:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<AvatarFallbackProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<AvatarFallbackProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -287,7 +287,7 @@
         "error:23:27 [TS2834] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Consider adding an extension to the import path.",
         "error:25:39 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:27:63 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<AvatarImageProps>'.",
-        "error:52:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<AvatarImageProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<AvatarImageProps, never>, \"as\"> & {}'."
+        "error:52:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<AvatarImageProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<AvatarImageProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -297,7 +297,7 @@
         "error:4:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:5:49 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:19:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:35:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<AvatarRootProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<AvatarRootProps, never>, \"as\"> & {}'."
+        "error:35:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<AvatarRootProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<AvatarRootProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -326,7 +326,7 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:15:50 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<CalendarCellProps>'.",
-        "error:21:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<CalendarCellProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<CalendarCellProps, never>, \"as\"> & {}'."
+        "error:21:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<CalendarCellProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<CalendarCellProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -337,8 +337,8 @@
         "error:13:24 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:43:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:47:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<CalendarCellTriggerProps>'.",
-        "error:178:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<CalendarCellTriggerProps, never>, \"as\"> & {}'.",
-        "error:179:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<CalendarCellTriggerProps, never>, \"as\"> & {}'."
+        "error:178:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<CalendarCellTriggerProps>, \"as\"> & {}'.",
+        "error:179:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<CalendarCellTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -396,9 +396,9 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:64 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<CalendarNextProps>'.",
-        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<CalendarNextProps, never>, \"as\" | \"step\"> & {}'.",
-        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<CalendarNextProps, never>, \"as\" | \"step\"> & {}'.",
-        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<CalendarNextProps, never>, \"as\" | \"step\"> & {}'."
+        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<CalendarNextProps>, \"as\" | \"step\"> & {}'.",
+        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<CalendarNextProps>, \"as\" | \"step\"> & {}'.",
+        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<CalendarNextProps>, \"as\" | \"step\"> & {}'."
       ]
     },
     {
@@ -407,9 +407,9 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:64 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<CalendarPrevProps>'.",
-        "error:40:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<CalendarPrevProps, never>, \"as\" | \"step\"> & {}'.",
-        "error:41:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<CalendarPrevProps, never>, \"as\" | \"step\"> & {}'.",
-        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<CalendarPrevProps, never>, \"as\" | \"step\"> & {}'."
+        "error:40:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<CalendarPrevProps>, \"as\" | \"step\"> & {}'.",
+        "error:41:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<CalendarPrevProps>, \"as\" | \"step\"> & {}'.",
+        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<CalendarPrevProps>, \"as\" | \"step\"> & {}'."
       ]
     },
     {
@@ -424,7 +424,7 @@
         "error:13:60 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
         "error:14:47 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './useCalendar.js'?",
         "error:122:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:348:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<CalendarRootProps, \"dir\" | \"disableDaysOutsideCurrentView\" | \"disabled\" | \"fixedWeeks\" | \"initialFocus\" | \"isDateDisabled\" | \"isDateUnavailable\" | ... 5 more ... | \"weekdayFormat\">, \"as\" | ... 9 more ... | \"weekdayFormat\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<CalendarRootProps, \"dir\" | \"disableDaysOutsideCurrentView\" | \"disabled\" | \"fixedWeeks\" | \"initialFocus\" | \"isDateDisabled\" | \"isDateUnavailable\" | ... 5 more ... | \"weekdayFormat\">, \"as\" | ... 9 more ... | \"weekdayFormat\"> & { ...; }'."
+        "error:348:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<CalendarRootProps>, \"as\" | \"disableDaysOutsideCurrentView\" | \"disabled\" | \"fixedWeeks\" | \"initialFocus\" | \"multiple\" | ... 4 more ... | \"weekdayFormat\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<CalendarRootProps>, \"as\" | \"disableDaysOutsideCurrentView\" | \"disabled\" | \"fixedWeeks\" | \"initialFocus\" | \"multiple\" | ... 4 more ... | \"weekdayFormat\"> & { ...; }'."
       ]
     },
     {
@@ -555,7 +555,7 @@
         "error:16:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:18:43 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:21:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<CheckboxIndicatorProps>'.",
-        "error:38:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<CheckboxIndicatorProps, \"forceMount\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<CheckboxIndicatorProps, \"forceMount\">, \"as\"> & {}'."
+        "error:38:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<CheckboxIndicatorProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<CheckboxIndicatorProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -569,8 +569,8 @@
         "error:52:33 [TS2307] Cannot find module '@/RovingFocus' or its corresponding type declarations.",
         "error:53:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
         "error:54:43 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:154:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props<T>, \"disabled\" | \"value\" | ([\"indeterminate\" | T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [...] ? \"falseValue\" : never) | ... | ...>, \"as\" | ... 2 more ... | \"value\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props<T>, \"disabled\" | \"value\" | ([\"indeterminate\" | T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [...] ? \"falseValue\" : never) | ... | ...>, \"as\" | ... 2 more ... | \"value\"> & { ...; }'.",
-        "error:155:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props<T>, \"disabled\" | \"value\" | ([\"indeterminate\" | T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [...] ? \"falseValue\" : never) | ... | ...>, \"as\" | ... 2 more ... | \"value\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props<T>, \"disabled\" | \"value\" | ([\"indeterminate\" | T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [...] ? \"falseValue\" : never) | ... | ...>, \"as\" | ... 2 more ... | \"value\"> & { ...; }'."
+        "error:154:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props<T>>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\"> & { falseValue: [T | undefined] extends [undefined] ? T | undefined : Exclude<...>; trueValue: ...; value: any; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props<T>>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\"> & { falseValue: [T | undefined] extends [undefined] ? T | undefined : Exclude<...>; trueValue: ...; value: any; }'.",
+        "error:155:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props<T>>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\"> & { falseValue: [T | undefined] extends [undefined] ? T | undefined : Exclude<...>; trueValue: ...; value: any; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props<T>>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\"> & { falseValue: [T | undefined] extends [undefined] ? T | undefined : Exclude<...>; trueValue: ...; value: any; }'."
       ]
     },
     {
@@ -638,8 +638,8 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:5:49 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:37:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:80:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<CollapsibleRootProps, keyof CollapsibleRootProps>, \"defaultOpen\" | \"unmountOnHide\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<CollapsibleRootProps, keyof CollapsibleRootProps>, \"defaultOpen\" | \"unmountOnHide\"> & { ...; }'.",
-        "error:81:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<CollapsibleRootProps, keyof CollapsibleRootProps>, \"defaultOpen\" | \"unmountOnHide\"> & { ...; }'."
+        "error:80:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<CollapsibleRootProps>, \"defaultOpen\" | \"unmountOnHide\"> & { defaultOpen: boolean; unmountOnHide: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<CollapsibleRootProps>, \"defaultOpen\" | \"unmountOnHide\"> & { defaultOpen: boolean; unmountOnHide: boolean; }'.",
+        "error:81:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<CollapsibleRootProps>, \"defaultOpen\" | \"unmountOnHide\"> & { defaultOpen: boolean; unmountOnHide: boolean; }'."
       ]
     },
     {
@@ -648,9 +648,9 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:9:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:22:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<CollapsibleTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<CollapsibleTriggerProps, never>, \"as\"> & {}'.",
-        "error:23:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<CollapsibleTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<CollapsibleTriggerProps, never>, \"as\"> & {}'.",
-        "error:24:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<CollapsibleTriggerProps, never>, \"as\"> & {}'."
+        "error:22:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<CollapsibleTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<CollapsibleTriggerProps>, \"as\"> & {}'.",
+        "error:23:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<CollapsibleTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<CollapsibleTriggerProps>, \"as\"> & {}'.",
+        "error:24:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<CollapsibleTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -677,7 +677,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:9:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:11:29 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:130:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ColorAreaAreaProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ColorAreaAreaProps, never>, \"as\"> & {}'."
+        "error:130:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ColorAreaAreaProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ColorAreaAreaProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -690,7 +690,7 @@
         "error:56:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:66:8 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations.",
         "error:67:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
-        "error:228:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ColorAreaRootProps, \"colorSpace\" | \"defaultValue\" | \"disabled\" | \"modelValue\" | \"xChannel\" | \"yChannel\">, \"as\" | ... 4 more ... | \"yChannel\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ColorAreaRootProps, \"colorSpace\" | \"defaultValue\" | \"disabled\" | \"modelValue\" | \"xChannel\" | \"yChannel\">, \"as\" | ... 4 more ... | \"yChannel\"> & { ...; }'."
+        "error:228:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ColorAreaRootProps>, \"as\" | \"colorSpace\" | \"defaultValue\" | \"disabled\" | \"xChannel\" | \"yChannel\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ColorAreaRootProps>, \"as\" | \"colorSpace\" | \"defaultValue\" | \"disabled\" | \"xChannel\" | \"yChannel\"> & { ...; }'."
       ]
     },
     {
@@ -700,7 +700,7 @@
         "error:9:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:10:32 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations.",
         "error:12:42 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:64:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ColorAreaThumbProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ColorAreaThumbProps, never>, \"as\"> & {}'."
+        "error:64:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ColorAreaThumbProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ColorAreaThumbProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -729,7 +729,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:11:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:30 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
-        "error:125:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ColorFieldInputProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ColorFieldInputProps, never>, \"as\"> & {}'."
+        "error:125:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ColorFieldInputProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ColorFieldInputProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -742,7 +742,7 @@
         "error:63:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:73:8 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations.",
         "error:74:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
-        "error:305:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ColorFieldRootProps, \"channel\" | \"colorSpace\" | \"defaultValue\" | \"disableWheelChange\" | \"disabled\" | \"modelValue\" | \"readonly\">, \"as\" | ... 4 more ... | \"readonly\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ColorFieldRootProps, \"channel\" | \"colorSpace\" | \"defaultValue\" | \"disableWheelChange\" | \"disabled\" | \"modelValue\" | \"readonly\">, \"as\" | ... 4 more ... | \"readonly\"> & { ...; }'."
+        "error:305:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ColorFieldRootProps>, \"as\" | \"colorSpace\" | \"defaultValue\" | \"disableWheelChange\" | \"disabled\" | \"readonly\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ColorFieldRootProps>, \"as\" | \"colorSpace\" | \"defaultValue\" | \"disableWheelChange\" | \"disabled\" | \"readonly\"> & { ...; }'."
       ]
     },
     {
@@ -784,7 +784,7 @@
         "error:56:140 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations.",
         "error:57:28 [TS2307] Cannot find module '@/Slider' or its corresponding type declarations.",
         "error:58:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
-        "error:209:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ColorSliderRootProps, \"channel\" | \"colorSpace\" | \"defaultValue\" | \"dir\" | \"disabled\" | \"inverted\" | \"modelValue\" | \"orientation\">, \"as\" | ... 4 more ... | \"orientation\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ColorSliderRootProps, \"channel\" | \"colorSpace\" | \"defaultValue\" | \"dir\" | \"disabled\" | \"inverted\" | \"modelValue\" | \"orientation\">, \"as\" | ... 4 more ... | \"orientation\"> & { ...; }'."
+        "error:209:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ColorSliderRootProps>, \"as\" | \"colorSpace\" | \"defaultValue\" | \"disabled\" | \"inverted\" | \"orientation\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ColorSliderRootProps>, \"as\" | \"colorSpace\" | \"defaultValue\" | \"disabled\" | \"inverted\" | \"orientation\"> & { ...; }'."
       ]
     },
     {
@@ -793,7 +793,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:9:32 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations.",
         "error:10:29 [TS2307] Cannot find module '@/Slider' or its corresponding type declarations.",
-        "error:44:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ColorSliderThumbProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ColorSliderThumbProps, never>, \"as\"> & {}'."
+        "error:44:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ColorSliderThumbProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ColorSliderThumbProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -802,7 +802,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:9:42 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations.",
         "error:10:29 [TS2307] Cannot find module '@/Slider' or its corresponding type declarations.",
-        "error:30:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ColorSliderTrackProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ColorSliderTrackProps, never>, \"as\"> & {}'."
+        "error:30:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ColorSliderTrackProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ColorSliderTrackProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -832,7 +832,7 @@
         "error:3:28 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:21:79 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations.",
-        "error:84:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ColorSwatchProps, \"color\">, \"as\" | \"color\"> & { color: any; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ColorSwatchProps, \"color\">, \"as\" | \"color\"> & { color: any; }'."
+        "error:84:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ColorSwatchProps>, \"as\" | \"color\"> & { color: any; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ColorSwatchProps>, \"as\" | \"color\"> & { color: any; }'."
       ]
     },
     {
@@ -925,7 +925,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:8:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:9:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
-        "error:36:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ComboboxCancelProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ComboboxCancelProps, never>, \"as\"> & {}'."
+        "error:36:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ComboboxCancelProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ComboboxCancelProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -981,7 +981,7 @@
         "error:118:5 [TS2322] Type 'string' is not assignable to type '(val: any) => string'.",
         "error:123:10 [TS2322] Type 'string' is not assignable to type '(val: any) => string'.",
         "error:126:5 [TS2322] Type 'string' is not assignable to type '(val: any) => string'.",
-        "error:158:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ComboboxInputProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ComboboxInputProps, never>, \"as\"> & {}'."
+        "error:158:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ComboboxInputProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ComboboxInputProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -1049,7 +1049,7 @@
         "error:12:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:13:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:17:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<ComboboxTriggerProps>'.",
-        "error:34:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ComboboxTriggerProps, \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ComboboxTriggerProps, \"disabled\">, \"as\"> & {}'."
+        "error:34:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ComboboxTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ComboboxTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -1329,7 +1329,7 @@
         "error:18:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:19:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:21:30 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:105:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ContextMenuTriggerProps, \"disabled\">, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ContextMenuTriggerProps, \"disabled\">, \"as\" | \"disabled\"> & { disabled: boolean; }'."
+        "error:105:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ContextMenuTriggerProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ContextMenuTriggerProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'."
       ]
     },
     {
@@ -1963,7 +1963,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:8:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:9:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
-        "error:23:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<DialogCloseProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<DialogCloseProps, never>, \"as\"> & {}'."
+        "error:23:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<DialogCloseProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<DialogCloseProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -1991,7 +1991,7 @@
       "diagnostics": [
         "error:4:65 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:9:3 [TS2353] Object literal may only specify known properties, and 'disableOutsidePointerEvents' does not exist in type '__WithDefaultsArgs<DialogContentImplProps & { present: boolean; }>'.",
-        "error:42:44 [TS2339] Property 'disableOutsidePointerEvents' does not exist on type 'Omit<__DefineProps<Props, \"present\" | keyof DialogContentImplProps>, \"disableOutsidePointerEvents\"> & {}'."
+        "error:42:44 [TS2339] Property 'disableOutsidePointerEvents' does not exist on type 'Omit<__LooseRequired<Props>, \"disableOutsidePointerEvents\"> & {}'."
       ]
     },
     {
@@ -2023,7 +2023,7 @@
         "error:9:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:10:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:11:35 [TS2307] Cannot find module '@/shared/useBodyScrollLock' or its corresponding type declarations.",
-        "error:27:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props, \"present\">, \"present\"> & { present: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props, \"present\">, \"present\"> & { present: boolean; }'."
+        "error:27:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props>, \"present\"> & { present: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props>, \"present\"> & { present: boolean; }'."
       ]
     },
     {
@@ -2054,7 +2054,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:9:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:10:41 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
-        "error:29:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<DialogTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<DialogTriggerProps, never>, \"as\"> & {}'."
+        "error:29:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<DialogTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<DialogTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -2110,7 +2110,7 @@
         "error:68:8 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:112:57 [TS7006] Parameter 'event' implicitly has an 'any' type.",
         "error:126:39 [TS7006] Parameter 'event' implicitly has an 'any' type.",
-        "error:225:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props, \"disableOutsidePointerEvents\" | \"present\">, \"disableOutsidePointerEvents\" | \"present\"> & { disableOutsidePointerEvents: boolean; present: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props, \"disableOutsidePointerEvents\" | \"present\">, \"disableOutsidePointerEvents\" | \"present\"> & { disableOutsidePointerEvents: boolean; present: boolean; }'."
+        "error:225:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props>, \"disableOutsidePointerEvents\" | \"present\"> & { disableOutsidePointerEvents: boolean; present: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props>, \"disableOutsidePointerEvents\" | \"present\"> & { disableOutsidePointerEvents: boolean; present: boolean; }'."
       ]
     },
     {
@@ -2198,7 +2198,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:8:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:9:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
-        "error:20:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<DrawerCloseProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<DrawerCloseProps, never>, \"as\"> & {}'."
+        "error:20:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<DrawerCloseProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<DrawerCloseProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -2265,7 +2265,7 @@
       "diagnostics": [
         "error:13:26 [TS2307] Cannot find module '@/Presence' or its corresponding type declarations.",
         "error:14:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
-        "error:36:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<DrawerOverlayProps, keyof DrawerOverlayProps>, \"forceMount\" | \"forceRender\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<DrawerOverlayProps, keyof DrawerOverlayProps>, \"forceMount\" | \"forceRender\"> & { ...; }'."
+        "error:36:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<DrawerOverlayProps>, \"forceMount\" | \"forceRender\"> & { forceMount: boolean; forceRender: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<DrawerOverlayProps>, \"forceMount\" | \"forceRender\"> & { forceMount: boolean; forceRender: boolean; }'."
       ]
     },
     {
@@ -2338,7 +2338,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:9:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:10:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
-        "error:35:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<DrawerTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<DrawerTriggerProps, never>, \"as\"> & {}'."
+        "error:35:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<DrawerTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<DrawerTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -2418,7 +2418,7 @@
         "error:9:30 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:27:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<DropdownMenuFilterProps>'.",
         "error:74:128 [TS7006] Parameter 'event' implicitly has an 'any' type.",
-        "error:122:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<DropdownMenuFilterProps, \"autoFocus\" | \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<DropdownMenuFilterProps, \"autoFocus\" | \"disabled\">, \"as\"> & {}'."
+        "error:122:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<DropdownMenuFilterProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<DropdownMenuFilterProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -2535,9 +2535,9 @@
         "error:13:28 [TS2307] Cannot find module '@/Menu' or its corresponding type declarations.",
         "error:16:8 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<DropdownMenuTriggerProps>'.",
-        "error:39:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<DropdownMenuTriggerProps, \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<DropdownMenuTriggerProps, \"disabled\">, \"as\"> & {}'.",
-        "error:40:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<DropdownMenuTriggerProps, \"disabled\">, \"as\"> & {}'.",
-        "error:41:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<DropdownMenuTriggerProps, \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<DropdownMenuTriggerProps, \"disabled\">, \"as\"> & {}'."
+        "error:39:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<DropdownMenuTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<DropdownMenuTriggerProps>, \"as\"> & {}'.",
+        "error:40:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<DropdownMenuTriggerProps>, \"as\"> & {}'.",
+        "error:41:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<DropdownMenuTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<DropdownMenuTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -2582,7 +2582,7 @@
       "diagnostics": [
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:8:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:23:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<EditableCancelTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<EditableCancelTriggerProps, never>, \"as\"> & {}'."
+        "error:23:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<EditableCancelTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<EditableCancelTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -2590,7 +2590,7 @@
       "diagnostics": [
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:8:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:23:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<EditableEditTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<EditableEditTriggerProps, never>, \"as\"> & {}'."
+        "error:23:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<EditableEditTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<EditableEditTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -2619,7 +2619,7 @@
         "error:79:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
         "error:116:3 [TS2339] Property 'name' does not exist on type 'ToRefs<Omit<__DefineProps<EditableRootProps, \"autoResize\" | \"dir\" | \"disabled\" | \"readonly\" | \"selectOnFocus\" | \"startWithEditMode\">, \"activationMode\" | ... 6 more ... | \"submitMode\"> & { ...; }>'.",
         "error:128:3 [TS2339] Property 'required' does not exist on type 'ToRefs<Omit<__DefineProps<EditableRootProps, \"autoResize\" | \"dir\" | \"disabled\" | \"readonly\" | \"selectOnFocus\" | \"startWithEditMode\">, \"activationMode\" | ... 6 more ... | \"submitMode\"> & { ...; }>'.",
-        "error:224:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<EditableRootProps, \"autoResize\" | \"dir\" | \"disabled\" | \"readonly\" | \"selectOnFocus\" | \"startWithEditMode\">, \"activationMode\" | ... 6 more ... | \"submitMode\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<EditableRootProps, \"autoResize\" | \"dir\" | \"disabled\" | \"readonly\" | \"selectOnFocus\" | \"startWithEditMode\">, \"activationMode\" | ... 6 more ... | \"submitMode\"> & { ...; }'."
+        "error:224:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<EditableRootProps>, \"activationMode\" | \"as\" | \"autoResize\" | \"disabled\" | \"placeholder\" | \"required\" | \"selectOnFocus\" | \"submitMode\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<EditableRootProps>, \"activationMode\" | \"as\" | \"autoResize\" | \"disabled\" | \"placeholder\" | \"required\" | \"selectOnFocus\" | \"submitMode\"> & { ...; }'."
       ]
     },
     {
@@ -2627,7 +2627,7 @@
       "diagnostics": [
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:8:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:23:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<EditableSubmitTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<EditableSubmitTriggerProps, never>, \"as\"> & {}'."
+        "error:23:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<EditableSubmitTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<EditableSubmitTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -2673,7 +2673,7 @@
         "error:49:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:50:40 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './stack.js'?",
         "error:59:8 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:311:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<FocusScopeProps, keyof FocusScopeProps>, \"loop\" | \"present\" | \"trapped\"> & { loop: boolean; present: boolean; trapped: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<FocusScopeProps, keyof FocusScopeProps>, \"loop\" | \"present\" | \"trapped\"> & { loop: boolean; present: boolean; trapped: boolean; }'."
+        "error:311:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<FocusScopeProps>, \"loop\" | \"present\" | \"trapped\"> & { loop: boolean; present: boolean; trapped: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<FocusScopeProps>, \"loop\" | \"present\" | \"trapped\"> & { loop: boolean; present: boolean; trapped: boolean; }'."
       ]
     },
     {
@@ -2748,7 +2748,7 @@
         "error:8:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:9:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:11:30 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:48:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<HoverCardTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<HoverCardTriggerProps, never>, \"as\"> & {}'."
+        "error:48:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<HoverCardTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<HoverCardTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -2814,7 +2814,7 @@
         "error:7:27 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:26:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<ListboxFilterProps>'.",
         "error:64:128 [TS7006] Parameter 'event' implicitly has an 'any' type.",
-        "error:101:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ListboxFilterProps, \"autoFocus\" | \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ListboxFilterProps, \"autoFocus\" | \"disabled\">, \"as\"> & {}'."
+        "error:101:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ListboxFilterProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ListboxFilterProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -2843,7 +2843,7 @@
         "error:33:27 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:35:33 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:38:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<ListboxItemProps<T>>'.",
-        "error:83:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props<T>, \"disabled\" | ([T] extends [boolean | undefined] ? \"value\" : never)>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props<T>, \"disabled\" | ([T] extends [boolean | undefined] ? \"value\" : never)>, \"as\"> & {}'."
+        "error:83:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props<T>>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props<T>>, \"as\"> & {}'."
       ]
     },
     {
@@ -2876,7 +2876,7 @@
         "error:327:53 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:349:34 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:389:3 [TS2578] Unused '@ts-expect-error' directive.",
-        "error:421:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props<T>, \"defaultValue\" | \"dir\" | \"disabled\" | \"highlightOnHover\" | \"modelValue\" | \"multiple\" | \"orientation\">, \"orientation\" | \"selectionBehavior\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props<T>, \"defaultValue\" | \"dir\" | \"disabled\" | \"highlightOnHover\" | \"modelValue\" | \"multiple\" | \"orientation\">, \"orientation\" | \"selectionBehavior\"> & { ...; }'."
+        "error:421:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props<T>>, \"orientation\" | \"selectionBehavior\"> & { orientation: any; selectionBehavior: \"replace\" | \"toggle\"; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props<T>>, \"orientation\" | \"selectionBehavior\"> & { orientation: any; selectionBehavior: \"replace\" | \"toggle\"; }'."
       ]
     },
     {
@@ -3049,7 +3049,7 @@
         "error:29:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:30:50 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:33:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MenuItemIndicatorProps>'.",
-        "error:50:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<MenuItemIndicatorProps, \"forceMount\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<MenuItemIndicatorProps, \"forceMount\">, \"as\"> & {}'."
+        "error:50:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<MenuItemIndicatorProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<MenuItemIndicatorProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3367,8 +3367,8 @@
         "error:17:8 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:18:33 [TS2307] Cannot find module '@/RovingFocus' or its corresponding type declarations.",
         "error:23:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MenubarTriggerProps>'.",
-        "error:51:16 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<MenubarTriggerProps, \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<MenubarTriggerProps, \"disabled\">, \"as\"> & {}'.",
-        "error:53:18 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<MenubarTriggerProps, \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<MenubarTriggerProps, \"disabled\">, \"as\"> & {}'."
+        "error:51:16 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<MenubarTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<MenubarTriggerProps>, \"as\"> & {}'.",
+        "error:53:18 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<MenubarTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<MenubarTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3395,7 +3395,7 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:15:53 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthPickerCellProps>'.",
-        "error:21:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<MonthPickerCellProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<MonthPickerCellProps, never>, \"as\"> & {}'."
+        "error:21:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<MonthPickerCellProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<MonthPickerCellProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3406,8 +3406,8 @@
         "error:7:24 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:31:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:34:74 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthPickerCellTriggerProps>'.",
-        "error:191:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<MonthPickerCellTriggerProps, never>, \"as\"> & {}'.",
-        "error:192:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<MonthPickerCellTriggerProps, never>, \"as\"> & {}'."
+        "error:191:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<MonthPickerCellTriggerProps>, \"as\"> & {}'.",
+        "error:192:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<MonthPickerCellTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3451,9 +3451,9 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:67 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthPickerNextProps>'.",
-        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<MonthPickerNextProps, never>, \"as\"> & {}'.",
-        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<MonthPickerNextProps, never>, \"as\"> & {}'.",
-        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<MonthPickerNextProps, never>, \"as\"> & {}'."
+        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<MonthPickerNextProps>, \"as\"> & {}'.",
+        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<MonthPickerNextProps>, \"as\"> & {}'.",
+        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<MonthPickerNextProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3462,9 +3462,9 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:67 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthPickerPrevProps>'.",
-        "error:40:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<MonthPickerPrevProps, never>, \"as\"> & {}'.",
-        "error:41:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<MonthPickerPrevProps, never>, \"as\"> & {}'.",
-        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<MonthPickerPrevProps, never>, \"as\"> & {}'."
+        "error:40:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<MonthPickerPrevProps>, \"as\"> & {}'.",
+        "error:41:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<MonthPickerPrevProps>, \"as\"> & {}'.",
+        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<MonthPickerPrevProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3479,7 +3479,7 @@
         "error:10:60 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
         "error:11:53 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './useMonthPicker.js'?",
         "error:96:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:292:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<MonthPickerRootProps, \"dir\" | \"disabled\" | \"initialFocus\" | \"isMonthDisabled\" | \"isMonthUnavailable\" | \"multiple\" | \"preventDeselect\" | \"readonly\">, \"as\" | ... 4 more ... | \"readonly\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<MonthPickerRootProps, \"dir\" | \"disabled\" | \"initialFocus\" | \"isMonthDisabled\" | \"isMonthUnavailable\" | \"multiple\" | \"preventDeselect\" | \"readonly\">, \"as\" | ... 4 more ... | \"readonly\"> & { ...; }'."
+        "error:292:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<MonthPickerRootProps>, \"as\" | \"disabled\" | \"initialFocus\" | \"multiple\" | \"preventDeselect\" | \"readonly\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<MonthPickerRootProps>, \"as\" | \"disabled\" | \"initialFocus\" | \"multiple\" | \"preventDeselect\" | \"readonly\"> & { ...; }'."
       ]
     },
     {
@@ -3514,7 +3514,7 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:15:58 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthRangePickerCellProps>'.",
-        "error:21:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<MonthRangePickerCellProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<MonthRangePickerCellProps, never>, \"as\"> & {}'."
+        "error:21:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<MonthRangePickerCellProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<MonthRangePickerCellProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3525,8 +3525,8 @@
         "error:7:24 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:41:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:44:79 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthRangePickerCellTriggerProps>'.",
-        "error:273:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<MonthRangePickerCellTriggerProps, never>, \"as\"> & {}'.",
-        "error:274:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<MonthRangePickerCellTriggerProps, never>, \"as\"> & {}'."
+        "error:273:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<MonthRangePickerCellTriggerProps>, \"as\"> & {}'.",
+        "error:274:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<MonthRangePickerCellTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3570,9 +3570,9 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:72 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthRangePickerNextProps>'.",
-        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<MonthRangePickerNextProps, never>, \"as\"> & {}'.",
-        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<MonthRangePickerNextProps, never>, \"as\"> & {}'.",
-        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<MonthRangePickerNextProps, never>, \"as\"> & {}'."
+        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<MonthRangePickerNextProps>, \"as\"> & {}'.",
+        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<MonthRangePickerNextProps>, \"as\"> & {}'.",
+        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<MonthRangePickerNextProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3581,9 +3581,9 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:72 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthRangePickerPrevProps>'.",
-        "error:40:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<MonthRangePickerPrevProps, never>, \"as\"> & {}'.",
-        "error:41:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<MonthRangePickerPrevProps, never>, \"as\"> & {}'.",
-        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<MonthRangePickerPrevProps, never>, \"as\"> & {}'."
+        "error:40:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<MonthRangePickerPrevProps>, \"as\"> & {}'.",
+        "error:41:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<MonthRangePickerPrevProps>, \"as\"> & {}'.",
+        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<MonthRangePickerPrevProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3600,7 +3600,7 @@
         "error:12:60 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
         "error:13:42 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './useRangeMonthPicker.js'?",
         "error:114:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:365:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<MonthRangePickerRootProps, \"allowNonContiguousRanges\" | \"defaultValue\" | \"dir\" | \"disabled\" | \"initialFocus\" | \"isMonthDisabled\" | \"isMonthUnavailable\" | \"modelValue\" | \"preventDeselect\" | \"readonly\">, \"allowNonContiguousRanges\" | ... 5 more ... | \"readonly\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<MonthRangePickerRootProps, \"allowNonContiguousRanges\" | \"defaultValue\" | \"dir\" | \"disabled\" | \"initialFocus\" | \"isMonthDisabled\" | \"isMonthUnavailable\" | \"modelValue\" | \"preventDeselect\" | \"readonly\">, \"allowNonContiguousRanges\" | ... 5 more ... | \"readonly\"> & { ...; }'."
+        "error:365:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<MonthRangePickerRootProps>, \"allowNonContiguousRanges\" | \"as\" | \"defaultValue\" | \"disabled\" | \"initialFocus\" | \"preventDeselect\" | \"readonly\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<MonthRangePickerRootProps>, \"allowNonContiguousRanges\" | \"as\" | \"defaultValue\" | \"disabled\" | \"initialFocus\" | \"preventDeselect\" | \"readonly\"> & { ...; }'."
       ]
     },
     {
@@ -3670,7 +3670,7 @@
         "error:44:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<NavigationMenuItemProps>'.",
         "error:112:40 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:114:9 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:136:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<NavigationMenuItemProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<NavigationMenuItemProps, never>, \"as\"> & {}'."
+        "error:136:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<NavigationMenuItemProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<NavigationMenuItemProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3682,8 +3682,8 @@
         "error:21:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:22:57 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:25:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<NavigationMenuLinkProps>'.",
-        "error:59:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<NavigationMenuLinkProps, \"active\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<NavigationMenuLinkProps, \"active\">, \"as\"> & {}'.",
-        "error:62:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<NavigationMenuLinkProps, \"active\">, \"as\"> & {}'."
+        "error:59:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<NavigationMenuLinkProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<NavigationMenuLinkProps>, \"as\"> & {}'.",
+        "error:62:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<NavigationMenuLinkProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3692,8 +3692,8 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:12:8 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:38:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<NavigationMenuListProps, never>, \"as\"> & {}'.",
-        "error:39:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<NavigationMenuListProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<NavigationMenuListProps, never>, \"as\"> & {}'."
+        "error:38:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<NavigationMenuListProps>, \"as\"> & {}'.",
+        "error:39:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<NavigationMenuListProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<NavigationMenuListProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3711,7 +3711,7 @@
         "error:194:22 [TS7006] Parameter 'val' implicitly has an 'any' type.",
         "error:197:20 [TS7006] Parameter 'val' implicitly has an 'any' type.",
         "error:220:18 [TS7006] Parameter 'val' implicitly has an 'any' type.",
-        "error:238:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<NavigationMenuRootProps, \"dir\" | \"disableClickTrigger\" | \"disableHoverTrigger\" | \"disablePointerLeaveClose\" | \"orientation\" | \"unmountOnHide\">, \"as\" | ... 5 more ... | \"unmountOnHide\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<NavigationMenuRootProps, \"dir\" | \"disableClickTrigger\" | \"disableHoverTrigger\" | \"disablePointerLeaveClose\" | \"orientation\" | \"unmountOnHide\">, \"as\" | ... 5 more ... | \"unmountOnHide\"> & { ...; }'."
+        "error:238:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<NavigationMenuRootProps>, \"as\" | \"delayDuration\" | \"disableClickTrigger\" | \"disableHoverTrigger\" | \"orientation\" | \"skipDelayDuration\" | \"unmountOnHide\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<NavigationMenuRootProps>, \"as\" | \"delayDuration\" | \"disableClickTrigger\" | \"disableHoverTrigger\" | \"orientation\" | \"skipDelayDuration\" | \"unmountOnHide\"> & { ...; }'."
       ]
     },
     {
@@ -3728,8 +3728,8 @@
         "error:85:22 [TS7006] Parameter 'val' implicitly has an 'any' type.",
         "error:89:20 [TS7006] Parameter 'val' implicitly has an 'any' type.",
         "error:101:18 [TS7006] Parameter 'val' implicitly has an 'any' type.",
-        "error:115:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<NavigationMenuSubProps, \"orientation\">, \"orientation\"> & { orientation: any; }'.",
-        "error:116:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<NavigationMenuSubProps, \"orientation\">, \"orientation\"> & { orientation: any; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<NavigationMenuSubProps, \"orientation\">, \"orientation\"> & { orientation: any; }'."
+        "error:115:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<NavigationMenuSubProps>, \"orientation\"> & { orientation: any; }'.",
+        "error:116:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<NavigationMenuSubProps>, \"orientation\"> & { orientation: any; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<NavigationMenuSubProps>, \"orientation\"> & { orientation: any; }'."
       ]
     },
     {
@@ -3743,8 +3743,8 @@
         "error:22:60 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:29:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<NavigationMenuTriggerProps>'.",
         "error:111:20 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ horizontal: string; vertical: string; }'.",
-        "error:153:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<NavigationMenuTriggerProps, \"disabled\">, \"as\"> & {}'.",
-        "error:154:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<NavigationMenuTriggerProps, \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<NavigationMenuTriggerProps, \"disabled\">, \"as\"> & {}'."
+        "error:153:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<NavigationMenuTriggerProps>, \"as\"> & {}'.",
+        "error:154:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<NavigationMenuTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<NavigationMenuTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3755,7 +3755,7 @@
         "error:22:26 [TS2307] Cannot find module '@/Presence' or its corresponding type declarations.",
         "error:25:8 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:27:41 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:170:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<NavigationMenuViewportProps, \"forceMount\">, \"align\"> & { align: \"center\" | \"end\" | \"start\"; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<NavigationMenuViewportProps, \"forceMount\">, \"align\"> & { align: \"center\" | \"end\" | \"start\"; }'."
+        "error:170:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<NavigationMenuViewportProps>, \"align\"> & { align: \"center\" | \"end\" | \"start\"; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<NavigationMenuViewportProps>, \"align\"> & { align: \"center\" | \"end\" | \"start\"; }'."
       ]
     },
     {
@@ -3837,7 +3837,7 @@
         "error:5:32 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:13:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:16:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<NumberFieldDecrementProps>'.",
-        "error:36:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<NumberFieldDecrementProps, \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<NumberFieldDecrementProps, \"disabled\">, \"as\"> & {}'."
+        "error:36:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<NumberFieldDecrementProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<NumberFieldDecrementProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3847,7 +3847,7 @@
         "error:5:32 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:13:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:16:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<NumberFieldIncrementProps>'.",
-        "error:36:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<NumberFieldIncrementProps, \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<NumberFieldIncrementProps, \"disabled\">, \"as\"> & {}'."
+        "error:36:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<NumberFieldIncrementProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<NumberFieldIncrementProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3875,7 +3875,7 @@
         "error:107:56 [TS18048] 'modelValue.value' is possibly 'undefined'.",
         "error:189:71 [TS2345] Argument of type 'number | undefined' is not assignable to parameter of type 'number'.\nType 'undefined' is not assignable to type 'number'.",
         "error:233:19 [TS7006] Parameter 'el' implicitly has an 'any' type.",
-        "error:254:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<NumberFieldRootProps, \"disableWheelChange\" | \"disabled\" | \"focusOnChange\" | \"invertWheelChange\" | \"readonly\" | \"stepSnapping\">, \"as\" | ... 2 more ... | \"stepSnapping\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<NumberFieldRootProps, \"disableWheelChange\" | \"disabled\" | \"focusOnChange\" | \"invertWheelChange\" | \"readonly\" | \"stepSnapping\">, \"as\" | ... 2 more ... | \"stepSnapping\"> & { ...; }'."
+        "error:254:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<NumberFieldRootProps>, \"as\" | \"focusOnChange\" | \"step\" | \"stepSnapping\"> & { focusOnChange: boolean; step: number; stepSnapping: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<NumberFieldRootProps>, \"as\" | \"focusOnChange\" | \"step\" | \"stepSnapping\"> & { focusOnChange: boolean; step: number; stepSnapping: boolean; }'."
       ]
     },
     {
@@ -3919,7 +3919,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:10:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:25:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<PaginationFirstProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<PaginationFirstProps, never>, \"as\"> & {}'."
+        "error:25:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PaginationFirstProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PaginationFirstProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3928,7 +3928,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:10:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:25:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<PaginationLastProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<PaginationLastProps, never>, \"as\"> & {}'."
+        "error:25:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PaginationLastProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PaginationLastProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3947,7 +3947,7 @@
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:13:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:16:70 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<PaginationListItemProps>'.",
-        "error:33:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<PaginationListItemProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<PaginationListItemProps, never>, \"as\"> & {}'."
+        "error:33:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PaginationListItemProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PaginationListItemProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3956,7 +3956,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:10:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:25:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<PaginationNextProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<PaginationNextProps, never>, \"as\"> & {}'."
+        "error:25:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PaginationNextProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PaginationNextProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3965,7 +3965,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:10:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:25:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<PaginationPrevProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<PaginationPrevProps, never>, \"as\"> & {}'."
+        "error:25:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PaginationPrevProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PaginationPrevProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3975,7 +3975,7 @@
         "error:4:49 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:48:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:80:16 [TS7006] Parameter 'value' implicitly has an 'any' type.",
-        "error:92:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<PaginationRootProps, \"disabled\" | \"showEdges\">, \"as\" | \"defaultPage\" | \"showEdges\" | \"siblingCount\" | \"total\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<PaginationRootProps, \"disabled\" | \"showEdges\">, \"as\" | \"defaultPage\" | \"showEdges\" | \"siblingCount\" | \"total\"> & { ...; }'."
+        "error:92:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PaginationRootProps>, \"as\" | \"defaultPage\" | \"showEdges\" | \"siblingCount\" | \"total\"> & { defaultPage: number; showEdges: boolean; siblingCount: number; total: number; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PaginationRootProps>, \"as\" | \"defaultPage\" | \"showEdges\" | \"siblingCount\" | \"total\"> & { defaultPage: number; showEdges: boolean; siblingCount: number; total: number; }'."
       ]
     },
     {
@@ -4007,7 +4007,7 @@
         "error:5:68 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:20:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<PinInputInputProps>'.",
         "error:36:85 [TS7006] Parameter 'event' implicitly has an 'any' type.",
-        "error:248:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<PinInputInputProps, \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<PinInputInputProps, \"disabled\">, \"as\"> & {}'."
+        "error:248:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PinInputInputProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PinInputInputProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -4070,9 +4070,9 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:9:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:24:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<PopoverCloseProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<PopoverCloseProps, never>, \"as\"> & {}'.",
-        "error:25:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<PopoverCloseProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<PopoverCloseProps, never>, \"as\"> & {}'.",
-        "error:26:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<PopoverCloseProps, never>, \"as\"> & {}'."
+        "error:24:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PopoverCloseProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PopoverCloseProps>, \"as\"> & {}'.",
+        "error:25:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PopoverCloseProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PopoverCloseProps>, \"as\"> & {}'.",
+        "error:26:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<PopoverCloseProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -4130,9 +4130,9 @@
         "error:3:41 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:10:30 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
         "error:11:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:36:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<PopoverTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<PopoverTriggerProps, never>, \"as\"> & {}'.",
-        "error:41:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<PopoverTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<PopoverTriggerProps, never>, \"as\"> & {}'.",
-        "error:42:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<PopoverTriggerProps, never>, \"as\"> & {}'."
+        "error:36:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PopoverTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PopoverTriggerProps>, \"as\"> & {}'.",
+        "error:41:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PopoverTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PopoverTriggerProps>, \"as\"> & {}'.",
+        "error:42:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<PopoverTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -4223,7 +4223,7 @@
         "error:40:6 [TS2322] Type '(el: Element | ComponentPublicInstance | null) => undefined' is not assignable to type 'VNodeRef | undefined'.\nType '(el: Element | ComponentPublicInstance | null) => undefined' is not assignable to type '(ref: Element | ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any> | null, refs: Record<...>) => void'.\nTypes of parameters 'el' and 'ref' are incompatible.\nType 'Element | ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any> | null' is not assignable to type 'Element | ComponentPublicInstance | null'.\nType 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>' is not assignable to type 'Element | ComponentPublicInstance | null'.\nType 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>' is not assignable to type 'ComponentPublicInstance'.\nType 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>' is not assignable to type '{ $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Data; $refs: Data; $slots: Readonly<InternalSlots>; $root: ComponentPublicInstance<...> | null; ... 7 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined): WatchStopHandle; }'.\nThe types of '$.type' are incompatible between these types.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").ConcreteComponent<{}, any, any, import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue...' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").ConcreteComponent<{}, any, any, import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/t...'.\nType 'FunctionalComponent<{}, {}, any, {}>' is not assignable to type 'ConcreteComponent<{}, any, any, ComputedOptions, MethodOptions, {}, any>'.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").FunctionalComponent<{}, {}, any, {}>' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").FunctionalComponent<{}, {}, any, {}>'.\nTypes of property 'slots' are incompatible.\nType 'Readonly<InternalSlots> | undefined' is not assignable to type 'Readonly<InternalSlots> | undefined'. Two different types with this name exist, but they are unrelated.\nType 'Readonly<InternalSlots>' is not assignable to type 'Readonly<InternalSlots>'. Two different types with this name exist, but they are unrelated.\n'string' index signatures are incompatible.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").Slot<any> | undefined' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").Slot<any> | undefined'.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").Slot<any>' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").Slot<any>'.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").VNode<import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.1...' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").VNode<import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/tests/_fixtures/_git/reka-u...'.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").VNode<import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.1...' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").VNode<import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/tests/_fixtures/_git/reka-u...'.\nTypes of property 'type' are incompatible.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").VNodeTypes' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").VNodeTypes'.\nType 'unique symbol' is not assignable to type 'VNodeTypes'.",
         "error:49:24 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ top: string; right: string; bottom: string; left: string; }'.",
         "error:55:18 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ top: string; right: string; bottom: string; left: string; }'.",
-        "error:70:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<PopperArrowProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<PopperArrowProps, never>, \"as\"> & {}'."
+        "error:70:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PopperArrowProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PopperArrowProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -4350,7 +4350,7 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:4:60 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:78:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:146:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ProgressRootProps, never>, \"getValueLabel\" | \"max\"> & { getValueLabel: (value: number | null | undefined, max: number) => string | undefined; max: number; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ProgressRootProps, never>, \"getValueLabel\" | \"max\"> & { getValueLabel: (value: number | null | undefined, max: number) => string | undefined; max: number; }'."
+        "error:146:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ProgressRootProps>, \"getValueLabel\" | \"max\"> & { getValueLabel: (value: number | null | undefined, max: number) => string | undefined; max: number; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ProgressRootProps>, \"getValueLabel\" | \"max\"> & { getValueLabel: (value: number | null | undefined, max: number) => string | undefined; max: number; }'."
       ]
     },
     {
@@ -4380,8 +4380,8 @@
         "error:26:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
         "error:27:30 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:64:37 [TS7006] Parameter 'ev' implicitly has an 'any' type.",
-        "error:85:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<RadioProps, \"checked\" | \"disabled\" | \"value\">, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<RadioProps, \"checked\" | \"disabled\" | \"value\">, \"as\" | \"disabled\"> & { disabled: boolean; }'.",
-        "error:86:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<RadioProps, \"checked\" | \"disabled\" | \"value\">, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<RadioProps, \"checked\" | \"disabled\" | \"value\">, \"as\" | \"disabled\"> & { disabled: boolean; }'."
+        "error:85:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<RadioProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<RadioProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.",
+        "error:86:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<RadioProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<RadioProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'."
       ]
     },
     {
@@ -4392,7 +4392,7 @@
         "error:15:26 [TS2307] Cannot find module '@/Presence' or its corresponding type declarations.",
         "error:16:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<RadioGroupIndicatorProps>'.",
-        "error:36:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<RadioGroupIndicatorProps, \"forceMount\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<RadioGroupIndicatorProps, \"forceMount\">, \"as\"> & {}'."
+        "error:36:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<RadioGroupIndicatorProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<RadioGroupIndicatorProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -4416,7 +4416,7 @@
         "error:73:38 [TS2339] Property 'name' does not exist on type 'ToRefs<Omit<__DefineProps<RadioGroupRootProps, keyof RadioGroupRootProps>, \"disabled\" | \"loop\" | \"orientation\" | \"required\"> & { ...; }>'.",
         "error:73:44 [TS2339] Property 'required' does not exist on type 'ToRefs<Omit<__DefineProps<RadioGroupRootProps, keyof RadioGroupRootProps>, \"disabled\" | \"loop\" | \"orientation\" | \"required\"> & { ...; }>'.",
         "error:79:22 [TS7006] Parameter 'value' implicitly has an 'any' type.",
-        "error:102:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<RadioGroupRootProps, keyof RadioGroupRootProps>, \"disabled\" | \"loop\" | \"required\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<RadioGroupRootProps, keyof RadioGroupRootProps>, \"disabled\" | \"loop\" | \"required\"> & { ...; }'."
+        "error:102:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<RadioGroupRootProps>, \"disabled\" | \"loop\" | \"required\"> & { disabled: boolean; loop: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<RadioGroupRootProps>, \"disabled\" | \"loop\" | \"required\"> & { disabled: boolean; loop: boolean; }'."
       ]
     },
     {
@@ -4460,7 +4460,7 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:11:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:14:55 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<RangeCalendarCellProps>'.",
-        "error:20:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<RangeCalendarCellProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<RangeCalendarCellProps, never>, \"as\"> & {}'."
+        "error:20:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<RangeCalendarCellProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<RangeCalendarCellProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -4471,7 +4471,7 @@
         "error:13:24 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:52:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:55:76 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<RangeCalendarCellTriggerProps>'.",
-        "error:254:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<RangeCalendarCellTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<RangeCalendarCellTriggerProps, never>, \"as\"> & {}'."
+        "error:254:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<RangeCalendarCellTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<RangeCalendarCellTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -4529,9 +4529,9 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:69 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<RangeCalendarNextProps>'.",
-        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<RangeCalendarNextProps, never>, \"as\"> & {}'.",
-        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<RangeCalendarNextProps, never>, \"as\"> & {}'.",
-        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<RangeCalendarNextProps, never>, \"as\"> & {}'."
+        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<RangeCalendarNextProps>, \"as\"> & {}'.",
+        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<RangeCalendarNextProps>, \"as\"> & {}'.",
+        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<RangeCalendarNextProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -4540,9 +4540,9 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:69 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<RangeCalendarPrevProps>'.",
-        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<RangeCalendarPrevProps, never>, \"as\"> & {}'.",
-        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<RangeCalendarPrevProps, never>, \"as\"> & {}'.",
-        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<RangeCalendarPrevProps, never>, \"as\"> & {}'."
+        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<RangeCalendarPrevProps>, \"as\"> & {}'.",
+        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<RangeCalendarPrevProps>, \"as\"> & {}'.",
+        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<RangeCalendarPrevProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -4559,7 +4559,7 @@
         "error:18:60 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
         "error:19:39 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './useRangeCalendar.js'?",
         "error:154:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:452:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<RangeCalendarRootProps, \"allowNonContiguousRanges\" | \"defaultValue\" | \"dir\" | \"disableDaysOutsideCurrentView\" | \"disabled\" | \"fixedWeeks\" | ... 9 more ... | \"weekdayFormat\">, \"allowNonContiguousRanges\" | ... 10 more ... | \"weekdayFormat\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<RangeCalendarRootProps, \"allowNonContiguousRanges\" | \"defaultValue\" | \"dir\" | \"disableDaysOutsideCurrentView\" | \"disabled\" | \"fixedWeeks\" | ... 9 more ... | \"weekdayFormat\">, \"allowNonContiguousRanges\" | ... 10 more ... | \"weekdayFormat\"> & { ...; }'."
+        "error:452:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<RangeCalendarRootProps>, \"allowNonContiguousRanges\" | \"as\" | \"defaultValue\" | \"disableDaysOutsideCurrentView\" | ... 7 more ... | \"weekdayFormat\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<RangeCalendarRootProps>, \"allowNonContiguousRanges\" | \"as\" | \"defaultValue\" | \"disableDaysOutsideCurrentView\" | ... 7 more ... | \"weekdayFormat\"> & { ...; }'."
       ]
     },
     {
@@ -4629,7 +4629,7 @@
         "error:5:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:6:31 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:23:62 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<RatingItemProps>'.",
-        "error:48:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<RatingItemProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<RatingItemProps, never>, \"as\"> & {}'."
+        "error:48:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<RatingItemProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<RatingItemProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -4683,7 +4683,7 @@
         "error:105:42 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:107:9 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:134:17 [TS7006] Parameter 'tabStopId' implicitly has an 'any' type.",
-        "error:154:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<RovingFocusGroupProps, \"dir\" | \"loop\" | \"orientation\" | \"preventScrollOnEntryFocus\">, \"loop\" | \"preventScrollOnEntryFocus\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<RovingFocusGroupProps, \"dir\" | \"loop\" | \"orientation\" | \"preventScrollOnEntryFocus\">, \"loop\" | \"preventScrollOnEntryFocus\"> & { ...; }'."
+        "error:154:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<RovingFocusGroupProps>, \"loop\" | \"preventScrollOnEntryFocus\"> & { loop: boolean; preventScrollOnEntryFocus: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<RovingFocusGroupProps>, \"loop\" | \"preventScrollOnEntryFocus\"> & { loop: boolean; preventScrollOnEntryFocus: boolean; }'."
       ]
     },
     {
@@ -4696,7 +4696,7 @@
         "error:24:55 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:79:45 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:79:64 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:108:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<RovingFocusItemProps, \"active\" | \"allowShiftKey\" | \"focusable\">, \"as\" | \"focusable\"> & { focusable: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<RovingFocusItemProps, \"active\" | \"allowShiftKey\" | \"focusable\">, \"as\" | \"focusable\"> & { focusable: boolean; }'."
+        "error:108:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<RovingFocusItemProps>, \"as\" | \"focusable\"> & { focusable: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<RovingFocusItemProps>, \"as\" | \"focusable\"> & { focusable: boolean; }'."
       ]
     },
     {
@@ -4755,8 +4755,8 @@
         "error:119:31 [TS7006] Parameter 'rendered' implicitly has an 'any' type.",
         "error:122:25 [TS7006] Parameter 'width' implicitly has an 'any' type.",
         "error:125:26 [TS7006] Parameter 'height' implicitly has an 'any' type.",
-        "error:134:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<ScrollAreaRootProps, \"dir\" | \"type\">, \"scrollHideDelay\" | \"type\"> & { scrollHideDelay: number; type: any; }'.",
-        "error:135:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ScrollAreaRootProps, \"dir\" | \"type\">, \"scrollHideDelay\" | \"type\"> & { scrollHideDelay: number; type: any; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ScrollAreaRootProps, \"dir\" | \"type\">, \"scrollHideDelay\" | \"type\"> & { scrollHideDelay: number; type: any; }'."
+        "error:134:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<ScrollAreaRootProps>, \"scrollHideDelay\" | \"type\"> & { scrollHideDelay: number; type: any; }'.",
+        "error:135:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ScrollAreaRootProps>, \"scrollHideDelay\" | \"type\"> & { scrollHideDelay: number; type: any; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ScrollAreaRootProps>, \"scrollHideDelay\" | \"type\"> & { scrollHideDelay: number; type: any; }'."
       ]
     },
     {
@@ -4960,7 +4960,7 @@
       "diagnostics": [
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:8:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:18:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<SelectIconProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<SelectIconProps, never>, \"as\"> & {}'."
+        "error:18:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectIconProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectIconProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -5042,6 +5042,8 @@
         "error:70:28 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
         "error:93:9 [TS2339] Property 'required' does not exist on type 'ToRefs<Omit<__DefineProps<SelectRootProps<T>, \"defaultOpen\" | \"dir\" | \"disabled\" | \"multiple\" | \"open\" | Extract<...> | Extract<...>>, \"modelValue\" | ... 1 more ... | \"open\"> & { ...; }>'.",
         "error:98:3 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'false' is not assignable to type 'true'.",
+        "error:103:3 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'boolean' is not assignable to type '(false & __LooseRequired<SelectRootProps<T>>[\"open\" & Extract<[T | T[] | undefined] extends [boolean | undefined] ? \"defaultValue\" : never, keyof SelectRootProps<...>>] & __LooseRequired<...>[\"open\" & Extract<...>]) | (true & ... 1 more ... & __LooseRequired<...>[\"open\" & Extract<...>])'.",
+        "error:104:3 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'false' is not assignable to type 'true'.",
         "error:157:21 [TS7006] Parameter 'node' implicitly has an 'any' type.",
         "error:161:26 [TS7006] Parameter 'node' implicitly has an 'any' type.",
         "error:166:3 [TS2578] Unused '@ts-expect-error' directive.",
@@ -5092,8 +5094,8 @@
         "error:14:55 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:18:50 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:21:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<SelectTriggerProps>'.",
-        "error:106:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<SelectTriggerProps, \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<SelectTriggerProps, \"disabled\">, \"as\"> & {}'.",
-        "error:117:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<SelectTriggerProps, \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<SelectTriggerProps, \"disabled\">, \"as\"> & {}'."
+        "error:106:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.",
+        "error:117:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -5108,7 +5110,7 @@
         "error:36:45 [TS7006] Parameter 'value' implicitly has an 'any' type.",
         "error:36:72 [TS2339] Property 'textContent' does not exist on type '{}'.",
         "error:39:54 [TS2339] Property 'textContent' does not exist on type '{}'.",
-        "error:52:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<SelectValueProps, never>, \"as\" | \"placeholder\"> & { placeholder: string; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<SelectValueProps, never>, \"as\" | \"placeholder\"> & { placeholder: string; }'."
+        "error:52:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectValueProps>, \"as\" | \"placeholder\"> & { placeholder: string; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectValueProps>, \"as\" | \"placeholder\"> & { placeholder: string; }'."
       ]
     },
     {
@@ -5220,7 +5222,7 @@
         "error:10:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:74 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:19:76 [TS7006] Parameter 'value' implicitly has an 'any' type.",
-        "error:32:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<SliderRangeProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<SliderRangeProps, never>, \"as\"> & {}'."
+        "error:32:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SliderRangeProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SliderRangeProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -5232,7 +5234,7 @@
         "error:6:86 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:72:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
         "error:75:137 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:177:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<SliderRootProps, \"dir\" | \"disabled\" | \"inverted\" | \"orientation\">, \"as\" | \"defaultValue\" | \"disabled\" | \"inverted\" | ... 5 more ... | \"thumbAlignment\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<SliderRootProps, \"dir\" | \"disabled\" | \"inverted\" | \"orientation\">, \"as\" | \"defaultValue\" | \"disabled\" | \"inverted\" | ... 5 more ... | \"thumbAlignment\"> & { ...; }'."
+        "error:177:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SliderRootProps>, \"as\" | \"defaultValue\" | \"disabled\" | \"inverted\" | \"max\" | \"min\" | \"minStepsBetweenThumbs\" | \"orientation\" | \"step\" | \"thumbAlignment\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SliderRootProps>, \"as\" | \"defaultValue\" | \"disabled\" | \"inverted\" | \"max\" | \"min\" | \"minStepsBetweenThumbs\" | \"orientation\" | \"step\" | \"thumbAlignment\"> & { ...; }'."
       ]
     },
     {
@@ -5262,7 +5264,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:9:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:22:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<SliderTrackProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<SliderTrackProps, never>, \"as\"> & {}'."
+        "error:22:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SliderTrackProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SliderTrackProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -5335,7 +5337,7 @@
         "error:95:42 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils/style.js'?",
         "error:96:103 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils/units.js'?",
         "error:97:42 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils/validation.js'?",
-        "error:937:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<SplitterGroupProps, \"direction\">, \"autoSaveId\" | \"keyboardResizeBy\" | \"storage\"> & { autoSaveId: string | null; keyboardResizeBy: number | null; storage: PanelGroupStorage; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<SplitterGroupProps, \"direction\">, \"autoSaveId\" | \"keyboardResizeBy\" | \"storage\"> & { autoSaveId: string | null; keyboardResizeBy: number | null; storage: PanelGroupStorage; }'."
+        "error:937:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SplitterGroupProps>, \"autoSaveId\" | \"keyboardResizeBy\" | \"storage\"> & { autoSaveId: string | null; keyboardResizeBy: number | null; storage: PanelGroupStorage; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SplitterGroupProps>, \"autoSaveId\" | \"keyboardResizeBy\" | \"storage\"> & { autoSaveId: string | null; keyboardResizeBy: number | null; storage: PanelGroupStorage; }'."
       ]
     },
     {
@@ -5360,7 +5362,7 @@
         "error:35:52 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:37:24 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils/assert.js'?",
         "error:38:38 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils/registry.js'?",
-        "error:156:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<SplitterResizeHandleProps, \"disabled\" | \"hitAreaMargins\">, \"tabindex\"> & { tabindex: number; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<SplitterResizeHandleProps, \"disabled\" | \"hitAreaMargins\">, \"tabindex\"> & { tabindex: number; }'."
+        "error:156:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SplitterResizeHandleProps>, \"tabindex\"> & { tabindex: number; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SplitterResizeHandleProps>, \"tabindex\"> & { tabindex: number; }'."
       ]
     },
     {
@@ -5587,7 +5589,7 @@
         "error:4:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:6:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:7:56 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
-        "error:87:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<StepperItemProps, \"completed\" | \"disabled\">, \"completed\" | \"disabled\"> & { completed: boolean; disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<StepperItemProps, \"completed\" | \"disabled\">, \"completed\" | \"disabled\"> & { completed: boolean; disabled: boolean; }'."
+        "error:87:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<StepperItemProps>, \"completed\" | \"disabled\"> & { completed: boolean; disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<StepperItemProps>, \"completed\" | \"disabled\"> & { completed: boolean; disabled: boolean; }'."
       ]
     },
     {
@@ -5597,7 +5599,7 @@
         "error:4:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:7:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:8:63 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
-        "error:184:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<StepperRootProps, \"dir\" | \"linear\" | \"orientation\">, \"defaultValue\" | \"linear\" | \"orientation\"> & { defaultValue: number; linear: boolean; orientation: any; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<StepperRootProps, \"dir\" | \"linear\" | \"orientation\">, \"defaultValue\" | \"linear\" | \"orientation\"> & { defaultValue: number; linear: boolean; orientation: any; }'."
+        "error:184:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<StepperRootProps>, \"defaultValue\" | \"linear\" | \"orientation\"> & { defaultValue: number; linear: boolean; orientation: any; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<StepperRootProps>, \"defaultValue\" | \"linear\" | \"orientation\"> & { defaultValue: number; linear: boolean; orientation: any; }'."
       ]
     },
     {
@@ -5622,8 +5624,8 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:4:80 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:11:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:88:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<StepperTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<StepperTriggerProps, never>, \"as\"> & {}'.",
-        "error:89:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<StepperTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<StepperTriggerProps, never>, \"as\"> & {}'."
+        "error:88:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<StepperTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<StepperTriggerProps>, \"as\"> & {}'.",
+        "error:89:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<StepperTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<StepperTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -5675,8 +5677,8 @@
         "error:5:84 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:45:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:46:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
-        "error:105:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props<T>, \"disabled\" | ([T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [boolean | undefined] ? \"falseValue\" : never) | ... | ...>, \"as\" | ... 2 more ... | \"value\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props<T>, \"disabled\" | ([T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [boolean | undefined] ? \"falseValue\" : never) | ... | ...>, \"as\" | ... 2 more ... | \"value\"> & { ...; }'.",
-        "error:113:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props<T>, \"disabled\" | ([T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [boolean | undefined] ? \"falseValue\" : never) | ... | ...>, \"as\" | ... 2 more ... | \"value\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props<T>, \"disabled\" | ([T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [boolean | undefined] ? \"falseValue\" : never) | ... | ...>, \"as\" | ... 2 more ... | \"value\"> & { ...; }'."
+        "error:105:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props<T>>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\"> & { falseValue: [T | undefined] extends [undefined] ? T | undefined : Exclude<...>; trueValue: ...; value: string; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props<T>>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\"> & { falseValue: [T | undefined] extends [undefined] ? T | undefined : Exclude<...>; trueValue: ...; value: string; }'.",
+        "error:113:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props<T>>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\"> & { falseValue: [T | undefined] extends [undefined] ? T | undefined : Exclude<...>; trueValue: ...; value: string; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props<T>>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\"> & { falseValue: [T | undefined] extends [undefined] ? T | undefined : Exclude<...>; trueValue: ...; value: string; }'."
       ]
     },
     {
@@ -5685,7 +5687,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:9:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:24:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<SwitchThumbProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<SwitchThumbProps, never>, \"as\"> & {}'."
+        "error:24:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SwitchThumbProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SwitchThumbProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -5723,7 +5725,7 @@
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:13:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:14:34 [TS2307] Cannot find module '@/RovingFocus' or its corresponding type declarations.",
-        "error:39:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<TabsListProps, \"loop\">, \"loop\"> & { loop: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<TabsListProps, \"loop\">, \"loop\"> & { loop: boolean; }'."
+        "error:39:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<TabsListProps>, \"loop\"> & { loop: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<TabsListProps>, \"loop\"> & { loop: boolean; }'."
       ]
     },
     {
@@ -5733,7 +5735,7 @@
         "error:4:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:6:70 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:62:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:118:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props<T>, \"dir\" | \"orientation\" | \"unmountOnHide\" | ([T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [...] ? \"modelValue\" : never)>, \"activationMode\" | ... 1 more ... | \"unmountOnHide\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props<T>, \"dir\" | \"orientation\" | \"unmountOnHide\" | ([T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [...] ? \"modelValue\" : never)>, \"activationMode\" | ... 1 more ... | \"unmountOnHide\"> & { ...; }'."
+        "error:118:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props<T>>, \"activationMode\" | \"orientation\" | \"unmountOnHide\"> & { activationMode: \"automatic\" | \"manual\"; orientation: any; unmountOnHide: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props<T>>, \"activationMode\" | \"orientation\" | \"unmountOnHide\"> & { activationMode: \"automatic\" | \"manual\"; orientation: any; unmountOnHide: boolean; }'."
       ]
     },
     {
@@ -5745,8 +5747,8 @@
         "error:16:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:17:33 [TS2307] Cannot find module '@/RovingFocus' or its corresponding type declarations.",
         "error:19:46 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:45:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<TabsTriggerProps, keyof TabsTriggerProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<TabsTriggerProps, keyof TabsTriggerProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.",
-        "error:46:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<TabsTriggerProps, keyof TabsTriggerProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<TabsTriggerProps, keyof TabsTriggerProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'."
+        "error:45:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<TabsTriggerProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<TabsTriggerProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.",
+        "error:46:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<TabsTriggerProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<TabsTriggerProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'."
       ]
     },
     {
@@ -5783,7 +5785,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:10:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:29:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<TagsInputClearProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<TagsInputClearProps, never>, \"as\"> & {}'."
+        "error:29:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<TagsInputClearProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<TagsInputClearProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -5793,7 +5795,7 @@
         "error:3:48 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:17:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:21:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<TagsInputInputProps>'.",
-        "error:155:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<TagsInputInputProps, \"autoFocus\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<TagsInputInputProps, \"autoFocus\">, \"as\"> & {}'."
+        "error:155:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<TagsInputInputProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<TagsInputInputProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -5813,7 +5815,7 @@
         "error:5:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:13:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:28:52 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:41:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<TagsInputItemDeleteProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<TagsInputItemDeleteProps, never>, \"as\"> & {}'."
+        "error:41:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<TagsInputItemDeleteProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<TagsInputItemDeleteProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -5839,7 +5841,7 @@
         "error:164:58 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:175:46 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:176:48 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:250:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props<T>, \"addOnBlur\" | \"addOnPaste\" | \"addOnTab\" | \"dir\" | \"disabled\" | \"duplicate\">, \"defaultValue\" | \"delimiter\" | \"displayValue\" | \"max\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props<T>, \"addOnBlur\" | \"addOnPaste\" | \"addOnTab\" | \"dir\" | \"disabled\" | \"duplicate\">, \"defaultValue\" | \"delimiter\" | \"displayValue\" | \"max\"> & { ...; }'."
+        "error:250:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props<T>>, \"defaultValue\" | \"delimiter\" | \"displayValue\" | \"max\"> & { defaultValue: T[]; delimiter: string | RegExp; displayValue: (value: T) => string; max: number; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props<T>>, \"defaultValue\" | \"delimiter\" | \"displayValue\" | \"max\"> & { defaultValue: T[]; delimiter: string | RegExp; displayValue: (value: T) => string; max: number; }'."
       ]
     },
     {
@@ -6074,7 +6076,7 @@
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:9:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:26:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ToastCloseProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ToastCloseProps, never>, \"as\"> & {}'."
+        "error:26:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ToastCloseProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ToastCloseProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -6106,7 +6108,7 @@
       "diagnostics": [
         "error:4:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:24:26 [TS2307] Cannot find module '@/Presence' or its corresponding type declarations.",
-        "error:61:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ToastRootProps, \"defaultOpen\" | \"forceMount\" | \"open\">, \"as\" | \"defaultOpen\" | \"type\"> & { defaultOpen: boolean; type: \"background\" | \"foreground\"; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ToastRootProps, \"defaultOpen\" | \"forceMount\" | \"open\">, \"as\" | \"defaultOpen\" | \"type\"> & { defaultOpen: boolean; type: \"background\" | \"foreground\"; }'."
+        "error:61:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ToastRootProps>, \"as\" | \"defaultOpen\" | \"type\"> & { defaultOpen: boolean; type: \"background\" | \"foreground\"; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ToastRootProps>, \"as\" | \"defaultOpen\" | \"type\"> & { defaultOpen: boolean; type: \"background\" | \"foreground\"; }'."
       ]
     },
     {
@@ -6118,7 +6120,7 @@
         "error:6:67 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:51:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:54:197 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:211:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ToastRootImplProps, \"open\">, \"as\" | \"open\"> & { open: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ToastRootImplProps, \"open\">, \"as\" | \"open\"> & { open: boolean; }'."
+        "error:211:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ToastRootImplProps>, \"as\" | \"open\"> & { open: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ToastRootImplProps>, \"as\" | \"open\"> & { open: boolean; }'."
       ]
     },
     {
@@ -6142,7 +6144,7 @@
         "error:115:50 [TS7006] Parameter 'candidate' implicitly has an 'any' type.",
         "error:151:37 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:152:46 [TS7006] Parameter 'toastNode' implicitly has an 'any' type.",
-        "error:193:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ToastViewportProps, never>, \"as\" | \"hotkey\" | \"label\"> & { hotkey: string[]; label: string | ((hotkey: string) => string); }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ToastViewportProps, never>, \"as\" | \"hotkey\" | \"label\"> & { hotkey: string[]; label: string | ((hotkey: string) => string); }'."
+        "error:193:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ToastViewportProps>, \"as\" | \"hotkey\" | \"label\"> & { hotkey: string[]; label: string | ((hotkey: string) => string); }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ToastViewportProps>, \"as\" | \"hotkey\" | \"label\"> & { hotkey: string[]; label: string | ((hotkey: string) => string); }'."
       ]
     },
     {
@@ -6204,9 +6206,9 @@
         "error:5:46 [TS2307] Cannot find module '@/ToggleGroup/ToggleGroupRoot.vue' or its corresponding type declarations.",
         "error:6:33 [TS2307] Cannot find module '@/VisuallyHidden/VisuallyHiddenInput.vue' or its corresponding type declarations.",
         "error:35:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:87:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ToggleProps, \"defaultValue\" | \"disabled\">, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ToggleProps, \"defaultValue\" | \"disabled\">, \"as\" | \"disabled\"> & { disabled: boolean; }'.",
-        "error:88:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<ToggleProps, \"defaultValue\" | \"disabled\">, \"as\" | \"disabled\"> & { disabled: boolean; }'.",
-        "error:89:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ToggleProps, \"defaultValue\" | \"disabled\">, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ToggleProps, \"defaultValue\" | \"disabled\">, \"as\" | \"disabled\"> & { disabled: boolean; }'."
+        "error:87:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ToggleProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ToggleProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.",
+        "error:88:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<ToggleProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.",
+        "error:89:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ToggleProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ToggleProps>, \"as\" | \"disabled\"> & { disabled: boolean; }'."
       ]
     },
     {
@@ -6234,7 +6236,7 @@
         "error:43:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:44:34 [TS2307] Cannot find module '@/RovingFocus' or its corresponding type declarations.",
         "error:45:42 [TS2307] Cannot find module '@/shared/useSingleOrMultipleValue' or its corresponding type declarations.",
-        "error:92:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props, keyof Props>, \"disabled\" | \"loop\" | \"rovingFocus\"> & { disabled: boolean; loop: boolean; rovingFocus: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props, keyof Props>, \"disabled\" | \"loop\" | \"rovingFocus\"> & { disabled: boolean; loop: boolean; rovingFocus: boolean; }'."
+        "error:92:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props>, \"disabled\" | \"loop\" | \"rovingFocus\"> & { disabled: boolean; loop: boolean; rovingFocus: boolean; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props>, \"disabled\" | \"loop\" | \"rovingFocus\"> & { disabled: boolean; loop: boolean; rovingFocus: boolean; }'."
       ]
     },
     {
@@ -6269,7 +6271,7 @@
         "error:11:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:33 [TS2307] Cannot find module '@/RovingFocus' or its corresponding type declarations.",
         "error:14:65 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<ToolbarButtonProps>'.",
-        "error:25:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ToolbarButtonProps, \"disabled\">, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ToolbarButtonProps, \"disabled\">, \"as\"> & {}'."
+        "error:25:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ToolbarButtonProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ToolbarButtonProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -6289,7 +6291,7 @@
         "error:5:63 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:27:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:28:34 [TS2307] Cannot find module '@/RovingFocus' or its corresponding type declarations.",
-        "error:52:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<ToolbarRootProps, keyof ToolbarRootProps>, \"orientation\"> & { orientation: any; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<ToolbarRootProps, keyof ToolbarRootProps>, \"orientation\"> & { orientation: any; }'."
+        "error:52:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<ToolbarRootProps>, \"orientation\"> & { orientation: any; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ToolbarRootProps>, \"orientation\"> & { orientation: any; }'."
       ]
     },
     {
@@ -6398,8 +6400,8 @@
         "error:13:40 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
         "error:15:30 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
         "error:18:8 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:114:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<TooltipTriggerProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<TooltipTriggerProps, never>, \"as\"> & {}'.",
-        "error:115:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<TooltipTriggerProps, never>, \"as\"> & {}'."
+        "error:114:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<TooltipTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<TooltipTriggerProps>, \"as\"> & {}'.",
+        "error:115:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<TooltipTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -6444,7 +6446,7 @@
         "error:80:28 [TS7006] Parameter 'child' implicitly has an 'any' type.",
         "error:97:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:121:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:187:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props<T>, \"disabled\" | ([T] extends [boolean | undefined] ? \"value\" : never)>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props<T>, \"disabled\" | ([T] extends [boolean | undefined] ? \"value\" : never)>, \"as\"> & {}'."
+        "error:187:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props<T>>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props<T>>, \"as\"> & {}'."
       ]
     },
     {
@@ -6462,7 +6464,7 @@
         "error:219:14 [TS7006] Parameter 'val' implicitly has an 'any' type.",
         "error:239:39 [TS7006] Parameter 'child' implicitly has an 'any' type.",
         "error:248:12 [TS7006] Parameter 'val' implicitly has an 'any' type.",
-        "error:284:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<Props<T, U, M>, \"bubbleSelect\" | \"dir\" | \"disabled\" | \"propagateSelect\" | ([(M extends true ? U[] : U) | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ... | ...>, \"as\" | ... 1 more ... | \"selectionBehavior\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<Props<T, U, M>, \"bubbleSelect\" | \"dir\" | \"disabled\" | \"propagateSelect\" | ([(M extends true ? U[] : U) | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ... | ...>, \"as\" | ... 1 more ... | \"selectionBehavior\"> & { ...; }'."
+        "error:284:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<Props<T, U, M>>, \"as\" | \"getChildren\" | \"selectionBehavior\"> & { getChildren: (val: T) => T[] | undefined; selectionBehavior: \"replace\" | \"toggle\"; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<Props<T, U, M>>, \"as\" | \"getChildren\" | \"selectionBehavior\"> & { getChildren: (val: T) => T[] | undefined; selectionBehavior: \"replace\" | \"toggle\"; }'."
       ]
     },
     {
@@ -6571,7 +6573,7 @@
       "diagnostics": [
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:10:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:17:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<VisuallyHiddenProps, never>, \"as\" | \"feature\"> & { feature: \"focusable\" | \"fully-hidden\"; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<VisuallyHiddenProps, never>, \"as\" | \"feature\"> & { feature: \"focusable\" | \"fully-hidden\"; }'."
+        "error:17:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<VisuallyHiddenProps>, \"as\" | \"feature\"> & { feature: \"focusable\" | \"fully-hidden\"; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<VisuallyHiddenProps>, \"as\" | \"feature\"> & { feature: \"focusable\" | \"fully-hidden\"; }'."
       ]
     },
     {
@@ -6599,7 +6601,7 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:15:52 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearPickerCellProps>'.",
-        "error:21:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<YearPickerCellProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<YearPickerCellProps, never>, \"as\"> & {}'."
+        "error:21:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<YearPickerCellProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<YearPickerCellProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -6610,8 +6612,8 @@
         "error:7:24 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:31:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:34:73 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearPickerCellTriggerProps>'.",
-        "error:195:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<YearPickerCellTriggerProps, never>, \"as\"> & {}'.",
-        "error:196:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<YearPickerCellTriggerProps, never>, \"as\"> & {}'."
+        "error:195:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<YearPickerCellTriggerProps>, \"as\"> & {}'.",
+        "error:196:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<YearPickerCellTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -6655,9 +6657,9 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:66 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearPickerNextProps>'.",
-        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<YearPickerNextProps, never>, \"as\"> & {}'.",
-        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<YearPickerNextProps, never>, \"as\"> & {}'.",
-        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<YearPickerNextProps, never>, \"as\"> & {}'."
+        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<YearPickerNextProps>, \"as\"> & {}'.",
+        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<YearPickerNextProps>, \"as\"> & {}'.",
+        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<YearPickerNextProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -6666,9 +6668,9 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:66 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearPickerPrevProps>'.",
-        "error:40:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<YearPickerPrevProps, never>, \"as\"> & {}'.",
-        "error:41:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<YearPickerPrevProps, never>, \"as\"> & {}'.",
-        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<YearPickerPrevProps, never>, \"as\"> & {}'."
+        "error:40:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<YearPickerPrevProps>, \"as\"> & {}'.",
+        "error:41:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<YearPickerPrevProps>, \"as\"> & {}'.",
+        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<YearPickerPrevProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -6683,7 +6685,7 @@
         "error:10:60 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
         "error:11:51 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './useYearPicker.js'?",
         "error:99:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:295:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<YearPickerRootProps, \"dir\" | \"disabled\" | \"initialFocus\" | \"isYearDisabled\" | \"isYearUnavailable\" | \"multiple\" | \"preventDeselect\" | \"readonly\">, \"as\" | ... 5 more ... | \"yearsPerPage\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<YearPickerRootProps, \"dir\" | \"disabled\" | \"initialFocus\" | \"isYearDisabled\" | \"isYearUnavailable\" | \"multiple\" | \"preventDeselect\" | \"readonly\">, \"as\" | ... 5 more ... | \"yearsPerPage\"> & { ...; }'."
+        "error:295:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<YearPickerRootProps>, \"as\" | \"disabled\" | \"initialFocus\" | \"multiple\" | \"preventDeselect\" | \"readonly\" | \"yearsPerPage\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<YearPickerRootProps>, \"as\" | \"disabled\" | \"initialFocus\" | \"multiple\" | \"preventDeselect\" | \"readonly\" | \"yearsPerPage\"> & { ...; }'."
       ]
     },
     {
@@ -6718,7 +6720,7 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:15:57 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearRangePickerCellProps>'.",
-        "error:21:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<YearRangePickerCellProps, never>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<YearRangePickerCellProps, never>, \"as\"> & {}'."
+        "error:21:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<YearRangePickerCellProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<YearRangePickerCellProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -6729,8 +6731,8 @@
         "error:7:24 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:41:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:44:78 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearRangePickerCellTriggerProps>'.",
-        "error:275:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<YearRangePickerCellTriggerProps, never>, \"as\"> & {}'.",
-        "error:276:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<YearRangePickerCellTriggerProps, never>, \"as\"> & {}'."
+        "error:275:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<YearRangePickerCellTriggerProps>, \"as\"> & {}'.",
+        "error:276:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<YearRangePickerCellTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -6774,9 +6776,9 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:71 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearRangePickerNextProps>'.",
-        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<YearRangePickerNextProps, never>, \"as\"> & {}'.",
-        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<YearRangePickerNextProps, never>, \"as\"> & {}'.",
-        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<YearRangePickerNextProps, never>, \"as\"> & {}'."
+        "error:39:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<YearRangePickerNextProps>, \"as\"> & {}'.",
+        "error:40:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<YearRangePickerNextProps>, \"as\"> & {}'.",
+        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<YearRangePickerNextProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -6785,9 +6787,9 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:71 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearRangePickerPrevProps>'.",
-        "error:40:16 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<YearRangePickerPrevProps, never>, \"as\"> & {}'.",
-        "error:41:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__DefineProps<YearRangePickerPrevProps, never>, \"as\"> & {}'.",
-        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__DefineProps<YearRangePickerPrevProps, never>, \"as\"> & {}'."
+        "error:40:16 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<YearRangePickerPrevProps>, \"as\"> & {}'.",
+        "error:41:22 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<YearRangePickerPrevProps>, \"as\"> & {}'.",
+        "error:42:18 [TS2339] Property 'as' does not exist on type 'Omit<__LooseRequired<YearRangePickerPrevProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -6804,7 +6806,7 @@
         "error:12:31 [TS2307] Cannot find module '@/YearPicker/useYearPicker' or its corresponding type declarations.",
         "error:13:41 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './useRangeYearPicker.js'?",
         "error:117:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:365:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<YearRangePickerRootProps, \"allowNonContiguousRanges\" | \"defaultValue\" | \"dir\" | \"disabled\" | \"initialFocus\" | \"isYearDisabled\" | \"isYearUnavailable\" | \"modelValue\" | \"preventDeselect\" | \"readonly\">, \"allowNonContiguousRanges\" | ... 6 more ... | \"yearsPerPage\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<YearRangePickerRootProps, \"allowNonContiguousRanges\" | \"defaultValue\" | \"dir\" | \"disabled\" | \"initialFocus\" | \"isYearDisabled\" | \"isYearUnavailable\" | \"modelValue\" | \"preventDeselect\" | \"readonly\">, \"allowNonContiguousRanges\" | ... 6 more ... | \"yearsPerPage\"> & { ...; }'."
+        "error:365:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<YearRangePickerRootProps>, \"allowNonContiguousRanges\" | \"as\" | \"defaultValue\" | \"disabled\" | \"initialFocus\" | \"preventDeselect\" | \"readonly\" | \"yearsPerPage\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<YearRangePickerRootProps>, \"allowNonContiguousRanges\" | \"as\" | \"defaultValue\" | \"disabled\" | \"initialFocus\" | \"preventDeselect\" | \"readonly\" | \"yearsPerPage\"> & { ...; }'."
       ]
     },
     {
@@ -6974,7 +6976,7 @@
         "error:2:38 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../types.js'?",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:22:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:50:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__DefineProps<BaseSeparatorProps, keyof BaseSeparatorProps>, \"orientation\"> & { orientation: any; }'.\nProperty 'as' does not exist on type 'Omit<__DefineProps<BaseSeparatorProps, keyof BaseSeparatorProps>, \"orientation\"> & { orientation: any; }'."
+        "error:50:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<BaseSeparatorProps>, \"orientation\"> & { orientation: any; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<BaseSeparatorProps>, \"orientation\"> & { orientation: any; }'."
       ]
     },
     {
@@ -7262,7 +7264,7 @@
       ]
     }
   ],
-  "errorCount": 2856,
+  "errorCount": 2858,
   "warningCount": 0,
   "fileCount": 913
 }

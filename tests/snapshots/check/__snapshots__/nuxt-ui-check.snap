@@ -657,7 +657,6 @@
         "error:105:42 [TS2307] Cannot find module '@tiptap/vue-3/menus' or its corresponding type declarations.",
         "error:106:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:107:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:129:73 [TS2345] Argument of type '(Omit<__DefineProps<EditorToolbarBaseProps<T> & { layout?: \"fixed\" | undefined; }, never>, \"activeColor\" | \"activeVariant\" | \"color\" | \"layout\" | \"size\" | \"variant\"> & { ...; }) | (Omit<...> & { ...; }) | (Omit<...> & { ...; })' is not assignable to parameter of type 'EditorToolbarProps<T>'.\nType 'Omit<__DefineProps<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }, never>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' is not assignable to type 'EditorToolbarProps<T>'.\nType 'Omit<__DefineProps<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }, never>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' is not assignable to type 'EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }'.\nProperty 'editor' is missing in type 'Omit<__DefineProps<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }, never>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' but required in type 'EditorToolbarBaseProps<T>'.",
         "error:170:30 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
@@ -2838,7 +2837,7 @@
       ]
     }
   ],
-  "errorCount": 1695,
+  "errorCount": 1694,
   "warningCount": 0,
   "fileCount": 231
 }
