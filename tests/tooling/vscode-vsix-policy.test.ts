@@ -85,6 +85,7 @@ test("VSIX package policy keeps hidden host-smoke commands out of the manifest",
 
   assert.deepEqual(hiddenCommands.sort(), [
     "vize.test.executeCompletion",
+    "vize.test.executeLspRequest",
     "vize.test.executeReferences",
     "vize.test.getServerInfo",
   ]);

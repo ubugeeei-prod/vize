@@ -8,6 +8,10 @@ export type TestCompletionRequest = TestTextDocumentPositionRequest;
 export type TestReferencesRequest = TestTextDocumentPositionRequest & {
   includeDeclaration?: boolean;
 };
+export type TestLspRequest = {
+  method: string;
+  params?: unknown;
+};
 
 export type HostTestLanguageClient = {
   sendRequest(method: string, params: unknown): Promise<unknown>;
@@ -29,6 +33,7 @@ export type HostTestCommand = {
 
 export const HOST_TEST_COMMAND_ENVIRONMENT_FLAG = "VIZE_TEST_ENABLE_HOST_COMMANDS";
 export const HOST_TEST_COMPLETION_COMMAND = "vize.test.executeCompletion";
+export const HOST_TEST_LSP_REQUEST_COMMAND = "vize.test.executeLspRequest";
 export const HOST_TEST_REFERENCES_COMMAND = "vize.test.executeReferences";
 export const HOST_TEST_SERVER_INFO_COMMAND = "vize.test.getServerInfo";
 
@@ -67,6 +72,14 @@ export function createHostTestCommands(behavior: {
           ...textDocumentPositionParams(request),
           context: { includeDeclaration: request.includeDeclaration ?? true },
         });
+      },
+    },
+    {
+      command: HOST_TEST_LSP_REQUEST_COMMAND,
+      handler: async (request) => {
+        const activeClient = requireActiveClient(behavior, "LSP request");
+        assertTestLspRequest(request);
+        return activeClient.sendRequest(request.method, request.params);
       },
     },
     {
@@ -115,6 +128,17 @@ function assertTestReferencesRequest(request: unknown): asserts request is TestR
     typeof (request as TestReferencesRequest).includeDeclaration !== "boolean"
   ) {
     throw new TypeError("Invalid Vize test references request.");
+  }
+}
+
+function assertTestLspRequest(request: unknown): asserts request is TestLspRequest {
+  const candidate = request as Partial<TestLspRequest> | null;
+  if (
+    candidate == null ||
+    typeof candidate.method !== "string" ||
+    candidate.method.trim().length === 0
+  ) {
+    throw new TypeError("Invalid Vize test LSP request.");
   }
 }
 

@@ -5,6 +5,7 @@ import { test } from "node:test";
 import {
   HOST_TEST_COMMAND_ENVIRONMENT_FLAG,
   HOST_TEST_COMPLETION_COMMAND,
+  HOST_TEST_LSP_REQUEST_COMMAND,
   HOST_TEST_REFERENCES_COMMAND,
   HOST_TEST_SERVER_INFO_COMMAND,
   bindHostTestCommands,
@@ -23,7 +24,7 @@ import {
   assertRealHostServerInfo,
 } from "../../editors/vscode/test/real-host-server-info-oracle.mjs";
 
-test("the hidden host completion command only exists for the host smoke", async () => {
+test("the hidden host commands only exist for the host smoke", async () => {
   const client = createFakeClient([{ label: "label" }]);
   assert.deepEqual(createHostTestCommands({ environment: {}, getClient: () => client }), []);
   assert.deepEqual(
@@ -40,13 +41,23 @@ test("the hidden host completion command only exists for the host smoke", async 
   });
   assertExactCommandMembership(
     commands.map((command) => command.command),
-    [HOST_TEST_COMPLETION_COMMAND, HOST_TEST_REFERENCES_COMMAND, HOST_TEST_SERVER_INFO_COMMAND],
+    [
+      HOST_TEST_COMPLETION_COMMAND,
+      HOST_TEST_LSP_REQUEST_COMMAND,
+      HOST_TEST_REFERENCES_COMMAND,
+      HOST_TEST_SERVER_INFO_COMMAND,
+    ],
   );
   const completionCommand = findHostCommand(commands, HOST_TEST_COMPLETION_COMMAND);
+  const lspRequestCommand = findHostCommand(commands, HOST_TEST_LSP_REQUEST_COMMAND);
   const referencesCommand = findHostCommand(commands, HOST_TEST_REFERENCES_COMMAND);
   const serverInfoCommand = findHostCommand(commands, HOST_TEST_SERVER_INFO_COMMAND);
   await assert.rejects(
     completionCommand.handler({ character: 8, line: 3, uri: "file:///App.vue" }),
+    /requires an active language client/,
+  );
+  await assert.rejects(
+    lspRequestCommand.handler({ method: "textDocument/hover" }),
     /requires an active language client/,
   );
   await assert.rejects(
@@ -193,11 +204,13 @@ test("registering the gated host commands leaves an executable command behind", 
   });
   assertExactCommandMembership(registerCalls, [
     HOST_TEST_COMPLETION_COMMAND,
+    HOST_TEST_LSP_REQUEST_COMMAND,
     HOST_TEST_REFERENCES_COMMAND,
     HOST_TEST_SERVER_INFO_COMMAND,
   ]);
   assertExactCommandMembership(registry.keys(), [
     HOST_TEST_COMPLETION_COMMAND,
+    HOST_TEST_LSP_REQUEST_COMMAND,
     HOST_TEST_REFERENCES_COMMAND,
     HOST_TEST_SERVER_INFO_COMMAND,
   ]);
