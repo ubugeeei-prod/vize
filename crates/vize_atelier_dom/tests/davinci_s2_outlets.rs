@@ -126,6 +126,10 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<Bar v-slot="{ row }"><Foo><slot @[row.event]="row.handler"></slot></Foo></Bar>"#,
     ),
     (
+        "conditional_forwarded_dynamic_event",
+        r#"<Foo><slot v-if="ok" @[event]="handler"></slot></Foo>"#,
+    ),
+    (
         "scoped_forwarded",
         r#"<Bar v-slot="p"><Foo><slot></slot></Foo></Bar>"#,
     ),
@@ -222,6 +226,11 @@ const PATCH_SITE_CASES: &[Case] = &[
             "1024 /* DYNAMIC_SLOTS */",
             "3 /* FORWARDED */",
         ],
+    },
+    Case {
+        name: "conditional_forwarded_dynamic_event",
+        src: r#"<Foo><slot v-if="ok" @[event]="handler"></slot></Foo>"#,
+        sites: &["3 /* FORWARDED */"],
     },
     Case {
         name: "named_mixed_props",
