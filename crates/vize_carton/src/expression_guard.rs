@@ -20,21 +20,17 @@ pub use scan::is_expression_trailing_trivia;
 /// at depth 32 (#2944) cannot be caught, so every entry point shares this guard.
 pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 31;
 
-/// Per-operator branch depth counted by the cumulative speculative type-angle
-/// budget.
-///
-/// Logical/nullish operators stop one parser branch, so low-depth comparison
-/// chains (`a < b && c < d`) must stay accepted. OXC still retains allocations
-/// from failed medium-depth type-argument attempts across those branches,
-/// however; enough of them OOM even when no single branch crosses
-/// [`MAX_EXPRESSION_NESTING_DEPTH`] (#4618). Counting only latched branches at
-/// half the hard limit keeps ordinary comparisons out of the cumulative budget.
+/// Per-operator branch depth counted by the cumulative speculative type-angle budget.
+/// Logical/nullish operators stop one parser branch, so low-depth comparison chains stay accepted;
+/// repeated failed medium-depth type-argument attempts still count toward #4618.
 const CUMULATIVE_SPECULATIVE_TYPE_ANGLE_MIN_DEPTH: usize = MAX_EXPRESSION_NESTING_DEPTH / 2;
+const MAX_NUMERIC_TOKEN_BYTES: usize = 4096;
 
 struct ExpressionNestingAnalysis {
     max_depth: usize,
     delimiters_balanced: bool,
     cumulative_speculative_type_angle_depth: usize,
+    oversized_numeric_token: bool,
 }
 
 fn flush_speculative_type_angle_segment(cumulative: &mut usize, segment_depth: &mut usize) {
@@ -78,6 +74,7 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
     let mut malformed_type_escape_opens = 0usize;
     let mut segment_speculative_type_angle_depth = 0usize;
     let mut cumulative_speculative_type_angle_depth = 0usize;
+    let mut oversized_numeric_token = false;
     let mut track_type_angles = false;
     let mut i = 0;
 
@@ -148,7 +145,9 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
                 continue;
             }
             b'0'..=b'9' => {
+                let start = i;
                 i = skip_number(bytes, i + 1);
+                oversized_numeric_token |= i - start > MAX_NUMERIC_TOKEN_BYTES;
                 can_start_regex = false;
                 continue;
             }
@@ -265,9 +264,8 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
             b',' | b';' | b':' | b'?' | b'!' | b'=' | b'+' | b'-' | b'*' | b'/' | b'%' | b'&'
             | b'|' | b'^' | b'~' => can_start_regex = true,
             // A `\` in code position begins an identifier escape for OXC's
-            // lexer (`\uXXXX` / `\u{...}`); a `\` that does not form a valid
-            // escape is a lexer error OXC recovers from without opening a new
-            // literal. Either way OXC never starts a string at a `'`/`"` — or a
+            // lexer (`\uXXXX` / `\u{...}`); invalid escapes recover without opening
+            // a new literal. Either way OXC never starts a string at a `'`/`"` — or a
             // template at a `` ` `` — that immediately follows a `\`. The
             // scanner used to advance past the lone `\` and then treat that
             // quote as a string opener, so `skip_quoted` ran to the next
@@ -287,11 +285,8 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
                 }
                 can_start_regex = false;
             }
-            // Every byte reaching this arm is identifier-like (`#` starts a
-            // private name, non-ASCII bytes continue multi-byte identifiers) or
-            // an invalid control character. None of them can precede a regex
-            // literal, and claiming they do lets `skip_regex` swallow arbitrary
-            // source, hiding real brackets from the depth guard (#3107).
+            // Identifier-like (`#`, non-ASCII) or invalid bytes cannot precede
+            // regex; doing so hid real brackets behind a false regex (#3107).
             _ => can_start_regex = false,
         }
 
@@ -322,6 +317,7 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
             && delimiters.is_empty()
             && template_interpolation_depths.is_empty(),
         cumulative_speculative_type_angle_depth,
+        oversized_numeric_token,
     }
 }
 
@@ -340,6 +336,7 @@ pub fn expression_is_safe_to_parse(content: &str) -> bool {
     analysis.delimiters_balanced
         && analysis.max_depth <= MAX_EXPRESSION_NESTING_DEPTH
         && analysis.cumulative_speculative_type_angle_depth <= MAX_EXPRESSION_NESTING_DEPTH
+        && !analysis.oversized_numeric_token
         && !operators::has_excessive_prefix_operator_run(content)
 }
 
