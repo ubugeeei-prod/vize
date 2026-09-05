@@ -38,7 +38,10 @@ fn individual_feature_flags_gate_matching_providers() {
         (
             "typecheck",
             |features| features.typecheck = false,
-            |capabilities| capabilities.implementation_provider.is_some(),
+            |capabilities| {
+                capabilities.type_definition_provider.is_some()
+                    || capabilities.implementation_provider.is_some()
+            },
         ),
         (
             "references",

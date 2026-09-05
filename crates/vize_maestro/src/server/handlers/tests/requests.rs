@@ -158,6 +158,11 @@ disabled_open_doc_request_returns_none!(
     &[("definition", false)],
     |server, uri| server.goto_type_definition(type_definition_params(&uri))
 );
+disabled_open_doc_request_returns_none!(
+    type_definition_disabled_when_typecheck_is_off_returns_none,
+    &[("definition", true), ("typecheck", false)],
+    |server, uri| server.goto_type_definition(type_definition_params(&uri))
+);
 enabled_missing_doc_request_returns_none!(
     type_definition_missing_document_returns_none,
     &[("definition", true)],

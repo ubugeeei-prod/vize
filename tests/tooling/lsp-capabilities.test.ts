@@ -279,6 +279,7 @@ test("vize lsp per-feature init flags toggle individual providers independently"
       assert.equal(capabilities.completionProvider, undefined);
       assert.equal(capabilities.hoverProvider, undefined);
       assert.equal(capabilities.definitionProvider, undefined);
+      assert.equal(capabilities.typeDefinitionProvider, undefined);
       assert.equal(capabilities.referencesProvider, undefined);
       assert.equal(capabilities.documentHighlightProvider, undefined);
       // A sibling editor provider is untouched.
@@ -291,9 +292,9 @@ test("vize lsp per-feature init flags toggle individual providers independently"
     { editor: true, typecheck: false },
     (capabilities) => {
       assert.equal(capabilities.implementationProvider, undefined);
+      assert.equal(capabilities.typeDefinitionProvider, undefined);
       // Definition keeps its lexical/editor fallback when typecheck is disabled.
       assert.equal(capabilities.definitionProvider, true);
-      assert.equal(capabilities.typeDefinitionProvider, true);
     },
   );
 

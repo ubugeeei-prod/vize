@@ -70,7 +70,7 @@ pub(super) async fn goto_type_definition(
     server: &MaestroServer,
     params: GotoTypeDefinitionParams,
 ) -> Result<Option<GotoTypeDefinitionResponse>> {
-    if !server.state.lsp_features().definition {
+    if !server.state.lsp_features().definition || !server.state.lsp_features().typecheck {
         return Ok(None);
     }
 

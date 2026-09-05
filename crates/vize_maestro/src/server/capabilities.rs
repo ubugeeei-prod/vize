@@ -210,13 +210,13 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
             .document_links
             .then_some(ColorProviderCapability::Simple(true)),
 
-        // Checker-backed type definitions share the go-to-definition switch:
-        // disabling navigation must not spawn type-checker/editor work.
-        type_definition_provider: (features.definition && cfg!(feature = "native"))
-            .then_some(TypeDefinitionProviderCapability::Simple(true)),
-        // Checker-backed implementation navigation uses Corsa directly: the
-        // provider stays hidden when typecheck is disabled because no lexical
-        // fallback can answer implementation semantics.
+        // Checker-backed type-definition and implementation navigation use
+        // Corsa directly: the providers stay hidden when typecheck is disabled
+        // because no lexical fallback can answer their semantics.
+        type_definition_provider: (features.definition
+            && features.typecheck
+            && cfg!(feature = "native"))
+        .then_some(TypeDefinitionProviderCapability::Simple(true)),
         implementation_provider: (features.definition
             && features.typecheck
             && cfg!(feature = "native"))
