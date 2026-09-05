@@ -4,11 +4,11 @@ import {
   bindHostTestCommands,
   type HostTestLanguageClient,
   type HostTestServerInfo,
-} from "./extension-core";
+} from "./host-test-core";
 
 /**
  * Binds the environment-gated host smoke commands to the VS Code command
- * registry. The gate itself lives in `extension-core` so the tooling tests can
+ * registry. The gate itself lives in `host-test-core` so the tooling tests can
  * exercise it without a VS Code host.
  */
 export function registerHostTestCommands(

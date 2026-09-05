@@ -77,14 +77,15 @@ test("VSIX package policy keeps hidden host-smoke commands out of the manifest",
     activationEvents?: string[];
     contributes?: { commands?: Array<{ command?: string }> };
   };
-  const extensionCore = readText("editors/vscode/src/extension-core.ts");
+  const hostTestCore = readText("editors/vscode/src/host-test-core.ts");
   const smoke = readText("tools/commands/editors/vscode/assert-vsix-package.rs");
   const hiddenCommands = [
-    ...extensionCore.matchAll(/export const HOST_TEST_[A-Z_]+_COMMAND = "(vize\.test\.[^"]+)";/g),
+    ...hostTestCore.matchAll(/export const HOST_TEST_[A-Z_]+_COMMAND = "(vize\.test\.[^"]+)";/g),
   ].map((match) => match[1]);
 
   assert.deepEqual(hiddenCommands.sort(), [
     "vize.test.executeCompletion",
+    "vize.test.executeReferences",
     "vize.test.getServerInfo",
   ]);
   const contributedCommands = new Set(

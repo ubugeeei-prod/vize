@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-// Mirrors `HOST_TEST_SERVER_INFO_COMMAND` in `src/extension-core.ts`; the
+// Mirrors `HOST_TEST_SERVER_INFO_COMMAND` in `src/host-test-core.ts`; the
 // tooling tests assert both stay in sync.
 export const HOST_TEST_SERVER_INFO_COMMAND = "vize.test.getServerInfo";
 

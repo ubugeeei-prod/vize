@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 // `{{ label }}` template expression. Keeping the oracle here lets both the real
 // extension host and the tooling tests run the same assertions, so a broken
 // command gate, registration, or request forwarding fails somewhere.
-// Mirrors `HOST_TEST_COMPLETION_COMMAND` in `src/extension-core.ts`; the tooling
+// Mirrors `HOST_TEST_COMPLETION_COMMAND` in `src/host-test-core.ts`; the tooling
 // tests assert both stay in sync.
 export const HOST_TEST_COMPLETION_COMMAND = "vize.test.executeCompletion";
 export const REQUIRED_TEMPLATE_COMPLETION_LABELS = ["Child", "amount", "label"];

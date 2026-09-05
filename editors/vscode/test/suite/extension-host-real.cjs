@@ -54,6 +54,8 @@ exports.run = async function run() {
   await runRealDiagnosticSmoke(mismatchDocument, cleanDocument);
   logProgress("completion");
   await runRealCompletionSmoke(mismatchDocument);
+  logProgress("references");
+  await runRealReferencesSmoke(mismatchDocument);
   logProgress("hover");
   await runRealHoverSmoke(mismatchDocument);
   logProgress("didChange repair");
@@ -107,6 +109,20 @@ async function runRealCompletionSmoke(mismatchDocument) {
   });
 
   assertRealHostCompletionLabels(completions);
+}
+
+async function runRealReferencesSmoke(mismatchDocument) {
+  const { HOST_TEST_REFERENCES_COMMAND, assertRealHostReferences } =
+    await import("../real-host-references-oracle.mjs");
+  const position = positionAfter(mismatchDocument, "{{ label }}", "{{ la");
+  const references = await vscode.commands.executeCommand(HOST_TEST_REFERENCES_COMMAND, {
+    character: position.character,
+    includeDeclaration: true,
+    line: position.line,
+    uri: mismatchDocument.uri.toString(),
+  });
+
+  assertRealHostReferences(references, { uri: mismatchDocument.uri.toString() });
 }
 
 async function runRealHoverSmoke(mismatchDocument) {

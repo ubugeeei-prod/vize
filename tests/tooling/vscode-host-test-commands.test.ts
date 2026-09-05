@@ -5,13 +5,15 @@ import { test } from "node:test";
 import {
   HOST_TEST_COMMAND_ENVIRONMENT_FLAG,
   HOST_TEST_COMPLETION_COMMAND,
+  HOST_TEST_REFERENCES_COMMAND,
   HOST_TEST_SERVER_INFO_COMMAND,
   bindHostTestCommands,
   createHostTestCommands,
   type HostTestLanguageClient,
   type HostTestServerInfo,
   type TestCompletionRequest,
-} from "../../editors/vscode/src/extension-core.ts";
+  type TestReferencesRequest,
+} from "../../editors/vscode/src/host-test-core.ts";
 import {
   HOST_TEST_COMPLETION_COMMAND as suiteHostCompletionCommand,
   assertRealHostCompletionLabels,
@@ -38,12 +40,17 @@ test("the hidden host completion command only exists for the host smoke", async 
   });
   assertExactCommandMembership(
     commands.map((command) => command.command),
-    [HOST_TEST_COMPLETION_COMMAND, HOST_TEST_SERVER_INFO_COMMAND],
+    [HOST_TEST_COMPLETION_COMMAND, HOST_TEST_REFERENCES_COMMAND, HOST_TEST_SERVER_INFO_COMMAND],
   );
   const completionCommand = findHostCommand(commands, HOST_TEST_COMPLETION_COMMAND);
+  const referencesCommand = findHostCommand(commands, HOST_TEST_REFERENCES_COMMAND);
   const serverInfoCommand = findHostCommand(commands, HOST_TEST_SERVER_INFO_COMMAND);
   await assert.rejects(
     completionCommand.handler({ character: 8, line: 3, uri: "file:///App.vue" }),
+    /requires an active language client/,
+  );
+  await assert.rejects(
+    referencesCommand.handler({ character: 8, line: 3, uri: "file:///App.vue" }),
     /requires an active language client/,
   );
   await assert.rejects(serverInfoCommand.handler(), /requires selected server evidence/);
@@ -82,6 +89,64 @@ test("the host completion command forwards the request to the Vize language clie
     );
   }
   assert.equal(client.requests.length, 1);
+});
+
+test("the host references command forwards the request to the Vize language client", async () => {
+  const response = [
+    {
+      range: { start: { character: 6, line: 3 }, end: { character: 11, line: 3 } },
+      uri: "file:///App.vue",
+    },
+  ];
+  const client = createFakeClientResponse(response);
+  const commands = createHostTestCommands({
+    environment: { [HOST_TEST_COMMAND_ENVIRONMENT_FLAG]: "1" },
+    getClient: () => client,
+  });
+  const command = findHostCommand(commands, HOST_TEST_REFERENCES_COMMAND);
+
+  assert.deepEqual(
+    await command.handler({ character: 10, line: 9, uri: "file:///App.vue" }),
+    response,
+  );
+  assert.deepEqual(
+    await command.handler({
+      character: 10,
+      includeDeclaration: false,
+      line: 9,
+      uri: "file:///App.vue",
+    }),
+    response,
+  );
+  assert.deepEqual(client.requests, [
+    [
+      "textDocument/references",
+      {
+        context: { includeDeclaration: true },
+        position: { character: 10, line: 9 },
+        textDocument: { uri: "file:///App.vue" },
+      },
+    ],
+    [
+      "textDocument/references",
+      {
+        context: { includeDeclaration: false },
+        position: { character: 10, line: 9 },
+        textDocument: { uri: "file:///App.vue" },
+      },
+    ],
+  ]);
+
+  await assert.rejects(
+    command.handler({
+      character: 10,
+      includeDeclaration: "yes",
+      line: 9,
+      uri: "file:///App.vue",
+    } as TestReferencesRequest),
+    /Invalid Vize test references request/,
+  );
+  assert.equal(client.requests.length, 2);
 });
 
 test("the host server info command returns the selected server evidence", async () => {
@@ -128,10 +193,12 @@ test("registering the gated host commands leaves an executable command behind", 
   });
   assertExactCommandMembership(registerCalls, [
     HOST_TEST_COMPLETION_COMMAND,
+    HOST_TEST_REFERENCES_COMMAND,
     HOST_TEST_SERVER_INFO_COMMAND,
   ]);
   assertExactCommandMembership(registry.keys(), [
     HOST_TEST_COMPLETION_COMMAND,
+    HOST_TEST_REFERENCES_COMMAND,
     HOST_TEST_SERVER_INFO_COMMAND,
   ]);
 
@@ -246,12 +313,18 @@ function assertExactCommandMembership(actual: Iterable<string>, expected: readon
 function createFakeClient(
   items: unknown[],
 ): HostTestLanguageClient & { requests: [string, unknown][] } {
+  return createFakeClientResponse({ isIncomplete: false, items });
+}
+
+function createFakeClientResponse(
+  response: unknown,
+): HostTestLanguageClient & { requests: [string, unknown][] } {
   const requests: [string, unknown][] = [];
   return {
     requests,
     sendRequest: async (method, params) => {
       requests.push([method, params]);
-      return { isIncomplete: false, items };
+      return response;
     },
   };
 }
