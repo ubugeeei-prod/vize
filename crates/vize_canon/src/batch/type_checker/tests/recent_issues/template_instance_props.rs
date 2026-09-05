@@ -212,8 +212,7 @@ fn runtime_object_props_reach_template_dollar_props() {
         return;
     };
 
-    let props_type =
-        r#"Readonly<Omit<__LooseRequired<Props>, "isActive"> & { isActive: boolean; }>"#;
+    let props_type = r#"Readonly<Readonly<__VizeMappedOmit<Props, "isActive">> & { readonly isActive: boolean; } & {}>"#;
     assert_eq!(
         snapshot,
         vec![

@@ -406,12 +406,7 @@
     },
     {
       "file": "app/components/Link/Base.vue",
-      "diagnostics": [
-        "error:58:15 [TS2339] Property 'startsWith' does not exist on type 'never'.",
-        "error:58:47 [TS2339] Property 'startsWith' does not exist on type 'never'.",
-        "error:58:80 [TS2339] Property 'startsWith' does not exist on type 'never'.",
-        "error:61:64 [TS2339] Property 'startsWith' does not exist on type 'never'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/LoadingSpinner.vue",
@@ -1063,11 +1058,7 @@
     {
       "file": "app/components/Tag/RadioButton.vue",
       "diagnostics": [
-        "error:18:13 [TS2552] Cannot find name 'useId'. Did you mean 'uid'?",
-        "error:20:54 [TS2339] Property 'value' does not exist on type 'never'.\nThe intersection '__DefineProps<{ disabled?: boolean | undefined; type?: undefined; checked?: undefined; value: string; }, \"checked\" | \"disabled\" | \"type\">' was reduced to 'never' because property 'type' has conflicting types in some constituents.",
-        "error:23:23 [TS2339] Property 'value' does not exist on type 'never'.\nThe intersection '__DefineProps<{ disabled?: boolean | undefined; type?: undefined; checked?: undefined; value: string; }, \"checked\" | \"disabled\" | \"type\">' was reduced to 'never' because property 'type' has conflicting types in some constituents.",
-        "error:32:21 [TS2339] Property 'value' does not exist on type 'never'.\nThe intersection '__DefineProps<Props, \"checked\" | \"disabled\" | \"type\">' was reduced to 'never' because property 'type' has conflicting types in some constituents.",
-        "error:34:24 [TS2339] Property 'disabled' does not exist on type 'never'.\nThe intersection '__DefineProps<Props, \"checked\" | \"disabled\" | \"type\">' was reduced to 'never' because property 'type' has conflicting types in some constituents."
+        "error:18:13 [TS2552] Cannot find name 'useId'. Did you mean 'uid'?"
       ]
     },
     {
@@ -1469,7 +1460,7 @@
       ]
     }
   ],
-  "errorCount": 474,
+  "errorCount": 466,
   "warningCount": 0,
   "fileCount": 222
 }

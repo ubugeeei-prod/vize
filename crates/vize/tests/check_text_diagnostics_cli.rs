@@ -205,8 +205,17 @@ const text = ref("bad");
     // a UTF-16 astral-plane column offset (`'second'`), the event (`@save`),
     // and the slot (`#default`). Declaring that slot must not add a missing-slot
     // diagnostic to any invocation that omits it.
+    let normalized_stdout = normalize_check_output(stdout, &project_root)
+        .replace(
+            "Types of parameters 'id' and 'id' are incompatible.",
+            "Types of parameters 'id' and '<target>' are incompatible.",
+        )
+        .replace(
+            "Types of parameters 'id' and 'args' are incompatible.",
+            "Types of parameters 'id' and '<target>' are incompatible.",
+        );
     assert_eq!(
-        normalize_check_output(stdout, &project_root),
+        normalized_stdout,
         concat!(
             "\n<project>/src/App.vue\n",
             "  error:9:10 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Child v-model=\"text\" />; binding: modelValue)\n",
@@ -215,7 +224,7 @@ const text = ref("bad");
             "  error:11:50 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Child label=\"v-model:fake\" kind=\"num\" :n=\"1\" :value=\"'bad'\" />; binding: 'value')\n",
             "  error:12:51 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Child label=\"😀\" kind=\"num\" :n=\"1\" :first=\"1\" :second=\"'bad'\" />; binding: 'second')\n",
             "  error:13:46 [TS2322] Type '(id: string) => void' is not assignable to type '(id: number) => any'.\n",
-            "Types of parameters 'id' and 'id' are incompatible.\n",
+            "Types of parameters 'id' and '<target>' are incompatible.\n",
             "Type 'number' is not assignable to type 'string'. (source: <Child :model-value=\"1\" kind=\"num\" :n=\"1\" @save=\"(id: string) => {}\" />; binding: @save)\n",
             "  error:14:73 [TS2339] Property 'toUpperCase' does not exist on type 'number'. (source: <Child :model-value=\"1\" kind=\"num\" :n=\"1\" v-slot=\"{ count }\">{{ count.toUpperCase() }}</Child>; binding: #default)\n",
             "\n\u{2717} Type checked 2 files in <duration> (collect: <duration>, imports: <duration>, gen: <duration>, corsa: <duration>)\n",

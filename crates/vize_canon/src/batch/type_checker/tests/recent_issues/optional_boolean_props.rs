@@ -230,3 +230,95 @@ useVModel(props, "open", emit, {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn with_defaults_generic_imported_heritage_consumes_reka_vmodel_expect_error() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "with-defaults-generic-imported-heritage-reka-vmodel",
+        &[
+            (
+                "src/form.ts",
+                r#"export interface FormFieldProps {
+  name?: string;
+  required?: boolean;
+}
+"#,
+            ),
+            (
+                "src/Foo.vue",
+                r#"<script lang="ts">
+import type { FormFieldProps } from "./form";
+
+type Ref<T> = { value: T };
+type AcceptableValue = string | number | bigint | Record<string, any> | null;
+
+export interface Props<T = AcceptableValue> extends FormFieldProps {
+  open?: boolean;
+  defaultOpen?: boolean;
+  defaultValue?: T | Array<T>;
+  modelValue?: T | Array<T>;
+  multiple?: boolean;
+}
+
+export type Emits<T = AcceptableValue> = {
+  "update:modelValue": [value: T];
+  "update:open": [value: boolean];
+};
+
+type UseVModelOptions<T, Passive extends boolean = false> = {
+  passive?: Passive;
+  defaultValue?: T;
+  deep?: boolean;
+};
+
+declare function useVModel<P extends object, K extends keyof P, Name extends string>(
+  props: P,
+  key?: K,
+  emit?: (name: Name, ...args: any[]) => void,
+  options?: UseVModelOptions<P[K], false>,
+): Ref<P[K]>;
+declare function useVModel<P extends object, K extends keyof P, Name extends string>(
+  props: P,
+  key?: K,
+  emit?: (name: Name, ...args: any[]) => void,
+  options?: UseVModelOptions<P[K], true>,
+): Ref<P[K]>;
+</script>
+
+<script setup lang="ts" generic="T extends AcceptableValue = AcceptableValue">
+const props = withDefaults(defineProps<Props<T>>(), {
+  modelValue: undefined,
+  open: undefined,
+});
+const emit = defineEmits<Emits<T>>();
+const multiple = { value: props.multiple };
+
+useVModel(props, "modelValue", emit, {
+  // @ts-expect-error Missing infer for AcceptableValue
+  defaultValue: props.defaultValue ?? (multiple.value ? [] : undefined),
+  passive: (props.modelValue === undefined) as false,
+  deep: true,
+});
+</script>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot
+            .iter()
+            .all(|(file, code, _message)| { !(file == "src/Foo.vue" && *code == Some(2578)) }),
+        "Reka-style generic useVModel expect-error should be consumed, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

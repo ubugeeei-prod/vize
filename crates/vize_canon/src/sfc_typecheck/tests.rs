@@ -6,6 +6,7 @@ mod optional_chain_props;
 #[cfg(feature = "legacy")]
 mod options_api_required_props;
 mod options_api_setup_spread;
+mod with_defaults;
 use super::{
     SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity, type_check_sfc,
     type_check_sfc_with_options_api,
@@ -124,51 +125,6 @@ const props = defineProps({ ...common, foo: String });
 }
 
 #[test]
-fn test_type_check_with_defaults_template_props_are_default_resolved() {
-    let source = r#"<template>
-  <svg>
-    <line :stroke-width="props.thickness / 2"></line>
-    <text>{{ label.toUpperCase() }} {{ props.label.toUpperCase() }}</text>
-  </svg>
-</template>
-
-<script setup lang="ts">
-const props = withDefaults(defineProps<{
-  thickness?: number;
-  label?: string;
-  raw?: string;
-}>(), {
-  thickness: 0.1,
-  label: 'ok',
-});
-
-const { thickness, label } = props;
-</script>"#;
-    let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
-    let result = type_check_sfc(source, &options);
-    let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
-
-    assert!(
-            virtual_ts.contains(
-                r#"type __WithDefaultsResult<T, D, __BKeys extends keyof T = never, __Props = __LooseRequired<T>> = T extends unknown ? Omit<__Props, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__Props[K & keyof __Props], undefined> } : never;"#
-            ),
-            "{virtual_ts}"
-        );
-    assert!(
-        virtual_ts.contains(
-            r#"const props: __WithDefaultsResult<Props, Pick<Props, "label" | "thickness">>"#
-        ),
-        "{virtual_ts}"
-    );
-    assert!(!virtual_ts.contains(r#"const thickness = props["thickness"]"#));
-    assert!(!virtual_ts.contains(r#"const label = props["label"]"#));
-    assert!(
-        virtual_ts.contains(r#"const raw = props["raw"];"#),
-        "{virtual_ts}"
-    );
-}
-
-#[test]
 fn test_type_check_renamed_props_destructure_does_not_emit_original_prop_binding() {
     let source = r#"<script setup lang="ts">
 const { foo: bar } = defineProps<{ foo: string }>()
@@ -228,49 +184,6 @@ defineProps<Props>()
     assert!(
         virtual_ts.contains("void (inner);"),
         "nested member shorthand should remain unresolved in virtual TS:\n{virtual_ts}"
-    );
-}
-
-#[test]
-fn test_type_check_with_defaults_narrows_direct_template_prop_identifiers() {
-    let source = r#"<script setup lang="ts">
-const props = withDefaults(
-  defineProps<{
-    count?: number;
-    label: string;
-  }>(),
-  { count: 0 },
-);
-
-const emit = defineEmits<{
-  increment: [value: number];
-}>();
-
-void props;
-</script>
-
-<template>
-  <button type="button" @click="emit('increment', count + 1)">
-    {{ label }}: {{ count }}
-  </button>
-</template>"#;
-    let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
-    let result = type_check_sfc(source, &options);
-    let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
-
-    assert!(
-            virtual_ts.contains(
-                r#"const count = props["count"] as Exclude<__WithDefaultsResult<Props, Pick<Props, "count">>["count"], undefined>;"#
-            ),
-            "{virtual_ts}"
-        );
-    assert!(
-        !virtual_ts.contains(r#"const count = props["count"];"#),
-        "{virtual_ts}"
-    );
-    assert!(
-        virtual_ts.contains(r#"void (emit('increment', count + 1));"#),
-        "{virtual_ts}"
     );
 }
 

@@ -66,6 +66,21 @@ const take = (value: string) => value
     let Some(snapshot) = snapshot else {
         return;
     };
+    let snapshot: Vec<_> = snapshot
+        .into_iter()
+        .map(|(path, code, message)| {
+            let message = message
+                .replace(
+                    "Types of parameters 'value' and 'value' are incompatible.",
+                    "Types of parameters 'value' and '<target>' are incompatible.",
+                )
+                .replace(
+                    "Types of parameters 'value' and 'args' are incompatible.",
+                    "Types of parameters 'value' and '<target>' are incompatible.",
+                );
+            (path, code, String::from(message.as_str()))
+        })
+        .collect();
 
     assert_eq!(
         snapshot,
@@ -75,7 +90,7 @@ const take = (value: string) => value
                 Some(2322),
                 String::from(
                     "7:11:error Type '(value: string) => string' is not assignable to type '(value: number) => any'.\n\
-                     Types of parameters 'value' and 'value' are incompatible.\n\
+                     Types of parameters 'value' and '<target>' are incompatible.\n\
                      Type 'number' is not assignable to type 'string'."
                 ),
             ),

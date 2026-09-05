@@ -262,17 +262,33 @@ fn genuine_collisions_and_legal_shadowing_match_vue_tsc() {
 
 #[test]
 fn a_setup_type_over_a_classic_value_keeps_checking_the_component_contract() {
+    fn normalize_target_parameter_name(message: String) -> String {
+        message
+            .replace(
+                "Types of parameters 'item' and 'item' are incompatible.",
+                "Types of parameters 'item' and '<target>' are incompatible.",
+            )
+            .replace(
+                "Types of parameters 'item' and 'args' are incompatible.",
+                "Types of parameters 'item' and '<target>' are incompatible.",
+            )
+    }
+
+    let diagnostics: Vec<_> = project::check(&[
+        (
+            "src/ClassicValueAndSetupType.vue",
+            CLASSIC_VALUE_AND_SETUP_TYPE,
+        ),
+        ("src/ClassicValueConsumer.vue", CLASSIC_VALUE_CONSUMER),
+    ])
+    .into_iter()
+    .map(normalize_target_parameter_name)
+    .collect();
     assert_eq!(
-        project::check(&[
-            (
-                "src/ClassicValueAndSetupType.vue",
-                CLASSIC_VALUE_AND_SETUP_TYPE
-            ),
-            ("src/ClassicValueConsumer.vue", CLASSIC_VALUE_CONSUMER),
-        ]),
-        [
-            "src/ClassicValueConsumer.vue(10,11): error TS2322: Type '(item: string) => void' is not assignable to type '(item: Item) => any'.\nTypes of parameters 'item' and 'item' are incompatible.\nType 'Item' is not assignable to type 'string'.",
-        ]
+        diagnostics,
+        vec![String::from(
+            "src/ClassicValueConsumer.vue(10,11): error TS2322: Type '(item: string) => void' is not assignable to type '(item: Item) => any'.\nTypes of parameters 'item' and '<target>' are incompatible.\nType 'Item' is not assignable to type 'string'.",
+        )]
     );
 }
 

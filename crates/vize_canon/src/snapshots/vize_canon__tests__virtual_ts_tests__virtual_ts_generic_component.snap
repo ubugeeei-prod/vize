@@ -32,12 +32,15 @@ type __RuntimePropCtorInner<T> = T extends null | undefined ? never : T extends 
 type __RuntimePropCtor<T> = [__RuntimePropCtorInner<T>] extends [never] ? unknown : __RuntimePropCtorInner<T>;
 type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;
 type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
-type __DefaultFactory<T> = (props: any) => T;
-type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
-type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [T[K]] extends [boolean | undefined] ? K : never : never; type __DefineProps<T, __BKeys extends keyof T = __VizeBooleanKey<T>> = __LooseRequired<T> & { [K in __BKeys]-?: boolean };
-type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D, __BKeys extends keyof T = never, __Props = __LooseRequired<T>> = T extends unknown ? Omit<__Props, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__Props[K & keyof __Props], undefined> } : never;
+type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never; type __DefineProps<T, __BKeys extends keyof T = __VizeBooleanKey<T>> = Readonly<T> & { readonly [K in __BKeys]-?: boolean };
+type __VizeIfAny<T, Y, N> = 0 extends (1 & T) ? Y : N;
+type __VizeNotUndefined<T> = T extends undefined ? never : T;
+type __VizeMappedOmit<T, K extends keyof any> = { [P in keyof T as P extends K ? never : P]: T[P] };
+type __VizeDefaultNativeType = null | number | string | boolean | symbol | Function;
+type __VizeInferDefault<P, T> = ((props: P) => T & {}) | (T extends __VizeDefaultNativeType ? T : never);
+type __WithDefaultsArgs<T> = { [K in keyof T]?: __VizeInferDefault<T, T[K]> };
+type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown ? Readonly<__VizeMappedOmit<T, keyof D>> & { readonly [K in keyof D as K extends keyof T ? K : never]-?: K extends keyof T ? D[K] extends undefined ? __VizeIfAny<D[K], __VizeNotUndefined<T[K]>, T[K]> : __VizeNotUndefined<T[K]> : never } & { readonly [K in __BKeys]-?: K extends keyof D ? D[K] extends undefined ? boolean | undefined : boolean : boolean } : never;
 type __Ref<T> = import('vue').Ref<T>;
 type __VizeModelModifiers<M extends PropertyKey> = Record<M, true | undefined>;
 type __VizeWritableRef<G, S> = Omit<__Ref<G>, 'value'> & { get value(): G; set value(value: S); };
@@ -82,7 +85,7 @@ export type Props<T extends string | number = any> = {
 function __setup<T extends string | number>() {
   type __VizeDefinePropsBooleanKeys<_T> = never;
   // Compiler macros (only valid in setup scope, not global)
-  function defineProps<_T = unknown>(): __DefineProps<_T, Extract<__VizeDefinePropsBooleanKeys<_T>, keyof _T>>;
+  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeDefinePropsBooleanKeys<_T>, keyof __LooseRequired<_T>>>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }
@@ -96,7 +99,7 @@ function __setup<T extends string | number>() {
   function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options?: any): __VizeModelRef<_T, _M, _G, _S>;
   function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
-  function withDefaults<_T, _BKeys extends keyof _T, const _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys, __DefineProps<_T, _BKeys>>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
+  function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
   function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
   // Mark compiler macros as used
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
@@ -115,7 +118,7 @@ function __setup<T extends string | number>() {
   
   const activeItem = ref<T | null>(null)
   
-  // @vize-map: 10147:10341 -> 0:193
+  // @vize-map: 10689:10883 -> 0:193
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

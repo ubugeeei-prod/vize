@@ -154,7 +154,7 @@ fn emit_hoisted_setup_helpers(ts: &mut String) {
     ts.push_str(
         r#"  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)
   const defineProps = __vize_defineProps as {
-    <_T = unknown>(): __DefineProps<_T, Extract<__VizeDefinePropsBooleanKeys<_T>, keyof _T>>;
+    <_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeDefinePropsBooleanKeys<_T>, keyof __LooseRequired<_T>>>;
     <const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
     <const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   };
@@ -172,7 +172,7 @@ fn emit_hoisted_setup_helpers(ts: &mut String) {
 fn emit_embedded_setup_helpers(ts: &mut String) {
     ts.push_str(
         r#"  // Compiler macros (only valid in setup scope, not global)
-  function defineProps<_T = unknown>(): __DefineProps<_T, Extract<__VizeDefinePropsBooleanKeys<_T>, keyof _T>>;
+  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeDefinePropsBooleanKeys<_T>, keyof __LooseRequired<_T>>>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }
@@ -186,7 +186,7 @@ fn emit_embedded_setup_helpers(ts: &mut String) {
   function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options?: any): __VizeModelRef<_T, _M, _G, _S>;
   function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
-  function withDefaults<_T, _BKeys extends keyof _T, const _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys, __DefineProps<_T, _BKeys>>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
+  function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
   function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
   // Mark compiler macros as used
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"#,
