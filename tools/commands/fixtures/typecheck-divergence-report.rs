@@ -12,7 +12,7 @@
 //! ```
 
 use regex::Regex;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
@@ -580,10 +580,17 @@ fn materialize_baseline_project(
     let artifact_path = report_dir.join(format!("{project_id}-vue-tsc.tsconfig.json"));
     fs::create_dir_all(&config_dir)
         .map_err(|error| format!("cannot create {}: {error}", config_dir.display()))?;
-    let source_roots = source_roots(fixture_root, project)?;
+    let source_roots = source_roots(fixture_root, project, vize_report)?;
+    let mut dot_roots = dot_directory_include_roots(fixture_root, vize_report);
+    dot_roots.extend(discover_dot_directory_include_roots(&source_roots)?);
+    dedup_paths(&mut dot_roots);
     let mut ambient_roots = vec![source_dir.to_path_buf()];
     ambient_roots.extend(source_roots.clone());
+    ambient_roots.extend(dot_roots.clone());
     dedup_paths(&mut ambient_roots);
+    let mut include_roots = source_roots.clone();
+    include_roots.extend(dot_roots.clone());
+    dedup_paths(&mut include_roots);
     let config = json!({
         "extends": config_relative_path(&config_dir, &source_path),
         "compilerOptions": {
@@ -591,7 +598,7 @@ fn materialize_baseline_project(
             "rootDir": config_relative_path(&config_dir, fixture_root),
         },
         "files": vize_report.get("files").and_then(Value::as_array).unwrap_or(&Vec::new()).iter().take(vize_report.get("fileCount").and_then(Value::as_u64).unwrap_or(0) as usize).filter_map(|entry| entry.get("file").and_then(Value::as_str)).map(|file| config_relative_path(&config_dir, &fixture_root.join(file))).collect::<Vec<_>>(),
-        "include": include_globs(&config_dir, &ambient_roots, &source_roots),
+        "include": include_globs(&config_dir, &ambient_roots, &include_roots, &dot_roots),
         "exclude": ambient_roots.iter().flat_map(|root_path| {
             let root = config_relative_path(&config_dir, root_path);
             vec![format!("{root}/**/node_modules/**"), format!("{root}/**/dist/**")]
@@ -3598,25 +3605,53 @@ fn ratio_field(performance: &Value, name: &str) -> Result<f64, String> {
     }
 }
 
-fn source_roots(fixture_root: &Path, project: &Value) -> Result<Vec<PathBuf>, String> {
+fn source_roots(
+    fixture_root: &Path,
+    project: &Value,
+    vize_report: &Value,
+) -> Result<Vec<PathBuf>, String> {
     let globs = project
         .pointer("/typecheckPerformance/corpusGlobs")
         .and_then(Value::as_array)
-        .or_else(|| project.get("vueGlobs").and_then(Value::as_array))
-        .ok_or_else(|| "project has no typecheck corpus globs".to_string())?;
+        .or_else(|| project.get("vueGlobs").and_then(Value::as_array));
     let mut roots = globs
-        .iter()
-        .filter_map(Value::as_str)
-        .map(|glob| fixture_root.join(literal_glob_root(glob)))
-        .collect::<Vec<_>>();
+        .map(|globs| {
+            globs
+                .iter()
+                .filter_map(Value::as_str)
+                .map(|glob| fixture_root.join(literal_glob_root(glob)))
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    if roots.is_empty() {
+        roots = vize_report_source_roots(fixture_root, vize_report);
+    }
     dedup_paths(&mut roots);
     Ok(roots)
+}
+
+fn vize_report_source_roots(fixture_root: &Path, vize_report: &Value) -> Vec<PathBuf> {
+    vize_report
+        .get("files")
+        .and_then(Value::as_array)
+        .unwrap_or(&Vec::new())
+        .iter()
+        .take(
+            vize_report
+                .get("fileCount")
+                .and_then(Value::as_u64)
+                .unwrap_or(0) as usize,
+        )
+        .filter_map(|entry| entry.get("file").and_then(Value::as_str))
+        .map(|file| fixture_root.join(literal_glob_root(file)))
+        .collect()
 }
 
 fn include_globs(
     config_dir: &Path,
     ambient_roots: &[PathBuf],
     source_roots: &[PathBuf],
+    dot_roots: &[PathBuf],
 ) -> Vec<String> {
     let mut values = Vec::new();
     for root in ambient_roots {
@@ -3639,7 +3674,99 @@ fn include_globs(
             format!("{root}/**/*.json"),
         ]);
     }
+    for root in dot_roots {
+        values.push(format!(
+            "{}/**/*.vue",
+            config_relative_path(config_dir, root)
+        ));
+    }
     values
+}
+
+fn dot_directory_include_roots(fixture_root: &Path, vize_report: &Value) -> Vec<PathBuf> {
+    let mut roots = Vec::new();
+    for file in vize_report
+        .get("files")
+        .and_then(Value::as_array)
+        .unwrap_or(&Vec::new())
+        .iter()
+        .take(
+            vize_report
+                .get("fileCount")
+                .and_then(Value::as_u64)
+                .unwrap_or(0) as usize,
+        )
+        .filter_map(|entry| entry.get("file").and_then(Value::as_str))
+    {
+        let normalized = file.replace('\\', "/");
+        let segments = normalized.split('/').collect::<Vec<_>>();
+        for index in 0..segments.len().saturating_sub(1) {
+            if !is_dot_directory(segments[index])
+                || has_ancestor_segment(&segments, index, "node_modules")
+            {
+                continue;
+            }
+            roots.push(
+                segments[..=index]
+                    .iter()
+                    .fold(fixture_root.to_path_buf(), |path, segment| {
+                        path.join(segment)
+                    }),
+            );
+        }
+    }
+    roots
+}
+
+fn has_ancestor_segment(segments: &[&str], end: usize, expected: &str) -> bool {
+    segments
+        .iter()
+        .take(end)
+        .any(|segment| *segment == expected)
+}
+
+fn discover_dot_directory_include_roots(source_roots: &[PathBuf]) -> Result<Vec<PathBuf>, String> {
+    let mut roots = Vec::new();
+    for source_root in source_roots {
+        collect_dot_directories(source_root, &mut roots)?;
+    }
+    Ok(roots)
+}
+
+fn collect_dot_directories(directory: &Path, roots: &mut Vec<PathBuf>) -> Result<(), String> {
+    if !directory.exists() {
+        return Ok(());
+    }
+    for entry in fs::read_dir(directory)
+        .map_err(|error| format!("cannot read {}: {error}", directory.display()))?
+    {
+        let entry = entry.map_err(|error| error.to_string())?;
+        let name = entry.file_name().to_string_lossy().to_string();
+        if !entry
+            .file_type()
+            .map_err(|error| error.to_string())?
+            .is_dir()
+        {
+            continue;
+        }
+        if ignored_directory(&name) {
+            continue;
+        }
+        let child = entry.path();
+        if is_dot_directory(&name) {
+            roots.push(child.clone());
+        }
+        collect_dot_directories(&child, roots)?;
+    }
+    Ok(())
+}
+
+fn ignored_directory(name: &str) -> bool {
+    matches!(name, "node_modules" | "dist" | ".git" | ".vize-baseline")
+}
+
+fn is_dot_directory(name: &str) -> bool {
+    name.starts_with('.') && name != "." && name != ".."
 }
 
 fn literal_glob_root(glob: &str) -> &str {
