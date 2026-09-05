@@ -6474,7 +6474,7 @@
         "column": 194,
         "endLine": 7,
         "endColumn": 209,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 0,
@@ -7148,7 +7148,7 @@
         "column": 85,
         "endLine": 39,
         "endColumn": 100,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -7170,7 +7170,7 @@
         "column": 105,
         "endLine": 40,
         "endColumn": 120,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/attribute-hyphenation",
@@ -7203,7 +7203,7 @@
         "column": 88,
         "endLine": 50,
         "endColumn": 103,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/attribute-hyphenation",
@@ -8230,7 +8230,7 @@
         "column": 72,
         "endLine": 21,
         "endColumn": 87,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 1,
@@ -8303,7 +8303,7 @@
         "column": 60,
         "endLine": 133,
         "endColumn": 75,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 0,
@@ -11170,7 +11170,7 @@
         "column": 97,
         "endLine": 24,
         "endColumn": 112,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-template-target-blank",
@@ -11181,7 +11181,7 @@
         "column": 43,
         "endLine": 70,
         "endColumn": 58,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "a11y/alt-text",
@@ -11214,7 +11214,7 @@
         "column": 49,
         "endLine": 74,
         "endColumn": 64,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "a11y/alt-text",
@@ -11247,7 +11247,7 @@
         "column": 52,
         "endLine": 78,
         "endColumn": 67,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "a11y/alt-text",
@@ -11280,7 +11280,7 @@
         "column": 44,
         "endLine": 82,
         "endColumn": 59,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "a11y/alt-text",
@@ -11313,7 +11313,7 @@
         "column": 47,
         "endLine": 86,
         "endColumn": 62,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "a11y/alt-text",
@@ -11346,7 +11346,7 @@
         "column": 46,
         "endLine": 90,
         "endColumn": 61,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "a11y/alt-text",
@@ -11379,7 +11379,7 @@
         "column": 107,
         "endLine": 100,
         "endColumn": 122,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-template-target-blank",
@@ -11390,7 +11390,7 @@
         "column": 108,
         "endLine": 103,
         "endColumn": 123,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-template-target-blank",
@@ -11401,7 +11401,7 @@
         "column": 92,
         "endLine": 106,
         "endColumn": 107,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-template-target-blank",
@@ -11412,7 +11412,7 @@
         "column": 103,
         "endLine": 109,
         "endColumn": 118,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-template-target-blank",
@@ -11423,7 +11423,7 @@
         "column": 131,
         "endLine": 112,
         "endColumn": 146,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-template-target-blank",
@@ -11434,7 +11434,7 @@
         "column": 106,
         "endLine": 115,
         "endColumn": 121,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/require-v-for-key",
@@ -11611,7 +11611,7 @@
         "column": 42,
         "endLine": 10,
         "endColumn": 57,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/attribute-hyphenation",
@@ -12006,7 +12006,7 @@
         "column": 93,
         "endLine": 57,
         "endColumn": 108,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/attribute-hyphenation",
@@ -12050,7 +12050,7 @@
         "column": 9,
         "endLine": 113,
         "endColumn": 24,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/attribute-hyphenation",
@@ -12072,7 +12072,7 @@
         "column": 105,
         "endLine": 144,
         "endColumn": 120,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-v-html",
@@ -18332,7 +18332,7 @@
         "column": 54,
         "endLine": 32,
         "endColumn": 69,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-template-target-blank",
@@ -18343,7 +18343,7 @@
         "column": 86,
         "endLine": 35,
         "endColumn": 101,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "a11y/anchor-has-content",
@@ -22101,7 +22101,7 @@
         "column": 51,
         "endLine": 18,
         "endColumn": 66,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 1,
@@ -22840,7 +22840,7 @@
         "column": 65,
         "endLine": 8,
         "endColumn": 80,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -23523,7 +23523,7 @@
         "column": 109,
         "endLine": 16,
         "endColumn": 124,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 0,
@@ -23563,7 +23563,7 @@
         "column": 52,
         "endLine": 20,
         "endColumn": 67,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 0,

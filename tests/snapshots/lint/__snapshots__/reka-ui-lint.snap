@@ -1225,7 +1225,7 @@
         "column": 19,
         "endLine": 61,
         "endColumn": 34,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 0,
@@ -3988,7 +3988,7 @@
         "column": 23,
         "endLine": 52,
         "endColumn": 38,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 0,
@@ -4088,7 +4088,7 @@
         "column": 19,
         "endLine": 55,
         "endColumn": 34,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 0,
@@ -6748,7 +6748,7 @@
         "column": 11,
         "endLine": 86,
         "endColumn": 26,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 0,
@@ -6777,7 +6777,7 @@
         "column": 7,
         "endLine": 81,
         "endColumn": 22,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 0,

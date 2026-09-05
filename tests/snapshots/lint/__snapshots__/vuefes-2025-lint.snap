@@ -691,7 +691,7 @@
         "column": 15,
         "endLine": 145,
         "endColumn": 30,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -713,7 +713,7 @@
         "column": 15,
         "endLine": 153,
         "endColumn": 30,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -735,7 +735,7 @@
         "column": 15,
         "endLine": 161,
         "endColumn": 30,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -757,7 +757,7 @@
         "column": 15,
         "endLine": 186,
         "endColumn": 30,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -779,7 +779,7 @@
         "column": 15,
         "endLine": 194,
         "endColumn": 30,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -801,7 +801,7 @@
         "column": 15,
         "endLine": 202,
         "endColumn": 30,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "html/no-empty-palpable-content",
@@ -1014,7 +1014,7 @@
         "column": 56,
         "endLine": 219,
         "endColumn": 71,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 0,
@@ -1065,7 +1065,7 @@
         "column": 75,
         "endLine": 106,
         "endColumn": 90,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 0,
@@ -1116,7 +1116,7 @@
         "column": 75,
         "endLine": 111,
         "endColumn": 90,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       }
     ],
     "errorCount": 0,
@@ -1151,7 +1151,7 @@
         "column": 9,
         "endLine": 123,
         "endColumn": 24,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
         "ruleId": "vue/no-unsafe-url",
