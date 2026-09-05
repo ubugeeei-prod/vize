@@ -171,7 +171,7 @@ fn table(metadata: &BindingMetadata) -> BindingTable {
     support::bindings::binding_table(metadata)
 }
 
-fn production_option_battery(inline: bool) -> Vec<(&'static str, &'static str)> {
+fn production_option_battery() -> Vec<(&'static str, &'static str)> {
     let mut battery =
         Vec::with_capacity(PRODUCTION_DOM_BATTERY_NAMES.len() + PRODUCTION_LAYOUT_BATTERY.len());
     battery.extend(
@@ -185,12 +185,7 @@ fn production_option_battery(inline: bool) -> Vec<(&'static str, &'static str)> 
         PRODUCTION_DOM_BATTERY_NAMES.len(),
         "every selected shared DOM battery case must exist"
     );
-    battery.extend(
-        PRODUCTION_LAYOUT_BATTERY
-            .iter()
-            .copied()
-            .filter(|(name, _)| !inline || !INLINE_BATTERY_SKIP.contains(name)),
-    );
+    battery.extend(PRODUCTION_LAYOUT_BATTERY.iter().copied());
     battery
 }
 
@@ -198,7 +193,7 @@ fn production_option_battery(inline: bool) -> Vec<(&'static str, &'static str)> 
 /// that share a props object most often.
 #[test]
 fn cached_handlers_and_scope_id_agree_with_the_shipped_lane() {
-    let battery = production_option_battery(false);
+    let battery = production_option_battery();
     support::assert_s2_matches_shipped_with_options(
         &battery,
         &DomCompilerOptions {
@@ -222,7 +217,7 @@ fn cached_handlers_and_scope_id_agree_with_the_shipped_lane() {
 fn the_script_setup_configuration_agrees_with_the_shipped_lane() {
     let metadata = metadata();
     let table = table(&metadata);
-    let battery = production_option_battery(false);
+    let battery = production_option_battery();
     support::assert_s2_matches_shipped_with_options(
         &battery,
         &DomCompilerOptions {
@@ -245,14 +240,39 @@ fn the_script_setup_configuration_agrees_with_the_shipped_lane() {
     );
 }
 
-/// Held out of the `inline` production-layout cases below by one **pre-existing divergence
-/// that predates the option work**: under `inline`, the shipped lane hoists
-/// a component's (or builtin's) static props to `_hoisted_1` while the S2
-/// lane emits them inline. It reproduces with `cache_handlers` and
-/// `scope_id` both off, so it belongs to the `inline` surface
-/// (installment 89), not to this matrix. Recorded here rather than silently
-/// dropped; every other case in the battery runs under `inline`.
-const INLINE_BATTERY_SKIP: &[&str] = &["component_static_prop", "teleport"];
+#[test]
+fn inline_component_static_props_stay_in_the_option_matrix() {
+    let metadata = metadata();
+    let table = table(&metadata);
+    support::assert_s2_matches_shipped_with_options(
+        &[
+            ("component_static_prop", r#"<MyComp a="1" />"#),
+            (
+                "teleport_static_prop",
+                r##"<Teleport to="#a"><div @click="a++">x</div></Teleport>"##,
+            ),
+        ],
+        &DomCompilerOptions {
+            mode: CodegenMode::Module,
+            prefix_identifiers: true,
+            inline: true,
+            cache_handlers: true,
+            scope_id: Some(SCOPE_ID.into()),
+            binding_metadata: Some(metadata.clone()),
+            ..Default::default()
+        },
+        &CodegenOptions::default(),
+        &DomEmitOptions {
+            mode: DomEmitMode::Module,
+            prefix_identifiers: true,
+            inline: true,
+            cache_handlers: true,
+            scope_id: Some(SCOPE_ID),
+            bindings: Some(&table),
+            ..DomEmitOptions::DEFAULT
+        },
+    );
+}
 
 /// The same, inlined into `setup()`, where setup bindings are read off the
 /// closure and a `SetupConst` handler stops being cached.
@@ -260,7 +280,7 @@ const INLINE_BATTERY_SKIP: &[&str] = &["component_static_prop", "teleport"];
 fn the_inline_script_setup_configuration_agrees_with_the_shipped_lane() {
     let metadata = metadata();
     let table = table(&metadata);
-    let battery = production_option_battery(true);
+    let battery = production_option_battery();
     support::assert_s2_matches_shipped_with_options(
         &battery,
         &DomCompilerOptions {
