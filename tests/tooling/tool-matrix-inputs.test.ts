@@ -18,6 +18,7 @@ test("fixture Vue input collection includes hidden recursive directories", () =>
     writeFile(fixtureDir, "App.vue");
     writeFile(fixtureDir, ".storybook/Preview.vue");
     writeFile(fixtureDir, "docs/.vitepress/components/DownloadPage.vue");
+    writeFile(fixtureDir, "packages/docs/.vuepress/theme/Layout.vue");
     writeFile(fixtureDir, ".yarn/cache/Ignored.vue");
     writeFile(fixtureDir, "packages/app/node_modules/pkg/Ignored.vue");
 
@@ -25,6 +26,7 @@ test("fixture Vue input collection includes hidden recursive directories", () =>
       ".storybook/Preview.vue",
       "App.vue",
       "docs/.vitepress/components/DownloadPage.vue",
+      "packages/docs/.vuepress/theme/Layout.vue",
     ]);
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true });

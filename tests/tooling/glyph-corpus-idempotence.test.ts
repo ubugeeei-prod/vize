@@ -329,7 +329,10 @@ function makeAgreementFixture(mode: "change" | "clean") {
   };
 }
 
-function makeSyntheticProject(files: Array<[string, string]>): CorpusProject {
+function makeSyntheticProject(
+  files: Array<[string, string]>,
+  vueGlobs: string[] = ["src/**/*.vue"],
+): CorpusProject {
   const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-corpus-"));
   for (const [file, content] of files) {
     fs.mkdirSync(path.dirname(path.join(fixtureDir, file)), { recursive: true });
@@ -339,6 +342,6 @@ function makeSyntheticProject(files: Array<[string, string]>): CorpusProject {
     id: "synthetic-idempotence",
     fixtureDir,
     hydrated: true,
-    vueGlobs: ["src/**/*.vue"],
+    vueGlobs,
   };
 }
