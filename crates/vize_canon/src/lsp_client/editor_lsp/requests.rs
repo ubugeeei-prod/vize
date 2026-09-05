@@ -38,6 +38,14 @@ impl lsp_types::request::Request for RawTypeDefinitionRequest {
     const METHOD: &'static str = "textDocument/typeDefinition";
 }
 
+pub(super) struct RawDeclarationRequest;
+
+impl lsp_types::request::Request for RawDeclarationRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/declaration";
+}
+
 pub(super) struct RawImplementationRequest;
 
 impl lsp_types::request::Request for RawImplementationRequest {

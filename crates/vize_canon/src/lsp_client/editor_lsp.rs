@@ -30,6 +30,7 @@ use std::{
 use vize_s0::{FxHashMap, FxHashSet, String, cstr};
 
 mod client;
+mod declaration;
 mod file_rename;
 mod implementation;
 mod readiness;

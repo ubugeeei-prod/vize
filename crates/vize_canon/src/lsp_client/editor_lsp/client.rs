@@ -62,6 +62,18 @@ impl CorsaProjectClient {
         })
     }
 
+    pub(in crate::lsp_client) fn declaration_via_editor_lsp(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        if !self.document_texts.contains_key(uri) {
+            return Ok(None);
+        }
+        self.request_with_editor_lsp_recovery(|session| session.declaration(uri, line, character))
+    }
+
     pub(in crate::lsp_client) fn implementation_via_editor_lsp(
         &mut self,
         uri: &str,

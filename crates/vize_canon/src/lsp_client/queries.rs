@@ -82,6 +82,15 @@ impl CorsaProjectClient {
         self.type_definition_via_editor_lsp(uri, line, character)
     }
 
+    pub(crate) fn declaration_raw(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        self.declaration_via_editor_lsp(uri, line, character)
+    }
+
     pub(crate) fn implementation_raw(
         &mut self,
         uri: &str,

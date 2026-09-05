@@ -13,6 +13,8 @@ use super::types::{CorsaBridgeConfig, CorsaBridgeError};
 use super::worker::{BoundedWorker, WorkerError};
 use crate::corsa_client::CorsaProjectClient;
 
+#[path = "bridge/declaration.rs"]
+mod declaration;
 #[path = "bridge/documents.rs"]
 mod documents;
 #[path = "bridge/implementation.rs"]

@@ -57,6 +57,13 @@ export async function assertEmptyEditorRequests(
       },
     ],
     [
+      "textDocument/declaration",
+      {
+        textDocument: { uri },
+        position,
+      },
+    ],
+    [
       "textDocument/definition",
       {
         textDocument: { uri },

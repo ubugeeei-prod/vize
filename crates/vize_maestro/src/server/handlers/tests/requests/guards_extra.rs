@@ -187,7 +187,7 @@ enabled_out_of_range_request_returns_none!(
     definition_out_of_range_returns_none,
     &[("definition", true)],
     |server, uri| {
-        server.goto_definition(GotoDefinitionParams {
+        server.goto_definition(DefParams {
             text_document_position_params: out_of_range_pos(&uri),
             work_done_progress_params: WorkDoneProgressParams::default(),
             partial_result_params: PartialResultParams::default(),

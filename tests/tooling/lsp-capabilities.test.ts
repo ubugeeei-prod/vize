@@ -108,6 +108,7 @@ const EDITOR_BUNDLE_CAPABILITIES = {
     retriggerCharacters: [")"],
   },
   definitionProvider: true,
+  declarationProvider: true,
   typeDefinitionProvider: true,
   implementationProvider: true,
   referencesProvider: true,
@@ -182,7 +183,7 @@ const EDITOR_BUNDLE_CAPABILITIES = {
     },
   },
   // Absent on purpose, and therefore absent from this object: the three
-  // formatting providers (opt-in, see below), `declarationProvider`,
+  // formatting providers (opt-in, see below),
   // `executeCommandProvider`, `callHierarchyProvider`, `monikerProvider` and
   // `experimental` is absent unless the private client explicitly opts in.
 };
@@ -231,6 +232,7 @@ test("vize lsp editor:false strips editor providers but keeps lint-driven codeAc
       assert.equal(capabilities.colorProvider, undefined);
       assert.equal(capabilities.workspaceSymbolProvider, undefined);
       assert.equal(capabilities.hoverProvider, undefined);
+      assert.equal(capabilities.declarationProvider, undefined);
       assert.equal(capabilities.definitionProvider, undefined);
       assert.equal(capabilities.typeDefinitionProvider, undefined);
       assert.equal(capabilities.implementationProvider, undefined);
@@ -292,6 +294,7 @@ test("vize lsp per-feature init flags toggle individual providers independently"
     { editor: true, typecheck: false },
     (capabilities) => {
       assert.equal(capabilities.implementationProvider, undefined);
+      assert.equal(capabilities.declarationProvider, undefined);
       assert.equal(capabilities.typeDefinitionProvider, undefined);
       // Definition keeps its lexical/editor fallback when typecheck is disabled.
       assert.equal(capabilities.definitionProvider, true);

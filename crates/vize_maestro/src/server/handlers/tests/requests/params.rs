@@ -83,16 +83,24 @@ pub(super) fn signature_help_params(uri: &Url) -> SignatureHelpParams {
     }
 }
 
-pub(super) fn definition_params(uri: &Url) -> GotoDefinitionParams {
-    GotoDefinitionParams {
+pub(super) fn definition_params(uri: &Url) -> DefParams {
+    DefParams {
         text_document_position_params: text_pos(uri),
         work_done_progress_params: WorkDoneProgressParams::default(),
         partial_result_params: PartialResultParams::default(),
     }
 }
 
-pub(super) fn type_definition_params(uri: &Url) -> GotoTypeDefinitionParams {
-    GotoTypeDefinitionParams {
+pub(super) fn type_definition_params(uri: &Url) -> TypeDefParams {
+    TypeDefParams {
+        text_document_position_params: text_pos(uri),
+        work_done_progress_params: WorkDoneProgressParams::default(),
+        partial_result_params: PartialResultParams::default(),
+    }
+}
+
+pub(super) fn declaration_params(uri: &Url) -> DeclParams {
+    DeclParams {
         text_document_position_params: text_pos(uri),
         work_done_progress_params: WorkDoneProgressParams::default(),
         partial_result_params: PartialResultParams::default(),

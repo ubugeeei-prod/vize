@@ -169,6 +169,21 @@ enabled_missing_doc_request_returns_none!(
     |server, uri| server.goto_type_definition(type_definition_params(&uri))
 );
 disabled_open_doc_request_returns_none!(
+    declaration_disabled_returns_none,
+    &[("definition", false)],
+    |server, uri| server.goto_declaration(declaration_params(&uri))
+);
+disabled_open_doc_request_returns_none!(
+    declaration_disabled_when_typecheck_is_off_returns_none,
+    &[("definition", true), ("typecheck", false)],
+    |server, uri| server.goto_declaration(declaration_params(&uri))
+);
+enabled_missing_doc_request_returns_none!(
+    declaration_missing_document_returns_none,
+    &[("definition", true)],
+    |server, uri| server.goto_declaration(declaration_params(&uri))
+);
+disabled_open_doc_request_returns_none!(
     references_disabled_returns_none,
     &[("references", false)],
     |server, uri| server.references(references_params(&uri))

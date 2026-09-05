@@ -1,7 +1,6 @@
 //! LSP protocol handler implementations.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
-use tower_lsp::lsp_types::request::{GotoTypeDefinitionParams, GotoTypeDefinitionResponse};
 use tower_lsp::{
     LanguageServer,
     jsonrpc::Result,
@@ -14,13 +13,13 @@ use tower_lsp::{
         DocumentColorParams, DocumentFormattingParams, DocumentHighlight, DocumentHighlightParams,
         DocumentLink, DocumentLinkParams, DocumentOnTypeFormattingParams,
         DocumentRangeFormattingParams, DocumentSymbolParams, DocumentSymbolResponse, FoldingRange,
-        FoldingRangeParams, GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams,
-        InitializeParams, InitializeResult, InitializedParams, InlayHint, InlayHintParams,
-        LinkedEditingRangeParams, LinkedEditingRanges, Location, PrepareRenameResponse,
-        ReferenceParams, RenameFilesParams, RenameParams, SelectionRange, SelectionRangeParams,
-        SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
-        SemanticTokensResult, ServerInfo, SignatureHelp, SignatureHelpParams, SymbolInformation,
-        TextDocumentPositionParams, TextEdit, WorkspaceEdit, WorkspaceSymbolParams,
+        FoldingRangeParams, Hover, HoverParams, InitializeParams, InitializeResult,
+        InitializedParams, InlayHint, InlayHintParams, LinkedEditingRangeParams,
+        LinkedEditingRanges, Location, PrepareRenameResponse, ReferenceParams, RenameFilesParams,
+        RenameParams, SelectionRange, SelectionRangeParams, SemanticTokensParams,
+        SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
+        SignatureHelp, SignatureHelpParams, SymbolInformation, TextDocumentPositionParams,
+        TextEdit, WorkspaceEdit, WorkspaceSymbolParams,
     },
 };
 
@@ -37,7 +36,10 @@ use crate::ide::{
 };
 
 mod navigation;
-use navigation::{ImplParams, ImplResponse};
+use navigation::{
+    DeclParams, DeclResponse, DefParams, DefResponse, ImplParams, ImplResponse, TypeDefParams,
+    TypeDefResponse,
+};
 
 #[tower_lsp::async_trait]
 impl LanguageServer for MaestroServer {
@@ -281,18 +283,16 @@ impl LanguageServer for MaestroServer {
         }
     }
 
-    async fn goto_definition(
-        &self,
-        params: GotoDefinitionParams,
-    ) -> Result<Option<GotoDefinitionResponse>> {
+    async fn goto_definition(&self, params: DefParams) -> Result<Option<DefResponse>> {
         navigation::goto_definition(self, params).await
     }
 
-    async fn goto_type_definition(
-        &self,
-        params: GotoTypeDefinitionParams,
-    ) -> Result<Option<GotoTypeDefinitionResponse>> {
+    async fn goto_type_definition(&self, params: TypeDefParams) -> Result<Option<TypeDefResponse>> {
         navigation::goto_type_definition(self, params).await
+    }
+
+    async fn goto_declaration(&self, params: DeclParams) -> Result<Option<DeclResponse>> {
+        navigation::goto_declaration(self, params).await
     }
 
     async fn goto_implementation(&self, params: ImplParams) -> Result<Option<ImplResponse>> {

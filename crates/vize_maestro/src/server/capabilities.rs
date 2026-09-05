@@ -3,7 +3,7 @@
 
 use tower_lsp::lsp_types::{
     CodeActionKind, CodeActionOptions, CodeActionProviderCapability, CodeLensOptions,
-    ColorProviderCapability, CompletionOptions, DocumentLinkOptions,
+    ColorProviderCapability, CompletionOptions, DeclarationCapability, DocumentLinkOptions,
     DocumentOnTypeFormattingOptions, FileOperationFilter, FileOperationPattern,
     FileOperationPatternKind, FileOperationRegistrationOptions, FoldingRangeProviderCapability,
     HoverProviderCapability, ImplementationProviderCapability,
@@ -210,7 +210,7 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
             .document_links
             .then_some(ColorProviderCapability::Simple(true)),
 
-        // Checker-backed type-definition and implementation navigation use
+        // Checker-backed type-definition, implementation, and declaration use
         // Corsa directly: the providers stay hidden when typecheck is disabled
         // because no lexical fallback can answer their semantics.
         type_definition_provider: (features.definition
@@ -221,8 +221,11 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
             && features.typecheck
             && cfg!(feature = "native"))
         .then_some(ImplementationProviderCapability::Simple(true)),
+        declaration_provider: (features.definition
+            && features.typecheck
+            && cfg!(feature = "native"))
+        .then_some(DeclarationCapability::Simple(true)),
         // Features not yet implemented
-        declaration_provider: None,
         execute_command_provider: None,
         call_hierarchy_provider: None,
         moniker_provider: None,

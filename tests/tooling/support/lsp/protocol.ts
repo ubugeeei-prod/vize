@@ -74,6 +74,7 @@ export type ServerCapabilities = {
     triggerCharacters?: string[];
     resolveProvider?: boolean;
   };
+  declarationProvider?: unknown;
   definitionProvider?: unknown;
   typeDefinitionProvider?: unknown;
   documentHighlightProvider?: unknown;
