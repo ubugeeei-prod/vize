@@ -82,11 +82,11 @@ counts or fixture availability changes.
 - **Complete: 17 of 22 — P2-1, P2-2, P2-3, P2-4, P2-5a, P2-5b, P2-6,
   P2-7, P2-8, P2-9, P2-10, P2-12a, P2-13, P2-14, P2-15, P2-18 and P2-19.**
   Each completion is joined to its merged PR and current evidence in the
-  [evidence index](./phase-2-records.md#current-completion-evidence-2026-09-03);
+  [evidence index](./phase-2-records.md#current-completion-evidence-2026-09-05);
   review-only evidence is labeled there rather than presented as executable.
-- **Active and blocked: 1 of 22 — P2-11.** P2-11 has 108 landed installments
+- **Active and blocked: 1 of 22 — P2-11.** P2-11 has 109 landed installments
   through
-  [#5765](https://github.com/ubugeeei-prod/vize/pull/5765), including the
+  [#5771](https://github.com/ubugeeei-prod/vize/pull/5771), including the
   late directive/object-spread set, event/model/slot residuals, structural
   `v-if`/`v-for` cases, expression-edge admission, keyed slot forwarding,
   component `v-once` wrappers, slot text fact alignment, the corpus-runnable
@@ -94,8 +94,9 @@ counts or fixture availability changes.
   hoist-order witnesses, the production option surface through inline setup
   reads, `cache_handlers`, constant text/style shortcuts and printed-order
   cache slot numbering, scoped CSS ids, runtime names, option bundles,
-  model/outlet families, the shared DOM battery and the source-map-free
-  production selector. The comparison count remains pinned at 144 DOM-output comparisons.
+  model/outlet families, the shared DOM battery, the source-map-free production
+  selector and S2 DOM section boundaries. The comparison count remains pinned at
+  144 DOM-output comparisons.
   Real Project Matrix run `33531193323` produced canonical hydrated
   zero-divergence evidence over 146 gitlinks and 142 ecosystem projects:
   42,668 files, 42,279 compared templates, zero S2 refusals and zero

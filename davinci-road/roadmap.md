@@ -118,17 +118,17 @@ P2-9 is now complete: the hydrated corpus run compiled 41,580 files at zero
 divergence and measured the retained-`None` residual at 11.73%. P2-11 remains
 the active blocked series; P2-12b, P2-16, P2-17 and P2-20 remain open because
 their dependency gates remain open. P2-12b has TS-22 groundwork for observed
-S2 DOM emit walks, but not the fused build-path switch. P2-11 has 108 landed
-installments through [#5765](https://github.com/ubugeeei-prod/vize/pull/5765). Installments
-84-108 open the production option surface the switch needs: module output,
+S2 DOM emit walks, but not the fused build-path switch. P2-11 has 109 landed
+installments through [#5771](https://github.com/ubugeeei-prod/vize/pull/5771). Installments
+84-109 open the production option surface the switch needs: module output,
 identifier prefixing, binding metadata, TypeScript erasure, component-name
 self references, inline setup reads, inline root prop hoists, helper order,
 template refs, constant-handler and constant-text decisions, `cache_handlers`
 and printed-order cache slots, then extend that matrix through scoped CSS ids,
-runtime names, option bundles, model/outlet families, the shared DOM battery
-and the source-map-free production selector. The earlier increments pin the
-late directive, patch-site, component, hoist-order and residual DOM corpus
-witnesses. Real Project Matrix run
+runtime names, option bundles, model/outlet families, the shared DOM battery,
+the source-map-free production selector and S2 DOM section boundaries. The
+earlier increments pin the late directive, patch-site, component, hoist-order
+and residual DOM corpus witnesses. Real Project Matrix run
 `33531193323` recorded canonical hydrated zero-divergence evidence over 146
 gitlinks, 142 ecosystem projects, 42,668 files and 42,279 compared templates;
 the full production-lane switch is still open for source maps, comments,

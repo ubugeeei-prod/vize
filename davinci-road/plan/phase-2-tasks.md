@@ -212,8 +212,8 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-09-05):** 108 installments have landed through
-[#5765](https://github.com/ubugeeei-prod/vize/pull/5765). Installments 84-108 open
+**Current series evidence (2026-09-05):** 109 installments have landed through
+[#5771](https://github.com/ubugeeei-prod/vize/pull/5771). Installments 84-109 open
 the production option surface the switch needs, since through 83 the lane only
 matched `compile_template`'s _defaults_ while production compiles go through
 `compile_template_block`: `DomEmitOptions` now carries module mode,
@@ -224,12 +224,12 @@ without it refuses rather than emitting un-erased TypeScript), the SFC's own
 transform-time `_unref` helper order, inline template refs, merged
 const-handler rules, non-simple cached prop layout, constant style and text-run
 shortcuts, `cache_handlers`, printed-order cache slots, scoped CSS ids, runtime
-names, option bundles, model/outlet families, the shared DOM battery and the
-source-map-free production selector for supported DOM compiles. A
+names, option bundles, model/outlet families, the shared DOM battery, the
+source-map-free production selector and S2 DOM section boundaries. A
 field missing from that struct is not a default the emitter assumes; it is
-surface the series has not reached. The earlier S2 DOM lane also covers the late directive and
-patch-site witnesses, residual component and hoist-order witnesses, and the
-corpus-runnable plus CI DOM lanes. Real Project Matrix run `33531193323`
+surface the series has not reached. The earlier S2 DOM lane also covers the
+late directive and patch-site witnesses, residual component and hoist-order
+witnesses, and the corpus-runnable plus CI DOM lanes. Real Project Matrix run `33531193323`
 recorded canonical hydrated zero-divergence evidence over 146 gitlinks,
 142 ecosystem projects, 42,668 files and 42,279 compared templates. The task
 remains blocked on the full production-lane switch because source-map, comment,
