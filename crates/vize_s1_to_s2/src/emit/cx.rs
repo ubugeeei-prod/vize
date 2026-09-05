@@ -156,9 +156,10 @@ impl EmitCx<'_> {
 
     /// `cache_handlers_in_current_scope`: handler caching is unsafe while
     /// template-scope params are in play, because a cached closure would
-    /// capture the first scoped value.
+    /// capture the first scoped value. The default lane stores aliases as
+    /// raw patterns, so the gate has to read both param stacks.
     pub(super) fn caches_handlers(&self) -> bool {
-        self.cache_handlers && !self.scope.has_slot_params()
+        self.cache_handlers && !self.scope.has_codegen_scope_params()
     }
 
     /// `TransformContext::enter_v_for_scope` + `add_slot_params` for the

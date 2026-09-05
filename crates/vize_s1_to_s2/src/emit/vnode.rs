@@ -244,6 +244,7 @@ pub(super) fn emit_call(
         for_item,
         cx.is_ts,
         &|name| cx.reads_constant_binding_name(name),
+        &|on| super::on::caches_handler(cx, on),
         cx.caches_handlers(),
     );
     let text_flag = !once && !memo_block && children_need_text_flag(cx, &element.children);

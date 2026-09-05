@@ -53,13 +53,14 @@ pub(super) fn admit_object_on(on: &OnOp<'_>) -> Result<(), EmitError> {
     }
 }
 
-pub(super) fn object_patch(
-    bindings: &[BindingOp<'_>],
+pub(super) fn object_patch<'a>(
+    bindings: &[BindingOp<'a>],
     is_component: bool,
     if_key: Option<&str>,
     for_item: bool,
     is_ts: bool,
     constant_handler: &dyn Fn(&str) -> bool,
+    handler_is_cached: &dyn Fn(&OnOp<'a>) -> bool,
     caches_handlers: bool,
 ) -> Patch {
     let mut dynamic_props = StdVec::new();
@@ -111,7 +112,7 @@ pub(super) fn object_patch(
                 // shipped lane runs one per-prop loop whether or not the
                 // element ends up in `mergeProps`.
                 if !super::props::handler_is_constant(on, constant_handler)
-                    && !(caches_handlers && on.handler.is_some())
+                    && !handler_is_cached(on)
                     && !dynamic_props.contains(&key)
                 {
                     dynamic_props.push(key.clone());

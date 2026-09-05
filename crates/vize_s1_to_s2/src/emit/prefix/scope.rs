@@ -213,6 +213,10 @@ impl<'b> PrefixScope<'b> {
         !self.slot_params.is_empty()
     }
 
+    pub(in crate::emit) fn has_codegen_scope_params(&self) -> bool {
+        !self.slot_params.is_empty() || !self.patterns.is_empty()
+    }
+
     pub(in crate::emit) fn slot_params(&self) -> &[String] {
         &self.slot_params
     }

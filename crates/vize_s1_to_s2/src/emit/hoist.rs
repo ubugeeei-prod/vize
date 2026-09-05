@@ -47,8 +47,9 @@ pub(super) fn emit_cached_element(
     cx.buf.push("] || (_cache[");
     cx.push_cache_index(cache_slot);
     cx.buf.push("] = ");
+    let scope_id = cached_scope_id(cx);
     cx.buf.push(
-        cached_element_rhs(element, true, cx.buf.indent_width(), cx.is_ts, cx.scope_id).as_str(),
+        cached_element_rhs(element, true, cx.buf.indent_width(), cx.is_ts, scope_id).as_str(),
     );
     cx.buf.push(")");
     Ok(())
@@ -90,9 +91,9 @@ pub(super) fn emit_cached_elements_array(
         if hoist_needs_create_text(element) {
             cx.buf.use_create_text();
         }
+        let scope_id = cached_scope_id(cx);
         cx.buf.push(
-            cached_element_rhs(element, true, cx.buf.indent_width(), cx.is_ts, cx.scope_id)
-                .as_str(),
+            cached_element_rhs(element, true, cx.buf.indent_width(), cx.is_ts, scope_id).as_str(),
         );
     }
 
@@ -135,6 +136,10 @@ fn walk_hoisted(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {
             _ => {}
         }
     }
+}
+
+fn cached_scope_id<'facts>(cx: &EmitCx<'facts>) -> Option<&'facts str> {
+    if cx.scope.inline() { None } else { cx.scope_id }
 }
 
 fn hoist_element_rhs(

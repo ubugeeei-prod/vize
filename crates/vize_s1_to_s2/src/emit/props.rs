@@ -7,7 +7,7 @@ mod ts_view;
 use alloc::vec::Vec as StdVec;
 
 use vize_s0::String;
-use vize_s2::op::{Attribute, BindingOp};
+use vize_s2::op::{Attribute, BindingOp, OnOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -117,13 +117,14 @@ fn admit_bindings_inner(
     Ok(())
 }
 
-pub(super) fn bind_patch(
-    bindings: &[BindingOp<'_>],
+pub(super) fn bind_patch<'a>(
+    bindings: &[BindingOp<'a>],
     is_component: bool,
     if_key: Option<&str>,
     for_item: bool,
     is_ts: bool,
     constant_handler: &dyn Fn(&str) -> bool,
+    handler_is_cached: &dyn Fn(&OnOp<'a>) -> bool,
     caches_handlers: bool,
 ) -> Patch {
     if super::merge::has_object_spread(bindings) {
@@ -134,6 +135,7 @@ pub(super) fn bind_patch(
             for_item,
             is_ts,
             constant_handler,
+            handler_is_cached,
             caches_handlers,
         );
     }
@@ -192,12 +194,7 @@ pub(super) fn bind_patch(
                 let Ok(key) = event_key_for(on, !is_component) else {
                     continue;
                 };
-                // Constant and cached handlers are both created outside this patch path. The
-                // cache rule reads only the option, without the const-reference carve-out used by
-                // `needs_von_handler_cache`.
-                if !handler_is_constant(on, constant_handler)
-                    && !(caches_handlers && on.handler.is_some())
-                {
+                if !handler_is_constant(on, constant_handler) && !handler_is_cached(on) {
                     flag |= 8;
                     if !dynamic_props.contains(&key) {
                         dynamic_props.push(key.clone());
