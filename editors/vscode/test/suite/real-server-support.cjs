@@ -2,34 +2,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vscode = require("vscode");
-
-// Every `vize.<key>.enable` switch the extension maps onto an LSP
-// initialization option. The real-server suites reset all of them so a run
-// never inherits a previous run's workspace settings.
-const featureSettingKeys = [
-  "lint.enable",
-  "diagnostics.enable",
-  "typecheck.enable",
-  "editor.enable",
-  "ecosystem.enable",
-  "optionsApi.enable",
-  "legacyVue2.enable",
-  "completion.enable",
-  "hover.enable",
-  "definition.enable",
-  "references.enable",
-  "documentSymbols.enable",
-  "workspaceSymbols.enable",
-  "codeActions.enable",
-  "rename.enable",
-  "codeLens.enable",
-  "formatting.enable",
-  "semanticTokens.enable",
-  "documentLinks.enable",
-  "foldingRanges.enable",
-  "inlayHints.enable",
-  "fileRename.enable",
-];
+const { featureSettingKeys } = require("./extension-host-fixtures.cjs");
 
 function assertPackagedExtension(extension) {
   const extensionsPath = getRequiredPath(

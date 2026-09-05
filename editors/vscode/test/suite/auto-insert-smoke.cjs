@@ -2,32 +2,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vscode = require("vscode");
-
-const featureSettingKeys = [
-  "lint.enable",
-  "diagnostics.enable",
-  "typecheck.enable",
-  "editor.enable",
-  "ecosystem.enable",
-  "optionsApi.enable",
-  "legacyVue2.enable",
-  "completion.enable",
-  "hover.enable",
-  "definition.enable",
-  "references.enable",
-  "documentSymbols.enable",
-  "workspaceSymbols.enable",
-  "codeActions.enable",
-  "rename.enable",
-  "codeLens.enable",
-  "formatting.enable",
-  "semanticTokens.enable",
-  "documentLinks.enable",
-  "foldingRanges.enable",
-  "inlayHints.enable",
-  "fileRename.enable",
-  "autoInsert.enable",
-];
+const { featureSettingKeys } = require("./extension-host-fixtures.cjs");
 
 exports.runAutoInsertSmoke = async function runAutoInsertSmoke() {
   const { logPath, serverPath } = getFakeServer();
