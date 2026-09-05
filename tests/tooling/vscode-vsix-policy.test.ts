@@ -72,6 +72,33 @@ test("VSIX package policy excludes workspace manifests from shipped files", () =
   );
 });
 
+test("VSIX package policy keeps hidden host-smoke commands out of the manifest", () => {
+  const manifest = readJson("editors/vscode/package.json") as {
+    activationEvents?: string[];
+    contributes?: { commands?: Array<{ command?: string }> };
+  };
+  const extensionCore = readText("editors/vscode/src/extension-core.ts");
+  const smoke = readText("tools/commands/editors/vscode/assert-vsix-package.rs");
+  const hiddenCommands = [
+    ...extensionCore.matchAll(/export const HOST_TEST_[A-Z_]+_COMMAND = "(vize\.test\.[^"]+)";/g),
+  ].map((match) => match[1]);
+
+  assert.deepEqual(hiddenCommands.sort(), [
+    "vize.test.executeCompletion",
+    "vize.test.getServerInfo",
+  ]);
+  const contributedCommands = new Set(
+    (manifest.contributes?.commands ?? []).map((command) => command.command),
+  );
+  const activationEvents = new Set(manifest.activationEvents ?? []);
+  for (const command of hiddenCommands) {
+    assert.equal(contributedCommands.has(command), false);
+    assert.equal(activationEvents.has(`onCommand:${command}`), false);
+  }
+  assert.match(smoke, /assert_no_hidden_host_test_commands/);
+  assert.match(smoke, /starts_with\("vize\.test\."\)/);
+});
+
 test("VSIX archive reader escapes unzip member globs", () => {
   const reader = readText("tools/support/editors/archive.rs");
   const smoke = readText("tools/commands/editors/vscode/assert-vsix-package.rs");

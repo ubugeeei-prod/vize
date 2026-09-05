@@ -83,6 +83,7 @@ fn run() -> Result<(), String> {
 
     assert_unique_json_strings(&package_json, &["activationEvents"])?;
     let activation_events = json_string_array(&package_json, &["activationEvents"])?;
+    assert_no_hidden_host_test_commands(&activation_events, "activationEvents")?;
     let commands = package_json
         .pointer("/contributes/commands")
         .and_then(Value::as_array)
@@ -108,6 +109,7 @@ fn run() -> Result<(), String> {
         }
     }
     assert_unique_values(&command_names, "contributes.commands")?;
+    assert_no_hidden_host_test_commands(&command_names, "contributes.commands")?;
     for event in ["onLanguage:vue", "onLanguage:art-vue"] {
         if !activation_events.contains(&event.to_string()) {
             return Err(format!("activationEvents missing {event}"));
@@ -473,6 +475,18 @@ fn assert_unique_values(values: &[String], label: &str) -> Result<(), String> {
     let unique = values.iter().collect::<HashSet<_>>();
     if unique.len() != values.len() {
         return Err(format!("{label} must not contain duplicates"));
+    }
+    Ok(())
+}
+
+fn assert_no_hidden_host_test_commands(values: &[String], label: &str) -> Result<(), String> {
+    for value in values {
+        let command = value.strip_prefix("onCommand:").unwrap_or(value);
+        if command.starts_with("vize.test.") {
+            return Err(format!(
+                "{label} must not expose hidden host smoke command: {value}"
+            ));
+        }
     }
     Ok(())
 }
