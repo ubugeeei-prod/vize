@@ -2,7 +2,7 @@
   "schemaVersion": 8,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
-    "minimumProjectCount": 24,
+    "minimumProjectCount": 25,
     "trackingIssue": 3952
   },
   "projects": [
@@ -263,6 +263,69 @@
         "corpusGlobs": ["packages/**/*.vue", "ssr-testing/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
+      },
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "packages/components/anchor/src/anchor-link.vue",
+          "symbol": "cls",
+          "usageAnchor": ":class=\"cls\"",
+          "declarationAnchor": "const cls = computed(() => [",
+          "hoverContains": ["const cls:"],
+          "renameTo": "__vizeRenamedCls"
+        },
+        "componentBoundary": {
+          "importerFile": "packages/components/cascader-panel/src/menu.vue",
+          "componentFile": "packages/components/cascader-panel/src/node.vue",
+          "tagName": "el-cascader-node",
+          "tagAnchor": "<el-cascader-node\n            ",
+          "completionItemCount": 30,
+          "completionItems": [
+            { "label": "v-if", "rank": 0 },
+            { "label": "v-else-if", "rank": 1 },
+            { "label": "v-else", "rank": 2 },
+            { "label": "v-for", "rank": 3 },
+            { "label": "v-on", "rank": 4 },
+            { "label": "v-bind", "rank": 5 },
+            { "label": "v-model", "rank": 6 },
+            { "label": "v-slot", "rank": 7 },
+            { "label": "v-show", "rank": 8 },
+            { "label": "v-pre", "rank": 9 },
+            { "label": "v-once", "rank": 10 },
+            { "label": "v-memo", "rank": 11 },
+            { "label": "v-cloak", "rank": 12 },
+            { "label": "v-text", "rank": 13 },
+            { "label": "v-html", "rank": 14 },
+            { "label": "@", "rank": 15 },
+            { "label": ":", "rank": 16 },
+            { "label": "#", "rank": 17 },
+            { "label": "@click", "rank": 18 },
+            { "label": "@input", "rank": 19 },
+            { "label": "@change", "rank": 20 },
+            { "label": "@submit", "rank": 21 },
+            { "label": "@keydown", "rank": 22 },
+            { "label": "@keyup", "rank": 23 },
+            { "label": "@focus", "rank": 24 },
+            { "label": "@blur", "rank": 25 },
+            { "label": "@mouseenter", "rank": 26 },
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "node", "rank": 28 },
+            { "label": "menu-id", "rank": 29 }
+          ],
+          "dependencyEdit": {
+            "anchor": "  menuId?: string\n",
+            "replacement": "  menuId?: string\n  vizeOracleProbe?: boolean\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "packages/components/cascader-panel/src/__VizeOracleCascaderNode.vue",
+          "renamedFile": "packages/components/cascader-panel/src/__VizeOracleRenamedCascaderNode.vue",
+          "originalImportSpecifier": "./node.vue",
+          "copiedImportSpecifier": "./__VizeOracleCascaderNode.vue",
+          "renamedImportSpecifier": "./__VizeOracleRenamedCascaderNode.vue",
+          "markerInsertionAnchor": "import type { CheckboxValueType } from '@element-plus/components/checkbox'\n\n",
+          "markerSymbol": "__vizeElementPlusCascaderNodeMarker__"
+        }
       }
     },
     {
