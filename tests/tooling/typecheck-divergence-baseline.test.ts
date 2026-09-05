@@ -13,7 +13,6 @@ import {
   run,
   sha256,
   setup,
-  sharedBaselineOutput,
   sharedVizeDiagnostic,
   unusableFailure,
   updateVizeOutput,
