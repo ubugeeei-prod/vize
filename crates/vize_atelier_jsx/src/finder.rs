@@ -29,7 +29,7 @@ use self::signature::{destructured_prop_names, formal_parameters_range, type_par
 use crate::diagnostics::JsxDiagnostic;
 use crate::lower::{Lowerer, ScopedStyleExpr};
 use crate::mode::{DirectiveKind, JsxOutputMode, classify_directive};
-use crate::{ComponentSetupSpan, LoweredRoot, StyleExprSpan};
+use crate::{ComponentSetupSpan, LoweredRoot, StyleExprSpan, s2};
 
 /// Lower every outermost JSX root in `program` into a [`LoweredRoot`].
 pub(crate) fn lower_program_roots<'a>(
@@ -274,9 +274,11 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
         self.lowerer
             .set_current_output_mode(mode.unwrap_or(self.default_mode));
         let root = self.lowerer.lower_element_root(element);
+        let s2 = s2::try_lower_root(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
         let (scoped_css, scoped_style_exprs) = self.take_scoped_style();
         self.roots.push(LoweredRoot {
             root,
+            s2,
             mode,
             component_name: self.current_name(),
             component_setup: self.current_setup_for_span(element.span),
@@ -290,9 +292,11 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
         self.lowerer
             .set_current_output_mode(mode.unwrap_or(self.default_mode));
         let root = self.lowerer.lower_fragment_root(fragment);
+        let s2 = s2::try_lower_root(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
         let (scoped_css, scoped_style_exprs) = self.take_scoped_style();
         self.roots.push(LoweredRoot {
             root,
+            s2,
             mode,
             component_name: self.current_name(),
             component_setup: self.current_setup_for_span(fragment.span),

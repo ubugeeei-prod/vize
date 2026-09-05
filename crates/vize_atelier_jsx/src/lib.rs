@@ -1,7 +1,7 @@
 //! Shared JSX/TSX lowering layer for Vize.
 //!
-//! This crate turns OXC-parsed JSX/TSX into Vize's shared template IR
-//! ([`vize_relief::RootNode`]) exactly once, so the VDOM
+//! This crate turns OXC-parsed JSX/TSX into Vize's shared template IR and its
+//! Davinci S2 projection exactly once, so the VDOM
 //! ([`vize_atelier_dom`](https://docs.rs/vize_atelier_dom)) and Vapor
 //! (`vize_atelier_vapor`) backends, the type checker, the LSP, and Patina all
 //! consume the same lowered representation instead of forking JSX-only logic.
@@ -40,6 +40,7 @@ pub mod lang;
 pub mod lower;
 pub mod mode;
 pub mod parse;
+pub mod s2;
 pub mod scoped;
 pub mod span;
 pub mod ssr;
@@ -81,8 +82,13 @@ pub use vdom::{VdomCompileOptions, VdomComponent, VdomOutput, compile_to_vdom};
 /// A single lowered render root plus the component metadata recovered from its
 /// enclosing function.
 pub struct LoweredRoot<'a> {
-    /// The lowered template IR.
+    /// The legacy lowered template IR, retained for compatibility consumers
+    /// while P2-16 moves JSX production paths toward [`Self::s2`].
     pub root: RootNode<'a>,
+    /// The neutral S2 representation or the exact family not yet admitted by
+    /// JSX-to-S2 lowering. A refusal is observable input to the migration lane;
+    /// it must not become a silent fallback after the lane selects S2.
+    pub s2: Result<s2::JsxS2Root<'a>, s2::S2Refusal>,
     /// Output mode override from the nearest enclosing component function's
     /// `"use vue:vapor"` / `"use vue:vdom"` directive prologue, if any. `None`
     /// means the configured default applies.

@@ -1,0 +1,250 @@
+//! The first JSX-to-S2 lowering seam.
+//!
+//! This module deliberately admits only the lossless, local subset needed to
+//! establish the S2 representation without inventing fallback semantics.
+//! Callers receive a typed refusal for every Relief form whose S2 facts or DOM
+//! realization have not landed yet. P2-16 expands the admitted family until
+//! this is the authoritative JSX lowering.
+
+use vize_relief::{
+    ElementType, ExpressionNode, Namespace as ReliefNamespace, PropNode, RootNode,
+    TemplateChildNode,
+};
+use vize_s0::{Allocator, Box, Vec};
+use vize_s2::expr::ExprRef;
+use vize_s2::op::{
+    Attribute, ComponentOp, ElementOp, InterpolationOp, Namespace, Op, Region, TextOp,
+};
+
+/// A JSX render root represented as S2 operations.
+#[derive(Debug)]
+pub struct JsxS2Root<'a> {
+    /// The complete JSX/TSX module source backing every S2 span.
+    pub source: &'a str,
+    /// Render operations in authored order.
+    pub root: Region<'a>,
+    /// Number of operations, including attached bindings when they land.
+    pub op_count: u32,
+}
+
+/// A construct which needs a dedicated S2 lowering and must not be silently
+/// projected through the static foundation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum S2Refusal {
+    /// A Vue/JSX directive needs its matching S2 binding op and fact channel.
+    Directive,
+    /// A transformed Relief-only child needs an S2 structural lowering.
+    TransformedChild,
+    /// A JSX root contains a Relief child not represented by this foundation.
+    UnsupportedChild,
+    /// An element kind requires its dedicated S2 operation or realization.
+    UnsupportedElement,
+    /// A Relief expression is compound rather than one authored JS span.
+    CompoundExpression,
+}
+
+/// Project the already-lowered JSX root into the initial, lossless S2 subset.
+///
+/// The projection keeps absolute source spans and parses interpolation text via
+/// [`ExprRef`]. It intentionally refuses instead of degrading directive,
+/// control-flow, slot, or compound-expression semantics.
+pub fn try_lower_root<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    root: &RootNode<'a>,
+) -> Result<JsxS2Root<'a>, S2Refusal> {
+    let mut op_count = 0;
+    let ops = lower_children(allocator, &root.children, &mut op_count)?;
+    Ok(JsxS2Root {
+        source,
+        root: Region { ops },
+        op_count,
+    })
+}
+
+fn lower_children<'a>(
+    allocator: &'a Allocator,
+    children: &[TemplateChildNode<'a>],
+    op_count: &mut u32,
+) -> Result<Vec<'a, Op<'a>>, S2Refusal> {
+    let mut ops = Vec::new_in(&allocator);
+    for child in children {
+        ops.push(lower_child(allocator, child, op_count)?);
+    }
+    Ok(ops)
+}
+
+fn lower_child<'a>(
+    allocator: &'a Allocator,
+    child: &TemplateChildNode<'a>,
+    op_count: &mut u32,
+) -> Result<Op<'a>, S2Refusal> {
+    *op_count = op_count.saturating_add(1);
+    match child {
+        TemplateChildNode::Text(text) => Ok(Op::Text(Box::new_in(
+            TextOp {
+                content: text.content,
+                span: text.loc.span,
+            },
+            &allocator,
+        ))),
+        TemplateChildNode::Interpolation(interpolation) => {
+            let expression = lower_expression(allocator, &interpolation.content)?;
+            Ok(Op::Interpolation(Box::new_in(
+                InterpolationOp {
+                    expression,
+                    span: interpolation.loc.span,
+                },
+                &allocator,
+            )))
+        }
+        TemplateChildNode::Element(element) => lower_element(allocator, element, op_count),
+        TemplateChildNode::If(_)
+        | TemplateChildNode::IfBranch(_)
+        | TemplateChildNode::For(_)
+        | TemplateChildNode::TextCall(_)
+        | TemplateChildNode::CompoundExpression(_)
+        | TemplateChildNode::Hoisted(_) => Err(S2Refusal::TransformedChild),
+        TemplateChildNode::Comment(_) => Err(S2Refusal::UnsupportedChild),
+    }
+}
+
+fn lower_element<'a>(
+    allocator: &'a Allocator,
+    element: &vize_relief::ElementNode<'a>,
+    op_count: &mut u32,
+) -> Result<Op<'a>, S2Refusal> {
+    let attributes = lower_attributes(allocator, &element.props)?;
+    let children = Region {
+        ops: lower_children(allocator, &element.children, op_count)?,
+    };
+    match element.tag_type {
+        ElementType::Element => Ok(Op::Element(Box::new_in(
+            ElementOp {
+                tag: element.tag,
+                namespace: namespace(element.ns),
+                attributes,
+                bindings: Vec::new_in(&allocator),
+                children,
+                span: element.loc.span,
+            },
+            &allocator,
+        ))),
+        ElementType::Component => Ok(Op::Component(Box::new_in(
+            ComponentOp {
+                name: element.tag,
+                attributes,
+                bindings: Vec::new_in(&allocator),
+                children,
+                span: element.loc.span,
+            },
+            &allocator,
+        ))),
+        ElementType::Slot | ElementType::Template => Err(S2Refusal::UnsupportedElement),
+    }
+}
+
+fn lower_attributes<'a>(
+    allocator: &'a Allocator,
+    props: &[PropNode<'a>],
+) -> Result<Vec<'a, Attribute<'a>>, S2Refusal> {
+    let mut attributes = Vec::new_in(&allocator);
+    for prop in props {
+        match prop {
+            PropNode::Attribute(attribute) => attributes.push(Attribute {
+                name: attribute.name,
+                value: attribute.value.as_ref().map(|value| value.content),
+                span: attribute.loc.span,
+            }),
+            PropNode::Directive(_) => return Err(S2Refusal::Directive),
+        }
+    }
+    Ok(attributes)
+}
+
+fn lower_expression<'a>(
+    allocator: &'a Allocator,
+    expression: &ExpressionNode<'a>,
+) -> Result<ExprRef<'a>, S2Refusal> {
+    match expression {
+        ExpressionNode::Simple(simple) => Ok(ExprRef::parse_js_in(
+            allocator,
+            simple.content,
+            simple.loc.span,
+        )),
+        ExpressionNode::Compound(_) => Err(S2Refusal::CompoundExpression),
+    }
+}
+
+const fn namespace(namespace: ReliefNamespace) -> Namespace {
+    match namespace {
+        ReliefNamespace::Html => Namespace::Html,
+        ReliefNamespace::Svg => Namespace::Svg,
+        ReliefNamespace::MathMl => Namespace::MathMl,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use vize_s0::Allocator;
+    use vize_s2::op::Op;
+
+    use crate::{JsxLang, lower_source};
+
+    use super::S2Refusal;
+
+    #[test]
+    fn lower_source_attaches_static_intrinsic_s2_root() {
+        let allocator = Allocator::new();
+        let source = "const App = () => <div id=\"x\">hello {name}<span hidden /></div>";
+        let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+        let root = lowered.roots.first().expect("one JSX root");
+
+        let s2 = root.s2.as_ref().expect("static intrinsic S2 root");
+        assert_eq!(s2.source, source);
+        assert_eq!(s2.op_count, 4);
+        let Op::Element(element) = &s2.root.ops[0] else {
+            panic!("root is an element");
+        };
+        assert_eq!(element.tag, "div");
+        assert_eq!(element.attributes[0].name, "id");
+        assert_eq!(element.attributes[0].value, Some("x"));
+        let Op::Interpolation(interpolation) = &element.children.ops[1] else {
+            panic!("second child is interpolation");
+        };
+        assert_eq!(interpolation.expression.source(), "name");
+        assert_eq!(
+            interpolation.expression.span().start,
+            source.find("name").unwrap() as u32
+        );
+    }
+
+    #[test]
+    fn lower_source_attaches_component_s2_root() {
+        let allocator = Allocator::new();
+        let source = "const App = () => <Panel title=\"x\" />";
+        let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+        let root = lowered.roots.first().expect("one JSX root");
+
+        let s2 = root.s2.as_ref().expect("component S2 root");
+        let Op::Component(component) = &s2.root.ops[0] else {
+            panic!("root is a component");
+        };
+        assert_eq!(component.name, "Panel");
+        assert_eq!(component.attributes[0].name, "title");
+    }
+
+    #[test]
+    fn directive_needs_its_own_s2_binding_lowering() {
+        let allocator = Allocator::new();
+        let lowered = lower_source(
+            &allocator,
+            allocator.as_oxc(),
+            "const App = () => <div id={name} />",
+            JsxLang::Jsx,
+        );
+        let root = lowered.roots.first().expect("one JSX root");
+
+        assert!(matches!(root.s2, Err(S2Refusal::Directive)));
+    }
+}

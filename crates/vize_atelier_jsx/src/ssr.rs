@@ -105,6 +105,7 @@ pub(crate) fn compile_lowered_root_to_ssr(
 ) -> SsrComponent {
     let LoweredRoot {
         mut root,
+        s2: _,
         mode,
         component_name,
         component_setup,

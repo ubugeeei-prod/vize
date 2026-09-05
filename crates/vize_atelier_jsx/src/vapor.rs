@@ -135,6 +135,7 @@ pub(crate) fn compile_root_to_vapor(
 
     let LoweredRoot {
         mut root,
+        s2: _,
         mode,
         component_name,
         component_setup,
