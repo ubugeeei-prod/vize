@@ -6,8 +6,9 @@ use tower_lsp::lsp_types::{
     ColorProviderCapability, CompletionOptions, DocumentLinkOptions,
     DocumentOnTypeFormattingOptions, FileOperationFilter, FileOperationPattern,
     FileOperationPatternKind, FileOperationRegistrationOptions, FoldingRangeProviderCapability,
-    HoverProviderCapability, LinkedEditingRangeServerCapabilities, OneOf, RenameOptions,
-    SaveOptions, SelectionRangeProviderCapability, SemanticTokenModifier, SemanticTokenType,
+    HoverProviderCapability, ImplementationProviderCapability,
+    LinkedEditingRangeServerCapabilities, OneOf, RenameOptions, SaveOptions,
+    SelectionRangeProviderCapability, SemanticTokenModifier, SemanticTokenType,
     SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
     SemanticTokensServerCapabilities, ServerCapabilities, SignatureHelpOptions,
     TextDocumentSyncCapability, TextDocumentSyncKind, TextDocumentSyncOptions,
@@ -213,8 +214,14 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
         // disabling navigation must not spawn type-checker/editor work.
         type_definition_provider: (features.definition && cfg!(feature = "native"))
             .then_some(TypeDefinitionProviderCapability::Simple(true)),
+        // Checker-backed implementation navigation uses Corsa directly: the
+        // provider stays hidden when typecheck is disabled because no lexical
+        // fallback can answer implementation semantics.
+        implementation_provider: (features.definition
+            && features.typecheck
+            && cfg!(feature = "native"))
+        .then_some(ImplementationProviderCapability::Simple(true)),
         // Features not yet implemented
-        implementation_provider: None,
         declaration_provider: None,
         execute_command_provider: None,
         call_hierarchy_provider: None,

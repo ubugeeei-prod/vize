@@ -109,6 +109,7 @@ const EDITOR_BUNDLE_CAPABILITIES = {
   },
   definitionProvider: true,
   typeDefinitionProvider: true,
+  implementationProvider: true,
   referencesProvider: true,
   documentHighlightProvider: true,
   documentSymbolProvider: true,
@@ -181,10 +182,9 @@ const EDITOR_BUNDLE_CAPABILITIES = {
     },
   },
   // Absent on purpose, and therefore absent from this object: the three
-  // formatting providers (opt-in, see below), `implementationProvider`,
-  // `declarationProvider`, `executeCommandProvider`, `callHierarchyProvider`,
-  // `monikerProvider` and `experimental` is absent unless the private client
-  // explicitly opts in.
+  // formatting providers (opt-in, see below), `declarationProvider`,
+  // `executeCommandProvider`, `callHierarchyProvider`, `monikerProvider` and
+  // `experimental` is absent unless the private client explicitly opts in.
 };
 
 test("vize lsp advertises exactly this capability set for the default editor bundle", async () => {
@@ -233,6 +233,7 @@ test("vize lsp editor:false strips editor providers but keeps lint-driven codeAc
       assert.equal(capabilities.hoverProvider, undefined);
       assert.equal(capabilities.definitionProvider, undefined);
       assert.equal(capabilities.typeDefinitionProvider, undefined);
+      assert.equal(capabilities.implementationProvider, undefined);
       assert.equal(capabilities.referencesProvider, undefined);
       assert.equal(capabilities.documentHighlightProvider, undefined);
 
@@ -282,6 +283,17 @@ test("vize lsp per-feature init flags toggle individual providers independently"
       assert.equal(capabilities.documentHighlightProvider, undefined);
       // A sibling editor provider is untouched.
       assert.equal(capabilities.documentSymbolProvider, true);
+    },
+  );
+
+  await withCapabilities(
+    "granular-typecheck-off",
+    { editor: true, typecheck: false },
+    (capabilities) => {
+      assert.equal(capabilities.implementationProvider, undefined);
+      // Definition keeps its lexical/editor fallback when typecheck is disabled.
+      assert.equal(capabilities.definitionProvider, true);
+      assert.equal(capabilities.typeDefinitionProvider, true);
     },
   );
 

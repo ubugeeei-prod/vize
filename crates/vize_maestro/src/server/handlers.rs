@@ -1,7 +1,4 @@
 //! LSP protocol handler implementations.
-//!
-//! Implements the `LanguageServer` trait for `MaestroServer`, dispatching
-//! requests to the appropriate IDE services.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::request::{GotoTypeDefinitionParams, GotoTypeDefinitionResponse};
@@ -27,9 +24,7 @@ use tower_lsp::{
     },
 };
 
-// Only the test modules below construct positions and ranges now that
-// `document_symbol` moved into `server::document_structure` and range
-// formatting into `server::format`; they reach these through `use super::*`.
+// Test modules still construct positions and ranges through `use super::*`.
 #[cfg(test)]
 use tower_lsp::lsp_types::{Position, Range};
 
@@ -42,6 +37,7 @@ use crate::ide::{
 };
 
 mod navigation;
+use navigation::{ImplParams, ImplResponse};
 
 #[tower_lsp::async_trait]
 impl LanguageServer for MaestroServer {
@@ -297,6 +293,10 @@ impl LanguageServer for MaestroServer {
         params: GotoTypeDefinitionParams,
     ) -> Result<Option<GotoTypeDefinitionResponse>> {
         navigation::goto_type_definition(self, params).await
+    }
+
+    async fn goto_implementation(&self, params: ImplParams) -> Result<Option<ImplResponse>> {
+        navigation::goto_implementation(self, params).await
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {

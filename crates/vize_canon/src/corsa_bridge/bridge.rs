@@ -15,6 +15,8 @@ use crate::corsa_client::CorsaProjectClient;
 
 #[path = "bridge/documents.rs"]
 mod documents;
+#[path = "bridge/implementation.rs"]
+mod implementation;
 mod language_features;
 pub(super) use documents::normalize_document_uri;
 

@@ -86,6 +86,7 @@ export type ServerCapabilities = {
   documentSymbolProvider?: unknown;
   foldingRangeProvider?: unknown;
   hoverProvider?: unknown;
+  implementationProvider?: unknown;
   inlayHintProvider?: unknown;
   linkedEditingRangeProvider?: unknown;
   referencesProvider?: unknown;

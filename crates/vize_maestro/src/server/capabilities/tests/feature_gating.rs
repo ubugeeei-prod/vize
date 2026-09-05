@@ -32,7 +32,13 @@ fn individual_feature_flags_gate_matching_providers() {
             |capabilities| {
                 capabilities.definition_provider.is_some()
                     || capabilities.type_definition_provider.is_some()
+                    || capabilities.implementation_provider.is_some()
             },
+        ),
+        (
+            "typecheck",
+            |features| features.typecheck = false,
+            |capabilities| capabilities.implementation_provider.is_some(),
         ),
         (
             "references",

@@ -116,6 +116,68 @@ const label = user.name
 }
 
 #[test]
+fn canonical_location_maps_script_setup_class_member_implementation_target() {
+    let uri = Url::parse("file:///tmp/Implementation.vue").expect("uri");
+    let source = r#"<script setup lang="ts">
+interface Formatter {
+  format(value: string): string
+}
+
+class LabelFormatter implements Formatter {
+  format(value: string): string {
+    return value.toUpperCase()
+  }
+}
+</script>
+"#;
+    let state = ServerState::new();
+    let ctx = IdeContext::with_content(
+        &state,
+        &uri,
+        source.find("Formatter").unwrap(),
+        source.to_string(),
+    );
+    let doc = canonical_doc(&uri, source);
+    let generated_start = doc
+        .virtual_result
+        .code
+        .find("format(value: string): string {")
+        .expect("generated class method");
+    let generated_end = generated_start + "format".len();
+    let (start_line, start_character) =
+        crate::ide::offset_to_position(&doc.virtual_result.code, generated_start);
+    let (end_line, end_character) =
+        crate::ide::offset_to_position(&doc.virtual_result.code, generated_end);
+    let location = LspLocation {
+        uri: doc.request_uri.to_string(),
+        range: LspRange {
+            start: LspPosition {
+                line: start_line,
+                character: start_character,
+            },
+            end: LspPosition {
+                line: end_line,
+                character: end_character,
+            },
+        },
+    };
+
+    let mapped = map_canonical_corsa_location(&ctx, &doc, &location)
+        .expect("implementation target should map to authored class method");
+    let source_start = crate::ide::position_to_offset(
+        source,
+        mapped.range.start.line,
+        mapped.range.start.character,
+    )
+    .expect("mapped start");
+    let source_end =
+        crate::ide::position_to_offset(source, mapped.range.end.line, mapped.range.end.character)
+            .expect("mapped end");
+
+    assert_eq!(&source[source_start..source_end], "format");
+}
+
+#[test]
 fn canonical_source_offset_accounts_for_vue_import_rewrite_before_script_body() {
     let uri = Url::parse("file:///tmp/Parent.vue").expect("uri");
     let source = r#"<script setup lang="ts">

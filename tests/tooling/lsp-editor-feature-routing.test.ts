@@ -48,6 +48,10 @@ const DISABLED_REQUESTS: RequestCase[] = [
     params: (uri) => ({ textDocument: { uri }, position }),
   },
   {
+    method: "textDocument/implementation",
+    params: (uri) => ({ textDocument: { uri }, position }),
+  },
+  {
     method: "textDocument/references",
     params: (uri) => ({ textDocument: { uri }, position, context: { includeDeclaration: true } }),
   },

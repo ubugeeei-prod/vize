@@ -20,6 +20,7 @@ pub mod document_link;
 pub(crate) mod ecosystem;
 pub mod file_rename;
 pub mod hover;
+pub mod implementation;
 pub mod inlay_hint;
 pub mod jsx;
 pub mod linked_editing;
@@ -52,6 +53,7 @@ pub use document_highlight::DocumentHighlightService;
 pub use document_link::DocumentLinkService;
 pub use file_rename::FileRenameService;
 pub use hover::{HoverBuilder, HoverService};
+pub use implementation::ImplementationService;
 pub use inlay_hint::InlayHintService;
 pub use jsx::{
     JsxCodeActionService, JsxDocumentSymbolsService, JsxScopedStyleService,
