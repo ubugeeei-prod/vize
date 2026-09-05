@@ -145,6 +145,42 @@ fn assert_family(inline: bool) {
 }
 
 #[test]
+fn model_battery_with_cache_handlers_and_scope_id_matches_the_shipped_lane() {
+    support::assert_s2_matches_shipped_with_options(
+        support::battery::model::MODEL_BATTERY,
+        &DomCompilerOptions {
+            cache_handlers: true,
+            scope_id: Some(SCOPE_ID.into()),
+            ..Default::default()
+        },
+        &CodegenOptions::default(),
+        &DomEmitOptions {
+            cache_handlers: true,
+            scope_id: Some(SCOPE_ID),
+            ..DomEmitOptions::DEFAULT
+        },
+    );
+}
+
+#[test]
+fn outlet_battery_with_cache_handlers_and_scope_id_matches_the_shipped_lane() {
+    support::assert_s2_matches_shipped_with_options(
+        support::battery::outlets::OUTLET_BATTERY,
+        &DomCompilerOptions {
+            cache_handlers: true,
+            scope_id: Some(SCOPE_ID.into()),
+            ..Default::default()
+        },
+        &CodegenOptions::default(),
+        &DomEmitOptions {
+            cache_handlers: true,
+            scope_id: Some(SCOPE_ID),
+            ..DomEmitOptions::DEFAULT
+        },
+    );
+}
+
+#[test]
 fn script_setup_option_families_match_the_shipped_lane() {
     assert_family(false);
 }
