@@ -96,25 +96,28 @@ test("DOM S2 production switch classifies every compiler option", () => {
     "DomCompilerOptions",
   );
 
-  assert.deepEqual(fields, [
-    "mode",
-    "prefix_identifiers",
-    "hoist_static",
-    "cache_handlers",
-    "scope_id",
-    "ssr",
-    "source_map",
-    "comments",
-    "experimental_in_tag_comments",
-    "experimental_patterned_template",
-    "component_name",
-    "inline",
-    "custom_renderer",
-    "binding_metadata",
-    "is_ts",
-    "dialect",
-    "croquis",
-  ]);
+  assert.deepEqual(
+    [...fields].sort(),
+    [
+      "mode",
+      "prefix_identifiers",
+      "hoist_static",
+      "cache_handlers",
+      "scope_id",
+      "ssr",
+      "source_map",
+      "comments",
+      "experimental_in_tag_comments",
+      "experimental_patterned_template",
+      "component_name",
+      "inline",
+      "custom_renderer",
+      "binding_metadata",
+      "is_ts",
+      "dialect",
+      "croquis",
+    ].sort(),
+  );
 
   assert.deepEqual(
     sortedUnique([...compilerOptionsProjectedToS2, ...compilerOptionsHeldAtDefault]),
@@ -124,11 +127,13 @@ test("DOM S2 production switch classifies every compiler option", () => {
 
 test("DOM S2 emit options stay scoped to the supported switch surface", () => {
   assert.deepEqual(
-    publicStructFieldNames(
-      readRepoFile("crates", "vize_s1_to_s2", "src", "emit", "options.rs"),
-      "DomEmitOptions",
-    ),
-    s2EmitOptionFields,
+    [
+      ...publicStructFieldNames(
+        readRepoFile("crates", "vize_s1_to_s2", "src", "emit", "options.rs"),
+        "DomEmitOptions",
+      ),
+    ].sort(),
+    [...s2EmitOptionFields].sort(),
   );
 });
 
