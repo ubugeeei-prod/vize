@@ -296,13 +296,6 @@ pub(super) fn emit_call(
     } else if !element.attributes.is_empty() {
         cx.buf.push(", ");
         super::props_static::emit_inline(cx, element.attributes.iter(), once_layout);
-    } else if let Some(scope_id) = cx
-        .scope_id_here()
-        .filter(|_| cx.in_v_for && (has_children || emit_flag))
-    {
-        cx.buf.push(", ");
-        let props = super::hoist::compact_props_object(element.attributes.iter(), Some(scope_id));
-        cx.buf.push(props.as_str());
     } else if empty_runtime_for {
         cx.buf.push(", { }");
     } else if has_children || emit_flag {
