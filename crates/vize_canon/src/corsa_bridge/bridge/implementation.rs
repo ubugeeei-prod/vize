@@ -1,7 +1,7 @@
 //! Implementation-location editor query forwarded through the Corsa session.
 
-use super::{CorsaBridge, parse_json_value};
-use crate::corsa_bridge::types::{CorsaBridgeError, LspDefinitionResponse, LspLocation};
+use super::{CorsaBridge, parse_lsp_locations};
+use crate::corsa_bridge::types::{CorsaBridgeError, LspLocation};
 
 #[allow(clippy::disallowed_types)]
 impl CorsaBridge {
@@ -27,7 +27,7 @@ impl CorsaBridge {
         }
 
         if let Some(value) = result {
-            return Ok(parse_json_value::<LspDefinitionResponse>(value)?.into_locations());
+            return parse_lsp_locations(value);
         }
 
         Ok(Vec::new())

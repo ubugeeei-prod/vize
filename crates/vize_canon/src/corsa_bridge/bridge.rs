@@ -9,7 +9,7 @@ use vize_carton::cstr;
 use vize_carton::profiler::{CacheStats, Profiler};
 
 use super::session::build_client;
-use super::types::{CorsaBridgeConfig, CorsaBridgeError};
+use super::types::{CorsaBridgeConfig, CorsaBridgeError, LspDefinitionResponse, LspLocation};
 use super::worker::{BoundedWorker, WorkerError};
 use crate::corsa_client::CorsaProjectClient;
 
@@ -227,4 +227,40 @@ where
     serde_json::from_value(value).map_err(|e| {
         CorsaBridgeError::CommunicationError(cstr!("Failed to parse Corsa result: {e}"))
     })
+}
+
+pub(super) fn parse_lsp_locations(value: Value) -> Result<Vec<LspLocation>, CorsaBridgeError> {
+    Ok(parse_json_value::<LspDefinitionResponse>(value)?.into_locations())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_lsp_locations;
+
+    #[test]
+    fn declaration_and_implementation_location_links_normalize_to_locations() {
+        let locations = parse_lsp_locations(serde_json::json!([{
+            "targetUri": "file:///workspace/src/service.ts",
+            "targetRange": {
+                "start": { "line": 3, "character": 0 },
+                "end": { "line": 5, "character": 1 }
+            },
+            "targetSelectionRange": {
+                "start": { "line": 3, "character": 6 },
+                "end": { "line": 3, "character": 21 }
+            },
+            "originSelectionRange": {
+                "start": { "line": 0, "character": 10 },
+                "end": { "line": 0, "character": 17 }
+            }
+        }]))
+        .expect("location-link response");
+
+        assert_eq!(locations.len(), 1);
+        assert_eq!(locations[0].uri, "file:///workspace/src/service.ts");
+        assert_eq!(locations[0].range.start.line, 3);
+        assert_eq!(locations[0].range.start.character, 6);
+        assert_eq!(locations[0].range.end.line, 3);
+        assert_eq!(locations[0].range.end.character, 21);
+    }
 }

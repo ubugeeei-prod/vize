@@ -118,6 +118,17 @@ impl lsp_types::request::Request for RawWillRenameFilesRequest {
     const METHOD: &'static str = "workspace/willRenameFiles";
 }
 
+pub(super) fn positional_text_document_request_params(
+    uri: &Uri,
+    line: u32,
+    character: u32,
+) -> Value {
+    serde_json::json!({
+        "textDocument": { "uri": uri },
+        "position": { "line": line, "character": character },
+    })
+}
+
 pub(super) fn signature_help_request_params(
     uri: &Uri,
     line: u32,

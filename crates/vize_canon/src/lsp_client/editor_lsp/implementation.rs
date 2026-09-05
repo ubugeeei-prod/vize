@@ -2,7 +2,10 @@ use corsa::runtime::block_on;
 use serde_json::Value;
 use vize_s0::{String, cstr};
 
-use super::{EditorLspSession, requests::RawImplementationRequest};
+use super::{
+    EditorLspSession,
+    requests::{RawImplementationRequest, positional_text_document_request_params},
+};
 
 impl EditorLspSession {
     pub(super) fn implementation(
@@ -12,13 +15,9 @@ impl EditorLspSession {
         character: u32,
     ) -> Result<Option<Value>, String> {
         let uri = self.ready_document_uri(document_uri)?;
-        block_on(
-            self.client
-                .request::<RawImplementationRequest>(serde_json::json!({
-                    "textDocument": { "uri": uri },
-                    "position": { "line": line, "character": character },
-                })),
-        )
+        block_on(self.client.request::<RawImplementationRequest>(
+            positional_text_document_request_params(&uri, line, character),
+        ))
         .map_err(|error| cstr!("Failed to request editor LSP implementation: {error}"))
     }
 }

@@ -3,10 +3,10 @@
 use serde_json::Value;
 use vize_carton::String;
 
-use super::{CorsaBridge, parse_json_value};
+use super::{CorsaBridge, parse_json_value, parse_lsp_locations};
 use crate::corsa_bridge::types::{
-    CorsaBridgeError, LspCompletionItem, LspCompletionResponse, LspDefinitionResponse, LspHover,
-    LspLocation, LspSignatureHelp,
+    CorsaBridgeError, LspCompletionItem, LspCompletionResponse, LspHover, LspLocation,
+    LspSignatureHelp,
 };
 
 #[allow(clippy::disallowed_types)]
@@ -57,7 +57,7 @@ impl CorsaBridge {
         }
 
         if let Some(value) = result {
-            return Ok(parse_json_value::<LspDefinitionResponse>(value)?.into_locations());
+            return parse_lsp_locations(value);
         }
 
         Ok(Vec::new())
@@ -97,9 +97,7 @@ impl CorsaBridge {
         results
             .into_iter()
             .map(|result| match result {
-                Some(value) => {
-                    Ok(parse_json_value::<LspDefinitionResponse>(value)?.into_locations())
-                }
+                Some(value) => parse_lsp_locations(value),
                 None => Ok(Vec::new()),
             })
             .collect()
@@ -127,7 +125,7 @@ impl CorsaBridge {
         }
 
         if let Some(value) = result {
-            return Ok(parse_json_value::<LspDefinitionResponse>(value)?.into_locations());
+            return parse_lsp_locations(value);
         }
 
         Ok(Vec::new())

@@ -1,6 +1,32 @@
 use super::*;
 
 #[test]
+fn declaration_and_implementation_requests_use_standard_lsp_methods() {
+    assert_eq!(
+        <requests::RawDeclarationRequest as lsp_types::request::Request>::METHOD,
+        "textDocument/declaration"
+    );
+    assert_eq!(
+        <requests::RawImplementationRequest as lsp_types::request::Request>::METHOD,
+        "textDocument/implementation"
+    );
+}
+
+#[test]
+fn positional_language_feature_params_use_lsp_text_document_position_shape() {
+    let uri = Uri::from_str("file:///workspace/src/App.vue.ts").unwrap();
+    let params = requests::positional_text_document_request_params(&uri, 12, 34);
+
+    assert_eq!(
+        params,
+        serde_json::json!({
+            "textDocument": { "uri": "file:///workspace/src/App.vue.ts" },
+            "position": { "line": 12, "character": 34 }
+        })
+    );
+}
+
+#[test]
 fn prepare_call_hierarchy_uses_editor_lsp_runtime_items() {
     if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
         return;
