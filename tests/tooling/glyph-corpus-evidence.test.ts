@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
+  loadKnownViolations,
   selectGlyphCorpusProjects,
   writeGlyphCorpusPropertyEvidence,
 } from "../../legacy-tools/fixtures/glyph-corpus.mjs";
@@ -116,3 +117,28 @@ test("glyph corpus shard selection is bound to manifest project ids before hydra
     /must be less than/,
   );
 });
+
+test("glyph waiver ledger validation is not narrowed to the selected shard", () => {
+  const beforeIndex = process.env.FIXTURE_SHARD_INDEX;
+  const beforeCount = process.env.FIXTURE_SHARD_COUNT;
+  try {
+    process.env.FIXTURE_SHARD_INDEX = "10";
+    process.env.FIXTURE_SHARD_COUNT = "22";
+    const violations = loadKnownViolations("parse-preservation");
+    assert.ok(
+      violations.some((entry: { project: string }) => entry.project === "vitepress"),
+      "the current VitePress waiver should remain valid outside its matrix shard",
+    );
+  } finally {
+    restoreEnv("FIXTURE_SHARD_INDEX", beforeIndex);
+    restoreEnv("FIXTURE_SHARD_COUNT", beforeCount);
+  }
+});
+
+function restoreEnv(name: string, value: string | undefined): void {
+  if (value == null) {
+    delete process.env[name];
+  } else {
+    process.env[name] = value;
+  }
+}

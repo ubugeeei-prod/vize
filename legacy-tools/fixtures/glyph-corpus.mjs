@@ -46,8 +46,20 @@ const maxFilesEnv = "VIZE_GLYPH_CORPUS_MAX_FILES_PER_PROJECT";
  * so shared fixture paths never make sibling registry ids look selected.
  */
 export function loadGlyphCorpusProjects() {
+  return materializeGlyphCorpusProjects(selectGlyphCorpusProjects(readGlyphCorpusRegistry()));
+}
+
+function loadAllGlyphCorpusProjects() {
+  return materializeGlyphCorpusProjects(selectGlyphCorpusProjects(readGlyphCorpusRegistry(), {}));
+}
+
+function readGlyphCorpusRegistry() {
   const registry = JSON.parse(readFileSync(registryPath, "utf8"));
-  return selectGlyphCorpusProjects(registry.projects).map((project) => {
+  return registry.projects;
+}
+
+function materializeGlyphCorpusProjects(projects) {
+  return projects.map((project) => {
     const fixtureDir = resolve(repoRoot, project.fixturePath);
     const hydrated = existsSync(fixtureDir) && readdirSync(fixtureDir).length > 0;
     return { ...project, fixtureDir, hydrated };
@@ -305,7 +317,7 @@ function nonNegativeInteger(value, name) {
 }
 
 export function loadKnownViolationLedger() {
-  return readKnownViolationLedger(knownViolationsPath, loadGlyphCorpusProjects());
+  return readKnownViolationLedger(knownViolationsPath, loadAllGlyphCorpusProjects());
 }
 
 /** Load the checked-in waiver ledger entries for one corpus property. */
