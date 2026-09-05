@@ -264,6 +264,7 @@
       "file": "packages/core/src/Autocomplete/story/_Autocomplete.vue",
       "diagnostics": [
         "error:2:67 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:5:38 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:6:235 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -272,6 +273,7 @@
       "file": "packages/core/src/Avatar/AvatarFallback.vue",
       "diagnostics": [
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
+        "error:3:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:4:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:14:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:18:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<AvatarFallbackProps>'.",
@@ -318,11 +320,14 @@
     },
     {
       "file": "packages/core/src/Avatar/utils.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/Calendar/CalendarCell.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:15:50 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<CalendarCellProps>'.",
@@ -332,7 +337,9 @@
     {
       "file": "packages/core/src/Calendar/CalendarCellTrigger.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
+        "error:10:8 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:12:24 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:13:24 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:43:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
@@ -393,6 +400,7 @@
     {
       "file": "packages/core/src/Calendar/CalendarNext.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:64 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<CalendarNextProps>'.",
@@ -404,6 +412,7 @@
     {
       "file": "packages/core/src/Calendar/CalendarPrev.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:64 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<CalendarPrevProps>'.",
@@ -415,10 +424,12 @@
     {
       "file": "packages/core/src/Calendar/CalendarRoot.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:5:65 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:6:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:8:32 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:9:32 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
+        "error:10:39 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:11:33 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:12:56 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:13:60 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
@@ -433,36 +444,50 @@
     },
     {
       "file": "packages/core/src/Calendar/story/CalendarChromatic.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:4:30 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/Calendar/story/CalendarDefault.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:211 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Calendar/story/CalendarDir.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:32 [TS2307] Cannot find module '@/ConfigProvider' or its corresponding type declarations.",
         "error:4:211 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Calendar/story/CalendarFixedWeeksForLocales.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:115 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/Calendar/story/CalendarLocales.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:115 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/Calendar/story/CalendarMultiple.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:30 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/Calendar/story/CalendarPopover.story.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:4:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
+        "error:5:55 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:8:50 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:9:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:11:211 [TS2307] Cannot find module '..' or its corresponding type declarations."
@@ -471,6 +496,8 @@
     {
       "file": "packages/core/src/Calendar/story/CalendarSelect.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
+        "error:3:69 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:5:23 [TS2307] Cannot find module '@/Label' or its corresponding type declarations.",
         "error:6:239 [TS2307] Cannot find module '@/Select' or its corresponding type declarations.",
         "error:7:211 [TS2307] Cannot find module '..' or its corresponding type declarations."
@@ -480,6 +507,7 @@
       "file": "packages/core/src/Calendar/story/CalendarValidation.story.vue",
       "diagnostics": [
         "error:2:40 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:41 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:6:68 [TS7006] Parameter 'date' implicitly has an 'any' type.",
         "error:9:65 [TS7006] Parameter 'date' implicitly has an 'any' type."
       ]
@@ -487,6 +515,7 @@
     {
       "file": "packages/core/src/Calendar/story/CalendarWeek.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:31 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:4:211 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -494,12 +523,15 @@
     {
       "file": "packages/core/src/Calendar/story/CalendarYearIncrement.story.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:211 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Calendar/story/_Calendar.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:40 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:4:211 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -507,6 +539,7 @@
     {
       "file": "packages/core/src/Calendar/story/_CalendarMultiple.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:40 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:4:211 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -521,6 +554,7 @@
       "file": "packages/core/src/Calendar/story/_DummyCalendar.vue",
       "diagnostics": [
         "error:2:59 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:38 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:5:211 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -528,8 +562,10 @@
     {
       "file": "packages/core/src/Calendar/useCalendar.ts",
       "diagnostics": [
+        "error:5:44 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:7:65 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:8:43 [TS2307] Cannot find module '@/shared/useDateFormatter' or its corresponding type declarations.",
+        "error:9:54 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:11:73 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:12:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:207:39 [TS7006] Parameter 'date' implicitly has an 'any' type."
@@ -565,6 +601,7 @@
         "error:4:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:5:54 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
         "error:7:116 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
+        "error:49:25 [TS2307] Cannot find module 'ohash' or its corresponding type declarations.",
         "error:51:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:52:33 [TS2307] Cannot find module '@/RovingFocus' or its corresponding type declarations.",
         "error:53:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
@@ -582,12 +619,14 @@
     {
       "file": "packages/core/src/Checkbox/story/Checkbox.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:49 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Checkbox/story/CheckboxGroup.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:68 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -595,6 +634,7 @@
       "file": "packages/core/src/Checkbox/story/_Checkbox.vue",
       "diagnostics": [
         "error:2:40 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:5:49 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -602,6 +642,7 @@
       "file": "packages/core/src/Checkbox/story/_CheckboxGroup.vue",
       "diagnostics": [
         "error:2:45 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:5:68 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -660,6 +701,7 @@
     {
       "file": "packages/core/src/Collapsible/story/Collapsible.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:73 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -1064,6 +1106,7 @@
     {
       "file": "packages/core/src/Combobox/ComboboxVirtualizer.vue",
       "diagnostics": [
+        "error:6:47 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
         "error:7:46 [TS2307] Cannot find module '@/Listbox/ListboxVirtualizer.vue' or its corresponding type declarations.",
         "error:8:38 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
         "error:9:32 [TS2307] Cannot find module '@/Listbox/ListboxVirtualizer.vue' or its corresponding type declarations."
@@ -1076,6 +1119,7 @@
     {
       "file": "packages/core/src/Combobox/story/ComboboxAsync.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:5:150 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:29:30 [TS7006] Parameter 'v' implicitly has an 'any' type."
       ]
@@ -1083,6 +1127,7 @@
     {
       "file": "packages/core/src/Combobox/story/ComboboxAsyncOptions.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:5:165 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:14:34 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:14:108 [TS7006] Parameter 'i' implicitly has an 'any' type."
@@ -1091,30 +1136,35 @@
     {
       "file": "packages/core/src/Combobox/story/ComboboxBasic.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:214 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Combobox/story/ComboboxCancel.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:230 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Combobox/story/ComboboxCustom.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:180 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Combobox/story/ComboboxMultiple.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:180 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Combobox/story/ComboboxObject.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:27 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:5:180 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -1122,12 +1172,14 @@
     {
       "file": "packages/core/src/Combobox/story/ComboboxReactive.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:199 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Combobox/story/ComboboxScrolling.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:214 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -1135,12 +1187,14 @@
       "file": "packages/core/src/Combobox/story/ComboboxSelectMenu.story.vue",
       "diagnostics": [
         "error:2:47 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:5:230 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Combobox/story/ComboboxVirtual.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:27 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:5:29 [TS2307] Cannot find module '@/shared/constant' or its corresponding type declarations.",
         "error:6:171 [TS2307] Cannot find module '..' or its corresponding type declarations.",
@@ -1153,6 +1207,7 @@
       "file": "packages/core/src/Combobox/story/_Combobox.vue",
       "diagnostics": [
         "error:2:59 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:5:49 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:6:199 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -1161,6 +1216,7 @@
       "file": "packages/core/src/Combobox/story/_ComboboxManualFilter.vue",
       "diagnostics": [
         "error:2:60 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:5:27 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:6:180 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -1169,6 +1225,7 @@
       "file": "packages/core/src/Combobox/story/_ComboboxObject.vue",
       "diagnostics": [
         "error:2:60 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:5:180 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -1339,12 +1396,14 @@
     {
       "file": "packages/core/src/ContextMenu/story/ContextMenu.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:20:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/ContextMenu/story/_ContextMenu.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:20:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -1365,6 +1424,7 @@
     {
       "file": "packages/core/src/DateField/DateFieldRoot.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:4:30 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:5:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:6:42 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
@@ -1387,6 +1447,8 @@
     {
       "file": "packages/core/src/DateField/story/DateFieldChromatic.story.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:3:30 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:5:47 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -1426,6 +1488,7 @@
     {
       "file": "packages/core/src/DateField/story/_DateField.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:41 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:4:23 [TS2307] Cannot find module '@/Label' or its corresponding type declarations.",
         "error:5:47 [TS2307] Cannot find module '..' or its corresponding type declarations."
@@ -1448,6 +1511,8 @@
     {
       "file": "packages/core/src/DatePicker/DatePickerCalendar.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:3:28 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:4:30 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -1486,6 +1551,7 @@
     {
       "file": "packages/core/src/DatePicker/DatePickerField.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:31 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -1564,6 +1630,7 @@
     {
       "file": "packages/core/src/DatePicker/DatePickerRoot.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:5:111 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:6:59 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:7:55 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
@@ -1621,11 +1688,15 @@
     },
     {
       "file": "packages/core/src/DatePicker/story/DatePickerChromatic.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:5:30 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/DatePicker/story/DatePickerDefault.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:23 [TS2307] Cannot find module '@/Label' or its corresponding type declarations.",
         "error:23:8 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:36:33 [TS7006] Parameter 'date' implicitly has an 'any' type."
@@ -1637,11 +1708,15 @@
     },
     {
       "file": "packages/core/src/DatePicker/story/DatePickerValidation.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:3:41 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/DatePicker/story/_DatePicker.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:42 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:4:23 [TS2307] Cannot find module '@/Label' or its corresponding type declarations.",
         "error:23:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
@@ -1651,6 +1726,7 @@
       "file": "packages/core/src/DatePicker/story/_DummyDatePicker.vue",
       "diagnostics": [
         "error:2:63 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:38 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:25:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -1668,6 +1744,7 @@
     {
       "file": "packages/core/src/DateRangeField/DateRangeFieldRoot.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:5:30 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:6:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:7:32 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
@@ -1690,7 +1767,10 @@
     },
     {
       "file": "packages/core/src/DateRangeField/story/DateRangeFieldChromatic.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:4:57 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/DateRangeField/story/DateRangeFieldDefault.story.vue",
@@ -1700,18 +1780,22 @@
     },
     {
       "file": "packages/core/src/DateRangeField/story/DateRangeFieldGranular.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:34 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/DateRangeField/story/DateRangeFieldValidation.story.vue",
       "diagnostics": [
         "error:2:30 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
+        "error:3:30 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:10:38 [TS7006] Parameter 'date' implicitly has an 'any' type."
       ]
     },
     {
       "file": "packages/core/src/DateRangeField/story/_DateRangeField.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:46 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:4:23 [TS2307] Cannot find module '@/Label' or its corresponding type declarations.",
         "error:5:57 [TS2307] Cannot find module '..' or its corresponding type declarations."
@@ -1742,6 +1826,7 @@
     {
       "file": "packages/core/src/DateRangePicker/DateRangePickerCalendar.vue",
       "diagnostics": [
+        "error:2:28 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:35 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:36:27 [TS7006] Parameter 'date' implicitly has an 'any' type.",
         "error:39:27 [TS7006] Parameter 'date' implicitly has an 'any' type.",
@@ -1782,6 +1867,7 @@
     {
       "file": "packages/core/src/DateRangePicker/DateRangePickerField.vue",
       "diagnostics": [
+        "error:2:28 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:36 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:33:27 [TS7006] Parameter 'date' implicitly has an 'any' type.",
         "error:37:27 [TS7006] Parameter 'date' implicitly has an 'any' type."
@@ -1862,6 +1948,7 @@
     {
       "file": "packages/core/src/DateRangePicker/DateRangePickerRoot.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:5:126 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:6:59 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:7:66 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
@@ -1923,11 +2010,15 @@
     },
     {
       "file": "packages/core/src/DateRangePicker/story/DateRangePickerChromatic.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:4:34 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/DateRangePicker/story/DateRangePickerDefault.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:23 [TS2307] Cannot find module '@/Label' or its corresponding type declarations.",
         "error:23:8 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:36:33 [TS7006] Parameter 'date' implicitly has an 'any' type."
@@ -1939,11 +2030,15 @@
     },
     {
       "file": "packages/core/src/DateRangePicker/story/DateRangePickerValidation.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:3:45 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/DateRangePicker/story/_DateRangePicker.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:47 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:4:23 [TS2307] Cannot find module '@/Label' or its corresponding type declarations.",
         "error:23:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
@@ -1953,6 +2048,7 @@
       "file": "packages/core/src/DateRangePicker/story/_DummyDateRangePicker.vue",
       "diagnostics": [
         "error:2:73 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:38 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:25:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -2068,6 +2164,7 @@
     {
       "file": "packages/core/src/Dialog/story/DialogExternalTrigger.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:13:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -2086,12 +2183,14 @@
     {
       "file": "packages/core/src/Dialog/story/DialogWithDropdown.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:10:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Dialog/story/_Dialog.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:13:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -2189,6 +2288,7 @@
     {
       "file": "packages/core/src/DismissableLayer/utils.ts",
       "diagnostics": [
+        "error:2:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:4:46 [TS2307] Cannot find module '@/shared' or its corresponding type declarations."
       ]
     },
@@ -2547,12 +2647,14 @@
     {
       "file": "packages/core/src/DropdownMenu/story/DropdownMenu.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:20:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/DropdownMenu/story/DropdownMenuFilter.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:21:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -2560,6 +2662,7 @@
       "file": "packages/core/src/DropdownMenu/story/_DropdownMenu.vue",
       "diagnostics": [
         "error:4:8 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:5:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:7:32 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:21:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -2670,6 +2773,7 @@
       "diagnostics": [
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:3:52 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
+        "error:47:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:49:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:50:40 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './stack.js'?",
         "error:59:8 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
@@ -2717,6 +2821,7 @@
       "diagnostics": [
         "error:2:44 [TS2307] Cannot find module '@/DismissableLayer' or its corresponding type declarations.",
         "error:3:41 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
+        "error:4:25 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:5:48 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:14:34 [TS2307] Cannot find module '@/DismissableLayer' or its corresponding type declarations.",
         "error:15:31 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
@@ -2800,6 +2905,7 @@
       "file": "packages/core/src/Listbox/ListboxContent.vue",
       "diagnostics": [
         "error:2:37 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:30 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:4:27 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:11:31 [TS2307] Cannot find module '@/Collection' or its corresponding type declarations.",
         "error:25:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type '__DefineProps<ListboxContentProps, never>'.\nProperty 'as' does not exist on type '__DefineProps<ListboxContentProps, never>'."
@@ -2863,6 +2969,7 @@
         "error:5:32 [TS2307] Cannot find module '@/RovingFocus/utils' or its corresponding type declarations.",
         "error:6:102 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:7:27 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:82:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:84:31 [TS2307] Cannot find module '@/Collection' or its corresponding type declarations.",
         "error:85:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
         "error:86:25 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
@@ -2882,12 +2989,17 @@
     {
       "file": "packages/core/src/Listbox/ListboxVirtualizer.vue",
       "diagnostics": [
+        "error:15:47 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
         "error:17:38 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
+        "error:18:32 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
+        "error:20:30 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:22:31 [TS2307] Cannot find module '@/Collection' or its corresponding type declarations.",
         "error:23:41 [TS2307] Cannot find module '@/RovingFocus/utils' or its corresponding type declarations.",
         "error:24:53 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:25:30 [TS2307] Cannot find module '@/shared/useTypeahead' or its corresponding type declarations.",
         "error:27:46 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
+        "error:67:18 [TS7006] Parameter 'index' implicitly has an 'any' type.",
+        "error:78:82 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:107:36 [TS7031] Binding element 'event' implicitly has an 'any' type.",
         "error:107:43 [TS7031] Binding element 'scroll' implicitly has an 'any' type.",
         "error:141:36 [TS7006] Parameter 'i' implicitly has an 'any' type.",
@@ -2958,7 +3070,9 @@
     },
     {
       "file": "packages/core/src/Listbox/utils.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:1:25 [TS2307] Cannot find module 'ohash' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/Menu/MenuAnchor.vue",
@@ -3078,6 +3192,7 @@
       "file": "packages/core/src/Menu/MenuRadioItem.vue",
       "diagnostics": [
         "error:6:38 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
+        "error:7:30 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:8:33 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:23:33 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?"
       ]
@@ -3378,6 +3493,7 @@
     {
       "file": "packages/core/src/Menubar/story/Menubar.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:19:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -3385,6 +3501,7 @@
       "file": "packages/core/src/Menubar/story/_Menubar.vue",
       "diagnostics": [
         "error:4:8 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:5:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:7:32 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:20:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -3392,6 +3509,7 @@
     {
       "file": "packages/core/src/MonthPicker/MonthPickerCell.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:15:53 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthPickerCellProps>'.",
@@ -3401,7 +3519,9 @@
     {
       "file": "packages/core/src/MonthPicker/MonthPickerCellTrigger.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
+        "error:4:65 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:6:41 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:7:24 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:31:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
@@ -3448,6 +3568,7 @@
     {
       "file": "packages/core/src/MonthPicker/MonthPickerNext.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:67 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthPickerNextProps>'.",
@@ -3459,6 +3580,7 @@
     {
       "file": "packages/core/src/MonthPicker/MonthPickerPrev.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:67 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthPickerPrevProps>'.",
@@ -3470,6 +3592,7 @@
     {
       "file": "packages/core/src/MonthPicker/MonthPickerRoot.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:4:36 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:5:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:6:32 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
@@ -3489,12 +3612,14 @@
     {
       "file": "packages/core/src/MonthPicker/story/MonthPickerDefault.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:205 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/MonthPicker/story/_MonthPicker.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:43 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:4:205 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -3502,8 +3627,10 @@
     {
       "file": "packages/core/src/MonthPicker/useMonthPicker.ts",
       "diagnostics": [
+        "error:1:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:36 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:4:43 [TS2307] Cannot find module '@/shared/useDateFormatter' or its corresponding type declarations.",
+        "error:5:28 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:7:77 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:8:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations."
       ]
@@ -3511,6 +3638,7 @@
     {
       "file": "packages/core/src/MonthRangePicker/MonthRangePickerCell.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:15:58 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthRangePickerCellProps>'.",
@@ -3520,7 +3648,9 @@
     {
       "file": "packages/core/src/MonthRangePicker/MonthRangePickerCellTrigger.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
+        "error:4:65 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:6:66 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:7:24 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:41:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
@@ -3567,6 +3697,7 @@
     {
       "file": "packages/core/src/MonthRangePicker/MonthRangePickerNext.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:72 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthRangePickerNextProps>'.",
@@ -3578,6 +3709,7 @@
     {
       "file": "packages/core/src/MonthRangePicker/MonthRangePickerPrev.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:72 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<MonthRangePickerPrevProps>'.",
@@ -3589,6 +3721,7 @@
     {
       "file": "packages/core/src/MonthRangePicker/MonthRangePickerRoot.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:4:36 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:5:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:6:32 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
@@ -3622,6 +3755,7 @@
     {
       "file": "packages/core/src/MonthRangePicker/useRangeMonthPicker.ts",
       "diagnostics": [
+        "error:1:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:30 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:5:95 [TS2307] Cannot find module '@/date' or its corresponding type declarations."
       ]
@@ -3629,6 +3763,7 @@
     {
       "file": "packages/core/src/NavigationMenu/NavigationMenuContent.vue",
       "diagnostics": [
+        "error:16:40 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:18:26 [TS2307] Cannot find module '@/Presence' or its corresponding type declarations.",
         "error:19:56 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:23:41 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?"
@@ -3771,12 +3906,14 @@
     {
       "file": "packages/core/src/NavigationMenu/story/NavigationMenuAlignment.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:13:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/NavigationMenu/story/NavigationMenuBasic.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:12:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -3787,18 +3924,21 @@
     {
       "file": "packages/core/src/NavigationMenu/story/NavigationMenuDemo.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:13:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/NavigationMenu/story/NavigationMenuSubmenus.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:14:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/NavigationMenu/story/NavigationMenuViewport.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:13:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -3885,12 +4025,14 @@
     {
       "file": "packages/core/src/NumberField/story/NumberField.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:95 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/NumberField/story/NumberFieldChromatic.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:95 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -3898,12 +4040,16 @@
       "file": "packages/core/src/NumberField/story/_NumberField.vue",
       "diagnostics": [
         "error:2:43 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:95 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/NumberField/utils.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:3:47 [TS2307] Cannot find module '@internationalized/number' or its corresponding type declarations.",
+        "error:5:61 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/Pagination/PaginationEllipsis.vue",
@@ -4088,11 +4234,11 @@
         "error:5:8 [TS2307] Cannot find module '@/DismissableLayer' or its corresponding type declarations.",
         "error:6:38 [TS2307] Cannot find module '@/FocusScope' or its corresponding type declarations.",
         "error:7:41 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
+        "error:8:30 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:35:34 [TS2307] Cannot find module '@/DismissableLayer' or its corresponding type declarations.",
         "error:36:28 [TS2307] Cannot find module '@/FocusScope' or its corresponding type declarations.",
         "error:37:31 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
-        "error:38:67 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
-        "error:44:68 [TS2345] Argument of type '\"disableOutsidePointerEvents\"' is not assignable to parameter of type '\"trapFocus\" | \"trapFocus\"[]'."
+        "error:38:67 [TS2307] Cannot find module '@/shared' or its corresponding type declarations."
       ]
     },
     {
@@ -4146,6 +4292,7 @@
     {
       "file": "packages/core/src/Popover/story/PopoverBodyLock.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:11:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -4158,30 +4305,35 @@
     {
       "file": "packages/core/src/Popover/story/PopoverCustomAnchor.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:11:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Popover/story/PopoverCustomArrow.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:11:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Popover/story/PopoverDemo.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:11:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Popover/story/PopoverForceMount.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:10:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Popover/story/PopoverModality.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:10:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -4194,22 +4346,25 @@
     {
       "file": "packages/core/src/Popover/story/PopoverProgrammaticClose.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:9:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Popover/story/_Popover.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:11:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Popper/PopperAnchor.vue",
       "diagnostics": [
+        "error:2:39 [TS2307] Cannot find module '@floating-ui/vue' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:4:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:20:8 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:37:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type '__DefineProps<PopperAnchorProps, never>'.\nProperty 'as' does not exist on type '__DefineProps<PopperAnchorProps, never>'."
+        "error:37:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type '__DefineProps<PopperAnchorProps, \"reference\">'.\nProperty 'as' does not exist on type '__DefineProps<PopperAnchorProps, \"reference\">'."
       ]
     },
     {
@@ -4220,7 +4375,6 @@
         "error:4:33 [TS2307] Cannot find module '@/shared/component/Arrow.vue' or its corresponding type declarations.",
         "error:19:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:20:19 [TS2307] Cannot find module '@/shared/component/Arrow.vue' or its corresponding type declarations.",
-        "error:40:6 [TS2322] Type '(el: Element | ComponentPublicInstance | null) => undefined' is not assignable to type 'VNodeRef | undefined'.\nType '(el: Element | ComponentPublicInstance | null) => undefined' is not assignable to type '(ref: Element | ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any> | null, refs: Record<...>) => void'.\nTypes of parameters 'el' and 'ref' are incompatible.\nType 'Element | ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any> | null' is not assignable to type 'Element | ComponentPublicInstance | null'.\nType 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>' is not assignable to type 'Element | ComponentPublicInstance | null'.\nType 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>' is not assignable to type 'ComponentPublicInstance'.\nType 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>' is not assignable to type '{ $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Data; $refs: Data; $slots: Readonly<InternalSlots>; $root: ComponentPublicInstance<...> | null; ... 7 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined): WatchStopHandle; }'.\nThe types of '$.type' are incompatible between these types.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").ConcreteComponent<{}, any, any, import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue...' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").ConcreteComponent<{}, any, any, import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/t...'.\nType 'FunctionalComponent<{}, {}, any, {}>' is not assignable to type 'ConcreteComponent<{}, any, any, ComputedOptions, MethodOptions, {}, any>'.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").FunctionalComponent<{}, {}, any, {}>' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").FunctionalComponent<{}, {}, any, {}>'.\nTypes of property 'slots' are incompatible.\nType 'Readonly<InternalSlots> | undefined' is not assignable to type 'Readonly<InternalSlots> | undefined'. Two different types with this name exist, but they are unrelated.\nType 'Readonly<InternalSlots>' is not assignable to type 'Readonly<InternalSlots>'. Two different types with this name exist, but they are unrelated.\n'string' index signatures are incompatible.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").Slot<any> | undefined' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").Slot<any> | undefined'.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").Slot<any>' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").Slot<any>'.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").VNode<import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.1...' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").VNode<import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/tests/_fixtures/_git/reka-u...'.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").VNode<import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.1...' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").VNode<import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/tests/_fixtures/_git/reka-u...'.\nTypes of property 'type' are incompatible.\nType 'import(\"/Users/ubugeeei/Source/github.com/ubugeeei/vize--reka-ui-typecheck-gate/node_modules/.pnpm/@vue+runtime-core@3.6.0-beta.10/node_modules/@vue/runtime-core/dist/runtime-core\").VNodeTypes' is not assignable to type 'import(\"<cwd>/node_modules/.pnpm/@vue+runtime-core@3.5.17/node_modules/@vue/runtime-core/dist/runtime-core\").VNodeTypes'.\nType 'unique symbol' is not assignable to type 'VNodeTypes'.",
         "error:49:24 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ top: string; right: string; bottom: string; left: string; }'.",
         "error:55:18 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ top: string; right: string; bottom: string; left: string; }'.",
         "error:70:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<PopperArrowProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<PopperArrowProps>, \"as\"> & {}'."
@@ -4229,27 +4383,30 @@
     {
       "file": "packages/core/src/Popper/PopperContent.vue",
       "diagnostics": [
+        "error:6:8 [TS2307] Cannot find module '@floating-ui/vue' or its corresponding type declarations.",
         "error:11:8 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:12:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:13:32 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
         "error:14:72 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
+        "error:212:8 [TS2307] Cannot find module '@floating-ui/vue' or its corresponding type declarations.",
         "error:216:8 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:222:8 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:286:13 [TS2345] Argument of type '{ padding: number | { top: number; right: number; bottom: number; left: number; }; boundary: (Element | null)[]; altBoundary: boolean; mainAxis: boolean; crossAxis: boolean; }' is not assignable to parameter of type 'Derivable<{ rootBoundary?: RootBoundary | undefined; elementContext?: ElementContext | undefined; altBoundary?: boolean | undefined; padding?: Padding | undefined; ... 6 more ...; boundary?: Boundary | undefined; }> | { ...; } | undefined'.\nType '{ padding: number | { top: number; right: number; bottom: number; left: number; }; boundary: (Element | null)[]; altBoundary: boolean; mainAxis: boolean; crossAxis: boolean; }' is not assignable to type '{ rootBoundary?: RootBoundary | undefined; elementContext?: ElementContext | undefined; altBoundary?: boolean | undefined; padding?: Padding | undefined; ... 6 more ...; boundary?: Boundary | undefined; }'.\nTypes of property 'boundary' are incompatible.\nType '(Element | null)[]' is not assignable to type 'Boundary | undefined'.\nType '(Element | null)[]' is not assignable to type 'Element[]'.\nType 'Element | null' is not assignable to type 'Element'.\nType 'null' is not assignable to type 'Element'.",
-        "error:291:14 [TS2345] Argument of type '{ padding: number | { top: number; right: number; bottom: number; left: number; }; boundary: (Element | null)[]; altBoundary: boolean; mainAxis: true; crossAxis: boolean; limiter: { options: any; fn: (state: MiddlewareState) => Coords; } | undefined; }' is not assignable to parameter of type 'Derivable<{ rootBoundary?: RootBoundary | undefined; elementContext?: ElementContext | undefined; altBoundary?: boolean | undefined; padding?: Padding | undefined; mainAxis?: boolean | undefined; crossAxis?: boolean | undefined; limiter?: { ...; } | undefined; boundary?: Boundary | undefined; }> | { ...; } | undefined'.\nType '{ padding: number | { top: number; right: number; bottom: number; left: number; }; boundary: (Element | null)[]; altBoundary: boolean; mainAxis: true; crossAxis: boolean; limiter: { options: any; fn: (state: MiddlewareState) => Coords; } | undefined; }' is not assignable to type '{ rootBoundary?: RootBoundary | undefined; elementContext?: ElementContext | undefined; altBoundary?: boolean | undefined; padding?: Padding | undefined; mainAxis?: boolean | undefined; crossAxis?: boolean | undefined; limiter?: { ...; } | undefined; boundary?: Boundary | undefined; }'.\nTypes of property 'boundary' are incompatible.\nType '(Element | null)[]' is not assignable to type 'Boundary | undefined'.\nType '(Element | null)[]' is not assignable to type 'Element[]'.\nType 'Element | null' is not assignable to type 'Element'.\nType 'null' is not assignable to type 'Element'.",
-        "error:299:13 [TS2345] Argument of type '{ padding: number | { top: number; right: number; bottom: number; left: number; }; boundary: (Element | null)[]; altBoundary: boolean; mainAxis: boolean; crossAxis: boolean; }' is not assignable to parameter of type 'Derivable<{ rootBoundary?: RootBoundary | undefined; elementContext?: ElementContext | undefined; altBoundary?: boolean | undefined; padding?: Padding | undefined; ... 6 more ...; boundary?: Boundary | undefined; }> | { ...; } | undefined'.\nType '{ padding: number | { top: number; right: number; bottom: number; left: number; }; boundary: (Element | null)[]; altBoundary: boolean; mainAxis: boolean; crossAxis: boolean; }' is not assignable to type '{ rootBoundary?: RootBoundary | undefined; elementContext?: ElementContext | undefined; altBoundary?: boolean | undefined; padding?: Padding | undefined; ... 6 more ...; boundary?: Boundary | undefined; }'.\nTypes of property 'boundary' are incompatible.\nType '(Element | null)[]' is not assignable to type 'Boundary | undefined'.\nType '(Element | null)[]' is not assignable to type 'Element[]'.\nType 'Element | null' is not assignable to type 'Element'.\nType 'null' is not assignable to type 'Element'.",
-        "error:303:10 [TS2345] Argument of type '{ padding: number | { top: number; right: number; bottom: number; left: number; }; boundary: (Element | null)[]; altBoundary: boolean; apply: ({ elements, rects, availableWidth, availableHeight }: { initialPlacement: Placement; ... 7 more ...; y: number; } & { ...; }) => void; }' is not assignable to parameter of type 'Derivable<{ rootBoundary?: RootBoundary | undefined; elementContext?: ElementContext | undefined; altBoundary?: boolean | undefined; padding?: Padding | undefined; boundary?: Boundary | undefined; apply?: ((args: { ...; } & { ...; }) => Promisable<...>) | undefined; }> | { ...; } | undefined'.\nType '{ padding: number | { top: number; right: number; bottom: number; left: number; }; boundary: (Element | null)[]; altBoundary: boolean; apply: ({ elements, rects, availableWidth, availableHeight }: { initialPlacement: Placement; ... 7 more ...; y: number; } & { ...; }) => void; }' is not assignable to type '{ rootBoundary?: RootBoundary | undefined; elementContext?: ElementContext | undefined; altBoundary?: boolean | undefined; padding?: Padding | undefined; boundary?: Boundary | undefined; apply?: ((args: { ...; } & { ...; }) => Promisable<...>) | undefined; }'.\nTypes of property 'boundary' are incompatible.\nType '(Element | null)[]' is not assignable to type 'Boundary | undefined'.\nType '(Element | null)[]' is not assignable to type 'Element[]'.\nType 'Element | null' is not assignable to type 'Element'.\nType 'null' is not assignable to type 'Element'.",
-        "error:334:13 [TS2345] Argument of type '{ padding: number | { top: number; right: number; bottom: number; left: number; }; boundary: (Element | null)[]; altBoundary: boolean; strategy: \"referenceHidden\"; }' is not assignable to parameter of type 'Derivable<{ rootBoundary?: RootBoundary | undefined; elementContext?: ElementContext | undefined; altBoundary?: boolean | undefined; padding?: Padding | undefined; strategy?: \"escaped\" | ... 1 more ... | undefined; boundary?: Boundary | undefined; }> | { ...; } | undefined'.\nType '{ padding: number | { top: number; right: number; bottom: number; left: number; }; boundary: (Element | null)[]; altBoundary: boolean; strategy: \"referenceHidden\"; }' is not assignable to type '{ rootBoundary?: RootBoundary | undefined; elementContext?: ElementContext | undefined; altBoundary?: boolean | undefined; padding?: Padding | undefined; strategy?: \"escaped\" | ... 1 more ... | undefined; boundary?: Boundary | undefined; }'.\nTypes of property 'boundary' are incompatible.\nType '(Element | null)[]' is not assignable to type 'Boundary | undefined'.\nType '(Element | null)[]' is not assignable to type 'Element[]'.\nType 'Element | null' is not assignable to type 'Element'.\nType 'null' is not assignable to type 'Element'.",
+        "error:305:17 [TS7031] Binding element 'elements' implicitly has an 'any' type.",
+        "error:305:27 [TS7031] Binding element 'rects' implicitly has an 'any' type.",
+        "error:305:34 [TS7031] Binding element 'availableWidth' implicitly has an 'any' type.",
+        "error:305:50 [TS7031] Binding element 'availableHeight' implicitly has an 'any' type.",
+        "error:347:28 [TS7019] Rest parameter 'args' implicitly has an 'any[]' type.",
         "error:386:18 [TS7006] Parameter 'element' implicitly has an 'any' type.",
-        "error:430:24 [TS2339] Property 'asChild' does not exist on type '__DefineProps<PopperContentProps, \"align\" | \"alignFlip\" | \"avoidCollisions\" | \"dir\" | \"disableUpdateOnLayoutShift\" | \"hideShiftedArrow\" | \"hideWhenDetached\" | \"prioritizePosition\" | \"side\" | \"sideFlip\">'.",
-        "error:431:18 [TS2339] Property 'as' does not exist on type '__DefineProps<PopperContentProps, \"align\" | \"alignFlip\" | \"avoidCollisions\" | \"dir\" | \"disableUpdateOnLayoutShift\" | \"hideShiftedArrow\" | \"hideWhenDetached\" | \"prioritizePosition\" | \"side\" | \"sideFlip\">'.",
-        "error:447:24 [TS2339] Property 'asChild' does not exist on type '__DefineProps<PopperContentProps, \"align\" | \"alignFlip\" | \"avoidCollisions\" | \"dir\" | \"disableUpdateOnLayoutShift\" | \"hideShiftedArrow\" | \"hideWhenDetached\" | \"prioritizePosition\" | \"side\" | \"sideFlip\">'.",
-        "error:448:18 [TS2339] Property 'as' does not exist on type '__DefineProps<PopperContentProps, \"align\" | \"alignFlip\" | \"avoidCollisions\" | \"dir\" | \"disableUpdateOnLayoutShift\" | \"hideShiftedArrow\" | \"hideWhenDetached\" | \"prioritizePosition\" | \"side\" | \"sideFlip\">'."
+        "error:430:24 [TS2339] Property 'asChild' does not exist on type '__DefineProps<PopperContentProps, \"align\" | \"alignFlip\" | \"avoidCollisions\" | \"dir\" | \"disableUpdateOnLayoutShift\" | \"hideShiftedArrow\" | \"hideWhenDetached\" | \"prioritizePosition\" | \"reference\" | \"side\" | \"sideFlip\">'.",
+        "error:431:18 [TS2339] Property 'as' does not exist on type '__DefineProps<PopperContentProps, \"align\" | \"alignFlip\" | \"avoidCollisions\" | \"dir\" | \"disableUpdateOnLayoutShift\" | \"hideShiftedArrow\" | \"hideWhenDetached\" | \"prioritizePosition\" | \"reference\" | \"side\" | \"sideFlip\">'.",
+        "error:447:24 [TS2339] Property 'asChild' does not exist on type '__DefineProps<PopperContentProps, \"align\" | \"alignFlip\" | \"avoidCollisions\" | \"dir\" | \"disableUpdateOnLayoutShift\" | \"hideShiftedArrow\" | \"hideWhenDetached\" | \"prioritizePosition\" | \"reference\" | \"side\" | \"sideFlip\">'.",
+        "error:448:18 [TS2339] Property 'as' does not exist on type '__DefineProps<PopperContentProps, \"align\" | \"alignFlip\" | \"avoidCollisions\" | \"dir\" | \"disableUpdateOnLayoutShift\" | \"hideShiftedArrow\" | \"hideWhenDetached\" | \"prioritizePosition\" | \"reference\" | \"side\" | \"sideFlip\">'."
       ]
     },
     {
       "file": "packages/core/src/Popper/PopperRoot.vue",
       "diagnostics": [
+        "error:2:39 [TS2307] Cannot find module '@floating-ui/vue' or its corresponding type declarations.",
         "error:4:31 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:30:19 [TS7006] Parameter 'element' implicitly has an 'any' type."
       ]
@@ -4261,7 +4418,9 @@
     {
       "file": "packages/core/src/Popper/utils.ts",
       "diagnostics": [
-        "error:2:32 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations."
+        "error:1:44 [TS2307] Cannot find module '@floating-ui/vue' or its corresponding type declarations.",
+        "error:2:32 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
+        "error:22:8 [TS7006] Parameter 'data' implicitly has an 'any' type."
       ]
     },
     {
@@ -4308,6 +4467,7 @@
     {
       "file": "packages/core/src/Presence/usePresence.ts",
       "diagnostics": [
+        "error:3:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:5:33 [TS2307] Cannot find module '@/shared' or its corresponding type declarations."
       ]
     },
@@ -4400,6 +4560,7 @@
       "diagnostics": [
         "error:4:34 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:5:68 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
+        "error:23:25 [TS2307] Cannot find module 'ohash' or its corresponding type declarations.",
         "error:25:33 [TS2307] Cannot find module '@/RovingFocus' or its corresponding type declarations.",
         "error:56:69 [TS2339] Property 'required' does not exist on type 'Omit<__DefineProps<RadioGroupItemProps, \"disabled\" | \"value\">, \"as\" | \"disabled\"> & { disabled: boolean; }'."
       ]
@@ -4457,6 +4618,7 @@
     {
       "file": "packages/core/src/RangeCalendar/RangeCalendarCell.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:11:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:14:55 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<RangeCalendarCellProps>'.",
@@ -4466,7 +4628,9 @@
     {
       "file": "packages/core/src/RangeCalendar/RangeCalendarCellTrigger.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
+        "error:10:8 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:12:44 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:13:24 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:52:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
@@ -4526,6 +4690,7 @@
     {
       "file": "packages/core/src/RangeCalendar/RangeCalendarNext.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:69 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<RangeCalendarNextProps>'.",
@@ -4537,6 +4702,7 @@
     {
       "file": "packages/core/src/RangeCalendar/RangeCalendarPrev.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:69 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<RangeCalendarPrevProps>'.",
@@ -4548,11 +4714,13 @@
     {
       "file": "packages/core/src/RangeCalendar/RangeCalendarRoot.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:4:65 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:5:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:6:32 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:7:32 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
         "error:8:32 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
+        "error:9:28 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:10:29 [TS2307] Cannot find module '@/Calendar/useCalendar' or its corresponding type declarations.",
         "error:11:43 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:17:8 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
@@ -4568,21 +4736,30 @@
     },
     {
       "file": "packages/core/src/RangeCalendar/story/RangeCalendarChromatic.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:4:59 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/RangeCalendar/story/RangeCalendarDefault.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:271 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/RangeCalendar/story/RangeCalendarMultiple.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:30 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/RangeCalendar/story/RangeCalendarPopover.story.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:4:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
+        "error:5:41 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:8:29 [TS2307] Cannot find module '@/Calendar/story/_CalendarPopover.vue' or its corresponding type declarations.",
         "error:9:50 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:10:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
@@ -4591,11 +4768,15 @@
     },
     {
       "file": "packages/core/src/RangeCalendar/story/RangeCalendarValidation.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:3:41 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/RangeCalendar/story/RangeCalendarWeek.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:31 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:4:271 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -4604,6 +4785,7 @@
       "file": "packages/core/src/RangeCalendar/story/_DummyRangeCalendar.vue",
       "diagnostics": [
         "error:2:69 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:38 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:5:271 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -4611,6 +4793,7 @@
     {
       "file": "packages/core/src/RangeCalendar/story/_RangeCalendar.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:45 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:4:271 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -4618,7 +4801,9 @@
     {
       "file": "packages/core/src/RangeCalendar/useRangeCalendar.ts",
       "diagnostics": [
+        "error:5:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:7:30 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
+        "error:8:27 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:10:77 [TS2307] Cannot find module '@/date' or its corresponding type declarations."
       ]
     },
@@ -4659,12 +4844,15 @@
     },
     {
       "file": "packages/core/src/Rating/story/RatingDefault.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/Rating/story/_Rating.vue",
       "diagnostics": [
         "error:2:38 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:61 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -5136,18 +5324,21 @@
     {
       "file": "packages/core/src/Select/story/SelectDemo.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:20:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Select/story/SelectForm.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:19:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Select/story/SelectWithinDialog.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:8:8 [TS2307] Cannot find module '@/Dialog' or its corresponding type declarations.",
         "error:23:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -5155,12 +5346,14 @@
     {
       "file": "packages/core/src/Select/story/_Select.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:19:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Select/story/_SelectItem.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:65 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -5168,6 +5361,7 @@
       "file": "packages/core/src/Select/story/_SelectTest.vue",
       "diagnostics": [
         "error:2:55 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:38 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:19:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -5175,7 +5369,8 @@
     {
       "file": "packages/core/src/Select/utils.ts",
       "diagnostics": [
-        "error:1:38 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations."
+        "error:1:38 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
+        "error:2:25 [TS2307] Cannot find module 'ohash' or its corresponding type declarations."
       ]
     },
     {
@@ -5639,6 +5834,7 @@
     {
       "file": "packages/core/src/Stepper/story/StepperDefault.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:128 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -5646,6 +5842,7 @@
       "file": "packages/core/src/Stepper/story/_DummyStepper.vue",
       "diagnostics": [
         "error:2:57 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:38 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:5:128 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -5812,6 +6009,7 @@
       "file": "packages/core/src/TagsInput/TagsInputItemDelete.vue",
       "diagnostics": [
         "error:2:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
+        "error:3:25 [TS2307] Cannot find module 'ohash' or its corresponding type declarations.",
         "error:5:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:13:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:28:52 [TS7006] Parameter 'i' implicitly has an 'any' type.",
@@ -5832,6 +6030,7 @@
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:4:48 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
         "error:6:99 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
+        "error:73:25 [TS2307] Cannot find module 'ohash' or its corresponding type declarations.",
         "error:74:31 [TS2307] Cannot find module '@/Collection' or its corresponding type declarations.",
         "error:75:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:76:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
@@ -5851,12 +6050,14 @@
     {
       "file": "packages/core/src/TagsInput/story/TagsInput.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:102 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/TagsInput/story/TagsInputCombobox.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:180 [TS2307] Cannot find module '@/Combobox' or its corresponding type declarations.",
         "error:5:27 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:6:102 [TS2307] Cannot find module '..' or its corresponding type declarations."
@@ -5865,18 +6066,21 @@
     {
       "file": "packages/core/src/TagsInput/story/TagsInputObject.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:102 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/TagsInput/story/_TagsInput.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:102 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/TagsInput/story/_TagsInputDisabled.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:102 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -5884,6 +6088,7 @@
       "file": "packages/core/src/TagsInput/story/_TagsInputObject.vue",
       "diagnostics": [
         "error:2:41 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:5:102 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -5906,10 +6111,12 @@
     {
       "file": "packages/core/src/TimeField/TimeFieldRoot.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:4:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:6:83 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
         "error:7:48 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
+        "error:8:79 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:9:26 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:10:93 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:20:8 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
@@ -5928,6 +6135,7 @@
     {
       "file": "packages/core/src/TimeField/story/TimeFieldChromatic.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:4:47 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -5981,6 +6189,7 @@
     {
       "file": "packages/core/src/TimeRangeField/TimeRangeFieldRoot.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:4:30 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:5:36 [TS2307] Cannot find module '@/DateRangeField/DateRangeFieldRoot.vue' or its corresponding type declarations.",
         "error:6:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
@@ -5988,6 +6197,7 @@
         "error:8:83 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
         "error:9:32 [TS2307] Cannot find module '@/shared/date/types' or its corresponding type declarations.",
         "error:10:48 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
+        "error:11:67 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:12:66 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:13:93 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:27:8 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
@@ -6006,7 +6216,8 @@
     {
       "file": "packages/core/src/TimeRangeField/story/TimeRangeFieldChromatic.story.vue",
       "diagnostics": [
-        "error:3:32 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations."
+        "error:3:32 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
+        "error:4:22 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
       ]
     },
     {
@@ -6017,12 +6228,15 @@
     },
     {
       "file": "packages/core/src/TimeRangeField/story/TimeRangeFieldGranular.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/TimeRangeField/story/TimeRangeFieldValidation.story.vue",
       "diagnostics": [
         "error:2:30 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:10:34 [TS7006] Parameter 'time' implicitly has an 'any' type."
       ]
     },
@@ -6059,6 +6273,7 @@
     {
       "file": "packages/core/src/Toast/ToastAnnounce.vue",
       "diagnostics": [
+        "error:2:38 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations."
       ]
     },
@@ -6116,6 +6331,7 @@
       "diagnostics": [
         "error:2:33 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
+        "error:4:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:5:31 [TS2307] Cannot find module '@/Collection' or its corresponding type declarations.",
         "error:6:67 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:51:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
@@ -6194,6 +6410,7 @@
     {
       "file": "packages/core/src/Toggle/Toggle.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:24 [TS2307] Cannot find module '.' or its corresponding type declarations."
       ]
     },
@@ -6246,6 +6463,7 @@
     {
       "file": "packages/core/src/ToggleGroup/story/ToggleGroup.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:50 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -6259,6 +6477,7 @@
       "file": "packages/core/src/ToggleGroup/story/_ToggleGroup.vue",
       "diagnostics": [
         "error:2:65 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:38 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:5:50 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -6327,12 +6546,14 @@
     {
       "file": "packages/core/src/Toolbar/story/Toolbar.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:11:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Toolbar/story/_Toolbar.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:11:8 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -6362,6 +6583,7 @@
       "diagnostics": [
         "error:2:41 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
+        "error:4:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:5:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:47:34 [TS2307] Cannot find module '@/DismissableLayer' or its corresponding type declarations.",
         "error:48:31 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
@@ -6381,7 +6603,8 @@
     {
       "file": "packages/core/src/Tooltip/TooltipProvider.vue",
       "diagnostics": [
-        "error:4:49 [TS2307] Cannot find module '@/shared' or its corresponding type declarations."
+        "error:4:49 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
+        "error:64:30 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations."
       ]
     },
     {
@@ -6411,12 +6634,14 @@
     {
       "file": "packages/core/src/Tooltip/stories/Tooltip.content.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:107 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/Tooltip/stories/Tooltip.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:107 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -6470,12 +6695,17 @@
     {
       "file": "packages/core/src/Tree/TreeVirtualizer.vue",
       "diagnostics": [
+        "error:13:47 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
+        "error:16:32 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
         "error:19:31 [TS2307] Cannot find module '@/Collection' or its corresponding type declarations.",
         "error:20:41 [TS2307] Cannot find module '@/RovingFocus/utils' or its corresponding type declarations.",
         "error:21:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:22:30 [TS2307] Cannot find module '@/shared/useTypeahead' or its corresponding type declarations.",
         "error:50:47 [TS7006] Parameter 'option' implicitly has an 'any' type.",
         "error:50:55 [TS7006] Parameter 'index' implicitly has an 'any' type.",
+        "error:79:16 [TS7006] Parameter 'index' implicitly has an 'any' type.",
+        "error:82:18 [TS7006] Parameter 'index' implicitly has an 'any' type.",
+        "error:93:82 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:122:36 [TS7006] Parameter 'event' implicitly has an 'any' type.",
         "error:136:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:147:78 [TS7006] Parameter 'item' implicitly has an 'any' type.",
@@ -6494,6 +6724,7 @@
       "file": "packages/core/src/Tree/story/TreeAsync.story.vue",
       "diagnostics": [
         "error:2:42 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:5:36 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:77:20 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
@@ -6501,6 +6732,7 @@
     {
       "file": "packages/core/src/Tree/story/TreeBasic.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:36 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:4:23 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './constants.js'?",
         "error:17:20 [TS7006] Parameter 'item' implicitly has an 'any' type."
@@ -6509,6 +6741,7 @@
     {
       "file": "packages/core/src/Tree/story/TreeCheckbox.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:36 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:5:23 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './constants.js'?",
         "error:21:20 [TS7006] Parameter 'item' implicitly has an 'any' type.",
@@ -6526,6 +6759,7 @@
     {
       "file": "packages/core/src/Tree/story/TreeVirtual.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:29 [TS2307] Cannot find module '@/shared/constant' or its corresponding type declarations.",
         "error:4:53 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:30:20 [TS7006] Parameter 'item' implicitly has an 'any' type.",
@@ -6536,6 +6770,7 @@
       "file": "packages/core/src/Tree/story/_Tree.vue",
       "diagnostics": [
         "error:2:51 [TS2307] Cannot find module '..' or its corresponding type declarations.",
+        "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:4:38 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:5:36 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:75:16 [TS7006] Parameter 'item' implicitly has an 'any' type."
@@ -6544,6 +6779,7 @@
     {
       "file": "packages/core/src/Tree/story/_TreeNested.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:26 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
@@ -6598,6 +6834,7 @@
     {
       "file": "packages/core/src/YearPicker/YearPickerCell.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:15:52 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearPickerCellProps>'.",
@@ -6607,7 +6844,9 @@
     {
       "file": "packages/core/src/YearPicker/YearPickerCellTrigger.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
+        "error:4:77 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:6:36 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:7:24 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:31:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
@@ -6654,6 +6893,7 @@
     {
       "file": "packages/core/src/YearPicker/YearPickerNext.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:66 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearPickerNextProps>'.",
@@ -6665,6 +6905,7 @@
     {
       "file": "packages/core/src/YearPicker/YearPickerPrev.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:66 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearPickerPrevProps>'.",
@@ -6676,6 +6917,7 @@
     {
       "file": "packages/core/src/YearPicker/YearPickerRoot.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:4:36 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:5:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:6:32 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
@@ -6695,12 +6937,14 @@
     {
       "file": "packages/core/src/YearPicker/story/YearPickerDefault.story.vue",
       "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:195 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/YearPicker/story/_YearPicker.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:42 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:4:195 [TS2307] Cannot find module '..' or its corresponding type declarations."
       ]
@@ -6708,8 +6952,10 @@
     {
       "file": "packages/core/src/YearPicker/useYearPicker.ts",
       "diagnostics": [
+        "error:1:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:36 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:4:43 [TS2307] Cannot find module '@/shared/useDateFormatter' or its corresponding type declarations.",
+        "error:5:40 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:7:71 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:8:34 [TS2307] Cannot find module '@/shared' or its corresponding type declarations."
       ]
@@ -6717,6 +6963,7 @@
     {
       "file": "packages/core/src/YearRangePicker/YearRangePickerCell.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:12:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:15:57 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearRangePickerCellProps>'.",
@@ -6726,7 +6973,9 @@
     {
       "file": "packages/core/src/YearRangePicker/YearRangePickerCellTrigger.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
+        "error:4:77 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:6:60 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:7:24 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:41:48 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
@@ -6773,6 +7022,7 @@
     {
       "file": "packages/core/src/YearRangePicker/YearRangePickerNext.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:71 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearRangePickerNextProps>'.",
@@ -6784,6 +7034,7 @@
     {
       "file": "packages/core/src/YearRangePicker/YearRangePickerPrev.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:20:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:23:71 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<YearRangePickerPrevProps>'.",
@@ -6795,6 +7046,7 @@
     {
       "file": "packages/core/src/YearRangePicker/YearRangePickerRoot.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:4:36 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:5:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:6:32 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
@@ -6828,6 +7080,7 @@
     {
       "file": "packages/core/src/YearRangePicker/useRangeYearPicker.ts",
       "diagnostics": [
+        "error:1:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:30 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:5:70 [TS2307] Cannot find module '@/date' or its corresponding type declarations."
       ]
@@ -6902,12 +7155,15 @@
         "error:125:15 [TS2834] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Consider adding an extension to the import path.",
         "error:126:58 [TS2834] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Consider adding an extension to the import path.",
         "error:127:15 [TS2834] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Consider adding an extension to the import path.",
-        "error:128:15 [TS2834] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Consider adding an extension to the import path."
+        "error:128:15 [TS2834] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Consider adding an extension to the import path.",
+        "error:131:8 [TS2307] Cannot find module '@floating-ui/vue' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/shared/arrays.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:1:25 [TS2307] Cannot find module 'ohash' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/shared/browser.ts",
@@ -6985,7 +7241,10 @@
     },
     {
       "file": "packages/core/src/shared/date/comparators.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:5:47 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:6:97 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/shared/date/index.ts",
@@ -7003,13 +7262,13 @@
     {
       "file": "packages/core/src/shared/date/parser.ts",
       "diagnostics": [
+        "error:1:44 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:32 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:4:128 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
         "error:5:41 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:6:172 [TS2307] Cannot find module '@/shared/date' or its corresponding type declarations.",
         "error:21:53 [TS7006] Parameter 'part' implicitly has an 'any' type.",
         "error:31:46 [TS7006] Parameter 'part' implicitly has an 'any' type.",
-        "error:32:19 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'DateValue'.",
         "error:45:29 [TS7006] Parameter 'part' implicitly has an 'any' type.",
         "error:49:17 [TS7031] Binding element 'key' implicitly has an 'any' type.",
         "error:62:52 [TS7006] Parameter 'part' implicitly has an 'any' type.",
@@ -7037,6 +7296,7 @@
     {
       "file": "packages/core/src/shared/date/types.ts",
       "diagnostics": [
+        "error:5:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:8:32 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './comparators.js'?",
         "error:9:113 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './parts.js'?"
       ]
@@ -7044,8 +7304,10 @@
     {
       "file": "packages/core/src/shared/date/useDateField.ts",
       "diagnostics": [
+        "error:1:74 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:3:90 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './types.js'?",
         "error:4:32 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
+        "error:7:8 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:9:40 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
         "error:10:59 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:11:80 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './segment.js'?",
@@ -7056,7 +7318,8 @@
       "file": "packages/core/src/shared/date/utils.ts",
       "diagnostics": [
         "error:1:34 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './comparators.js'?",
-        "error:2:68 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './types.js'?"
+        "error:2:68 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './types.js'?",
+        "error:3:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations."
       ]
     },
     {
@@ -7116,6 +7379,7 @@
     {
       "file": "packages/core/src/shared/isValueEqualOrExist.ts",
       "diagnostics": [
+        "error:1:25 [TS2307] Cannot find module 'ohash' or its corresponding type declarations.",
         "error:2:27 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './nullish.js'?"
       ]
     },
@@ -7148,6 +7412,9 @@
     {
       "file": "packages/core/src/shared/useBodyScrollLock.ts",
       "diagnostics": [
+        "error:1:25 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
+        "error:6:53 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
+        "error:7:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:9:45 [TS2307] Cannot find module '@/ConfigProvider/ConfigProvider.vue' or its corresponding type declarations.",
         "error:10:52 [TS2307] Cannot find module '@/DismissableLayer/context' or its corresponding type declarations."
       ]
@@ -7159,7 +7426,11 @@
     {
       "file": "packages/core/src/shared/useDateFormatter.ts",
       "diagnostics": [
-        "error:8:50 [TS2307] Cannot find module '@/date' or its corresponding type declarations."
+        "error:5:47 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:6:56 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:8:50 [TS2307] Cannot find module '@/date' or its corresponding type declarations.",
+        "error:107:30 [TS7006] Parameter 'p' implicitly has an 'any' type.",
+        "error:131:29 [TS7006] Parameter 'p' implicitly has an 'any' type."
       ]
     },
     {
@@ -7171,7 +7442,9 @@
     },
     {
       "file": "packages/core/src/shared/useEmitAsProps.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:1:28 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/shared/useFilter.ts",
@@ -7179,7 +7452,9 @@
     },
     {
       "file": "packages/core/src/shared/useFocusGuards.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:1:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/shared/useFormControl.ts",
@@ -7196,6 +7471,7 @@
     {
       "file": "packages/core/src/shared/useForwardPropsEmits.ts",
       "diagnostics": [
+        "error:1:28 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:3:40 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './useEmitAsProps.js'?",
         "error:4:43 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './useForwardProps.js'?",
         "error:6:32 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './useEmitAsProps.js'?",
@@ -7213,12 +7489,15 @@
     {
       "file": "packages/core/src/shared/useGraceArea.ts",
       "diagnostics": [
-        "error:2:27 [TS2307] Cannot find module '@/Popper/utils' or its corresponding type declarations."
+        "error:2:27 [TS2307] Cannot find module '@/Popper/utils' or its corresponding type declarations.",
+        "error:3:66 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations."
       ]
     },
     {
       "file": "packages/core/src/shared/useHideOthers.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:3:28 [TS2307] Cannot find module 'aria-hidden' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/shared/useId.ts",
@@ -7254,17 +7533,19 @@
     {
       "file": "packages/core/src/shared/useTypeahead.ts",
       "diagnostics": [
+        "error:1:30 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:2:34 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './getActiveElement.js'?"
       ]
     },
     {
       "file": "packages/core/src/shared/withDefault.ts",
       "diagnostics": [
+        "error:2:37 [TS2307] Cannot find module 'vue-component-type-helpers' or its corresponding type declarations.",
         "error:4:34 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './useForwardExpose.js'?"
       ]
     }
   ],
-  "errorCount": 2858,
+  "errorCount": 3116,
   "warningCount": 0,
   "fileCount": 913
 }
