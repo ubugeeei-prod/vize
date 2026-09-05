@@ -137,7 +137,7 @@
         "error:146:119 [TS2307] Cannot find module 'reka-ui/namespaced' or its corresponding type declarations.",
         "error:147:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:148:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:165:66 [TS2739] Type 'Omit<__LooseRequired<CalendarProps<R, M>>, \"fixedWeeks\" | \"monthControls\" | \"type\" | \"viewControl\" | \"yearControls\"> & { ...; }' is missing the following properties from type 'CalendarProps<R, M>': isMonthDisabled, isMonthUnavailable, isYearDisabled, isYearUnavailable",
+        "error:165:66 [TS2739] Type 'Omit<__DefineProps<CalendarProps<R, M>, keyof CalendarProps<R, M>>, \"fixedWeeks\" | \"monthControls\" | \"type\" | \"viewControl\" | \"yearControls\"> & { ...; }' is missing the following properties from type 'CalendarProps<R, M>': isMonthDisabled, isMonthUnavailable, isYearDisabled, isYearUnavailable",
         "error:267:56 [TS7006] Parameter '_' implicitly has an 'any' type.",
         "error:267:59 [TS7006] Parameter 'key' implicitly has an 'any' type.",
         "error:286:95 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"calendar\"> | Record<string, never>) & { calendar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"calendar\"> & { calendar?: any; }'.",
@@ -257,8 +257,7 @@
         "error:4:19 [TS2307] Cannot find module '#build/ui/chat-prompt' or its corresponding type declarations.",
         "error:57:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:58:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
-        "error:59:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:151:8 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:59:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -269,7 +268,7 @@
         "error:4:19 [TS2307] Cannot find module '#build/ui/chat-prompt-submit' or its corresponding type declarations.",
         "error:90:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:91:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:122:42 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ ready: { icon: any; color: RouterLinkProps; variant: RouterLinkProps; type: \"submit\"; }; submitted: { icon: any; color: string | number | symbol; variant: string | number | symbol; onClick(e: MouseEvent): void; }; streaming: { ...; }; error: { ...; }; }'.",
+        "error:122:42 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ ready: { icon: any; color: any; variant: any; type: \"submit\"; }; submitted: { icon: any; color: string | number | symbol; variant: string | number | symbol; onClick(e: MouseEvent): void; }; streaming: { ...; }; error: { ...; }; }'.",
         "error:124:74 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
         "error:130:47 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
         "error:138:47 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
@@ -658,7 +657,7 @@
         "error:105:42 [TS2307] Cannot find module '@tiptap/vue-3/menus' or its corresponding type declarations.",
         "error:106:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:107:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:129:73 [TS2345] Argument of type '(Omit<__LooseRequired<EditorToolbarBaseProps<T> & { layout?: \"fixed\" | undefined; }>, \"activeColor\" | \"activeVariant\" | \"color\" | \"layout\" | \"size\" | \"variant\"> & { ...; }) | (Omit<...> & { ...; }) | (Omit<...> & { ...; })' is not assignable to parameter of type 'EditorToolbarProps<T>'.\nType 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' is not assignable to type 'EditorToolbarProps<T>'.\nType 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' is not assignable to type 'EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }'.\nProperty 'editor' is missing in type 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' but required in type 'EditorToolbarBaseProps<T>'.",
+        "error:129:73 [TS2345] Argument of type '(Omit<__DefineProps<EditorToolbarBaseProps<T> & { layout?: \"fixed\" | undefined; }, never>, \"activeColor\" | \"activeVariant\" | \"color\" | \"layout\" | \"size\" | \"variant\"> & { ...; }) | (Omit<...> & { ...; }) | (Omit<...> & { ...; })' is not assignable to parameter of type 'EditorToolbarProps<T>'.\nType 'Omit<__DefineProps<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }, never>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' is not assignable to type 'EditorToolbarProps<T>'.\nType 'Omit<__DefineProps<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }, never>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' is not assignable to type 'EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }'.\nProperty 'editor' is missing in type 'Omit<__DefineProps<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }, never>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' but required in type 'EditorToolbarBaseProps<T>'.",
         "error:170:30 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
@@ -787,8 +786,8 @@
         "error:76:80 [TS2307] Cannot find module 'reka-ui/namespaced' or its corresponding type declarations.",
         "error:77:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:100:174 [TS2345] Argument of type 'Omit<__LooseRequired<InputDateProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' is not assignable to parameter of type 'Props<InputDateProps<R>> | undefined'.\nType 'Omit<__LooseRequired<InputDateProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' has no properties in common with type 'Props<InputDateProps<R>>'.",
-        "error:101:80 [TS2559] Type 'Omit<__LooseRequired<InputDateProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' has no properties in common with type 'Props<InputDateProps<R>>'.",
+        "error:100:174 [TS2345] Argument of type 'Omit<__DefineProps<InputDateProps<R>, keyof InputDateProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' is not assignable to parameter of type 'Props<InputDateProps<R>> | undefined'.\nType 'Omit<__DefineProps<InputDateProps<R>, keyof InputDateProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' has no properties in common with type 'Props<InputDateProps<R>>'.",
+        "error:101:80 [TS2559] Type 'Omit<__DefineProps<InputDateProps<R>, keyof InputDateProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' has no properties in common with type 'Props<InputDateProps<R>>'.",
         "error:205:59 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputDate\"> | Record<string, never>) & { inputDate?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputDate\"> & { inputDate?: any; }'."
       ]
     },
@@ -861,8 +860,8 @@
         "error:86:46 [TS2307] Cannot find module 'reka-ui/namespaced' or its corresponding type declarations.",
         "error:87:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:88:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:111:174 [TS2345] Argument of type 'Omit<__LooseRequired<InputTimeProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' is not assignable to parameter of type 'Props<InputTimeProps<R>> | undefined'.\nType 'Omit<__LooseRequired<InputTimeProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' has no properties in common with type 'Props<InputTimeProps<R>>'.",
-        "error:112:80 [TS2559] Type 'Omit<__LooseRequired<InputTimeProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' has no properties in common with type 'Props<InputTimeProps<R>>'.",
+        "error:111:174 [TS2345] Argument of type 'Omit<__DefineProps<InputTimeProps<R>, keyof InputTimeProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' is not assignable to parameter of type 'Props<InputTimeProps<R>> | undefined'.\nType 'Omit<__DefineProps<InputTimeProps<R>, keyof InputTimeProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' has no properties in common with type 'Props<InputTimeProps<R>>'.",
+        "error:112:80 [TS2559] Type 'Omit<__DefineProps<InputTimeProps<R>, keyof InputTimeProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' has no properties in common with type 'Props<InputTimeProps<R>>'.",
         "error:219:59 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputTime\"> | Record<string, never>) & { inputTime?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputTime\"> & { inputTime?: any; }'."
       ]
     },
@@ -940,7 +939,7 @@
         "error:90:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:91:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:201:60 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"modal\"> | Record<string, never>) & { modal?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"modal\"> & { modal?: any; }'.",
-        "error:229:85 [TS2339] Property 'unmountOnHide' does not exist on type 'Omit<__LooseRequired<ModalProps>, \"close\" | \"dismissible\" | \"modal\" | \"overlay\" | \"portal\" | \"transition\"> & { close: boolean | Omit<ButtonProps, LinkPropsKeys>; dismissible: boolean; overlay: boolean; portal: string | ... 1 more ... | HTMLElement; transition: boolean; }'."
+        "error:229:85 [TS2339] Property 'unmountOnHide' does not exist on type 'Omit<__DefineProps<ModalProps, \"class\" | \"closeIcon\" | \"content\" | \"dismissible\" | \"fullscreen\" | \"overlay\" | \"scrollable\" | \"transition\">, \"close\" | ... 4 more ... | \"transition\"> & { ...; }'."
       ]
     },
     {
@@ -1226,8 +1225,8 @@
         "error:156:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:157:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:158:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:193:167 [TS2345] Argument of type 'Omit<__LooseRequired<SelectProps<T, VK, M, Mod>>, \"autofocusDelay\" | \"descriptionKey\" | \"labelKey\" | \"portal\" | \"valueKey\"> & { ...; }' is not assignable to parameter of type 'Props<InputProps<any, ModelModifiers>> | undefined'.\nType 'Omit<__LooseRequired<SelectProps<T, VK, M, Mod>>, \"autofocusDelay\" | \"descriptionKey\" | \"labelKey\" | \"portal\" | \"valueKey\"> & { ...; }' has no properties in common with type 'Props<InputProps<any, ModelModifiers>>'.",
-        "error:194:73 [TS2559] Type 'Omit<__LooseRequired<SelectProps<T, VK, M, Mod>>, \"autofocusDelay\" | \"descriptionKey\" | \"labelKey\" | \"portal\" | \"valueKey\"> & { ...; }' has no properties in common with type 'Props<InputProps<any, ModelModifiers>>'.",
+        "error:193:167 [TS2345] Argument of type 'Omit<__DefineProps<SelectProps<T, VK, M, Mod>, keyof SelectProps<T, VK, M, Mod>>, \"autofocusDelay\" | \"descriptionKey\" | \"labelKey\" | \"portal\" | \"valueKey\"> & { ...; }' is not assignable to parameter of type 'Props<InputProps<any, ModelModifiers>> | undefined'.\nType 'Omit<__DefineProps<SelectProps<T, VK, M, Mod>, keyof SelectProps<T, VK, M, Mod>>, \"autofocusDelay\" | \"descriptionKey\" | \"labelKey\" | \"portal\" | \"valueKey\"> & { ...; }' has no properties in common with type 'Props<InputProps<any, ModelModifiers>>'.",
+        "error:194:73 [TS2559] Type 'Omit<__DefineProps<SelectProps<T, VK, M, Mod>, keyof SelectProps<T, VK, M, Mod>>, \"autofocusDelay\" | \"descriptionKey\" | \"labelKey\" | \"portal\" | \"valueKey\"> & { ...; }' has no properties in common with type 'Props<InputProps<any, ModelModifiers>>'.",
         "error:204:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"select\"> | Record<string, never>) & { select?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"select\"> & { select?: any; }'.",
         "error:433:74 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"select\"> | Record<string, never>) & { select?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"select\"> & { select?: any; }'."
       ]
@@ -1290,7 +1289,7 @@
         "error:88:148 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:90:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:91:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:153:85 [TS2339] Property 'unmountOnHide' does not exist on type 'Omit<__LooseRequired<SlideoverProps>, \"close\" | \"dismissible\" | \"modal\" | \"overlay\" | \"portal\" | \"side\" | \"transition\"> & { close: boolean | Omit<...>; ... 4 more ...; transition: boolean; }'.",
+        "error:153:85 [TS2339] Property 'unmountOnHide' does not exist on type 'Omit<__DefineProps<SlideoverProps, \"class\" | \"closeIcon\" | \"content\" | \"dismissible\" | \"inset\" | \"overlay\" | \"transition\">, \"close\" | \"dismissible\" | ... 4 more ... | \"transition\"> & { ...; }'.",
         "error:207:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"slideover\"> | Record<string, never>) & { slideover?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"slideover\"> & { slideover?: any; }'."
       ]
     },
@@ -1420,7 +1419,7 @@
         "error:56:120 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:57:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:58:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:90:128 [TS2339] Property 'disabled' does not exist on type 'Omit<__LooseRequired<TooltipProps>, \"portal\"> & { portal: string | boolean | HTMLElement; }'."
+        "error:90:128 [TS2339] Property 'disabled' does not exist on type 'Omit<__DefineProps<TooltipProps, \"class\" | \"content\" | \"reference\">, \"portal\"> & { portal: string | boolean | HTMLElement; }'."
       ]
     },
     {
@@ -2839,7 +2838,7 @@
       ]
     }
   ],
-  "errorCount": 1696,
+  "errorCount": 1695,
   "warningCount": 0,
   "fileCount": 231
 }

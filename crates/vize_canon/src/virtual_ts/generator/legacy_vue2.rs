@@ -20,7 +20,7 @@ type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
 type __DefineProps<T, __BKeys extends keyof T = never> = __LooseRequired<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D> = T extends unknown ? Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__LooseRequired<T>[K], undefined> } : never;
+type __WithDefaultsResult<T, D, __BKeys extends keyof T = never, __Props = __LooseRequired<T>> = T extends unknown ? Omit<__Props, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? __Props[K & keyof __Props] : Exclude<__Props[K & keyof __Props], undefined> } : never;
 type __Ref<T> = { value: T };
 type __VizeModelModifiers<M extends PropertyKey> = Record<M, true | undefined>;
 type __VizeWritableRef<G, S> = Omit<__Ref<G>, 'value'> & { get value(): G; set value(value: S); };
