@@ -194,18 +194,40 @@ pub(crate) fn compile_template_block(
     }
 
     // Compile template
-    let (_, errors, result) = profile!(
-        "atelier.sfc.template.dom",
-        vize_atelier_dom::compile_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
-            allocator,
-            &template.content,
-            dom_opts,
-            template_syntax,
-            hoisted_scope_attr,
-            custom_elements.clone(),
-            codegen_options.clone(),
+    let (errors, result) = if inline {
+        profile!(
+            "atelier.sfc.template.dom",
+            vize_atelier_dom::compile_sfc_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
+                allocator,
+                &template.content,
+                dom_opts,
+                template_syntax,
+                hoisted_scope_attr,
+                custom_elements.clone(),
+                codegen_options.clone(),
+            )
         )
-    );
+    } else {
+        let (_, errors, result) = profile!(
+            "atelier.sfc.template.dom",
+            vize_atelier_dom::compile_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_and_codegen_options(
+                allocator,
+                &template.content,
+                dom_opts,
+                template_syntax,
+                hoisted_scope_attr,
+                custom_elements.clone(),
+                codegen_options.clone(),
+            )
+        );
+        (
+            errors,
+            vize_atelier_core::codegen::CodegenResultWithSections {
+                result,
+                sections: None,
+            },
+        )
+    };
 
     // See above — drop recoverable parser diagnostics from the gating
     // check so duplicate-attribute SFCs still produce valid render code. (#958)

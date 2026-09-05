@@ -10,7 +10,7 @@
 use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode};
 use vize_atelier_dom::{
     DomCompilerOptions,
-    compile_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
+    compile_sfc_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
     compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
 };
 use vize_s0::Allocator;
@@ -41,10 +41,7 @@ fn source_map_free_dom_compile_uses_s2_without_profiler() {
 
     assert_eq!(selected.preamble, compat.preamble);
     assert_eq!(selected.code, compat.code);
-    assert!(
-        selected.sections.is_none(),
-        "source-map-free supported DOM compiles should come from the S2 selector"
-    );
+    assert_eq!(selected.sections, compat.sections);
     assert_eq!(
         counter_total(&counters, "davinci.s2_dom.files"),
         None,
@@ -128,26 +125,30 @@ fn unsupported_options_stay_on_compatibility_without_profiler() {
 }
 
 #[test]
-fn sfc_sections_entry_stays_on_compatibility_until_s2_sections_land() {
+fn sfc_sections_entry_uses_s2_once_sections_land() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
     profiler.clear();
 
-    let result = compile_sfc_sections_entry(
-        r#"<button @click="go">{{ label }}</button>"#,
-        DomCompilerOptions::default(),
+    let source = r#"<button @click="go">{{ label }}</button>"#;
+    let compat = compile_sfc_sections_entry(
+        source,
+        DomCompilerOptions {
+            source_map: true,
+            ..Default::default()
+        },
     );
+    let selected = compile_sfc_sections_entry(source, DomCompilerOptions::default());
     let counters = profiler.counter_summary();
 
-    assert!(
-        result.sections.is_some(),
-        "SFC template assembly needs compatibility sections until S2 records them"
-    );
+    assert_eq!(selected.preamble, compat.preamble);
+    assert_eq!(selected.code, compat.code);
+    assert_eq!(selected.sections, compat.sections);
     assert_eq!(
         counter_total(&counters, "davinci.s2_dom.files"),
         None,
-        "compatibility compiles must not instantiate the profiling observer"
+        "the SFC sections entry must not instantiate the profiling observer"
     );
 }
 
@@ -178,8 +179,8 @@ fn compile(source: &str, options: DomCompilerOptions) -> Compiled {
 
 fn compile_sfc_sections_entry(source: &str, options: DomCompilerOptions) -> Compiled {
     let allocator = Allocator::new();
-    let (_, errors, result) =
-        compile_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
+    let (errors, result) =
+        compile_sfc_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
             &allocator,
             source,
             options,

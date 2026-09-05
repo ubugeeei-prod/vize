@@ -14,6 +14,7 @@ use vize_croquis::Croquis;
 use vize_s0::{Allocator, String, profile};
 
 mod pipeline;
+mod sfc;
 mod stage_options;
 
 use crate::options::DomCompilerOptions;

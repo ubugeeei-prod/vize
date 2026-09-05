@@ -94,7 +94,7 @@ pub struct CodegenContext {
 /// hoisted consts / asset preamble / render body. Recording the boundaries
 /// while the code is written lets the caller slice the buffer directly
 /// instead of re-scanning the output line by line.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CodegenSections {
     /// Byte length of the import statement section at the start of
     /// `preamble`. Hoisted declarations (when present) follow after a single

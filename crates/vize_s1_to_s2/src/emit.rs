@@ -125,7 +125,8 @@ pub use self::budget::{
 use self::buf::Buf;
 use self::dispatch::{emit_for_item_call, emit_for_op, emit_if_branch_call, emit_if_op};
 pub use self::entry::{
-    DomEmit, emit_dom_source, emit_dom_source_with_caps, emit_dom_source_with_options,
+    DomEmit, DomEmitSections, emit_dom_source, emit_dom_source_with_caps,
+    emit_dom_source_with_options,
 };
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
 pub use self::options::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};

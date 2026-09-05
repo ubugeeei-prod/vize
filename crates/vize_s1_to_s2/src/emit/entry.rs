@@ -19,6 +19,23 @@ pub struct DomEmit {
     pub preamble: String,
     /// The `function render(…)` body, no trailing newline after `}`.
     pub code: String,
+    /// Emission-recorded section boundaries in the same buffers.
+    pub sections: DomEmitSections,
+}
+
+/// Byte offsets of the structural sections of one S2 DOM render module.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DomEmitSections {
+    /// Byte length of the import/destructure section at the start of
+    /// [`DomEmit::preamble`]. Hoisted declarations, when present, follow it.
+    pub imports_len: usize,
+    /// Byte range in [`DomEmit::code`] covering component/directive/filter
+    /// resolution statements inside the render function.
+    pub assets_start: usize,
+    pub assets_end: usize,
+    /// Byte range in [`DomEmit::code`] covering the root `return` expression.
+    pub return_expr_start: usize,
+    pub return_expr_end: usize,
 }
 
 impl DomEmit {

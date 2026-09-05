@@ -3,7 +3,7 @@
 //! Keeps the parse/transform option wiring out of `compile.rs` so that entry
 //! point stays focused on pipeline flow.
 
-use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections};
+use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections, CodegenSections};
 use vize_atelier_core::options::{
     BindingMetadata, BindingType, CodegenMode, CodegenOptions, ParserOptions, TemplateSyntaxMode,
     TransformOptions,
@@ -11,7 +11,7 @@ use vize_atelier_core::options::{
 use vize_s0::Allocator;
 use vize_s0::profiler::global_profiler;
 use vize_s1_to_s2::{
-    BindingKind, BindingTable, DomEmitMode, DomEmitOptions, EmitError, LegacyCaps,
+    BindingKind, BindingTable, DomEmitMode, DomEmitOptions, DomEmitSections, EmitError, LegacyCaps,
 };
 
 use super::pipeline::S2EmitSelection;
@@ -84,8 +84,10 @@ pub(super) fn s2_emit_supported(
     has_croquis: bool,
     s2_emit_selection: S2EmitSelection,
 ) -> bool {
-    s2_emit_selection == S2EmitSelection::Allowed
-        && !codegen.source_map
+    matches!(
+        s2_emit_selection,
+        S2EmitSelection::Allowed | S2EmitSelection::RequireSections
+    ) && !codegen.source_map
         && options.hoist_static
         && !options.ssr
         && !options.comments
@@ -185,11 +187,20 @@ pub(super) fn emit_s2(
             preamble: emit.preamble,
             map: None,
         },
-        // S2 does not retain emission offsets yet. SFC assembly keeps its
-        // established scanner fallback until the source-map/section work
-        // moves into the S2 backend.
-        sections: None,
+        // S2 records the same structural render-module boundaries as the
+        // shipped emitter so SFC assembly can slice either lane identically.
+        sections: Some(s2_codegen_sections(emit.sections)),
     })
+}
+
+const fn s2_codegen_sections(sections: DomEmitSections) -> CodegenSections {
+    CodegenSections {
+        imports_len: sections.imports_len,
+        assets_start: sections.assets_start,
+        assets_end: sections.assets_end,
+        return_expr_start: sections.return_expr_start,
+        return_expr_end: sections.return_expr_end,
+    }
 }
 
 const fn s2_binding_kind(kind: BindingType) -> BindingKind {

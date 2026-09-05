@@ -4,6 +4,7 @@ use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher};
 pub(super) enum S2EmitSelection {
     Allowed,
     RequireSections,
+    Disabled,
 }
 
 pub(super) struct DomCompilePipelineOptions {
@@ -32,6 +33,17 @@ impl DomCompilePipelineOptions {
             custom_elements,
             codegen_options,
             s2_emit_selection: S2EmitSelection::RequireSections,
+        }
+    }
+
+    pub(super) fn require_sections_compat(
+        custom_elements: CustomElementMatcher,
+        codegen_options: CodegenOptions,
+    ) -> Self {
+        Self {
+            custom_elements,
+            codegen_options,
+            s2_emit_selection: S2EmitSelection::Disabled,
         }
     }
 }

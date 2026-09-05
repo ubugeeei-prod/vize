@@ -70,10 +70,11 @@ pub mod lower;
 pub mod pass;
 
 pub use emit::{
-    BindingKind, BindingTable, DomEmit, DomEmitBudget, DomEmitMode, DomEmitOptions, EmitError,
-    ObservedDomEmit, UnsupportedReason, UnsupportedRefusal, emit_dom, emit_dom_source,
-    emit_dom_source_observed, emit_dom_source_observed_with_options, emit_dom_source_with_caps,
-    emit_dom_source_with_caps_observed, emit_dom_source_with_options, emit_dom_with_options,
+    BindingKind, BindingTable, DomEmit, DomEmitBudget, DomEmitMode, DomEmitOptions,
+    DomEmitSections, EmitError, ObservedDomEmit, UnsupportedReason, UnsupportedRefusal, emit_dom,
+    emit_dom_source, emit_dom_source_observed, emit_dom_source_observed_with_options,
+    emit_dom_source_with_caps, emit_dom_source_with_caps_observed, emit_dom_source_with_options,
+    emit_dom_with_options,
 };
 pub use lower::{
     LegacyCaps, Lowered, lower, lower_source_block, lower_source_block_with_caps,

@@ -11,10 +11,18 @@ impl Buf {
     /// destructure or the module-mode import, per `options.mode` — then
     /// any root static-props hoist (the shipped codegen appends hoists to
     /// the helper preamble in both modes).
+    #[cfg(test)]
     pub(in crate::emit) fn preamble(&self, options: &DomEmitOptions<'_>) -> String {
+        self.preamble_with_imports_len(options).0
+    }
+
+    pub(in crate::emit) fn preamble_with_imports_len(
+        &self,
+        options: &DomEmitOptions<'_>,
+    ) -> (String, usize) {
         let listed = self.ordered_helpers();
         if listed.is_empty() {
-            return String::default();
+            return (String::default(), 0);
         }
         let mut preamble = String::default();
         match options.mode {
@@ -47,6 +55,7 @@ impl Buf {
                 preamble.push_str("\"\n");
             }
         }
+        let imports_len = preamble.len();
         if !self.hoists.is_empty() {
             preamble.push('\n');
             for (i, rhs) in self.hoists.iter().enumerate() {
@@ -57,6 +66,6 @@ impl Buf {
                 preamble.push('\n');
             }
         }
-        preamble
+        (preamble, imports_len)
     }
 }

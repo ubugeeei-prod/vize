@@ -16,8 +16,8 @@ use super::buf::Buf;
 use super::fragment::emit_root;
 use super::helper::Helper;
 use super::{
-    DomEmit, DomEmitOptions, EmitCx, EmitError, UnsupportedReason, cache_slots, component,
-    directive, filter, fragment, helper_preference, prefix, static_cache,
+    DomEmit, DomEmitOptions, DomEmitSections, EmitCx, EmitError, UnsupportedReason, cache_slots,
+    component, directive, filter, fragment, helper_preference, prefix, static_cache,
 };
 
 /// Emit a DOM render function from an already-lowered (and typically
@@ -114,6 +114,7 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
         .push(options.mode.render_signature(options.bindings.is_some()));
     cx.buf.indent();
     cx.buf.newline();
+    let assets_start = cx.buf.code.len();
     let names = component::collect_names(&lowered.root);
     let dirs = directive::collect_names(&lowered.root);
     let mut resolved_assets = false;
@@ -127,11 +128,14 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
         filter::emit_resolves(&mut cx, filters);
         resolved_assets = true;
     }
+    let assets_end = cx.buf.code.len();
     if resolved_assets {
         cx.buf.newline();
     }
     cx.buf.push("return ");
+    let return_expr_start = cx.buf.code.len();
     emit_root(&mut cx, &lowered.root)?;
+    let return_expr_end = cx.buf.code.len();
     cx.buf.deindent();
     cx.buf.newline();
     cx.buf.push("}");
@@ -145,7 +149,20 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
     }
     cache_slots::renumber(&mut cx);
     let emit_visits = cx.walk.visits();
-    let preamble = cx.buf.preamble(options);
+    let (preamble, imports_len) = cx.buf.preamble_with_imports_len(options);
     let code = cx.buf.code;
-    Ok((DomEmit { preamble, code }, emit_visits))
+    Ok((
+        DomEmit {
+            preamble,
+            code,
+            sections: DomEmitSections {
+                imports_len,
+                assets_start,
+                assets_end,
+                return_expr_start,
+                return_expr_end,
+            },
+        },
+        emit_visits,
+    ))
 }
