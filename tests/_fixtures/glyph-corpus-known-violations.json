@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "property": "parse-preservation",
+    "category": "semantic-diff",
+    "project": "vitepress",
+    "path": "template/.vitepress/theme/Layout.vue",
+    "reason": "Including hidden recursive formatter inputs exposes an existing VitePress fixture where formatting removes one Vue compiler parse error signature.",
+    "trackingIssue": 5723,
+    "expiryCondition": "Remove when the formatter preserves this file's parse-error signature without a waiver."
+  }
+]
