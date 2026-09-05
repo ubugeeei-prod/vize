@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/marquette",
-  "version": "0.396.0",
+  "version": "0.397.0",
   "description": "Typed application marquettes for every Vize target",
   "keywords": [
     "application-contract",
