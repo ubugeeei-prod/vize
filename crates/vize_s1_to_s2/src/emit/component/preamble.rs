@@ -2,6 +2,7 @@
 
 use alloc::vec::Vec as StdVec;
 
+use vize_s0::ensure_sufficient_stack;
 use vize_s2::op::{Op, Region};
 
 use super::{Buf, EmitCx, asset_ident, builtin};
@@ -54,6 +55,10 @@ fn is_self_reference(component: &str, own: &str) -> bool {
 }
 
 fn collect_from<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
+    ensure_sufficient_stack(|| collect_from_guarded(region, names));
+}
+
+fn collect_from_guarded<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
     for op in region.ops.iter() {
         match op {
             Op::Element(element) => collect_from(&element.children, names),

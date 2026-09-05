@@ -5,6 +5,7 @@
 
 use alloc::vec::Vec as StdVec;
 
+use vize_s0::ensure_sufficient_stack;
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{
     BindingOp, ComponentOp, DynamicName, ElementOp, ModelOp, Op, Region, VueDirectiveOp, VueShowOp,
@@ -253,6 +254,10 @@ fn runtime_directives<'a>(bindings: &'a [BindingOp<'a>]) -> StdVec<RuntimeDirect
 }
 
 fn collect_from<'a>(region: &'a Region<'a>, names: &mut StdVec<&'a str>) {
+    ensure_sufficient_stack(|| collect_from_guarded(region, names));
+}
+
+fn collect_from_guarded<'a>(region: &'a Region<'a>, names: &mut StdVec<&'a str>) {
     for op in region.ops.iter() {
         match op {
             Op::Element(element) => {

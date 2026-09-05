@@ -15,7 +15,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_s0::{Box, Span, String, Vec, cstr};
+use vize_s0::{Box, Span, String, Vec, cstr, ensure_sufficient_stack};
 use vize_s1::{Element, SurfaceChild};
 
 use vize_s2::op::{IfBranch, IfOp, Namespace, Op, Region};
@@ -46,6 +46,14 @@ type Branch<'a, 't> = (&'t Element<'a>, Analyzed<'a>, usize, StdVec<usize>);
 /// run lane (`lower::text::lower_text_run` — merging), everything else
 /// as before.
 pub(crate) fn lower_children<'a>(
+    cx: &mut Cx<'a>,
+    children: &[SurfaceChild<'a>],
+    ns: Namespace,
+) -> Vec<'a, Op<'a>> {
+    ensure_sufficient_stack(|| lower_children_guarded(cx, children, ns))
+}
+
+fn lower_children_guarded<'a>(
     cx: &mut Cx<'a>,
     children: &[SurfaceChild<'a>],
     ns: Namespace,

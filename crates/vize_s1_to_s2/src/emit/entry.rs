@@ -1,11 +1,12 @@
 //! One-shot entry points: parse → lower → S2 transform → emit, and the
 //! two-half render module the dual-run compares.
 
+use vize_davinci::pass::NoObserver;
 use vize_s0::{Allocator, String};
 
 use crate::lower::LegacyCaps;
 
-use super::budget::emit_dom_source_observed_with_options;
+use super::budget::emit_dom_source_with_options_and_observer;
 use super::options::DomEmitOptions;
 use super::{EmitError, emit_dom_source_with_caps_observed};
 
@@ -57,6 +58,7 @@ pub fn emit_dom_source_with_options<'a>(
     caps: LegacyCaps,
     options: &DomEmitOptions<'_>,
 ) -> Result<DomEmit, EmitError> {
-    emit_dom_source_observed_with_options(allocator, source, caps, options)
-        .map(|observed| observed.emit)
+    let mut observer = NoObserver;
+    emit_dom_source_with_options_and_observer(allocator, source, caps, options, &mut observer)
+        .map(|(emit, _)| emit)
 }

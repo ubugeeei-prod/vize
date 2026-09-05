@@ -1,4 +1,7 @@
-use super::{compile_template_inner, compile_template_inner_with_sections};
+use super::{
+    compile_template_inner, compile_template_inner_with_sections,
+    pipeline::DomCompilePipelineOptions,
+};
 use crate::DomCompilerOptions;
 use vize_atelier_core::{
     CompilerError, RootNode,
@@ -47,7 +50,6 @@ pub fn compile_template_with_custom_elements_and_template_syntax_and_hoisted_sco
         options,
         template_syntax,
         hoisted_scope_id,
-        custom_elements,
-        codegen_options,
+        DomCompilePipelineOptions::require_sections(custom_elements, codegen_options),
     )
 }

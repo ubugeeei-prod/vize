@@ -3,6 +3,7 @@
 mod slot_order;
 
 use vize_davinci::side_table::SideTable;
+use vize_s0::ensure_sufficient_stack;
 use vize_s2::op::{Op, Region};
 
 use crate::lower::ForWrapper;
@@ -45,6 +46,26 @@ pub(super) fn prefer_helpers(
 }
 
 fn prefer_region_helpers(
+    buf: &mut Buf,
+    cx: &PreferCx<'_>,
+    walk: &mut PageWalk,
+    region: &Region<'_>,
+    template_slot_context: bool,
+    suppress_first_runtime_directives: bool,
+) {
+    ensure_sufficient_stack(|| {
+        prefer_region_helpers_guarded(
+            buf,
+            cx,
+            walk,
+            region,
+            template_slot_context,
+            suppress_first_runtime_directives,
+        );
+    });
+}
+
+fn prefer_region_helpers_guarded(
     buf: &mut Buf,
     cx: &PreferCx<'_>,
     walk: &mut PageWalk,
@@ -171,7 +192,9 @@ fn prefer_if_branch_helpers(
     region: &Region<'_>,
     slot_context: bool,
 ) {
-    for op in region.ops.iter() {
-        prefer_op_helpers(buf, cx, walk, op, slot_context, false);
-    }
+    ensure_sufficient_stack(|| {
+        for op in region.ops.iter() {
+            prefer_op_helpers(buf, cx, walk, op, slot_context, false);
+        }
+    });
 }

@@ -1,6 +1,7 @@
 //! Static child vnode hoist gates for native element emission.
 
 use vize_davinci::id::NodeId;
+use vize_s0::ensure_sufficient_stack;
 use vize_s2::op::{ElementOp, Namespace, Op};
 
 use super::EmitCx;
@@ -52,6 +53,10 @@ fn has_direct_component_child(element: &ElementOp<'_>) -> bool {
 }
 
 pub(super) fn can_whole_hoist_static_element(element: &ElementOp<'_>, is_ts: bool) -> bool {
+    ensure_sufficient_stack(|| can_whole_hoist_static_element_guarded(element, is_ts))
+}
+
+fn can_whole_hoist_static_element_guarded(element: &ElementOp<'_>, is_ts: bool) -> bool {
     if element.namespace != Namespace::Html
         && element.tag == "svg"
         && !element.bindings.is_empty()
@@ -77,7 +82,9 @@ pub(super) fn can_whole_hoist_static_element(element: &ElementOp<'_>, is_ts: boo
 fn can_whole_hoist_static_child(op: &Op<'_>, is_ts: bool) -> bool {
     match op {
         Op::Text(_) => true,
-        Op::Element(element) => can_whole_hoist_static_element(element, is_ts),
+        Op::Element(element) => {
+            ensure_sufficient_stack(|| can_whole_hoist_static_element(element, is_ts))
+        }
         _ => false,
     }
 }

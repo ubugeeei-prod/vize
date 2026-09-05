@@ -9,7 +9,7 @@
 
 use core::fmt::{Result, Write};
 
-use vize_s0::Span;
+use vize_s0::{Span, ensure_sufficient_stack};
 
 use super::S2Folio;
 use super::owned::{FolioAttribute, FolioBinding, FolioExpr, FolioName, FolioOp};
@@ -116,6 +116,10 @@ pub(super) fn print_name<W: Write>(w: &mut W, name: &FolioName, mode: FolioMode)
 }
 
 fn print_op<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: FolioMode) -> Result {
+    ensure_sufficient_stack(|| print_op_guarded(w, op, depth, mode))
+}
+
+fn print_op_guarded<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: FolioMode) -> Result {
     match op {
         FolioOp::Element(element) => {
             indent(w, depth)?;

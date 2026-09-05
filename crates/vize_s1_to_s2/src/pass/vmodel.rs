@@ -78,7 +78,7 @@ use alloc::vec::Vec as StdVec;
 use vize_davinci::diagnostic::Diagnostic;
 use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_davinci::side_table::SideTable;
-use vize_s0::String;
+use vize_s0::{String, ensure_sufficient_stack};
 use vize_s2::op::{BindingOp, Op};
 use vize_s2::provenance::ProvenanceRecord;
 
@@ -182,6 +182,15 @@ pub(super) struct Channels<'l> {
 }
 
 fn region<'a>(
+    walk: &mut PageWalk,
+    channels: &mut Channels<'_>,
+    env: &mut StdVec<String>,
+    ops: &[Op<'a>],
+) {
+    ensure_sufficient_stack(|| region_guarded(walk, channels, env, ops));
+}
+
+fn region_guarded<'a>(
     walk: &mut PageWalk,
     channels: &mut Channels<'_>,
     env: &mut StdVec<String>,

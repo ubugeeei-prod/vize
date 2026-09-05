@@ -1,6 +1,7 @@
 //! Walk helpers for `createSlots` entry collection.
 
 use vize_davinci::id::NodeId;
+use vize_s0::ensure_sufficient_stack;
 use vize_s2::op::{BindingOp, ElementOp, ForOp, IfBranch, IfOp, Op, Region, SlotContentOp};
 
 use super::EmitCx;
@@ -72,6 +73,10 @@ pub(super) fn advance_after_op(walk: &mut PageWalk, op: &Op<'_>) {
 }
 
 fn advance_after_ops(walk: &mut PageWalk, ops: &[Op<'_>]) {
+    ensure_sufficient_stack(|| advance_after_ops_guarded(walk, ops));
+}
+
+fn advance_after_ops_guarded(walk: &mut PageWalk, ops: &[Op<'_>]) {
     for op in ops {
         let _id = walk.mint();
         advance_after_op(walk, op);
@@ -110,6 +115,10 @@ fn is_slot_template_carrier(region: &Region<'_>) -> bool {
 }
 
 pub(super) fn skip_ops(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) {
+    ensure_sufficient_stack(|| skip_ops_guarded(cx, ops));
+}
+
+fn skip_ops_guarded(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) {
     for op in ops {
         skip_op(cx, op);
     }

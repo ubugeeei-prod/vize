@@ -65,14 +65,18 @@ fn stress_deep_compiles_and_tears_down_on_a_small_stack() {
         .stack_size(SMALL_STACK)
         .spawn(move || {
             let allocator = Allocator::new();
-            let (root, errors, compiled) =
-                compile_template_with_options(&allocator, &template, DomCompilerOptions::default());
-            assert!(errors.is_empty(), "stress-deep.vue must compile cleanly");
-            // Drop the tree and the arena here, inside the small stack: this
-            // is the frame the retired `Drop` impls used to recurse on.
-            drop(root);
+            let code = {
+                let (root, errors, compiled) = compile_template_with_options(
+                    &allocator,
+                    &template,
+                    DomCompilerOptions::default(),
+                );
+                assert!(errors.is_empty(), "stress-deep.vue must compile cleanly");
+                let _root = root;
+                compiled.code
+            };
             drop(allocator);
-            compiled.code
+            code
         })
         .expect("spawning the teardown thread")
         .join()

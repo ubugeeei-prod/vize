@@ -192,9 +192,7 @@ fn compile_source_on_small_stack(
                 preamble: String::from(result.preamble.as_str()),
                 has_source_map: result.map.is_some(),
             };
-            // Dropping the tree is a recursive walk of its own; do it here, on
-            // the small stack, so the teardown is under test too.
-            drop(root);
+            let _root = root;
             compiled
         })
         .expect("spawn worker thread")

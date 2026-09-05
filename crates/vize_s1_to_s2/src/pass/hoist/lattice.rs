@@ -6,7 +6,7 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_davinci::side_table::SideTable;
-use vize_s0::cstr;
+use vize_s0::{cstr, ensure_sufficient_stack};
 use vize_s2::op::{
     Attribute, BindingOp, ComponentOp, DynamicName, ElementOp, Namespace, Op, SlotOp,
 };
@@ -73,6 +73,16 @@ impl RegionSummary {
 /// of their own — and element children re-enter through the
 /// integration points, the lowering's own rule mirrored).
 pub(super) fn visit_region(
+    walk: &mut PageWalk,
+    ops: &[Op<'_>],
+    ns: Namespace,
+    provenance: &mut StdVec<ProvenanceRecord>,
+    facts: &mut SideTable<StaticFacts>,
+) -> RegionSummary {
+    ensure_sufficient_stack(|| visit_region_guarded(walk, ops, ns, provenance, facts))
+}
+
+fn visit_region_guarded(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
     ns: Namespace,

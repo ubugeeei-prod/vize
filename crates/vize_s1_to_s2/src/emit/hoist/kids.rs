@@ -1,12 +1,16 @@
 use alloc::vec::Vec as StdVec;
 
-use vize_s0::String;
+use vize_s0::{String, ensure_sufficient_stack};
 use vize_s2::op::{ElementOp, Op, Region};
 
 use super::super::buf::Buf;
 use super::super::js::escape_js_string;
 
 pub(super) fn hoist_needs_create_text(element: &ElementOp<'_>) -> bool {
+    ensure_sufficient_stack(|| hoist_needs_create_text_guarded(element))
+}
+
+fn hoist_needs_create_text_guarded(element: &ElementOp<'_>) -> bool {
     let kids = renderable_children(&element.children);
     let has_text = kids.iter().any(|op| matches!(op, Op::Text(_)));
     let has_other = kids.iter().any(|op| !matches!(op, Op::Text(_)));
@@ -18,6 +22,15 @@ pub(super) fn hoist_needs_create_text(element: &ElementOp<'_>) -> bool {
 }
 
 pub(super) fn append_hoist_kids(
+    out: &mut String,
+    kids: &[&Op<'_>],
+    is_ts: bool,
+    scope_id: Option<&str>,
+) {
+    ensure_sufficient_stack(|| append_hoist_kids_guarded(out, kids, is_ts, scope_id));
+}
+
+fn append_hoist_kids_guarded(
     out: &mut String,
     kids: &[&Op<'_>],
     is_ts: bool,
@@ -61,6 +74,14 @@ fn hoist_descendant_element_rhs(
     is_ts: bool,
     scope_id: Option<&str>,
 ) -> String {
+    ensure_sufficient_stack(|| hoist_descendant_element_rhs_guarded(element, is_ts, scope_id))
+}
+
+fn hoist_descendant_element_rhs_guarded(
+    element: &ElementOp<'_>,
+    is_ts: bool,
+    scope_id: Option<&str>,
+) -> String {
     let mut out = String::default();
     out.push_str(Buf::create_element_vnode_alias());
     out.push('(');
@@ -86,6 +107,16 @@ fn hoist_descendant_element_rhs(
 }
 
 pub(super) fn append_cached_kids(
+    out: &mut String,
+    kids: &[&Op<'_>],
+    line_indent: usize,
+    is_ts: bool,
+    scope_id: Option<&str>,
+) {
+    ensure_sufficient_stack(|| append_cached_kids_guarded(out, kids, line_indent, is_ts, scope_id));
+}
+
+fn append_cached_kids_guarded(
     out: &mut String,
     kids: &[&Op<'_>],
     line_indent: usize,

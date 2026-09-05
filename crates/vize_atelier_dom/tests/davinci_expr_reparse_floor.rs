@@ -23,7 +23,7 @@ use vize_s0::Allocator;
 const FLOOR: [(&str, u64); 6] = [
     ("small", 0),
     ("medium", 0),
-    ("large", 16),
+    ("large", 8),
     ("stress-deep", 0),
     ("stress-wide", 0),
     ("stress-interp", 0),

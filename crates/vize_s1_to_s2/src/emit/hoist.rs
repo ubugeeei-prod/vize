@@ -10,7 +10,7 @@ mod props;
 
 pub(super) use props::{compact_props_object, push_attr_pair, push_empty_attr_pair, unique_attrs};
 
-use vize_s0::String;
+use vize_s0::{String, ensure_sufficient_stack};
 use vize_s2::op::{ElementOp, Op};
 
 use super::buf::Buf;
@@ -123,6 +123,10 @@ pub(super) fn is_static_element_tree(element: &ElementOp<'_>, is_ts: bool) -> bo
 }
 
 fn walk_hoisted(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {
+    ensure_sufficient_stack(|| walk_hoisted_guarded(cx, element));
+}
+
+fn walk_hoisted_guarded(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {
     for op in element.children.ops.iter() {
         match op {
             Op::Text(_) | Op::Interpolation(_) => {

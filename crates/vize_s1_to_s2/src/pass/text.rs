@@ -89,7 +89,7 @@ use alloc::vec::Vec as StdVec;
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_davinci::side_table::SideTable;
-use vize_s0::{String, cstr};
+use vize_s0::{String, cstr, ensure_sufficient_stack};
 use vize_s2::expr::{ExprRef, OpaqueReason};
 use vize_s2::op::Op;
 use vize_s2::provenance::ProvenanceRecord;
@@ -171,6 +171,16 @@ pub fn run(lowered: &mut Lowered<'_>) -> SideTable<TextFacts> {
 /// The shaped recursion: one region at a time, so the adjacency law
 /// sees sibling pairs; ids mint through the one shared arithmetic.
 fn visit_region(
+    walk: &mut PageWalk,
+    ops: &[Op<'_>],
+    texts: &SideTable<TextParts>,
+    provenance: &mut StdVec<ProvenanceRecord>,
+    facts: &mut SideTable<TextFacts>,
+) {
+    ensure_sufficient_stack(|| visit_region_guarded(walk, ops, texts, provenance, facts));
+}
+
+fn visit_region_guarded(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
     texts: &SideTable<TextParts>,

@@ -229,13 +229,12 @@ fn a_constant_handler_leaves_the_merged_dynamic_props_array() {
         )
         .expect("const handler witness must emit")
         .assembled();
-        let line = assembled
+        assembled
             .lines()
             .find(|line| line.contains("FULL_PROPS"))
             .unwrap_or_default()
             .trim()
-            .to_string();
-        line
+            .to_string()
     };
     // The constant handler is gone from the array; the dynamic one stays.
     assert_eq!(

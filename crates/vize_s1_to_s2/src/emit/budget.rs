@@ -1,5 +1,5 @@
-use vize_davinci::pass::BudgetObserver;
-use vize_s0::Allocator;
+use vize_davinci::pass::{BudgetObserver, PassObserver};
+use vize_s0::{Allocator, ensure_sufficient_stack};
 use vize_s1::parse;
 
 use crate::lower::{LegacyCaps, lower_with_caps};
@@ -54,11 +54,14 @@ pub fn emit_dom_source_observed_with_options<'a>(
     caps: LegacyCaps,
     options: &DomEmitOptions<'_>,
 ) -> Result<ObservedDomEmit, EmitError> {
-    let (tree, errors) = parse(allocator, source);
-    let mut lowered = lower_with_caps(allocator, &tree, &errors, caps);
     let mut transform = BudgetObserver::new();
-    let facts = run_transform(&mut lowered, &mut transform);
-    let (emit, emit_visits) = emit_dom_with_emit_budget(&lowered, &facts, options)?;
+    let (emit, emit_visits) = emit_dom_source_with_options_and_observer(
+        allocator,
+        source,
+        caps,
+        options,
+        &mut transform,
+    )?;
     Ok(ObservedDomEmit {
         emit,
         budget: DomEmitBudget {
@@ -66,5 +69,21 @@ pub fn emit_dom_source_observed_with_options<'a>(
             emit_walks: 1,
             emit_visits,
         },
+    })
+}
+
+pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    observer: &mut O,
+) -> Result<(DomEmit, u32), EmitError> {
+    ensure_sufficient_stack(|| {
+        let (tree, errors) = parse(allocator, source);
+        let mut lowered = lower_with_caps(allocator, &tree, &errors, caps);
+        let facts = run_transform(&mut lowered, observer);
+        let (emit, emit_visits) = emit_dom_with_emit_budget(&lowered, &facts, options)?;
+        Ok((emit, emit_visits))
     })
 }

@@ -13,9 +13,11 @@ use vize_atelier_core::{
 use vize_croquis::Croquis;
 use vize_s0::{Allocator, String, profile};
 
+mod pipeline;
 mod stage_options;
 
 use crate::options::DomCompilerOptions;
+use pipeline::DomCompilePipelineOptions;
 
 /// Compile a Vue template for DOM with default options
 pub fn compile_template<'a>(
@@ -179,8 +181,10 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections<
         options,
         template_syntax,
         hoisted_scope_id,
-        CustomElementMatcher::default(),
-        CodegenOptions::default(),
+        DomCompilePipelineOptions::allow_s2(
+            CustomElementMatcher::default(),
+            CodegenOptions::default(),
+        ),
     )
 }
 
@@ -203,8 +207,7 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_
         options,
         template_syntax,
         hoisted_scope_id,
-        CustomElementMatcher::default(),
-        codegen_options,
+        DomCompilePipelineOptions::allow_s2(CustomElementMatcher::default(), codegen_options),
     )
 }
 
@@ -223,8 +226,7 @@ fn compile_template_inner<'a>(
         options,
         template_syntax,
         hoisted_scope_id,
-        custom_elements,
-        codegen_options,
+        DomCompilePipelineOptions::allow_s2(custom_elements, codegen_options),
     );
     (root, errors, codegen_result.into_result())
 }
@@ -235,9 +237,13 @@ fn compile_template_inner_with_sections<'a>(
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
     hoisted_scope_id: Option<String>,
-    custom_elements: CustomElementMatcher,
-    codegen_options: CodegenOptions,
+    pipeline_options: DomCompilePipelineOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResultWithSections) {
+    let DomCompilePipelineOptions {
+        custom_elements,
+        codegen_options,
+        s2_emit_selection,
+    } = pipeline_options;
     let parser_opts = stage_options::parser_options(&options);
 
     // Parse
@@ -279,18 +285,18 @@ fn compile_template_inner_with_sections<'a>(
     let codegen_opts = stage_options::codegen_options(&options, codegen_options);
     let template_syntax_quirks = template_syntax.is_quirks();
     let has_custom_element_matcher = !custom_elements.is_empty();
-    let profile_s2_emit = stage_options::s2_profile_enabled()
-        && stage_options::s2_emit_supported(
-            &options,
-            &codegen_opts,
-            has_custom_element_matcher,
-            template_syntax,
-            has_croquis,
-        );
+    let use_s2_emit = stage_options::s2_emit_supported(
+        &options,
+        &codegen_opts,
+        has_custom_element_matcher,
+        template_syntax,
+        has_croquis,
+        s2_emit_selection,
+    );
     // Project the public output options before consuming Croquis below. Croquis
     // intentionally crosses the transform boundary by ownership and is not
     // cloneable, while S2 only borrows the remaining compiler settings.
-    let s2_emit_source = profile_s2_emit.then(|| (options.clone(), hoisted_scope_id.clone()));
+    let s2_emit_source = use_s2_emit.then(|| (options.clone(), hoisted_scope_id.clone()));
     let transform_opts = stage_options::transform_options(&options);
     // Park the summary on the allocator so it shares the allocator lifetime.
     let analysis: Option<&Croquis> = options.croquis.map(|c| allocator.alloc_owned(*c));

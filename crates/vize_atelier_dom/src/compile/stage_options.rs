@@ -14,6 +14,7 @@ use vize_s1_to_s2::{
     BindingKind, BindingTable, DomEmitMode, DomEmitOptions, EmitError, LegacyCaps,
 };
 
+use super::pipeline::S2EmitSelection;
 use crate::namespace::get_namespace;
 use crate::options::DomCompilerOptions;
 
@@ -81,8 +82,10 @@ pub(super) fn s2_emit_supported(
     has_custom_element_matcher: bool,
     template_syntax: TemplateSyntaxMode,
     has_croquis: bool,
+    s2_emit_selection: S2EmitSelection,
 ) -> bool {
-    !codegen.source_map
+    s2_emit_selection == S2EmitSelection::Allowed
+        && !codegen.source_map
         && options.hoist_static
         && !options.ssr
         && !options.comments
@@ -94,14 +97,10 @@ pub(super) fn s2_emit_supported(
         && !has_croquis
 }
 
-pub(super) fn s2_profile_enabled() -> bool {
-    global_profiler().is_enabled()
-}
-
 /// The published DOM option surface projected onto the S2 emitter.
 ///
 /// Keep this conversion beside the legacy parse/transform wiring: the public
-/// compiler still returns its AST and diagnostics, while S2 owns the profiled
+/// compiler still returns its AST and diagnostics, while S2 owns the supported
 /// source-map-free traversal surface. A field missing here must stay on the
 /// compatibility path rather than becoming an accidental S2 default.
 pub(super) fn s2_emit_options<'a>(

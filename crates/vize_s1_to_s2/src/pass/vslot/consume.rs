@@ -14,7 +14,7 @@ use alloc::vec::Vec as StdVec;
 use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
-use vize_s0::{Span, String};
+use vize_s0::{Span, String, ensure_sufficient_stack};
 use vize_s2::op::{BindingOp, Op};
 use vize_s2::provenance::ProvenanceRecord;
 use vize_s2::scope::{ScopeFacts, ScopeTag};
@@ -188,11 +188,13 @@ pub(super) fn region<'a>(
     channels: &mut Channels<'_>,
     ops: &[Op<'a>],
 ) -> StdVec<ChildView> {
-    let mut views = StdVec::with_capacity(ops.len());
-    for op in ops {
-        views.push(visit(walk, channels, op));
-    }
-    views
+    ensure_sufficient_stack(|| {
+        let mut views = StdVec::with_capacity(ops.len());
+        for op in ops {
+            views.push(visit(walk, channels, op));
+        }
+        views
+    })
 }
 
 fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> ChildView {

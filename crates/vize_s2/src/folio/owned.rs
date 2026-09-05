@@ -10,7 +10,7 @@
 
 use alloc::vec::Vec;
 
-use vize_s0::{Span, String};
+use vize_s0::{Span, String, ensure_sufficient_stack};
 
 use super::S2Folio;
 use crate::op::{Attribute, DynamicName, Namespace, Op, Region};
@@ -167,24 +167,32 @@ impl S2Folio {
     /// Mirror a live arena tree into the owned document model.
     #[must_use]
     pub fn of(ops: &[Op<'_>]) -> Self {
-        Self {
-            ops: ops.iter().map(own_op).collect(),
-        }
+        ensure_sufficient_stack(|| Self { ops: own_ops(ops) })
     }
 
     /// Total op count of the tree: region ops plus attached bindings, all
     /// levels. This is what the printed `ops=` header states.
     #[must_use]
     pub fn op_count(&self) -> u64 {
-        self.ops.iter().map(count_op).sum()
+        ensure_sufficient_stack(|| self.ops.iter().map(count_op).sum())
     }
 }
 
+fn own_ops(ops: &[Op<'_>]) -> Vec<FolioOp> {
+    ops.iter()
+        .map(|op| ensure_sufficient_stack(|| own_op(op)))
+        .collect()
+}
+
 fn own_region(region: &Region<'_>) -> Vec<FolioOp> {
-    region.ops.iter().map(own_op).collect()
+    ensure_sufficient_stack(|| own_ops(&region.ops))
 }
 
 fn own_op(op: &Op<'_>) -> FolioOp {
+    ensure_sufficient_stack(|| own_op_guarded(op))
+}
+
+fn own_op_guarded(op: &Op<'_>) -> FolioOp {
     match op {
         Op::Element(element) => FolioOp::Element(FolioElement {
             tag: String::from(element.tag),
@@ -257,6 +265,10 @@ pub(super) fn own_attribute(attribute: &Attribute<'_>) -> FolioAttribute {
 }
 
 fn count_op(op: &FolioOp) -> u64 {
+    ensure_sufficient_stack(|| count_op_guarded(op))
+}
+
+fn count_op_guarded(op: &FolioOp) -> u64 {
     match op {
         FolioOp::Element(element) => {
             1 + element.bindings.len() as u64 + element.children.iter().map(count_op).sum::<u64>()

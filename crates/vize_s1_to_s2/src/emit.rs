@@ -41,9 +41,10 @@
 //! handler from the patch flag; suppressed under `v-for` / slot params),
 //! and **`scope_id`** (`<style scoped>`'s `"data-v-abc123": ""` pair on
 //! every props object — inline, hoisted and component alike, and once as a
-//! trailing `mergeProps` argument rather than per spread segment).
-//! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
-//! is named here and *read* in the atelier_dom witness.
+//! trailing `mergeProps` argument rather than per spread segment). `atelier_dom`
+//! selects this lane for supported source-map-free DOM compiles; the old lane
+//! remains for source maps and unsupported option surfaces until the phase-exit
+//! deletion.
 
 mod budget;
 mod buf;

@@ -17,6 +17,7 @@
 //! here, and both shapes end at the same accounting assertion.
 
 use vize_davinci::id::NodeId;
+use vize_s0::ensure_sufficient_stack;
 use vize_s2::op::Op;
 
 /// The page-order id state of one pass run: a mirror of `Cx::mint_op`'s
@@ -88,6 +89,14 @@ impl PageWalk {
 /// surface, never its children's order, so pre-order is the one order
 /// every pass needs).
 pub(crate) fn visit_ops<'a>(
+    walk: &mut PageWalk,
+    ops: &mut [Op<'a>],
+    visit: &mut impl FnMut(Option<NodeId>, &mut Op<'a>),
+) {
+    ensure_sufficient_stack(|| visit_ops_guarded(walk, ops, visit));
+}
+
+fn visit_ops_guarded<'a>(
     walk: &mut PageWalk,
     ops: &mut [Op<'a>],
     visit: &mut impl FnMut(Option<NodeId>, &mut Op<'a>),

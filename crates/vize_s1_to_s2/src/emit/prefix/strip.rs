@@ -61,8 +61,9 @@ pub(super) fn strip_scope_prefixes_for_slot_params(
         if stripped {
             continue;
         }
-        result.push(bytes[i] as char);
-        i += 1;
+        let character = content[i..].chars().next().expect("valid UTF-8 boundary");
+        result.push(character);
+        i += character.len_utf8();
     }
     result
 }
@@ -77,4 +78,35 @@ pub(super) fn strip_ctx_prefix_for_slot_params(scope: &PrefixScope<'_>, content:
         result = String::from(replaced.as_str());
     }
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{strip_ctx_prefix_for_slot_params, strip_scope_prefixes_for_slot_params};
+    use crate::emit::prefix::scope::PrefixScope;
+
+    #[test]
+    fn preserves_utf8_when_prefixes_do_not_name_slot_params() {
+        let mut scope = PrefixScope::new(None, true, false, false);
+        scope.push_for([Some("i"), None, None]);
+
+        let content = "`\u{2795} ${$setup.n}`";
+
+        assert_eq!(
+            strip_scope_prefixes_for_slot_params(&scope, content),
+            content
+        );
+    }
+
+    #[test]
+    fn preserves_utf8_while_stripping_scope_prefixes() {
+        let mut scope = PrefixScope::new(None, true, false, false);
+        scope.push_for([Some("i"), None, None]);
+
+        assert_eq!(
+            strip_scope_prefixes_for_slot_params(&scope, "`\u{2795} ${$setup.i}`"),
+            "`\u{2795} ${i}`"
+        );
+        assert_eq!(strip_ctx_prefix_for_slot_params(&scope, "_ctx.i"), "i");
+    }
 }
