@@ -229,7 +229,7 @@ test(
 );
 
 test(
-  "every documented difference the baseline counts is described in the ledger",
+  "every documented difference belongs to a typecheck gate",
   {
     skip: updateBaseline || !baselineExists ? "baseline is being regenerated or absent" : false,
   },
@@ -237,10 +237,19 @@ test(
     const baseline = readCompatBaseline();
     const differences = readCompatDocumentedDifferences().differences;
     const probeIds = new Set(compatProbes.map((probe) => probe.fixtureId));
+    const registryPath = path.join(path.dirname(compatBaselinePath), "vue-ecosystem-fixtures.json");
+    const registry = JSON.parse(fs.readFileSync(registryPath, "utf8")) as {
+      projects: Array<{ id: string; typecheckPerformance?: { enabled?: boolean } }>;
+    };
+    const typecheckProjectIds = new Set(
+      registry.projects
+        .filter((project) => project.typecheckPerformance?.enabled === true)
+        .map((project) => project.id),
+    );
     for (const difference of differences) {
       assert.ok(
-        probeIds.has(difference.project),
-        `documented difference names an unknown probe: ${difference.project}`,
+        probeIds.has(difference.project) || typecheckProjectIds.has(difference.project),
+        `documented difference names an unknown typecheck project: ${difference.project}`,
       );
     }
     for (const probe of compatProbes) {

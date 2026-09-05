@@ -150,7 +150,12 @@ function selectDocumentedDifferences(values, projectId, cwd) {
     const vize = optionalDocumentedSide(value.vize, `${label}.vize`);
     const baseline = optionalDocumentedSide(value.baseline, `${label}.baseline`);
     if (vize == null && baseline == null) invalid(`${label} must record at least one tool side`);
-    if (vize != null && baseline != null && vize.code === baseline.code && vize.message === baseline.message) {
+    if (
+      vize != null &&
+      baseline != null &&
+      vize.code === baseline.code &&
+      vize.message === baseline.message
+    ) {
       invalid(`${label} must record a difference between the two tools`);
     }
     if (!Number.isSafeInteger(value.issue) || value.issue < 1) {

@@ -319,9 +319,7 @@ test("authored declaration files are included in the vue-tsc baseline program", 
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
 
-    const baselineConfig = readJson(
-      path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"),
-    );
+    const baselineConfig = readJson(path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"));
     assert.deepEqual(baselineConfig.files, ["../env.d.ts", "../src/App.vue"]);
   } finally {
     cleanup(fixture);
