@@ -49,6 +49,50 @@ test("the generic host LSP request command forwards method and params", async ()
   assert.deepEqual(client.requests, [["textDocument/hover", params]]);
 });
 
+test("the generic host LSP request command waits for the active language client", async () => {
+  const response = [{ contents: "hover after startup" }];
+  let client: ReturnType<typeof createFakeClientResponse> | undefined;
+  const command = findLspRequestCommand({
+    environment: { [HOST_TEST_COMMAND_ENVIRONMENT_FLAG]: "1" },
+    getClient: () => client,
+  });
+  const request = {
+    method: "textDocument/hover",
+    params: {
+      position: { character: 4, line: 2 },
+      textDocument: { uri: "file:///App.vue" },
+    },
+  };
+
+  await assert.rejects(
+    command.handler(request),
+    /Vize test LSP request command requires an active language client/,
+  );
+
+  client = createFakeClientResponse(response);
+  assert.deepEqual(await command.handler(request), response);
+  assert.deepEqual(client.requests, [[request.method, request.params]]);
+});
+
+test("the generic host LSP request command propagates backend failures", async () => {
+  const failure = new Error("backend rejected hover");
+  const client = createFakeClientFailure(failure);
+  const command = findLspRequestCommand({
+    environment: { [HOST_TEST_COMMAND_ENVIRONMENT_FLAG]: "1" },
+    getClient: () => client,
+  });
+  const params = {
+    position: { character: 4, line: 2 },
+    textDocument: { uri: "file:///App.vue" },
+  };
+
+  await assert.rejects(command.handler({ method: "textDocument/hover", params }), (error) => {
+    assert.strictEqual(error, failure);
+    return true;
+  });
+  assert.deepEqual(client.requests, [["textDocument/hover", params]]);
+});
+
 test("the generic host LSP request command validates request shape", async () => {
   const client = createFakeClientResponse(null);
   const command = findLspRequestCommand({
@@ -114,6 +158,19 @@ function createFakeClientResponse(
     sendRequest: async (method, params) => {
       requests.push([method, params]);
       return response;
+    },
+  };
+}
+
+function createFakeClientFailure(
+  failure: Error,
+): HostTestLanguageClient & { requests: [string, unknown][] } {
+  const requests: [string, unknown][] = [];
+  return {
+    requests,
+    sendRequest: async (method, params) => {
+      requests.push([method, params]);
+      throw failure;
     },
   };
 }
