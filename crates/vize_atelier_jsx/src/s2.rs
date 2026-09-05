@@ -13,7 +13,8 @@ use vize_relief::{
 use vize_s0::{Allocator, Box, Vec};
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{
-    Attribute, ComponentOp, ElementOp, InterpolationOp, Namespace, Op, Region, TextOp,
+    Attribute, BindOp, BindingOp, ComponentOp, DynamicName, ElementOp, InterpolationOp, Namespace,
+    Op, Region, TextOp,
 };
 
 /// A JSX render root represented as S2 operations.
@@ -114,7 +115,8 @@ fn lower_element<'a>(
     element: &vize_relief::ElementNode<'a>,
     op_count: &mut u32,
 ) -> Result<Op<'a>, S2Refusal> {
-    let attributes = lower_attributes(allocator, &element.props)?;
+    let props = lower_props(allocator, &element.props)?;
+    *op_count = op_count.saturating_add(props.binding_count);
     let children = Region {
         ops: lower_children(allocator, &element.children, op_count)?,
     };
@@ -123,8 +125,8 @@ fn lower_element<'a>(
             ElementOp {
                 tag: element.tag,
                 namespace: namespace(element.ns),
-                attributes,
-                bindings: Vec::new_in(&allocator),
+                attributes: props.attributes,
+                bindings: props.bindings,
                 children,
                 span: element.loc.span,
             },
@@ -133,8 +135,8 @@ fn lower_element<'a>(
         ElementType::Component => Ok(Op::Component(Box::new_in(
             ComponentOp {
                 name: element.tag,
-                attributes,
-                bindings: Vec::new_in(&allocator),
+                attributes: props.attributes,
+                bindings: props.bindings,
                 children,
                 span: element.loc.span,
             },
@@ -144,11 +146,18 @@ fn lower_element<'a>(
     }
 }
 
-fn lower_attributes<'a>(
+struct LoweredProps<'a> {
+    attributes: Vec<'a, Attribute<'a>>,
+    bindings: Vec<'a, BindingOp<'a>>,
+    binding_count: u32,
+}
+
+fn lower_props<'a>(
     allocator: &'a Allocator,
     props: &[PropNode<'a>],
-) -> Result<Vec<'a, Attribute<'a>>, S2Refusal> {
+) -> Result<LoweredProps<'a>, S2Refusal> {
     let mut attributes = Vec::new_in(&allocator);
+    let mut bindings = Vec::new_in(&allocator);
     for prop in props {
         match prop {
             PropNode::Attribute(attribute) => attributes.push(Attribute {
@@ -156,10 +165,67 @@ fn lower_attributes<'a>(
                 value: attribute.value.as_ref().map(|value| value.content),
                 span: attribute.loc.span,
             }),
-            PropNode::Directive(_) => return Err(S2Refusal::Directive),
+            PropNode::Directive(directive) => {
+                bindings.push(lower_binding(allocator, directive)?);
+            }
         }
     }
-    Ok(attributes)
+    let binding_count = bindings.len() as u32;
+    Ok(LoweredProps {
+        attributes,
+        bindings,
+        binding_count,
+    })
+}
+
+fn lower_binding<'a>(
+    allocator: &'a Allocator,
+    directive: &vize_relief::DirectiveNode<'a>,
+) -> Result<BindingOp<'a>, S2Refusal> {
+    if directive.name != "bind" {
+        return Err(S2Refusal::Directive);
+    }
+
+    let name = lower_dynamic_name(allocator, directive.arg.as_ref())?;
+    let mut modifiers = Vec::new_in(&allocator);
+    for modifier in &directive.modifiers {
+        modifiers.push(modifier.content);
+    }
+    let value = directive
+        .exp
+        .as_ref()
+        .map(|expression| lower_expression(allocator, expression))
+        .transpose()?;
+
+    Ok(BindingOp::Bind(Box::new_in(
+        BindOp {
+            name,
+            modifiers,
+            value,
+            span: directive.loc.span,
+        },
+        &allocator,
+    )))
+}
+
+fn lower_dynamic_name<'a>(
+    allocator: &'a Allocator,
+    name: Option<&ExpressionNode<'a>>,
+) -> Result<Option<DynamicName<'a>>, S2Refusal> {
+    let Some(name) = name else {
+        return Ok(None);
+    };
+    match name {
+        ExpressionNode::Simple(simple) if simple.is_static => {
+            Ok(Some(DynamicName::Static(simple.content)))
+        }
+        ExpressionNode::Simple(simple) => Ok(Some(DynamicName::Dynamic(ExprRef::parse_js_in(
+            allocator,
+            simple.content,
+            simple.loc.span,
+        )))),
+        ExpressionNode::Compound(_) => Err(S2Refusal::CompoundExpression),
+    }
 }
 
 fn lower_expression<'a>(
@@ -235,12 +301,12 @@ mod tests {
     }
 
     #[test]
-    fn directive_needs_its_own_s2_binding_lowering() {
+    fn non_bind_directive_needs_its_own_s2_binding_lowering() {
         let allocator = Allocator::new();
         let lowered = lower_source(
             &allocator,
             allocator.as_oxc(),
-            "const App = () => <div id={name} />",
+            "const App = () => <div v-show={visible} />",
             JsxLang::Jsx,
         );
         let root = lowered.roots.first().expect("one JSX root");
