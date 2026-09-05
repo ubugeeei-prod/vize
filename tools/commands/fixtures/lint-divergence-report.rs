@@ -5,11 +5,14 @@
 //!
 //! [dependencies]
 //! glob = "0.3"
+//! ignore = "0.4"
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! sha2 = "0.10"
 //! ```
 
+use glob::{MatchOptions, Pattern};
+use ignore::WalkBuilder;
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{
@@ -1315,15 +1318,129 @@ Classify vize lint against eslint-plugin-vue over the pinned real projects.\n\
 fn collect_vue_input_paths(cwd: &Path, project: &Value) -> Result<Vec<String>, String> {
     let mut files = BTreeSet::new();
     for pattern in project_string_array(project, "vueGlobs")? {
-        let absolute_pattern = cwd.join(pattern).to_string_lossy().into_owned();
-        for entry in glob::glob(&absolute_pattern).map_err(|error| error.to_string())? {
-            let path = entry.map_err(|error| error.to_string())?;
-            if path.is_file() {
-                files.insert(common::relative_path(cwd, &path));
-            }
-        }
+        collect_lint_input_pattern(cwd, &pattern, &mut files);
     }
     Ok(files.into_iter().collect())
+}
+
+fn collect_lint_input_pattern(cwd: &Path, pattern: &str, files: &mut BTreeSet<String>) {
+    let candidate = cwd.join(pattern);
+    if candidate.exists() {
+        if candidate.is_file() {
+            add_lint_input_file(cwd, &candidate, files);
+            return;
+        }
+        if candidate.is_dir() {
+            collect_lint_files_from_dir(cwd, &candidate, None, files);
+            return;
+        }
+    }
+
+    let base_dir = cwd.join(base_dir_from_lint_pattern(pattern));
+    let matcher = LintInputGlob::new(pattern, cwd);
+    collect_lint_files_from_dir(cwd, &base_dir, matcher.as_ref(), files);
+}
+
+fn collect_lint_files_from_dir(
+    cwd: &Path,
+    dir: &Path,
+    matcher: Option<&LintInputGlob>,
+    files: &mut BTreeSet<String>,
+) {
+    for entry in WalkBuilder::new(dir)
+        .standard_filters(true)
+        .hidden(matcher.is_none())
+        .build()
+        .filter_map(Result::ok)
+    {
+        let path = entry.path();
+        if path.is_file() && matcher.is_none_or(|matcher| matcher.matches(path)) {
+            add_lint_input_file(cwd, path, files);
+        }
+    }
+}
+
+fn add_lint_input_file(cwd: &Path, path: &Path, files: &mut BTreeSet<String>) {
+    if path.extension().and_then(|value| value.to_str()) == Some("vue") {
+        files.insert(common::relative_path(cwd, path));
+    }
+}
+
+fn base_dir_from_lint_pattern(pattern: &str) -> PathBuf {
+    let glob_start = pattern.find(['*', '?', '[', '{']).unwrap_or(pattern.len());
+    let prefix = &pattern[..glob_start];
+    let base = if prefix.is_empty() {
+        "."
+    } else if let Some(index) = prefix.rfind('/') {
+        &prefix[..index]
+    } else {
+        prefix
+    };
+    if base.is_empty() {
+        PathBuf::from(".")
+    } else {
+        PathBuf::from(base)
+    }
+}
+
+struct LintInputGlob {
+    pattern: Pattern,
+    cwd: PathBuf,
+    absolute: bool,
+}
+
+impl LintInputGlob {
+    fn new(pattern: &str, cwd: &Path) -> Option<Self> {
+        let normalized = normalize_lint_glob_pattern(pattern);
+        let absolute = Path::new(normalized.as_str()).is_absolute();
+        Pattern::new(normalized.as_str()).ok().map(|pattern| Self {
+            pattern,
+            cwd: cwd.to_path_buf(),
+            absolute,
+        })
+    }
+
+    fn matches(&self, path: &Path) -> bool {
+        let candidate = if self.absolute {
+            let absolute = if path.is_absolute() {
+                path.to_path_buf()
+            } else {
+                self.cwd.join(path)
+            };
+            normalize_lint_path(&absolute)
+        } else {
+            path.strip_prefix(&self.cwd)
+                .map(normalize_lint_path)
+                .unwrap_or_else(|_| normalize_lint_path(path))
+        };
+
+        self.pattern
+            .matches_with(&candidate, lint_glob_match_options())
+    }
+}
+
+fn normalize_lint_glob_pattern(pattern: &str) -> String {
+    strip_lint_current_dir_prefix(&pattern.replace('\\', "/"))
+}
+
+fn normalize_lint_path(path: &Path) -> String {
+    strip_lint_current_dir_prefix(&path.to_string_lossy().replace('\\', "/"))
+}
+
+fn strip_lint_current_dir_prefix(value: &str) -> String {
+    let mut normalized = value;
+    while let Some(stripped) = normalized.strip_prefix("./") {
+        normalized = stripped;
+    }
+    normalized.into()
+}
+
+fn lint_glob_match_options() -> MatchOptions {
+    MatchOptions {
+        case_sensitive: true,
+        require_literal_separator: true,
+        require_literal_leading_dot: false,
+    }
 }
 
 fn reconcile_corpus(
