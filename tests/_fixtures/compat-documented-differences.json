@@ -63,20 +63,6 @@
     },
     {
       "project": "reka-ui",
-      "file": "packages/core/src/Checkbox/CheckboxRoot.vue",
-      "severity": "error",
-      "line": 155,
-      "column": 12,
-      "vize": {
-        "code": 2367,
-        "message": "This comparison appears to be unintentional because the types 'Exclude<__DefineProps<Props<T>, \"asChild\" | \"disabled\" | \"required\" | ([\"indeterminate\" | T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [...] ? \"falseValue\" : never) | ... | ...>[\"as\"], undefined>' and 'string' have no overlap."
-      },
-      "baseline": null,
-      "issue": 5722,
-      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
       "file": "packages/core/src/Combobox/ComboboxRoot.vue",
       "severity": "error",
       "line": 110,
@@ -273,20 +259,6 @@
     },
     {
       "project": "reka-ui",
-      "file": "packages/core/src/Select/SelectRoot.vue",
-      "severity": "error",
-      "line": 96,
-      "column": 3,
-      "vize": {
-        "code": 2578,
-        "message": "Unused '@ts-expect-error' directive."
-      },
-      "baseline": null,
-      "issue": 5722,
-      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
       "file": "packages/core/src/Select/story/_Select.vue",
       "severity": "error",
       "line": 34,
@@ -410,20 +382,6 @@
       },
       "issue": 5722,
       "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Switch/SwitchRoot.vue",
-      "severity": "error",
-      "line": 105,
-      "column": 12,
-      "vize": {
-        "code": 2367,
-        "message": "This comparison appears to be unintentional because the types 'Exclude<__DefineProps<Props<T>, \"asChild\" | \"disabled\" | \"required\" | ([T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [...] ? \"falseValue\" : never) | ... | ...>[\"as\"], undefined>' and 'string' have no overlap."
-      },
-      "baseline": null,
-      "issue": 5722,
-      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
     },
     {
       "project": "reka-ui",
