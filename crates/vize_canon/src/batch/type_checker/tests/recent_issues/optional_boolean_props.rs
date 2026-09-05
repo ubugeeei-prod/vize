@@ -319,6 +319,14 @@ useVModel(props, "modelValue", emit, {
             .all(|(file, code, _message)| { !(file == "src/Foo.vue" && *code == Some(2578)) }),
         "Reka-style generic useVModel expect-error should be consumed, got: {snapshot:#?}"
     );
+    assert!(
+        snapshot.iter().all(|(file, code, message)| {
+            !(file == "src/Foo.vue"
+                && *code == Some(2769)
+                && message.contains("Type 'false' is not assignable to type 'true'"))
+        }),
+        "Reka-style generic useVModel expect-error should not leak the passive overload fallback, got: {snapshot:#?}"
+    );
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

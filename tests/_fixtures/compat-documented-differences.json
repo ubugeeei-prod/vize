@@ -457,34 +457,6 @@
       "project": "reka-ui",
       "file": "packages/core/src/Tree/TreeRoot.vue",
       "severity": "error",
-      "line": 113,
-      "column": 3,
-      "vize": {
-        "code": 2578,
-        "message": "Unused '@ts-expect-error' directive."
-      },
-      "baseline": null,
-      "issue": 5722,
-      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Tree/TreeRoot.vue",
-      "severity": "error",
-      "line": 120,
-      "column": 3,
-      "vize": {
-        "code": 2578,
-        "message": "Unused '@ts-expect-error' directive."
-      },
-      "baseline": null,
-      "issue": 5722,
-      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Tree/TreeRoot.vue",
-      "severity": "error",
       "line": 288,
       "column": 8,
       "vize": null,
@@ -494,62 +466,6 @@
       },
       "issue": 5722,
       "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/VisuallyHidden/VisuallyHiddenInput.vue",
-      "severity": "error",
-      "line": 18,
-      "column": 18,
-      "vize": {
-        "code": 2339,
-        "message": "Property 'length' does not exist on type 'never'."
-      },
-      "baseline": null,
-      "issue": 5722,
-      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/VisuallyHidden/VisuallyHiddenInput.vue",
-      "severity": "error",
-      "line": 30,
-      "column": 24,
-      "vize": {
-        "code": 2339,
-        "message": "Property 'flatMap' does not exist on type 'never'."
-      },
-      "baseline": null,
-      "issue": 5722,
-      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/VisuallyHidden/VisuallyHiddenInput.vue",
-      "severity": "error",
-      "line": 30,
-      "column": 33,
-      "vize": {
-        "code": 7006,
-        "message": "Parameter 'obj' implicitly has an 'any' type."
-      },
-      "baseline": null,
-      "issue": 5722,
-      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/VisuallyHidden/VisuallyHiddenInput.vue",
-      "severity": "error",
-      "line": 30,
-      "column": 38,
-      "vize": {
-        "code": 7006,
-        "message": "Parameter 'index' implicitly has an 'any' type."
-      },
-      "baseline": null,
-      "issue": 5722,
-      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
     }
   ]
 }

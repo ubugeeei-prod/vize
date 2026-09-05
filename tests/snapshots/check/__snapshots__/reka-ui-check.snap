@@ -5229,7 +5229,6 @@
         "error:6:42 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:70:28 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
         "error:93:9 [TS2339] Property 'required' does not exist on type 'ToRefs<Readonly<__VizeMappedOmit<__LooseRequired<SelectRootProps<T>>, \"modelValue\" | \"nullableValue\" | \"open\">> & { ...; } & { readonly [K in \"defaultOpen\" | ... 5 more ... | Extract<...>]-?: ...; }>'.",
-        "error:98:3 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'false' is not assignable to type 'true'.",
         "error:157:21 [TS7006] Parameter 'node' implicitly has an 'any' type.",
         "error:161:26 [TS7006] Parameter 'node' implicitly has an 'any' type.",
         "error:166:3 [TS2578] Unused '@ts-expect-error' directive.",
@@ -6682,7 +6681,6 @@
         "error:84:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:85:34 [TS2307] Cannot find module '@/RovingFocus' or its corresponding type declarations.",
         "error:86:41 [TS2307] Cannot find module '@/RovingFocus/utils' or its corresponding type declarations.",
-        "error:122:3 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'false' is not assignable to type 'true'.",
         "error:219:14 [TS7006] Parameter 'val' implicitly has an 'any' type.",
         "error:239:39 [TS7006] Parameter 'child' implicitly has an 'any' type.",
         "error:248:12 [TS7006] Parameter 'val' implicitly has an 'any' type.",
@@ -7537,7 +7535,7 @@
       ]
     }
   ],
-  "errorCount": 3109,
+  "errorCount": 3107,
   "warningCount": 0,
   "fileCount": 913
 }

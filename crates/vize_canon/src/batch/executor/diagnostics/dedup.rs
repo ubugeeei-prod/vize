@@ -1,7 +1,7 @@
 //! Collapsing exact-duplicate diagnostics at the collection point, shared by
 //! the LSP and CLI paths.
 
-use super::Diagnostic;
+use super::{Diagnostic, skip_rules};
 use vize_carton::{FxHashSet, String};
 
 /// Identity key for deduplicating diagnostics — (file, line, column, code,
@@ -54,7 +54,7 @@ pub(in crate::batch::executor) fn dedup_diagnostics(
             !seen.contains(&key)
         })
     });
-    deduped
+    skip_rules::filter_authored_diagnostics(deduped)
 }
 
 /// The message with its leading `Type '<literal>'` widened to the literal's
