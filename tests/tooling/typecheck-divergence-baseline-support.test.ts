@@ -8,6 +8,7 @@ import {
   readJson,
   run,
   setup,
+  updateJson,
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
 
 test("typecheck divergence report includes dot-directory support roots", () => {
@@ -29,6 +30,38 @@ test("typecheck divergence report includes dot-directory support roots", () => {
     assert.equal(config.include.includes("../src/.vitepress/**/*.js"), true);
     assert.equal(config.include.includes("../src/.vitepress/**/*.json"), true);
     assert.equal(config.include.includes("../src/.vitepress/**/*.vue"), true);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("typecheck divergence report includes tsconfig dot-directory support roots", () => {
+  const fixture = setup();
+  try {
+    fs.mkdirSync(path.join(fixture.fixtureRoot, "docs/.vitepress/vitepress/utils"), {
+      recursive: true,
+    });
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, "docs/.vitepress/vitepress/utils/index.ts"),
+      "export const label = 'ok';\n",
+    );
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, "tsconfig.json"),
+      `${JSON.stringify({ include: ["src/**/*.vue", "docs/**/*.ts"] })}\n`,
+    );
+    updateJson(
+      fixture.registryPath,
+      (registry) => (registry.projects[0].typecheckPerformance.corpusGlobs = ["src/**/*.vue"]),
+    );
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+
+    const config = readJson(path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"));
+    assert.equal(config.include.includes("../docs/.vitepress/**/*.d.ts"), true);
+    assert.equal(config.include.includes("../docs/.vitepress/**/*.ts"), true);
+    assert.equal(config.include.includes("../docs/.vitepress/**/*.js"), true);
+    assert.equal(config.include.includes("../docs/.vitepress/**/*.json"), true);
+    assert.equal(config.include.includes("../docs/.vitepress/**/*.vue"), true);
   } finally {
     cleanup(fixture);
   }

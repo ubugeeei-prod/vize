@@ -12,7 +12,7 @@
 //! ```
 
 use regex::Regex;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
@@ -580,9 +580,15 @@ fn materialize_baseline_project(
     let artifact_path = report_dir.join(format!("{project_id}-vue-tsc.tsconfig.json"));
     fs::create_dir_all(&config_dir)
         .map_err(|error| format!("cannot create {}: {error}", config_dir.display()))?;
+    let source_document = common::read_json(&source_path)?;
     let source_roots = source_roots(fixture_root, project, vize_report)?;
     let mut dot_roots = dot_directory_include_roots(fixture_root, vize_report);
     dot_roots.extend(discover_dot_directory_include_roots(&source_roots)?);
+    dot_roots.extend(tsconfig_include_dot_roots(
+        fixture_root,
+        source_dir,
+        &source_document,
+    )?);
     dedup_paths(&mut dot_roots);
     let mut ambient_roots = vec![source_dir.to_path_buf()];
     ambient_roots.extend(source_roots.clone());
@@ -591,12 +597,28 @@ fn materialize_baseline_project(
     let mut include_roots = source_roots.clone();
     include_roots.extend(dot_roots.clone());
     dedup_paths(&mut include_roots);
+    let mut compiler_options = serde_json::Map::new();
+    compiler_options.insert("ignoreDeprecations".to_string(), json!("6.0"));
+    compiler_options.insert(
+        "rootDir".to_string(),
+        json!(config_relative_path(&config_dir, fixture_root)),
+    );
+    let source_base_url = source_document
+        .pointer("/compilerOptions/baseUrl")
+        .and_then(Value::as_str)
+        .map(|base_url| source_dir.join(base_url));
+    let path_mapping_root = source_base_url.as_deref().unwrap_or(source_dir);
+    let mut paths = source_path_mappings(path_mapping_root, &config_dir, &source_document);
+    extend_local_vue_runtime_paths(fixture_root, &config_dir, &mut paths)?;
+    if !paths.is_empty() {
+        compiler_options.insert("paths".to_string(), Value::Object(paths));
+        if source_base_url.is_some() {
+            compiler_options.insert("baseUrl".to_string(), json!("."));
+        }
+    }
     let config = json!({
         "extends": config_relative_path(&config_dir, &source_path),
-        "compilerOptions": {
-            "ignoreDeprecations": "6.0",
-            "rootDir": config_relative_path(&config_dir, fixture_root),
-        },
+        "compilerOptions": Value::Object(compiler_options),
         "files": vize_report.get("files").and_then(Value::as_array).unwrap_or(&Vec::new()).iter().take(vize_report.get("fileCount").and_then(Value::as_u64).unwrap_or(0) as usize).filter_map(|entry| entry.get("file").and_then(Value::as_str)).map(|file| config_relative_path(&config_dir, &fixture_root.join(file))).collect::<Vec<_>>(),
         "include": include_globs(&config_dir, &ambient_roots, &include_roots, &dot_roots),
         "exclude": ambient_roots.iter().flat_map(|root_path| {
@@ -3683,6 +3705,42 @@ fn include_globs(
     values
 }
 
+fn tsconfig_include_dot_roots(
+    fixture_root: &Path,
+    source_dir: &Path,
+    source_document: &Value,
+) -> Result<Vec<PathBuf>, String> {
+    let mut roots = Vec::new();
+    let Some(includes) = source_document.get("include").and_then(Value::as_array) else {
+        return Ok(roots);
+    };
+    for include in includes.iter().filter_map(Value::as_str) {
+        let root = source_dir.join(literal_glob_root(include));
+        if !path_stays_inside(fixture_root, &root) {
+            continue;
+        }
+        push_dot_ancestors(fixture_root, &root, &mut roots);
+        collect_dot_directories(&root, &mut roots)?;
+    }
+    Ok(roots)
+}
+
+fn push_dot_ancestors(fixture_root: &Path, path: &Path, roots: &mut Vec<PathBuf>) {
+    let Some(relative) = pathdiff::diff_paths(path, fixture_root) else {
+        return;
+    };
+    let mut current = fixture_root.to_path_buf();
+    for component in relative.components() {
+        let std::path::Component::Normal(segment) = component else {
+            return;
+        };
+        current.push(segment);
+        if is_dot_directory(&segment.to_string_lossy()) {
+            roots.push(current.clone());
+        }
+    }
+}
+
 fn dot_directory_include_roots(fixture_root: &Path, vize_report: &Value) -> Vec<PathBuf> {
     let mut roots = Vec::new();
     for file in vize_report
@@ -3767,6 +3825,125 @@ fn ignored_directory(name: &str) -> bool {
 
 fn is_dot_directory(name: &str) -> bool {
     name.starts_with('.') && name != "." && name != ".."
+}
+
+fn source_path_mappings(
+    source_dir: &Path,
+    config_dir: &Path,
+    source_document: &Value,
+) -> serde_json::Map<String, Value> {
+    let Some(declared) = source_document
+        .pointer("/compilerOptions/paths")
+        .and_then(Value::as_object)
+    else {
+        return serde_json::Map::new();
+    };
+    declared
+        .iter()
+        .filter_map(|(name, targets)| {
+            let targets = targets
+                .as_array()?
+                .iter()
+                .map(|target| {
+                    target
+                        .as_str()
+                        .map(|target| json!(relocate_path_mapping(source_dir, config_dir, target)))
+                        .unwrap_or_else(|| target.clone())
+                })
+                .collect::<Vec<_>>();
+            Some((name.clone(), Value::Array(targets)))
+        })
+        .collect()
+}
+
+fn relocate_path_mapping(source_dir: &Path, config_dir: &Path, target: &str) -> String {
+    if target.ends_with("/*") && !target[..target.len() - 2].contains('*') {
+        return format!(
+            "{}/*",
+            config_relative_path(config_dir, &source_dir.join(&target[..target.len() - 2]))
+        );
+    }
+    if !target.contains('*') {
+        return config_relative_path(config_dir, &source_dir.join(target));
+    }
+    target.to_string()
+}
+
+fn extend_local_vue_runtime_paths(
+    fixture_root: &Path,
+    config_dir: &Path,
+    paths: &mut serde_json::Map<String, Value>,
+) -> Result<(), String> {
+    let runtime_names = ["@vue/runtime-core", "@vue/runtime-dom", "vue"];
+    for name in runtime_names {
+        if let Some(root) = local_package_root(fixture_root, name)? {
+            paths.insert(
+                name.to_string(),
+                json!([config_relative_path(config_dir, &root)]),
+            );
+        }
+    }
+    Ok(())
+}
+
+fn local_package_root(fixture_root: &Path, name: &str) -> Result<Option<PathBuf>, String> {
+    let linked = name
+        .split('/')
+        .fold(fixture_root.join("node_modules"), |path, segment| {
+            path.join(segment)
+        });
+    if linked.join("package.json").exists() {
+        return Ok(Some(linked));
+    }
+    unique_pnpm_store_package_root(fixture_root, name)
+}
+
+fn unique_pnpm_store_package_root(
+    fixture_root: &Path,
+    name: &str,
+) -> Result<Option<PathBuf>, String> {
+    let store = fixture_root.join("node_modules/.pnpm");
+    if !store.exists() {
+        return Ok(None);
+    }
+    let mut matches = BTreeMap::new();
+    for entry in
+        fs::read_dir(&store).map_err(|error| format!("cannot read {}: {error}", store.display()))?
+    {
+        let entry = entry.map_err(|error| error.to_string())?;
+        let entry_name = entry.file_name().to_string_lossy().to_string();
+        if entry_name.starts_with('.') {
+            continue;
+        }
+        let candidate = name
+            .split('/')
+            .fold(entry.path().join("node_modules"), |path, segment| {
+                path.join(segment)
+            });
+        if !candidate.join("package.json").exists() {
+            continue;
+        }
+        let real = fs::canonicalize(&candidate)
+            .map_err(|error| format!("cannot resolve {}: {error}", candidate.display()))?;
+        if !path_stays_inside(fixture_root, &real) {
+            continue;
+        }
+        matches.insert(real, candidate);
+    }
+    Ok(if matches.len() == 1 {
+        matches.into_values().next()
+    } else {
+        None
+    })
+}
+
+fn path_stays_inside(root: &Path, path: &Path) -> bool {
+    pathdiff::diff_paths(path, root).is_some_and(|relative| {
+        !relative.as_os_str().is_empty()
+            && relative
+                .components()
+                .all(|component| matches!(component, std::path::Component::Normal(_)))
+    })
 }
 
 fn literal_glob_root(glob: &str) -> &str {
