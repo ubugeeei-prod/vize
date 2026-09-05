@@ -3,17 +3,28 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
-import { firstLocation, offsetToPosition } from "./support/lsp/assertions.ts";
+import { firstLocation, isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
 import { testOutputRoot } from "./support/lsp/paths.ts";
 import type { ServerCapabilities } from "./support/lsp/protocol.ts";
-import { LspRequestError, LspSession } from "./support/lsp/session.ts";
+import { LspSession } from "./support/lsp/session.ts";
 
 const source = `<script setup lang="ts">
+interface Formatter {
+  format(value: string): string
+}
+
+class LabelFormatter implements Formatter {
+  format(value: string): string {
+    return value.toUpperCase()
+  }
+}
+
+const formatter: Formatter = new LabelFormatter()
 const message = "hello"
 </script>
 
 <template>
-  <span>{{ message }}</span>
+  <span>{{ formatter.format(message) }}</span>
 </template>
 `;
 
@@ -21,10 +32,27 @@ type ImplementationCapabilities = ServerCapabilities & {
   implementationProvider?: unknown;
 };
 
-test("vize lsp keeps textDocument/implementation fail-closed until #3953 implements it", async () => {
+test("vize lsp maps textDocument/implementation from authored SFC interfaces", async () => {
   const testRootDir = path.join(testOutputRoot, "lsp-implementation-capability");
   fs.mkdirSync(testRootDir, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
+  fs.writeFileSync(
+    path.join(workspaceDir, "tsconfig.json"),
+    JSON.stringify(
+      {
+        compilerOptions: {
+          strict: true,
+          target: "ES2022",
+          module: "ESNext",
+          moduleResolution: "bundler",
+          noEmit: true,
+        },
+        include: ["**/*"],
+      },
+      null,
+      2,
+    ),
+  );
   const filePath = path.join(workspaceDir, "Widget.vue");
   const uri = pathToFileURL(filePath).href;
   const session = new LspSession();
@@ -33,34 +61,32 @@ test("vize lsp keeps textDocument/implementation fail-closed until #3953 impleme
     const init = (await session.initialize(workspaceDir, {
       editor: true,
       lint: false,
-      typecheck: false,
+      typecheck: true,
     })) as { capabilities?: ImplementationCapabilities };
-    assert.equal(init.capabilities?.implementationProvider, undefined);
+    assert.equal(init.capabilities?.implementationProvider, true);
 
     fs.writeFileSync(filePath, source, "utf8");
     session.notify("textDocument/didOpen", {
       textDocument: { uri, languageId: "vue", version: 1, text: source },
     });
-
-    const position = offsetToPosition(source, source.lastIndexOf("message }}</span>") + 3);
-    await assert.rejects(
-      session.request("textDocument/implementation", {
-        textDocument: { uri },
-        position,
-      }),
-      (error) =>
-        error instanceof LspRequestError &&
-        error.method === "textDocument/implementation" &&
-        error.code === -32601,
+    await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, uri),
+      60_000,
     );
 
-    const definition = (await session.request("textDocument/definition", {
+    const position = offsetToPosition(source, source.indexOf("format(value: string): string"));
+    const implementation = await session.request("textDocument/implementation", {
       textDocument: { uri },
       position,
-    })) as Array<{ uri: string; range: { start: { line: number; character: number } } }>;
-    const location = firstLocation(definition);
+    });
+    const location = firstLocation(implementation as never);
     assert.equal(location.uri, uri);
-    assert.deepEqual(location.range.start, offsetToPosition(source, source.indexOf("message =")));
+    assert.deepEqual(
+      location.range.start,
+      offsetToPosition(source, source.indexOf("format(value: string): string {")),
+    );
+    assert.ok(!location.uri.endsWith(".vue.ts"), JSON.stringify(implementation));
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
