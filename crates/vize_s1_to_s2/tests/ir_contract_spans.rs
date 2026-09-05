@@ -91,3 +91,19 @@ fn owned_folio_rejects_same_length_expression_source_mismatches() {
 
     assert_folio_spans_resolve("{{ x }}", &folio, "corrupt-expression-source");
 }
+
+#[test]
+#[should_panic(expected = "expression source is not authored")]
+fn owned_folio_rejects_different_length_expression_source_mismatches() {
+    let folio = DisegnoFolio {
+        ops: vec![FolioOp::Interpolation(FolioInterpolation {
+            expression: FolioExpr::Js {
+                source: String::from("items"),
+                span: Span::new(3, 11),
+            },
+            span: Span::new(0, 14),
+        })],
+    };
+
+    assert_folio_spans_resolve("{{ items[0] }}", &folio, "truncated-expression-source");
+}

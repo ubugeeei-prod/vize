@@ -216,13 +216,44 @@ fn assert_expr(source: &str, root: SourceRoot<'_>, expr: &FolioExpr, context: &s
 
 fn assert_expr_source(source: &str, span: Span, expr_source: &str, context: &str) {
     let slice = exact_slice(source, span);
-    if slice.len() == expr_source.len() {
-        assert_eq!(
-            slice, expr_source,
-            "expression source is not authored at @{}:{}: {context}",
-            span.start, span.end
-        );
+    if slice == expr_source
+        || is_normalized_same_name_expr(slice, expr_source)
+        || is_legacy_synthetic_expr(slice, expr_source)
+    {
+        return;
     }
+    assert_eq!(
+        slice, expr_source,
+        "expression source is not authored at @{}:{}: {context}",
+        span.start, span.end
+    );
+}
+
+fn is_normalized_same_name_expr(authored_slice: &str, expr_source: &str) -> bool {
+    if !authored_slice.contains('-') {
+        return false;
+    }
+
+    let mut normalized = std::string::String::with_capacity(authored_slice.len());
+    let mut uppercase_next = false;
+    for ch in authored_slice.chars() {
+        if ch == '-' {
+            uppercase_next = true;
+            continue;
+        }
+        if uppercase_next {
+            normalized.extend(ch.to_uppercase());
+            uppercase_next = false;
+        } else {
+            normalized.push(ch);
+        }
+    }
+    normalized == expr_source
+}
+
+fn is_legacy_synthetic_expr(authored_slice: &str, expr_source: &str) -> bool {
+    (expr_source.starts_with("_filter_") && authored_slice.contains('|'))
+        || (expr_source.starts_with("$event => ((") && authored_slice.contains(".sync"))
 }
 
 fn assert_span(source: &str, root: SourceRoot<'_>, span: Span, label: &str, context: &str) {
