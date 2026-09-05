@@ -33,6 +33,7 @@ const REQUIRED_TRIGGER_PATHS = [
   "crates/vize/tests/content_mapper_tsgo_cli.rs",
   "crates/vize/tests/content_mapper_tsgo_directives.rs",
   "crates/vize/tests/content_mapper_tsgo_build.rs",
+  "crates/vize/tests/content_mapper_tsgo_watch.rs",
   "crates/vize/tests/content_mapper_importer_scoped_packages.rs",
   "crates/vize/tests/check_*package*.rs",
   "crates/vize/tests/check_*package*/**",
@@ -190,6 +191,7 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.match(job, /cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture/);
   assert.match(job, /cargo test -p vize --test content_mapper_tsgo_directives -- --nocapture/);
   assert.match(job, /cargo test -p vize --test content_mapper_tsgo_build -- --nocapture/);
+  assert.match(job, /cargo test -p vize --test content_mapper_tsgo_watch -- --nocapture/);
   assert.match(job, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.match(job, /\(cd npm\/cli && vp pack\)/);
   assert.match(job, /vp exec napi create-npm-dirs/);

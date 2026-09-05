@@ -14,6 +14,7 @@ on:
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
       - "crates/vize/tests/content_mapper_tsgo_directives.rs"
       - "crates/vize/tests/content_mapper_tsgo_build.rs"
+      - "crates/vize/tests/content_mapper_tsgo_watch.rs"
       - "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
       - "crates/vize/tests/check_*package*.rs"
       - "crates/vize/tests/check_*package*/**"
@@ -73,6 +74,7 @@ on:
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
       - "crates/vize/tests/content_mapper_tsgo_directives.rs"
       - "crates/vize/tests/content_mapper_tsgo_build.rs"
+      - "crates/vize/tests/content_mapper_tsgo_watch.rs"
       - "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
       - "crates/vize/tests/check_*package*.rs"
       - "crates/vize/tests/check_*package*/**"
@@ -221,6 +223,7 @@ jobs:
           cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture
           cargo test -p vize --test content_mapper_tsgo_directives -- --nocapture
           cargo test -p vize --test content_mapper_tsgo_build -- --nocapture
+          cargo test -p vize --test content_mapper_tsgo_watch -- --nocapture
           cargo test -p vize --test content_mapper_importer_scoped_packages -- --nocapture
       - name: Run importer-scoped package resolution matrix
         env:
