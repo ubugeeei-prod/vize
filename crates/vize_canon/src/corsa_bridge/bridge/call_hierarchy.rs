@@ -23,4 +23,30 @@ impl CorsaBridge {
         })
         .await
     }
+
+    /// Resolve callers for a prepared call-hierarchy item.
+    pub async fn call_hierarchy_incoming_calls(
+        &self,
+        item: Value,
+    ) -> Result<Option<Value>, CorsaBridgeError> {
+        self.with_client(move |client| {
+            client
+                .call_hierarchy_incoming_calls_raw(item)
+                .map_err(CorsaBridgeError::CommunicationError)
+        })
+        .await
+    }
+
+    /// Resolve callees for a prepared call-hierarchy item.
+    pub async fn call_hierarchy_outgoing_calls(
+        &self,
+        item: Value,
+    ) -> Result<Option<Value>, CorsaBridgeError> {
+        self.with_client(move |client| {
+            client
+                .call_hierarchy_outgoing_calls_raw(item)
+                .map_err(CorsaBridgeError::CommunicationError)
+        })
+        .await
+    }
 }

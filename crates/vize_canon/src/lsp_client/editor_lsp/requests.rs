@@ -62,6 +62,22 @@ impl lsp_types::request::Request for RawPrepareCallHierarchyRequest {
     const METHOD: &'static str = "textDocument/prepareCallHierarchy";
 }
 
+pub(super) struct RawCallHierarchyIncomingCallsRequest;
+
+impl lsp_types::request::Request for RawCallHierarchyIncomingCallsRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "callHierarchy/incomingCalls";
+}
+
+pub(super) struct RawCallHierarchyOutgoingCallsRequest;
+
+impl lsp_types::request::Request for RawCallHierarchyOutgoingCallsRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "callHierarchy/outgoingCalls";
+}
+
 pub(super) struct RawReferencesRequest;
 
 impl lsp_types::request::Request for RawReferencesRequest {

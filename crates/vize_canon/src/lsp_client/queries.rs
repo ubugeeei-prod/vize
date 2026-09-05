@@ -109,6 +109,20 @@ impl CorsaProjectClient {
         self.prepare_call_hierarchy_via_editor_lsp(uri, line, character)
     }
 
+    pub(crate) fn call_hierarchy_incoming_calls_raw(
+        &mut self,
+        item: Value,
+    ) -> Result<Option<Value>, String> {
+        self.call_hierarchy_incoming_calls_via_editor_lsp(item)
+    }
+
+    pub(crate) fn call_hierarchy_outgoing_calls_raw(
+        &mut self,
+        item: Value,
+    ) -> Result<Option<Value>, String> {
+        self.call_hierarchy_outgoing_calls_via_editor_lsp(item)
+    }
+
     pub(crate) fn references_raw(
         &mut self,
         uri: &str,

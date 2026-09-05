@@ -262,13 +262,11 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn incoming_calls(&self, params: CHIncomingParams) -> Result<Option<CHIncomingResponse>> {
-        let _ = params;
-        Ok(None)
+        call_hierarchy::incoming(self, params).await
     }
 
     async fn outgoing_calls(&self, params: CHOutgoingParams) -> Result<Option<CHOutgoingResponse>> {
-        let _ = params;
-        Ok(None)
+        call_hierarchy::outgoing(self, params).await
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {

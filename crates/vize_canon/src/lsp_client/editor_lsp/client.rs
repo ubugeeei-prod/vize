@@ -102,6 +102,24 @@ impl CorsaProjectClient {
         })
     }
 
+    pub(in crate::lsp_client) fn call_hierarchy_incoming_calls_via_editor_lsp(
+        &mut self,
+        item: Value,
+    ) -> Result<Option<Value>, String> {
+        self.request_with_editor_lsp_recovery(|session| {
+            session.call_hierarchy_incoming_calls(item.clone())
+        })
+    }
+
+    pub(in crate::lsp_client) fn call_hierarchy_outgoing_calls_via_editor_lsp(
+        &mut self,
+        item: Value,
+    ) -> Result<Option<Value>, String> {
+        self.request_with_editor_lsp_recovery(|session| {
+            session.call_hierarchy_outgoing_calls(item.clone())
+        })
+    }
+
     pub(in crate::lsp_client) fn references_via_editor_lsp(
         &mut self,
         uri: &str,

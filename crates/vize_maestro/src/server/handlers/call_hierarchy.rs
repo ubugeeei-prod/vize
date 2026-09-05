@@ -52,3 +52,80 @@ pub(super) async fn prepare(
         Ok(None)
     }
 }
+
+pub(super) async fn incoming(
+    server: &MaestroServer,
+    params: CHIncomingParams,
+) -> Result<Option<CHIncomingResponse>> {
+    if !server.state.lsp_features().definition || !server.state.lsp_features().typecheck {
+        return Ok(None);
+    }
+
+    #[cfg(feature = "native")]
+    {
+        let Some(ctx) = context_for_item(server, &params.item) else {
+            return Ok(None);
+        };
+        let corsa_bridge = server.state.get_corsa_bridge().await;
+        return Ok(CallHierarchyService::incoming_calls_with_corsa(
+            &ctx,
+            &params.item,
+            corsa_bridge,
+        )
+        .await);
+    }
+
+    #[cfg(not(feature = "native"))]
+    {
+        let _ = params;
+        Ok(None)
+    }
+}
+
+pub(super) async fn outgoing(
+    server: &MaestroServer,
+    params: CHOutgoingParams,
+) -> Result<Option<CHOutgoingResponse>> {
+    if !server.state.lsp_features().definition || !server.state.lsp_features().typecheck {
+        return Ok(None);
+    }
+
+    #[cfg(feature = "native")]
+    {
+        let Some(ctx) = context_for_item(server, &params.item) else {
+            return Ok(None);
+        };
+        let corsa_bridge = server.state.get_corsa_bridge().await;
+        return Ok(CallHierarchyService::outgoing_calls_with_corsa(
+            &ctx,
+            &params.item,
+            corsa_bridge,
+        )
+        .await);
+    }
+
+    #[cfg(not(feature = "native"))]
+    {
+        let _ = params;
+        Ok(None)
+    }
+}
+
+#[cfg(feature = "native")]
+fn context_for_item<'a>(
+    server: &'a MaestroServer,
+    item: &'a CallHierarchyItem,
+) -> Option<IdeContext<'a>> {
+    let content = server.state.documents.text(&item.uri)?;
+    let offset = position_to_offset(
+        &content,
+        item.selection_range.start.line,
+        item.selection_range.start.character,
+    )?;
+    Some(IdeContext::with_content(
+        &server.state,
+        &item.uri,
+        offset,
+        content,
+    ))
+}
