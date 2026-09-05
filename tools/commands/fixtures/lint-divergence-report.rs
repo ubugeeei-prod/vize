@@ -10,7 +10,7 @@
 //! sha2 = "0.10"
 //! ```
 
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -750,20 +750,12 @@ fn collect_baseline_findings(results: &[Value], cwd: &Path) -> Result<BaselineIn
             }
             let rule_id = required_str(message, "ruleId", &label)?.to_string();
             let severity = severity(message.get("severity"), &label)?;
-            let line = required_u64(message, "line", &label)?;
-            let column = required_u64(message, "column", &label)?;
-            let end_line = message
-                .get("endLine")
-                .and_then(Value::as_u64)
-                .unwrap_or(line);
-            let end_column = message
-                .get("endColumn")
-                .and_then(Value::as_u64)
-                .unwrap_or(column);
-            if validate_range(&file, &rule_id, line, column, end_line, end_column).is_err() {
+            let Some((line, column, end_line, end_column)) =
+                baseline_range(message, &file, &rule_id)
+            else {
                 invalid_range_count += 1;
                 continue;
-            }
+            };
             findings.push(LintRecord {
                 file: file.clone(),
                 rule_id,
@@ -783,6 +775,22 @@ fn collect_baseline_findings(results: &[Value], cwd: &Path) -> Result<BaselineIn
         excluded_non_vue_count,
         invalid_range_count,
     })
+}
+
+fn baseline_range(message: &Value, file: &str, rule_id: &str) -> Option<(u64, u64, u64, u64)> {
+    let line = message.get("line").and_then(Value::as_u64)?;
+    let column = message.get("column").and_then(Value::as_u64)?;
+    let end_line = optional_baseline_u64(message.get("endLine"), line)?;
+    let end_column = optional_baseline_u64(message.get("endColumn"), column)?;
+    validate_range(file, rule_id, line, column, end_line, end_column).ok()?;
+    Some((line, column, end_line, end_column))
+}
+
+fn optional_baseline_u64(value: Option<&Value>, default: u64) -> Option<u64> {
+    match value {
+        None | Some(Value::Null) => Some(default),
+        Some(value) => value.as_u64(),
+    }
 }
 
 fn group_by_identity(records: &[LintRecord]) -> BTreeMap<String, Vec<LintRecord>> {
@@ -1707,4 +1715,71 @@ fn rustc_version() -> String {
 
 fn sha256(value: &str) -> String {
     format!("{:x}", Sha256::digest(value.as_bytes()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn baseline_zero_column_is_counted_as_invalid_range() {
+        let cwd = Path::new("/repo");
+        let results = json!([
+            {
+                "filePath": "/repo/src/App.vue",
+                "messages": [
+                    {
+                        "ruleId": "vue/no-v-html",
+                        "severity": 2,
+                        "line": 7,
+                        "column": 0,
+                        "endLine": 7,
+                        "endColumn": 1,
+                        "message": "bad location"
+                    }
+                ]
+            }
+        ]);
+
+        let baseline = collect_baseline_findings(results.as_array().unwrap(), cwd).unwrap();
+
+        assert!(baseline.findings.is_empty());
+        assert_eq!(baseline.invalid_range_count, 1);
+        assert_eq!(baseline.parse_error_count, 0);
+    }
+
+    #[test]
+    fn baseline_invalid_range_does_not_hide_valid_findings() {
+        let cwd = Path::new("/repo");
+        let results = json!([
+            {
+                "filePath": "/repo/src/App.vue",
+                "messages": [
+                    {
+                        "ruleId": "vue/no-v-html",
+                        "severity": 2,
+                        "line": 7,
+                        "column": 0,
+                        "message": "bad location"
+                    },
+                    {
+                        "ruleId": "vue/require-v-for-key",
+                        "severity": 1,
+                        "line": 9,
+                        "column": 3,
+                        "endLine": 9,
+                        "endColumn": 5,
+                        "message": "missing key"
+                    }
+                ]
+            }
+        ]);
+
+        let baseline = collect_baseline_findings(results.as_array().unwrap(), cwd).unwrap();
+
+        assert_eq!(baseline.findings.len(), 1);
+        assert_eq!(baseline.findings[0].rule_id, "vue/require-v-for-key");
+        assert_eq!(baseline.findings[0].line, 9);
+        assert_eq!(baseline.invalid_range_count, 1);
+    }
 }
