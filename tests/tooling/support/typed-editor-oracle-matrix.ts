@@ -93,6 +93,7 @@ export const matrix: MatrixRow[] = [
           'diagnostic.code === "fallthrough-attrs"',
           "$attrs.class",
           "PlainFragment.vue",
+          "SingleRoot.vue",
           "line: 5, character: 2",
         ],
       },

@@ -77,6 +77,34 @@ const marker = 1
       10_000,
     )) as PublishDiagnosticsParams;
     assert.deepEqual(plainFragmentPublish.diagnostics, []);
+
+    const singleRoot = `<script setup lang="ts">
+const marker = 1
+</script>
+
+<template>
+  <main :class="$attrs.class">body</main>
+</template>
+`;
+    const singleRootPath = path.join(sourceDir, "SingleRoot.vue");
+    const singleRootUri = pathToFileURL(singleRootPath).href;
+    fs.writeFileSync(singleRootPath, singleRoot, "utf8");
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri: singleRootUri,
+        languageId: "vue",
+        version: 1,
+        text: singleRoot,
+      },
+    });
+    const singleRootPublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) =>
+        isDiagnosticsForUri(params, singleRootUri) &&
+        fallthroughDiagnostic(params as PublishDiagnosticsParams) == null,
+      10_000,
+    )) as PublishDiagnosticsParams;
+    assert.deepEqual(singleRootPublish.diagnostics, []);
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
