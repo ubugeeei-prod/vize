@@ -21,6 +21,7 @@ import path from "node:path";
 
 import { run } from "./smoke-process.mjs";
 import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.mjs";
+import { withPoisonedVizePath } from "./smoke-release-path-poison.mjs";
 import { FRESH_INIT_MATRIX, PROJECT_SHAPES } from "./smoke-release-init-shapes.mjs";
 import {
   assertFreshProject,
@@ -124,8 +125,9 @@ function runFreshProjectCell(context, cell) {
   assert.deepEqual(reportedDiagnostics(clean.report, projectRoot), []);
   assert.equal(clean.report.errorCount, 0);
   // The documented command, run exactly as `docs/content/guide/init.md` and the
-  // generated script spell it, with no extra arguments.
-  const documented = runGeneratedCheck(projectRoot, manager, []);
+  // generated script spell it, with no extra arguments. The poisoned PATH makes
+  // the command fail closed if it stops resolving the fresh project's package.
+  const documented = runGeneratedCheck(projectRoot, manager, [], withPoisonedVizePath(projectRoot));
   assert.equal(documented.status, 0, `documented vize:check failed\n${documented.stderr}`);
 
   const afterInit = snapshotFiles(projectRoot, tracked);

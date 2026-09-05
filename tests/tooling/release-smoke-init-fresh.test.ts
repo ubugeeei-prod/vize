@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -9,6 +12,7 @@ import {
   runManager,
 } from "../../legacy-tools/npm/smoke-release-init-project.mjs";
 import { PACKAGE_MANAGERS } from "../../legacy-tools/npm/smoke-release-init-managers.mjs";
+import { withPoisonedVizePath } from "../../legacy-tools/npm/smoke-release-path-poison.mjs";
 import {
   FRESH_INIT_MATRIX,
   PROJECT_SHAPES,
@@ -277,6 +281,25 @@ function assertRuntimeSmokePackageManagers(workflow: string, jobName: string) {
 test("fresh install runtime smokes expose every package manager they matrix", () => {
   assertRuntimeSmokePackageManagers("native-smoke.yml", "fresh-install-smoke");
   assertRuntimeSmokePackageManagers("release.yml", "smoke-release-packages");
+});
+
+test("the documented generated check runs with outside vize path poison", () => {
+  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-path-poison-"));
+  try {
+    const env = withPoisonedVizePath(projectRoot, { PATH: "/host/bin" });
+    const [poisonDir, inherited] = env.PATH.split(path.delimiter);
+    assert.equal(inherited, "/host/bin");
+    assert.match(fs.readFileSync(path.join(poisonDir, "vize"), "utf8"), /outside vize/);
+    assert.match(fs.readFileSync(path.join(poisonDir, "vize.cmd"), "utf8"), /outside vize/);
+
+    const freshDriver = readRepoFile("legacy-tools", "npm", "smoke-release-init-fresh.mjs");
+    assert.match(
+      freshDriver,
+      /runGeneratedCheck\(\s*projectRoot,\s*manager,\s*\[\],\s*withPoisonedVizePath/su,
+    );
+  } finally {
+    fs.rmSync(projectRoot, { force: true, recursive: true });
+  }
 });
 
 test("the fresh project runs with the host's Corsa overrides stripped", () => {
