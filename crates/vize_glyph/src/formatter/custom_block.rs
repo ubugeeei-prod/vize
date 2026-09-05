@@ -4,17 +4,29 @@ pub(super) fn format(
     output: &mut Vec<u8>,
     block: &vize_atelier_sfc::SfcCustomBlock<'_>,
     options: &FormatOptions,
+    source: &str,
 ) -> Result<(), FormatError> {
-    output.push(b'<');
-    output.extend_from_slice(block.block_type.as_bytes());
-    super::write_remaining_attrs(output, &block.attrs, &[]);
-    output.push(b'>');
+    let opening_tag = super::opening_tag::raw_templated_opening_tag(source, &block.loc);
+    if let Some(opening_tag) = &opening_tag {
+        super::opening_tag::write_raw(output, opening_tag);
+    } else {
+        output.push(b'<');
+        output.extend_from_slice(block.block_type.as_bytes());
+        super::write_remaining_attrs(output, &block.attrs, &[]);
+        output.push(b'>');
+    }
     output.extend_from_slice(options.newline_bytes());
 
+    let content = super::opening_tag::content_after_opening_tag(
+        source,
+        &block.loc,
+        block.content.as_ref(),
+        opening_tag.as_ref(),
+    );
     if block.block_type.as_ref() == "art" {
-        write_art_content(output, block.content.as_ref(), options)?;
+        write_art_content(output, content, options)?;
     } else {
-        output.extend_from_slice(block.content.trim().as_bytes());
+        output.extend_from_slice(content.trim().as_bytes());
         output.extend_from_slice(options.newline_bytes());
     }
 

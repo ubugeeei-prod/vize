@@ -4,17 +4,18 @@
 
 mod block_indent;
 mod custom_block;
+mod opening_tag;
 mod raw_mask;
+mod script_block;
+mod style_block;
 mod template_block;
 mod template_indent;
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
-use crate::script;
-use crate::style;
 use std::borrow::Cow;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_s0::{Allocator, FxHashMap, String, ToCompactString};
+use vize_s0::{Allocator, FxHashMap, String};
 
 /// Result of formatting a Vue SFC
 #[derive(Debug, Clone)]
@@ -122,16 +123,25 @@ impl<'a> GlyphFormatter<'a> {
                 output.extend_from_slice(newline);
             }
             match block {
-                Block::Script(script) => {
-                    self.format_script_block_fast(&mut output, script)?;
-                }
-                Block::Template(template) => {
-                    self.format_template_block_fast(&mut output, template)?;
-                }
+                Block::Script(script) => script_block::write_script_block(
+                    &mut output,
+                    script,
+                    self.options,
+                    self.allocator,
+                    source,
+                )?,
+                Block::Template(template) => template_block::write_template_block(
+                    &mut output,
+                    template,
+                    self.options,
+                    source,
+                )?,
                 Block::Style(style) => {
-                    self.format_style_block_fast(&mut output, style)?;
+                    style_block::write_style_block(&mut output, style, self.options, source)?
                 }
-                Block::Custom(block) => custom_block::format(&mut output, block, self.options)?,
+                Block::Custom(block) => {
+                    custom_block::format(&mut output, block, self.options, source)?
+                }
             }
         }
 
@@ -173,122 +183,6 @@ impl<'a> GlyphFormatter<'a> {
         }
 
         size
-    }
-
-    /// Format a script block using byte operations
-    #[inline]
-    fn format_script_block_fast(
-        &self,
-        output: &mut Vec<u8>,
-        block: &vize_atelier_sfc::SfcScriptBlock<'_>,
-    ) -> Result<(), FormatError> {
-        // Degrade gracefully on a script parse error: emit the original script
-        // body trimmed but otherwise unchanged, rather than failing the whole
-        // SFC format and dropping the template/style work. The script formatter
-        // delegates to oxc, which round-trips decorated class components
-        // (`@Component`/`@Prop()`/`@Emit()`) fine; this fallback only triggers
-        // on genuinely unparseable TS, mirroring the style block's fallback to
-        // trimmed content. (#1391)
-        let trimmed = block.content.trim();
-        let source_type =
-            script::source_type_for_script_lang(block.lang.as_ref().map(|lang| lang.as_ref()));
-        let formatted_content = script::format_sfc_script_content_stable(
-            trimmed,
-            self.options,
-            self.allocator,
-            source_type,
-        )
-        .unwrap_or_else(|_| trimmed.to_compact_string());
-
-        // Build the opening tag using byte operations
-        output.extend_from_slice(b"<script");
-        if block.setup {
-            write_attr(output, "setup", None);
-        }
-        if let Some(lang) = &block.lang {
-            write_attr(output, "lang", Some(lang));
-        }
-        write_remaining_attrs(output, &block.attrs, &["setup", "lang"]);
-        output.push(b'>');
-        output.extend_from_slice(self.options.newline_bytes());
-
-        // Add content with indentation if configured
-        if self.options.vue_indent_script_and_style {
-            block_indent::write_indented_block(
-                output,
-                &formatted_content,
-                self.options.indent_bytes(),
-                self.options.newline_bytes(),
-            );
-        } else {
-            output.extend_from_slice(formatted_content.as_bytes());
-            if !formatted_content.ends_with('\n') {
-                output.extend_from_slice(self.options.newline_bytes());
-            }
-        }
-
-        output.extend_from_slice(b"</script>");
-
-        Ok(())
-    }
-
-    /// Format a template block using byte operations
-    #[inline]
-    fn format_template_block_fast(
-        &self,
-        output: &mut Vec<u8>,
-        block: &vize_atelier_sfc::SfcTemplateBlock<'_>,
-    ) -> Result<(), FormatError> {
-        template_block::write_template_block(output, block, self.options)
-    }
-
-    /// Format a style block using lightningcss for CSS
-    #[inline]
-    fn format_style_block_fast(
-        &self,
-        output: &mut Vec<u8>,
-        block: &vize_atelier_sfc::SfcStyleBlock<'_>,
-    ) -> Result<(), FormatError> {
-        // Use lightningcss for plain CSS; for preprocessor languages, just trim
-        let is_plain_css = block.lang.as_ref().is_none_or(|l| l.as_ref() == "css");
-        let formatted_content = if is_plain_css {
-            style::format_style_content(&block.content, self.options)
-                .unwrap_or_else(|_| block.content.trim().to_compact_string())
-        } else {
-            block.content.trim().to_compact_string()
-        };
-        let formatted_content = formatted_content.as_str();
-
-        // Build the opening tag
-        output.extend_from_slice(b"<style");
-        if block.scoped {
-            write_attr(output, "scoped", None);
-        }
-        if let Some(lang) = &block.lang {
-            write_attr(output, "lang", Some(lang));
-        }
-        write_remaining_attrs(output, &block.attrs, &["scoped", "lang"]);
-        output.push(b'>');
-        output.extend_from_slice(self.options.newline_bytes());
-
-        // Add content with indentation if configured
-        if self.options.vue_indent_script_and_style {
-            block_indent::write_indented_block(
-                output,
-                formatted_content,
-                self.options.indent_bytes(),
-                self.options.newline_bytes(),
-            );
-        } else {
-            output.extend_from_slice(formatted_content.as_bytes());
-            if !formatted_content.ends_with('\n') {
-                output.extend_from_slice(self.options.newline_bytes());
-            }
-        }
-
-        output.extend_from_slice(b"</style>");
-
-        Ok(())
     }
 }
 

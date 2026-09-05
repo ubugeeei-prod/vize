@@ -118,17 +118,14 @@ test("glyph corpus shard selection is bound to manifest project ids before hydra
   );
 });
 
-test("glyph waiver ledger validation is not narrowed to the selected shard", () => {
+test("glyph parse-preservation waiver ledger is empty after hidden VitePress passes", () => {
   const beforeIndex = process.env.FIXTURE_SHARD_INDEX;
   const beforeCount = process.env.FIXTURE_SHARD_COUNT;
   try {
     process.env.FIXTURE_SHARD_INDEX = "10";
     process.env.FIXTURE_SHARD_COUNT = "22";
     const violations = loadKnownViolations("parse-preservation");
-    assert.ok(
-      violations.some((entry: { project: string }) => entry.project === "vitepress"),
-      "the current VitePress waiver should remain valid outside its matrix shard",
-    );
+    assert.deepEqual(violations, []);
   } finally {
     restoreEnv("FIXTURE_SHARD_INDEX", beforeIndex);
     restoreEnv("FIXTURE_SHARD_COUNT", beforeCount);
