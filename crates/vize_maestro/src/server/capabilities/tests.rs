@@ -85,6 +85,7 @@ fn default_features_advertise_non_opinionated_providers() {
     assert!(capabilities.document_formatting_provider.is_none());
     assert!(capabilities.document_range_formatting_provider.is_none());
     assert!(capabilities.document_on_type_formatting_provider.is_none());
+    assert!(capabilities.implementation_provider.is_none());
 }
 
 /// The trigger set is `@vue/language-server`'s, character for character, so an
@@ -177,6 +178,7 @@ fn all_features_skip_unimplemented_providers_and_keep_implemented_ones() {
             .and_then(|workspace| workspace.file_operations)
             .is_some()
     );
+    assert!(capabilities.implementation_provider.is_none());
 }
 
 #[test]
