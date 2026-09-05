@@ -81,7 +81,8 @@ pub(super) fn emit_props_object(
         return Ok(());
     }
     let extra = usize::from(if_key.is_some()) + usize::from(scope_id.is_some());
-    let compact_multiline = if_key.is_none() && pieces_are_dynamic_model_products(&visible);
+    let compact_multiline =
+        if_key.is_none() && scope_id.is_none() && pieces_are_dynamic_model_products(&visible);
     let v_for_merge_arg_multiline = skip_normalize && for_item && visible.len() + extra > 1;
     let multiline = !compact_multiline
         && (force_multiline
