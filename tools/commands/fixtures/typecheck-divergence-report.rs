@@ -33,6 +33,7 @@ mod common;
 #[derive(Debug)]
 struct Args {
     budget_mode: String,
+    documented_differences: PathBuf,
     registry: PathBuf,
     report_dir: PathBuf,
     shard_count: usize,
@@ -198,7 +199,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
             coverage_baseline.run.duration_ms, coverage_baseline.run.status
         );
     }
-    let documented_differences = read_documented_differences(root)?;
+    let documented_differences = read_documented_differences(&args.documented_differences)?;
     let divergence = compare_typecheck_diagnostics(
         project_id.clone(),
         &fixture_root,
@@ -1709,11 +1710,19 @@ fn comparison_delta(clean: &Value, current: &Value) -> Value {
             .unwrap_or(&Vec::new()),
         diagnostic_key,
     );
+    let documented_vize_count = documented_differences
+        .iter()
+        .filter(|difference| documented_side_is_present(difference, "vize"))
+        .count();
+    let documented_baseline_count = documented_differences
+        .iter()
+        .filter(|difference| documented_side_is_present(difference, "baseline"))
+        .count();
     json!({
         "shared": shared,
         "summary": {
-            "vizeDiagnosticCount": shared.len() + message_mismatches.len() + documented_differences.len() + false_positives.len(),
-            "baselineDiagnosticCount": shared.len() + message_mismatches.len() + documented_differences.len() + false_negatives.len(),
+            "vizeDiagnosticCount": shared.len() + message_mismatches.len() + documented_vize_count + false_positives.len(),
+            "baselineDiagnosticCount": shared.len() + message_mismatches.len() + documented_baseline_count + false_negatives.len(),
             "sharedCount": shared.len(),
             "messageMismatchCount": message_mismatches.len(),
             "documentedDifferenceCount": documented_differences.len(),
@@ -1721,6 +1730,10 @@ fn comparison_delta(clean: &Value, current: &Value) -> Value {
             "falseNegativeCount": false_negatives.len(),
         }
     })
+}
+
+fn documented_side_is_present(difference: &Value, side: &str) -> bool {
+    difference.get(side).is_some_and(|value| !value.is_null())
 }
 
 fn subtract_records(
@@ -1947,9 +1960,8 @@ fn find_documented_mismatch(
     })
 }
 
-fn read_documented_differences(root: &Path) -> Result<Vec<DocumentedDifference>, String> {
-    let ledger =
-        common::read_json(root.join("tests/_fixtures/compat-documented-differences.json"))?;
+fn read_documented_differences(path: &Path) -> Result<Vec<DocumentedDifference>, String> {
+    let ledger = common::read_json(path)?;
     if ledger.get("schema").and_then(Value::as_str) != Some("vize.compatDocumentedDifferences")
         || ledger.get("version").and_then(Value::as_u64) != Some(1)
     {
@@ -3667,6 +3679,7 @@ fn ratio_string(value: &Value, key: &str) -> String {
 fn parse_args(argv: Vec<String>, root: &Path) -> Result<Args, String> {
     let mut args = Args {
         budget_mode: "enforce".to_string(),
+        documented_differences: root.join("tests/_fixtures/compat-documented-differences.json"),
         registry: root.join("tests/_fixtures/vue-ecosystem-fixtures.json"),
         report_dir: PathBuf::new(),
         shard_count: 1,
@@ -3688,6 +3701,9 @@ fn parse_args(argv: Vec<String>, root: &Path) -> Result<Args, String> {
         };
         match arg.as_str() {
             "--budget-mode" => args.budget_mode = parse_budget_mode(&value(&mut index)?)?,
+            "--documented-differences" => {
+                args.documented_differences = absolutize(root, PathBuf::from(value(&mut index)?))
+            }
             "--registry" => args.registry = absolutize(root, PathBuf::from(value(&mut index)?)),
             "--report-dir" => {
                 report_dir = Some(absolutize(root, PathBuf::from(value(&mut index)?)))
@@ -3721,7 +3737,7 @@ fn parse_args(argv: Vec<String>, root: &Path) -> Result<Args, String> {
 
 fn print_help() {
     println!(
-        "usage: rust-script tools/commands/fixtures/typecheck-divergence-report.rs --report-dir dir --vize-bin path --vue-tsc-bin path [--registry path] [--budget-mode enforce|record-only] [--shard-index n] [--shard-count n]"
+        "usage: rust-script tools/commands/fixtures/typecheck-divergence-report.rs --report-dir dir --vize-bin path --vue-tsc-bin path [--registry path] [--documented-differences path] [--budget-mode enforce|record-only] [--shard-index n] [--shard-count n]"
     );
 }
 

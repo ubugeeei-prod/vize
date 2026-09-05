@@ -120,6 +120,8 @@ test("typecheck divergence cancels reviewed one-sided differences", () => {
   );
 
   assert.equal(result.summary.documentedDifferenceCount, 2);
+  assert.equal(result.summary.vizeDiagnosticCount, 1);
+  assert.equal(result.summary.baselineDiagnosticCount, 1);
   assert.equal(result.summary.falsePositiveCount, 0);
   assert.equal(result.summary.falseNegativeCount, 0);
   assert.deepEqual(result.documentedDifferences, [

@@ -286,9 +286,14 @@ function compareDocumented(left, right) {
     byteOrder(left.severity, right.severity) ||
     left.line - right.line ||
     left.column - right.column ||
-    left.vize.code - right.vize.code ||
-    left.baseline.code - right.baseline.code
+    compareDocumentedSide(left.vize, right.vize) ||
+    compareDocumentedSide(left.baseline, right.baseline)
   );
+}
+
+function compareDocumentedSide(left, right) {
+  if (left == null || right == null) return Number(left != null) - Number(right != null);
+  return left.code - right.code || byteOrder(left.message, right.message);
 }
 
 function compareShared(left, right) {
