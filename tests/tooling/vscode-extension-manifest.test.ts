@@ -68,7 +68,11 @@ function readManifest(): Manifest {
   ) as Manifest;
 }
 
-const LANGUAGE_SCOPED_COMMANDS = new Set(["vize.restartServer", "vize.showOutput"]);
+const LANGUAGE_SCOPED_COMMANDS = new Set([
+  "vize.findReferences",
+  "vize.restartServer",
+  "vize.showOutput",
+]);
 
 test("every contributed command has a matching onCommand activation event", () => {
   const manifest = readManifest();
@@ -105,16 +109,32 @@ test("command palette menu only references declared commands", () => {
 test("language-scoped commands are gated by an editor language guard", () => {
   const manifest = readManifest();
   const palette = manifest.contributes?.menus?.commandPalette ?? [];
+  const paletteByCommand = new Map<string, Array<{ command?: string; when?: string }>>();
 
   for (const item of palette) {
+    if (item.command) {
+      const entries = paletteByCommand.get(item.command) ?? [];
+      entries.push(item);
+      paletteByCommand.set(item.command, entries);
+    }
+
     if (LANGUAGE_SCOPED_COMMANDS.has(item.command ?? "")) {
       assert.match(item.when ?? "", /editorLangId == vue/);
       assert.match(item.when ?? "", /editorLangId == art-vue/);
+      assert.match(item.when ?? "", /editorLangId == html/);
     } else {
       // Profile/status commands are always available, so they must not carry a
       // language guard that would hide them from the palette.
       assert.equal(item.when, undefined, `${item.command} should not be language-gated`);
     }
+  }
+
+  for (const command of LANGUAGE_SCOPED_COMMANDS) {
+    assert.equal(
+      paletteByCommand.get(command)?.length,
+      1,
+      `${command} should have exactly one command-palette gate`,
+    );
   }
 });
 

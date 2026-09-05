@@ -353,6 +353,10 @@
         {
           "command": "vize.showOutput",
           "when": "editorLangId == vue || editorLangId == art-vue || editorLangId == html"
+        },
+        {
+          "command": "vize.findReferences",
+          "when": "editorLangId == vue || editorLangId == art-vue || editorLangId == html"
         }
       ]
     },
