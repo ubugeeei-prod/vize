@@ -7,6 +7,7 @@
     clippy::disallowed_methods
 )]
 
+pub mod battery;
 pub mod bindings;
 
 use vize_atelier_core::options::{CodegenOptions, TemplateSyntaxMode};

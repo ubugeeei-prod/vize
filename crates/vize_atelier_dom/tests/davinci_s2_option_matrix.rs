@@ -15,14 +15,38 @@ mod support;
 
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
-use vize_s0::FxHashMap;
-use vize_s1_to_s2::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
+use vize_s1_to_s2::{BindingTable, DomEmitMode, DomEmitOptions};
 
 const SCOPE_ID: &str = "data-v-abc123";
 
-/// Shapes where a cached handler and a scope pair land in the same props
-/// object, or where one of them decides the object's layout.
-const BATTERY: &[(&str, &str)] = &[
+const PRODUCTION_DOM_BATTERY_NAMES: &[&str] = &[
+    "class_attr",
+    "id_and_class",
+    "data_attr",
+    "boolean_attr",
+    "nested_class",
+    "hoisted_class_interp",
+    "static_and_dynamic_class",
+    "attr_then_object_bind",
+    "object_bind_then_attr",
+    "class_then_object_bind",
+    "static_dynamic_class_then_object",
+    "class_object_then_dynamic_class",
+    "component_static_class",
+    "component_class_and_id",
+    "component_static_id_text_slot",
+    "component_static_class_text_slot",
+    "component_static_two_attrs_text_slot",
+    "component_mixed_static_bind_text_slot",
+    "component_span_class_slot",
+    "component_span_class_text_slot",
+    "component_static_tree_with_text",
+];
+
+/// Production-only shapes where a cached handler, static/cache hoist and
+/// scope pair land in the same props object, or where one of them decides
+/// the object's layout.
+const PRODUCTION_LAYOUT_BATTERY: &[(&str, &str)] = &[
     ("handler_only", r#"<div @click="count++"></div>"#),
     (
         "handler_and_static",
@@ -88,54 +112,95 @@ const BATTERY: &[(&str, &str)] = &[
         "teleport",
         r##"<Teleport to="#a"><div @click="a++">x</div></Teleport>"##,
     ),
+    (
+        "cached_static_scoped_child",
+        r#"<section><Comp :format="fmt"/><span class="badge">ok</span></section>"#,
+    ),
+    (
+        "cached_static_and_dynamic_scoped_child",
+        r#"<section><Comp :format="fmt"/><span class="badge" :title="label">ok</span></section>"#,
+    ),
+    (
+        "cached_style_object_scoped_child",
+        r#"<section><Comp :format="fmt"/><span :style="{ marginLeft: 8 }">ok</span></section>"#,
+    ),
+    (
+        "cached_static_style_scoped_child",
+        r#"<section><Comp :format="fmt"/><span style="margin-left: 8px">ok</span></section>"#,
+    ),
 ];
 
 fn metadata() -> BindingMetadata {
-    let entries: &[(&str, BindingType)] = &[
+    support::bindings::script_setup_metadata(&[
         ("onTap", BindingType::SetupConst),
         ("tapLet", BindingType::SetupLet),
         ("count", BindingType::SetupRef),
+        ("a", BindingType::SetupRef),
+        ("b", BindingType::SetupRef),
+        ("submit", BindingType::SetupConst),
         ("msg", BindingType::SetupLet),
+        ("name", BindingType::SetupLet),
+        ("cls", BindingType::SetupLet),
+        ("s", BindingType::SetupLet),
+        ("foo", BindingType::SetupLet),
+        ("x", BindingType::SetupLet),
+        ("y", BindingType::SetupLet),
+        ("z", BindingType::SetupLet),
+        ("obj", BindingType::SetupLet),
+        ("handlers", BindingType::SetupLet),
+        ("ok", BindingType::SetupRef),
+        ("k", BindingType::SetupRef),
+        ("ka", BindingType::SetupRef),
+        ("kb", BindingType::SetupRef),
+        ("kc", BindingType::SetupRef),
+        ("list", BindingType::SetupConst),
+        ("n", BindingType::SetupConst),
         ("items", BindingType::SetupConst),
+        ("h", BindingType::SetupConst),
+        ("handler", BindingType::SetupConst),
+        ("fmt", BindingType::SetupRef),
+        ("label", BindingType::SetupLet),
+        ("Comp", BindingType::SetupConst),
+        ("Foo", BindingType::SetupConst),
+        ("Bar", BindingType::SetupConst),
         ("MyComp", BindingType::SetupConst),
-    ];
-    let mut bindings = FxHashMap::default();
-    for (name, kind) in entries {
-        bindings.insert((*name).into(), *kind);
-    }
-    BindingMetadata {
-        bindings,
-        props_aliases: FxHashMap::default(),
-        is_script_setup: true,
-    }
-}
-
-fn kind(binding: BindingType) -> BindingKind {
-    match binding {
-        BindingType::SetupConst => BindingKind::SetupConst,
-        BindingType::SetupLet => BindingKind::SetupLet,
-        BindingType::SetupRef => BindingKind::SetupRef,
-        _ => BindingKind::SetupConst,
-    }
+    ])
 }
 
 fn table(metadata: &BindingMetadata) -> BindingTable {
-    BindingTable::new(
-        metadata
-            .bindings
+    support::bindings::binding_table(metadata)
+}
+
+fn production_option_battery(inline: bool) -> Vec<(&'static str, &'static str)> {
+    let mut battery =
+        Vec::with_capacity(PRODUCTION_DOM_BATTERY_NAMES.len() + PRODUCTION_LAYOUT_BATTERY.len());
+    battery.extend(
+        support::battery::dom::DOM_BATTERY
             .iter()
-            .map(|(name, binding)| (name.as_str(), kind(*binding))),
-        [],
-        metadata.is_script_setup,
-    )
+            .copied()
+            .filter(|(name, _)| PRODUCTION_DOM_BATTERY_NAMES.contains(name)),
+    );
+    assert_eq!(
+        battery.len(),
+        PRODUCTION_DOM_BATTERY_NAMES.len(),
+        "every selected shared DOM battery case must exist"
+    );
+    battery.extend(
+        PRODUCTION_LAYOUT_BATTERY
+            .iter()
+            .copied()
+            .filter(|(name, _)| !inline || !INLINE_BATTERY_SKIP.contains(name)),
+    );
+    battery
 }
 
 /// `cache_handlers` + `scope_id` with nothing else: the pair of options
 /// that share a props object most often.
 #[test]
 fn cached_handlers_and_scope_id_agree_with_the_shipped_lane() {
+    let battery = production_option_battery(false);
     support::assert_s2_matches_shipped_with_options(
-        BATTERY,
+        &battery,
         &DomCompilerOptions {
             cache_handlers: true,
             scope_id: Some(SCOPE_ID.into()),
@@ -157,8 +222,9 @@ fn cached_handlers_and_scope_id_agree_with_the_shipped_lane() {
 fn the_script_setup_configuration_agrees_with_the_shipped_lane() {
     let metadata = metadata();
     let table = table(&metadata);
+    let battery = production_option_battery(false);
     support::assert_s2_matches_shipped_with_options(
-        BATTERY,
+        &battery,
         &DomCompilerOptions {
             mode: CodegenMode::Module,
             prefix_identifiers: true,
@@ -179,7 +245,7 @@ fn the_script_setup_configuration_agrees_with_the_shipped_lane() {
     );
 }
 
-/// Held out of the `inline` battery below by one **pre-existing divergence
+/// Held out of the `inline` production-layout cases below by one **pre-existing divergence
 /// that predates the option work**: under `inline`, the shipped lane hoists
 /// a component's (or builtin's) static props to `_hoisted_1` while the S2
 /// lane emits them inline. It reproduces with `cache_handlers` and
@@ -194,16 +260,7 @@ const INLINE_BATTERY_SKIP: &[&str] = &["component_static_prop", "teleport"];
 fn the_inline_script_setup_configuration_agrees_with_the_shipped_lane() {
     let metadata = metadata();
     let table = table(&metadata);
-    let battery: Vec<(&str, &str)> = BATTERY
-        .iter()
-        .copied()
-        .filter(|(name, _)| !INLINE_BATTERY_SKIP.contains(name))
-        .collect();
-    assert_eq!(
-        battery.len(),
-        BATTERY.len() - INLINE_BATTERY_SKIP.len(),
-        "every held-out case must exist in the battery"
-    );
+    let battery = production_option_battery(true);
     support::assert_s2_matches_shipped_with_options(
         &battery,
         &DomCompilerOptions {
