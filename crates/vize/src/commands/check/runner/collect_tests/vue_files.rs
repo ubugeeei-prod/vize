@@ -38,3 +38,16 @@ fn collect_vue_files_filters_quoted_globs() {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+#[test]
+fn collect_vue_files_recursive_globs_include_dot_directories() {
+    let case_dir = unique_case_dir("collect-vue-dot-directory-glob");
+    let _ = fs::remove_dir_all(&case_dir);
+    let download_page = write_file(&case_dir, "docs/.vitepress/components/DownloadPage.vue", "");
+
+    let files = collect_vue_files(&vec![case_dir.join("**/*.vue").display().to_string()]);
+
+    assert_eq!(files, vec![download_page]);
+
+    let _ = fs::remove_dir_all(&case_dir);
+}

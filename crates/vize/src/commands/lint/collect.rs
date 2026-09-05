@@ -71,7 +71,7 @@ fn collect_lint_files_from_dir(
 ) {
     for entry in WalkBuilder::new(dir)
         .standard_filters(true)
-        .hidden(true)
+        .hidden(matcher.is_none())
         .build()
     {
         let Ok(entry) = entry else {
@@ -326,5 +326,21 @@ mod tests {
         );
 
         assert_eq!(files, vec![src.join("App.vue")]);
+    }
+
+    #[test]
+    fn recursive_globs_include_dot_directories() {
+        let dir = tempfile::tempdir().unwrap();
+        let docs = dir.path().join("docs/.vitepress/components");
+        fs::create_dir_all(&docs).unwrap();
+        let download_page = docs.join("DownloadPage.vue");
+        fs::write(&download_page, "").unwrap();
+
+        let files = collect_lint_files(
+            &[dir.path().join("**/*.vue").display().to_string().into()],
+            None,
+        );
+
+        assert_eq!(files, vec![download_page]);
     }
 }

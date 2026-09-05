@@ -133,6 +133,9 @@ fn classify_input(input: &str) -> Result<BuildInput<'_>, InputError<'_>> {
 
 fn collect_walked_files(root: &Path, pattern: Option<&BuildGlob>, files: &mut Vec<PathBuf>) {
     let mut walker = WalkBuilder::new(root);
+    if pattern.is_some() {
+        walker.hidden(false);
+    }
     if let Some(max_depth) = pattern.and_then(BuildGlob::max_depth) {
         walker.max_depth(Some(max_depth));
     }

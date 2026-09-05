@@ -151,6 +151,23 @@ fn collect_check_files_filters_quoted_globs() {
 }
 
 #[test]
+fn collect_check_files_recursive_globs_include_dot_directories() {
+    let case_dir = unique_case_dir("collect-check-dot-directory-glob");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("docs/.vitepress/components")).unwrap();
+    let download_page = write_file(&case_dir, "docs/.vitepress/components/DownloadPage.vue", "");
+
+    let files = collect_check_files(
+        &vec![case_dir.join("**/*.vue").display().to_string()],
+        false,
+    );
+
+    assert_eq!(files, vec![download_page]);
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
 fn collect_check_files_applies_entry_ignores() {
     let case_dir = unique_case_dir("collect-check-entry-ignores");
     let _ = fs::remove_dir_all(&case_dir);

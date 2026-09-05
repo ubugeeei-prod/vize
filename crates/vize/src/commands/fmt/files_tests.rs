@@ -58,13 +58,13 @@ fn explicit_relative_glob_respects_nested_gitignore() {
 }
 
 #[test]
-fn relative_globs_require_explicit_hidden_components() {
+fn relative_recursive_globs_include_dot_directories() {
     let cwd = std::env::current_dir().unwrap();
     let relative_root =
         PathBuf::from("tests").join(unique_case_dir("hidden-glob").file_name().unwrap());
     let root = cwd.join(&relative_root);
     let source = root.join("src/App.vue");
-    let hidden = root.join("docs/.vitepress/Theme.vue");
+    let hidden = root.join("docs/.vitepress/components/DownloadPage.vue");
     let _ = fs::remove_dir_all(&root);
     fs::create_dir_all(source.parent().unwrap()).unwrap();
     fs::create_dir_all(hidden.parent().unwrap()).unwrap();
@@ -74,16 +74,21 @@ fn relative_globs_require_explicit_hidden_components() {
     let implicit = collect_files(&[relative_root.join("**/*.vue").to_string_lossy()], None);
     let explicit = collect_files(
         &[relative_root
-            .join("docs/.vitepress/**/*.vue")
+            .join("docs/.vitepress/components/**/*.vue")
             .to_string_lossy()],
         None,
     );
     let _ = fs::remove_dir_all(&root);
 
-    assert_eq!(implicit, vec![relative_root.join("src/App.vue")]);
+    let mut expected = vec![
+        relative_root.join("docs/.vitepress/components/DownloadPage.vue"),
+        relative_root.join("src/App.vue"),
+    ];
+    expected.sort();
+    assert_eq!(implicit, expected);
     assert_eq!(
         explicit,
-        vec![relative_root.join("docs/.vitepress/Theme.vue")]
+        vec![relative_root.join("docs/.vitepress/components/DownloadPage.vue")]
     );
 }
 

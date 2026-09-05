@@ -129,6 +129,21 @@ fn collect_files_accepts_backslash_pattern_separators() {
 }
 
 #[test]
+fn recursive_globs_include_dot_directories() {
+    let root = unique_case_dir("build-dot-directory-glob");
+    let docs = root.join("docs/.vitepress/components");
+    let _ = fs::remove_dir_all(&root);
+    fs::create_dir_all(&docs).unwrap();
+    let download_page = docs.join("DownloadPage.vue");
+    fs::write(&download_page, "<template><div /></template>").unwrap();
+
+    let collected = collect_files(&[root.join("**/*.vue").display().to_string()]).unwrap();
+    let _ = fs::remove_dir_all(&root);
+
+    assert_eq!(collected.files, vec![download_page]);
+}
+
+#[test]
 fn existing_paths_with_metacharacters_remain_literals() {
     let root = unique_case_dir("build-literal-metacharacter");
     let file = root.join("Component[old].vue");

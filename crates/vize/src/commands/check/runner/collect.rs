@@ -165,7 +165,7 @@ fn collect_from_dir_filtered(
     let normalized_dir = normalize_input_path(dir);
     let walker = WalkBuilder::new(dir)
         .standard_filters(true)
-        .hidden(true)
+        .hidden(matcher.is_none())
         .build_parallel();
 
     let collected = std::sync::Mutex::new(Vec::<PathBuf>::new());

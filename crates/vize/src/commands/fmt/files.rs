@@ -179,7 +179,7 @@ fn fmt_glob_match_options() -> MatchOptions {
     MatchOptions {
         case_sensitive: !cfg!(windows),
         require_literal_separator: true,
-        require_literal_leading_dot: true,
+        require_literal_leading_dot: false,
     }
 }
 
