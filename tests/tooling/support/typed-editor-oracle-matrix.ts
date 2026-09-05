@@ -94,6 +94,7 @@ export const matrix: MatrixRow[] = [
           "$attrs.class",
           "PlainFragment.vue",
           "SingleRoot.vue",
+          "assert.deepEqual(singleRootPublish.diagnostics, [])",
           "line: 5, character: 2",
         ],
       },
