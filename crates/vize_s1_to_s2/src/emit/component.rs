@@ -7,9 +7,7 @@ mod children_arg;
 mod entry;
 mod preamble;
 
-use call_props::{
-    emit_dynamic_props, has_rendered_attrs, has_rendered_binds, rendered_hoist_attrs,
-};
+use call_props::{has_rendered_attrs, has_rendered_binds, rendered_hoist_attrs};
 use checks::admit;
 
 use vize_davinci::id::NodeId;
@@ -29,6 +27,7 @@ use super::props::{
     BindPropsOptions, apply_static_ref_patch, bind_patch, emit_bind_props,
     prune_legacy_patchless_dynamic_props,
 };
+use super::props_dynamic::emit_dynamic_props;
 use super::props_static;
 use super::props_static::PropHoistPosition as Position;
 use super::slots;

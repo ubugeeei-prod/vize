@@ -86,6 +86,7 @@ mod prefix;
 mod props;
 mod props_bind;
 mod props_class;
+mod props_dynamic;
 mod props_object;
 mod props_object_merge;
 mod props_static;

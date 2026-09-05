@@ -19,6 +19,7 @@ use super::namespace;
 use super::props::{
     BindPropsOptions, admit_element_bindings, apply_static_ref_patch, bind_patch, emit_bind_props,
 };
+use super::props_dynamic::emit_dynamic_props;
 use super::props_static::PropHoistPosition;
 use super::vnode_children::emit_children;
 use super::{EmitCx, EmitError};
@@ -339,17 +340,8 @@ pub(super) fn emit_call(
         emit_patch_flag(cx, flag);
     }
     let suppress_memo_for_item_dynamic_props = memo_block && cx.skip_memo && for_item;
-    if !once && !suppress_memo_for_item_dynamic_props && !patch.dynamic_props.is_empty() {
-        cx.buf.push(", [");
-        for (i, name) in patch.dynamic_props.iter().enumerate() {
-            if i > 0 {
-                cx.buf.push(", ");
-            }
-            cx.buf.push("\"");
-            cx.buf.push(name.as_str());
-            cx.buf.push("\"");
-        }
-        cx.buf.push("]");
+    if !once && !suppress_memo_for_item_dynamic_props {
+        emit_dynamic_props(cx, &patch.dynamic_props);
     }
     cx.buf.push(")");
     Ok(())

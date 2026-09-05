@@ -3,7 +3,6 @@ mod scans;
 use alloc::vec::Vec as StdVec;
 
 use vize_davinci::id::NodeId;
-use vize_s0::String;
 use vize_s2::op::{Attribute, BindingOp, ComponentOp, DynamicName, Op, Region};
 
 use super::super::EmitCx;
@@ -266,20 +265,4 @@ fn has_element_with_direct_slot_outlet(region: &Region<'_>) -> bool {
         .ops
         .iter()
         .any(|op| matches!(op, Op::Element(element) if element.bindings.is_empty() && has_direct_slot_outlet(&element.children)))
-}
-
-pub(super) fn emit_dynamic_props(cx: &mut EmitCx<'_>, names: &[String]) {
-    if names.is_empty() {
-        return;
-    }
-    cx.buf.push(", [");
-    for (i, name) in names.iter().enumerate() {
-        if i > 0 {
-            cx.buf.push(", ");
-        }
-        cx.buf.push("\"");
-        cx.buf.push(name.as_str());
-        cx.buf.push("\"");
-    }
-    cx.buf.push("]");
 }
