@@ -71,6 +71,41 @@ test("a fixture typed against its own Vue runtime is measured, not rejected", ()
   }
 });
 
+test("fixture-local Vue runtimes are pinned into the baseline config", () => {
+  const fixture = setup();
+  try {
+    for (const name of ["vue", "@vue/runtime-core", "@vue/runtime-dom"]) {
+      const packageRoot = path.join(fixture.fixtureRoot, "node_modules", ...name.split("/"));
+      fs.mkdirSync(packageRoot, { recursive: true });
+      fs.writeFileSync(path.join(packageRoot, "package.json"), `{"name":"${name}"}\n`);
+    }
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, "tsconfig.json"),
+      `${JSON.stringify({
+        compilerOptions: {
+          baseUrl: ".",
+          paths: {
+            "#app": ["src/app"],
+          },
+        },
+      })}\n`,
+    );
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+
+    const config = readJson(path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"));
+    assert.equal(config.compilerOptions.baseUrl, ".");
+    assert.deepEqual(config.compilerOptions.paths, {
+      "#app": ["../src/app"],
+      "@vue/runtime-core": ["../node_modules/@vue/runtime-core"],
+      "@vue/runtime-dom": ["../node_modules/@vue/runtime-dom"],
+      vue: ["../node_modules/vue"],
+    });
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("a second Vue runtime resolved above the fixture sinks the run", () => {
   const fixture = setup({ baselineProgramFiles: [fixtureVue, vizeVue] });
   try {
