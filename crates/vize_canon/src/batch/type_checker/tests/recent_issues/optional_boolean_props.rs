@@ -152,3 +152,81 @@ acceptState({
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn with_defaults_undefined_boolean_keeps_controlled_vmodel_overloads() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "with-defaults-undefined-boolean-vmodel-overloads",
+        &[(
+            "src/Foo.vue",
+            r#"<script setup lang="ts" generic="T">
+interface Props<T> {
+  modelValue?: T | T[];
+  defaultValue?: T | T[];
+  open?: boolean;
+  defaultOpen?: boolean;
+  multiple?: boolean;
+}
+
+type Ref<T> = { value: T };
+type UseVModelOptions<T, Passive extends boolean = false> = {
+  passive?: Passive;
+  defaultValue?: T;
+  deep?: boolean;
+};
+
+declare function useVModel<P extends object, K extends keyof P, Name extends string>(
+  props: P,
+  key?: K,
+  emit?: (name: Name, ...args: any[]) => void,
+  options?: UseVModelOptions<P[K], false>,
+): Ref<P[K]>;
+declare function useVModel<P extends object, K extends keyof P, Name extends string>(
+  props: P,
+  key?: K,
+  emit?: (name: Name, ...args: any[]) => void,
+  options?: UseVModelOptions<P[K], true>,
+): Ref<P[K]>;
+
+const props = withDefaults(defineProps<Props<T>>(), {
+  modelValue: undefined,
+  open: undefined,
+});
+const emit = defineEmits<{
+  "update:modelValue": [value: T];
+  "update:open": [value: boolean];
+}>();
+
+useVModel(props, "modelValue", emit, {
+  defaultValue: props.defaultValue ?? (props.multiple ? [] : undefined),
+  passive: (props.modelValue === undefined) as false,
+  deep: true,
+});
+useVModel(props, "open", emit, {
+  defaultValue: props.defaultOpen,
+  passive: (props.open === undefined) as false,
+});
+</script>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().all(|(file, code, message)| {
+            !(file == "src/Foo.vue"
+                && *code == Some(2769)
+                && message.contains("No overload matches this call"))
+        }),
+        "undefined boolean defaults should preserve useVModel overloads, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

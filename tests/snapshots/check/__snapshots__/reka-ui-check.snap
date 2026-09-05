@@ -5230,8 +5230,6 @@
         "error:70:28 [TS2307] Cannot find module '@/Popper' or its corresponding type declarations.",
         "error:93:9 [TS2339] Property 'required' does not exist on type 'ToRefs<Omit<__DefineProps<SelectRootProps<T>, \"defaultOpen\" | \"dir\" | \"disabled\" | \"multiple\" | \"open\" | Extract<...> | Extract<...>>, \"modelValue\" | ... 1 more ... | \"open\"> & { ...; }>'.",
         "error:98:3 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'false' is not assignable to type 'true'.",
-        "error:103:3 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'boolean' is not assignable to type '(false & __LooseRequired<SelectRootProps<T>>[\"open\" & Extract<[T | T[] | undefined] extends [boolean | undefined] ? \"defaultValue\" : never, keyof SelectRootProps<...>>] & __LooseRequired<...>[\"open\" & Extract<...>]) | (true & ... 1 more ... & __LooseRequired<...>[\"open\" & Extract<...>])'.",
-        "error:104:3 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'false' is not assignable to type 'true'.",
         "error:157:21 [TS7006] Parameter 'node' implicitly has an 'any' type.",
         "error:161:26 [TS7006] Parameter 'node' implicitly has an 'any' type.",
         "error:166:3 [TS2578] Unused '@ts-expect-error' directive.",
@@ -7545,7 +7543,7 @@
       ]
     }
   ],
-  "errorCount": 3116,
+  "errorCount": 3114,
   "warningCount": 0,
   "fileCount": 913
 }
