@@ -7,6 +7,8 @@
 
 #[cfg(feature = "native")]
 mod disk;
+#[cfg(test)]
+mod tests;
 
 use tower_lsp::lsp_types::{Location, Position, Range, SymbolInformation, SymbolKind, Url};
 
@@ -166,10 +168,8 @@ impl WorkspaceSymbolsService {
 
         let container = Self::extract_component_name(uri);
 
-        // Range pointing at the start of the script setup block. Symbols
-        // discovered through Croquis don't yet carry their declaration span,
-        // so we anchor them at the block start as a follow-up improvement
-        // on top of the line-0-character-0 placeholder from #715.
+        // Fallback for Croquis symbols that do not yet carry a declaration
+        // span, on top of the line-0-character-0 placeholder from #715.
         let script_setup_position =
             Self::offset_to_position(descriptor.source.as_ref(), script_setup.loc.start);
         let placeholder_range = Range {
@@ -185,6 +185,13 @@ impl WorkspaceSymbolsService {
             if !query.is_empty() && !name.to_lowercase().contains(query) {
                 continue;
             }
+            let range = Self::macro_declaration_range(
+                descriptor.source.as_ref(),
+                script_setup.content.as_ref(),
+                script_setup.loc.start,
+                croquis.macros.emit_declaration(name),
+                placeholder_range,
+            );
             symbols.push(SymbolInformation {
                 name: name.to_string(),
                 kind: SymbolKind::EVENT,
@@ -192,7 +199,7 @@ impl WorkspaceSymbolsService {
                 deprecated: None,
                 location: Location {
                     uri: uri.clone(),
-                    range: placeholder_range,
+                    range,
                 },
                 container_name: container.clone(),
             });
@@ -217,6 +224,57 @@ impl WorkspaceSymbolsService {
                 },
                 container_name: container.clone(),
             });
+        }
+    }
+
+    fn macro_declaration_range(
+        source: &str,
+        script: &str,
+        script_start: usize,
+        declaration: Option<(u32, u32)>,
+        fallback: Range,
+    ) -> Range {
+        let Some((start, end)) = declaration else {
+            return fallback;
+        };
+        let start = start as usize;
+        let end = end as usize;
+        if start >= end || script.get(start..end).is_none() {
+            return fallback;
+        }
+
+        let (start, end) = Self::trim_paired_quotes(script, start, end);
+        let (Some(source_start), Some(source_end)) = (
+            script_start.checked_add(start),
+            script_start.checked_add(end),
+        ) else {
+            return fallback;
+        };
+        if source_start > source_end || source.get(source_start..source_end).is_none() {
+            return fallback;
+        }
+
+        Range {
+            start: Self::offset_to_position(source, source_start),
+            end: Self::offset_to_position(source, source_end),
+        }
+    }
+
+    fn trim_paired_quotes(source: &str, start: usize, end: usize) -> (usize, usize) {
+        let Some(raw) = source.get(start..end) else {
+            return (start, end);
+        };
+        let bytes = raw.as_bytes();
+        if bytes.len() < 2 {
+            return (start, end);
+        }
+        let Some(last) = bytes.last() else {
+            return (start, end);
+        };
+        if matches!(bytes[0], b'\'' | b'"') && *last == bytes[0] {
+            (start + 1, end - 1)
+        } else {
+            (start, end)
         }
     }
 
@@ -563,64 +621,5 @@ impl WorkspaceSymbolsService {
 
     fn is_ident_char(c: char) -> bool {
         c.is_ascii_alphanumeric() || c == '_' || c == '$'
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::WorkspaceSymbolsService;
-    use tower_lsp::lsp_types::SymbolKind;
-
-    #[test]
-    fn test_to_pascal_case() {
-        assert_eq!(
-            WorkspaceSymbolsService::to_pascal_case("hello-world"),
-            "HelloWorld"
-        );
-        assert_eq!(
-            WorkspaceSymbolsService::to_pascal_case("my_component"),
-            "MyComponent"
-        );
-        assert_eq!(WorkspaceSymbolsService::to_pascal_case("Button"), "Button");
-    }
-
-    #[test]
-    fn test_extract_identifier() {
-        assert_eq!(
-            WorkspaceSymbolsService::extract_identifier("count = 0"),
-            Some("count".to_string())
-        );
-        assert_eq!(
-            WorkspaceSymbolsService::extract_identifier("MyClass extends Base"),
-            Some("MyClass".to_string())
-        );
-        assert_eq!(
-            WorkspaceSymbolsService::extract_identifier("{ a, b } = obj"),
-            None
-        );
-    }
-
-    #[test]
-    fn test_extract_css_classes() {
-        let classes = WorkspaceSymbolsService::extract_css_classes(".container .item-active { }");
-        assert_eq!(classes, vec!["container", "item-active"]);
-    }
-
-    #[test]
-    fn test_extract_css_ids() {
-        let ids = WorkspaceSymbolsService::extract_css_ids("#app #main-content { }");
-        assert_eq!(ids, vec!["app", "main-content"]);
-    }
-
-    #[test]
-    fn test_parse_declaration() {
-        let (name, kind) = WorkspaceSymbolsService::parse_declaration("count = ref(0)").unwrap();
-        assert_eq!(name, "count");
-        assert_eq!(kind, SymbolKind::VARIABLE);
-
-        let (name, kind) =
-            WorkspaceSymbolsService::parse_declaration("handleClick = () => {}").unwrap();
-        assert_eq!(name, "handleClick");
-        assert_eq!(kind, SymbolKind::FUNCTION);
     }
 }
