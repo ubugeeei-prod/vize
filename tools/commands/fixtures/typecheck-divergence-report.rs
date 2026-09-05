@@ -586,6 +586,7 @@ fn materialize_baseline_project(
     fs::create_dir_all(&config_dir)
         .map_err(|error| format!("cannot create {}: {error}", config_dir.display()))?;
     let source_document = read_tsconfig_jsonc(&source_path)?;
+    let compiler_paths = winning_compiler_paths(fixture_root, &source_path)?;
     let mut dot_roots = dot_directory_include_roots(fixture_root, vize_report);
     let fixture_roots = [fixture_root.to_path_buf()];
     dot_roots.extend(discover_dot_directory_include_roots(&fixture_roots)?);
@@ -609,16 +610,23 @@ fn materialize_baseline_project(
         "rootDir".to_string(),
         json!(config_relative_path(&config_dir, fixture_root)),
     );
-    let source_base_url = source_document
-        .pointer("/compilerOptions/baseUrl")
-        .and_then(Value::as_str)
-        .map(|base_url| source_dir.join(base_url));
-    let path_mapping_root = source_base_url.as_deref().unwrap_or(source_dir);
-    let mut paths = source_path_mappings(path_mapping_root, &config_dir, &source_document);
+    let path_mapping_root = compiler_paths
+        .base_url
+        .as_ref()
+        .map(|base_url| base_url.dir.join(&base_url.value))
+        .or_else(|| compiler_paths.paths.as_ref().map(|paths| paths.dir.clone()));
+    let mut paths = compiler_paths
+        .paths
+        .as_ref()
+        .zip(path_mapping_root.as_deref())
+        .map(|(paths, path_mapping_root)| {
+            source_path_mappings(path_mapping_root, &config_dir, &paths.value)
+        })
+        .unwrap_or_default();
     extend_local_vue_runtime_paths(fixture_root, &config_dir, &mut paths)?;
     if !paths.is_empty() {
         compiler_options.insert("paths".to_string(), Value::Object(paths));
-        if source_base_url.is_some() {
+        if compiler_paths.base_url.is_some() {
             compiler_options.insert("baseUrl".to_string(), json!("."));
         }
     }
@@ -3924,6 +3932,101 @@ fn read_tsconfig_jsonc(path: &Path) -> Result<Value, String> {
         .map_err(|error| format!("cannot parse JSON {}: {error}", path.display()))
 }
 
+struct CompilerPaths {
+    paths: Option<DeclaredPaths>,
+    base_url: Option<DeclaredBaseUrl>,
+}
+
+struct DeclaredPaths {
+    dir: PathBuf,
+    value: serde_json::Map<String, Value>,
+}
+
+struct DeclaredBaseUrl {
+    dir: PathBuf,
+    value: String,
+}
+
+fn winning_compiler_paths(
+    fixture_root: &Path,
+    source_path: &Path,
+) -> Result<CompilerPaths, String> {
+    let mut chain = Vec::new();
+    collect_tsconfig_extends_chain(fixture_root, source_path, &mut BTreeSet::new(), &mut chain)?;
+    let mut paths = None;
+    let mut base_url = None;
+    for (path, document) in chain {
+        let dir = path
+            .parent()
+            .ok_or_else(|| format!("tsconfig has no parent: {}", path.display()))?
+            .to_path_buf();
+        if let Some(value) = document
+            .pointer("/compilerOptions/paths")
+            .and_then(Value::as_object)
+        {
+            paths = Some(DeclaredPaths {
+                dir: dir.clone(),
+                value: value.clone(),
+            });
+        }
+        if let Some(value) = document
+            .pointer("/compilerOptions/baseUrl")
+            .and_then(Value::as_str)
+        {
+            base_url = Some(DeclaredBaseUrl {
+                dir,
+                value: value.to_string(),
+            });
+        }
+    }
+    Ok(CompilerPaths { paths, base_url })
+}
+
+fn collect_tsconfig_extends_chain(
+    fixture_root: &Path,
+    path: &Path,
+    seen: &mut BTreeSet<PathBuf>,
+    chain: &mut Vec<(PathBuf, Value)>,
+) -> Result<(), String> {
+    let normalized = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+    if !seen.insert(normalized.clone()) {
+        return Ok(());
+    }
+    let document = read_tsconfig_jsonc(&normalized)?;
+    if let Some(parent) = document
+        .get("extends")
+        .and_then(Value::as_str)
+        .and_then(|extends| resolve_relative_tsconfig_extends(fixture_root, &normalized, extends))
+    {
+        collect_tsconfig_extends_chain(fixture_root, &parent, seen, chain)?;
+    }
+    chain.push((normalized, document));
+    Ok(())
+}
+
+fn resolve_relative_tsconfig_extends(
+    fixture_root: &Path,
+    from_config: &Path,
+    specifier: &str,
+) -> Option<PathBuf> {
+    if !(specifier.starts_with("./") || specifier.starts_with("../")) {
+        return None;
+    }
+    let base = from_config.parent()?.join(specifier);
+    let candidates = if base.extension().is_some() {
+        vec![base]
+    } else {
+        vec![base.with_extension("json"), base]
+    };
+    candidates.into_iter().find(|candidate| {
+        candidate.exists()
+            && candidate
+                .canonicalize()
+                .ok()
+                .is_some_and(|path| path_stays_inside(fixture_root, &path))
+    })
+}
+
 fn strip_jsonc_sugar(source: &str) -> String {
     let mut out = String::with_capacity(source.len());
     let mut chars = source.chars().peekable();
@@ -3986,14 +4089,8 @@ fn is_dot_directory(name: &str) -> bool {
 fn source_path_mappings(
     source_dir: &Path,
     config_dir: &Path,
-    source_document: &Value,
+    declared: &serde_json::Map<String, Value>,
 ) -> serde_json::Map<String, Value> {
-    let Some(declared) = source_document
-        .pointer("/compilerOptions/paths")
-        .and_then(Value::as_object)
-    else {
-        return serde_json::Map::new();
-    };
     declared
         .iter()
         .filter_map(|(name, targets)| {

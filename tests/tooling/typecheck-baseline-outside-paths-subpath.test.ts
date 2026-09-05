@@ -115,7 +115,7 @@ test("a trailing-star mapping under dist keeps that directory", () => {
   }
 });
 
-test("a missing fixture subpath is left inherited", () => {
+test("a missing fixture subpath is preserved from a moved config", () => {
   const { fixtureRoot, outer, outsideVue } = scaffold();
   try {
     const local = path.join(fixtureRoot, "node_modules", "vue");
@@ -130,9 +130,9 @@ test("a missing fixture subpath is left inherited", () => {
         },
       })}\n`,
     );
-    assert.equal(
+    assert.deepEqual(
       rewriteOutsidePackagePaths(fixtureRoot, sourcePath, path.join(fixtureRoot, ".vize-baseline")),
-      null,
+      { vue: ["../../node_modules/vue/dist/vue"] },
     );
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });

@@ -138,7 +138,7 @@ test("an interior star in a hash alias is not guessed", () => {
   }
 });
 
-test("an outside hash alias with no fixture-local package is left inherited", () => {
+test("an outside hash alias with no fixture-local package is preserved from a moved config", () => {
   const { outer, fixtureRoot, outsideNuxt } = scaffold();
   try {
     const sourcePath = path.join(fixtureRoot, "tsconfig.json");
@@ -153,8 +153,10 @@ test("an outside hash alias with no fixture-local package is left inherited", ()
       })}\n`,
     );
     assert.equal(
-      rewriteOutsideAliasPaths(fixtureRoot, sourcePath, path.join(fixtureRoot, ".vize-baseline")),
-      null,
+      rewriteOutsideAliasPaths(fixtureRoot, sourcePath, path.join(fixtureRoot, ".vize-baseline"))?.[
+        "#app"
+      ][0],
+      "../../node_modules/nuxt/dist/app",
     );
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });

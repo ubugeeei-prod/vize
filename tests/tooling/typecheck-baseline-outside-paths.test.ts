@@ -86,7 +86,7 @@ test("an outside mapping reached only through extends is still retargeted", () =
   }
 });
 
-test("an outside path with no fixture-local copy is left inherited", () => {
+test("an outside path with no fixture-local copy is preserved from a moved config", () => {
   const { outer, fixtureRoot, outsideRouter } = scaffold();
   try {
     const sourcePath = path.join(fixtureRoot, "tsconfig.json");
@@ -99,8 +99,12 @@ test("an outside path with no fixture-local copy is left inherited", () => {
       })}\n`,
     );
     assert.equal(
-      rewriteOutsidePackagePaths(fixtureRoot, sourcePath, path.join(fixtureRoot, ".vize-baseline")),
-      null,
+      rewriteOutsidePackagePaths(
+        fixtureRoot,
+        sourcePath,
+        path.join(fixtureRoot, ".vize-baseline"),
+      )?.["vue-router"][0],
+      "../../node_modules/vue-router",
     );
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
@@ -130,6 +134,50 @@ test("materialized baseline writes the retargeted paths onto the generated confi
     );
     assert.deepEqual(JSON.parse(project.source).compilerOptions.paths, {
       "vue-router": ["../node_modules/vue-router"],
+    });
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("materialized baseline preserves package-local aliases from a moved config", () => {
+  const { outer, fixtureRoot } = scaffold();
+  try {
+    const packageRoot = path.join(fixtureRoot, "packages/core");
+    fs.mkdirSync(path.join(packageRoot, "src/shared"), { recursive: true });
+    fs.writeFileSync(path.join(packageRoot, "src/App.vue"), "<template />\n");
+    fs.writeFileSync(path.join(packageRoot, "src/shared/index.ts"), "export const ok = true;\n");
+    fs.writeFileSync(
+      path.join(packageRoot, "tsconfig.app.json"),
+      `${JSON.stringify({
+        compilerOptions: {
+          paths: {
+            "@/*": ["./src/*"],
+          },
+        },
+      })}\n`,
+    );
+    fs.writeFileSync(
+      path.join(packageRoot, "tsconfig.check.json"),
+      `{ "extends": "./tsconfig.app.json" }\n`,
+    );
+    const reportDir = path.join(outer, "report");
+    fs.mkdirSync(reportDir);
+    const project = materializeBaselineProject(
+      fixtureRoot,
+      reportDir,
+      {
+        id: "fixture",
+        tsconfig: "packages/core/tsconfig.check.json",
+        typecheckPerformance: {
+          baseline: { tsconfig: "packages/core/tsconfig.check.json" },
+          corpusGlobs: ["packages/core/src/**/*.vue"],
+        },
+      },
+      { fileCount: 1, files: [{ file: "packages/core/src/App.vue" }] },
+    );
+    assert.deepEqual(JSON.parse(project.source).compilerOptions.paths, {
+      "@/*": ["../src/*"],
     });
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });

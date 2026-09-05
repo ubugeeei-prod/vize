@@ -252,6 +252,39 @@ test("typecheck divergence progress logging is opt-in", () => {
   }
 });
 
+test("typecheck divergence baseline preserves inherited path aliases from moved configs", () => {
+  const fixture = setup();
+  try {
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, "tsconfig.app.json"),
+      `${JSON.stringify({
+        compilerOptions: {
+          paths: {
+            "@/*": ["./src/*"],
+          },
+        },
+      })}\n`,
+    );
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, "tsconfig.check.json"),
+      `{ "extends": "./tsconfig.app.json" }\n`,
+    );
+    updateJson(fixture.registryPath, (registry) => {
+      registry.projects[0].tsconfig = "tsconfig.check.json";
+      registry.projects[0].typecheckPerformance.baseline = { tsconfig: "tsconfig.check.json" };
+    });
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+
+    const config = readJson(path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"));
+    assert.deepEqual(config.compilerOptions.paths, {
+      "@/*": ["../src/*"],
+    });
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("typecheck divergence report skips shards without typecheck performance targets", () => {
   const fixture = setup();
   try {

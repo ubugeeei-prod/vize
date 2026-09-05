@@ -16,8 +16,10 @@ import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.mjs
  * Setting `paths` on the generated baseline replaces the inherited object, so
  * this copies every mapping, re-homes it to the generated config directory, and
  * only then retargets package names whose original target is outside and whose
- * fixture-local `node_modules/<name>` is already a real package. No rewrite
- * means the generated config leaves `paths` unset and inherits.
+ * fixture-local `node_modules/<name>` is already a real package. Even when no
+ * package retarget is possible, a generated config that lives in `.vize-baseline`
+ * still needs the relocated mappings so relative targets keep the source
+ * tsconfig's meaning.
  * Vize's `check --tsconfig` still reads the fixture config, so a matching
  * untracked overlay is written next to the source when a rewrite exists. Git
  * porcelain uses `--untracked-files=no`, so the overlay does not dirty the
@@ -47,7 +49,7 @@ export function rewriteOutsidePackagePaths(fixtureRoot, sourceConfigPath, config
   let changed = false;
   for (const [name, targets] of Object.entries(declared.paths)) {
     if (!Array.isArray(targets)) continue;
-    rewritten[name] = retargetPathMapping(
+    const remapped = retargetPathMapping(
       root,
       mapping,
       declared.dir,
@@ -58,6 +60,8 @@ export function rewriteOutsidePackagePaths(fixtureRoot, sourceConfigPath, config
         changed = true;
       },
     );
+    rewritten[name] = remapped;
+    if (!sameStringArray(targets, remapped)) changed = true;
   }
   return changed ? rewritten : null;
 }
@@ -339,6 +343,11 @@ function isInside(root, target) {
 function isTypesPackageRoot(directory) {
   const normalized = directory.replaceAll("\\", "/");
   return normalized.endsWith("/node_modules/@types");
+}
+
+function sameStringArray(left, right) {
+  if (left.length !== right.length) return false;
+  return left.every((entry, index) => entry === right[index]);
 }
 
 function configRelativePath(from, to) {

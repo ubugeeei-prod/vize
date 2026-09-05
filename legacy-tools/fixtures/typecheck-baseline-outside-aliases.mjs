@@ -24,7 +24,10 @@ import {
  *
  * A mapping is retargeted only when its target sits under an outside
  * `node_modules/<name>` (or `@scope/name`) directory and the fixture already
- * has that package. Interior `*` patterns are not guessed.
+ * has that package. Interior `*` patterns are not guessed. When the generated
+ * baseline config is placed in another directory, every emitted mapping is also
+ * relocated to that config directory so inherited relative aliases keep their
+ * source meaning.
  *
  * Package-name `extends` is followed only inside the fixture, matching the
  * package-name overlay. Climbing into Vize would load Vize's `#app` mappings.
@@ -41,7 +44,7 @@ export function rewriteOutsideAliasPaths(fixtureRoot, sourceConfigPath, configDi
   let changed = false;
   for (const [name, targets] of Object.entries(declared.paths)) {
     if (!Array.isArray(targets)) continue;
-    rewritten[name] = retargetAliasMapping(
+    const remapped = retargetAliasMapping(
       root,
       mapping,
       declared.dir,
@@ -52,6 +55,8 @@ export function rewriteOutsideAliasPaths(fixtureRoot, sourceConfigPath, configDi
         changed = true;
       },
     );
+    rewritten[name] = remapped;
+    if (!isPackageMappingName(name) && !sameStringArray(targets, remapped)) changed = true;
   }
   return changed ? rewritten : null;
 }
@@ -221,6 +226,11 @@ function resolveRelativeExtends(fromConfig, specifier, fixtureRoot) {
 function isInside(root, target) {
   const path = relative(root, target);
   return path !== "" && !path.startsWith("..") && !path.startsWith("/");
+}
+
+function sameStringArray(left, right) {
+  if (left.length !== right.length) return false;
+  return left.every((entry, index) => entry === right[index]);
 }
 
 function configRelativePath(from, to) {
