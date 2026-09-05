@@ -6,7 +6,7 @@
 use super::Croquis;
 use super::bindings::UnusedTemplateVar;
 use super::bindings::UnusedVarContext;
-use crate::scope::{ScopeData, ScopeKind};
+use crate::scope::{ScopeBinding, ScopeData, ScopeKind, VForScopeData};
 use vize_carton::CompactString;
 use vize_relief::BindingType;
 
@@ -169,8 +169,6 @@ impl Croquis {
 
     /// Get unused template variables (v-for, v-slot variables that are not used)
     pub fn unused_template_vars(&self) -> Vec<UnusedTemplateVar> {
-        use crate::scope::{ScopeData, ScopeKind};
-
         let mut unused = Vec::new();
 
         for scope in self.scopes.iter() {
@@ -183,6 +181,12 @@ impl Croquis {
                 if !binding.is_used() {
                     let context = match scope.data() {
                         ScopeData::VFor(data) => {
+                            if !is_reportable_unused_v_for_alias(name, data, |alias| {
+                                scope.get_binding(alias).is_some_and(ScopeBinding::is_used)
+                            }) {
+                                continue;
+                            }
+
                             // Determine which kind of variable this is
                             if data
                                 .value_bindings
@@ -237,6 +241,79 @@ impl Croquis {
             unused_binding_count: self.unused_bindings.len(),
         }
     }
+}
+
+fn is_reportable_unused_v_for_alias(
+    name: &str,
+    data: &VForScopeData,
+    mut is_used: impl FnMut(&str) -> bool,
+) -> bool {
+    let Some(position) = v_for_alias_position(name, data) else {
+        return true;
+    };
+
+    match position {
+        VForAliasPosition::Value if is_simple_value_alias(name, data) => {
+            !v_for_alias_used_after(VForAliasPosition::Value, data, &mut is_used)
+        }
+        VForAliasPosition::Value => true,
+        VForAliasPosition::Key => {
+            !v_for_alias_used_after(VForAliasPosition::Key, data, &mut is_used)
+        }
+        VForAliasPosition::Index => true,
+    }
+}
+
+fn is_simple_value_alias(name: &str, data: &VForScopeData) -> bool {
+    data.value_bindings.len() == 1 && data.value_alias.as_str() == name
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum VForAliasPosition {
+    Value,
+    Key,
+    Index,
+}
+
+fn v_for_alias_position(name: &str, data: &VForScopeData) -> Option<VForAliasPosition> {
+    if data
+        .value_bindings
+        .iter()
+        .any(|value| value.as_str() == name)
+    {
+        return Some(VForAliasPosition::Value);
+    }
+    if data
+        .key_alias
+        .as_ref()
+        .is_some_and(|key| key.as_str() == name)
+    {
+        return Some(VForAliasPosition::Key);
+    }
+    if data
+        .index_alias
+        .as_ref()
+        .is_some_and(|index| index.as_str() == name)
+    {
+        return Some(VForAliasPosition::Index);
+    }
+    None
+}
+
+fn v_for_alias_used_after(
+    position: VForAliasPosition,
+    data: &VForScopeData,
+    is_used: &mut impl FnMut(&str) -> bool,
+) -> bool {
+    let key_is_later_used = position < VForAliasPosition::Key
+        && data.key_alias.as_ref().is_some_and(|key| is_used(key));
+    let index_is_later_used = position < VForAliasPosition::Index
+        && data
+            .index_alias
+            .as_ref()
+            .is_some_and(|index| is_used(index));
+
+    key_is_later_used || index_is_later_used
 }
 
 /// Statistics about a croquis.

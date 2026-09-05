@@ -3046,17 +3046,6 @@
     "file": "packages/core/src/HoverCard/story/HoverMultiCard.story.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Variable 'entry' is defined by v-for but never used",
-        "line": 18,
-        "column": 19,
-        "endLine": 18,
-        "endColumn": 24,
-        "help": "If the variable is intentionally unused, prefix it with underscore: _item"
-      },
-      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3069,7 +3058,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/HoverCard/story/_HoverCard.vue",
