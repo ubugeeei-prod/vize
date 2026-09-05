@@ -12,6 +12,11 @@ export function materializeCreateVueTypecheckSource(fixture: PinnedFixtureWorksp
     '<script setup lang="ts"></script>',
     `<script setup lang="ts">\n${createVueCleanCount}\nconst label = 'ready'\n</script>`,
   );
+  fixture.applyExactPatch(
+    createVueTypecheckAppPath,
+    'target="_blank" rel="noopener"',
+    'target="_blank" rel="noopener noreferrer"',
+  );
   return fixture.applyExactPatch(
     createVueTypecheckAppPath,
     "  <h1>You did it!</h1>",

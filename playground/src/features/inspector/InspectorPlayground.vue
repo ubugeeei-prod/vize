@@ -401,7 +401,7 @@ onUnmounted(() => {
           class="inspector-pr-link tab-copy-btn"
           href="https://github.com/ubugeeei-prod/vize/compare/main...compiler-inspector-repro"
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           @click.prevent="openPullRequest"
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">

@@ -104,7 +104,12 @@ onUnmounted(() => {
           <h2>Source</h2>
         </div>
         <div class="panel-actions">
-          <a href="/musea-examples/__musea__" target="_blank" rel="noopener" class="btn-examples">
+          <a
+            href="/musea-examples/__musea__"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-examples"
+          >
             <svg
               viewBox="0 0 24 24"
               width="12"

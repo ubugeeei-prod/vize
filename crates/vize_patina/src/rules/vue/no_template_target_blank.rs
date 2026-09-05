@@ -1,12 +1,12 @@
 //! vue/no-template-target-blank
 //!
-//! Disallow `target="_blank"` on links without `rel="noopener"` /
-//! `rel="noreferrer"`.
+//! Disallow `target="_blank"` on links without `rel="noopener noreferrer"`.
 //!
 //! A link that opens in a new tab with `target="_blank"` gives the opened page
 //! a reference to the opener via `window.opener`, which it can use to redirect
-//! the original tab (reverse tabnabbing). Adding `rel="noopener"` (or
-//! `noreferrer`) severs that reference.
+//! the original tab (reverse tabnabbing). Adding `rel="noopener noreferrer"`
+//! severs that reference while also matching eslint-plugin-vue's default
+//! referrer policy.
 //!
 //! This is the cross-framework analogue of `react/jsx-no-target-blank` and
 //! `svelte/no-target-blank`. The same logic runs over a Vue template and over
@@ -21,8 +21,7 @@
 //!
 //! ### Valid
 //! ```vue
-//! <a href="https://example.com" target="_blank" rel="noopener">x</a>
-//! <a href="https://example.com" target="_blank" rel="noreferrer">x</a>
+//! <a href="https://example.com" target="_blank" rel="noopener noreferrer">x</a>
 //! ```
 
 use crate::context::LintContext;
@@ -33,21 +32,28 @@ use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-template-target-blank",
-    description: "Disallow target=\"_blank\" without rel=\"noopener\"",
+    description: "Disallow target=\"_blank\" without rel=\"noopener noreferrer\"",
     category: RuleCategory::Recommended,
     fixable: false,
     default_severity: Severity::Warning,
 };
 
-/// Disallow target="_blank" without rel="noopener"/"noreferrer"
+/// Disallow target="_blank" without rel="noopener noreferrer"
 #[derive(Default)]
 pub struct NoTemplateTargetBlank;
 
 /// Whether a `rel` value safely opts out of `window.opener` access.
 fn rel_is_safe(rel: &str) -> bool {
-    rel.split_whitespace().any(|token| {
-        token.eq_ignore_ascii_case("noopener") || token.eq_ignore_ascii_case("noreferrer")
-    })
+    let mut has_noopener = false;
+    let mut has_noreferrer = false;
+    for token in rel.split_whitespace() {
+        if token.eq_ignore_ascii_case("noopener") {
+            has_noopener = true;
+        } else if token.eq_ignore_ascii_case("noreferrer") {
+            has_noreferrer = true;
+        }
+    }
+    has_noopener && has_noreferrer
 }
 
 impl MarkupRule for NoTemplateTargetBlank {
@@ -174,23 +180,33 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_with_noopener() {
+    fn test_valid_with_noopener_noreferrer() {
         let linter = create_linter();
         let result = linter.lint_template(
-            r#"<a href="https://example.com" target="_blank" rel="noopener">x</a>"#,
+            r#"<a href="https://example.com" target="_blank" rel="noopener noreferrer">x</a>"#,
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
     }
 
     #[test]
-    fn test_valid_with_noreferrer() {
+    fn test_invalid_with_noopener_only() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<a href="https://example.com" target="_blank" rel="noopener">x</a>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_with_noreferrer_only() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<a href="https://example.com" target="_blank" rel="noreferrer nofollow">x</a>"#,
             "test.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
@@ -271,13 +287,13 @@ mod tests {
     }
 
     #[test]
-    fn test_jsx_with_noopener_ok() {
+    fn test_jsx_with_noopener_only_reports() {
         let linter = create_linter();
         let result = linter.lint_jsx(
             r#"const A = () => <a href="https://example.com" target="_blank" rel="noopener">x</a>;"#,
             "test.jsx",
             JsxLang::Jsx,
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 }
