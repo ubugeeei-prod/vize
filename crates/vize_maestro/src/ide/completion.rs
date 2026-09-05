@@ -26,6 +26,8 @@ mod component_alias_props_tests;
 #[cfg(test)]
 mod component_lower_camel_props_tests;
 #[cfg(test)]
+mod component_options_api_props_tests;
+#[cfg(test)]
 mod component_props_tests;
 #[cfg(test)]
 mod component_pug_props_tests;

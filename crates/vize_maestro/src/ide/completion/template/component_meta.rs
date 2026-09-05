@@ -214,7 +214,7 @@ pub(super) fn extract_component_metadata(
             }
         }
 
-        if legacy_vue2 {
+        if options_api || legacy_vue2 {
             for (name, binding_type) in summary.bindings.iter() {
                 if binding_type == BindingType::Props && seen_props.insert(name.to_string()) {
                     props.push(ComponentProp {

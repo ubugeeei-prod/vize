@@ -66,9 +66,10 @@ test("LSP report records resolved server binary provenance", () => {
       { GITHUB_SHA: "1".repeat(40), VIZE_LSP_BIN: binary },
       { resolveLaunchCommand: () => [binary, "lsp"] },
     );
+    const relativeBinary = path.relative(process.cwd(), binary);
     assert.deepEqual(report.evidence.vizeBinary, {
       command: [binary, "lsp"],
-      path: binary,
+      path: relativeBinary.startsWith("..") ? binary : relativeBinary,
       sha256: createHash("sha256").update("fake vize binary").digest("hex"),
     });
   } finally {

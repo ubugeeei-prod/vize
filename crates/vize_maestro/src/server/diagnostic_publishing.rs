@@ -13,6 +13,9 @@ impl MaestroServer {
     /// document still has the version opened by the caller. Empty initial
     /// results are withheld so consumers do not mistake the parser/lint pass
     /// for the terminal combined result from the queued type-diagnostic pass.
+    /// Non-empty sync results are still useful as prompt feedback, but they
+    /// stay unversioned for the same reason: a versioned publish is the
+    /// complete parser/lint/typecheck answer for that document version.
     ///
     /// This deliberately bypasses `publish_collected_diagnostics`: Corsa has
     /// not been attempted yet, so its one-shot "type checking unavailable"
@@ -38,7 +41,7 @@ impl MaestroServer {
             && self.state.documents.version(uri) == Some(expected)
         {
             self.client
-                .publish_diagnostics(uri.clone(), diagnostics, Some(expected))
+                .publish_diagnostics(uri.clone(), diagnostics, None)
                 .await;
         }
     }

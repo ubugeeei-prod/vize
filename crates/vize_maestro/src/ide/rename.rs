@@ -27,7 +27,7 @@ use vize_canon::CorsaBridge;
 
 use super::IdeContext;
 #[cfg(feature = "native")]
-use crate::ide::corsa_support;
+use crate::ide::corsa_support as corsa;
 #[cfg(feature = "native")]
 use crate::virtual_code::{ArtCursorPosition, BlockType};
 
@@ -135,7 +135,7 @@ impl RenameService {
         if let canonical::Answer::Available(edit) =
             canonical::rename(ctx, new_name, corsa_bridge.as_deref()).await
         {
-            return edit;
+            return corsa::merge_missing_authored_rename(ctx, edit, Self::rename(ctx, new_name));
         }
         let corsa_result = match ctx.block_type? {
             BlockType::Template => {
@@ -159,7 +159,7 @@ impl RenameService {
 
         // Corsa only renames the virtual document the request opened, so the
         // authored edits carry the other blocks of this SFC.
-        corsa_support::merge_authored_rename(ctx, corsa_result, Self::rename(ctx, new_name))
+        corsa::merge_authored_rename(ctx, corsa_result, Self::rename(ctx, new_name))
     }
 
     #[cfg(feature = "native")]
@@ -173,14 +173,14 @@ impl RenameService {
         let vts_offset =
             crate::ide::hover::HoverService::sfc_to_virtual_ts_offset(ctx, ctx.offset)?;
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
-        let request_path = corsa_support::template_request_path(ctx.uri);
+        let request_path = corsa::template_request_path(ctx.uri);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &template.content)
             .await
             .ok()?;
         let response = bridge.prepare_rename(&uri, line, character).await.ok()??;
         let response = serde_json::from_value(response).ok()?;
-        corsa_support::map_corsa_prepare_rename(ctx, &uri, response)
+        corsa::map_corsa_prepare_rename(ctx, &uri, response)
     }
 
     #[cfg(feature = "native")]
@@ -194,14 +194,14 @@ impl RenameService {
         let template = virtual_docs.art_template(info.variant_index)?;
         let vts_offset = template.source_map.to_generated(ctx.offset as u32)? as usize;
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
-        let request_path = corsa_support::art_template_request_path(ctx.uri, info.variant_index);
+        let request_path = corsa::art_template_request_path(ctx.uri, info.variant_index);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &template.content)
             .await
             .ok()?;
         let response = bridge.prepare_rename(&uri, line, character).await.ok()??;
         let response = serde_json::from_value(response).ok()?;
-        corsa_support::map_corsa_prepare_rename(ctx, &uri, response)
+        corsa::map_corsa_prepare_rename(ctx, &uri, response)
     }
 
     #[cfg(feature = "native")]
@@ -220,14 +220,14 @@ impl RenameService {
         let vts_offset =
             crate::ide::hover::HoverService::sfc_to_virtual_ts_script_offset(ctx, ctx.offset)?;
         let (line, character) = crate::ide::offset_to_position(&script_doc.content, vts_offset);
-        let request_path = corsa_support::script_request_path(ctx.uri, is_setup);
+        let request_path = corsa::script_request_path(ctx.uri, is_setup);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &script_doc.content)
             .await
             .ok()?;
         let response = bridge.prepare_rename(&uri, line, character).await.ok()??;
         let response = serde_json::from_value(response).ok()?;
-        corsa_support::map_corsa_prepare_rename(ctx, &uri, response)
+        corsa::map_corsa_prepare_rename(ctx, &uri, response)
     }
 
     #[cfg(feature = "native")]
@@ -242,7 +242,7 @@ impl RenameService {
         let vts_offset =
             crate::ide::hover::HoverService::sfc_to_virtual_ts_offset(ctx, ctx.offset)?;
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
-        let request_path = corsa_support::template_request_path(ctx.uri);
+        let request_path = corsa::template_request_path(ctx.uri);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &template.content)
             .await
@@ -252,7 +252,7 @@ impl RenameService {
             .await
             .ok()??;
         let edit = serde_json::from_value(edit).ok()?;
-        corsa_support::map_corsa_workspace_edit(ctx, edit)
+        corsa::map_corsa_workspace_edit(ctx, edit)
     }
 
     #[cfg(feature = "native")]
@@ -267,7 +267,7 @@ impl RenameService {
         let template = virtual_docs.art_template(info.variant_index)?;
         let vts_offset = template.source_map.to_generated(ctx.offset as u32)? as usize;
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
-        let request_path = corsa_support::art_template_request_path(ctx.uri, info.variant_index);
+        let request_path = corsa::art_template_request_path(ctx.uri, info.variant_index);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &template.content)
             .await
@@ -277,7 +277,7 @@ impl RenameService {
             .await
             .ok()??;
         let edit = serde_json::from_value(edit).ok()?;
-        corsa_support::map_corsa_workspace_edit(ctx, edit)
+        corsa::map_corsa_workspace_edit(ctx, edit)
     }
 
     #[cfg(feature = "native")]
@@ -297,7 +297,7 @@ impl RenameService {
         let vts_offset =
             crate::ide::hover::HoverService::sfc_to_virtual_ts_script_offset(ctx, ctx.offset)?;
         let (line, character) = crate::ide::offset_to_position(&script_doc.content, vts_offset);
-        let request_path = corsa_support::script_request_path(ctx.uri, is_setup);
+        let request_path = corsa::script_request_path(ctx.uri, is_setup);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &script_doc.content)
             .await
@@ -307,7 +307,7 @@ impl RenameService {
             .await
             .ok()??;
         let edit = serde_json::from_value(edit).ok()?;
-        corsa_support::map_corsa_workspace_edit(ctx, edit)
+        corsa::map_corsa_workspace_edit(ctx, edit)
     }
 
     fn is_renameable(word: &str, ctx: &IdeContext) -> bool {

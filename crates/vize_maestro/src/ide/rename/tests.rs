@@ -1,5 +1,9 @@
 use super::RenameService;
 
+#[cfg(feature = "native")]
+#[path = "corsa_options_api_tests.rs"]
+mod corsa_options_api_tests;
+
 /// Renaming a local binding must not rewrite a same-named prop
 /// *attribute name* on a component usage — that token belongs to the
 /// child's own prop symbol, and rewriting it silently breaks the call
