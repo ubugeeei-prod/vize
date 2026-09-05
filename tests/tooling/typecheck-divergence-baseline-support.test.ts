@@ -16,10 +16,7 @@ test("typecheck divergence report includes dot-directory support roots", () => {
   try {
     const supportRoot = path.join(fixture.fixtureRoot, "src/.vitepress/vitepress/utils");
     fs.mkdirSync(supportRoot, { recursive: true });
-    fs.writeFileSync(
-      path.join(supportRoot, "index.ts"),
-      "export const label = 'ok';\n",
-    );
+    fs.writeFileSync(path.join(supportRoot, "index.ts"), "export const label = 'ok';\n");
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
 
@@ -40,10 +37,7 @@ test("typecheck divergence report includes tsconfig dot-directory support roots"
   try {
     const supportRoot = path.join(fixture.fixtureRoot, "docs/.vitepress/vitepress/utils");
     fs.mkdirSync(supportRoot, { recursive: true });
-    fs.writeFileSync(
-      path.join(supportRoot, "index.ts"),
-      "export const label = 'ok';\n",
-    );
+    fs.writeFileSync(path.join(supportRoot, "index.ts"), "export const label = 'ok';\n");
     fs.writeFileSync(
       path.join(fixture.fixtureRoot, "tsconfig.json"),
       `${JSON.stringify({ include: ["src/**/*.vue", "docs/**/*.ts"] })}\n`,
