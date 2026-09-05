@@ -206,8 +206,6 @@ export const p2_11FileExpectations = [
   [105, /725b3313b/],
   [106, /Runtime Module Profiling/],
   [106, /426d2becf/],
-  [107, /Shared Model And Outlet Batteries/],
   [107, /4857d3e75/],
-  [108, /Source-Map-Free Production Selector/],
   [108, /8be4517e/],
 ] as const;

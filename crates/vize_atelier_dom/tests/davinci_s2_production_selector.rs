@@ -80,6 +80,54 @@ fn comments_stay_on_compatibility_without_profiler() {
 }
 
 #[test]
+fn unsupported_options_stay_on_compatibility_without_profiler() {
+    let _guard = lock_profiler();
+    let profiler = global_profiler();
+
+    let cases = [
+        (
+            "ssr",
+            DomCompilerOptions {
+                ssr: true,
+                ..Default::default()
+            },
+        ),
+        (
+            "patterned_template",
+            DomCompilerOptions {
+                experimental_patterned_template: true,
+                ..Default::default()
+            },
+        ),
+        (
+            "custom_renderer",
+            DomCompilerOptions {
+                custom_renderer: true,
+                ..Default::default()
+            },
+        ),
+    ];
+
+    for (label, options) in cases {
+        profiler.disable();
+        profiler.clear();
+
+        let result = compile(r#"<button @click="go">{{ label }}</button>"#, options);
+        let counters = profiler.counter_summary();
+
+        assert!(
+            result.sections.is_some(),
+            "{label} must stay on the compatibility path until S2 supports it"
+        );
+        assert_eq!(
+            counter_total(&counters, "davinci.s2_dom.files"),
+            None,
+            "{label} compatibility compiles must not instantiate the profiling observer"
+        );
+    }
+}
+
+#[test]
 fn sfc_sections_entry_stays_on_compatibility_until_s2_sections_land() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
