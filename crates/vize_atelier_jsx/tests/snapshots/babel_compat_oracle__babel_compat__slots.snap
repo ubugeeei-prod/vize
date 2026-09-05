@@ -212,7 +212,7 @@ export function render(_ctx, _cache) {
 
 ## slots/dynamic_slot_name
 ### verdict
-deferred: computed slot names warn and drop; needs dynamic-slot lowering
+equivalent
 ### source (jsx)
 const A = () => <B>{{[n]: () => <i/>}}</B>;
 ### babel options
@@ -223,10 +223,14 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
   [n]: () => _createVNode("i", null, null)
 });
 ### vize (vdom, babel compat)
-<Warning> computed JSX slot names are not supported and were ignored
-import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
 
-  return (_openBlock(), _createBlock(_component_B))
+  return (_openBlock(), _createBlock(_component_B, null, {
+    [n]: _withCtx(() => [
+      _createElementVNode("i")
+    ]),
+    _: 2 /* DYNAMIC */
+  }, 1024 /* DYNAMIC_SLOTS */))
 }

@@ -105,24 +105,6 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
                 continue;
             };
 
-            if property.computed {
-                self.report(JsxDiagnostic::warning(
-                    "computed JSX slot names are not supported and were ignored",
-                    property.span.start,
-                    property.span.end,
-                ));
-                continue;
-            }
-
-            let Some((slot_name, name_span)) = static_key(&property.key) else {
-                self.report(JsxDiagnostic::warning(
-                    "unsupported JSX slot name; only identifier or string keys are allowed",
-                    property.key.span().start,
-                    property.key.span().end,
-                ));
-                continue;
-            };
-
             let Some(slot_fn) = SlotFn::from_value(&property.value) else {
                 self.report(JsxDiagnostic::warning(
                     "JSX slot values must be a function returning the slot content; ignored",
@@ -132,10 +114,22 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
                 continue;
             };
 
-            // Slot names come out of the parsed module, so they are copied
-            // into the compile arena before reaching the node.
-            let slot_name = self.bump().alloc_str(slot_name);
-            let template = self.build_slot_template(slot_name, name_span, &slot_fn);
+            let template = if property.computed {
+                self.build_dynamic_slot_template(property.key.span(), &slot_fn)
+            } else {
+                let Some((slot_name, name_span)) = static_key(&property.key) else {
+                    self.report(JsxDiagnostic::warning(
+                        "unsupported JSX slot name; only identifier or string keys are allowed",
+                        property.key.span().start,
+                        property.key.span().end,
+                    ));
+                    continue;
+                };
+                // Slot names come out of the parsed module, so they are copied
+                // into the compile arena before reaching the node.
+                let slot_name = self.bump().alloc_str(slot_name);
+                self.build_slot_template(slot_name, name_span, &slot_fn)
+            };
             out.push(TemplateChildNode::Element(Box::new_in(
                 template,
                 &self.bump(),
@@ -183,6 +177,25 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         }
         node.props.push(PropNode::Directive(self.boxed(directive)));
 
+        node.children = self.extract_fn_slot_body(slot_fn);
+        node
+    }
+
+    fn build_dynamic_slot_template(
+        &mut self,
+        name_span: Span,
+        slot_fn: &SlotFn<'_>,
+    ) -> ElementNode<'a> {
+        let loc = self.mapper().location(slot_fn.span);
+        let mut node = ElementNode::new(self.bump(), "template", loc);
+        node.tag_type = ElementType::Template;
+        let mut directive =
+            DirectiveNode::new(self.bump(), "slot", self.mapper().location(name_span));
+        directive.arg = Some(self.dyn_expr(name_span));
+        if let Some(param_span) = slot_fn.param_span {
+            directive.exp = Some(self.dyn_expr(param_span));
+        }
+        node.props.push(PropNode::Directive(self.boxed(directive)));
         node.children = self.extract_fn_slot_body(slot_fn);
         node
     }

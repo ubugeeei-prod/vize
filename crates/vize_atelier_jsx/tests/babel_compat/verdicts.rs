@@ -102,10 +102,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("slots/v_slots_object_literal", Same),
     ("slots/v_slots_object_with_children", Same),
     ("slots/element_children_default", Same),
-    (
-        "slots/dynamic_slot_name",
-        Todo("computed slot names warn and drop; needs dynamic-slot lowering"),
-    ),
+    ("slots/dynamic_slot_name", Same),
     // -- children --------------------------------------------------------
     ("children/static_text", Same),
     ("children/text_interp_mix", Same),

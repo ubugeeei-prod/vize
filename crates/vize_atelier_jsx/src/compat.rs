@@ -30,12 +30,10 @@
 //!
 //! `optimize` has no Vize equivalent, because Vize's output is always optimized
 //! — which is what the plugin's `optimize: true` produces. `resolveType` is
-//! deferred, along with one other row:
+//! still deferred:
 //!
 //! - `options/resolve_type_on` — type-driven props/emits inference needs the
 //!   type-resolution work tracked on #1497 / #1502.
-//! - `slots/dynamic_slot_name` — a computed slot name warns and drops; it needs
-//!   dynamic-slot lowering.
 //!
 //! # Compat under SSR output
 //!

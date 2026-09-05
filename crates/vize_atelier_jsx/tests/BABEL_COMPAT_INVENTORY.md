@@ -55,9 +55,9 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   98 |
+| equivalent |   99 |
 | divergent  |    0 |
-| deferred   |    2 |
+| deferred   |    1 |
 
 ## Global divergences
 
@@ -219,17 +219,17 @@ it classifies as an intrinsic element but the DOM backend still resolves with
 
 ## Slots
 
-| Case                                 | Babel                                 | Vize today                                     | Compat mode                           | Verdict |
-| ------------------------------------ | ------------------------------------- | ---------------------------------------------- | ------------------------------------- | ------- |
-| `slots/object_children`              | object child becomes the slots object | `withCtx` slots + `_: 1`                       | no change                             | ✅      |
-| `slots/render_prop_child`            | `{default: () => 'foo'}`              | `default: () => [createTextVNode("foo")]`      | no change                             | ✅      |
-| `slots/scoped_param`                 | `default: s => …`                     | `default: withCtx((s) => […])`                 | no change                             | ✅      |
-| `slots/v_slots_with_children`        | `{default: () => […], ...slots}`      | same keys + `1024 /* DYNAMIC_SLOTS */` (#3467) | no change                             | ✅      |
-| `slots/v_slots_only`                 | slots object passed as children       | same + `1024 /* DYNAMIC_SLOTS */` (#3467)      | no change                             | ✅      |
-| `slots/v_slots_object_literal`       | object literal becomes the slots      | `withCtx` slots + `_: 1` (#3418)               | no change                             | ✅      |
-| `slots/v_slots_object_with_children` | `{default: () => […], bar: …}`        | same two slots, other literal order (#3418)    | no change                             | ✅      |
-| `slots/element_children_default`     | `{default: () => […]}`                | `withCtx` default slot + `_: 1`                | no change                             | ✅      |
-| `slots/dynamic_slot_name`            | `{[n]: () => …}`                      | warns and drops the slot                       | deferred: needs dynamic-slot lowering | ⏸       |
+| Case                                 | Babel                                 | Vize today                                     | Compat mode | Verdict |
+| ------------------------------------ | ------------------------------------- | ---------------------------------------------- | ----------- | ------- |
+| `slots/object_children`              | object child becomes the slots object | `withCtx` slots + `_: 1`                       | no change   | ✅      |
+| `slots/render_prop_child`            | `{default: () => 'foo'}`              | `default: () => [createTextVNode("foo")]`      | no change   | ✅      |
+| `slots/scoped_param`                 | `default: s => …`                     | `default: withCtx((s) => […])`                 | no change   | ✅      |
+| `slots/v_slots_with_children`        | `{default: () => […], ...slots}`      | same keys + `1024 /* DYNAMIC_SLOTS */` (#3467) | no change   | ✅      |
+| `slots/v_slots_only`                 | slots object passed as children       | same + `1024 /* DYNAMIC_SLOTS */` (#3467)      | no change   | ✅      |
+| `slots/v_slots_object_literal`       | object literal becomes the slots      | `withCtx` slots + `_: 1` (#3418)               | no change   | ✅      |
+| `slots/v_slots_object_with_children` | `{default: () => […], bar: …}`        | same two slots, other literal order (#3418)    | no change   | ✅      |
+| `slots/element_children_default`     | `{default: () => […]}`                | `withCtx` default slot + `_: 1`                | no change   | ✅      |
+| `slots/dynamic_slot_name`            | `{[n]: () => …}`                      | dynamic slot key + patch flag                  | no change   | ✅      |
 
 ### Forwarding an opaque slots object (#3467)
 

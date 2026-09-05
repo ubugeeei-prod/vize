@@ -287,15 +287,12 @@ fn a_repeated_v_slots_is_rejected() {
 }
 
 #[test]
-fn spreads_and_computed_keys_keep_their_object_children_warnings() {
-    // `lower_object_slots` is shared with the object-children idiom, so these
-    // stay warnings naming what was ignored rather than silence.
+fn spreads_keep_their_object_children_warning() {
+    // `lower_object_slots` is shared with the object-children idiom, so spread
+    // entries stay warnings naming what was ignored rather than silence.
     assert_eq!(
         diagnostics("const A = () => <B v-slots={{...rest}}/>;"),
         vec!["spread in a JSX slot object is not supported and was ignored".to_string()]
     );
-    assert_eq!(
-        diagnostics("const A = () => <B v-slots={{[n]: () => <i/>}}/>;"),
-        vec!["computed JSX slot names are not supported and were ignored".to_string()]
-    );
+    assert!(diagnostics("const A = () => <B v-slots={{[n]: () => <i/>}}/>;").is_empty());
 }
