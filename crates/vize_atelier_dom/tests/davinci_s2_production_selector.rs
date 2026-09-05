@@ -187,6 +187,85 @@ fn sfc_sections_entry_uses_s2_once_sections_land() {
     );
 }
 
+#[test]
+fn sfc_sections_entry_uses_s2_for_foreign_namespace_templates() {
+    let _guard = lock_profiler();
+    let profiler = global_profiler();
+    profiler.disable();
+    profiler.clear();
+
+    for (label, source) in [
+        ("svg", r#"<svg><circle :r="radius" /></svg>"#),
+        (
+            "mathml",
+            r#"<math><msub :data-depth="depth"><mi>x</mi></msub></math>"#,
+        ),
+    ] {
+        let compat = compile_sfc_sections_entry(
+            source,
+            DomCompilerOptions {
+                source_map: true,
+                ..Default::default()
+            },
+        );
+
+        profiler.enable();
+        let selected = compile_sfc_sections_entry(source, DomCompilerOptions::default());
+        let counters = profiler.counter_summary();
+        profiler.disable();
+        profiler.clear();
+
+        assert_eq!(selected.preamble, compat.preamble, "{label} preamble");
+        assert_eq!(selected.code, compat.code, "{label} code");
+        assert_eq!(selected.sections, compat.sections, "{label} sections");
+        assert_eq!(
+            counter_total(&counters, "davinci.s2_dom.files"),
+            Some(1),
+            "{label} must use the S2 SFC sections fast path"
+        );
+    }
+}
+
+#[test]
+fn sfc_sections_entry_keeps_html_self_closing_native_tags_on_compatibility() {
+    let _guard = lock_profiler();
+    let profiler = global_profiler();
+
+    for (label, source) in [
+        ("html_root", r#"<div />"#),
+        (
+            "svg_html_reentry",
+            r#"<svg><foreignObject><div /></foreignObject></svg>"#,
+        ),
+        (
+            "mathml_html_reentry",
+            r#"<math><annotation-xml><div /></annotation-xml></math>"#,
+        ),
+    ] {
+        profiler.clear();
+        profiler.enable();
+        let (error_count, result) =
+            compile_sfc_sections_entry_with_errors(source, DomCompilerOptions::default());
+        let counters = profiler.counter_summary();
+        profiler.disable();
+        profiler.clear();
+
+        assert!(
+            error_count > 0,
+            "{label} must surface the compatibility parser diagnostic"
+        );
+        assert!(
+            result.sections.is_some(),
+            "{label} must keep compatibility sections"
+        );
+        assert_eq!(
+            counter_total(&counters, "davinci.s2_dom.files"),
+            None,
+            "{label} must stay on compatibility until native self-closing is admitted"
+        );
+    }
+}
+
 struct Compiled {
     preamble: String,
     code: String,
@@ -215,6 +294,15 @@ fn compile(source: &str, options: DomCompilerOptions) -> Compiled {
 }
 
 fn compile_sfc_sections_entry(source: &str, options: DomCompilerOptions) -> Compiled {
+    let (error_count, compiled) = compile_sfc_sections_entry_with_errors(source, options);
+    assert_eq!(error_count, 0, "compile errors");
+    compiled
+}
+
+fn compile_sfc_sections_entry_with_errors(
+    source: &str,
+    options: DomCompilerOptions,
+) -> (usize, Compiled) {
     let allocator = Allocator::new();
     let (errors, result) =
         compile_sfc_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
@@ -226,13 +314,15 @@ fn compile_sfc_sections_entry(source: &str, options: DomCompilerOptions) -> Comp
             CustomElementMatcher::default(),
             CodegenOptions::default(),
         );
-    assert!(errors.is_empty(), "compile errors: {errors:?}");
-    Compiled {
-        preamble: result.result.preamble.to_string(),
-        code: result.result.code.to_string(),
-        map: result.result.map.map(|map| map.to_string()),
-        sections: result.sections,
-    }
+    (
+        errors.len(),
+        Compiled {
+            preamble: result.result.preamble.to_string(),
+            code: result.result.code.to_string(),
+            map: result.result.map.map(|map| map.to_string()),
+            sections: result.sections,
+        },
+    )
 }
 
 fn counter_total(counters: &CounterSummary, name: &str) -> Option<u64> {
