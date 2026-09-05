@@ -273,6 +273,31 @@ test("typecheck divergence report skips shards without typecheck performance tar
   }
 });
 
+test("typecheck divergence report falls back to Vize files when corpus globs are absent", () => {
+  const fixture = setup();
+  try {
+    updateJson(fixture.registryPath, (registry) => {
+      delete registry.projects[0].vueGlobs;
+      delete registry.projects[0].typecheckPerformance.corpusGlobs;
+    });
+    const result = run(fixture, {}, ["--budget-mode", "record-only"]);
+    assert.equal(result.status, 0, result.stderr);
+
+    const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
+    assert.equal(artifact.baseline.coverage.verdict, "usable");
+    assert.equal(artifact.baseline.coverage.vizeVueFileCount, 1);
+    assert.equal(artifact.baseline.coverage.baselineVueFileCount, 1);
+    assert.equal(
+      artifact.mutationOracle.unusableReason,
+      "seeded mutation requires configured typecheck corpus globs to rerun Vize",
+    );
+    const config = readJson(path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"));
+    assert.equal(config.include.includes("../src/**/*.ts"), true);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("typecheck divergence report writes all selected artifacts before enforcing budgets", () => {
   const fixture = setup({
     vizeDiagnostics: ["error:1:1 [TS2322] shared", "error:1:2 [TS2322] extra"],

@@ -15,8 +15,11 @@ test("typecheck divergence report includes dot-directory support roots", () => {
   const fixture = setup();
   try {
     const supportRoot = path.join(fixture.fixtureRoot, "src/.vitepress/vitepress/utils");
+    const yarnRoot = path.join(fixture.fixtureRoot, "src/.yarn/cache");
     fs.mkdirSync(supportRoot, { recursive: true });
+    fs.mkdirSync(yarnRoot, { recursive: true });
     fs.writeFileSync(path.join(supportRoot, "index.ts"), "export const label = 'ok';\n");
+    fs.writeFileSync(path.join(yarnRoot, "package.ts"), "export const label = 'skip';\n");
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
 
@@ -27,6 +30,10 @@ test("typecheck divergence report includes dot-directory support roots", () => {
     assert.equal(config.include.includes("../src/.vitepress/**/*.js"), true);
     assert.equal(config.include.includes("../src/.vitepress/**/*.json"), true);
     assert.equal(config.include.includes("../src/.vitepress/**/*.vue"), true);
+    assert.equal(
+      config.include.some((include: string) => include.includes("/.yarn/")),
+      false,
+    );
   } finally {
     cleanup(fixture);
   }
@@ -61,7 +68,7 @@ test("typecheck divergence report includes tsconfig dot-directory support roots"
     assert.equal(config.include.includes("../docs/.vitepress/**/*.ts"), true);
     assert.equal(config.include.includes("../docs/.vitepress/**/*.js"), true);
     assert.equal(config.include.includes("../docs/.vitepress/**/*.json"), true);
-    assert.equal(config.include.includes("../docs/.vitepress/**/*.vue"), false);
+    assert.equal(config.include.includes("../docs/.vitepress/**/*.vue"), true);
   } finally {
     cleanup(fixture);
   }
@@ -86,7 +93,7 @@ test("typecheck divergence report includes fixture dot-directory support roots",
     assert.equal(config.include.includes("../docs/.vitepress/**/*.ts"), true);
     assert.equal(config.include.includes("../docs/.vitepress/**/*.js"), true);
     assert.equal(config.include.includes("../docs/.vitepress/**/*.json"), true);
-    assert.equal(config.include.includes("../docs/.vitepress/**/*.vue"), false);
+    assert.equal(config.include.includes("../docs/.vitepress/**/*.vue"), true);
   } finally {
     cleanup(fixture);
   }

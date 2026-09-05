@@ -12,7 +12,7 @@
 //! ```
 
 use regex::Regex;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
@@ -101,6 +101,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         })?
         .to_string();
     let source_config = common::read_text(fixture_root.join(&source_project))?;
+    let typecheck_source_roots = source_roots(&fixture_root, project, &vize_run.payload["parsed"])?;
     let baseline_config = materialize_baseline_project(
         root,
         &fixture_root,
@@ -108,6 +109,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         project,
         &source_project,
         &vize_run.payload["parsed"],
+        &typecheck_source_roots,
     )?;
     let vue_tsc_version = run_capture_limited(
         &args.vue_tsc_bin,
@@ -202,6 +204,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         &fixture_root,
         &vize_run.payload["parsed"],
         &baseline.run.output,
+        &typecheck_source_roots,
         &documented_differences,
     )?;
     let coverage = if let Some(reason) = baseline
@@ -215,6 +218,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
             &vize_run.payload["parsed"],
             &coverage_baseline.run.output,
             &fixture_root,
+            &typecheck_source_roots,
         )?
     };
     let configuration = if let Some(reason) = baseline.run_error.as_deref() {
@@ -460,7 +464,7 @@ fn read_and_validate_vize_run(
         ));
     }
     let fixture_root = root.join(project_string(project, "fixturePath")?);
-    let expected_files = collect_vue_input_paths(&fixture_root, &typecheck_corpus_globs(project)?)?;
+    let expected_files = expected_typecheck_vue_files(&fixture_root, project, &payload["parsed"])?;
     let authored_files = collect_typechecker_authored_paths(&fixture_root)?;
     let expected_coverage = validate_typechecker_output(
         project,
@@ -569,6 +573,7 @@ fn materialize_baseline_project(
     project: &Value,
     source_project: &str,
     vize_report: &Value,
+    source_roots: &[PathBuf],
 ) -> Result<BaselineConfig, String> {
     let source_path = fixture_root.join(source_project);
     let source_dir = source_path
@@ -581,7 +586,6 @@ fn materialize_baseline_project(
     fs::create_dir_all(&config_dir)
         .map_err(|error| format!("cannot create {}: {error}", config_dir.display()))?;
     let source_document = read_tsconfig_jsonc(&source_path)?;
-    let source_roots = source_roots(fixture_root, project, vize_report)?;
     let mut dot_roots = dot_directory_include_roots(fixture_root, vize_report);
     let fixture_roots = [fixture_root.to_path_buf()];
     dot_roots.extend(discover_dot_directory_include_roots(&fixture_roots)?);
@@ -592,13 +596,13 @@ fn materialize_baseline_project(
     )?);
     dedup_paths(&mut dot_roots);
     let mut ambient_roots = vec![source_dir.to_path_buf()];
-    ambient_roots.extend(source_roots.clone());
+    ambient_roots.extend(source_roots.iter().cloned());
     ambient_roots.extend(dot_roots.clone());
     dedup_paths(&mut ambient_roots);
-    let mut include_roots = source_roots.clone();
+    let mut include_roots = source_roots.to_vec();
     include_roots.extend(dot_roots.clone());
     dedup_paths(&mut include_roots);
-    let dot_vue_roots = dot_vue_include_roots(&source_roots, &dot_roots);
+    let dot_vue_roots = dot_roots.clone();
     let mut compiler_options = serde_json::Map::new();
     compiler_options.insert("ignoreDeprecations".to_string(), json!("6.0"));
     compiler_options.insert(
@@ -738,6 +742,7 @@ fn compare_typecheck_diagnostics(
     cwd: &Path,
     vize_report: &Value,
     vue_tsc_output: &str,
+    source_roots: &[PathBuf],
     documented_differences: &[DocumentedDifference],
 ) -> Result<Value, String> {
     if project_id.is_empty() {
@@ -749,7 +754,13 @@ fn compare_typecheck_diagnostics(
     let expected = select_documented_differences(documented_differences, &project_id, cwd)?;
     let vize_input = collect_vize_diagnostics(vize_report, cwd)?;
     let comparable_vue_files = comparable_vue_file_set(vize_report, cwd)?;
-    let baseline_input = collect_vue_tsc_diagnostics(vue_tsc_output, cwd, &comparable_vue_files)?;
+    let support_classifier = SupportVueClassifier::new(cwd, source_roots);
+    let baseline_input = collect_vue_tsc_diagnostics(
+        vue_tsc_output,
+        cwd,
+        &comparable_vue_files,
+        &support_classifier,
+    )?;
     let mut vize_groups = group_by_identity(vize_input.diagnostics);
     let mut baseline_groups = group_by_identity(baseline_input.diagnostics);
     let mut identities = vize_groups
@@ -912,6 +923,7 @@ fn collect_vue_tsc_diagnostics(
     output: &str,
     cwd: &Path,
     comparable_vue_files: &BTreeSet<String>,
+    support_classifier: &SupportVueClassifier,
 ) -> Result<DiagnosticInput, String> {
     let positioned = Regex::new(r"^(.+)\((\d+),(\d+)\): (error|warning) TS(\d+): (.+)$").unwrap();
     let project = Regex::new(r"^(error|warning) TS(\d+): (.+)$").unwrap();
@@ -927,7 +939,8 @@ fn collect_vue_tsc_diagnostics(
                 None => excluded_external_count += 1,
                 Some(file) if !file.ends_with(".vue") => excluded_non_vue_count += 1,
                 Some(file)
-                    if !comparable_vue_files.contains(&file) && is_support_vue_file(&file) =>
+                    if !comparable_vue_files.contains(&file)
+                        && support_classifier.is_support_vue_file(&file) =>
                 {
                     excluded_support_vue_count += 1
                 }
@@ -974,6 +987,7 @@ fn evaluate_vue_program_coverage(
     vize_report: &Value,
     vue_tsc_output: &str,
     cwd: &Path,
+    source_roots: &[PathBuf],
 ) -> Result<Value, String> {
     let mut vize_vue_files = vize_report
         .get("files")
@@ -1000,8 +1014,9 @@ fn evaluate_vue_program_coverage(
         .collect::<Vec<_>>();
     sort_bytes_dedup(&mut vize_vue_files);
     let comparable = vize_vue_files.iter().cloned().collect::<BTreeSet<_>>();
+    let support_classifier = SupportVueClassifier::new(cwd, source_roots);
     let (baseline_vue_files, dependency_vue_files, support_vue_files) =
-        collect_vue_tsc_program_files(vue_tsc_output, cwd, &comparable)?;
+        collect_vue_tsc_program_files(vue_tsc_output, cwd, &comparable, &support_classifier)?;
     let baseline_set = baseline_vue_files.iter().cloned().collect::<BTreeSet<_>>();
     let vize_set = vize_vue_files.iter().cloned().collect::<BTreeSet<_>>();
     let missing_vue_files = vize_vue_files
@@ -1093,6 +1108,7 @@ fn collect_vue_tsc_program_files(
     output: &str,
     cwd: &Path,
     comparable_vue_files: &BTreeSet<String>,
+    support_classifier: &SupportVueClassifier,
 ) -> Result<(Vec<String>, Vec<String>, Vec<String>), String> {
     let mut files = Vec::new();
     let mut dependency_files = Vec::new();
@@ -1117,7 +1133,9 @@ fn collect_vue_tsc_program_files(
         }
         if segments.contains(&"node_modules") {
             dependency_files.push(file);
-        } else if !comparable_vue_files.contains(&file) && is_support_vue_file(&file) {
+        } else if !comparable_vue_files.contains(&file)
+            && support_classifier.is_support_vue_file(&file)
+        {
             support_files.push(file);
         } else {
             files.push(file);
@@ -1286,6 +1304,12 @@ fn create_seeded_mutation_oracle(ctx: MutationContext<'_>) -> Result<Value, Stri
                 .unwrap_or("vue-tsc project configuration is unusable"),
         ));
     }
+    if optional_typecheck_corpus_globs(ctx.project).is_none() {
+        return Ok(unusable_mutation(
+            &seed,
+            "seeded mutation requires configured typecheck corpus globs to rerun Vize",
+        ));
+    }
     let mut shared_files = ctx
         .vize_report
         .get("files")
@@ -1432,11 +1456,13 @@ fn observe_mutation_state(
         .parsed
         .as_ref()
         .ok_or_else(|| "Vize mutation run emitted no parsed JSON".to_string())?;
+    let source_roots = source_roots(ctx.fixture_root, ctx.project, parsed)?;
     let comparison = compare_typecheck_diagnostics(
         project_string(ctx.project, "id")?,
         ctx.fixture_root,
         parsed,
         &baseline.output,
+        &source_roots,
         ctx.documented_differences,
     )?;
     Ok(ObservedMutation {
@@ -1466,8 +1492,7 @@ fn run_vize_typecheck(
     .map_err(mutation_run_error)?;
     let parsed = serde_json::from_str::<Value>(&run.stdout)
         .map_err(|error| format!("Vize mutation run emitted invalid JSON: {error}"))?;
-    let expected_files =
-        collect_vue_input_paths(ctx.fixture_root, &typecheck_corpus_globs(ctx.project)?)?;
+    let expected_files = expected_typecheck_vue_files(ctx.fixture_root, ctx.project, &parsed)?;
     let authored_files = collect_typechecker_authored_paths(ctx.fixture_root)?;
     validate_typechecker_output(
         ctx.project,
@@ -2116,12 +2141,55 @@ fn divergence_error(message: &str) -> String {
     format!("Invalid typecheck divergence input: {message}")
 }
 
-fn is_support_vue_file(file: &str) -> bool {
+struct SupportVueClassifier {
+    source_roots: Vec<String>,
+}
+
+impl SupportVueClassifier {
+    fn new(cwd: &Path, source_roots: &[PathBuf]) -> Self {
+        let mut source_roots = source_roots
+            .iter()
+            .filter_map(|source_root| pathdiff::diff_paths(source_root, cwd))
+            .map(|relative| {
+                let normalized = common::normalize_path(&relative);
+                if normalized.is_empty() {
+                    ".".to_string()
+                } else {
+                    normalized
+                }
+            })
+            .collect::<Vec<_>>();
+        sort_bytes_dedup(&mut source_roots);
+        Self { source_roots }
+    }
+
+    fn is_support_vue_file(&self, file: &str) -> bool {
+        has_dot_directory_parent(file) || self.is_outside_source_roots(file)
+    }
+
+    fn is_outside_source_roots(&self, file: &str) -> bool {
+        !self.source_roots.is_empty()
+            && !self
+                .source_roots
+                .iter()
+                .any(|root| relative_file_is_inside(root, file))
+    }
+}
+
+fn has_dot_directory_parent(file: &str) -> bool {
     file.split('/')
         .collect::<Vec<_>>()
         .split_last()
         .map(|(_, parents)| parents.iter().any(|segment| segment.starts_with('.')))
         .unwrap_or(false)
+}
+
+fn relative_file_is_inside(root: &str, file: &str) -> bool {
+    root == "."
+        || file == root
+        || file
+            .strip_prefix(root)
+            .is_some_and(|rest| rest.starts_with('/'))
 }
 
 fn is_absolute_program_path(file: &str) -> bool {
@@ -2490,16 +2558,37 @@ fn tool_args(project: &Value) -> Result<Vec<String>, String> {
 }
 
 fn typecheck_corpus_globs(project: &Value) -> Result<Vec<String>, String> {
+    optional_typecheck_corpus_globs(project)
+        .ok_or_else(|| "project has no typecheck corpus globs".to_string())
+}
+
+fn optional_typecheck_corpus_globs(project: &Value) -> Option<Vec<String>> {
     let globs = project
         .pointer("/typecheckPerformance/corpusGlobs")
         .and_then(Value::as_array)
-        .or_else(|| project.get("vueGlobs").and_then(Value::as_array))
-        .ok_or_else(|| "project has no typecheck corpus globs".to_string())?;
-    Ok(globs
-        .iter()
-        .filter_map(Value::as_str)
-        .map(str::to_string)
-        .collect())
+        .or_else(|| project.get("vueGlobs").and_then(Value::as_array))?;
+    Some(
+        globs
+            .iter()
+            .filter_map(Value::as_str)
+            .map(str::to_string)
+            .collect(),
+    )
+}
+
+fn expected_typecheck_vue_files(
+    cwd: &Path,
+    project: &Value,
+    vize_report: &Value,
+) -> Result<Vec<String>, String> {
+    if let Some(globs) = optional_typecheck_corpus_globs(project) {
+        return collect_vue_input_paths(cwd, &globs);
+    }
+    let mut files = comparable_vue_file_set(vize_report, cwd)?
+        .into_iter()
+        .collect::<Vec<_>>();
+    sort_bytes_dedup(&mut files);
+    Ok(files)
 }
 
 fn typecheck_tsconfig_path(project: &Value) -> Option<String> {
@@ -3707,20 +3796,6 @@ fn include_globs(
     values
 }
 
-fn dot_vue_include_roots(source_roots: &[PathBuf], dot_roots: &[PathBuf]) -> Vec<PathBuf> {
-    let mut roots = dot_roots
-        .iter()
-        .filter(|dot_root| {
-            source_roots
-                .iter()
-                .any(|source_root| path_is_or_stays_inside(source_root, dot_root))
-        })
-        .cloned()
-        .collect::<Vec<_>>();
-    dedup_paths(&mut roots);
-    roots
-}
-
 fn tsconfig_include_dot_roots(
     fixture_root: &Path,
     source_dir: &Path,
@@ -3838,7 +3913,7 @@ fn collect_dot_directories(directory: &Path, roots: &mut Vec<PathBuf>) -> Result
 fn ignored_directory(name: &str) -> bool {
     matches!(
         name,
-        "node_modules" | "dist" | ".git" | ".generated" | ".vize-baseline"
+        "node_modules" | "dist" | ".git" | ".generated" | ".vize-baseline" | ".yarn"
     )
 }
 
@@ -3938,6 +4013,9 @@ fn source_path_mappings(
 }
 
 fn relocate_path_mapping(source_dir: &Path, config_dir: &Path, target: &str) -> String {
+    if target == "*" {
+        return format!("{}/*", config_relative_path(config_dir, source_dir));
+    }
     if target.ends_with("/*") && !target[..target.len() - 2].contains('*') {
         return format!(
             "{}/*",
@@ -4067,15 +4145,6 @@ fn pnpm_store_entry_matches_package(entry_name: &str, name: &str) -> bool {
     entry_name
         .strip_prefix(&encoded)
         .is_some_and(|suffix| suffix.starts_with('@'))
-}
-
-fn path_is_or_stays_inside(root: &Path, path: &Path) -> bool {
-    pathdiff::diff_paths(path, root).is_some_and(|relative| {
-        relative.as_os_str().is_empty()
-            || relative
-                .components()
-                .all(|component| matches!(component, std::path::Component::Normal(_)))
-    })
 }
 
 fn path_stays_inside(root: &Path, path: &Path) -> bool {

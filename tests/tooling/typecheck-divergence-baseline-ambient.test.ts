@@ -110,6 +110,30 @@ test("fixture-local Vue runtimes are pinned into the baseline config", () => {
   }
 });
 
+test("bare wildcard path mappings stay relative to the source baseUrl", () => {
+  const fixture = setup();
+  try {
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, "tsconfig.json"),
+      `${JSON.stringify({
+        compilerOptions: {
+          baseUrl: "src",
+          paths: {
+            "@/*": ["*"],
+          },
+        },
+      })}\n`,
+    );
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+
+    const config = readJson(path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"));
+    assert.deepEqual(config.compilerOptions.paths["@/*"], ["../src/*"]);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("Vue dependency runtimes are pinned from the selected pnpm Vue store entry", () => {
   const fixture = setup();
   try {

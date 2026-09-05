@@ -348,3 +348,26 @@ test("transitive dot-directory Vue support does not expand the authored fixture 
     cleanup(fixture);
   }
 });
+
+test("transitive Vue support outside corpus roots does not expand the authored fixture corpus", () => {
+  const fixture = setup({
+    baselineFiles: ["src/App.vue", "docs/components/Support.vue"],
+    baselineOutput:
+      `${sharedBaselineOutput}` + "docs/components/Support.vue(1,1): error TS2322: support only\n",
+  });
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = readJson(artifactPath(fixture, "json"));
+    assert.equal(artifact.divergence.summary.falseNegativeCount, 0);
+    assert.equal(artifact.divergence.summary.baselineExcludedSupportVueCount, 1);
+    const coverage = artifact.baseline.coverage;
+    assert.equal(coverage.verdict, "usable");
+    assert.equal(coverage.baselineVueFileCount, 1);
+    assert.equal(coverage.ignoredSupportVueFileCount, 1);
+    assert.deepEqual(coverage.missingVueFiles, []);
+    assert.deepEqual(coverage.unexpectedVueFiles, []);
+  } finally {
+    cleanup(fixture);
+  }
+});
