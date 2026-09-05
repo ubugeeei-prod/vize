@@ -118,7 +118,7 @@ pub(super) fn generate_v_slot_scope(
 ) {
     let scope_id = scope.id.as_u32();
     append!(*ts, "\n{indent}// v-slot scope: #{}\n", data.name);
-    let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
+    let props_pattern = slot_props_pattern(data, scope_id);
     let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
     let props_type = slot_payload_type(
         ts,
@@ -143,14 +143,14 @@ pub(super) fn generate_v_slot_scope(
         ts,
         indent,
         cstr!("_slot_{safe_slot_name}_{scope_id}").as_str(),
-        props_pattern,
+        props_pattern.as_str(),
         &props_type,
     );
     map_slot_props_pattern(
         mappings,
         scope,
         ctx.template_offset,
-        props_pattern,
+        props_pattern.as_str(),
         function_gen_start,
         ts,
     );
@@ -203,7 +203,7 @@ pub(super) fn generate_v_slot_props_scope(
     inner_indent: &str,
 ) {
     let scope_id = scope.id.as_u32();
-    let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
+    let props_pattern = slot_props_pattern(data, scope_id);
     let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
     append!(
         *ts,
@@ -229,14 +229,14 @@ pub(super) fn generate_v_slot_props_scope(
         ts,
         indent,
         cstr!("_slot_props_{safe_slot_name}_{scope_id}").as_str(),
-        props_pattern,
+        props_pattern.as_str(),
         &props_type,
     );
     map_slot_props_pattern(
         mappings,
         scope,
         ctx.source_context.offset,
-        props_pattern,
+        props_pattern.as_str(),
         function_gen_start,
         ts,
     );
@@ -253,6 +253,13 @@ pub(super) fn generate_v_slot_props_scope(
 
     ts.push_str(indent);
     ts.push_str("};\n");
+}
+
+fn slot_props_pattern(data: &VSlotScopeData, scope_id: u32) -> String {
+    data.props_pattern
+        .as_ref()
+        .map(|pattern| pattern.as_str().into())
+        .unwrap_or_else(|| cstr!("__vize_slot_props_{scope_id}"))
 }
 
 fn map_slot_props_pattern(
