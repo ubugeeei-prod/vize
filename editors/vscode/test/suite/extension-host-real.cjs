@@ -126,37 +126,18 @@ async function runRealReferencesSmoke(mismatchDocument) {
 }
 
 async function runRealHoverSmoke(mismatchDocument) {
+  const { HOST_TEST_LSP_REQUEST_COMMAND, assertRealHostTemplateBindingHover } =
+    await import("../real-host-lsp-request-oracle.mjs");
   const position = positionAfter(mismatchDocument, "{{ label }}", "{{ la");
-  const hovers = await vscode.commands.executeCommand(
-    "vscode.executeHoverProvider",
-    mismatchDocument.uri,
-    position,
-  );
-  assert.ok(hovers?.length >= 1, "expected a hover for the template binding");
+  const hover = await vscode.commands.executeCommand(HOST_TEST_LSP_REQUEST_COMMAND, {
+    method: "textDocument/hover",
+    params: {
+      position: { character: position.character, line: position.line },
+      textDocument: { uri: mismatchDocument.uri.toString() },
+    },
+  });
 
-  const markdown = hovers
-    .flatMap((hover) => hover.contents)
-    .map((content) => (typeof content === "string" ? content : content.value))
-    .join("\n");
-  // This profile enables typechecking, so the hover type text comes from the
-  // live backend (#3321): the real literal type of the const, not the
-  // script-binding heuristic that used to answer here.
-  //
-  // The hover opens with the signature code block, like Volar and tsserver:
-  // no implementation-detail preamble ahead of it (#3894).
-  assert.match(markdown, /^```typescript\n/);
-  assert.ok(
-    markdown.includes('const label: "hello from vize"'),
-    `hover must report the backend type of the binding: ${JSON.stringify(markdown)}`,
-  );
-  assert.ok(
-    !markdown.includes("TypeScript quick info"),
-    `hover must not restore the removed preamble: ${JSON.stringify(markdown)}`,
-  );
-  assert.ok(
-    !markdown.includes("Template binding from script"),
-    `hover must not fall back to the script-binding heuristic: ${JSON.stringify(markdown)}`,
-  );
+  assertRealHostTemplateBindingHover(hover);
 }
 
 async function runRealDidChangeRepairSmoke(mismatchDocument, extension) {

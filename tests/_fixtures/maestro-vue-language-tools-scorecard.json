@@ -133,10 +133,10 @@
           "summary": "Type-aware VS Code hover does not fall back to removed heuristic preambles.",
           "evidence": [
             {
-              "file": "editors/vscode/test/suite/extension-host-real.cjs",
+              "file": "editors/vscode/test/real-host-lsp-request-oracle.mjs",
               "contains": [
-                "!markdown.includes(\"TypeScript quick info\")",
-                "!markdown.includes(\"Template binding from script\")"
+                "assert.doesNotMatch",
+                "TypeScript quick info|Template binding from script|Ref<unknown>|ComputedRef<unknown>|MaybeRef<unknown>"
               ]
             }
           ]

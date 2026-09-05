@@ -8,7 +8,10 @@ import {
   type HostTestLanguageClient,
   type TestLspRequest,
 } from "../../editors/vscode/src/host-test-core.ts";
-import { HOST_TEST_LSP_REQUEST_COMMAND as suiteHostLspRequestCommand } from "../../editors/vscode/test/real-host-lsp-request-oracle.mjs";
+import {
+  HOST_TEST_LSP_REQUEST_COMMAND as suiteHostLspRequestCommand,
+  assertRealHostTemplateBindingHover,
+} from "../../editors/vscode/test/real-host-lsp-request-oracle.mjs";
 
 test("the generic host LSP request command only exists for the host smoke", () => {
   const client = createFakeClientResponse(null);
@@ -64,6 +67,28 @@ test("the generic host LSP request command validates request shape", async () =>
 
 test("the real host LSP request oracle keeps the command id in sync", () => {
   assert.equal(HOST_TEST_LSP_REQUEST_COMMAND, suiteHostLspRequestCommand);
+});
+
+test("the real host LSP request oracle pins backend typed hover content", () => {
+  const hover = {
+    contents: {
+      kind: "markdown",
+      value: ["```typescript", 'const label: "hello from vize"', "```"].join("\n"),
+    },
+  };
+
+  assert.equal(
+    assertRealHostTemplateBindingHover(hover),
+    '```typescript\nconst label: "hello from vize"\n```',
+  );
+  assert.throws(
+    () =>
+      assertRealHostTemplateBindingHover({
+        contents: "Template binding from script: Ref<unknown>",
+      }),
+    /Template binding from script/,
+  );
+  assert.throws(() => assertRealHostTemplateBindingHover(null), /must include contents/);
 });
 
 function hasLspRequestCommand(behavior: Parameters<typeof createHostTestCommands>[0]): boolean {
