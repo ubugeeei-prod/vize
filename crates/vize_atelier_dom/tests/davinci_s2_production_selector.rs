@@ -50,6 +50,41 @@ fn source_map_free_dom_compile_uses_s2_without_profiler() {
 }
 
 #[test]
+fn source_map_compiles_stay_on_compatibility_when_profiled() {
+    let _guard = lock_profiler();
+    let profiler = global_profiler();
+    profiler.disable();
+    profiler.clear();
+
+    let source = r#"<button @click="go">{{ label }}</button>"#;
+    let source_map_free = compile(source, DomCompilerOptions::default());
+
+    profiler.enable();
+    let mapped = compile(
+        source,
+        DomCompilerOptions {
+            source_map: true,
+            ..Default::default()
+        },
+    );
+    let counters = profiler.counter_summary();
+    profiler.disable();
+    profiler.clear();
+
+    assert_eq!(mapped.preamble, source_map_free.preamble);
+    assert_eq!(mapped.code, source_map_free.code);
+    assert!(
+        mapped.map.is_some(),
+        "source-map compiles must produce the compatibility map"
+    );
+    assert_eq!(
+        counter_total(&counters, "davinci.s2_dom.files"),
+        None,
+        "source-map compiles must stay on compatibility until S2 records map segments"
+    );
+}
+
+#[test]
 fn comments_stay_on_compatibility_without_profiler() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
@@ -155,6 +190,7 @@ fn sfc_sections_entry_uses_s2_once_sections_land() {
 struct Compiled {
     preamble: String,
     code: String,
+    map: Option<String>,
     sections: Option<vize_atelier_core::CodegenSections>,
 }
 
@@ -173,6 +209,7 @@ fn compile(source: &str, options: DomCompilerOptions) -> Compiled {
     Compiled {
         preamble: result.result.preamble.to_string(),
         code: result.result.code.to_string(),
+        map: result.result.map.map(|map| map.to_string()),
         sections: result.sections,
     }
 }
@@ -193,6 +230,7 @@ fn compile_sfc_sections_entry(source: &str, options: DomCompilerOptions) -> Comp
     Compiled {
         preamble: result.result.preamble.to_string(),
         code: result.result.code.to_string(),
+        map: result.result.map.map(|map| map.to_string()),
         sections: result.sections,
     }
 }
