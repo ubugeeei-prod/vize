@@ -3,6 +3,20 @@
   "version": 1,
   "differences": [
     {
+      "project": "elk",
+      "file": "app/components/publish/PublishWidget.vue",
+      "severity": "error",
+      "line": 500,
+      "column": 18,
+      "vize": null,
+      "baseline": {
+        "code": 1117,
+        "message": "An object literal cannot have multiple properties with the same name."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
+    },
+    {
       "project": "nuxt-ui",
       "file": "docs/app/components/content/examples/tabs/TabsRouteQueryExample.vue",
       "severity": "error",
@@ -18,6 +32,566 @@
       },
       "issue": 3358,
       "reason": "vue-tsc loses the spelling hint here because TypeScript's checker stops offering suggestions once a program has produced maximumSuggestionCount = 10 unresolved-name errors (onFailedToResolveSymbol in checker.ts increments the counter on every failed name resolution, including the ones generated virtual code never surfaces). Corsa does not implement that cap, so vize keeps the hint. The symbol tables agree: renaming this SFC so it is checked first makes vue-tsc 3.3.4 emit the identical TS2552 on an otherwise byte-identical program, and vize's virtual TypeScript for this file is byte-identical whether the sibling SFCs are in the program or not. Matching vue-tsc would mean rewriting TS2552 to TS2304 from a program-global, file-order-dependent counter, which is unstable under incremental checking and would silently drop genuine hints after the tenth unresolved name in any project."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Autocomplete/AutocompleteRoot.vue",
+      "severity": "error",
+      "line": 90,
+      "column": 81,
+      "vize": {
+        "code": 2344,
+        "message": "Type '__VizeComponentInstance' does not satisfy the constraint 'ComponentPublicInstance'. Type '__VizeComponentInstance' is not assignable to type '{ $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Data; $refs: Data; $slots: Readonly<InternalSlots>; $root: ComponentPublicInstance<...> | null; ... 7 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined): WatchStopHandle; }'. Types of property '$emit' are incompatible. Type '((event: \"entryFocus\", event: CustomEvent<any>) => void) & ((event: \"highlight\", payload: { ref: HTMLElement; value: AcceptableValue; } | undefined) => void) & ((event: \"leave\", event: Event) => void) & ((event: \"update:modelValue\", value: AcceptableValue) => void)' is not assignable to type '(event: string, ...args: any[]) => void'. Types of parameters 'event' and 'event' are incompatible. Type 'string' is not assignable to type '\"entryFocus\"'."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Calendar/story/CalendarMultiple.story.vue",
+      "severity": "error",
+      "line": 11,
+      "column": 45,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Checkbox/CheckboxRoot.vue",
+      "severity": "error",
+      "line": 155,
+      "column": 12,
+      "vize": {
+        "code": 2367,
+        "message": "This comparison appears to be unintentional because the types 'Exclude<__DefineProps<Props<T>, \"asChild\" | \"disabled\" | \"required\" | ([\"indeterminate\" | T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [...] ? \"falseValue\" : never) | ... | ...>[\"as\"], undefined>' and 'string' have no overlap."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Combobox/ComboboxRoot.vue",
+      "severity": "error",
+      "line": 110,
+      "column": 81,
+      "vize": {
+        "code": 2344,
+        "message": "Type '__VizeComponentInstance' does not satisfy the constraint 'ComponentPublicInstance'. Type '__VizeComponentInstance' is not assignable to type '{ $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Data; $refs: Data; $slots: Readonly<InternalSlots>; $root: ComponentPublicInstance<...> | null; ... 7 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined): WatchStopHandle; }'. Types of property '$emit' are incompatible. Type '((event: \"entryFocus\", event: CustomEvent<any>) => void) & ((event: \"highlight\", payload: { ref: HTMLElement; value: AcceptableValue; } | undefined) => void) & ((event: \"leave\", event: Event) => void) & ((event: \"update:modelValue\", value: AcceptableValue) => void)' is not assignable to type '(event: string, ...args: any[]) => void'. Types of parameters 'event' and 'event' are incompatible. Type 'string' is not assignable to type '\"entryFocus\"'."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/DismissableLayer/story/_DismissableBox.vue",
+      "severity": "error",
+      "line": 28,
+      "column": 10,
+      "vize": null,
+      "baseline": {
+        "code": 7006,
+        "message": "Parameter 'ev' implicitly has an 'any' type."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports this baseline-only real-project diagnostic while Vize accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Editable/EditableInput.vue",
+      "severity": "error",
+      "line": 69,
+      "column": 6,
+      "vize": null,
+      "baseline": {
+        "code": 1117,
+        "message": "An object literal cannot have multiple properties with the same name."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Editable/story/EditableChromatic.story.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 44,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Listbox/ListboxContent.vue",
+      "severity": "error",
+      "line": 56,
+      "column": 8,
+      "vize": null,
+      "baseline": {
+        "code": 1117,
+        "message": "An object literal cannot have multiple properties with the same name."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Listbox/ListboxContent.vue",
+      "severity": "error",
+      "line": 57,
+      "column": 8,
+      "vize": null,
+      "baseline": {
+        "code": 1117,
+        "message": "An object literal cannot have multiple properties with the same name."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Listbox/ListboxFilter.vue",
+      "severity": "error",
+      "line": 110,
+      "column": 6,
+      "vize": null,
+      "baseline": {
+        "code": 1117,
+        "message": "An object literal cannot have multiple properties with the same name."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Listbox/story/ListboxChromatic.story.vue",
+      "severity": "error",
+      "line": 17,
+      "column": 30,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Listbox/story/ListboxFilter.story.vue",
+      "severity": "error",
+      "line": 13,
+      "column": 30,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Listbox/story/ListboxVirtual.story.vue",
+      "severity": "error",
+      "line": 16,
+      "column": 30,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/PinInput/PinInputInput.vue",
+      "severity": "error",
+      "line": 262,
+      "column": 6,
+      "vize": null,
+      "baseline": {
+        "code": 1117,
+        "message": "An object literal cannot have multiple properties with the same name."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/PinInput/PinInputInput.vue",
+      "severity": "error",
+      "line": 263,
+      "column": 6,
+      "vize": null,
+      "baseline": {
+        "code": 1117,
+        "message": "An object literal cannot have multiple properties with the same name."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/PinInput/story/PinInput.story.vue",
+      "severity": "error",
+      "line": 20,
+      "column": 11,
+      "vize": {
+        "code": 2322,
+        "message": "Type 'string[]' is not assignable to type 'number[]'. Type 'string' is not assignable to type 'number'."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/RangeCalendar/story/RangeCalendarMultiple.story.vue",
+      "severity": "error",
+      "line": 11,
+      "column": 45,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Select/SelectRoot.vue",
+      "severity": "error",
+      "line": 96,
+      "column": 3,
+      "vize": {
+        "code": 2578,
+        "message": "Unused '@ts-expect-error' directive."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Select/story/_Select.vue",
+      "severity": "error",
+      "line": 34,
+      "column": 5,
+      "vize": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and '\"ariaLabel\"' does not exist in type 'Partial<Props<string>> & { autocomplete?: unknown; by?: unknown; defaultOpen?: unknown; defaultValue?: unknown; dir?: unknown; disabled?: unknown; modelValue?: unknown; multiple?: unknown; name?: unknown; nullableValue?: unknown; open?: unknown; required?: unknown; } & VNodeProps & AllowedComponentProps & ComponentC...'."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Select/story/_SelectTest.vue",
+      "severity": "error",
+      "line": 33,
+      "column": 7,
+      "vize": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and '\"ariaLabel\"' does not exist in type 'Partial<Props<string | number | bigint | Record<string, any> | null>> & { autocomplete?: unknown; by?: unknown; defaultOpen?: unknown; defaultValue?: unknown; dir?: unknown; disabled?: unknown; modelValue?: unknown; multiple?: unknown; name?: unknown; nullableValue?: unknown; open?: unknown; required?: unknown; } & ...'."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Splitter/story/SplitterAction.story.vue",
+      "severity": "error",
+      "line": 18,
+      "column": 32,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Splitter/story/SplitterChromatic.story.vue",
+      "severity": "error",
+      "line": 8,
+      "column": 45,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Splitter/story/SplitterCollapsible.story.vue",
+      "severity": "error",
+      "line": 8,
+      "column": 32,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Splitter/story/SplitterConditional.story.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 32,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Splitter/story/SplitterDirection.story.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 32,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Splitter/story/SplitterOverflow.story.vue",
+      "severity": "error",
+      "line": 8,
+      "column": 32,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Splitter/story/SplitterPersistence.story.vue",
+      "severity": "error",
+      "line": 8,
+      "column": 32,
+      "vize": null,
+      "baseline": {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Switch/SwitchRoot.vue",
+      "severity": "error",
+      "line": 105,
+      "column": 12,
+      "vize": {
+        "code": 2367,
+        "message": "This comparison appears to be unintentional because the types 'Exclude<__DefineProps<Props<T>, \"asChild\" | \"disabled\" | \"required\" | ([T | undefined] extends [boolean | undefined] ? \"defaultValue\" : never) | ([T | undefined] extends [...] ? \"falseValue\" : never) | ... | ...>[\"as\"], undefined>' and 'string' have no overlap."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/TagsInput/story/TagsInputCombobox.story.vue",
+      "severity": "error",
+      "line": 41,
+      "column": 16,
+      "vize": null,
+      "baseline": {
+        "code": 2322,
+        "message": "Type 'AcceptableInputValue' is not assignable to type 'PropertyKey | undefined'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports this baseline-only real-project diagnostic while Vize accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/TagsInput/TagsInputInput.vue",
+      "severity": "error",
+      "line": 163,
+      "column": 6,
+      "vize": null,
+      "baseline": {
+        "code": 1117,
+        "message": "An object literal cannot have multiple properties with the same name."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/TagsInput/TagsInputInput.vue",
+      "severity": "error",
+      "line": 165,
+      "column": 6,
+      "vize": null,
+      "baseline": {
+        "code": 1117,
+        "message": "An object literal cannot have multiple properties with the same name."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Tree/TreeItem.vue",
+      "severity": "error",
+      "line": 198,
+      "column": 8,
+      "vize": null,
+      "baseline": {
+        "code": 1117,
+        "message": "An object literal cannot have multiple properties with the same name."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Tree/TreeItem.vue",
+      "severity": "error",
+      "line": 199,
+      "column": 8,
+      "vize": null,
+      "baseline": {
+        "code": 1117,
+        "message": "An object literal cannot have multiple properties with the same name."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Tree/TreeRoot.vue",
+      "severity": "error",
+      "line": 113,
+      "column": 3,
+      "vize": {
+        "code": 2578,
+        "message": "Unused '@ts-expect-error' directive."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Tree/TreeRoot.vue",
+      "severity": "error",
+      "line": 120,
+      "column": 3,
+      "vize": {
+        "code": 2578,
+        "message": "Unused '@ts-expect-error' directive."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/Tree/TreeRoot.vue",
+      "severity": "error",
+      "line": 288,
+      "column": 8,
+      "vize": null,
+      "baseline": {
+        "code": 1117,
+        "message": "An object literal cannot have multiple properties with the same name."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc reports a duplicate generated listener key for legal paired event directives; Vize intentionally keeps listener directives out of the props literal."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/VisuallyHidden/VisuallyHiddenInput.vue",
+      "severity": "error",
+      "line": 18,
+      "column": 18,
+      "vize": {
+        "code": 2339,
+        "message": "Property 'length' does not exist on type 'never'."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/VisuallyHidden/VisuallyHiddenInput.vue",
+      "severity": "error",
+      "line": 30,
+      "column": 24,
+      "vize": {
+        "code": 2339,
+        "message": "Property 'flatMap' does not exist on type 'never'."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/VisuallyHidden/VisuallyHiddenInput.vue",
+      "severity": "error",
+      "line": 30,
+      "column": 33,
+      "vize": {
+        "code": 7006,
+        "message": "Parameter 'obj' implicitly has an 'any' type."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "reka-ui",
+      "file": "packages/core/src/VisuallyHidden/VisuallyHiddenInput.vue",
+      "severity": "error",
+      "line": 30,
+      "column": 38,
+      "vize": {
+        "code": 7006,
+        "message": "Parameter 'index' implicitly has an 'any' type."
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
     }
   ]
 }

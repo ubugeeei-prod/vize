@@ -630,10 +630,11 @@ fn materialize_baseline_project(
             compiler_options.insert("baseUrl".to_string(), json!("."));
         }
     }
+    let files = baseline_files(&config_dir, fixture_root, vize_report)?;
     let config = json!({
         "extends": config_relative_path(&config_dir, &source_path),
         "compilerOptions": Value::Object(compiler_options),
-        "files": vize_report.get("files").and_then(Value::as_array).unwrap_or(&Vec::new()).iter().take(vize_report.get("fileCount").and_then(Value::as_u64).unwrap_or(0) as usize).filter_map(|entry| entry.get("file").and_then(Value::as_str)).map(|file| config_relative_path(&config_dir, &fixture_root.join(file))).collect::<Vec<_>>(),
+        "files": files,
         "include": include_globs(&config_dir, &ambient_roots, &include_roots, &dot_vue_roots),
         "exclude": ambient_roots.iter().flat_map(|root_path| {
             let root = config_relative_path(&config_dir, root_path);
@@ -688,8 +689,8 @@ struct DocumentedDifference {
     severity: String,
     line: u64,
     column: u64,
-    vize: DiagnosticSide,
-    baseline: DiagnosticSide,
+    vize: Option<DiagnosticSide>,
+    baseline: Option<DiagnosticSide>,
     issue: u64,
     reason: String,
 }
@@ -817,10 +818,20 @@ fn compare_typecheck_diagnostics(
         &mut false_negatives,
         &mut message_mismatches,
     );
+    let documented_vize_count = documented
+        .iter()
+        .filter(|difference| difference.vize.is_some())
+        .count();
+    let documented_baseline_count = documented
+        .iter()
+        .filter(|difference| difference.baseline.is_some())
+        .count();
     let vize_count =
-        shared.len() + message_mismatches.len() + documented.len() + false_positives.len();
-    let baseline_count =
-        shared.len() + message_mismatches.len() + documented.len() + false_negatives.len();
+        shared.len() + message_mismatches.len() + documented_vize_count + false_positives.len();
+    let baseline_count = shared.len()
+        + message_mismatches.len()
+        + documented_baseline_count
+        + false_negatives.len();
     let summary = json!({
         "vizeDiagnosticCount": vize_count,
         "baselineDiagnosticCount": baseline_count,
@@ -1797,8 +1808,23 @@ fn compare_documented(
         .then_with(|| compare_bytes(&left.severity, &right.severity))
         .then_with(|| left.line.cmp(&right.line))
         .then_with(|| left.column.cmp(&right.column))
-        .then_with(|| left.vize.code.cmp(&right.vize.code))
-        .then_with(|| left.baseline.code.cmp(&right.baseline.code))
+        .then_with(|| compare_optional_side(left.vize.as_ref(), right.vize.as_ref()))
+        .then_with(|| compare_optional_side(left.baseline.as_ref(), right.baseline.as_ref()))
+}
+
+fn compare_optional_side(
+    left: Option<&DiagnosticSide>,
+    right: Option<&DiagnosticSide>,
+) -> std::cmp::Ordering {
+    match (left, right) {
+        (Some(left), Some(right)) => left
+            .code
+            .cmp(&right.code)
+            .then_with(|| compare_bytes(&left.message, &right.message)),
+        (None, Some(_)) => std::cmp::Ordering::Less,
+        (Some(_), None) => std::cmp::Ordering::Greater,
+        (None, None) => std::cmp::Ordering::Equal,
+    }
 }
 
 fn compare_bytes(left: &str, right: &str) -> std::cmp::Ordering {
@@ -1840,8 +1866,8 @@ fn documented_json(record: &DocumentedDifference) -> Value {
         "severity": record.severity,
         "line": record.line,
         "column": record.column,
-        "vize": { "code": record.vize.code, "message": record.vize.message },
-        "baseline": { "code": record.baseline.code, "message": record.baseline.message },
+        "vize": record.vize.as_ref().map(|side| json!({ "code": side.code, "message": side.message })).unwrap_or(Value::Null),
+        "baseline": record.baseline.as_ref().map(|side| json!({ "code": side.code, "message": side.message })).unwrap_or(Value::Null),
         "issue": record.issue,
         "reason": record.reason,
     })
@@ -1855,17 +1881,34 @@ fn pair_documented_differences(
 ) -> Vec<DocumentedDifference> {
     let mut paired = Vec::new();
     for difference in expected {
-        let positive_index = find_documented(false_positives, difference, &difference.vize);
-        let negative_index = find_documented(false_negatives, difference, &difference.baseline);
-        if let (Some(positive), Some(negative)) = (positive_index, negative_index) {
-            false_positives.remove(positive);
-            false_negatives.remove(negative);
-            paired.push(difference.clone());
-            continue;
-        }
-        if let Some(index) = find_documented_mismatch(message_mismatches, difference) {
-            message_mismatches.remove(index);
-            paired.push(difference.clone());
+        match (difference.vize.as_ref(), difference.baseline.as_ref()) {
+            (Some(vize), Some(baseline)) => {
+                let positive_index = find_documented(false_positives, difference, vize);
+                let negative_index = find_documented(false_negatives, difference, baseline);
+                if let (Some(positive), Some(negative)) = (positive_index, negative_index) {
+                    false_positives.remove(positive);
+                    false_negatives.remove(negative);
+                    paired.push(difference.clone());
+                    continue;
+                }
+                if let Some(index) = find_documented_mismatch(message_mismatches, difference) {
+                    message_mismatches.remove(index);
+                    paired.push(difference.clone());
+                }
+            }
+            (Some(vize), None) => {
+                if let Some(positive) = find_documented(false_positives, difference, vize) {
+                    false_positives.remove(positive);
+                    paired.push(difference.clone());
+                }
+            }
+            (None, Some(baseline)) => {
+                if let Some(negative) = find_documented(false_negatives, difference, baseline) {
+                    false_negatives.remove(negative);
+                    paired.push(difference.clone());
+                }
+            }
+            (None, None) => {}
         }
     }
     paired
@@ -1890,15 +1933,17 @@ fn find_documented_mismatch(
     records: &[SharedDiagnostic],
     difference: &DocumentedDifference,
 ) -> Option<usize> {
+    let vize = difference.vize.as_ref()?;
+    let baseline = difference.baseline.as_ref()?;
     records.iter().position(|candidate| {
         candidate.file == difference.file
             && candidate.severity == difference.severity
             && candidate.line == difference.line
             && candidate.column == difference.column
-            && candidate.code == difference.vize.code
-            && candidate.code == difference.baseline.code
-            && candidate.vize_message == difference.vize.message
-            && candidate.baseline_message == difference.baseline.message
+            && candidate.code == vize.code
+            && candidate.code == baseline.code
+            && candidate.vize_message == vize.message
+            && candidate.baseline_message == baseline.message
     })
 }
 
@@ -1946,9 +1991,15 @@ fn parse_documented_difference(
         .to_string();
     let line = positive_json_integer(value.get("line"), &format!("{label}.line"))?;
     let column = positive_json_integer(value.get("column"), &format!("{label}.column"))?;
-    let vize = documented_side(value.get("vize"), &format!("{label}.vize"))?;
-    let baseline = documented_side(value.get("baseline"), &format!("{label}.baseline"))?;
-    if vize.code == baseline.code && vize.message == baseline.message {
+    let vize = optional_documented_side(value.get("vize"), &format!("{label}.vize"))?;
+    let baseline = optional_documented_side(value.get("baseline"), &format!("{label}.baseline"))?;
+    if vize.is_none() && baseline.is_none() {
+        invalid_divergence(&format!("{label} must record at least one tool side"))?;
+    }
+    if let (Some(vize), Some(baseline)) = (&vize, &baseline)
+        && vize.code == baseline.code
+        && vize.message == baseline.message
+    {
         invalid_divergence(&format!(
             "{label} must record a difference between the two tools"
         ))?;
@@ -1971,6 +2022,17 @@ fn parse_documented_difference(
         issue,
         reason,
     })
+}
+
+fn optional_documented_side(
+    value: Option<&Value>,
+    label: &str,
+) -> Result<Option<DiagnosticSide>, String> {
+    match value {
+        Some(value) if value.is_null() => Ok(None),
+        Some(_) => documented_side(value, label).map(Some),
+        None => Ok(None),
+    }
 }
 
 fn documented_side(value: Option<&Value>, label: &str) -> Result<DiagnosticSide, String> {
@@ -3766,6 +3828,72 @@ fn vize_report_source_roots(fixture_root: &Path, vize_report: &Value) -> Vec<Pat
         .filter_map(|entry| entry.get("file").and_then(Value::as_str))
         .map(|file| fixture_root.join(literal_glob_root(file)))
         .collect()
+}
+
+fn baseline_files(
+    config_dir: &Path,
+    fixture_root: &Path,
+    vize_report: &Value,
+) -> Result<Vec<String>, String> {
+    let mut files = vize_report
+        .get("files")
+        .and_then(Value::as_array)
+        .unwrap_or(&Vec::new())
+        .iter()
+        .take(
+            vize_report
+                .get("fileCount")
+                .and_then(Value::as_u64)
+                .unwrap_or(0) as usize,
+        )
+        .filter_map(|entry| entry.get("file").and_then(Value::as_str))
+        .map(|file| config_relative_path(config_dir, &fixture_root.join(file)))
+        .collect::<Vec<_>>();
+    let mut declarations = Vec::new();
+    collect_ambient_declaration_files(fixture_root, &mut declarations)?;
+    declarations.sort();
+    declarations.dedup();
+    files.extend(
+        declarations
+            .iter()
+            .map(|path| config_relative_path(config_dir, path)),
+    );
+    files.sort_by(|left, right| compare_bytes(left, right));
+    files.dedup();
+    Ok(files)
+}
+
+fn collect_ambient_declaration_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<(), String> {
+    if !dir.exists() {
+        return Ok(());
+    }
+    for entry in
+        fs::read_dir(dir).map_err(|error| format!("cannot read {}: {error}", dir.display()))?
+    {
+        let entry = entry.map_err(|error| error.to_string())?;
+        let path = entry.path();
+        let name = entry.file_name().to_string_lossy().to_string();
+        if path.is_dir() {
+            if matches!(
+                name.as_str(),
+                "node_modules" | ".yarn" | "dist" | ".vize" | ".vize-baseline"
+            ) {
+                continue;
+            }
+            collect_ambient_declaration_files(&path, files)?;
+        } else if path.is_file() && is_declaration_file(&path) {
+            files.push(path);
+        }
+    }
+    Ok(())
+}
+
+fn is_declaration_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|value| value.to_str())
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
 }
 
 fn include_globs(

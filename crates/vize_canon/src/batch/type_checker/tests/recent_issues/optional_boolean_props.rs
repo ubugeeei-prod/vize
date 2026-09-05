@@ -53,3 +53,53 @@ defineProps<{ loading?: boolean }>();
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn with_defaults_preserves_optional_boolean_define_props_narrowing() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "with-defaults-optional-boolean-props",
+        &[(
+            "src/Foo.vue",
+            r#"<script setup lang="ts">
+import { computed } from "vue";
+import type { ComputedRef } from "vue";
+
+interface Props {
+  disabled?: boolean;
+  unmountOnHide?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  unmountOnHide: undefined,
+});
+const disabled = computed(() => props.disabled);
+
+function acceptDisabled(value: ComputedRef<boolean>) {
+  return value;
+}
+
+acceptDisabled(disabled);
+</script>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().all(|(file, code, message)| {
+            !(file == "src/Foo.vue"
+                && *code == Some(2345)
+                && message.contains("ComputedRef<boolean | undefined>"))
+        }),
+        "withDefaults should keep optional boolean defineProps reads narrowed, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

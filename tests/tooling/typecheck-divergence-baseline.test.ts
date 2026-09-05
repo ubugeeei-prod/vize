@@ -303,6 +303,31 @@ test("transitive authored TypeScript sources stay out of the Vue corpus comparis
   }
 });
 
+test("authored declaration files are included in the vue-tsc baseline program", () => {
+  const fixture = setup();
+  try {
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, "env.d.ts"),
+      "declare module 'virtual:fixture' { export const value: string }\n",
+    );
+    fs.mkdirSync(path.join(fixture.fixtureRoot, ".vize"), { recursive: true });
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, ".vize", "generated.d.ts"),
+      "declare const generated: string\n",
+    );
+
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+
+    const baselineConfig = readJson(
+      path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"),
+    );
+    assert.deepEqual(baselineConfig.files, ["../env.d.ts", "../src/App.vue"]);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("transitive Vue dependencies do not expand the authored fixture corpus", () => {
   const fixture = setup({
     baselineFiles: ["src/App.vue", "node_modules/pkg/RuntimeComponent.vue"],

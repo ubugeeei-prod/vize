@@ -11,13 +11,11 @@ import {
 /**
  * `documentedDifferences` is the reviewed ledger of expected vize-versus-vue-tsc
  * differences (tests/_fixtures/compat-documented-differences.json). An entry can
- * only ever cancel exactly one false positive against exactly one false negative
- * that share a file, severity, line and column, or one message mismatch at that
- * span: both tools must already report something there, and both messages must
- * match the ledger byte for byte after whitespace normalization. A vize-only or
- * vue-tsc-only diagnostic can therefore never be absorbed, and a divergence that
- * shifts position falls straight back into the false-positive/false-negative
- * buckets.
+ * cancel exactly one false positive, one false negative, one false positive
+ * paired with one false negative at the same span, or one message mismatch at
+ * that span. Present tool sides must match the ledger byte for byte after
+ * whitespace normalization. A divergence that shifts position falls straight
+ * back into the false-positive/false-negative buckets.
  *
  * Two diagnostics that agree on (file, severity, line, column, code) are only
  * `shared` when their messages are also identical after whitespace
@@ -149,9 +147,10 @@ function selectDocumentedDifferences(values, projectId, cwd) {
     const severity = value.severity;
     const line = positiveInteger(value.line, `${label}.line`);
     const column = positiveInteger(value.column, `${label}.column`);
-    const vize = documentedSide(value.vize, `${label}.vize`);
-    const baseline = documentedSide(value.baseline, `${label}.baseline`);
-    if (vize.code === baseline.code && vize.message === baseline.message) {
+    const vize = optionalDocumentedSide(value.vize, `${label}.vize`);
+    const baseline = optionalDocumentedSide(value.baseline, `${label}.baseline`);
+    if (vize == null && baseline == null) invalid(`${label} must record at least one tool side`);
+    if (vize != null && baseline != null && vize.code === baseline.code && vize.message === baseline.message) {
       invalid(`${label} must record a difference between the two tools`);
     }
     if (!Number.isSafeInteger(value.issue) || value.issue < 1) {
@@ -177,17 +176,31 @@ function pairDocumentedDifferences(expected, falsePositives, falseNegatives, mes
     // (the tools disagree on the code, so neither diagnostic has a partner) or
     // sits in the message-mismatch bucket (they agree on the code and differ
     // only in wording). Exactly one of the two shapes may cancel it.
-    const positiveIndex = findDocumented(falsePositives, difference, difference.vize);
-    const negativeIndex = findDocumented(falseNegatives, difference, difference.baseline);
-    if (positiveIndex >= 0 && negativeIndex >= 0) {
-      falsePositives.splice(positiveIndex, 1);
-      falseNegatives.splice(negativeIndex, 1);
+    if (difference.vize != null && difference.baseline != null) {
+      const positiveIndex = findDocumented(falsePositives, difference, difference.vize);
+      const negativeIndex = findDocumented(falseNegatives, difference, difference.baseline);
+      if (positiveIndex >= 0 && negativeIndex >= 0) {
+        falsePositives.splice(positiveIndex, 1);
+        falseNegatives.splice(negativeIndex, 1);
+        paired.push(difference);
+        continue;
+      }
+      const mismatchIndex = findDocumentedMismatch(messageMismatches, difference);
+      if (mismatchIndex < 0) continue;
+      messageMismatches.splice(mismatchIndex, 1);
       paired.push(difference);
       continue;
     }
-    const mismatchIndex = findDocumentedMismatch(messageMismatches, difference);
-    if (mismatchIndex < 0) continue;
-    messageMismatches.splice(mismatchIndex, 1);
+    if (difference.vize != null) {
+      const positiveIndex = findDocumented(falsePositives, difference, difference.vize);
+      if (positiveIndex < 0) continue;
+      falsePositives.splice(positiveIndex, 1);
+      paired.push(difference);
+      continue;
+    }
+    const negativeIndex = findDocumented(falseNegatives, difference, difference.baseline);
+    if (negativeIndex < 0) continue;
+    falseNegatives.splice(negativeIndex, 1);
     paired.push(difference);
   }
   return paired;
@@ -206,6 +219,7 @@ function findDocumented(records, difference, side) {
 }
 
 function findDocumentedMismatch(records, difference) {
+  if (difference.vize == null || difference.baseline == null) return -1;
   return records.findIndex(
     (candidate) =>
       candidate.file === difference.file &&
@@ -217,6 +231,11 @@ function findDocumentedMismatch(records, difference) {
       candidate.vizeMessage === difference.vize.message &&
       candidate.baselineMessage === difference.baseline.message,
   );
+}
+
+function optionalDocumentedSide(value, label) {
+  if (value == null) return null;
+  return documentedSide(value, label);
 }
 
 function documentedSide(value, label) {
