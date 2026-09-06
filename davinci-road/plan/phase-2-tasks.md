@@ -212,8 +212,8 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-09-06):** 118 installments have landed through
-[#5818](https://github.com/ubugeeei-prod/vize/pull/5818). Installments 84-118 open
+**Current series evidence (2026-09-06):** 119 installments have landed through
+[#5826](https://github.com/ubugeeei-prod/vize/pull/5826). Installments 84-119 open
 the production option surface the switch needs, since through 83 the lane only
 matched `compile_template`'s _defaults_ while production compiles go through
 `compile_template_block`: `DomEmitOptions` now carries module mode,

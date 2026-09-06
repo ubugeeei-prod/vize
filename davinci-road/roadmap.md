@@ -118,9 +118,9 @@ P2-9 is now complete: the hydrated corpus run compiled 41,580 files at zero
 divergence and measured the retained-`None` residual at 11.73%. P2-11 remains
 the active blocked series; P2-12b, P2-16, P2-17 and P2-20 remain open because
 their dependency gates remain open. P2-12b has TS-22 groundwork for observed
-S2 DOM emit walks, but not the fused build-path switch. P2-11 has 118 landed
-installments through [#5818](https://github.com/ubugeeei-prod/vize/pull/5818). Installments
-84-118 open the production option surface the switch needs: module output,
+S2 DOM emit walks, but not the fused build-path switch. P2-11 has 119 landed
+installments through [#5826](https://github.com/ubugeeei-prod/vize/pull/5826). Installments
+84-119 open the production option surface the switch needs: module output,
 identifier prefixing, binding metadata, TypeScript erasure, component-name
 self references, inline setup reads, inline root prop hoists, helper order,
 template refs, constant-handler and constant-text decisions, `cache_handlers`

@@ -84,9 +84,9 @@ counts or fixture availability changes.
   Each completion is joined to its merged PR and current evidence in the
   [evidence index](./phase-2-records.md#current-completion-evidence-2026-09-06);
   review-only evidence is labeled there rather than presented as executable.
-- **Active and blocked: 1 of 22 — P2-11.** P2-11 has 118 landed installments
+- **Active and blocked: 1 of 22 — P2-11.** P2-11 has 119 landed installments
   through
-  [#5818](https://github.com/ubugeeei-prod/vize/pull/5818), including the
+  [#5826](https://github.com/ubugeeei-prod/vize/pull/5826), including the
   late directive/object-spread set, event/model/slot residuals, structural
   `v-if`/`v-for` cases, expression-edge admission, keyed slot forwarding,
   component `v-once` wrappers, slot text fact alignment, the corpus-runnable
