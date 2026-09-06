@@ -100,6 +100,48 @@ fn sfc_sections_entry_ignores_lt_inside_foreign_attributes() {
 }
 
 #[test]
+fn sfc_sections_entry_ignores_native_raw_text_bodies() {
+    let _guard = lock_profiler();
+    let profiler = global_profiler();
+    profiler.disable();
+    profiler.clear();
+
+    for (label, source) in [
+        (
+            "textarea_literal_tag",
+            r#"<textarea><div /></textarea><p>{{ label }}</p>"#,
+        ),
+        (
+            "title_literal_tag",
+            r#"<title><div /></title><p>{{ label }}</p>"#,
+        ),
+    ] {
+        let compat = compile_sfc_sections_entry(
+            source,
+            DomCompilerOptions {
+                source_map: true,
+                ..Default::default()
+            },
+        );
+
+        profiler.enable();
+        let selected = compile_sfc_sections_entry(source, DomCompilerOptions::default());
+        let counters = profiler.counter_summary();
+        profiler.disable();
+        profiler.clear();
+
+        assert_eq!(selected.preamble, compat.preamble, "{label} preamble");
+        assert_eq!(selected.code, compat.code, "{label} code");
+        assert_eq!(selected.sections, compat.sections, "{label} sections");
+        assert_eq!(
+            counter_total(&counters, "davinci.s2_dom.files"),
+            Some(1),
+            "{label} must keep the S2 SFC sections fast path"
+        );
+    }
+}
+
+#[test]
 fn sfc_sections_entry_keeps_root_html_title_on_compatibility() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
