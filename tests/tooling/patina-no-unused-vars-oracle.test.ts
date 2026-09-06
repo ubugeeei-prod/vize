@@ -12,6 +12,24 @@ const pluginVue = requireFromBench("eslint-plugin-vue");
 const vueParser = requireFromBench("vue-eslint-parser");
 const typescriptParser = requireFromBench("@typescript-eslint/parser");
 
+function rangeAt(source: string, offset: number, text: string) {
+  assert.equal(source.slice(offset, offset + text.length), text);
+  return {
+    line: 1,
+    column: offset + 1,
+    endLine: 1,
+    endColumn: offset + text.length + 1,
+  };
+}
+
+function aliasRange(source: string, directive: string, alias: string) {
+  const offset = source.indexOf(directive);
+  assert.notEqual(offset, -1, `missing expected range target: ${directive}${alias}`);
+  return rangeAt(source, offset + directive.length, alias);
+}
+
+const eventParameterShadowSource = `<template><button v-for="event in events" @click="(event) => handle(event)"></button></template>`;
+
 const cases = [
   {
     id: "leading-value-alias-needed-for-index",
@@ -35,8 +53,9 @@ const cases = [
   },
   {
     id: "event-parameter-shadows-outer-alias",
-    source: `<template><button v-for="event in events" @click="(event) => handle(event)"></button></template>`,
+    source: eventParameterShadowSource,
     diagnostics: ["'event' is defined but never used."],
+    ranges: [aliasRange(eventParameterShadowSource, `v-for="`, "event")],
   },
 ] as const;
 
@@ -71,10 +90,23 @@ test("no-unused-vars v-for tuple boundary stays pinned to eslint-plugin-vue 10.9
     });
     const diagnostics = result.messages
       .filter((message) => message.ruleId === "vue/no-unused-vars")
-      .map((message) => message.message);
+      .map((message) => ({
+        message: message.message,
+        range: {
+          line: message.line,
+          column: message.column,
+          endLine: message.endLine,
+          endColumn: message.endColumn,
+        },
+      }));
     const parserErrors = result.messages.filter((message) => message.ruleId == null);
+    const messages = diagnostics.map((diagnostic) => diagnostic.message);
+    const ranges = diagnostics.map((diagnostic) => diagnostic.range);
 
     assert.deepEqual(parserErrors, [], `${fixture.id}: parser errors`);
-    assert.deepEqual(diagnostics, fixture.diagnostics, fixture.id);
+    assert.deepEqual(messages, fixture.diagnostics, fixture.id);
+    if ("ranges" in fixture) {
+      assert.deepEqual(ranges, fixture.ranges, `${fixture.id}: diagnostic ranges`);
+    }
   }
 });

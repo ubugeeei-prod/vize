@@ -99,5 +99,11 @@ fn test_lint_template_reports_outer_alias_shadowed_by_event_parameter() {
     let result = linter.lint_sfc(source, "test.vue");
 
     assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
-    assert!(result.diagnostics[0].message.contains("'event'"));
+    let alias_start = source.find(r#"v-for="event"#).unwrap() as u32 + "v-for=\"".len() as u32;
+    let diagnostic = &result.diagnostics[0];
+    assert!(diagnostic.message.contains("'event'"));
+    assert_eq!(
+        (diagnostic.start, diagnostic.end),
+        (alias_start, alias_start + "event".len() as u32)
+    );
 }
