@@ -281,6 +281,64 @@ test("real host runner refuses to launch without a packaged VSIX", async () => {
   }
 });
 
+test("real host runner stops when installing the VSIX fails", async () => {
+  const profilePath = fs.mkdtempSync(path.join(os.tmpdir(), "vize-packaged-host-install-"));
+  const extensionsPath = path.join(profilePath, "extensions");
+  const userDataPath = path.join(profilePath, "user-data");
+  const vsixPath = path.join(profilePath, "vize.vsix");
+  fs.mkdirSync(extensionsPath);
+  fs.writeFileSync(vsixPath, "");
+
+  try {
+    const installFailure = new Error("install failed");
+    const invocations: string[][] = [];
+    let outputCount = 0;
+
+    await assert.rejects(
+      runPackagedExtensionHost(
+        async (args) => {
+          invocations.push(args);
+          if (!args.includes("--install-extension")) {
+            assert.fail(`unexpected host launch: ${args.join(" ")}`);
+          }
+          throw installFailure;
+        },
+        {
+          extensionId: "ubugeeei.vize",
+          extensionsPath,
+          extensionTestsPath: path.join(profilePath, "extension-host-real.cjs"),
+          hostEnvironment: {},
+          hostTimeoutMs: 1000,
+          installEnvironment: {},
+          installTimeoutMs: 1000,
+          onOutput: () => {
+            outputCount += 1;
+          },
+          userDataPath,
+          vscodeVersion: "1.107.1",
+          vsixPath,
+          workspacePath: path.join(profilePath, "workspace"),
+        },
+      ),
+      (error) => {
+        assert.strictEqual(error, installFailure);
+        return true;
+      },
+    );
+
+    assert.equal(outputCount, 0);
+    assert.deepEqual(invocations, [
+      createPackagedHostInstallArgs({
+        extensionsPath,
+        userDataPath,
+        vsixPath,
+      }),
+    ]);
+  } finally {
+    fs.rmSync(profilePath, { force: true, recursive: true });
+  }
+});
+
 function taskShape(value: unknown): { command: string } {
   return value as { command: string };
 }
