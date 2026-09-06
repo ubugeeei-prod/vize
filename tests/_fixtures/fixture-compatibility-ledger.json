@@ -787,6 +787,7 @@
           "tests/_fixtures/_git/splitpanes",
           "tests/_fixtures/_git/layoutit-grid",
           "tests/_fixtures/_git/lew-ui",
+          "tests/_fixtures/_git/vue-data-ui",
           "tests/_fixtures/_git/vue-charts",
           "tests/_fixtures/_git/vue-datepicker",
           "tests/_fixtures/_git/vue-flow",
