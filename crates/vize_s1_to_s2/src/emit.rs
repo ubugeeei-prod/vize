@@ -48,6 +48,10 @@
 //! compatibility codegen; the old lane remains for unsupported option surfaces
 //! until the phase-exit deletion.
 
+/// Env flag that keeps DOM template compiles on the compatibility lane while
+/// the P2-11 production switch is still in phase.
+pub const DOM_LANE_FLAG: &str = "VIZE_DAVINCI_DOM";
+
 mod budget;
 mod buf;
 mod builtin;
@@ -229,4 +233,12 @@ struct EmitCx<'facts> {
     component_name: Option<&'facts str>,
     /// The transform scope and codegen slot params the prefixer consults.
     scope: prefix::PrefixScope<'facts>,
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn dom_lane_flag_name_is_stable() {
+        assert_eq!(super::DOM_LANE_FLAG, "VIZE_DAVINCI_DOM");
+    }
 }

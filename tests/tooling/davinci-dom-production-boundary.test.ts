@@ -24,13 +24,13 @@ const compilerOptionsProjectedToS2 = [
   "inline",
   "binding_metadata",
   "is_ts",
-  "dialect",
 ];
 const compilerOptionsHandledAroundS2 = ["source_map"];
 const compilerOptionsHeldAtDefault = [
   "ssr",
   "experimental_patterned_template",
   "custom_renderer",
+  "dialect",
   "croquis",
 ];
 const s2EmitOptionFields = [
