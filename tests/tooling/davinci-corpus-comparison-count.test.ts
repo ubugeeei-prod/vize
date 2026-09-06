@@ -111,7 +111,8 @@ test("P2-11 DOM differential docs pin the hydrated full-corpus comparison count"
   assert.match(countSection, /files=42,668/u);
   assert.match(countSection, /compared=42,279/u);
   assert.match(countSection, /divergences=0/u);
-  assert.match(countSection, /production-lane switch remains open/u);
+  assert.match(countSection, /production-lane switch is now closed/u);
+  assert.doesNotMatch(countSection, /production-lane switch remains open/u);
   assert.doesNotMatch(countSection, /hydrated zero-divergence corpus run\s+is still a blocker/u);
   assert.doesNotMatch(countSection, /This is still a blocker/u);
 });
