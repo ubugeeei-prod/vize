@@ -28,11 +28,15 @@ function taskIndex(source: string): Map<string, boolean> {
 
 function currentGroup(source: string, label: string): string[] {
   const match = new RegExp(
-    `^- \\*\\*${label}: \\d+ of \\d+ [^\\n]*?(?<ids>P2-[\\s\\S]*?)\\.\\*\\*`,
+    `^- \\*\\*${label}: (?<count>\\d+) of (?<total>\\d+) — (?<ids>(?:none|P2-[\\s\\S]*?))\\.\\*\\*`,
     "mu",
   ).exec(source);
   assert.ok(match?.groups, `missing ${label} current-ledger group`);
-  return match.groups.ids.match(/P2-\d+(?:[ab])?/gu) ?? [];
+  const ids =
+    match.groups.ids === "none" ? [] : (match.groups.ids.match(/P2-\d+(?:[ab])?/gu) ?? []);
+  assert.equal(new Set(ids).size, ids.length, `${label} current-ledger group has duplicates`);
+  assert.equal(ids.length, Number(match.groups.count), `${label} current-ledger count drifted`);
+  return ids;
 }
 
 function taskSection(id: string): string {
@@ -86,6 +90,7 @@ test("task contracts and record files reflect the current Phase 2 status", () =>
   const tasks = taskIndex(text.phase);
   const completed = new Set([...tasks].filter(([, checked]) => checked).map(([id]) => id));
   const active = new Set(currentGroup(text.phase, "Active and blocked"));
+  const ready = new Set(currentGroup(text.phase, "Ready"));
   const blocked = new Set(currentGroup(text.phase, "Open and dependency-blocked"));
 
   assert.deepEqual(new Set(currentEvidenceIds()), completed);
@@ -103,6 +108,9 @@ test("task contracts and record files reflect the current Phase 2 status", () =>
     if (active.has(id)) {
       assert.match(section, /^\*\*Current series evidence/mu, `${id} needs series evidence`);
       assert.ok(fs.existsSync(recordFile(id)), `${id} series record file must exist`);
+    }
+    if (ready.has(id)) {
+      assert.ok(!fs.existsSync(recordFile(id)), `${id} must not get a record file before landing`);
     }
     if (blocked.has(id)) {
       assert.ok(!fs.existsSync(recordFile(id)), `${id} must not get a record file before landing`);
