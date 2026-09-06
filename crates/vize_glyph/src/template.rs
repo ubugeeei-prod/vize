@@ -284,9 +284,9 @@ mod tests {
         let class_pos = result.find(":class").unwrap();
         let click_pos = result.find("@click").unwrap();
 
-        assert!(class_pos < vif_pos, "bound attributes stay as authored");
-        assert!(vif_pos < vfor_pos, "directives stay as authored");
-        assert!(vfor_pos < click_pos, "events stay as authored");
+        assert!(vfor_pos < vif_pos);
+        assert!(vif_pos < class_pos);
+        assert!(class_pos < click_pos);
     }
 
     #[test]
@@ -405,18 +405,18 @@ mod tests {
 
     #[test]
     fn test_merge_bind_and_non_bind_false() {
-        // Dynamic bindings are evaluation-order barriers; static attributes
-        // cannot move across them even when grouping is enabled.
         let source = r#"<div :class="cls" class="base" :style="s" style="color:red"></div>"#;
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        assert_eq!(result.as_str(), source);
+        assert_eq!(
+            result.as_str(),
+            r#"<div class="base" style="color:red" :class="cls" :style="s"></div>"#
+        );
     }
 
     #[test]
     fn test_merge_bind_and_non_bind_true() {
-        // When merge_bind_and_non_bind_attrs is true, bind and non-bind are merged
         let source = r#"<div :class="cls" class="base" :style="s" style="color:red"></div>"#;
         let mut options = FormatOptions::default();
         options.merge_bind_and_non_bind_attrs = true;
@@ -486,18 +486,9 @@ mod tests {
         let click_pos = result.find("@click=").unwrap();
         let title_pos = result.find("title=").unwrap();
 
-        assert!(
-            click_pos < id_pos,
-            "dynamic event remains the first barrier"
-        );
-        assert!(
-            id_pos < class_pos,
-            "safe static attrs still use custom groups"
-        );
-        assert!(
-            class_pos < title_pos,
-            "class (group 1) before title (group 3)"
-        );
+        assert!(id_pos < class_pos);
+        assert!(class_pos < click_pos);
+        assert!(click_pos < title_pos);
     }
 
     #[test]

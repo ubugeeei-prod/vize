@@ -22,12 +22,7 @@ pub(crate) struct ParsedAttribute {
 
 /// Sort attributes based on the configured options.
 pub(crate) fn sort_attributes(attrs: &mut [ParsedAttribute], options: &FormatOptions) {
-    // Bindings and directives can execute Vue instance getters, calls,
-    // assignments, or updates while the render data object is constructed.
-    // Keep them fixed and sort only unique, literal HTML attributes between
-    // those barriers. This also subsumes the no-argument v-bind/v-on spread
-    // boundary: no dynamic attribute may cross another one.
-    for segment in attrs.split_mut(is_order_sensitive_attribute) {
+    for segment in attrs.split_mut(is_ordering_barrier) {
         if has_duplicate_static_names(segment) {
             continue;
         }
@@ -47,12 +42,20 @@ fn sort_attribute_segment(attrs: &mut [ParsedAttribute], options: &FormatOptions
             // so computing it inside a comparator re-allocates O(n log n)
             // times. `sort_by_cached_key` evaluates the key closure exactly
             // once per attribute and caches it, then sorts on the cached
-            // tuples. The composite key `(priority, group, lowercased base,
-            // original index)` reproduces the previous comparator (including
-            // the stable original-index tie-break) exactly.
+            // tuples. Static attrs still sort alphabetically inside their
+            // group, while dynamic attrs preserve authored order inside their
+            // lint group so formatter output does not reshuffle listener or
+            // binding evaluation within an otherwise valid category.
             let merge_bind = options.merge_bind_and_non_bind_attrs;
             attrs.sort_by_cached_key(|attr| {
-                let (group, base) = attr_sort_key(&attr.name, merge_bind);
+                let is_dynamic = is_dynamic_attribute_name(&attr.name);
+                let keep_authored_order =
+                    is_dynamic && !(merge_bind && is_bind_attribute_name(&attr.name));
+                let (group, base) = if keep_authored_order {
+                    (1, String::new(""))
+                } else {
+                    attr_sort_key(&attr.name, merge_bind)
+                };
                 (attr.priority, group, base, attr.original_index)
             });
         }
@@ -69,14 +72,27 @@ fn sort_attribute_segment(attrs: &mut [ParsedAttribute], options: &FormatOptions
     }
 }
 
-fn is_order_sensitive_attribute(attr: &ParsedAttribute) -> bool {
+fn is_ordering_barrier(attr: &ParsedAttribute) -> bool {
     let name = attr.name.as_str();
-    name.starts_with([':', '@', '#', '.'])
-        || name.starts_with("v-")
+    is_object_spread_directive(name)
         || attr
             .value
             .as_deref()
             .is_some_and(|value| value.contains("{{"))
+}
+
+fn is_object_spread_directive(name: &str) -> bool {
+    matches!(name, ":" | "@" | "v-bind" | "v-on")
+        || name.starts_with("v-bind.")
+        || name.starts_with("v-on.")
+}
+
+fn is_dynamic_attribute_name(name: &str) -> bool {
+    name.starts_with([':', '@', '#', '.']) || name.starts_with("v-")
+}
+
+fn is_bind_attribute_name(name: &str) -> bool {
+    name.starts_with([':', '.']) || name.starts_with("v-bind:")
 }
 
 fn has_duplicate_static_names(attrs: &[ParsedAttribute]) -> bool {
@@ -119,14 +135,14 @@ fn attr_sort_key(name: &str, merge_bind: bool) -> (u8, String) {
 /// Attribute sort priority mirroring patina's `vue/attribute-order` groups
 /// (the eslint-plugin-vue `vue/attributes-order` default), so default fmt
 /// output can never introduce that lint finding (#3251). Patina quirks are
-/// mirrored on purpose: `:ref`/`:id` are plain bindings, only `:key`/`:is`
-/// are special, static Vue 2 slots are unique attributes, and unmatched
+/// mirrored on purpose: bound `is`, `id`, `ref`, `key`, and Vue 2 slots keep
+/// their named groups; unmatched
 /// directives (`v-is`, `v-memo`) join the slots.
 /// 0 `is`/`:is`; 1 `v-for`; 2 conditionals `v-if`/`v-else-if`/`v-else`/
 /// `v-show`/`v-cloak`; 3 render modifiers `v-pre`/`v-once`; 4 `id`; 5 unique
-/// `ref`/`key`/`slot`/`slot-scope`/`:key`; 6 `v-model`; 7 other directives
-/// `v-slot`/`#xxx`; 8 other attributes (bound `:class` and static `class`
-/// share a priority); 9 events `@xxx`/`v-on`; 10 content `v-html`/`v-text`.
+/// `ref`/`key`/`slot`/`slot-scope`; 6 `v-model`; 7 other directives
+/// `v-slot`/`#xxx`; 8 other attributes; 9 events `@xxx`/`v-on`; 10 content
+/// `v-html`/`v-text`.
 pub(crate) fn attribute_priority(name: &str) -> u8 {
     // Exact directive name or an `:arg`/`.mod` boundary (so `v-models` etc. fall through to 7).
     fn matches_directive(name: &str, directive: &str) -> bool {
@@ -145,12 +161,23 @@ pub(crate) fn attribute_priority(name: &str) -> u8 {
     if matches!(name, "v-pre" | "v-once") {
         return 3;
     }
-    if name == "id" {
+    if matches!(name, "id" | ":id" | "v-bind:id") {
         return 4;
     }
     if matches!(
         name,
-        "ref" | "key" | "slot" | "slot-scope" | ":key" | "v-bind:key"
+        "ref"
+            | "key"
+            | "slot"
+            | "slot-scope"
+            | ":ref"
+            | ":key"
+            | ":slot"
+            | ":slot-scope"
+            | "v-bind:ref"
+            | "v-bind:key"
+            | "v-bind:slot"
+            | "v-bind:slot-scope"
     ) {
         return 5;
     }

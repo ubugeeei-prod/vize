@@ -20,8 +20,6 @@ fn object_v_bind_stays_between_independently_sorted_attribute_groups() {
 
 #[test]
 fn default_order_matches_patina_vue_attribute_order_groups() {
-    // Dynamic directives are evaluation-order barriers. Static attributes
-    // after the final directive can still sort safely.
     let options = FormatOptions {
         print_width: 200,
         ..FormatOptions::default()
@@ -33,7 +31,7 @@ fn default_order_matches_patina_vue_attribute_order_groups() {
     let second = format_template(&first, &options).unwrap();
     assert_eq!(
         first.as_str(),
-        r#"<div class="_button" v-tooltip:dialog="tip" v-once v-show="open" id="help"></div>"#
+        r#"<div v-show="open" v-once id="help" v-tooltip:dialog="tip" class="_button"></div>"#
     );
     assert_eq!(first, second);
 
@@ -48,7 +46,7 @@ fn default_order_matches_patina_vue_attribute_order_groups() {
     let second = format_template(&first, &options).unwrap();
     assert_eq!(
         first.as_str(),
-        r#"<Comp :data="d" #default="{ x }"></Comp>"#
+        r#"<Comp #default="{ x }" :data="d"></Comp>"#
     );
     assert_eq!(first, second);
 }

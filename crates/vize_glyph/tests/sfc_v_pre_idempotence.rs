@@ -57,7 +57,7 @@ fn v_pre_with_other_attributes_is_stable_after_they_are_sorted() {
     let source = "<template>\n  <code class=\"a\" v-pre>{{ v }}</code>\n</template>\n";
     assert_stable(
         source,
-        "<template>\n  <code class=\"a\" v-pre>{{ v }}</code>\n</template>\n",
+        "<template>\n  <code v-pre class=\"a\">{{ v }}</code>\n</template>\n",
     );
 }
 

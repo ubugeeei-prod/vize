@@ -28,12 +28,13 @@ fn test_attribute_priority_order() {
         attribute_priority("v-tooltip")
     );
     assert!(attribute_priority("v-tooltip") < attribute_priority(":class"));
-    // :class and class share the same priority so they stay adjacent;
-    // patina treats :ref and :id as plain bindings.
+    // :class and class share the same priority so they stay adjacent.
     assert_eq!(attribute_priority(":class"), attribute_priority("class"));
     assert_eq!(attribute_priority(":style"), attribute_priority("style"));
-    assert_eq!(attribute_priority(":ref"), attribute_priority(":class"));
-    assert_eq!(attribute_priority(":id"), attribute_priority(":class"));
+    assert_eq!(attribute_priority(":id"), attribute_priority("id"));
+    assert_eq!(attribute_priority(":ref"), attribute_priority("ref"));
+    assert_eq!(attribute_priority("v-bind:id"), attribute_priority("id"));
+    assert_eq!(attribute_priority("v-bind:ref"), attribute_priority("ref"));
     // Events come after attributes, content comes last.
     assert!(attribute_priority("class") < attribute_priority("@click"));
     assert!(attribute_priority("@click") < attribute_priority("v-html"));
