@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
@@ -16,6 +17,20 @@ const outerHarnessTimeoutMs = 20_000;
 
 function artifactPath(fixture: ReturnType<typeof setup>) {
   return path.join(fixture.reportDir, "fixture-typecheck-divergence.json");
+}
+
+function killPidFileIfPresent(pidPath: string) {
+  if (!fs.existsSync(pidPath)) return;
+
+  const rawPid = fs.readFileSync(pidPath, "utf8").trim();
+  const pid = Number.parseInt(rawPid, 10);
+  if (!Number.isSafeInteger(pid) || pid <= 0 || String(pid) !== rawPid) return;
+
+  try {
+    process.kill(pid, "SIGKILL");
+  } catch (error) {
+    if ((error as { code?: unknown }).code !== "ESRCH") throw error;
+  }
 }
 
 test("typecheck divergence report bounds a vue-tsc baseline that ignores SIGTERM", () => {
@@ -59,6 +74,55 @@ setInterval(() => {}, 1000);`,
     assert.equal(artifact.budget.verdict, "unusable");
     assert.equal(artifact.budget.passed, false);
   } finally {
+    cleanup(fixture);
+  }
+});
+
+test("typecheck divergence report closes inherited stdio children after checker exit", () => {
+  if (process.platform === "win32") return;
+
+  const fixture = setup();
+  const childPidPath = path.join(fixture.fakeDir, "stdio-child.pid");
+  try {
+    fs.writeFileSync(
+      fixture.vueTsc,
+      `#!/usr/bin/env node
+import { spawn } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+
+const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000);"], { stdio: "inherit" });
+if (typeof child.pid === "number") fs.writeFileSync(${JSON.stringify(childPidPath)}, String(child.pid));
+
+if (process.argv.includes("--version")) {
+  console.log("3.3.4");
+  process.exit(0);
+}
+
+if (process.argv.includes("--listFilesOnly")) {
+  console.log(path.join(process.cwd(), "src/App.vue"));
+  process.exit(0);
+}
+
+process.stdout.write("src/App.vue(1,1): error TS2322: shared\\n");
+process.exit(2);
+`,
+    );
+    fs.chmodSync(fixture.vueTsc, 0o755);
+
+    const startedAt = Date.now();
+    const result = run(fixture, {}, ["--budget-mode", "record-only"], { timeoutMs: 8_000 });
+    assert.equal(result.status, 0, result.stderr);
+    assert.ok(
+      Date.now() - startedAt < 8_000,
+      "checker output capture must not wait for inherited stdio children after exit",
+    );
+    assert.equal(
+      fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
+      true,
+    );
+  } finally {
+    killPidFileIfPresent(childPidPath);
     cleanup(fixture);
   }
 });

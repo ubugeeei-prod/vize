@@ -2880,6 +2880,7 @@ fn run_capture_limited(
         thread::sleep(Duration::from_millis(5));
     };
     let status = status.code().unwrap_or(1);
+    kill_child_process_group(child.id());
     let stdout = join_output_reader(stdout_reader, label, "stdout")?;
     let stderr = join_output_reader(stderr_reader, label, "stderr")?;
     if !allowed_statuses.contains(&status) {
@@ -2921,14 +2922,32 @@ fn timeout_error(label: &str, timeout_ms: u64) -> String {
 }
 
 fn kill_child_group(child: &mut std::process::Child) {
-    #[cfg(unix)]
-    {
-        let _ = Command::new("kill")
-            .args(["-KILL", &format!("-{}", child.id())])
-            .status();
-    }
+    kill_child_process_group(child.id());
     let _ = child.kill();
     let _ = child.wait();
+}
+
+#[cfg(unix)]
+fn kill_child_process_group(child_id: u32) {
+    let Ok(child_pid) = i32::try_from(child_id) else {
+        return;
+    };
+    // SAFETY: `child_pid` came from `Child::id`, and a negative pid asks the OS
+    // to signal the process group created by `process_group(0)` above.
+    unsafe {
+        let _ = kill(-child_pid, SIGKILL);
+    }
+}
+
+#[cfg(not(unix))]
+fn kill_child_process_group(_child_id: u32) {}
+
+#[cfg(unix)]
+const SIGKILL: i32 = 9;
+
+#[cfg(unix)]
+unsafe extern "C" {
+    fn kill(pid: i32, sig: i32) -> i32;
 }
 
 fn mutation_run_error(error: String) -> String {
