@@ -42,6 +42,45 @@ test("VSIX package policy keeps the production CJS host entrypoint shippable", (
   assert.match(smoke, /"sourceMappingURL="/);
 });
 
+test("VSIX TypeScript plugin staging follows the runtime require closure", () => {
+  const pluginDir = "editors/vscode/typescript-vue-plugin";
+  const sync = readText("tools/commands/editors/vscode/sync-typescript-plugin.rs");
+  const smoke = readText("tools/commands/editors/vscode/assert-vsix-package.rs");
+  const runtimeFiles = new Set(["package.json"]);
+  const pending = ["index.cjs"];
+
+  while (pending.length > 0) {
+    const file = pending.pop();
+    assert.ok(file);
+    if (runtimeFiles.has(file)) {
+      continue;
+    }
+    runtimeFiles.add(file);
+
+    const source = readText(`${pluginDir}/${file}`);
+    for (const match of source.matchAll(/require\("\.\/([^"]+\.cjs)"\)/g)) {
+      pending.push(match[1]);
+    }
+  }
+
+  assert.deepEqual([...runtimeFiles].sort(), [
+    "component-contracts.cjs",
+    "import-resolution.cjs",
+    "index.cjs",
+    "module-resolution.cjs",
+    "package.json",
+    "virtual-modules.cjs",
+  ]);
+  for (const file of runtimeFiles) {
+    assert.match(sync, new RegExp(`"${escapeRegExp(file)}"`), `${file} is not staged`);
+    assert.match(
+      smoke,
+      new RegExp(`extension/node_modules/@vizejs/typescript-vue-plugin/${escapeRegExp(file)}`),
+      `${file} is not required by VSIX smoke`,
+    );
+  }
+});
+
 test("VSIX package policy excludes source-only extension host inputs", () => {
   const ignore = readText("editors/vscode/.vscodeignore");
   const smoke = readText("tools/commands/editors/vscode/assert-vsix-package.rs");

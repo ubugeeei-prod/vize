@@ -15,7 +15,14 @@ const syncCommand = path.join(
   "vscode",
   "sync-typescript-plugin.rs",
 );
-const pluginFiles = ["index.cjs", "package.json", "virtual-modules.cjs"] as const;
+const pluginFiles = [
+  "component-contracts.cjs",
+  "import-resolution.cjs",
+  "index.cjs",
+  "module-resolution.cjs",
+  "package.json",
+  "virtual-modules.cjs",
+] as const;
 
 test("TypeScript Vue plugin staging refuses partial source packages without touching target", () => {
   const fixture = createFixture();
@@ -26,8 +33,9 @@ test("TypeScript Vue plugin staging refuses partial source packages without touc
   );
   fs.mkdirSync(source, { recursive: true });
   fs.mkdirSync(target, { recursive: true });
-  fs.writeFileSync(path.join(source, "index.cjs"), "new index\n");
-  fs.writeFileSync(path.join(source, "package.json"), "{}\n");
+  for (const file of pluginFiles.filter((file) => file !== "virtual-modules.cjs")) {
+    fs.writeFileSync(path.join(source, file), `new ${file}\n`);
+  }
   for (const file of pluginFiles) {
     fs.writeFileSync(path.join(target, file), `previous ${file}\n`);
   }
