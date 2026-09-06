@@ -28,6 +28,10 @@ test("real-project LSP exercises authored binding and component boundary feature
     assert.equal(result.hover.count, 1);
     assert.equal(result.references.count, 2);
     assert.equal(result.rename.count, 2);
+    assert.deepEqual(result.templateBindingDiagnostics, {
+      count: 0,
+      sha256: "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    });
     for (const evidence of [
       result.completion,
       result.componentDefinition,

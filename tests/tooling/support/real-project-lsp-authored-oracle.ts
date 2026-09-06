@@ -27,7 +27,11 @@ import {
   requestCompletion,
   waitForDiagnostics,
 } from "./real-project-lsp-authored-oracle-session.ts";
-import type { FixtureProject, LspAuthoredOracle } from "./real-project-lsp-report.ts";
+import type {
+  AuthoredLspExerciseEvidence,
+  FixtureProject,
+  LspAuthoredOracle,
+} from "./real-project-lsp-report.ts";
 import { exerciseAuthoredFileLifecycle } from "./real-project-lsp-file-lifecycle.ts";
 
 const diagnosticsTimeoutMs = 120_000;
@@ -37,7 +41,7 @@ export async function exerciseAuthoredLspOracle(
   workspaceDir: string,
   oracle: LspAuthoredOracle,
   timeoutMs: () => number = () => diagnosticsTimeoutMs,
-) {
+): Promise<AuthoredLspExerciseEvidence> {
   const openUris: string[] = [];
   const binding = oracle.templateBinding;
   const boundary = oracle.componentBoundary;

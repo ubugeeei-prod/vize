@@ -111,6 +111,10 @@ export type AuthoredLspEvidence = {
   templateBindingFile: string;
 };
 
+export type AuthoredLspExerciseEvidence = AuthoredLspEvidence & {
+  templateBindingDiagnostics: DiagnosticEvidence;
+};
+
 export type LspProjectEvidence = {
   actualFile: string | null;
   actualFileDiagnostics: DiagnosticEvidence | null;
