@@ -212,8 +212,8 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-09-06):** 120 installments have landed through
-[#5829](https://github.com/ubugeeei-prod/vize/pull/5829). Installments 84-120 open
+**Current series evidence (2026-09-06):** 121 installments have landed through
+[#5849](https://github.com/ubugeeei-prod/vize/pull/5849). Installments 84-121 open
 the production option surface the switch needs, since through 83 the lane only
 matched `compile_template`'s _defaults_ while production compiles go through
 `compile_template_block`: `DomEmitOptions` now carries module mode,
@@ -230,7 +230,7 @@ routing, SFC namespace selection, ordinary comment output, source-map requests
 handled around S2 with a verified compatibility map, experimental in-tag
 comments, declarative custom-element patterns, bare static style merges and
 disabled static-hoist routing, HTML re-entry close casing and the explicit
-legacy selection guard. A
+legacy selection guard, plus the audited DOM no-op `optimize_imports` selector. A
 field missing from that struct is not a default the emitter assumes; it is
 surface the series has not reached. The earlier S2 DOM lane also covers the
 late directive and patch-site witnesses, residual component and hoist-order
@@ -238,8 +238,8 @@ witnesses, and the corpus-runnable plus CI DOM lanes. Real Project Matrix run `3
 recorded canonical hydrated zero-divergence evidence over 146 gitlinks,
 142 ecosystem projects, 42,668 files and 42,279 compared templates. The task
 remains blocked on the full production-lane switch because opaque
-custom-element predicates, unsupported-option and explicit legacy-flag compiles
-still require the guarded compatibility path until flag deletion. See the
+custom-element predicates and explicit legacy-flag compiles still require the
+guarded compatibility path until flag deletion. See the
 [series record](./phase-2-records/p2-11.md).
 
 **Steps:**
