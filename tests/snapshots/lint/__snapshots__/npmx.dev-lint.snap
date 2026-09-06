@@ -3706,17 +3706,6 @@
         "help": "Use kebab-case for attribute names"
       },
       {
-        "ruleId": "vue/require-v-for-key",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
-        "line": 1028,
-        "column": 19,
-        "endLine": 1028,
-        "endColumn": 60,
-        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3770,20 +3759,9 @@
         "endLine": 1102,
         "endColumn": 23,
         "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/require-v-for-key",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
-        "line": 1136,
-        "column": 19,
-        "endLine": 1136,
-        "endColumn": 60,
-        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
       }
     ],
-    "errorCount": 2,
+    "errorCount": 0,
     "warningCount": 17
   },
   {
