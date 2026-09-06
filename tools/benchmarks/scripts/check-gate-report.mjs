@@ -75,6 +75,9 @@ export function measureRows(variants, { runs, warmups }) {
 
 /** Pure budget rule so tests can exercise it without re-measuring. */
 export function evaluateBudget(headMedianMs, baseline, thresholdPercent) {
+  if (!Number.isFinite(headMedianMs) || headMedianMs <= 0) {
+    return { status: "invalid-head-median", headMedianMs, thresholdPercent };
+  }
   if (baseline == null) return { status: "no-baseline", thresholdPercent };
   const baseMedianMs = baseline?.rows?.find((row) => row.id === "vize-check-max")?.medianMs;
   if (!Number.isFinite(baseMedianMs) || baseMedianMs <= 0) {

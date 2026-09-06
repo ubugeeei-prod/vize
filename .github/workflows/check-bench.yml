@@ -32,6 +32,7 @@ on:
       - tools/benchmarks/scripts/check-gate-env.mjs
       - tools/benchmarks/scripts/check-gate-plants.mjs
       - tools/benchmarks/scripts/check-gate-report.mjs
+      - tools/benchmarks/scripts/check-gate-report.test.mjs
       - .github/workflows/check-bench.yml
   schedule:
     # Weekly report cadence; the plants correctness gate itself runs on every
@@ -79,6 +80,9 @@ jobs:
           node-version-file: "package.json"
           cache: true
           run-install: false
+
+      - name: Test check benchmark report helpers
+        run: node --test tools/benchmarks/scripts/check-gate-report.test.mjs
 
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline

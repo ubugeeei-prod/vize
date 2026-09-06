@@ -268,7 +268,11 @@ export async function main(argv = process.argv.slice(2)) {
   if (args.out) writeFileSync(resolve(args.out), markdown);
   else process.stdout.write(markdown);
   if (args.json) writeFileSync(resolve(args.json), `${JSON.stringify(data, null, 2)}\n`);
-  if (budget.status === "failed" || budget.status === "invalid-baseline") {
+  if (
+    budget.status === "failed" ||
+    budget.status === "invalid-baseline" ||
+    budget.status === "invalid-head-median"
+  ) {
     throw new Error(`check-gate: budget ${budget.status} (${JSON.stringify(budget)})`);
   }
 }
