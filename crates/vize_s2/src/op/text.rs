@@ -1,4 +1,4 @@
-//! `ui.text` / `ui.interpolation` payloads.
+//! `ui.text` / `ui.interpolation` / `ui.comment` payloads.
 
 use vize_s0::Span;
 
@@ -23,9 +23,19 @@ pub struct InterpolationOp<'a> {
     pub span: Span,
 }
 
+/// `ui.comment` - an authored template comment kept for DOM output.
+#[derive(Debug)]
+pub struct CommentOp<'a> {
+    /// The comment body, without the `<!--` / `-->` delimiters.
+    pub content: &'a str,
+    /// The comment's full source range.
+    pub span: Span,
+}
+
 /// See [`crate::op`] for the guard rationale.
 #[cfg(target_pointer_width = "64")]
 const _: () = {
     assert!(core::mem::size_of::<TextOp<'_>>() == 24);
     assert!(core::mem::size_of::<InterpolationOp<'_>>() == 24);
+    assert!(core::mem::size_of::<CommentOp<'_>>() == 24);
 };

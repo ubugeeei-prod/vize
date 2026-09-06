@@ -2,7 +2,7 @@
 
 use vize_s2::op::{Op, Region};
 
-use super::children::{emit_create_text_vnode, emit_text_like};
+use super::children::{emit_comment_vnode, emit_create_text_vnode, emit_text_like};
 use super::{EmitCx, EmitError};
 
 pub(super) fn emit_children(
@@ -68,7 +68,18 @@ fn emit_children_inner(
         }
         cx.buf.newline();
         first = false;
-        super::vnode::emit_array_child(cx, &ops[i], hoist_static_children, cache_static_children)?;
+        match &ops[i] {
+            Op::Comment(comment) => {
+                let _id = cx.walk.mint();
+                emit_comment_vnode(cx, comment);
+            }
+            op => super::vnode::emit_array_child(
+                cx,
+                op,
+                hoist_static_children,
+                cache_static_children,
+            )?,
+        }
         i += 1;
     }
     cx.buf.deindent();

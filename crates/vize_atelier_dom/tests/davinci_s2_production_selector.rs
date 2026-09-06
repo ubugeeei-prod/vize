@@ -85,30 +85,27 @@ fn source_map_compiles_stay_on_compatibility_when_profiled() {
 }
 
 #[test]
-fn comments_stay_on_compatibility_without_profiler() {
+fn comments_use_s2_when_profiled() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
     profiler.clear();
 
     let source = "<div><!--kept--><span>probe</span></div>";
-    let options = DomCompilerOptions {
-        comments: true,
-        ..Default::default()
-    };
-
-    let result = compile(source, options);
+    profiler.enable();
+    let result = compile(
+        source,
+        DomCompilerOptions {
+            comments: true,
+            ..Default::default()
+        },
+    );
     let counters = profiler.counter_summary();
+    profiler.disable();
+    profiler.clear();
 
-    assert!(
-        result.sections.is_some(),
-        "comment-preserving compiles must keep compatibility sections"
-    );
-    assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
-        None,
-        "compatibility compiles must not instantiate the profiling observer"
-    );
+    assert!(result.code.contains(r#"_createCommentVNode("kept")"#));
+    assert_eq!(counter_total(&counters, "davinci.s2_dom.files"), Some(1));
 }
 
 #[test]

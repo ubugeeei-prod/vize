@@ -119,7 +119,7 @@ fn rewrite_ops<'a>(
                     facts,
                 );
             }
-            Op::Text(_) => {}
+            Op::Text(_) | Op::Comment(_) => {}
         }
     }
 }

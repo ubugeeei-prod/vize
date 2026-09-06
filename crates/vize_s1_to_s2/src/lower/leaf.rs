@@ -1,5 +1,5 @@
-//! Leaf children: text, interpolations, and the S1 node kinds S2 does
-//! not carry (comments, processing instructions, `Unexpected` holes).
+//! Leaf children: text, interpolations, comments, and the S1 node kinds S2 does
+//! not carry (processing instructions, `Unexpected` holes).
 //!
 //! Dropping is never silent: every non-lowered node leaves a provenance
 //! record (the survival law), and the bytes stay recoverable through S1.
@@ -11,7 +11,7 @@
 use vize_s0::{Box, Span, String, Vec, cstr};
 use vize_s1::{Interpolation, SurfaceChild, Token};
 
-use vize_s2::op::{InterpolationOp, Op, TextOp};
+use vize_s2::op::{CommentOp, InterpolationOp, Op, TextOp};
 
 use super::cx::Cx;
 use super::expr::{desc, filter_expr_at};
@@ -26,8 +26,12 @@ pub(crate) fn lower_leaf<'a>(cx: &mut Cx<'a>, child: &SurfaceChild<'a>, out: &mu
         SurfaceChild::Text(token) => lower_text(cx, token, token.text, out),
         SurfaceChild::Interpolation(node) => lower_interpolation(cx, node, out),
         SurfaceChild::Comment(token) => {
-            let span = cx.token_span(token);
-            cx.record("drop.comment", None, token.text, String::default(), span);
+            if cx.preserve_comments() {
+                lower_comment(cx, token, out);
+            } else {
+                let span = cx.token_span(token);
+                cx.record("drop.comment", None, token.text, String::default(), span);
+            }
         }
         SurfaceChild::Cdata(token) => lower_cdata(cx, token, out),
         SurfaceChild::ProcessingInstruction(token) => {
@@ -89,6 +93,31 @@ fn lower_interpolation<'a>(cx: &mut Cx<'a>, node: &Interpolation<'a>, out: &mut 
         InterpolationOp { expression, span },
         &cx.allocator,
     )));
+}
+
+fn lower_comment<'a>(cx: &mut Cx<'a>, token: &Token<'a>, out: &mut Vec<'a, Op<'a>>) {
+    let node = cx.mint_op();
+    let span = cx.token_span(token);
+    cx.record(
+        "lower.comment",
+        node,
+        token.text,
+        String::from("ui.comment"),
+        span,
+    );
+    out.push(Op::Comment(Box::new_in(
+        CommentOp {
+            content: comment_content(token.text),
+            span,
+        },
+        &cx.allocator,
+    )));
+}
+
+fn comment_content(text: &str) -> &str {
+    text.strip_prefix("<!--")
+        .and_then(|inner| inner.strip_suffix("-->"))
+        .unwrap_or(text)
 }
 
 /// A CDATA section's content is text (the foreign-namespace reading);

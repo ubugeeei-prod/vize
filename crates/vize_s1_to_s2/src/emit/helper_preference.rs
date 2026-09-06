@@ -173,6 +173,7 @@ fn prefer_op_helpers(
             );
         }
         Op::Text(_) => buf.prefer(Helper::CreateText),
+        Op::Comment(_) => buf.prefer(Helper::CreateComment),
         Op::Interpolation(_) => {
             buf.prefer(Helper::ToDisplayString);
             if id

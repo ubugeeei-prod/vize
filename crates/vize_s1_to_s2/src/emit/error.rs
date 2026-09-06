@@ -294,6 +294,7 @@ fn op_span(op: &Op<'_>) -> Span {
         Op::Component(op) => op.span,
         Op::Text(op) => op.span,
         Op::Interpolation(op) => op.span,
+        Op::Comment(op) => op.span,
         Op::If(op) => op.span,
         Op::For(op) => op.span,
         Op::Slot(op) => op.span,

@@ -76,7 +76,10 @@ pub fn walk_level(
     let mut cursor = 0usize;
     for op in s2 {
         // Leaf ops between structural positions still consume ids.
-        if matches!(op, FolioOp::Text(_) | FolioOp::Interpolation(_)) {
+        if matches!(
+            op,
+            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_)
+        ) {
             *next += 1;
             continue;
         }
@@ -243,7 +246,10 @@ fn walk_branch_roots(
     );
     let mut cursor = 0usize;
     for op in ops {
-        if matches!(op, FolioOp::Text(_) | FolioOp::Interpolation(_)) {
+        if matches!(
+            op,
+            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_)
+        ) {
             *next += 1;
             continue;
         }

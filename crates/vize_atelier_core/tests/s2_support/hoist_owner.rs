@@ -330,7 +330,7 @@ pub fn advance_ops(ops: &[FolioOp], next: &mut u32) {
                 *next += 1;
                 advance_ops(&for_op.ops, next);
             }
-            FolioOp::Text(_) | FolioOp::Interpolation(_) => *next += 1,
+            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => *next += 1,
         }
     }
 }

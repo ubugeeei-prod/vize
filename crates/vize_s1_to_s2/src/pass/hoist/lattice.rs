@@ -134,6 +134,11 @@ fn visit_region_guarded(
                 nested: true,
                 native: true,
             },
+            Op::Comment(_) => Contribution {
+                level: ChildLevel::Dynamic,
+                nested: false,
+                native: true,
+            },
             Op::If(if_op) => {
                 for branch in if_op.branches.iter() {
                     visit_region(walk, &branch.region.ops, ns, provenance, facts);

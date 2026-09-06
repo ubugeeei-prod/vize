@@ -51,7 +51,7 @@ pub use control::{ForBinding, ForOp, IfBranch, IfOp};
 pub use element::{Attribute, ComponentOp, ElementOp, Namespace};
 pub use model::{BindingContract, ModelOp};
 pub use slot::{DynamicName, SlotContentOp, SlotOp};
-pub use text::{InterpolationOp, TextOp};
+pub use text::{CommentOp, InterpolationOp, TextOp};
 pub use vue::{
     VueCloakOp, VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp, VueOnceOp, VueShowOp,
     VueSlotScopeOp, VueSyncOp, VueTextOp,
@@ -77,6 +77,8 @@ pub enum Op<'a> {
     Text(Box<'a, TextOp<'a>>),
     /// `ui.interpolation` - an expression rendered as text.
     Interpolation(Box<'a, InterpolationOp<'a>>),
+    /// `ui.comment` - an authored template comment preserved for DOM output.
+    Comment(Box<'a, CommentOp<'a>>),
     /// `ui.if` - structured conditional; every branch owns its region.
     If(Box<'a, IfOp<'a>>),
     /// `ui.for` - structured iteration; the repeated content is one owned
@@ -96,6 +98,7 @@ impl Op<'_> {
             Self::Component(_) => "ui.component",
             Self::Text(_) => "ui.text",
             Self::Interpolation(_) => "ui.interpolation",
+            Self::Comment(_) => "ui.comment",
             Self::If(_) => "ui.if",
             Self::For(_) => "ui.for",
             Self::Slot(_) => "ui.slot",

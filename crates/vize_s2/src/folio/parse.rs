@@ -230,7 +230,9 @@ impl Parser {
                     FolioOp::If(if_op) => self.stack.push(Frame::If(if_op)),
                     FolioOp::For(for_op) => self.stack.push(Frame::For(for_op)),
                     FolioOp::Slot(slot) => self.stack.push(Frame::Slot(slot, Phase::Attrs)),
-                    FolioOp::Text(_) | FolioOp::Interpolation(_) => self.attach_op(op),
+                    FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => {
+                        self.attach_op(op)
+                    }
                 }
                 Ok(())
             }

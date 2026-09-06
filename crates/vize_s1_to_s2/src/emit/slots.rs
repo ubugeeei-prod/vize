@@ -108,7 +108,7 @@ pub(super) fn admit_default(children: &Region<'_>) -> Result<(), EmitError> {
 fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
     for op in region.ops.iter() {
         match op {
-            Op::Text(_) | Op::Interpolation(_) => {}
+            Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
             Op::Element(element) if is_slot_template(element) => {
                 if element.bindings.iter().any(|b| !is_inert_slot_binding(b)) {
                     return Err(EmitError::unsupported_at(

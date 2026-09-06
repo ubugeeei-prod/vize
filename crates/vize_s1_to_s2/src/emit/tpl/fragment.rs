@@ -3,9 +3,9 @@ use vize_s2::op::{InterpolationOp, Op};
 
 use super::super::buf::Buf;
 use super::super::children::{
-    emit_create_text_vnode, emit_dynamic_part, emit_interpolation, emit_js_to_display_string,
-    emit_plain_text_vnode, emit_raw_interpolation_or_refuse, emit_to_display_string,
-    is_empty_interpolation,
+    emit_comment_vnode, emit_create_text_vnode, emit_dynamic_part, emit_interpolation,
+    emit_js_to_display_string, emit_plain_text_vnode, emit_raw_interpolation_or_refuse,
+    emit_to_display_string, is_empty_interpolation,
 };
 use super::super::hoist::{emit_hoisted_element, is_hoistable};
 use super::super::js::{escape_js_string, is_valid_js_identifier};
@@ -227,6 +227,11 @@ fn emit_generate_node(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitErr
             Op::Interpolation(interp) => {
                 emit_gen_interp(cx, interp, &mut first)?;
             }
+            Op::Comment(comment) => {
+                start_item(cx, &mut first);
+                let _id = cx.walk.mint();
+                emit_comment_vnode(cx, comment);
+            }
             _ => {
                 start_item(cx, &mut first);
                 emit_node_child(cx, op)?;
@@ -301,6 +306,11 @@ fn emit_inline_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> 
         Op::Interpolation(interp) => {
             let id = cx.walk.mint();
             emit_interpolation(cx, interp, id)
+        }
+        Op::Comment(comment) => {
+            let _id = cx.walk.mint();
+            emit_comment_vnode(cx, comment);
+            Ok(())
         }
         _ => emit_node_child(cx, op),
     }

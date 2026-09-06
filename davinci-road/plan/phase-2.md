@@ -102,8 +102,8 @@ counts or fixture availability changes.
   zero-divergence evidence over 146 gitlinks and 142 ecosystem projects:
   42,668 files, 42,279 compared templates, zero S2 refusals and zero
   divergences. The full production-lane switch remains open for source maps,
-  comments, unsupported option shapes and the explicit legacy flag; the old DOM
-  lane remains the compatibility path.
+  experimental in-tag comments, unsupported option shapes and the explicit
+  legacy flag; the old DOM lane remains the compatibility path.
 - **Open and dependency-blocked: 4 of 22 — P2-12b, P2-16, P2-17 and
   P2-20.** P2-12b depends on P2-12a, P2-11 and P2-3; TS-22 groundwork now
   exposes `emit_dom_source_observed` and `emit_budget_observer` for the one

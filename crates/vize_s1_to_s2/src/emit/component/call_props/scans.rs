@@ -28,7 +28,7 @@ pub(super) fn has_nested_for_component_static_bind_props(
             }
             Op::For(for_op) => region_has_component_static_bind_props(&for_op.region, is_ts)?,
             Op::Slot(slot) => has_nested_for_component_static_bind_props(&slot.fallback, is_ts)?,
-            Op::Text(_) | Op::Interpolation(_) => false,
+            Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
         };
         if found {
             return Ok(true);
@@ -59,7 +59,7 @@ fn region_has_component_static_bind_props(
             }
             Op::For(for_op) => region_has_component_static_bind_props(&for_op.region, is_ts)?,
             Op::Slot(slot) => region_has_component_static_bind_props(&slot.fallback, is_ts)?,
-            Op::Text(_) | Op::Interpolation(_) => false,
+            Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
         };
         if found {
             return Ok(true);

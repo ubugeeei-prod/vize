@@ -64,6 +64,7 @@ fn carrier_surface<'w, 'a>(
         | Op::Component(_)
         | Op::Slot(_)
         | Op::Text(_)
+        | Op::Comment(_)
         | Op::Interpolation(_)
         | Op::If(_)
         | Op::For(_) => None,

@@ -271,7 +271,7 @@ pub fn shape_of_s2(ops: &[FolioOp], out: &mut vize_s0::String) {
                 shape_of_s2(&for_op.ops, out);
                 out.push(')');
             }
-            FolioOp::Text(_) | FolioOp::Interpolation(_) => {}
+            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => {}
         }
     }
 }

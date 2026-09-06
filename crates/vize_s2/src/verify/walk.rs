@@ -37,6 +37,7 @@ fn keyword(op: &FolioOp) -> &'static str {
         FolioOp::Component(_) => "ui.component",
         FolioOp::Text(_) => "ui.text",
         FolioOp::Interpolation(_) => "ui.interpolation",
+        FolioOp::Comment(_) => "ui.comment",
         FolioOp::If(_) => "ui.if",
         FolioOp::For(_) => "ui.for",
         FolioOp::Slot(_) => "ui.slot",
@@ -50,6 +51,7 @@ fn op_span(op: &FolioOp) -> Span {
         FolioOp::Component(component) => component.span,
         FolioOp::Text(text) => text.span,
         FolioOp::Interpolation(interpolation) => interpolation.span,
+        FolioOp::Comment(comment) => comment.span,
         FolioOp::If(if_op) => if_op.span,
         FolioOp::For(for_op) => for_op.span,
         FolioOp::Slot(slot) => slot.span,
@@ -105,7 +107,7 @@ fn visit_op(op: &FolioOp, owner: Owner, rigor: Rigor, out: &mut Vec<Violation>) 
             rigor,
             out,
         ),
-        FolioOp::Text(_) | FolioOp::Interpolation(_) => {}
+        FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => {}
         FolioOp::If(if_op) => visit_if(if_op, rigor, out),
         FolioOp::For(for_op) => {
             for child in &for_op.ops {

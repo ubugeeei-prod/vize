@@ -68,7 +68,7 @@ pub(super) fn advance_after_op(walk: &mut PageWalk, op: &Op<'_>) {
             walk.skip(slot.bindings.len());
             advance_after_ops(walk, &slot.fallback.ops);
         }
-        Op::Text(_) | Op::Interpolation(_) => {}
+        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
     }
 }
 
@@ -145,6 +145,6 @@ fn skip_op(cx: &mut EmitCx<'_>, op: &Op<'_>) {
             cx.walk.skip(slot.bindings.len());
             skip_ops(cx, &slot.fallback.ops);
         }
-        Op::Text(_) | Op::Interpolation(_) => {}
+        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
     }
 }

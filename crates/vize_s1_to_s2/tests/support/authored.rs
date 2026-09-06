@@ -61,6 +61,7 @@ fn assert_op(source: &str, root: SourceRoot<'_>, op: &Op<'_>) {
             assert_region(source, root, &component.children);
         }
         Op::Text(text) => assert_span(source, root, text.span, "text"),
+        Op::Comment(comment) => assert_span(source, root, comment.span, "comment"),
         Op::Interpolation(interpolation) => {
             assert_span(source, root, interpolation.span, "interpolation");
             assert_expr(source, root, interpolation.expression);

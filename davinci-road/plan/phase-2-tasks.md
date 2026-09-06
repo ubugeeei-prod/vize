@@ -233,9 +233,9 @@ late directive and patch-site witnesses, residual component and hoist-order
 witnesses, and the corpus-runnable plus CI DOM lanes. Real Project Matrix run `33531193323`
 recorded canonical hydrated zero-divergence evidence over 146 gitlinks,
 142 ecosystem projects, 42,668 files and 42,279 compared templates. The task
-remains blocked on the full production-lane switch because source-map, comment,
-unsupported-option and explicit legacy-flag compiles still require the
-compatibility path. See the
+remains blocked on the full production-lane switch because source-map,
+experimental in-tag comment, unsupported-option and explicit legacy-flag
+compiles still require the compatibility path. See the
 [series record](./phase-2-records/p2-11.md).
 
 **Steps:**

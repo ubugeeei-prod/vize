@@ -43,6 +43,8 @@ pub(crate) struct Cx<'a> {
     /// How many `v-pre` ancestors the walk is inside; interpolations are
     /// inert authored text for those subtrees.
     v_pre_depth: u32,
+    /// Whether ordinary comments lower to `ui.comment`.
+    preserve_comments: bool,
     pub diagnostics: Vec<Diagnostic>,
     pub provenance: Vec<ProvenanceRecord>,
     pub scopes: SideTable<ScopeFacts>,
@@ -53,10 +55,11 @@ pub(crate) struct Cx<'a> {
 }
 
 impl<'a> Cx<'a> {
-    pub(crate) fn with_source_block(
+    pub(crate) fn with_source_block_and_comment_policy(
         allocator: &'a Allocator,
         block: SourceBlock<'a>,
         caps: super::caps::LegacyCaps,
+        preserve_comments: bool,
     ) -> Self {
         Self {
             allocator,
@@ -67,6 +70,7 @@ impl<'a> Cx<'a> {
             next_scope: 0,
             condense_depth: 0,
             v_pre_depth: 0,
+            preserve_comments,
             diagnostics: Vec::new(),
             provenance: Vec::new(),
             scopes: SideTable::new(),
@@ -85,6 +89,11 @@ impl<'a> Cx<'a> {
     /// Whether the walk is inside a `v-pre` subtree.
     pub(crate) fn v_pre_suppressed(&self) -> bool {
         self.v_pre_depth > 0
+    }
+
+    /// Whether ordinary comments are lowered as `ui.comment` ops.
+    pub(crate) fn preserve_comments(&self) -> bool {
+        self.preserve_comments
     }
 
     /// Enter/leave a condense-suppressing `<pre>` around its children.

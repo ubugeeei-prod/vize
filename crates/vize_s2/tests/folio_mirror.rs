@@ -11,9 +11,9 @@ use vize_s0::{Allocator, Box, Span, Vec as ArenaVec};
 use vize_s2::expr::{ExprRef, ForeignExpr, JsExpr, OpaqueExpr, OpaqueReason};
 use vize_s2::folio::DisegnoFolio;
 use vize_s2::op::{
-    Attribute, BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, ForBinding,
-    ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region, SlotOp, TextOp,
-    VueDirectiveOp,
+    Attribute, BindOp, BindingContract, BindingOp, CommentOp, ComponentOp, DynamicName, ElementOp,
+    ForBinding, ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region,
+    SlotOp, TextOp, VueDirectiveOp,
 };
 
 /// Canonical text of the reference tree.
@@ -54,13 +54,22 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
                         condition: Some(js(allocator, "open", 65, 69)),
                         region: Region {
                             ops: ArenaVec::from_iter_in(
-                                [Op::Text(Box::new_in(
-                                    TextOp {
-                                        content: "a\"b\\c",
-                                        span: Span::new(66, 70),
-                                    },
-                                    &allocator,
-                                ))],
+                                [
+                                    Op::Text(Box::new_in(
+                                        TextOp {
+                                            content: "a\"b\\c",
+                                            span: Span::new(66, 70),
+                                        },
+                                        &allocator,
+                                    )),
+                                    Op::Comment(Box::new_in(
+                                        CommentOp {
+                                            content: "kept",
+                                            span: Span::new(70, 74),
+                                        },
+                                        &allocator,
+                                    )),
+                                ],
                                 &allocator,
                             ),
                         },
@@ -250,7 +259,7 @@ fn an_arena_tree_mirrors_into_the_same_folio() {
     let allocator = Allocator::default();
     let ops = arena_built(&allocator);
     let mirrored = DisegnoFolio::of(&ops);
-    assert_eq!(mirrored.op_count(), 12);
+    assert_eq!(mirrored.op_count(), 13);
     assert_eq!(
         mirrored.print_to_string(FolioMode::Full).as_str(),
         CANONICAL

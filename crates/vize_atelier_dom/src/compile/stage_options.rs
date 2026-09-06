@@ -90,7 +90,6 @@ pub(super) fn s2_emit_supported(
     ) && !codegen.source_map
         && options.hoist_static
         && !options.ssr
-        && !options.comments
         && !options.experimental_in_tag_comments
         && !options.experimental_patterned_template
         && !options.custom_renderer
@@ -125,6 +124,7 @@ pub(super) fn s2_emit_options<'a>(
         hoisted_scope_id,
         scope_id: options.scope_id.as_deref(),
         is_ts: options.is_ts,
+        comments: options.comments,
         bindings,
     }
 }

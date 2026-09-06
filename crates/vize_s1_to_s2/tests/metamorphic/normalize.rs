@@ -82,7 +82,7 @@ fn walk_region(ops: &mut [FolioOp]) {
                 sort_binding_attrs(&mut slot.bindings);
                 walk_region(&mut slot.fallback);
             }
-            FolioOp::Text(_) | FolioOp::Interpolation(_) => {}
+            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => {}
         }
     }
 }

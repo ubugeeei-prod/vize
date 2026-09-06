@@ -142,6 +142,24 @@ pub fn lower_with_caps<'a>(
     lower_source_block_with_caps(allocator, tree, errors, root.whole_block(), caps)
 }
 
+pub(crate) fn lower_with_caps_and_comment_policy<'a>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+    caps: LegacyCaps,
+    preserve_comments: bool,
+) -> Lowered<'a> {
+    let root = SourceRoot::new(tree.source).expect("vize_s1 accepted a u32-addressable source");
+    lower_source_block_with_caps_and_comment_policy(
+        allocator,
+        tree,
+        errors,
+        root.whole_block(),
+        caps,
+        preserve_comments,
+    )
+}
+
 /// Lower a parsed S1 source block while preserving file-absolute S0 spans.
 #[must_use]
 pub fn lower_source_block<'a>(
@@ -162,12 +180,24 @@ pub fn lower_source_block_with_caps<'a>(
     block: SourceBlock<'a>,
     caps: LegacyCaps,
 ) -> Lowered<'a> {
+    lower_source_block_with_caps_and_comment_policy(allocator, tree, errors, block, caps, false)
+}
+
+fn lower_source_block_with_caps_and_comment_policy<'a>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+    block: SourceBlock<'a>,
+    caps: LegacyCaps,
+    preserve_comments: bool,
+) -> Lowered<'a> {
     debug_assert!(
         tree.source.as_ptr() == block.source().as_ptr()
             && tree.source.len() == block.source().len(),
         "the source block must be the exact string parsed into the S1 tree"
     );
-    let mut cx = cx::Cx::with_source_block(allocator, block, caps);
+    let mut cx =
+        cx::Cx::with_source_block_and_comment_policy(allocator, block, caps, preserve_comments);
     for error in errors {
         cx.diagnostics.push(Diagnostic::new(
             Severity::Error,

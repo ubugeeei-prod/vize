@@ -60,7 +60,9 @@ fn structural_children_cross_boundary(
             })
         }),
         Op::For(for_op) => ensure_sufficient_stack(|| children_cross_boundary(ns, &for_op.region)),
-        Op::Component(_) | Op::Slot(_) | Op::Text(_) | Op::Interpolation(_) => false,
+        Op::Component(_) | Op::Slot(_) | Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {
+            false
+        }
     })
 }
 
@@ -88,7 +90,9 @@ fn child_crosses(ns: Namespace, child: &Op<'_>) -> bool {
             .iter()
             .any(|branch| ensure_sufficient_stack(|| children_cross_boundary(ns, &branch.region))),
         Op::For(for_op) => ensure_sufficient_stack(|| children_cross_boundary(ns, &for_op.region)),
-        Op::Component(_) | Op::Slot(_) | Op::Text(_) | Op::Interpolation(_) => false,
+        Op::Component(_) | Op::Slot(_) | Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {
+            false
+        }
     }
 }
 

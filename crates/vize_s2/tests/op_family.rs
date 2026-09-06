@@ -10,10 +10,10 @@
 use vize_s0::{Allocator, Box, Span, Vec};
 use vize_s2::expr::{ExprRef, OpaqueExpr, OpaqueReason};
 use vize_s2::op::{
-    Attribute, BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, ForBinding,
-    ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region, SlotContentOp,
-    SlotOp, TextOp, VueCloakOp, VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp, VueOnceOp,
-    VueShowOp, VueSlotScopeOp, VueSyncOp, VueTextOp,
+    Attribute, BindOp, BindingContract, BindingOp, CommentOp, ComponentOp, DynamicName, ElementOp,
+    ForBinding, ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region,
+    SlotContentOp, SlotOp, TextOp, VueCloakOp, VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp,
+    VueOnceOp, VueShowOp, VueSlotScopeOp, VueSyncOp, VueTextOp,
 };
 
 /// The escape payload standing in for "some expression" wherever the op
@@ -34,6 +34,7 @@ fn op_keyword(op: &Op<'_>) -> &'static str {
         Op::Component(_) => "ui.component",
         Op::Text(_) => "ui.text",
         Op::Interpolation(_) => "ui.interpolation",
+        Op::Comment(_) => "ui.comment",
         Op::If(_) => "ui.if",
         Op::For(_) => "ui.for",
         Op::Slot(_) => "ui.slot",
@@ -120,6 +121,13 @@ fn every_op<'a>(allocator: &'a Allocator) -> Vec<'a, Op<'a>> {
             Op::Interpolation(Box::new_in(
                 InterpolationOp {
                     expression: expr,
+                    span,
+                },
+                &allocator,
+            )),
+            Op::Comment(Box::new_in(
+                CommentOp {
+                    content: "kept",
                     span,
                 },
                 &allocator,
@@ -280,6 +288,7 @@ fn every_region_op_variant_is_matched_without_a_wildcard() {
             "ui.component",
             "ui.text",
             "ui.interpolation",
+            "ui.comment",
             "ui.if",
             "ui.for",
             "ui.slot",

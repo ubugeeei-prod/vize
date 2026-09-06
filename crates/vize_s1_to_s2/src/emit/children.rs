@@ -7,7 +7,7 @@ pub(super) use slot_text::{emit_slot_text_child, emit_slot_text_run};
 use vize_davinci::id::NodeId;
 use vize_s0::Span;
 use vize_s2::expr::{ExprRef, JsExpr, OpaqueReason};
-use vize_s2::op::{InterpolationOp, Op, Region};
+use vize_s2::op::{CommentOp, InterpolationOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
@@ -26,7 +26,12 @@ pub(super) fn emit_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), 
         match op {
             Op::Text(text) => emit_quoted_text(cx, text.content),
             Op::Interpolation(interp) => emit_interpolation(cx, interp, id)?,
-            Op::Element(_) | Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
+            Op::Element(_)
+            | Op::Component(_)
+            | Op::Comment(_)
+            | Op::If(_)
+            | Op::For(_)
+            | Op::Slot(_) => {
                 return Err(EmitError::unsupported_op(
                     Reason::TextRunContainsNonText,
                     op,
@@ -56,6 +61,7 @@ pub(super) fn children_need_text_flag(cx: &EmitCx<'_>, children: &Region<'_>) ->
                 all_constant &= interpolation_is_constant(cx, interp, id);
             }
             Op::Text(_) => {}
+            Op::Comment(_) => return false,
             _ => return false,
         }
     }
@@ -217,6 +223,14 @@ pub(super) fn emit_plain_text_vnode(cx: &mut EmitCx<'_>, content: &str) {
     }
     cx.buf.push("(\"");
     cx.buf.push(escape_js_string(content).as_str());
+    cx.buf.push("\")");
+}
+
+pub(super) fn emit_comment_vnode(cx: &mut EmitCx<'_>, comment: &CommentOp<'_>) {
+    cx.buf.use_create_comment();
+    cx.buf.push(Buf::create_comment_alias());
+    cx.buf.push("(\"");
+    cx.buf.push(escape_js_string(comment.content).as_str());
     cx.buf.push("\")");
 }
 

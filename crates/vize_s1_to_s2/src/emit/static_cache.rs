@@ -101,7 +101,7 @@ fn op_has_legacy_hoist(
             skip_region(walk, &slot.fallback.ops);
             false
         }
-        Op::Text(_) | Op::Interpolation(_) => false,
+        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
     }
 }
 
@@ -285,6 +285,6 @@ fn skip_op_after_mint(walk: &mut PageWalk, op: &Op<'_>) {
             walk.skip(slot.bindings.len());
             ensure_sufficient_stack(|| skip_region(walk, &slot.fallback.ops));
         }
-        Op::Text(_) | Op::Interpolation(_) => {}
+        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
     }
 }

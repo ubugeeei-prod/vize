@@ -12,8 +12,9 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{
-    emit_create_text_vnode, emit_dynamic_part, emit_interpolation, emit_plain_text_vnode,
-    emit_raw_interpolation_or_refuse, emit_to_display_string, is_empty_interpolation,
+    emit_comment_vnode, emit_create_text_vnode, emit_dynamic_part, emit_interpolation,
+    emit_plain_text_vnode, emit_raw_interpolation_or_refuse, emit_to_display_string,
+    is_empty_interpolation,
 };
 use super::helper::Helper;
 use super::prefix::Site;
@@ -85,6 +86,11 @@ fn emit_unique(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
         Op::Interpolation(interp) => {
             let id = cx.walk.mint();
             emit_interpolation(cx, interp, id)
+        }
+        Op::Comment(comment) => {
+            let _id = cx.walk.mint();
+            emit_comment_vnode(cx, comment);
+            Ok(())
         }
         Op::Element(element) => {
             let _id = cx.walk.mint();
@@ -159,6 +165,12 @@ fn emit_units(cx: &mut EmitCx<'_>, op: &Op<'_>, first: &mut bool) -> Result<(), 
             emit_create_text_vnode(cx, core::slice::from_ref(op))
         }
         Op::Interpolation(interp) => emit_interp(cx, interp, first),
+        Op::Comment(comment) => {
+            start_item(cx, first);
+            let _id = cx.walk.mint();
+            emit_comment_vnode(cx, comment);
+            Ok(())
+        }
         Op::Element(element) => {
             start_item(cx, first);
             let id = cx.walk.mint();

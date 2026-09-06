@@ -12,7 +12,7 @@ use vize_davinci::folio::FolioError;
 use vize_s0::{Span, String, cstr};
 
 use super::super::owned::{
-    FolioAttribute, FolioBind, FolioBranch, FolioComponent, FolioElement, FolioFor,
+    FolioAttribute, FolioBind, FolioBranch, FolioComment, FolioComponent, FolioElement, FolioFor,
     FolioForBinding, FolioIf, FolioInterpolation, FolioModel, FolioName, FolioOn, FolioOp,
     FolioSlot, FolioSlotContent, FolioText, FolioVueCloak, FolioVueCssBind, FolioVueDirective,
     FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope, FolioVueSync,
@@ -110,6 +110,7 @@ pub(in super::super) fn parse_item(content: &str, line_no: usize) -> Result<Item
         "ui.component" => component(rest, line_no),
         "ui.text" => text(rest, line_no),
         "ui.interpolation" => interpolation(rest, line_no),
+        "ui.comment" => comment(rest, line_no),
         "ui.if" => Ok(Item::Op(FolioOp::If(FolioIf {
             branches: alloc::vec::Vec::new(),
             span: final_span(rest, line_no)?,
@@ -219,6 +220,14 @@ fn interpolation(rest: &str, line_no: usize) -> Result<Item, FolioError> {
     let (expression, tail) = take_expr(rest, line_no)?;
     Ok(Item::Op(FolioOp::Interpolation(FolioInterpolation {
         expression,
+        span: tail_span(tail, line_no)?,
+    })))
+}
+
+fn comment(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+    let (content, tail) = take_quoted(rest, line_no)?;
+    Ok(Item::Op(FolioOp::Comment(FolioComment {
+        content,
         span: tail_span(tail, line_no)?,
     })))
 }

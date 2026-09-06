@@ -29,6 +29,7 @@ fn assert_op(source: &str, root: SourceRoot<'_>, op: &FolioOp, context: &str) {
             assert_ops(source, root, &component.children, context);
         }
         FolioOp::Text(text) => assert_span(source, root, text.span, "text", context),
+        FolioOp::Comment(comment) => assert_span(source, root, comment.span, "comment", context),
         FolioOp::Interpolation(interpolation) => {
             assert_span(source, root, interpolation.span, "interpolation", context);
             assert_expr(source, root, &interpolation.expression, context);

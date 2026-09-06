@@ -113,7 +113,7 @@ fn visit_ops_guarded<'a>(
                 walk.skip(component.bindings.len());
                 visit_ops(walk, &mut component.children.ops, visit);
             }
-            Op::Text(_) | Op::Interpolation(_) => {}
+            Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
             Op::If(if_op) => {
                 for branch in if_op.branches.iter_mut() {
                     visit_ops(walk, &mut branch.region.ops, visit);

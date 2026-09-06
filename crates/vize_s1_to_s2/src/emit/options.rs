@@ -195,11 +195,9 @@ impl BindingTable {
 pub struct DomEmitOptions<'a> {
     /// Module or function output.
     pub mode: DomEmitMode,
-    /// The module the helper imports name in [`DomEmitMode::Module`]
-    /// (`"vue"` by default).
+    /// Module name imported in [`DomEmitMode::Module`] (`"vue"` by default).
     pub runtime_module_name: &'a str,
-    /// The global the helper destructure reads in
-    /// [`DomEmitMode::Function`] (`"Vue"` by default).
+    /// Global read in [`DomEmitMode::Function`] (`"Vue"` by default).
     pub runtime_global_name: &'a str,
     /// The shipped lane's `prefix_identifiers`: free identifiers become
     /// member accesses (`emit::prefix`).
@@ -218,10 +216,7 @@ pub struct DomEmitOptions<'a> {
     /// is created once instead of on every render. Turned on with
     /// [`DomEmitOptions::inline`] by `compile_template_block`.
     pub cache_handlers: bool,
-    /// SFC scoped-style attr for module-level static VNode hoists. The DOM
-    /// SFC wrapper passes this separately from `scope_id` because runtime
-    /// VNodes receive scope attrs from Vue; only import-time hoists need it
-    /// baked into generated props.
+    /// SFC scoped-style attr for module-level static VNode hoists.
     pub hoisted_scope_id: Option<&'a str>,
     /// The shipped lane's `scope_id`: `<style scoped>` gives the SFC an
     /// attribute name (`data-v-abc123`) that every element's props object
@@ -231,6 +226,8 @@ pub struct DomEmitOptions<'a> {
     /// so each one is type-erased (`emit::prefix::typescript`) before the
     /// identifier pass reads it.
     pub is_ts: bool,
+    /// Preserve ordinary template comments as `_createCommentVNode(...)`.
+    pub comments: bool,
     /// The shipped lane's `binding_metadata`, honoured in non-inline mode:
     /// prefixed identifiers resolve to `$setup.` / `$props.` / `$data.` /
     /// `$options.`, components and directives resolve to `$setup` members,
@@ -252,6 +249,7 @@ impl DomEmitOptions<'static> {
         hoisted_scope_id: None,
         scope_id: None,
         is_ts: false,
+        comments: false,
         bindings: None,
     };
 }
@@ -281,6 +279,7 @@ mod tests {
                 hoisted_scope_id: None,
                 scope_id: None,
                 is_ts: false,
+                comments: false,
                 bindings: None,
             }
         );

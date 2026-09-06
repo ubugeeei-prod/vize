@@ -164,6 +164,12 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: Folio
             print_expr(w, &interpolation.expression, mode)?;
             end_line(w, interpolation.span, mode)
         }
+        FolioOp::Comment(comment) => {
+            indent(w, depth)?;
+            w.write_str("ui.comment ")?;
+            quoted(w, comment.content.as_str())?;
+            end_line(w, comment.span, mode)
+        }
         FolioOp::If(if_op) => {
             indent(w, depth)?;
             w.write_str("ui.if")?;

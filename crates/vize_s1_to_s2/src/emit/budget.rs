@@ -2,7 +2,7 @@ use vize_davinci::pass::{BudgetObserver, PassObserver};
 use vize_s0::{Allocator, ensure_sufficient_stack};
 use vize_s1::parse;
 
-use crate::lower::{LegacyCaps, lower_with_caps};
+use crate::lower::{LegacyCaps, lower_with_caps_and_comment_policy};
 use crate::pass::run_transform;
 
 use super::{DomEmit, DomEmitOptions, EmitError, emit_dom_with_emit_budget};
@@ -81,7 +81,8 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
 ) -> Result<(DomEmit, u32), EmitError> {
     ensure_sufficient_stack(|| {
         let (tree, errors) = parse(allocator, source);
-        let mut lowered = lower_with_caps(allocator, &tree, &errors, caps);
+        let mut lowered =
+            lower_with_caps_and_comment_policy(allocator, &tree, &errors, caps, options.comments);
         let facts = run_transform(&mut lowered, observer);
         let (emit, emit_visits) = emit_dom_with_emit_budget(&lowered, &facts, options)?;
         Ok((emit, emit_visits))

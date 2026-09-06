@@ -30,7 +30,7 @@ pub(super) fn map_binding_lists<'a>(
                 }
             }
             Op::For(for_op) => map_binding_lists(&mut for_op.region.ops, visit),
-            Op::Text(_) | Op::Interpolation(_) => {}
+            Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
         }
     }
 }

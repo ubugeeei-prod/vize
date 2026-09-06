@@ -32,8 +32,9 @@
 //! **dynamic `v-if` keys** (`:key="expr"`), foreign namespace boundaries,
 //! template refs, Vue 2 `.native` event sugar, static+dynamic `style`,
 //! dynamic `v-on` keys, native-element `v-once` / `v-memo`, `v-html` /
-//! `v-text`, `v-bind` modifiers, dynamic `v-bind` keys / modifiers, and
-//! Vue 2 pipe filters legalized by `legacy-sugar`, and **module mode**
+//! `v-text`, ordinary template comments, `v-bind` modifiers, dynamic
+//! `v-bind` keys / modifiers, and Vue 2 pipe filters legalized by
+//! `legacy-sugar`, and **module mode**
 //! ([`DomEmitOptions`]: `import { … } from "vue"` + `export function
 //! render(_ctx, _cache)`, custom runtime module / global names), and
 //! **`cache_handlers`** (`_cache[n] || (_cache[n] = …)` around a `v-on`
@@ -43,8 +44,8 @@
 //! every props object — inline, hoisted and component alike, and once as a
 //! trailing `mergeProps` argument rather than per spread segment). `atelier_dom`
 //! selects this lane for supported source-map-free DOM compiles; the old lane
-//! remains for source maps and unsupported option surfaces until the phase-exit
-//! deletion.
+//! remains for source maps, experimental in-tag comments and unsupported
+//! option surfaces until the phase-exit deletion.
 
 mod budget;
 mod buf;

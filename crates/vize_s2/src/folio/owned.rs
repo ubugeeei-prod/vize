@@ -39,6 +39,8 @@ pub enum FolioOp {
     Text(FolioText),
     /// `ui.interpolation`.
     Interpolation(FolioInterpolation),
+    /// `ui.comment`.
+    Comment(FolioComment),
     /// `ui.if`.
     If(FolioIf),
     /// `ui.for`.
@@ -113,6 +115,15 @@ pub struct FolioText {
 pub struct FolioInterpolation {
     /// The rendered expression.
     pub expression: FolioExpr,
+    /// Source range.
+    pub span: Span,
+}
+
+/// Mirror of [`crate::op::CommentOp`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolioComment {
+    /// The comment body.
+    pub content: String,
     /// Source range.
     pub span: Span,
 }
@@ -217,6 +228,10 @@ fn own_op_guarded(op: &Op<'_>) -> FolioOp {
             expression: own_expr(&interpolation.expression),
             span: interpolation.span,
         }),
+        Op::Comment(comment) => FolioOp::Comment(FolioComment {
+            content: String::from(comment.content),
+            span: comment.span,
+        }),
         Op::If(if_op) => FolioOp::If(FolioIf {
             branches: if_op
                 .branches
@@ -277,7 +292,7 @@ fn count_op_guarded(op: &FolioOp) -> u64 {
             1 + component.bindings.len() as u64
                 + component.children.iter().map(count_op).sum::<u64>()
         }
-        FolioOp::Text(_) | FolioOp::Interpolation(_) => 1,
+        FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => 1,
         FolioOp::If(if_op) => {
             1 + if_op
                 .branches

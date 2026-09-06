@@ -171,7 +171,7 @@ fn has_nested_component_key(region: &Region<'_>) -> bool {
             .any(|branch| has_nested_component_key(&branch.region)),
         Op::For(for_op) => has_nested_component_key(&for_op.region),
         Op::Slot(slot) => has_nested_component_key(&slot.fallback),
-        Op::Text(_) | Op::Interpolation(_) => false,
+        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
     })
 }
 

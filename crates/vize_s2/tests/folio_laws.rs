@@ -1,24 +1,17 @@
-//! TS-16 for the disegno folio (P2-5a; expression payloads P2-5b).
-//!
-//! `Full` mode: `print(parse(t)) == t` byte-exact for canonical text and
-//! `parse(print(v)) == v` structurally, with normalization by the first
-//! print for non-canonical input. `Display` explicitly carries **no**
-//! round-trip law - here it elides every span (line tails and the spans
-//! inside expression payloads) and nothing else. The committed reference
-//! page (`tests/fixtures/reference.folio`) covers every op kind, both
-//! binding kinds, escapes, a namespace, static and dynamic names,
-//! optional `ui.for` positions, and all three expression payload kinds;
-//! `tests/folio_mirror.rs` builds the same tree in a live arena, and the
-//! remaining opaque-reason spellings are pinned by
-//! `every_opaque_reason_spelling_round_trips` below.
+//! TS-16 for the disegno folio (P2-5a; expression payloads P2-5b). Full mode
+//! round-trips byte-exact canonical text and parse/print structure; Display
+//! elides spans and carries no round-trip law. The committed reference page
+//! covers every op and binding kind; `tests/folio_mirror.rs` builds the same
+//! tree in a live arena, and this file pins all opaque-reason spellings.
 
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_s0::{Span, String};
 use vize_s2::expr::OpaqueReason;
 use vize_s2::folio::{
-    DisegnoFolio, FolioAttribute, FolioBind, FolioBinding, FolioBranch, FolioComponent,
-    FolioContract, FolioElement, FolioExpr, FolioFor, FolioForBinding, FolioIf, FolioInterpolation,
-    FolioModel, FolioName, FolioOn, FolioOp, FolioSlot, FolioText, FolioVueDirective,
+    DisegnoFolio, FolioAttribute, FolioBind, FolioBinding, FolioBranch, FolioComment,
+    FolioComponent, FolioContract, FolioElement, FolioExpr, FolioFor, FolioForBinding, FolioIf,
+    FolioInterpolation, FolioModel, FolioName, FolioOn, FolioOp, FolioSlot, FolioText,
+    FolioVueDirective,
 };
 use vize_s2::op::Namespace;
 
@@ -28,7 +21,7 @@ const CANONICAL: &str = include_str!("fixtures/reference.folio");
 /// `Display` output for the same tree: every span elided, nothing else.
 const DISPLAY: &str = "\
 [disegno]
-ops=12
+ops=13
 
 [disegno.ops]
 ui.element form
@@ -39,6 +32,7 @@ ui.element form
   ui.if
     branch js(\"open\")
       ui.text \"a\\\"b\\\\c\"
+      ui.comment \"kept\"
     branch
       ui.interpolation opaque(nesting-refused \"((((x))))\")
 ui.for source=opaque(for-value \"a in b in c\") value=js(\"a\") key=js(\"i\")
@@ -109,10 +103,16 @@ fn hand_built() -> DisegnoFolio {
                     branches: vec![
                         FolioBranch {
                             condition: Some(js("open", 65, 69)),
-                            ops: vec![FolioOp::Text(FolioText {
-                                content: String::from("a\"b\\c"),
-                                span: Span::new(66, 70),
-                            })],
+                            ops: vec![
+                                FolioOp::Text(FolioText {
+                                    content: String::from("a\"b\\c"),
+                                    span: Span::new(66, 70),
+                                }),
+                                FolioOp::Comment(FolioComment {
+                                    content: String::from("kept"),
+                                    span: Span::new(70, 74),
+                                }),
+                            ],
                             span: Span::new(61, 75),
                         },
                         FolioBranch {

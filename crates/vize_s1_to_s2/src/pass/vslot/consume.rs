@@ -112,6 +112,17 @@ pub(super) enum ChildKind {
     },
 }
 
+fn implicit_default_content(id: Option<NodeId>, span: Span) -> ChildView {
+    ChildView {
+        id,
+        span,
+        kind: ChildKind::Content {
+            implicit: true,
+            default_slot: true,
+        },
+    }
+}
+
 /// Whether any view in a region carries implicit content (the legacy
 /// `any_implicit_child`), plus unwrapped wrappers that hold nested
 /// `#slot` templates. Kept `#slot v-if` / `#slot v-for` carriers stay
@@ -254,26 +265,14 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
                 },
             }
         }
-        Op::Text(text) => ChildView {
+        Op::Text(text) if crate::lower::legacy_slot_filler_text(text.content) => ChildView {
             id,
             span: text.span,
-            kind: if crate::lower::legacy_slot_filler_text(text.content) {
-                ChildKind::Filler
-            } else {
-                ChildKind::Content {
-                    implicit: true,
-                    default_slot: true,
-                }
-            },
+            kind: ChildKind::Filler,
         },
-        Op::Interpolation(interpolation) => ChildView {
-            id,
-            span: interpolation.span,
-            kind: ChildKind::Content {
-                implicit: true,
-                default_slot: true,
-            },
-        },
+        Op::Text(text) => implicit_default_content(id, text.span),
+        Op::Interpolation(interpolation) => implicit_default_content(id, interpolation.span),
+        Op::Comment(comment) => implicit_default_content(id, comment.span),
         Op::If(if_op) => {
             let wrapper = id.and_then(|id| channels.wrappers.get(id));
             let mut implicit = false;

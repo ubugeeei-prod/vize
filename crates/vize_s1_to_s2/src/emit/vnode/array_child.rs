@@ -56,6 +56,10 @@ pub(in crate::emit) fn emit_array_child(
                 cx.walk.skip(slot.bindings.len());
                 super::super::outlet::emit_outlet(cx, slot, None, false)
             }
+            Op::Comment(comment) => {
+                super::super::children::emit_comment_vnode(cx, comment);
+                Ok(())
+            }
             Op::Text(_) | Op::Interpolation(_) => {
                 Err(EmitError::unsupported_op(Reason::ArrayChildTextRun, op))
             }

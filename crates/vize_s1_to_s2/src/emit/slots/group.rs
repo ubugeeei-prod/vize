@@ -184,7 +184,7 @@ fn op_branch_key_count(cx: &EmitCx<'_>, op: &Op<'_>, walk: &mut PageWalk) -> u32
             walk.skip(slot.bindings.len());
             region_branch_key_count(cx, &slot.fallback, walk)
         }
-        Op::Text(_) | Op::Interpolation(_) => 0,
+        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => 0,
     }
 }
 

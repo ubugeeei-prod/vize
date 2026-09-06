@@ -4,7 +4,7 @@
 //! branch shapes. Static prop keys are camelized.
 
 use vize_s2::expr::{ExprRef, OpaqueReason};
-use vize_s2::op::{BindingOp, DynamicName, InterpolationOp, Op, Region, SlotOp};
+use vize_s2::op::{BindingOp, CommentOp, DynamicName, InterpolationOp, Op, Region, SlotOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -35,7 +35,7 @@ fn op_forwards(op: &Op<'_>) -> bool {
             .iter()
             .any(|branch| has_forwarded_outlet(&branch.region)),
         Op::For(for_op) => has_forwarded_outlet(&for_op.region),
-        Op::Text(_) | Op::Interpolation(_) => false,
+        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
     }
 }
 
@@ -178,6 +178,7 @@ fn emit_fallback_units(
             emit_create_text_vnode(cx, core::slice::from_ref(op))
         }
         Op::Interpolation(interp) => emit_fallback_interp(cx, interp, compact, first),
+        Op::Comment(comment) => emit_fallback_comment(cx, comment, compact, first),
         Op::Element(element) if is_hoistable(element, cx.is_ts) => {
             start_fallback_item(cx, compact, first);
             emit_hoisted_element(cx, element)
@@ -199,6 +200,18 @@ fn emit_fallback_element(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitErr
     let result = emit_array_child(cx, op, false, false);
     cx.static_cache = previous;
     result
+}
+
+fn emit_fallback_comment(
+    cx: &mut EmitCx<'_>,
+    comment: &CommentOp<'_>,
+    compact: bool,
+    first: &mut bool,
+) -> Result<(), EmitError> {
+    start_fallback_item(cx, compact, first);
+    let _id = cx.walk.mint();
+    super::children::emit_comment_vnode(cx, comment);
+    Ok(())
 }
 
 /// Slot fallback walks each S1 child (`generate_node`), so a merged
@@ -281,6 +294,6 @@ fn skip_op(cx: &mut EmitCx<'_>, op: &Op<'_>) {
             cx.walk.skip(slot.bindings.len());
             skip_region(cx, &slot.fallback);
         }
-        Op::Text(_) | Op::Interpolation(_) => {}
+        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
     }
 }

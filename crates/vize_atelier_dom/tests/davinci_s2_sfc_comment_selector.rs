@@ -1,5 +1,5 @@
-//! P2-11 witness: SFC section selection keeps comment-preserving DOM compiles
-//! on the compatibility path until S2 preserves authored comments.
+//! P2-11 witness: SFC section selection routes comment-preserving DOM compiles
+//! through S2 while retaining exact authored comment output.
 
 #![allow(
     clippy::disallowed_macros,
@@ -16,7 +16,7 @@ use vize_s0::Allocator;
 use vize_s0::profiler::{CounterSummary, global_profiler};
 
 #[test]
-fn comment_preserving_sfc_sections_stay_on_compatibility_when_profiled() {
+fn comment_preserving_sfc_sections_use_s2_when_profiled() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
@@ -59,8 +59,8 @@ fn comment_preserving_sfc_sections_stay_on_compatibility_when_profiled() {
     );
     assert_eq!(
         counter_total(&counters, "davinci.s2_dom.files"),
-        None,
-        "comment-preserving SFC sections must stay on compatibility until S2 preserves comments"
+        Some(1),
+        "comment-preserving SFC sections must use S2 once S2 preserves comments"
     );
 }
 

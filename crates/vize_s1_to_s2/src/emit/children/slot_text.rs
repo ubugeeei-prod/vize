@@ -106,7 +106,12 @@ fn emit_slot_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitEr
         match op {
             Op::Text(text) => emit_quoted_text(cx, text.content),
             Op::Interpolation(interp) => emit_slot_interpolation(cx, interp, id)?,
-            Op::Element(_) | Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
+            Op::Element(_)
+            | Op::Component(_)
+            | Op::Comment(_)
+            | Op::If(_)
+            | Op::For(_)
+            | Op::Slot(_) => {
                 return Err(EmitError::unsupported_op(
                     Reason::TextRunContainsNonText,
                     op,

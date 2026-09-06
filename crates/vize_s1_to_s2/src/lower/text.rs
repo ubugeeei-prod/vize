@@ -15,11 +15,13 @@
 //! for one decisive reason: **comments**. Both computations read comment
 //! positions — a comment is a non-text-like neighbour for the
 //! remove-vs-condense rule and a hard boundary for run merging — and
-//! comments exist only in S1 (the lowering drops them under
-//! `drop.comment`). A post-lowering pass would be comment-blind and
-//! wrong on real shapes (`a<!--c-->\n<!--d-->b` must lose its
-//! whitespace, `a<!--c-->b` must stay two text units); the lowering is
-//! the last stage that can compute the legacy answers. P2-5b's record
+//! comments exist only in S1 unless the DOM comment-preserving route asks
+//! the lowering to keep them as `ui.comment` (the default lowering still
+//! drops them under `drop.comment`). A post-lowering pass would be
+//! comment-blind and wrong on real shapes (`a<!--c-->\n<!--d-->b` must
+//! lose its whitespace, `a<!--c-->b` must stay two text units); the
+//! lowering is the last stage that can compute the legacy answers.
+//! P2-5b's record
 //! independently requires it: the position-classified opaque reasons —
 //! [`OpaqueReason::Compound`] included — "are assignable only by the
 //! S1→S2 lowering".

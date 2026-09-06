@@ -203,7 +203,7 @@ fn visit_region_guarded(
                 }
                 visit_region(walk, &component.children.ops, texts, provenance, facts);
             }
-            Op::Text(_) => {}
+            Op::Text(_) | Op::Comment(_) => {}
             Op::Interpolation(interpolation) => {
                 consume_compound(
                     texts,

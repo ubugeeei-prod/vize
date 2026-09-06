@@ -234,7 +234,7 @@ fn source_map_disabled_runtime_global_name_stays_on_s2_codegen() {
 }
 
 #[test]
-fn source_map_disabled_comments_use_compatibility_codegen() {
+fn source_map_disabled_comments_use_s2_codegen() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
@@ -264,9 +264,9 @@ fn source_map_disabled_comments_use_compatibility_codegen() {
     assert_eq!(result.preamble, compat.preamble);
     assert_eq!(result.code, compat.code);
     assert_eq!(
-        counter_total(&counters, "davinci.s2_dom.files"),
-        None,
-        "comment-preserving compiles must stay on compatibility codegen"
+        counter(&counters, "davinci.s2_dom.files"),
+        1,
+        "comment-preserving source-map-free compiles are covered by the S2 production option surface"
     );
 }
 

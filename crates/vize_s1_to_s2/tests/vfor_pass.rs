@@ -20,7 +20,7 @@ fn count_fors(ops: &[FolioOp]) -> usize {
         .map(|op| match op {
             FolioOp::Element(element) => count_fors(&element.children),
             FolioOp::Component(component) => count_fors(&component.children),
-            FolioOp::Text(_) | FolioOp::Interpolation(_) => 0,
+            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => 0,
             FolioOp::If(if_op) => if_op
                 .branches
                 .iter()

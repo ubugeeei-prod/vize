@@ -247,6 +247,7 @@ fn walk(
                     },
                 });
             }
+            FolioOp::Comment(_) => *next += 1,
             FolioOp::If(if_op) => {
                 let id = NodeId::from_index(*next).expect("page-order ids fit");
                 *next += 1;

@@ -1,5 +1,5 @@
 [disegno]
-ops=12
+ops=13
 
 [disegno.ops]
 ui.element form @0:99
@@ -10,6 +10,7 @@ ui.element form @0:99
   ui.if @61:90
     branch js("open" @65:69) @61:75
       ui.text "a\"b\\c" @66:70
+      ui.comment "kept" @70:74
     branch @75:90
       ui.interpolation opaque(nesting-refused "((((x))))" @82:88) @80:88
 ui.for source=opaque(for-value "a in b in c" @110:121) value=js("a" @105:106) key=js("i" @108:109) @100:161
