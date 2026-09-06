@@ -185,7 +185,7 @@ pub(super) fn append_prop_check_helpers(
         ts.push_str(concat!(
             "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n",
             "  type __VizeAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<__VizeAttrCamel<__T>>}` : S;\n",
-            "  type __VizeNativeAttrNames = { [K in keyof __VizeNativeElements]: keyof __VizeNativeElements[K] }[keyof __VizeNativeElements] & string;\n",
+            "  type __VizeNativeAttrNames = { [K in keyof __VizeNativeElements & string]: keyof __VizeNativeElements[K] }[keyof __VizeNativeElements & string] & string;\n",
             "  type __VizeGlobalHtmlAttrs = __VizeIsAny<__VizeNativeElements> extends true ? {} : { [K in __VizeNativeAttrNames as K | __VizeAttrCamel<K>]?: unknown } & { [K in `data${string}`]?: unknown };\n",
             "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : Record<string, unknown>;\n",
         ));

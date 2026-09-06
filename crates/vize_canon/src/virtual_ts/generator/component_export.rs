@@ -109,20 +109,22 @@ fn slot_resolver_field(generic_decl: &str, generic_names: &str, slots_is_generic
 /// The prop parameter a parent's template calls on a generic child.
 ///
 /// Generic SFCs need `Partial<Props<T>>` so authored props can infer `T` without
-/// requiring every prop in the generic contract. What they must not need is an
-/// unconditional string index: generated parents already know whether this
-/// generated child can fall attributes through, so strict-template unknown props
-/// should only be accepted by a real fallthrough target. Keep the generic
-/// fallthrough tail value-open: intersecting native element props here makes
-/// declared component props such as `color` collide with DOM attributes, while
-/// non-generic usages still get value-sensitive fallthrough checks from their
-/// per-prop aliases.
+/// requiring every prop in the generic contract. They also accept Vue's global
+/// HTML attr surface (`id`, camelized `aria-*`, `data*`, etc.) even when the
+/// generated child is closed, matching the strict non-generic checker. What
+/// they must not need is an unconditional string index: generated parents
+/// already know whether this generated child can fall attributes through, so
+/// arbitrary unknown props should only be accepted by a real fallthrough target.
+/// Keep the generic fallthrough tail value-open: intersecting native element
+/// props here makes declared component props such as `color` collide with DOM
+/// attributes, while non-generic usages still get value-sensitive fallthrough
+/// checks from their per-prop aliases.
 fn generic_check_props_param(generic_names: &str, fallthrough_props_ref: Option<&str>) -> String {
     let authored_key_witness = cstr!(
         "{{ [K in Props<{generic_names}> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown }}"
     );
     let mut param = cstr!(
-        "Partial<Props<{generic_names}>> & {authored_key_witness} & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps"
+        "Partial<Props<{generic_names}>> & {authored_key_witness} & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs"
     );
     if fallthrough_props_ref.is_some() {
         param.push_str(" & Record<string, unknown>");

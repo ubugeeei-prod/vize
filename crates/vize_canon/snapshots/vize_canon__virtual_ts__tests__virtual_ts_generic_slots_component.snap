@@ -68,6 +68,11 @@ type __VizeNativeElements = import('vue').NativeElements;
 type __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;
 type __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
 declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: __VizeNativeElementProp<__VizeNativeElement<__Tag>, __Prop>): void;
+type __VizeComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<__VizeComponentAttrCamel<__T>>}` : S;
+type __VizeComponentNativeAttrNames = { [K in keyof __VizeNativeElements & string]: keyof __VizeNativeElements[K] }[keyof __VizeNativeElements & string] & string;
+type __VizeComponentDataAttrs = { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };
+type __VizeComponentGlobalHtmlAttrs = __VizeIsAny<__VizeNativeElements> extends true ? {} : { [K in __VizeComponentNativeAttrNames as K | __VizeComponentAttrCamel<K>]?: unknown } & __VizeComponentDataAttrs;
+declare function __vizeComponentGlobalHtmlAttrs(value: __VizeComponentGlobalHtmlAttrs): void;
 // @ts-ignore TS2694/TS2307: a `vue` without `Directive` must degrade custom directive value checks to unchecked, never error. See virtual_ts/expressions/directive_values.rs.
 type __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ? V : unknown;
 declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;
@@ -120,7 +125,7 @@ function __setup<T extends string = 'a'>() {
     if (value !== undefined) emit("update:value", value);
   }
   
-  // @vize-map: 10636:10963 -> 0:292
+  // @vize-map: 11349:11676 -> 0:292
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -228,5 +233,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { __vizeCheck: <T extends string = 'a'>(props: Partial<Props<T>> & { [K in Props<T> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & Record<string, unknown>) => void; __vizeResolveProps?: <T extends string = 'a'>(props: Partial<Props<T>> & { [K in Props<T> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & Record<string, unknown>) => Props<T>; __vizeResolveSlots?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => Slots<T>; __vizeEmitProps?: __VizeStaticEmitProps; __vizeResolveEmitProps?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props<string>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"button">>; } & __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { __vizeCheck: <T extends string = 'a'>(props: Partial<Props<T>> & { [K in Props<T> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => void; __vizeResolveProps?: <T extends string = 'a'>(props: Partial<Props<T>> & { [K in Props<T> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => Props<T>; __vizeResolveSlots?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => Slots<T>; __vizeEmitProps?: __VizeStaticEmitProps; __vizeResolveEmitProps?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props<string>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"button">>; } & __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;
