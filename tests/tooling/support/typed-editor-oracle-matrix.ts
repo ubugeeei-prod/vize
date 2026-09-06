@@ -4,13 +4,14 @@ export type MatrixRow = {
   id: string;
   status: "covered" | "known-gap";
 };
-
 export type Evidence =
   | { kind: "ci"; label: string; path: string; requiredText: string[] }
   | { kind: "file"; path: string; requiredText: string[] }
   | { kind: "pending-pr"; pr: number; reason: string };
-
 export const rowsRequiringExecutedEvidence = new Set([
+  "lsp-authored-script-diagnostics",
+  "lsp-fallthrough-template-range",
+  "lsp-hover-definition-template-anchors",
   "vscode-host-reactive-hover-surface",
   "vscode-host-component-contract-hover",
   "lsp-imported-component-contract-hover",
@@ -62,6 +63,7 @@ export const matrix: MatrixRow[] = [
         path: "tests/tooling/lsp-authored-script-diagnostics.test.ts",
         requiredText: ["const a: string = 1", "params.version === 2"],
       },
+      toolingTestCiEvidence,
     ],
     followUp: "#4587",
     id: "lsp-authored-script-diagnostics",
@@ -98,6 +100,7 @@ export const matrix: MatrixRow[] = [
           "line: 5, character: 2",
         ],
       },
+      toolingTestCiEvidence,
     ],
     followUp: "#4586",
     id: "lsp-fallthrough-template-range",
@@ -113,6 +116,7 @@ export const matrix: MatrixRow[] = [
           "component slot hover must select the authored slot name",
         ],
       },
+      toolingTestCiEvidence,
     ],
     followUp: "#4588 #4592",
     id: "lsp-hover-definition-template-anchors",

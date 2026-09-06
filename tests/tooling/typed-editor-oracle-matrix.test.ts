@@ -63,6 +63,22 @@ test("covered typed editor oracle matrix rows point at live gate files and CI ga
   }
 });
 
+test("covered LSP tooling rows require executed CI evidence", () => {
+  const missing = matrix
+    .filter(
+      (row) =>
+        row.status === "covered" &&
+        row.id.startsWith("lsp-") &&
+        row.evidence.some(
+          (evidence) => evidence.kind === "file" && evidence.path.startsWith("tests/tooling/"),
+        ) &&
+        !rowsRequiringExecutedEvidence.has(row.id),
+    )
+    .map((row) => row.id);
+
+  assert.deepEqual(missing, []);
+});
+
 test("typed editor oracle matrix document mirrors the executable ledger", () => {
   const doc = fs.readFileSync(
     path.join(root, "docs/release/typed-editor-oracle-matrix.md"),
