@@ -1,5 +1,5 @@
-//! P2-11 witness: legacy dialect compiles stay on compatibility until the DOM
-//! lane flag is deleted at the production switch exit gate.
+//! P2-11 witness: legacy dialect compiles stay on compatibility after the DOM
+//! lane flag deletion, while stale flag values no longer select the old lane.
 
 #![allow(
     clippy::disallowed_macros,
@@ -18,7 +18,7 @@ use vize_s0::config::VueVersion;
 use vize_s0::profiler::{CounterSummary, global_profiler};
 
 #[test]
-fn legacy_dialect_stays_on_compatibility_until_flag_deletion() {
+fn legacy_dialect_stays_on_compatibility_after_flag_deletion() {
     let _env_lock = lock_env();
     let _profiler_lock = lock_profiler();
     let (result, counters) = compile_with_s2_profiler(
@@ -32,25 +32,33 @@ fn legacy_dialect_stays_on_compatibility_until_flag_deletion() {
     assert_compatibility_sections_without_s2_profile(
         &result,
         &counters,
-        "legacy dialect compiles must not enter the S2 production selector before flag deletion",
+        "legacy dialect compiles must not enter the S2 production selector",
     );
 }
 
 #[test]
-fn dom_legacy_lane_flag_keeps_vue3_on_compatibility_until_flag_deletion() {
+fn removed_dom_lane_flag_does_not_disarm_vue3_s2_selection() {
     let _env_lock = lock_env();
-    let _flag = ScopedEnvVar::set(vize_s1_to_s2::DOM_LANE_FLAG, "legacy");
+    let _flag = ScopedEnvVar::set(removed_dom_lane_flag_name(), "legacy");
     let _profiler_lock = lock_profiler();
     let (result, counters) = compile_with_s2_profiler(
         r#"<button @click="go">{{ label }}</button>"#,
         DomCompilerOptions::default(),
     );
 
-    assert_compatibility_sections_without_s2_profile(
-        &result,
-        &counters,
-        "the DOM legacy lane flag must keep Vue 3 compiles off the S2 production selector",
+    assert!(
+        result.sections.is_some(),
+        "S2 DOM must keep codegen sections available"
     );
+    assert_eq!(
+        counter_total(&counters, "davinci.s2_dom.files"),
+        Some(1),
+        "removed DOM lane env values must not disarm the S2 production selector",
+    );
+}
+
+fn removed_dom_lane_flag_name() -> &'static str {
+    concat!("VIZE", "_DAVINCI", "_DOM")
 }
 
 struct Compiled {

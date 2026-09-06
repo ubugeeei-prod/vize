@@ -18,24 +18,6 @@ use super::pipeline::S2EmitSelection;
 use crate::namespace::get_namespace;
 use crate::options::DomCompilerOptions;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(super) enum DomLaneSelection {
-    S2,
-    Legacy,
-}
-
-pub(super) fn dom_lane_selection() -> DomLaneSelection {
-    let value = std::env::var(vize_s1_to_s2::DOM_LANE_FLAG);
-    dom_lane_selection_from_flag(value.as_deref().ok())
-}
-
-fn dom_lane_selection_from_flag(value: Option<&str>) -> DomLaneSelection {
-    match value {
-        None | Some("s2") => DomLaneSelection::S2,
-        Some(_) => DomLaneSelection::Legacy,
-    }
-}
-
 /// Parser options with DOM-specific settings.
 pub(super) fn parser_options(options: &DomCompilerOptions) -> ParserOptions {
     ParserOptions {
@@ -100,15 +82,12 @@ pub(super) fn s2_emit_supported(
     _custom_elements: &CustomElementMatcher,
     template_syntax: TemplateSyntaxMode,
     has_croquis: bool,
-    dom_lane: DomLaneSelection,
     s2_emit_selection: S2EmitSelection,
 ) -> bool {
-    dom_lane == DomLaneSelection::S2
-        && matches!(
-            s2_emit_selection,
-            S2EmitSelection::Allowed | S2EmitSelection::RequireSections
-        )
-        && !options.ssr
+    matches!(
+        s2_emit_selection,
+        S2EmitSelection::Allowed | S2EmitSelection::RequireSections
+    ) && !options.ssr
         && !options.experimental_patterned_template
         && !options.custom_renderer
         && options.dialect == vize_s0::config::VueVersion::V3

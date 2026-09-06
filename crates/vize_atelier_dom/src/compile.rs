@@ -291,7 +291,6 @@ fn compile_template_inner_with_sections<'a>(
         &custom_elements,
         template_syntax,
         has_croquis,
-        stage_options::dom_lane_selection(),
         s2_emit_selection,
     );
     // Project the public output options before consuming Croquis below. Croquis

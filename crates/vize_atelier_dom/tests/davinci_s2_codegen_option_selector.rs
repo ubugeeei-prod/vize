@@ -17,36 +17,16 @@ use vize_s0::profiler::{CounterSummary, global_profiler};
 
 #[test]
 fn optimize_imports_uses_s2_after_legacy_noop_audit() {
-    let _env_guard = lock_env();
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
     profiler.clear();
 
     let source = r#"<button @click="go">{{ label }}</button>"#;
-    let legacy_default = {
-        let _flag = ScopedEnvVar::set(vize_s1_to_s2::DOM_LANE_FLAG, "legacy");
-        compile(source, CodegenOptions::default())
-    };
-    let legacy_optimized = {
-        let _flag = ScopedEnvVar::set(vize_s1_to_s2::DOM_LANE_FLAG, "legacy");
-        compile(
-            source,
-            CodegenOptions {
-                optimize_imports: true,
-                ..Default::default()
-            },
-        )
-    };
-
-    assert_eq!(legacy_optimized.preamble, legacy_default.preamble);
-    assert_eq!(legacy_optimized.code, legacy_default.code);
-    assert_eq!(legacy_optimized.sections, legacy_default.sections);
+    let selected_default = compile(source, CodegenOptions::default());
 
     profiler.enable();
-
-    let _flag = ScopedEnvVar::set(vize_s1_to_s2::DOM_LANE_FLAG, "s2");
-    let selected = compile(
+    let selected_optimized = compile(
         source,
         CodegenOptions {
             optimize_imports: true,
@@ -57,9 +37,9 @@ fn optimize_imports_uses_s2_after_legacy_noop_audit() {
     profiler.disable();
     profiler.clear();
 
-    assert_eq!(selected.preamble, legacy_optimized.preamble);
-    assert_eq!(selected.code, legacy_optimized.code);
-    assert_eq!(selected.sections, legacy_optimized.sections);
+    assert_eq!(selected_optimized.preamble, selected_default.preamble);
+    assert_eq!(selected_optimized.code, selected_default.code);
+    assert_eq!(selected_optimized.sections, selected_default.sections);
     assert_eq!(
         counter_total(&counters, "davinci.s2_dom.files"),
         Some(1),
@@ -106,39 +86,4 @@ fn lock_profiler() -> std::sync::MutexGuard<'static, ()> {
     PROFILER_TEST_LOCK
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner)
-}
-
-fn lock_env() -> std::sync::MutexGuard<'static, ()> {
-    static ENV_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
-    ENV_TEST_LOCK
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
-}
-
-struct ScopedEnvVar {
-    key: &'static str,
-    previous: Option<std::ffi::OsString>,
-}
-
-impl ScopedEnvVar {
-    fn set(key: &'static str, value: &str) -> Self {
-        let previous = std::env::var_os(key);
-        // SAFETY: This test holds the local environment lock for the full
-        // lifetime of the scoped override.
-        unsafe { std::env::set_var(key, value) };
-        Self { key, previous }
-    }
-}
-
-impl Drop for ScopedEnvVar {
-    fn drop(&mut self) {
-        // SAFETY: The guard is dropped before the local environment lock,
-        // restoring the process environment while mutations are serialized.
-        unsafe {
-            match &self.previous {
-                Some(value) => std::env::set_var(self.key, value),
-                None => std::env::remove_var(self.key),
-            }
-        }
-    }
 }

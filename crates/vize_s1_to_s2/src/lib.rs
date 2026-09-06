@@ -70,7 +70,7 @@ pub mod lower;
 pub mod pass;
 
 pub use emit::{
-    BindingKind, BindingTable, DOM_LANE_FLAG, DomEmit, DomEmitBudget, DomEmitMode, DomEmitOptions,
+    BindingKind, BindingTable, DomEmit, DomEmitBudget, DomEmitMode, DomEmitOptions,
     DomEmitSections, EmitError, ObservedDomEmit, UnsupportedReason, UnsupportedRefusal, emit_dom,
     emit_dom_source, emit_dom_source_observed, emit_dom_source_observed_with_options,
     emit_dom_source_with_caps, emit_dom_source_with_caps_observed, emit_dom_source_with_options,

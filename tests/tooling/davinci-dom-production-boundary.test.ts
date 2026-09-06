@@ -178,6 +178,30 @@ test("DOM S2 production switch classifies every adapter codegen option", () => {
   );
 });
 
+test("DOM production selector has no live env lane override", () => {
+  const removedEnvName = ["VIZE", "DAVINCI", "DOM"].join("_");
+  const removedFlagSymbol = ["DOM", "LANE", "FLAG"].join("_");
+  const removedSelectorFn = ["dom", "lane", "selection"].join("_");
+  const removedSelectorType = ["Dom", "Lane", "Selection"].join("");
+  const liveSources = [
+    ["crates", "vize_atelier_dom", "src", "compile.rs"],
+    ["crates", "vize_atelier_dom", "src", "compile", "sfc.rs"],
+    ["crates", "vize_atelier_dom", "src", "compile", "stage_options.rs"],
+    ["crates", "vize_s1_to_s2", "src", "emit.rs"],
+    ["crates", "vize_s1_to_s2", "src", "lib.rs"],
+  ] as const;
+
+  for (const sourcePath of liveSources) {
+    const label = sourcePath.join("/");
+    const source = readRepoFile(...sourcePath);
+    assert.doesNotMatch(source, new RegExp(removedEnvName, "u"), label);
+    assert.doesNotMatch(source, new RegExp(removedFlagSymbol, "u"), label);
+    assert.doesNotMatch(source, new RegExp(removedSelectorFn, "u"), label);
+    assert.doesNotMatch(source, new RegExp(removedSelectorType, "u"), label);
+    assert.doesNotMatch(source, /\bstd::env::var(?:_os)?\s*\(/u, label);
+  }
+});
+
 test("DOM SFC parser-backed sections do not force legacy codegen", () => {
   const source = readRepoFile("crates", "vize_atelier_dom", "src", "compile", "sfc.rs");
 

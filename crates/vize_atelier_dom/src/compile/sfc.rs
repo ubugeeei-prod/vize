@@ -23,14 +23,12 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     codegen_options: CodegenOptions,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
     let codegen_opts = stage_options::codegen_options(&options, codegen_options.clone());
-    let dom_lane = stage_options::dom_lane_selection();
     let use_s2_emit = stage_options::s2_emit_supported(
         &options,
         &codegen_opts,
         &custom_elements,
         template_syntax,
         options.croquis.is_some(),
-        dom_lane,
         pipeline::S2EmitSelection::RequireSections,
     );
 
