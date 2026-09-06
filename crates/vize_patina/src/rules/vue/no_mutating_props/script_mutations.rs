@@ -8,18 +8,34 @@
 use crate::rules::script::script_source_type;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    AssignmentExpression, CallExpression, Expression, IdentifierReference, Program,
-    SimpleAssignmentTarget, Statement, UpdateExpression,
+    Argument, AssignmentExpression, CallExpression, Expression, IdentifierReference, Program,
+    SimpleAssignmentTarget, Statement, UnaryExpression, UpdateExpression,
 };
 use oxc_ast_visit::{
     Visit,
-    walk::{walk_assignment_expression, walk_update_expression},
+    walk::{
+        walk_assignment_expression, walk_call_expression, walk_unary_expression,
+        walk_update_expression,
+    },
 };
 use oxc_parser::Parser;
 use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::{GetSpan, Span};
+use oxc_syntax::operator::UnaryOperator;
 use oxc_syntax::symbol::SymbolId;
 use vize_s0::{FxHashSet, String};
+
+const MUTATING_ARRAY_METHODS: &[&str] = &[
+    "push",
+    "pop",
+    "shift",
+    "unshift",
+    "reverse",
+    "splice",
+    "sort",
+    "copyWithin",
+    "fill",
+];
 
 pub(super) struct ScriptPropMutation {
     pub(super) target: String,
@@ -124,10 +140,27 @@ struct MutationCollector<'s> {
 }
 
 impl MutationCollector<'_> {
-    fn record(&mut self, target: &SimpleAssignmentTarget<'_>) {
+    fn record(&mut self, target: &SimpleAssignmentTarget<'_>, mutation_span: Span) {
         let Some(reference) = target_reference(target) else {
             return;
         };
+        self.record_reference(reference, target.span(), mutation_span);
+    }
+
+    fn record_expression(&mut self, target: &Expression<'_>, mutation_span: Span) {
+        let target = target.get_inner_expression();
+        let Some(reference) = root_reference(target) else {
+            return;
+        };
+        self.record_reference(reference, target.span(), mutation_span);
+    }
+
+    fn record_reference(
+        &mut self,
+        reference: &IdentifierReference<'_>,
+        target_span: Span,
+        mutation_span: Span,
+    ) {
         let Some(reference_id) = reference.reference_id.get() else {
             return;
         };
@@ -138,13 +171,15 @@ impl MutationCollector<'_> {
             return;
         }
 
-        let span = target.span();
-        let Some(target) = self.source.get(span.start as usize..span.end as usize) else {
+        let Some(target) = self
+            .source
+            .get(target_span.start as usize..target_span.end as usize)
+        else {
             return;
         };
         self.mutations.push(ScriptPropMutation {
             target: String::from(target),
-            span,
+            span: mutation_span,
         });
     }
 }
@@ -152,14 +187,28 @@ impl MutationCollector<'_> {
 impl<'a> Visit<'a> for MutationCollector<'_> {
     fn visit_assignment_expression(&mut self, expression: &AssignmentExpression<'a>) {
         if let Some(target) = expression.left.as_simple_assignment_target() {
-            self.record(target);
+            self.record(target, expression.span);
         }
         walk_assignment_expression(self, expression);
     }
 
     fn visit_update_expression(&mut self, expression: &UpdateExpression<'a>) {
-        self.record(&expression.argument);
+        self.record(&expression.argument, expression.span);
         walk_update_expression(self, expression);
+    }
+
+    fn visit_unary_expression(&mut self, expression: &UnaryExpression<'a>) {
+        if expression.operator == UnaryOperator::Delete {
+            self.record_expression(&expression.argument, expression.span);
+        }
+        walk_unary_expression(self, expression);
+    }
+
+    fn visit_call_expression(&mut self, expression: &CallExpression<'a>) {
+        if let Some(target) = mutating_call_target(expression) {
+            self.record_expression(target, expression.span);
+        }
+        walk_call_expression(self, expression);
     }
 }
 
@@ -183,4 +232,44 @@ fn root_reference<'a>(expression: &'a Expression<'a>) -> Option<&'a IdentifierRe
         }
         _ => None,
     }
+}
+
+fn mutating_call_target<'a>(call: &'a CallExpression<'a>) -> Option<&'a Expression<'a>> {
+    let (object, property) = static_call_member(&call.callee)?;
+
+    if MUTATING_ARRAY_METHODS.contains(&property) {
+        return Some(object);
+    }
+
+    if property == "assign"
+        && is_identifier_named(object, "Object")
+        && let Some(argument) = call.arguments.first().and_then(Argument::as_expression)
+    {
+        return Some(argument);
+    }
+
+    None
+}
+
+fn static_call_member<'a>(callee: &'a Expression<'a>) -> Option<(&'a Expression<'a>, &'a str)> {
+    match callee.get_inner_expression() {
+        Expression::StaticMemberExpression(member) => {
+            Some((&member.object, member.property.name.as_str()))
+        }
+        Expression::ComputedMemberExpression(member) => match member
+            .expression
+            .get_inner_expression()
+        {
+            Expression::StringLiteral(property) => Some((&member.object, property.value.as_str())),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+fn is_identifier_named(expression: &Expression<'_>, expected: &str) -> bool {
+    matches!(
+        expression.get_inner_expression(),
+        Expression::Identifier(identifier) if identifier.name.as_str() == expected
+    )
 }

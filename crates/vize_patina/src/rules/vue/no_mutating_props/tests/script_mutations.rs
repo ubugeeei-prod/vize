@@ -5,10 +5,11 @@ use vize_s0::String;
 fn expected_script_finding<'a>(
     sfc: &'a str,
     target: &'a str,
+    mutation: &'a str,
     occurrence: usize,
 ) -> (&'static str, Severity, u32, u32, String) {
     let start = sfc
-        .match_indices(target)
+        .match_indices(mutation)
         .nth(occurrence)
         .map(|(start, _)| start)
         .expect("mutation target");
@@ -16,7 +17,7 @@ fn expected_script_finding<'a>(
         "vue/no-mutating-props",
         Severity::Error,
         start as u32,
-        (start + target.len()) as u32,
+        (start + mutation.len()) as u32,
         String::new(format!(
             "Unexpected mutation of prop '{target}' in <script setup>"
         )),
@@ -36,10 +37,10 @@ props.profile.name = 'Ada'
     let result = lint_sfc(sfc);
     let actual = findings(&result);
     let expected = [
-        expected_script_finding(sfc, "props.count", 0),
-        expected_script_finding(sfc, "props.count", 1),
-        expected_script_finding(sfc, "props.count", 2),
-        expected_script_finding(sfc, "props.profile.name", 0),
+        expected_script_finding(sfc, "props.count", "props.count = 1", 0),
+        expected_script_finding(sfc, "props.count", "props.count += 1", 0),
+        expected_script_finding(sfc, "props.count", "props.count++", 0),
+        expected_script_finding(sfc, "props.profile.name", "props.profile.name = 'Ada'", 0),
     ];
 
     assert_eq!(actual.len(), expected.len());
@@ -66,8 +67,8 @@ isEnabled--
     let result = lint_sfc(sfc);
     let actual = findings(&result);
     let expected = [
-        expected_script_finding(sfc, "count", 2),
-        expected_script_finding(sfc, "isEnabled", 1),
+        expected_script_finding(sfc, "count", "count = 1", 0),
+        expected_script_finding(sfc, "isEnabled", "isEnabled--", 0),
     ];
 
     assert_eq!(actual.len(), expected.len());
@@ -86,9 +87,87 @@ const props = withDefaults(defineProps<{ count?: number }>(), { count: 0 })
 props.count *= 2
 </script>
 "#;
-    let expected = expected_script_finding(sfc, "props.count", 0);
+    let expected = expected_script_finding(sfc, "props.count", "props.count *= 2", 0);
     let result = lint_sfc(sfc);
     let actual = findings(&result);
+
+    assert_eq!(actual.len(), 1);
+    assert_eq!(
+        (actual[0].2, actual[0].3, actual[0].4),
+        (expected.2, expected.3, expected.4.as_str())
+    );
+}
+
+#[test]
+fn reports_delete_and_mutating_calls_on_props() {
+    let sfc = r#"<script setup lang="ts">
+const props = defineProps<{
+  items: string[]
+  profile: { name?: string }
+  options: Record<string, boolean>
+}>()
+props.items.push('x')
+props.items.splice(0, 1)
+props.items["push"]('y')
+Object.assign(props.options, { enabled: true })
+Object["assign"](props.options, { archived: false })
+delete props.profile.name
+</script>
+"#;
+    let result = lint_sfc(sfc);
+    let actual = findings(&result);
+    let expected = [
+        expected_script_finding(sfc, "props.items", "props.items.push('x')", 0),
+        expected_script_finding(sfc, "props.items", "props.items.splice(0, 1)", 0),
+        expected_script_finding(sfc, "props.items", "props.items[\"push\"]('y')", 0),
+        expected_script_finding(
+            sfc,
+            "props.options",
+            "Object.assign(props.options, { enabled: true })",
+            0,
+        ),
+        expected_script_finding(
+            sfc,
+            "props.options",
+            "Object[\"assign\"](props.options, { archived: false })",
+            0,
+        ),
+        expected_script_finding(sfc, "props.profile.name", "delete props.profile.name", 0),
+    ];
+
+    assert_eq!(actual.len(), expected.len());
+    for (actual, expected) in actual.iter().zip(expected.iter()) {
+        assert_eq!(
+            (actual.2, actual.3, actual.4),
+            (expected.2, expected.3, expected.4.as_str())
+        );
+    }
+}
+
+#[test]
+fn ignores_non_literal_computed_mutating_calls_on_props() {
+    let sfc = r#"<script setup lang="ts">
+const props = defineProps<{ items: string[]; options: Record<string, boolean> }>()
+const method = 'push'
+const assign = 'assign'
+props.items[method]('x')
+Object[assign](props.options, { enabled: true })
+</script>
+"#;
+
+    assert!(findings(&lint_sfc(sfc)).is_empty());
+}
+
+#[test]
+fn reports_mutating_calls_on_destructured_props() {
+    let sfc = r#"<script setup lang="ts">
+const { items } = defineProps<{ items: string[] }>()
+items.sort()
+</script>
+"#;
+    let result = lint_sfc(sfc);
+    let actual = findings(&result);
+    let expected = expected_script_finding(sfc, "items", "items.sort()", 0);
 
     assert_eq!(actual.len(), 1);
     assert_eq!(

@@ -12,8 +12,8 @@
 //! bindings returned by `defineProps` (including destructured bindings and
 //! `withDefaults`). In templates, two positions mutate a prop directly:
 //! `v-model` bound to a prop, and an assignment (or `++` / `--`) inside a
-//! `v-on` inline handler. Both script and handler checks resolve real oxc
-//! syntax rather than scanning source text.
+//! `v-on` inline handler. Assignments, updates, deletes, and mutating calls are
+//! checked with real oxc syntax rather than scanning source text.
 //!
 //! ## Examples
 //!
@@ -97,22 +97,19 @@ impl NoMutatingProps {
         if !scope.is_mutation(content) {
             return;
         }
+        let span = exp.loc().span;
         ctx.report(
             crate::diagnostic::LintDiagnostic::error(
                 ctx.current_rule,
                 format!("Unexpected mutation of prop '{}' via v-model", content),
-                directive.loc.span.start,
-                directive.loc.span.end,
+                span.start,
+                span.end,
             )
             .with_help("Use a local ref or emit an event instead of mutating props directly"),
         );
     }
 
-    /// Check whether a `v-on` inline handler assigns to a prop.
-    ///
-    /// Reported at the directive, matching the `v-model` half of this rule.
-    /// Upstream highlights the mutated expression instead; that is a location
-    /// divergence for the parity ledger, not a coverage one.
+    /// Check whether a `v-on` inline handler mutates a prop.
     fn check_handler_mutation<'a>(
         &self,
         ctx: &mut LintContext<'a>,
@@ -125,23 +122,37 @@ impl NoMutatingProps {
         let Some(exp) = directive.exp.as_ref() else {
             return;
         };
-        let mut mutated: Vec<String> = Vec::new();
-        handlers::for_each_mutation_target(expression_source(exp, ctx.source), |target| {
-            let target = target.trim();
-            if scope.is_mutation(target) && !mutated.iter().any(|seen| seen == target) {
-                mutated.push(String::new(target));
+        let expression_start = exp.loc().span.start;
+        let mut mutated: Vec<TemplateMutation> = Vec::new();
+        handlers::for_each_mutation_target(expression_source(exp, ctx.source), |mutation| {
+            let target = mutation.target.trim();
+            if !scope.is_mutation(target) {
+                return;
             }
+            let start = expression_start + mutation.span.start;
+            let end = expression_start + mutation.span.end;
+            if mutated
+                .iter()
+                .any(|seen| seen.target == target && seen.start == start && seen.end == end)
+            {
+                return;
+            }
+            mutated.push(TemplateMutation {
+                target: String::new(target),
+                start,
+                end,
+            });
         });
-        for target in mutated {
+        for mutation in mutated {
             ctx.report(
                 crate::diagnostic::LintDiagnostic::error(
                     ctx.current_rule,
                     format!(
                         "Unexpected mutation of prop '{}' in an inline handler",
-                        target
+                        mutation.target
                     ),
-                    directive.loc.span.start,
-                    directive.loc.span.end,
+                    mutation.start,
+                    mutation.end,
                 )
                 .with_help("Use a local ref or emit an event instead of mutating props directly"),
             );
@@ -236,6 +247,12 @@ impl NoMutatingProps {
         self.check_children(ctx, &element.children, scope);
         scope.shadowed.truncate(depth);
     }
+}
+
+struct TemplateMutation {
+    target: String,
+    start: u32,
+    end: u32,
 }
 
 impl Rule for NoMutatingProps {

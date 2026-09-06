@@ -4355,7 +4355,7 @@
         "line": 151,
         "column": 27,
         "endLine": 151,
-        "endColumn": 66,
+        "endColumn": 75,
         "help": "Use a local ref or emit an event instead of mutating props directly"
       },
       {
@@ -4366,7 +4366,7 @@
         "line": 321,
         "column": 4,
         "endLine": 321,
-        "endColumn": 43,
+        "endColumn": 52,
         "help": "Use a local ref or emit an event instead of mutating props directly"
       }
     ],
@@ -5729,7 +5729,7 @@
         "line": 76,
         "column": 2,
         "endLine": 76,
-        "endColumn": 29,
+        "endColumn": 43,
         "help": "Use a local ref or emit an event instead of mutating props directly"
       },
       {
@@ -5740,7 +5740,7 @@
         "line": 77,
         "column": 2,
         "endLine": 77,
-        "endColumn": 34,
+        "endColumn": 81,
         "help": "Use a local ref or emit an event instead of mutating props directly"
       },
       {
@@ -5751,7 +5751,7 @@
         "line": 82,
         "column": 2,
         "endLine": 82,
-        "endColumn": 29,
+        "endColumn": 42,
         "help": "Use a local ref or emit an event instead of mutating props directly"
       },
       {
@@ -5762,7 +5762,7 @@
         "line": 87,
         "column": 2,
         "endLine": 87,
-        "endColumn": 35,
+        "endColumn": 45,
         "help": "Use a local ref or emit an event instead of mutating props directly"
       }
     ],
