@@ -20,6 +20,9 @@ pub(super) struct TemplateRefUnwraps {
     /// Setup bindings whose assignment is deferred past their declaration. See
     /// `deferred_bindings` for why they need the same shadowing treatment.
     deferred_bindings: Vec<String>,
+    /// Setup bindings produced by `defineModel`. They need the model getter type
+    /// in templates, while ordinary refs stay on the cheaper generic unwrap.
+    model_ref_bindings: FxHashSet<String>,
     /// Dialect and preamble decisions resolved once at collection time; they
     /// also select the `__U` helper this shadow set is emitted against.
     legacy_helpers: bool,
@@ -100,6 +103,13 @@ impl TemplateRefUnwraps {
             .map(|(name, _)| String::from(name.as_str()))
             .collect();
         setup_bindings.sort_unstable();
+        let model_ref_bindings = summary
+            .macros
+            .models()
+            .iter()
+            .map(|model| String::from(model.local_name.as_str()))
+            .filter(|name| setup_bindings.iter().any(|binding| binding == name))
+            .collect();
 
         let auto_import_bindings = template_referenced_names
             .map(|referenced| {
@@ -132,6 +142,7 @@ impl TemplateRefUnwraps {
             options_api_setup_bindings,
             auto_import_bindings,
             deferred_bindings,
+            model_ref_bindings,
             legacy_helpers,
             dialect: generation_options.dialect,
             hoist_shared_preamble: generation_options.hoist_shared_preamble,
@@ -212,8 +223,20 @@ impl TemplateRefUnwraps {
             has_generic_param,
             self.hoist_shared_preamble,
         ));
+        if !self.model_ref_bindings.is_empty() {
+            ts.push_str(model_ref_unwrap_helper_for_template(
+                self.legacy_helpers,
+                self.dialect,
+                has_generic_param,
+            ));
+        }
         for name in &self.setup_bindings {
-            record_template_shadow(ts, name, "__U<__R_", ">", captures, semantic_links);
+            let helper = if self.model_ref_bindings.contains(name) {
+                "__M<__R_"
+            } else {
+                "__U<__R_"
+            };
+            record_template_shadow(ts, name, helper, ">", captures, semantic_links);
         }
         for name in &self.options_api_setup_bindings {
             append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
@@ -259,5 +282,17 @@ fn record_template_shadow(
             target_range: start..start + name.len(),
             kind: VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
         });
+    }
+}
+
+fn model_ref_unwrap_helper_for_template(
+    legacy_helpers: bool,
+    _dialect: VueVersion,
+    has_generic_param: bool,
+) -> &'static str {
+    if legacy_helpers || has_generic_param {
+        "    type __M<T> = T extends __VizeModelRef<any, any, infer __G, any> ? __G : __U<T>;\n"
+    } else {
+        "    type __M<T> = T extends __VizeModelRef<any, any, infer __G, any> ? __VizeWidenTemplateRef<__G> : __U<T>;\n"
     }
 }

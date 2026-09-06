@@ -4,6 +4,7 @@ mod component_options_index_signature;
 mod component_prop_regressions;
 mod css_module_classes;
 mod css_side_effect_import;
+mod define_model_template_unwrap;
 mod diagnostic_normalization;
 mod directive_anchors;
 mod directive_values;

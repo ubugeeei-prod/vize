@@ -95,6 +95,14 @@ impl MacroTracker {
         self.models.push(model);
     }
 
+    /// Rewrite the local binding name of the most recently extracted model.
+    #[inline]
+    pub fn set_latest_model_local_name(&mut self, local_name: CompactString) {
+        if let Some(model) = self.models.last_mut() {
+            model.local_name = local_name;
+        }
+    }
+
     /// Get all models.
     #[inline]
     pub fn models(&self) -> &[ModelDefinition] {

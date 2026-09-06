@@ -27,6 +27,9 @@ pub(super) fn process(
     if let Some(first) = array.elements.first().and_then(|elem| elem.as_ref())
         && let Some(name) = get_binding_pattern_name(first)
     {
+        result
+            .macros
+            .set_latest_model_local_name(CompactString::new(name.as_str()));
         result.reactivity.register(
             CompactString::new(name.as_str()),
             ReactiveKind::Ref,

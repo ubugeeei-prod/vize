@@ -43,11 +43,28 @@ fn shifting_macros_keeps_event_declarations_in_the_script_coordinate_space() {
 
 #[test]
 fn models_retain_explicit_names_and_default_macro_ranges() {
-    for (source, name, declaration) in [
-        ("defineModel<string>(\"title\")", "title", "\"title\""),
-        ("defineModel<number>()", "modelValue", "defineModel"),
+    for (source, name, local_name, declaration) in [
+        (
+            "const titleRef = defineModel<string>(\"title\")",
+            "title",
+            "titleRef",
+            "\"title\"",
+        ),
+        (
+            "const model = defineModel<number>()",
+            "modelValue",
+            "model",
+            "defineModel",
+        ),
     ] {
         let result = parse_script_setup(source);
+        let model = result
+            .macros
+            .models()
+            .iter()
+            .find(|model| model.name == name)
+            .expect("model definition");
+        assert_eq!(model.local_name, local_name);
         let (start, end) = result
             .macros
             .model_declaration(name)
@@ -64,6 +81,7 @@ fn array_destructured_define_model_keeps_public_model_contract() {
 
     assert_eq!(models.len(), 1);
     assert_eq!(models[0].name, "modelValue");
+    assert_eq!(models[0].local_name, "model");
     assert_eq!(models[0].model_type.as_deref(), Some("string"));
     assert_eq!(
         result.macros.model_modifier_type(models[0].name.as_str()),

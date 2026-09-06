@@ -38,13 +38,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
         BindingPattern::BindingIdentifier(id) => {
             let name = id.name.as_str();
             let at = id.span.start;
-            // Record definition span for Go-to-Definition
             result
                 .binding_spans
                 .insert(CompactString::new(name), (id.span.start, id.span.end));
 
-            // Check if the init is a macro or reactivity call
-            // Use extract_call_expression to handle type assertions (as/satisfies)
             let call_extracted = if let Some(call) =
                 declarator.init.as_ref().and_then(extract_call_expression)
             {
@@ -58,8 +55,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         MacroKind::DefineModel => BindingType::SetupRef,
                         _ => get_binding_type_from_kind(kind),
                     };
-                    // defineModel returns a ref, register in reactivity tracker
                     if macro_kind == MacroKind::DefineModel {
+                        result
+                            .macros
+                            .set_latest_model_local_name(CompactString::new(name));
                         result
                             .reactivity
                             .register(CompactString::new(name), ReactiveKind::Ref, at);
