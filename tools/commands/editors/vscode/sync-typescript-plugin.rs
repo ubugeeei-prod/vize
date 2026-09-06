@@ -52,11 +52,46 @@ fn run() -> Result<(), String> {
 }
 
 fn stage_plugin(source_dir: &Path, target_dir: &Path) -> Result<(), String> {
-    if target_dir.exists() {
-        fs::remove_dir_all(target_dir)
-            .map_err(|error| format!("cannot remove {}: {error}", target_dir.display()))?;
+    validate_plugin_files(source_dir)?;
+    let parent = target_dir
+        .parent()
+        .ok_or_else(|| format!("{} has no parent directory", target_dir.display()))?;
+    common::mkdir(parent)?;
+    let temp_dir = unique_sibling_dir(parent, ".typescript-vue-plugin-stage")?;
+    let backup_dir = unique_sibling_dir(parent, ".typescript-vue-plugin-backup")?;
+    common::mkdir(&temp_dir)?;
+
+    let result = (|| {
+        copy_plugin_files(source_dir, &temp_dir)?;
+        replace_staged_plugin(&temp_dir, target_dir, &backup_dir)
+    })();
+
+    if result.is_err() {
+        let _ = fs::remove_dir_all(&temp_dir);
     }
-    common::mkdir(target_dir)?;
+    result
+}
+
+fn validate_plugin_files(source_dir: &Path) -> Result<(), String> {
+    if !source_dir.is_dir() {
+        return Err(format!(
+            "TypeScript Vue plugin source directory does not exist: {}",
+            source_dir.display()
+        ));
+    }
+    for file in PLUGIN_FILES {
+        let path = source_dir.join(file);
+        if !path.is_file() {
+            return Err(format!(
+                "TypeScript Vue plugin source file is missing: {}",
+                path.display()
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn copy_plugin_files(source_dir: &Path, target_dir: &Path) -> Result<(), String> {
     for file in PLUGIN_FILES {
         fs::copy(source_dir.join(file), target_dir.join(file)).map_err(|error| {
             format!(
@@ -67,6 +102,47 @@ fn stage_plugin(source_dir: &Path, target_dir: &Path) -> Result<(), String> {
         })?;
     }
     Ok(())
+}
+
+fn replace_staged_plugin(
+    temp_dir: &Path,
+    target_dir: &Path,
+    backup_dir: &Path,
+) -> Result<(), String> {
+    if target_dir.exists() {
+        fs::rename(target_dir, backup_dir).map_err(|error| {
+            format!(
+                "cannot move {} to {}: {error}",
+                target_dir.display(),
+                backup_dir.display()
+            )
+        })?;
+    }
+
+    if let Err(error) = fs::rename(temp_dir, target_dir) {
+        if backup_dir.exists() {
+            let _ = fs::rename(backup_dir, target_dir);
+        }
+        return Err(format!(
+            "cannot move staged plugin {} to {}: {error}",
+            temp_dir.display(),
+            target_dir.display()
+        ));
+    }
+
+    if backup_dir.exists() {
+        fs::remove_dir_all(backup_dir)
+            .map_err(|error| format!("cannot remove {}: {error}", backup_dir.display()))?;
+    }
+    Ok(())
+}
+
+fn unique_sibling_dir(parent: &Path, prefix: &str) -> Result<PathBuf, String> {
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|error| error.to_string())?
+        .as_nanos();
+    Ok(parent.join(format!("{prefix}-{}-{nanos}", std::process::id())))
 }
 
 fn inject_plugin(source_dir: &Path, vsix_path: &Path) -> Result<(), String> {
