@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runTests } from "@vscode/test-electron";
@@ -50,19 +51,26 @@ if (process.platform === "win32") {
   );
 }
 
-await runTests({
-  extensionDevelopmentPath,
-  extensionTestsPath,
-  extensionTestsEnv: {
-    VIZE_TEST_SERVER_LOG: fakeServerLogPath,
-    VIZE_TEST_SERVER_PATH: fakeServerPath,
-    VIZE_TEST_SERVER_VERSION: packageJson.version,
-  },
-  launchArgs: [
-    "--disable-extensions",
-    "--disable-workspace-trust",
-    "--skip-welcome",
-    "--skip-release-notes",
-    workspacePath,
-  ],
-});
+const profilePath = fs.mkdtempSync(path.join(os.tmpdir(), "vize-host-"));
+try {
+  await runTests({
+    extensionDevelopmentPath,
+    extensionTestsPath,
+    extensionTestsEnv: {
+      VIZE_TEST_SERVER_LOG: fakeServerLogPath,
+      VIZE_TEST_SERVER_PATH: fakeServerPath,
+      VIZE_TEST_SERVER_VERSION: packageJson.version,
+    },
+    launchArgs: [
+      `--extensions-dir=${path.join(profilePath, "extensions")}`,
+      `--user-data-dir=${path.join(profilePath, "user-data")}`,
+      "--disable-extensions",
+      "--disable-workspace-trust",
+      "--skip-welcome",
+      "--skip-release-notes",
+      workspacePath,
+    ],
+  });
+} finally {
+  fs.rmSync(profilePath, { force: true, recursive: true });
+}

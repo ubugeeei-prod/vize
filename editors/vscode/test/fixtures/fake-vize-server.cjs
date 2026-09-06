@@ -183,6 +183,9 @@ function createCapabilities() {
       },
       range: false,
     },
+    signatureHelpProvider: {
+      triggerCharacters: ["(", ","],
+    },
     textDocumentSync: 1,
     workspaceSymbolProvider: true,
   };
@@ -356,6 +359,18 @@ function createResponse(message) {
     case "textDocument/semanticTokens/full":
       return {
         data: [1, 6, 7, 0, 1, 4, 2, 4, 1, 0],
+      };
+
+    case "textDocument/signatureHelp":
+      return {
+        activeParameter: 0,
+        activeSignature: 0,
+        signatures: [
+          {
+            label: "fakeAction(value: string): void",
+            parameters: [{ label: "value" }],
+          },
+        ],
       };
 
     case "workspace/symbol":

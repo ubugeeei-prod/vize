@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const require = createRequire(import.meta.url);
 
 type ConfigurationProperty = {
   type?: string | string[];
@@ -34,6 +36,22 @@ type Manifest = {
     semanticTokenModifiers?: Array<{ id?: string; description?: string }>;
   };
 };
+
+type ExtensionHostFixtures = {
+  commandIds: string[];
+  granularEditorCapabilitySettings: Array<[string, string]>;
+};
+
+const NON_PROVIDER_FEATURE_SETTINGS = new Set([
+  "lint.enable",
+  "diagnostics.enable",
+  "typecheck.enable",
+  "editor.enable",
+  "ecosystem.enable",
+  "optionsApi.enable",
+  "legacyVue2.enable",
+  "autoInsert.enable",
+]);
 
 test("multiline Vue script grammar is contributed", () => {
   const grammar = readManifest().contributes?.grammars?.find(
@@ -68,6 +86,12 @@ function readManifest(): Manifest {
   ) as Manifest;
 }
 
+function readExtensionHostFixtures(): ExtensionHostFixtures {
+  return require(
+    path.join(root, "editors/vscode/test/suite/extension-host-fixtures.cjs"),
+  ) as ExtensionHostFixtures;
+}
+
 const LANGUAGE_SCOPED_COMMANDS = new Set([
   "vize.findReferences",
   "vize.restartServer",
@@ -88,6 +112,27 @@ test("every contributed command has a matching onCommand activation event", () =
   // A command without an activation event silently fails to start the extension
   // when invoked from a keybinding; an orphan activation event is dead config.
   assert.deepEqual(onCommandEvents, commands);
+});
+
+test("extension-host fixture mirrors published commands and provider settings", () => {
+  const manifest = readManifest();
+  const fixtures = readExtensionHostFixtures();
+  const properties = manifest.contributes?.configuration?.properties ?? {};
+  const commands = (manifest.contributes?.commands ?? [])
+    .map((command) => command.command)
+    .filter((command): command is string => typeof command === "string" && command.length > 0)
+    .sort();
+  const providerSettings = Object.keys(properties)
+    .map((key) => (key.startsWith("vize.") ? key.slice("vize.".length) : key))
+    .filter((key) => key.endsWith(".enable") && !NON_PROVIDER_FEATURE_SETTINGS.has(key))
+    .sort();
+  const fixtureSettings = fixtures.granularEditorCapabilitySettings.map(([setting]) => setting);
+  const fixtureOptions = fixtures.granularEditorCapabilitySettings.map(([, option]) => option);
+
+  assert.deepEqual([...fixtures.commandIds].sort(), commands);
+  assert.deepEqual([...fixtureSettings].sort(), providerSettings);
+  assert.equal(new Set(fixtureSettings).size, fixtureSettings.length);
+  assert.equal(new Set(fixtureOptions).size, fixtureOptions.length);
 });
 
 test("command palette menu only references declared commands", () => {

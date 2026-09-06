@@ -79,6 +79,7 @@ const featureSettingKeys = [
 
 const granularEditorCapabilitySettings = [
   ["completion.enable", "completion"],
+  ["signatureHelp.enable", "signatureHelp"],
   ["hover.enable", "hover"],
   ["definition.enable", "definition"],
   ["references.enable", "references"],

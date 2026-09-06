@@ -60,6 +60,20 @@ async function runEditorCapabilityProviderSmoke({
   });
 
   await runProviderCommand(logPath, {
+    args: [document.uri, position, "("],
+    commandIds: ["vscode.executeSignatureHelpProvider"],
+    label: "signature help",
+    method: "textDocument/signatureHelp",
+    validate(result, request) {
+      assert.equal(result?.activeSignature, 0);
+      assert.equal(result?.activeParameter, 0);
+      assert.equal(result?.signatures?.[0]?.label, "fakeAction(value: string): void");
+      assert.deepEqual(result?.signatures?.[0]?.parameters?.[0]?.label, "value");
+      assertTextDocumentRequest(request, document.uri, position);
+    },
+  });
+
+  await runProviderCommand(logPath, {
     args: [document.uri, position],
     commandIds: ["vscode.executeDefinitionProvider"],
     label: "definition",
