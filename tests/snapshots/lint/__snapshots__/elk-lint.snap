@@ -1313,17 +1313,6 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
-        "line": 86,
-        "column": 42,
-        "endLine": 86,
-        "endColumn": 57,
-        "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
-      },
-      {
-        "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 90,
         "column": 46,
         "endLine": 90,
@@ -1343,7 +1332,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 5
   },
   {
     "file": "app/components/nav/NavLogo.vue",
