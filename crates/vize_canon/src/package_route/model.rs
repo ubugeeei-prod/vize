@@ -196,6 +196,19 @@ impl PackageRoute {
         paths
     }
 
+    pub fn requires_workspace_source_shadow(&self) -> bool {
+        (self.workspace_source
+            && self.source_targets.iter().any(|source| {
+                source.source_path != source.native_probe_path
+                    && source.source_path.starts_with(&self.package_root)
+                    && source.native_probe_path.starts_with(&self.package_root)
+            }))
+            || self
+                .nested_routes
+                .iter()
+                .any(PackageRoute::requires_workspace_source_shadow)
+    }
+
     /// See [`Self::collect_invalidation_paths`] for why the recursion does not
     /// sort as it descends.
     fn collect_all_source_paths<'a>(&'a self, out: &mut Vec<&'a PathBuf>) {

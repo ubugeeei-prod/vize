@@ -35,7 +35,7 @@ use candidates::{
 use search::{
     PackageRequest, PackageSearchCache, find_package_root, nearest_package_manifest, read_manifest,
 };
-use source::resolve_sources;
+use source::{resolve_sources, resolve_workspace_source_fallbacks};
 
 pub use cache::{PackageRouteLookup, PackageRouteResolver};
 #[cfg(feature = "native")]
@@ -192,9 +192,19 @@ fn resolve_uncached(
         collect_types_version_candidates(&manifest, &request, &package_root, &mut candidates);
     }
     let mut source_targets = Vec::new();
+    let workspace_source = !inside_node_modules(&package_root);
     for candidate in &candidates {
         invalidation_paths.push(candidate.clone());
         let mut resolved = resolve_sources(candidate, options, invalidation_paths, canonical_paths);
+        if resolved.is_empty() && workspace_source {
+            resolved = resolve_workspace_source_fallbacks(
+                candidate,
+                &package_root,
+                options,
+                invalidation_paths,
+                canonical_paths,
+            );
+        }
         if resolved.is_empty() && candidate.extension().is_some_and(|ext| ext == "vue") {
             resolved.push(source::ResolvedPackageSource {
                 source_path: canonical_path(candidate, canonical_paths),
@@ -239,7 +249,7 @@ fn resolve_uncached(
         package_link_root: logical_absolute(&package_link_root),
         manifest_path,
         package_name,
-        workspace_source: !inside_node_modules(&package_root),
+        workspace_source,
         nested_routes,
     })
 }

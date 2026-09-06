@@ -102,7 +102,10 @@ impl<'a> RouteDiscovery<'a> {
                     })
                     .clone()
             });
-        let needs_shadow = reachability.requires_shadow();
+        let needs_shadow = reachability.requires_shadow()
+            || route
+                .as_ref()
+                .is_some_and(crate::PackageRoute::requires_workspace_source_shadow);
         let track_reachability = reachability.requires_tracking();
         self.inputs.extend(reachability.inputs);
         if needs_shadow && let Some(route) = route.as_ref() {
@@ -111,7 +114,7 @@ impl<'a> RouteDiscovery<'a> {
                 route.clone(),
             );
         }
-        if track_reachability || watchable_negative {
+        if needs_shadow || track_reachability || watchable_negative {
             self.bindings.push(crate::PackageRouteBinding {
                 importer_path: importer.to_path_buf(),
                 specifier: specifier.into(),

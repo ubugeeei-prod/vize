@@ -190,6 +190,7 @@ fn source_needs_virtual_registration(
                     invalidation_paths.push(file.clone());
                     let mut binding_route = None;
                     let mut track_reachability = false;
+                    let mut needs_shadow = false;
                     if let Some(route) = route {
                         let reachability_key = (
                             route.manifest_path.clone(),
@@ -213,7 +214,8 @@ fn source_needs_virtual_registration(
                             }
                         };
                         track_reachability = reachability.requires_tracking();
-                        let needs_shadow = reachability.requires_shadow();
+                        needs_shadow = reachability.requires_shadow()
+                            || route.requires_workspace_source_shadow();
                         needs_registration |= needs_shadow;
                         invalidation_paths.extend(reachability.inputs);
                         if needs_shadow {
@@ -222,7 +224,7 @@ fn source_needs_virtual_registration(
                     }
                     invalidation_paths.sort();
                     invalidation_paths.dedup();
-                    if track_reachability || watchable_negative {
+                    if needs_shadow || track_reachability || watchable_negative {
                         discovered_routes.push(vize_canon::PackageRouteBinding {
                             importer_path: file.clone(),
                             specifier: specifier.clone(),

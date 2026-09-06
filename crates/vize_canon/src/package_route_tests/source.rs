@@ -162,3 +162,54 @@ fn native_shadow_reverse_mapping_matches_materialized_typescript_twin_priority()
         None
     );
 }
+
+#[test]
+#[cfg(unix)]
+fn symlinked_workspace_build_export_falls_back_to_src_entry() {
+    use std::os::unix::fs::symlink;
+
+    let root = tempfile::tempdir().unwrap();
+    let app = root.path().join("app");
+    let importer = app.join("src");
+    let package = root.path().join("packages/misskey-js");
+    let link = app.join("node_modules/misskey-js");
+    let source = package.join("src/index.ts");
+    std::fs::create_dir_all(&importer).unwrap();
+    std::fs::create_dir_all(source.parent().unwrap()).unwrap();
+    std::fs::create_dir_all(link.parent().unwrap()).unwrap();
+    std::fs::write(&source, "export const packed: string = 'ok'\n").unwrap();
+    std::fs::write(
+        package.join("package.json"),
+        r#"{
+  "type": "module",
+  "name": "misskey-js",
+  "main": "./built/index.js",
+  "types": "./built/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./built/index.js",
+      "types": "./built/index.d.ts",
+      "default": "./built/index.js"
+    }
+  }
+}
+"#,
+    )
+    .unwrap();
+    symlink(&package, &link).unwrap();
+
+    let route = PackageRouteResolver::default()
+        .resolve(&importer, "misskey-js", PackageSourceOptions::default())
+        .unwrap();
+    assert!(route.workspace_source);
+    assert!(route.requires_workspace_source_shadow());
+    assert_eq!(
+        route.unambiguous_source_path().unwrap().clone(),
+        source.canonicalize().unwrap()
+    );
+    assert!(route.source_targets.iter().any(|target| {
+        target.source_path == source.canonicalize().unwrap()
+            && target.native_probe_relative_path(&route.package_root)
+                == Some("built/index.ts".into())
+    }));
+}

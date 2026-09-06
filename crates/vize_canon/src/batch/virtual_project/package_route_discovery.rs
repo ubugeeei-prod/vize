@@ -109,7 +109,10 @@ impl VirtualProject {
                 if has_route {
                     reachability.record_work(&mut resolver);
                 }
-                let needs_shadow = reachability.requires_shadow();
+                let needs_shadow = reachability.requires_shadow()
+                    || route
+                        .as_ref()
+                        .is_some_and(crate::PackageRoute::requires_workspace_source_shadow);
                 if !route_requires_invalidation_binding(has_route, watchable_negative) {
                     continue;
                 }

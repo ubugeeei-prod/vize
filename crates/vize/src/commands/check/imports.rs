@@ -205,7 +205,7 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
             }
             let mut discovery = registration::VirtualRegistrationDiscovery::default();
             let needs_registration = if let Some(route) = package_route {
-                let mut needs_registration = false;
+                let mut needs_registration = route.requires_workspace_source_shadow();
                 for candidate in route.all_source_paths() {
                     needs_registration |= non_relative_import_needs_virtual_registration(
                         candidate,
