@@ -298,13 +298,8 @@ fn compile_template_inner_with_sections<'a>(
     // Project the public output options before consuming Croquis below. Croquis
     // intentionally crosses the transform boundary by ownership and is not
     // cloneable, while S2 only borrows the remaining compiler settings.
-    let s2_emit_source = use_s2_emit.then(|| {
-        (
-            options.clone(),
-            hoisted_scope_id.clone(),
-            custom_elements.clone(),
-        )
-    });
+    let s2_custom_elements = custom_elements.clone();
+    let s2_emit_source = use_s2_emit.then(|| (options.clone(), hoisted_scope_id.clone()));
     let transform_opts = stage_options::transform_options(&options);
     // Park the summary on the allocator so it shares the allocator lifetime.
     let analysis: Option<&Croquis> = options.croquis.map(|c| allocator.alloc_owned(*c));
@@ -328,23 +323,21 @@ fn compile_template_inner_with_sections<'a>(
     errors.extend(transform_errors);
 
     // Codegen
-    let s2_emit = s2_emit_source.map(
-        |(s2_options_source, s2_hoisted_scope_id, s2_custom_elements)| {
-            let binding_table =
-                stage_options::s2_binding_table(s2_options_source.binding_metadata.as_ref());
-            let s2_options = stage_options::s2_emit_options(
-                &s2_options_source,
-                &codegen_opts,
-                &s2_custom_elements,
-                binding_table.as_ref(),
-                s2_hoisted_scope_id.as_deref(),
-            );
-            profile!(
-                "atelier.dom.template.s2_codegen",
-                stage_options::emit_s2(allocator, source, s2_options_source.dialect, &s2_options)
-            )
-        },
-    );
+    let s2_emit = s2_emit_source.map(|(s2_options_source, s2_hoisted_scope_id)| {
+        let binding_table =
+            stage_options::s2_binding_table(s2_options_source.binding_metadata.as_ref());
+        let s2_options = stage_options::s2_emit_options(
+            &s2_options_source,
+            &codegen_opts,
+            &s2_custom_elements,
+            binding_table.as_ref(),
+            s2_hoisted_scope_id.as_deref(),
+        );
+        profile!(
+            "atelier.dom.template.s2_codegen",
+            stage_options::emit_s2(allocator, source, s2_options_source.dialect, &s2_options)
+        )
+    });
     let codegen_result = match s2_emit {
         Some(Ok(result)) => source_map::attach_compat_map(&root, &codegen_opts, result),
         Some(Err(_)) | None => profile!(

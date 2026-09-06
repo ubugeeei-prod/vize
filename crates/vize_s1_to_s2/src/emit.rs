@@ -57,6 +57,7 @@ mod component;
 mod constant_expr;
 mod create_slots;
 mod create_slots_walk;
+mod custom_element;
 mod cx;
 mod directive;
 mod dispatch;
@@ -125,13 +126,13 @@ pub use self::budget::{
     emit_dom_source_observed_with_options, emit_dom_source_with_caps_observed,
 };
 use self::buf::Buf;
+pub(crate) use self::custom_element::tag_pattern_matches;
 use self::dispatch::{emit_for_item_call, emit_for_op, emit_if_branch_call, emit_if_op};
 pub use self::entry::{
     DomEmit, DomEmitSections, emit_dom_source, emit_dom_source_with_caps,
     emit_dom_source_with_options,
 };
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
-pub(crate) use self::options::tag_pattern_matches;
 pub use self::options::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
 use self::run::emit_dom_with_emit_budget;
 pub use self::run::{emit_dom, emit_dom_with_options};

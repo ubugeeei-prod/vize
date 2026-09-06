@@ -16,7 +16,6 @@
 //! contract): past `u32::MAX - 1` ops the context reports once and stops
 //! minting; side tables simply stop gaining keys while the op tree stays
 //! total.
-//!
 //! [`S2Folio`]: vize_s2::folio::S2Folio
 
 use alloc::vec::Vec;
@@ -28,6 +27,8 @@ use vize_s0::{Allocator, SourceBlock, Span, String};
 use vize_s1::{CloseTag, Element, ElementClose, SurfaceChild, Token};
 use vize_s2::provenance::ProvenanceRecord;
 use vize_s2::scope::{ScopeFacts, ScopeTag};
+
+mod custom_element;
 
 pub(crate) struct Cx<'a> {
     pub allocator: &'a Allocator,
@@ -82,14 +83,6 @@ impl<'a> Cx<'a> {
             caps,
             custom_element_patterns: custom_element_patterns.to_vec(),
         }
-    }
-
-    /// Whether a non-native tag should lower as a platform custom element
-    /// instead of a Vue component.
-    pub(crate) fn is_custom_element(&self, tag: &str) -> bool {
-        self.custom_element_patterns
-            .iter()
-            .any(|pattern| crate::emit::tag_pattern_matches(pattern.as_str(), tag))
     }
 
     /// Whether the walk is inside a condense-suppressing subtree.

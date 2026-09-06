@@ -80,15 +80,14 @@ fn a_matching_custom_element_pattern_emits_an_element_not_a_component() {
         &options,
     )
     .expect("emit");
-    let assembled = emit.assembled();
+    assert_eq!(
+        emit.assembled().as_str(),
+        "\
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
 
-    assert!(
-        assembled.contains("_createElementBlock(\"ion-button\""),
-        "{assembled}"
-    );
-    assert!(
-        !assembled.contains("_resolveComponent(\"ion-button\")"),
-        "{assembled}"
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"ion-button\", { onClick: go }, _toDisplayString(label), 9 /* TEXT, PROPS */, [\"onClick\"]))
+}"
     );
 }
 

@@ -7,7 +7,6 @@
 //! emitter silently assumes — it is production surface the series has
 
 use alloc::vec::Vec as StdVec;
-
 use vize_s0::String;
 
 /// Which module form the render function is emitted in — the shipped
@@ -258,55 +257,6 @@ impl DomEmitOptions<'static> {
     };
 }
 
-pub(crate) fn tag_pattern_matches(pattern: &str, tag: &str) -> bool {
-    if pattern.is_empty() {
-        return false;
-    }
-    if pattern.bytes().all(|byte| byte == b'*') {
-        return true;
-    }
-    if !pattern.contains('*') {
-        return pattern == tag;
-    }
-
-    let starts_with_wildcard = pattern.starts_with('*');
-    let ends_with_wildcard = pattern.ends_with('*');
-    let mut position = 0;
-    let mut matched_any = false;
-
-    for (index, part) in pattern
-        .split('*')
-        .filter(|part| !part.is_empty())
-        .enumerate()
-    {
-        matched_any = true;
-        if index == 0 && !starts_with_wildcard {
-            if !tag[position..].starts_with(part) {
-                return false;
-            }
-            position += part.len();
-            continue;
-        }
-
-        let Some(found) = tag[position..].find(part) else {
-            return false;
-        };
-        position += found + part.len();
-    }
-
-    if !matched_any {
-        return false;
-    }
-
-    if !ends_with_wildcard
-        && let Some(last_part) = pattern.rsplit('*').find(|part| !part.is_empty())
-    {
-        return tag.ends_with(last_part);
-    }
-
-    true
-}
-
 impl Default for DomEmitOptions<'static> {
     fn default() -> Self {
         Self::DEFAULT
@@ -370,10 +320,6 @@ mod tests {
         assert_eq!(table.kind("msg"), Some(BindingKind::SetupLet));
         assert_eq!(table.kind("Comp"), Some(BindingKind::SetupConst));
         assert_eq!(table.kind("other"), None);
-        // `contains` is the membership half of the same lookup; both
-        // answers are pinned, and the call stays out of the assertion so
-        // the Davinci assertion lint's partial-match scan reads it as the
-        // exact query it is.
         let named = (table.contains("Comp"), table.contains("other"));
         assert_eq!(named, (true, false));
         assert_eq!(
