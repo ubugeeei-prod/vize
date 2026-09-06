@@ -24,7 +24,7 @@ import {
   ServerOptions,
   Trace,
   TransportKind,
-} from "vscode-languageclient/node";
+} from "vscode-languageclient/node.js";
 import {
   LINT_ONLY_CONFIGURATION_UPDATES,
   createDocumentSelector,
@@ -35,11 +35,11 @@ import {
   parseVizeVersion,
   shouldStartFromConfiguration,
   type LspInitializationOptions,
-} from "./extension-core";
-import { registerHostTestCommands } from "./host-test-commands";
-import { registerTypeScriptContentMapperDiscovery } from "./content-mapper-discovery";
-import { createAutoInsertMiddleware } from "./auto-insert";
-import { downloadFile } from "./release-download";
+} from "./extension-core.js";
+import { registerHostTestCommands } from "./host-test-commands.js";
+import { registerTypeScriptContentMapperDiscovery } from "./content-mapper-discovery.js";
+import { createAutoInsertMiddleware } from "./auto-insert.js";
+import { downloadFile } from "./release-download.js";
 
 const execFileAsync = promisify(execFile);
 let client: LanguageClient | undefined;

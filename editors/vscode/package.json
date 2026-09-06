@@ -15,6 +15,7 @@
     "directory": "editors/vscode"
   },
   "publisher": "ubugeeei",
+  "type": "module",
   "main": "./dist/extension.cjs",
   "scripts": {
     "vscode:prepublish": "vp pack",

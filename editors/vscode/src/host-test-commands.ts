@@ -4,7 +4,7 @@ import {
   bindHostTestCommands,
   type HostTestLanguageClient,
   type HostTestServerInfo,
-} from "./host-test-core";
+} from "./host-test-core.js";
 
 /**
  * Binds the environment-gated host smoke commands to the VS Code command

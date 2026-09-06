@@ -15,12 +15,17 @@ function readJson(relativePath: string): unknown {
 }
 
 test("VSIX package policy keeps the production CJS host entrypoint shippable", () => {
-  const manifest = readJson("editors/vscode/package.json") as { main?: string };
+  const manifest = readJson("editors/vscode/package.json") as { main?: string; type?: string };
+  const tsconfig = readJson("editors/vscode/tsconfig.json") as {
+    compilerOptions?: { types?: string[] };
+  };
   const packConfig = readText("editors/vscode/vite.config.ts");
   const ignore = readText("editors/vscode/.vscodeignore");
   const smoke = readText("tools/commands/editors/vscode/assert-vsix-package.rs");
 
+  assert.equal(manifest.type, "module");
   assert.equal(manifest.main, "./dist/extension.cjs");
+  assert.deepEqual(tsconfig.compilerOptions?.types, ["node"]);
   assert.match(packConfig, /entry:\s*\["src\/extension\.ts"\]/);
   assert.match(packConfig, /outDir:\s*"dist"/);
   assert.match(packConfig, /format:\s*"cjs"/);
