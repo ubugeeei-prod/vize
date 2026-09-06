@@ -59,8 +59,8 @@ defineExpose(exposed);
 <template>
   <!-- eslint-disable vue/no-root-v-if -->
   <component
-    v-if="rendered"
     :is="as"
+    v-if="rendered"
     ref="element"
     v-bind="context.errorMessageProps.value"
     data-vize-ui="field-error-message"
