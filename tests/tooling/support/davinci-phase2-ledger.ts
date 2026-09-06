@@ -201,9 +201,12 @@ export function assertP2_17P2_20ExitBlockers(
   assert.match(phaseLedger, /P2-11's S2 DOM lane/);
   assert.match(phaseLedger, /P2-12b's traversal-budget swap/);
   assert.match(phaseLedger, /P2-13's failure\s+provenance contract/);
-  assert.match(phaseLedger, /span-resolution and `schema_version` negotiation checks/);
-  assert.match(phaseLedger, /P2-20 cannot evaluate the exit gate until every P2-1\.\.P2-19/);
-  assert.match(phaseLedger, /tick a line only with evidence/);
+  assert.match(phaseLedger, /ir_contract_spans\.rs/);
+  assert.match(phaseLedger, /spolvero_feed\.rs/);
+  assert.match(phaseLedger, /pre-signoff evidence, not a P2-17 completion/);
+  assert.match(phaseLedger, /P2-20 cannot evaluate\s+the exit gate until every P2-1\.\.P2-19/);
+  assert.match(phaseLedger, /tick a line only\s+with evidence/);
+  assertP2_17MechanicalWitnesses();
 
   assert.equal(gateItems.length, 12, "the P2 exit gate item count changed");
   assert.deepEqual(
@@ -228,4 +231,22 @@ export function assertP2_17P2_20ExitBlockers(
     ),
     "P2-20 must continue to gate the C-16 waiver-ledger review",
   );
+}
+
+function assertP2_17MechanicalWitnesses(): void {
+  const spanWitness = fs.readFileSync(
+    new URL("../../../crates/vize_s1_to_s2/tests/ir_contract_spans.rs", import.meta.url),
+    "utf8",
+  );
+  assert.match(spanWitness, /P2-17 mechanical span gate/);
+  assert.match(spanWitness, /owned_folio_spans_resolve_for_optional_corpus/);
+  assert.match(spanWitness, /assert_folio_spans_resolve/);
+
+  const schemaWitness = fs.readFileSync(
+    new URL("../../../crates/vize_davinci/tests/spolvero_feed.rs", import.meta.url),
+    "utf8",
+  );
+  assert.match(schemaWitness, /consumers_negotiate_schema_version_before_reading_pages/);
+  assert.match(schemaWitness, /not read until the version is accepted/);
+  assert.match(schemaWitness, /SchemaGateError::VersionMismatch/);
 }

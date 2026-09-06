@@ -117,12 +117,16 @@ counts or fixture availability changes.
   must not replace this inventory.
 - **P2-17/P2-20 pre-exit blocker map:** P2-17 cannot be signed off until
   P2-11's S2 DOM lane, P2-12b's traversal-budget swap and P2-13's failure
-  provenance contract are all available to review together; its mechanical
-  span-resolution and `schema_version` negotiation checks still need to land as
-  tests. P2-20 cannot evaluate the exit gate until every P2-1..P2-19
-  dependency is closed. Until then the exit gate below stays unticked: P2-20's
-  acceptance rule is to tick a line only with evidence, or leave it unticked
-  with its blocker named during the phase-exit evaluation.
+  provenance contract are all available to review together. Its mechanical
+  span-resolution witness now runs in
+  [`ir_contract_spans.rs`](../../crates/vize_s1_to_s2/tests/ir_contract_spans.rs),
+  and its `schema_version` negotiation witness now runs in
+  [`spolvero_feed.rs`](../../crates/vize_davinci/tests/spolvero_feed.rs); those
+  tests are pre-signoff evidence, not a P2-17 completion. P2-20 cannot evaluate
+  the exit gate until every P2-1..P2-19 dependency is closed. Until then the
+  exit gate below stays unticked: P2-20's acceptance rule is to tick a line only
+  with evidence, or leave it unticked with its blocker named during the
+  phase-exit evaluation.
 
 ## Davinci describes the shipped pipeline — and cannot yet consume it (2026-08-19)
 
