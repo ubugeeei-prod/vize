@@ -33,6 +33,7 @@ export function requiredLine(source: string, pattern: RegExp, label: string): st
 }
 
 export function assertCurrentP2_11Installment(source: string, label: string): void {
+  assertP2_11CurrentPin();
   const record = currentP2_11InstallmentRecord(source, label);
   const current = P2_11_CURRENT.number;
   assert.ok(
@@ -49,7 +50,22 @@ export function assertCurrentP2_11Installment(source: string, label: string): vo
     new RegExp(`#${P2_11_CURRENT.pr}`, "u"),
     `${label} current record must cite #${P2_11_CURRENT.pr}`,
   );
+  if (label === "p2_11")
+    assert.match(
+      record,
+      new RegExp(P2_11_CURRENT.sha, "u"),
+      `${label} current record must cite ${P2_11_CURRENT.sha}`,
+    );
   assert.doesNotMatch(record, /\bpending\b/iu, `${label} current record must not be pending`);
+}
+
+function assertP2_11CurrentPin(): void {
+  const currentRow = p2_11TableRows[p2_11TableRows.length - 1];
+  assert.deepEqual(
+    currentRow,
+    [P2_11_CURRENT.number, P2_11_CURRENT.pr, P2_11_CURRENT.sha],
+    "P2-11 current pin must match the final installment table row",
+  );
 }
 
 function currentP2_11InstallmentRecord(source: string, label: string): string {
