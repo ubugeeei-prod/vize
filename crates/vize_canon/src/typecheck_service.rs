@@ -349,24 +349,6 @@ impl TypeCheckService {
     }
 }
 
-/// Convert line and column to offset in the given content.
-fn line_col_to_offset(content: &str, line: u32, col: u32) -> u32 {
-    let mut offset = 0;
-    let mut current_line = 0;
-
-    for (i, ch) in content.char_indices() {
-        if current_line == line {
-            return (i as u32) + col;
-        }
-        if ch == '\n' {
-            current_line += 1;
-        }
-        offset = i as u32 + 1;
-    }
-
-    offset + col
-}
-
 fn add_script_parse_diagnostics(
     diagnostics: Vec<ScriptParseDiagnostic>,
     result: &mut SfcTypeCheckResult,
@@ -401,8 +383,13 @@ fn map_position_to_sfc(
     _template_offset: u32,
 ) -> (u32, u32) {
     // Convert line/col to offset in generated content
-    let gen_start_offset = line_col_to_offset(&virtual_ts.code, start_line, start_char) as usize;
-    let gen_end_offset = line_col_to_offset(&virtual_ts.code, end_line, end_char) as usize;
+    let line_index = vize_carton::line_index::LineIndex::new(&virtual_ts.code);
+    let (Some(gen_start_offset), Some(gen_end_offset)) = (
+        line_index.line_col_to_offset(start_line, start_char),
+        line_index.line_col_to_offset(end_line, end_char),
+    ) else {
+        return fallback_position_to_sfc(start_line, start_char, end_line, end_char, script_offset);
+    };
 
     if let Some((src_start, src_end)) = crate::virtual_ts::mapping::map_generated_range_to_source(
         &virtual_ts.mappings,
@@ -414,27 +401,24 @@ fn map_position_to_sfc(
 
     // Fallback: estimate based on line numbers
     // This is a rough approximation when source map mapping is not found
-    let start = script_offset + start_line * 80 + start_char;
-    let end = script_offset + end_line * 80 + end_char;
+    fallback_position_to_sfc(start_line, start_char, end_line, end_char, script_offset)
+}
+
+fn fallback_position_to_sfc(
+    start_line: u32,
+    start_char: u32,
+    end_line: u32,
+    end_char: u32,
+    script_offset: u32,
+) -> (u32, u32) {
+    let start = script_offset
+        .saturating_add(start_line.saturating_mul(80))
+        .saturating_add(start_char);
+    let end = script_offset
+        .saturating_add(end_line.saturating_mul(80))
+        .saturating_add(end_char);
     (start, end)
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{SfcDiagnosticSeverity, TypeCheckServiceOptions};
-
-    #[test]
-    fn test_sfc_diagnostic_severity() {
-        assert_eq!(SfcDiagnosticSeverity::Error, SfcDiagnosticSeverity::Error);
-        assert_ne!(SfcDiagnosticSeverity::Error, SfcDiagnosticSeverity::Warning);
-    }
-
-    #[test]
-    fn test_type_check_service_options_default() {
-        let opts = TypeCheckServiceOptions::default();
-        assert!(opts.project_root.is_none());
-        assert!(opts.tsconfig_path.is_none());
-        assert!(!opts.check_cross_component);
-        assert!(!opts.check_template);
-    }
-}
+mod tests;
