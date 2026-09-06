@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { compareTypecheckDiagnostics } from "../../legacy-tools/fixtures/typecheck-divergence.mjs";
+import * as compatNonVacuity from "./compat-nonvacuity.ts";
+import type { CompatNonVacuity } from "./compat-nonvacuity.ts";
 import { repoRoot, symlinkDirectory, withPinnedFixtureWorkspace } from "./realworld-patch.ts";
 import {
   resolveTsgoBinary,
@@ -75,6 +77,7 @@ export type CompatProbeResult = {
   revision: string;
   summary: CompatSummary;
   accepted: boolean;
+  nonVacuity: CompatNonVacuity | null;
   vizeDurationMs: number;
   vueTscDurationMs: number;
 };
@@ -226,29 +229,30 @@ export async function runCompatProbe(probe: CompatProbe): Promise<CompatProbeRes
         `vue-tsc must complete for ${probe.fixtureId}: exit ${vueTsc.status}\n${vueTsc.stderr}`,
       );
 
+      const documentedDifferences = readCompatDocumentedDifferences().differences;
       const divergence = compareTypecheckDiagnostics({
         projectId: probe.fixtureId,
         cwd: fixture.workspaceDir,
         vizeReport: vize.report,
         vueTscOutput: `${vueTsc.stdout}\n${vueTsc.stderr}`,
-        documentedDifferences: readCompatDocumentedDifferences().differences,
+        documentedDifferences,
       }) as { summary: CompatSummary & Record<string, number> };
 
-      const summary: CompatSummary = {
-        vizeDiagnosticCount: divergence.summary.vizeDiagnosticCount,
-        baselineDiagnosticCount: divergence.summary.baselineDiagnosticCount,
-        sharedCount: divergence.summary.sharedCount,
-        messageMismatchCount: divergence.summary.messageMismatchCount,
-        documentedDifferenceCount: divergence.summary.documentedDifferenceCount,
-        falsePositiveCount: divergence.summary.falsePositiveCount,
-        falseNegativeCount: divergence.summary.falseNegativeCount,
-        falsePositiveRatio: divergence.summary.falsePositiveRatio,
-        falseNegativeRatio: divergence.summary.falseNegativeRatio,
-      };
+      const summary = compatNonVacuity.compatSummaryFromDivergence(divergence.summary);
+      const nonVacuity = compatNonVacuity.isDiagnosticFreeSummary(summary)
+        ? compatNonVacuity.runCompatNonVacuityProbe({
+            probe,
+            fixture,
+            corsaPath,
+            vueTscPath,
+            documentedDifferences,
+          })
+        : null;
       return {
         revision: fixture.entry.revision,
         summary,
         accepted: isAcceptedByRegistryBudget(probe.fixtureId, summary),
+        nonVacuity,
         vizeDurationMs,
         vueTscDurationMs,
       };

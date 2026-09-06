@@ -27,6 +27,7 @@ import os from "node:os";
 import path from "node:path";
 import { after, test } from "node:test";
 
+import { assertCompatNonVacuity } from "../_helpers/compat-nonvacuity.ts";
 import {
   type CompatBaseline,
   type CompatBaselineEntry,
@@ -114,6 +115,7 @@ for (const probe of compatProbes) {
           ` falseNegatives=${summary.falseNegativeCount} (${summary.falseNegativeRatio.toFixed(4)})` +
           ` vize=${result.vizeDurationMs}ms vue-tsc=${result.vueTscDurationMs}ms`,
       );
+      assertCompatNonVacuity(probe.fixtureId, summary, result.nonVacuity);
 
       if (updateBaseline) {
         updatedEntries.set(probe.fixtureId, {
