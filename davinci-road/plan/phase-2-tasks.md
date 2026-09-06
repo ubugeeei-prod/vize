@@ -212,8 +212,8 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-09-06):** 116 installments have landed through
-[#5806](https://github.com/ubugeeei-prod/vize/pull/5806). Installments 84-116 open
+**Current series evidence (2026-09-06):** 118 installments have landed through
+[#5818](https://github.com/ubugeeei-prod/vize/pull/5818). Installments 84-118 open
 the production option surface the switch needs, since through 83 the lane only
 matched `compile_template`'s _defaults_ while production compiles go through
 `compile_template_block`: `DomEmitOptions` now carries module mode,
@@ -228,7 +228,8 @@ names, option bundles, model/outlet families, the shared DOM battery, the
 source-map-free production selector, S2 DOM section boundaries, in-tag option
 routing, SFC namespace selection, ordinary comment output, source-map requests
 handled around S2 with a verified compatibility map, experimental in-tag
-comments and declarative custom-element patterns. A
+comments, declarative custom-element patterns, bare static style merges and
+disabled static-hoist routing. A
 field missing from that struct is not a default the emitter assumes; it is
 surface the series has not reached. The earlier S2 DOM lane also covers the
 late directive and patch-site witnesses, residual component and hoist-order
