@@ -174,7 +174,7 @@ fn sfc_sections_entry_pops_html_reentry_closes_case_insensitively() {
 }
 
 #[test]
-fn sfc_sections_entry_keeps_root_html_title_on_compatibility() {
+fn sfc_sections_entry_uses_parser_backed_s2_for_root_html_title() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.clear();
@@ -192,8 +192,8 @@ fn sfc_sections_entry_keeps_root_html_title_on_compatibility() {
     );
     assert_eq!(
         counter_total(&counters, "davinci.s2_dom.files"),
-        None,
-        "root HTML title must not be treated as a foreign self-closing tag"
+        Some(1),
+        "root HTML title must use S2 after parser recovery, not the direct foreign fast path"
     );
 }
 

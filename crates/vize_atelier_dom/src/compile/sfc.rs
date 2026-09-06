@@ -55,8 +55,6 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
             return (Vec::new(), result);
         }
         force_compat_sections = true;
-    } else if use_s2_emit && !fast_path_supported {
-        force_compat_sections = true;
     }
 
     let pipeline_options = if force_compat_sections {

@@ -222,46 +222,6 @@ fn sfc_sections_entry_uses_s2_for_foreign_namespace_templates() {
     }
 }
 
-#[test]
-fn sfc_sections_entry_keeps_html_self_closing_native_tags_on_compatibility() {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-
-    for (label, source) in [
-        ("html_root", r#"<div />"#),
-        (
-            "svg_html_reentry",
-            r#"<svg><foreignObject><div /></foreignObject></svg>"#,
-        ),
-        (
-            "mathml_html_reentry",
-            r#"<math><annotation-xml><div /></annotation-xml></math>"#,
-        ),
-    ] {
-        profiler.clear();
-        profiler.enable();
-        let (error_count, result) =
-            compile_sfc_sections_entry_with_errors(source, DomCompilerOptions::default());
-        let counters = profiler.counter_summary();
-        profiler.disable();
-        profiler.clear();
-
-        assert!(
-            error_count > 0,
-            "{label} must surface the compatibility parser diagnostic"
-        );
-        assert!(
-            result.sections.is_some(),
-            "{label} must keep compatibility sections"
-        );
-        assert_eq!(
-            counter_total(&counters, "davinci.s2_dom.files"),
-            None,
-            "{label} must stay on compatibility until native self-closing is admitted"
-        );
-    }
-}
-
 struct Compiled {
     preamble: String,
     code: String,
