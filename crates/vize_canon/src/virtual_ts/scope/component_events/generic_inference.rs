@@ -1,7 +1,10 @@
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::{Croquis, EventHandlerScopeData, Scope, analysis::ComponentUsage};
 
-use crate::virtual_ts::{expressions::rewrite_reserved_template_prop, helpers::to_camel_case};
+use crate::virtual_ts::{
+    expressions::rewrite_reserved_template_prop, helpers::to_camel_case,
+    scope::is_inline_callback_prop,
+};
 
 use crate::virtual_ts::expressions::generated_prop_value;
 
@@ -93,6 +96,12 @@ pub(super) fn generate_inferred_emit_args(
             continue;
         };
         let camel_prop_name = to_camel_case(prop.name.as_str());
+        if is_inline_callback_prop(prop) {
+            append!(
+                *ts,
+                "{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
+            );
+        }
         append!(
             *ts,
             "{call_indent}  \"{camel_prop_name}\": {},\n",

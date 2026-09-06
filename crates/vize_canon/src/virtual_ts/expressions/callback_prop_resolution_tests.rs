@@ -43,6 +43,13 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
         2,
         "only the inference call and mapped owner keep the callback"
     );
+    assert!(
+        output.code.contains(
+            "    // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n    \"pick\": (item) => item.id,"
+        ),
+        "inference-only callback line must not own duplicate diagnostics:\n{}",
+        output.code
+    );
     assert_eq!(
         output.code.matches(r#""pick": undefined as any"#).count(),
         2,

@@ -113,8 +113,14 @@ fn append_props_object(
             generated_prop_value(prop, template_prop_names)
         };
         let Some(mut value) = value else { continue };
-        if erase_callbacks && is_inline_callback_prop(prop) {
+        let inline_callback = is_inline_callback_prop(prop);
+        if erase_callbacks && inline_callback {
             value = String::from("undefined as any");
+        } else if inline_callback {
+            append!(
+                *ts,
+                "{expr_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
+            );
         }
         let name = super::super::helpers::to_camel_case(prop.name.as_str());
         append!(*ts, "{expr_indent}  \"{name}\": ");
