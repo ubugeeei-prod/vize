@@ -102,6 +102,17 @@ export async function assertEmptyEditorRequests(
       },
     ],
     [
+      "textDocument/signatureHelp",
+      {
+        textDocument: { uri },
+        position,
+        context: {
+          triggerKind: 1,
+          isRetrigger: false,
+        },
+      },
+    ],
+    [
       "textDocument/documentSymbol",
       {
         textDocument: { uri },
@@ -171,6 +182,27 @@ export async function assertEmptyEditorRequests(
       },
     ],
     [
+      "textDocument/documentHighlight",
+      {
+        textDocument: { uri },
+        position,
+      },
+    ],
+    [
+      "textDocument/linkedEditingRange",
+      {
+        textDocument: { uri },
+        position,
+      },
+    ],
+    [
+      "textDocument/selectionRange",
+      {
+        textDocument: { uri },
+        positions: [position],
+      },
+    ],
+    [
       "textDocument/formatting",
       {
         textDocument: { uri },
@@ -189,6 +221,25 @@ export async function assertEmptyEditorRequests(
           tabSize: 2,
           insertSpaces: true,
         },
+      },
+    ],
+    [
+      "volar/client/autoInsert",
+      {
+        textDocument: { uri },
+        selection: position,
+        change: {
+          rangeOffset: 0,
+          rangeLength: 0,
+          text: ">",
+        },
+      },
+    ],
+    [
+      "textDocument/prepareCallHierarchy",
+      {
+        textDocument: { uri },
+        position,
       },
     ],
   ];
