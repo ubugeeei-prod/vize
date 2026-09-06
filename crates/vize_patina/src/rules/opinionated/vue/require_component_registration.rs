@@ -45,7 +45,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::builtins::is_builtin_component;
 use vize_croquis::naming::{names_match, to_pascal_case};
-use vize_croquis::{Croquis, ScopeData};
+use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind};
 use vize_relief::BindingType;
 use vize_relief::{ElementNode, RootNode};
 use vize_s0::String;
@@ -171,12 +171,7 @@ impl RequireComponentRegistration {
         analysis
             .scopes
             .iter()
-            .filter(|scope| {
-                matches!(
-                    scope.data(),
-                    ScopeData::ExternalModule(data) if !data.is_type_only
-                )
-            })
+            .filter(|scope| Self::is_script_setup_external_module(analysis, scope))
             .flat_map(|scope| scope.bindings())
             .any(|(name, binding)| {
                 matches!(
@@ -184,6 +179,26 @@ impl RequireComponentRegistration {
                     BindingType::SetupConst | BindingType::SetupMaybeRef
                 ) && component_name_matches(tag, name)
             })
+    }
+
+    fn is_script_setup_external_module(analysis: &Croquis, scope: &Scope) -> bool {
+        let ScopeData::ExternalModule(data) = scope.data() else {
+            return false;
+        };
+        if data.is_type_only {
+            return false;
+        }
+        scope
+            .parent()
+            .and_then(|id| analysis.scopes.get_scope(id))
+            .is_some_and(|parent| parent.kind == ScopeKind::ScriptSetup)
+    }
+
+    fn is_options_api_registered_component(&self, analysis: &Croquis, tag: &str) -> bool {
+        analysis
+            .component_registrations
+            .iter()
+            .any(|registration| component_name_matches(tag, registration.name.as_str()))
     }
 }
 
@@ -208,10 +223,10 @@ impl Rule for RequireComponentRegistration {
                     continue;
                 }
 
-                if ctx
-                    .analysis()
-                    .is_some_and(|analysis| self.is_script_setup_imported_component(analysis, &tag))
-                {
+                if ctx.analysis().is_some_and(|analysis| {
+                    self.is_script_setup_imported_component(analysis, &tag)
+                        || self.is_options_api_registered_component(analysis, &tag)
+                }) {
                     continue;
                 }
 

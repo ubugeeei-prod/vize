@@ -56,6 +56,57 @@ import { LibraryWidget as RenamedWidget } from '@example/widgets'
 }
 
 #[test]
+fn test_allows_options_api_components_registration() {
+    let linter = create_linter();
+    let sfc = r#"<script lang="ts">
+import Child from './Child.vue'
+import LocalPanel from './LocalPanel.vue'
+
+export default {
+  components: {
+    Child,
+    RegisteredPanel: LocalPanel,
+  },
+}
+</script>
+
+<template>
+  <Child />
+  <registered-panel />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "ParentWidget.vue");
+
+    assert!(
+        result.diagnostics.is_empty(),
+        "Options API `components` registrations should count as registered: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn test_reports_normal_script_import_without_components_registration() {
+    let linter = create_linter();
+    let sfc = r#"<script lang="ts">
+import Child from './Child.vue'
+
+export default {}
+</script>
+
+<template>
+  <Child />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "ParentWidget.vue");
+
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(
+        result.diagnostics[0].rule_name,
+        "vue/require-component-registration"
+    );
+}
+
+#[test]
 fn test_reports_unimported_script_setup_component() {
     let linter = create_linter();
     let sfc = r#"<script setup lang="ts">
