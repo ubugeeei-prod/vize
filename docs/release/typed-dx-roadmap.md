@@ -8,6 +8,13 @@ where applicable.
 Internal virtual-code snapshots are useful debugging evidence, but they do not
 complete a row. Every row must prove the authored user-facing behavior.
 
+## Current evidence
+
+`docs/release/typed-editor-oracle-matrix.md` is the machine-checked external
+behavior ledger for this roadmap. Keep this file focused on required invariants
+and delivery policy; record per-slice status, evidence paths, and CI wiring in
+the matrix.
+
 ## P0 matrix
 
 | issue | invariant                                                                                           | required oracle                                                                                                                                              | first fix target                     |
@@ -27,7 +34,7 @@ complete a row. Every row must prove the authored user-facing behavior.
    in a reviewed expected-failure ledger that names the P0 issue.
 3. Fix exactly that invariant.
 4. Promote the oracle into the relevant CI gate.
-5. Update this roadmap only with machine evidence.
+5. Update the external behavior ledger only with machine evidence.
 
 ## PR policy
 
