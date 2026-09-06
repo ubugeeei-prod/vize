@@ -6,6 +6,7 @@ import {
   requiredReleaseWorkflowEvidence,
   requiredReleaseWorkflows,
   selectRequiredWorkflowRuns,
+  summarizeRequiredWorkflowJobFailures,
 } from "../../legacy-tools/github/release-preflight-evidence.mjs";
 import { requiredRealProjectMatrixShardCount } from "../../legacy-tools/github/release-preflight-matrix-evidence.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
@@ -171,6 +172,39 @@ test("matrix-sensitive release gates require every successful job", () => {
       ]),
     new RegExp(
       `real projects \\(0\\/${requiredRealProjectMatrixShardCount}\\) is completed\\/failure`,
+    ),
+  );
+});
+
+test("required workflow selection can report failed release jobs inline", () => {
+  const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
+  const matrix = runs.find((run) => run.name === "Real Project Matrix");
+  assert.ok(matrix);
+  matrix.conclusion = "cancelled";
+
+  const matrixJobs = Array.from({ length: requiredRealProjectMatrixShardCount }, (_, shard) =>
+    successfulReleaseJob(`real projects (${shard}/${requiredRealProjectMatrixShardCount})`),
+  );
+  matrixJobs[0] = { ...matrixJobs[0], conclusion: "cancelled" };
+  matrixJobs[12] = { ...matrixJobs[12], conclusion: "failure" };
+
+  const summary = summarizeRequiredWorkflowJobFailures("Real Project Matrix", matrixJobs);
+  assert.equal(
+    summary,
+    `required jobs: real projects (0/${requiredRealProjectMatrixShardCount})=completed/cancelled, real projects (12/${requiredRealProjectMatrixShardCount})=completed/failure`,
+  );
+  assert.throws(
+    () =>
+      selectRequiredWorkflowRuns(
+        runs,
+        releaseSha,
+        requiredReleaseWorkflows,
+        new Map(),
+        new Map(),
+        new Map([["Real Project Matrix", summary]]),
+      ),
+    new RegExp(
+      `Real Project Matrix: completed\\/cancelled[\\s\\S]*required jobs: real projects \\(0\\/${requiredRealProjectMatrixShardCount}\\)=completed\\/cancelled, real projects \\(12\\/${requiredRealProjectMatrixShardCount}\\)=completed\\/failure`,
     ),
   );
 });

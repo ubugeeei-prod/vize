@@ -46,6 +46,10 @@ const PARENT_EVIDENCE_REUSABLE_WORKFLOWS: &[&str] = &[
 ];
 const RELEASE_PACKAGE_ROOTS: &[&str] = &["editors", "npm"];
 const RELEASE_BLOCKING_LABELS: &[&str] = &["priority:p0", "priority:p1"];
+const FAILURE_DETAIL_GITHUB_TIMEOUTS: GitHubApiTimeouts = GitHubApiTimeouts {
+    connect: Duration::from_secs(5),
+    total: Duration::from_secs(20),
+};
 
 #[derive(Clone, Debug)]
 struct PackageManifest {
@@ -58,6 +62,12 @@ struct GitOutput {
     status: i32,
     stdout: String,
     stderr: String,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct GitHubApiTimeouts {
+    connect: Duration,
+    total: Duration,
 }
 
 #[derive(Clone, Debug)]
@@ -151,7 +161,15 @@ fn verify_release_preflight(bootstrap: bool) -> Result<(), String> {
             &mut runs,
         )?
     } else {
-        select_required_workflow_runs(&runs, &target.sha, &evidence_shas, &dispatch_plans)?
+        select_required_workflow_runs_with_failure_details(
+            &api_url,
+            &repository,
+            &token,
+            &runs,
+            &target.sha,
+            &evidence_shas,
+            &dispatch_plans,
+        )?
     };
 
     let issues = github_api_pages(&api_url, &repository, &token, "issues", Some("state=open"))?;
@@ -615,16 +633,46 @@ fn bootstrap_required_workflow_runs(
             }
         }
         if failed || (missing.is_empty() && pending.is_empty()) {
-            return select_required_workflow_runs(runs, &target.sha, evidence_shas, dispatch_plans);
+            let failure_details = collect_required_workflow_failure_details(
+                api_url,
+                repository,
+                token,
+                runs,
+                &target.sha,
+                evidence_shas,
+                dispatch_plans,
+            );
+            return select_required_workflow_runs(
+                runs,
+                &target.sha,
+                evidence_shas,
+                dispatch_plans,
+                Some(&failure_details),
+            );
         }
         if started.elapsed() >= timeout {
-            return select_required_workflow_runs(runs, &target.sha, evidence_shas, dispatch_plans)
-                .map_err(|error| {
-                    format!(
-                        "Timed out after {}ms waiting for release gates.\n{error}",
-                        timeout.as_millis()
-                    )
-                });
+            let failure_details = collect_required_workflow_failure_details(
+                api_url,
+                repository,
+                token,
+                runs,
+                &target.sha,
+                evidence_shas,
+                dispatch_plans,
+            );
+            return select_required_workflow_runs(
+                runs,
+                &target.sha,
+                evidence_shas,
+                dispatch_plans,
+                Some(&failure_details),
+            )
+            .map_err(|error| {
+                format!(
+                    "Timed out after {}ms waiting for release gates.\n{error}",
+                    timeout.as_millis()
+                )
+            });
         }
         let wait_state = format!("missing={missing:?};pending={pending:?}");
         if wait_state != previous_wait_state {
@@ -647,6 +695,33 @@ fn bootstrap_required_workflow_runs(
     }
 }
 
+fn select_required_workflow_runs_with_failure_details(
+    api_url: &str,
+    repository: &str,
+    token: &str,
+    runs: &[Value],
+    sha: &str,
+    evidence_shas: &BTreeMap<&'static str, Vec<String>>,
+    dispatch_plans: &[DispatchPlan],
+) -> Result<BTreeMap<String, Value>, String> {
+    let failure_details = collect_required_workflow_failure_details(
+        api_url,
+        repository,
+        token,
+        runs,
+        sha,
+        evidence_shas,
+        dispatch_plans,
+    );
+    select_required_workflow_runs(
+        runs,
+        sha,
+        evidence_shas,
+        dispatch_plans,
+        Some(&failure_details),
+    )
+}
+
 fn dispatch_workflow(
     api_url: &str,
     repository: &str,
@@ -666,6 +741,7 @@ fn select_required_workflow_runs(
     sha: &str,
     evidence_shas: &BTreeMap<&'static str, Vec<String>>,
     dispatch_plans: &[DispatchPlan],
+    failure_details: Option<&BTreeMap<String, String>>,
 ) -> Result<BTreeMap<String, Value>, String> {
     let mut selected = BTreeMap::new();
     let mut failures = Vec::new();
@@ -686,14 +762,19 @@ fn select_required_workflow_runs(
             if status == Some("completed") && conclusion == Some("success") {
                 selected.insert((*workflow_name).to_string(), current.clone());
             } else {
+                let detail = failure_details
+                    .and_then(|details| details.get(*workflow_name))
+                    .map(|detail| format!("; {detail}"))
+                    .unwrap_or_default();
                 failures.push(format!(
-                    "{workflow_name}: {}/{} ({})",
+                    "{workflow_name}: {}/{} ({}){}",
                     status.unwrap_or("unknown"),
                     conclusion.unwrap_or("no conclusion"),
                     current
                         .get("html_url")
                         .and_then(Value::as_str)
-                        .unwrap_or("no URL")
+                        .unwrap_or("no URL"),
+                    detail
                 ));
             }
         } else {
@@ -716,6 +797,55 @@ fn select_required_workflow_runs(
         ));
     }
     Ok(selected)
+}
+
+fn collect_required_workflow_failure_details(
+    api_url: &str,
+    repository: &str,
+    token: &str,
+    runs: &[Value],
+    sha: &str,
+    evidence_shas: &BTreeMap<&'static str, Vec<String>>,
+    dispatch_plans: &[DispatchPlan],
+) -> BTreeMap<String, String> {
+    let mut details = BTreeMap::new();
+    for workflow_name in REQUIRED_RELEASE_WORKFLOWS {
+        if !workflow_requires_job_evidence(workflow_name) {
+            continue;
+        }
+        let Ok(Some(run)) = latest_required_workflow_run(
+            runs,
+            &accepted_evidence_shas(evidence_shas, workflow_name, sha),
+            workflow_name,
+            dispatch_plans
+                .iter()
+                .find(|plan| plan.workflow_name == *workflow_name),
+        ) else {
+            continue;
+        };
+        if run.get("status").and_then(Value::as_str) == Some("completed")
+            && run.get("conclusion").and_then(Value::as_str) == Some("success")
+        {
+            continue;
+        }
+        let Some(run_id) = run.get("id").and_then(Value::as_i64) else {
+            continue;
+        };
+        let detail = github_api_pages_with_timeouts(
+            api_url,
+            repository,
+            token,
+            &format!("actions/runs/{run_id}/jobs"),
+            None,
+            FAILURE_DETAIL_GITHUB_TIMEOUTS,
+        )
+        .ok()
+        .and_then(|jobs| summarize_required_workflow_job_failures(workflow_name, &jobs));
+        if let Some(detail) = detail {
+            details.insert((*workflow_name).to_string(), detail);
+        }
+    }
+    details
 }
 
 fn latest_required_workflow_run<'a>(
@@ -839,11 +969,8 @@ fn workflow_requires_job_evidence(workflow_name: &str) -> bool {
     )
 }
 
-fn assert_required_workflow_jobs(
-    workflow_name: &str,
-    jobs_response: &[Value],
-) -> Result<(), String> {
-    let job_names = match workflow_name {
+fn required_workflow_job_names(workflow_name: &str) -> Vec<String> {
+    match workflow_name {
         "Check" => vec!["test-scripts".to_string()],
         "Benchmark" => vec!["pr-benchmark-budget".to_string()],
         "Fuzz" => vec![
@@ -862,7 +989,14 @@ fn assert_required_workflow_jobs(
             })
             .collect(),
         _ => Vec::new(),
-    };
+    }
+}
+
+fn assert_required_workflow_jobs(
+    workflow_name: &str,
+    jobs_response: &[Value],
+) -> Result<(), String> {
+    let job_names = required_workflow_job_names(workflow_name);
     let mut jobs = flatten_collection(jobs_response, "jobs");
     if jobs.is_empty() && jobs_response.iter().all(Value::is_object) {
         jobs.extend(jobs_response);
@@ -895,6 +1029,57 @@ fn assert_required_workflow_jobs(
         }
     }
     Ok(())
+}
+
+fn summarize_required_workflow_job_failures(
+    workflow_name: &str,
+    jobs_response: &[Value],
+) -> Option<String> {
+    let job_names = required_workflow_job_names(workflow_name);
+    if job_names.is_empty() {
+        return None;
+    }
+    let mut jobs = flatten_collection(jobs_response, "jobs");
+    if jobs.is_empty() && jobs_response.iter().all(Value::is_object) {
+        jobs.extend(jobs_response);
+    }
+    let mut failures = Vec::new();
+    for name in job_names {
+        let matching = jobs
+            .iter()
+            .filter(|job| job.get("name").and_then(Value::as_str) == Some(name.as_str()))
+            .collect::<Vec<_>>();
+        match matching.as_slice() {
+            [] => failures.push(format!("{name}=missing")),
+            [job] => {
+                let status = job
+                    .get("status")
+                    .and_then(Value::as_str)
+                    .unwrap_or("unknown");
+                let conclusion = job
+                    .get("conclusion")
+                    .and_then(Value::as_str)
+                    .unwrap_or("no conclusion");
+                if status != "completed" || conclusion != "success" {
+                    failures.push(format!("{name}={status}/{conclusion}"));
+                }
+            }
+            _ => failures.push(format!("{name}=duplicate({})", matching.len())),
+        }
+    }
+    if failures.is_empty() {
+        return None;
+    }
+    const MAX_REPORTED_JOBS: usize = 8;
+    let omitted = failures.len().saturating_sub(MAX_REPORTED_JOBS);
+    let mut reported = failures
+        .into_iter()
+        .take(MAX_REPORTED_JOBS)
+        .collect::<Vec<_>>();
+    if omitted > 0 {
+        reported.push(format!("and {omitted} more"));
+    }
+    Some(format!("required jobs: {}", reported.join(", ")))
 }
 
 fn find_release_blockers(issues: &[Value], tag: Option<&str>) -> Result<Vec<Value>, String> {
@@ -1019,6 +1204,28 @@ fn github_api_pages(
     resource: &str,
     query: Option<&str>,
 ) -> Result<Vec<Value>, String> {
+    github_api_pages_inner(api_url, repository, token, resource, query, None)
+}
+
+fn github_api_pages_with_timeouts(
+    api_url: &str,
+    repository: &str,
+    token: &str,
+    resource: &str,
+    query: Option<&str>,
+    timeouts: GitHubApiTimeouts,
+) -> Result<Vec<Value>, String> {
+    github_api_pages_inner(api_url, repository, token, resource, query, Some(timeouts))
+}
+
+fn github_api_pages_inner(
+    api_url: &str,
+    repository: &str,
+    token: &str,
+    resource: &str,
+    query: Option<&str>,
+    timeouts: Option<GitHubApiTimeouts>,
+) -> Result<Vec<Value>, String> {
     let mut page = 1;
     let mut items = Vec::new();
     loop {
@@ -1032,7 +1239,11 @@ fn github_api_pages(
             separator,
             page
         );
-        let response = github_api_raw(token, &url)?;
+        let response = if let Some(timeouts) = timeouts {
+            github_api_raw_with_timeouts(token, &url, Some(timeouts))?
+        } else {
+            github_api_raw(token, &url)?
+        };
         let value: Value = serde_json::from_str(&response)
             .map_err(|error| format!("GitHub API returned invalid JSON for {resource}: {error}"))?;
         let page_items = flatten_collection(std::slice::from_ref(&value), collection_for(resource));
@@ -1109,7 +1320,16 @@ fn github_api_request(
 }
 
 fn github_api_raw(token: &str, url: &str) -> Result<String, String> {
-    let output = Command::new("curl")
+    github_api_raw_with_timeouts(token, url, None)
+}
+
+fn github_api_raw_with_timeouts(
+    token: &str,
+    url: &str,
+    timeouts: Option<GitHubApiTimeouts>,
+) -> Result<String, String> {
+    let mut command = Command::new("curl");
+    command
         .args([
             "--fail-with-body",
             "--silent",
@@ -1120,15 +1340,27 @@ fn github_api_raw(token: &str, url: &str) -> Result<String, String> {
             "X-GitHub-Api-Version: 2022-11-28",
             "--header",
             &format!("Authorization: Bearer {token}"),
-            url,
         ])
-        .stdin(Stdio::null())
+        .stdin(Stdio::null());
+    if let Some(timeouts) = timeouts {
+        command
+            .arg("--connect-timeout")
+            .arg(curl_timeout_arg(timeouts.connect))
+            .arg("--max-time")
+            .arg(curl_timeout_arg(timeouts.total));
+    }
+    let output = command
+        .arg(url)
         .output()
         .map_err(|error| format!("failed to run curl: {error}"))?;
     if !output.status.success() {
         return Err(String::from_utf8_lossy(&output.stderr).trim().to_string());
     }
     Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+}
+
+fn curl_timeout_arg(duration: Duration) -> String {
+    duration.as_secs().max(1).to_string()
 }
 
 fn collection_for(resource: &str) -> &'static str {

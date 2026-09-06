@@ -186,6 +186,49 @@ test("verify-only mode accepts flat job evidence returned by pagination", () => 
   }
 });
 
+test("verify-only mode reports failed matrix shard jobs for red release evidence", () => {
+  const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-red-matrix-"));
+  try {
+    const fixture = createReleasePreflightVerifyOnlyFixture(tempDir, {
+      requireJobTimeoutArgs: true,
+      mutateRuns(runs) {
+        const matrix = runs.find((run) => run.name === "Real Project Matrix");
+        assert.ok(matrix);
+        matrix.conclusion = "cancelled";
+      },
+      mutateJobs(jobs) {
+        const matrixJobs = jobs[106];
+        assert.ok(matrixJobs);
+        matrixJobs[0] = { ...matrixJobs[0], conclusion: "cancelled" };
+        matrixJobs[12] = { ...matrixJobs[12], conclusion: "failure" };
+      },
+    });
+    const result = spawnSync(
+      "rust-script",
+      ["tools/commands/ci/github/release-preflight.rs", "--verify-only"],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          PATH: `${fixture.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+          ...fixture.env,
+        },
+      },
+    );
+
+    assert.ifError(result.error);
+    assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
+    assert.match(result.stderr, /Real Project Matrix: completed\/cancelled/);
+    assert.match(
+      result.stderr,
+      /required jobs: real projects \(0\/22\)=completed\/cancelled, real projects \(12\/22\)=completed\/failure/,
+    );
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
 test("verify-only mode rejects mutation states with observed typecheck drift", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-mutation-drift-"));
   try {

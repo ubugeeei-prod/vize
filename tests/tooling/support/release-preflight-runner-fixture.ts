@@ -19,7 +19,10 @@ const baseSha = "b".repeat(40);
 export function createReleasePreflightVerifyOnlyFixture(
   tempDir: string,
   options: {
+    mutateJobs?: (jobs: ReturnType<typeof releaseWorkflowJobs>) => void;
+    mutateRuns?: (runs: ReturnType<typeof releaseWorkflowRuns>) => void;
     mutateShardEntries?: (shard: number, entries: Record<string, string>) => void;
+    requireJobTimeoutArgs?: boolean;
   } = {},
 ) {
   const binDir = path.join(tempDir, "bin");
@@ -35,6 +38,8 @@ export function createReleasePreflightVerifyOnlyFixture(
   assert.ok(matrixRun);
   const artifacts = realProjectArtifacts(matrixRun);
   const jobs = releaseWorkflowJobs();
+  options.mutateRuns?.(runs);
+  options.mutateJobs?.(jobs);
 
   fs.mkdirSync(binDir, { recursive: true });
   fs.mkdirSync(dataDir, { recursive: true });
@@ -70,6 +75,7 @@ export function createReleasePreflightVerifyOnlyFixture(
       TEST_MAIN_CARGO_TOML: `[workspace.package]\nversion = "${version}"\n`,
       TEST_PACKAGE_MANIFESTS: JSON.stringify(trackedManifests),
       TEST_RELEASE_SHA: releaseSha,
+      TEST_REQUIRE_JOB_TIMEOUT_ARGS: options.requireJobTimeoutArgs === true ? "1" : "0",
       TEST_RUNS_FILE: path.join(dataDir, "runs.json"),
       TEST_TAG: tag,
       TEST_TAG_SHA: releaseSha,
@@ -182,6 +188,13 @@ function writeFlatJobEvidenceCurlCommand(binDir: string): void {
       "const args = process.argv.slice(2);",
       "const read = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));",
       "const send = (value) => process.stdout.write(JSON.stringify(value));",
+      "const isJobsRequest = url.includes('/actions/runs/') && url.includes('/jobs');",
+      "if (process.env.TEST_REQUIRE_JOB_TIMEOUT_ARGS === '1' && isJobsRequest) {",
+      "  if (!args.includes('--connect-timeout') || !args.includes('--max-time')) {",
+      "    console.error('jobs request is missing bounded curl timeout flags');",
+      "    process.exit(22);",
+      "  }",
+      "}",
       "if (url.includes('/actions/runs?')) send({ workflow_runs: read(process.env.TEST_RUNS_FILE) });",
       "else if (url.includes('/actions/runs/') && url.includes('/artifacts')) send({ artifacts: read(process.env.TEST_ARTIFACTS_FILE) });",
       "else if (url.startsWith('https://example.test/artifacts/')) {",
@@ -189,7 +202,7 @@ function writeFlatJobEvidenceCurlCommand(binDir: string): void {
       "  const shard = url.match(/\\/artifacts\\/(\\d+)\\.zip$/)?.[1];",
       "  if (output == null || shard == null) process.exit(22);",
       "  fs.copyFileSync(path.join(process.env.TEST_ARTIFACT_DIR, `${shard}.zip`), output);",
-      "} else if (url.includes('/actions/runs/')) {",
+      "} else if (isJobsRequest) {",
       "  const id = url.match(/\\/actions\\/runs\\/(\\d+)\\/jobs/)?.[1];",
       "  send({ jobs: read(process.env.TEST_JOBS_FILE)[id] ?? [] });",
       "} else if (url.includes('/issues?')) send([]);",

@@ -151,6 +151,7 @@ export function selectRequiredWorkflowRuns(
   required = requiredReleaseWorkflows,
   qualifiers = new Map(),
   evidenceShas = new Map(),
+  jobFailureSummaries = new Map(),
 ) {
   const selected = new Map();
   const failures = [];
@@ -172,7 +173,7 @@ export function selectRequiredWorkflowRuns(
       );
     } else if (current.status !== "completed" || current.conclusion !== "success") {
       failures.push(
-        `${workflowName}: ${current.status}/${current.conclusion ?? "no conclusion"} (${current.html_url ?? "no URL"})`,
+        `${workflowName}: ${current.status}/${current.conclusion ?? "no conclusion"} (${current.html_url ?? "no URL"})${formatJobFailureSummary(jobFailureSummaries.get(workflowName))}`,
       );
     } else {
       selected.set(workflowName, current);
@@ -188,8 +189,37 @@ export function selectRequiredWorkflowRuns(
   return selected;
 }
 
+function formatJobFailureSummary(summary) {
+  return summary == null || summary === "" ? "" : `; ${summary}`;
+}
+
 export function workflowRequiresJobEvidence(workflowName) {
   return requiredJobNames.has(workflowName);
+}
+
+export function summarizeRequiredWorkflowJobFailures(workflowName, jobs) {
+  const failures = [];
+  for (const jobName of requiredJobNames.get(workflowName) ?? []) {
+    const matching = jobs.filter((job) => job.name === jobName);
+    if (matching.length === 0) {
+      failures.push(`${jobName}=missing`);
+      continue;
+    }
+    if (matching.length > 1) {
+      failures.push(`${jobName}=duplicate(${matching.length})`);
+      continue;
+    }
+    const job = matching[0];
+    if (job.status !== "completed" || job.conclusion !== "success") {
+      failures.push(`${jobName}=${job.status}/${job.conclusion ?? "no conclusion"}`);
+    }
+  }
+  if (failures.length === 0) return null;
+  const maxReportedJobs = 8;
+  const reported = failures.slice(0, maxReportedJobs);
+  const omitted = failures.length - reported.length;
+  if (omitted > 0) reported.push(`and ${omitted} more`);
+  return `required jobs: ${reported.join(", ")}`;
 }
 
 export function assertRequiredWorkflowJobs(workflowName, jobs) {
