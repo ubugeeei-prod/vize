@@ -80,10 +80,10 @@ impl Rule for ValidVModel {
             return;
         }
 
-        if let Some(expression_error_key) = model_expression_error_key(&directive.exp) {
+        if let Some((expression_error_key, loc)) = model_expression_error(&directive.exp) {
             ctx.error_with_help(
                 ctx.t(expression_error_key),
-                &directive.loc,
+                loc,
                 ctx.t("vue/valid-v-model.help"),
             );
         }
@@ -174,7 +174,9 @@ fn is_empty_expression(exp: &ExpressionNode) -> bool {
     }
 }
 
-fn model_expression_error_key(exp: &Option<ExpressionNode<'_>>) -> Option<&'static str> {
+fn model_expression_error<'a>(
+    exp: &'a Option<ExpressionNode<'a>>,
+) -> Option<(&'static str, &'a vize_relief::SourceLocation)> {
     let Some(ExpressionNode::Simple(simple)) = exp else {
         return None;
     };
@@ -182,16 +184,17 @@ fn model_expression_error_key(exp: &Option<ExpressionNode<'_>>) -> Option<&'stat
     let allocator = Allocator::default();
     let source_type = SourceType::default().with_typescript(true);
     let Ok(expression) = Parser::new(&allocator, source, source_type).parse_expression() else {
-        return Some("vue/valid-v-model.invalid_expression");
+        return Some(("vue/valid-v-model.invalid_expression", &simple.loc));
     };
 
     if expression.span().end as usize != source.len() {
-        return Some("vue/valid-v-model.invalid_expression");
+        return Some(("vue/valid-v-model.invalid_expression", &simple.loc));
     }
-    if expression_contains_optional_chain(&expression) {
-        return Some("vue/valid-v-model.optional_chain");
+    if is_optional_chaining_member_expression(&expression) {
+        return Some(("vue/valid-v-model.optional_chain", &simple.loc));
     }
-    (!is_assignable_model_target(&expression)).then_some("vue/valid-v-model.invalid_expression")
+    (!is_assignable_model_target(&expression))
+        .then_some(("vue/valid-v-model.invalid_expression", &simple.loc))
 }
 
 fn is_assignable_model_target(expression: &OxcExpression<'_>) -> bool {
@@ -217,37 +220,15 @@ fn is_assignable_model_target(expression: &OxcExpression<'_>) -> bool {
     }
 }
 
-fn expression_contains_optional_chain(expression: &OxcExpression<'_>) -> bool {
+fn is_optional_chaining_member_expression(expression: &OxcExpression<'_>) -> bool {
     match expression {
-        OxcExpression::ChainExpression(_) => true,
-        OxcExpression::StaticMemberExpression(member) => {
-            member.optional || expression_contains_optional_chain(&member.object)
-        }
-        OxcExpression::ComputedMemberExpression(member) => {
-            member.optional
-                || expression_contains_optional_chain(&member.object)
-                || expression_contains_optional_chain(&member.expression)
-        }
-        OxcExpression::PrivateFieldExpression(member) => {
-            member.optional || expression_contains_optional_chain(&member.object)
-        }
-        OxcExpression::CallExpression(call) => {
-            call.optional || expression_contains_optional_chain(&call.callee)
-        }
-        OxcExpression::ParenthesizedExpression(parenthesized) => {
-            expression_contains_optional_chain(&parenthesized.expression)
-        }
-        OxcExpression::TSNonNullExpression(ts_non_null) => {
-            expression_contains_optional_chain(&ts_non_null.expression)
-        }
-        OxcExpression::TSAsExpression(ts_as) => {
-            expression_contains_optional_chain(&ts_as.expression)
-        }
-        OxcExpression::TSSatisfiesExpression(ts_satisfies) => {
-            expression_contains_optional_chain(&ts_satisfies.expression)
-        }
-        OxcExpression::TSTypeAssertion(ts_assertion) => {
-            expression_contains_optional_chain(&ts_assertion.expression)
+        OxcExpression::ChainExpression(chain) => {
+            matches!(
+                &chain.expression,
+                oxc_ast::ast::ChainElement::StaticMemberExpression(_)
+                    | oxc_ast::ast::ChainElement::ComputedMemberExpression(_)
+                    | oxc_ast::ast::ChainElement::PrivateFieldExpression(_)
+            )
         }
         _ => false,
     }
