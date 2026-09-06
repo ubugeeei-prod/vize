@@ -113,7 +113,7 @@ holds or improves — this phase should be a measurable win, not a wash.
   timing, remark emission) land with the pass manager itself, so the DevTool's
   data feed exists from the first S2 build.
 
-**Current execution ledger (2026-09-06):** [17 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-09-05).
+**Current execution ledger (2026-09-06):** [17 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-09-06).
 P2-9 is now complete: the hydrated corpus run compiled 41,580 files at zero
 divergence and measured the retained-`None` residual at 11.73%. P2-11 remains
 the active blocked series; P2-12b, P2-16, P2-17 and P2-20 remain open because
