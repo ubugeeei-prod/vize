@@ -3,7 +3,7 @@ use super::{
 };
 use crate::DomCompilerOptions;
 use std::ffi::OsString;
-use vize_atelier_core::options::{CodegenOptions, TemplateSyntaxMode};
+use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode};
 use vize_s0::config::VueVersion;
 
 #[test]
@@ -65,7 +65,20 @@ fn ssr_optimize_imports_codegen_option_stays_on_the_compatibility_lane() {
             optimize_imports: true,
             ..Default::default()
         },
-        true,
+        &CustomElementMatcher::default(),
+        TemplateSyntaxMode::Standard,
+        false,
+        DomLaneSelection::S2,
+        super::S2EmitSelection::Allowed,
+    ));
+}
+
+#[test]
+fn opaque_custom_element_predicates_stay_on_the_compatibility_lane() {
+    assert!(!s2_emit_supported(
+        &DomCompilerOptions::default(),
+        &CodegenOptions::default(),
+        &CustomElementMatcher::from_static_predicate(is_custom_element),
         TemplateSyntaxMode::Standard,
         false,
         DomLaneSelection::S2,
@@ -77,12 +90,16 @@ fn supported(options: DomCompilerOptions, dom_lane: DomLaneSelection) -> bool {
     s2_emit_supported(
         &options,
         &CodegenOptions::default(),
-        true,
+        &CustomElementMatcher::default(),
         TemplateSyntaxMode::Standard,
         false,
         dom_lane,
         super::S2EmitSelection::Allowed,
     )
+}
+
+fn is_custom_element(tag: &str) -> bool {
+    tag.starts_with("x-")
 }
 
 struct ScopedEnvVar {

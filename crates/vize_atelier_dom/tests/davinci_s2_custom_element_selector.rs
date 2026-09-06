@@ -123,6 +123,43 @@ fn static_predicate_custom_element_matcher_keeps_template_sections_on_compatibil
     );
 }
 
+#[test]
+fn static_predicate_custom_element_matcher_keeps_sfc_sections_on_compatibility_codegen() {
+    let _guard = lock_profiler();
+    let profiler = global_profiler();
+    profiler.disable();
+    profiler.clear();
+
+    let source = r#"<ion-button @click="go">{{ label }}</ion-button>"#;
+    let compat = compile_sfc_sections(
+        source,
+        DomCompilerOptions {
+            source_map: true,
+            ..Default::default()
+        },
+        predicate_custom_elements(),
+    );
+
+    profiler.enable();
+    let selected = compile_sfc_sections(
+        source,
+        DomCompilerOptions::default(),
+        predicate_custom_elements(),
+    );
+    let counters = profiler.counter_summary();
+    profiler.disable();
+    profiler.clear();
+
+    assert_eq!(selected.preamble, compat.preamble);
+    assert_eq!(selected.code, compat.code);
+    assert_eq!(selected.sections, compat.sections);
+    assert_eq!(
+        counter_total(&counters, "davinci.s2_dom.files"),
+        None,
+        "opaque custom-element predicates stay outside the S2 SFC sections selector"
+    );
+}
+
 struct Compiled {
     preamble: String,
     code: String,

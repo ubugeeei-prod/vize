@@ -285,11 +285,10 @@ fn compile_template_inner_with_sections<'a>(
     let has_croquis = options.croquis.is_some();
     let codegen_opts = stage_options::codegen_options(&options, codegen_options);
     let template_syntax_quirks = template_syntax.is_quirks();
-    let custom_elements_supported = !custom_elements.has_static_predicate();
     let use_s2_emit = stage_options::s2_emit_supported(
         &options,
         &codegen_opts,
-        custom_elements_supported,
+        &custom_elements,
         template_syntax,
         has_croquis,
         stage_options::dom_lane_selection(),
@@ -323,7 +322,7 @@ fn compile_template_inner_with_sections<'a>(
     errors.extend(transform_errors);
 
     // Codegen
-    let s2_emit = s2_emit_source.map(|(s2_options_source, s2_hoisted_scope_id)| {
+    let s2_emit = s2_emit_source.and_then(|(s2_options_source, s2_hoisted_scope_id)| {
         let binding_table =
             stage_options::s2_binding_table(s2_options_source.binding_metadata.as_ref());
         let s2_options = stage_options::s2_emit_options(
@@ -332,11 +331,11 @@ fn compile_template_inner_with_sections<'a>(
             &s2_custom_elements,
             binding_table.as_ref(),
             s2_hoisted_scope_id.as_deref(),
-        );
-        profile!(
+        )?;
+        Some(profile!(
             "atelier.dom.template.s2_codegen",
             stage_options::emit_s2(allocator, source, s2_options_source.dialect, &s2_options)
-        )
+        ))
     });
     let codegen_result = match s2_emit {
         Some(Ok(result)) => source_map::attach_compat_map(&root, &codegen_opts, result),

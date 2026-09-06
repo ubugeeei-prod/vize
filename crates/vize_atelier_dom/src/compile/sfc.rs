@@ -27,7 +27,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     let use_s2_emit = stage_options::s2_emit_supported(
         &options,
         &codegen_opts,
-        !custom_elements.has_static_predicate(),
+        &custom_elements,
         template_syntax,
         options.croquis.is_some(),
         dom_lane,
@@ -46,10 +46,12 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
             binding_table.as_ref(),
             hoisted_scope_id.as_deref(),
         );
-        if let Ok(result) = profile!(
-            "atelier.dom.template.s2_codegen_sfc_fast",
-            stage_options::emit_s2(allocator, source, options.dialect, &s2_options)
-        ) {
+        if let Some(s2_options) = s2_options
+            && let Ok(result) = profile!(
+                "atelier.dom.template.s2_codegen_sfc_fast",
+                stage_options::emit_s2(allocator, source, options.dialect, &s2_options)
+            )
+        {
             return (Vec::new(), result);
         }
         force_compat_sections = true;

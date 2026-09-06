@@ -39,6 +39,12 @@ impl CustomElementMatcher {
         &self.patterns
     }
 
+    /// Return patterns only when this matcher has no opaque predicate branch.
+    #[must_use]
+    pub fn projectable_patterns(&self) -> Option<&[String]> {
+        (!self.has_static_predicate()).then_some(self.patterns())
+    }
+
     /// Whether the matcher includes an opaque static predicate.
     #[must_use]
     pub fn has_static_predicate(&self) -> bool {
@@ -116,6 +122,10 @@ mod tests {
     use super::CustomElementMatcher;
     use vize_s0::String;
 
+    fn is_tres(tag: &str) -> bool {
+        tag.starts_with("Tres")
+    }
+
     #[test]
     fn custom_element_matcher_supports_exact_and_wildcard_patterns() {
         let matcher = CustomElementMatcher::from_patterns(vec![
@@ -145,6 +155,26 @@ mod tests {
         assert!(matcher.matches("TresMaterial"));
         assert!(!matcher.matches("TresMaterialX"));
         assert!(!matcher.matches("MyTresBasicMaterial"));
+    }
+
+    #[test]
+    fn custom_element_matcher_projects_only_declarative_patterns() {
+        let matcher = CustomElementMatcher::from_patterns(vec![
+            String::from("Tres*"),
+            String::from("primitive"),
+        ]);
+
+        assert_eq!(
+            matcher.projectable_patterns().unwrap(),
+            [String::from("Tres*"), String::from("primitive")]
+        );
+
+        let opaque = CustomElementMatcher {
+            patterns: vec![String::from("Tres*")],
+            predicate: Some(is_tres),
+        };
+        assert!(opaque.matches("TresMesh"));
+        assert!(opaque.projectable_patterns().is_none());
     }
 
     #[test]

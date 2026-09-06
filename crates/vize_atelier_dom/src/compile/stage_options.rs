@@ -97,7 +97,7 @@ pub(super) fn codegen_options(
 pub(super) fn s2_emit_supported(
     options: &DomCompilerOptions,
     codegen: &CodegenOptions,
-    custom_elements_supported: bool,
+    custom_elements: &CustomElementMatcher,
     template_syntax: TemplateSyntaxMode,
     has_croquis: bool,
     dom_lane: DomLaneSelection,
@@ -113,7 +113,7 @@ pub(super) fn s2_emit_supported(
         && !options.custom_renderer
         && options.dialect == vize_s0::config::VueVersion::V3
         && template_syntax == TemplateSyntaxMode::Standard
-        && custom_elements_supported
+        && custom_elements.projectable_patterns().is_some()
         && !has_croquis
         && !codegen.optimize_imports
 }
@@ -131,8 +131,9 @@ pub(super) fn s2_emit_options<'a>(
     custom_elements: &'a CustomElementMatcher,
     bindings: Option<&'a BindingTable>,
     hoisted_scope_id: Option<&'a str>,
-) -> DomEmitOptions<'a> {
-    DomEmitOptions {
+) -> Option<DomEmitOptions<'a>> {
+    let custom_element_patterns = custom_elements.projectable_patterns()?;
+    Some(DomEmitOptions {
         mode: match options.mode {
             CodegenMode::Function => DomEmitMode::Function,
             CodegenMode::Module => DomEmitMode::Module,
@@ -149,9 +150,9 @@ pub(super) fn s2_emit_options<'a>(
         is_ts: options.is_ts,
         comments: options.comments,
         experimental_in_tag_comments: options.experimental_in_tag_comments,
-        custom_element_patterns: custom_elements.patterns(),
+        custom_element_patterns,
         bindings,
-    }
+    })
 }
 
 pub(super) fn s2_binding_table(metadata: Option<&BindingMetadata>) -> Option<BindingTable> {
