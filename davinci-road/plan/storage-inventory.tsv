@@ -20,7 +20,7 @@ s1	-	crates/vize_s1/src/surface.rs	0	0	0	0	1	3	0	0
 s2	analysis	crates/vize_s2/src/expr/filter.rs	2	0	0	0	1	2	0	0
 s2	-	crates/vize_s2/src/expr/foreign.rs	0	0	0	0	1	1	0	0
 s2	contract	crates/vize_s2/src/folio.rs	1	1	0	0	0	0	0	0
-s2	contract	crates/vize_s2/src/folio/owned.rs	1	14	1	12	0	0	0	0
+s2	contract	crates/vize_s2/src/folio/owned.rs	1	14	1	14	0	0	0	0
 s2	contract	crates/vize_s2/src/folio/owned/binding.rs	1	7	1	13	0	0	0	0
 s2	-	crates/vize_s2/src/folio/owned/expr.rs	0	0	1	10	0	0	0	0
 s2	contract	crates/vize_s2/src/folio/parse.rs	1	4	0	0	0	0	0	0
@@ -111,7 +111,7 @@ s1_to_s2	lower	crates/vize_s1_to_s2/src/lower/element.rs	1	2	0	0	1	4	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/lower/expr.rs	0	0	1	4	0	0	0	0
 s1_to_s2	lower	crates/vize_s1_to_s2/src/lower/forop.rs	1	2	1	5	1	2	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/lower/html.rs	0	0	1	2	0	0	0	0
-s1_to_s2	-	crates/vize_s1_to_s2/src/lower/leaf.rs	0	0	1	5	1	4	0	0
+s1_to_s2	-	crates/vize_s1_to_s2/src/lower/leaf.rs	0	0	1	6	1	5	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/lower/once_memo.rs	0	0	1	3	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/lower/show.rs	0	0	1	2	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/lower/slot.rs	0	0	1	4	1	4	0	0

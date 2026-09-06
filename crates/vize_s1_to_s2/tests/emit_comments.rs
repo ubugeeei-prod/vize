@@ -25,62 +25,82 @@ fn assembled_with_comments(source: &str, comments: bool) -> String {
     .to_string()
 }
 
+fn pin(visual: &str) -> String {
+    visual.replace(")\n\n  return", ")\n  \n  return")
+}
+
 #[test]
 fn ordinary_template_comments_emit_comment_vnodes_when_enabled() {
-    let output = assembled_with_comments("<div><!--kept--><span>ok</span></div>", true);
+    assert_eq!(
+        assembled_with_comments("<div><!--kept--><span>ok</span></div>", true),
+        "\
+const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
 
-    assert!(
-        output.contains("createCommentVNode: _createCommentVNode"),
-        "expected comment helper in output:\n{output}"
-    );
-    assert!(
-        output.contains("_createCommentVNode(\"kept\")"),
-        "expected preserved comment vnode in output:\n{output}"
-    );
-    assert!(
-        output.contains("_createElementVNode(\"span\", null, \"ok\")"),
-        "expected sibling vnode to stay emitted in output:\n{output}"
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", null, [
+    _createCommentVNode(\"kept\"),
+    _createElementVNode(\"span\", null, \"ok\")
+  ]))
+}"
     );
 }
 
 #[test]
 fn ordinary_template_comments_stay_dropped_by_default() {
     let allocator = Allocator::new();
-    let output = emit_dom_source(&allocator, "<div><!--kept--><span>ok</span></div>")
-        .unwrap_or_else(|error| panic!("emit refused default comments=false case: {error:?}"))
-        .assembled()
-        .to_string();
+    assert_eq!(
+        emit_dom_source(&allocator, "<div><!--kept--><span>ok</span></div>")
+            .unwrap_or_else(|error| panic!("emit refused default comments=false case: {error:?}"))
+            .assembled()
+            .to_string(),
+        "\
+const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
 
-    assert!(
-        !output.contains("_createCommentVNode"),
-        "expected default lowering to drop comments:\n{output}"
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", null, [
+    _createElementVNode(\"span\", null, \"ok\")
+  ]))
+}"
     );
 }
 
 #[test]
 fn component_default_slots_preserve_comment_children_when_enabled() {
-    let output = assembled_with_comments("<Foo><!--slot--><span>ok</span></Foo>", true);
+    assert_eq!(
+        assembled_with_comments("<Foo><!--slot--><span>ok</span></Foo>", true),
+        pin("\
+const { resolveComponent: _resolveComponent, createElementVNode: _createElementVNode, openBlock: _openBlock, createBlock: _createBlock, createCommentVNode: _createCommentVNode, withCtx: _withCtx } = Vue
 
-    assert!(
-        output.contains("_createCommentVNode(\"slot\")"),
-        "expected component default slot comment vnode in output:\n{output}"
-    );
-    assert!(
-        output.contains("_createElementVNode(\"span\", null, \"ok\")"),
-        "expected component default slot sibling vnode in output:\n{output}"
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"span\", null, \"ok\")
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, null, {
+    default: _withCtx(() => [
+      _createCommentVNode(\"slot\"),
+      _hoisted_1
+    ]),
+    _: 1 /* STABLE */
+  }))
+}")
     );
 }
 
 #[test]
 fn slot_outlet_fallbacks_preserve_comment_children_when_enabled() {
-    let output = assembled_with_comments("<slot><!--fallback--><span>ok</span></slot>", true);
+    assert_eq!(
+        assembled_with_comments("<slot><!--fallback--><span>ok</span></slot>", true),
+        "\
+const { renderSlot: _renderSlot, createElementVNode: _createElementVNode, createCommentVNode: _createCommentVNode } = Vue
 
-    assert!(
-        output.contains("_createCommentVNode(\"fallback\")"),
-        "expected slot fallback comment vnode in output:\n{output}"
-    );
-    assert!(
-        output.contains("_createElementVNode(\"span\", null, \"ok\")"),
-        "expected slot fallback sibling vnode in output:\n{output}"
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"span\", null, \"ok\")
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _renderSlot(_ctx.$slots, \"default\", {}, () => [
+    _createCommentVNode(\"fallback\"),
+    _hoisted_1
+  ])
+}"
     );
 }

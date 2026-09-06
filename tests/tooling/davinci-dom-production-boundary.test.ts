@@ -17,6 +17,7 @@ const compilerOptionsProjectedToS2 = [
   "prefix_identifiers",
   "cache_handlers",
   "scope_id",
+  "comments",
   "component_name",
   "inline",
   "binding_metadata",
@@ -27,7 +28,6 @@ const compilerOptionsHeldAtDefault = [
   "hoist_static",
   "ssr",
   "source_map",
-  "comments",
   "experimental_in_tag_comments",
   "experimental_patterned_template",
   "custom_renderer",
@@ -44,6 +44,7 @@ const s2EmitOptionFields = [
   "hoisted_scope_id",
   "scope_id",
   "is_ts",
+  "comments",
   "bindings",
 ];
 
