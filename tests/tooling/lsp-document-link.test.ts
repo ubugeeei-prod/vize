@@ -207,11 +207,10 @@ export {
 
     assert.ok(Array.isArray(links), JSON.stringify(links));
     assert.deepEqual(links.map(basenameForTarget), ["Multi.vue", "Real.vue", "Exported.vue"]);
-    assert.deepEqual(links.map((link) => textAtLinkRange(source, link)), [
-      "'./Multi.vue'",
-      "'./Real.vue'",
-      "'./Exported.vue'",
-    ]);
+    assert.deepEqual(
+      links.map((link) => textAtLinkRange(source, link)),
+      ["'./Multi.vue'", "'./Real.vue'", "'./Exported.vue'"],
+    );
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
