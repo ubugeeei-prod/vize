@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveVizeLaunchCommand } from "./lsp/launch.ts";
+import { hasCompleteAuthoredFeatureEvidence } from "./real-project-lsp-report-authored.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const reportName = "lsp-lifecycle-summary.json";
@@ -65,6 +66,11 @@ export type LspResponseEvidence = {
   sha256: string;
 };
 
+export type AuthoredAnchorEvidence = {
+  count: number;
+  sha256: string;
+};
+
 export type LspReportEvidence = {
   commitSha: string;
   runtime: { name: "node"; version: string };
@@ -93,6 +99,7 @@ export type AuthoredFileLifecycleEvidence = {
 };
 
 export type AuthoredLspEvidence = {
+  authoredAnchors: AuthoredAnchorEvidence;
   completion: LspResponseEvidence;
   componentDefinition: LspResponseEvidence;
   componentFile: string;
@@ -161,19 +168,23 @@ export function createLspReport(
   } = {},
 ) {
   const evidence = createReportEvidence(environment, dependencies);
+  const completeAuthoredProjects = projects.filter(hasCompleteAuthoredFeatureEvidence);
   return {
     schema: "vize.realProjectLspLifecycle",
-    version: 4,
+    version: 5,
     commitSha: evidence.commitSha,
     evidence,
     shard: { count: selection.shardCount, index: selection.shardIndex },
     summary: {
       projectCount: projects.length,
       actualFileCount: projects.filter((project) => project.actualFile != null).length,
-      authoredFeatureProjectCount: projects.filter((project) => project.authoredFeatures != null)
-        .length,
+      authoredFeatureProjectCount: completeAuthoredProjects.length,
+      authoredAnchorCount: completeAuthoredProjects.reduce(
+        (total, project) => total + project.authoredFeatures!.authoredAnchors.count,
+        0,
+      ),
       missingAuthoredFeatureProjectIds: projects
-        .filter((project) => project.authoredFeatures == null)
+        .filter((project) => !hasCompleteAuthoredFeatureEvidence(project))
         .map((project) => project.id),
       vueFileCount: projects.reduce((total, project) => total + project.vueFileCount, 0),
       failedProjectCount: projects.filter((project) => project.status === "failed").length,

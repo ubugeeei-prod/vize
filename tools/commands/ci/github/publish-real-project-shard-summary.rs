@@ -274,10 +274,11 @@ fn string_array(json: &Value, pointer: &str) -> Result<String, String> {
 
 fn lsp_summary(json: &Value) -> Result<String, String> {
     Ok(format!(
-        "LSP lifecycle: {} project(s), {} actual file(s), {} authored feature oracle(s), {} Vue file(s), {} failed project(s); missing authored oracles: {}",
+        "LSP lifecycle: {} project(s), {} actual file(s), {} authored feature oracle(s), {} authored anchor(s), {} Vue file(s), {} failed project(s); missing authored oracles: {}",
         number(json, "/summary/projectCount")?,
         number(json, "/summary/actualFileCount")?,
         number(json, "/summary/authoredFeatureProjectCount")?,
+        number(json, "/summary/authoredAnchorCount")?,
         number(json, "/summary/vueFileCount")?,
         number(json, "/summary/failedProjectCount")?,
         string_array(json, "/summary/missingAuthoredFeatureProjectIds")?

@@ -44,14 +44,38 @@ test("LSP report summarizes authored feature coverage from project evidence", ()
   );
 
   assert.equal(report.summary.projectCount, 3);
-  assert.equal(report.version, 4);
+  assert.equal(report.version, 5);
   assert.equal(report.commitSha, "0".repeat(40));
   assert.equal(report.evidence.commitSha, "0".repeat(40));
   assert.deepEqual(report.evidence.runtime, { name: "node", version: process.versions.node });
   assert.equal(report.summary.authoredFeatureProjectCount, 1);
+  assert.equal(report.summary.authoredAnchorCount, 6);
   assert.deepEqual(report.summary.missingAuthoredFeatureProjectIds, [
     "missing-oracle",
     "also-missing-oracle",
+  ]);
+});
+
+test("LSP report refuses to count incomplete authored feature evidence", () => {
+  const missingAnchorEvidence = authoredEvidence();
+  missingAnchorEvidence.authoredAnchors = { count: 0, sha256: "1".repeat(64) };
+  const missingHoverEvidence = authoredEvidence();
+  missingHoverEvidence.hover = { count: 0, durationMs: 0, sha256: "2".repeat(64) };
+  const report = createLspReport(
+    { enforced: true, projects: [], shardCount: 1, shardIndex: 0 },
+    [
+      projectEvidence("complete-oracle", authoredEvidence()),
+      projectEvidence("missing-anchor-evidence", missingAnchorEvidence),
+      projectEvidence("missing-hover-evidence", missingHoverEvidence),
+    ],
+    { GITHUB_SHA: "0".repeat(40) },
+  );
+
+  assert.equal(report.summary.authoredFeatureProjectCount, 1);
+  assert.equal(report.summary.authoredAnchorCount, 6);
+  assert.deepEqual(report.summary.missingAuthoredFeatureProjectIds, [
+    "missing-anchor-evidence",
+    "missing-hover-evidence",
   ]);
 });
 
@@ -267,12 +291,13 @@ function projectEvidence(
 
 function authoredEvidence(): AuthoredLspEvidence {
   const diagnostic = { count: 0, sha256: "0".repeat(64) };
-  const response = { count: 1, durationMs: 0, sha256: "0".repeat(64) };
+  const response = () => ({ count: 1, durationMs: 0, sha256: "0".repeat(64) });
   return {
-    completion: response,
-    componentDefinition: response,
+    authoredAnchors: { count: 6, sha256: "0".repeat(64) },
+    completion: response(),
+    componentDefinition: response(),
     componentFile: "FeatureChild.vue",
-    definition: response,
+    definition: response(),
     dependencyCompletion: {
       baselineContainsProbe: false,
       changedContainsProbe: true,
@@ -280,25 +305,25 @@ function authoredEvidence(): AuthoredLspEvidence {
     },
     fileLifecycle: {
       copiedFile: "Copied.vue",
-      createdDefinition: response,
-      createdWorkspaceSymbols: response,
-      deletedDefinition: { ...response, count: 0 },
-      deletedDocumentSymbols: { ...response, count: 0 },
+      createdDefinition: response(),
+      createdWorkspaceSymbols: response(),
+      deletedDefinition: { ...response(), count: 0 },
+      deletedDocumentSymbols: { ...response(), count: 0 },
       deletedImporterDiagnostics: diagnostic,
-      deletedWorkspaceSymbols: { ...response, count: 0 },
+      deletedWorkspaceSymbols: { ...response(), count: 0 },
       repairedDiagnostics: diagnostic,
-      renameEdit: response,
-      renamedDefinition: response,
+      renameEdit: response(),
+      renamedDefinition: response(),
       renamedFile: "Renamed.vue",
-      renamedWorkspaceSymbols: response,
-      restoredDefinition: response,
-      staleCopiedDocumentSymbols: { ...response, count: 0 },
+      renamedWorkspaceSymbols: response(),
+      restoredDefinition: response(),
+      staleCopiedDocumentSymbols: { ...response(), count: 0 },
     },
-    hover: response,
+    hover: response(),
     importerFile: "FeatureParent.vue",
-    prepareRename: response,
-    references: response,
-    rename: response,
+    prepareRename: response(),
+    references: response(),
+    rename: response(),
     templateBindingFile: "Binding.vue",
   };
 }

@@ -32,6 +32,7 @@ import type {
   FixtureProject,
   LspAuthoredOracle,
 } from "./real-project-lsp-report.ts";
+import { authoredAnchorEvidence } from "./real-project-lsp-report-authored.ts";
 import { exerciseAuthoredFileLifecycle } from "./real-project-lsp-file-lifecycle.ts";
 
 const diagnosticsTimeoutMs = 120_000;
@@ -292,6 +293,7 @@ export async function exerciseAuthoredLspOracle(
       responseEvidence(response, count, workspaceDir, request.durationMs);
 
     return {
+      authoredAnchors: authoredAnchorEvidence(oracle),
       completion: evidence(completionRequest, baselineLabels, baselineLabels.length),
       componentDefinition: evidence(componentDefinitionRequest, componentDefinition, 1),
       componentFile: boundary.componentFile,

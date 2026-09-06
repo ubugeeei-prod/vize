@@ -70,6 +70,7 @@ test("shard summary script records every surface, present or missing", () => {
     /summary\.md/,
     /lsp-lifecycle-summary\.json/,
     /authoredFeatureProjectCount/,
+    /authoredAnchorCount/,
     /missingAuthoredFeatureProjectIds/,
     /actualFileCount/,
     /No LSP lifecycle report was produced/,
