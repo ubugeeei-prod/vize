@@ -48,6 +48,7 @@ export type LspAuthoredOracle = {
     file: string;
     hoverContains: string[];
     renameTo: string;
+    sharesComponentImporter?: boolean;
     symbol: string;
     usageAnchor: string;
   };

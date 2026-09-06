@@ -255,7 +255,7 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
       - name: Hydrate CLI diagnostic fixture and install JS dependencies
-        run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue && vp install --frozen-lockfile --prefer-offline
+        run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select && vp install --frozen-lockfile --prefer-offline
       - name: Build vize CLI
         run: cargo build --profile ci -p vize
       - name: Install vize CLI

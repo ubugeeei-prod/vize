@@ -56,7 +56,15 @@ test("authored LSP feature oracles are explicit and ratcheted", () => {
   for (const project of configured) {
     const oracle = project.lspAuthoredOracle;
     assert.ok(project.coverage.includes("lsp"));
-    assert.notEqual(oracle.templateBinding.file, oracle.componentBoundary.importerFile);
+    if (oracle.templateBinding.file === oracle.componentBoundary.importerFile) {
+      assert.equal(
+        oracle.templateBinding.sharesComponentImporter,
+        true,
+        `${project.id} must explicitly mark shared authored LSP files`,
+      );
+    } else {
+      assert.notEqual(oracle.templateBinding.sharesComponentImporter, true);
+    }
     assert.notEqual(oracle.componentBoundary.importerFile, oracle.componentBoundary.componentFile);
     assert.ok(oracle.templateBinding.hoverContains.length > 0);
     assert.ok(oracle.componentBoundary.completionItems.length > 0);
