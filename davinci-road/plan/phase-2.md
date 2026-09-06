@@ -84,9 +84,9 @@ counts or fixture availability changes.
   Each completion is joined to its merged PR and current evidence in the
   [evidence index](./phase-2-records.md#current-completion-evidence-2026-09-05);
   review-only evidence is labeled there rather than presented as executable.
-- **Active and blocked: 1 of 22 — P2-11.** P2-11 has 114 landed installments
+- **Active and blocked: 1 of 22 — P2-11.** P2-11 has 115 landed installments
   through
-  [#5798](https://github.com/ubugeeei-prod/vize/pull/5798), including the
+  [#5803](https://github.com/ubugeeei-prod/vize/pull/5803), including the
   late directive/object-spread set, event/model/slot residuals, structural
   `v-if`/`v-for` cases, expression-edge admission, keyed slot forwarding,
   component `v-once` wrappers, slot text fact alignment, the corpus-runnable
@@ -96,15 +96,16 @@ counts or fixture availability changes.
   cache slot numbering, scoped CSS ids, runtime names, option bundles,
   model/outlet families, the shared DOM battery, the source-map-free production
   selector, S2 DOM section boundaries, in-tag option routing, SFC namespace
-  selection, ordinary comment output and source-map requests handled around S2
-  with a verified compatibility map. The comparison count remains pinned at
+  selection, ordinary comment output, source-map requests handled around S2
+  with a verified compatibility map, and experimental in-tag comments. The
+  comparison count remains pinned at
   144 DOM-output comparisons.
   Real Project Matrix run `33531193323` produced canonical hydrated
   zero-divergence evidence over 146 gitlinks and 142 ecosystem projects:
   42,668 files, 42,279 compared templates, zero S2 refusals and zero
-  divergences. The full production-lane switch remains open for experimental
-  in-tag comments, unsupported option shapes and the explicit legacy flag; the
-  old DOM lane remains the compatibility path for those shapes.
+  divergences. The full production-lane switch remains open for unsupported
+  option shapes and the explicit legacy flag; the old DOM lane remains the
+  compatibility path for those shapes.
 - **Open and dependency-blocked: 4 of 22 — P2-12b, P2-16, P2-17 and
   P2-20.** P2-12b depends on P2-12a, P2-11 and P2-3; TS-22 groundwork now
   exposes `emit_dom_source_observed` and `emit_budget_observer` for the one
