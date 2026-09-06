@@ -96,11 +96,7 @@ impl AttrCategory {
 
 fn is_ordering_barrier(prop: &PropNode<'_>) -> bool {
     match prop {
-        // Glyph preserves every directive in authored order because its
-        // expression can observe Vue getters or otherwise affect evaluation.
-        // Attribute-order must not chain style categories across that runtime
-        // boundary and then reject formatter output.
-        PropNode::Directive(_) => true,
+        PropNode::Directive(dir) => dir.name == "bind" && dir.arg.is_none(),
         PropNode::Attribute(attr) => attr
             .value
             .as_ref()
@@ -120,17 +116,17 @@ impl Rule for AttributeOrder {
             return;
         }
 
-        let mut previous_category = None;
+        let mut highest_category = None;
 
         for prop in element.props.iter() {
             if is_ordering_barrier(prop) {
-                previous_category = None;
+                highest_category = None;
                 continue;
             }
             let category = AttrCategory::from_prop(prop);
 
-            if let Some(previous_category_value) = previous_category
-                && category < previous_category_value
+            if let Some(highest_category_value) = highest_category
+                && category < highest_category_value
             {
                 let loc = match prop {
                     PropNode::Attribute(attr) => &attr.loc,
@@ -144,7 +140,8 @@ impl Rule for AttributeOrder {
                 );
             }
 
-            previous_category = Some(category);
+            highest_category =
+                Some(highest_category.map_or(category, |highest| highest.max(category)));
         }
     }
 }
@@ -172,11 +169,48 @@ mod tests {
     }
 
     #[test]
-    fn dynamic_directives_are_ordering_barriers() {
+    fn directives_participate_in_ordering() {
         let linter = create_linter();
         let result =
             linter.lint_template(r#"<div @click="onClick" v-if="show"></div>"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn reports_late_directive_groups() {
+        let linter = create_linter();
+        for source in [
+            r#"<div class="panel" v-if="show"></div>"#,
+            r#"<button @click="save" :disabled="busy"></button>"#,
+            r#"<CopyButton showLabel v-model:copied="copied" />"#,
+            r#"<div class="panel" v-ripple></div>"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.warning_count, 1, "{source}");
+        }
+    }
+
+    #[test]
+    fn tracks_highest_seen_category() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<Comp @keydown.meta.s.prevent="save" :show="show" :size="size"></Comp>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 2);
+    }
+
+    #[test]
+    fn object_v_bind_resets_ordering() {
+        let linter = create_linter();
+        for source in [
+            r#"<Comp v-bind="attrs" v-model="value" />"#,
+            r#"<Comp v-bind="attrs" :id="id" />"#,
+            r#"<Comp v-bind="attrs" :is="kind" />"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.warning_count, 0, "{source}");
+        }
     }
 
     #[test]
@@ -207,10 +241,10 @@ mod tests {
     }
 
     #[test]
-    fn glyph_output_lints_clean_across_dynamic_barriers_and_static_slots() {
+    fn glyph_output_lints_clean_for_ordered_directives_and_static_slots() {
         let cases = [
-            r#"<div class="_button" v-tooltip:dialog="tip" v-once v-show="open" id="help"></div>"#,
-            r#"<Comp :data="d" #default="{ x }"></Comp>"#,
+            r#"<div v-show="open" v-once id="help" v-tooltip:dialog="tip" class="_button"></div>"#,
+            r#"<Comp #default="{ x }" :data="d"></Comp>"#,
             r#"<div class="panel" slot="header"></div>"#,
         ];
 
