@@ -100,6 +100,7 @@ fn load_config_defaults_dialect_to_unset() {
     assert_eq!(loaded.config.dialect, None);
 }
 
+#[test]
 fn load_compiler_vue_version_reads_vue_version_key() {
     let dir = tempfile::tempdir().unwrap();
     let config_path = dir.path().join("vize.config.json");
