@@ -39,6 +39,12 @@ impl CustomElementMatcher {
         &self.patterns
     }
 
+    /// Whether the matcher includes an opaque static predicate.
+    #[must_use]
+    pub fn has_static_predicate(&self) -> bool {
+        self.predicate.is_some()
+    }
+
     /// Whether no pattern or predicate can match.
     #[must_use]
     pub fn is_empty(&self) -> bool {

@@ -143,7 +143,7 @@ pub(crate) fn element_core<'a>(
     let child_ns = children_ns(own_ns, tag);
     let span = element_span(cx, element);
     let node = cx.mint_op();
-    let component = !is_native_tag(tag);
+    let component = !is_native_tag(tag) && !cx.is_custom_element(tag);
 
     let open_end = cx.token_span(&element.open.gt).end;
     let open_slice = cx

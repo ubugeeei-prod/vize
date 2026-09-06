@@ -87,8 +87,14 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
             },
         );
-        let mut lowered =
-            lower_with_caps_and_comment_policy(allocator, &tree, &errors, caps, options.comments);
+        let mut lowered = lower_with_caps_and_comment_policy(
+            allocator,
+            &tree,
+            &errors,
+            caps,
+            options.comments,
+            options.custom_element_patterns,
+        );
         let facts = run_transform(&mut lowered, observer);
         let (emit, emit_visits) = emit_dom_with_emit_budget(&lowered, &facts, options)?;
         Ok((emit, emit_visits))

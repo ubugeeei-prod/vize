@@ -46,6 +46,7 @@ const s2EmitOptionFields = [
   "is_ts",
   "comments",
   "experimental_in_tag_comments",
+  "custom_element_patterns",
   "bindings",
 ];
 

@@ -26,7 +26,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     let use_s2_emit = stage_options::s2_emit_supported(
         &options,
         &codegen_opts,
-        !custom_elements.is_empty(),
+        !custom_elements.has_static_predicate(),
         template_syntax,
         options.croquis.is_some(),
         pipeline::S2EmitSelection::RequireSections,
@@ -40,6 +40,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
         let s2_options = stage_options::s2_emit_options(
             &options,
             &codegen_opts,
+            &custom_elements,
             binding_table.as_ref(),
             hoisted_scope_id.as_deref(),
         );

@@ -52,6 +52,7 @@ pub(crate) struct Cx<'a> {
     pub wrappers: SideTable<super::structural::WrapperKeys>,
     pub for_wrappers: SideTable<super::structural::ForWrapper>,
     pub caps: super::caps::LegacyCaps,
+    custom_element_patterns: Vec<String>,
 }
 
 impl<'a> Cx<'a> {
@@ -60,6 +61,7 @@ impl<'a> Cx<'a> {
         block: SourceBlock<'a>,
         caps: super::caps::LegacyCaps,
         preserve_comments: bool,
+        custom_element_patterns: &[String],
     ) -> Self {
         Self {
             allocator,
@@ -78,7 +80,16 @@ impl<'a> Cx<'a> {
             wrappers: SideTable::new(),
             for_wrappers: SideTable::new(),
             caps,
+            custom_element_patterns: custom_element_patterns.to_vec(),
         }
+    }
+
+    /// Whether a non-native tag should lower as a platform custom element
+    /// instead of a Vue component.
+    pub(crate) fn is_custom_element(&self, tag: &str) -> bool {
+        self.custom_element_patterns
+            .iter()
+            .any(|pattern| crate::emit::tag_pattern_matches(pattern.as_str(), tag))
     }
 
     /// Whether the walk is inside a condense-suppressing subtree.

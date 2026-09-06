@@ -5,8 +5,8 @@
 
 use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections, CodegenSections};
 use vize_atelier_core::options::{
-    BindingMetadata, BindingType, CodegenMode, CodegenOptions, ParserOptions, TemplateSyntaxMode,
-    TransformOptions,
+    BindingMetadata, BindingType, CodegenMode, CodegenOptions, CustomElementMatcher, ParserOptions,
+    TemplateSyntaxMode, TransformOptions,
 };
 use vize_s0::Allocator;
 use vize_s0::profiler::global_profiler;
@@ -79,7 +79,7 @@ pub(super) fn codegen_options(
 pub(super) fn s2_emit_supported(
     options: &DomCompilerOptions,
     _codegen: &CodegenOptions,
-    has_custom_element_matcher: bool,
+    custom_elements_supported: bool,
     template_syntax: TemplateSyntaxMode,
     has_croquis: bool,
     s2_emit_selection: S2EmitSelection,
@@ -92,7 +92,7 @@ pub(super) fn s2_emit_supported(
         && !options.experimental_patterned_template
         && !options.custom_renderer
         && template_syntax == TemplateSyntaxMode::Standard
-        && !has_custom_element_matcher
+        && custom_elements_supported
         && !has_croquis
 }
 
@@ -106,6 +106,7 @@ pub(super) fn s2_emit_supported(
 pub(super) fn s2_emit_options<'a>(
     options: &'a DomCompilerOptions,
     codegen: &'a CodegenOptions,
+    custom_elements: &'a CustomElementMatcher,
     bindings: Option<&'a BindingTable>,
     hoisted_scope_id: Option<&'a str>,
 ) -> DomEmitOptions<'a> {
@@ -125,6 +126,7 @@ pub(super) fn s2_emit_options<'a>(
         is_ts: options.is_ts,
         comments: options.comments,
         experimental_in_tag_comments: options.experimental_in_tag_comments,
+        custom_element_patterns: custom_elements.patterns(),
         bindings,
     }
 }

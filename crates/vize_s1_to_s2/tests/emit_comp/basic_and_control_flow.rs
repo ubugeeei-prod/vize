@@ -1,4 +1,5 @@
 use super::*;
+use vize_s1_to_s2::{DomEmitOptions, LegacyCaps, emit_dom_source_with_options};
 
 #[test]
 fn a_root_component_matches_the_shipped_snapshot() {
@@ -61,6 +62,33 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
   return (_openBlock(), _createBlock(_component_foo_bar))
 }")
+    );
+}
+
+#[test]
+fn a_matching_custom_element_pattern_emits_an_element_not_a_component() {
+    let allocator = Allocator::new();
+    let patterns = [vize_s0::String::from("ion-*")];
+    let options = DomEmitOptions {
+        custom_element_patterns: &patterns,
+        ..DomEmitOptions::DEFAULT
+    };
+    let emit = emit_dom_source_with_options(
+        &allocator,
+        r#"<ion-button @click="go">{{ label }}</ion-button>"#,
+        LegacyCaps::VUE3,
+        &options,
+    )
+    .expect("emit");
+    let assembled = emit.assembled();
+
+    assert!(
+        assembled.contains("_createElementBlock(\"ion-button\""),
+        "{assembled}"
+    );
+    assert!(
+        !assembled.contains("_resolveComponent(\"ion-button\")"),
+        "{assembled}"
     );
 }
 

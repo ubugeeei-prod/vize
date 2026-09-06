@@ -131,6 +131,7 @@ pub use self::entry::{
     emit_dom_source_with_options,
 };
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
+pub(crate) use self::options::tag_pattern_matches;
 pub use self::options::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
 use self::run::emit_dom_with_emit_budget;
 pub use self::run::{emit_dom, emit_dom_with_options};

@@ -255,7 +255,11 @@ fn compiled(result: CodegenResultWithSections) -> Compiled {
 }
 
 fn non_matching_custom_elements() -> CustomElementMatcher {
-    CustomElementMatcher::from_patterns(vec!["x-never-*".into()])
+    CustomElementMatcher::from_static_predicate(is_never_custom_element)
+}
+
+fn is_never_custom_element(_tag: &str) -> bool {
+    false
 }
 
 fn counter_total(counters: &CounterSummary, name: &str) -> Option<u64> {

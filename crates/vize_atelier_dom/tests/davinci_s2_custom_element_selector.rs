@@ -1,5 +1,5 @@
-//! P2-11 witness: declarative custom-element matchers remain an explicit
-//! compatibility boundary for the S2 DOM production selector.
+//! P2-11 witness: declarative custom-element matchers are covered by the S2
+//! DOM production selector, while opaque predicate matchers remain guarded.
 
 #![allow(
     clippy::disallowed_macros,
@@ -20,7 +20,7 @@ use vize_s0::profiler::{CounterSummary, global_profiler};
 static PROFILER_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 #[test]
-fn custom_element_matcher_keeps_template_sections_on_compatibility_codegen() {
+fn declarative_custom_element_matcher_uses_s2_for_template_sections() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
@@ -48,13 +48,13 @@ fn custom_element_matcher_keeps_template_sections_on_compatibility_codegen() {
     assert_eq!(selected.sections, compat.sections);
     assert_eq!(
         counter_total(&counters, "davinci.s2_dom.files"),
-        None,
-        "custom-element matchers are not covered by the S2 production selector yet"
+        Some(1),
+        "declarative custom-element matchers should enter the S2 production selector"
     );
 }
 
 #[test]
-fn custom_element_matcher_keeps_sfc_sections_on_compatibility_codegen() {
+fn declarative_custom_element_matcher_uses_s2_for_sfc_sections() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
@@ -81,8 +81,45 @@ fn custom_element_matcher_keeps_sfc_sections_on_compatibility_codegen() {
     assert_eq!(selected.sections, compat.sections);
     assert_eq!(
         counter_total(&counters, "davinci.s2_dom.files"),
+        Some(1),
+        "declarative custom-element matchers should enter the S2 SFC sections fast path"
+    );
+}
+
+#[test]
+fn static_predicate_custom_element_matcher_keeps_template_sections_on_compatibility_codegen() {
+    let _guard = lock_profiler();
+    let profiler = global_profiler();
+    profiler.disable();
+    profiler.clear();
+
+    let source = r#"<ion-button @click="go">{{ label }}</ion-button>"#;
+    let compat = compile_template_sections(
+        source,
+        DomCompilerOptions {
+            source_map: true,
+            ..Default::default()
+        },
+        predicate_custom_elements(),
+    );
+
+    profiler.enable();
+    let selected = compile_template_sections(
+        source,
+        DomCompilerOptions::default(),
+        predicate_custom_elements(),
+    );
+    let counters = profiler.counter_summary();
+    profiler.disable();
+    profiler.clear();
+
+    assert_eq!(selected.preamble, compat.preamble);
+    assert_eq!(selected.code, compat.code);
+    assert_eq!(selected.sections, compat.sections);
+    assert_eq!(
+        counter_total(&counters, "davinci.s2_dom.files"),
         None,
-        "custom-element matchers are not covered by the S2 SFC sections fast path yet"
+        "opaque custom-element predicates stay outside the S2 production selector"
     );
 }
 
@@ -142,6 +179,14 @@ fn compiled(result: CodegenResultWithSections) -> Compiled {
 
 fn custom_elements() -> CustomElementMatcher {
     CustomElementMatcher::from_patterns(vec!["ion-*".into()])
+}
+
+fn predicate_custom_elements() -> CustomElementMatcher {
+    CustomElementMatcher::from_static_predicate(is_ion_custom_element)
+}
+
+fn is_ion_custom_element(tag: &str) -> bool {
+    tag.starts_with("ion-")
 }
 
 fn counter_total(counters: &CounterSummary, name: &str) -> Option<u64> {
