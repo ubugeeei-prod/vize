@@ -3,6 +3,7 @@ use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diag
 mod declaration_emit;
 mod emit_only;
 mod inherited_boolean;
+mod inline_callback_context_props;
 mod inline_callback_guarded_props;
 mod inline_callback_props;
 mod inline_callback_union_props;
