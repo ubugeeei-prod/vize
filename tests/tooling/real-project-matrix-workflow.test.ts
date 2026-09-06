@@ -267,6 +267,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(divergence.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
   assert.match(divergence.run ?? "", /--budget-mode "\$BUDGET_MODE"/);
   assert.match(divergence.run ?? "", /--vue-tsc-bin tests\/node_modules\/\.bin\/vue-tsc/);
+  assert.equal(divergence["timeout-minutes"], 100);
   assert.equal(divergence.env?.BUDGET_MODE, "${{ inputs.typecheck_divergence_mode || 'enforce' }}");
 
   const surfaceVerdict = findStep(steps, "Enforce all real-project surface verdicts");

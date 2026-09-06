@@ -261,6 +261,7 @@ jobs:
         id: typecheck_divergence
         if: ${{ !cancelled() }}
         continue-on-error: true
+        timeout-minutes: 100
         env:
           BUDGET_MODE: ${{ inputs.typecheck_divergence_mode || 'enforce' }}
           VIZE_TYPECHECK_DIVERGENCE_PROGRESS: "1"
@@ -272,7 +273,6 @@ jobs:
             --budget-mode "$BUDGET_MODE" \
             --vize-bin target/ci/vize \
             --vue-tsc-bin tests/node_modules/.bin/vue-tsc
-
       - name: Enforce all real-project surface verdicts
         id: surface_verdict
         if: ${{ always() }}
