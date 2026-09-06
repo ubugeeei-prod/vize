@@ -78,7 +78,7 @@ pub(super) fn codegen_options(
 
 pub(super) fn s2_emit_supported(
     options: &DomCompilerOptions,
-    codegen: &CodegenOptions,
+    _codegen: &CodegenOptions,
     has_custom_element_matcher: bool,
     template_syntax: TemplateSyntaxMode,
     has_croquis: bool,
@@ -87,8 +87,7 @@ pub(super) fn s2_emit_supported(
     matches!(
         s2_emit_selection,
         S2EmitSelection::Allowed | S2EmitSelection::RequireSections
-    ) && !codegen.source_map
-        && options.hoist_static
+    ) && options.hoist_static
         && !options.ssr
         && !options.experimental_in_tag_comments
         && !options.experimental_patterned_template
@@ -102,8 +101,9 @@ pub(super) fn s2_emit_supported(
 ///
 /// Keep this conversion beside the legacy parse/transform wiring: the public
 /// compiler still returns its AST and diagnostics, while S2 owns the supported
-/// source-map-free traversal surface. A field missing here must stay on the
-/// compatibility path rather than becoming an accidental S2 default.
+/// traversal surface. Source-map requests attach a verified compatibility map
+/// in `compile::source_map`; a field missing here must stay on the compatibility
+/// path rather than becoming an accidental S2 default.
 pub(super) fn s2_emit_options<'a>(
     options: &'a DomCompilerOptions,
     codegen: &'a CodegenOptions,

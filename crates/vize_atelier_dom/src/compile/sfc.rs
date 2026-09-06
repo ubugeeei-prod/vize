@@ -33,8 +33,9 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     );
 
     let mut force_compat_sections = false;
+    let fast_path_supported = selector::s2_sfc_fast_path_supported_source(source);
 
-    if use_s2_emit && selector::s2_sfc_fast_path_supported_source(source) {
+    if use_s2_emit && fast_path_supported && !codegen_opts.source_map {
         let binding_table = stage_options::s2_binding_table(options.binding_metadata.as_ref());
         let s2_options = stage_options::s2_emit_options(
             &options,
@@ -49,7 +50,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
             return (Vec::new(), result);
         }
         force_compat_sections = true;
-    } else if use_s2_emit {
+    } else if use_s2_emit && !fast_path_supported {
         force_compat_sections = true;
     }
 

@@ -3590,6 +3590,7 @@ dependencies = [
  "insta",
  "phf 0.13.1",
  "serde",
+ "serde_json",
  "thiserror 2.0.20",
  "vize_atelier_core",
  "vize_carton",

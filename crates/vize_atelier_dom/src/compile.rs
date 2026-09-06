@@ -15,6 +15,7 @@ use vize_s0::{Allocator, String, profile};
 
 mod pipeline;
 mod sfc;
+mod source_map;
 mod stage_options;
 
 use crate::options::DomCompilerOptions;
@@ -336,7 +337,7 @@ fn compile_template_inner_with_sections<'a>(
         )
     });
     let codegen_result = match s2_emit {
-        Some(Ok(result)) => result,
+        Some(Ok(result)) => source_map::attach_compat_map(&root, &codegen_opts, result),
         Some(Err(_)) | None => profile!(
             "atelier.dom.template.codegen_compat",
             generate_with_sections(&root, codegen_opts)

@@ -24,10 +24,10 @@ const compilerOptionsProjectedToS2 = [
   "is_ts",
   "dialect",
 ];
+const compilerOptionsHandledAroundS2 = ["source_map"];
 const compilerOptionsHeldAtDefault = [
   "hoist_static",
   "ssr",
-  "source_map",
   "experimental_in_tag_comments",
   "experimental_patterned_template",
   "custom_renderer",
@@ -121,7 +121,11 @@ test("DOM S2 production switch classifies every compiler option", () => {
   );
 
   assert.deepEqual(
-    sortedUnique([...compilerOptionsProjectedToS2, ...compilerOptionsHeldAtDefault]),
+    sortedUnique([
+      ...compilerOptionsProjectedToS2,
+      ...compilerOptionsHandledAroundS2,
+      ...compilerOptionsHeldAtDefault,
+    ]),
     [...fields].sort(),
   );
 });

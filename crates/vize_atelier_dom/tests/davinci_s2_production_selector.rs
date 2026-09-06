@@ -50,7 +50,7 @@ fn source_map_free_dom_compile_uses_s2_without_profiler() {
 }
 
 #[test]
-fn source_map_compiles_stay_on_compatibility_when_profiled() {
+fn source_map_compiles_use_s2_with_the_compatibility_map_when_profiled() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
@@ -75,12 +75,12 @@ fn source_map_compiles_stay_on_compatibility_when_profiled() {
     assert_eq!(mapped.code, source_map_free.code);
     assert!(
         mapped.map.is_some(),
-        "source-map compiles must produce the compatibility map"
+        "source-map compiles must keep producing a map"
     );
     assert_eq!(
         counter_total(&counters, "davinci.s2_dom.files"),
-        None,
-        "source-map compiles must stay on compatibility until S2 records map segments"
+        Some(1),
+        "source-map compiles must use S2 once the map is verified against compatibility codegen"
     );
 }
 

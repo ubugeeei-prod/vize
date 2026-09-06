@@ -29,6 +29,7 @@ thiserror = { workspace = true }
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
 insta = { workspace = true }
+serde_json = { workspace = true }
 
 # S2 test and benchmark fixtures still use the stage diagnostics/types.
 vize_davinci = { workspace = true }
