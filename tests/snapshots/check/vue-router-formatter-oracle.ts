@@ -11,9 +11,9 @@ import { resolveVizeCommand } from "../../_helpers/realworld-typecheck.ts";
 
 const appPath = "packages/playground/src/AppLink.vue";
 const sourceSha256 = "f5c888da7bae9c61151c7fbfde578ccdb768e75fbe2e69637d8298ca4f702c96";
-const formattedSourceSha256 = "bcd23df8291106cd98f49d27ef27bce7ea6d21337c2b00fb73ce2d17b7f6e2d0";
-const formattedOutputSha256 = "cd770ca74541ed940ab3b044145969faec6bbfc52faaaf7a1510993d0d3e1ac5";
-const formattedCodeSha256 = "c6f62b78a9617fa7e390c64e3cb49122db97acee64abc23e6231c55936e47e50";
+const formattedSourceSha256 = "28cf96bec91ca56fff12447fa4fb135c28a40586421729ff274e9c5f9764f712";
+const formattedOutputSha256 = "3713f2ddd52bd7722925b7458c64e89cf48b5670c0a611374430c3137f0e9a48";
+const formattedCodeSha256 = "c68549e117eb5d7669c9591ed8299b1c8fc37b3e26772ffd60163723fbfbbd66";
 const cleanAttrs = "const attrs = useAttrs();";
 const brokenAttrs = "const  attrs = useAttrs();";
 

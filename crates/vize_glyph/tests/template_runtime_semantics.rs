@@ -49,12 +49,12 @@ fn dynamic_attribute_groups_remain_as_authored() {
     let formatted = format(source);
     assert_eq!(format(&formatted), formatted);
     let names = [
-        "v-model=",
         ":z=",
         ":a=",
         ":getter=",
         ":assigned=",
         ":updated=",
+        "v-model=",
         "@z=",
         "@a=",
     ];
@@ -66,7 +66,7 @@ fn dynamic_attribute_groups_remain_as_authored() {
 fn literal_attributes_sort_only_inside_safe_unique_runs() {
     assert_fixed_point(
         r#"<Widget :value="read()" class="box" id="root" :next="write()" />"#,
-        r#"<Widget id="root" class="box" :value="read()" :next="write()" />"#,
+        r#"<Widget :value="read()" id="root" class="box" :next="write()" />"#,
     );
     assert_fixed_point(
         r#"<Widget class="first" class="second" :value="read()" />"#,

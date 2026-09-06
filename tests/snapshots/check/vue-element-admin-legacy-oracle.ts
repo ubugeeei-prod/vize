@@ -25,9 +25,9 @@ const sourcePath = "src/views/dashboard/admin/components/TransactionTable.vue";
 const cleanBinding = ':data="list"';
 const brokenBinding = ':data="missingList"';
 const brokenLintBinding = 'v-bind:data="list"';
-const formattedTable = '  <el-table style="width: 100%;padding-top: 15px;" :data="list">';
-const brokenFormattedTable = '  <el-table style="width: 100%;padding-top: 15px;"  :data="list">';
-const formattedSourceSha256 = "1a0656daedde4d7f0f50e96d7ab367c94b920d452f71e775b09a25e3c9521804";
+const formattedTable = '  <el-table :data="list" style="width: 100%;padding-top: 15px;">';
+const brokenFormattedTable = '  <el-table :data="list"  style="width: 100%;padding-top: 15px;">';
+const formattedSourceSha256 = "bb911ad5e002bee6c7c7800d92b787c486cdb6e56fade344575bcc8f464e5b3c";
 
 type CompilerOutput = {
   code: string;
@@ -234,8 +234,8 @@ test("vue-element-admin formatter converges and repairs one exact legacy SFC edi
       assert.deepEqual(compiled.output.warnings, []);
       assertParsesAsModule(compiled.output.code, "formatted TransactionTable.json#code");
       assert.ok(
-        compiled.output.code.indexOf('style: "width: 100%;padding-top: 15px;"') <
-          compiled.output.code.indexOf("data: $data.list"),
+        compiled.output.code.indexOf("data: $data.list") <
+          compiled.output.code.indexOf('style: "width: 100%;padding-top: 15px;"'),
         compiled.output.code,
       );
 

@@ -22,7 +22,12 @@ pub(crate) struct ParsedAttribute {
 
 /// Sort attributes based on the configured options.
 pub(crate) fn sort_attributes(attrs: &mut [ParsedAttribute], options: &FormatOptions) {
-    for segment in attrs.split_mut(is_ordering_barrier) {
+    // Bindings and directives can execute Vue instance getters, calls,
+    // assignments, or updates while the render data object is constructed.
+    // Keep them fixed and sort only unique, literal HTML attributes between
+    // those barriers. This also subsumes the no-argument v-bind/v-on spread
+    // boundary: no dynamic attribute may cross another one.
+    for segment in attrs.split_mut(is_order_sensitive_attribute) {
         if has_duplicate_static_names(segment) {
             continue;
         }
@@ -30,11 +35,7 @@ pub(crate) fn sort_attributes(attrs: &mut [ParsedAttribute], options: &FormatOpt
     }
 }
 
-/// Sort one contiguous group that cannot cross an object directive spread.
-///
-/// Vue applies object `v-bind` and `v-on` directives in source order. Moving
-/// an attribute across either directive changes the order of `mergeProps`
-/// arguments and can therefore change which value wins at runtime.
+/// Sort one contiguous group with no order-sensitive dynamic attributes.
 fn sort_attribute_segment(attrs: &mut [ParsedAttribute], options: &FormatOptions) {
     match options.attribute_sort_order {
         AttributeSortOrder::Alphabetical => {
@@ -42,20 +43,12 @@ fn sort_attribute_segment(attrs: &mut [ParsedAttribute], options: &FormatOptions
             // so computing it inside a comparator re-allocates O(n log n)
             // times. `sort_by_cached_key` evaluates the key closure exactly
             // once per attribute and caches it, then sorts on the cached
-            // tuples. Static attrs still sort alphabetically inside their
-            // group, while dynamic attrs preserve authored order inside their
-            // lint group so formatter output does not reshuffle listener or
-            // binding evaluation within an otherwise valid category.
+            // tuples. The composite key `(priority, group, lowercased base,
+            // original index)` reproduces the previous comparator (including
+            // the stable original-index tie-break) exactly.
             let merge_bind = options.merge_bind_and_non_bind_attrs;
             attrs.sort_by_cached_key(|attr| {
-                let is_dynamic = is_dynamic_attribute_name(&attr.name);
-                let keep_authored_order =
-                    is_dynamic && !(merge_bind && is_bind_attribute_name(&attr.name));
-                let (group, base) = if keep_authored_order {
-                    (1, String::new(""))
-                } else {
-                    attr_sort_key(&attr.name, merge_bind)
-                };
+                let (group, base) = attr_sort_key(&attr.name, merge_bind);
                 (attr.priority, group, base, attr.original_index)
             });
         }
@@ -72,29 +65,14 @@ fn sort_attribute_segment(attrs: &mut [ParsedAttribute], options: &FormatOptions
     }
 }
 
-fn is_ordering_barrier(attr: &ParsedAttribute) -> bool {
+fn is_order_sensitive_attribute(attr: &ParsedAttribute) -> bool {
     let name = attr.name.as_str();
-    is_object_spread_directive(name)
+    name.starts_with([':', '@', '#', '.'])
+        || name.starts_with("v-")
         || attr
             .value
             .as_deref()
             .is_some_and(|value| value.contains("{{"))
-}
-
-fn is_object_spread_directive(name: &str) -> bool {
-    matches!(name, ":" | "@" | "v-bind" | "v-on")
-        || name.starts_with(":[")
-        || name.starts_with("v-bind.")
-        || name.starts_with("v-bind:[")
-        || name.starts_with("v-on.")
-}
-
-fn is_dynamic_attribute_name(name: &str) -> bool {
-    name.starts_with([':', '@', '#', '.']) || name.starts_with("v-")
-}
-
-fn is_bind_attribute_name(name: &str) -> bool {
-    name.starts_with([':', '.']) || name.starts_with("v-bind:")
 }
 
 fn has_duplicate_static_names(attrs: &[ParsedAttribute]) -> bool {

@@ -26,13 +26,10 @@ fn default_order_matches_patina_vue_attribute_order_groups() {
     };
 
     let source =
-        r#"<div class="_button" v-tooltip:dialog="tip" v-once v-show="open" id="help"></div>"#;
+        r#"<div v-show="open" v-once id="help" v-tooltip:dialog="tip" class="_button"></div>"#;
     let first = format_template(source, &options).unwrap();
     let second = format_template(&first, &options).unwrap();
-    assert_eq!(
-        first.as_str(),
-        r#"<div v-show="open" v-once id="help" v-tooltip:dialog="tip" class="_button"></div>"#
-    );
+    assert_eq!(first.as_str(), source);
     assert_eq!(first, second);
 
     let legacy_slot = r#"<div class="box" slot="header"></div>"#;
@@ -41,13 +38,10 @@ fn default_order_matches_patina_vue_attribute_order_groups() {
     assert_eq!(first.as_str(), r#"<div slot="header" class="box"></div>"#);
     assert_eq!(first, second);
 
-    let slotted = r#"<Comp :data="d" #default="{ x }"></Comp>"#;
+    let slotted = r#"<Comp #default="{ x }" :data="d"></Comp>"#;
     let first = format_template(slotted, &options).unwrap();
     let second = format_template(&first, &options).unwrap();
-    assert_eq!(
-        first.as_str(),
-        r#"<Comp #default="{ x }" :data="d"></Comp>"#
-    );
+    assert_eq!(first.as_str(), slotted);
     assert_eq!(first, second);
 }
 

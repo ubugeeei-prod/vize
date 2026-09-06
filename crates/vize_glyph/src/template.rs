@@ -274,19 +274,18 @@ mod tests {
 
     #[test]
     fn test_attribute_sorting() {
-        let source =
-            r#"<div :class="cls" v-if="show" v-for="item in items" @click="handle"></div>"#;
+        let source = r#"<div title="t" ref="root" class="c" id="main"></div>"#;
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        let vfor_pos = result.find("v-for").unwrap();
-        let vif_pos = result.find("v-if").unwrap();
-        let class_pos = result.find(":class").unwrap();
-        let click_pos = result.find("@click").unwrap();
+        let id_pos = result.find("id=").unwrap();
+        let ref_pos = result.find("ref=").unwrap();
+        let class_pos = result.find("class=").unwrap();
+        let title_pos = result.find("title=").unwrap();
 
-        assert!(vfor_pos < vif_pos);
-        assert!(vif_pos < class_pos);
-        assert!(class_pos < click_pos);
+        assert!(id_pos < ref_pos);
+        assert!(ref_pos < class_pos);
+        assert!(class_pos < title_pos);
     }
 
     #[test]
@@ -405,14 +404,13 @@ mod tests {
 
     #[test]
     fn test_merge_bind_and_non_bind_false() {
+        // Dynamic bindings are evaluation-order barriers; static attributes
+        // cannot move across them even when grouping is enabled.
         let source = r#"<div :class="cls" class="base" :style="s" style="color:red"></div>"#;
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        assert_eq!(
-            result.as_str(),
-            r#"<div class="base" style="color:red" :class="cls" :style="s"></div>"#
-        );
+        assert_eq!(result.as_str(), source);
     }
 
     #[test]
@@ -470,25 +468,22 @@ mod tests {
 
     #[test]
     fn test_custom_attribute_groups() {
-        // Custom groups: [["id"], ["class", ":class"], ["@*"], ["*"]]
-        let source = r#"<div @click="h" class="c" id="main" title="t"></div>"#;
+        // Custom groups apply within static, order-safe attribute runs.
+        let source = r#"<div title="t" class="c" data-role="main"></div>"#;
         let mut options = FormatOptions::default();
         options.attribute_groups = Some(vec![
-            vec!["id".to_compact_string()],
-            vec!["class".to_compact_string(), ":class".to_compact_string()],
-            vec!["@*".to_compact_string()],
+            vec!["data-role".to_compact_string()],
+            vec!["class".to_compact_string()],
             vec!["*".to_compact_string()],
         ]);
         let result = format_template_content(source, &options).unwrap();
 
-        let id_pos = result.find("id=").unwrap();
+        let data_role_pos = result.find("data-role=").unwrap();
         let class_pos = result.find("class=").unwrap();
-        let click_pos = result.find("@click=").unwrap();
         let title_pos = result.find("title=").unwrap();
 
-        assert!(id_pos < class_pos);
-        assert!(class_pos < click_pos);
-        assert!(click_pos < title_pos);
+        assert!(data_role_pos < class_pos);
+        assert!(class_pos < title_pos);
     }
 
     #[test]
