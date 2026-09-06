@@ -40,6 +40,7 @@ pub(super) fn affected_vue_source_paths<'a>(
         if is_vue_file(&path) {
             sources.push(path.clone());
         }
+        sources.extend(tracked_vue_descendant_paths(state, &path));
         sources.extend(
             importers::indexed_dependency_paths(state, &path)
                 .into_iter()
@@ -49,6 +50,15 @@ pub(super) fn affected_vue_source_paths<'a>(
     sources.sort();
     sources.dedup();
     sources
+}
+
+fn tracked_vue_descendant_paths(state: &ServerState, root: &Path) -> Vec<PathBuf> {
+    state
+        .workspace_vue_file_uris()
+        .into_iter()
+        .filter_map(|uri| uri.to_file_path().ok())
+        .filter(|path| path.starts_with(root) && is_vue_file(path))
+        .collect()
 }
 
 /// Mark the on-disk project view cached by the reusable Corsa editor session stale.
@@ -95,7 +105,7 @@ mod tests {
     use tower_lsp::lsp_types::Url;
     use vize_s0::cstr;
 
-    use super::{ServerState, versioned_open_typecheck_dependents};
+    use super::{ServerState, affected_vue_source_paths, versioned_open_typecheck_dependents};
 
     #[test]
     fn package_manifest_event_reindexes_the_retargeted_vue_source() {
@@ -131,6 +141,33 @@ mod tests {
             versioned_open_typecheck_dependents(&state, [renamed_uri.as_str()].into_iter()),
             [(parent_uri, 1)],
             "the manifest refresh must index the new physical target",
+        );
+    }
+
+    #[test]
+    fn directory_events_evict_tracked_vue_descendants_without_disk_scan() {
+        let root = tempfile::tempdir().unwrap();
+        let components = root.path().join("components");
+        let child = components.join("nested/Child.vue");
+        let sibling_dir = root.path().join("components-old");
+        let sibling = sibling_dir.join("Sibling.vue");
+        std::fs::create_dir_all(child.parent().unwrap()).unwrap();
+        std::fs::create_dir_all(&sibling_dir).unwrap();
+        std::fs::write(&child, "<template />\n").unwrap();
+        std::fs::write(&sibling, "<template />\n").unwrap();
+        let components_uri = Url::from_file_path(&components).unwrap();
+        let sibling_uri = Url::from_file_path(&sibling_dir).unwrap();
+        let state = ServerState::new();
+
+        assert!(state.track_workspace_vue_files(components_uri.as_str()));
+        assert!(state.track_workspace_vue_files(sibling_uri.as_str()));
+
+        std::fs::rename(&components, root.path().join("renamed-components")).unwrap();
+
+        assert_eq!(
+            affected_vue_source_paths(&state, [components_uri.as_str()].into_iter()),
+            [child],
+            "directory rename/delete events must retire old tracked Vue virtual documents"
         );
     }
 
