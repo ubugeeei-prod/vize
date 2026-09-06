@@ -78,8 +78,8 @@ fn optimize_imports_codegen_option_does_not_disarm_s2() {
 }
 
 #[test]
-fn opaque_custom_element_predicates_stay_on_the_compatibility_lane() {
-    assert!(!s2_emit_supported(
+fn opaque_custom_element_predicates_enter_the_s2_lane() {
+    assert!(s2_emit_supported(
         &DomCompilerOptions::default(),
         &CodegenOptions::default(),
         &CustomElementMatcher::from_static_predicate(is_custom_element),

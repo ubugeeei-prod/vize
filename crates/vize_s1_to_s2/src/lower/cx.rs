@@ -54,6 +54,7 @@ pub(crate) struct Cx<'a> {
     pub for_wrappers: SideTable<super::structural::ForWrapper>,
     pub caps: super::caps::LegacyCaps,
     custom_element_patterns: Vec<String>,
+    custom_element_predicate: Option<fn(&str) -> bool>,
 }
 
 impl<'a> Cx<'a> {
@@ -63,6 +64,7 @@ impl<'a> Cx<'a> {
         caps: super::caps::LegacyCaps,
         preserve_comments: bool,
         custom_element_patterns: &[String],
+        custom_element_predicate: Option<fn(&str) -> bool>,
     ) -> Self {
         Self {
             allocator,
@@ -82,6 +84,7 @@ impl<'a> Cx<'a> {
             for_wrappers: SideTable::new(),
             caps,
             custom_element_patterns: custom_element_patterns.to_vec(),
+            custom_element_predicate,
         }
     }
 
@@ -95,7 +98,6 @@ impl<'a> Cx<'a> {
         self.v_pre_depth > 0
     }
 
-    /// Whether ordinary comments are lowered as `ui.comment` ops.
     pub(crate) fn preserve_comments(&self) -> bool {
         self.preserve_comments
     }
@@ -173,12 +175,10 @@ impl<'a> Cx<'a> {
         }
     }
 
-    /// How many op ids were minted (the page's `ops=` count).
     pub(crate) fn op_count(&self) -> u32 {
         self.next_op
     }
 
-    /// The next hygiene scope tag, dense per artifact.
     pub(crate) fn mint_scope(&mut self) -> ScopeTag {
         let tag = ScopeTag::from_index(self.next_scope);
         self.next_scope = self.next_scope.saturating_add(1);
@@ -209,7 +209,6 @@ impl<'a> Cx<'a> {
         }
     }
 
-    /// The span of a source slice.
     pub(crate) fn span_of(&self, slice: &str) -> Span {
         self.block.span_of(slice).unwrap_or_else(|| {
             let start = self.offset(slice);

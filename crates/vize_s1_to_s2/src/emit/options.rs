@@ -189,7 +189,7 @@ impl BindingTable {
 }
 
 /// Emission settings the S2 DOM emitter honours.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy)]
 pub struct DomEmitOptions<'a> {
     /// Module or function output.
     pub mode: DomEmitMode,
@@ -227,9 +227,48 @@ pub struct DomEmitOptions<'a> {
     /// Declarative tag patterns that the shipped lane treats as custom
     /// elements instead of components.
     pub custom_element_patterns: &'a [String],
+    /// Static predicate branch for host-defined custom-element classifiers.
+    pub custom_element_predicate: Option<fn(&str) -> bool>,
     /// The shipped lane's `binding_metadata`, honoured in non-inline mode:
     /// prefixed identifiers resolve to the same proxy members and signatures.
     pub bindings: Option<&'a BindingTable>,
+}
+
+impl PartialEq for DomEmitOptions<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.mode == other.mode
+            && self.runtime_module_name == other.runtime_module_name
+            && self.runtime_global_name == other.runtime_global_name
+            && self.prefix_identifiers == other.prefix_identifiers
+            && self.hoist_static == other.hoist_static
+            && self.inline == other.inline
+            && self.component_name == other.component_name
+            && self.cache_handlers == other.cache_handlers
+            && self.hoisted_scope_id == other.hoisted_scope_id
+            && self.scope_id == other.scope_id
+            && self.is_ts == other.is_ts
+            && self.comments == other.comments
+            && self.experimental_in_tag_comments == other.experimental_in_tag_comments
+            && self.custom_element_patterns == other.custom_element_patterns
+            && custom_element_predicate_eq(
+                self.custom_element_predicate,
+                other.custom_element_predicate,
+            )
+            && self.bindings == other.bindings
+    }
+}
+
+impl Eq for DomEmitOptions<'_> {}
+
+fn custom_element_predicate_eq(
+    left: Option<fn(&str) -> bool>,
+    right: Option<fn(&str) -> bool>,
+) -> bool {
+    match (left, right) {
+        (None, None) => true,
+        (Some(left), Some(right)) => core::ptr::fn_addr_eq(left, right),
+        _ => false,
+    }
 }
 
 impl DomEmitOptions<'static> {
@@ -250,6 +289,7 @@ impl DomEmitOptions<'static> {
         comments: false,
         experimental_in_tag_comments: false,
         custom_element_patterns: &[],
+        custom_element_predicate: None,
         bindings: None,
     };
 }
@@ -261,88 +301,4 @@ impl Default for DomEmitOptions<'static> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
-
-    #[test]
-    fn default_options_project_the_shipped_codegen_defaults() {
-        assert_eq!(
-            DomEmitOptions::default(),
-            DomEmitOptions {
-                mode: DomEmitMode::Function,
-                runtime_module_name: "vue",
-                runtime_global_name: "Vue",
-                prefix_identifiers: false,
-                hoist_static: true,
-                inline: false,
-                component_name: None,
-                cache_handlers: false,
-                hoisted_scope_id: None,
-                scope_id: None,
-                is_ts: false,
-                comments: false,
-                experimental_in_tag_comments: false,
-                custom_element_patterns: &[],
-                bindings: None,
-            }
-        );
-    }
-
-    #[test]
-    fn render_signatures_match_the_shipped_lane_per_mode() {
-        assert_eq!(
-            DomEmitMode::Function.render_signature(false),
-            "function render(_ctx, _cache, $props, $setup, $data, $options) {"
-        );
-        assert_eq!(
-            DomEmitMode::Module.render_signature(false),
-            "export function render(_ctx, _cache) {"
-        );
-        assert_eq!(
-            DomEmitMode::Module.render_signature(true),
-            "export function render(_ctx, _cache, $props, $setup, $data, $options) {"
-        );
-    }
-
-    #[test]
-    fn binding_table_lookups_and_alias_order() {
-        let table = BindingTable::new(
-            [
-                ("msg", BindingKind::SetupRef),
-                ("Comp", BindingKind::SetupConst),
-                ("msg", BindingKind::SetupLet),
-            ],
-            [("local", "prop-key")],
-            true,
-        );
-        assert_eq!(table.kind("msg"), Some(BindingKind::SetupLet));
-        assert_eq!(table.kind("Comp"), Some(BindingKind::SetupConst));
-        assert_eq!(table.kind("other"), None);
-        let named = (table.contains("Comp"), table.contains("other"));
-        assert_eq!(named, (true, false));
-        assert_eq!(
-            table.aliases().collect::<alloc::vec::Vec<_>>(),
-            [("local", "prop-key")]
-        );
-        assert!(table.is_script_setup());
-    }
-
-    #[test]
-    fn non_inline_prefixes_match_the_shipped_binding_types() {
-        assert_eq!(
-            BindingKind::SetupRef.non_inline_template_prefix(),
-            "$setup."
-        );
-        assert_eq!(BindingKind::Props.non_inline_template_prefix(), "$props.");
-        assert_eq!(BindingKind::Data.non_inline_template_prefix(), "$data.");
-        assert_eq!(
-            BindingKind::Options.non_inline_template_prefix(),
-            "$options."
-        );
-        assert_eq!(BindingKind::VueGlobal.non_inline_template_prefix(), "_ctx.");
-        assert_eq!(
-            BindingKind::ExternalModule.non_inline_template_prefix(),
-            "$setup."
-        );
-    }
-}
+mod tests;

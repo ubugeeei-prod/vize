@@ -149,8 +149,13 @@ pub(crate) fn lower_with_caps_and_comment_policy<'a>(
     caps: LegacyCaps,
     preserve_comments: bool,
     custom_element_patterns: &[String],
+    custom_element_predicate: Option<fn(&str) -> bool>,
 ) -> Lowered<'a> {
     let root = SourceRoot::new(tree.source).expect("vize_s1 accepted a u32-addressable source");
+    let custom_elements = LowerCustomElements {
+        patterns: custom_element_patterns,
+        predicate: custom_element_predicate,
+    };
     lower_source_block_with_caps_and_comment_policy(
         allocator,
         tree,
@@ -158,7 +163,7 @@ pub(crate) fn lower_with_caps_and_comment_policy<'a>(
         root.whole_block(),
         caps,
         preserve_comments,
-        custom_element_patterns,
+        custom_elements,
     )
 }
 
@@ -189,8 +194,14 @@ pub fn lower_source_block_with_caps<'a>(
         block,
         caps,
         false,
-        &[],
+        LowerCustomElements::default(),
     )
+}
+
+#[derive(Clone, Copy, Default)]
+struct LowerCustomElements<'a> {
+    patterns: &'a [String],
+    predicate: Option<fn(&str) -> bool>,
 }
 
 fn lower_source_block_with_caps_and_comment_policy<'a>(
@@ -200,7 +211,7 @@ fn lower_source_block_with_caps_and_comment_policy<'a>(
     block: SourceBlock<'a>,
     caps: LegacyCaps,
     preserve_comments: bool,
-    custom_element_patterns: &[String],
+    custom_elements: LowerCustomElements<'_>,
 ) -> Lowered<'a> {
     debug_assert!(
         tree.source.as_ptr() == block.source().as_ptr()
@@ -212,7 +223,8 @@ fn lower_source_block_with_caps_and_comment_policy<'a>(
         block,
         caps,
         preserve_comments,
-        custom_element_patterns,
+        custom_elements.patterns,
+        custom_elements.predicate,
     );
     for error in errors {
         cx.diagnostics.push(Diagnostic::new(

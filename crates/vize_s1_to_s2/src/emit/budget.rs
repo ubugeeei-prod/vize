@@ -94,6 +94,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
             caps,
             options.comments,
             options.custom_element_patterns,
+            options.custom_element_predicate,
         );
         let facts = run_transform(&mut lowered, observer);
         let (emit, emit_visits) = emit_dom_with_emit_budget(&lowered, &facts, options)?;

@@ -51,6 +51,12 @@ impl CustomElementMatcher {
         self.predicate.is_some()
     }
 
+    /// Return the opaque static predicate branch, when one is configured.
+    #[must_use]
+    pub fn static_predicate(&self) -> Option<fn(&str) -> bool> {
+        self.predicate
+    }
+
     /// Whether no pattern or predicate can match.
     #[must_use]
     pub fn is_empty(&self) -> bool {

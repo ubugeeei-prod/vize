@@ -48,6 +48,7 @@ const s2EmitOptionFields = [
   "comments",
   "experimental_in_tag_comments",
   "custom_element_patterns",
+  "custom_element_predicate",
   "bindings",
 ];
 const codegenOptionsOwnedByDomCompiler = [

@@ -1,5 +1,5 @@
-//! P2-11 witness: declarative custom-element matchers are covered by the S2
-//! DOM production selector, while opaque predicate matchers remain guarded.
+//! P2-11 witness: declarative custom-element matchers and opaque static
+//! predicate matchers are covered by the S2 DOM production selector.
 
 #![allow(
     clippy::disallowed_macros,
@@ -87,7 +87,7 @@ fn declarative_custom_element_matcher_uses_s2_for_sfc_sections() {
 }
 
 #[test]
-fn static_predicate_custom_element_matcher_keeps_template_sections_on_compatibility_codegen() {
+fn static_predicate_custom_element_matcher_uses_s2_for_template_sections() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
@@ -118,13 +118,13 @@ fn static_predicate_custom_element_matcher_keeps_template_sections_on_compatibil
     assert_eq!(selected.sections, compat.sections);
     assert_eq!(
         counter_total(&counters, "davinci.s2_dom.files"),
-        None,
-        "opaque custom-element predicates stay outside the S2 production selector"
+        Some(1),
+        "opaque custom-element predicates should enter the S2 production selector"
     );
 }
 
 #[test]
-fn static_predicate_custom_element_matcher_keeps_sfc_sections_on_compatibility_codegen() {
+fn static_predicate_custom_element_matcher_uses_s2_for_sfc_sections() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
     profiler.disable();
@@ -155,8 +155,8 @@ fn static_predicate_custom_element_matcher_keeps_sfc_sections_on_compatibility_c
     assert_eq!(selected.sections, compat.sections);
     assert_eq!(
         counter_total(&counters, "davinci.s2_dom.files"),
-        None,
-        "opaque custom-element predicates stay outside the S2 SFC sections selector"
+        Some(1),
+        "opaque custom-element predicates should enter the S2 SFC sections selector"
     );
 }
 
