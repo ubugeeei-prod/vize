@@ -7,7 +7,7 @@ test("the Patina scorecard exhaustively maps the pinned eslint-plugin-vue rule s
 
   assert.equal(ruleMap.upstream.version, "10.9.2");
   assert.equal(ruleMap.upstream.ruleCount, 252);
-  assert.deepEqual(ruleMap.summary, { mapped: 122, unimplemented: 128, intentionalDivergence: 2 });
+  assert.deepEqual(ruleMap.summary, { mapped: 123, unimplemented: 127, intentionalDivergence: 2 });
   assert.deepEqual(ruleMap.entries["vue/component-definition-name-casing"], {
     status: "intentional-divergence",
     reason:

@@ -29,6 +29,7 @@ mod no_dupe_v_else_if;
 mod no_duplicate_attributes;
 mod no_invalid_html_attribute;
 mod no_reserved_component_names;
+mod no_static_inline_styles;
 mod no_template_key;
 mod no_textarea_mustache;
 mod no_unused_vars;
@@ -151,6 +152,7 @@ pub use html_quotes::{HtmlQuotes, HtmlQuotesOption};
 pub use mustache_interpolation_spacing::MustacheInterpolationSpacing;
 pub use no_multi_spaces::NoMultiSpaces;
 pub use no_multiple_template_root::NoMultipleTemplateRoot;
+pub use no_static_inline_styles::NoStaticInlineStyles;
 pub use prop_name_casing::PropNameCasing;
 pub use v_on_style::{VOnStyle, VOnStyleOption};
 pub use v_slot_style::VSlotStyle;
@@ -284,5 +286,8 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     }
     if !registry.has_rule("vue/no-bare-strings-in-template") {
         registry.register(Box::new(NoBareStringsInTemplate));
+    }
+    if !registry.has_rule("vue/no-static-inline-styles") {
+        registry.register(Box::new(NoStaticInlineStyles));
     }
 }

@@ -60,6 +60,7 @@ fn is_style_rule_name(rule_name: &str) -> bool {
             | "vue/mustache-interpolation-spacing"
             | "vue/no-inline-style"
             | "vue/no-multi-spaces"
+            | "vue/no-static-inline-styles"
             | "vue/prefer-props-shorthand"
             | "vue/prefer-true-attribute-shorthand"
             | "vue/prop-name-casing"

@@ -654,6 +654,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-deprecated-router-link-tag-prop",
     "vue/no-deprecated-filter",
     "vue/no-bare-strings-in-template",
+    "vue/no-static-inline-styles",
     "ecosystem/pinia-prefer-store-to-refs",
     "ecosystem/vue-router-prefer-named-push",
     "ecosystem/vue-test-utils-no-html-snapshot",

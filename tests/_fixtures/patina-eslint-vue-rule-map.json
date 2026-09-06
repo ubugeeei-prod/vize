@@ -821,8 +821,10 @@
       "status": "unimplemented"
     },
     "vue/no-static-inline-styles": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-static-inline-styles",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-template-key": {
       "patinaPresets": [
@@ -1676,8 +1678,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 122,
-    "unimplemented": 128
+    "mapped": 123,
+    "unimplemented": 127
   },
   "upstream": {
     "package": "eslint-plugin-vue",

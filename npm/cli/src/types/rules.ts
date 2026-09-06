@@ -190,6 +190,7 @@ export const LINT_RULE_NAMES = [
   "vue/no-root-v-if",
   "vue/no-script-non-standard-lang",
   "vue/no-src-attribute",
+  "vue/no-static-inline-styles",
   "vue/no-template-key",
   "vue/no-template-lang",
   "vue/no-template-shadow",

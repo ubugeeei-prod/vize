@@ -274,6 +274,6 @@ test("suppression telemetry reports the mapped FP candidate and the unmapped nam
   assert.equal(
     lines[1],
     "scope-proof: files-scanned=4 suppression-comments=2 named=2 bare=0 " +
-      "rules-mapped=122 mapped-seen=1 unmapped-seen=1 fp-candidates=1",
+      "rules-mapped=123 mapped-seen=1 unmapped-seen=1 fp-candidates=1",
   );
 });
