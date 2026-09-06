@@ -56,6 +56,27 @@ fn rel_is_safe(rel: &str) -> bool {
     has_noopener && has_noreferrer
 }
 
+fn is_external_href(value: &str) -> bool {
+    if value.starts_with("//") {
+        return true;
+    }
+    let Some(colon) = value.as_bytes().iter().position(|&byte| byte == b':') else {
+        return false;
+    };
+    colon > 0
+        && value.as_bytes()[..colon]
+            .iter()
+            .all(|byte| byte.is_ascii_alphanumeric() || *byte == b'_')
+}
+
+fn markup_has_dangerous_href(element: &MarkupElement<'_>) -> bool {
+    element
+        .static_attribute("href")
+        .and_then(|attr| attr.value())
+        .is_some_and(is_external_href)
+        || element.has_bound_attribute("href")
+}
+
 impl MarkupRule for NoTemplateTargetBlank {
     fn name(&self) -> &'static str {
         META.name
@@ -71,8 +92,9 @@ impl MarkupRule for NoTemplateTargetBlank {
         if target.value().is_none_or(|value| value != "_blank") {
             return;
         }
-        // The reverse-tabnabbing risk only applies to links that navigate.
-        if !element.has_static_attribute("href") && !element.has_bound_attribute("href") {
+        // Match eslint-plugin-vue: static relative links are clean, while
+        // external static links and dynamic href bindings are checked.
+        if !markup_has_dangerous_href(element) {
             return;
         }
         let rel_is_safe = element
@@ -104,7 +126,7 @@ impl Rule for NoTemplateTargetBlank {
         if attribute_value(target) != "_blank" {
             return;
         }
-        if !has_attribute_or_binding(element, "href") {
+        if !has_dangerous_href(element) {
             return;
         }
         if static_attribute_value(element, "rel").is_some_and(rel_is_safe) {
@@ -138,13 +160,18 @@ fn static_attribute_value<'a>(element: &'a ElementNode<'a>, name: &str) -> Optio
     static_attribute(element, name).map(attribute_value)
 }
 
-/// Whether `element` has a static `name` attribute or a `v-bind:name` directive.
-fn has_attribute_or_binding(element: &ElementNode, name: &str) -> bool {
+fn has_dangerous_href(element: &ElementNode) -> bool {
     element.props.iter().any(|prop| match prop {
-        PropNode::Attribute(attr) => attr.name == name,
+        PropNode::Attribute(attr) => {
+            attr.name == "href"
+                && attr
+                    .value
+                    .as_ref()
+                    .is_some_and(|value| is_external_href(value.content))
+        }
         PropNode::Directive(dir) => {
             dir.name == "bind"
-                && matches!(&dir.arg, Some(ExpressionNode::Simple(s)) if s.content == name)
+                && matches!(&dir.arg, Some(ExpressionNode::Simple(s)) if s.content == "href")
         }
     })
 }
@@ -227,6 +254,14 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_relative_href() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r##"<a href="/guide" target="_blank">x</a>"##, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
     fn test_invalid_missing_rel_reports_target_attribute_range() {
         // The non-ASCII label keeps the reported range honest about byte
         // offsets: a code-point or UTF-16 based span would drift here.
@@ -276,6 +311,17 @@ mod tests {
             JsxLang::Jsx,
         );
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_jsx_relative_href_is_clean() {
+        let linter = create_linter();
+        let result = linter.lint_jsx(
+            r#"const A = () => <a href="/guide" target="_blank">x</a>;"#,
+            "test.jsx",
+            JsxLang::Jsx,
+        );
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
