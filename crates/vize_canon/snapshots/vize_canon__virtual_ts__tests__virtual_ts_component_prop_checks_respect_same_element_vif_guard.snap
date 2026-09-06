@@ -134,6 +134,7 @@ function __setup() {
   if ((item)) {
     // @vize-map: expr -> 16:20
   }
+  // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
   if ((item)) {
     void (item.name); // VBind
     // @vize-map: expr -> 27:36
@@ -186,15 +187,18 @@ function __setup() {
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 22:37
+  // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.
   if ((item)) {
     const __vize_prop_check_0_to: __LinkComp_0_prop_to = item.name;
     void __vize_prop_check_0_to;
   }
+  // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.
   if ((item)) {
     (undefined as unknown as __LinkComp_Check_0)({
       "to": item.name,
     });
   }
+  // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.
   if ((item)) {
     type __VizeSlotContract_0 = __VizeStructuralSlots<typeof LinkComp>;
     const __vize_required_slots_0: __VizeRequiredSlots<__VizeSlotContract_0, {}> = {};

@@ -130,6 +130,7 @@ function __setup() {
     if ((show)) {
       // @vize-map: expr -> 62:66
     }
+    // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
     if ((show)) {
       void (item); // Interpolation
       // @vize-map: expr -> 71:75

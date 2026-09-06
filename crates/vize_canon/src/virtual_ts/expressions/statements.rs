@@ -11,7 +11,7 @@ use super::native_props::generate_native_prop_statement;
 use super::reserved_props::rewrite_reserved_template_prop;
 use super::value_checks::TemplateValueChecks;
 use super::vif_chain::{VifControlFlowChain, emit_vif_control_flow_chain};
-use crate::virtual_ts::scope::remove_enclosing_vif_guard_prefix;
+use crate::virtual_ts::scope::{append_ignored_vif_guard_open, remove_enclosing_vif_guard_prefix};
 use vize_carton::CompactString;
 use vize_carton::FxHashSet;
 use vize_carton::String;
@@ -159,7 +159,7 @@ pub(crate) fn generate_expression(
             .map_or_else(|| guard.as_str(), |s| s.as_str());
         // Wrap in if block for type narrowing
         let gen_guard_start = ts.len();
-        append!(*ts, "{indent}if ({generated_guard}) {{\n");
+        append_ignored_vif_guard_open(ts, indent, generated_guard, "Narrowing-only guard");
         let gen_guard_end = ts.len();
         mappings.push(VizeMapping {
             gen_range: generated_text_range(

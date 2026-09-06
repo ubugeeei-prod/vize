@@ -6,6 +6,8 @@ use vize_croquis::analysis::ComponentUsage;
 use crate::virtual_ts::expressions::ComponentPropCheckContext;
 use crate::virtual_ts::types::VizeMapping;
 
+use super::vif_guard::append_ignored_vif_guard_open;
+
 pub(super) fn append_component_slot_check_helpers(ts: &mut String) {
     // `$slots` declarations in third-party component libraries frequently
     // describe callable slot names, not whether the parent must provide them.
@@ -40,7 +42,7 @@ pub(super) fn generate_component_slot_checks(
     };
 
     if let Some(ref guard) = usage.vif_guard {
-        append!(*ts, "{indent}if ({guard}) {{\n");
+        append_ignored_vif_guard_open(ts, indent, guard, "Inference-only guard");
     }
 
     let contract_name = cstr!("__VizeSlotContract_{idx}");

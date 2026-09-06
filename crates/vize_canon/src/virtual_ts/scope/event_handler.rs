@@ -9,6 +9,7 @@ use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
 use super::context::EventHandlerExprContext;
 use super::handler_shape::{inline_callback_event_argument, is_callable_handler_reference};
+use super::vif_guard::append_ignored_vif_guard_open;
 
 /// Generate event handler expressions inside a closure.
 pub(super) fn generate_event_handler_expressions(
@@ -32,7 +33,7 @@ pub(super) fn generate_event_handler_expressions(
                     .unwrap_or_else(|| String::from(guard.as_str()))
             });
             if let Some(ref guard) = guard {
-                append!(*ts, "{indent}if ({guard}) {{\n", indent = ctx.indent);
+                append_ignored_vif_guard_open(ts, ctx.indent, guard, "Inference-only guard");
             }
             let handler_indent = if guard.is_some() {
                 cstr!("{}  ", ctx.indent)

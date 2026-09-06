@@ -31,4 +31,5 @@ pub(crate) use closures::generate_scope_closures;
 pub(crate) use component_prop_checker::is_inline_callback_prop;
 pub(crate) use context::{GlobalComponentCheck, ScopeGenerationOptions};
 pub(crate) use slot_scope::emit_slot_payload_helpers;
+pub(crate) use vif_guard::append_ignored_vif_guard_open;
 pub(crate) use vif_guard::remove_enclosing_vif_guard_prefix;

@@ -260,13 +260,9 @@
         "error:14:37 [TS2304] Cannot find name 'choosedAddress'.",
         "error:15:37 [TS2304] Cannot find name 'choosedAddress'.",
         "error:18:41 [TS2304] Cannot find name 'choosedAddress'.",
-        "error:18:90 [TS2304] Cannot find name 'choosedAddress'.",
         "error:18:97 [TS2304] Cannot find name 'choosedAddress'.",
-        "error:18:110 [TS2304] Cannot find name 'choosedAddress'.",
         "error:18:121 [TS2304] Cannot find name 'choosedAddress'.",
-        "error:18:139 [TS2304] Cannot find name 'choosedAddress'.",
         "error:19:34 [TS2304] Cannot find name 'choosedAddress'.",
-        "error:19:55 [TS2304] Cannot find name 'choosedAddress'.",
         "error:88:50 [TS2304] Cannot find name 'remarkText'.",
         "error:88:62 [TS2304] Cannot find name 'inputText'.",
         "error:134:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
@@ -314,13 +310,6 @@
       "diagnostics": [
         "error:21:22 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
         "error:35:62 [TS2304] Cannot find name 'index'.",
-        "error:172:29 [TS2304] Cannot find name 'latitude'.",
-        "error:172:61 [TS2304] Cannot find name 'latitude'.",
-        "error:172:109 [TS2304] Cannot find name 'latitude'.",
-        "error:172:147 [TS2304] Cannot find name 'latitude'.",
-        "error:172:174 [TS2304] Cannot find name 'latitude'.",
-        "error:172:205 [TS2304] Cannot find name 'latitude'.",
-        "error:172:233 [TS2304] Cannot find name 'latitude'.",
         "error:172:251 [TS2304] Cannot find name 'latitude'.",
         "error:178:40 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:225:27 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
@@ -475,7 +464,6 @@
       "file": "src/page/profile/children/info.vue",
       "diagnostics": [
         "error:9:33 [TS2304] Cannot find name 'userInfo'.",
-        "error:9:50 [TS2304] Cannot find name 'userInfo'.",
         "error:9:62 [TS2304] Cannot find name 'userInfo'.",
         "error:106:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:154:35 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
@@ -494,8 +482,6 @@
       "diagnostics": [
         "error:6:35 [TS2304] Cannot find name 'userInfo'.",
         "error:6:45 [TS2304] Cannot find name 'userInfo'.",
-        "error:7:33 [TS2304] Cannot find name 'userInfo'.",
-        "error:7:43 [TS2304] Cannot find name 'userInfo'.",
         "error:7:45 [TS2304] Cannot find name 'userInfo'.",
         "error:7:89 [TS2304] Cannot find name 'userInfo'.",
         "error:7:99 [TS2304] Cannot find name 'userInfo'.",
@@ -647,7 +633,6 @@
       "diagnostics": [
         "error:4:24 [TS2304] Cannot find name 'userInfo'.",
         "error:5:44 [TS2304] Cannot find name 'userInfo'.",
-        "error:5:45 [TS2304] Cannot find name 'userInfo'.",
         "error:76:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:101:22 [TS2339] Property 'ORDER_SUCCESS' does not exist on type '__VizeThis'.",
         "error:102:22 [TS2551] Property 'BUY_CART' does not exist on type '__VizeThis'. Did you mean 'buyCart'?",
@@ -721,7 +706,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 426,
+  "errorCount": 411,
   "warningCount": 0,
   "fileCount": 61
 }

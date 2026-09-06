@@ -142,6 +142,7 @@ function __setup() {
   if ((props.count)) {
     // @vize-map: expr -> 176:187
   }
+  // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
   if ((props.count)) {
     void (props.count); // Interpolation
     // @vize-map: expr -> 199:210

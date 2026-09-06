@@ -124,10 +124,12 @@ function __setup() {
   if ((key === 'b')) {
     // @vize-map: expr -> 11:22
   }
+  // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
   if ((key === 'b')) {
 
     // v-for scope: value in elems[key]
     __vForList(elems[key]).forEach(([value]) => {
+      // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
       if ((key === 'b')) {
         void value;
         const __vize_native_prop_check_69: __VizeNativeElementProp<__VizeNativeElement<"button">, "key"> = (value);

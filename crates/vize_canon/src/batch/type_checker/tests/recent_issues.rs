@@ -2,6 +2,7 @@ use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diag
 mod component_event_assignment_scope;
 mod component_options_index_signature;
 mod component_prop_regressions;
+mod component_vif_guard_ts7006;
 mod css_module_classes;
 mod css_side_effect_import;
 mod define_model_template_unwrap;

@@ -6,6 +6,7 @@
 //! assembled by [`super::props_literal`].
 
 use super::super::helpers::to_safe_identifier_fragment;
+use super::super::scope::append_ignored_vif_guard_open;
 use super::super::types::VizeMapping;
 use super::component_props::ComponentPropSource;
 use super::props_literal::append_props_literal;
@@ -46,7 +47,7 @@ pub(super) fn generate_generic_props_call(
     };
 
     if let Some(ref guard) = usage.vif_guard {
-        append!(*ts, "{indent}if ({guard}) {{\n");
+        append_ignored_vif_guard_open(ts, indent, guard, "Inference-only guard");
     }
 
     append!(
@@ -118,6 +119,12 @@ pub(crate) fn generate_slot_host_binding(
     indent: &str,
 ) {
     let mut discarded = Vec::new();
+    if usage.vif_guard.is_some() {
+        append!(
+            *ts,
+            "{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n"
+        );
+    }
     append!(
         *ts,
         "{indent}const {binding_name} = (undefined as unknown as __VizeSlotsResolver<typeof {component_ref}>)(",

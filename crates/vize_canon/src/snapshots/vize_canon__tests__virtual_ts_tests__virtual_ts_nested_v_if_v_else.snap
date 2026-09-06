@@ -144,6 +144,7 @@ function __setup() {
     void (message); // Interpolation
     // @vize-map: expr -> 311:318
   }
+  // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
   if (!(status === 'loading') && !(status === 'error')) {
 
     // v-for scope: item in data

@@ -6,6 +6,7 @@
 //! validate the values and infer generics across the component boundary.
 
 use super::super::helpers::to_safe_identifier_fragment;
+use super::super::scope::append_ignored_vif_guard_open;
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::prop_sources::{
     append_prop_value, generated_prop_value, prop_name_source_range, prop_value_source_range,
@@ -124,10 +125,11 @@ pub(crate) fn generate_component_prop_checks(
         .any(crate::virtual_ts::scope::is_inline_callback_prop);
     let grouped_guard = has_inline_callback && usage.vif_guard.is_some();
     if grouped_guard {
-        append!(
-            *ts,
-            "{indent}if ({}) {{\n",
-            usage.vif_guard.as_deref().unwrap()
+        append_ignored_vif_guard_open(
+            ts,
+            indent,
+            usage.vif_guard.as_deref().unwrap(),
+            "Inference-only guard",
         );
     }
     let callback_indent = if grouped_guard {
@@ -173,7 +175,7 @@ pub(crate) fn generate_component_prop_checks(
             };
 
             if !grouped_guard && let Some(ref guard) = usage.vif_guard {
-                append!(*ts, "{indent}if ({guard}) {{\n");
+                append_ignored_vif_guard_open(ts, indent, guard, "Inference-only guard");
             }
 
             // A repeated attribute name (static class next to :class) still

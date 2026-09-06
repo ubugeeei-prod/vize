@@ -442,21 +442,10 @@
         "error:7:37 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:10:146 [TS7006] Parameter 'changed' implicitly has an 'any' type.",
         "error:10:155 [TS7006] Parameter 'invalid' implicitly has an 'any' type.",
-        "error:11:111 [TS7006] Parameter 'item' implicitly has an 'any' type.",
-        "error:12:60 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:14:172 [TS7006] Parameter 'changed' implicitly has an 'any' type.",
         "error:14:181 [TS7006] Parameter 'invalid' implicitly has an 'any' type.",
-        "error:15:111 [TS7006] Parameter 'item' implicitly has an 'any' type.",
-        "error:16:60 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:18:189 [TS7006] Parameter 'changed' implicitly has an 'any' type.",
         "error:18:198 [TS7006] Parameter 'invalid' implicitly has an 'any' type.",
-        "error:19:111 [TS7006] Parameter 'item' implicitly has an 'any' type.",
-        "error:20:60 [TS7006] Parameter 'item' implicitly has an 'any' type.",
-        "error:24:60 [TS7006] Parameter 'item' implicitly has an 'any' type.",
-        "error:27:111 [TS7006] Parameter 'item' implicitly has an 'any' type.",
-        "error:30:111 [TS7006] Parameter 'item' implicitly has an 'any' type.",
-        "error:33:111 [TS7006] Parameter 'item' implicitly has an 'any' type.",
-        "error:34:60 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:42:21 [TS7006] Parameter 'f' implicitly has an 'any' type.",
         "error:43:13 [TS7006] Parameter 'f' implicitly has an 'any' type.",
         "error:102:17 [TS7006] Parameter 'newCanSave' implicitly has an 'any' type.",
@@ -3853,7 +3842,7 @@
       ]
     }
   ],
-  "errorCount": 565,
+  "errorCount": 554,
   "warningCount": 0,
   "fileCount": 794
 }

@@ -1,7 +1,19 @@
-use vize_carton::String;
+use vize_carton::{String, append};
 use vize_croquis::{
     Scope, ScopeData, TemplateExpression, VForScopeData, drawer::extract_identifiers_oxc,
 };
+
+pub(crate) fn append_ignored_vif_guard_open(
+    ts: &mut String,
+    indent: &str,
+    guard: &str,
+    purpose: &str,
+) {
+    append!(
+        *ts,
+        "{indent}// @ts-ignore {purpose}; authored v-if checks own diagnostics.\n{indent}if ({guard}) {{\n"
+    );
+}
 
 /// Compute the enclosing v-if guard shared by all expressions in a v-for scope.
 pub(super) fn common_vif_guard_prefix(exprs: &[&TemplateExpression]) -> Option<String> {

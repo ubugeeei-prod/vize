@@ -125,10 +125,12 @@ function __setup() {
   if ((key === 'b')) {
     // @vize-map: expr -> 11:22
   }
+  // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
   if ((key === 'b')) {
 
     // v-for scope: value in elems[key]
     __vForList(elems[key]).forEach(([value]) => {
+      // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
       if ((key === 'b')) {
         void value;
         const __vize_native_prop_check_69: __VizeNativeElementProp<__VizeNativeElement<"button">, "key"> = (value);
@@ -191,15 +193,18 @@ function __setup() {
     __vForList(elems[key]).forEach(([value]) => {
       void value;
       // @vize-map: prop -> 87:102
+      // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.
       if ((key === 'b')) {
         const __vize_prop_check_0_value1: __Test_0_prop_value1 = value;
         void __vize_prop_check_0_value1;
       }
+      // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.
       if ((key === 'b')) {
         (undefined as unknown as __Test_Check_0)({
           "value1": value,
         });
       }
+      // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.
       if ((key === 'b')) {
         type __VizeSlotContract_0 = __VizeStructuralSlots<typeof Test>;
         const __vize_required_slots_0: __VizeRequiredSlots<__VizeSlotContract_0, {}> = {};

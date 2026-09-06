@@ -13,6 +13,7 @@ use crate::virtual_ts::{
 };
 
 use super::super::context::ScopeGenContext;
+use super::super::vif_guard::append_ignored_vif_guard_open;
 use super::SlotOutlet;
 
 struct SlotOutletCheckContext<'a> {
@@ -128,7 +129,7 @@ fn generate_slot_outlet_checks(
 
     for outlet in outlets {
         if let Some(ref guard) = outlet.vif_guard {
-            append!(*ts, "{indent}if ({guard}) {{\n");
+            append_ignored_vif_guard_open(ts, indent, guard, "Inference-only guard");
         }
         let expr_indent = if outlet.vif_guard.is_some() {
             let mut nested = String::from(indent);

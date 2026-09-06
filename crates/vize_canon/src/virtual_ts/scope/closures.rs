@@ -17,7 +17,9 @@ use super::event_scope::generate_event_handler_scope;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
 use super::slot_outlet_props::{SlotOutletChecks, generate_scope_slot_outlet_checks};
 use super::slot_scope::generate_v_slot_scope;
-use super::vif_guard::{callback_vif_guard, common_vif_guard_prefix_outside_v_for_scope};
+use super::vif_guard::{
+    append_ignored_vif_guard_open, callback_vif_guard, common_vif_guard_prefix_outside_v_for_scope,
+};
 use super::{children::generate_child_scopes, component_event_navigation::emit_event_references};
 
 /// Generates the Croquis scope chain as a recursive tree so nested v-for/v-slot
@@ -96,7 +98,6 @@ pub(crate) fn generate_scope_closures(
             }
         });
 
-    // Scopes nested inside a VFor/VSlot closure are generated inside their parent.
     let nested_scope_ids: FxHashSet<ScopeId> =
         profile!("canon.virtual_ts.collect_nested_scope_ids", {
             summary
@@ -163,7 +164,6 @@ pub(crate) fn generate_scope_closures(
             continue;
         }
 
-        // Global scopes: emit expressions directly
         if matches!(
             scope.kind,
             ScopeKind::JsGlobalUniversal
@@ -216,7 +216,6 @@ pub(crate) fn generate_scope_closures(
     }
 }
 
-/// Recursively generate a scope node (VFor/VSlot/EventHandler) and its nested children.
 pub(super) fn generate_scope_node(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -229,10 +228,7 @@ pub(super) fn generate_scope_node(
 
     match scope.data() {
         ScopeData::VFor(data) => {
-            // For a v-for nested in `v-if`, wrap the loop in `if (guard) {}` so
-            // TypeScript narrows identifiers in the v-for source (e.g. `elems[key]`
-            // narrowed by the parent `v-if`); otherwise it widens (#1511). The guard
-            // is the longest common `&&`-separated prefix of this scope's expressions.
+            // Re-emit parent `v-if` around v-for source so TypeScript keeps narrowing (#1511).
             let enclosing_guard: Option<String> = ctx
                 .expressions_by_scope
                 .get(&scope_id)
@@ -245,7 +241,7 @@ pub(super) fn generate_scope_node(
                 (String::from(indent), inner_indent.clone())
             };
             if let Some(guard) = enclosing_guard {
-                append!(*ts, "{indent}if ({guard}) {{\n");
+                append_ignored_vif_guard_open(ts, indent, guard, "Narrowing-only guard");
             }
             append_v_for_comment(
                 ts,
@@ -263,11 +259,15 @@ pub(super) fn generate_scope_node(
                 scope,
                 ctx.template_prop_names,
             );
-            // A positive narrowing outside a callback is not retained for captured
-            // object properties. Recheck those terms so discriminated unions narrow.
+            // Recheck positive terms for callback-captured object-property narrowing.
             let callback_guard = enclosing_guard.and_then(callback_vif_guard);
             let callback_indent = if let Some(guard) = callback_guard.as_deref() {
-                append!(*ts, "{vfor_inner_indent}if ({guard}) {{\n");
+                append_ignored_vif_guard_open(
+                    ts,
+                    vfor_inner_indent.as_str(),
+                    guard,
+                    "Narrowing-only guard",
+                );
                 cstr!("{vfor_inner_indent}  ")
             } else {
                 vfor_inner_indent.clone()
@@ -284,7 +284,6 @@ pub(super) fn generate_scope_node(
                 append!(*ts, "{callback_indent}void {index};\n");
             }
 
-            // Generate expressions in this scope
             if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
                 && ctx.check_options.check_template_bindings
             {
@@ -304,7 +303,6 @@ pub(super) fn generate_scope_node(
             }
             generate_scope_slot_outlet_checks(ts, mappings, scope_id, ctx, &callback_indent);
 
-            // Recursively generate child scopes inside this closure
             profile!(
                 "canon.virtual_ts.child_scopes",
                 generate_child_scopes(ts, mappings, ctx, scope_id, &callback_indent)
