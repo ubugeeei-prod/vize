@@ -15,6 +15,7 @@ const domStageDeps = new Set(["vize_davinci", "vize_s1_to_s2", "vize_s2"]);
 const compilerOptionsProjectedToS2 = [
   "mode",
   "prefix_identifiers",
+  "hoist_static",
   "cache_handlers",
   "scope_id",
   "comments",
@@ -27,7 +28,6 @@ const compilerOptionsProjectedToS2 = [
 ];
 const compilerOptionsHandledAroundS2 = ["source_map"];
 const compilerOptionsHeldAtDefault = [
-  "hoist_static",
   "ssr",
   "experimental_patterned_template",
   "custom_renderer",
@@ -38,6 +38,7 @@ const s2EmitOptionFields = [
   "runtime_module_name",
   "runtime_global_name",
   "prefix_identifiers",
+  "hoist_static",
   "inline",
   "component_name",
   "cache_handlers",

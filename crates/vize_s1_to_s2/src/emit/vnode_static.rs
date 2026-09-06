@@ -15,6 +15,9 @@ pub(super) fn should_hoist_static_children(
     branch_root: bool,
     for_item: bool,
 ) -> bool {
+    if !cx.hoist_static {
+        return false;
+    }
     if cx.conditional_v_for_item {
         return false;
     }

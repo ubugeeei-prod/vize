@@ -50,7 +50,7 @@ pub(super) fn emit_if_template_branch(
     branch: &IfBranch<'_>,
     key: &str,
 ) -> Result<(), EmitError> {
-    if should_unwrap_if(&branch.region.ops, cx.is_ts) {
+    if should_unwrap_if(&branch.region.ops, cx.is_ts, cx.hoist_static) {
         return unwrap_if(cx, branch, key);
     }
     emit_inner_fragment(
@@ -63,9 +63,9 @@ pub(super) fn emit_if_template_branch(
     )
 }
 
-fn should_unwrap_if(ops: &[Op<'_>], is_ts: bool) -> bool {
+fn should_unwrap_if(ops: &[Op<'_>], is_ts: bool, hoist_static: bool) -> bool {
     match ops {
-        [Op::Element(element)] => !is_hoistable(element, is_ts),
+        [Op::Element(element)] => !hoist_static || !is_hoistable(element, is_ts),
         [Op::Component(_)] | [Op::Slot(_)] | [Op::For(_)] => true,
         _ => false,
     }

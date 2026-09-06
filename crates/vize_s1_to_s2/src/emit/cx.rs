@@ -57,7 +57,7 @@ impl EmitCx<'_> {
         write: impl FnOnce(&mut Self) -> Result<T, EmitError>,
     ) -> Result<T, EmitError> {
         let previous = self.hoist_static_vnodes;
-        self.hoist_static_vnodes = previous || enabled;
+        self.hoist_static_vnodes = self.hoist_static && (previous || enabled);
         let result = write(self);
         self.hoist_static_vnodes = previous;
         result
@@ -69,7 +69,7 @@ impl EmitCx<'_> {
         write: impl FnOnce(&mut Self) -> Result<T, EmitError>,
     ) -> Result<T, EmitError> {
         let previous = self.hoist_static_vnodes;
-        self.hoist_static_vnodes = enabled;
+        self.hoist_static_vnodes = self.hoist_static && enabled;
         let result = write(self);
         self.hoist_static_vnodes = previous;
         result

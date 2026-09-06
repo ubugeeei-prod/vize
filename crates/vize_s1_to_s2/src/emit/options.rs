@@ -197,22 +197,18 @@ pub struct DomEmitOptions<'a> {
     pub runtime_module_name: &'a str,
     /// Global read in [`DomEmitMode::Function`] (`"Vue"` by default).
     pub runtime_global_name: &'a str,
-    /// The shipped lane's `prefix_identifiers`: free identifiers become
-    /// member accesses (`emit::prefix`).
+    /// Free identifiers become member accesses (`emit::prefix`) when enabled.
     pub prefix_identifiers: bool,
-    /// The shipped lane's `inline`: the render function is inlined into
-    /// `setup()`, so setup bindings are read straight from the closure —
-    /// refs through `.value`, `let`/maybe-ref bindings through `_unref`,
-    /// props through `__props.` — instead of the `$setup` proxy.
+    /// Static props and static VNode declarations are emitted only when enabled.
+    pub hoist_static: bool,
+    /// Inline render functions read setup bindings from closure locals instead
+    /// of the `$setup` proxy.
     pub inline: bool,
     /// The shipped lane's `component_name`: the SFC's own name (its file
     /// stem). A component tag that resolves to it is a self-reference, and
     /// the shipped lane asks the runtime to resolve it as one.
     pub component_name: Option<&'a str>,
-    /// The shipped lane's `cache_handlers`: an inline `v-on` handler is
-    /// hoisted into the render function's `_cache` array, so the closure
-    /// is created once instead of on every render. Turned on with
-    /// [`DomEmitOptions::inline`] by `compile_template_block`.
+    /// Cache inline `v-on` handlers in `_cache` when safe for scopes.
     pub cache_handlers: bool,
     /// SFC scoped-style attr for module-level static VNode hoists.
     pub hoisted_scope_id: Option<&'a str>,
@@ -244,6 +240,7 @@ impl DomEmitOptions<'static> {
         runtime_module_name: "vue",
         runtime_global_name: "Vue",
         prefix_identifiers: false,
+        hoist_static: true,
         inline: false,
         component_name: None,
         cache_handlers: false,
@@ -276,6 +273,7 @@ mod tests {
                 runtime_module_name: "vue",
                 runtime_global_name: "Vue",
                 prefix_identifiers: false,
+                hoist_static: true,
                 inline: false,
                 component_name: None,
                 cache_handlers: false,

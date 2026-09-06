@@ -88,7 +88,7 @@ pub(super) fn emit_call(
     let hoist_attrs = rendered_hoist_attrs(component, skip_is);
     let static_nested = builtin::has_static_nested(&component.children);
     let builtin_helper = builtin::helper(component.name).is_some();
-    let hoistable_static_props = if cx.hoisted_scope_id.is_some() {
+    let hoistable_static_props = if !cx.hoist_static || cx.hoisted_scope_id.is_some() {
         None
     } else {
         call_props::hoistable_static_props(component, skip_is, &hoist_attrs, cx.is_ts, cx.scope_id)?

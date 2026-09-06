@@ -210,6 +210,23 @@ fn cached_handlers_and_scope_id_agree_with_the_shipped_lane() {
     );
 }
 
+#[test]
+fn disabled_static_hoists_agree_with_the_shipped_lane() {
+    let battery = production_option_battery();
+    support::assert_s2_matches_shipped_with_options(
+        &battery,
+        &DomCompilerOptions {
+            hoist_static: false,
+            ..Default::default()
+        },
+        &CodegenOptions::default(),
+        &DomEmitOptions {
+            hoist_static: false,
+            ..DomEmitOptions::DEFAULT
+        },
+    );
+}
+
 /// The configuration a real `<script setup>` SFC with `<style scoped>`
 /// compiles under: module mode, prefixed identifiers, binding metadata,
 /// cached handlers and a scope id, all at once.

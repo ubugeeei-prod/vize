@@ -87,8 +87,7 @@ pub(super) fn s2_emit_supported(
     matches!(
         s2_emit_selection,
         S2EmitSelection::Allowed | S2EmitSelection::RequireSections
-    ) && options.hoist_static
-        && !options.ssr
+    ) && !options.ssr
         && !options.experimental_patterned_template
         && !options.custom_renderer
         && template_syntax == TemplateSyntaxMode::Standard
@@ -118,6 +117,7 @@ pub(super) fn s2_emit_options<'a>(
         runtime_module_name: codegen.runtime_module_name.as_str(),
         runtime_global_name: codegen.runtime_global_name.as_str(),
         prefix_identifiers: options.prefix_identifiers,
+        hoist_static: options.hoist_static,
         inline: options.inline,
         component_name: options.component_name.as_deref(),
         cache_handlers: options.cache_handlers,

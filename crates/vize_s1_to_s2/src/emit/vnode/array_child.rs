@@ -11,6 +11,7 @@ pub(in crate::emit) fn emit_array_child(
 ) -> Result<(), EmitError> {
     let hoist_static_children = hoist_static_children || cx.hoist_static_vnodes;
     if hoist_static_children
+        && cx.hoist_static
         && let Op::Element(element) = op
         && super::super::hoist::is_hoistable(element, cx.is_ts)
     {

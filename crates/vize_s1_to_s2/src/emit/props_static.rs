@@ -34,6 +34,9 @@ pub(super) fn should_hoist(
     id: Option<NodeId>,
     position: PropHoistPosition,
 ) -> bool {
+    if !cx.hoist_static {
+        return false;
+    }
     let Some(fact) = id.and_then(|id| cx.facts.static_facts.get(id)) else {
         return false;
     };
@@ -76,13 +79,17 @@ pub(super) fn inline_root_hoist(
     id: Option<NodeId>,
     position: PropHoistPosition,
 ) -> bool {
-    matches!(position, PropHoistPosition::Root)
+    cx.hoist_static
+        && matches!(position, PropHoistPosition::Root)
         && id
             .and_then(|id| cx.facts.static_facts.get(id))
             .is_some_and(|fact| fact.props_hoistable && inline_root_arm(cx, fact))
 }
 
 pub(super) fn props_hoistable(cx: &EmitCx<'_>, id: Option<NodeId>) -> bool {
+    if !cx.hoist_static {
+        return false;
+    }
     id.and_then(|id| cx.facts.static_facts.get(id))
         .is_some_and(|fact| fact.props_hoistable)
 }

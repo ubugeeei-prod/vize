@@ -53,9 +53,10 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
     {
         return Err(EmitError::Diagnostics);
     }
-    // `static_cache = inline || !hoists.is_empty()`.
-    let static_cache =
-        options.inline || static_cache::enabled(&lowered.root, facts, &lowered.wrappers);
+    // `static_cache = inline || !hoists.is_empty()`, with `hoists` empty
+    // when `hoist_static` disables the transform's static hoist pass.
+    let static_cache = options.inline
+        || (options.hoist_static && static_cache::enabled(&lowered.root, facts, &lowered.wrappers));
     let mut cx = EmitCx {
         buf: Buf::new(options.inline),
         source: lowered.source,
@@ -83,6 +84,7 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
         static_cache,
         parent_ns: Namespace::Html,
         prefix_identifiers: options.prefix_identifiers,
+        hoist_static: options.hoist_static,
         is_ts: options.is_ts,
         cache_handlers: options.cache_handlers,
         hoisted_scope_id: options.hoisted_scope_id,

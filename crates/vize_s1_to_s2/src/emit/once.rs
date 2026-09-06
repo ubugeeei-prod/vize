@@ -81,7 +81,9 @@ fn emit_component_target(
 fn skip_or_hoist_component_children(cx: &mut EmitCx<'_>, component: &ComponentOp<'_>) {
     for op in component.children.ops.iter() {
         match op {
-            Op::Element(element) if super::hoist::is_hoistable(element, cx.is_ts) => {
+            Op::Element(element)
+                if cx.hoist_static && super::hoist::is_hoistable(element, cx.is_ts) =>
+            {
                 let _id = cx.walk.mint();
                 cx.walk.skip(element.bindings.len());
                 let _alias = super::hoist::hoist_static_element(cx, element);
@@ -99,7 +101,9 @@ fn skip_or_hoist_component_children(cx: &mut EmitCx<'_>, component: &ComponentOp
 fn skip_or_hoist_once_element_children(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {
     for op in element.children.ops.iter() {
         match op {
-            Op::Element(child) if super::hoist::is_hoistable(child, cx.is_ts) => {
+            Op::Element(child)
+                if cx.hoist_static && super::hoist::is_hoistable(child, cx.is_ts) =>
+            {
                 let _id = cx.walk.mint();
                 cx.walk.skip(child.bindings.len());
                 let _alias = super::hoist::hoist_static_element(cx, child);
@@ -153,7 +157,7 @@ pub(super) fn emit_hoisted_child(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
 ) -> Result<bool, EmitError> {
-    if cx.once_depth == 0 || !is_hoistable(element, cx.is_ts) {
+    if cx.once_depth == 0 || !cx.hoist_static || !is_hoistable(element, cx.is_ts) {
         return Ok(false);
     }
     let alias = super::hoist::hoist_static_element(cx, element);

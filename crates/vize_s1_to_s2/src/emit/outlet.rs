@@ -179,7 +179,7 @@ fn emit_fallback_units(
         }
         Op::Interpolation(interp) => emit_fallback_interp(cx, interp, compact, first),
         Op::Comment(comment) => emit_fallback_comment(cx, comment, compact, first),
-        Op::Element(element) if is_hoistable(element, cx.is_ts) => {
+        Op::Element(element) if cx.hoist_static && is_hoistable(element, cx.is_ts) => {
             start_fallback_item(cx, compact, first);
             emit_hoisted_element(cx, element)
         }

@@ -196,6 +196,9 @@ struct EmitCx<'facts> {
     /// `prefix_identifiers`: expressions go through [`prefix`] on their
     /// way out instead of being pushed verbatim.
     prefix_identifiers: bool,
+    /// `hoist_static`: static props and static VNode declarations are emitted
+    /// only when the public transform option enabled them.
+    hoist_static: bool,
     /// The shipped lane's `is_ts`: expressions are type-erased first.
     is_ts: bool,
     /// The shipped lane's `cache_handlers`.
