@@ -62,8 +62,8 @@ fn legacy_dialects_stay_on_the_compatibility_lane() {
 }
 
 #[test]
-fn ssr_optimize_imports_codegen_option_stays_on_the_compatibility_lane() {
-    assert!(!s2_emit_supported(
+fn optimize_imports_codegen_option_does_not_disarm_s2() {
+    assert!(s2_emit_supported(
         &DomCompilerOptions::default(),
         &CodegenOptions {
             optimize_imports: true,

@@ -96,7 +96,7 @@ pub(super) fn codegen_options(
 
 pub(super) fn s2_emit_supported(
     options: &DomCompilerOptions,
-    codegen: &CodegenOptions,
+    _codegen: &CodegenOptions,
     custom_elements: &CustomElementMatcher,
     template_syntax: TemplateSyntaxMode,
     has_croquis: bool,
@@ -115,7 +115,6 @@ pub(super) fn s2_emit_supported(
         && template_syntax == TemplateSyntaxMode::Standard
         && custom_elements.projectable_patterns().is_some()
         && !has_croquis
-        && !codegen.optimize_imports
 }
 
 /// The published DOM option surface projected onto the S2 emitter.

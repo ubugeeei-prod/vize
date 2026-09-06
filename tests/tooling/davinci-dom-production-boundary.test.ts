@@ -64,7 +64,7 @@ const codegenOptionsOwnedByDomCompiler = [
 ];
 const codegenOptionsProjectedToS2 = ["runtime_module_name", "runtime_global_name"];
 const codegenOptionsHandledAroundS2 = ["filename"];
-const codegenOptionsUnsupportedForS2 = ["optimize_imports"];
+const codegenOptionsNoopForDomS2 = ["optimize_imports"];
 
 test("DOM compiler keeps the published S2 renderer available for profiling", () => {
   const dependencies = workspacePackage(metadata, "vize_atelier_dom").dependencies;
@@ -171,7 +171,7 @@ test("DOM S2 production switch classifies every adapter codegen option", () => {
       ...codegenOptionsOwnedByDomCompiler,
       ...codegenOptionsProjectedToS2,
       ...codegenOptionsHandledAroundS2,
-      ...codegenOptionsUnsupportedForS2,
+      ...codegenOptionsNoopForDomS2,
     ]),
     [...fields].sort(),
   );

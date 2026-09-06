@@ -7,7 +7,8 @@
 This installment lands `scope_id`, which completes the DOM-relevant half of
 `CodegenOptions` in `DomEmitOptions`. What remains outside the emitter's
 surface is deliberate: `source_map` / `filename` belong to the structured S4
-emitter (P3-9), and `ssr` / `optimize_imports` are the SSR lane's (phase 3).
+emitter (P3-9), and `ssr` belongs to the SSR lane (phase 3). A later selector
+audit confirmed `optimize_imports` is a stale DOM no-op and should not block S2.
 
 ## Why this one is wide
 
