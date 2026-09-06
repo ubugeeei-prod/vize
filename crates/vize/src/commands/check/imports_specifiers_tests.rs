@@ -90,6 +90,27 @@ import type { Static } from "static-package" /* bundler hint */ with /* mode */ 
 }
 
 #[test]
+fn line_comments_stop_at_ecmascript_line_terminators() {
+    let cases = [
+        ("lf", "\n"),
+        ("cr", "\r"),
+        ("crlf", "\r\n"),
+        ("line-separator", "\u{2028}"),
+        ("paragraph-separator", "\u{2029}"),
+    ];
+
+    for (label, terminator) in cases {
+        let source = format!(r#"const value = import(// {label}{terminator}"line-package")"#);
+        let actual = extract_module_specifier_occurrences(&source)
+            .into_iter()
+            .map(|occurrence| (occurrence.specifier.to_string(), occurrence.mode))
+            .collect::<Vec<_>>();
+
+        assert_eq!(actual, vec![("line-package".to_owned(), Import)], "{label}");
+    }
+}
+
+#[test]
 fn keywords_must_be_standalone_identifier_tokens() {
     let source = r#"
 const imported = "ignored-one"

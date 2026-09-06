@@ -221,10 +221,28 @@ fn skip_trivia(bytes: &[u8], mut cursor: usize) -> usize {
 }
 
 fn skip_line_comment(bytes: &[u8], start: usize) -> usize {
-    bytes[start + 2..]
-        .iter()
-        .position(|byte| *byte == b'\n')
-        .map_or(bytes.len(), |offset| start + 2 + offset + 1)
+    let mut cursor = start + 2;
+    while cursor < bytes.len() {
+        if let Some(len) = line_terminator_len(bytes, cursor) {
+            return cursor + len;
+        }
+        cursor += 1;
+    }
+    bytes.len()
+}
+
+fn line_terminator_len(bytes: &[u8], cursor: usize) -> Option<usize> {
+    match bytes.get(cursor)? {
+        b'\n' => Some(1),
+        b'\r' => Some(if bytes.get(cursor + 1) == Some(&b'\n') {
+            2
+        } else {
+            1
+        }),
+        0xe2 if bytes.get(cursor..cursor + 3) == Some(b"\xe2\x80\xa8".as_slice()) => Some(3),
+        0xe2 if bytes.get(cursor..cursor + 3) == Some(b"\xe2\x80\xa9".as_slice()) => Some(3),
+        _ => None,
+    }
 }
 
 fn skip_block_comment(bytes: &[u8], start: usize) -> Option<usize> {
