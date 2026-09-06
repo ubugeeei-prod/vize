@@ -212,8 +212,8 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-09-05):** 112 installments have landed through
-[#5779](https://github.com/ubugeeei-prod/vize/pull/5779). Installments 84-112 open
+**Current series evidence (2026-09-06):** 114 installments have landed through
+[#5798](https://github.com/ubugeeei-prod/vize/pull/5798). Installments 84-114 open
 the production option surface the switch needs, since through 83 the lane only
 matched `compile_template`'s _defaults_ while production compiles go through
 `compile_template_block`: `DomEmitOptions` now carries module mode,
@@ -226,16 +226,17 @@ const-handler rules, non-simple cached prop layout, constant style and text-run
 shortcuts, `cache_handlers`, printed-order cache slots, scoped CSS ids, runtime
 names, option bundles, model/outlet families, the shared DOM battery, the
 source-map-free production selector, S2 DOM section boundaries, in-tag option
-routing and SFC namespace selection. A
+routing, SFC namespace selection, ordinary comment output and source-map
+requests handled around S2 with a verified compatibility map. A
 field missing from that struct is not a default the emitter assumes; it is
 surface the series has not reached. The earlier S2 DOM lane also covers the
 late directive and patch-site witnesses, residual component and hoist-order
 witnesses, and the corpus-runnable plus CI DOM lanes. Real Project Matrix run `33531193323`
 recorded canonical hydrated zero-divergence evidence over 146 gitlinks,
 142 ecosystem projects, 42,668 files and 42,279 compared templates. The task
-remains blocked on the full production-lane switch because source-map,
-experimental in-tag comment, unsupported-option and explicit legacy-flag
-compiles still require the compatibility path. See the
+remains blocked on the full production-lane switch because experimental in-tag
+comment, unsupported-option and explicit legacy-flag compiles still require
+the compatibility path. See the
 [series record](./phase-2-records/p2-11.md).
 
 **Steps:**

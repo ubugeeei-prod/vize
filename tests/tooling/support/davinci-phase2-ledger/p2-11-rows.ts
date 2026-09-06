@@ -12,7 +12,7 @@ export function p2_11Installment(number: number): URL {
   );
 }
 
-export const P2_11_CURRENT = { number: 112, pr: 5779, sha: "297e3f1e" } as const;
+export const P2_11_CURRENT = { number: 114, pr: 5798, sha: "99ee05a1b" } as const;
 
 export const p2_11TableRows = [
   [41, 5359, "5b5ac0924"],
@@ -87,6 +87,8 @@ export const p2_11TableRows = [
   [110, 5777, "0eae46139"],
   [111, 5778, "8f3d843c"],
   [112, 5779, "297e3f1e"],
+  [113, 5796, "a7ab8b2a5"],
+  [114, 5798, "99ee05a1b"],
 ] as const;
 
 export const p2_11FileExpectations = [
@@ -220,4 +222,8 @@ export const p2_11FileExpectations = [
   [111, /8f3d843c/],
   [112, /SFC Namespace Selection Hardening/],
   [112, /297e3f1e/],
+  [113, /S2 DOM Comments/],
+  [113, /a7ab8b2a5/],
+  [114, /S2 DOM Source Maps/],
+  [114, /99ee05a1b/],
 ] as const;

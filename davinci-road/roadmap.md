@@ -113,27 +113,28 @@ holds or improves — this phase should be a measurable win, not a wash.
   timing, remark emission) land with the pass manager itself, so the DevTool's
   data feed exists from the first S2 build.
 
-**Current execution ledger (2026-09-05):** [17 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-09-05).
+**Current execution ledger (2026-09-06):** [17 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-09-05).
 P2-9 is now complete: the hydrated corpus run compiled 41,580 files at zero
 divergence and measured the retained-`None` residual at 11.73%. P2-11 remains
 the active blocked series; P2-12b, P2-16, P2-17 and P2-20 remain open because
 their dependency gates remain open. P2-12b has TS-22 groundwork for observed
-S2 DOM emit walks, but not the fused build-path switch. P2-11 has 112 landed
-installments through [#5779](https://github.com/ubugeeei-prod/vize/pull/5779). Installments
-84-112 open the production option surface the switch needs: module output,
+S2 DOM emit walks, but not the fused build-path switch. P2-11 has 114 landed
+installments through [#5798](https://github.com/ubugeeei-prod/vize/pull/5798). Installments
+84-114 open the production option surface the switch needs: module output,
 identifier prefixing, binding metadata, TypeScript erasure, component-name
 self references, inline setup reads, inline root prop hoists, helper order,
 template refs, constant-handler and constant-text decisions, `cache_handlers`
 and printed-order cache slots, then extend that matrix through scoped CSS ids,
 runtime names, option bundles, model/outlet families, the shared DOM battery,
 the source-map-free production selector, S2 DOM section boundaries, in-tag
-option routing and SFC namespace selection. The
+option routing, SFC namespace selection, ordinary comment output and source-map
+requests handled around S2 with a verified compatibility map. The
 earlier increments pin the late directive, patch-site, component, hoist-order
 and residual DOM corpus witnesses. Real Project Matrix run
 `33531193323` recorded canonical hydrated zero-divergence evidence over 146
 gitlinks, 142 ecosystem projects, 42,668 files and 42,279 compared templates;
-the full production-lane switch is still open for source maps, experimental
-in-tag comments, unsupported option shapes and the explicit legacy flag.
+the full production-lane switch is still open for experimental in-tag comments,
+unsupported option shapes and the explicit legacy flag.
 The executable fixture inventory is 146 gitlinks / 142 ecosystem projects;
 fixture checkout hydration is deliberately not a project-count source.
 
