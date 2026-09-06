@@ -17,6 +17,7 @@ mod source_types;
 mod tsconfig_extends;
 mod tsconfig_native_options;
 mod windows_paths;
+mod workspace_package_dependency_shadows;
 mod workspace_package_routes;
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
@@ -45,7 +46,6 @@ fn assert_tsx_parses(source: &str) {
         parsed.diagnostics
     );
 }
-
 #[derive(Debug)]
 #[allow(dead_code)]
 struct DiagnosticSnapshot<'a> {

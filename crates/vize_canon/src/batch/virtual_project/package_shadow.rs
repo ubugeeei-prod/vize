@@ -206,7 +206,46 @@ impl VirtualProject {
             topology
                 .files
                 .entry(shadow_root.join(relative_probe))
-                .or_insert(canonical_virtual);
+                .or_insert_with(|| canonical_virtual.clone());
+            if let Some(relative_target) =
+                source.declaration_target_relative_path(&route.package_root)
+            {
+                topology
+                    .files
+                    .entry(shadow_root.join(relative_target))
+                    .or_insert_with(|| canonical_virtual.clone());
+            }
+            self.collect_workspace_dependency_target_shadows(route, source, shadow_root, topology);
+        }
+    }
+
+    fn collect_workspace_dependency_target_shadows(
+        &self,
+        route: &crate::PackageRoute,
+        source: &crate::PackageRouteSource,
+        shadow_root: &Path,
+        topology: &mut PackageShadowTopology,
+    ) {
+        let normalized_root = vize_carton::path::canonicalize_non_verbatim(&route.package_root);
+        let Some(indexed_sources) = self.package_source_index.get(&normalized_root) else {
+            return;
+        };
+        let mut sources = indexed_sources
+            .iter()
+            .map(|(source_path, (_, virtual_path))| (source_path, virtual_path))
+            .collect::<Vec<_>>();
+        sources.sort_by(|left, right| left.0.cmp(right.0));
+
+        for (dependency, canonical_virtual) in sources {
+            let Some(relative_probe) =
+                source.workspace_dependency_probe_relative_path(&route.package_root, dependency)
+            else {
+                continue;
+            };
+            topology
+                .files
+                .entry(shadow_root.join(relative_probe))
+                .or_insert_with(|| canonical_virtual.clone());
         }
     }
 

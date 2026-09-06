@@ -236,17 +236,16 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
             if let Some(route) = package_route
                 && needs_registration
             {
+                if !package_graph && registered.insert(file.clone()) {
+                    registrations.push(file.clone());
+                }
                 let (_, invalidation_paths, mode, context, _) = package_lookup
                     .as_ref()
                     .expect("a positive package route came from a package lookup");
                 let mut route = route.clone();
-                // Re-sort only when the extension actually added something. The
-                // route arrives sorted and deduped, and most occurrences in a
-                // workspace resolve to a package whose sources are already all
-                // known, so the common case is appending nothing and then paying
-                // a full sort of the package's whole dependency list — with
-                // `Path`'s component-wise comparison, over long pnpm paths, once
-                // per import occurrence (#4426).
+                // Re-sort only when the extension actually added something; most
+                // workspace packages arrive sorted and deduped, so the common case
+                // avoids a component-wise path sort over long pnpm paths (#4426).
                 let before = route.dependency_paths.len();
                 route.dependency_paths.extend(
                     discovery

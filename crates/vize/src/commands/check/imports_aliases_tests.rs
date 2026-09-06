@@ -62,6 +62,84 @@ fn exact_alias_does_not_match_prefix() {
 }
 
 #[test]
+#[cfg(unix)]
+fn wildcard_alias_js_type_import_registers_sources_that_need_package_shadows() {
+    use std::os::unix::fs::symlink;
+
+    let root = tempfile::tempdir().unwrap();
+    let entry = write(
+        root.path(),
+        "src/App.vue",
+        "<script setup lang=\"ts\">\nimport type { Form } from '@/utility/form.js'\ndefineProps<{ form: Form }>()\n</script>\n",
+    );
+    let form = write(
+        root.path(),
+        "src/utility/form.ts",
+        "import * as Misskey from 'misskey-js';\nexport interface Form { file: Misskey.entities.DriveFile }\n",
+    );
+    let package = root.path().join("packages/misskey-js");
+    let package_source = write(
+        root.path(),
+        "packages/misskey-js/src/index.ts",
+        "export * as entities from './entities.js';\n",
+    );
+    write(
+        root.path(),
+        "packages/misskey-js/src/entities.ts",
+        "export interface DriveFile { id: string }\n",
+    );
+    write(
+        root.path(),
+        "packages/misskey-js/package.json",
+        r#"{
+  "type": "module",
+  "name": "misskey-js",
+  "exports": {
+    ".": {
+      "import": "./built/index.js",
+      "types": "./built/index.d.ts"
+    }
+  }
+}
+"#,
+    );
+    std::fs::write(
+        root.path().join("tsconfig.json"),
+        r#"{"compilerOptions":{"paths":{"@/*":["./src/*"]}}}"#,
+    )
+    .unwrap();
+    let link = root.path().join("node_modules/misskey-js");
+    std::fs::create_dir_all(link.parent().unwrap()).unwrap();
+    symlink(&package, &link).unwrap();
+    let resolver =
+        PathAliasResolver::from_tsconfig(Some(root.path().join("tsconfig.json").as_path()));
+
+    let mut package_resolver = vize_canon::PackageRouteResolver::default();
+    let discovered = super::super::imports::collect_transitive_local_imports_with_resolver(
+        std::slice::from_ref(&entry),
+        root.path(),
+        &mut CanonicalPathCache::default(),
+        false,
+        Some(&resolver),
+        &mut package_resolver,
+    );
+
+    assert_eq!(discovered.registrations, vec![form.canonicalize().unwrap()]);
+    assert!(
+        discovered
+            .authored
+            .contains(&package_source.canonicalize().unwrap())
+    );
+    assert_eq!(discovered.package_routes.len(), 1);
+    assert!(
+        discovered.package_routes[0]
+            .route
+            .as_ref()
+            .is_some_and(vize_canon::PackageRoute::requires_workspace_source_shadow)
+    );
+}
+
+#[test]
 fn missing_alias_target_retains_every_probed_candidate() {
     let root = tempfile::tempdir().unwrap();
     std::fs::write(

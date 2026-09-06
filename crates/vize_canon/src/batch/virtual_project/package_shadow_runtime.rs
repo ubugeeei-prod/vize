@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::{FxHashSet, String as CompactString, cstr};
 
+use crate::batch::declaration_path::is_declaration_file;
 use crate::batch::error::CorsaResult;
 
 use super::VirtualProject;
@@ -25,6 +26,11 @@ impl VirtualProject {
             .extension()
             .is_none_or(|extension| extension != "vue")
         {
+            if !is_declaration_file(&file.original_path)
+                && let Some(forwarder) = declaration_shadow_forwarder(shadow_path)
+            {
+                return Ok(forwarder);
+            }
             // Package TS/declaration modules keep their authored spelling in
             // the importer-local mirror. Native TypeScript can then apply
             // `allowArbitraryExtensions` to `./Widget.vue` and select the
@@ -131,4 +137,17 @@ impl VirtualProject {
         links.dedup();
         links
     }
+}
+
+fn declaration_shadow_forwarder(shadow_path: &Path) -> Option<CompactString> {
+    let name = shadow_path.file_name()?.to_str()?;
+    let target = if let Some(stem) = name.strip_suffix(".d.mts") {
+        cstr!("{stem}.mjs")
+    } else if let Some(stem) = name.strip_suffix(".d.cts") {
+        cstr!("{stem}.cjs")
+    } else {
+        let stem = name.strip_suffix(".d.ts")?;
+        cstr!("{stem}.js")
+    };
+    Some(cstr!("export * from \"./{target}\";\n"))
 }
