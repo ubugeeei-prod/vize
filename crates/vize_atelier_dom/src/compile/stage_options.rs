@@ -31,8 +31,8 @@ pub(super) fn dom_lane_selection() -> DomLaneSelection {
 
 fn dom_lane_selection_from_flag(value: Option<&str>) -> DomLaneSelection {
     match value {
-        Some("legacy") => DomLaneSelection::Legacy,
-        _ => DomLaneSelection::S2,
+        None | Some("s2") => DomLaneSelection::S2,
+        Some(_) => DomLaneSelection::Legacy,
     }
 }
 

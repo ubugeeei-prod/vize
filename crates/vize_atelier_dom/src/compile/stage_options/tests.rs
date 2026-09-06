@@ -13,6 +13,10 @@ fn dom_lane_selection_maps_the_legacy_flag_value() {
         DomLaneSelection::Legacy
     );
     assert_eq!(
+        dom_lane_selection_from_flag(Some("unknown")),
+        DomLaneSelection::Legacy
+    );
+    assert_eq!(
         dom_lane_selection_from_flag(Some("s2")),
         DomLaneSelection::S2
     );
