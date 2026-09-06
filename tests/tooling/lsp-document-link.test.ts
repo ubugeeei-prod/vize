@@ -144,7 +144,7 @@ const _x = ref(0)
   }
 });
 
-test("vize lsp documentLink ignores commented and string-literal imports", async () => {
+test("vize lsp documentLink handles multiline imports and ignores inactive specifiers", async () => {
   const testRootDir = path.join(testOutputRoot, "lsp-document-link-script-comments");
   fs.mkdirSync(testRootDir, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
@@ -157,18 +157,27 @@ test("vize lsp documentLink ignores commented and string-literal imports", async
       typecheck: false,
     });
 
-    fs.writeFileSync(
-      path.join(workspaceDir, "Real.vue"),
-      `<script setup lang="ts"></script>
+    for (const fileName of ["Multi.vue", "Real.vue", "Exported.vue"]) {
+      fs.writeFileSync(
+        path.join(workspaceDir, fileName),
+        `<script setup lang="ts"></script>
 <template><span /></template>
 `,
-      "utf8",
-    );
+        "utf8",
+      );
+    }
 
     const source = `<script setup lang="ts">
+/* import Block from './Block.vue' */
 // import Ghost from './Ghost.vue'
 const note = "import Hidden from './Hidden.vue'"
+import {
+  real /* from './CommentOnly.vue' */,
+} from './Multi.vue'
 import Real from './Real.vue'
+export {
+  default as Exported /* from './FakeExport.vue' */,
+} from './Exported.vue'
 </script>
 
 <template>
@@ -197,8 +206,12 @@ import Real from './Real.vue'
     })) as DocumentLink[] | null;
 
     assert.ok(Array.isArray(links), JSON.stringify(links));
-    assert.deepEqual(links.map(basenameForTarget), ["Real.vue"]);
-    assert.equal(textAtLinkRange(source, links[0]!), "'./Real.vue'");
+    assert.deepEqual(links.map(basenameForTarget), ["Multi.vue", "Real.vue", "Exported.vue"]);
+    assert.deepEqual(links.map((link) => textAtLinkRange(source, link)), [
+      "'./Multi.vue'",
+      "'./Real.vue'",
+      "'./Exported.vue'",
+    ]);
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });

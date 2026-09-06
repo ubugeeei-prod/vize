@@ -44,6 +44,7 @@ impl DocumentLinkService {
 
             imports::collect_import_links(
                 &script_setup.content,
+                imports::script_source_type(script_setup.lang.as_deref()),
                 script_setup.loc.start,
                 content,
                 base_path.as_deref(),
@@ -62,6 +63,7 @@ impl DocumentLinkService {
 
             imports::collect_import_links(
                 &script.content,
+                imports::script_source_type(script.lang.as_deref()),
                 script.loc.start,
                 content,
                 base_path.as_deref(),
