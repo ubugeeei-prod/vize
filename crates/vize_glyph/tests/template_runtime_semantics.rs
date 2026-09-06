@@ -79,6 +79,18 @@ fn literal_attributes_sort_only_inside_safe_unique_runs() {
 }
 
 #[test]
+fn dynamic_argument_bindings_keep_literal_collision_order() {
+    assert_fixed_point(
+        r#"<Widget :[name]="dynamic" id="literal" class="box" />"#,
+        r#"<Widget :[name]="dynamic" id="literal" class="box" />"#,
+    );
+    assert_fixed_point(
+        r#"<Widget v-bind:[name]="dynamic" id="literal" class="box" />"#,
+        r#"<Widget :[name]="dynamic" id="literal" class="box" />"#,
+    );
+}
+
+#[test]
 fn comments_and_inline_sibling_whitespace_keep_their_boundaries() {
     assert_fixed_point(
         "<p>Hello<!-- keep -->{{name}}</p>",

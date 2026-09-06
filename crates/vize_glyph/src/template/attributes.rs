@@ -83,7 +83,9 @@ fn is_ordering_barrier(attr: &ParsedAttribute) -> bool {
 
 fn is_object_spread_directive(name: &str) -> bool {
     matches!(name, ":" | "@" | "v-bind" | "v-on")
+        || name.starts_with(":[")
         || name.starts_with("v-bind.")
+        || name.starts_with("v-bind:[")
         || name.starts_with("v-on.")
 }
 
