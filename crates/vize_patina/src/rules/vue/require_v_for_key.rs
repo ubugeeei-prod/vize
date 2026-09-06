@@ -281,5 +281,4 @@ impl Rule for RequireVForKey {
 }
 
 #[cfg(test)]
-#[path = "require_v_for_key_tests.rs"]
 mod tests;

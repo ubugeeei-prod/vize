@@ -1,5 +1,6 @@
 ---
-source: crates/vize_patina/src/rules/vue/require_v_for_key.rs
+source: crates/vize_patina/src/rules/vue/require_v_for_key/tests.rs
+assertion_line: 29
 expression: result.diagnostics
 ---
 [
