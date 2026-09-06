@@ -54,17 +54,11 @@ pub(super) fn extract_module_specifier_occurrences(source: &str) -> Vec<ModuleSp
             continue;
         };
 
-        let mut j = i + keyword_len;
-        while j < len && bytes[j].is_ascii_whitespace() {
-            j += 1;
-        }
+        let mut j = skip_trivia(bytes, i + keyword_len);
         // `import('./x')` / `import ( './x' )` — step over the call paren.
         let call_import = j < len && bytes[j] == b'(';
         if call_import {
-            j += 1;
-            while j < len && bytes[j].is_ascii_whitespace() {
-                j += 1;
-            }
+            j = skip_trivia(bytes, j + 1);
         }
 
         if j < len && (bytes[j] == b'"' || bytes[j] == b'\'') {
@@ -107,21 +101,25 @@ fn explicit_resolution_mode(
     call_import: bool,
 ) -> Option<vize_canon::PackageResolutionMode> {
     let bytes = source.as_bytes();
-    let mut cursor = skip_whitespace(bytes, after_specifier);
+    let mut cursor = skip_trivia(bytes, after_specifier);
     if call_import {
         if bytes.get(cursor) != Some(&b',') {
             return None;
         }
-        cursor = skip_whitespace(bytes, cursor + 1);
+        cursor = skip_trivia(bytes, cursor + 1);
     } else {
         let keyword = [b"with".as_slice(), b"assert".as_slice()]
             .into_iter()
             .find(|keyword| matches_keyword(bytes, cursor, keyword))?;
-        cursor = skip_whitespace(bytes, cursor + keyword.len());
+        cursor = skip_trivia(bytes, cursor + keyword.len());
     }
     let (start, end) = object_literal_bounds(bytes, cursor)?;
     let mut at = start + 1;
     while at < end {
+        at = skip_trivia(bytes, at);
+        if at >= end {
+            break;
+        }
         let Some((key, key_end)) = string_literal_at(source, at) else {
             at += 1;
             continue;
@@ -130,12 +128,12 @@ fn explicit_resolution_mode(
             at = key_end;
             continue;
         }
-        let colon = skip_whitespace(bytes, key_end);
+        let colon = skip_trivia(bytes, key_end);
         if bytes.get(colon) != Some(&b':') {
             at = key_end;
             continue;
         }
-        let value_start = skip_whitespace(bytes, colon + 1);
+        let value_start = skip_trivia(bytes, colon + 1);
         let (value, _) = string_literal_at(source, value_start)?;
         return vize_canon::PackageResolutionMode::from_explicit_attribute(value);
     }
@@ -152,6 +150,14 @@ fn object_literal_bounds(bytes: &[u8], start: usize) -> Option<(usize, usize)> {
         match bytes[cursor] {
             b'\'' | b'"' => {
                 cursor = skip_quoted(bytes, cursor)?;
+                continue;
+            }
+            b'/' if bytes.get(cursor + 1) == Some(&b'/') => {
+                cursor = skip_line_comment(bytes, cursor);
+                continue;
+            }
+            b'/' if bytes.get(cursor + 1) == Some(&b'*') => {
+                cursor = skip_block_comment(bytes, cursor)?;
                 continue;
             }
             b'{' => depth += 1,
@@ -194,11 +200,38 @@ fn skip_quoted(bytes: &[u8], start: usize) -> Option<usize> {
     None
 }
 
-fn skip_whitespace(bytes: &[u8], mut cursor: usize) -> usize {
-    while bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
-        cursor += 1;
+fn skip_trivia(bytes: &[u8], mut cursor: usize) -> usize {
+    loop {
+        while bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+            cursor += 1;
+        }
+        if bytes.get(cursor) == Some(&b'/') && bytes.get(cursor + 1) == Some(&b'/') {
+            cursor = skip_line_comment(bytes, cursor);
+            continue;
+        }
+        if bytes.get(cursor) == Some(&b'/') && bytes.get(cursor + 1) == Some(&b'*') {
+            let Some(next) = skip_block_comment(bytes, cursor) else {
+                return bytes.len();
+            };
+            cursor = next;
+            continue;
+        }
+        return cursor;
     }
-    cursor
+}
+
+fn skip_line_comment(bytes: &[u8], start: usize) -> usize {
+    bytes[start + 2..]
+        .iter()
+        .position(|byte| *byte == b'\n')
+        .map_or(bytes.len(), |offset| start + 2 + offset + 1)
+}
+
+fn skip_block_comment(bytes: &[u8], start: usize) -> Option<usize> {
+    bytes[start + 2..]
+        .windows(2)
+        .position(|window| window == b"*/")
+        .map(|offset| start + 2 + offset + 2)
 }
 
 /// Whether `bytes[at..]` begins with `keyword` as a standalone identifier token.
@@ -270,6 +303,45 @@ import type { Native } from "import-package" with { "resolution-mode": "import" 
                 ("static-package".to_owned(), Require),
                 ("dynamic-package".to_owned(), Require),
                 ("import-package".to_owned(), Import),
+            ]
+        );
+    }
+
+    #[test]
+    fn comments_inside_import_syntax_do_not_hide_specifiers() {
+        let source = r#"
+const view = import(
+  /* webpackChunkName: "profile" */
+  "dynamic-package",
+  /* import attributes may be split across build-tool comments */
+  {
+    with: {
+      /* keep package resolution parity with TypeScript */
+      "resolution-mode": /* inline */ "require",
+    },
+  },
+)
+const commonjs = require(
+  /* real-world generated helper comment */
+  "commonjs-package"
+)
+export { named } from /* generated barrel comment */ "reexported-package"
+import type { Static } from "static-package" /* bundler hint */ with /* mode */ {
+  "resolution-mode": "require"
+}
+"#;
+        let actual = extract_module_specifier_occurrences(source)
+            .into_iter()
+            .map(|occurrence| (occurrence.specifier.to_string(), occurrence.mode))
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            actual,
+            vec![
+                ("dynamic-package".to_owned(), Require),
+                ("commonjs-package".to_owned(), Require),
+                ("reexported-package".to_owned(), Contextual),
+                ("static-package".to_owned(), Require),
             ]
         );
     }

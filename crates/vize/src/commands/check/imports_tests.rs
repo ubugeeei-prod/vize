@@ -114,6 +114,44 @@ void percent
 }
 
 #[test]
+fn collects_dynamic_imports_with_magic_comments() {
+    let root = std::env::temp_dir().join(cstr!("vize-imports-magic-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(root.join("src")).unwrap();
+
+    let entry = write(
+        &root,
+        "src/entry.ts",
+        r#"const panel = import(
+  /* webpackChunkName: "settings-panel" */
+  "./Panel.vue"
+)
+void panel
+"#,
+    );
+    let panel = write(
+        &root,
+        "src/Panel.vue",
+        "<script setup lang=\"ts\">\nconst ready = true\n</script>\n<template>{{ ready }}</template>\n",
+    );
+
+    let discovered = collect_transitive_local_imports(
+        &[entry],
+        &root,
+        &mut CanonicalPathCache::default(),
+        false,
+        None,
+    );
+
+    assert_eq!(
+        discovered.registrations,
+        vec![canonicalize_non_verbatim(&panel)]
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
 fn jsx_imports_are_resolved_only_when_jsx_typecheck_is_enabled() {
     let root = std::env::temp_dir().join(cstr!("vize-imports-jsx-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&root);
