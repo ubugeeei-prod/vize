@@ -316,5 +316,5 @@ export default defineComponent({
 
     assert_eq!(result.warning_count, 1);
     assert_eq!(result.diagnostics[0].rule_name, "vue/no-unused-components");
-    assert!(result.diagnostics[0].message.contains("Style"));
+    assert!(result.diagnostics[0].message.contains("FourStyle"));
 }
