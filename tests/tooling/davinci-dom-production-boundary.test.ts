@@ -178,6 +178,21 @@ test("DOM S2 production switch classifies every adapter codegen option", () => {
   );
 });
 
+test("DOM SFC parser-backed sections do not force legacy codegen", () => {
+  const source = readRepoFile("crates", "vize_atelier_dom", "src", "compile", "sfc.rs");
+
+  assert.match(
+    source,
+    /if use_s2_emit && fast_path_supported && !codegen_opts\.source_map/u,
+    "the direct SFC fast path guard must stay explicit",
+  );
+  assert.doesNotMatch(
+    source,
+    /else\s+if\s+use_s2_emit\s*&&\s*!\s*fast_path_supported/u,
+    "parser-backed SFC sections must stay eligible for S2 after recovery",
+  );
+});
+
 function sortedUnique(values: string[]): string[] {
   const unique = new Set(values);
   assert.equal(unique.size, values.length, "option classification has duplicates");
