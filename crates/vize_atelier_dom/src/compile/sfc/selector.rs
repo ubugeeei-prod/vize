@@ -74,7 +74,14 @@ fn find_byte(bytes: &[u8], start: usize, needle: u8) -> Option<usize> {
 }
 
 fn pop_closed_tag(tags: &mut Vec<SourceOpenTag<'_>>, name: &str) {
-    if tags.last().is_some_and(|tag| tag.name == name) {
+    let Some(tag) = tags.last() else {
+        return;
+    };
+    let closes = match tag.namespace {
+        SourceNamespace::Html => tag.name.eq_ignore_ascii_case(name),
+        SourceNamespace::Svg | SourceNamespace::MathMl => tag.name == name,
+    };
+    if closes {
         tags.pop();
     }
 }

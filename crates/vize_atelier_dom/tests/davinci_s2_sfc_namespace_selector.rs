@@ -142,6 +142,38 @@ fn sfc_sections_entry_ignores_native_raw_text_bodies() {
 }
 
 #[test]
+fn sfc_sections_entry_pops_html_reentry_closes_case_insensitively() {
+    let _guard = lock_profiler();
+    let profiler = global_profiler();
+    profiler.disable();
+    profiler.clear();
+
+    let source = r#"<svg><foreignObject><div>label</DIV></foreignObject><path :d="path" /></svg>"#;
+    let compat = compile_sfc_sections_entry(
+        source,
+        DomCompilerOptions {
+            source_map: true,
+            ..Default::default()
+        },
+    );
+
+    profiler.enable();
+    let selected = compile_sfc_sections_entry(source, DomCompilerOptions::default());
+    let counters = profiler.counter_summary();
+    profiler.disable();
+    profiler.clear();
+
+    assert_eq!(selected.preamble, compat.preamble);
+    assert_eq!(selected.code, compat.code);
+    assert_eq!(selected.sections, compat.sections);
+    assert_eq!(
+        counter_total(&counters, "davinci.s2_dom.files"),
+        Some(1),
+        "case-insensitive HTML closes inside foreign re-entry must not poison the S2 selector"
+    );
+}
+
+#[test]
 fn sfc_sections_entry_keeps_root_html_title_on_compatibility() {
     let _guard = lock_profiler();
     let profiler = global_profiler();
