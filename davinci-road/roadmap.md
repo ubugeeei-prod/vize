@@ -118,9 +118,9 @@ P2-9 is now complete: the hydrated corpus run compiled 41,580 files at zero
 divergence and measured the retained-`None` residual at 11.73%. P2-11 remains
 the active blocked series; P2-12b, P2-16, P2-17 and P2-20 remain open because
 their dependency gates remain open. P2-12b has TS-22 groundwork for observed
-S2 DOM emit walks, but not the fused build-path switch. P2-11 has 121 landed
-installments through [#5849](https://github.com/ubugeeei-prod/vize/pull/5849). Installments
-84-121 open the production option surface the switch needs: module output,
+S2 DOM emit walks, but not the fused build-path switch. P2-11 has 122 landed
+installments through [#5854](https://github.com/ubugeeei-prod/vize/pull/5854). Installments
+84-122 open the production option surface the switch needs: module output,
 identifier prefixing, binding metadata, TypeScript erasure, component-name
 self references, inline setup reads, inline root prop hoists, helper order,
 template refs, constant-handler and constant-text decisions, `cache_handlers`
@@ -132,12 +132,14 @@ requests handled around S2 with a verified compatibility map, experimental
 in-tag comments, declarative custom-element patterns, bare static style merges
 and disabled static-hoist routing, HTML re-entry close casing, the explicit
 legacy selection guard and the audited DOM no-op `optimize_imports` selector. The
+static custom-element predicate and parser-recovered SFC self-closing selector
+edges now have S2 production witnesses. The
 earlier increments pin the late directive, patch-site, component, hoist-order
 and residual DOM corpus witnesses. Real Project Matrix run
 `33531193323` recorded canonical hydrated zero-divergence evidence over 146
 gitlinks, 142 ecosystem projects, 42,668 files and 42,279 compared templates;
-the full production-lane switch is still open for opaque custom-element
-predicates and explicit legacy flag deletion.
+the full production-lane switch is still open for explicit legacy flag
+deletion.
 The executable fixture inventory is 146 gitlinks / 142 ecosystem projects;
 fixture checkout hydration is deliberately not a project-count source.
 
