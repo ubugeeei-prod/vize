@@ -33,6 +33,11 @@ const cases = [
     source: `<template><div v-for="({ id, label }, index) in items" :key="index">{{ index }}</div></template>`,
     diagnostics: ["'id' is defined but never used.", "'label' is defined but never used."],
   },
+  {
+    id: "event-parameter-shadows-outer-alias",
+    source: `<template><button v-for="event in events" @click="(event) => handle(event)"></button></template>`,
+    diagnostics: ["'event' is defined but never used."],
+  },
 ] as const;
 
 test("no-unused-vars v-for tuple boundary stays pinned to eslint-plugin-vue 10.9.2", async () => {

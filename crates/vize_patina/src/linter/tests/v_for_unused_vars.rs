@@ -88,3 +88,16 @@ fn test_lint_template_reports_unused_destructured_value_before_used_index() {
             .any(|diagnostic| diagnostic.message.contains("'label'"))
     );
 }
+
+#[test]
+fn test_lint_template_reports_outer_alias_shadowed_by_event_parameter() {
+    let linter =
+        Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-vars".to_compact_string()]));
+    let source = r#"<template>
+  <button v-for="event in events" @click="(event) => handle(event)"></button>
+</template>"#;
+    let result = linter.lint_sfc(source, "test.vue");
+
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    assert!(result.diagnostics[0].message.contains("'event'"));
+}
