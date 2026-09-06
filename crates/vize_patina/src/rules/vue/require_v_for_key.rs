@@ -74,6 +74,9 @@ fn has_markup_key(element: &MarkupElement<'_>) -> bool {
 }
 
 fn has_markup_template_v_for_key(element: &MarkupElement<'_>) -> bool {
+    if element.has_directive("slot") {
+        return true;
+    }
     if has_markup_key(element) {
         return true;
     }
@@ -186,7 +189,8 @@ fn relief_directive_is_bound_key(directive: &DirectiveNode<'_>) -> bool {
 }
 
 fn relief_template_v_for_has_key(element: &ElementNode<'_>) -> bool {
-    relief_element_has_key(element)
+    relief_template_has_slot_directive(element)
+        || relief_element_has_key(element)
         || element.children.iter().any(|child| {
             matches!(
                 child,
@@ -196,6 +200,15 @@ fn relief_template_v_for_has_key(element: &ElementNode<'_>) -> bool {
                     .any(|prop| matches!(prop, PropNode::Directive(dir) if relief_directive_is_bound_key(dir)))
             )
         })
+}
+
+fn relief_template_has_slot_directive(element: &ElementNode<'_>) -> bool {
+    element.props.iter().any(|prop| {
+        matches!(
+            prop,
+            PropNode::Directive(directive) if directive.name == "slot"
+        )
+    })
 }
 
 /// Markup-IR entry point for `vue/require-v-for-key`.

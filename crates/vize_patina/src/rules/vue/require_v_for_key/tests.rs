@@ -97,3 +97,17 @@ fn test_template_v_for_child_key_is_not_missing_key() {
     );
     assert_eq!(result.error_count, 0);
 }
+
+#[test]
+fn test_template_v_for_dynamic_slot_forwarder_is_not_missing_key() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<Component>
+  <template v-for="header in headers" #[`header.${header.value}`]>
+    <slot :name="`header.${header.value}`" :header="header" />
+  </template>
+</Component>"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 0);
+}
