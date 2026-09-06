@@ -15,13 +15,13 @@ test("packaged host result proves the pinned create-vue diagnostic transition", 
   try {
     fs.writeFileSync(serverPath, "");
     fs.writeFileSync(resultPath, JSON.stringify(passingResult));
-    assert.deepEqual(readPinnedCreateVueHostResult(resultPath), passingResult);
+    assert.deepEqual(readPinnedCreateVueHostResult(resultPath, serverPath), passingResult);
 
     fs.writeFileSync(
       resultPath,
       JSON.stringify({ ...passingResult, documentDirty: false, extensionActive: false }),
     );
-    assert.throws(() => readPinnedCreateVueHostResult(resultPath));
+    assert.throws(() => readPinnedCreateVueHostResult(resultPath, serverPath));
 
     fs.writeFileSync(
       resultPath,
@@ -30,7 +30,21 @@ test("packaged host result proves the pinned create-vue diagnostic transition", 
         brokenDiagnostics: [{ ...passingResult.brokenDiagnostics[0], range: [1, 7, 1, 12] }],
       }),
     );
-    assert.throws(() => readPinnedCreateVueHostResult(resultPath));
+    assert.throws(() => readPinnedCreateVueHostResult(resultPath, serverPath));
+
+    const otherServerPath = path.join(resultDirectory, "other-vize");
+    fs.writeFileSync(otherServerPath, "");
+    fs.writeFileSync(
+      resultPath,
+      JSON.stringify({
+        ...passingResult,
+        serverInfo: { ...passingResult.serverInfo, path: otherServerPath },
+      }),
+    );
+    assert.throws(
+      () => readPinnedCreateVueHostResult(resultPath, serverPath),
+      /selected server path must match the configured real server/,
+    );
 
     fs.writeFileSync(
       resultPath,
@@ -40,7 +54,7 @@ test("packaged host result proves the pinned create-vue diagnostic transition", 
       }),
     );
     assert.throws(
-      () => readPinnedCreateVueHostResult(resultPath),
+      () => readPinnedCreateVueHostResult(resultPath, serverPath),
       /selected server version must match extension version/,
     );
   } finally {

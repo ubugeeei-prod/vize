@@ -19,20 +19,27 @@ const expectedResult = {
   schemaVersion: 1,
 };
 
-export function readPinnedCreateVueHostResult(resultPath) {
+export function readPinnedCreateVueHostResult(resultPath, expectedServerPath) {
   assert.ok(fs.existsSync(resultPath), `packaged host did not write its result: ${resultPath}`);
   const actual = JSON.parse(fs.readFileSync(resultPath, "utf8"));
-  assertServerInfo(actual.serverInfo);
+  assertServerInfo(actual.serverInfo, expectedServerPath);
   assert.deepEqual(actual, { ...expectedResult, serverInfo: actual.serverInfo });
   return actual;
 }
 
-function assertServerInfo(serverInfo) {
+function assertServerInfo(serverInfo, expectedServerPath) {
   assert.equal(serverInfo?.source, "configured");
   assert.equal(serverInfo?.status, "ready");
   assert.equal(typeof serverInfo?.path, "string");
   assert.ok(path.isAbsolute(serverInfo.path), "selected server path must be absolute");
   assert.ok(fs.existsSync(serverInfo.path), `selected server path must exist: ${serverInfo.path}`);
+  assert.equal(typeof expectedServerPath, "string", "configured real server path must be recorded");
+  assert.ok(path.isAbsolute(expectedServerPath), "configured real server path must be absolute");
+  assert.equal(
+    fs.realpathSync(serverInfo.path),
+    fs.realpathSync(expectedServerPath),
+    "selected server path must match the configured real server",
+  );
   assert.deepEqual(Object.keys(serverInfo).sort(), [
     "extensionVersion",
     "path",

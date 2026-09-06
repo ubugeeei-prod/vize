@@ -89,7 +89,7 @@ await withPinnedFixtureWorkspace(
         vsixPath,
         workspacePath: fixture.workspaceDir,
       });
-      readPinnedCreateVueHostResult(resultPath);
+      readPinnedCreateVueHostResult(resultPath, serverPath);
     } finally {
       fs.rmSync(profilePath, { force: true, recursive: true });
     }
