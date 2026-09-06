@@ -107,6 +107,14 @@ pub(super) fn declaration_params(uri: &Url) -> DeclParams {
     }
 }
 
+pub(super) fn implementation_params(uri: &Url) -> ImplParams {
+    ImplParams {
+        text_document_position_params: text_pos(uri),
+        work_done_progress_params: WorkDoneProgressParams::default(),
+        partial_result_params: PartialResultParams::default(),
+    }
+}
+
 pub(super) fn references_params(uri: &Url) -> ReferenceParams {
     ReferenceParams {
         text_document_position: text_pos(uri),

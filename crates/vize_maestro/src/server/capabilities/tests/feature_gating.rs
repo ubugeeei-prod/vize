@@ -52,7 +52,7 @@ fn individual_feature_flags_gate_matching_providers() {
             |features| features.references = false,
             |capabilities| {
                 capabilities.references_provider.is_some()
-                    && capabilities.document_highlight_provider.is_some()
+                    || capabilities.document_highlight_provider.is_some()
             },
         ),
         (
@@ -68,7 +68,10 @@ fn individual_feature_flags_gate_matching_providers() {
         (
             "rename",
             |features| features.rename = false,
-            |capabilities| capabilities.rename_provider.is_some(),
+            |capabilities| {
+                capabilities.rename_provider.is_some()
+                    || capabilities.linked_editing_range_provider.is_some()
+            },
         ),
         (
             "formatting",
@@ -77,8 +80,8 @@ fn individual_feature_flags_gate_matching_providers() {
             // formatter scoped to the document, to a selection, and to a line.
             |capabilities| {
                 capabilities.document_formatting_provider.is_some()
-                    && capabilities.document_range_formatting_provider.is_some()
-                    && capabilities.document_on_type_formatting_provider.is_some()
+                    || capabilities.document_range_formatting_provider.is_some()
+                    || capabilities.document_on_type_formatting_provider.is_some()
             },
         ),
         (
@@ -94,12 +97,18 @@ fn individual_feature_flags_gate_matching_providers() {
         (
             "document_links",
             |features| features.document_links = false,
-            |capabilities| capabilities.document_link_provider.is_some(),
+            |capabilities| {
+                capabilities.document_link_provider.is_some()
+                    || capabilities.color_provider.is_some()
+            },
         ),
         (
             "folding_ranges",
             |features| features.folding_ranges = false,
-            |capabilities| capabilities.folding_range_provider.is_some(),
+            |capabilities| {
+                capabilities.folding_range_provider.is_some()
+                    || capabilities.selection_range_provider.is_some()
+            },
         ),
         (
             "inlay_hints",

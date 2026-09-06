@@ -159,7 +159,7 @@ pub(super) async fn goto_implementation(
     server: &MaestroServer,
     params: GotoImplementationParams,
 ) -> Result<Option<GotoImplementationResponse>> {
-    if !server.state.lsp_features().definition {
+    if !server.state.lsp_features().definition || !server.state.lsp_features().typecheck {
         return Ok(None);
     }
 
