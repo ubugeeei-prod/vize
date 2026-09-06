@@ -13,6 +13,7 @@ import {
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 const scorecardPath = "tests/_fixtures/maestro-vue-language-tools-scorecard.json";
+const scorecardDocPath = "docs/release/maestro-vue-language-tools-scorecard.md";
 
 type Evidence = {
   file: string;
@@ -44,6 +45,7 @@ type EditorRow = {
 
 type LatencyBudgetRow = {
   fixtureId: string;
+  fixtureName: string;
   suite: string;
   budgetSource: string;
   ciJob: string;
@@ -206,5 +208,36 @@ test("Maestro scorecard names enforced Misskey and Vue Vben Admin latency budget
         `${row.suite}.${lane} must fit under the hard timeout`,
       );
     }
+  }
+});
+
+test("Maestro scorecard documentation mirrors fixture dimensions and evidence lanes", () => {
+  const scorecard = readScorecard();
+  const doc = collapseWhitespace(
+    readRepoFile("docs", "release", "maestro-vue-language-tools-scorecard.md"),
+  );
+
+  assert.ok(doc.includes(scorecardPath), "scorecard docs must name the fixture source of truth");
+  assert.ok(
+    doc.includes("tests/tooling/lsp-vue-language-tools-scorecard.test.ts"),
+    "scorecard docs must name the executable metadata guard",
+  );
+
+  for (const row of scorecard.featureMatrix) {
+    const label = row.dimension.replaceAll("-", " ");
+    assert.ok(doc.includes(label), `${scorecardDocPath} is missing dimension ${row.dimension}`);
+  }
+
+  for (const row of scorecard.editorBreadth) {
+    assert.ok(doc.includes(row.editor), `${scorecardDocPath} is missing editor ${row.editor}`);
+    assert.ok(doc.includes(row.task), `${scorecardDocPath} is missing task ${row.task}`);
+  }
+
+  for (const row of scorecard.latencyBudgets) {
+    assert.ok(
+      doc.includes(row.fixtureName),
+      `${scorecardDocPath} is missing fixture ${row.fixtureName}`,
+    );
+    assert.ok(doc.includes(row.suite), `${scorecardDocPath} is missing suite ${row.suite}`);
   }
 });

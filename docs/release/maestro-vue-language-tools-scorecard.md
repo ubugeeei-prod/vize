@@ -10,8 +10,9 @@ backing.
 
 ## Feature Matrix
 
-The gated dimensions are diagnostics, completion, hover, definition, references, rename, code
-actions, semantic tokens, inlay hints, document features, file rename, and workspace symbols.
+The gated dimensions are diagnostics, completion, signature help, hover, definition, references,
+rename, code actions, semantic tokens, inlay hints, document features, file rename, and workspace
+symbols.
 
 Each row in the fixture has:
 
