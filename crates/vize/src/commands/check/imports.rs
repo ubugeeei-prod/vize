@@ -329,6 +329,9 @@ mod generated_tests;
 #[path = "imports_js_tests.rs"]
 mod js_tests;
 #[cfg(test)]
+#[path = "imports_magic_comments_tests.rs"]
+mod magic_comments_tests;
+#[cfg(test)]
 #[path = "imports_package_cache_tests.rs"]
 mod package_cache_tests;
 #[cfg(test)]
