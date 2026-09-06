@@ -12,6 +12,8 @@ use tower_lsp::lsp_types::{DocumentLink, Position, Range, Url};
 
 use super::offset_to_position;
 
+mod imports;
+
 /// Document link service.
 pub struct DocumentLinkService;
 
@@ -40,7 +42,7 @@ impl DocumentLinkService {
                 links.push(Self::create_link(content, start, end, target));
             }
 
-            Self::collect_import_links(
+            imports::collect_import_links(
                 &script_setup.content,
                 script_setup.loc.start,
                 content,
@@ -58,7 +60,7 @@ impl DocumentLinkService {
                 links.push(Self::create_link(content, start, end, target));
             }
 
-            Self::collect_import_links(
+            imports::collect_import_links(
                 &script.content,
                 script.loc.start,
                 content,
@@ -113,117 +115,6 @@ impl DocumentLinkService {
         }
     }
 
-    /// Collect import statement links from script content.
-    fn collect_import_links(
-        script: &str,
-        base_offset: usize,
-        full_content: &str,
-        base_path: Option<&Path>,
-        links: &mut Vec<DocumentLink>,
-    ) {
-        // Match: import ... from "path" or import ... from 'path'
-        // Match: import "path" or import 'path' (side-effect imports)
-        // Match: export ... from "path" or export ... from 'path'
-        let mut pos = 0;
-        let bytes = script.as_bytes();
-
-        while pos < script.len() {
-            // Find "import" or "export"
-            let import_start = script[pos..].find("import");
-            let export_start = script[pos..].find("export");
-
-            let keyword_start = match (import_start, export_start) {
-                (Some(i), Some(e)) => Some(pos + i.min(e)),
-                (Some(i), None) => Some(pos + i),
-                (None, Some(e)) => Some(pos + e),
-                (None, None) => None,
-            };
-
-            let Some(start) = keyword_start else {
-                break;
-            };
-
-            // Check it's at word boundary
-            if start > 0 && Self::is_ident_char(bytes[start - 1] as char) {
-                pos = start + 1;
-                continue;
-            }
-
-            // Find the end of this statement (semicolon or newline)
-            let stmt_end = script[start..]
-                .find([';', '\n'])
-                .map(|i| start + i)
-                .unwrap_or(script.len());
-
-            let stmt = &script[start..stmt_end];
-
-            // Find string literal (the path)
-            if let Some((path, rel_start, rel_end)) = Self::extract_import_path(stmt) {
-                // Only link relative imports (start with . or /)
-                if (path.starts_with('.') || path.starts_with('/'))
-                    && let Some(target) = Self::resolve_path(&path, base_path)
-                {
-                    let abs_start = base_offset + start + rel_start;
-                    let abs_end = base_offset + start + rel_end;
-                    links.push(Self::create_link(full_content, abs_start, abs_end, target));
-                }
-            }
-
-            pos = stmt_end + 1;
-        }
-    }
-
-    /// Extract import path from an import/export statement.
-    /// Returns (path, start, end_offset) where offsets are relative to stmt start.
-    fn extract_import_path(stmt: &str) -> Option<(String, usize, usize)> {
-        // Look for 'from' keyword followed by string
-        if let Some(from_pos) = stmt.find(" from ") {
-            let after_from = &stmt[from_pos + 6..];
-            return Self::extract_string_literal(after_from)
-                .map(|(path, s, e)| (path, from_pos + 6 + s, from_pos + 6 + e));
-        }
-
-        // Side-effect import: import "path"
-        if stmt.starts_with("import ") || stmt.starts_with("import\t") {
-            let after_import = &stmt[7..];
-            // Check if it's a side-effect import (no identifier before the string)
-            let trimmed = after_import.trim_start();
-            if trimmed.starts_with('"') || trimmed.starts_with('\'') {
-                let ws_len = after_import.len() - trimmed.len();
-                return Self::extract_string_literal(trimmed)
-                    .map(|(path, s, e)| (path, 7 + ws_len + s, 7 + ws_len + e));
-            }
-        }
-
-        None
-    }
-
-    /// Extract string literal from text.
-    /// Returns (content, start, end_offset) where offsets include quotes.
-    fn extract_string_literal(text: &str) -> Option<(String, usize, usize)> {
-        let bytes = text.as_bytes();
-        if bytes.is_empty() {
-            return None;
-        }
-
-        let quote = bytes[0] as char;
-        if quote != '"' && quote != '\'' {
-            return None;
-        }
-
-        // Find closing quote
-        let mut i = 1;
-        while i < bytes.len() {
-            if bytes[i] == quote as u8 && (i == 1 || bytes[i - 1] != b'\\') {
-                let content = text[1..i].to_string();
-                return Some((content, 0, i + 1));
-            }
-            i += 1;
-        }
-
-        None
-    }
-
     /// Collect CSS @import links.
     fn collect_css_import_links(
         css: &str,
@@ -243,7 +134,9 @@ impl DocumentLinkService {
 
             // @import url("path") or @import url('path')
             if let Some(url_content) = trimmed.strip_prefix("url(") {
-                if let Some((path, s, e)) = Self::extract_string_literal(url_content.trim_start()) {
+                if let Some((path, s, e)) =
+                    imports::extract_string_literal(url_content.trim_start())
+                {
                     let inner_ws = url_content.len() - url_content.trim_start().len();
                     if (path.starts_with('.') || path.starts_with('/'))
                         && let Some(target) = Self::resolve_path(&path, base_path)
@@ -255,7 +148,7 @@ impl DocumentLinkService {
                 }
             }
             // @import "path" or @import 'path'
-            else if let Some((path, s, e)) = Self::extract_string_literal(trimmed)
+            else if let Some((path, s, e)) = imports::extract_string_literal(trimmed)
                 && (path.starts_with('.') || path.starts_with('/'))
                 && let Some(target) = Self::resolve_path(&path, base_path)
             {
@@ -355,10 +248,6 @@ impl DocumentLinkService {
             data: None,
         }
     }
-
-    fn is_ident_char(c: char) -> bool {
-        c.is_ascii_alphanumeric() || c == '_' || c == '$'
-    }
 }
 
 #[cfg(test)]
@@ -367,36 +256,6 @@ mod tests {
 
     use super::DocumentLinkService;
     use tower_lsp::lsp_types::Url;
-
-    #[test]
-    fn test_extract_import_path() {
-        // Regular import
-        let stmt = r#"import { ref } from "./utils""#;
-        let (path, _, _) = DocumentLinkService::extract_import_path(stmt).unwrap();
-        assert_eq!(path, "./utils");
-
-        // Side-effect import
-        let stmt = r#"import "./styles.css""#;
-        let (path, _, _) = DocumentLinkService::extract_import_path(stmt).unwrap();
-        assert_eq!(path, "./styles.css");
-
-        // Export from
-        let stmt = r#"export { foo } from './foo'"#;
-        let (path, _, _) = DocumentLinkService::extract_import_path(stmt).unwrap();
-        assert_eq!(path, "./foo");
-    }
-
-    #[test]
-    fn test_extract_string_literal() {
-        let (content, start, end) =
-            DocumentLinkService::extract_string_literal(r#""hello""#).unwrap();
-        assert_eq!(content, "hello");
-        assert_eq!(start, 0);
-        assert_eq!(end, 7);
-
-        let (content, _, _) = DocumentLinkService::extract_string_literal("'world'").unwrap();
-        assert_eq!(content, "world");
-    }
 
     #[test]
     fn test_define_art_source_link() {

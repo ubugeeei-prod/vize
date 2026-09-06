@@ -144,6 +144,68 @@ const _x = ref(0)
   }
 });
 
+test("vize lsp documentLink ignores commented and string-literal imports", async () => {
+  const testRootDir = path.join(testOutputRoot, "lsp-document-link-script-comments");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    await session.initialize(workspaceDir, {
+      editor: true,
+      lint: false,
+      typecheck: false,
+    });
+
+    fs.writeFileSync(
+      path.join(workspaceDir, "Real.vue"),
+      `<script setup lang="ts"></script>
+<template><span /></template>
+`,
+      "utf8",
+    );
+
+    const source = `<script setup lang="ts">
+// import Ghost from './Ghost.vue'
+const note = "import Hidden from './Hidden.vue'"
+import Real from './Real.vue'
+</script>
+
+<template>
+  <Real />
+</template>
+`;
+    const filePath = path.join(workspaceDir, "Host.vue");
+    const uri = pathToFileURL(filePath).href;
+    fs.writeFileSync(filePath, source, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri,
+        languageId: "vue",
+        version: 1,
+        text: source,
+      },
+    });
+
+    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
+      isDiagnosticsForUri(params, uri),
+    );
+
+    const links = (await session.request("textDocument/documentLink", {
+      textDocument: { uri },
+    })) as DocumentLink[] | null;
+
+    assert.ok(Array.isArray(links), JSON.stringify(links));
+    assert.deepEqual(links.map(basenameForTarget), ["Real.vue"]);
+    assert.equal(textAtLinkRange(source, links[0]!), "'./Real.vue'");
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
+  }
+});
+
 test("vize lsp documentLink resolves SFC block src attributes and CSS imports", async (t) => {
   const testRootDir = path.join(testOutputRoot, "lsp-document-link-src-css");
   fs.mkdirSync(testRootDir, { recursive: true });
