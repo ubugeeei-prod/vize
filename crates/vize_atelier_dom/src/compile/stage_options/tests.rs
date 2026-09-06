@@ -57,6 +57,22 @@ fn legacy_dialects_stay_on_the_compatibility_lane() {
     ));
 }
 
+#[test]
+fn ssr_optimize_imports_codegen_option_stays_on_the_compatibility_lane() {
+    assert!(!s2_emit_supported(
+        &DomCompilerOptions::default(),
+        &CodegenOptions {
+            optimize_imports: true,
+            ..Default::default()
+        },
+        true,
+        TemplateSyntaxMode::Standard,
+        false,
+        DomLaneSelection::S2,
+        super::S2EmitSelection::Allowed,
+    ));
+}
+
 fn supported(options: DomCompilerOptions, dom_lane: DomLaneSelection) -> bool {
     s2_emit_supported(
         &options,

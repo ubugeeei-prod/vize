@@ -50,6 +50,21 @@ const s2EmitOptionFields = [
   "custom_element_patterns",
   "bindings",
 ];
+const codegenOptionsOwnedByDomCompiler = [
+  "mode",
+  "prefix_identifiers",
+  "source_map",
+  "component_name",
+  "scope_id",
+  "ssr",
+  "is_ts",
+  "inline",
+  "binding_metadata",
+  "cache_handlers",
+];
+const codegenOptionsProjectedToS2 = ["runtime_module_name", "runtime_global_name"];
+const codegenOptionsHandledAroundS2 = ["filename"];
+const codegenOptionsUnsupportedForS2 = ["optimize_imports"];
 
 test("DOM compiler keeps the published S2 renderer available for profiling", () => {
   const dependencies = workspacePackage(metadata, "vize_atelier_dom").dependencies;
@@ -142,6 +157,23 @@ test("DOM S2 emit options stay scoped to the supported switch surface", () => {
       ),
     ].sort(),
     [...s2EmitOptionFields].sort(),
+  );
+});
+
+test("DOM S2 production switch classifies every adapter codegen option", () => {
+  const fields = publicStructFieldNames(
+    readRepoFile("crates", "vize_relief", "src", "options.rs"),
+    "CodegenOptions",
+  );
+
+  assert.deepEqual(
+    sortedUnique([
+      ...codegenOptionsOwnedByDomCompiler,
+      ...codegenOptionsProjectedToS2,
+      ...codegenOptionsHandledAroundS2,
+      ...codegenOptionsUnsupportedForS2,
+    ]),
+    [...fields].sort(),
   );
 });
 
