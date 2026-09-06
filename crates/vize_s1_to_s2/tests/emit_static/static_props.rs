@@ -259,6 +259,12 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn bare_style_attribute_beside_dynamic_style_matches_the_shipped_lane() {
+    assert_shipped_parity(r#"<div style :style="s"></div>"#);
+    assert_shipped_parity(r#"<div :style="s" style></div>"#);
+}
+
+#[test]
 fn full_props_patch_flags_drop_class_and_style_bits() {
     assert_eq!(
         assembled(r#"<div :[foo]="bar" :class="c" :style="s"></div>"#),

@@ -16,8 +16,16 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div style="color: red" :style="s"></div>"#,
     ),
     (
+        "bare_static_then_dynamic",
+        r#"<div style :style="s"></div>"#,
+    ),
+    (
         "dynamic_then_static",
         r#"<div :style="s" style="color: red"></div>"#,
+    ),
+    (
+        "bare_dynamic_then_static",
+        r#"<div :style="s" style></div>"#,
     ),
     (
         "multiline_dynamic_then_static",

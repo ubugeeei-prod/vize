@@ -10,7 +10,6 @@ use vize_s1_to_s2::UnsupportedReason as Reason;
 
 const SOURCE: &[Reason] = &[
     Reason::ArrayBuiltinCannotUseSlotObject,
-    Reason::BareStyleAttributeWithDynamicStyle,
     Reason::BindNameNotJs,
     Reason::BindValueNotJs,
     Reason::CustomDirectiveExprNotJs,
@@ -71,6 +70,7 @@ const PREFIX_LANE: &[Reason] = &[
 const PORTABILITY: &[Reason] = &[Reason::TypeScriptLaneUnavailable];
 
 const RETIRED: &[Reason] = &[
+    Reason::BareStyleAttributeWithDynamicStyle,
     Reason::CreateSlotsMissingSlotTemplate,
     Reason::DynamicOnHasModifiers,
     Reason::ObjectBindHasModifiers,

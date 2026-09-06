@@ -37,12 +37,6 @@ const SOURCE_CASES: &[Case] = &[
         Reason::ArrayBuiltinCannotUseSlotObject,
     ),
     case(
-        "bare_style_attr",
-        r#"<div style :style="s"></div>"#,
-        VUE3,
-        Reason::BareStyleAttributeWithDynamicStyle,
-    ),
-    case(
         "bad_bind_name",
         r#"<div :[a.]="x"></div>"#,
         VUE3,
@@ -197,7 +191,6 @@ fn committed_fixture_refusal_census_is_pinned() {
         counts.into_iter().collect::<Vec<_>>(),
         vec![
             ("array_builtin_cannot_use_slot_object", 1),
-            ("bare_style_attr_with_dynamic_style", 1),
             ("bind_name_not_js", 1),
             ("bind_value_not_js", 1),
             ("custom_directive_expr_not_js", 1),

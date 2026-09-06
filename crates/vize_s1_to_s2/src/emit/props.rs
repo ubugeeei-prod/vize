@@ -42,17 +42,13 @@ pub(super) struct BindPropsOptions<'a> {
 }
 
 pub(super) fn admit_element_bindings(
-    attributes: &[Attribute<'_>],
+    _attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
 ) -> Result<(), EmitError> {
-    admit_bindings_inner(attributes, bindings, true)
+    admit_bindings_inner(bindings, true)
 }
 
-fn admit_bindings_inner(
-    attributes: &[Attribute<'_>],
-    bindings: &[BindingOp<'_>],
-    allow_once: bool,
-) -> Result<(), EmitError> {
+fn admit_bindings_inner(bindings: &[BindingOp<'_>], allow_once: bool) -> Result<(), EmitError> {
     let mut class = false;
     let mut style = false;
     for binding in bindings.iter() {
@@ -103,16 +99,6 @@ fn admit_bindings_inner(
                 ));
             }
         }
-    }
-    if style
-        && let Some(attr) = attributes
-            .iter()
-            .find(|attr| attr.name == "style" && attr.value.is_none())
-    {
-        return Err(EmitError::unsupported_at(
-            Reason::BareStyleAttributeWithDynamicStyle,
-            attr.span,
-        ));
     }
     Ok(())
 }
