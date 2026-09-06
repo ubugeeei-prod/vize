@@ -51,6 +51,15 @@ test("release preflight requires same-corpus coverage, mutation oracle, and prep
       /seeded mutation oracle/,
     ],
     [
+      "observed mutation false positive",
+      (entries: Record<string, string>) =>
+        mutateDivergence(
+          entries,
+          (artifact) => (artifact.mutationOracle.states[1].observed.falsePositiveCount = 1),
+        ),
+      /seeded mutation oracle/,
+    ],
+    [
       "unrestored repaired mutation state",
       (entries: Record<string, string>) =>
         mutateDivergence(

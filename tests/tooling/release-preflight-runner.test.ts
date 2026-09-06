@@ -11,6 +11,7 @@ import {
 } from "../../legacy-tools/github/release-preflight.mjs";
 import { workspaceVersionFromCargoToml } from "../../legacy-tools/github/release-preflight-core.mjs";
 import { repoRoot } from "./_helpers/moonbit.ts";
+import { mutateDivergence } from "./_helpers/release-preflight-matrix-evidence-fixture.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 import { createReleasePreflightVerifyOnlyFixture } from "./support/release-preflight-runner-fixture.ts";
 
@@ -180,6 +181,39 @@ test("verify-only mode accepts flat job evidence returned by pagination", () => 
     assert.ifError(result.error);
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     assert.match(result.stdout, new RegExp(`Release preflight passed for ${fixture.tag}`));
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("verify-only mode rejects mutation states with observed typecheck drift", () => {
+  const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-mutation-drift-"));
+  try {
+    const fixture = createReleasePreflightVerifyOnlyFixture(tempDir, {
+      mutateShardEntries(shard, entries) {
+        if (shard !== 0) return;
+        mutateDivergence(
+          entries,
+          (artifact) => (artifact.mutationOracle.states[1].observed.falseNegativeCount = 1),
+        );
+      },
+    });
+    const result = spawnSync(
+      "rust-script",
+      ["tools/commands/ci/github/release-preflight.rs", "--verify-only"],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          PATH: `${fixture.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+          ...fixture.env,
+        },
+      },
+    );
+    assert.ifError(result.error);
+    assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
+    assert.match(result.stderr, /seeded mutation oracle/);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }

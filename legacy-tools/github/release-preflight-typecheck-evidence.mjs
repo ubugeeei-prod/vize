@@ -199,6 +199,7 @@ function assertReleaseMutationOracle(artifactName, mutationOracle) {
 function hasMutationStateEvidence(state) {
   return (
     hasSummaryEvidence(state.observed) &&
+    hasObservedMutationParity(state.observed) &&
     hasRunEvidence(state.vize) &&
     hasRunEvidence(state.baseline)
   );
@@ -214,6 +215,14 @@ function hasSummaryEvidence(summary) {
     "falsePositiveCount",
     "falseNegativeCount",
   ].every((key) => Number.isSafeInteger(summary?.[key]) && summary[key] >= 0);
+}
+
+function hasObservedMutationParity(summary) {
+  return (
+    summary?.messageMismatchCount === 0 &&
+    summary?.falsePositiveCount === 0 &&
+    summary?.falseNegativeCount === 0
+  );
 }
 
 function hasRunEvidence(run) {

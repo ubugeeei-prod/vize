@@ -16,7 +16,12 @@ import { writeFakeCommand } from "./fake-command.ts";
 const releaseSha = "a".repeat(40);
 const baseSha = "b".repeat(40);
 
-export function createReleasePreflightVerifyOnlyFixture(tempDir: string) {
+export function createReleasePreflightVerifyOnlyFixture(
+  tempDir: string,
+  options: {
+    mutateShardEntries?: (shard: number, entries: Record<string, string>) => void;
+  } = {},
+) {
   const binDir = path.join(tempDir, "bin");
   const dataDir = path.join(tempDir, "github-api");
   const artifactDir = path.join(tempDir, "artifacts");
@@ -35,14 +40,11 @@ export function createReleasePreflightVerifyOnlyFixture(tempDir: string) {
   fs.mkdirSync(dataDir, { recursive: true });
   fs.mkdirSync(artifactDir, { recursive: true });
   for (const shard of artifacts.keys()) {
-    fs.writeFileSync(
-      path.join(artifactDir, `${shard}.zip`),
-      storedZip(
-        Object.entries(
-          shardEntries(shard, { typecheckProject: typecheckProjectIds()[shard] ?? null }),
-        ),
-      ),
-    );
+    const entries = shardEntries(shard, {
+      typecheckProject: typecheckProjectIds()[shard] ?? null,
+    });
+    options.mutateShardEntries?.(shard, entries);
+    fs.writeFileSync(path.join(artifactDir, `${shard}.zip`), storedZip(Object.entries(entries)));
   }
   writeJson(path.join(dataDir, "runs.json"), runs);
   writeJson(path.join(dataDir, "artifacts.json"), artifacts);

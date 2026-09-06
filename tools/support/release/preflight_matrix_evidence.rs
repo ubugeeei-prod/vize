@@ -564,7 +564,9 @@ fn assert_release_mutation_oracle(
 }
 
 fn has_mutation_state_evidence(state: &Value) -> bool {
-    has_summary_evidence(nested(state, &["observed"]))
+    let observed = nested(state, &["observed"]);
+    has_summary_evidence(observed)
+        && has_observed_mutation_parity(observed)
         && has_run_evidence(nested(state, &["vize"]))
         && has_run_evidence(nested(state, &["baseline"]))
 }
@@ -581,6 +583,12 @@ fn has_summary_evidence(summary: &Value) -> bool {
     ]
     .into_iter()
     .all(|key| integer_field(summary, key).is_some_and(|value| value >= 0))
+}
+
+fn has_observed_mutation_parity(summary: &Value) -> bool {
+    integer_field(summary, "messageMismatchCount") == Some(0)
+        && integer_field(summary, "falsePositiveCount") == Some(0)
+        && integer_field(summary, "falseNegativeCount") == Some(0)
 }
 
 fn has_run_evidence(run: &Value) -> bool {
