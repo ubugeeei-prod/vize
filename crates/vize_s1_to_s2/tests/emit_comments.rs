@@ -25,6 +25,14 @@ fn assembled_with_comments(source: &str, comments: bool) -> String {
     .to_string()
 }
 
+fn assembled_with_options(source: &str, options: DomEmitOptions<'_>) -> String {
+    let allocator = Allocator::new();
+    emit_dom_source_with_options(&allocator, source, LegacyCaps::VUE3, &options)
+        .unwrap_or_else(|error| panic!("emit refused {source:?}: {error:?}"))
+        .assembled()
+        .to_string()
+}
+
 fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
 }
@@ -62,6 +70,21 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   ]))
 }"
     );
+}
+
+#[test]
+fn in_tag_comments_are_parse_options_not_comment_vnodes() {
+    let with_in_tag_comment = assembled_with_options(
+        "<div // keep the parse extension covered\n  id=\"x\">{{ msg }}</div>",
+        DomEmitOptions {
+            experimental_in_tag_comments: true,
+            ..DomEmitOptions::DEFAULT
+        },
+    );
+    let without_in_tag_comment =
+        assembled_with_options("<div id=\"x\">{{ msg }}</div>", Default::default());
+
+    assert_eq!(with_in_tag_comment, without_in_tag_comment);
 }
 
 #[test]

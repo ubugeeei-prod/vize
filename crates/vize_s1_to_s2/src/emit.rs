@@ -42,11 +42,11 @@
 //! handler from the patch flag; suppressed under `v-for` / slot params),
 //! and **`scope_id`** (`<style scoped>`'s `"data-v-abc123": ""` pair on
 //! every props object — inline, hoisted and component alike, and once as a
-//! trailing `mergeProps` argument rather than per spread segment). `atelier_dom`
-//! selects this lane for supported DOM compiles, including source-map requests
-//! whose maps are verified against compatibility codegen; the old lane remains
-//! for experimental in-tag comments and unsupported option surfaces until the
-//! phase-exit deletion.
+//! trailing `mergeProps` argument rather than per spread segment), and
+//! experimental in-tag comments. `atelier_dom` selects this lane for supported
+//! DOM compiles, including source-map requests whose maps are verified against
+//! compatibility codegen; the old lane remains for unsupported option surfaces
+//! until the phase-exit deletion.
 
 mod budget;
 mod buf;

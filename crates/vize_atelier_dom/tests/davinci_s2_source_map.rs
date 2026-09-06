@@ -77,6 +77,25 @@ fn source_map_sfc_sections_compile_uses_s2_with_the_compatibility_map() {
     assert_selected_source_map_matches_compat(selected, compat, counters);
 }
 
+#[test]
+fn in_tag_comment_source_map_compile_uses_s2_with_the_compatibility_map() {
+    let source =
+        "<button // keep the parse extension covered\n  @click=\"go\">{{ label }}</button>";
+    let options = DomCompilerOptions {
+        source_map: true,
+        experimental_in_tag_comments: true,
+        ..Default::default()
+    };
+    let codegen = CodegenOptions {
+        filename: "InTagComment.vue".into(),
+        ..Default::default()
+    };
+    let compat = compile_template_compat(source, options.clone(), codegen.clone());
+    let (selected, counters) = compile_template_selected_with_profile(source, options, codegen);
+
+    assert_selected_source_map_matches_compat(selected, compat, counters);
+}
+
 fn assert_selected_source_map_matches_compat(
     selected: Compiled,
     compat: Compiled,

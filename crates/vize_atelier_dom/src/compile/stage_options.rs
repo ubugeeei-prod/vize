@@ -89,7 +89,6 @@ pub(super) fn s2_emit_supported(
         S2EmitSelection::Allowed | S2EmitSelection::RequireSections
     ) && options.hoist_static
         && !options.ssr
-        && !options.experimental_in_tag_comments
         && !options.experimental_patterned_template
         && !options.custom_renderer
         && template_syntax == TemplateSyntaxMode::Standard
@@ -125,6 +124,7 @@ pub(super) fn s2_emit_options<'a>(
         scope_id: options.scope_id.as_deref(),
         is_ts: options.is_ts,
         comments: options.comments,
+        experimental_in_tag_comments: options.experimental_in_tag_comments,
         bindings,
     }
 }

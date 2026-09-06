@@ -5,7 +5,6 @@
 //! the atelier_dom dual-run can pin each option against the shipped lane
 //! one at a time. A field missing from this struct is not a default the
 //! emitter silently assumes — it is production surface the series has
-//! not reached yet, and the witness for it does not exist.
 
 use alloc::vec::Vec as StdVec;
 
@@ -228,10 +227,10 @@ pub struct DomEmitOptions<'a> {
     pub is_ts: bool,
     /// Preserve ordinary template comments as `_createCommentVNode(...)`.
     pub comments: bool,
+    /// Preserve Vue's experimental `//` comments inside opening tag attrs.
+    pub experimental_in_tag_comments: bool,
     /// The shipped lane's `binding_metadata`, honoured in non-inline mode:
-    /// prefixed identifiers resolve to `$setup.` / `$props.` / `$data.` /
-    /// `$options.`, components and directives resolve to `$setup` members,
-    /// and the render signature carries all six arguments.
+    /// prefixed identifiers resolve to the same proxy members and signatures.
     pub bindings: Option<&'a BindingTable>,
 }
 
@@ -250,6 +249,7 @@ impl DomEmitOptions<'static> {
         scope_id: None,
         is_ts: false,
         comments: false,
+        experimental_in_tag_comments: false,
         bindings: None,
     };
 }
@@ -280,6 +280,7 @@ mod tests {
                 scope_id: None,
                 is_ts: false,
                 comments: false,
+                experimental_in_tag_comments: false,
                 bindings: None,
             }
         );

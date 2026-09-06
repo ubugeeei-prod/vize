@@ -10,7 +10,8 @@ use davinci_test_support::surface_fixture as common;
 use vize_relief::ErrorCode;
 use vize_s0::{Allocator, String};
 use vize_s1::{
-    ElementClose, HoleCounts, SurfaceChild, SurfaceTree, check_fidelity, hole_counts, parse, render,
+    ElementClose, HoleCounts, SurfaceChild, SurfaceParseOptions, SurfaceTree, check_fidelity,
+    hole_counts, parse, parse_with_options, render,
 };
 
 fn rendered(tree: &SurfaceTree<'_>) -> String {
@@ -299,4 +300,35 @@ fn in_tag_junk_rides_in_leading_under_a_diagnostic() {
     assert_eq!(element.open.attrs[0].name.leading, " / ");
     assert_eq!(errors.len(), 1);
     assert!(matches!(errors[0].code, ErrorCode::UnexpectedSolidusInTag));
+}
+
+#[test]
+fn experimental_in_tag_comments_ride_in_leading_without_holes() {
+    let source = concat!(
+        "<LegacySelect\n",
+        "  :options=\"options\"\n",
+        "  // @vue-expect-error legacy API\n",
+        "  :selected-id=\"selectedId\"\n",
+        "/>",
+    );
+    let allocator = Allocator::new();
+    let (tree, errors) = parse_with_options(
+        &allocator,
+        source,
+        SurfaceParseOptions {
+            experimental_in_tag_comments: true,
+        },
+    );
+
+    assert!(errors.is_empty());
+    assert_eq!(rendered(&tree), source);
+    assert_eq!(hole_counts(&tree), HoleCounts::default());
+    let SurfaceChild::Element(element) = &tree.children[0] else {
+        panic!("one element");
+    };
+    assert_eq!(element.open.attrs.len(), 2);
+    assert_eq!(
+        element.open.attrs[1].name.leading,
+        "\n  // @vue-expect-error legacy API\n  "
+    );
 }

@@ -19,6 +19,7 @@ const compilerOptionsProjectedToS2 = [
   "scope_id",
   "comments",
   "component_name",
+  "experimental_in_tag_comments",
   "inline",
   "binding_metadata",
   "is_ts",
@@ -28,7 +29,6 @@ const compilerOptionsHandledAroundS2 = ["source_map"];
 const compilerOptionsHeldAtDefault = [
   "hoist_static",
   "ssr",
-  "experimental_in_tag_comments",
   "experimental_patterned_template",
   "custom_renderer",
   "croquis",
@@ -45,6 +45,7 @@ const s2EmitOptionFields = [
   "scope_id",
   "is_ts",
   "comments",
+  "experimental_in_tag_comments",
   "bindings",
 ];
 

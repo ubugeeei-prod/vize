@@ -10,6 +10,13 @@ use crate::event::{Event, Recorder};
 use crate::render::check_fidelity;
 use crate::surface::SurfaceTree;
 
+/// Parse-time switches S1 owns for the S2 consumers.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct SurfaceParseOptions {
+    /// Accept Vue's experimental `//` comments inside opening tag attrs.
+    pub experimental_in_tag_comments: bool,
+}
+
 /// A recoverable tokenizer diagnostic, by code and byte offset. S1 keeps
 /// armature's codes verbatim; rendering them through the P2-1
 /// `Diagnostic` channel is the S1→S2 lowering's job (P2-8).
@@ -37,6 +44,15 @@ pub fn parse<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> (SurfaceTree<'a>, Vec<'a, SurfaceError>) {
+    parse_with_options(allocator, source, SurfaceParseOptions::default())
+}
+
+/// [`parse`] with explicit S1 parse switches.
+pub fn parse_with_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SurfaceParseOptions,
+) -> (SurfaceTree<'a>, Vec<'a, SurfaceError>) {
     assert!(
         u32::try_from(source.len()).is_ok(),
         "S1 sources are u32-addressed"
@@ -49,6 +65,7 @@ pub fn parse<'a>(
             errors: &mut errors,
         };
         let mut tokenizer = Tokenizer::new(source, recorder);
+        tokenizer.set_in_tag_comments(options.experimental_in_tag_comments);
         tokenizer.tokenize();
     }
     let tree = build(allocator, source, &events);

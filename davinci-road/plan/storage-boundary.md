@@ -64,7 +64,7 @@ or count and fails the gate instead of becoming a `no_std` escape from S0.
 | s1       | `alloc::vec::Vec`       |     0 |            0 |          0 |
 | s1       | `alloc::string::String` |     0 |            0 |          0 |
 | s1       | `vize_s0::String`       |     0 |            0 |          0 |
-| s1       | `vize_s0::Vec`          |     5 |            5 |         21 |
+| s1       | `vize_s0::Vec`          |     5 |            5 |         22 |
 | s1       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s2       | `alloc::vec::Vec`       |    10 |           22 |         44 |
 | s2       | `alloc::string::String` |     0 |            0 |          0 |

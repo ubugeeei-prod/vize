@@ -70,7 +70,7 @@ pub mod surface;
 mod build;
 mod event;
 
-pub use parse::{SurfaceError, parse};
+pub use parse::{SurfaceError, SurfaceParseOptions, parse, parse_with_options};
 pub use render::{HoleCounts, check_fidelity, hole_counts, render};
 pub use surface::{
     AttrValue, Attribute, CloseTag, Element, ElementClose, Interpolation, OpenTag, SurfaceChild,

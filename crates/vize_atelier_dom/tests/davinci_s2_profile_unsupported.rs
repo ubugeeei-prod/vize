@@ -32,13 +32,6 @@ fn profiled_unsupported_options_stay_on_compatibility_codegen() {
             },
         ),
         (
-            "in_tag_comments",
-            DomCompilerOptions {
-                experimental_in_tag_comments: true,
-                ..Default::default()
-            },
-        ),
-        (
             "custom_renderer",
             DomCompilerOptions {
                 custom_renderer: true,
@@ -48,12 +41,8 @@ fn profiled_unsupported_options_stay_on_compatibility_codegen() {
     ] {
         let profile = ProfileScope::enable();
         let allocator = Allocator::new();
-        let source = if label == "in_tag_comments" {
-            "<div // keep the parse extension covered\n  id=\"x\">{{ msg }}</div>"
-        } else {
-            "<div>{{ msg }}</div>"
-        };
-        let (_, errors, result) = compile_template_with_options(&allocator, source, options);
+        let (_, errors, result) =
+            compile_template_with_options(&allocator, "<div>{{ msg }}</div>", options);
         let counters = profile.finish();
 
         assert!(errors.is_empty(), "{label} compile errors: {errors:?}");
