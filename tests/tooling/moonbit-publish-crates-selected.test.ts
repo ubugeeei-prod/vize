@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { test } from "node:test";
 
 import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { assertPublishManifestIsSanitized } from "./support/fake-cargo-publish.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 function workspaceVersion(): string {
@@ -23,8 +24,15 @@ test("publish_crates can target the JSX and Patina handoff set", () => {
   const binDir = path.join(tempDir, "bin");
   const cargoLogPath = path.join(tempDir, "cargo.log");
   const curlLogPath = path.join(tempDir, "curl.log");
+  const selectedCrates = ["vize_atelier_jsx", "vize_patina"];
   const version = workspaceVersion();
   assert.ok(version);
+  const manifestSnapshots = new Map(
+    selectedCrates.map((crateName) => {
+      const manifestPath = path.join(repoRoot, "crates", crateName, "Cargo.toml");
+      return [manifestPath, fs.readFileSync(manifestPath, "utf8")] as const;
+    }),
+  );
 
   try {
     fs.mkdirSync(binDir, { recursive: true });
@@ -33,8 +41,10 @@ test("publish_crates can target the JSX and Patina handoff set", () => {
       "cargo",
       [
         "const fs = require('node:fs');",
+        "const path = require('node:path');",
         "const args = process.argv.slice(2);",
         "fs.appendFileSync(process.env.CARGO_LOG, args.join(' ') + '\\n');",
+        ...assertPublishManifestIsSanitized,
         "if (['package', 'publish', 'info'].includes(args[0])) process.exit(0);",
         "process.exit(1);",
       ].join("\n"),
@@ -73,9 +83,9 @@ test("publish_crates can target the JSX and Patina handoff set", () => {
       /Selected crate publish plan: vize_atelier_jsx, vize_patina/,
     );
     assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
-      "publish --locked --no-verify -p vize_atelier_jsx",
+      "publish --allow-dirty --no-verify -p vize_atelier_jsx",
       `info --registry crates-io vize_atelier_jsx@${version}`,
-      "publish --locked --no-verify -p vize_patina",
+      "publish --allow-dirty --no-verify -p vize_patina",
       `info --registry crates-io vize_patina@${version}`,
     ]);
 
@@ -96,8 +106,11 @@ test("publish_crates can target the JSX and Patina handoff set", () => {
     assert.equal(selectedDryRun.status, 0, selectedDryRun.stderr);
     assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
       `info --registry crates-io vize_atelier_jsx@${version}`,
-      "publish --dry-run --locked --no-verify -p vize_patina",
+      "publish --dry-run --allow-dirty --no-verify -p vize_patina",
     ]);
+    for (const [manifestPath, original] of manifestSnapshots) {
+      assert.equal(fs.readFileSync(manifestPath, "utf8"), original);
+    }
     assert.match(selectedDryRun.stdout, /registry-resolvable frontier vize_patina/i);
 
     for (const invalidArgs of [
@@ -115,6 +128,9 @@ test("publish_crates can target the JSX and Patina handoff set", () => {
       assert.equal(fs.readFileSync(cargoLogPath, "utf8"), "");
     }
   } finally {
+    for (const [manifestPath, original] of manifestSnapshots) {
+      fs.writeFileSync(manifestPath, original);
+    }
     rmSync(tempDir, { recursive: true, force: true });
   }
 });

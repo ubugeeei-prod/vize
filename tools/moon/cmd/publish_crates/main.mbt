@@ -67,54 +67,6 @@ fn known_release_crates() -> Array[String] {
   crates
 }
 
-/// Parses a positive integer from a string and falls back on invalid input.
-fn positive_int_or(value : String, fallback : Int) -> Int {
-  try {
-    let parsed = @string.parse_int(value)
-    if parsed > 0 {
-      parsed
-    } else {
-      fallback
-    }
-  } catch {
-    _ => fallback
-  }
-}
-
-/// Reads a retry-related integer from the environment with a validated default.
-fn env_positive_int(name : String, fallback : Int) -> Int {
-  match @env.get_env_var(name) {
-    Some(value) if value != "" => positive_int_or(value, fallback)
-    _ => fallback
-  }
-}
-
-/// Extracts the workspace package version from the root `Cargo.toml`.
-/// We only need the `[workspace.package]` version line, so a lightweight line
-/// scanner is more predictable than shelling out to another TOML parser.
-fn workspace_version_from_content(content : String) -> String? {
-  let mut section = ""
-  let lines : Array[String] = content.split("\n").map(view => view.to_owned()).collect()
-  for line in lines {
-    let trimmed = line.trim()
-    if trimmed.has_prefix("[") && trimmed.has_suffix("]") {
-      section = trimmed.to_owned()
-      continue
-    }
-    if section == "[workspace.package]" &&
-      trimmed.has_prefix("version = \"") &&
-      trimmed.has_suffix("\"") {
-      return Some(
-        trimmed
-          .to_owned()
-          .replace(old="version = \"", new="")
-          .replace_all(old="\"", new=""),
-      )
-    }
-  }
-  None
-}
-
 /// Main entry point for ordered and rerun-safe crates.io publishing.
 /// Each crate is published serially, retried on transient failure, and then
 /// verified through Cargo resolution before the next dependent crate is
@@ -243,10 +195,22 @@ async fn run_app() -> Int {
       }
     }
     println("Dry-running registry-resolvable frontier \{frontier} v\{version}...")
-    if @process.run(
+    let (manifest_path, original_manifest, original_lockfile) = match stage_publish_manifest(frontier) {
+      Some(staged) => staged
+      None => {
+        @stdio.stderr.write("Failed to prepare publish manifest for \{frontier}\n")
+        return 1
+      }
+    }
+    let dry_run_exit = @process.run(
       "cargo",
-      ["publish", "--dry-run", "--locked", "--no-verify", "-p", frontier],
-    ) != 0 {
+      ["publish", "--dry-run", "--allow-dirty", "--no-verify", "-p", frontier],
+    )
+    if !restore_publish_manifest(manifest_path, original_manifest, original_lockfile) {
+      @stdio.stderr.write("Failed to restore publish manifest for \{frontier}\n")
+      return 1
+    }
+    if dry_run_exit != 0 {
       @stdio.stderr.write("Crate publish dry-run failed for \{frontier} v\{version}.\n")
       return 1
     }
@@ -274,10 +238,21 @@ async fn run_app() -> Int {
     let mut attempt = 1
     let mut published = false
     while attempt <= max_attempts {
+      let (manifest_path, original_manifest, original_lockfile) = match stage_publish_manifest(crate_name) {
+        Some(staged) => staged
+        None => {
+          @stdio.stderr.write("Failed to prepare publish manifest for \{crate_name}\n")
+          return 1
+        }
+      }
       let (publish_exit, publish_stdout, publish_stderr) = @process.collect_output(
         "cargo",
-        ["publish", "--locked", "--no-verify", "-p", crate_name],
+        ["publish", "--allow-dirty", "--no-verify", "-p", crate_name],
       )
+      if !restore_publish_manifest(manifest_path, original_manifest, original_lockfile) {
+        @stdio.stderr.write("Failed to restore publish manifest for \{crate_name}\n")
+        return 1
+      }
       if publish_exit == 0 {
         published = true
         break

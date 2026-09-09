@@ -1,111 +1,13 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import fs, { mkdtempSync, rmSync } from "node:fs";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 
 import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { assertPublishManifestIsSanitized } from "./support/fake-cargo-publish.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
-
-type CargoMetadata = {
-  packages: CargoPackage[];
-};
-
-type CargoPackage = {
-  name: string;
-  dependencies: CargoDependency[];
-  manifest_path: string;
-  publish: string[] | null;
-  version: string;
-};
-
-type CargoDependency = { name: string; kind: string | null; req: string };
-
-function getScriptCrateArray(variableName: string): string[] {
-  const scriptPath = path.join(repoRoot, "tools", "moon", "cmd", "publish_crates", "main.mbt");
-  const script = fs.readFileSync(scriptPath, "utf8");
-  const arrayBody = script.match(
-    new RegExp(
-      `let ${variableName}\\s*:\\s*Array\\[String\\]\\s*=\\s*\\[(?<body>[\\s\\S]*?)\\n\\]`,
-      "m",
-    ),
-  )?.groups?.body;
-
-  assert.ok(arrayBody, `Failed to locate ${variableName} in publish_crates`);
-  return Array.from(arrayBody.matchAll(/"([^"]+)"/g), ([, crateName]) => crateName);
-}
-
-const getPublishedCrates = () => getScriptCrateArray("published_crates");
-const getManualPublishCrates = () => getScriptCrateArray("manual_publish_crates");
-const getBlockedByManualPublishCrates = () =>
-  getScriptCrateArray("blocked_by_manual_publish_crates");
-
-function getMetadata(): CargoMetadata {
-  return JSON.parse(
-    execFileSync("cargo", ["metadata", "--no-deps", "--format-version", "1"], {
-      cwd: repoRoot,
-      encoding: "utf8",
-    }),
-  ) as CargoMetadata;
-}
-
-test("publish_crates script keeps publishable workspace dependencies ordered", () => {
-  const publishedCrates = getPublishedCrates();
-  const publishOrder = new Map(publishedCrates.map((crateName, index) => [crateName, index]));
-  const packages = new Map(getMetadata().packages.map((pkg) => [pkg.name, pkg]));
-
-  for (const crateName of publishedCrates) {
-    const pkg = packages.get(crateName);
-    assert.ok(pkg, `Missing package metadata for ${crateName}`);
-
-    for (const dependency of pkg.dependencies) {
-      const dependencyOrder = publishOrder.get(dependency.name);
-      const strippedOnPublish = dependency.kind === "dev";
-      if (!packages.has(dependency.name) || strippedOnPublish) continue;
-      assert.ok(
-        dependencyOrder != null,
-        `${crateName} cannot depend on deferred workspace crate ${dependency.name}`,
-      );
-      const crateOrder = publishOrder.get(crateName);
-      assert.ok(crateOrder != null, `Missing publish order for ${crateName}`);
-      assert.ok(
-        dependencyOrder < crateOrder,
-        `${crateName} must be published after ${dependency.name}`,
-      );
-    }
-  }
-});
-
-test("publish_crates exactly partitions every publishable workspace crate", () => {
-  const releaseCrates = [
-    ...getPublishedCrates(),
-    ...getManualPublishCrates(),
-    ...getBlockedByManualPublishCrates(),
-  ];
-  const publishableCrates = getMetadata()
-    .packages.filter((pkg) =>
-      path.relative(repoRoot, pkg.manifest_path).startsWith(`crates${path.sep}`),
-    )
-    .filter((pkg) => pkg.publish === null || pkg.publish.length > 0)
-    .map((pkg) => pkg.name);
-
-  assert.equal(new Set(releaseCrates).size, releaseCrates.length, "release crate lists overlap");
-  assert.deepEqual(releaseCrates.toSorted(), publishableCrates.toSorted());
-});
-
-test("publish_crates defers crates that still need manual crates.io handoff", () => {
-  assert.deepEqual(getManualPublishCrates(), [
-    "vize_croquis_cf",
-    "vize_atelier_jsx",
-    "vize_marquette",
-    "vize_doctor",
-  ]);
-});
-
-test("publish_crates only blocks crates that depend on manual-publish exclusions", () => {
-  assert.deepEqual(getBlockedByManualPublishCrates(), ["vize_canon", "vize_patina"]);
-});
+import { getMetadata, getPublishedCrates } from "./support/publish-crates-plan.ts";
 
 test("publish_crates native script covers publish and idempotent dry-run modes", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-crates-"));
@@ -115,6 +17,14 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
   const publishedCrates = getPublishedCrates();
   const version = getMetadata().packages.find((pkg) => pkg.name === publishedCrates[0])?.version;
   assert.ok(version);
+  const manifestSnapshots = new Map(
+    publishedCrates.map((crateName) => {
+      const manifestPath = path.join(repoRoot, "crates", crateName, "Cargo.toml");
+      return [manifestPath, fs.readFileSync(manifestPath, "utf8")] as const;
+    }),
+  );
+  const cargoLockPath = path.join(repoRoot, "Cargo.lock");
+  const originalCargoLock = fs.readFileSync(cargoLockPath, "utf8");
 
   try {
     fs.mkdirSync(binDir, { recursive: true });
@@ -123,9 +33,12 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       "cargo",
       [
         "const fs = require('node:fs');",
+        "const path = require('node:path');",
         "const args = process.argv.slice(2);",
         "fs.appendFileSync(process.env.CARGO_LOG, args.join(' ') + '\\n');",
         "const [command] = args;",
+        ...assertPublishManifestIsSanitized,
+        "if (command === 'publish') fs.appendFileSync(path.join(process.cwd(), 'Cargo.lock'), '\\n# fake cargo publish lock mutation\\n');",
         "if (command === 'publish' && args.includes('--dry-run') && process.env.TEST_FAIL_PUBLISH_DRY_RUN) process.exit(1);",
         "const unresolved = (process.env.TEST_UNRESOLVED_CRATES || '').split(',');",
         "if (command === 'info' && unresolved.includes(args.at(-1).split('@')[0])) { console.error('not in registry index'); process.exit(1); }",
@@ -166,9 +79,9 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
 
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     const logLines = fs.readFileSync(cargoLogPath, "utf8").trim().split("\n");
-    assert.match(logLines[0] ?? "", /^publish --locked --no-verify -p vize_carton$/);
+    assert.match(logLines[0] ?? "", /^publish --allow-dirty --no-verify -p vize_carton$/);
     assert.match(logLines[1] ?? "", /^info --registry crates-io vize_carton@/);
-    assert.match(logLines.at(-2) ?? "", /^publish --locked --no-verify -p vize_fresco$/);
+    assert.match(logLines.at(-2) ?? "", /^publish --allow-dirty --no-verify -p vize_fresco$/);
     assert.match(logLines.at(-1) ?? "", /^info --registry crates-io vize_fresco@/);
 
     const runDryRun = (alreadyPublished: string[], extraEnv: Record<string, string> = {}) => {
@@ -187,7 +100,7 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       });
     };
     const expectedFrontier = (crateName: string) =>
-      ["publish", "--dry-run", "--locked", "--no-verify", "-p", crateName].join(" ");
+      ["publish", "--dry-run", "--allow-dirty", "--no-verify", "-p", crateName].join(" ");
     const expectedInfo = (crateName: string) => `info --registry crates-io ${crateName}@${version}`;
 
     const nonePublished = runDryRun([]);
@@ -273,6 +186,10 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       fs.readFileSync(cargoLogPath, "utf8").trim(),
       expectedFrontier(publishedCrates[0]),
     );
+    for (const [manifestPath, original] of manifestSnapshots) {
+      assert.equal(fs.readFileSync(manifestPath, "utf8"), original);
+    }
+    assert.equal(fs.readFileSync(cargoLockPath, "utf8"), originalCargoLock);
     const frontierCurlLog = fs.readFileSync(curlLogPath, "utf8").trim();
     assert.notEqual(frontierCurlLog, "");
     assert.equal(frontierCurlLog.split("\n").length, 1);
@@ -294,6 +211,10 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       assert.equal(fs.readFileSync(curlLogPath, "utf8"), "");
     }
   } finally {
+    for (const [manifestPath, original] of manifestSnapshots) {
+      fs.writeFileSync(manifestPath, original);
+    }
+    fs.writeFileSync(cargoLockPath, originalCargoLock);
     rmSync(tempDir, { recursive: true, force: true });
   }
 });
@@ -310,8 +231,10 @@ test("publish_crates treats a non-zero cargo publish exit as success when the cr
       "cargo",
       [
         "const fs = require('node:fs');",
+        "const path = require('node:path');",
         "const args = process.argv.slice(2);",
         "fs.appendFileSync(process.env.CARGO_LOG, args.join(' ') + '\\n');",
+        ...assertPublishManifestIsSanitized,
         "if (args[0] === 'publish' && args.at(-1) === 'vize_carton') process.exit(1);",
         "if (args[0] === 'publish' || args[0] === 'info') process.exit(0);",
         "process.exit(1);",
@@ -339,7 +262,7 @@ test("publish_crates treats a non-zero cargo publish exit as success when the cr
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     assert.match(result.stdout, /already resolvable despite a non-zero cargo publish exit/i);
     const logLines = fs.readFileSync(cargoLogPath, "utf8").trim().split("\n");
-    assert.equal(logLines[0], "publish --locked --no-verify -p vize_carton");
+    assert.equal(logLines[0], "publish --allow-dirty --no-verify -p vize_carton");
     assert.match(logLines[1] ?? "", /^info --registry crates-io vize_carton@/);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
