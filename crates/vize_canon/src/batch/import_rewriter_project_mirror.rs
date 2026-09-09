@@ -11,7 +11,7 @@ use super::virtual_rewrite::{
     is_rewritable_vue_specifier, resolve_source_path,
 };
 use super::{
-    ImportRewriter, ImportSourceMap, RewriteResult, authored_vue_ts,
+    ImportRewriter, ImportSourceMap, RewriteResult, VirtualAliasRewritePolicy, authored_vue_ts,
     rewrite_relative_vue_specifier, source_may_contain_relative_specifier,
 };
 
@@ -23,6 +23,25 @@ impl ImportRewriter {
         roots: (&Path, &Path),
         source_dir: Option<&Path>,
         mirrorable_project_files: Option<&FxHashSet<PathBuf>>,
+    ) -> RewriteResult {
+        self.rewrite_generated_for_virtual_project_with_alias_policy(
+            source,
+            source_type,
+            roots,
+            source_dir,
+            mirrorable_project_files,
+            None,
+        )
+    }
+
+    pub(in crate::batch) fn rewrite_generated_for_virtual_project_with_alias_policy(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        roots: (&Path, &Path),
+        source_dir: Option<&Path>,
+        mirrorable_project_files: Option<&FxHashSet<PathBuf>>,
+        alias_rewrite_policy: Option<&VirtualAliasRewritePolicy>,
     ) -> RewriteResult {
         let project_root = roots.0.to_string_lossy();
         let relative_candidate =
@@ -38,8 +57,14 @@ impl ImportRewriter {
         }
 
         self.rewrite_with(source, source_type, |path, _| {
-            self.rewrite_module_specifier_with_missing_vue_policy(path, source_dir, true, true)
-                .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
+            self.rewrite_module_specifier_with_missing_vue_policy_and_alias_policy(
+                path,
+                source_dir,
+                true,
+                true,
+                alias_rewrite_policy,
+            )
+            .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
                 .or_else(|| {
                     self.rewrite_known_virtual_project_specifier(
                         path,
@@ -66,6 +91,7 @@ impl ImportRewriter {
             source_dir,
             false,
             None,
+            None,
         )
     }
 
@@ -83,6 +109,26 @@ impl ImportRewriter {
             source_dir,
             true,
             None,
+            None,
+        )
+    }
+
+    pub(crate) fn rewrite_for_package_shadow_with_alias_policy(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        roots: (&Path, &Path),
+        source_dir: Option<&Path>,
+        alias_rewrite_policy: Option<&VirtualAliasRewritePolicy>,
+    ) -> RewriteResult {
+        self.rewrite_for_virtual_project_with_policy(
+            source,
+            source_type,
+            roots,
+            source_dir,
+            true,
+            None,
+            alias_rewrite_policy,
         )
     }
 
@@ -101,6 +147,27 @@ impl ImportRewriter {
             source_dir,
             false,
             mirrorable_project_files,
+            None,
+        )
+    }
+
+    pub(in crate::batch) fn rewrite_for_virtual_project_with_alias_policy(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        roots: (&Path, &Path),
+        source_dir: Option<&Path>,
+        alias_rewrite_policy: Option<&VirtualAliasRewritePolicy>,
+        mirrorable_project_files: Option<&FxHashSet<PathBuf>>,
+    ) -> RewriteResult {
+        self.rewrite_for_virtual_project_with_policy(
+            source,
+            source_type,
+            roots,
+            source_dir,
+            false,
+            mirrorable_project_files,
+            alias_rewrite_policy,
         )
     }
 
@@ -112,6 +179,7 @@ impl ImportRewriter {
         source_dir: Option<&Path>,
         preserve_relative_declarations: bool,
         mirrorable_project_files: Option<&FxHashSet<PathBuf>>,
+        alias_rewrite_policy: Option<&VirtualAliasRewritePolicy>,
     ) -> RewriteResult {
         let project_root = roots.0.to_string_lossy();
         let dts_candidate = source_dir.is_some() && source_may_contain_relative_specifier(source);
@@ -129,6 +197,7 @@ impl ImportRewriter {
                 source_dir,
                 preserve_relative_declarations,
                 mirrorable_project_files,
+                alias_rewrite_policy,
             )
         })
     }
@@ -140,6 +209,7 @@ impl ImportRewriter {
         source_dir: Option<&Path>,
         preserve_relative_declarations: bool,
         mirrorable_project_files: Option<&FxHashSet<PathBuf>>,
+        alias_rewrite_policy: Option<&VirtualAliasRewritePolicy>,
     ) -> Option<String> {
         if let Some(rewritten) =
             authored_vue_ts::rewrite_authored_or_missing_vue_import(path, source_dir, true, false)
@@ -177,7 +247,9 @@ impl ImportRewriter {
             }
             return Some(rewritten);
         }
-        if is_rewritable_vue_specifier(path) {
+        if is_rewritable_vue_specifier(path)
+            && alias_rewrite_policy.is_none_or(|policy| policy.should_rewrite_vue_specifier(path))
+        {
             Some(cstr!("{path}.ts"))
         } else {
             None

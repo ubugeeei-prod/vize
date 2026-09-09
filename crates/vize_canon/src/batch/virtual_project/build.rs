@@ -16,13 +16,15 @@ use crate::virtual_ts::VizeMapping;
 
 mod context;
 mod css_modules;
+#[path = "script_build.rs"]
+mod script_build;
 pub(super) use super::paths::source_type_for_path;
 pub(super) use context::{ScriptBuildContext, VirtualBuildContext};
 pub(super) use css_modules::virtual_ts_options_for_descriptor;
+pub(super) use script_build::build_script_registered_file;
 
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
-use super::esm_declaration_spelling::should_preserve_esm_declaration_spelling;
 use super::javascript_sfc::descriptor_is_unchecked_javascript;
 pub(super) use super::javascript_sfc::descriptor_uses_jsx_script;
 use super::jsx_build::build_jsx_registered_file;
@@ -144,12 +146,15 @@ pub(super) fn build_vue_registered_file(
     }
     let rewritten = profile!(
         "canon.import.rewrite.vue",
-        context.rewriter.rewrite_generated_for_virtual_project(
+        context
+            .rewriter
+            .rewrite_generated_for_virtual_project_with_alias_policy(
             &code,
             source_type,
             (context.project_root, context.virtual_root),
             path.parent(),
             context.mirrorable_project_files,
+            context.alias_rewrite_policy,
         )
     );
     let source_map = CompositeSourceMap::new_vue(
@@ -194,61 +199,6 @@ pub(super) fn build_vue_registered_file(
         ),
         diagnostics,
         unchecked_javascript: descriptor_is_unchecked_javascript(&descriptor),
-    })
-}
-
-pub(super) fn build_script_registered_file(
-    path: &Path,
-    content: &str,
-    source_type: SourceType,
-    context: ScriptBuildContext<'_>,
-) -> CorsaResult<RegisteredFile> {
-    let rewritten = profile!("canon.import.rewrite.script", {
-        if context.preserve_relative_declarations {
-            context.rewriter.rewrite_for_package_shadow(
-                content,
-                source_type,
-                context.roots,
-                path.parent(),
-            )
-        } else {
-            context
-                .rewriter
-                .rewrite_for_virtual_project_with_mirrorable_files(
-                    content,
-                    source_type,
-                    context.roots,
-                    path.parent(),
-                    context.mirrorable_project_files,
-                )
-        }
-    });
-    let preserve_declaration_spelling = context.preserve_declaration_spelling
-        || should_preserve_esm_declaration_spelling(path, content);
-    let virtual_path = super::paths::script_virtual_path(
-        context.roots,
-        path,
-        content,
-        preserve_declaration_spelling,
-    )?;
-
-    Ok(RegisteredFile {
-        file: VirtualFile {
-            content: rewritten.code,
-            source_map: CompositeSourceMap::new_script(rewritten.source_map),
-            original_path: path.to_path_buf(),
-            virtual_path,
-        },
-        extra_virtual_files: Vec::new(),
-        original_content: content.to_compact_string(),
-        passthrough_files: collect_passthrough_modules(
-            path,
-            content,
-            context.roots.0,
-            context.roots.1,
-        ),
-        diagnostics: Vec::new(),
-        unchecked_javascript: false,
     })
 }
 

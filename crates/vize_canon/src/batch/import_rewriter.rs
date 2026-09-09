@@ -22,6 +22,10 @@ use collect::{ModuleSpecifierCollector, collect_specifier_occurrences};
 mod virtual_rewrite;
 pub(super) use virtual_rewrite::rewrite_relative_vue_specifier;
 
+#[path = "import_rewriter_virtual_alias.rs"]
+mod virtual_alias;
+pub(crate) use virtual_alias::VirtualAliasRewritePolicy;
+
 #[path = "import_rewriter_dts.rs"]
 mod dts_rewrite;
 
@@ -59,6 +63,23 @@ impl ImportRewriter {
         source_dir: Option<&Path>,
         preserve_missing_vue_diagnostics: bool,
     ) -> RewriteResult {
+        self.rewrite_with_missing_vue_policy_and_alias_policy(
+            source,
+            source_type,
+            source_dir,
+            preserve_missing_vue_diagnostics,
+            None,
+        )
+    }
+
+    pub(crate) fn rewrite_with_missing_vue_policy_and_alias_policy(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        source_dir: Option<&Path>,
+        preserve_missing_vue_diagnostics: bool,
+        alias_rewrite_policy: Option<&VirtualAliasRewritePolicy>,
+    ) -> RewriteResult {
         let relative_candidate =
             source_dir.is_some() && source_may_contain_relative_specifier(source);
         if !source.contains(".vue") && !relative_candidate {
@@ -69,11 +90,12 @@ impl ImportRewriter {
         }
 
         self.rewrite_with(source, source_type, |path, _| {
-            self.rewrite_module_specifier_with_missing_vue_policy(
+            self.rewrite_module_specifier_with_missing_vue_policy_and_alias_policy(
                 path,
                 source_dir,
                 preserve_missing_vue_diagnostics,
                 true,
+                alias_rewrite_policy,
             )
             .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
         })

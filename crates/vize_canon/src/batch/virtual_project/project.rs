@@ -37,6 +37,7 @@ impl VirtualProject {
             tsconfig_path: None,
             preserve_unused_diagnostics: false,
             source_policy: Default::default(),
+            alias_rewrite_policy: Default::default(),
             virtual_ts_options: VirtualTsOptions::default(),
             diagnostic_paths: FxHashSet::default(),
             declaration_roots: None,
@@ -93,6 +94,7 @@ impl VirtualProject {
         project.preserve_unused_diagnostics =
             project.resolve_tsconfig_preserves_unused_diagnostics();
         project.source_policy = project.resolve_source_file_policy();
+        project.alias_rewrite_policy = project.resolve_alias_rewrite_policy();
         Ok(project)
     }
 
@@ -129,6 +131,7 @@ impl VirtualProject {
                 preserve_declaration_spelling: self.session_scripts,
                 mirrorable_project_files: None,
                 rewriter: &self.rewriter,
+                alias_rewrite_policy: Some(self.alias_rewrite_policy()),
                 runtime_prop_resolve_cache: None,
             },
         )?;
@@ -188,6 +191,7 @@ impl VirtualProject {
             preserve_declaration_spelling: self.session_scripts,
             mirrorable_project_files: Some(&mirrorable_project_files),
             rewriter: &self.rewriter,
+            alias_rewrite_policy: Some(self.alias_rewrite_policy()),
             runtime_prop_resolve_cache: Some(&runtime_prop_resolve_cache),
         };
         let package_paths = self
@@ -236,6 +240,7 @@ impl VirtualProject {
                 preserve_declaration_spelling: self.session_scripts,
                 mirrorable_project_files: None,
                 rewriter: &self.rewriter,
+                alias_rewrite_policy: Some(self.alias_rewrite_policy()),
                 runtime_prop_resolve_cache: None,
             },
         )?;
@@ -274,6 +279,7 @@ impl VirtualProject {
                 preserve_relative_declarations: self.is_package_route_path(path),
                 preserve_declaration_spelling: self.session_scripts,
                 mirrorable_project_files: None,
+                alias_rewrite_policy: Some(self.alias_rewrite_policy()),
             },
         )?;
         self.absorb_registered_file(registered);

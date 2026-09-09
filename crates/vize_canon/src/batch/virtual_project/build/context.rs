@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::FxHashSet;
 
-use crate::batch::import_rewriter::ImportRewriter;
+use crate::batch::import_rewriter::{ImportRewriter, VirtualAliasRewritePolicy};
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 use super::super::setup_props::RuntimePropResolveCache;
@@ -15,6 +15,8 @@ pub(in crate::batch::virtual_project) struct ScriptBuildContext<'a> {
     pub(in crate::batch::virtual_project) preserve_relative_declarations: bool,
     pub(in crate::batch::virtual_project) preserve_declaration_spelling: bool,
     pub(in crate::batch::virtual_project) mirrorable_project_files: Option<&'a FxHashSet<PathBuf>>,
+    pub(in crate::batch::virtual_project) alias_rewrite_policy:
+        Option<&'a VirtualAliasRewritePolicy>,
 }
 
 #[derive(Clone, Copy)]
@@ -35,6 +37,8 @@ pub(in crate::batch::virtual_project) struct VirtualBuildContext<'a> {
     pub(in crate::batch::virtual_project) preserve_declaration_spelling: bool,
     pub(in crate::batch::virtual_project) mirrorable_project_files: Option<&'a FxHashSet<PathBuf>>,
     pub(in crate::batch::virtual_project) rewriter: &'a ImportRewriter,
+    pub(in crate::batch::virtual_project) alias_rewrite_policy:
+        Option<&'a VirtualAliasRewritePolicy>,
     pub(in crate::batch::virtual_project) runtime_prop_resolve_cache:
         Option<&'a RuntimePropResolveCache>,
 }
@@ -47,6 +51,7 @@ impl<'a> VirtualBuildContext<'a> {
             preserve_relative_declarations: self.preserve_relative_declarations,
             preserve_declaration_spelling: self.preserve_declaration_spelling,
             mirrorable_project_files: self.mirrorable_project_files,
+            alias_rewrite_policy: self.alias_rewrite_policy,
         }
     }
 }
