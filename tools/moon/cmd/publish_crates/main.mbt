@@ -4,6 +4,10 @@
 /// single place. The script is deliberately idempotent: if a crate version is
 /// already published, it skips the publish call and only waits until the crate
 /// becomes resolvable from crates.io index queries.
+///
+/// Cargo's local publish verification cannot topologically satisfy this
+/// workspace's exact-version dev-dependency cycles, so release CI performs
+/// workspace validation separately and this script publishes with `--no-verify`.
 
 /// Ordered list of publishable crates. The order is topological because each
 /// crate can require exact versions of earlier workspace crates.
@@ -241,7 +245,7 @@ async fn run_app() -> Int {
     println("Dry-running registry-resolvable frontier \{frontier} v\{version}...")
     if @process.run(
       "cargo",
-      ["publish", "--dry-run", "--locked", "-p", frontier],
+      ["publish", "--dry-run", "--locked", "--no-verify", "-p", frontier],
     ) != 0 {
       @stdio.stderr.write("Crate publish dry-run failed for \{frontier} v\{version}.\n")
       return 1
@@ -272,7 +276,7 @@ async fn run_app() -> Int {
     while attempt <= max_attempts {
       let (publish_exit, publish_stdout, publish_stderr) = @process.collect_output(
         "cargo",
-        ["publish", "--locked", "-p", crate_name],
+        ["publish", "--locked", "--no-verify", "-p", crate_name],
       )
       if publish_exit == 0 {
         published = true

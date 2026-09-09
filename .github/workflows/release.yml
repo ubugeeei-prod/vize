@@ -572,7 +572,7 @@ jobs:
     name: Release @vizejs/native to npm
     runs-on: ubuntu-24.04
     needs: [plan-release-platforms, build-native-all, release-preflight]
-    timeout-minutes: 30
+    timeout-minutes: 60
     environment: npm
     permissions: { contents: read, id-token: write }
     steps:

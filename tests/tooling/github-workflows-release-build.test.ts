@@ -59,7 +59,7 @@ test("release workflow jobs cap runtime with explicit timeouts", () => {
     ["build-wasm-package", 30],
     ["build-native-all", 90],
     ["smoke-release-packages", 30],
-    ["release-npm-native", 30],
+    ["release-npm-native", 60],
     ["release-npm-fresco-native", 20],
     ["release-npm-wasm", 30],
     ["release-npm-vite-plugin", 15],

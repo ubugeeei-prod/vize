@@ -73,9 +73,9 @@ test("publish_crates can target the JSX and Patina handoff set", () => {
       /Selected crate publish plan: vize_atelier_jsx, vize_patina/,
     );
     assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
-      "publish --locked -p vize_atelier_jsx",
+      "publish --locked --no-verify -p vize_atelier_jsx",
       `info --registry crates-io vize_atelier_jsx@${version}`,
-      "publish --locked -p vize_patina",
+      "publish --locked --no-verify -p vize_patina",
       `info --registry crates-io vize_patina@${version}`,
     ]);
 
@@ -96,7 +96,7 @@ test("publish_crates can target the JSX and Patina handoff set", () => {
     assert.equal(selectedDryRun.status, 0, selectedDryRun.stderr);
     assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
       `info --registry crates-io vize_atelier_jsx@${version}`,
-      "publish --dry-run --locked -p vize_patina",
+      "publish --dry-run --locked --no-verify -p vize_patina",
     ]);
     assert.match(selectedDryRun.stdout, /registry-resolvable frontier vize_patina/i);
 

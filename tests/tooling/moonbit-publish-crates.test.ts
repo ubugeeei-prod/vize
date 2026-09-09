@@ -166,9 +166,9 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
 
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     const logLines = fs.readFileSync(cargoLogPath, "utf8").trim().split("\n");
-    assert.match(logLines[0] ?? "", /^publish --locked -p vize_carton$/);
+    assert.match(logLines[0] ?? "", /^publish --locked --no-verify -p vize_carton$/);
     assert.match(logLines[1] ?? "", /^info --registry crates-io vize_carton@/);
-    assert.match(logLines.at(-2) ?? "", /^publish --locked -p vize_fresco$/);
+    assert.match(logLines.at(-2) ?? "", /^publish --locked --no-verify -p vize_fresco$/);
     assert.match(logLines.at(-1) ?? "", /^info --registry crates-io vize_fresco@/);
 
     const runDryRun = (alreadyPublished: string[], extraEnv: Record<string, string> = {}) => {
@@ -187,7 +187,7 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       });
     };
     const expectedFrontier = (crateName: string) =>
-      ["publish", "--dry-run", "--locked", "-p", crateName].join(" ");
+      ["publish", "--dry-run", "--locked", "--no-verify", "-p", crateName].join(" ");
     const expectedInfo = (crateName: string) => `info --registry crates-io ${crateName}@${version}`;
 
     const nonePublished = runDryRun([]);
@@ -339,7 +339,7 @@ test("publish_crates treats a non-zero cargo publish exit as success when the cr
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     assert.match(result.stdout, /already resolvable despite a non-zero cargo publish exit/i);
     const logLines = fs.readFileSync(cargoLogPath, "utf8").trim().split("\n");
-    assert.equal(logLines[0], "publish --locked -p vize_carton");
+    assert.equal(logLines[0], "publish --locked --no-verify -p vize_carton");
     assert.match(logLines[1] ?? "", /^info --registry crates-io vize_carton@/);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
