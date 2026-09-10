@@ -7,20 +7,28 @@ import { mountInteraction } from "../../../testing/mount.ts";
 import {
   localeTextMatches,
   normalizeLocaleText,
+  resolveCalendar,
   resolveDirection,
   resolveDisplayNames,
   resolveLocale,
+  resolveNumberingSystem,
   resolveNumberFormatter,
   resolveSearchCollator,
+  resolveTimeZone,
+  resolveTimeZoneDisambiguation,
+  useCalendar,
   useCollator,
   useDateTimeFormatter,
   useDirection,
   useDisplayNames,
   useListFormatter,
   useLocale,
+  useNumberingSystem,
   useNumberFormatter,
   useRelativeTimeFormatter,
   useSearchCollator,
+  useTimeZone,
+  useTimeZoneDisambiguation,
 } from "./locale.ts";
 import LocaleProvider from "./locale-provider.vue";
 
@@ -51,6 +59,101 @@ test("publishes an explicit rtl locale", async () => {
   handle.unmount();
 });
 
+test("publishes formatter defaults through context and slot props", () => {
+  let snapshot:
+    | {
+        readonly locale: string;
+        readonly direction: string;
+        readonly numberingSystem: string | undefined;
+        readonly calendar: string | undefined;
+        readonly timeZone: string;
+        readonly timeZoneDisambiguation: string;
+        readonly numberSystem: string;
+        readonly dateCalendar: string;
+        readonly dateNumberingSystem: string;
+        readonly dateTimeZone: string;
+        readonly relativeNumberingSystem: string;
+      }
+    | undefined;
+
+  const Probe = defineComponent({
+    name: "LocaleDefaultsProbe",
+    setup() {
+      const locale = useLocale();
+      const direction = useDirection();
+      const numberingSystem = useNumberingSystem();
+      const calendar = useCalendar();
+      const timeZone = useTimeZone();
+      const timeZoneDisambiguation = useTimeZoneDisambiguation();
+      const number = useNumberFormatter();
+      const dateTime = useDateTimeFormatter({ dateStyle: "full" });
+      const relativeTime = useRelativeTimeFormatter({ numeric: "always" });
+
+      return () => {
+        snapshot = {
+          locale: locale.value,
+          direction: direction.value,
+          numberingSystem: numberingSystem.value,
+          calendar: calendar.value,
+          timeZone: timeZone.value,
+          timeZoneDisambiguation: timeZoneDisambiguation.value,
+          numberSystem: number.value.resolvedOptions().numberingSystem,
+          dateCalendar: dateTime.value.resolvedOptions().calendar,
+          dateNumberingSystem: dateTime.value.resolvedOptions().numberingSystem,
+          dateTimeZone: dateTime.value.resolvedOptions().timeZone,
+          relativeNumberingSystem: relativeTime.value.resolvedOptions().numberingSystem,
+        };
+        return h("span", snapshot.dateTimeZone);
+      };
+    },
+  });
+
+  const handle = mountInteraction(LocaleProvider, {
+    props: {
+      calendar: "japanese",
+      direction: "auto",
+      locale: "ja-JP",
+      numberingSystem: "arab",
+      timeZone: "Asia/Tokyo",
+      timeZoneDisambiguation: "later",
+    },
+    slots: {
+      default: (props: {
+        readonly locale: string;
+        readonly direction: string;
+        readonly numberingSystem: string | undefined;
+        readonly calendar: string | undefined;
+        readonly timeZone: string;
+        readonly timeZoneDisambiguation: string;
+      }) =>
+        h("section", [
+          `${props.locale}:${props.numberingSystem}:${props.calendar}:${props.timeZone}:${props.timeZoneDisambiguation}`,
+          h(Probe),
+        ]),
+    },
+  });
+
+  assert.equal(handle.root().getAttribute("data-vize-ui-numbering-system"), "arab");
+  assert.equal(handle.root().getAttribute("data-vize-ui-calendar"), "japanese");
+  assert.equal(handle.root().getAttribute("data-vize-ui-time-zone"), "Asia/Tokyo");
+  assert.equal(handle.root().getAttribute("data-vize-ui-time-zone-disambiguation"), "later");
+  assert.deepEqual(snapshot, {
+    locale: "ja-JP",
+    direction: "ltr",
+    numberingSystem: "arab",
+    calendar: "japanese",
+    timeZone: "Asia/Tokyo",
+    timeZoneDisambiguation: "later",
+    numberSystem: "arab",
+    dateCalendar: "japanese",
+    dateNumberingSystem: "arab",
+    dateTimeZone: "Asia/Tokyo",
+    relativeNumberingSystem: "arab",
+  });
+  assert.match(handle.root().textContent ?? "", /ja-JP:arab:japanese:Asia\/Tokyo:later/);
+  handle.unmount();
+});
+
 test("resolves auto direction from the locale", () => {
   const resolved = resolveDirection("auto", "ar");
   assert.ok(resolved === "rtl" || resolved === "ltr");
@@ -61,11 +164,66 @@ test("resolves auto direction from the locale", () => {
 test("canonicalizes invalid locale tags before formatter construction", () => {
   assert.equal(resolveLocale(" ja-jp "), "ja-JP");
   assert.equal(resolveLocale("not a locale"), "en-US");
+  assert.equal(resolveNumberingSystem(" arab "), "arab");
+  assert.equal(resolveNumberingSystem("foo"), undefined);
+  assert.equal(resolveNumberingSystem("not a numbering system"), undefined);
+  assert.equal(resolveCalendar(" japanese "), "japanese");
+  assert.equal(resolveCalendar("foo"), undefined);
+  assert.equal(resolveCalendar("islamicc"), "islamic-civil");
+  assert.equal(resolveCalendar("not a calendar"), undefined);
+  assert.equal(resolveTimeZone(" asia/tokyo "), "Asia/Tokyo");
+  assert.equal(resolveTimeZone("not a time zone"), "UTC");
+  assert.equal(resolveTimeZoneDisambiguation("reject"), "reject");
+  assert.equal(resolveTimeZoneDisambiguation("nearest" as never), "compatible");
   assert.equal(resolveNumberFormatter("not a locale").resolvedOptions().locale, "en-US");
   assert.equal(
     resolveDisplayNames("not a locale", { type: "region" }).resolvedOptions().locale,
     "en-US",
   );
+});
+
+test("unsupported provider formatter defaults preserve locale extensions", () => {
+  let snapshot:
+    | {
+        readonly numberSystem: string;
+        readonly dateCalendar: string;
+        readonly dateNumberingSystem: string;
+      }
+    | undefined;
+
+  const Probe = defineComponent({
+    name: "LocaleUnsupportedDefaultsProbe",
+    setup() {
+      const number = useNumberFormatter();
+      const dateTime = useDateTimeFormatter({ dateStyle: "short" });
+      return () => {
+        snapshot = {
+          numberSystem: number.value.resolvedOptions().numberingSystem,
+          dateCalendar: dateTime.value.resolvedOptions().calendar,
+          dateNumberingSystem: dateTime.value.resolvedOptions().numberingSystem,
+        };
+        return h("span", snapshot.dateCalendar);
+      };
+    },
+  });
+
+  const handle = mountInteraction(LocaleProvider, {
+    props: {
+      calendar: "foo",
+      locale: "ja-JP-u-ca-japanese-nu-fullwide",
+      numberingSystem: "foo",
+    },
+    slots: { default: () => h(Probe) },
+  });
+
+  assert.equal(handle.root().getAttribute("data-vize-ui-numbering-system"), null);
+  assert.equal(handle.root().getAttribute("data-vize-ui-calendar"), null);
+  assert.deepEqual(snapshot, {
+    numberSystem: "fullwide",
+    dateCalendar: "japanese",
+    dateNumberingSystem: "fullwide",
+  });
+  handle.unmount();
 });
 
 test("resolves formatters from the provider locale and explicit options", () => {
@@ -287,27 +445,68 @@ test("updates formatter composables when provider locale or options change", asy
 });
 
 test("normalizes invalid provider locales before publishing context", () => {
-  let formattedLocale: string | undefined;
+  let formatted:
+    | {
+        readonly locale: string;
+        readonly direction: string;
+        readonly numberLocale: string;
+        readonly numberingSystem: string | undefined;
+        readonly calendar: string | undefined;
+        readonly timeZone: string;
+        readonly timeZoneDisambiguation: string;
+      }
+    | undefined;
   const Probe = defineComponent({
     name: "InvalidLocaleProbe",
     setup() {
       const locale = useLocale();
       const direction = useDirection();
+      const numberingSystem = useNumberingSystem();
+      const calendar = useCalendar();
+      const timeZone = useTimeZone();
+      const timeZoneDisambiguation = useTimeZoneDisambiguation();
       const number = useNumberFormatter();
       return () => {
-        formattedLocale = number.value.resolvedOptions().locale;
-        return h("span", `${locale.value}:${direction.value}:${formattedLocale}`);
+        formatted = {
+          locale: locale.value,
+          direction: direction.value,
+          numberLocale: number.value.resolvedOptions().locale,
+          numberingSystem: numberingSystem.value,
+          calendar: calendar.value,
+          timeZone: timeZone.value,
+          timeZoneDisambiguation: timeZoneDisambiguation.value,
+        };
+        return h("span", `${formatted.locale}:${formatted.direction}:${formatted.numberLocale}`);
       };
     },
   });
 
   const handle = mountInteraction(LocaleProvider, {
-    props: { direction: "auto", locale: "not a locale" },
+    props: {
+      calendar: "not a calendar",
+      direction: "auto",
+      locale: "not a locale",
+      numberingSystem: "not a numbering system",
+      timeZone: "not a time zone",
+      timeZoneDisambiguation: "nearest" as never,
+    },
     slots: { default: () => h(Probe) },
   });
 
   assert.equal(handle.root().getAttribute("lang"), "en-US");
   assert.equal(handle.root().getAttribute("dir"), "ltr");
+  assert.equal(handle.root().getAttribute("data-vize-ui-numbering-system"), null);
+  assert.equal(handle.root().getAttribute("data-vize-ui-calendar"), null);
+  assert.equal(handle.root().getAttribute("data-vize-ui-time-zone"), "UTC");
+  assert.deepEqual(formatted, {
+    locale: "en-US",
+    direction: "ltr",
+    numberLocale: "en-US",
+    numberingSystem: undefined,
+    calendar: undefined,
+    timeZone: "UTC",
+    timeZoneDisambiguation: "compatible",
+  });
   assert.equal(handle.root().textContent, "en-US:ltr:en-US");
   handle.unmount();
 });
@@ -330,6 +529,10 @@ test("falls back without a provider", () => {
 test("rejects composable use outside setup", () => {
   assert.throws(() => useLocale(), /VIZE_UI_LOCALE_SETUP/);
   assert.throws(() => useDirection(), /VIZE_UI_LOCALE_SETUP/);
+  assert.throws(() => useNumberingSystem(), /VIZE_UI_LOCALE_SETUP/);
+  assert.throws(() => useCalendar(), /VIZE_UI_LOCALE_SETUP/);
+  assert.throws(() => useTimeZone(), /VIZE_UI_LOCALE_SETUP/);
+  assert.throws(() => useTimeZoneDisambiguation(), /VIZE_UI_LOCALE_SETUP/);
   assert.throws(() => useNumberFormatter(), /VIZE_UI_LOCALE_SETUP/);
   assert.throws(() => useDateTimeFormatter(), /VIZE_UI_LOCALE_SETUP/);
   assert.throws(() => useListFormatter(), /VIZE_UI_LOCALE_SETUP/);

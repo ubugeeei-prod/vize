@@ -4,7 +4,12 @@ import { test } from "vite-plus/test";
 import { createSSRApp, defineComponent, h } from "vue";
 import { renderToString } from "vue/server-renderer";
 
-import { useDisplayNames, useNumberFormatter, useSearchCollator } from "./locale.ts";
+import {
+  useDateTimeFormatter,
+  useDisplayNames,
+  useNumberFormatter,
+  useSearchCollator,
+} from "./locale.ts";
 import LocaleProvider from "./locale-provider.vue";
 
 const SsrProbe = defineComponent({
@@ -24,6 +29,77 @@ test("renders byte-identical locale markup across isolated SSR requests", async 
   assert.match(outputs[0], /lang="ja-JP"/);
   assert.match(outputs[0], /dir="ltr"/);
   assert.match(outputs[0], /data-vize-ui="locale"/);
+});
+
+type SsrFormatterDefaults = {
+  readonly calendar: string;
+  readonly locale: string;
+  readonly numberingSystem: string;
+  readonly timeZone: string;
+  readonly timeZoneDisambiguation: "earlier" | "later";
+};
+
+function createFormatterDefaultsProbe(defaults: SsrFormatterDefaults) {
+  const Inner = defineComponent({
+    name: "LocaleDefaultsSsrInner",
+    setup() {
+      const dateTime = useDateTimeFormatter({ dateStyle: "short" });
+      return () => dateTime.value.resolvedOptions().timeZone;
+    },
+  });
+
+  return defineComponent({
+    name: "LocaleDefaultsSsrProbe",
+    setup() {
+      return () =>
+        h(LocaleProvider, defaults, {
+          default: (props: {
+            readonly calendar: string | undefined;
+            readonly numberingSystem: string | undefined;
+            readonly timeZone: string;
+            readonly timeZoneDisambiguation: string;
+          }) =>
+            h("span", [
+              `${props.numberingSystem}:${props.calendar}:${props.timeZone}:${props.timeZoneDisambiguation}:`,
+              h(Inner),
+            ]),
+        });
+    },
+  });
+}
+
+test("isolates locale formatter defaults during concurrent SSR", async () => {
+  const first = {
+    calendar: "japanese",
+    locale: "ja-JP",
+    numberingSystem: "arab",
+    timeZone: "Asia/Tokyo",
+    timeZoneDisambiguation: "earlier",
+  } as const;
+  const second = {
+    calendar: "gregory",
+    locale: "en-US",
+    numberingSystem: "latn",
+    timeZone: "UTC",
+    timeZoneDisambiguation: "later",
+  } as const;
+
+  const outputs = await Promise.all([
+    renderToString(createSSRApp(createFormatterDefaultsProbe(first))),
+    renderToString(createSSRApp(createFormatterDefaultsProbe(second))),
+  ]);
+  assert.match(outputs[0], /data-vize-ui-numbering-system="arab"/);
+  assert.match(outputs[0], /data-vize-ui-calendar="japanese"/);
+  assert.match(outputs[0], /data-vize-ui-time-zone="Asia\/Tokyo"/);
+  assert.match(outputs[0], /data-vize-ui-time-zone-disambiguation="earlier"/);
+  assert.match(outputs[0], />arab:japanese:Asia\/Tokyo:earlier:Asia\/Tokyo</);
+  assert.doesNotMatch(outputs[0], /latn:gregory:UTC:later/);
+  assert.match(outputs[1], /data-vize-ui-numbering-system="latn"/);
+  assert.match(outputs[1], /data-vize-ui-calendar="gregory"/);
+  assert.match(outputs[1], /data-vize-ui-time-zone="UTC"/);
+  assert.match(outputs[1], /data-vize-ui-time-zone-disambiguation="later"/);
+  assert.match(outputs[1], />latn:gregory:UTC:later:UTC</);
+  assert.doesNotMatch(outputs[1], /arab:japanese:Asia\/Tokyo:earlier/);
 });
 
 test("uses the SSR fallback locale for formatters without a provider", async () => {

@@ -5,15 +5,21 @@ import type { ComputedRef } from "vue";
 import {
   localeTextMatches,
   normalizeLocaleText,
+  resolveCalendar,
   resolveCollator,
   resolveDateTimeFormatter,
   resolveDirection,
   resolveDisplayNames,
   resolveListFormatter,
   resolveLocale,
+  resolveNumberingSystem,
   resolveNumberFormatter,
   resolveRelativeTimeFormatter,
   resolveSearchCollator,
+  resolveTimeZone,
+  resolveTimeZoneDisambiguation,
+  useCalendar,
+  type LocaleCalendar,
   type LocaleCollatorOptions,
   type LocaleDateTimeFormatterOptions,
   type LocaleDisplayNamesOptions,
@@ -21,8 +27,12 @@ import {
   type LocaleDisplayNamesType,
   type LocaleFormatterOptionsInput,
   type LocaleListFormatterOptions,
+  type LocaleNumberingSystem,
   type LocaleNumberFormatterOptions,
   type LocaleRelativeTimeFormatterOptions,
+  type LocaleTimeZone,
+  type LocaleTimeZoneDisambiguation,
+  type LocaleValue,
   type LocaleTextMatchMode,
   type LocaleTextMatchOptions,
   type DirectionPreference,
@@ -33,9 +43,13 @@ import {
   useDisplayNames,
   useListFormatter,
   useLocale,
+  useLocaleValue,
+  useNumberingSystem,
   useNumberFormatter,
   useRelativeTimeFormatter,
   useSearchCollator,
+  useTimeZone,
+  useTimeZoneDisambiguation,
 } from "./locale.ts";
 
 type Equal<Left, Right> =
@@ -51,6 +65,18 @@ export const invalidDirection: TextDirection = "vertical";
 
 export const resolved: TextDirection = resolveDirection("auto", "en-US");
 export const canonicalLocale: string = resolveLocale("ja-jp");
+export const numberingSystem: LocaleNumberingSystem | undefined = resolveNumberingSystem("arab");
+export const calendar: LocaleCalendar | undefined = resolveCalendar("japanese");
+export const timeZone: LocaleTimeZone = resolveTimeZone("Asia/Tokyo");
+export const timeZoneDisambiguation: LocaleTimeZoneDisambiguation =
+  resolveTimeZoneDisambiguation("later");
+export const localeValue: ComputedRef<LocaleValue> = useLocaleValue();
+export const reactiveNumberingSystem: ComputedRef<LocaleNumberingSystem | undefined> =
+  useNumberingSystem();
+export const reactiveCalendar: ComputedRef<LocaleCalendar | undefined> = useCalendar();
+export const reactiveTimeZone: ComputedRef<LocaleTimeZone> = useTimeZone();
+export const reactiveTimeZoneDisambiguation: ComputedRef<LocaleTimeZoneDisambiguation> =
+  useTimeZoneDisambiguation();
 export const numberOptions = {
   currency: "JPY",
   style: "currency",
@@ -125,6 +151,18 @@ type _LocaleIsComputedString = Expect<Equal<ReturnType<typeof useLocale>, Comput
 type _DirectionIsComputed = Expect<
   Equal<ReturnType<typeof useDirection>, ComputedRef<TextDirection>>
 >;
+type _NumberingSystemIsComputed = Expect<
+  Equal<ReturnType<typeof useNumberingSystem>, ComputedRef<LocaleNumberingSystem | undefined>>
+>;
+type _CalendarIsComputed = Expect<
+  Equal<ReturnType<typeof useCalendar>, ComputedRef<LocaleCalendar | undefined>>
+>;
+type _TimeZoneIsComputed = Expect<
+  Equal<ReturnType<typeof useTimeZone>, ComputedRef<LocaleTimeZone>>
+>;
+type _TimeZoneDisambiguationIsComputed = Expect<
+  Equal<ReturnType<typeof useTimeZoneDisambiguation>, ComputedRef<LocaleTimeZoneDisambiguation>>
+>;
 type _NumberFormatterIsComputed = Expect<
   Equal<ReturnType<typeof useNumberFormatter>, ComputedRef<Intl.NumberFormat>>
 >;
@@ -149,6 +187,8 @@ type _SearchCollatorIsComputed = Expect<
 
 // @ts-expect-error auto is a preference, not a resolved direction.
 export const unresolved: TextDirection = "auto";
+// @ts-expect-error time-zone disambiguation is a closed union.
+resolveTimeZoneDisambiguation("nearest");
 // @ts-expect-error formatter styles are closed unions.
 resolveNumberFormatter("en-US", { style: "money" });
 // @ts-expect-error date styles are closed unions.
