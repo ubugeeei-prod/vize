@@ -219,6 +219,36 @@ defineProps<{ device: string; isVertical: boolean }>();
     }
 
     #[test]
+    fn allows_static_string_and_string_ternaries() {
+        let linter = create_linter();
+        let result = linter.lint_sfc(
+            r##"<script setup lang="ts">
+interface Props {
+  cols?: number | string;
+  alignSelf?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  cols: undefined,
+  alignSelf: undefined,
+});
+</script>
+
+<template>
+  <div
+    :class="[
+      'zz-col',
+      props.cols ? `zz-col-${props.cols}` : '',
+      props.alignSelf ? `zz-col-align-self-${props.alignSelf}` : ''
+    ]"
+  />
+</template>"##,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 0, "got: {:?}", result.diagnostics);
+    }
+
+    #[test]
     fn ignores_braces_inside_string_literals() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :class="['{', { a: b }]" />"#, "App.vue");
