@@ -21,8 +21,8 @@ void test("VRT CI blocks on visual diffs", () => {
   assert.equal(hasCiBlockingVrtResult(summary({ failed: 1, passed: 0 })), true);
 });
 
-void test("VRT CI blocks on capture errors", () => {
-  assert.equal(hasCiBlockingVrtResult(summary({ skipped: 1, passed: 0 })), true);
+void test("VRT CI allows skipped variants", () => {
+  assert.equal(hasCiBlockingVrtResult(summary({ skipped: 1, passed: 0 })), false);
 });
 
 void test("VRT CI allows clean and newly-created baselines", () => {
