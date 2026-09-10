@@ -50,6 +50,12 @@ fn strip_legacy_markers(selector: &str) -> String {
         output.push_str(selector[cursor..marker.start].trim_end());
         push_descendant_space(&mut output);
         cursor = skip_ws(selector, marker.end);
+        if let Some(target) = parenthesized_deep_target(selector, cursor) {
+            output.push_str(
+                strip_legacy_markers(&selector[target.inner_start..target.inner_end]).trim(),
+            );
+            cursor = target.end;
+        }
         changed = true;
     }
 
@@ -59,6 +65,26 @@ fn strip_legacy_markers(selector: &str) -> String {
 
     output.push_str(&selector[cursor..]);
     output
+}
+
+struct ParenthesizedTarget {
+    inner_start: usize,
+    inner_end: usize,
+    end: usize,
+}
+
+fn parenthesized_deep_target(selector: &str, cursor: usize) -> Option<ParenthesizedTarget> {
+    if !selector[cursor..].starts_with('(') {
+        return None;
+    }
+
+    let inner_start = cursor + 1;
+    let inner_end = find_matching_paren(selector, cursor)?;
+    Some(ParenthesizedTarget {
+        inner_start,
+        inner_end,
+        end: inner_end + 1,
+    })
 }
 
 fn push_descendant_space(output: &mut String) {
