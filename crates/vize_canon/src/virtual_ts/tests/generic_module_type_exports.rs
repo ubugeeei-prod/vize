@@ -155,8 +155,8 @@ void emit;
         .0;
 
     for expected in [
-        "$slots: Slots<T>",
-        "$emit: __VizeStrictPublicEmit<Emits<T>>",
+        "$slots: __VizePublicSlots<Slots<T>>",
+        "$emit: __VizePublicEmit<Emits<T>>",
         "__VizeShallowUnwrapRef<Exposed<T>>",
     ] {
         assert!(
@@ -179,7 +179,7 @@ void emit;
         .expect("non-generic instance present")
         .1;
     assert!(
-        instance.contains("$slots: Slots;"),
+        instance.contains("$slots: __VizePublicSlots<Slots>;"),
         "the non-generic instance must keep the bare alias:\n{instance}"
     );
 }
@@ -215,7 +215,7 @@ defineExpose<{ ready: boolean }>();
         "slots alias should take no parameters here:\n{virtual_ts}"
     );
     assert!(
-        generic_instance.contains("$slots: Slots;"),
+        generic_instance.contains("$slots: __VizePublicSlots<Slots>;"),
         "a non-generic alias must not be instantiated:\n{generic_instance}"
     );
     assert!(

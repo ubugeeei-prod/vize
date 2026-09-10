@@ -8,6 +8,8 @@ mod fallthrough_unknown_attrs;
 mod generic_emit_guard;
 #[path = "global_html_fallthrough_attrs.rs"]
 mod global_html_fallthrough_attrs;
+#[path = "histoire_layout_props.rs"]
+mod histoire_layout_props;
 #[path = "literal_union_props.rs"]
 mod literal_union_props;
 #[path = "runtime_mixin_props.rs"]

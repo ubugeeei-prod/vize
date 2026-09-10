@@ -15,6 +15,10 @@ declare module "vue" {
 }
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
+type GenericComponentInstance<T> = T extends new (...args: any[]) => infer R ? R : never;
+declare function usePrimitiveElement<T extends import("vue").ComponentPublicInstance>(): {
+  primitiveElement: T | undefined;
+};
 const unknownUsesPublicInstance: true = null as unknown as __VizeIsUnknown<unknown>;
 const anyIsAuthoredInput: false = null as unknown as __VizeIsUnknown<any>;
 const neverIsAuthoredInput: false = null as unknown as __VizeIsUnknown<never>;
@@ -23,6 +27,7 @@ const anyInstanceInferenceUsesPublicInstance: true =
   null as unknown as __VizeUsePublicInstance<any>;
 type PublicInstance = InstanceType<typeof Public>;
 declare const instance: PublicInstance;
+const publicPrimitive = usePrimitiveElement<GenericComponentInstance<typeof Public>>();
 const instanceIsAny: false = null as unknown as IsAny<PublicInstance>;
 const requiredModel: number = instance.$props.modelValue;
 const serviceResult: number = instance.$service.ping("ok");
@@ -63,6 +68,7 @@ instance.$emit.bind(instance)("other", 1);
 type NoEmitsInstance = InstanceType<typeof NoEmits>;
 declare const broadInstance: import("vue").ComponentPublicInstance;
 const noEmits = broadInstance as NoEmitsInstance;
+const noEmitsPrimitive = usePrimitiveElement<GenericComponentInstance<typeof NoEmits>>();
 noEmits.ping();
 type NoEmitsParameters = Parameters<NoEmitsInstance["$emit"]>;
 type NoEmitsWithoutThis = OmitThisParameter<NoEmitsInstance["$emit"]>;
@@ -99,6 +105,7 @@ runtimeArray.$emit("other");
 
 declare const generic: InstanceType<typeof Generic>;
 const genericItem: string = generic.$props.item;
+const genericPrimitive = usePrimitiveElement<GenericComponentInstance<typeof Generic>>();
 generic.$emit("pick", "ok");
 // @ts-expect-error emitted generic payload stays exact
 generic.$emit("pick", 1);
@@ -154,12 +161,15 @@ void neverIsAuthoredInput;
 void objectIsAuthoredInput;
 void anyInstanceInferenceUsesPublicInstance;
 void instanceIsAny;
+void publicPrimitive;
 void requiredModel;
 void serviceResult;
 void attrs;
 void refs;
+void noEmitsPrimitive;
 void missingProps;
 void genericItem;
+void genericPrimitive;
 void publicEmitThisIsUnknown;
 void broadEmitParameters;
 void noEmitsBroadParameters;

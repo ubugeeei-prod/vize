@@ -86,10 +86,11 @@ pub(super) fn emit_component_constructors(
     );
     if legacy_component {
         ts.push_str("  $emit: __EmitFn<Emits>;\n");
+        ts.push_str("  $slots: Slots;\n");
     } else {
-        ts.push_str("  $emit: __VizeStrictPublicEmit<Emits>;\n");
+        ts.push_str("  $emit: __VizePublicEmit<Emits>;\n");
+        ts.push_str("  $slots: __VizePublicSlots<Slots>;\n");
     }
-    ts.push_str("  $slots: Slots;\n");
     ts.push_str(instance_suffix(
         legacy_vue2,
         dialect,
@@ -176,7 +177,7 @@ pub(super) fn emit_component_constructors(
     }
     append!(
         *ts,
-        "{{\n  $props: Props<{generic_names}>{emit_props_field};\n  readonly __vizeRawProps?: Props<{generic_names}>;\n  $emit: __VizeStrictPublicEmit<{emits_ref}>;\n  $slots: {slots_ref};\n"
+        "{{\n  $props: Props<{generic_names}>{emit_props_field};\n  readonly __vizeRawProps?: Props<{generic_names}>;\n  $emit: __VizePublicEmit<{emits_ref}>;\n  $slots: __VizePublicSlots<{slots_ref}>;\n"
     );
     ts.push_str(&generic_instance_suffix(
         legacy_vue2,

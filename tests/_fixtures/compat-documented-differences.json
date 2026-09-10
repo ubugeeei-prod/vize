@@ -21,20 +21,6 @@
     },
     {
       "project": "reka-ui",
-      "file": "packages/core/src/Autocomplete/AutocompleteRoot.vue",
-      "severity": "error",
-      "line": 90,
-      "column": 81,
-      "vize": {
-        "code": 2344,
-        "message": "Type '__VizeComponentInstance' does not satisfy the constraint 'ComponentPublicInstance'. Type '__VizeComponentInstance' is not assignable to type '{ $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Data; $refs: Data; $slots: Readonly<InternalSlots>; $root: ComponentPublicInstance<...> | null; ... 7 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined): WatchStopHandle; }'. Types of property '$emit' are incompatible. Type '((event: \"entryFocus\", event: CustomEvent<any>) => void) & ((event: \"highlight\", payload: { ref: HTMLElement; value: AcceptableValue; } | undefined) => void) & ((event: \"leave\", event: Event) => void) & ((event: \"update:modelValue\", value: AcceptableValue) => void)' is not assignable to type '(event: string, ...args: any[]) => void'. Types of parameters 'event' and 'event' are incompatible. Type 'string' is not assignable to type '\"entryFocus\"'."
-      },
-      "baseline": null,
-      "issue": 5722,
-      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
       "file": "packages/core/src/Calendar/story/CalendarMultiple.story.vue",
       "severity": "error",
       "line": 11,
@@ -46,20 +32,6 @@
       },
       "issue": 5722,
       "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Combobox/ComboboxRoot.vue",
-      "severity": "error",
-      "line": 110,
-      "column": 81,
-      "vize": {
-        "code": 2344,
-        "message": "Type '__VizeComponentInstance' does not satisfy the constraint 'ComponentPublicInstance'. Type '__VizeComponentInstance' is not assignable to type '{ $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Data; $refs: Data; $slots: Readonly<InternalSlots>; $root: ComponentPublicInstance<...> | null; ... 7 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined): WatchStopHandle; }'. Types of property '$emit' are incompatible. Type '((event: \"entryFocus\", event: CustomEvent<any>) => void) & ((event: \"highlight\", payload: { ref: HTMLElement; value: AcceptableValue; } | undefined) => void) & ((event: \"leave\", event: Event) => void) & ((event: \"update:modelValue\", value: AcceptableValue) => void)' is not assignable to type '(event: string, ...args: any[]) => void'. Types of parameters 'event' and 'event' are incompatible. Type 'string' is not assignable to type '\"entryFocus\"'."
-      },
-      "baseline": null,
-      "issue": 5722,
-      "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
     },
     {
       "project": "reka-ui",
