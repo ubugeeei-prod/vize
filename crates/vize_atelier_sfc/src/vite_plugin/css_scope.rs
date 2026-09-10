@@ -93,10 +93,8 @@ fn transform_css_block_with_parents(
 }
 
 fn should_recurse_at_rule(statement: &str) -> bool {
-    matches!(
-        statement.split_whitespace().next(),
-        Some("@container" | "@layer" | "@media" | "@supports")
-    )
+    ["@container", "@layer", "@media", "@supports"]
+        .contains(&statement.split_whitespace().next().unwrap_or(""))
 }
 
 fn find_rule_header_start(css: &str, start: usize, brace: usize) -> usize {
@@ -436,23 +434,20 @@ fn add_scope_before_trailing_combinator(selector: &str, scope_id: &str) -> Strin
     };
 
     let target = selector[..combinator_start].trim_end();
-    let suffix = &selector[target.len()..];
     let mut output = if target.is_empty() {
         scope_attr(scope_id)
     } else {
         add_scope_to_selector_end(target, scope_id)
     };
-    output.push_str(suffix);
+    output.push_str(&selector[target.len()..]);
     output
 }
 
 fn trailing_combinator_start(selector: &str) -> Option<usize> {
-    let bytes = selector.as_bytes();
-    match bytes.last().copied()? {
-        b'>' | b'+' | b'~' => Some(bytes.len() - 1),
-        b'|' if bytes.len() >= 2 && bytes[bytes.len() - 2] == b'|' => Some(bytes.len() - 2),
-        _ => None,
-    }
+    selector
+        .strip_suffix("||")
+        .or_else(|| selector.strip_suffix(['>', '+', '~']))
+        .map(str::len)
 }
 
 fn add_scope_to_selector_end(selector: &str, scope_id: &str) -> String {
