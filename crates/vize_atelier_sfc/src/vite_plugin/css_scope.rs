@@ -430,12 +430,8 @@ fn split_leading_trivia(value: &str) -> (&str, &str) {
 }
 
 fn add_scope_before_trailing_combinator(selector: &str, scope_id: &str) -> String {
-    let Some((combinator_start, _)) = selector
-        .trim_end()
-        .char_indices()
-        .next_back()
-        .filter(|(_, char)| matches!(char, '>' | '+' | '~'))
-    else {
+    let trimmed = selector.trim_end();
+    let Some(combinator_start) = trailing_combinator_start(trimmed) else {
         return add_scope_to_selector_end(selector, scope_id);
     };
 
@@ -448,6 +444,15 @@ fn add_scope_before_trailing_combinator(selector: &str, scope_id: &str) -> Strin
     };
     output.push_str(suffix);
     output
+}
+
+fn trailing_combinator_start(selector: &str) -> Option<usize> {
+    let bytes = selector.as_bytes();
+    match bytes.last().copied()? {
+        b'>' | b'+' | b'~' => Some(bytes.len() - 1),
+        b'|' if bytes.len() >= 2 && bytes[bytes.len() - 2] == b'|' => Some(bytes.len() - 2),
+        _ => None,
+    }
 }
 
 fn add_scope_to_selector_end(selector: &str, scope_id: &str) -> String {
