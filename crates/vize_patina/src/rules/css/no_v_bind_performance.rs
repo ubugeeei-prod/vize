@@ -56,12 +56,12 @@ impl CssRule for NoVBindPerformance {
             result.add_diagnostic(
                 LintDiagnostic::warn(
                     META.name,
-                    "v-bind() has runtime performance cost",
+                    "v-bind() installs runtime CSS variable updates",
                     start,
                     end,
                 )
                 .with_help(
-                    "v-bind() creates reactive CSS custom properties. Consider static CSS or computed classes for better performance",
+                    "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
                 ),
             );
 
@@ -114,6 +114,19 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint(".button { color: v-bind(color); }", 0);
         assert_eq!(result.warning_count, 1);
+        assert_eq!(
+            result.diagnostics[0].message.as_str(),
+            "v-bind() installs runtime CSS variable updates"
+        );
+        assert_eq!(
+            result.diagnostics[0]
+                .help
+                .as_ref()
+                .map(|help| help.as_str()),
+            Some(
+                "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
+            )
+        );
     }
 
     #[test]
