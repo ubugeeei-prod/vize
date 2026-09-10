@@ -15,14 +15,13 @@ fn contains_typescript_suppression_comment(expr: &str) -> bool {
     let mut index = 0;
 
     while index < len {
-        let current = bytes[index];
-
-        if current == b'\'' || current == b'"' || current == b'`' {
-            index = skip_quoted_literal(bytes, index);
-            continue;
+        while index < len && bytes[index].is_ascii_whitespace() {
+            index += 1;
         }
-
-        if current == b'/' && index + 1 < len && !is_escaped(bytes, index) {
+        if index + 1 >= len || bytes[index] != b'/' {
+            return false;
+        }
+        {
             let next = bytes[index + 1];
             if next == b'/' {
                 let start = index + 2;
@@ -55,42 +54,15 @@ fn contains_typescript_suppression_comment(expr: &str) -> bool {
             }
         }
 
-        index += 1;
+        return false;
     }
 
     false
 }
 
-fn skip_quoted_literal(bytes: &[u8], start: usize) -> usize {
-    let quote = bytes[start];
-    let mut index = start + 1;
-    while index < bytes.len() {
-        let current = bytes[index];
-        index += 1;
-
-        if current == b'\\' {
-            index = (index + 1).min(bytes.len());
-            continue;
-        }
-
-        if current == quote {
-            break;
-        }
-    }
-    index
-}
-
 fn is_typescript_suppression_directive(comment: &str) -> bool {
     let trimmed = comment.trim_start();
     trimmed.starts_with("@ts-ignore") || trimmed.starts_with("@ts-expect-error")
-}
-
-fn is_escaped(bytes: &[u8], index: usize) -> bool {
-    let mut cursor = index;
-    while cursor > 0 && bytes[cursor - 1] == b'\\' {
-        cursor -= 1;
-    }
-    (index - cursor) % 2 == 1
 }
 
 #[cfg(test)]
@@ -121,5 +93,16 @@ mod tests {
         assert!(!contains_typescript_suppression_comment(
             r#"`/* @ts-expect-error */` + value"#
         ));
+    }
+
+    #[test]
+    fn strips_non_leading_suppression_comments() {
+        let object_literal = "{ name: 'route',\n// @ts-expect-error upstream note\nparams }";
+        assert!(!contains_typescript_suppression_comment(object_literal));
+        assert!(
+            !expression_source_for_typecheck(object_literal)
+                .as_ref()
+                .contains("@ts-expect-error")
+        );
     }
 }
