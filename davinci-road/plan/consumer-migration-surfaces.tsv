@@ -1336,7 +1336,7 @@ linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_compon
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	46	old_ast	old AST/parser	old	vize_relief	legacy	4
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	46	croquis	Croquis analysis	old	vize_croquis	legacy	3
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration/self_name.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	2
-linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs	33	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs	29	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/this_in_template.rs	31	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs	51	old_ast	old AST/parser	old	vize_relief	legacy	1
