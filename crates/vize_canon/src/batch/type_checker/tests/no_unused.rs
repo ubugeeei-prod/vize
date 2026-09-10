@@ -6,6 +6,7 @@ use vize_carton::cstr;
 
 mod css_v_bind;
 mod define_emits_unused;
+mod define_props_template_object;
 mod template_props_read;
 
 #[test]
