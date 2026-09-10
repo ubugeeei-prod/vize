@@ -857,7 +857,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/template_tests.rs	12	s0	S
 compiler	Compiler	source	crates/vize_atelier_sfc/src/types.rs	6	s0	S0	stage	vize_carton	compat	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/types.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/vite_plugin/css_scope.rs	2	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/vite_plugin/css_scope/slotted.rs	2	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/vite_plugin/css_scope/slotted.rs	5	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/vite_plugin/css.rs	5	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/vite_plugin/hmr.rs	1	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/vite_plugin/js_string.rs	1	s0	S0	stage	vize_carton	compat	1

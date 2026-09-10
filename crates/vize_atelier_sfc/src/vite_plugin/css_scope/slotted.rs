@@ -1,4 +1,7 @@
-use super::{PseudoFunction, add_scope_before_trailing_combinator, find_scope_insert_position};
+use super::{
+    PseudoFunction, add_scope_before_trailing_combinator, find_scope_insert_position,
+    trailing_combinator_start,
+};
 use vize_carton::String;
 
 pub(super) fn scope_slotted_selector(
@@ -25,8 +28,7 @@ pub(super) fn scope_slotted_selector(
 }
 
 fn selector_ends_with_combinator(selector: &str) -> bool {
-    let trimmed = selector.trim_end();
-    trimmed.ends_with('>') || trimmed.ends_with('+') || trimmed.ends_with('~')
+    trailing_combinator_start(selector.trim_end()).is_some()
 }
 
 fn push_slotted_target(output: &mut String, inner: &str, scope_id: &str) {
@@ -104,6 +106,14 @@ mod tests {
             )
             .as_str(),
             " .card[data-v-x] >[data-v-x-s]{flex: 1;} .card[data-v-x] >.title[data-v-x-s],.card[data-v-x] >.subtitle[data-v-x-s]{line-height: 1.2;} .card[data-v-x] >[data-v-x-s]:not(:last-child){margin-bottom: 2px;}"
+        );
+        assert_eq!(
+            scope_css_for_pipeline(
+                ".card { & || :slotted(*) { display: table-cell; } }",
+                "data-v-x"
+            )
+            .as_str(),
+            " .card[data-v-x] ||[data-v-x-s]{display: table-cell;}"
         );
     }
 }
