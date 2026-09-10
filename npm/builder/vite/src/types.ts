@@ -211,8 +211,9 @@ export interface VizeOptions extends ExperimentalPluginOptions {
   precompileBatchSize?: number;
 
   /**
-   * Glob patterns to ignore during pre-compilation
-   * @default ['node_modules/**', 'dist/**', '.git/**', '.nuxt/**', '.output/**', '.nitro/**', 'coverage/**']
+   * Glob patterns to ignore during pre-compilation. Defaults exclude common
+   * dependency and build-output directories at the project root and at any
+   * workspace package depth.
    */
   ignorePatterns?: string[];
 

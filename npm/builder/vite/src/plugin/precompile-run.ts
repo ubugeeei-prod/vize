@@ -87,6 +87,7 @@ export async function compileAll(state: VizePluginState): Promise<void> {
     cwd: state.root,
     ignore: state.ignorePatterns,
     absolute: true,
+    followSymbolicLinks: false,
   });
   const sfcFiles = files.filter(isPrecompileSfcPath);
 

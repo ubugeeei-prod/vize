@@ -11,12 +11,19 @@ export const DEFAULT_PRECOMPILE_BATCH_MAX_BYTES = 32 * 1024 * 1024;
 
 export const DEFAULT_PRECOMPILE_IGNORE_PATTERNS = [
   "node_modules/**",
+  "**/node_modules/**",
   "dist/**",
+  "**/dist/**",
   ".git/**",
+  "**/.git/**",
   ".nuxt/**",
+  "**/.nuxt/**",
   ".output/**",
+  "**/.output/**",
   ".nitro/**",
+  "**/.nitro/**",
   "coverage/**",
+  "**/coverage/**",
 ];
 
 export interface PrecompileFileMetadata {

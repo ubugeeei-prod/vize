@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { transform } from "oxc-transform";
+import * as oxcTransform from "oxc-transform";
 import type {
   ResolvedVizeConfig,
   LoadConfigOptions,
@@ -164,17 +164,18 @@ async function loadTypeScriptConfig(
   env?: ConfigEnv,
 ): Promise<ResolvedVizeConfig> {
   const source = fs.readFileSync(filePath, "utf-8");
-  const result = await transform(filePath, source, {
+  const result = await oxcTransform.transform(filePath, source, {
     typescript: {
       onlyRemoveTypeImports: true,
     },
   });
+  const code = rewriteSelfConfigImports(result.code);
 
   const tempFile = path.join(
     path.dirname(filePath),
     `.vize-config-${process.pid}-${Date.now()}-${randomUUID()}.mjs`,
   );
-  fs.writeFileSync(tempFile, result.code, { flag: "wx", mode: 0o600 });
+  fs.writeFileSync(tempFile, code, { flag: "wx", mode: 0o600 });
 
   try {
     const module = await importFresh(tempFile);
@@ -195,6 +196,28 @@ async function importFresh(filePath: string): Promise<Record<string, unknown>> {
   const fileUrl = pathToFileURL(filePath);
   fileUrl.searchParams.set("t", String(fs.statSync(filePath).mtimeMs));
   return import(fileUrl.href);
+}
+
+function rewriteSelfConfigImports(code: string): string {
+  return code
+    .replace(/\bfrom\s+(["'])(vize(?:\/config)?)\1/gu, (_match, quote, specifier) => {
+      return `from ${quote}${resolveSelfConfigImportUrl(specifier)}${quote}`;
+    })
+    .replace(/\bimport\s+(["'])(vize(?:\/config)?)\1/gu, (_match, quote, specifier) => {
+      return `import ${quote}${resolveSelfConfigImportUrl(specifier)}${quote}`;
+    })
+    .replace(/\bimport\s*\(\s*(["'])(vize(?:\/config)?)\1\s*\)/gu, (_match, quote, specifier) => {
+      return `import(${quote}${resolveSelfConfigImportUrl(specifier)}${quote})`;
+    });
+}
+
+function resolveSelfConfigImportUrl(specifier: string): string {
+  const distTarget =
+    specifier === "vize"
+      ? path.join(PACKAGE_ROOT, "dist", "index.mjs")
+      : path.join(PACKAGE_ROOT, "dist", "config.mjs");
+  const sourceTarget = path.join(PACKAGE_ROOT, "src", "config.ts");
+  return pathToFileURL(fs.existsSync(distTarget) ? distTarget : sourceTarget).href;
 }
 
 function parseJsonConfig(content: string, filePath: string): ResolvedVizeConfig {

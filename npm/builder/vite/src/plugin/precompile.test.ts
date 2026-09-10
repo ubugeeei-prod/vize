@@ -3,7 +3,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { DEFAULT_PRECOMPILE_BATCH_SIZE, type VizePluginState } from "./state.ts";
+import {
+  DEFAULT_PRECOMPILE_BATCH_SIZE,
+  DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
+  type VizePluginState,
+} from "./state.ts";
 import { compileAll } from "./precompile-run.ts";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -79,5 +83,63 @@ assert.equal(
   false,
   "TSX scan matches should not get SFC precompile metadata",
 );
+
+const workspaceRootForScan = fs.mkdtempSync(path.join(testRoot, "workspace-scan-"));
+const workspaceSourceRoot = path.join(workspaceRootForScan, "src");
+fs.mkdirSync(workspaceSourceRoot, { recursive: true });
+const workspaceApp = path.join(workspaceSourceRoot, "App.vue");
+fs.writeFileSync(workspaceApp, `<template><div>workspace</div></template>`);
+
+const nestedNodeModulesSfc = path.join(
+  workspaceRootForScan,
+  "packages",
+  "app",
+  "node_modules",
+  "linked",
+  "Nested.vue",
+);
+fs.mkdirSync(path.dirname(nestedNodeModulesSfc), { recursive: true });
+fs.writeFileSync(nestedNodeModulesSfc, `<template><div>nested dependency</div></template>`);
+
+const externalPackage = fs.mkdtempSync(path.join(testRoot, "external-package-"));
+const externalSfc = path.join(externalPackage, "Linked.vue");
+fs.writeFileSync(externalSfc, `<template><div>external dependency</div></template>`);
+const symlinkPath = path.join(workspaceRootForScan, "packages", "app", "linked-package");
+let symlinkCreated = false;
+try {
+  fs.symlinkSync(externalPackage, symlinkPath, "dir");
+  symlinkCreated = true;
+} catch {
+  // Some Windows developer shells cannot create directory symlinks. The nested
+  // node_modules assertion still covers the default workspace guard.
+}
+
+const workspaceState: VizePluginState = {
+  ...state,
+  cache: new Map(),
+  ssrCache: new Map(),
+  collectedCss: new Map(),
+  precompileMetadata: new Map(),
+  pendingHmrUpdateTypes: new Map(),
+  root: workspaceRootForScan,
+  scanPatterns: ["**/*.vue"],
+  ignorePatterns: [...DEFAULT_PRECOMPILE_IGNORE_PATTERNS],
+};
+
+await compileAll(workspaceState);
+
+assert.ok(workspaceState.cache.has(workspaceApp), "First-party SFCs should still pre-compile");
+assert.equal(
+  workspaceState.cache.has(nestedNodeModulesSfc),
+  false,
+  "Pre-compilation should ignore nested node_modules in pnpm workspaces",
+);
+if (symlinkCreated) {
+  assert.equal(
+    [...workspaceState.cache.keys()].some((filePath) => filePath.includes("Linked.vue")),
+    false,
+    "Pre-compilation should not follow directory symlinks during workspace scans",
+  );
+}
 
 console.log("✅ vite-plugin-vize precompile tests passed!");
