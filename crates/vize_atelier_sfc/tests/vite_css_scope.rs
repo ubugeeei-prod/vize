@@ -11,3 +11,16 @@ fn vite_pipeline_scopes_parent_before_trailing_universal_selectors() {
         ".dialog__action-buttons[data-v-x]>*:hover{flex: 1;}"
     );
 }
+
+#[test]
+fn vite_pipeline_rewrites_legacy_deep_combinators() {
+    let output = scope_css_for_pipeline(
+        ".panel >>> .inner >>> .leaf { padding: 0; }.panel ::v-deep .other /deep/ .child { margin: 0; }[data-label=\">>>\"] .plain { color: red; }.panel[data-token=\"::v-deep\"] { color: blue; }.literal\\>\\>\\> .plain { color: green; }",
+        "data-v-x",
+    );
+
+    assert_eq!(
+        output.as_str(),
+        ".panel[data-v-x] .inner .leaf{padding: 0;}.panel[data-v-x] .other .child{margin: 0;}[data-label=\">>>\"] .plain[data-v-x]{color: red;}.panel[data-token=\"::v-deep\"][data-v-x]{color: blue;}.literal\\>\\>\\> .plain[data-v-x]{color: green;}"
+    );
+}

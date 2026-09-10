@@ -1,6 +1,7 @@
 use crate::css::scoped_selector::split_before_trailing_universal_or_pseudo;
 use vize_carton::{SmallVec, String};
 
+mod legacy_deep;
 mod slotted;
 
 /// Scope CSS with the Vite plugin pipeline's selector model.
@@ -371,10 +372,7 @@ fn scope_selector(selector: &str, scope_id: &str) -> String {
     let leading = &selector[..leading_length];
     let body_end = trailing_trim_end(selector);
     let trailing = &selector[body_end..];
-    let mut body = unwrap_pseudo_functions(
-        &selector[leading_length..body_end],
-        &["::v-global(", ":global("],
-    );
+    let mut body = legacy_deep::normalize_scoped_selector_body(&selector[leading_length..body_end]);
 
     if let Some(slotted) = find_pseudo_function_any(body.as_str(), &["::v-slotted(", ":slotted("]) {
         body = slotted::scope_slotted_selector(body.as_str(), &slotted, scope_id);
