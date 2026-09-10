@@ -38,6 +38,24 @@ fn alias_ref(name: &str, is_generic: bool, generic_names: &str) -> String {
     }
 }
 
+const LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS: &str = r#"type __VizeVue2ComponentConstructorStatics = {
+  extend: (...args: any[]) => any;
+  nextTick: (...args: any[]) => any;
+  set: (...args: any[]) => any;
+  delete: (...args: any[]) => any;
+  directive: (...args: any[]) => any;
+  filter: (...args: any[]) => any;
+  component: (...args: any[]) => any;
+  use: (...args: any[]) => any;
+  mixin: (...args: any[]) => any;
+  compile: (...args: any[]) => any;
+  observable: <T>(obj: T) => T;
+  util: { warn: (...args: any[]) => void };
+  config: any;
+  version: string;
+};
+"#;
+
 pub(super) fn emit_component_constructors(
     ts: &mut String,
     setup_props_plan: &SetupPropsPlan,
@@ -78,8 +96,9 @@ pub(super) fn emit_component_constructors(
         aliases.has_exposed_type,
     ));
     if legacy_component {
+        ts.push_str(LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS);
         ts.push_str(
-            "type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;\n",
+            "type __VizeComponentConstructor = {\n  new (...args: any[]): any;\n  new (...args: any[]): __VizeComponentInstance;\n} & __VizeVue2ComponentConstructorStatics;\n",
         );
     } else {
         let props_ref = aliases
@@ -124,7 +143,7 @@ pub(super) fn emit_component_constructors(
     if legacy_component {
         append!(
             *ts,
-            "type __VizeGenericComponentConstructor = new <{generic_decl}>(...args: any[]) => "
+            "type __VizeGenericComponentConstructor = {{\n  new (...args: any[]): any;\n  new <{generic_decl}>(...args: any[]): "
         );
         if aliases.has_authored_default {
             ts.push_str("__VizeAuthoredInstance & ");
@@ -139,6 +158,7 @@ pub(super) fn emit_component_constructors(
             aliases.has_exposed_type,
             aliases.exposed_is_generic.then_some(generic_names.as_str()),
         ));
+        ts.push_str("} & __VizeVue2ComponentConstructorStatics;\n");
         return;
     }
 

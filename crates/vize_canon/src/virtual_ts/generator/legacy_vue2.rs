@@ -96,14 +96,16 @@ declare function __vizeDefineComponent<T>(options: T & __VizeNuxt2PageOptions): 
 pub(super) const LEGACY_COMPONENT_INSTANCE_HELPER: &str = r#"type __VizeVue2ComponentInstance = {
   $el: Element;
   $refs: Record<string, any>;
-  $attrs: Record<string, unknown>;
-  $listeners: Record<string, unknown>;
+  $attrs: Record<string, any>;
+  $listeners: Record<string, any>;
   $children: any[];
-  $scopedSlots: Record<string, unknown>;
+  $scopedSlots: Record<string, any>;
   $parent: any;
   $root: any;
+  $isServer: boolean; $vnode: any; $ssrContext: any;
   $options: Record<string, any>;
   $data: Record<string, any>;
+  $mount: (...args: any[]) => any;
   $on: (...args: any[]) => any;
   $off: (...args: any[]) => any;
   $once: (...args: any[]) => any;

@@ -84,8 +84,9 @@ fn modern_public_constructor_contract_does_not_leak_into_vue2() {
     );
     assert!(
         legacy.contains("$props: __VizeComponentProps<Props>;")
+            && legacy.contains("type __VizeVue2ComponentConstructorStatics = {")
             && legacy.contains(
-                "type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;"
+                "type __VizeComponentConstructor = {\n  new (...args: any[]): any;\n  new (...args: any[]): __VizeComponentInstance;\n} & __VizeVue2ComponentConstructorStatics;"
             )
             && legacy.contains("} & __VizeVue2ComponentInstance;"),
         "Vue 2 should keep its existing permissive constructor contract:\n{legacy}"

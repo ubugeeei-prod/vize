@@ -148,14 +148,16 @@ export type Slots = {};
 type __VizeVue2ComponentInstance = {
   $el: Element;
   $refs: Record<string, any>;
-  $attrs: Record<string, unknown>;
-  $listeners: Record<string, unknown>;
+  $attrs: Record<string, any>;
+  $listeners: Record<string, any>;
   $children: any[];
-  $scopedSlots: Record<string, unknown>;
+  $scopedSlots: Record<string, any>;
   $parent: any;
   $root: any;
+  $isServer: boolean; $vnode: any; $ssrContext: any;
   $options: Record<string, any>;
   $data: Record<string, any>;
+  $mount: (...args: any[]) => any;
   $on: (...args: any[]) => any;
   $off: (...args: any[]) => any;
   $once: (...args: any[]) => any;
@@ -174,7 +176,26 @@ type __VizeComponentInstance = {
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 } & __VizeVue2ComponentInstance;
-type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;
+type __VizeVue2ComponentConstructorStatics = {
+  extend: (...args: any[]) => any;
+  nextTick: (...args: any[]) => any;
+  set: (...args: any[]) => any;
+  delete: (...args: any[]) => any;
+  directive: (...args: any[]) => any;
+  filter: (...args: any[]) => any;
+  component: (...args: any[]) => any;
+  use: (...args: any[]) => any;
+  mixin: (...args: any[]) => any;
+  compile: (...args: any[]) => any;
+  observable: <T>(obj: T) => T;
+  util: { warn: (...args: any[]) => void };
+  config: any;
+  version: string;
+};
+type __VizeComponentConstructor = {
+  new (...args: any[]): any;
+  new (...args: any[]): __VizeComponentInstance;
+} & __VizeVue2ComponentConstructorStatics;
 type __VizeVueComponentOptions = {
   [key: string]: any;
   name?: string;

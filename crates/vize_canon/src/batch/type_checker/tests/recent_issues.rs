@@ -41,11 +41,11 @@ mod tsx_catch_all_emits;
 mod unmapped_template_fallback;
 mod v_for_source_callbacks;
 mod vapor_anchors;
+mod vue27_render_h;
 
 fn normalize_component_check_props_tail(message: &str) -> std::string::String {
     const START: &str = "__VizeComponentCheckProps<Props, ";
     const STABLE_TYPE: &str = "__VizeComponentCheckProps<Props, __VizeFallthroughAttrs>";
-
     let mut output = std::string::String::with_capacity(message.len());
     let mut rest = message;
     while let Some(start) = rest.find(START) {
