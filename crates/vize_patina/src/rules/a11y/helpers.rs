@@ -119,6 +119,51 @@ pub fn get_static_or_bound_literal_attribute_value<'a>(
     None
 }
 
+/// Check if an element has a static attribute or statically named bind.
+pub fn has_named_attribute_or_bind(element: &ElementNode, name: &str) -> bool {
+    for prop in &element.props {
+        match prop {
+            PropNode::Attribute(attr) if attr.name == name => return true,
+            PropNode::Directive(dir) if dir.name == "bind" => {
+                let Some(ExpressionNode::Simple(arg)) = &dir.arg else {
+                    continue;
+                };
+                if arg.is_static && arg.content == name {
+                    return true;
+                }
+            }
+            _ => {}
+        }
+    }
+    false
+}
+
+/// Whether the element is explicitly hidden from the accessibility tree.
+pub fn is_aria_hidden_true(element: &ElementNode) -> bool {
+    if get_static_or_bound_literal_attribute_value(element, "aria-hidden") == Some("true") {
+        return true;
+    }
+
+    for prop in &element.props {
+        let PropNode::Directive(dir) = prop else {
+            continue;
+        };
+        if dir.name != "bind" {
+            continue;
+        }
+        let Some(ExpressionNode::Simple(arg)) = &dir.arg else {
+            continue;
+        };
+        let Some(ExpressionNode::Simple(exp)) = &dir.exp else {
+            continue;
+        };
+        if arg.is_static && arg.content == "aria-hidden" && exp.content.trim() == "true" {
+            return true;
+        }
+    }
+    false
+}
+
 pub fn string_literal_value(content: &str) -> Option<&str> {
     let content = content.trim();
     let quote = content.as_bytes().first()?;

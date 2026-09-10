@@ -23,9 +23,19 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use lightningcss::declaration::DeclarationBlock;
+use lightningcss::properties::list::ListStyleType;
+use lightningcss::properties::{Property, PropertyId};
+use lightningcss::rules::CssRule as LCssRule;
+use lightningcss::selector::{Component, Selector};
+use lightningcss::stylesheet::{ParserOptions, StyleSheet};
 use vize_relief::{ElementNode, ElementType};
+use vize_s0::FxHashSet;
 
-use super::helpers::{get_implicit_role, get_implicit_role_by_attr, get_static_attribute_value};
+use super::helpers::{
+    get_implicit_role, get_implicit_role_by_attr, get_static_attribute_value,
+    get_static_or_bound_literal_attribute_value,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/no-redundant-roles",
@@ -68,6 +78,98 @@ impl NoRedundantRoles {
             Self::first_static_attribute_value(element, name)
         })
     }
+
+    fn keeps_markerless_list_role(
+        ctx: &LintContext<'_>,
+        element: &ElementNode<'_>,
+        role: &str,
+    ) -> bool {
+        if role != "list" || !matches!(element.tag, "ol" | "ul") {
+            return false;
+        }
+
+        let Some(class) = get_static_or_bound_literal_attribute_value(element, "class") else {
+            return false;
+        };
+        let classes = class
+            .split_ascii_whitespace()
+            .filter(|class| !class.is_empty())
+            .collect::<FxHashSet<_>>();
+        let Some(descriptor) = ctx.sfc_descriptor() else {
+            return false;
+        };
+
+        descriptor.styles.iter().any(|style| {
+            style.src.is_none()
+                && style
+                    .lang
+                    .as_deref()
+                    .is_none_or(|lang| lang.eq_ignore_ascii_case("css"))
+                && style_has_markerless_list_class(style.content.as_ref(), &classes)
+        })
+    }
+}
+
+fn style_has_markerless_list_class(source: &str, classes: &FxHashSet<&str>) -> bool {
+    let Ok(sheet) = StyleSheet::parse(source, ParserOptions::default()) else {
+        return false;
+    };
+    sheet
+        .rules
+        .0
+        .iter()
+        .any(|rule| css_rule_has_markerless_list_class(rule, classes))
+}
+
+fn css_rule_has_markerless_list_class(rule: &LCssRule, classes: &FxHashSet<&str>) -> bool {
+    match rule {
+        LCssRule::Style(rule) => {
+            rule.selectors
+                .0
+                .iter()
+                .any(|selector| selector_matches_class(selector, classes))
+                && declarations_have_markerless_list(&rule.declarations)
+        }
+        LCssRule::Media(rule) => rule
+            .rules
+            .0
+            .iter()
+            .any(|rule| css_rule_has_markerless_list_class(rule, classes)),
+        LCssRule::Supports(rule) => rule
+            .rules
+            .0
+            .iter()
+            .any(|rule| css_rule_has_markerless_list_class(rule, classes)),
+        LCssRule::LayerBlock(rule) => rule
+            .rules
+            .0
+            .iter()
+            .any(|rule| css_rule_has_markerless_list_class(rule, classes)),
+        _ => false,
+    }
+}
+
+fn selector_matches_class(selector: &Selector, classes: &FxHashSet<&str>) -> bool {
+    selector.iter().any(|component| {
+        matches!(component, Component::Class(class) if classes.contains(class.0.as_ref()))
+    })
+}
+
+fn declarations_have_markerless_list(declarations: &DeclarationBlock) -> bool {
+    declarations
+        .declarations
+        .iter()
+        .chain(declarations.important_declarations.iter())
+        .any(property_has_markerless_list)
+}
+
+fn property_has_markerless_list(property: &Property) -> bool {
+    matches!(property, Property::ListStyleType(ListStyleType::None))
+        || property
+            .longhand(&PropertyId::ListStyleType)
+            .is_some_and(|longhand| {
+                matches!(longhand, Property::ListStyleType(ListStyleType::None))
+            })
 }
 
 /// Markup-IR entry point for `a11y/no-redundant-roles`.
@@ -130,6 +232,7 @@ impl Rule for NoRedundantRoles {
 
         if let Some(implicit) = implicit_role
             && implicit == role_value
+            && !Self::keeps_markerless_list_role(ctx, element, role_value)
         {
             ctx.warn_with_help(
                 ctx.t_fmt(
@@ -187,6 +290,36 @@ mod tests {
     fn test_invalid_main_main() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<main role="main">Content</main>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_markerless_list_role_workaround() {
+        let linter = create_linter();
+        let result = linter.lint_sfc(
+            r#"<template>
+  <ul class="plain" role="list"><li>a</li></ul>
+</template>
+<style scoped>
+.plain { list-style: none; }
+</style>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_list_role_without_markerless_style() {
+        let linter = create_linter();
+        let result = linter.lint_sfc(
+            r#"<template>
+  <ul class="plain" role="list"><li>a</li></ul>
+</template>
+<style scoped>
+.plain { list-style: disc; }
+</style>"#,
+            "test.vue",
+        );
         assert_eq!(result.warning_count, 1);
     }
 

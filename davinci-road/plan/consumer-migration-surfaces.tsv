@@ -1245,6 +1245,7 @@ linter	Linter	source	crates/vize_patina/src/rules/a11y/helpers.rs	6	s0	S0	stage	
 linter	Linter	source	crates/vize_patina/src/rules/a11y/helpers.rs	6	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/iframe_has_title.rs	13	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/img_alt.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	4
+linter	Linter	source	crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs	25	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs	25	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/label_has_for.rs	25	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/media_has_caption.rs	28	old_ast	old AST/parser	old	vize_relief	legacy	1
@@ -1254,7 +1255,8 @@ linter	Linter	source	crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusab
 linter	Linter	source	crates/vize_patina/src/rules/a11y/no_autofocus.rs	15	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/no_distracting_elements.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/no_i_for_icon.rs	33	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/a11y/no_redundant_roles.rs	26	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/a11y/no_redundant_roles.rs	32	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/a11y/no_redundant_roles.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs	31	s0	S0	stage	vize_s0	preferred	3
 linter	Linter	source	crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs	31	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs	31	croquis	Croquis analysis	old	vize_croquis	legacy	1

@@ -12,7 +12,7 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
-use super::helpers::is_component_like_element;
+use super::helpers::{is_aria_hidden_true, is_component_like_element};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/click-events-have-key-events",
@@ -114,6 +114,10 @@ impl Rule for ClickEventsHaveKeyEvents {
             return;
         }
 
+        if is_aria_hidden_true(element) {
+            return;
+        }
+
         // Skip interactive elements - they have native keyboard support
         if Self::is_interactive_element(element.tag) {
             return;
@@ -194,6 +198,16 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<span @click="toggle">Toggle</span>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_aria_hidden_backdrop_click() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div aria-hidden="true" class="backdrop" @click="close" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
