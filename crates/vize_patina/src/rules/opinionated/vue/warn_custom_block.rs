@@ -111,7 +111,7 @@ impl Rule for WarnCustomBlock {
         let spans: Vec<(u32, u32)> = descriptor
             .custom_blocks
             .iter()
-            .filter(|block| !is_known_musea_art_block(ctx.filename, block.block_type.as_ref()))
+            .filter(|block| !is_known_musea_art_block(block.block_type.as_ref()))
             .map(|block| (block.loc.tag_start as u32, block.loc.start as u32))
             .collect();
 
@@ -137,8 +137,8 @@ fn is_sfc_filename(filename: &str) -> bool {
     filename.rsplit('.').next() == Some("vue")
 }
 
-fn is_known_musea_art_block(filename: &str, block_type: &str) -> bool {
-    block_type == "art" && filename.ends_with(".art.vue")
+fn is_known_musea_art_block(block_type: &str) -> bool {
+    block_type == "art"
 }
 
 #[cfg(test)]

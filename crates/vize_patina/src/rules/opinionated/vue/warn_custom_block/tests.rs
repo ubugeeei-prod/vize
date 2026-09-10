@@ -34,10 +34,8 @@ fn rejects_standalone_html_and_other_filenames() {
 
 #[test]
 fn detects_musea_art_files() {
-    assert!(is_known_musea_art_block("Button.art.vue", "art"));
-    assert!(is_known_musea_art_block("catalog/Button.art.vue", "art"));
-    assert!(!is_known_musea_art_block("Button.vue", "art"));
-    assert!(!is_known_musea_art_block("Button.art.vue", "docs"));
+    assert!(is_known_musea_art_block("art"));
+    assert!(!is_known_musea_art_block("docs"));
 }
 
 #[test]
@@ -101,14 +99,13 @@ fn test_musea_art_file_art_block_is_known() {
 }
 
 #[test]
-fn test_art_block_in_regular_sfc_still_warns() {
+fn test_art_block_in_regular_sfc_is_known() {
     let linter = create_linter();
     let result = linter.lint_sfc(
         "<template>\n  <div />\n</template>\n<art>\n  <variant name=\"Default\" />\n</art>\n",
         "Button.vue",
     );
-    assert_eq!(result.warning_count, 1, "got: {:?}", result.diagnostics);
-    assert_eq!(result.diagnostics[0].rule_name, "vue/warn-custom-block");
+    assert_eq!(result.warning_count, 0, "got: {:?}", result.diagnostics);
 }
 
 #[test]
