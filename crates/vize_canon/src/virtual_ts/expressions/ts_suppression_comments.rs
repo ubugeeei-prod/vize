@@ -99,10 +99,9 @@ mod tests {
     fn strips_non_leading_suppression_comments() {
         let object_literal = "{ name: 'route',\n// @ts-expect-error upstream note\nparams }";
         assert!(!contains_typescript_suppression_comment(object_literal));
-        assert!(
-            !expression_source_for_typecheck(object_literal)
-                .as_ref()
-                .contains("@ts-expect-error")
+        assert_eq!(
+            expression_source_for_typecheck(object_literal).as_ref(),
+            "{ name: 'route',\n\nparams }"
         );
     }
 }
