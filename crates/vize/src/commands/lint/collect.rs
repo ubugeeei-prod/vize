@@ -12,6 +12,11 @@ pub(super) struct LintIgnoreSet {
     patterns: Vec<LintInputGlob>,
 }
 
+pub(super) struct LintFileCollection {
+    pub(super) files: Vec<PathBuf>,
+    pub(super) unmatched_patterns: Vec<String>,
+}
+
 impl LintIgnoreSet {
     pub(super) fn new(ignores: &[config::ConfigEntryIgnore], config_dir: &Path) -> Option<Self> {
         let patterns = ignores
@@ -27,39 +32,66 @@ impl LintIgnoreSet {
     }
 }
 
-pub(super) fn collect_lint_files(
+pub(super) fn collect_lint_file_collection(
     patterns: &[String],
     ignore_set: Option<&LintIgnoreSet>,
-) -> Vec<PathBuf> {
+) -> LintFileCollection {
     let mut files = Vec::new();
+    let mut unmatched_patterns = Vec::new();
     let mut seen = FxHashSet::default();
 
     for pattern in patterns {
         let candidate = PathBuf::from(pattern);
         if candidate.exists() {
             if candidate.is_file() {
-                add_lint_file(&candidate, ignore_set, &mut files, &mut seen);
+                if !add_lint_file(&candidate, ignore_set, &mut files, &mut seen) {
+                    unmatched_patterns.push(pattern.clone());
+                }
                 continue;
             }
             if candidate.is_dir() {
-                collect_lint_files_from_dir(&candidate, None, ignore_set, &mut files, &mut seen);
+                if !collect_lint_files_from_dir(&candidate, None, ignore_set, &mut files, &mut seen)
+                {
+                    unmatched_patterns.push(pattern.clone());
+                }
                 continue;
             }
         }
 
         let base_dir = base_dir_from_lint_pattern(pattern);
         let matcher = LintInputGlob::new(pattern);
-        collect_lint_files_from_dir(
+        if !collect_lint_files_from_dir(
             &base_dir,
             matcher.as_ref(),
             ignore_set,
             &mut files,
             &mut seen,
-        );
+        ) {
+            unmatched_patterns.push(pattern.clone());
+        }
     }
 
     files.sort();
-    files
+    LintFileCollection {
+        files,
+        unmatched_patterns,
+    }
+}
+
+pub(super) fn collect_lint_inputs(
+    patterns: &[String],
+    ignore_set: Option<&LintIgnoreSet>,
+) -> (Vec<PathBuf>, usize) {
+    let LintFileCollection {
+        files,
+        unmatched_patterns,
+    } = collect_lint_file_collection(patterns, ignore_set);
+    let warning_count = if files.is_empty() {
+        0
+    } else {
+        super::patterns::write_unmatched_explicit_patterns(patterns, &unmatched_patterns)
+    };
+    (files, warning_count)
 }
 
 fn collect_lint_files_from_dir(
@@ -68,7 +100,8 @@ fn collect_lint_files_from_dir(
     ignore_set: Option<&LintIgnoreSet>,
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
-) {
+) -> bool {
+    let mut matched = false;
     for entry in WalkBuilder::new(dir)
         .standard_filters(true)
         .hidden(matcher.is_none())
@@ -79,9 +112,10 @@ fn collect_lint_files_from_dir(
         };
         let path = entry.path();
         if path.is_file() && matcher.is_none_or(|matcher| matcher.matches(path)) {
-            add_lint_file(path, ignore_set, files, seen);
+            matched |= add_lint_file(path, ignore_set, files, seen);
         }
     }
+    matched
 }
 
 fn add_lint_file(
@@ -89,16 +123,18 @@ fn add_lint_file(
     ignore_set: Option<&LintIgnoreSet>,
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
-) {
+) -> bool {
     if !is_lintable_path(path) {
-        return;
+        return false;
     }
     let normalized = normalize_lint_input_path(path);
-    if !ignore_set.is_some_and(|ignore_set| ignore_set.is_ignored(&normalized))
-        && seen.insert(normalized.clone())
-    {
+    if ignore_set.is_some_and(|ignore_set| ignore_set.is_ignored(&normalized)) {
+        return false;
+    }
+    if seen.insert(normalized.clone()) {
         files.push(normalized);
     }
+    true
 }
 
 fn is_lintable_path(path: &Path) -> bool {
@@ -120,20 +156,28 @@ pub(super) fn is_plain_script_path(path: &Path) -> bool {
 }
 
 fn base_dir_from_lint_pattern(pattern: &str) -> PathBuf {
-    let glob_start = pattern.find(['*', '?', '[', '{']).unwrap_or(pattern.len());
-    let prefix = &pattern[..glob_start];
-    let base = if prefix.is_empty() {
-        "."
-    } else if let Some(index) = prefix.rfind('/') {
-        &prefix[..index]
-    } else {
-        prefix
-    };
-    if base.is_empty() {
-        PathBuf::from(".")
-    } else {
-        PathBuf::from(base)
+    let normalized = normalize_lint_glob_pattern(pattern);
+    let glob_start = normalized
+        .find(['*', '?', '[', '{'])
+        .unwrap_or(normalized.len());
+    let prefix = &normalized[..glob_start];
+    if prefix.is_empty() || (glob_start < normalized.len() && !prefix.contains('/')) {
+        return PathBuf::from(".");
     }
+    if let Some(index) = prefix.rfind('/') {
+        if index == 0 {
+            return PathBuf::from("/");
+        }
+        if is_windows_drive_root(prefix, index) {
+            return PathBuf::from(&prefix[..=index]);
+        }
+        return PathBuf::from(&prefix[..index]);
+    }
+    PathBuf::from(prefix)
+}
+
+fn is_windows_drive_root(prefix: &str, slash_index: usize) -> bool {
+    slash_index == 2 && prefix.as_bytes().get(1) == Some(&b':')
 }
 
 struct LintInputGlob {
@@ -264,83 +308,5 @@ fn lint_glob_match_options() -> MatchOptions {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{LintIgnoreSet, collect_lint_files};
-    use std::fs;
-
-    #[test]
-    fn collection_includes_vue_html_scripts_and_jsx() {
-        let dir = tempfile::tempdir().unwrap();
-        let src = dir.path().join("src");
-        fs::create_dir_all(&src).unwrap();
-        fs::write(src.join("App.vue"), "").unwrap();
-        fs::write(src.join("index.html"), "").unwrap();
-        fs::write(src.join("config.js"), "").unwrap();
-        fs::write(src.join("store.ts"), "").unwrap();
-        fs::write(src.join("Panel.jsx"), "").unwrap();
-        fs::write(src.join("Widget.tsx"), "").unwrap();
-        fs::write(src.join("notes.md"), "").unwrap();
-
-        let files = collect_lint_files(&[src.display().to_string().into()], None);
-
-        assert_eq!(
-            files,
-            vec![
-                src.join("App.vue"),
-                src.join("Panel.jsx"),
-                src.join("Widget.tsx"),
-                src.join("config.js"),
-                src.join("index.html"),
-                src.join("store.ts")
-            ]
-        );
-    }
-
-    #[test]
-    fn collection_applies_config_ignores_and_nested_node_modules() {
-        let dir = tempfile::tempdir().unwrap();
-        let src = dir.path().join("src");
-        let scripts_dep = dir.path().join("scripts/node_modules/chalk/source");
-        fs::create_dir_all(&src).unwrap();
-        fs::create_dir_all(&scripts_dep).unwrap();
-        fs::write(src.join("App.vue"), "").unwrap();
-        fs::write(src.join("Generated.vue"), "").unwrap();
-        fs::write(scripts_dep.join("index.d.ts"), "").unwrap();
-
-        let ignore_set = LintIgnoreSet::new(
-            &[
-                crate::config::ConfigEntryIgnore {
-                    base_path: None,
-                    pattern: "src/Generated.vue".into(),
-                },
-                crate::config::ConfigEntryIgnore {
-                    base_path: None,
-                    pattern: "node_modules/**".into(),
-                },
-            ],
-            dir.path(),
-        );
-        let files = collect_lint_files(
-            &[dir.path().display().to_string().into()],
-            ignore_set.as_ref(),
-        );
-
-        assert_eq!(files, vec![src.join("App.vue")]);
-    }
-
-    #[test]
-    fn recursive_globs_include_dot_directories() {
-        let dir = tempfile::tempdir().unwrap();
-        let docs = dir.path().join("docs/.vitepress/components");
-        fs::create_dir_all(&docs).unwrap();
-        let download_page = docs.join("DownloadPage.vue");
-        fs::write(&download_page, "").unwrap();
-
-        let files = collect_lint_files(
-            &[dir.path().join("**/*.vue").display().to_string().into()],
-            None,
-        );
-
-        assert_eq!(files, vec![download_page]);
-    }
-}
+#[path = "collect_tests.rs"]
+mod tests;

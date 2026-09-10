@@ -1743,6 +1743,7 @@ linter	Linter	source	crates/vize_patina/src/visitor.rs	7	s0	S0	stage	vize_s0	pre
 linter	Linter	source	crates/vize_patina/src/visitor.rs	7	old_ast	old AST/parser	old	vize_relief	legacy	3
 linter	Linter	test/dev	crates/vize/src/commands/lint.rs	34	s0	S0	stage	vize_s0	preferred	2
 linter	Linter	source	crates/vize/src/commands/lint/args.rs	5	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize/src/commands/lint/collect_tests.rs	135	s0	S0	stage	vize_s0	preferred	4
 linter	Linter	source	crates/vize/src/commands/lint/collect.rs	6	s0	S0	stage	vize_s0	preferred	3
 linter	Linter	source	crates/vize/src/commands/lint/cross_file.rs	4	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	1
@@ -1752,7 +1753,8 @@ linter	Linter	test/dev	crates/vize/src/commands/lint/entry_rules_tests.rs	7	s0	S
 linter	Linter	source	crates/vize/src/commands/lint/entry_rules.rs	5	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize/src/commands/lint/entry_rules/rule_option_mapping.rs	1	s0	S0	stage	vize_s0	preferred	14
 linter	Linter	source	crates/vize/src/commands/lint/fix.rs	8	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize/src/commands/lint/patterns.rs	22	s0	S0	stage	vize_s0	preferred	4
+linter	Linter	source	crates/vize/src/commands/lint/patterns.rs	22	s0	S0	stage	vize_s0	preferred	11
+linter	Linter	test/dev	crates/vize/src/commands/lint/patterns.rs	113	s0	S0	stage	vize_s0	preferred	4
 linter	Linter	source	crates/vize/src/commands/lint/stdout.rs	4	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/benches/package_route.rs	40	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	s0	S0	stage	vize_s0	preferred	1
