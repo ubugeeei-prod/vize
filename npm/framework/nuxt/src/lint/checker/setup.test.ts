@@ -68,6 +68,18 @@ void test("setup connects the generated config seam to the Vite addon", async ()
   });
 });
 
+void test("setup treats Nuxt rolldown-vite as a Vite checker host", async () => {
+  let registered = false;
+  const result = await setupNuxtLintChecker(true, nuxt({ builder: "rolldown-vite" }), generation, {
+    addVitePlugin: async () => {
+      registered = true;
+    },
+  });
+
+  assert.equal(result?.builder, "vite");
+  assert.equal(registered, true);
+});
+
 void test("setup connects every explicit option to the webpack addon", async () => {
   let registered: unknown;
   const result = await setupNuxtLintChecker(

@@ -51,6 +51,22 @@ Nuxt.
 During development, the server response cleanup preserves valid URL-encoded Nuxt asset links such
 as `%40fs/` and encoded `assets/` paths while dropping decoded null-byte or traversal paths.
 
+To verify that Vize, not Nuxt's host Vue compiler, handled an SFC, enable compiler debug logging:
+
+```ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    compiler: { debug: true },
+  },
+});
+```
+
+Nuxt defaults to on-demand SFC compilation, so debug builds print `[vize] load: on-demand compiling
+...` only for files that actually enter the compiler pipeline. Published `@vizejs/nuxt` packages pin
+`vize`, `@vizejs/vite-plugin`, `@vizejs/native`, and the sibling Vize packages to the same release
+version.
+
 ## Module Options
 
 `@vizejs/nuxt` keeps the simple `compiler: true | false` switch, but the module options also expose

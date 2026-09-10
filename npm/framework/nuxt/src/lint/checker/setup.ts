@@ -1,5 +1,6 @@
 import path from "node:path";
 
+import { getNuxtBuilderKind } from "../../builder.ts";
 import type { NuxtLintConfigGeneration } from "../generation.ts";
 import {
   resolveNuxtLintCheckerOptions,
@@ -51,13 +52,6 @@ async function addWebpackPlugin(plugin: NuxtLintCheckerWebpackPlugin): Promise<v
   kit.addWebpackPlugin(plugin, { server: false });
 }
 
-function builderKind(builder: unknown): "unsupported" | "vite" | "webpack" {
-  if (typeof builder !== "string") return "unsupported";
-  if (builder === "vite" || builder.includes("vite-builder")) return "vite";
-  if (builder === "webpack" || builder.includes("webpack-builder")) return "webpack";
-  return "unsupported";
-}
-
 /** Register the dev-only adapter over Phase 3's generated config artifact. */
 export async function setupNuxtLintChecker(
   checker: boolean | VizeNuxtLintCheckerOptions | undefined,
@@ -78,7 +72,7 @@ export async function setupNuxtLintChecker(
   if (options === false) return undefined;
   const rootDir = path.resolve(nuxt.options.rootDir);
   const config = { configFile: generation.configFile, options, rootDir };
-  const builder = builderKind(nuxt.options.builder);
+  const builder = getNuxtBuilderKind(nuxt.options.builder);
 
   if (builder === "vite") {
     const register = dependencies.addVitePlugin ?? addVitePlugin;

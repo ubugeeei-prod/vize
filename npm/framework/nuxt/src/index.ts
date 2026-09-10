@@ -8,6 +8,7 @@ import { patchNuxtClientManifestCloseBundlePlugin } from "./client-manifest-brid
 import { patchNuxtHostVuePluginForCompilerExcludes } from "./host-vue-bridge";
 import { patchNuxtKeyedFunctionsPlugin, type ViteTransformResult } from "./keyed-functions-bridge";
 import "./schema";
+import { isViteNuxtBuilder } from "./builder";
 import * as bridgeFastPath from "./bridge-fast-path";
 import type { VizeNuxtCompilerOptions, VizeNuxtOptions } from "./options";
 import {
@@ -162,15 +163,12 @@ function getDetectedNuxtMajor(nuxt: unknown): 2 | 3 | 4 | null {
 }
 
 function hasNuxtViteCompilerSupport(nuxt: NuxtWithBuilderOptions): boolean {
-  const builder = nuxt.options.builder;
-  if (typeof builder === "string") {
-    return builder === "vite" || builder.includes("vite-builder");
+  if (isViteNuxtBuilder(nuxt.options.builder)) {
+    return true;
   }
-
   if (nuxt.options.vite) {
     return true;
   }
-
   return getDetectedNuxtMajor(nuxt) !== 2;
 }
 
