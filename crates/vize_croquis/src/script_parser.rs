@@ -44,6 +44,9 @@ mod binding_classification_tests;
 mod emits_ranges_tests;
 
 #[cfg(test)]
+mod enum_tests;
+
+#[cfg(test)]
 mod interface_extends_tests;
 
 #[cfg(test)]

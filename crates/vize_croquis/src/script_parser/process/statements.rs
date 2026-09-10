@@ -23,7 +23,9 @@ use super::super::extract::{
     process_type_export,
 };
 use super::super::walk::{extract_function_params, walk_expression, walk_statement};
+use super::enums::process_enum_declaration;
 use super::macros;
+use super::vue_runtime_api::is_vue_runtime_api;
 
 /// Process a single statement
 pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, source: &str) {
@@ -36,6 +38,9 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
 
         // Class declarations
         Statement::ClassDeclaration(class) => process_class_declaration(result, class),
+
+        // Runtime TypeScript enums are setup values; erased enums stay type-only.
+        Statement::TSEnumDeclaration(enumeration) => process_enum_declaration(result, enumeration),
 
         // Expression statements (may contain macro calls and callback scopes)
         Statement::ExpressionStatement(expr_stmt) => {
@@ -323,36 +328,9 @@ fn process_exported_value_declaration(
             process_function_declaration(result, func, source)
         }
         Declaration::ClassDeclaration(class) => process_class_declaration(result, class),
+        Declaration::TSEnumDeclaration(enumeration) => {
+            process_enum_declaration(result, enumeration)
+        }
         _ => {}
     }
-}
-
-fn is_vue_runtime_api(name: &str) -> bool {
-    matches!(
-        name,
-        "inject"
-            | "provide"
-            | "ref"
-            | "shallowRef"
-            | "reactive"
-            | "shallowReactive"
-            | "computed"
-            | "readonly"
-            | "shallowReadonly"
-            | "toRef"
-            | "toRefs"
-            | "watch"
-            | "watchEffect"
-            | "watchPostEffect"
-            | "watchSyncEffect"
-            | "onMounted"
-            | "onUnmounted"
-            | "onBeforeMount"
-            | "onBeforeUnmount"
-            | "onUpdated"
-            | "onBeforeUpdate"
-            | "onActivated"
-            | "onDeactivated"
-            | "onWatcherCleanup"
-    )
 }

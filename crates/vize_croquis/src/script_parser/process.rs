@@ -16,10 +16,12 @@
 mod bindings;
 mod class_component;
 mod class_component_props;
+mod enums;
 mod macros;
 mod module_exports;
 mod options_api;
 mod statements;
+mod vue_runtime_api;
 
 pub(in crate::script_parser) use options_api::collect_options_api_component_metadata;
 pub use options_api::{collect_options_descriptor, collect_options_object};

@@ -33,6 +33,8 @@ mod public_instance_guard_tests;
 mod scope;
 mod semantic_links;
 #[cfg(test)]
+mod strict_template_global_enum_tests;
+#[cfg(test)]
 mod strict_template_global_fallback_tests;
 #[cfg(test)]
 mod strict_template_globals_tests;
