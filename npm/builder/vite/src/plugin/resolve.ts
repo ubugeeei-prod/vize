@@ -16,6 +16,7 @@ import {
 
 import type { VizePluginState } from "./state.ts";
 import { isInsidePath, isProjectSourceImporter, normalizeImporterFilePath } from "./importer.ts";
+import { resolvePackageJsonImportFromVizeImporter } from "./package-imports.ts";
 import { cleanVueSfcImporter, resolveRelativeVueSfcImport } from "./resolve-relative-vue.ts";
 import {
   LEGACY_VIZE_PREFIX,
@@ -664,9 +665,7 @@ function nativeCssAliasRules(
 }
 
 function isPotentialVizeResolveId(id: string): boolean {
-  // `resolveId` is called for every dependency in a Vite graph. Most bare
-  // package imports cannot be Vize-owned, so this cheap string gate keeps regular
-  // dependencies off the heavier classifier/alias/Node-resolution path.
+  // Keep regular dependencies off the heavier classifier/alias/Node-resolution path.
   return (
     id.startsWith("\0") ||
     id.startsWith("vize:") ||
@@ -688,8 +687,6 @@ function classifyImporterRequest(
 }
 
 export function isPotentialVizeImporter(importer: string | undefined): boolean {
-  // Imports from Vize virtual modules still need custom resolution even when the
-  // requested id itself is a regular-looking relative or bare specifier.
   if (importer === undefined) {
     return false;
   }
@@ -697,12 +694,8 @@ export function isPotentialVizeImporter(importer: string | undefined): boolean {
     return true;
   }
 
-  // This gate keeps ordinary dependency edges off the classifier, so it must not
-  // call the classifier itself (#3427). `isVueSfcPath` is
-  // `normalizedVuePath.endsWith(".vue")`, and `normalizedVuePath` only ever strips
-  // a trailing `.ts`/`.tsx` from the pre-`?` path, so it can only end in `.vue`
-  // when the importer contains `.vue`: a strictly weaker test, so every importer
-  // the classifier would have accepted still reaches it.
+  // Avoid classifying ordinary dependency edges while still catching every
+  // classifier-accepted Vue importer (#3427).
   return importer.includes(".vue");
 }
 
@@ -945,13 +938,12 @@ export async function resolveIdHook(
       return relativeVueResolved;
     }
 
-    // Subpath imports (e.g., #imports/entry from Nuxt)
     if (id.startsWith("#")) {
       try {
-        return await resolveWithVite(ctx, state, id, cleanImporter, { skipSelf: true });
-      } catch {
-        return null;
-      }
+        const resolved = await resolveWithVite(ctx, state, id, cleanImporter, { skipSelf: true });
+        if (resolved) return resolved;
+      } catch {}
+      return resolvePackageJsonImportFromVizeImporter(state, id, cleanImporter);
     }
 
     // For non-vue files, resolve relative to the real importer

@@ -29,6 +29,7 @@ import "./plugin/load-storybook.test.ts";
 import "./plugin/load.test.ts";
 import "./plugin/load-dependency-sfc.test.ts";
 import "./plugin/native.test.ts";
+import "./plugin/package-imports.test.ts";
 import "./plugin/quasar.test.ts";
 import "./plugin/resolve-peer-runtime.test.ts";
 import "./plugin/resolve-vue-runtime.test.ts";
