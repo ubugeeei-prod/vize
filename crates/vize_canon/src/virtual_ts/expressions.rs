@@ -28,6 +28,7 @@ mod reserved_props;
 mod sequence_prop_tests;
 mod spread_reserved_props;
 mod statements;
+mod ts_suppression_comments;
 mod value_checks;
 mod vif_chain;
 

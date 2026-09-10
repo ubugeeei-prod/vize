@@ -10,6 +10,7 @@ use super::component_ref_callbacks::generate_component_ref_callback_statement;
 use super::directive_values::generate_directive_value_statement;
 use super::native_props::generate_native_prop_statement;
 use super::reserved_props::rewrite_reserved_template_prop;
+use super::ts_suppression_comments::expression_source_for_typecheck;
 use super::value_checks::TemplateValueChecks;
 use super::vif_chain::{VifControlFlowChain, emit_vif_control_flow_chain};
 use crate::virtual_ts::scope::{append_ignored_vif_guard_open, remove_enclosing_vif_guard_prefix};
@@ -21,7 +22,6 @@ use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
 use vize_croquis::croquis::{TemplateExpression, TemplateExpressionKind};
-use vize_croquis::drawer::strip_js_comments;
 
 /// Generate template expressions, compacting recognized v-if chains into
 /// TypeScript control-flow blocks.
@@ -202,7 +202,7 @@ fn generate_vif_guard_expression(
     let src_end = (template_offset + expr.end) as usize;
     let expression = profile!(
         "canon.virtual_ts.expression.strip_comments",
-        strip_js_comments(expr.content.as_str())
+        expression_source_for_typecheck(expr.content.as_str())
     );
     let trimmed_expression = expression.as_ref().trim();
     let rewritten_expression =
@@ -259,7 +259,7 @@ pub(super) fn generate_expression_statement(
     } else {
         profile!(
             "canon.virtual_ts.expression.strip_comments",
-            strip_js_comments(expr.content.as_str())
+            expression_source_for_typecheck(expr.content.as_str())
         )
     };
     let trimmed_expression = expression.as_ref().trim();

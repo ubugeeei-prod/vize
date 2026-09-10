@@ -188,6 +188,45 @@ function acceptElement(element: Element) {
 }
 
 #[test]
+fn template_expressions_preserve_authored_ts_suppression_comments() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "template-expression-ts-suppression-comments",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const items: { id: number }[] = [{ id: 1 }]
+</script>
+
+<template>
+  <div>
+    {{
+      // @ts-ignore
+      items[0].missingProperty
+    }}
+    {{
+      // @ts-expect-error
+      items[0].alsoMissing
+    }}
+  </div>
+</template>
+"#,
+        )],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    assert_eq!(
+        snapshot,
+        Some(Vec::new()),
+        "template expression generation should preserve authored TypeScript suppression comments"
+    );
+}
+
+#[test]
 fn unresolved_global_component_ref_callbacks_do_not_emit_standalone_any() {
     if resolve_test_tsgo_binary().is_none() {
         return;
