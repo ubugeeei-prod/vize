@@ -90,11 +90,12 @@ fn write_art_chunk(
 ) -> Result<(), FormatError> {
     let chunk = lines.join("\n");
     let formatted = crate::template::format_template_content(chunk.trim(), options)?;
-    let indent = options.indent_bytes();
-    for line in formatted.lines() {
-        output.extend_from_slice(indent);
-        output.extend_from_slice(line.as_bytes());
-        output.extend_from_slice(options.newline_bytes());
-    }
+    let trimmed = formatted.trim_end_matches('\n').trim_end_matches('\r');
+    super::template_indent::write_indented_template(
+        output,
+        trimmed,
+        options.indent_bytes(),
+        options.newline_bytes(),
+    );
     Ok(())
 }
