@@ -47,7 +47,7 @@ observational guard for planning only. It does not change rollout state.
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
 | Compiler                   |          1135 |                   787 |               348 |             158 |     373 |            1008 |      658 |           560 |           699 |
 | Linter                     |           358 |                   358 |                 0 |             298 |     301 |             719 |      238 |           387 |           567 |
-| Typechecker                |           925 |                   255 |               670 |             414 |     214 |             869 |      684 |           499 |           713 |
+| Typechecker                |           925 |                   255 |               670 |             414 |     214 |             869 |      684 |           500 |           714 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            20 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            69 |
 | LSP                        |           301 |                   301 |                 0 |             115 |      47 |             349 |      114 |           174 |           410 |
@@ -147,9 +147,9 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 | `crates/vize/src/commands/check/nuxt/parsing.rs:5`                             | source   | S0 1<br>raw OXC 11                                          |    12 |
 | `crates/vize_canon/Cargo.toml:16`                                              | manifest | S0 1<br>old AST/parser 3<br>Croquis analysis 1<br>raw OXC 6 |    11 |
 | `crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs:7` | source   | S0 10                                                       |    10 |
-| `crates/vize_canon/src/virtual_ts/expressions/statements.rs:17`                | source   | S0 6<br>Croquis analysis 3                                  |     9 |
+| `crates/vize_canon/src/virtual_ts/scope/context.rs:3`                          | source   | S0 4<br>old AST/parser 2<br>Croquis analysis 3              |     9 |
 
-Additional source/manifest rows are in the TSV: 331 omitted.
+Additional source/manifest rows are in the TSV: 332 omitted.
 
 #### Top test/dev files
 
