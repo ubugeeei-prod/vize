@@ -1992,20 +1992,9 @@
         "endLine": 76,
         "endColumn": 79,
         "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "script/no-ref-as-operand",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
-        "severity": 2,
-        "message": "[vize:script/no-ref-as-operand] 'maxHeight' is a ref and must be unwrapped with `.value` here.",
-        "line": 150,
-        "column": 31,
-        "endLine": 150,
-        "endColumn": 40,
-        "help": "A ref holds its value behind .value. Read it as <name>.value in this position; passing the ref itself (e.g. to watch) does not need .value."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 11
   },
   {

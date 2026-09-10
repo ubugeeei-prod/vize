@@ -1434,6 +1434,8 @@ linter	Linter	source	crates/vize_patina/src/rules/script/no_ref_as_operand.rs	29
 linter	Linter	source	crates/vize_patina/src/rules/script/no_ref_as_operand.rs	29	raw_oxc	raw OXC	raw	oxc_ast	raw	5
 linter	Linter	source	crates/vize_patina/src/rules/script/no_ref_as_operand.rs	29	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	2
 linter	Linter	source	crates/vize_patina/src/rules/script/no_ref_as_operand.rs	29	raw_oxc	raw OXC	raw	oxc_syntax	raw	2
+linter	Linter	source	crates/vize_patina/src/rules/script/no_ref_as_operand/scope.rs	1	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/script/no_ref_as_operand/scope.rs	1	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_reserved_identifiers.rs	36	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_reserved_identifiers.rs	36	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_reserved_identifiers.rs	36	raw_oxc	raw OXC	raw	oxc_syntax	raw	1

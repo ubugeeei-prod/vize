@@ -210,6 +210,35 @@ fn test_shadowing_local_not_flagged() {
 }
 
 #[test]
+fn test_shadowing_block_local_not_flagged() {
+    let source = "\
+const maxHeight = ref(0)
+const previewUrl = computed(() => {
+  const maxHeight = parseInt(paramClass.get('maxHeight'))
+  return maxHeight === 0 ? '500' : Math.min(maxHeight, 700).toString()
+})";
+    assert_eq!(lint(source).error_count, 0);
+}
+
+#[test]
+fn test_block_shadowing_does_not_leak() {
+    let source = "const count = ref(0)\n{ const count = 1; count + 1 }\ncount + 1";
+    assert_eq!(lint(source).error_count, 1);
+}
+
+#[test]
+fn test_catch_param_shadowing_not_flagged() {
+    let source = "const error = ref(false)\ntry {} catch (error) { if (error) {} }";
+    assert_eq!(lint(source).error_count, 0);
+}
+
+#[test]
+fn test_for_of_binding_shadowing_not_flagged() {
+    let source = "const item = ref(0)\nfor (const item of items) { item + 1 }";
+    assert_eq!(lint(source).error_count, 0);
+}
+
+#[test]
 fn test_ref_used_inside_nested_function() {
     // A top-level ref used as an operand inside a nested function is flagged.
     let source = "const count = ref(0)\nfunction f() { return count + 1 }";

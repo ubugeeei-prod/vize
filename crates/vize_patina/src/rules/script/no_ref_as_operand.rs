@@ -27,18 +27,19 @@
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
-    AssignmentExpression, BinaryExpression, BindingPattern, ConditionalExpression,
-    DoWhileStatement, Expression, ForStatement, Function, IfStatement, LogicalExpression, Program,
-    Statement, TemplateLiteral, UnaryExpression, UpdateExpression, VariableDeclaration,
-    WhileStatement,
+    AssignmentExpression, BinaryExpression, BlockStatement, CatchClause, ConditionalExpression,
+    DoWhileStatement, Expression, ForInStatement, ForOfStatement, ForStatement, ForStatementLeft,
+    Function, IfStatement, LogicalExpression, Program, TemplateLiteral, UnaryExpression,
+    UpdateExpression, WhileStatement,
 };
 use oxc_ast_visit::{
     Visit,
     walk::{
-        walk_assignment_expression, walk_binary_expression, walk_conditional_expression,
-        walk_do_while_statement, walk_for_statement, walk_function, walk_if_statement,
-        walk_logical_expression, walk_program, walk_template_literal, walk_unary_expression,
-        walk_update_expression, walk_while_statement,
+        walk_assignment_expression, walk_binary_expression, walk_block_statement,
+        walk_catch_clause, walk_conditional_expression, walk_do_while_statement,
+        walk_for_in_statement, walk_for_of_statement, walk_for_statement, walk_function,
+        walk_if_statement, walk_logical_expression, walk_program, walk_template_literal,
+        walk_unary_expression, walk_update_expression, walk_while_statement,
     },
 };
 use oxc_span::Span;
@@ -46,16 +47,17 @@ use oxc_syntax::operator::UnaryOperator;
 use oxc_syntax::scope::ScopeFlags;
 use vize_s0::{CompactString, FxHashMap};
 
+mod scope;
+
+use scope::{
+    collect_scope_bindings, merge_scope_bindings, record_binding_names, record_declaration,
+};
+
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-ref-as-operand",
     description: "Require ref-bound variables to be accessed via `.value` when used as an operand",
     default_severity: Severity::Error,
 };
-
-/// The ref factories whose direct call result is a single ref object that must
-/// be unwrapped with `.value`. Mirrors eslint-plugin-vue's tracked composables;
-/// notably excludes `reactive`/`toRefs` (their results are not single refs).
-const REF_FACTORIES: [&str; 5] = ["ref", "computed", "shallowRef", "toRef", "customRef"];
 
 /// Require ref-bound variables to be unwrapped via `.value` when used as an operand.
 pub struct NoRefAsOperand;
@@ -90,7 +92,8 @@ impl ScriptRule for NoRefAsOperand {
 /// Tracks, per lexical scope, which names are bound to a ref factory result.
 ///
 /// A scope frame is pushed on entry to the program, every function/arrow body,
-/// and every `for` header; bindings introduced by `var`/`let`/`const` in that
+/// block/catch body, and every `for` header; bindings introduced by variable
+/// declarations or parameters in that
 /// frame map a name to whether its initializer is a ref factory call. Operand
 /// identifiers resolve against the stack innermost-first, so a same-named
 /// non-ref binding closer to the use shadows an outer ref (no false positive).
@@ -114,6 +117,9 @@ impl<'a> Visit<'a> for RefOperandVisitor<'_> {
         for param in &it.params.items {
             record_binding_names(&param.pattern, false, &mut frame);
         }
+        if let Some(rest) = &it.params.rest {
+            record_binding_names(&rest.rest.argument, false, &mut frame);
+        }
         if let Some(body) = it.body.as_ref() {
             merge_scope_bindings(&body.statements, &mut frame);
         }
@@ -127,9 +133,28 @@ impl<'a> Visit<'a> for RefOperandVisitor<'_> {
         for param in &it.params.items {
             record_binding_names(&param.pattern, false, &mut frame);
         }
+        if let Some(rest) = &it.params.rest {
+            record_binding_names(&rest.rest.argument, false, &mut frame);
+        }
         merge_scope_bindings(&it.body.statements, &mut frame);
         self.scopes.push(frame);
         oxc_ast_visit::walk::walk_arrow_function_expression(self, it);
+        self.scopes.pop();
+    }
+
+    fn visit_block_statement(&mut self, it: &BlockStatement<'a>) {
+        self.scopes.push(collect_scope_bindings(&it.body));
+        walk_block_statement(self, it);
+        self.scopes.pop();
+    }
+
+    fn visit_catch_clause(&mut self, it: &CatchClause<'a>) {
+        let mut frame = FxHashMap::default();
+        if let Some(param) = &it.param {
+            record_binding_names(&param.pattern, false, &mut frame);
+        }
+        self.scopes.push(frame);
+        walk_catch_clause(self, it);
         self.scopes.pop();
     }
 
@@ -145,6 +170,26 @@ impl<'a> Visit<'a> for RefOperandVisitor<'_> {
             self.check_operand(test);
         }
         walk_for_statement(self, it);
+        self.scopes.pop();
+    }
+
+    fn visit_for_in_statement(&mut self, it: &ForInStatement<'a>) {
+        let mut frame = FxHashMap::default();
+        if let ForStatementLeft::VariableDeclaration(declaration) = &it.left {
+            record_declaration(declaration, &mut frame);
+        }
+        self.scopes.push(frame);
+        walk_for_in_statement(self, it);
+        self.scopes.pop();
+    }
+
+    fn visit_for_of_statement(&mut self, it: &ForOfStatement<'a>) {
+        let mut frame = FxHashMap::default();
+        if let ForStatementLeft::VariableDeclaration(declaration) = &it.left {
+            record_declaration(declaration, &mut frame);
+        }
+        self.scopes.push(frame);
+        walk_for_of_statement(self, it);
         self.scopes.pop();
     }
 
@@ -261,88 +306,6 @@ impl RefOperandVisitor<'_> {
                  position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
             );
         self.result.add_diagnostic(diagnostic);
-    }
-}
-
-/// Collect the top-level bindings of a statement list into a fresh frame.
-fn collect_scope_bindings(statements: &[Statement<'_>]) -> FxHashMap<CompactString, bool> {
-    let mut frame = FxHashMap::default();
-    merge_scope_bindings(statements, &mut frame);
-    frame
-}
-
-/// Record every variable binding declared directly in `statements` into `frame`,
-/// marking each as a ref (initializer is a ref factory call) or not. Nested
-/// blocks/functions are not descended into: their bindings belong to their own
-/// frame, pushed when the visitor enters them.
-fn merge_scope_bindings(statements: &[Statement<'_>], frame: &mut FxHashMap<CompactString, bool>) {
-    for statement in statements {
-        if let Statement::VariableDeclaration(declaration) = statement {
-            record_declaration(declaration, frame);
-        }
-    }
-}
-
-/// Record the bindings of a single variable declaration. A plain
-/// `const NAME = factory(...)` marks `NAME` as a ref; any other initializer (or
-/// a destructuring pattern) marks the bound names as non-refs so they shadow.
-fn record_declaration(
-    declaration: &VariableDeclaration<'_>,
-    frame: &mut FxHashMap<CompactString, bool>,
-) {
-    for declarator in &declaration.declarations {
-        let is_ref = matches!(&declarator.id, BindingPattern::BindingIdentifier(_))
-            && declarator.init.as_ref().is_some_and(is_ref_factory_call);
-        record_binding_names(&declarator.id, is_ref, frame);
-    }
-}
-
-/// Insert the names bound by `pattern` into `frame` with the given ref flag.
-/// Only a plain identifier can be a ref binding; destructured names are always
-/// recorded as non-refs (so they correctly shadow an outer ref of that name).
-fn record_binding_names(
-    pattern: &BindingPattern<'_>,
-    is_ref: bool,
-    frame: &mut FxHashMap<CompactString, bool>,
-) {
-    match pattern {
-        BindingPattern::BindingIdentifier(id) => {
-            frame.insert(CompactString::from(id.name.as_str()), is_ref);
-        }
-        BindingPattern::ObjectPattern(object) => {
-            for property in &object.properties {
-                record_binding_names(&property.value, false, frame);
-            }
-            if let Some(rest) = &object.rest {
-                record_binding_names(&rest.argument, false, frame);
-            }
-        }
-        BindingPattern::ArrayPattern(array) => {
-            for element in array.elements.iter().flatten() {
-                record_binding_names(element, false, frame);
-            }
-            if let Some(rest) = &array.rest {
-                record_binding_names(&rest.argument, false, frame);
-            }
-        }
-        BindingPattern::AssignmentPattern(assignment) => {
-            record_binding_names(&assignment.left, false, frame);
-        }
-    }
-}
-
-/// Whether `expression` is a direct call to a known ref factory, e.g. `ref(0)`
-/// or `computed(() => ...)`. Parenthesized and TS-cast wrappers are peeled.
-fn is_ref_factory_call(expression: &Expression<'_>) -> bool {
-    match expression {
-        Expression::CallExpression(call) => {
-            matches!(&call.callee, Expression::Identifier(id) if REF_FACTORIES.contains(&id.name.as_str()))
-        }
-        Expression::ParenthesizedExpression(paren) => is_ref_factory_call(&paren.expression),
-        Expression::TSAsExpression(ts) => is_ref_factory_call(&ts.expression),
-        Expression::TSSatisfiesExpression(ts) => is_ref_factory_call(&ts.expression),
-        Expression::TSNonNullExpression(ts) => is_ref_factory_call(&ts.expression),
-        _ => false,
     }
 }
 
