@@ -85,8 +85,22 @@ fn art_block_multiline_attribute_values_are_idempotent() {
     let second = format_sfc(&first.code, &options).unwrap();
     let third = format_sfc(&second.code, &options).unwrap();
 
-    assert!(first.code.contains("\n        height: 100%;\n"));
-    assert!(!first.code.contains("\n          height: 100%;\n"));
+    assert_eq!(
+        first.code.as_str(),
+        r#"<art>
+  <section>
+    <div
+      style="
+        height: 100%;
+        display: flex;
+      "
+    >
+      hello
+    </div>
+  </section>
+</art>
+"#
+    );
     assert_eq!(first.code, second.code);
     assert_eq!(second.code, third.code);
 }
