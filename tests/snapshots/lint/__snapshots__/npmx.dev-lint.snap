@@ -1909,17 +1909,6 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
-        "ruleId": "a11y/no-aria-hidden-on-focusable",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 2,
-        "message": "[vize:a11y/no-aria-hidden-on-focusable] aria-hidden=\"true\" must not be used on focusable elements",
-        "line": 79,
-        "column": 11,
-        "endLine": 86,
-        "endColumn": 12,
-        "help": "Remove aria-hidden=\"true\" or make the element non-focusable with tabindex=\"-1\""
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1942,7 +1931,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 6
   },
   {
