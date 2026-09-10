@@ -169,6 +169,22 @@ mod tests {
     }
 
     #[test]
+    fn global_id_precedes_unique_key_and_ref() {
+        let linter = create_linter();
+        let valid = linter.lint_template(
+            r#"<div v-for="item in items" :id="item.k" :key="item.k" ref="el" class="x" />"#,
+            "test.vue",
+        );
+        assert_eq!(valid.warning_count, 0, "got: {:?}", valid.diagnostics);
+
+        let invalid = linter.lint_template(
+            r#"<div v-for="item in items" :key="item.k" :id="item.k" class="x" />"#,
+            "test.vue",
+        );
+        assert_eq!(invalid.warning_count, 1, "got: {:?}", invalid.diagnostics);
+    }
+
+    #[test]
     fn directives_participate_in_ordering() {
         let linter = create_linter();
         let result =
