@@ -16,8 +16,10 @@ mod external_slot_payloads;
 mod global_component_callbacks;
 mod imported_component_ref_expose;
 mod imported_runtime_props;
+mod large_declaration_identity;
 mod literal_dynamic_slot_names;
 mod native_prop_anchors;
+mod normalization;
 mod open_slot_index_signature;
 mod optional_boolean_props;
 mod options_api_bridge_anchors;
@@ -43,24 +45,7 @@ mod v_for_source_callbacks;
 mod vapor_anchors;
 mod vue27_render_h;
 
-fn normalize_component_check_props_tail(message: &str) -> std::string::String {
-    const START: &str = "__VizeComponentCheckProps<Props, ";
-    const STABLE_TYPE: &str = "__VizeComponentCheckProps<Props, __VizeFallthroughAttrs>";
-    let mut output = std::string::String::with_capacity(message.len());
-    let mut rest = message;
-    while let Some(start) = rest.find(START) {
-        output.push_str(&rest[..start]);
-        let from_type = &rest[start..];
-        let Some(end) = from_type.find("'.") else {
-            output.push_str(from_type);
-            return output;
-        };
-        output.push_str(STABLE_TYPE);
-        rest = &from_type[end..];
-    }
-    output.push_str(rest);
-    output
-}
+pub(super) use normalization::normalize_component_check_props_tail;
 
 #[test]
 fn issue_2645_infers_generic_sfc_props_in_tsx() {

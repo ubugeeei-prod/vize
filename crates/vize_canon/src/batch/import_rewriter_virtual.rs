@@ -70,7 +70,7 @@ fn source_needs_virtual_rewrite(path: &Path) -> bool {
     false
 }
 
-fn resolve_source_path(path: &Path) -> Option<PathBuf> {
+pub(super) fn resolve_source_path(path: &Path) -> Option<PathBuf> {
     if path.is_file() {
         return Some(path.to_path_buf());
     }

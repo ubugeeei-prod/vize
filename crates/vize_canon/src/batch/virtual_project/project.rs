@@ -19,8 +19,8 @@ mod config;
 mod package_routes;
 
 use super::build::{
-    RegisteredFile, VirtualBuildContext, build_registered_file, build_script_registered_file,
-    build_vue_registered_file, source_type_for_path,
+    RegisteredFile, ScriptBuildContext, VirtualBuildContext, build_registered_file,
+    build_script_registered_file, build_vue_registered_file, source_type_for_path,
 };
 use super::setup_props::RuntimePropResolveCache;
 use super::{VirtualProject, project_virtual_root};
@@ -127,6 +127,7 @@ impl VirtualProject {
                 hoist_shared_preamble: true,
                 preserve_relative_declarations: package_route_path,
                 preserve_declaration_spelling: self.session_scripts,
+                mirrorable_project_files: None,
                 rewriter: &self.rewriter,
                 runtime_prop_resolve_cache: None,
             },
@@ -165,6 +166,11 @@ impl VirtualProject {
 
         let preserve_unused_diagnostics = self.tsconfig_preserves_unused_diagnostics();
         let runtime_prop_resolve_cache = RuntimePropResolveCache::default();
+        let mut mirrorable_project_files: FxHashSet<PathBuf> = valid_paths
+            .iter()
+            .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
+            .collect();
+        mirrorable_project_files.extend(self.original_index.keys().cloned());
         let build_context = VirtualBuildContext {
             project_root: self.project_root.as_path(),
             virtual_root: self.virtual_root.as_path(),
@@ -180,6 +186,7 @@ impl VirtualProject {
             hoist_shared_preamble: true,
             preserve_relative_declarations: false,
             preserve_declaration_spelling: self.session_scripts,
+            mirrorable_project_files: Some(&mirrorable_project_files),
             rewriter: &self.rewriter,
             runtime_prop_resolve_cache: Some(&runtime_prop_resolve_cache),
         };
@@ -227,6 +234,7 @@ impl VirtualProject {
                 hoist_shared_preamble: true,
                 preserve_relative_declarations: self.is_package_route_path(path),
                 preserve_declaration_spelling: self.session_scripts,
+                mirrorable_project_files: None,
                 rewriter: &self.rewriter,
                 runtime_prop_resolve_cache: None,
             },
@@ -260,10 +268,13 @@ impl VirtualProject {
             path,
             content,
             source_type,
-            (&self.project_root, &self.virtual_root),
-            &self.rewriter,
-            self.is_package_route_path(path),
-            self.session_scripts,
+            ScriptBuildContext {
+                roots: (&self.project_root, &self.virtual_root),
+                rewriter: &self.rewriter,
+                preserve_relative_declarations: self.is_package_route_path(path),
+                preserve_declaration_spelling: self.session_scripts,
+                mirrorable_project_files: None,
+            },
         )?;
         self.absorb_registered_file(registered);
         Ok(())

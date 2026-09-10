@@ -4,7 +4,6 @@
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{String as CompactString, ToCompactString, cstr, profile};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
@@ -12,12 +11,13 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use crate::batch::Diagnostic;
 use crate::batch::declaration_path::is_declaration_file;
 use crate::batch::error::{CorsaError, CorsaResult};
-use crate::batch::import_rewriter::ImportRewriter;
 use crate::batch::source_map::{CompositeSourceMap, SfcSourceMap};
-use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
+use crate::virtual_ts::VizeMapping;
 
+mod context;
 mod css_modules;
 pub(super) use super::paths::source_type_for_path;
+pub(super) use context::{ScriptBuildContext, VirtualBuildContext};
 pub(super) use css_modules::virtual_ts_options_for_descriptor;
 
 use super::VirtualFile;
@@ -27,7 +27,6 @@ use super::javascript_sfc::descriptor_is_unchecked_javascript;
 pub(super) use super::javascript_sfc::descriptor_uses_jsx_script;
 use super::jsx_build::build_jsx_registered_file;
 use super::passthrough::collect_passthrough_modules;
-use super::setup_props::RuntimePropResolveCache;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
 pub(super) const VUE_JSX_REFERENCE_DIRECTIVE: &str = "/// <reference types=\"vue/jsx\" />\n";
@@ -48,26 +47,6 @@ pub(super) struct RegisteredFile {
     pub(super) unchecked_javascript: bool,
 }
 
-#[derive(Clone, Copy)]
-pub(super) struct VirtualBuildContext<'a> {
-    pub(super) project_root: &'a Path,
-    pub(super) virtual_root: &'a Path,
-    pub(super) virtual_ts_options: &'a VirtualTsOptions,
-    pub(super) virtual_ts_check_options: VirtualTsCheckOptions,
-    pub(super) preserve_unused_diagnostics: bool,
-    pub(super) options_api: bool,
-    pub(super) legacy_vue2: bool,
-    pub(super) jsx_typecheck: bool,
-    pub(super) dialect: vize_carton::config::VueVersion,
-    pub(super) template_syntax: TemplateSyntaxMode,
-    pub(super) experimental_in_tag_comments: bool,
-    pub(super) hoist_shared_preamble: bool,
-    pub(super) preserve_relative_declarations: bool,
-    pub(super) preserve_declaration_spelling: bool,
-    pub(super) rewriter: &'a ImportRewriter,
-    pub(super) runtime_prop_resolve_cache: Option<&'a RuntimePropResolveCache>,
-}
-
 pub(super) fn build_registered_file(
     path: &Path,
     content: &str,
@@ -82,10 +61,7 @@ pub(super) fn build_registered_file(
             path,
             content,
             SourceType::ts(),
-            (context.project_root, context.virtual_root),
-            context.rewriter,
-            context.preserve_relative_declarations,
-            context.preserve_declaration_spelling,
+            context.script_context(),
         );
     }
 
@@ -102,15 +78,7 @@ pub(super) fn build_registered_file(
     let source_type = source_type_for_path(path).ok_or_else(|| CorsaError::PathError {
         path: path.to_path_buf(),
     })?;
-    build_script_registered_file(
-        path,
-        content,
-        source_type,
-        (context.project_root, context.virtual_root),
-        context.rewriter,
-        context.preserve_relative_declarations,
-        context.preserve_declaration_spelling,
-    )
+    build_script_registered_file(path, content, source_type, context.script_context())
 }
 
 pub(super) fn build_vue_registered_file(
@@ -176,7 +144,13 @@ pub(super) fn build_vue_registered_file(
     }
     let rewritten = profile!(
         "canon.import.rewrite.vue",
-        context.rewriter.rewrite(&code, source_type, path.parent())
+        context.rewriter.rewrite_generated_for_virtual_project(
+            &code,
+            source_type,
+            (context.project_root, context.virtual_root),
+            path.parent(),
+            context.mirrorable_project_files,
+        )
     );
     let source_map = CompositeSourceMap::new_vue(
         SfcSourceMap::new_with_semantic_links(
@@ -227,22 +201,36 @@ pub(super) fn build_script_registered_file(
     path: &Path,
     content: &str,
     source_type: SourceType,
-    roots: (&Path, &Path),
-    rewriter: &ImportRewriter,
-    preserve_relative_declarations: bool,
-    preserve_declaration_spelling: bool,
+    context: ScriptBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
     let rewritten = profile!("canon.import.rewrite.script", {
-        if preserve_relative_declarations {
-            rewriter.rewrite_for_package_shadow(content, source_type, roots, path.parent())
+        if context.preserve_relative_declarations {
+            context.rewriter.rewrite_for_package_shadow(
+                content,
+                source_type,
+                context.roots,
+                path.parent(),
+            )
         } else {
-            rewriter.rewrite_for_virtual_project(content, source_type, roots, path.parent())
+            context
+                .rewriter
+                .rewrite_for_virtual_project_with_mirrorable_files(
+                    content,
+                    source_type,
+                    context.roots,
+                    path.parent(),
+                    context.mirrorable_project_files,
+                )
         }
     });
-    let preserve_declaration_spelling =
-        preserve_declaration_spelling || should_preserve_esm_declaration_spelling(path, content);
-    let virtual_path =
-        super::paths::script_virtual_path(roots, path, content, preserve_declaration_spelling)?;
+    let preserve_declaration_spelling = context.preserve_declaration_spelling
+        || should_preserve_esm_declaration_spelling(path, content);
+    let virtual_path = super::paths::script_virtual_path(
+        context.roots,
+        path,
+        content,
+        preserve_declaration_spelling,
+    )?;
 
     Ok(RegisteredFile {
         file: VirtualFile {
@@ -253,7 +241,12 @@ pub(super) fn build_script_registered_file(
         },
         extra_virtual_files: Vec::new(),
         original_content: content.to_compact_string(),
-        passthrough_files: collect_passthrough_modules(path, content, roots.0, roots.1),
+        passthrough_files: collect_passthrough_modules(
+            path,
+            content,
+            context.roots.0,
+            context.roots.1,
+        ),
         diagnostics: Vec::new(),
         unchecked_javascript: false,
     })
