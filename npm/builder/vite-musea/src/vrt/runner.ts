@@ -25,6 +25,12 @@ export type { VrtResult, VrtSummary, ExtendedVrtOptions, PixelCompareOptions } f
 
 import type { VrtResult, VrtSummary, ExtendedVrtOptions } from "./types.js";
 
+type VrtJob = {
+  art: ArtFileInfo;
+  variantName: string;
+  viewport: ViewportConfig;
+};
+
 /**
  * VRT runner using Playwright.
  */
@@ -44,6 +50,7 @@ export class MuseaVrtRunner {
         { width: 1280, height: 720, name: "desktop" },
         { width: 375, height: 667, name: "mobile" },
       ],
+      workers: normalizeVrtWorkerCount(options.workers),
     };
     this.capture = {
       fullPage: options.capture?.fullPage ?? false,
@@ -120,45 +127,28 @@ export class MuseaVrtRunner {
       throw new Error("VRT runner not initialized. Call init() first.");
     }
 
-    const results: VrtResult[] = [];
     const retries = this.ci.retries ?? 0;
+    const jobs = createVrtJobs(artFiles, this.options.viewports);
 
-    for (const art of artFiles) {
-      for (const variant of art.variants) {
-        if (variant.skipVrt) {
-          continue;
+    return runJobsWithWorkers(jobs, this.options.workers, async (job) => {
+      let result: VrtResult | null = null;
+      let attempts = 0;
+
+      while (attempts <= retries) {
+        result = await this.captureAndCompare(job.art, job.variantName, job.viewport, baseUrl);
+        if (result.passed || result.isNew || !result.error) {
+          break;
         }
-
-        // Determine viewports: use per-variant viewport if defined, else global viewports
-        const viewports = variant.args?.viewport
-          ? [variant.args.viewport as ViewportConfig]
-          : this.options.viewports;
-
-        for (const viewport of viewports) {
-          let result: VrtResult | null = null;
-          let attempts = 0;
-
-          while (attempts <= retries) {
-            result = await this.captureAndCompare(art, variant.name, viewport, baseUrl);
-            if (result.passed || result.isNew || !result.error) {
-              break;
-            }
-            attempts++;
-            if (attempts <= retries) {
-              console.log(
-                `[vrt] Retry ${attempts}/${retries}: ${path.basename(art.path)}/${variant.name}`,
-              );
-            }
-          }
-
-          if (result) {
-            results.push(result);
-          }
+        attempts++;
+        if (attempts <= retries) {
+          console.log(
+            `[vrt] Retry ${attempts}/${retries}: ${path.basename(job.art.path)}/${job.variantName}`,
+          );
         }
       }
-    }
 
-    return results;
+      return result;
+    });
   }
 
   /**
@@ -280,4 +270,55 @@ export class MuseaVrtRunner {
   getSummary(results: VrtResult[]): VrtSummary {
     return computeSummary(results, this.startTime);
   }
+}
+
+export function normalizeVrtWorkerCount(workers: number | undefined): number {
+  if (workers === undefined || !Number.isFinite(workers)) {
+    return 1;
+  }
+  return Math.max(1, Math.floor(workers));
+}
+
+function createVrtJobs(artFiles: ArtFileInfo[], defaultViewports: ViewportConfig[]): VrtJob[] {
+  const jobs: VrtJob[] = [];
+  for (const art of artFiles) {
+    for (const variant of art.variants) {
+      if (variant.skipVrt) {
+        continue;
+      }
+
+      const viewports = variant.args?.viewport
+        ? [variant.args.viewport as ViewportConfig]
+        : defaultViewports;
+
+      for (const viewport of viewports) {
+        jobs.push({ art, variantName: variant.name, viewport });
+      }
+    }
+  }
+  return jobs;
+}
+
+async function runJobsWithWorkers<T>(
+  jobs: readonly VrtJob[],
+  workerCount: number,
+  runJob: (job: VrtJob) => Promise<T | null>,
+): Promise<T[]> {
+  const results = Array.from<T | null>({ length: jobs.length }, () => null);
+  let nextJobIndex = 0;
+
+  async function runWorker(): Promise<void> {
+    while (true) {
+      const jobIndex = nextJobIndex++;
+      const job = jobs[jobIndex];
+      if (!job) {
+        return;
+      }
+      results[jobIndex] = await runJob(job);
+    }
+  }
+
+  const activeWorkers = Math.min(normalizeVrtWorkerCount(workerCount), jobs.length);
+  await Promise.all(Array.from({ length: activeWorkers }, () => runWorker()));
+  return results.filter((result): result is T => result !== null);
 }

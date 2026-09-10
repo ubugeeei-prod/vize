@@ -42,6 +42,16 @@ void test("CLI threshold accepts zero as an explicit threshold", () => {
   assert.equal(options.thresholdProvided, true);
 });
 
+void test("CLI workers accepts positive concurrency and clamps invalid values", () => {
+  const concurrent = parseArgs(["--workers", "8"]);
+  assert.equal(concurrent.workers, 8);
+  assert.equal(concurrent.workersProvided, true);
+
+  const invalid = parseArgs(["-w", "0"]);
+  assert.equal(invalid.workers, 1);
+  assert.equal(invalid.workersProvided, true);
+});
+
 void test("CLI VRT options preserve config threshold when CLI threshold is omitted", () => {
   const options = parseArgs([]);
   options.vrt = {
@@ -49,6 +59,7 @@ void test("CLI VRT options preserve config threshold when CLI threshold is omitt
     capture: { settleTime: 250 },
     comparison: { antiAliasing: false },
     viewports: [{ width: 320, height: 240, name: "tiny" }],
+    workers: 4,
   };
 
   assert.deepEqual(createVrtOptions(options), {
@@ -57,19 +68,22 @@ void test("CLI VRT options preserve config threshold when CLI threshold is omitt
     capture: { settleTime: 250 },
     comparison: { antiAliasing: false },
     viewports: [{ width: 320, height: 240, name: "tiny" }],
+    workers: 4,
   });
 });
 
 void test("CLI threshold overrides configured VRT threshold", () => {
-  const options = parseArgs(["--threshold", "0"]);
+  const options = parseArgs(["--threshold", "0", "--workers", "8"]);
   options.vrt = {
     threshold: 10,
+    workers: 2,
     comparison: { antiAliasing: false },
   };
 
   assert.deepEqual(createVrtOptions(options), {
     snapshotDir: ".vize/snapshots",
     threshold: 0,
+    workers: 8,
     comparison: { antiAliasing: false },
   });
 });

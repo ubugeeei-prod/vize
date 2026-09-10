@@ -10,6 +10,7 @@ import path from "node:path";
 
 import { MuseaVrtRunner, generateVrtReport, generateVrtJsonReport } from "../vrt.js";
 import type { ExtendedVrtOptions, VrtSummary } from "../vrt.js";
+import { normalizeVrtWorkerCount } from "../vrt.js";
 import type { ArtFileInfo } from "../types/index.js";
 
 import type { CliOptions } from "./index.js";
@@ -24,13 +25,18 @@ export function isArtFileInput(filePath: string): boolean {
 
 export function createVrtOptions(options: CliOptions): ExtendedVrtOptions {
   const configured = options.vrt ?? {};
-  return {
+  const vrtOptions: ExtendedVrtOptions = {
     ...configured,
     snapshotDir: path.join(options.output, "snapshots"),
     threshold: options.thresholdProvided
       ? options.threshold
       : (configured.threshold ?? options.threshold),
   };
+  const workers = options.workersProvided ? options.workers : configured.workers;
+  if (workers !== undefined) {
+    vrtOptions.workers = normalizeVrtWorkerCount(workers);
+  }
+  return vrtOptions;
 }
 
 export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Promise<void> {

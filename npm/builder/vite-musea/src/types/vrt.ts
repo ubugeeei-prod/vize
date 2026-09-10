@@ -33,6 +33,12 @@ export interface VrtOptions {
    * @default [{ width: 1280, height: 720 }, { width: 375, height: 667 }]
    */
   viewports?: ViewportConfig[];
+
+  /**
+   * Number of variants/viewports to capture concurrently.
+   * @default 1
+   */
+  workers?: number;
 }
 
 /**

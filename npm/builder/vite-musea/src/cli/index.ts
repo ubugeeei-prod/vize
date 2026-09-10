@@ -15,6 +15,7 @@
  *   -c, --config     Path to vite config (default: vite.config.ts)
  *   -o, --output     Output directory for reports (default: .vize)
  *   -t, --threshold  Diff threshold percentage (default: 0.1)
+ *   -w, --workers    Number of concurrent captures (default: 1)
  *   --json           Output JSON report instead of HTML
  *   --ci             CI mode - exit with non-zero code on failures
  *   --a11y           Run accessibility audits alongside VRT
@@ -38,6 +39,8 @@ export interface CliOptions {
   output: string;
   threshold: number;
   thresholdProvided: boolean;
+  workers: number;
+  workersProvided: boolean;
   json: boolean;
   ci: boolean;
   a11y: boolean;
@@ -56,6 +59,8 @@ export function parseArgs(args: string[]): CliOptions {
     output: ".vize",
     threshold: 0.1,
     thresholdProvided: false,
+    workers: 1,
+    workersProvided: false,
     json: false,
     ci: false,
     a11y: false,
@@ -110,6 +115,11 @@ export function parseArgs(args: string[]): CliOptions {
         options.threshold = parseThreshold(args[++i]);
         options.thresholdProvided = true;
         break;
+      case "-w":
+      case "--workers":
+        options.workers = parseWorkers(args[++i]);
+        options.workersProvided = true;
+        break;
       case "--json":
         options.json = true;
         break;
@@ -138,6 +148,11 @@ function parseThreshold(value: string | undefined): number {
   return Number.isFinite(threshold) ? threshold : 0.1;
 }
 
+function parseWorkers(value: string | undefined): number {
+  const workers = Number.parseInt(value ?? "", 10);
+  return Number.isFinite(workers) ? Math.max(1, workers) : 1;
+}
+
 function printHelp(): void {
   console.log(`
 Musea VRT - Visual Regression Testing for Component Gallery
@@ -158,6 +173,7 @@ Options:
   -o, --output <dir>   Output directory for reports (default: .vize)
   -t, --threshold <n>  Diff threshold percentage (default: 0.1)
   -b, --base-url <url> Base URL for dev server (default: http://localhost:5173)
+  -w, --workers <n>    Number of concurrent captures (default: 1)
   --json               Output JSON report instead of HTML
   --ci                 CI mode - exit with non-zero code on failures
   --a11y               Run accessibility audits alongside VRT
@@ -178,6 +194,9 @@ Examples:
 
   # Run with accessibility audits
   musea-vrt --a11y
+
+  # Capture variants concurrently
+  musea-vrt --workers 8
 
   # Approve all failed snapshots
   musea-vrt approve
