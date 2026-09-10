@@ -1,6 +1,6 @@
 use super::{
-    NoOptionsApi, ScriptLintResult, ScriptRule, has_component_option_key,
-    imports_vue_runtime_module, is_component_option_name,
+    NoOptionsApi, ScriptLintResult, ScriptRule, SfcScriptContext, has_component_option_key,
+    is_component_option_name,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -10,6 +10,32 @@ fn parse_program<'a>(allocator: &'a Allocator, source: &'a str) -> oxc_ast::ast:
     Parser::new(allocator, source, SourceType::ts())
         .parse()
         .program
+}
+
+fn lint_script(source: &str) -> ScriptLintResult {
+    let rule = NoOptionsApi;
+    let mut result = ScriptLintResult::default();
+    rule.check(source, 0, &mut result);
+    result
+}
+
+fn lint_sfc_script(source: &str) -> ScriptLintResult {
+    let allocator = Allocator::default();
+    let program = parse_program(&allocator, source);
+    let rule = NoOptionsApi;
+    let mut result = ScriptLintResult::default();
+    rule.check_program_with_sfc(
+        &program,
+        source,
+        0,
+        SfcScriptContext {
+            is_sfc: true,
+            sole_script_block: true,
+            ..Default::default()
+        },
+        &mut result,
+    );
+    result
 }
 
 #[test]
@@ -23,26 +49,13 @@ fn test_component_option_names_cover_vue_options() {
 }
 
 #[test]
-fn test_vue_runtime_import_detection() {
-    let allocator = Allocator::default();
-    let program = parse_program(&allocator, "import { h } from 'vue'\n");
-    assert!(program.body.iter().any(imports_vue_runtime_module));
-
-    let allocator = Allocator::default();
-    let program = parse_program(&allocator, "import { createApp } from 'petite-vue'\n");
-    assert!(!program.body.iter().any(imports_vue_runtime_module));
-}
-
-#[test]
 fn test_valid_composition_api() {
     let source = r#"
 import { ref, computed } from 'vue'
 const count = ref(0)
 const doubled = computed(() => count.value * 2)
 "#;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
     assert_eq!(result.error_count, 0);
 }
 
@@ -58,9 +71,7 @@ export default {
   }
 }
 "#;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
     assert_eq!(result.error_count, 0, "got: {:?}", result.diagnostics);
 }
 
@@ -74,14 +85,12 @@ export default {
   }
 }
 "#;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
     assert_eq!(result.error_count, 0, "got: {:?}", result.diagnostics);
 }
 
 #[test]
-fn test_default_export_with_vue_import_is_component_options() {
+fn test_plain_default_export_with_vue_import_is_not_options_api() {
     let source = r#"
 import { h } from 'vue'
 
@@ -89,11 +98,8 @@ export default {
   customOption: true
 }
 "#;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
-    assert_eq!(result.error_count, 1);
-    assert_eq!(result.diagnostics[0].rule_name, "script/no-options-api");
+    let result = lint_script(source);
+    assert_eq!(result.error_count, 0, "got: {:?}", result.diagnostics);
 }
 
 #[test]
@@ -105,9 +111,7 @@ export default {
   }
 }
 "#;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_sfc_script(source);
     assert_eq!(result.error_count, 1);
     insta::assert_debug_snapshot!(result.diagnostics);
 }
@@ -140,9 +144,10 @@ export default {
         .expect("default object export");
     assert!(has_component_option_key(export));
 
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
+    assert_eq!(result.error_count, 0, "got: {:?}", result.diagnostics);
+
+    let result = lint_sfc_script(source);
     assert_eq!(result.error_count, 1);
     assert_eq!(result.diagnostics[0].rule_name, "script/no-options-api");
 }
@@ -158,9 +163,7 @@ export default defineComponent({
   }
 })
 "#;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
     assert_eq!(result.error_count, 1);
     insta::assert_debug_snapshot!(result.diagnostics);
 }
@@ -176,9 +179,7 @@ const component = {
 
 export default component
 "#;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_sfc_script(source);
     assert_eq!(result.error_count, 1);
     insta::assert_debug_snapshot!(result.diagnostics);
 }
@@ -191,9 +192,7 @@ export default {
   inheritAttrs: false
 }
 "#;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_sfc_script(source);
     assert_eq!(result.error_count, 1);
     insta::assert_debug_snapshot!(result.diagnostics);
 }
@@ -207,9 +206,7 @@ Vue.createApp({
   }
 }).mount("#app")
 "##;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
     assert_eq!(result.error_count, 1);
     insta::assert_debug_snapshot!(result.diagnostics);
 }
@@ -226,9 +223,7 @@ const options = {
 
 createApp(options).mount("#app")
 "##;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
     assert_eq!(result.error_count, 1);
     insta::assert_debug_snapshot!(result.diagnostics);
 }
@@ -243,9 +238,7 @@ PetiteVue.createApp({
   }
 }).mount()
 "##;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
     assert_eq!(result.error_count, 0);
 }
 
@@ -261,9 +254,7 @@ createApp({
   }
 }).mount()
 "##;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
     assert_eq!(result.error_count, 0);
 }
 
@@ -279,9 +270,7 @@ createPetiteApp({
   }
 }).mount()
 "##;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
     assert_eq!(result.error_count, 0);
 }
 
@@ -297,9 +286,7 @@ createApp({
   }
 }).mount()
 "##;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
     assert_eq!(result.error_count, 0);
 }
 
@@ -315,9 +302,7 @@ Vue.createApp({
   }
 }).mount()
 "##;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
     assert_eq!(result.error_count, 0);
 }
 
@@ -326,8 +311,6 @@ fn test_no_export_default_skip() {
     let source = r#"
 const computed = { foo: 'bar' }
 "#;
-    let rule = NoOptionsApi;
-    let mut result = ScriptLintResult::default();
-    rule.check(source, 0, &mut result);
+    let result = lint_script(source);
     assert_eq!(result.error_count, 0);
 }

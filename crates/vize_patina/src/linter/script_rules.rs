@@ -164,6 +164,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     .then(|| template_ast::parse_for_script_rules(linter, descriptor, &template_allocator))
     .flatten();
     let sfc_context = SfcScriptContext {
+        is_sfc: true,
         template_source: descriptor
             .template
             .as_ref()
@@ -172,8 +173,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         template_offset: template_ast.as_ref().map(|ast| ast.offset),
         // Both blocks are linted separately below, so a whole-file conclusion
         // is only available to a rule when there is a single block to draw it
-        // from. Computed from the descriptor rather than from the filtered
-        // `script` / `script_setup` bindings: a block skipped by the prefilter
+        // from. Computed from the descriptor rather than filtered bindings: a skipped block
         // still contributes declarations a rule would need to see.
         sole_script_block: descriptor.script.is_some() != descriptor.script_setup.is_some(),
     };

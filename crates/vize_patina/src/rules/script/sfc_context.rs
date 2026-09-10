@@ -46,6 +46,14 @@ use vize_relief::RootNode;
 /// an SFC. See the module documentation for how the three channels differ.
 #[derive(Clone, Copy, Default)]
 pub struct SfcScriptContext<'a> {
+    /// Whether the current script block came from a parsed SFC descriptor.
+    ///
+    /// Standalone JavaScript/TypeScript files and inline HTML scripts use the
+    /// default value (`false`). Rules that need SFC-only conclusions should
+    /// check this rather than inferring from offsets or template presence: an
+    /// SFC may omit `<template>`, and an inline HTML script has a non-zero
+    /// source offset.
+    pub is_sfc: bool,
     /// Raw `<template>` block content, when the SFC declares a template.
     pub template_source: Option<&'a str>,
     /// Parsed `<template>` AST, when the SFC declares a template, some enabled

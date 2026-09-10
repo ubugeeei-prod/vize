@@ -30,7 +30,7 @@
 //! watch(count, (val) => console.log(val))
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     Argument, BindingPattern, ExportDefaultDeclarationKind, Expression, ImportDeclarationSpecifier,
@@ -59,15 +59,25 @@ impl ScriptRule for NoOptionsApi {
         true
     }
 
-    #[inline]
     fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+    }
+
+    fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
         _source: &str,
         offset: usize,
+        sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        let Some(component_options) = find_component_options(program) else {
+        let Some(component_options) = find_component_options(program, sfc.is_sfc) else {
             return;
         };
 
@@ -124,16 +134,15 @@ struct OptionLabel {
     end: u32,
 }
 
-fn find_component_options<'a>(program: &'a Program<'a>) -> Option<ComponentOptionsMatch> {
+fn find_component_options<'a>(
+    program: &'a Program<'a>,
+    allow_sfc_default_export: bool,
+) -> Option<ComponentOptionsMatch> {
     let mut bindings = FxHashMap::default();
     let mut petite_vue = PetiteVueBindings::default();
-    let mut imports_vue_runtime = false;
 
     for statement in program.body.iter() {
         collect_petite_vue_imports(statement, &mut petite_vue);
-        if imports_vue_runtime_module(statement) {
-            imports_vue_runtime = true;
-        }
     }
 
     for statement in program.body.iter() {
@@ -164,7 +173,7 @@ fn find_component_options<'a>(program: &'a Program<'a>) -> Option<ComponentOptio
             &export.declaration,
             &bindings,
             &petite_vue,
-            imports_vue_runtime,
+            allow_sfc_default_export,
         ) else {
             continue;
         };
@@ -187,7 +196,7 @@ fn extract_component_options_from_export<'a>(
     declaration: &'a ExportDefaultDeclarationKind<'a>,
     bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
     petite_vue: &PetiteVueBindings<'a>,
-    imports_vue_runtime: bool,
+    allow_sfc_default_export: bool,
 ) -> Option<ComponentOptionsRef<'a>> {
     let options = match declaration {
         ExportDefaultDeclarationKind::ObjectExpression(object) => Some(ComponentOptionsRef {
@@ -219,8 +228,7 @@ fn extract_component_options_from_export<'a>(
         _ => None,
     }?;
 
-    if options.explicit_component || imports_vue_runtime || has_component_option_key(options.object)
-    {
+    if options.explicit_component || allow_sfc_default_export {
         Some(options)
     } else {
         None
@@ -414,16 +422,6 @@ fn extract_component_options_from_argument<'a>(
     }
 }
 
-fn imports_vue_runtime_module(statement: &Statement<'_>) -> bool {
-    let Statement::ImportDeclaration(import) = statement else {
-        return false;
-    };
-    matches!(
-        import.source.value.as_str(),
-        "vue" | "@vue/runtime-core" | "@vue/runtime-dom"
-    )
-}
-
 fn collect_petite_vue_imports<'a>(
     statement: &'a Statement<'a>,
     petite_vue: &mut PetiteVueBindings<'a>,
@@ -558,6 +556,7 @@ fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
     }
 }
 
+#[cfg(test)]
 fn has_component_option_key(object: &ObjectExpression<'_>) -> bool {
     object.properties.iter().any(|property| {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
@@ -570,6 +569,7 @@ fn has_component_option_key(object: &ObjectExpression<'_>) -> bool {
     })
 }
 
+#[cfg(test)]
 fn is_component_option_name(name: &str) -> bool {
     matches!(
         name,
