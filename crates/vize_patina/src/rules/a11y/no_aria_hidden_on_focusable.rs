@@ -132,6 +132,16 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_aria_hidden_on_input_with_negative_tabindex() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<input class="sizer" readonly tabindex="-1" aria-hidden="true" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
     fn test_valid_aria_hidden_false_on_button() {
         let linter = create_linter();
         let result =

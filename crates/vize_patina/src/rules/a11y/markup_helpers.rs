@@ -17,6 +17,13 @@ pub fn is_interactive_markup_element(element: &MarkupElement<'_>) -> bool {
 
 /// Check if a markup facade element is focusable (natively or via tabindex).
 pub fn is_focusable_markup_element(element: &MarkupElement<'_>) -> bool {
+    if let Some(tabindex) = get_static_markup_attribute_value(element, "tabindex") {
+        if let Ok(val) = tabindex.parse::<i32>() {
+            return val >= 0;
+        }
+        return true;
+    }
+
     if (element.is_unqualified_tag_exact("a") || element.is_unqualified_tag_exact("area"))
         && has_named_markup_prop(element, "href")
     {
@@ -29,13 +36,6 @@ pub fn is_focusable_markup_element(element: &MarkupElement<'_>) -> bool {
         || element.is_unqualified_tag_exact("textarea")
         || element.is_unqualified_tag_exact("summary")
     {
-        return true;
-    }
-
-    if let Some(tabindex) = get_static_markup_attribute_value(element, "tabindex") {
-        if let Ok(val) = tabindex.parse::<i32>() {
-            return val >= 0;
-        }
         return true;
     }
 
