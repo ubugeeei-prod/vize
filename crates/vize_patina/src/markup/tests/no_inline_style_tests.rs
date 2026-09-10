@@ -93,28 +93,28 @@ fn no_inline_style_template_boundaries() {
         ),
         (
             r#"<div :style="{ color: activeColor }"></div>"#,
-            vec![r#":style="{ color: activeColor }""#],
-            "shorthand dynamic style warns",
+            Vec::<&str>::new(),
+            "shorthand dynamic style stays clean",
         ),
         (
             r#"<div :style.prop="styles"></div>"#,
-            vec![r#":style.prop="styles""#],
-            "modifier dynamic style warns",
+            Vec::<&str>::new(),
+            "modifier dynamic style stays clean",
         ),
         (
             r#"<div v-bind:style="styles"></div>"#,
-            vec![r#"v-bind:style="styles""#],
-            "long-form dynamic style warns",
+            Vec::<&str>::new(),
+            "long-form dynamic style stays clean",
         ),
         (
             r#"<div v-bind:[style]="styles"></div>"#,
-            vec![r#"v-bind:[style]="styles""#],
-            "legacy dynamic style arg warns",
+            Vec::<&str>::new(),
+            "legacy dynamic style arg stays clean",
         ),
         (
             r#"<MyComponent style="color:red" :style="styles" />"#,
-            vec![r#"style="color:red""#, r#":style="styles""#],
-            "component style props keep legacy behavior",
+            vec![r#"style="color:red""#],
+            "component static style props still warn",
         ),
         (
             r#"<div STYLE="color:red"></div>"#,
@@ -182,18 +182,18 @@ fn no_inline_style_jsx_direct_matches_lowered_boundaries() {
         ),
         (
             r#"const A = () => <div style={{ color: activeColor }} />;"#,
-            vec![r#"style={{ color: activeColor }}"#],
-            "expression style warns",
+            Vec::<&str>::new(),
+            "expression style stays clean",
         ),
         (
             r#"const A = () => <div style={dynamicStyles} />;"#,
-            vec![r#"style={dynamicStyles}"#],
-            "identifier expression style warns",
+            Vec::<&str>::new(),
+            "identifier expression style stays clean",
         ),
         (
             r#"const A = () => <div v-bind:style={styles} />;"#,
-            vec![r#"v-bind:style={styles}"#],
-            "JSX directive spelling warns",
+            Vec::<&str>::new(),
+            "JSX directive spelling stays clean",
         ),
         (
             r#"const A = () => <Widget style="color:red" />;"#,
@@ -207,13 +207,13 @@ fn no_inline_style_jsx_direct_matches_lowered_boundaries() {
         ),
         (
             r#"const A = () => <div>{cond && <span style={{ color }} />}</div>;"#,
-            vec![r#"style={{ color }}"#],
-            "nested expression-container JSX style warns",
+            Vec::<&str>::new(),
+            "nested expression-container JSX style stays clean",
         ),
         (
             r#"const A = () => <><div style="color:red" /><span style={{ marginTop }} /></>;"#,
-            vec![r#"style="color:red""#, r#"style={{ marginTop }}"#],
-            "multiple JSX styles report in source order",
+            vec![r#"style="color:red""#],
+            "only static JSX styles report",
         ),
     ] {
         let direct = run_over_jsx_oxc(&rule, source);

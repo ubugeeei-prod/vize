@@ -53,8 +53,8 @@ fn no_inline_style_fires_on_jsx_and_tsx_markup() {
     let tsx_result = linter.lint_jsx(tsx, "test.tsx", JsxLang::Tsx);
     assert_eq!(
         diagnostic_slices(tsx, &tsx_result),
-        vec![r#"style={{ color: activeColor }}"#],
-        "TSX should use the same authored source range"
+        Vec::<&str>::new(),
+        "TSX dynamic style bindings should stay clean"
     );
 }
 
@@ -85,15 +85,12 @@ fn no_inline_style_reports_multiple_jsx_styles_in_source_order() {
     let source = r#"const A = () => <><div style="color:red" /><span style={{ marginTop }} /></>;"#;
     let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
 
-    assert_eq!(
-        diagnostic_rules(&result),
-        vec!["vue/no-inline-style", "vue/no-inline-style"]
-    );
-    assert_eq!(result.warning_count, 2);
+    assert_eq!(diagnostic_rules(&result), vec!["vue/no-inline-style"]);
+    assert_eq!(result.warning_count, 1);
     assert_eq!(result.error_count, 0);
     assert_eq!(
         diagnostic_slices(source, &result),
-        vec![r#"style="color:red""#, r#"style={{ marginTop }}"#]
+        vec![r#"style="color:red""#]
     );
 }
 
@@ -103,13 +100,10 @@ fn no_inline_style_reports_nested_jsx_styles() {
     let source = r#"const A = () => <div>{cond && <span style={dynamicStyles} />}</div>;"#;
     let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
 
-    assert_eq!(diagnostic_rules(&result), vec!["vue/no-inline-style"]);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(diagnostic_rules(&result), Vec::<&str>::new());
+    assert_eq!(result.warning_count, 0);
     assert_eq!(result.error_count, 0);
-    assert_eq!(
-        diagnostic_slices(source, &result),
-        vec![r#"style={dynamicStyles}"#]
-    );
+    assert_eq!(diagnostic_slices(source, &result), Vec::<&str>::new());
 }
 
 #[test]
@@ -118,13 +112,10 @@ fn no_inline_style_supports_jsx_v_bind_style_spelling() {
     let source = r#"const A = () => <div v-bind:style={styles} />;"#;
     let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
 
-    assert_eq!(diagnostic_rules(&result), vec!["vue/no-inline-style"]);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(diagnostic_rules(&result), Vec::<&str>::new());
+    assert_eq!(result.warning_count, 0);
     assert_eq!(result.error_count, 0);
-    assert_eq!(
-        diagnostic_slices(source, &result),
-        vec![r#"v-bind:style={styles}"#]
-    );
+    assert_eq!(diagnostic_slices(source, &result), Vec::<&str>::new());
 }
 
 #[test]

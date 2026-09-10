@@ -11,14 +11,13 @@
 //! ### Invalid
 //! ```vue
 //! <div style="color: red">text</div>
-//! <span :style="{ color: 'red' }">text</span>
-//! <p :style="dynamicStyles">text</p>
 //! ```
 //!
 //! ### Valid
 //! ```vue
 //! <div class="text-red">text</div>
 //! <span :class="{ 'text-red': isRed }">text</span>
+//! <div :style="{ width: `${ratio}%` }">text</div>
 //! ```
 //!
 //! ### Exceptions
@@ -45,10 +44,8 @@ pub struct NoInlineStyle;
 
 impl NoInlineStyle {
     fn check_binding(ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
-        if !matches!(
-            binding.kind(),
-            MarkupBindingKind::Attribute | MarkupBindingKind::Bind
-        ) || !binding.is_unqualified_arg_exact("style")
+        if !matches!(binding.kind(), MarkupBindingKind::Attribute)
+            || !binding.is_unqualified_arg_exact("style")
         {
             return;
         }
@@ -131,10 +128,10 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_dynamic_style() {
+    fn test_valid_dynamic_style() {
         let linter = create_linter();
         let result =
             linter.lint_template(r#"<div :style="{ color: 'red' }">text</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 }

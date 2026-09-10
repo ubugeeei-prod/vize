@@ -26,8 +26,8 @@
 //! <!-- Trusted static URLs are safe -->
 //! <a href="/about">About</a>
 //!
-//! <!-- Computed URLs with validation -->
-//! <a :href="sanitizedUrl">Link</a>
+//! <!-- Computed URLs with validation/sanitization -->
+//! <a :href="safeUrl(userProvidedUrl)">Link</a>
 //!
 //! <!-- Using router-link instead of href -->
 //! <router-link :to="{ name: 'profile', params: { id } }">Profile</router-link>
@@ -43,6 +43,10 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::url::is_unsafe_url;
+use oxc_allocator::Allocator;
+use oxc_ast::ast::Expression;
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SourceType};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -115,6 +119,60 @@ fn is_hash_only_href_binding(attr_name: &str, directive: &DirectiveNode) -> bool
     };
 
     is_hash_prefixed_expression(exp.content.trim())
+}
+
+fn is_sanitized_url_binding(directive: &DirectiveNode) -> bool {
+    let Some(ExpressionNode::Simple(exp)) = directive.exp.as_ref() else {
+        return false;
+    };
+
+    expression_is_sanitizer_call(exp.content.trim())
+}
+
+fn expression_is_sanitizer_call(source: &str) -> bool {
+    if !source.contains('(') {
+        return false;
+    }
+
+    let allocator = Allocator::default();
+    let source_type = SourceType::default().with_typescript(true);
+    let Ok(parsed) = Parser::new(&allocator, source, source_type).parse_expression() else {
+        return false;
+    };
+    let Some(rest) = source.get(parsed.span().end as usize..) else {
+        return false;
+    };
+    if !rest.trim().is_empty() {
+        return false;
+    }
+
+    let Expression::CallExpression(call) = parsed.get_inner_expression() else {
+        return false;
+    };
+
+    match call.callee.get_inner_expression() {
+        Expression::Identifier(callee) => is_sanitizer_callee_name(callee.name.as_str()),
+        Expression::StaticMemberExpression(member) => {
+            is_sanitizer_callee_name(member.property.name.as_str())
+        }
+        _ => false,
+    }
+}
+
+fn is_sanitizer_callee_name(name: &str) -> bool {
+    matches!(
+        name,
+        "sanitize"
+            | "sanitizeUrl"
+            | "sanitizeURL"
+            | "sanitizedUrl"
+            | "sanitizedURL"
+            | "safe"
+            | "safeUrl"
+            | "safeURL"
+            | "toSafeUrl"
+            | "toSafeURL"
+    )
 }
 
 fn is_hash_prefixed_expression(value: &str) -> bool {
@@ -228,6 +286,10 @@ impl Rule for NoUnsafeUrl {
         }
 
         if is_hash_only_href_binding(attr_name, directive) {
+            return;
+        }
+
+        if is_sanitized_url_binding(directive) {
             return;
         }
 

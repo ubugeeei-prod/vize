@@ -16,9 +16,11 @@
 
 use lightningcss::declaration::DeclarationBlock;
 use lightningcss::properties::Property;
+use lightningcss::properties::font::FontSize;
 use lightningcss::rules::CssRule as LCssRule;
 use lightningcss::stylesheet::StyleSheet;
 use lightningcss::values::color::CssColor;
+use lightningcss::values::length::{LengthPercentage, LengthValue};
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -192,10 +194,7 @@ impl NoHardcodedValues {
         result: &mut CssLintResult,
     ) {
         if let Property::FontSize(size) = property {
-            // Check if it's a Length type (hardcoded px values)
-            let is_hardcoded = matches!(size, lightningcss::properties::font::FontSize::Length(_));
-
-            if is_hardcoded {
+            if Self::is_hardcoded_font_size(size) {
                 result.add_diagnostic(
                     LintDiagnostic::warn(
                         META.name,
@@ -238,8 +237,28 @@ impl NoHardcodedValues {
 
     #[inline]
     fn is_hardcoded_color(&self, color: &CssColor) -> bool {
-        // Check for non-variable colors (CurrentColor and var() are allowed)
-        !matches!(color, CssColor::CurrentColor)
+        // Check for non-variable colors (CurrentColor, transparent, and var() are allowed).
+        match color {
+            CssColor::CurrentColor => false,
+            CssColor::RGBA(rgba) if rgba.alpha == 0 => false,
+            _ => true,
+        }
+    }
+
+    #[inline]
+    fn is_hardcoded_font_size(size: &FontSize) -> bool {
+        matches!(
+            size,
+            FontSize::Length(LengthPercentage::Dimension(
+                LengthValue::Px(_)
+                    | LengthValue::In(_)
+                    | LengthValue::Cm(_)
+                    | LengthValue::Mm(_)
+                    | LengthValue::Q(_)
+                    | LengthValue::Pt(_)
+                    | LengthValue::Pc(_)
+            ))
+        )
     }
 }
 
@@ -286,6 +305,30 @@ mod tests {
     fn test_valid_current_color() {
         let linter = create_linter();
         let result = linter.lint(".button { color: currentColor; }", 0);
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_transparent_color() {
+        let linter = create_linter();
+        let result = linter.lint(".button { background-color: transparent; }", 0);
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_warns_absolute_font_size() {
+        let linter = create_linter();
+        let result = linter.lint(".button { font-size: 16px; }", 0);
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_relative_font_size() {
+        let linter = create_linter();
+        let result = linter.lint(
+            ".button { font-size: 1.17em; } .title { font-size: 1rem; }",
+            0,
+        );
         assert_eq!(result.warning_count, 0);
     }
 

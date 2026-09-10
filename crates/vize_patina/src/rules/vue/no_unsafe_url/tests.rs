@@ -94,6 +94,30 @@ fn test_warns_dynamic_href() {
 }
 
 #[test]
+fn test_allows_sanitized_dynamic_href() {
+    let linter = create_linter();
+    let result = linter.lint_template(r#"<a :href="safe(link)">Link</a>"#, "test.vue");
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_allows_named_url_sanitizer_call() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<a :href="urlSanitizers.safeUrl(userUrl)">Link</a>"#,
+        "test.vue",
+    );
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_warns_unmarked_url_factory_call() {
+    let linter = create_linter();
+    let result = linter.lint_template(r#"<a :href="getUrl(userUrl)">Link</a>"#, "test.vue");
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
 fn test_allows_dynamic_href_argument() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<a :[href]="userUrl">Link</a>"#, "test.vue");
