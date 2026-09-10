@@ -7,9 +7,8 @@ fn dynamic_component_is_before_v_for_sees_loop_alias() {
     let project = tempfile::tempdir().expect("temp project should be created");
     write_project(project.path());
 
-    let Ok(mut checker) = BatchTypeChecker::new(project.path()) else {
-        return;
-    };
+    let mut checker =
+        BatchTypeChecker::new(project.path()).expect("batch checker should be created");
     checker.scan_project().expect("project should scan");
     let result = checker.check_project().expect("project should check");
 
