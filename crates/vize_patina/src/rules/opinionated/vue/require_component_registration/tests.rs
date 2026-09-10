@@ -85,6 +85,34 @@ export default {
 }
 
 #[test]
+fn test_allows_plain_script_component_imports_when_script_setup_is_present() {
+    let linter = create_linter();
+    let sfc = r#"<script lang="ts">
+import LoadingBar from './LoadingBar.vue'
+
+export const helper = () => 1
+</script>
+
+<script setup lang="ts">
+const shown = true
+</script>
+
+<template>
+  <div v-if="shown">
+    <LoadingBar />
+  </div>
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "ParentWidget.vue");
+
+    assert!(
+        result.diagnostics.is_empty(),
+        "plain script imports are template-visible in split-script setup SFCs: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn test_reports_normal_script_import_without_components_registration() {
     let linter = create_linter();
     let sfc = r#"<script lang="ts">

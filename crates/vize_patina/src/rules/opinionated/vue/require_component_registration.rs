@@ -167,11 +167,21 @@ impl RequireComponentRegistration {
             .is_some_and(|name| component_name_matches(tag, name))
     }
 
-    fn is_script_setup_imported_component(&self, analysis: &Croquis, tag: &str) -> bool {
+    fn is_template_visible_imported_component(
+        &self,
+        ctx: &LintContext<'_>,
+        analysis: &Croquis,
+        tag: &str,
+    ) -> bool {
+        let allow_plain_script_imports = ctx.sfc_descriptor().is_some_and(|descriptor| {
+            descriptor.script.is_some() && descriptor.script_setup.is_some()
+        });
         analysis
             .scopes
             .iter()
-            .filter(|scope| Self::is_script_setup_external_module(analysis, scope))
+            .filter(|scope| {
+                Self::is_value_import_scope(analysis, scope, allow_plain_script_imports)
+            })
             .flat_map(|scope| scope.bindings())
             .any(|(name, binding)| {
                 matches!(
@@ -181,7 +191,7 @@ impl RequireComponentRegistration {
             })
     }
 
-    fn is_script_setup_external_module(analysis: &Croquis, scope: &Scope) -> bool {
+    fn is_value_import_scope(analysis: &Croquis, scope: &Scope, allow_plain_script: bool) -> bool {
         let ScopeData::ExternalModule(data) = scope.data() else {
             return false;
         };
@@ -191,7 +201,10 @@ impl RequireComponentRegistration {
         scope
             .parent()
             .and_then(|id| analysis.scopes.get_scope(id))
-            .is_some_and(|parent| parent.kind == ScopeKind::ScriptSetup)
+            .is_some_and(|parent| {
+                parent.kind == ScopeKind::ScriptSetup
+                    || (allow_plain_script && parent.kind == ScopeKind::NonScriptSetup)
+            })
     }
 
     fn is_options_api_registered_component(&self, analysis: &Croquis, tag: &str) -> bool {
@@ -224,7 +237,7 @@ impl Rule for RequireComponentRegistration {
                 }
 
                 if ctx.analysis().is_some_and(|analysis| {
-                    self.is_script_setup_imported_component(analysis, &tag)
+                    self.is_template_visible_imported_component(ctx, analysis, &tag)
                         || self.is_options_api_registered_component(analysis, &tag)
                 }) {
                     continue;

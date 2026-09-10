@@ -2,6 +2,7 @@ use super::{
     SfcCroquisOptions, analyze_sfc_descriptor_resolved, analyze_sfc_descriptor_with_context,
 };
 use crate::{SfcParseOptions, parse_sfc};
+use vize_croquis::ScopeKind;
 
 #[test]
 fn split_scripts_share_one_synthetic_script_offset_space() {
@@ -34,6 +35,21 @@ const count = ref(0)
     assert!(setup_import.is_some());
     assert!(analysis.croquis.bindings.contains("PlainCard"));
     assert!(analysis.croquis.bindings.contains("count"));
+
+    let plain_import_scope = analysis
+        .croquis
+        .scopes
+        .iter()
+        .find(|scope| {
+            scope.kind == ScopeKind::ExternalModule
+                && scope.bindings().any(|(name, _)| name == "PlainCard")
+        })
+        .expect("plain script import scope should be preserved");
+    let plain_import_parent = plain_import_scope
+        .parent()
+        .and_then(|id| analysis.croquis.scopes.get_scope(id))
+        .expect("plain script import scope should have a parent");
+    assert_eq!(plain_import_parent.kind, ScopeKind::NonScriptSetup);
 
     let count_span = analysis.croquis.binding_spans.get("count").unwrap();
     assert_eq!(

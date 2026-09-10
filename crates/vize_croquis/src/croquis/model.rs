@@ -54,50 +54,6 @@ impl Croquis {
         }
     }
 
-    /// Merge a regular `<script>` croquis into a `<script setup>` croquis.
-    ///
-    /// The receiver keeps precedence for setup-local data, while module-level
-    /// facts from the regular script are retained for virtual TS, lint, and
-    /// cross-file consumers.
-    pub fn merge_plain_script(&mut self, plain: Self) {
-        let plain_bindings = plain.bindings;
-        self.bindings.is_script_setup |= plain_bindings.is_script_setup;
-        for (name, binding_type) in plain_bindings.bindings {
-            self.bindings.bindings.entry(name).or_insert(binding_type);
-        }
-        for (local, prop) in plain_bindings.props_aliases {
-            self.bindings.props_aliases.entry(local).or_insert(prop);
-        }
-
-        self.reactivity.extend(plain.reactivity);
-        self.race_conditions.extend(plain.race_conditions);
-        self.provide_inject.extend(plain.provide_inject);
-        self.setup_context.extend(plain.setup_context);
-        self.types.merge_keep_existing(plain.types);
-        self.type_exports.extend(plain.type_exports);
-        self.import_statements.extend(plain.import_statements);
-        self.re_exports.extend(plain.re_exports);
-        self.component_registrations
-            .extend(plain.component_registrations);
-
-        for scope in plain.scopes.iter() {
-            if let (ScopeKind::NonScriptSetup, ScopeData::NonScriptSetup(data)) =
-                (scope.kind, scope.data())
-            {
-                self.scopes.enter_non_script_setup_scope(
-                    data.clone(),
-                    scope.span.start,
-                    scope.span.end,
-                );
-                self.scopes.exit_scope();
-            }
-        }
-
-        for (name, span) in plain.binding_spans {
-            self.binding_spans.entry(name).or_insert(span);
-        }
-    }
-
     /// Check if a variable is defined in any scope
     #[inline]
     pub fn is_defined(&self, name: &str) -> bool {

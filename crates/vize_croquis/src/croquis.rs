@@ -29,6 +29,7 @@
 //! - [`vir`]      - VIR text format output
 
 mod bindings;
+mod merge;
 mod model;
 mod options_descriptor;
 mod snapshot;
