@@ -7,8 +7,8 @@ expression: result.diagnostics
         rule_name: "vue/scoped-event-names",
         severity: Warning,
         message: "Consider using scoped event name for better organization",
-        start: 8,
-        end: 31,
+        start: 13,
+        end: 36,
         help: Some(
             "Use scoped event names like 'update:modelValue' instead of generic names",
         ),

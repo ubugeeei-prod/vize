@@ -13,16 +13,12 @@
 //!
 //! ### Not Recommended
 //! ```vue
-//! <script setup>
-//! defineEmits(['playAudio', 'pauseAudio', 'reloadAudio'])
-//! </script>
+//! <AudioPlayer @playAudio="play" @pauseAudio="pause" @reloadAudio="reload" />
 //! ```
 //!
 //! ### Recommended
 //! ```vue
-//! <script setup>
-//! defineEmits(['audio:play', 'audio:pause', 'audio:reload'])
-//! </script>
+//! <AudioPlayer @audio:play="play" @audio:pause="pause" @audio:reload="reload" />
 //! ```
 
 #![allow(clippy::disallowed_macros)]
@@ -30,7 +26,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/scoped-event-names",
@@ -50,6 +46,19 @@ const COMMON_SUFFIXES: &[&str] = &[
 pub struct ScopedEventNames;
 
 impl ScopedEventNames {
+    /// Whether `element` is a Vue component with an author-owned event surface.
+    ///
+    /// Native elements expose platform event names (`click`, `contextmenu`,
+    /// `keyup`, ...), so they cannot adopt `context:event` names.
+    fn is_component(element: &ElementNode<'_>) -> bool {
+        element.tag_type == ElementType::Component
+            || element
+                .tag
+                .chars()
+                .next()
+                .is_some_and(|c| c.is_ascii_uppercase())
+    }
+
     /// Check if an event name could benefit from scoping
     fn could_benefit_from_scope(event_name: &str) -> Option<&'static str> {
         for suffix in COMMON_SUFFIXES {
@@ -82,7 +91,7 @@ impl Rule for ScopedEventNames {
     fn check_directive<'a>(
         &self,
         ctx: &mut LintContext<'a>,
-        _element: &ElementNode<'a>,
+        element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
         // Only check v-on directives
@@ -90,9 +99,13 @@ impl Rule for ScopedEventNames {
             return;
         }
 
+        if !Self::is_component(element) {
+            return;
+        }
+
         // Get the event name from the argument
         let event_name = match &directive.arg {
-            Some(ExpressionNode::Simple(s)) => s.content,
+            Some(ExpressionNode::Simple(s)) if s.is_static => s.content,
             _ => return,
         };
 
@@ -135,8 +148,7 @@ mod tests {
     #[test]
     fn test_warn_unscoped_event_with_suffix() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<button @playAudio="handlePlay"></button>"#, "test.vue");
+        let result = linter.lint_template(r#"<AudioPlayer @playAudio="handlePlay" />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
     }
@@ -145,6 +157,16 @@ mod tests {
     fn test_valid_simple_event() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<button @click="handleClick"></button>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_native_event_with_common_suffix_on_native_element() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<li @contextmenu.prevent="onMenu" @dblclick="onOpen">x</li>"#,
+            "test.vue",
+        );
         assert_eq!(result.warning_count, 0);
     }
 
