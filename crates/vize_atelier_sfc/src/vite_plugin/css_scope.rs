@@ -1,6 +1,8 @@
 use crate::css::scoped_selector::split_before_trailing_universal_or_pseudo;
 use vize_carton::{SmallVec, String};
 
+mod slotted;
+
 /// Scope CSS with the Vite plugin pipeline's selector model.
 pub(super) fn scope_css_for_pipeline(css: &str, scope_id: &str) -> String {
     transform_css_block(css, scope_id)
@@ -377,13 +379,7 @@ fn scope_selector(selector: &str, scope_id: &str) -> String {
     );
 
     if let Some(slotted) = find_pseudo_function_any(body.as_str(), &["::v-slotted(", ":slotted("]) {
-        let inner = &body[slotted.inner_start..slotted.inner_end];
-        let after = &body[slotted.end..];
-        let mut scoped = String::with_capacity(inner.len() + scope_id.len() + after.len() + 4);
-        scoped.push_str(inner);
-        push_slotted_scope_attr(&mut scoped, scope_id);
-        scoped.push_str(after);
-        body = scoped;
+        body = slotted::scope_slotted_selector(body.as_str(), &slotted, scope_id);
     } else if let Some(deep) =
         find_pseudo_function_any(body.as_str(), &["::v-deep(", "::deep(", ":deep("])
     {
@@ -663,12 +659,6 @@ fn push_scope_attr(output: &mut String, scope_id: &str) {
     output.push(']');
 }
 
-fn push_slotted_scope_attr(output: &mut String, scope_id: &str) {
-    output.push('[');
-    output.push_str(scope_id);
-    output.push_str("-s]");
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -712,30 +702,6 @@ mod tests {
         assert_eq!(
             unwrap_deep_selectors(css).as_str(),
             "[data-v-x] .parent > .child, [data-v-x] .slot, [data-v-x] .foo.bar {}"
-        );
-    }
-
-    #[test]
-    fn scopes_slotted_selectors_with_slotted_scope_id() {
-        assert_eq!(
-            scope_css_for_pipeline(":slotted(.foo) { color: red; }", "data-v-x").as_str(),
-            ".foo[data-v-x-s]{color: red;}"
-        );
-        assert_eq!(
-            scope_css_for_pipeline("::v-slotted(.foo) { color: red; }", "data-v-x").as_str(),
-            ".foo[data-v-x-s]{color: red;}"
-        );
-        assert_eq!(
-            scope_css_for_pipeline(":slotted(.foo):hover { color: red; }", "data-v-x").as_str(),
-            ".foo[data-v-x-s]:hover{color: red;}"
-        );
-    }
-
-    #[test]
-    fn scopes_nested_slotted_selector_with_slotted_scope_id() {
-        assert_eq!(
-            scope_css_for_pipeline(".host { :slotted(.foo) { color: red; } }", "data-v-x").as_str(),
-            " .foo[data-v-x-s]{color: red;}"
         );
     }
 

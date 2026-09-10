@@ -35,3 +35,21 @@ fn test_compile_scoped_css_scopes_parent_before_universal_pseudo() {
 
     assert_eq!(code, ".dialog__action-buttons[data-v-123]>:hover{flex:1;}");
 }
+
+#[test]
+fn test_compile_scoped_css_keeps_slotted_parent_combinator() {
+    let code = compile_scoped_css_without_whitespace(
+        ".card > :slotted(*) { flex: 1; }\
+         .card > :slotted(.title),\
+         .card > :slotted(.subtitle) { line-height: 1.2; }\
+         .card > :slotted(*):not(:last-child) { margin-bottom: 2px; }",
+    );
+
+    assert_eq!(
+        code,
+        ".card[data-v-123]>[data-v-123-s]{flex:1;}\
+         .card[data-v-123]>.title[data-v-123-s],\
+         .card[data-v-123]>.subtitle[data-v-123-s]{line-height:1.2;}\
+         .card[data-v-123]>[data-v-123-s]:not(:last-child){margin-bottom:2px;}"
+    );
+}

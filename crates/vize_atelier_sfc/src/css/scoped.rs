@@ -3,7 +3,11 @@
 //! Applies Vue-style scoped CSS by adding attribute selectors (e.g., `[data-v-xxx]`)
 //! to CSS selectors. Handles special pseudo-selectors: `:deep()`, `:slotted()`, `:global()`.
 
+mod slotted;
+
 use vize_carton::{Allocator, Vec as ArenaVec};
+
+pub(super) use slotted::transform_slotted;
 
 use super::scoped_selector::{
     find_top_level_pseudo, leading_universal_selector_end,
@@ -448,34 +452,6 @@ fn trailing_combinator_start(value: &str) -> Option<usize> {
         b'>' | b'+' | b'~' => Some(bytes.len() - 1),
         b'|' if bytes.len() >= 2 && bytes[bytes.len() - 2] == b'|' => Some(bytes.len() - 2),
         _ => None,
-    }
-}
-
-/// Transform :slotted() for slot content
-pub(super) fn transform_slotted(
-    out: &mut ArenaVec<u8>,
-    selector: &str,
-    start: usize,
-    attr_selector: &[u8],
-) {
-    let after = &selector[start + 9..];
-
-    if let Some(end) = find_matching_paren(after) {
-        let inner = &after.as_bytes()[..end];
-        let rest = &after.as_bytes()[end + 1..];
-
-        out.extend_from_slice(inner);
-        // Convert [data-v-xxx] to [data-v-xxx-s] for slotted styles
-        if attr_selector.last() == Some(&b']') {
-            out.extend_from_slice(&attr_selector[..attr_selector.len() - 1]);
-            out.extend_from_slice(b"-s]");
-        } else {
-            out.extend_from_slice(attr_selector);
-            out.extend_from_slice(b"-s");
-        }
-        out.extend_from_slice(rest);
-    } else {
-        out.extend_from_slice(selector.as_bytes());
     }
 }
 
