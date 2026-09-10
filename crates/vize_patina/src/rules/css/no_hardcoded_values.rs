@@ -193,18 +193,18 @@ impl NoHardcodedValues {
         offset: usize,
         result: &mut CssLintResult,
     ) {
-        if let Property::FontSize(size) = property {
-            if Self::is_hardcoded_font_size(size) {
-                result.add_diagnostic(
-                    LintDiagnostic::warn(
-                        META.name,
-                        "Consider using a CSS variable for font-size",
-                        offset as u32,
-                        (offset + 10) as u32,
-                    )
-                    .with_help("Use var(--font-size-name) or relative units (rem, em)"),
-                );
-            }
+        if let Property::FontSize(size) = property
+            && Self::is_hardcoded_font_size(size)
+        {
+            result.add_diagnostic(
+                LintDiagnostic::warn(
+                    META.name,
+                    "Consider using a CSS variable for font-size",
+                    offset as u32,
+                    (offset + 10) as u32,
+                )
+                .with_help("Use var(--font-size-name) or relative units (rem, em)"),
+            );
         }
     }
 

@@ -46,7 +46,7 @@ observational guard for planning only. It does not change rollout state.
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
 | Compiler                   |          1133 |                   787 |               346 |             157 |     373 |            1006 |      657 |           557 |           697 |
-| Linter                     |           356 |                   356 |                 0 |             298 |     298 |             714 |      238 |           387 |           567 |
+| Linter                     |           356 |                   356 |                 0 |             298 |     301 |             717 |      238 |           387 |           567 |
 | Typechecker                |           925 |                   255 |               670 |             414 |     214 |             869 |      684 |           499 |           713 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            20 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            69 |
@@ -102,7 +102,7 @@ Scope: lint command plus Patina rule engine. This is a lexical inventory, not a 
 | S0               |         356 |             247 |      109 |
 | old AST/parser   |         256 |             216 |       40 |
 | Croquis analysis |          42 |              37 |        5 |
-| raw OXC          |         298 |             214 |       84 |
+| raw OXC          |         301 |             217 |       84 |
 
 #### Top source and manifest files
 
