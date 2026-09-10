@@ -314,7 +314,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `extract_identifiers_oxc`                    | `vize_canon`         |     5 |     5 |
 | `extract_identifiers_oxc`                    | `vize_maestro`       |     1 |     1 |
 | `extract_slot_props`                         | `vize_patina`        |     1 |     1 |
-| `find_matching_paren`                        | `vize_atelier_sfc`   |     1 |     1 |
+| `find_matching_paren`                        | `vize_atelier_sfc`   |     2 |     2 |
 | `generate_declaration_ts`                    | `vize_vitrine`       |     1 |     2 |
 | `generate_declaration_ts_with_split_scripts` | `vize_vitrine`       |     1 |     1 |
 | `generate_virtual_ts_with_croquis`           | `vize_patina`        |     1 |     1 |
