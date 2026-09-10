@@ -1,11 +1,11 @@
 use std::path::{Path, PathBuf};
 
-use super::materialize_runtime_dependencies;
 use super::resolver::{
     VueRuntimePackages, resolve_package, resolve_vue_package, resolve_vue_runtime_packages,
     with_test_env_overrides,
 };
 use super::stubs::VUE_RUNTIME_CORE_STUB_TYPES;
+use super::{materialize_runtime_dependencies, symlink_package_dir};
 
 #[test]
 fn explicit_runtime_packages_override_project_packages() {
@@ -194,6 +194,35 @@ fn materialized_runtime_dom_writes_runtime_core_stub_when_core_is_absent() {
                 VUE_RUNTIME_CORE_STUB_TYPES
             );
         },
+    );
+}
+
+#[test]
+fn package_dir_link_leaves_self_targets_untouched() {
+    let temp = tempfile::tempdir().unwrap();
+    let node_modules = temp.path().join("node_modules");
+    std::fs::create_dir_all(node_modules.join(".pnpm/pkg@1.0.0/node_modules/pkg")).unwrap();
+    std::fs::create_dir_all(node_modules.join(".bin")).unwrap();
+    std::fs::write(node_modules.join(".modules.yaml"), "layout: isolated\n").unwrap();
+
+    symlink_package_dir(&node_modules, &node_modules).unwrap();
+
+    assert!(node_modules.is_dir());
+    assert!(
+        !std::fs::symlink_metadata(&node_modules)
+            .unwrap()
+            .file_type()
+            .is_symlink()
+    );
+    assert!(node_modules.join(".bin").is_dir());
+    assert!(
+        node_modules
+            .join(".pnpm/pkg@1.0.0/node_modules/pkg")
+            .is_dir()
+    );
+    assert_eq!(
+        std::fs::read_to_string(node_modules.join(".modules.yaml")).unwrap(),
+        "layout: isolated\n"
     );
 }
 

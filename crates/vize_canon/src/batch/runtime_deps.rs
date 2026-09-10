@@ -95,6 +95,10 @@ pub(super) fn symlink_package_dir(source: &Path, target: &Path) -> std::io::Resu
 }
 
 fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
+    if path_already_is_source(source, target)? {
+        return Ok(());
+    }
+
     if symlink_matches(source, target)? {
         return Ok(());
     }
@@ -121,6 +125,17 @@ fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
         } else {
             std::os::windows::fs::symlink_file(source, target)
         }
+    }
+}
+
+fn path_already_is_source(source: &Path, target: &Path) -> std::io::Result<bool> {
+    if source == target {
+        return Ok(true);
+    }
+    match std::fs::symlink_metadata(target) {
+        Ok(_) => Ok(package_link_source(source) == package_link_source(target)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(error),
     }
 }
 
