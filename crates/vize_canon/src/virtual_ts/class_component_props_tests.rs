@@ -47,7 +47,7 @@ export default class HelloDecorator extends Vue {
     let code = class_component_virtual_ts(script, "<button>{{ greeting }}</button>");
 
     assert!(
-        code.contains("export type Props = {\n  name: string;\n};"),
+        code.contains("export type Props = {\n  \"name\": string;\n};"),
         "a required @Prop must be a required member of the exported Props contract:\n{code}",
     );
     assert!(
@@ -58,7 +58,7 @@ export default class HelloDecorator extends Vue {
     // the Props body only: `__VizeVueComponentOptions` legitimately carries an
     // unrelated optional `name?: string` component-option field.
     assert!(
-        !code.contains("  name?: string;\n};"),
+        !code.contains("  \"name\"?: string;\n};"),
         "`required: true` must not be emitted as an optional member:\n{code}",
     );
 }
@@ -78,11 +78,11 @@ export default class Widget extends Vue {
     let code = class_component_virtual_ts(script, "<div>{{ label }}{{ size }}</div>");
 
     assert!(
-        code.contains("label?: string;"),
+        code.contains("\"label\"?: string;"),
         "a @Prop without `required: true` is optional at the usage site:\n{code}",
     );
     assert!(
-        code.contains("size?: number;"),
+        code.contains("\"size\"?: number;"),
         "a `?` member stays optional and keeps its declared type:\n{code}",
     );
 }
@@ -102,17 +102,17 @@ export default class List extends Vue {
     let code = class_component_virtual_ts(script, "<div>{{ items }}{{ offset }}</div>");
 
     assert!(
-        code.contains("items: Array<{ id: number }>;"),
+        code.contains("\"items\": Array<{ id: number }>;"),
         "the declared annotation must win over the runtime ctor:\n{code}",
     );
     assert!(
-        !code.contains("items: unknown[];"),
+        !code.contains("\"items\": unknown[];"),
         "the runtime ctor must not overwrite a precise annotation:\n{code}",
     );
     // A `default:` still leaves the prop optional for callers, but the template
     // binding is unwrapped because the default always supplies a value.
     assert!(
-        code.contains("offset?: number;"),
+        code.contains("\"offset\"?: number;"),
         "a defaulted prop is optional for callers:\n{code}",
     );
     // The runtime `default:` also lands in the resolved template props type, so

@@ -96,7 +96,7 @@ pub(super) fn emit_slot_outlet_helpers(
             "  type __VizeSlotOutletSpreadPayload<__Expected, __T> = __Expected & (__T extends object ? __T : Record<string, unknown>);\n",
         );
         ts.push_str(
-            "  function __vizeSlotOutletSpread<__Expected, __T = unknown>(value: __T): __VizeSlotOutletSpreadPayload<__Expected, __T> { return value as any; }\n",
+            "  function __vizeSlotOutletSpread<__Expected>() { return function <__T>(value: __T): __VizeSlotOutletSpreadPayload<__Expected, __T> { return value as any; }; }\n",
         );
     }
 }
@@ -269,10 +269,10 @@ fn append_slot_outlet_literal(
             SlotOutletLiteralEntry::Spread(spread) => {
                 append!(
                     *ts,
-                    "{expr_indent}  ...__vizeSlotOutletSpread<{payload_type}>((",
+                    "{expr_indent}  ...__vizeSlotOutletSpread<{payload_type}>()(",
                 );
                 let gen_range = append_prop_value(ts, spread.expression.as_str());
-                ts.push_str(")),\n");
+                ts.push_str("),\n");
                 let source_expression = spread_expression_source_range(source_context, spread);
                 mappings.push(VizeMapping {
                     gen_range: gen_range.clone(),

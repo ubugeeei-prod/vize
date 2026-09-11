@@ -119,6 +119,18 @@ fn define_model_runtime_constructor_array_type_preserves_null() {
 }
 
 #[test]
+fn define_model_runtime_constructor_array_parenthesizes_function_members() {
+    let result = parse_script_setup("const model = defineModel({ type: [Function, String] })");
+    let models = result.macros.models();
+
+    assert_eq!(models.len(), 1);
+    assert_eq!(
+        models[0].model_type.as_deref(),
+        Some("((...args: any[]) => any) | string")
+    );
+}
+
+#[test]
 fn define_model_bare_null_runtime_type_disables_inference() {
     let result = parse_script_setup("const model = defineModel({ type: null })");
     let models = result.macros.models();

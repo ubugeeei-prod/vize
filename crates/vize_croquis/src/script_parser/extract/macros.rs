@@ -258,7 +258,7 @@ fn runtime_constructor_model_type(name: &str) -> Option<&'static str> {
         "Array" => Some("unknown[]"),
         "Object" => Some("Record<string, unknown>"),
         "Date" => Some("Date"),
-        "Function" => Some("(...args: any[]) => any"),
+        "Function" => Some("((...args: any[]) => any)"),
         _ => None,
     }
 }

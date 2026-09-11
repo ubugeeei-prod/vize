@@ -233,8 +233,8 @@ void Widget;
     project.register_path(&app).unwrap();
     let generated = project.find_by_original(&app).unwrap().content.as_str();
 
-    assert!(generated.contains("\"@widgets/LocalWidget\""));
-    assert!(!generated.contains("\"@widgets/LocalWidget.vue.ts\""));
+    assert!(generated.contains("\"@widgets/LocalWidget.vue.ts\""));
+    assert!(!generated.contains("\"@widgets/LocalWidget\";"));
 
     let _ = fs::remove_dir_all(&case);
 }

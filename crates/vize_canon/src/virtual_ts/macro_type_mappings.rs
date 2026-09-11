@@ -2,7 +2,7 @@
 
 use std::ops::Range;
 
-use vize_carton::{String, cstr};
+use vize_carton::{FxHashSet, String, cstr};
 use vize_croquis::macros::{MacroCall, ModelDefinition};
 
 use crate::virtual_ts::helpers::push_ts_string_literal;
@@ -85,9 +85,16 @@ impl<'a> MacroTypeMappings<'a> {
         generated_start: usize,
         models: &[ModelDefinition],
         declarations: &vize_croquis::macros::MacroTracker,
+        emitted_model_names: &FxHashSet<String>,
     ) {
         let generated = &ts[generated_start..];
         for model in models {
+            if !emitted_model_names
+                .iter()
+                .any(|name| name.as_str() == model.name.as_str())
+            {
+                continue;
+            }
             let Some(authored) = declarations.model_declaration(model.name.as_str()) else {
                 continue;
             };

@@ -9,6 +9,7 @@ mod template_model_modifiers;
 mod template_names;
 mod with_defaults;
 pub(crate) use mappings::{PropBindingMappings, PropsSource, prop_source};
+pub(crate) use model_props::emitted_model_prop_names;
 use model_props::{append_macro_props_type_literal, append_model_props_type_literal};
 pub(crate) use options_api::OptionsApiPropsSource;
 pub(crate) use options_api::append_default_props;

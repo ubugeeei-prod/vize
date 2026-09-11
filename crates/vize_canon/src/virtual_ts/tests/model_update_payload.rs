@@ -105,6 +105,16 @@ fn runtime_constructor_model_array_type_can_include_null() {
 }
 
 #[test]
+fn runtime_constructor_model_array_parenthesizes_function_members() {
+    let code = code_of("const model = defineModel({ type: [Function, String] })\nvoid model;\n");
+
+    assert!(
+        code.contains(r#""modelValue"?: ((...args: any[]) => any) | string;"#),
+        "runtime constructor function members must stay grouped in public props:\n{code}"
+    );
+}
+
+#[test]
 fn optional_runtime_constructor_model_update_payload_carries_undefined() {
     let emits = emits_of("const model = defineModel({ type: String })\nvoid model;\n");
     assert!(
@@ -173,6 +183,36 @@ void title;
     assert!(
         !props.contains(r#""titleModifiers"?: Partial<Record<string, true>>;"#),
         "the generated modifier prop should be skipped when a macro prop owns the alias:\n{props}"
+    );
+}
+
+#[test]
+fn macro_prop_collisions_do_not_map_suppressed_model_members() {
+    let script = r#"defineProps({ foo: String })
+const foo = defineModel<string>("foo")
+void foo;
+"#;
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, "<div />");
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    let generated_start = output
+        .code
+        .find(r#""foo"?: string;"#)
+        .expect("generated foo prop");
+    let generated_range = generated_start..generated_start + r#""foo""#.len();
+    let authored_model_start = script.find(r#""foo""#).expect("authored model name");
+    let authored_model_range = authored_model_start..authored_model_start + r#""foo""#.len();
+    assert!(
+        output.mappings.iter().all(|mapping| {
+            mapping.gen_range != generated_range || mapping.src_range != authored_model_range
+        }),
+        "a suppressed defineModel member must not own the emitted defineProps prop mapping:\n{}",
+        output.code
     );
 }
 

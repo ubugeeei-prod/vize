@@ -137,19 +137,20 @@ impl PathAliasPattern {
         specifier: &str,
         project_root: &Path,
     ) -> Option<&'static str> {
-        self.targets
-            .iter()
-            .filter_map(|target| {
-                let target = self.substitute_target(specifier, target.as_str())?;
-                if Path::new(target.as_str()).extension().is_some() {
-                    return None;
-                }
-                let target = target_path(project_root, target.as_str());
-                let suffix = vue_rewrite_suffix_for_target(target.as_path())?;
-                self.matches(cstr!("{specifier}{suffix}").as_str())
-                    .then_some(suffix)
-            })
-            .next()
+        for target in &self.targets {
+            let Some(target) = self.substitute_target(specifier, target.as_str()) else {
+                continue;
+            };
+            let target = target_path(project_root, target.as_str());
+            let Some(resolved) = resolve_source_path(target.as_path()) else {
+                continue;
+            };
+            let suffix = vue_rewrite_suffix_for_resolved_target(target.as_path(), &resolved)?;
+            return self
+                .matches(cstr!("{specifier}{suffix}").as_str())
+                .then_some(suffix);
+        }
+        None
     }
 
     fn substitute_target(&self, specifier: &str, target: &str) -> Option<String> {
@@ -197,8 +198,7 @@ fn first_party_alias_targets(targets: &Value) -> Vec<String> {
         .collect()
 }
 
-fn vue_rewrite_suffix_for_target(target: &Path) -> Option<&'static str> {
-    let resolved = resolve_source_path(target)?;
+fn vue_rewrite_suffix_for_resolved_target(target: &Path, resolved: &Path) -> Option<&'static str> {
     if resolved
         .extension()
         .and_then(|extension| extension.to_str())
@@ -206,7 +206,7 @@ fn vue_rewrite_suffix_for_target(target: &Path) -> Option<&'static str> {
     {
         return None;
     }
-    let canonical_resolved = vize_carton::path::canonicalize_non_verbatim(&resolved);
+    let canonical_resolved = vize_carton::path::canonicalize_non_verbatim(resolved);
     let direct_vue = if target.extension().and_then(|extension| extension.to_str()) == Some("vue") {
         target.to_path_buf()
     } else {
@@ -223,12 +223,31 @@ fn vue_rewrite_suffix_for_target(target: &Path) -> Option<&'static str> {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+
     use serde_json::json;
+    use tempfile::TempDir;
 
     use super::VirtualAliasRewritePolicy;
 
     fn policy(paths: serde_json::Value) -> VirtualAliasRewritePolicy {
         VirtualAliasRewritePolicy::from_paths(paths.as_object().unwrap())
+    }
+
+    fn rewrite_extensionless(
+        paths: serde_json::Value,
+        files: &[&str],
+        specifier: &str,
+    ) -> Option<String> {
+        let temp_dir = TempDir::new().unwrap();
+        for file in files {
+            let path = temp_dir.path().join(file);
+            fs::create_dir_all(path.parent().unwrap()).unwrap();
+            fs::write(path, "").unwrap();
+        }
+        policy(paths)
+            .rewrite_extensionless_vue_specifier(specifier, temp_dir.path())
+            .map(|specifier| specifier.to_string())
     }
 
     #[test]
@@ -282,5 +301,27 @@ mod tests {
         }));
 
         assert!(configured.should_rewrite_vue_specifier("@/App.vue"));
+    }
+
+    #[test]
+    fn extensionless_aliases_stop_at_the_first_resolvable_paths_target() {
+        let paths = json!({
+            "@/*": ["src/*.ts", "src/*.vue"]
+        });
+
+        assert_eq!(
+            rewrite_extensionless(
+                paths.clone(),
+                &["src/Button.ts", "src/Button.vue"],
+                "@/Button"
+            ),
+            None,
+            "a later Vue target must not override the first resolvable TS target"
+        );
+        assert_eq!(
+            rewrite_extensionless(paths, &["src/Button.vue"], "@/Button"),
+            Some("@/Button.vue.ts".into()),
+            "unresolved earlier targets should still fall through to the first resolvable Vue target"
+        );
     }
 }

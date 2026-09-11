@@ -6,8 +6,8 @@ use super::setup_scope::define_props_type_requires_setup_scope;
 use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
 use crate::virtual_ts::props::{
     OptionsApiPropsSource, PropBindingMappings, PropsSource, PropsTypeEmission,
-    add_generic_defaults, append_default_props, extract_generic_names, generate_props_type,
-    generate_props_variables, generate_setup_scoped_props_artifact,
+    add_generic_defaults, append_default_props, emitted_model_prop_names, extract_generic_names,
+    generate_props_type, generate_props_variables, generate_setup_scoped_props_artifact,
 };
 
 pub(super) use crate::virtual_ts::props::prop_source;
@@ -42,11 +42,13 @@ pub(super) fn generate_setup_props(
     });
     let mut type_mappings = MacroTypeMappings::new(source.mappings, source.script, source.offset);
     type_mappings.map_exported_type(ts, generated_start, summary.macros.define_props(), "Props");
+    let emitted_model_names = emitted_model_prop_names(summary, summary.macros.models());
     type_mappings.map_model_props(
         ts,
         generated_start,
         summary.macros.models(),
         &summary.macros,
+        &emitted_model_names,
     );
     plan
 }
@@ -213,6 +215,7 @@ impl SetupPropsPlan {
                 generated_start,
                 source.summary.macros.models(),
                 &source.summary.macros,
+                &emitted_model_prop_names(source.summary, source.summary.macros.models()),
             );
         }
     }

@@ -36,6 +36,26 @@ fn emit_model_prop_members(
     }
 }
 
+pub(crate) fn emitted_model_prop_names(
+    summary: &Croquis,
+    models: &[ModelDefinition],
+) -> FxHashSet<String> {
+    let mut occupied_names: FxHashSet<String> = summary
+        .macros
+        .props()
+        .iter()
+        .map(|prop| prop.name.as_str().into())
+        .collect();
+    let mut emitted_models = FxHashSet::default();
+    for model in models {
+        if occupied_names.insert(model.name.as_str().into()) {
+            emitted_models.insert(model.name.as_str().into());
+        }
+        occupied_names.insert(model_modifier_prop_name(model.name.as_str()));
+    }
+    emitted_models
+}
+
 pub(super) fn append_model_props_type_literal(
     ts: &mut String,
     summary: &Croquis,
