@@ -34,5 +34,8 @@ test("CI JS checks keep native-backed UI lint behind the native build", () => {
     manifest.scripts?.["check:static"],
     "vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
   );
-  assert.equal(manifest.scripts?.check, "pnpm lint:sfc && pnpm check:static");
+  assert.equal(
+    manifest.scripts?.check,
+    "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed",
+  );
 });

@@ -16,7 +16,14 @@ test("package check keeps the UI source corpus on the toolchain gate", async () 
     manifest.scripts["lint:sfc"],
     "vp exec node scripts/lint-sfc.ts src && vp exec node scripts/check-renderers.ts src",
   );
-  assert.equal(manifest.scripts.check, "pnpm lint:sfc && pnpm check:static");
+  assert.equal(
+    manifest.scripts["check:story-testbed"],
+    "vp exec node scripts/story-testbed.ts check --format json",
+  );
+  assert.equal(
+    manifest.scripts.check,
+    "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed",
+  );
   assert.match(manifest.scripts["check:static"], /vue-tsc --noEmit -p tsconfig\.typecheck\.json/);
   assert.equal(manifest.scripts.fmt, "vp fmt --write src scripts vite.config.ts");
 });
