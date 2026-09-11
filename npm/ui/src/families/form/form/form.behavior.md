@@ -15,3 +15,8 @@ Normative state x input -> outcome table for the Standard Schema form foundation
 | F6  | valid        | field receives a matching error      | `useFormField` supplies an invalid flag for field wiring      | `wires field invalid state from normalized errors`                  |
 | F7  | invalid      | field errors feed summary composable | `useFormErrorSummary` exposes existing error-summary fields   | `feeds normalized errors into an error summary controller`          |
 | F8  | public types | mismatched schema input or mutation  | compilation rejects misuse                                    | `src/families/form/form/form.types.test-d.ts`                       |
+| F9  | native form  | constraint-invalid controls          | errors normalize through the same field and summary pipeline  | `normalizes native constraint validation failures`                  |
+| F10 | editing      | field visit, change, and blur events | dirty, visited, and touched state are tracked per field       | `tracks field state and focuses the first registered invalid field` |
+| F11 | invalid      | submitted form has registered fields | focus moves to the first invalid field in current error order | `tracks field state and focuses the first registered invalid field` |
+| F12 | validating   | a slower validation finishes last    | stale results return to their caller but cannot replace state | `discards stale async validation results`                           |
+| F13 | submitting   | latest validation succeeds           | `onSubmit` runs once for the latest valid result              | `submits only the latest valid result`                              |

@@ -253,11 +253,16 @@ export const foundationFamilyCatalog = [
     sourceFiles: [
       `${formFamilyRoot}form.ts`,
       `${formFamilyRoot}form-runtime.ts`,
+      `${formFamilyRoot}form-state.ts`,
+      `${formFamilyRoot}form-state-types.ts`,
       `${formFamilyRoot}form-types.ts`,
     ],
     behaviorContract: `${formFamilyRoot}form.behavior.md`,
-    tests: [`${formFamilyRoot}form.test.ts`],
-    typeTests: [`${formFamilyRoot}form.types.test-d.ts`],
+    tests: [`${formFamilyRoot}form.test.ts`, `${formFamilyRoot}form-state.test.ts`],
+    typeTests: [
+      `${formFamilyRoot}form.types.test-d.ts`,
+      `${formFamilyRoot}form-state.types.test-d.ts`,
+    ],
     qualityGates: stableQualityGates,
     bundleBudget: {
       exportName: "validateStandardSchema",
