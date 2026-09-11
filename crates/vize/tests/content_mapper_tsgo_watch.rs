@@ -79,6 +79,20 @@ fn install_packages(project_root: &Path) {
     std::os::windows::fs::symlink_dir(vue_source, vue_target).unwrap();
 }
 
+fn prepare_content_mapper_project(prefix: &str) -> tempfile::TempDir {
+    let fixture =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/content_mapper_project");
+    let cases_root = workspace_root().join("target/vize-tests/tests");
+    std::fs::create_dir_all(&cases_root).unwrap();
+    let project = tempfile::Builder::new()
+        .prefix(prefix)
+        .tempdir_in(cases_root)
+        .unwrap();
+    copy_fixture(&fixture, project.path());
+    install_packages(project.path());
+    project
+}
+
 struct WatchProcess {
     child: Child,
     output: String,
@@ -186,16 +200,7 @@ fn standard_tsgo_watch_enters_idle_with_authored_mapper_diagnostics() {
         tsgo.display()
     );
 
-    let fixture =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/content_mapper_project");
-    let cases_root = workspace_root().join("target/vize-tests/tests");
-    std::fs::create_dir_all(&cases_root).unwrap();
-    let project = tempfile::Builder::new()
-        .prefix("content-mapper-watch-")
-        .tempdir_in(cases_root)
-        .unwrap();
-    copy_fixture(&fixture, project.path());
-    install_packages(project.path());
+    let project = prepare_content_mapper_project("content-mapper-watch-");
 
     let mut clean = WatchProcess::spawn(&tsgo, project.path(), "tsconfig.json");
     clean.wait_for(0, "clean watch idle state", |output| {
@@ -216,4 +221,50 @@ fn standard_tsgo_watch_enters_idle_with_authored_mapper_diagnostics() {
             && output.contains("Watching for file changes")
     });
     broken.assert_running();
+}
+
+#[test]
+fn standard_tsgo_watch_revalidates_authored_vue_edits_and_repairs() {
+    let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        eprintln!("skipping exact Content Mapper watch edit conformance: {TSGO_ENV} is not set");
+        return;
+    };
+    assert!(
+        tsgo.is_file(),
+        "{TSGO_ENV} is not a file: {}",
+        tsgo.display()
+    );
+
+    let project = prepare_content_mapper_project("content-mapper-watch-edit-");
+    let child_path = project.path().join("src/Child.vue");
+    let valid_child = std::fs::read_to_string(&child_path).unwrap();
+    let invalid_child = valid_child.replace("count.toFixed(0)", "count.missing()");
+    assert_ne!(valid_child, invalid_child);
+
+    let mut watch = WatchProcess::spawn(&tsgo, project.path(), "tsconfig.json");
+    watch.wait_for(0, "initial clean watch idle state", |output| {
+        output.contains("Found 0 errors")
+            && output.contains("Watching for file changes")
+            && !output.contains("error TS")
+    });
+    watch.assert_running();
+
+    let edit_start = watch.output.len();
+    std::fs::write(&child_path, invalid_child).unwrap();
+    watch.wait_for(edit_start, "authored Vue edit diagnostic", |output| {
+        output.contains("src/Child.vue")
+            && output.contains("TS2339")
+            && output.contains("Property 'missing' does not exist on type 'number'")
+            && output.contains("Watching for file changes")
+    });
+    watch.assert_running();
+
+    let repair_start = watch.output.len();
+    std::fs::write(&child_path, valid_child).unwrap();
+    watch.wait_for(repair_start, "authored Vue repair diagnostics", |output| {
+        output.contains("Found 0 errors")
+            && output.contains("Watching for file changes")
+            && !output.contains("TS2339")
+    });
+    watch.assert_running();
 }
