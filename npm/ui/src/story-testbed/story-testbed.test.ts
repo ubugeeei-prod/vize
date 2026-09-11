@@ -62,12 +62,6 @@ interface CheckJsonOutput {
   readonly violationCount: number;
 }
 
-interface CapturedCli {
-  readonly exitCode: number;
-  readonly stdout: string;
-  readonly stderr: string;
-}
-
 const uiRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const repoRoot = path.resolve(uiRoot, "../..");
 
@@ -96,7 +90,7 @@ async function collectSourceFiles(
   return new Set(files.flat().sort((left, right) => left.localeCompare(right)));
 }
 
-function runCli(args: readonly string[]): CapturedCli {
+function runCli(args: readonly string[]) {
   let stdout = "";
   let stderr = "";
   const exitCode = runUiStoryTestbedCli(args, {
