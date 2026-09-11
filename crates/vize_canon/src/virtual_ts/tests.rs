@@ -19,6 +19,7 @@ mod options_api_props_spread;
 mod options_api_setup_spread;
 mod options_api_this_bridge;
 mod slot_component_bindings;
+mod slot_outlet_spread;
 mod template_ref_unwrap;
 mod unused_refs;
 mod vif_chain;
@@ -1118,37 +1119,6 @@ const items = ['a', 'b']
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert_virtual_ts_snapshot("virtual_ts_scoped_slot_expressions", output.code.as_str());
-}
-
-#[test]
-fn test_slot_outlet_spread_infers_the_spread_expression_type() {
-    let script = r#"const attrs = { label: 'ok' }
-defineSlots<{ default(props: { label: string }): any }>()
-"#;
-    let template = r#"<slot v-bind="attrs" />"#;
-
-    let allocator = vize_carton::Allocator::new();
-    let (root, _) = vize_armature::parse(&allocator, template);
-    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
-    analyzer.analyze_script_setup(script);
-    analyzer.analyze_template(&root);
-    let summary = analyzer.finish();
-    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
-
-    assert!(
-        output
-            .code
-            .contains("function __vizeSlotOutletSpread<__Expected>()"),
-        "slot outlet spread helper must split supplied and inferred generics:\n{}",
-        output.code
-    );
-    assert!(
-        output.code.contains(
-            r#"...__vizeSlotOutletSpread<__VizeSlotOutletPayload<Slots, "default">>()(attrs),"#
-        ),
-        "slot outlet spread call must infer its expression argument:\n{}",
-        output.code
-    );
 }
 
 #[test]
