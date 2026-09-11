@@ -237,11 +237,12 @@ fn standard_tsgo_watch_revalidates_authored_vue_edits_and_repairs() {
 
     let project = prepare_content_mapper_project("content-mapper-watch-edit-");
     let child_path = project.path().join("src/Child.vue");
-    let valid_child = std::fs::read_to_string(&child_path).unwrap().replace(
+    let original_child = std::fs::read_to_string(&child_path).unwrap();
+    let valid_child = original_child.replace(
         "<output>{{ count.toFixed(0) }}</output>",
         "<output>𠮷 {{ count.toFixed(0) }}</output>",
     );
-    assert!(valid_child.contains("𠮷 {{ count.toFixed(0) }}"));
+    assert_ne!(original_child, valid_child);
     let invalid_child = valid_child.replace("count.toFixed(0)", "count.missing()");
     assert_ne!(valid_child, invalid_child);
     std::fs::write(&child_path, &valid_child).unwrap();
