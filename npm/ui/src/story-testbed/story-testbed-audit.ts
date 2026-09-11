@@ -129,13 +129,24 @@ function auditSharedContracts(
     entry.harnessHooks.map((hook) => hook.name),
     "harness hook",
   );
-  if (entry.screenshotReview !== uiStoryTestbedScreenshotReview) {
+  if (!screenshotReviewMatchesSharedContract(entry.screenshotReview)) {
     violations.push({
       code: "missing-screenshot-review",
       family: entry.canonicalName,
       message: "screenshot review workflow must use the shared Playwright VRT contract",
     });
   }
+}
+
+function screenshotReviewMatchesSharedContract(
+  review: UiStoryTestbedEntry["screenshotReview"],
+): boolean {
+  return (
+    review.surface === uiStoryTestbedScreenshotReview.surface &&
+    review.workflow === uiStoryTestbedScreenshotReview.workflow &&
+    review.artifactDirectory === uiStoryTestbedScreenshotReview.artifactDirectory &&
+    review.requiresApproval === uiStoryTestbedScreenshotReview.requiresApproval
+  );
 }
 
 function pushMissingValues<Value extends string>(
@@ -206,6 +217,23 @@ function auditArtifacts(
     }
     seenSurfaces.add(artifact.surface);
 
+    if (artifact.status === "ready") {
+      const canonicalFile = canonicalFileForSurface(entry, artifact.surface);
+      if (artifact.files.length === 0) {
+        violations.push({
+          code: "ready-artifact-missing",
+          family: entry.canonicalName,
+          message: `${artifact.surface} is ready but does not list evidence files`,
+        });
+      } else if (!artifact.files.includes(canonicalFile)) {
+        violations.push({
+          code: "ready-artifact-missing",
+          family: entry.canonicalName,
+          message: `${artifact.surface} ready artifact must list ${canonicalFile}`,
+        });
+      }
+    }
+
     if (!existingFiles) continue;
     for (const file of artifact.files) {
       const exists = existingFiles.has(file);
@@ -224,5 +252,21 @@ function auditArtifacts(
         });
       }
     }
+  }
+}
+
+function canonicalFileForSurface(
+  entry: UiStoryTestbedEntry,
+  surface: UiStoryTestbedSurface,
+): `src/${string}` {
+  switch (surface) {
+    case "musea-story":
+      return entry.storyFile;
+    case "vue-test-utils":
+      return entry.vueTestFile;
+    case "vitest-browser":
+      return entry.browserTestFile;
+    case "playwright-vrt":
+      return entry.vrtTestFile;
   }
 }

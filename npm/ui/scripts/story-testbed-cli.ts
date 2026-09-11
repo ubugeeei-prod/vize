@@ -1,5 +1,6 @@
 import { readdirSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   UI_STORY_TESTBED_SCHEMA_VERSION,
@@ -88,6 +89,8 @@ const mutatingCommands = new Set([
   "approve",
 ]);
 
+const sourceDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../src");
+
 function collectSourceFiles(directory: string, relativeDirectory = "src"): ReadonlySet<string> {
   const files: string[] = [];
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
@@ -138,7 +141,7 @@ function writeRecords(
 function runCheckCommand(format: StoryTestbedOutputFormat, io: CliIo): number {
   const manifest = createUiStoryTestbedManifest();
   const plan = listUiStoryTestbedPlan({}, manifest);
-  const existingFiles = collectSourceFiles(path.resolve("src"));
+  const existingFiles = collectSourceFiles(sourceDirectory);
   const violations = auditUiStoryTestbedInventory(manifest.families, { existingFiles });
   const output: CheckJsonOutput = {
     schemaVersion: UI_STORY_TESTBED_SCHEMA_VERSION,

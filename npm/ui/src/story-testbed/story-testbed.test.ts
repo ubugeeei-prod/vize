@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { test } from "vite-plus/test";
 
@@ -66,6 +68,9 @@ interface CapturedCli {
   readonly stderr: string;
 }
 
+const uiRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const repoRoot = path.resolve(uiRoot, "../..");
+
 function colocatedArtifactFile(
   targetFile: `src/${string}`,
   canonicalName: string,
@@ -112,6 +117,10 @@ function runCli(args: readonly string[]): CapturedCli {
 
 function parseJson<Output>(source: string): Output {
   return JSON.parse(source) as Output;
+}
+
+function jsonRoundTrip<Value>(value: Value): Value {
+  return JSON.parse(JSON.stringify(value)) as Value;
 }
 
 test("publishes a deterministic story-testbed inventory for each family", () => {
@@ -236,7 +245,7 @@ test("publishes a machine-readable harness manifest and run plan", () => {
 });
 
 test("audits planned artifacts and supporting tests against source files", async () => {
-  const existingFiles = await collectSourceFiles(path.resolve("src"));
+  const existingFiles = await collectSourceFiles(path.join(uiRoot, "src"));
   const violations = auditUiStoryTestbedInventory(uiStoryTestbedInventory, { existingFiles });
 
   assert.equal(formatUiStoryTestbedViolations(violations), "");
@@ -252,6 +261,49 @@ test("audits planned artifacts and supporting tests against source files", async
   assert.equal(plannedArtifacts.length, uiFamilyCatalog.length * 4);
   assert.ok(supportingTestFiles.length >= uiFamilyCatalog.length);
   assert.equal(hookNames.length, uiFamilyCatalog.length * uiStoryTestbedHarnessHookNames.length);
+});
+
+test("audits shared story-testbed contracts structurally after JSON round trips", () => {
+  const roundTrippedInventory = jsonRoundTrip(uiStoryTestbedInventory);
+  const violations = auditUiStoryTestbedInventory(roundTrippedInventory);
+
+  assert.deepEqual(violations, []);
+});
+
+test("audits ready artifacts for listed evidence and canonical colocated files", () => {
+  const [entry] = uiStoryTestbedInventory;
+  assert.ok(entry, "story-testbed inventory must include at least one family");
+
+  const emptyReady = {
+    ...entry,
+    artifacts: entry.artifacts.map((artifact) =>
+      artifact.surface === "musea-story"
+        ? { ...artifact, status: "ready" as const, files: [] }
+        : artifact,
+    ),
+  };
+  const wrongReady = {
+    ...entry,
+    artifacts: entry.artifacts.map((artifact) =>
+      artifact.surface === "musea-story"
+        ? { ...artifact, status: "ready" as const, files: [entry.vueTestFile] }
+        : artifact,
+    ),
+  };
+
+  assert.ok(
+    auditUiStoryTestbedInventory([emptyReady]).some(
+      (violation) =>
+        violation.code === "ready-artifact-missing" &&
+        violation.message.includes("does not list evidence files"),
+    ),
+  );
+  assert.ok(
+    auditUiStoryTestbedInventory([wrongReady]).some(
+      (violation) =>
+        violation.code === "ready-artifact-missing" && violation.message.includes(entry.storyFile),
+    ),
+  );
 });
 
 test("CLI emits deterministic machine-readable story-testbed output", () => {
@@ -274,6 +326,11 @@ test("CLI emits deterministic machine-readable story-testbed output", () => {
   assert.deepEqual(checked.browserSuites, uiStoryTestbedBrowserSuiteNames);
   assert.deepEqual(checked.harnessHooks, uiStoryTestbedHarnessHookNames);
   assert.equal(checked.violationCount, 0);
+
+  const badFormatOutput = runCli(["check", "--format=yaml"]);
+  assert.equal(badFormatOutput.exitCode, 1);
+  assert.match(badFormatOutput.stderr, /Unsupported output format "yaml"/);
+  assert.doesNotMatch(badFormatOutput.stderr, /Unsupported output format "--format=yaml"/);
 
   const listOutput = runCli(["list", "--format", "json"]);
   assert.equal(listOutput.exitCode, 0);
@@ -318,9 +375,20 @@ test("CLI emits deterministic machine-readable story-testbed output", () => {
   assert.equal(info.family.storyFile, "src/families/actions/button/button.art.vue");
 });
 
+test("CLI check resolves source files when invoked from the repository root", () => {
+  const stdout = execFileSync(
+    process.execPath,
+    ["npm/ui/scripts/story-testbed.ts", "check", "--format", "json"],
+    { cwd: repoRoot, encoding: "utf8" },
+  );
+  const checked = parseJson<CheckJsonOutput>(stdout);
+
+  assert.equal(checked.violationCount, 0);
+});
+
 test("behavior contract documents the issue 4898 harness gates", async () => {
   const behavior = await readFile(
-    path.resolve("src/story-testbed/story-testbed.behavior.md"),
+    path.join(uiRoot, "src/story-testbed/story-testbed.behavior.md"),
     "utf8",
   );
 

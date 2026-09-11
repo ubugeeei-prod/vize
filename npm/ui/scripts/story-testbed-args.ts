@@ -63,9 +63,10 @@ export function parseStoryTestbedArgs(args: readonly string[]): ParsedStoryTestb
     }
 
     if (arg.startsWith("--format=")) {
-      const parsedFormat = parseFormat(arg.slice("--format=".length));
+      const value = arg.slice("--format=".length);
+      const parsedFormat = parseFormat(value);
       if (parsedFormat == null)
-        return { format, help, positional, surface, error: `Unsupported output format "${arg}"` };
+        return { format, help, positional, surface, error: `Unsupported output format "${value}"` };
 
       format = parsedFormat;
       continue;
