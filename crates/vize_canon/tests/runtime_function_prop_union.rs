@@ -24,15 +24,15 @@ fn runtime_function_union_members_generate_parseable_typescript() {
     .expect("virtual TypeScript should be generated");
 
     assert!(
-        virtual_ts.contains("data: unknown[] | ((...args: any[]) => any);"),
+        virtual_ts.contains("\"data\": unknown[] | ((...args: any[]) => any);"),
         "the Crater-style Array/Function prop must parenthesize its function member:\n{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("labelOrPredicate: string | ((...args: any[]) => any);"),
+        virtual_ts.contains("\"labelOrPredicate\": string | ((...args: any[]) => any);"),
         "a scalar/function union must preserve the same precedence:\n{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("formatter: (...args: any[]) => any;"),
+        virtual_ts.contains("\"formatter\": (...args: any[]) => any;"),
         "a standalone Function constructor must retain its callable shape:\n{virtual_ts}"
     );
     assert!(
