@@ -98,6 +98,44 @@ void read
 }
 
 #[test]
+fn define_model_option_callbacks_are_contextually_typed() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "define-model-option-contextual-callbacks",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const model = defineModel({
+  type: String,
+  required: true,
+  get(value) {
+    return value.length
+  },
+  set(value) {
+    return value.trim()
+  },
+})
+const read: number = model.value
+model.value = "updated"
+void read
+</script>
+"#,
+        )],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    assert_eq!(
+        snapshot,
+        Some(Vec::new()),
+        "defineModel get/set callbacks should not leak implicit any: {snapshot:#?}"
+    );
+}
+
+#[test]
 fn script_bound_unresolved_component_events_are_contextually_any() {
     if resolve_test_tsgo_binary().is_none() {
         return;

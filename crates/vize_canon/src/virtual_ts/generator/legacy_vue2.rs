@@ -18,6 +18,9 @@ type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends 
 type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
 type __VizeIsAny<T> = 0 extends (1 & T) ? true : false; type __VizeIsUnknown<T> = __VizeIsAny<T> extends true ? false : unknown extends T ? ([keyof T] extends [never] ? true : false) : false;
 type __VizeModelRuntimeValue<T> = __RuntimePropShape<{ modelValue: T }>["modelValue"]; type __VizeModelOptionValue<T, O extends Record<string, any>> = __VizeIsUnknown<T> extends true ? __VizeModelRuntimeValue<O> : T; type __VizeModelOptionGetValue<T, O extends Record<string, any>> = O extends { get?: infer __F } ? NonNullable<__F> extends (value: any) => infer __G ? __G : T : T; type __VizeModelOptionSetValue<T, O extends Record<string, any>> = O extends { set?: infer __F } ? NonNullable<__F> extends (value: infer __S) => any ? __S : T : T;
+type __VizePropConstructor<T = any> = { new (...args: any[]): T & {} } | { (): T };
+type __VizePropType<T> = __VizePropConstructor<T> | readonly (__VizePropConstructor<T> | null)[] | null;
+type __VizeDefineModelOptions<T, G = T, S = T> = { type?: __VizePropType<T>; required?: boolean; default?: any; get?: (value: T) => G; set?: (value: S) => any } & Record<string, any>;
 type __DefaultFactory<T> = (props: any) => T; type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
 type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never;

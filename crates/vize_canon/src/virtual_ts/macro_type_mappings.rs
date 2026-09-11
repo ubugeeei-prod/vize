@@ -97,7 +97,7 @@ impl<'a> MacroTypeMappings<'a> {
                 continue;
             };
             let start = generated_start + start + 2;
-            self.map_exact(start..start + needle.len() - 2, authored);
+            self.map_whole_symbol(start..start + needle.len() - 2, authored);
         }
     }
 

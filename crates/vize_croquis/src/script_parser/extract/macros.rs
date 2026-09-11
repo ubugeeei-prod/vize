@@ -192,7 +192,23 @@ pub fn process_call_expression(
 fn runtime_model_type_from_options_arg(arg: &Argument<'_>) -> Option<CompactString> {
     let options = argument_object(arg)?;
     let type_expression = object_property(options, "type")?;
-    runtime_model_type_from_expression(type_expression)
+    runtime_model_type_from_root_expression(type_expression)
+}
+
+fn runtime_model_type_from_root_expression(expression: &Expression<'_>) -> Option<CompactString> {
+    match expression {
+        Expression::ArrayExpression(array) => runtime_model_type_from_array(array),
+        Expression::ParenthesizedExpression(parenthesized) => {
+            runtime_model_type_from_root_expression(&parenthesized.expression)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            runtime_model_type_from_root_expression(&ts_as.expression)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            runtime_model_type_from_root_expression(&ts_satisfies.expression)
+        }
+        _ => runtime_model_type_from_expression(expression),
+    }
 }
 
 fn runtime_model_type_from_expression(expression: &Expression<'_>) -> Option<CompactString> {
@@ -200,22 +216,7 @@ fn runtime_model_type_from_expression(expression: &Expression<'_>) -> Option<Com
         Expression::Identifier(identifier) => {
             runtime_constructor_model_type(identifier.name.as_str()).map(CompactString::new)
         }
-        Expression::NullLiteral(_) => Some(CompactString::new("null")),
-        Expression::ArrayExpression(array) => {
-            let mut types = Vec::new();
-            for element in &array.elements {
-                let Some(expression) = element.as_expression() else {
-                    continue;
-                };
-                let Some(model_type) = runtime_model_type_from_expression(expression) else {
-                    continue;
-                };
-                if !types.contains(&model_type) {
-                    types.push(model_type);
-                }
-            }
-            (!types.is_empty()).then(|| CompactString::new(types.join(" | ")))
-        }
+        Expression::ArrayExpression(array) => runtime_model_type_from_array(array),
         Expression::ParenthesizedExpression(parenthesized) => {
             runtime_model_type_from_expression(&parenthesized.expression)
         }
@@ -225,6 +226,28 @@ fn runtime_model_type_from_expression(expression: &Expression<'_>) -> Option<Com
         }
         _ => None,
     }
+}
+
+fn runtime_model_type_from_array(
+    array: &oxc_ast::ast::ArrayExpression<'_>,
+) -> Option<CompactString> {
+    let mut types = Vec::new();
+    for element in &array.elements {
+        let Some(expression) = element.as_expression() else {
+            continue;
+        };
+        let model_type = match expression {
+            Expression::NullLiteral(_) => Some(CompactString::new("null")),
+            _ => runtime_model_type_from_expression(expression),
+        };
+        let Some(model_type) = model_type else {
+            continue;
+        };
+        if !types.contains(&model_type) {
+            types.push(model_type);
+        }
+    }
+    (!types.is_empty()).then(|| CompactString::new(types.join(" | ")))
 }
 
 fn runtime_constructor_model_type(name: &str) -> Option<&'static str> {
