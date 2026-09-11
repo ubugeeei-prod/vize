@@ -24,7 +24,7 @@ metadata.vize.stability = "experimental"
 # Arms the corpus-runnable TS-20 lane (`tests/davinci_lowering_corpus.rs`),
 # the P1-6/P1-7 differential-lane shape: committed battery with pinned
 # counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
-davinci-differential = ["typescript", "vize_atelier_dom/davinci-differential"]
+davinci-differential = ["typescript"]
 
 # The `is_ts` lane erases types by running oxc's transformer, whose
 # `Transformer::new` takes a `&std::path::Path` — so it needs `std`. It stays
@@ -58,7 +58,7 @@ insta = { workspace = true }
 toml = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_sfc = { workspace = true }
-vize_atelier_dom = { workspace = true }
+vize_atelier_dom = { workspace = true, features = ["davinci-differential"] }
 vize_croquis = { workspace = true }
 
 [[bench]]
