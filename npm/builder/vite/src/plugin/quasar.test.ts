@@ -20,7 +20,9 @@ const legacyVirtualId = `\0vize:${sourcePath}.ts`;
         receivedId = id;
         return id.includes(".vue")
           ? {
-              code: `import { QBtn } from "quasar";\n${code.replace(/_resolveComponent\("QBtn"\)/g, "QBtn")}`,
+              code: `import { QBtn, QBtnToggle } from "quasar";\n${code
+                .replace(/_resolveComponent\("QBtn"\)/g, "QBtn")
+                .replace(/_resolveComponent\("QBtnToggle"\)/g, "QBtnToggle")}`,
               map: null,
             }
           : null;
@@ -30,14 +32,20 @@ const legacyVirtualId = `\0vize:${sourcePath}.ts`;
 
   patchQuasarBridge(plugins);
   const result = plugins[0]!.transform!(
-    `const _component_QBtn = _resolveComponent("QBtn");`,
+    [
+      `const _component_QBtn = _resolveComponent("QBtn");`,
+      `const _component_QBtnToggle = _resolveComponent("QBtnToggle");`,
+    ].join("\n"),
     virtualId,
   );
 
   assert.equal(receivedId, sourcePath);
   assert.ok(result && typeof result === "object");
-  assert.match(result.code, /import \{ QBtn \} from "quasar"/);
+  assert.match(result.code, /import \{ QBtn, QBtnToggle \} from "quasar"/);
+  assert.match(result.code, /const _component_QBtn = QBtn;/);
+  assert.match(result.code, /const _component_QBtnToggle = QBtnToggle;/);
   assert.doesNotMatch(result.code, /_resolveComponent\("QBtn"\)/);
+  assert.doesNotMatch(result.code, /_resolveComponent\("QBtnToggle"\)/);
 }
 
 {
