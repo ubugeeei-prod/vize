@@ -24,6 +24,8 @@ mod svg_attribute;
 mod virtual_document;
 mod workspace_edit;
 
+#[cfg(test)]
+pub(crate) use canonical::canonical_request_path;
 pub(crate) use canonical::{
     CanonicalProjectOpenError, CanonicalSemanticPosition, CanonicalVirtualDocument,
     ComponentPropNavigationIdentities, ComponentPropSourceCache,

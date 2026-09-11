@@ -2,8 +2,10 @@ use super::*;
 use tower_lsp::{
     LspService,
     lsp_types::{
+        CallHierarchyIncomingCallsParams, CallHierarchyItem, CallHierarchyOutgoingCallsParams,
         CodeLensParams, DocumentLinkParams, FileRename, FoldingRangeParams, HoverParams,
-        InlayHintParams, SemanticTokensRangeParams, SignatureHelpParams, WorkspaceSymbolParams,
+        InlayHintParams, SemanticTokensRangeParams, SignatureHelpParams, SymbolKind,
+        WorkspaceSymbolParams,
     },
 };
 
@@ -197,6 +199,36 @@ enabled_missing_doc_request_returns_none!(
     implementation_missing_document_returns_none,
     &[("definition", true), ("typecheck", true)],
     |server, uri| server.goto_implementation(implementation_params(&uri))
+);
+disabled_open_doc_request_returns_none!(
+    call_hierarchy_incoming_disabled_returns_none,
+    &[("definition", false), ("typecheck", true)],
+    |server, uri| server.incoming_calls(call_hierarchy_incoming_params(&uri))
+);
+disabled_open_doc_request_returns_none!(
+    call_hierarchy_incoming_disabled_when_typecheck_is_off_returns_none,
+    &[("definition", true), ("typecheck", false)],
+    |server, uri| server.incoming_calls(call_hierarchy_incoming_params(&uri))
+);
+enabled_missing_doc_request_returns_none!(
+    call_hierarchy_incoming_missing_document_returns_none,
+    &[("definition", true), ("typecheck", true)],
+    |server, uri| server.incoming_calls(call_hierarchy_incoming_params(&uri))
+);
+disabled_open_doc_request_returns_none!(
+    call_hierarchy_outgoing_disabled_returns_none,
+    &[("definition", false), ("typecheck", true)],
+    |server, uri| server.outgoing_calls(call_hierarchy_outgoing_params(&uri))
+);
+disabled_open_doc_request_returns_none!(
+    call_hierarchy_outgoing_disabled_when_typecheck_is_off_returns_none,
+    &[("definition", true), ("typecheck", false)],
+    |server, uri| server.outgoing_calls(call_hierarchy_outgoing_params(&uri))
+);
+enabled_missing_doc_request_returns_none!(
+    call_hierarchy_outgoing_missing_document_returns_none,
+    &[("definition", true), ("typecheck", true)],
+    |server, uri| server.outgoing_calls(call_hierarchy_outgoing_params(&uri))
 );
 disabled_open_doc_request_returns_none!(
     references_disabled_returns_none,

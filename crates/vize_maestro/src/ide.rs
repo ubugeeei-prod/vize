@@ -1,7 +1,5 @@
-//! IDE features for the LSP server. The module list below is the
-//! authoritative inventory:
-//! - Correctness: diagnostics, type checking and type information
-//! - Authoring: hover, completion, definition, references, code actions, rename, linked editing
+//! IDE features for the LSP server. Module inventory:
+//! - Correctness/authoring: diagnostics, type info, hover, completion, navigation, rename, linked editing
 //! - Structure: document/workspace symbols, selection ranges, semantic tokens, inlay hints
 //! - Ecosystem: router/i18n awareness, file rename, auto-import, code lens, document links
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
@@ -13,6 +11,8 @@ pub mod code_lens;
 pub mod completion;
 mod context;
 mod corsa_support;
+#[cfg(all(test, feature = "native"))]
+pub(crate) use corsa_support::{canonical_request_path, request_file_uri};
 pub mod cursor_context;
 pub mod declaration;
 pub mod definition;

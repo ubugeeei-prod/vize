@@ -39,6 +39,25 @@ type RequestCase = {
 const position = { line: 1, character: 7 };
 const range = { start: position, end: position };
 
+function callHierarchyItem(uri: string) {
+  return {
+    name: "message",
+    kind: 13,
+    uri,
+    range,
+    selectionRange: range,
+    data: {
+      vizeCorsaRawCallHierarchyItem: {
+        name: "message",
+        kind: 13,
+        uri: `${uri}.vue.ts`,
+        range,
+        selectionRange: range,
+      },
+    },
+  };
+}
+
 const DISABLED_REQUESTS: RequestCase[] = [
   {
     method: "textDocument/hover",
@@ -166,6 +185,14 @@ const DISABLED_REQUESTS: RequestCase[] = [
   {
     method: "textDocument/prepareCallHierarchy",
     params: (uri) => ({ textDocument: { uri }, position }),
+  },
+  {
+    method: "callHierarchy/incomingCalls",
+    params: (uri) => ({ item: callHierarchyItem(uri) }),
+  },
+  {
+    method: "callHierarchy/outgoingCalls",
+    params: (uri) => ({ item: callHierarchyItem(uri) }),
   },
   {
     method: "volar/client/autoInsert",

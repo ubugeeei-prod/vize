@@ -2,6 +2,9 @@
 
 use vize_s0::cstr;
 
+#[cfg(feature = "native")]
+use crate::ide::{canonical_request_path, request_file_uri};
+
 use super::*;
 
 pub(super) fn service_with_options(
@@ -110,6 +113,47 @@ pub(super) fn declaration_params(uri: &Url) -> DeclParams {
 pub(super) fn implementation_params(uri: &Url) -> ImplParams {
     ImplParams {
         text_document_position_params: text_pos(uri),
+        work_done_progress_params: WorkDoneProgressParams::default(),
+        partial_result_params: PartialResultParams::default(),
+    }
+}
+
+fn call_hierarchy_item(uri: &Url) -> CallHierarchyItem {
+    #[cfg(feature = "native")]
+    let generated_uri = request_file_uri(&canonical_request_path(uri));
+    #[cfg(not(feature = "native"))]
+    let generated_uri = cstr!("file://{}.ts", uri.path());
+    CallHierarchyItem {
+        name: "message".to_string(),
+        kind: SymbolKind::VARIABLE,
+        tags: None,
+        detail: None,
+        uri: uri.clone(),
+        range: range(),
+        selection_range: range(),
+        data: Some(serde_json::json!({
+            "vizeCorsaRawCallHierarchyItem": {
+                "name": "message",
+                "kind": SymbolKind::VARIABLE,
+                "uri": generated_uri,
+                "range": range(),
+                "selectionRange": range(),
+            }
+        })),
+    }
+}
+
+pub(super) fn call_hierarchy_incoming_params(uri: &Url) -> CHIncomingParams {
+    CallHierarchyIncomingCallsParams {
+        item: call_hierarchy_item(uri),
+        work_done_progress_params: WorkDoneProgressParams::default(),
+        partial_result_params: PartialResultParams::default(),
+    }
+}
+
+pub(super) fn call_hierarchy_outgoing_params(uri: &Url) -> CHOutgoingParams {
+    CallHierarchyOutgoingCallsParams {
+        item: call_hierarchy_item(uri),
         work_done_progress_params: WorkDoneProgressParams::default(),
         partial_result_params: PartialResultParams::default(),
     }
