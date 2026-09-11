@@ -139,7 +139,7 @@ const missingRequiredTypeDiagnostic = {
     'about?: unknown; "accent-height"?: unknown; accentHeight?: unknown; accept?: unknown; ' +
     "acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; " +
     "... 673 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\n" +
-    "  Property 'name' is missing in type '{ nme: string; }' but required in type " +
+    "  Property '\"name\"' is missing in type '{ nme: string; }' but required in type " +
     "'{ readonly name: string; }'.",
 };
 

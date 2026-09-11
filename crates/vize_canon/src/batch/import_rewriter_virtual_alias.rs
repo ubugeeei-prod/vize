@@ -82,10 +82,7 @@ impl VirtualAliasRewritePolicy {
             {
                 continue;
             }
-            let Some(suffix) = pattern
-                .target_candidates(specifier, project_root)
-                .into_iter()
-                .find_map(|target| vue_rewrite_suffix_for_target(target.as_path()))
+            let Some(suffix) = pattern.extensionless_vue_rewrite_suffix(specifier, project_root)
             else {
                 continue;
             };
@@ -135,19 +132,24 @@ impl PathAliasPattern {
         self.prefix.len() + self.suffix.len()
     }
 
-    fn target_candidates(&self, specifier: &str, project_root: &Path) -> Vec<PathBuf> {
+    fn extensionless_vue_rewrite_suffix(
+        &self,
+        specifier: &str,
+        project_root: &Path,
+    ) -> Option<&'static str> {
         self.targets
             .iter()
-            .filter_map(|target| self.substitute_target(specifier, target.as_str()))
-            .map(|target| {
-                let path = Path::new(target.as_str());
-                if path.is_absolute() {
-                    path.to_path_buf()
-                } else {
-                    project_root.join(path)
+            .filter_map(|target| {
+                let target = self.substitute_target(specifier, target.as_str())?;
+                if Path::new(target.as_str()).extension().is_some() {
+                    return None;
                 }
+                let target = target_path(project_root, target.as_str());
+                let suffix = vue_rewrite_suffix_for_target(target.as_path())?;
+                self.matches(cstr!("{specifier}{suffix}").as_str())
+                    .then_some(suffix)
             })
-            .collect()
+            .next()
     }
 
     fn substitute_target(&self, specifier: &str, target: &str) -> Option<String> {
@@ -167,6 +169,15 @@ impl PathAliasPattern {
                 &target[wildcard + 1..]
             )
         })
+    }
+}
+
+fn target_path(project_root: &Path, target: &str) -> PathBuf {
+    let path = Path::new(target);
+    if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        project_root.join(path)
     }
 }
 

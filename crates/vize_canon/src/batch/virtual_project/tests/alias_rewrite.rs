@@ -154,6 +154,92 @@ void Card;
 }
 
 #[test]
+fn batch_sfc_keeps_extensionless_exact_alias_to_vue_authored() {
+    let case = unique_case_dir("extensionless-exact-alias-to-vue");
+    let _ = fs::remove_dir_all(&case);
+    fs::create_dir_all(case.join("src/local")).unwrap();
+    fs::write(
+        case.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@scope/ui": ["src/local/LocalWidget.vue"]
+    }
+  }
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        case.join("src/local/LocalWidget.vue"),
+        "<script setup lang=\"ts\">defineProps<{ localOnly: string }>()</script>",
+    )
+    .unwrap();
+    let app = case.join("src/App.vue");
+    fs::write(
+        &app,
+        r#"<script setup lang="ts">
+import Widget from "@scope/ui";
+void Widget;
+</script>
+"#,
+    )
+    .unwrap();
+
+    let mut project = VirtualProject::new(&case).unwrap();
+    project.register_path(&app).unwrap();
+    let generated = project.find_by_original(&app).unwrap().content.as_str();
+
+    assert!(generated.contains("\"@scope/ui\""));
+    assert!(!generated.contains("\"@scope/ui.vue.ts\""));
+
+    let _ = fs::remove_dir_all(&case);
+}
+
+#[test]
+fn batch_sfc_keeps_extensionless_alias_with_vue_target_authored() {
+    let case = unique_case_dir("extensionless-alias-with-vue-target");
+    let _ = fs::remove_dir_all(&case);
+    fs::create_dir_all(case.join("src/local")).unwrap();
+    fs::write(
+        case.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@widgets/*": ["src/local/*.vue"]
+    }
+  }
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        case.join("src/local/LocalWidget.vue"),
+        "<script setup lang=\"ts\">defineProps<{ localOnly: string }>()</script>",
+    )
+    .unwrap();
+    let app = case.join("src/App.vue");
+    fs::write(
+        &app,
+        r#"<script setup lang="ts">
+import Widget from "@widgets/LocalWidget";
+void Widget;
+</script>
+"#,
+    )
+    .unwrap();
+
+    let mut project = VirtualProject::new(&case).unwrap();
+    project.register_path(&app).unwrap();
+    let generated = project.find_by_original(&app).unwrap().content.as_str();
+
+    assert!(generated.contains("\"@widgets/LocalWidget\""));
+    assert!(!generated.contains("\"@widgets/LocalWidget.vue.ts\""));
+
+    let _ = fs::remove_dir_all(&case);
+}
+
+#[test]
 fn batch_sfc_keeps_vue_suffixed_alias_key_import_authored() {
     let case = unique_case_dir("vue-suffixed-alias-key-import");
     let app = write_vue_import_case(

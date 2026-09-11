@@ -1811,7 +1811,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_polic
 typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_project_mirror.rs	6	s0	S0	stage	vize_carton	compat	6
 typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_source_map.rs	3	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/import_rewriter_tests.rs	5	s0	S0	stage	vize_carton	compat	4
-typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_virtual_alias.rs	9	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_virtual_alias.rs	11	s0	S0	stage	vize_carton	compat	4
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/import_rewriter_virtual_tests.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_virtual.rs	3	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/import_rewriter_virtual.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
