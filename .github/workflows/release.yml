@@ -84,7 +84,7 @@ jobs:
         uses: ./.github/actions/setup-ubuntu-archive
       - name: Install cross-compilation tools (Linux ARM64)
         if: matrix.settings.target == 'aarch64-unknown-linux-gnu'
-        run: moon run --target native tools/moon/cmd/github/install_cross_compile_tools --
+        run: vize-ci-apt-retry moon run --target native tools/moon/cmd/github/install_cross_compile_tools --
       - name: Setup Zig (Linux musl CLI)
         if: endsWith(matrix.settings.target, '-musl')
         uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2

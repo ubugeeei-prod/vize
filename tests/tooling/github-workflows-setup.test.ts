@@ -17,11 +17,20 @@ test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () =>
   assert.match(action, /Acquire::Retries "5";/);
   assert.match(action, /Acquire::http::Timeout "30";/);
   assert.match(action, /Acquire::https::Timeout "30";/);
+  assert.match(action, /Acquire::Queue-Mode "access";/);
+  assert.match(action, /Acquire::http::Pipeline-Depth "0";/);
+  assert.match(action, /Acquire::https::Pipeline-Depth "0";/);
+  assert.match(action, /\/usr\/local\/bin\/vize-ci-apt-retry/);
+  assert.match(action, /VIZE_CI_APT_RETRIES:-4/);
 
   const row = readRepoFile(".github", "actions", "app-e2e-row", "action.yml");
   const rowSetup = row.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
   const rowApt = row.indexOf("playwright install-deps chromium");
   assert.ok(rowSetup >= 0 && rowSetup < rowApt);
+  assert.match(
+    row,
+    /vize-ci-apt-retry vp exec --filter '\.\/tests' -- playwright install-deps chromium/,
+  );
 
   const editor = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
   const editorSetup = editor.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
@@ -43,6 +52,10 @@ test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () =>
   const playgroundSetup = playground.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
   const playgroundInstall = playground.indexOf("install_playwright_browsers --");
   assert.ok(playgroundSetup >= 0 && playgroundSetup < playgroundInstall);
+  assert.match(
+    playground,
+    /vize-ci-apt-retry moon run --target native tools\/moon\/cmd\/github\/install_playwright_browsers --/,
+  );
 });
 
 test("deploy-docs deploy job installs MoonBit before running command packages", () => {

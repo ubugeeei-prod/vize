@@ -9,4 +9,4 @@ runs:
 
     - name: Install Playwright browsers
       shell: bash
-      run: moon run --target native tools/moon/cmd/github/install_playwright_browsers --
+      run: vize-ci-apt-retry moon run --target native tools/moon/cmd/github/install_playwright_browsers --

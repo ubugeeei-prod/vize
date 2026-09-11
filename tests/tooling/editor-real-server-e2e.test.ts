@@ -147,7 +147,7 @@ test("CI runs both headless editor specs", () => {
   assert.match(action, /vp run --workspace-root test:vim-extension:headless/);
   assert.match(action, /command -v vim/);
   assert.match(action, /vim --version \| grep -F '\+timers'/);
-  assert.match(action, /sudo apt-get install -y vim-nox/);
+  assert.match(action, /vize-ci-apt-retry sudo apt-get install -y vim-nox/);
 });
 
 test("CI pins vim-lsp before running the Vim real-server scenario", () => {
@@ -173,7 +173,8 @@ test("CI pins vim-lsp before running the Vim real-server scenario", () => {
 });
 
 test("CI executes the packaged Emacs ERT suite", () => {
-  const steps = actionSteps(readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml"));
+  const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const steps = actionSteps(action);
 
   assert.equal(
     taskCommand("test:emacs-extension:headless"),
@@ -184,11 +185,13 @@ test("CI executes the packaged Emacs ERT suite", () => {
   // step and its position ahead of the ERT task are one contract.
   const setupIndex = steps.findIndex((step) => step.name === "Ensure Emacs is available");
   const runIndex = steps.findIndex((step) => step.name === "Run the packaged Emacs ERT suite");
+  const setupAt = action.indexOf("- name: Ensure Emacs is available");
+  const runAt = action.indexOf("- name: Run the packaged Emacs ERT suite");
+  const setup = action.slice(setupAt, runAt);
 
-  assert.equal(
-    steps[setupIndex]?.run,
-    "command -v emacs || (sudo apt-get update && sudo apt-get install -y emacs-nox)",
-  );
+  assert.match(setup, /command -v emacs/);
+  assert.match(setup, /vize-ci-apt-retry sudo apt-get update/);
+  assert.match(setup, /vize-ci-apt-retry sudo apt-get install -y emacs-nox/);
   assert.equal(steps[runIndex]?.run, "vp run --workspace-root test:emacs-extension:headless");
   assert.ok(setupIndex < runIndex, "Emacs setup must run before the ERT suite");
 });

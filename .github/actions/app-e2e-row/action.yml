@@ -135,7 +135,7 @@ runs:
     - name: Install Playwright OS dependencies
       if: inputs.needs-playwright == 'true'
       shell: bash
-      run: vp exec --filter './tests' -- playwright install-deps chromium
+      run: vize-ci-apt-retry vp exec --filter './tests' -- playwright install-deps chromium
 
     - name: Install Playwright browser
       if: inputs.needs-playwright == 'true' && steps.cache-playwright.outputs.cache-hit != 'true'
