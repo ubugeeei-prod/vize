@@ -308,9 +308,13 @@ test("release npm publication waits long enough for registry dist-tag visibility
 
 test("Open VSX publication is an explicit, fail-closed opt-in", () => {
   const workflow = readRepoFile(".github", "workflows", "release-open-vsx.yml");
+  const parsed = parse(workflow) as {
+    env?: Record<string, string | number>;
+  };
   const publishJob = workflowJobBody(workflow, "release-open-vsx-extension");
 
   assert.match(workflow, /name:\s*Publish Open VSX \(optional\)/);
+  assert.equal(parsed.env?.PNPM_CONFIG_STRICT_DEP_BUILDS, "false");
   assert.match(workflow, /group:\s*publish-open-vsx-\$\{\{ inputs\.tag_name \}\}/);
   assert.match(workflow, /cancel-in-progress:\s*false/);
   assert.doesNotMatch(workflow, /\n\s*release:\s*\n\s*types:\s*\[published\]/);
