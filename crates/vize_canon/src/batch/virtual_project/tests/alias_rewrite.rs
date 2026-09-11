@@ -3,6 +3,14 @@ use std::fs;
 use super::{VirtualProject, unique_case_dir};
 
 fn write_vue_import_case(case: &std::path::Path, tsconfig: Option<&str>) -> std::path::PathBuf {
+    write_vue_import_case_with_specifier(case, tsconfig, "@/components/api/DirectiveTable.vue")
+}
+
+fn write_vue_import_case_with_specifier(
+    case: &std::path::Path,
+    tsconfig: Option<&str>,
+    specifier: &str,
+) -> std::path::PathBuf {
     let _ = fs::remove_dir_all(case);
     fs::create_dir_all(case.join("src/components/api")).unwrap();
     if let Some(tsconfig) = tsconfig {
@@ -16,14 +24,27 @@ fn write_vue_import_case(case: &std::path::Path, tsconfig: Option<&str>) -> std:
     let app = case.join("src/App.vue");
     fs::write(
         &app,
-        r#"<script setup lang="ts">
-import DirectiveTable from "@/components/api/DirectiveTable.vue";
+        format!(
+            r#"<script setup lang="ts">
+import DirectiveTable from "{specifier}";
 void DirectiveTable;
 </script>
-"#,
+"#
+        ),
     )
     .unwrap();
     app
+}
+
+fn alias_tsconfig() -> &'static str {
+    r#"{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}"#
 }
 
 #[test]
@@ -44,18 +65,24 @@ fn batch_sfc_keeps_unconfigured_alias_vue_import_authored() {
 #[test]
 fn batch_sfc_rewrites_configured_alias_vue_import_to_the_mirror() {
     let case = unique_case_dir("configured-alias-vue-import");
-    let app = write_vue_import_case(
+    let app = write_vue_import_case(&case, Some(alias_tsconfig()));
+
+    let mut project = VirtualProject::new(&case).unwrap();
+    project.register_path(&app).unwrap();
+    let generated = project.find_by_original(&app).unwrap().content.as_str();
+
+    assert!(generated.contains("\"@/components/api/DirectiveTable.vue.ts\""));
+
+    let _ = fs::remove_dir_all(&case);
+}
+
+#[test]
+fn batch_sfc_rewrites_configured_extensionless_alias_sfc_import_to_the_mirror() {
+    let case = unique_case_dir("configured-extensionless-alias-sfc-import");
+    let app = write_vue_import_case_with_specifier(
         &case,
-        Some(
-            r#"{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
-  }
-}"#,
-        ),
+        Some(alias_tsconfig()),
+        "@/components/api/DirectiveTable",
     );
 
     let mut project = VirtualProject::new(&case).unwrap();
@@ -63,6 +90,65 @@ fn batch_sfc_rewrites_configured_alias_vue_import_to_the_mirror() {
     let generated = project.find_by_original(&app).unwrap().content.as_str();
 
     assert!(generated.contains("\"@/components/api/DirectiveTable.vue.ts\""));
+
+    let _ = fs::remove_dir_all(&case);
+}
+
+#[test]
+fn batch_sfc_keeps_configured_extensionless_alias_ts_import_authored() {
+    let case = unique_case_dir("configured-extensionless-alias-ts-import");
+    let _ = fs::remove_dir_all(&case);
+    fs::create_dir_all(case.join("src/lib")).unwrap();
+    fs::write(case.join("tsconfig.json"), alias_tsconfig()).unwrap();
+    fs::write(
+        case.join("src/lib/format.ts"),
+        "export const format = () => '';\n",
+    )
+    .unwrap();
+    let app = case.join("src/App.vue");
+    fs::write(
+        &app,
+        r#"<script setup lang="ts">
+import { format } from "@/lib/format";
+void format;
+</script>
+"#,
+    )
+    .unwrap();
+
+    let mut project = VirtualProject::new(&case).unwrap();
+    project.register_path(&app).unwrap();
+    let generated = project.find_by_original(&app).unwrap().content.as_str();
+
+    assert!(generated.contains("\"@/lib/format\""));
+    assert!(!generated.contains("\"@/lib/format.vue.ts\""));
+
+    let _ = fs::remove_dir_all(&case);
+}
+
+#[test]
+fn batch_sfc_rewrites_configured_extensionless_alias_index_sfc_import_to_the_mirror() {
+    let case = unique_case_dir("configured-extensionless-alias-index-sfc-import");
+    let _ = fs::remove_dir_all(&case);
+    fs::create_dir_all(case.join("src/panels/Card")).unwrap();
+    fs::write(case.join("tsconfig.json"), alias_tsconfig()).unwrap();
+    fs::write(case.join("src/panels/Card/index.vue"), "<template />").unwrap();
+    let app = case.join("src/App.vue");
+    fs::write(
+        &app,
+        r#"<script setup lang="ts">
+import Card from "@/panels/Card";
+void Card;
+</script>
+"#,
+    )
+    .unwrap();
+
+    let mut project = VirtualProject::new(&case).unwrap();
+    project.register_path(&app).unwrap();
+    let generated = project.find_by_original(&app).unwrap().content.as_str();
+
+    assert!(generated.contains("\"@/panels/Card/index.vue.ts\""));
 
     let _ = fs::remove_dir_all(&case);
 }

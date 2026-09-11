@@ -200,6 +200,7 @@ fn runtime_model_type_from_expression(expression: &Expression<'_>) -> Option<Com
         Expression::Identifier(identifier) => {
             runtime_constructor_model_type(identifier.name.as_str()).map(CompactString::new)
         }
+        Expression::NullLiteral(_) => Some(CompactString::new("null")),
         Expression::ArrayExpression(array) => {
             let mut types = Vec::new();
             for element in &array.elements {

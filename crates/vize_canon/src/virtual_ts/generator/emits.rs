@@ -4,7 +4,7 @@ use vize_croquis::Croquis;
 use super::generics::module_alias_generic_suffix;
 use super::setup_scope::macro_type_requires_setup_scope;
 use crate::virtual_ts::{
-    helpers::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER},
+    helpers::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER, push_ts_string_literal},
     macro_type_mappings::MacroTypeMappings,
     props::{add_generic_defaults, extract_generic_names, strip_const_modifiers},
 };
@@ -155,6 +155,11 @@ fn model_update_payload(model: &vize_croquis::macros::ModelDefinition) -> String
     }
 }
 
+fn push_model_update_event_literal(ts: &mut String, model_name: &str) {
+    let event_name = cstr!("update:{model_name}");
+    push_ts_string_literal(ts, event_name.as_str());
+}
+
 pub(super) fn emit_emits_type(
     ts: &mut String,
     summary: &Croquis,
@@ -209,7 +214,9 @@ pub(super) fn emit_emits_type(
                 for model in models {
                     let name = model.name.as_str();
                     let payload = model_update_payload(model);
-                    append!(*ts, "  \"update:{name}\": [value: {payload}];\n");
+                    ts.push_str("  ");
+                    push_model_update_event_literal(ts, name);
+                    append!(*ts, ": [value: {payload}];\n");
                 }
                 ts.push_str("};\n");
             } else {
@@ -226,10 +233,9 @@ pub(super) fn emit_emits_type(
             for model in models {
                 let name = model.name.as_str();
                 let payload = model_update_payload(model);
-                append!(
-                    *ts,
-                    " & ((event: \"update:{name}\", value: {payload}) => void)"
-                );
+                ts.push_str(" & ((event: ");
+                push_model_update_event_literal(ts, name);
+                append!(*ts, ", value: {payload}) => void)");
             }
             ts.push_str(";\n");
         } else if has_macro_emits || has_model_emits {
@@ -237,7 +243,9 @@ pub(super) fn emit_emits_type(
             let mut emitted_names: FxHashSet<String> = FxHashSet::default();
             for emit in summary.macros.emits() {
                 let payload = emit.payload_type.as_deref().unwrap_or("any[]");
-                append!(*ts, "  \"{}\": {payload};\n", emit.name);
+                ts.push_str("  ");
+                push_ts_string_literal(ts, emit.name.as_str());
+                append!(*ts, ": {payload};\n");
                 emitted_names.insert(emit.name.as_str().into());
             }
             for model in models {
@@ -246,7 +254,9 @@ pub(super) fn emit_emits_type(
                     continue;
                 }
                 let payload = model_update_payload(model);
-                append!(*ts, "  \"{event_name}\": [value: {payload}];\n");
+                ts.push_str("  ");
+                push_ts_string_literal(ts, event_name.as_str());
+                append!(*ts, ": [value: {payload}];\n");
             }
             ts.push_str("};\n");
         } else {

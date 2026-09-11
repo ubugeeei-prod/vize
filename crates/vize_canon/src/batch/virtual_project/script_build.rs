@@ -19,22 +19,26 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
 ) -> CorsaResult<RegisteredFile> {
     let rewritten = profile!("canon.import.rewrite.script", {
         if context.preserve_relative_declarations {
-            context.rewriter.rewrite_for_package_shadow_with_alias_policy(
-                content,
-                source_type,
-                context.roots,
-                path.parent(),
-                context.alias_rewrite_policy,
-            )
+            context
+                .rewriter
+                .rewrite_for_package_shadow_with_alias_policy(
+                    content,
+                    source_type,
+                    context.roots,
+                    path.parent(),
+                    context.alias_rewrite_policy,
+                )
         } else {
-            context.rewriter.rewrite_for_virtual_project_with_alias_policy(
-                content,
-                source_type,
-                context.roots,
-                path.parent(),
-                context.alias_rewrite_policy,
-                context.mirrorable_project_files,
-            )
+            context
+                .rewriter
+                .rewrite_for_virtual_project_with_alias_policy(
+                    content,
+                    source_type,
+                    context.roots,
+                    path.parent(),
+                    context.alias_rewrite_policy,
+                    context.mirrorable_project_files,
+                )
         }
     });
     let preserve_declaration_spelling = context.preserve_declaration_spelling

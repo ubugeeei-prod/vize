@@ -5,8 +5,12 @@
 //! TypeScript and vue-tsc resolve the authored specifier as-is; appending `.ts`
 //! changes the unresolved target and can introduce false TS2307 diagnostics.
 
+use std::path::{Path, PathBuf};
+
 use serde_json::{Map, Value};
 use vize_carton::{String, cstr};
+
+use super::virtual_rewrite::{append_extension, resolve_source_path};
 
 #[derive(Debug, Default)]
 pub(crate) struct VirtualAliasRewritePolicy {
@@ -18,6 +22,7 @@ struct PathAliasPattern {
     prefix: String,
     suffix: String,
     wildcard: bool,
+    targets: Vec<String>,
 }
 
 impl VirtualAliasRewritePolicy {
@@ -25,10 +30,18 @@ impl VirtualAliasRewritePolicy {
     pub(crate) fn from_paths(paths: &Map<std::string::String, Value>) -> Self {
         let patterns = paths
             .iter()
-            .filter(|(_, targets)| targets_enable_first_party_alias(targets))
-            .map(|(pattern, _)| PathAliasPattern::new(pattern))
+            .filter_map(|(pattern, targets)| {
+                let targets = first_party_alias_targets(targets);
+                (!targets.is_empty()).then(|| PathAliasPattern::new(pattern, targets))
+            })
             .collect();
         Self { patterns }
+    }
+
+    pub(crate) fn source_may_contain_rewritable_alias(&self, source: &str) -> bool {
+        self.patterns
+            .iter()
+            .any(|pattern| pattern.source_may_contain_alias(source))
     }
 
     pub(crate) fn should_rewrite_vue_specifier(&self, specifier: &str) -> bool {
@@ -38,26 +51,73 @@ impl VirtualAliasRewritePolicy {
         self.matches(cstr!("{specifier}.ts").as_str())
     }
 
+    pub(crate) fn rewrite_extensionless_vue_specifier(
+        &self,
+        specifier: &str,
+        project_root: &Path,
+    ) -> Option<String> {
+        if Path::new(specifier).extension().is_some() {
+            return None;
+        }
+        let suffix = self.extensionless_vue_rewrite_suffix(specifier, project_root)?;
+        Some(cstr!("{specifier}{suffix}"))
+    }
+
     fn matches(&self, specifier: &str) -> bool {
         self.patterns
             .iter()
             .any(|pattern| pattern.matches(specifier))
     }
+
+    fn extensionless_vue_rewrite_suffix(
+        &self,
+        specifier: &str,
+        project_root: &Path,
+    ) -> Option<&'static str> {
+        let mut best: Option<(usize, &'static str)> = None;
+        for pattern in &self.patterns {
+            if best
+                .as_ref()
+                .is_some_and(|(len, _)| pattern.key_len() <= *len)
+            {
+                continue;
+            }
+            let Some(suffix) = pattern
+                .target_candidates(specifier, project_root)
+                .into_iter()
+                .find_map(|target| vue_rewrite_suffix_for_target(target.as_path()))
+            else {
+                continue;
+            };
+            best = Some((pattern.key_len(), suffix));
+        }
+        best.map(|(_, suffix)| suffix)
+    }
 }
 
 impl PathAliasPattern {
-    fn new(pattern: &str) -> Self {
+    fn new(pattern: &str, targets: Vec<String>) -> Self {
         let Some(wildcard) = pattern.find('*') else {
             return Self {
                 prefix: pattern.into(),
                 suffix: String::default(),
                 wildcard: false,
+                targets,
             };
         };
         Self {
             prefix: pattern[..wildcard].into(),
             suffix: pattern[wildcard + 1..].into(),
             wildcard: true,
+            targets,
+        }
+    }
+
+    fn source_may_contain_alias(&self, source: &str) -> bool {
+        if self.prefix.is_empty() {
+            source.contains("import") || source.contains("export")
+        } else {
+            source.contains(self.prefix.as_str())
         }
     }
 
@@ -70,20 +130,84 @@ impl PathAliasPattern {
             specifier == self.prefix
         }
     }
+
+    fn key_len(&self) -> usize {
+        self.prefix.len() + self.suffix.len()
+    }
+
+    fn target_candidates(&self, specifier: &str, project_root: &Path) -> Vec<PathBuf> {
+        self.targets
+            .iter()
+            .filter_map(|target| self.substitute_target(specifier, target.as_str()))
+            .map(|target| {
+                let path = Path::new(target.as_str());
+                if path.is_absolute() {
+                    path.to_path_buf()
+                } else {
+                    project_root.join(path)
+                }
+            })
+            .collect()
+    }
+
+    fn substitute_target(&self, specifier: &str, target: &str) -> Option<String> {
+        if !self.matches(specifier) {
+            return None;
+        }
+        if !self.wildcard {
+            return Some(target.into());
+        }
+        let capture_end = specifier.len().checked_sub(self.suffix.len())?;
+        let capture = specifier.get(self.prefix.len()..capture_end)?;
+        target.find('*').map(|wildcard| {
+            cstr!(
+                "{}{}{}",
+                &target[..wildcard],
+                capture,
+                &target[wildcard + 1..]
+            )
+        })
+    }
 }
 
 fn is_policy_controlled_vue_specifier(specifier: &str) -> bool {
     specifier.ends_with(".vue") && (specifier.starts_with("@/") || specifier.starts_with("~/"))
 }
 
-fn targets_enable_first_party_alias(targets: &Value) -> bool {
+fn first_party_alias_targets(targets: &Value) -> Vec<String> {
     let Some(targets) = targets.as_array() else {
-        return false;
+        return Vec::new();
     };
     targets
         .iter()
         .filter_map(Value::as_str)
-        .any(|target| !target.is_empty() && !target.contains("node_modules"))
+        .filter(|target| !target.is_empty() && !target.contains("node_modules"))
+        .map(String::from)
+        .collect()
+}
+
+fn vue_rewrite_suffix_for_target(target: &Path) -> Option<&'static str> {
+    let resolved = resolve_source_path(target)?;
+    if resolved
+        .extension()
+        .and_then(|extension| extension.to_str())
+        != Some("vue")
+    {
+        return None;
+    }
+    let canonical_resolved = vize_carton::path::canonicalize_non_verbatim(&resolved);
+    let direct_vue = if target.extension().and_then(|extension| extension.to_str()) == Some("vue") {
+        target.to_path_buf()
+    } else {
+        append_extension(target, ".vue")
+    };
+    if canonical_resolved == vize_carton::path::canonicalize_non_verbatim(&direct_vue) {
+        return Some(".vue.ts");
+    }
+    let index_vue = target.join("index.vue");
+    (target.extension().is_none()
+        && canonical_resolved == vize_carton::path::canonicalize_non_verbatim(&index_vue))
+    .then_some("/index.vue.ts")
 }
 
 #[cfg(test)]

@@ -2,8 +2,10 @@
 
 use std::ops::Range;
 
-use vize_carton::cstr;
+use vize_carton::{String, cstr};
 use vize_croquis::macros::{MacroCall, ModelDefinition};
+
+use crate::virtual_ts::helpers::push_ts_string_literal;
 
 use super::VizeMapping;
 
@@ -89,12 +91,13 @@ impl<'a> MacroTypeMappings<'a> {
             let Some(authored) = declarations.model_declaration(model.name.as_str()) else {
                 continue;
             };
-            let needle = cstr!("  \"{}\"", model.name);
+            let mut needle = String::from("  ");
+            push_ts_string_literal(&mut needle, model.name.as_str());
             let Some(start) = generated.find(needle.as_str()) else {
                 continue;
             };
             let start = generated_start + start + 2;
-            self.map_exact(start..start + model.name.len() + 2, authored);
+            self.map_exact(start..start + needle.len() - 2, authored);
         }
     }
 

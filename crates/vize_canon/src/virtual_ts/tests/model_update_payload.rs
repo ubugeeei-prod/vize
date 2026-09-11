@@ -31,6 +31,18 @@ fn code_of(script: &str) -> std::string::String {
         .into()
 }
 
+fn props_type_of(script: &str) -> std::string::String {
+    let code = code_of(script);
+    let start = code
+        .find("export type Props")
+        .or_else(|| code.find("type __VizeResolvedProps"))
+        .expect("Props alias");
+    let end = code[start..]
+        .find("\n\n")
+        .map_or(code.len(), |end| start + end);
+    code[start..end].into()
+}
+
 #[test]
 fn an_optional_model_update_payload_carries_undefined() {
     let emits = emits_of("const model = defineModel<string>()\nvoid model;\n");
@@ -79,6 +91,20 @@ fn runtime_constructor_model_flows_into_public_props_and_emits() {
 }
 
 #[test]
+fn runtime_constructor_model_array_type_can_include_null() {
+    let code = code_of("const model = defineModel({ type: [String, null] })\nvoid model;\n");
+
+    assert!(
+        code.contains("\"modelValue\"?: string | null;"),
+        "runtime constructor model should preserve null public prop type:\n{code}"
+    );
+    assert!(
+        code.contains("\"update:modelValue\": [value: (string | null) | undefined]"),
+        "runtime constructor model should preserve null update payload:\n{code}"
+    );
+}
+
+#[test]
 fn optional_runtime_constructor_model_update_payload_carries_undefined() {
     let emits = emits_of("const model = defineModel({ type: String })\nvoid model;\n");
     assert!(
@@ -93,6 +119,88 @@ fn a_function_typed_model_parenthesizes_the_base() {
     assert!(
         emits.contains("\"update:modelValue\": [value: (() => string) | undefined]"),
         "a function-typed model must not absorb the union into its return type:\n{emits}"
+    );
+}
+
+#[test]
+fn define_model_prop_names_are_escaped_as_typescript_string_literals() {
+    let script = "const model = defineModel<string>(\"quote\\\"line\\u2028\")\nvoid model;\n";
+    let props = props_type_of(script);
+    let emits = emits_of(script);
+
+    assert!(
+        props.contains(r#""quote\"line\u2028"?: string;"#),
+        "model prop names must be escaped in public props:\n{props}"
+    );
+    assert!(
+        props.contains(r#""quote\"line\u2028Modifiers"?: Partial<Record<string, true>>;"#),
+        "model modifier prop names must be escaped in public props:\n{props}"
+    );
+    assert!(
+        emits.contains(r#""update:quote\"line\u2028": [value: (string) | undefined]"#),
+        "model update event names must be escaped in public emits:\n{emits}"
+    );
+}
+
+#[test]
+fn define_props_prop_names_are_escaped_as_typescript_string_literals() {
+    let props =
+        props_type_of("defineProps({ \"foo-bar\": String, \"quote\\\"line\\u2028\": Number })\n");
+
+    assert!(
+        props.contains(r#""foo-bar"?: string;"#),
+        "hyphenated macro prop names must be quoted in public props:\n{props}"
+    );
+    assert!(
+        props.contains(r#""quote\"line\u2028"?: number;"#),
+        "escaped macro prop names must be valid TypeScript literals:\n{props}"
+    );
+}
+
+#[test]
+fn macro_props_only_suppress_colliding_model_members() {
+    let props = props_type_of(
+        r#"defineProps({ titleModifiers: Boolean })
+const title = defineModel<string>("title")
+void title;
+"#,
+    );
+
+    assert!(
+        props.contains(r#""title"?: string;"#),
+        "a macro prop colliding with modifiers must not suppress the model prop:\n{props}"
+    );
+    assert!(
+        !props.contains(r#""titleModifiers"?: Partial<Record<string, true>>;"#),
+        "the generated modifier prop should be skipped when a macro prop owns the alias:\n{props}"
+    );
+}
+
+#[test]
+fn later_model_names_cannot_duplicate_modifier_aliases() {
+    let props = props_type_of(
+        r#"const title = defineModel<string>("title")
+const modifierAlias = defineModel<number>("titleModifiers")
+void title;
+void modifierAlias;
+"#,
+    );
+
+    assert!(
+        props.contains(r#""title"?: string;"#),
+        "the first model prop should be emitted:\n{props}"
+    );
+    assert!(
+        props.contains(r#""titleModifiers"?: Partial<Record<string, true>>;"#),
+        "the first model modifier alias should be emitted:\n{props}"
+    );
+    assert!(
+        !props.contains(r#""titleModifiers"?: number;"#),
+        "a later model prop must not duplicate an earlier modifier alias:\n{props}"
+    );
+    assert!(
+        props.contains(r#""titleModifiersModifiers"?: Partial<Record<string, true>>;"#),
+        "only the colliding generated member should be skipped:\n{props}"
     );
 }
 

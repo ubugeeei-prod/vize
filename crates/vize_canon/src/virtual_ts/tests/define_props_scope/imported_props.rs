@@ -98,9 +98,9 @@ defineModel<string>();
     );
 }
 
-fn options_api_code_with_component_usage(script: &str) -> std::string::String {
+fn options_api_code(script: &str, template: &str) -> std::string::String {
     let allocator = vize_carton::Allocator::new();
-    let (root, _) = vize_armature::parse(&allocator, "<Widget />");
+    let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
     analyzer.analyze_script_plain(script);
     analyzer.analyze_template(&root);
@@ -116,6 +116,10 @@ fn options_api_code_with_component_usage(script: &str) -> std::string::String {
     )
     .code
     .into()
+}
+
+fn options_api_code_with_component_usage(script: &str) -> std::string::String {
+    options_api_code(script, "<Widget />")
 }
 
 #[test]
@@ -141,6 +145,30 @@ export default {
     assert!(
         code.contains("  $props: __VizeResolvedProps;"),
         "component instance should read the private Options API props alias:\n{code}"
+    );
+}
+
+#[test]
+fn imported_props_type_keeps_options_api_props_without_component_usage() {
+    let script = r#"import type { Props } from "./types";
+
+export default {
+  props: ["initial", "label"],
+};
+"#;
+    let code = options_api_code(script, "<div />");
+
+    assert!(
+        !code.contains("export type Props = {"),
+        "imported Props must not be redeclared:\n{code}"
+    );
+    assert!(
+        code.contains("type __VizeResolvedProps = {\n  \"initial\"?: unknown;\n"),
+        "Options API props should still be preserved through a private alias:\n{code}"
+    );
+    assert!(
+        code.contains("  $props: __VizeResolvedProps;"),
+        "component instance should use the private Options API props alias:\n{code}"
     );
 }
 

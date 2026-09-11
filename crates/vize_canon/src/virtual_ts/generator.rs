@@ -60,8 +60,8 @@ use super::{
     import_meta::emit_import_meta_augmentation,
     macro_type_mappings::MacroTypeMappings,
     props::{
-        OptionsApiPropsSource, add_generic_defaults, collect_template_prop_names,
-        extract_generic_names, strip_const_modifiers,
+        add_generic_defaults, collect_template_prop_names, extract_generic_names,
+        strip_const_modifiers,
     },
     scope::{ScopeGenerationOptions, emit_slot_payload_helpers, generate_scope_closures},
     types::{
@@ -344,6 +344,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
     let global_components =
         GlobalComponentPlan::new(summary, legacy_vue2, has_script_reference_types);
+    // Derive a real cross-file `Props` type from macro or Options API input.
+    let options_api_props = (options_api && summary.macros.props().is_empty())
+        .then(|| script_content.and_then(find_options_api_props))
+        .flatten();
     // The template-scope unwrap set also needs it: an auto-import already
     // imported by a plain `<script>` must not gain a second shadow.
     let needs_imported_names = !options.auto_import_stubs.is_empty()
@@ -357,15 +361,18 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     } else {
         FxHashSet::default()
     };
-    let syntactic_type_only_imported_names =
-        if should_collect_syntactic_type_only_imported_names(summary, &global_components) {
-            profile!(
-                "canon.virtual_ts.extract_syntactic_type_only_imported_names",
-                collect_syntactic_type_only_imported_names(summary, script_content)
-            )
-        } else {
-            FxHashSet::default()
-        };
+    let syntactic_type_only_imported_names = if should_collect_syntactic_type_only_imported_names(
+        summary,
+        &global_components,
+        options_api_props.is_some(),
+    ) {
+        profile!(
+            "canon.virtual_ts.extract_syntactic_type_only_imported_names",
+            collect_syntactic_type_only_imported_names(summary, script_content)
+        )
+    } else {
+        FxHashSet::default()
+    };
     if !options.auto_import_stubs.is_empty() {
         profile!(
             "canon.virtual_ts.emit_auto_import_stubs",
@@ -387,13 +394,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     ts.push('\n');
 
-    // Derive a real cross-file `Props` type from macro or Options API input.
-    let options_api_props: Option<OptionsApiPropsSource> =
-        if options_api && summary.macros.props().is_empty() {
-            script_content.and_then(find_options_api_props)
-        } else {
-            None
-        };
     let source_offset = &script_source_offset;
     let setup_props_plan = generate_setup_props(
         &mut ts,

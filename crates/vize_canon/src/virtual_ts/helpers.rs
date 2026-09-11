@@ -217,6 +217,36 @@ pub(crate) fn to_safe_identifier_fragment(s: &str) -> String {
     result
 }
 
+/// Append a double-quoted TypeScript string literal.
+pub(crate) fn push_ts_string_literal(out: &mut String, value: &str) {
+    out.push('"');
+    for ch in value.chars() {
+        match ch {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            '\u{08}' => out.push_str("\\b"),
+            '\u{0c}' => out.push_str("\\f"),
+            '\u{2028}' => out.push_str("\\u2028"),
+            '\u{2029}' => out.push_str("\\u2029"),
+            ch if (ch as u32) < 0x20 => {
+                out.push_str("\\u00");
+                push_hex_digit(out, (ch as u8) >> 4);
+                push_hex_digit(out, (ch as u8) & 0x0f);
+            }
+            _ => out.push(ch),
+        }
+    }
+    out.push('"');
+}
+
+fn push_hex_digit(out: &mut String, value: u8) {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    out.push(HEX[value as usize] as char);
+}
+
 #[inline]
 pub(crate) fn is_reserved_identifier(s: &str) -> bool {
     matches!(

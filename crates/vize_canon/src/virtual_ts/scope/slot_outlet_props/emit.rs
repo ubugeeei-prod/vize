@@ -29,6 +29,20 @@ struct PayloadType {
     name_gen_range: Option<Range<usize>>,
 }
 
+enum SlotOutletLiteralEntry<'a> {
+    Prop(&'a PassedProp),
+    Spread(&'a SpreadProp),
+}
+
+impl SlotOutletLiteralEntry<'_> {
+    const fn start(&self) -> u32 {
+        match self {
+            Self::Prop(prop) => prop.start,
+            Self::Spread(spread) => spread.start,
+        }
+    }
+}
+
 pub(super) fn emit_slot_outlet_helpers(
     ts: &mut String,
     slot_outlets_by_scope: &FxHashMap<u32, Vec<SlotOutlet>>,
@@ -53,14 +67,7 @@ pub(super) fn emit_slot_outlet_helpers(
         return;
     }
 
-    // The payload is resolved through indexed access rather than a
-    // `__K extends keyof __S` conditional: a slots type that instantiates the
-    // SFC's own type parameters (`Slots<T>`, typically widened by a mapped type
-    // over `T`) has a generic `keyof`, so such a conditional stays deferred and
-    // nothing is assignable to it. `Parameters<…>` of the indexed slot resolves
-    // even then, and both guards below keep the permissive fallbacks: a key the
-    // slots type does not declare, or a slot that takes no payload, still types
-    // the outlet literal as `unknown` instead of `never`/`undefined`.
+    // Indexed access keeps generic slot payloads concrete with permissive fallbacks.
     ts.push_str("  type __VizeSlotOutletFn = (...args: any[]) => any;\n");
     if needs_static {
         ts.push_str(
@@ -86,10 +93,10 @@ pub(super) fn emit_slot_outlet_helpers(
     }
     if needs_spread {
         ts.push_str(
-            "  type __VizeSlotOutletSpreadPayload<__T> = __T extends object ? __T : Record<string, unknown>;\n",
+            "  type __VizeSlotOutletSpreadPayload<__Expected, __T> = __Expected & (__T extends object ? __T : Record<string, unknown>);\n",
         );
         ts.push_str(
-            "  function __vizeSlotOutletSpread<__T>(value: __T): __VizeSlotOutletSpreadPayload<__T> { return value as any; }\n",
+            "  function __vizeSlotOutletSpread<__Expected, __T = unknown>(value: __T): __VizeSlotOutletSpreadPayload<__Expected, __T> { return value as any; }\n",
         );
     }
 }
@@ -171,6 +178,7 @@ fn generate_slot_outlet_checks(
             ts,
             mappings,
             outlet,
+            payload_type.text.as_str(),
             template_prop_names,
             source_context,
             expr_indent.as_str(),
@@ -212,6 +220,7 @@ fn append_slot_outlet_literal(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     outlet: &SlotOutlet,
+    payload_type: &str,
     template_prop_names: &FxHashSet<String>,
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
@@ -219,49 +228,65 @@ fn append_slot_outlet_literal(
     let literal_gen_start = ts.len();
     ts.push_str("{\n");
 
-    for prop in &outlet.props {
-        let Some(generated_value) = generated_prop_value(prop, template_prop_names) else {
-            continue;
-        };
-        let prop_src_start = (source_context.offset + prop.start) as usize;
-        let prop_src_end = (source_context.offset + prop.end) as usize;
-        append!(*ts, "{expr_indent}  ");
-        let entry_gen_start = ts.len();
-        let camel_prop_name = to_camel_case(prop.name.as_str());
-        append!(*ts, "\"{camel_prop_name}\"");
-        let key_gen_end = ts.len();
-        ts.push_str(": ");
-        let value_gen_range = append_prop_value(ts, generated_value.as_str());
-        let entry_gen_end = ts.len();
-        ts.push_str(",\n");
-        mappings.push(VizeMapping {
-            gen_range: entry_gen_start..entry_gen_end,
-            src_range: prop_src_start..prop_src_end,
-            sub_spans: entry_sub_spans(
-                source_context,
-                prop,
-                entry_gen_start..key_gen_end,
-                value_gen_range,
-            ),
-        });
-    }
+    let mut entries = Vec::with_capacity(outlet.props.len() + outlet.spread_props.len());
+    entries.extend(outlet.props.iter().map(SlotOutletLiteralEntry::Prop));
+    entries.extend(
+        outlet
+            .spread_props
+            .iter()
+            .map(SlotOutletLiteralEntry::Spread),
+    );
+    entries.sort_by_key(SlotOutletLiteralEntry::start);
 
-    for spread in &outlet.spread_props {
-        append!(*ts, "{expr_indent}  ...__vizeSlotOutletSpread((");
-        let gen_range = append_prop_value(ts, spread.expression.as_str());
-        ts.push_str(")),\n");
-        let source_expression = spread_expression_source_range(source_context, spread);
-        mappings.push(VizeMapping {
-            gen_range: gen_range.clone(),
-            src_range: (source_context.offset + spread.start) as usize
-                ..(source_context.offset + spread.end) as usize,
-            sub_spans: source_expression.map_or_else(Vec::new, |src_range| {
-                vec![VizeSubSpan {
-                    gen_range,
-                    src_range,
-                }]
-            }),
-        });
+    for entry in entries {
+        match entry {
+            SlotOutletLiteralEntry::Prop(prop) => {
+                let Some(generated_value) = generated_prop_value(prop, template_prop_names) else {
+                    continue;
+                };
+                let prop_src_start = (source_context.offset + prop.start) as usize;
+                let prop_src_end = (source_context.offset + prop.end) as usize;
+                append!(*ts, "{expr_indent}  ");
+                let entry_gen_start = ts.len();
+                let camel_prop_name = to_camel_case(prop.name.as_str());
+                append!(*ts, "\"{camel_prop_name}\"");
+                let key_gen_end = ts.len();
+                ts.push_str(": ");
+                let value_gen_range = append_prop_value(ts, generated_value.as_str());
+                let entry_gen_end = ts.len();
+                ts.push_str(",\n");
+                mappings.push(VizeMapping {
+                    gen_range: entry_gen_start..entry_gen_end,
+                    src_range: prop_src_start..prop_src_end,
+                    sub_spans: entry_sub_spans(
+                        source_context,
+                        prop,
+                        entry_gen_start..key_gen_end,
+                        value_gen_range,
+                    ),
+                });
+            }
+            SlotOutletLiteralEntry::Spread(spread) => {
+                append!(
+                    *ts,
+                    "{expr_indent}  ...__vizeSlotOutletSpread<{payload_type}>((",
+                );
+                let gen_range = append_prop_value(ts, spread.expression.as_str());
+                ts.push_str(")),\n");
+                let source_expression = spread_expression_source_range(source_context, spread);
+                mappings.push(VizeMapping {
+                    gen_range: gen_range.clone(),
+                    src_range: (source_context.offset + spread.start) as usize
+                        ..(source_context.offset + spread.end) as usize,
+                    sub_spans: source_expression.map_or_else(Vec::new, |src_range| {
+                        vec![VizeSubSpan {
+                            gen_range,
+                            src_range,
+                        }]
+                    }),
+                });
+            }
+        }
     }
 
     append!(*ts, "{expr_indent}}}");
@@ -275,9 +300,7 @@ fn entry_sub_spans(
     value_gen_range: Range<usize>,
 ) -> Vec<VizeSubSpan> {
     let mut sub_spans = Vec::new();
-    // The key and the value are anchored independently: a value whose authored
-    // text cannot be located (a shorthand bind, a rewritten reserved name) must
-    // not discard the key span too.
+    // Keep key and value spans independent when authored value text is synthetic.
     if let Some(name_src_range) = prop_name_source_range(source_context, prop) {
         sub_spans.push(VizeSubSpan {
             gen_range: key_gen_range,

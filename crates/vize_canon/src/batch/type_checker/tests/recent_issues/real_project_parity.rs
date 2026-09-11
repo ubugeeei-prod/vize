@@ -60,6 +60,44 @@ void value
 }
 
 #[test]
+fn define_model_option_getter_and_setter_keep_distinct_ref_types() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "define-model-option-get-set-ref-types",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const model = defineModel({
+  type: String,
+  required: true,
+  get(value: string) {
+    return value.length
+  },
+  set(value: number) {
+    return String(value)
+  },
+})
+const read: number = model.value
+model.value = 42
+void read
+</script>
+"#,
+        )],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    assert_eq!(
+        snapshot,
+        Some(Vec::new()),
+        "defineModel get/set should shape the ModelRef read/write types: {snapshot:#?}"
+    );
+}
+
+#[test]
 fn script_bound_unresolved_component_events_are_contextually_any() {
     if resolve_test_tsgo_binary().is_none() {
         return;
@@ -171,6 +209,38 @@ const slotProps = undefined as unknown
         snapshot,
         Some(Vec::new()),
         "dynamic slot outlet spread should not report TS2698, got: {snapshot:#?}"
+    );
+}
+
+#[test]
+fn generic_slot_outlet_spread_preserves_exact_payloads() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "generic-slot-outlet-spread-exact-payload",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts" generic="M extends string">
+type SlotProps<T> = T extends string ? { modelValue: T } : Record<string, unknown>
+defineSlots<{ default(props: SlotProps<M>): unknown }>()
+const slotProps = undefined as unknown as SlotProps<M>
+</script>
+
+<template>
+  <slot v-bind="slotProps" />
+</template>
+"#,
+        )],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    assert_eq!(
+        snapshot,
+        Some(Vec::new()),
+        "generic slot outlet spread should keep the authored payload type: {snapshot:#?}"
     );
 }
 
