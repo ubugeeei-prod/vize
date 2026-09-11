@@ -249,7 +249,57 @@ title: アクセシビリティルール
 </template>
 ```
 
+## `a11y/mouse-events-have-key-events`
+
+マウス hover のハンドラーを使う場合は、対応する focus と blur のハンドラーも必要です。
+
+デフォルトの重大度: `warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
+
+```vue
+<!-- 悪い -->
+<div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
+
+<!-- 良い -->
+<div tabindex="0" @mouseenter="showPreview" @mouseleave="hidePreview" @focus="showPreview" @blur="hidePreview">Preview</div>
+```
+
+## `a11y/no-i-for-icon`
+
+よく使われる icon 用 CSS class によって、`<i>` 要素が icon だけに使われている場合に報告します。
+
+デフォルトの重大度: `warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
+
+```vue
+<!-- 悪い -->
+<i class="material-icons">home</i>
+
+<!-- 良い -->
+<span class="material-icons" aria-hidden="true">home</span>
+<span class="sr-only">Home</span>
+```
+
+## `a11y/no-refer-to-non-existent-id`
+
+`for`、`aria-labelledby`、`aria-describedby` などの静的な ID 参照が、同じ template 内に存在する
+ID を指していることを要求します。
+
+デフォルトの重大度: `warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
+
+```vue
+<!-- 悪い -->
+<label for="email">Email</label>
+<input id="user-email" />
+
+<!-- 良い -->
+<label for="email">Email</label>
+<input id="email" />
+```
+
 ## 追加のアクセシビリティ ルール
+
+この分け方はドキュメントの詳しさだけの違いです。このページに載っている `a11y/*` はすべて通常の
+Patina アクセシビリティルールです。上のセクションは例付きで詳説済み、下の項目は同じ扱いで今後
+例を追加していくコンパクトな一覧です。
 
 `a11y/anchor-has-content` では、アンカー要素にアクセス可能なコンテンツが必要です。デフォルト: `warning`。
 プリセット: `happy-path`、`nuxt`、`opinionated`。
@@ -278,9 +328,6 @@ title: アクセシビリティルール
 `a11y/media-has-caption` にはメディア要素のキャプションが必要です。デフォルト: `warning`。プリセット:
 `happy-path`、`nuxt`、`opinionated`。
 
-`a11y/mouse-events-have-key-events` では、マウス ハンドラーを使用する場合、フォーカス ハンドラーとブラー ハンドラーが必要です。
-デフォルト: `warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
-
 `a11y/no-access-key` は、`accesskey` 属性を禁止します。デフォルト: `warning`。プリセット:
 `happy-path`、`nuxt`、`opinionated`。
 
@@ -290,14 +337,8 @@ title: アクセシビリティルール
 `a11y/no-distracting-elements` は、`<marquee>` や `<blink>` などの気が散る要素を禁止します。
 デフォルト: `warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
 
-`a11y/no-i-for-icon` は、アイコンのみの要素として `<i>` を使用することを推奨しません。デフォルト: `warning`。プリセット:
-`happy-path`、`nuxt`、`opinionated`。
-
 `a11y/no-redundant-roles` は、ネイティブ セマンティクスを複製する ARIA ロールを禁止します。デフォルト:
 `warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
-
-`a11y/no-refer-to-non-existent-id` は、欠落している ID への ARIA 参照を報告します。デフォルト: `warning`。
-プリセット: `happy-path`、`nuxt`、`opinionated`。
 
 `a11y/no-role-presentation-on-focusable` は `role="presentation"` または `role="none"` を禁止します
 フォーカス可能な要素。デフォルト: `error`。プリセット: `happy-path`、`nuxt`、`opinionated`。

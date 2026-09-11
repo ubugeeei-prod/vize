@@ -247,7 +247,56 @@ Good:
 </template>
 ```
 
+## `a11y/mouse-events-have-key-events`
+
+Requires focus and blur handlers when mouse hover handlers are used.
+
+Default severity: `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
+
+```vue
+<!-- Bad -->
+<div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
+
+<!-- Good -->
+<div tabindex="0" @mouseenter="showPreview" @mouseleave="hidePreview" @focus="showPreview" @blur="hidePreview">Preview</div>
+```
+
+## `a11y/no-i-for-icon`
+
+Reports `<i>` elements that are used only as icons through common icon CSS classes.
+
+Default severity: `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
+
+```vue
+<!-- Bad -->
+<i class="material-icons">home</i>
+
+<!-- Good -->
+<span class="material-icons" aria-hidden="true">home</span>
+<span class="sr-only">Home</span>
+```
+
+## `a11y/no-refer-to-non-existent-id`
+
+Requires static ID references such as `for`, `aria-labelledby`, and `aria-describedby` to point at IDs that exist in the same template.
+
+Default severity: `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
+
+```vue
+<!-- Bad -->
+<label for="email">Email</label>
+<input id="user-email" />
+
+<!-- Good -->
+<label for="email">Email</label>
+<input id="email" />
+```
+
 ## Additional Accessibility Rules
+
+The split here is documentation detail only: every `a11y/*` rule listed on this page is a normal
+Patina accessibility rule. Expanded sections above have examples; the compact entries below are
+listed until they receive the same treatment.
 
 `a11y/anchor-has-content` requires anchor elements to have accessible content. Default: `warning`.
 Presets: `happy-path`, `nuxt`, `opinionated`.
@@ -276,9 +325,6 @@ Presets: `nuxt`, `opinionated`.
 `a11y/media-has-caption` requires captions for media elements. Default: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
 
-`a11y/mouse-events-have-key-events` requires focus and blur handlers when mouse handlers are used.
-Default: `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
-
 `a11y/no-access-key` disallows the `accesskey` attribute. Default: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
 
@@ -288,14 +334,8 @@ Default: `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
 `a11y/no-distracting-elements` disallows distracting elements such as `<marquee>` and `<blink>`.
 Default: `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
 
-`a11y/no-i-for-icon` discourages using `<i>` as an icon-only element. Default: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
-
 `a11y/no-redundant-roles` disallows ARIA roles that duplicate native semantics. Default:
 `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
-
-`a11y/no-refer-to-non-existent-id` reports ARIA references to missing IDs. Default: `warning`.
-Presets: `happy-path`, `nuxt`, `opinionated`.
 
 `a11y/no-role-presentation-on-focusable` disallows `role="presentation"` or `role="none"` on
 focusable elements. Default: `error`. Presets: `happy-path`, `nuxt`, `opinionated`.
