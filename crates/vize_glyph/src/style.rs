@@ -3,10 +3,12 @@
 //! This module provides formatting for CSS/SCSS/Less content
 //! in Vue SFC `<style>` blocks using lightningcss for parsing and printing.
 
+mod comment_scan;
 mod stabilization;
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
+use comment_scan::{SegmentKind, has_nested_comment, split_top_level_comments};
 use lightningcss::stylesheet::{ParserOptions, PrinterOptions, StyleSheet};
 use vize_s0::{String, ToCompactString};
 
@@ -14,12 +16,16 @@ use vize_s0::{String, ToCompactString};
 ///
 /// Top-level (depth 0) comments are extracted before parsing and re-inserted
 /// at their original boundaries, because lightningcss drops non-license
-/// comments during parse. Comments nested inside a selector block are still
-/// dropped — that limitation is documented and covered by an ignored test.
+/// comments during parse. Nested comments keep the original block text instead
+/// of risking silent data loss.
 pub fn format_style_content(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
     let trimmed = source.trim();
     if trimmed.is_empty() {
         return Ok(String::default());
+    }
+
+    if has_nested_comment(source) {
+        return Ok(trimmed.to_compact_string());
     }
 
     if !contains_comment(source) {
@@ -135,101 +141,6 @@ fn contains_comment(source: &str) -> bool {
     memchr::memmem::find(source.as_bytes(), b"/*").is_some()
 }
 
-#[derive(Clone, Copy)]
-enum SegmentKind {
-    Code,
-    Comment,
-}
-
-struct CssSegment<'a> {
-    kind: SegmentKind,
-    content: &'a str,
-}
-
-/// Split CSS source into alternating code and top-level comment segments.
-///
-/// Only depth-0 comments (those outside `{ ... }` and not inside a string
-/// literal) become separate `Comment` segments. Comments nested in a selector
-/// block stay embedded in the surrounding `Code` segment, because slicing the
-/// rule at that point would produce text lightningcss could not parse.
-fn split_top_level_comments(source: &str) -> Vec<CssSegment<'_>> {
-    let bytes = source.as_bytes();
-    let mut segments: Vec<CssSegment<'_>> = Vec::new();
-    let mut depth: u32 = 0;
-    let mut in_string: Option<u8> = None;
-    let mut last_split = 0usize;
-    let mut i = 0usize;
-
-    while i < bytes.len() {
-        let c = bytes[i];
-
-        if let Some(quote) = in_string {
-            if c == b'\\' && i + 1 < bytes.len() {
-                i += 2;
-                continue;
-            }
-            if c == quote {
-                in_string = None;
-            }
-            i += 1;
-            continue;
-        }
-
-        match c {
-            b'"' | b'\'' => {
-                in_string = Some(c);
-                i += 1;
-            }
-            b'{' => {
-                depth = depth.saturating_add(1);
-                i += 1;
-            }
-            b'}' => {
-                depth = depth.saturating_sub(1);
-                i += 1;
-            }
-            b'/' if i + 1 < bytes.len() && bytes[i + 1] == b'*' => {
-                let comment_end = find_comment_end(bytes, i + 2);
-                if depth == 0 {
-                    if i > last_split {
-                        segments.push(CssSegment {
-                            kind: SegmentKind::Code,
-                            content: &source[last_split..i],
-                        });
-                    }
-                    segments.push(CssSegment {
-                        kind: SegmentKind::Comment,
-                        content: &source[i..comment_end],
-                    });
-                    last_split = comment_end;
-                }
-                i = comment_end;
-            }
-            _ => i += 1,
-        }
-    }
-
-    if last_split < bytes.len() {
-        segments.push(CssSegment {
-            kind: SegmentKind::Code,
-            content: &source[last_split..],
-        });
-    }
-
-    segments
-}
-
-fn find_comment_end(bytes: &[u8], from: usize) -> usize {
-    let mut j = from;
-    while j + 1 < bytes.len() {
-        if bytes[j] == b'*' && bytes[j + 1] == b'/' {
-            return j + 2;
-        }
-        j += 1;
-    }
-    bytes.len()
-}
-
 #[cfg(test)]
 mod tests {
     use super::{FormatOptions, format_style_content};
@@ -319,6 +230,27 @@ mod tests {
     }
 
     #[test]
+    fn test_format_preserves_nested_block_comments_by_leaving_block_raw() {
+        let source = concat!(
+            ".box {\n",
+            "  /* keep color note */\n",
+            "  color: red;\n",
+            "  /* keep nested note */\n",
+            "  .inner {\n",
+            "    color: blue; /* keep inline note */\n",
+            "  }\n",
+            "}\n",
+        );
+        let options = FormatOptions::default();
+        let result = format_style_content(source, &options).unwrap();
+
+        assert_eq!(result.as_str(), source.trim());
+        assert!(result.contains("/* keep color note */"));
+        assert!(result.contains("/* keep nested note */"));
+        assert!(result.contains("/* keep inline note */"));
+    }
+
+    #[test]
     fn test_format_keeps_comment_like_content_inside_strings_as_string() {
         let source = ".x { content: \"/* not a comment */\"; }";
         let options = FormatOptions::default();
@@ -327,6 +259,35 @@ mod tests {
         // lightningcss emits a clean single-rule output.
         assert!(result.contains(".x"));
         assert!(result.contains("\"/* not a comment */\""));
+    }
+
+    #[test]
+    fn test_format_keeps_comment_markers_inside_unquoted_urls() {
+        let source = concat!(
+            ".asset{background:url(https://example.test/a/*/icon.svg);color:red}\n",
+            "/* after */",
+        );
+        let options = FormatOptions::default();
+        let result = format_style_content(source, &options).unwrap();
+
+        assert!(result.contains(".asset {\n"));
+        assert!(result.contains("https://example.test/a/*/icon.svg"));
+        assert!(result.contains("/* after */"));
+    }
+
+    #[test]
+    fn test_format_splits_top_level_comments_after_import_url_data() {
+        let source = concat!(
+            "@import url(https://example.test/a/*/reset.css);\n",
+            "/* import note */\n",
+            ".asset{color:red}",
+        );
+        let options = FormatOptions::default();
+        let result = format_style_content(source, &options).unwrap();
+
+        assert!(result.contains("https://example.test/a/*/reset.css"));
+        assert!(result.contains("/* import note */"));
+        assert!(result.contains(".asset {\n"));
     }
 
     #[test]

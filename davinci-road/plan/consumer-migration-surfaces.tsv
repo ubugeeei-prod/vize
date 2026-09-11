@@ -2708,7 +2708,7 @@ formatter	Formatter	source	crates/vize_glyph/src/script/block_identity.rs	4	s0	S
 formatter	Formatter	source	crates/vize_glyph/src/script/block_identity.rs	4	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 formatter	Formatter	source	crates/vize_glyph/src/script/block_identity.rs	4	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 formatter	Formatter	source	crates/vize_glyph/src/script/block_identity.rs	4	raw_oxc	raw OXC	raw	oxc_formatter	raw	1
-formatter	Formatter	source	crates/vize_glyph/src/style.rs	11	s0	S0	stage	vize_s0	preferred	1
+formatter	Formatter	source	crates/vize_glyph/src/style.rs	13	s0	S0	stage	vize_s0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/style/stabilization.rs	9	s0	S0	stage	vize_s0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/src/style/stabilization.rs	226	s0	S0	stage	vize_s0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/src/template.rs	28	s0	S0	stage	vize_s0	preferred	2
