@@ -1,5 +1,4 @@
-use vize_carton::config::VueVersion;
-use vize_carton::cstr;
+use vize_carton::{config::VueVersion, cstr};
 use vize_croquis::Croquis;
 
 use super::super::helpers::VUE_TYPE_HELPERS;
@@ -46,9 +45,7 @@ const LEGACY_EXPOSED_UNWRAP_HELPER: &str = "type __VizeShallowUnwrapRef<T> = { [
 /// preamble is *not* hoisted (check server, content mapper).
 ///
 /// The widening conditional types stay here, inside `__template()`, instead of
-/// joining the module-scope preamble: `__U` is their only reference, and
-/// `TemplateRefUnwraps::emit_template_variables` emits no `__U` at all for a
-/// component with no setup bindings in template scope. Module-scope
+/// joining the module-scope preamble: `__U` is their only reference. Module-scope
 /// declarations are module-local, so an unused one surfaces to the user as a
 /// `TS6196` hint on their own file.
 const MODERN_REF_UNWRAP_HELPER: &str = r#"    type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
@@ -60,9 +57,9 @@ const MODERN_REF_UNWRAP_HELPER: &str = r#"    type __VizeIsUnion<T, __U = T> = T
 /// widening types once per program and never reports them unused.
 ///
 /// `__U` itself stays per file — it is dialect-dependent. Hoisting the two
-/// type-parameterized aliases saves 369 bytes in every generated `.vue.ts` and
-/// stops TypeScript instantiating a distinct declaration per file instead of
-/// caching one (#3443, #3460).
+/// aliases saves 369 bytes in every generated `.vue.ts` and stops TypeScript
+/// instantiating a distinct declaration per file instead of caching one
+/// (#3443, #3460).
 const MODERN_HOISTED_REF_UNWRAP_HELPER: &str =
     "    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;\n";
 const MODERN_GENERIC_REF_UNWRAP_HELPER: &str =
