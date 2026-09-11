@@ -2575,7 +2575,8 @@ typechecker	Typechecker	source	crates/vize/src/commands/check/imports_cache.rs	9
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_generated_tests.rs	3	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_js_tests.rs	2	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_magic_comments_tests.rs	2	s0	S0	stage	vize_s0	preferred	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_package_routes.rs	80	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/imports_package_routes.rs	13	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_package_routes.rs	90	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/imports_registration.rs	3	s0	S0	stage	vize_s0	preferred	2
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_registration.rs	175	s0	S0	stage	vize_s0	preferred	2
 typechecker	Typechecker	source	crates/vize/src/commands/check/imports_resolution.rs	5	s0	S0	stage	vize_s0	preferred	1

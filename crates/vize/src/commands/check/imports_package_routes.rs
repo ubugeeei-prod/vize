@@ -1,6 +1,19 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, path::PathBuf};
 
 use vize_canon::{PackageResolutionContext, PackageRouteBinding};
+
+/// Byte-order dedup. `PathBuf` equality is bytewise, so this is exact; it only
+/// avoids `PathBuf::cmp`'s component-wise walk over long package-manager paths.
+pub(super) fn dedup_paths_sorted(paths: &mut Vec<PathBuf>) {
+    paths.sort_unstable_by(|left, right| left.as_os_str().cmp(right.as_os_str()));
+    paths.dedup();
+}
+
+fn dedup_paths_merged(paths: &mut Vec<PathBuf>) {
+    let mut seen = vize_s0::FxHashSet::default();
+    paths.retain(|path| seen.insert(path.clone()));
+    paths.sort_unstable_by(|left, right| left.as_os_str().cmp(right.as_os_str()));
+}
 
 pub(super) fn sort_package_route_bindings(bindings: &mut Vec<PackageRouteBinding>) {
     bindings.sort_by(compare_binding_keys);
@@ -24,8 +37,7 @@ pub(super) fn sort_package_route_bindings(bindings: &mut Vec<PackageRouteBinding
     }
     if merged {
         for binding in &mut deduped {
-            binding.invalidation_paths.sort();
-            binding.invalidation_paths.dedup();
+            dedup_paths_merged(&mut binding.invalidation_paths);
         }
     }
     *bindings = deduped;
@@ -65,8 +77,6 @@ fn same_binding_key(left: &PackageRouteBinding, right: &PackageRouteBinding) -> 
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
-
     use vize_canon::{PackageResolutionContext, PackageResolutionMode};
 
     use super::*;
@@ -111,5 +121,39 @@ mod tests {
             ]
         );
         assert_eq!(bindings[1].occurrence_mode, PackageResolutionMode::Require);
+    }
+
+    #[test]
+    fn merged_invalidation_paths_are_deduped_once() {
+        let mut bindings = vec![
+            binding(
+                PackageResolutionMode::Import,
+                [
+                    "/workspace/pkg/package.json",
+                    "/workspace/pkg/index.d.ts",
+                    "/workspace/pkg/package.json",
+                ],
+            ),
+            binding(
+                PackageResolutionMode::Import,
+                [
+                    "/workspace/pkg/index.d.ts",
+                    "/workspace/pkg/types.d.ts",
+                    "/workspace/pkg/types.d.ts",
+                ],
+            ),
+        ];
+
+        sort_package_route_bindings(&mut bindings);
+
+        assert_eq!(bindings.len(), 1);
+        assert_eq!(
+            bindings[0].invalidation_paths,
+            vec![
+                PathBuf::from("/workspace/pkg/index.d.ts"),
+                PathBuf::from("/workspace/pkg/package.json"),
+                PathBuf::from("/workspace/pkg/types.d.ts"),
+            ],
+        );
     }
 }

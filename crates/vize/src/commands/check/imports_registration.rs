@@ -222,8 +222,9 @@ fn source_needs_virtual_registration(
                             binding_route = Some(route);
                         }
                     }
-                    invalidation_paths.sort();
-                    invalidation_paths.dedup();
+                    super::super::imports_package_routes::dedup_paths_sorted(
+                        &mut invalidation_paths,
+                    );
                     if needs_shadow || track_reachability || watchable_negative {
                         discovered_routes.push(vize_canon::PackageRouteBinding {
                             importer_path: file.clone(),
