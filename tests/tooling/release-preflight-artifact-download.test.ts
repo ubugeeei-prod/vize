@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { Buffer } from "node:buffer";
+import { createServer } from "node:http";
 import { Readable } from "node:stream";
 import { test } from "node:test";
 import { crc32 } from "node:zlib";
@@ -102,14 +103,92 @@ test("artifact download fails closed on missing URLs and error responses", async
     downloadArtifactEntries({
       artifact,
       token: "token",
+      limits: { maxAttempts: 1 },
       fetchImpl: async () => ({ ok: false, status: 500, statusText: "Server Error" }),
     }),
     /500 Server Error/,
   );
 });
 
+test("artifact download retries transient server failures before reading the archive", async () => {
+  let requests = 0;
+  const archive = storedZip([["summary.json", '{"ok":true}\n']]);
+  const server = createServer((_request, response) => {
+    requests += 1;
+    if (requests < 3) {
+      response.writeHead(503, { "content-type": "text/plain" });
+      response.end("temporarily unavailable");
+      return;
+    }
+    response.writeHead(200, { "content-type": "application/zip" });
+    response.end(archive);
+  });
+  await listen(server);
+  try {
+    const address = server.address();
+    assert.ok(address != null && typeof address !== "string");
+    const entries = await downloadArtifactEntries({
+      artifact: {
+        ...artifact,
+        archive_download_url: `http://127.0.0.1:${address.port}/artifact.zip`,
+      },
+      token: "token",
+      limits: { retryDelayMs: 0 },
+    });
+    assert.equal(requests, 3);
+    assert.equal(entries.get("summary.json"), '{"ok":true}\n');
+  } finally {
+    await close(server);
+  }
+});
+
+test("artifact download cancels retryable response bodies before retrying", async () => {
+  let requests = 0;
+  let cancellations = 0;
+  const entries = await downloadArtifactEntries({
+    artifact,
+    token: "token",
+    limits: { retryDelayMs: 0 },
+    fetchImpl: async () => {
+      requests += 1;
+      if (requests < 3) {
+        return {
+          ok: false,
+          status: 503,
+          statusText: "Service Unavailable",
+          body: {
+            cancel: async () => {
+              cancellations += 1;
+            },
+          },
+        };
+      }
+      return zipResponse([["summary.json", '{"ok":true}\n']]);
+    },
+  });
+  assert.equal(requests, 3);
+  assert.equal(cancellations, 2);
+  assert.equal(entries.get("summary.json"), '{"ok":true}\n');
+});
+
 function streamResponse(chunks: Iterable<Buffer>) {
   return { ok: true, status: 200, statusText: "OK", body: Readable.from(chunks) };
+}
+
+function listen(server: ReturnType<typeof createServer>) {
+  return new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      server.off("error", reject);
+      resolve();
+    });
+  });
+}
+
+function close(server: ReturnType<typeof createServer>) {
+  return new Promise<void>((resolve, reject) => {
+    server.close((error) => (error == null ? resolve() : reject(error)));
+  });
 }
 
 function zipResponse(files: [string, string][]) {

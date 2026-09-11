@@ -15,6 +15,8 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 
 const artifactDownloadTimeoutMs = 120_000;
+const artifactDownloadRetries = 5;
+const artifactDownloadRetryDelayMs = 2_000;
 const artifactMaxBytes = 512 * 1024 * 1024;
 const artifactMaxEntries = 4_096;
 const artifactMaxUncompressedBytes = 512 * 1024 * 1024;
@@ -29,23 +31,17 @@ export async function downloadArtifactEntries({
   if (typeof url !== "string" || url.length === 0) {
     throw new Error(`Real Project Matrix artifact ${String(artifact.name)} has no download URL`);
   }
-  const response = await fetchImpl(url, {
-    headers: {
-      accept: "application/vnd.github+json",
-      authorization: `Bearer ${token}`,
-      "x-github-api-version": "2022-11-28",
-    },
-    signal: AbortSignal.timeout(artifactDownloadTimeoutMs),
+  const label = String(artifact.name);
+  const response = await fetchArtifactWithRetry({
+    artifactName: label,
+    fetchImpl,
+    limits,
+    token,
+    url,
   });
-  if (!response.ok) {
-    throw new Error(
-      `Failed to download Real Project Matrix artifact ${String(artifact.name)}: ${response.status} ${response.statusText}`,
-    );
-  }
   const maxBytes = limits.maxBytes ?? artifactMaxBytes;
   const maxEntries = limits.maxEntries ?? artifactMaxEntries;
   const maxUncompressedBytes = limits.maxUncompressedBytes ?? artifactMaxUncompressedBytes;
-  const label = String(artifact.name);
   const scratch = mkdtempSync(join(tmpdir(), "vize-release-matrix-artifact-"));
   try {
     const archive = join(scratch, "artifact.zip");
@@ -71,6 +67,55 @@ export async function downloadArtifactEntries({
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }
+}
+
+async function fetchArtifactWithRetry({ artifactName, fetchImpl, limits, token, url }) {
+  const maxAttempts = limits.maxAttempts ?? artifactDownloadRetries + 1;
+  const retryDelayMs = limits.retryDelayMs ?? artifactDownloadRetryDelayMs;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    let response;
+    try {
+      response = await fetchImpl(url, {
+        headers: {
+          accept: "application/vnd.github+json",
+          authorization: `Bearer ${token}`,
+          "x-github-api-version": "2022-11-28",
+        },
+        signal: AbortSignal.timeout(artifactDownloadTimeoutMs),
+      });
+    } catch (error) {
+      if (attempt === maxAttempts) throw error;
+      if (retryDelayMs > 0) await sleep(retryDelayMs);
+      continue;
+    }
+    if (response.ok) return response;
+    if (!isRetryableDownloadStatus(response.status) || attempt === maxAttempts) {
+      throw new Error(
+        `Failed to download Real Project Matrix artifact ${artifactName}: ${response.status} ${response.statusText}`,
+      );
+    }
+    await cancelResponseBody(response);
+    if (retryDelayMs > 0) await sleep(retryDelayMs);
+  }
+  throw new Error(`Failed to download Real Project Matrix artifact ${artifactName}`);
+}
+
+async function cancelResponseBody(response) {
+  const cancel = response.body?.cancel;
+  if (typeof cancel !== "function") return;
+  try {
+    await cancel.call(response.body);
+  } catch {
+    // A failed cancellation should not hide the original transient download error.
+  }
+}
+
+function isRetryableDownloadStatus(status) {
+  return status === 408 || status === 429 || (status >= 500 && status < 600);
+}
+
+function sleep(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 export function exactMatchingEntries(entries, pattern, label) {

@@ -13,6 +13,8 @@ pub const REQUIRED_REAL_PROJECT_MATRIX_SHARD_COUNT: usize = 22;
 pub const REAL_PROJECT_MATRIX_WORKFLOW_NAME: &str = "Real Project Matrix";
 
 const ARTIFACT_DOWNLOAD_TIMEOUT_SECONDS: u64 = 120;
+const ARTIFACT_DOWNLOAD_RETRIES: u64 = 5;
+const ARTIFACT_DOWNLOAD_RETRY_DELAY_SECONDS: u64 = 3;
 const ARTIFACT_MAX_BYTES: u64 = 512 * 1024 * 1024;
 const ARTIFACT_MAX_ENTRIES: usize = 4_096;
 const ARTIFACT_MAX_UNCOMPRESSED_BYTES: u64 = 512 * 1024 * 1024;
@@ -98,6 +100,8 @@ fn download_artifact_entries_in(
     let archive = scratch.join("artifact.zip");
     let output = scratch.join("out");
     let timeout_seconds = ARTIFACT_DOWNLOAD_TIMEOUT_SECONDS.to_string();
+    let retry_count = ARTIFACT_DOWNLOAD_RETRIES.to_string();
+    let retry_delay_seconds = ARTIFACT_DOWNLOAD_RETRY_DELAY_SECONDS.to_string();
     let download = Command::new("curl")
         .args([
             "--fail-with-body",
@@ -106,6 +110,10 @@ fn download_artifact_entries_in(
             "--location",
             "--max-time",
             &timeout_seconds,
+            "--retry",
+            &retry_count,
+            "--retry-delay",
+            &retry_delay_seconds,
             "--header",
             "Accept: application/vnd.github+json",
             "--header",
