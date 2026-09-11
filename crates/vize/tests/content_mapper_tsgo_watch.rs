@@ -237,9 +237,14 @@ fn standard_tsgo_watch_revalidates_authored_vue_edits_and_repairs() {
 
     let project = prepare_content_mapper_project("content-mapper-watch-edit-");
     let child_path = project.path().join("src/Child.vue");
-    let valid_child = std::fs::read_to_string(&child_path).unwrap();
+    let valid_child = std::fs::read_to_string(&child_path).unwrap().replace(
+        "<output>{{ count.toFixed(0) }}</output>",
+        "<output>𠮷 {{ count.toFixed(0) }}</output>",
+    );
+    assert!(valid_child.contains("𠮷 {{ count.toFixed(0) }}"));
     let invalid_child = valid_child.replace("count.toFixed(0)", "count.missing()");
     assert_ne!(valid_child, invalid_child);
+    std::fs::write(&child_path, &valid_child).unwrap();
 
     let mut watch = WatchProcess::spawn(&tsgo, project.path(), "tsconfig.json");
     watch.wait_for(0, "initial clean watch idle state", |output| {
@@ -252,7 +257,7 @@ fn standard_tsgo_watch_revalidates_authored_vue_edits_and_repairs() {
     let edit_start = watch.output.len();
     std::fs::write(&child_path, invalid_child).unwrap();
     watch.wait_for(edit_start, "authored Vue edit diagnostic", |output| {
-        output.contains("src/Child.vue")
+        output.contains("src/Child.vue(10,23): error TS2339")
             && output.contains("TS2339")
             && output.contains("Property 'missing' does not exist on type 'number'")
             && output.contains("Watching for file changes")
