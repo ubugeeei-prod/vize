@@ -23,6 +23,8 @@ export interface UseFocusOptions {
   autoFocus?: boolean;
   /** Focus ID for this element */
   id?: string;
+  /** Parent focus ID used to derive descendant-focus state */
+  parentId?: string | null | Ref<string | null | undefined>;
 }
 
 export interface FocusManager {
@@ -45,16 +47,24 @@ export interface FocusManager {
   /** Focus previous element */
   focusPrevious: () => void;
   /** Register a focusable element */
-  register: (id: string, options?: { isActive?: boolean; autoFocus?: boolean }) => void;
+  register: (
+    id: string,
+    options?: { isActive?: boolean; autoFocus?: boolean; parentId?: string | null | undefined },
+  ) => void;
   /** Unregister a focusable element */
   unregister: (id: string) => void;
   /** Activate or deactivate a focusable element while keeping its order */
   setActive: (id: string, isActive: boolean) => void;
+  /** Reparent a focusable element while keeping its registration order */
+  setParent: (id: string, parentId: string | null | undefined) => void;
+  /** Whether a registered descendant of the target currently owns focus */
+  hasFocusedDescendant: (id: string) => boolean;
 }
 
 interface Focusable {
   id: string;
   isActive: boolean;
+  parentId: string | null;
 }
 
 function activeFocusables(focusables: Focusable[]): Focusable[] {
@@ -82,9 +92,10 @@ export function createFocusManager(): FocusManager {
     const active = activeFocusables(focusables.value);
     if (!isEnabled.value || active.length === 0) return;
 
-    const currentIndex = focusedId.value
-      ? focusables.value.findIndex((focusable) => focusable.id === focusedId.value)
-      : -1;
+    const currentIndex =
+      focusedId.value !== null
+        ? focusables.value.findIndex((focusable) => focusable.id === focusedId.value)
+        : -1;
     const next = focusables.value.slice(currentIndex + 1).find((focusable) => focusable.isActive);
     focusedId.value = next?.id ?? active[0]?.id ?? null;
   };
@@ -93,9 +104,10 @@ export function createFocusManager(): FocusManager {
     const active = activeFocusables(focusables.value);
     if (!isEnabled.value || active.length === 0) return;
 
-    const currentIndex = focusedId.value
-      ? focusables.value.findIndex((focusable) => focusable.id === focusedId.value)
-      : focusables.value.length;
+    const currentIndex =
+      focusedId.value !== null
+        ? focusables.value.findIndex((focusable) => focusable.id === focusedId.value)
+        : focusables.value.length;
     const previous = focusables.value
       .slice(0, currentIndex < 0 ? 0 : currentIndex)
       .findLast((focusable) => focusable.isActive);
@@ -106,14 +118,18 @@ export function createFocusManager(): FocusManager {
     const existing = focusables.value.find((focusable) => focusable.id === id);
     if (existing) {
       existing.isActive = options.isActive ?? existing.isActive;
+      if ("parentId" in options) {
+        existing.parentId = options.parentId ?? null;
+      }
     } else {
       focusables.value.push({
         id,
         isActive: options.isActive ?? true,
+        parentId: options.parentId ?? null,
       });
     }
 
-    if (options.autoFocus && !focusedId.value && options.isActive !== false) {
+    if (options.autoFocus && focusedId.value === null && options.isActive !== false) {
       focus(id);
     }
   };
@@ -135,6 +151,30 @@ export function createFocusManager(): FocusManager {
     focusable.isActive = isActive;
     if (!isActive && focusedId.value === id) {
       focusedId.value = null;
+    }
+  };
+
+  const setParent: FocusManager["setParent"] = (id, parentId) => {
+    const focusable = focusables.value.find((item) => item.id === id);
+    if (!focusable) return;
+
+    focusable.parentId = parentId ?? null;
+  };
+
+  const hasFocusedDescendant: FocusManager["hasFocusedDescendant"] = (id) => {
+    let currentId = focusedId.value;
+    if (currentId === null || currentId === id) return false;
+
+    const visited = new Set<string>();
+
+    while (true) {
+      if (visited.has(currentId)) return false;
+      visited.add(currentId);
+      const current = focusables.value.find((focusable) => focusable.id === currentId);
+      const parentId = current?.parentId ?? null;
+      if (parentId === null) return false;
+      if (parentId === id) return true;
+      currentId = parentId;
     }
   };
 
@@ -160,6 +200,8 @@ export function createFocusManager(): FocusManager {
     register,
     unregister,
     setActive,
+    setParent,
+    hasFocusedDescendant,
   };
 }
 
@@ -178,11 +220,13 @@ export function useFocus(options: UseFocusOptions = {}) {
     autoFocus = false,
     id = `focus-${Math.random().toString(36).slice(2)}`,
     isActive: isActiveOption = true,
+    parentId: parentIdOption = null,
   } = options;
 
   const manager = inject(FOCUS_KEY, null);
   const localFocused = ref(autoFocus);
   const active = isRef(isActiveOption) ? isActiveOption : ref(isActiveOption);
+  const parentId = isRef(parentIdOption) ? parentIdOption : ref(parentIdOption);
 
   const isFocused = computed(() => {
     if (manager) {
@@ -190,6 +234,7 @@ export function useFocus(options: UseFocusOptions = {}) {
     }
     return active.value && localFocused.value;
   });
+  const hasFocusedDescendant = computed(() => (manager ? manager.hasFocusedDescendant(id) : false));
 
   const focus = (targetId = id) => {
     if (manager) {
@@ -210,13 +255,20 @@ export function useFocus(options: UseFocusOptions = {}) {
   };
 
   if (manager) {
-    manager.register(id, { isActive: active.value, autoFocus });
+    manager.register(id, { isActive: active.value, autoFocus, parentId: parentId.value });
 
     watch(
       active,
       (enabled) => {
         manager.setActive(id, enabled);
         if (enabled && autoFocus && !manager.focusedId.value) manager.focus(id);
+      },
+      { immediate: false },
+    );
+    watch(
+      parentId,
+      (nextParentId) => {
+        manager.setParent(id, nextParentId);
       },
       { immediate: false },
     );
@@ -229,6 +281,7 @@ export function useFocus(options: UseFocusOptions = {}) {
   return {
     id,
     isFocused,
+    hasFocusedDescendant,
     focus,
     blur,
   };
@@ -249,6 +302,7 @@ export function useFocusManager() {
       focusNext: () => {},
       focusPrevious: () => {},
       focus: (_id: string) => {},
+      hasFocusedDescendant: (_id: string) => false,
       activeId,
       focusableIds: empty,
     };
@@ -260,6 +314,7 @@ export function useFocusManager() {
     focusNext: manager.focusNext,
     focusPrevious: manager.focusPrevious,
     focus: manager.focus,
+    hasFocusedDescendant: manager.hasFocusedDescendant,
     activeId: manager.activeId,
     focusableIds: manager.focusableIds,
   };

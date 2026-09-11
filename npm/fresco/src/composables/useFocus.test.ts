@@ -63,19 +63,65 @@ void test("disableFocus clears and blocks focus until re-enabled", () => {
 interface FocusProbe {
   id: string;
   isFocused: Ref<boolean>;
+  hasFocusedDescendant: Ref<boolean>;
   focus: (targetId?: string) => void;
   blur: () => void;
 }
 
-function focusableStub(id: string, probes: Map<string, FocusProbe>, isActive?: Ref<boolean>) {
+function focusableStub(
+  id: string,
+  probes: Map<string, FocusProbe>,
+  isActive?: Ref<boolean>,
+  parentId?: string | Ref<string | null>,
+) {
   return defineComponent({
     name: `Focusable${id}`,
     setup() {
-      probes.set(id, useFocus(isActive === undefined ? { id } : { id, isActive }));
+      probes.set(id, useFocus({ id, isActive, parentId }));
       return () => h("text", { text: id });
     },
   });
 }
+
+void test("focused descendants are derived through direct and nested parents", () => {
+  const manager = createFocusManager();
+  manager.register("modal");
+  manager.register("body", { parentId: "modal" });
+  manager.register("field", { parentId: "body" });
+
+  manager.focus("field");
+  assert.equal(manager.hasFocusedDescendant("modal"), true);
+  assert.equal(manager.hasFocusedDescendant("body"), true);
+  assert.equal(manager.hasFocusedDescendant("field"), false, "self focus is not a descendant");
+
+  manager.focus("modal");
+  assert.equal(manager.hasFocusedDescendant("modal"), false);
+
+  manager.focus("field");
+  manager.setParent("field", "field");
+  assert.equal(manager.hasFocusedDescendant("field"), false, "self-parenting is not a descendant");
+
+  manager.setParent("field", "body");
+  manager.setParent("body", null);
+  assert.equal(manager.hasFocusedDescendant("modal"), false, "broken parent chains stop lookup");
+});
+
+void test("empty string focus IDs stay addressable in hierarchy checks", () => {
+  const manager = createFocusManager();
+  manager.register("");
+  manager.register("field", { parentId: "" });
+
+  manager.focus("");
+  assert.equal(manager.focusedId.value, "");
+  manager.register("later", { autoFocus: true });
+  assert.equal(manager.focusedId.value, "", "empty string focus blocks later autofocus");
+
+  manager.focus("field");
+  assert.equal(manager.hasFocusedDescendant(""), true);
+
+  manager.focusNext();
+  assert.equal(manager.focusedId.value, "later");
+});
 
 void test("mounted components register with the app focus manager and unregister on unmount", async () => {
   const probes = new Map<string, FocusProbe>();
@@ -162,5 +208,26 @@ void test("a reactive isActive toggles traversal membership from inside the tree
   await nextTick();
   assert.equal(mounted.focusManager.focusedId.value, null, "deactivation releases focus");
   assert.deepEqual(mounted.focusManager.focusableIds.value, ["first"]);
+  mounted.unmount();
+});
+
+void test("mounted focusables expose descendant-focus state", async () => {
+  const probes = new Map<string, FocusProbe>();
+  const parentId = ref<string | null>("panel");
+  const Panel = focusableStub("panel", probes);
+  const Aside = focusableStub("aside", probes);
+  const Field = focusableStub("field", probes, undefined, parentId);
+  const mounted = mountFresco(() => h("box", [h(Panel), h(Aside), h(Field)]));
+
+  mounted.focusManager.focus("field");
+  assert.equal(probes.get("panel")?.hasFocusedDescendant.value, true);
+  assert.equal(probes.get("aside")?.hasFocusedDescendant.value, false);
+  assert.equal(probes.get("field")?.hasFocusedDescendant.value, false);
+
+  parentId.value = "aside";
+  await nextTick();
+  assert.equal(probes.get("panel")?.hasFocusedDescendant.value, false);
+  assert.equal(probes.get("aside")?.hasFocusedDescendant.value, true);
+
   mounted.unmount();
 });
