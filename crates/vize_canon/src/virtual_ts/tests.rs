@@ -32,7 +32,6 @@ fn assert_virtual_ts_snapshot(name: &str, value: &str) {
 fn test_vue_setup_helpers_are_actual_functions() {
     assert_virtual_ts_snapshot("virtual_ts_vue_setup_helpers", VUE_SETUP_HELPERS);
 }
-
 #[test]
 fn test_vue_template_context() {
     let ctx = generate_template_context(&VirtualTsOptions::default(), VueVersion::V3, false);
