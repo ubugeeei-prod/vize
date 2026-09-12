@@ -94,6 +94,11 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         } else {
             CodegenMode::Function
         },
+        filename: opts
+            .filename
+            .clone()
+            .unwrap_or_else(|| "template.vue".to_string())
+            .into(),
         component_name: self_component_name(&opts).map(Into::into),
         source_map: opts.source_map.unwrap_or(false),
         ssr: opts.ssr.unwrap_or(false),
@@ -115,6 +120,11 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         self_component: opts.experimental_self_component.unwrap_or(false),
     };
     let result = generate_with_experimental_options(&root, codegen_opts, codegen_experimental_opts);
+    let map = result
+        .map
+        .map(|map| serde_json::from_str(map.as_str()))
+        .transpose()
+        .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
 
     // Collect helpers
     let helpers: Vec<String> = root.helpers.iter().map(|h| h.name().to_string()).collect();
@@ -126,7 +136,7 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         code: result.code.to_string(),
         preamble: result.preamble.to_string(),
         ast,
-        map: None,
+        map,
         helpers,
         templates: None,
     })
@@ -152,6 +162,8 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
     let vapor_experimental_opts = VaporCompilerExperimentalOptions {
         component_name: self_component_name(&opts).map(Into::into),
         self_component: opts.experimental_self_component.unwrap_or(false),
+        source_map: opts.source_map.unwrap_or(false),
+        source_map_filename: opts.filename.clone().map(Into::into),
     };
     let result = compile_vapor_with_custom_elements_template_syntax_and_experimental_options(
         &allocator,
@@ -175,12 +187,17 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
                 .join("\n"),
         ));
     }
+    let map = result
+        .map
+        .map(|map| serde_json::from_str(map.as_str()))
+        .transpose()
+        .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
 
     Ok(CompileResult {
         code: result.code.into(),
         preamble: String::new(),
         ast: serde_json::json!({}),
-        map: None,
+        map,
         helpers: vec![],
         templates: Some(result.templates.iter().map(|s| s.to_string()).collect()),
     })
@@ -282,4 +299,26 @@ fn build_ast_json(root: &vize_atelier_core::RootNode<'_>) -> serde_json::Value {
         "components": root.components.iter().copied().collect::<Vec<_>>(),
         "directives": root.directives.iter().copied().collect::<Vec<_>>(),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn compile_source_map_uses_requested_filename() {
+        let result = compile(
+            "<div>{{ msg }}</div>".to_string(),
+            Some(CompilerOptions {
+                filename: Some("src/Napi.vue".to_string()),
+                source_map: Some(true),
+                ..Default::default()
+            }),
+        )
+        .expect("compile should succeed");
+        let map = result.map.expect("sourceMap should attach a map");
+
+        assert_eq!(map["file"].as_str(), Some("src/Napi.vue"));
+        assert_eq!(map["sources"][0].as_str(), Some("src/Napi.vue"));
+    }
 }

@@ -1,8 +1,6 @@
 //! Vue SSR compiler for Vize.
 //!
-//! **Atelier** (/ˌætəlˈjeɪ/) is an artist's workshop or studio. The "ssr" atelier
-//! specializes in server-side rendering output, producing HTML strings instead of
-//! VNode trees.
+//! The SSR atelier specializes in server-rendered HTML strings, not VNode trees.
 
 #![allow(clippy::collapsible_match)]
 #![cfg_attr(test, allow(clippy::disallowed_macros))]
@@ -13,6 +11,8 @@ pub mod errors;
 mod experimental_tests;
 pub mod options;
 mod s4;
+#[cfg(test)]
+mod source_map_tests;
 mod stage_options;
 pub mod steps;
 

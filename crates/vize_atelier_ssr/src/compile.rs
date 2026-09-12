@@ -157,6 +157,7 @@ fn compile_ssr_inner<'a>(
             SsrCodegenResult {
                 code: String::default(),
                 preamble: String::default(),
+                map: None,
             },
         );
     }

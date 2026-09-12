@@ -156,8 +156,7 @@ impl SourceMapBuilder {
             "mappings": mappings.as_str(),
         });
 
-        // serde_json writes into a std String; convert once to the workspace
-        // CompactString that `CodegenResult.map` stores.
+        // serde_json writes into std String; convert once to CompactString.
         serde_json::to_string(&doc)
             .unwrap_or_default()
             .to_compact_string()

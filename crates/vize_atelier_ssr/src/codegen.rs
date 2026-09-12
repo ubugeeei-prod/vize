@@ -10,7 +10,10 @@ pub(crate) mod helpers;
 mod scope_prefix;
 
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
-use vize_atelier_core::{RootNode, RuntimeHelper, TemplateChildNode};
+use vize_atelier_core::{
+    RootNode, RuntimeHelper, TemplateChildNode,
+    codegen::source_map_anchor::build_single_anchor_source_map,
+};
 use vize_s0::{Allocator, FxHashSet, SmallVec, String, ToCompactString};
 
 /// SSR codegen result
@@ -20,6 +23,8 @@ pub struct SsrCodegenResult {
     pub code: String,
     /// Import preamble
     pub preamble: String,
+    /// Source Map v3 JSON for the generated render code.
+    pub map: Option<String>,
 }
 
 /// A part of a template literal
@@ -66,6 +71,10 @@ pub struct SsrCodegenContext<'a> {
     /// The source string node-loc spans index into, used to recover covered
     /// text from a `SourceLocation`.
     pub(crate) source: &'a str,
+    /// Whether to attach a Source Map v3 document to the result.
+    source_map: bool,
+    /// Filename recorded in the Source Map v3 `file` and `sources` fields.
+    source_map_filename: String,
 }
 
 impl<'a> SsrCodegenContext<'a> {
@@ -87,6 +96,10 @@ impl<'a> SsrCodegenContext<'a> {
         let component_name = experimental_options
             .component_name
             .or_else(|| options.component_name.clone());
+        let source_map = experimental_options.source_map;
+        let source_map_filename = experimental_options
+            .source_map_filename
+            .unwrap_or_else(|| "template.vue".into());
         Self {
             allocator,
             options,
@@ -102,6 +115,8 @@ impl<'a> SsrCodegenContext<'a> {
             with_slot_scope_id: false,
             scoped_params: std::vec::Vec::new(),
             select_v_model_stack: std::vec::Vec::new(),
+            source_map,
+            source_map_filename,
         }
     }
 
@@ -155,15 +170,21 @@ impl<'a> SsrCodegenContext<'a> {
         // Build preamble with imports
         let preamble = self.build_preamble();
 
+        // SAFETY: `self.code` is filled exclusively through `push(&str)`,
+        // `push_indent`, and helpers that append ASCII punctuation around
+        // already-valid template/source strings. No caller can inject raw
+        // bytes into the buffer, so the Vec<u8> invariant is "always valid
+        // UTF-8". Keeping this unchecked conversion avoids validating the
+        // complete generated SSR module after every compile.
+        let code = unsafe { String::from_utf8_unchecked(self.code) };
+        let map = self.source_map.then(|| {
+            build_single_anchor_source_map(&code, self.source_map_filename.as_str(), self.source)
+        });
+
         SsrCodegenResult {
-            // SAFETY: `self.code` is filled exclusively through `push(&str)`,
-            // `push_indent`, and helpers that append ASCII punctuation around
-            // already-valid template/source strings. No caller can inject raw
-            // bytes into the buffer, so the Vec<u8> invariant is "always valid
-            // UTF-8". Keeping this unchecked conversion avoids validating the
-            // complete generated SSR module after every compile.
-            code: unsafe { String::from_utf8_unchecked(self.code) },
+            code,
             preamble,
+            map,
         }
     }
 

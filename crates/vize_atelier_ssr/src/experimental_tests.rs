@@ -16,6 +16,7 @@ fn test_experimental_self_component_resolves_current_component() {
         SsrCompilerExperimentalOptions {
             component_name: Some("TreeNode".into()),
             self_component: true,
+            ..SsrCompilerExperimentalOptions::default()
         },
     );
 

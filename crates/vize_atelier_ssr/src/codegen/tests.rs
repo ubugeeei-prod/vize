@@ -51,5 +51,6 @@ mod ssr_codegen_tests {
         let result = SsrCodegenResult::default();
         assert!(result.code.is_empty());
         assert!(result.preamble.is_empty());
+        assert!(result.map.is_none());
     }
 }

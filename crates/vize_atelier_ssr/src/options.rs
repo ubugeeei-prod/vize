@@ -108,4 +108,8 @@ pub struct SsrCompilerExperimentalOptions {
     pub component_name: Option<String>,
     /// Treat the reserved `<Self>` tag as a reference to the current SFC.
     pub self_component: bool,
+    /// Generate a Source Map v3 document for SSR render code.
+    pub source_map: bool,
+    /// Filename recorded in the Source Map v3 `file` and `sources` fields.
+    pub source_map_filename: Option<String>,
 }

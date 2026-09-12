@@ -120,6 +120,7 @@ pub(crate) fn compile_template_block(
         let ssr_experimental_options = vize_atelier_ssr::SsrCompilerExperimentalOptions {
             component_name: component_name.map(|name| name.to_compact_string()),
             self_component: experimental_self_component,
+            ..vize_atelier_ssr::SsrCompilerExperimentalOptions::default()
         };
 
         let (_, errors, result) = profile!(

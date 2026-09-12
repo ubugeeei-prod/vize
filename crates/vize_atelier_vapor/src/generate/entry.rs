@@ -3,7 +3,9 @@
 use std::fmt::Write;
 
 use crate::ir::{OperationNode, RootIRNode};
-use vize_atelier_core::options::BindingMetadata;
+use vize_atelier_core::{
+    codegen::source_map_anchor::build_single_anchor_source_map, options::BindingMetadata,
+};
 use vize_carton::{FxHashSet, String};
 
 use super::context::GenerateContext;
@@ -19,6 +21,8 @@ pub struct VaporGenerateResult {
     pub code: String,
     /// Static templates
     pub templates: Vec<String>,
+    /// Source Map v3 JSON for the generated render code.
+    pub map: Option<String>,
 }
 
 /// Options for Vapor code generation.
@@ -38,6 +42,10 @@ pub struct VaporGenerateExperimentalOptions<'a> {
     pub component_name: Option<&'a str>,
     /// Treat the reserved `<Self>` tag as a reference to the current SFC.
     pub self_component: bool,
+    /// Generate a Source Map v3 document for Vapor render code.
+    pub source_map: bool,
+    /// Filename recorded in the Source Map v3 `file` and `sources` fields.
+    pub source_map_filename: Option<&'a str>,
 }
 
 /// Generate Vapor code from IR
@@ -182,9 +190,19 @@ pub fn generate_vapor_with_options_and_experimentals(
         final_code.push('\n');
     }
     final_code.push_str(&ctx.code);
+    let map = experimental_options.source_map.then(|| {
+        build_single_anchor_source_map(
+            final_code.as_str(),
+            experimental_options
+                .source_map_filename
+                .unwrap_or("template.vue"),
+            ir.source,
+        )
+    });
 
     VaporGenerateResult {
         code: final_code,
         templates: ir.templates.iter().map(|t| String::new(t)).collect(),
+        map,
     }
 }

@@ -95,6 +95,45 @@ fn compiler_options_change_runtime_names_syntax_and_source_maps() {
             .and_then(|map| map["sources"][0].as_str()),
         Some("src/Component.vue")
     );
+
+    let ssr_with_map = compile_internal(
+        "<div>{{ message }}</div>",
+        &CompilerOptions {
+            ssr: Some(true),
+            source_map: Some(true),
+            filename: Some("src/Ssr.vue".to_string()),
+            ..Default::default()
+        },
+        false,
+        None,
+    )
+    .expect("SSR source-map compile should succeed");
+    assert_eq!(
+        ssr_with_map
+            .map
+            .as_ref()
+            .and_then(|map| map["sources"][0].as_str()),
+        Some("src/Ssr.vue")
+    );
+
+    let vapor_with_map = compile_internal(
+        "<div>{{ message }}</div>",
+        &CompilerOptions {
+            source_map: Some(true),
+            filename: Some("src/Vapor.vue".to_string()),
+            ..Default::default()
+        },
+        true,
+        None,
+    )
+    .expect("Vapor source-map compile should succeed");
+    assert_eq!(
+        vapor_with_map
+            .map
+            .as_ref()
+            .and_then(|map| map["sources"][0].as_str()),
+        Some("src/Vapor.vue")
+    );
 }
 
 #[test]

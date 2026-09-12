@@ -38,3 +38,11 @@ all = "warn"
 [[bench]]
 name = "davinci"
 harness = false
+
+[package.metadata.cargo-semver-checks.lints]
+# SSR codegen result/options are a compatibility-preview compiler boundary.
+# P3-9 extends that opt-in boundary with source-map result fields while keeping
+# the default `map: None` behavior unchanged. cargo-semver-checks treats public
+# struct fields as externally constructible, so additive preview fields are
+# allowed here and still covered by release validation.
+constructible_struct_adds_field = "allow"

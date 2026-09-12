@@ -45,3 +45,10 @@ insta = { workspace = true }
 [[bench]]
 name = "davinci"
 harness = false
+
+[package.metadata.cargo-semver-checks.lints]
+# Vapor is an experimental compiler boundary. P3-9 extends the opt-in
+# source-map API with result/options fields while keeping default output
+# unchanged, so additive preview fields are allowed and release validation owns
+# the versioning decision.
+constructible_struct_adds_field = "allow"

@@ -44,6 +44,8 @@ pub(in crate::wasm) fn compile_internal(
         let ssr_experimental_opts = SsrCompilerExperimentalOptions {
             component_name: self_component_name(opts).map(Into::into),
             self_component: experimental_self_component,
+            source_map: opts.source_map.unwrap_or(false),
+            source_map_filename: opts.filename.clone().map(Into::into),
         };
         let (root, errors, result) =
             compile_ssr_with_custom_elements_template_syntax_and_experimental_options(
@@ -65,7 +67,7 @@ pub(in crate::wasm) fn compile_internal(
             code: result.code.to_string(),
             preamble: result.preamble.to_string(),
             ast: build_ast_json(&root),
-            map: None,
+            map: parse_codegen_map(result.map)?,
             helpers: root.helpers.iter().map(|h| h.name().to_string()).collect(),
             templates: None,
         });
@@ -84,6 +86,8 @@ pub(in crate::wasm) fn compile_internal(
         let vapor_experimental_opts = VaporCompilerExperimentalOptions {
             component_name: self_component_name(opts).map(Into::into),
             self_component: experimental_self_component,
+            source_map: opts.source_map.unwrap_or(false),
+            source_map_filename: opts.filename.clone().map(Into::into),
         };
         let result = compile_vapor_with_custom_elements_template_syntax_and_experimental_options(
             &allocator,
@@ -105,7 +109,7 @@ pub(in crate::wasm) fn compile_internal(
             code: result.code.to_string(),
             preamble: String::new(),
             ast: serde_json::json!({}),
-            map: None,
+            map: parse_codegen_map(result.map)?,
             helpers: vec![],
             templates: Some(
                 result
@@ -168,6 +172,12 @@ pub(in crate::wasm) fn compile_internal(
         helpers: root.helpers.iter().map(|h| h.name().to_string()).collect(),
         templates: None,
     })
+}
+
+fn parse_codegen_map<T: AsRef<str>>(map: Option<T>) -> Result<Option<serde_json::Value>, String> {
+    map.map(|map| serde_json::from_str(map.as_ref()))
+        .transpose()
+        .map_err(|error| format!("Codegen emitted an invalid source map: {error}"))
 }
 
 fn custom_elements(opts: &CompilerOptions) -> CustomElementMatcher {

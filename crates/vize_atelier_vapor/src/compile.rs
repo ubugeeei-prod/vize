@@ -57,6 +57,10 @@ pub struct VaporCompilerExperimentalOptions {
     pub component_name: Option<String>,
     /// Treat the reserved `<Self>` tag as a reference to the current SFC.
     pub self_component: bool,
+    /// Generate a Source Map v3 document for Vapor render code.
+    pub source_map: bool,
+    /// Filename recorded in the Source Map v3 `file` and `sources` fields.
+    pub source_map_filename: Option<String>,
 }
 
 /// Vapor compilation result
@@ -66,6 +70,8 @@ pub struct VaporCompileResult {
     pub code: String,
     /// Template strings for static parts
     pub templates: Vec<String>,
+    /// Source Map v3 JSON for the generated render code.
+    pub map: Option<String>,
     /// Error messages during compilation
     pub error_messages: Vec<String>,
 }
@@ -123,6 +129,7 @@ fn compile_vapor_inner_with_stack<'a>(
             VaporCompileResult {
                 code: String::default(),
                 templates: Vec::new(),
+                map: None,
                 error_messages: fatal.iter().map(|e| e.message.clone()).collect(),
             },
             parser_diagnostics,
@@ -179,6 +186,8 @@ fn compile_vapor_inner_with_stack<'a>(
         crate::generate::VaporGenerateExperimentalOptions {
             component_name: experimental_options.component_name.as_deref(),
             self_component: experimental_options.self_component,
+            source_map: experimental_options.source_map,
+            source_map_filename: experimental_options.source_map_filename.as_deref(),
         },
     );
 
@@ -186,6 +195,7 @@ fn compile_vapor_inner_with_stack<'a>(
         VaporCompileResult {
             code: result.code,
             templates: result.templates,
+            map: result.map,
             error_messages: transform_diagnostics,
         },
         parser_diagnostics,
