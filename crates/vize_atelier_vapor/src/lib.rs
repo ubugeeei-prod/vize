@@ -15,6 +15,8 @@ pub mod generate;
 pub mod generators;
 pub mod ir;
 pub mod lower;
+#[doc(hidden)]
+pub mod s3;
 pub mod steps;
 
 #[cfg(test)]

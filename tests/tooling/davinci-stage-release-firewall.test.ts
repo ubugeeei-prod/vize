@@ -9,6 +9,7 @@ const publishedDavinciStages = new Set([
   "vize_s2",
   "vize_impeto",
   "vize_s1_to_s2",
+  "vize_s2_to_s3",
 ]);
 
 function isPublishable(pkg: Package): boolean {
@@ -109,6 +110,52 @@ test("DOM production keeps the published S2 renderer available for profiling", (
       // TypeScript templates are part of the public DOM compiler contract, so
       // the profiled DOM renderer enables the stage library's opt-in erasure.
       features: ["typescript"],
+    },
+  ]);
+});
+
+test("Vapor production selects only published stages for the S3 bridge", () => {
+  const stageEdges = workspacePackage(metadata, "vize_atelier_vapor")
+    .dependencies.filter(
+      (dependency) => dependency.kind === null && publishedDavinciStages.has(dependency.name),
+    )
+    .map((dependency) => ({
+      name: dependency.name,
+      req: dependency.req,
+      rename: dependency.rename,
+      optional: dependency.optional,
+      features: dependency.features,
+    }))
+    .sort((left, right) => left.name.localeCompare(right.name));
+
+  assert.deepEqual(stageEdges, [
+    {
+      name: "vize_impeto",
+      req: versionRequirement("vize_impeto"),
+      rename: "vize_s3",
+      optional: false,
+      features: [],
+    },
+    {
+      name: "vize_s1",
+      req: versionRequirement("vize_s1"),
+      rename: null,
+      optional: false,
+      features: [],
+    },
+    {
+      name: "vize_s1_to_s2",
+      req: versionRequirement("vize_s1_to_s2"),
+      rename: null,
+      optional: false,
+      features: [],
+    },
+    {
+      name: "vize_s2_to_s3",
+      req: versionRequirement("vize_s2_to_s3"),
+      rename: null,
+      optional: false,
+      features: [],
     },
   ]);
 });

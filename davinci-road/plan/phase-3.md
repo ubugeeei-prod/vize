@@ -83,6 +83,10 @@ semantic context; deletes the run-then-discard double transform
 calls upstream `@vue/runtime-vapor` APIs only (charter #38). In-phase flag
 for fallback. _Accept:_ TS-33 behavioral parity; TS-30 traces; vapor bench
 improvement (the P0-3 double-transform number is the floor to beat).
+_First slice 2026-09-12:_ see
+[P3-6 record](./phase-3-records/p3-6.md) for the production-path S3 bridge,
+verified artifact guard, and profiler counters. The legacy Vapor IR payload
+lowering remains until S3 owns typed generation payloads.
 
 **P3-7 VDOM patch flags from facts.** `patch_flag.rs` inference replaced by
 lattice-fact consumption; flags become explicit S3 decisions (or S2→S4

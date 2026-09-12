@@ -12,6 +12,10 @@ metadata.vize.stability = "experimental"
 vize_carton = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_croquis = { workspace = true }
+vize_s1 = { workspace = true }
+vize_s1_to_s2 = { workspace = true }
+vize_s2_to_s3 = { workspace = true }
+vize_s3 = { workspace = true }
 
 oxc_allocator = { workspace = true }
 oxc_ast = { workspace = true }

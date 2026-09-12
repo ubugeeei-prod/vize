@@ -5,6 +5,7 @@
 
 use crate::generate::generate_vapor;
 use crate::lower as vapor_lower;
+use crate::s3::{self, VaporS3BridgeOptions, VaporS3BridgeStatus};
 use vize_atelier_core::{
     CompilerError, Namespace,
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
@@ -218,6 +219,19 @@ fn compile_vapor_inner_with_stack<'a>(
         );
     }
 
+    let s3_bridge_status = s3::lower_source_for_vapor(
+        allocator,
+        source,
+        VaporS3BridgeOptions {
+            ssr: options.ssr,
+            custom_renderer: options.custom_renderer,
+            experimental_in_tag_comments: options.experimental_in_tag_comments,
+            experimental_patterned_template: options.experimental_patterned_template,
+            template_syntax,
+            has_custom_elements: !custom_elements.is_empty(),
+        },
+    );
+
     // Transform to Vapor IR
     let binding_metadata = options.binding_metadata.clone();
     let transform_opts = TransformOptions {
@@ -241,8 +255,11 @@ fn compile_vapor_inner_with_stack<'a>(
     );
 
     // Lower to Vapor IR
-    let (ir, transform_diagnostics) =
+    let (ir, mut transform_diagnostics) =
         vapor_lower::transform_to_ir_with_diagnostics(allocator, &root, source);
+    if let VaporS3BridgeStatus::Rejected(diagnostics) = s3_bridge_status {
+        transform_diagnostics.extend(diagnostics);
+    }
 
     // Generate Vapor code
     let result = generate_vapor(&ir, binding_metadata.as_ref());

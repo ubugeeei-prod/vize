@@ -255,6 +255,29 @@ test("Atelier core S2 witnesses import lowering through the physical S1-to-S2 pa
   }
 });
 
+test("Davinci Vapor compile path imports the verified S3 bridge", () => {
+  const vapor = workspacePackage(metadata, "vize_atelier_vapor");
+  for (const [dependencyName, rename] of [
+    ["vize_s1", null],
+    ["vize_s1_to_s2", null],
+    ["vize_s2_to_s3", null],
+    ["vize_impeto", "vize_s3"],
+  ] as const) {
+    const dep = dependency(metadata, "vize_atelier_vapor", dependencyName, null);
+    assert.equal(dep.rename, rename);
+    assert.equal(dep.req, `=${workspacePackage(metadata, dependencyName).version}`);
+  }
+
+  const compile = readRepoFile("crates", "vize_atelier_vapor", "src", "compile.rs");
+  const bridge = readRepoFile("crates", "vize_atelier_vapor", "src", "s3.rs");
+  assert.match(compile, /lower_source_for_vapor/u);
+  assert.match(bridge, /vize_s1::parse_with_options/u);
+  assert.match(bridge, /vize_s1_to_s2::lower/u);
+  assert.match(bridge, /vize_s2_to_s3::lower/u);
+  assert.match(bridge, /vize_s3::verify::verify/u);
+  assert.ok(vapor.dependencies.some((dep) => dep.name === "vize_s2_to_s3"));
+});
+
 const s0AliasConsumers = [
   ["vize", "vize package", ["crates", "vize"]],
   ["vize_test_runner", "Test runner", ["tests", "vize_test_runner"]],
