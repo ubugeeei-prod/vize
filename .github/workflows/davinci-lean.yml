@@ -1,0 +1,51 @@
+name: Davinci Lean
+
+on:
+  push:
+    branches: [main, davinci]
+    paths:
+      - "formal/impeto/**"
+      - "crates/vize_impeto/**"
+      - "crates/vize_s2_to_s3/**"
+      - "davinci-road/plan/phase-3.md"
+      - "davinci-road/plan/test-suites.md"
+      - ".github/workflows/davinci-lean.yml"
+  pull_request:
+    branches: [main, davinci]
+    paths:
+      - "formal/impeto/**"
+      - "crates/vize_impeto/**"
+      - "crates/vize_s2_to_s3/**"
+      - "davinci-road/plan/phase-3.md"
+      - "davinci-road/plan/test-suites.md"
+      - ".github/workflows/davinci-lean.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: davinci-lean-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  impeto-reference:
+    name: Impeto Lean reference (TS-28)
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1.6.0
+        with:
+          lake-package-directory: formal/impeto
+          build: "true"
+          test: "false"
+          lint: "false"
+          use-mathlib-cache: "false"
+          use-github-cache: "true"
+      - name: Run TS-28 fixture differential
+        working-directory: formal/impeto
+        run: lake exe impetoRef --check-fixtures

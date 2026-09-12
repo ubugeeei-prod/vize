@@ -85,3 +85,4 @@ tests/fuzz/target/
 # Insta pending snapshots (created on test failure; should not be checked in)
 *.snap.new
 *.pending-snap
+.lake/

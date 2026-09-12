@@ -1,0 +1,15 @@
+[s3-folio]
+phase=built
+
+[s3-folio.regions]
+id=0 parent=- owner=- span=0:24
+id=1 parent=0 owner=0 span=6:11
+
+[s3-folio.ops]
+id=0 kind=impeto.insert-node region=0 effect=- span=0:24
+id=1 kind=impeto.set-text region=1 effect=- span=6:11
+
+[s3-folio.edges]
+from=0 to=1 kind=dom-order effect=-
+
+[s3-folio.effects]

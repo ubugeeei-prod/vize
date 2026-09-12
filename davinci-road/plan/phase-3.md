@@ -62,6 +62,10 @@ total lowering skeleton, and exported partition fact contract.
 under both Vapor and VDOM interpretations; runner compares compiled-output
 behavior traces vs reference on S3 fixtures (TS-28). _Accept:_ runner in CI
 on the fixture ladder.
+_First slice 2026-09-12:_ see
+[P3-4 record](./phase-3-records/p3-4.md) for the pinned Lean package, the
+initial S3 Folio parser, executable reference traces, and CI-lenient TS-28
+workflow.
 
 **P3-5 Op reference doc.** `davinci-road/plan/impeto-ops.md`: every op's
 meaning under both interpretations, written **before any optional pass
