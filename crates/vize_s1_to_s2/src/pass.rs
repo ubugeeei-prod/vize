@@ -24,17 +24,6 @@
 //! (`vize_s2`) learning any Vue and without the published legacy
 //! lane gaining an edge on the strangler's new lane.
 //!
-//! # The in-phase lane flag (charter #26)
-//!
-//! [`TRANSFORM_LANE_FLAG`] names the env flag the P2-9 series runs
-//! behind: `VIZE_DAVINCI_TRANSFORM=legacy` disarms the S2 dual-run in
-//! the differential comparator, leaving the shipped legacy lane alone as
-//! today. The flag is *read* in `vize_atelier_core`'s test-space
-//! comparator (this crate is `no_std` and reads no environment); it is
-//! *named* here so the phase-2 exit gate's deletion grep has one home.
-//! The old lane is the only shipped lane while the phase is live; the
-//! differential lane, not the flag, carries the risk (phase-2.md § 11).
-//!
 //! # Driving a run
 //!
 //! [`run_transform`] executes the artifact-selected S2 plan through the
@@ -72,12 +61,6 @@ pub use vslot::{SlotCarrier, SlotFacts, SlotGroup, SlotName, SlotParams};
 
 /// The stage name S2 transform pipelines print and parse under.
 pub const S2_STAGE: &str = "s2";
-
-/// The env flag the P2-9 series runs behind (charter #26): value
-/// `legacy` disarms the S2 dual-run lane. Read by the differential
-/// comparator in `vize_atelier_core`'s test space; deleted, with the
-/// lane it guards, at the phase-2 exit gate.
-pub const TRANSFORM_LANE_FLAG: &str = "VIZE_DAVINCI_TRANSFORM";
 
 /// The S2 transform pipeline as the series has built it so far.
 ///
@@ -224,9 +207,7 @@ pub fn run_transform_with_profile<'a, O: PassObserver>(
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        S2_STAGE, TRANSFORM, TRANSFORM_LANE_FLAG, TRANSFORM_PASSES, hoist, vif, vmodel, vslot,
-    };
+    use super::{S2_STAGE, TRANSFORM, TRANSFORM_PASSES, hoist, vif, vmodel, vslot};
     use vize_davinci::pass::{Fusability, PassKind, Preserved};
 
     #[test]
@@ -297,10 +278,5 @@ mod tests {
         assert_eq!((fusable.start, fusable.len), (2, 1));
         assert!(fusable.preserved == Preserved::ALL);
         assert_eq!(TRANSFORM.group(3), None);
-    }
-
-    #[test]
-    fn the_lane_flag_has_its_recorded_name() {
-        assert_eq!(TRANSFORM_LANE_FLAG, "VIZE_DAVINCI_TRANSFORM");
     }
 }

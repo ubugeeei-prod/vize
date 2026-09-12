@@ -113,7 +113,7 @@ holds or improves — this phase should be a measurable win, not a wash.
   timing, remark emission) land with the pass manager itself, so the DevTool's
   data feed exists from the first S2 build.
 
-**Current execution ledger (2026-09-12):** [21 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-09-12).
+**Current execution ledger (2026-09-12):** [22 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-09-12), and phase 2 has exited.
 P2-9 is complete: the hydrated corpus run compiled 41,580 files at zero
 divergence and measured the retained-`None` residual at 11.73%. P2-11 is now
 complete through [#5860](https://github.com/ubugeeei-prod/vize/pull/5860), so
@@ -127,7 +127,10 @@ products folded before codegen and Vue 2 legacy sugar kept on its compatibility
 pass-manager path. P2-17 is complete through
 [#6057](https://github.com/ubugeeei-prod/vize/pull/6057), signing off the
 internal S2 contract checklist with span, schema-version and provenance
-witnesses; P2-20 is ready to evaluate the phase exit.
+witnesses. P2-20 completed the phase-exit evaluation through
+[#6059](https://github.com/ubugeeei-prod/vize/pull/6059), deleting the P2-9
+transform lane flag and recording the DOM compile allocation target miss with a
+phase-3 blocker rather than loosening the ratchet.
 P2-11 has 123 landed installments through
 [#5860](https://github.com/ubugeeei-prod/vize/pull/5860).
 Installments 84-123 open and close the production option surface the switch

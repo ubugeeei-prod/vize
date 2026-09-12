@@ -12,7 +12,7 @@ use vize_davinci::pass::NoObserver;
 use vize_s0::Allocator;
 use vize_s0::config::VueVersion;
 use vize_s1_to_s2::LegacyCaps;
-use vize_s1_to_s2::pass::{TRANSFORM_LANE_FLAG, run_transform};
+use vize_s1_to_s2::pass::run_transform;
 use vize_s2::folio::DisegnoFolio;
 
 use super::{
@@ -37,10 +37,6 @@ pub fn compare(name: &str, source: &str, counters: &mut Counters) {
 /// Same contract as [`compare`].
 pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: VueVersion) {
     counters.templates_seen += 1;
-    if std::env::var(TRANSFORM_LANE_FLAG).is_ok_and(|value| value == "legacy") {
-        counters.skipped_legacy_flag += 1;
-        return;
-    }
 
     // Legacy lane: the shipped parse + transform.
     //

@@ -33,13 +33,6 @@
 //! path has no migrated read yet: the S2 lane runs *beside* the legacy
 //! lane, not inside it.
 //!
-//! # The lane flag (charter #26)
-//!
-//! `VIZE_DAVINCI_TRANSFORM=legacy` disarms the dual-run: the legacy
-//! lane is then the only thing exercised, which is also the shipped
-//! default. The plain witness pins non-zero comparison counts, so a
-//! flag or cfg regression that silently disarms the lane fails loudly.
-//!
 //! # Skip classes are counted, never silent
 //!
 //! The two lanes parse with different S1 front ends, and the S1 v1
@@ -104,8 +97,6 @@ pub struct Counters {
     pub templates_seen: u64,
     /// Templates dual-run to completion with zero divergence.
     pub compared: u64,
-    /// `VIZE_DAVINCI_TRANSFORM=legacy` disarmed the S2 lane.
-    pub skipped_legacy_flag: u64,
     /// The legacy parser reported a **hard** error (recovery notes
     /// compare — see the module docs); outside both lanes' shared
     /// domain.

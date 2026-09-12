@@ -38,7 +38,6 @@ fn the_s2_transform_lane_holds_over_the_corpus() {
         Counters {
             templates_seen: 90,
             compared: 90,
-            skipped_legacy_flag: 0,
             skipped_old_parse_errors: 0,
             skipped_s2_errors: 0,
             if_ops: 24,

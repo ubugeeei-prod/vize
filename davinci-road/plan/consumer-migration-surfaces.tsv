@@ -197,10 +197,10 @@ compiler	Compiler	source	crates/vize_atelier_core/src/steps/v_slot/validate.rs	3
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/concatenated_string_bind_patch_flags.rs	4	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/conditional_named_slots.rs	4	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform_vue2.rs	24	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	119	davinci	Davinci	stage	vize_davinci	preferred	3
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	119	s0	S0	stage	vize_s0	preferred	6
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	119	s1	S1	stage	vize_s1	preferred	3
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	119	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	13
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	118	davinci	Davinci	stage	vize_davinci	preferred	3
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	118	s0	S0	stage	vize_s0	preferred	6
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	118	s1	S1	stage	vize_s1	preferred	3
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	118	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	12
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_sourcemap_prefixed_identifiers.rs	133	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_bind_on_argument.rs	11	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_slot_forwarding.rs	14	s0	S0	stage	vize_s0	preferred	1

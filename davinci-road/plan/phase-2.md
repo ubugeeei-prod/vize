@@ -71,7 +71,7 @@ Each ID links to its contract in [phase-2-tasks.md](./phase-2-tasks.md); what a 
 - [x] [P2-17](./phase-2-tasks-later.md#p2-17--ir-contract-review-milestone) IR contract review milestone — landed 2026-09-12 through [#6057](https://github.com/ubugeeei-prod/vize/pull/6057); signed-off internal S2 contract checklist with span, schema-version and provenance witnesses ([record](./phase-2-records/p2-17.md))
 - [x] [P2-18](./phase-2-tasks-later.md#p2-18--spolvero-feed-v1) Spolvero feed v1 — landed 2026-08-21; the feed is a serialization of P2-13's `FolioDump` (never a second page collector): `davinci-opt --folio-dir` writes `spolvero.json` beside the pages, the inspector payload and the wasm `analyzeSfc` result embed the same schema-versioned shape (S1 pages through `vize_s1`, byte-faithful; S2 joins when P2-8 gives it a producer), the croquis alias pinned byte-identical for the first time, TS-52 registered and established ([record](./phase-2-records/p2-18.md))
 - [x] [P2-19](./phase-2-tasks-later.md#p2-19--devtool-protocol-spike) DevTool protocol spike — landed 2026-08-21; decided **document over JSON-RPC**: the P2-18 feed document stays the unit on every surface — C-7's local server speaks content-mapper-style JSON-RPC whose `initialize` negotiates the feed `schema_version` before any payload is serialized (the only candidate that negotiates rather than refusing after the producer wrote everything), served files stay the at-rest form, the wasm playground keeps the P2-18 embedding, JSON-lines rejected (every named consumer reassembles the document anyway); spike deleted deliberately, measurements and reproduction recipe in the record ([record](./phase-2-records/p2-19.md))
-- [ ] [P2-20](./phase-2-tasks-later.md#p2-20--phase-exit) Phase exit
+- [x] [P2-20](./phase-2-tasks-later.md#p2-20--phase-exit) Phase exit — landed 2026-09-12 through [#6059](https://github.com/ubugeeei-prod/vize/pull/6059); all exit-gate lines evaluated with evidence and the P2-9 transform lane flag deleted ([record](./phase-2-records/p2-20.md))
 
 ## Current execution ledger (2026-09-12)
 
@@ -79,40 +79,34 @@ This is the current snapshot. The phase re-cut above and the per-installment
 records are historical evidence and are not silently rewritten when current
 counts or fixture availability changes.
 
-- **Complete: 21 of 22 — P2-1, P2-2, P2-3, P2-4, P2-5a, P2-5b, P2-6,
+- **Complete: 22 of 22 — P2-1, P2-2, P2-3, P2-4, P2-5a, P2-5b, P2-6,
   P2-7, P2-8, P2-9, P2-10, P2-11, P2-12a, P2-12b, P2-13, P2-14,
-  P2-15, P2-16, P2-17, P2-18 and P2-19.**
+  P2-15, P2-16, P2-17, P2-18, P2-19 and P2-20.**
   Each completion is joined to its merged PR and current evidence in the
   [evidence index](./phase-2-records.md#current-completion-evidence-2026-09-12);
   review-only evidence is labeled there rather than presented as executable.
   P2-11 keeps the hydrated full-corpus differential contract pinned as
   144 DOM-output comparisons. P2-16 keeps the JSX S2-vs-Relief differential
-  lane in the required check job; its retirement remains a P2-20 exit item.
+  lane in the required check job; its retirement is re-dated at P2-20.
   P2-12b keeps the DOM build-path traversal target as an ordinary Rust
-  integration gate over the ladder.
+  integration gate over the ladder. P2-20 records the exit verdict and the
+  charter #26 old-path deletion.
 - **Active and blocked: 0 of 22 — none.**
-- **Ready: 1 of 22 — P2-20.** P2-20 now has all P2-1 through P2-19
-  dependencies closed and can evaluate the phase exit.
+- **Ready: 0 of 22 — none.**
 - **Open and dependency-blocked: 0 of 22 — none.**
 - **Executable corpus inventory:** 146 gitlinks, including 142 ecosystem
   projects, as asserted by
   [`fixture-compatibility-ledger.test.ts`](../../tests/tooling/fixture-compatibility-ledger.test.ts).
   A worktree's initialized or uninitialized submodule count is transient and
   must not replace this inventory.
-- **P2-17/P2-20 pre-exit blocker map:** P2-17 is signed off for internal S2
-  consumers: P2-11's S2 DOM lane, P2-12b's traversal-budget swap and P2-13's
-  failure provenance contract were reviewed together. Its mechanical
-  span-resolution witness runs in
-  [`ir_contract_spans.rs`](../../crates/vize_s1_to_s2/tests/ir_contract_spans.rs),
-  while serialized agent-visible artifact witnesses run in
-  [`spolvero_feed.rs`](../../crates/vize_davinci/tests/spolvero_feed.rs),
-  [`davinci_opt_dumps.rs`](../../crates/vize_davinci/tests/davinci_opt_dumps.rs)
-  and [`spolvero_payload.rs`](../../crates/vize_curator/tests/spolvero_payload.rs).
-  Future remark and fact-table serializations are not real payloads yet, so the
-  signed-off rule is that they must join the same schema-versioned refusal
-  pattern when introduced. The exit gate below stays unticked until P2-20
-  evaluates it line by line, ticks satisfied lines with evidence, and leaves
-  any misses unticked with blockers named.
+- **P2 exit verdict:** the gate below is fully evaluated. Real Project Matrix
+  run `34682248135` supplies the hydrated DOM-corpus proof over 146 gitlinks /
+  142 ecosystem projects; P2-11 deleted the DOM production selector, and P2-20
+  deletes the transform-lane disarm flag so no in-phase production or test
+  escape hatch remains. The S2 contract, traversal target, portability lane,
+  differential lane, waiver ledger and corpus-expansion audit all have current
+  witnesses named inline below. Phase 3 remains provisional until its own
+  re-cut, per the plan README.
 
 ## Davinci describes the shipped pipeline — and cannot yet consume it (2026-08-19)
 
@@ -167,15 +161,15 @@ probe counts.
 
 ## Exit gate (machine-checkable)
 
-- [ ] **DOM corpus byte-parity on the S2 path, waiver ledger empty** — `rust-script tools/commands/davinci/corpus-diff.rs --surface compiler --shards 2 --timeout-ms 600000` from clean fixtures: zero gating drift with scope proof matching the project manifest (TS-11)
-- [ ] **Legacy DOM lane and its flag deleted** — grep zero for `VIZE_DAVINCI_DOM` and for the old DOM codegen entry; the transform lane flag likewise (charter #26)
-- [ ] **Traversal budget gated at or below the recorded pre-S2 baseline** — `budgets.toml [traversal]` populated by P2-12a and enforced exactly on the fixture ladder in CI (TS-22), with the walk law pinned by an ordinary integration test in the default `cargo test --workspace` lane
-- [ ] **Verifier, metamorphic, totality-fuzz and S1-fidelity suites green and required** — TS-18, TS-21, TS-20, TS-19
-- [ ] **S1/S2 folios in fixtures; `davinci-opt` pass tests in place** — TS-16 byte-exact in `Full` mode per derived type, TS-17 with at least one full normalized folio snapshot per landed pass
-- [ ] **wasip2 and `no_std` lanes required for the four libraries (`vize_davinci`, S1, S2, S1→S2); S0/Carton excluded; boundary audit committed** — TS-24
-- [ ] **IR contract review signed off** — P2-17's checklist committed with the mechanical half landed as tests (review point: the judgement half)
-- [ ] **Phase-2 target pinned at phase start was met, or the miss is recorded with its blocker** — measured against `budgets.toml`'s P2 target table and the phase-start rev recorded by P2-12a. This line exists because P1-13 could not tick its equivalent; it may be ticked as a recorded miss only if the target was pinned before P2-9 merged
-- [ ] **Every bench added in this phase carries its measured alloc count** — `rust-script tools/commands/davinci/bench-compare.rs` reports zero breaches and zero seeded-`0` entries (TS-10; a seeded `0` fails loudly since P1-13)
-- [ ] **Differential lanes green and their retirement condition restated** — TS-25 zero divergence for P2-9, P2-11 and P2-16, with the phase-1 lanes' "for one release" life either honoured or explicitly re-dated
-- [ ] **Standing gates held throughout** — TS-1..9 unchanged, TS-12 matrices current, TS-13 assertion lint clean under its allowlist, TS-14 mutation scores held for the new crates, TS-15 profiler export validating, TS-26 counter law still pinned
-- [ ] **Corpus waiver ledger empty and the phase-boundary expansion audit done** — C-14, C-16
+- [x] **DOM corpus byte-parity on the S2 path, waiver ledger empty** — `rust-script tools/commands/davinci/corpus-diff.rs --surface compiler --shards 2 --timeout-ms 600000` from clean fixtures: zero gating drift with scope proof matching the project manifest (TS-11). Evidence: Real Project Matrix run `34682248135`, job `s2 dom corpus`, artifact `real-project-davinci-dom-corpus`: 146 gitlinks, 42,668 files, 42,279 compared templates, zero divergences, zero S2 refusals, 16 old-lane hard-error skips, verdict success.
+- [x] **Legacy DOM lane and its flag deleted** — grep zero for `VIZE_DAVINCI_DOM` and for the old DOM codegen entry; the transform lane flag likewise (charter #26). Evidence: P2-11 installment 123 deleted `VIZE_DAVINCI_DOM=legacy`; P2-20 deletes `TRANSFORM_LANE_FLAG` / `VIZE_DAVINCI_TRANSFORM` and `skipped_legacy_flag`, with the live-source scan pinned by `davinci-phase2-exit.test.ts`. Historical plan records intentionally keep the old strings as audit history.
+- [x] **Traversal budget gated at or below the recorded pre-S2 baseline** — `budgets.toml [traversal]` populated by P2-12a and enforced exactly on the fixture ladder in CI (TS-22), with the walk law pinned by an ordinary integration test in the default `cargo test --workspace` lane. Evidence: `emit_budget_observer`, `davinci_s2_profile` and `davinci_s2_build_profile` pin DOM build walks at 1 and emit visits below the recorded baseline on every ladder row.
+- [x] **Verifier, metamorphic, totality-fuzz and S1-fidelity suites green and required** — TS-18, TS-21, TS-20, TS-19. Evidence: the `clippy-and-test` Check workflow keeps `cargo test --workspace`, `davinci_lowering_corpus`, `davinci_dom_corpus`, JSX differential and the Vue 2 transform lane required; local P2-20 verification reran the targeted transform and ledger suites.
+- [x] **S1/S2 folios in fixtures; `davinci-opt` pass tests in place** — TS-16 byte-exact in `Full` mode per derived type, TS-17 with at least one full normalized folio snapshot per landed pass. Evidence: `folio_derive_laws`, `davinci_opt_cli`, `davinci_opt_dumps` and the phase-2 record files keep the committed folio and pass-output witnesses.
+- [x] **wasip2 and `no_std` lanes required for the four libraries (`vize_davinci`, S1, S2, S1→S2); S0/Carton excluded; boundary audit committed** — TS-24. Evidence: `davinci-portability-lane.test.ts` pins the `check.yml` step that builds `vize_davinci`, `vize_s1`, `vize_s2` and `vize_s1_to_s2` for `wasm32-wasip2` and `--no-default-features`; `no-std-boundary.md` records the S0/Carton exclusion.
+- [x] **IR contract review signed off** — P2-17's checklist committed with the mechanical half landed as tests (review point: the judgement half). Evidence: `p2-17.md`, `ir_contract_spans`, `spolvero_feed`, `davinci_opt_dumps` and `spolvero_payload`.
+- [x] **Phase-2 target pinned at phase start was met, or the miss is recorded with its blocker** — measured against `budgets.toml`'s P2 target table and the phase-start rev recorded by P2-12a. This line exists because P1-13 could not tick its equivalent; it may be ticked as a recorded miss only if the target was pinned before P2-9 merged. Evidence: P2-12a pinned rev `232870a83506cf3312cc8ef02e91c8b73ac12d2b` before P2-9; current DOM build walks are 1/1 and the non-control visit ratios are at most 0.63 against the phase-start table. **Recorded miss:** `dom_compile_allocs_ratio_max = 1.00` is breached by the current DOM compile bench (`small` 39→67, `medium` 264→594, `large` 573→1053, `stress-deep` 426→877, `stress-wide` 245→264, `stress-interp` 536→2264). **Blocker:** phase-3 owns the allocation payback while it replaces the remaining backend/consumer paths; the miss is not hidden by loosening the ratchet.
+- [x] **Every bench added in this phase carries its measured alloc count** — `rust-script tools/commands/davinci/bench-compare.rs` reports zero breaches and zero seeded-`0` entries (TS-10; a seeded `0` fails loudly since P1-13). Evidence: `davinci-budgets.test.ts` reconciles every Davinci bench id; `bench-compare` is part of the required allocation gate for `s1_to_s2_lower_vfor_three_aliases`, `s1_to_s2_emit_von_two_per_bucket`, `s1_to_s2_emit_p2_11_dom_surface` and `patina_jsx_markup_one_root`.
+- [x] **Differential lanes green and their retirement condition restated** — TS-25 zero divergence for P2-9, P2-11 and P2-16, with the phase-1 lanes' "for one release" life either honoured or explicitly re-dated. Evidence: P2-20 restates that verification-only `davinci-differential` lanes stay required until the first phase-3 task either deletes the corresponding old consumer path with zero-divergence evidence or re-dates the lane in that task's record; phase-1's one-release life has been honored by the stable releases through `v0.421.0`.
+- [x] **Standing gates held throughout** — TS-1..9 unchanged, TS-12 matrices current, TS-13 assertion lint clean under its allowlist, TS-14 mutation scores held for the new crates, TS-15 profiler export validating, TS-26 counter law still pinned. Evidence: the P2-20 PR runs the Check, Benchmark, App E2E, CodeQL, Miri, pkg.pr.new and title-policy workflows; local verification reran the phase-2 ledger, source-length, traversal, transform and folio witnesses before opening the PR.
+- [x] **Corpus waiver ledger empty and the phase-boundary expansion audit done** — C-14, C-16. Evidence: `corpus-coverage.md` records the hydrated 142/142 scan with MathML as the only matrix-only S2 element kind; the Real Project Matrix workflow audits formatter waiver owners and enforces the surface verdict; `glyph-corpus-*` tests consume every known formatter waiver and the current DOM corpus artifact records zero DOM output waivers.

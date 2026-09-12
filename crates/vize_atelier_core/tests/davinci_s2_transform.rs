@@ -1,8 +1,8 @@
 //! P2-9, the plain-suite coverage witness: the committed battery (the
 //! v-if half from series 1, the v-for half from series 2, the v-slot
 //! half from series 3, the text half from series 4) dual-runs
-//! legacy-vs-S2 with **exact-pinned** counters, so a cfg or flag
-//! regression that disarms the differential lane fails loudly here (the
+//! legacy-vs-S2 with **exact-pinned** counters, so a cfg regression
+//! that disarms the differential lane fails loudly here (the
 //! P1-6/P1-7 witness law). The corpus-widened entry is
 //! `davinci_s2_transform_corpus.rs` (feature `davinci-differential`).
 
@@ -18,7 +18,6 @@ fn expected() -> Counters {
     Counters {
         templates_seen: 90,
         compared: 90,
-        skipped_legacy_flag: 0,
         skipped_old_parse_errors: 0,
         skipped_s2_errors: 0,
         if_ops: 24,
@@ -283,16 +282,5 @@ fn both_lanes_flag_the_duplicate_key() {
                 == vize_s1_to_s2::pass::vif::SAME_KEY_MESSAGE),
         "the S2 lowering must flag the collision: {:?}",
         lowered.diagnostics
-    );
-}
-
-#[test]
-fn the_legacy_flag_disarms_the_lane_visibly() {
-    // Not an env-mutating test (the harness runs tests concurrently):
-    // the flag's read is pinned by name here, and its disarm arm is the
-    // `skipped_legacy_flag` counter the battery pin holds at zero.
-    assert_eq!(
-        vize_s1_to_s2::pass::TRANSFORM_LANE_FLAG,
-        "VIZE_DAVINCI_TRANSFORM"
     );
 }

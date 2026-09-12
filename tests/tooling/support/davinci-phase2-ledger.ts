@@ -197,9 +197,19 @@ export function assertP2_17P2_20ExitBlockers(
   const p2_17 = phaseTaskSection(tasksLater, "P2-17");
   const p2_20 = phaseTaskSection(tasksLater, "P2-20");
   const gateItems = exitGateItems(phase);
+  const exitGate = requiredSection(
+    phase,
+    /^## Exit gate \(machine-checkable\)/mu,
+    /$a/mu,
+    "P2 exit gate",
+  );
+  const exitRecord = fs.readFileSync(
+    new URL("../../../davinci-road/plan/phase-2-records/p2-20.md", import.meta.url),
+    "utf8",
+  );
 
   assert.equal(p2_17Checked, true, "P2-17 must be ticked after review sign-off");
-  assert.equal(p2_20Checked, false, "P2-20 must not be ticked before exit evaluation");
+  assert.equal(p2_20Checked, true, "P2-20 must be ticked after exit evaluation");
   assert.deepEqual(phaseDependencySet(tasksLater, "P2-17", taskIds), ["P2-11", "P2-12b", "P2-13"]);
   assert.deepEqual(
     phaseDependencySet(tasksLater, "P2-20", taskIds),
@@ -213,25 +223,27 @@ export function assertP2_17P2_20ExitBlockers(
   assert.match(p2_20, /a line is ticked only when it is satisfied/);
   assert.match(p2_20, /an unticked line names its blocker/);
   assert.match(p2_20, /no line's wording is softened to make it tickable/);
+  assert.match(p2_20, /\*\*Landed 2026-09-12\*\*/);
 
-  assert.match(phaseLedger, /P2-17\/P2-20 pre-exit blocker map/);
-  assert.match(phaseLedger, /P2-17 is signed off/);
-  assert.match(phaseLedger, /P2-12b's traversal-budget swap/);
-  assert.match(phaseLedger, /P2-13's\s+failure\s+provenance contract/);
-  assert.match(phaseLedger, /ir_contract_spans\.rs/);
-  assert.match(phaseLedger, /spolvero_feed\.rs/);
-  assert.match(phaseLedger, /davinci_opt_dumps\.rs/);
-  assert.match(phaseLedger, /spolvero_payload\.rs/);
-  assert.match(phaseLedger, /P2-20\s+evaluates it line by line/);
-  assert.match(phaseLedger, /ticks satisfied lines with evidence/);
+  assert.match(phaseLedger, /P2 exit verdict/);
+  assert.match(phaseLedger, /34682248135/);
+  assert.match(phaseLedger, /transform-lane disarm flag/);
+  assert.match(phaseLedger, /Phase 3 remains provisional/);
   assertP2_17MechanicalWitnesses();
 
   assert.equal(gateItems.length, 12, "the P2 exit gate item count changed");
   assert.deepEqual(
-    gateItems.filter((item) => item.checked),
+    gateItems.filter((item) => !item.checked),
     [],
-    "P2 exit gate must remain unticked until P2-20 evaluation records evidence",
+    "P2 exit gate must be fully evaluated at P2-20",
   );
+  assert.match(exitGate, /Real Project Matrix run `34682248135`/);
+  assert.match(exitGate, /Recorded miss/);
+  assert.match(exitGate, /Blocker:\*\* phase-3/);
+  assert.match(exitGate, /phase-1's one-release life has been honored/);
+  assert.match(exitRecord, /bench-compare` exits 1 with six exact allocation breaches/);
+  assert.match(exitRecord, /The lanes cannot expire silently at the phase boundary/);
+  assert.match(exitRecord, /hydrated 142\/142/);
   assert.ok(
     gateItems.some((item) => item.title === "IR contract review signed off"),
     "P2-17 must remain an exit-gate line",

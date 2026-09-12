@@ -51,7 +51,6 @@ fn expected() -> Counters {
     Counters {
         templates_seen: 9,
         compared: 9,
-        skipped_legacy_flag: 0,
         skipped_old_parse_errors: 0,
         skipped_s2_errors: 0,
         if_ops: 1,

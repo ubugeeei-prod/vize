@@ -84,14 +84,16 @@
 
 ## P2-20 — Phase exit
 
+**Landed 2026-09-12** — full record: [phase-2-records/p2-20.md](./phase-2-records/p2-20.md).
+
 **Deliverable:** the exit gate in [phase-2.md](./phase-2.md), evaluated and recorded there, in phase 0's and phase 1's manner: **a line is ticked only when it is satisfied, an unticked line names its blocker, and no line's wording is softened to make it tickable.**
 
 **Steps:**
 
-- [ ] Evaluate every line of the exit gate in [phase-2.md](./phase-2.md) and record the evidence inline
-- [ ] Delete the in-phase old paths (P2-9's transform lane flag, P2-11's `VIZE_DAVINCI_DOM=legacy`) or record each as an unfinished deletion with an owner and an issue — charter #26's fix-forward switch happens here
-- [ ] Restate the retirement condition for the `davinci-differential` lanes (phase 1's and phase 2's), which are written to live "for one release"
-- [ ] Re-bench the phase-start rev and this tree, compare against the P2-12a target, and record the result — including a miss, if it is one
-- [ ] Corpus waiver ledger reviewed and empty (C-16)
+- [x] Evaluate every line of the exit gate in [phase-2.md](./phase-2.md) and record the evidence inline
+- [x] Delete the in-phase old paths (P2-9's transform lane flag, P2-11's `VIZE_DAVINCI_DOM=legacy`) or record each as an unfinished deletion with an owner and an issue — charter #26's fix-forward switch happens here
+- [x] Restate the retirement condition for the `davinci-differential` lanes (phase 1's and phase 2's), which are written to live "for one release"
+- [x] Re-bench the phase-start rev and this tree, compare against the P2-12a target, and record the result — including a miss, if it is one
+- [x] Corpus waiver ledger reviewed and empty (C-16)
 
 **Acceptance:** the exit gate in [phase-2.md](./phase-2.md), with every line either ticked with its evidence or carrying a named blocker. **Deps:** all of P2-1..P2-19. **Non-goals:** re-cutting phase 3 — that is phase 3's own re-cut at this exit, per the plan README; closing P0-4's Blacksmith pending; unblocking P1-8.
