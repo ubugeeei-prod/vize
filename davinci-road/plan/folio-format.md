@@ -344,18 +344,18 @@ validated by the TS-27 phase validator.
 
 Header:
 
-| field   | values                                | notes                         |
-| ------- | ------------------------------------- | ----------------------------- |
-| `phase` | `built`, `partitioned`, or `scheduled` | printed from `op::Phase`      |
+| field   | values                                 | notes                    |
+| ------- | -------------------------------------- | ------------------------ |
+| `phase` | `built`, `partitioned`, or `scheduled` | printed from `op::Phase` |
 
 Sections, in struct declaration order:
 
-| section               | entry grammar                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------ |
-| `[s3-folio.regions]`  | `id=<n> parent=<n\|-> owner=<n\|-> span=<start>:<end>`                               |
-| `[s3-folio.ops]`      | `id=<n> kind=<mnemonic> region=<n> effect=<n\|-> span=<start>:<end>`                 |
-| `[s3-folio.edges]`    | `from=<n> to=<n> kind=<dom-order\|effect-order\|data-dependency> effect=<n\|->`      |
-| `[s3-folio.effects]`  | `id=<n> owner=<n> region=<n> span=<start>:<end>`                                     |
+| section              | entry grammar                                                                   |
+| -------------------- | ------------------------------------------------------------------------------- |
+| `[s3-folio.regions]` | `id=<n> parent=<n\|-> owner=<n\|-> span=<start>:<end>`                          |
+| `[s3-folio.ops]`     | `id=<n> kind=<mnemonic> region=<n> effect=<n\|-> span=<start>:<end>`            |
+| `[s3-folio.edges]`   | `from=<n> to=<n> kind=<dom-order\|effect-order\|data-dependency> effect=<n\|->` |
+| `[s3-folio.effects]` | `id=<n> owner=<n> region=<n> span=<start>:<end>`                                |
 
 The optional id value is spelled `-` when absent. The op mnemonic set is the
 P3-1 generalization of Vapor's OperationNode family:
