@@ -7,7 +7,7 @@
 ## TODO index
 
 - [x] P3-1 `vize_impeto` crate + phase validator
-- [ ] P3-2 Reactivity lattice fact group v1
+- [x] P3-2 Reactivity lattice fact group v1
 - [ ] P3-3 S2→S3 lowering + shared partition
 - [ ] P3-4 Lean reference semantics + differential runner
 - [ ] P3-5 Impeto op reference doc (before optional passes)
@@ -42,7 +42,8 @@ and verdicts are orthogonal axes:** the four lattice states are the fact's
 _value_; `proven/refuted/unknown` is the epistemic _status_ of that value —
 a binding can be provenly `reactive` or unknowably classified, and rules fire
 only on proven values per the assurance doctrine. _Accept:_ declarative rule spec + naive evaluator committed
-(TS-34 pattern); lattice folio page.
+(TS-34 pattern); lattice folio page. _Landed 2026-09-12:_ see
+[P3-2 record](./phase-3-records/p3-2.md).
 
 **P3-3 S2→S3 lowering.** Total, no-rollback; static/dynamic partition
 computed once here and exported as facts (SSR reads them without S3).

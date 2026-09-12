@@ -35,3 +35,24 @@ tests in `crates/vize_impeto/tests/folio_laws.rs` pin
 TS-27 (`crates/vize_impeto/tests/phase_validator.rs`) separately pins exact
 rejections for unresolved state edges, malformed region nesting, effect-scope
 leaks, and scheduled-phase back edges.
+
+## S3 Reactivity Folio
+
+P3-2 adds `vize_impeto::lattice::S3ReactivityFolio`, a derived Folio page
+named `[s3-reactivity-folio]`. It mirrors the first reactivity-lattice fact
+group without depending on the later S2-to-S3 lowering.
+
+Sections:
+
+| section                         | entry grammar                                                                                                        |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `[s3-reactivity-folio.bindings]` | `id=<n> class=<class> verdict=<verdict> origin=<origin> effects=<effects> escape=<escape> span=<start>:<end>` |
+
+`class` is one of `static`, `props-stable`, `reactive`, or `unstable`.
+`verdict` is one of `proven`, `refuted`, or `unknown`; consumers may use a
+fact only when the verdict is `proven`. `origin` is one of `local`, `prop`,
+`provide-inject`, or `template-ref`. `escape` is one of `none`, `returned`,
+`stored`, or `global`. `effects` is `-` when empty or a comma-separated list
+from the P3-2 effect vocabulary: `freeze`, `capture`, `read-prop`,
+`read-reactive`, `mutate-local`, `mutate-global`, `call-unknown`, and
+`allocate`.
