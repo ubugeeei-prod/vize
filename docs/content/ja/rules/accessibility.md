@@ -295,59 +295,447 @@ ID を指していることを要求します。
 <input id="email" />
 ```
 
-## 追加のアクセシビリティ ルール
+## `a11y/anchor-has-content`
 
-この分け方はドキュメントの詳しさだけの違いです。このページに載っている `a11y/*` はすべて通常の
-Patina アクセシビリティルールです。上のセクションは例付きで詳説済み、下の項目は同じ扱いで今後
-例を追加していくコンパクトな一覧です。
+アンカー要素に、アクセシブルネームになる内容を要求します。テキスト、補間、アクセシブルな子要素、
+空ではない `alt` を持つ画像、`aria-label`、`aria-labelledby` があれば満たされます。
 
-`a11y/anchor-has-content` では、アンカー要素にアクセス可能なコンテンツが必要です。デフォルト: `warning`。
-プリセット: `happy-path`、`nuxt`、`opinionated`。
+デフォルトの重大度: `warning`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
 
-`a11y/aria-props` は無効な ARIA 属性を許可しません。デフォルト: `error`。プリセット: `happy-path`、
-`nuxt`、`opinionated`。
+悪い：
 
-`a11y/aria-role` には、有効な非抽象 ARIA ロールが必要です。デフォルト: `error`。プリセット: `happy-path`、
-`nuxt`、`opinionated`。
+```vue
+<template>
+  <a href="/settings"></a>
+</template>
+```
 
-`a11y/aria-unsupported-elements` は、ARIA 属性をサポートしていない要素の ARIA 属性を許可しません。
-デフォルト: `error`。プリセット: `happy-path`、`nuxt`、`opinionated`。
+良い：
 
-`a11y/heading-has-content` では、見出し要素にアクセス可能なコンテンツが必要です。デフォルト: `warning`。
-プリセット: `happy-path`、`nuxt`、`opinionated`。
+```vue
+<template>
+  <a href="/settings">Settings</a>
+  <a href="/settings" aria-label="Settings"></a>
+</template>
+```
 
-`a11y/heading-levels` は、見出しレベルのスキップを許可しません。デフォルト: `warning`。プリセット: `nuxt`、
-`opinionated`。
+## `a11y/aria-props`
 
-`a11y/iframe-has-title` には、`<iframe>` に `title` が必要です。デフォルト: `warning`。プリセット:
-`happy-path`、`nuxt`、`opinionated`。
+無効な `aria-*` 属性を禁止します。スペルミスや標準にない ARIA 名を、アクセシビリティツリーから
+静かに消える前に検出します。
 
-`a11y/landmark-roles` は、ランドマークの役割の配置と一意性を検証します。デフォルト: `warning`。
-プリセット: `nuxt`、`opinionated`。
+デフォルトの重大度: `error`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
 
-`a11y/media-has-caption` にはメディア要素のキャプションが必要です。デフォルト: `warning`。プリセット:
-`happy-path`、`nuxt`、`opinionated`。
+悪い：
 
-`a11y/no-access-key` は、`accesskey` 属性を禁止します。デフォルト: `warning`。プリセット:
-`happy-path`、`nuxt`、`opinionated`。
+```vue
+<template>
+  <button aria-lable="Close">x</button>
+</template>
+```
 
-`a11y/no-autofocus` は `autofocus` を許可しません。デフォルト: `warning`。プリセット: `happy-path`、`nuxt`、
-`opinionated`。
+良い：
 
-`a11y/no-distracting-elements` は、`<marquee>` や `<blink>` などの気が散る要素を禁止します。
-デフォルト: `warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
+```vue
+<template>
+  <button aria-label="Close">x</button>
+</template>
+```
 
-`a11y/no-redundant-roles` は、ネイティブ セマンティクスを複製する ARIA ロールを禁止します。デフォルト:
-`warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
+## `a11y/aria-role`
 
-`a11y/no-role-presentation-on-focusable` は `role="presentation"` または `role="none"` を禁止します
-フォーカス可能な要素。デフォルト: `error`。プリセット: `happy-path`、`nuxt`、`opinionated`。
+`role` の値が有効で具体的な ARIA ロールであることを要求します。不明なロールや抽象ロールは、
+支援技術が意図どおりに扱えないため報告されます。
 
-`a11y/placeholder-label-option` では、プレースホルダーの `<option>` 値を無効にするか非表示にする必要があります。
-デフォルト: `warning`。プリセット: `nuxt`、`opinionated`。
+デフォルトの重大度: `error`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
 
-`a11y/role-has-required-aria-props` では、ロールに必要な ARIA 属性を含める必要があります。
-デフォルト: `warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
+悪い：
 
-`a11y/use-list` は、箇条書きのようなテキストのリスト要素を提案します。デフォルト: `warning`。プリセット: `nuxt`、
-`opinionated`。
+```vue
+<template>
+  <div role="datepicker">Choose a date</div>
+  <div role="command">Run</div>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <button type="button">Choose a date</button>
+  <div role="button" tabindex="0">Run</div>
+</template>
+```
+
+## `a11y/aria-unsupported-elements`
+
+アクセシビリティツリーに参加しない要素で ARIA 属性や `role` を使うことを禁止します。対象には
+metadata 要素、`script`、`style` などが含まれます。
+
+デフォルトの重大度: `error`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <meta aria-hidden="true" />
+  <script role="presentation"></script>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <meta name="viewport" content="width=device-width" />
+  <script></script>
+</template>
+```
+
+## `a11y/heading-has-content`
+
+`<h1>` から `<h6>` までの見出しにアクセシブルな内容を要求します。表示テキスト、補間、アクセシブルな
+子要素、ARIA による名前付けがあれば満たされます。
+
+デフォルトの重大度: `warning`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <h2></h2>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <h2>Billing</h2>
+  <h2 aria-label="Billing"></h2>
+</template>
+```
+
+## `a11y/heading-levels`
+
+見出しレベルのスキップを報告します。見出し順はページのアウトラインを表すため、`<h1>` から
+`<h3>` へ、間の `<h2>` なしに飛ぶべきではありません。
+
+デフォルトの重大度: `warning`
+プリセット: `nuxt`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <h1>Account</h1>
+  <h3>Invoices</h3>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <h1>Account</h1>
+  <h2>Billing</h2>
+  <h3>Invoices</h3>
+</template>
+```
+
+## `a11y/iframe-has-title`
+
+すべての `<iframe>` に空ではない `title`、または動的値の `title` binding を要求します。スクリーン
+リーダーはこの title を使って埋め込み文書を識別します。
+
+デフォルトの重大度: `warning`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <iframe src="/billing"></iframe>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <iframe src="/billing" title="Billing dashboard"></iframe>
+</template>
+```
+
+## `a11y/landmark-roles`
+
+ランドマークの配置と一意性を検証します。重複した `main`、競合する入れ子ランドマーク、区別できる
+ラベルを持たない複数の navigation/region ランドマークを報告します。
+
+デフォルトの重大度: `warning`
+プリセット: `nuxt`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <main>Primary content</main>
+  <main>Secondary content</main>
+  <nav>Primary navigation</nav>
+  <nav>Footer navigation</nav>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <main>Primary content</main>
+  <nav aria-label="Primary">Primary navigation</nav>
+  <nav aria-label="Footer">Footer navigation</nav>
+</template>
+```
+
+## `a11y/media-has-caption`
+
+`<video>` と `<audio>` に、子要素の `<track kind="captions">` による caption を要求します。muted
+media や明示的にラベル付けされた media は、caption が不要だとルールが判断できる場合に許可されます。
+
+デフォルトの重大度: `warning`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <video src="/launch.mp4"></video>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <video src="/launch.mp4">
+    <track kind="captions" src="/launch.en.vtt" />
+  </video>
+  <video src="/ambient.mp4" muted></video>
+</template>
+```
+
+## `a11y/no-access-key`
+
+ネイティブ要素の `accesskey` を禁止します。ブラウザ、OS、支援技術のショートカットは環境ごとに
+異なるため、独自 access key は衝突しやすくなります。
+
+デフォルトの重大度: `warning`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <button accesskey="s">Save</button>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <button type="button">Save</button>
+</template>
+```
+
+## `a11y/no-autofocus`
+
+`autofocus` を禁止します。自動で focus を移すと、スクリーンリーダーの読み上げ順やキーボード操作を
+予期せず中断することがあります。
+
+デフォルトの重大度: `warning`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <input autofocus />
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <input />
+</template>
+```
+
+## `a11y/no-distracting-elements`
+
+`<marquee>` や `<blink>` などの要素を禁止します。これらのタグは動きや点滅を制御しづらく、
+アクセシブルな現代的 UI には適しません。
+
+デフォルトの重大度: `warning`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <marquee>Sale ends soon</marquee>
+  <blink>Unread</blink>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <p>Sale ends soon</p>
+  <strong>Unread</strong>
+</template>
+```
+
+## `a11y/no-redundant-roles`
+
+HTML のネイティブ semantics と重複する明示的な ARIA role を禁止します。静的に冗長だと判断できる
+role は fixable で、削除しても公開される意味は変わりません。
+
+デフォルトの重大度: `warning`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
+自動修正: 対応
+
+悪い：
+
+```vue
+<template>
+  <button role="button">Save</button>
+  <nav role="navigation">Sections</nav>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <button type="button">Save</button>
+  <nav>Sections</nav>
+  <div role="navigation">Supplemental links</div>
+</template>
+```
+
+## `a11y/no-role-presentation-on-focusable`
+
+focus 可能な要素の `role="presentation"` と `role="none"` を禁止します。focus は残るのに semantics
+だけが消えるため、focus 中の control がスクリーンリーダー利用者に分かりづらくなります。
+
+デフォルトの重大度: `error`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <button role="presentation">Close</button>
+  <div role="none" tabindex="0">Focusable panel</div>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <button type="button">Close</button>
+  <div tabindex="0">Focusable panel</div>
+</template>
+```
+
+## `a11y/placeholder-label-option`
+
+`<select>` の placeholder option に `disabled` または `hidden` を要求します。最初の empty-value
+option は placeholder と扱われ、送信可能な選択肢として残すべきではありません。
+
+デフォルトの重大度: `warning`
+プリセット: `nuxt`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <select>
+    <option value="">Choose a country</option>
+    <option value="jp">Japan</option>
+  </select>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <select>
+    <option value="" disabled>Choose a country</option>
+    <option value="jp">Japan</option>
+  </select>
+</template>
+```
+
+## `a11y/role-has-required-aria-props`
+
+ARIA role が必要とする ARIA property を要求します。たとえば checkbox には `aria-checked`、slider
+には現在値と範囲が必要です。
+
+デフォルトの重大度: `warning`
+プリセット: `happy-path`、`nuxt`、`ecosystem`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <div role="checkbox">Subscribe</div>
+  <div role="slider">Volume</div>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <div role="checkbox" aria-checked="false">Subscribe</div>
+  <div role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">Volume</div>
+</template>
+```
+
+## `a11y/use-list`
+
+箇条書きに見えるテキストには semantic list markup を提案します。実際の list にすると、支援技術が
+item 数、list の境界、list navigation を扱えるようになります。
+
+デフォルトの重大度: `warning`
+プリセット: `nuxt`、`opinionated`
+
+悪い：
+
+```vue
+<template>
+  <p>- Create an account</p>
+  <p>- Invite the team</p>
+</template>
+```
+
+良い：
+
+```vue
+<template>
+  <ul>
+    <li>Create an account</li>
+    <li>Invite the team</li>
+  </ul>
+</template>
+```
