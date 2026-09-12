@@ -324,10 +324,13 @@ function validateRatchets(oracles, fixtureMap, context) {
   equal(oracles.get("vue-tsc-parity").size, 11, "vue-tsc parity count drifted");
   deepEqual(
     [...oracles.get("authored-lsp")].sort(compareCodepoints),
-    context.registry.projects
-      .filter((project) => project.lspAuthoredOracle != null)
-      .map((project) => project.fixturePath)
-      .sort(compareCodepoints),
+    [
+      ...new Set(
+        context.registry.projects
+          .filter((project) => project.lspAuthoredOracle != null)
+          .map((project) => project.fixturePath),
+      ),
+    ].sort(compareCodepoints),
     "authored LSP oracle membership drifted",
   );
   deepEqual(

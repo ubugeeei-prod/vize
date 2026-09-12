@@ -203,13 +203,20 @@ export function normalizeDiagnostics(diagnostics: LspDiagnostic[]): string[] {
     .map((diagnostic) =>
       JSON.stringify({
         code: diagnostic.code,
-        message: diagnostic.message,
+        message: normalizeDiagnosticMessage(diagnostic.message),
         range: diagnostic.range,
         severity: diagnostic.severity,
         source: diagnostic.source,
       }),
     )
     .sort();
+}
+
+const VIZE_CANON_SESSION_PATH_PATTERN =
+  /(?:\/[^'"`\s]+)+\/vize-canon\/editor\/sessions\/session-[^/'"`\s]+\/projects\/[0-9a-fA-F]+\//gu;
+
+function normalizeDiagnosticMessage(message: string | undefined): string | undefined {
+  return message?.replace(VIZE_CANON_SESSION_PATH_PATTERN, "<vize-canon-session>/");
 }
 
 export function diagnosticEvidence(diagnostics: LspDiagnostic[]): DiagnosticEvidence {

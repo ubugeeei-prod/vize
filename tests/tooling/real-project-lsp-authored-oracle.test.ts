@@ -11,6 +11,7 @@ import {
 } from "./support/fake-authored-lsp-session.ts";
 import { exerciseAuthoredLspOracle } from "./support/real-project-lsp-authored-oracle.ts";
 import {
+  normalizeDiagnostics,
   readOracleDocument,
   responseEvidence,
   sortLocations,
@@ -145,6 +146,20 @@ test("authored LSP utilities fail with portable evidence and diagnostics", () =>
     assert.deepEqual(
       responseEvidence({ uri: firstOutside, z: 1, ä: 2 }, 1, workspace),
       responseEvidence({ ä: 2, z: 1, uri: secondOutside }, 1, workspace),
+    );
+
+    const transientSessionDiagnostic = (session: string) => ({
+      code: 6263,
+      message:
+        `Module '/private/var/folders/x/T/vize-canon/editor/sessions/${session}/projects/0123abc/src/BaseButton.vue' was resolved to ` +
+        `'/private/var/folders/x/T/vize-canon/editor/sessions/${session}/projects/0123abc/src/BaseButton.d.vue', but '--allowArbitraryExtensions' is not set.`,
+      range: range(0, 1, 2),
+      severity: 1,
+      source: "typescript",
+    });
+    assert.deepEqual(
+      normalizeDiagnostics([transientSessionDiagnostic("session-A1")]),
+      normalizeDiagnostics([transientSessionDiagnostic("session-B2")]),
     );
   } finally {
     fs.rmSync(workspace, { recursive: true, force: true });
