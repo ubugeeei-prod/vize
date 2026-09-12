@@ -41,7 +41,7 @@ s2	analysis	crates/vize_s2/src/verify.rs	1	4	1	1	0	0	0	0
 s2	-	crates/vize_s2/src/verify/observer.rs	0	0	1	1	0	0	0	0
 s2	analysis	crates/vize_s2/src/verify/walk.rs	1	5	0	0	0	0	0	0
 s3	contract	crates/vize_impeto/src/folio.rs	1	4	1	4	0	0	0	0
-s3	-	crates/vize_impeto/src/op.rs	0	0	0	0	1	8	0	0
+s3	-	crates/vize_impeto/src/op/program.rs	0	0	0	0	1	8	0	0
 s3	analysis	crates/vize_impeto/src/verify.rs	1	8	1	1	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit.rs	1	2	1	1	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/buf.rs	1	8	1	8	0	0	0	0
