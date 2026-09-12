@@ -34,6 +34,14 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
       ["vize_s2", null],
     ],
   ],
+  [
+    "vize_s2_to_s3",
+    [
+      ["vize_carton", "vize_s0"],
+      ["vize_s2", null],
+      ["vize_impeto", "vize_s3"],
+    ],
+  ],
 ]);
 
 const publishedDavinciStages = new Set([
@@ -43,6 +51,7 @@ const publishedDavinciStages = new Set([
   "vize_s2",
   "vize_impeto",
   "vize_s1_to_s2",
+  "vize_s2_to_s3",
 ]);
 
 test("Davinci crates import retained packages through stage aliases", () => {
@@ -70,6 +79,7 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_s2", 2],
     ["vize_impeto", 3],
     ["vize_s1_to_s2", 3],
+    ["vize_s2_to_s3", 4],
   ]);
   const expectedEdges = new Map<string, string[]>([
     ["vize_carton", []],
@@ -78,6 +88,7 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_s2", ["vize_carton", "vize_davinci"]],
     ["vize_impeto", ["vize_carton", "vize_davinci"]],
     ["vize_s1_to_s2", ["vize_carton", "vize_davinci", "vize_s1", "vize_s2"]],
+    ["vize_s2_to_s3", ["vize_carton", "vize_impeto", "vize_s2"]],
   ]);
 
   for (const [packageName, packageTier] of tiers) {

@@ -53,6 +53,9 @@ or trigger fact revalidation before anything downstream reads them — stale
 exports are a verifier failure, not a footgun. ANF-ish
 discipline: pure expressions vs effectful ops separated. _Accept:_ TS-17
 pass snapshots; TS-20 totality fuzz extended to S2→S3.
+_First slice 2026-09-12:_ see
+[P3-3 record](./phase-3-records/p3-3.md) for the `vize_s2_to_s3` crate,
+total lowering skeleton, and exported partition fact contract.
 
 **P3-4 Lean reference + differential.** `formal/impeto/` Lean package
 (CI-lenient lane per charter #39): executable small-step semantics for S3 ops

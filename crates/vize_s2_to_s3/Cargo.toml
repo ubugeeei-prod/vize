@@ -1,0 +1,19 @@
+[package]
+name = "vize_s2_to_s3"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "S2-to-S3 - the Davinci Impeto lowering and shared partition facts"
+metadata.vize.stability = "experimental"
+readme = "README.md"
+
+[dependencies]
+vize_s0 = { workspace = true }
+vize_s2 = { workspace = true }
+vize_s3 = { workspace = true }
+
+[dev-dependencies]
+vize_s1 = { workspace = true }
+vize_s1_to_s2 = { workspace = true }

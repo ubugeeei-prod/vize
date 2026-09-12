@@ -11,6 +11,7 @@ compatibility change is still required.
 | S2 semantic IR                   | `vize_s2`            | `vize_s2`          |
 | S3 reactivity/backend scheduling | `vize_s3`            | `vize_impeto`      |
 | S1 to S2 lowering                | `vize_s1_to_s2`      | `vize_s1_to_s2`    |
+| S2 to S3 lowering                | `vize_s2_to_s3`      | `vize_s2_to_s3`    |
 
 `vize_davinci` is shared infrastructure rather than another artifact stage. It
 owns ids, diagnostics, side tables, pass machinery, Folio contracts, and the
@@ -29,9 +30,10 @@ may point only to an earlier tier:
 | 2          | `vize_s2`       | `vize_s0`, `vize_davinci`                       |
 | 3          | `vize_s3`       | `vize_s0`, `vize_davinci`                       |
 | 3          | `vize_s1_to_s2` | `vize_s0`, `vize_davinci`, `vize_s1`, `vize_s2` |
+| 4          | `vize_s2_to_s3` | `vize_s0`, `vize_s2`, `vize_s3`                 |
 
-S0 must never depend on a later tier. The conversion crate is the only current
-crate that joins both artifact stages.
+S0 must never depend on a later tier. Conversion crates are the only current
+crates that join artifact stages.
 
 The [storage boundary](./storage-boundary.md) defines how every stage consumes
 S0 strings and collections, inventories retained `alloc::vec::Vec` sites, and

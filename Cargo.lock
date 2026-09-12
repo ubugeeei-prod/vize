@@ -4087,6 +4087,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_s2_to_s3"
+version = "0.423.0"
+dependencies = [
+ "vize_carton",
+ "vize_impeto",
+ "vize_s1",
+ "vize_s1_to_s2",
+ "vize_s2",
+]
+
+[[package]]
 name = "vize_test_runner"
 version = "0.423.0"
 dependencies = [

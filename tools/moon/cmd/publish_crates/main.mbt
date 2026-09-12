@@ -21,6 +21,7 @@ let published_crates : Array[String] = [
   "vize_s2",
   "vize_impeto",
   "vize_s1_to_s2",
+  "vize_s2_to_s3",
   "vize_croquis",
   "vize_atelier_core",
   "vize_atelier_dom",
