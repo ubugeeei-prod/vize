@@ -14,6 +14,10 @@
 //! The crate is `no_std + alloc` from birth so S3 artifacts can be printed,
 //! validated, and replayed on the same portability lane as the earlier Davinci
 //! stage libraries.
+//!
+//! The operation semantics review point lives in
+//! [`davinci-road/plan/impeto-ops.md`](../../../davinci-road/plan/impeto-ops.md)
+//! and is kept in sync with [`op::OpKind`] plus the Lean reference runner.
 
 #![no_std]
 
