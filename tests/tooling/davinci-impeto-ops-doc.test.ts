@@ -14,9 +14,7 @@ function rustMnemonics(): string[] {
   const rust = readRepoFile("crates", "vize_impeto", "src", "op", "kind.rs");
   return [
     ...new Set(
-      [...rust.matchAll(/Self::[A-Za-z]+ => "(impeto\.[^"]+)"/gu)].map(
-        (match) => match[1],
-      ),
+      [...rust.matchAll(/Self::[A-Za-z]+ => "(impeto\.[^"]+)"/gu)].map((match) => match[1]),
     ),
   ];
 }
@@ -33,11 +31,16 @@ function tableRows(): Map<string, { vapor: string; vdom: string }> {
   const rows = new Map<string, { vapor: string; vdom: string }>();
 
   for (const line of doc.split("\n")) {
-    const match = line.match(
-      /^\| `(impeto\.[^`]+)` \| .* \| `([^`]+)` \| `([^`]+)` \| .* \|$/u,
-    );
-    if (match) {
-      rows.set(match[1], { vdom: match[2], vapor: match[3] });
+    const cells = line
+      .split("|")
+      .slice(1, -1)
+      .map((cell) => cell.trim());
+    const mnemonic = cells[0]?.match(/^`(impeto\.[^`]+)`$/u);
+    const vdom = cells[2]?.match(/^`([^`]+)`$/u);
+    const vapor = cells[3]?.match(/^`([^`]+)`$/u);
+
+    if (mnemonic && vdom && vapor) {
+      rows.set(mnemonic[1], { vdom: vdom[1], vapor: vapor[1] });
     }
   }
 
