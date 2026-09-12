@@ -9,7 +9,13 @@ use core::fmt;
 
 use vize_s0::{Span, String, cstr};
 
-use crate::op::{EffectId, OpId, Phase, Program, RegionId};
+use crate::op::{Phase, Program, RegionId};
+use lookup::{
+    contains, effect_scope, op, op_index, op_inside_region, region, region_has_cycle,
+    region_is_or_descendant,
+};
+
+mod lookup;
 
 /// Which invariant a [`Violation`] reports.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -334,62 +340,4 @@ fn check_edges(program: &Program<'_>, out: &mut Vec<Violation>) {
             });
         }
     }
-}
-
-fn contains(owner: Span, child: Span) -> bool {
-    owner.start <= child.start && child.end <= owner.end
-}
-
-fn op<'a>(program: &'a Program<'_>, id: OpId) -> Option<&'a crate::op::Op> {
-    program.ops.iter().find(|op| op.id == id)
-}
-
-fn op_index(program: &Program<'_>, id: OpId) -> Option<usize> {
-    program.ops.iter().position(|op| op.id == id)
-}
-
-fn region<'a>(program: &'a Program<'_>, id: RegionId) -> Option<&'a crate::op::Region> {
-    program.regions.iter().find(|region| region.id == id)
-}
-
-fn effect_scope<'a>(program: &'a Program<'_>, id: EffectId) -> Option<&'a crate::op::EffectScope> {
-    program.effects.iter().find(|effect| effect.id == id)
-}
-
-fn region_has_cycle(program: &Program<'_>, start: RegionId) -> bool {
-    let mut current = region(program, start).and_then(|region| region.parent);
-    let mut steps = 0usize;
-    while let Some(id) = current {
-        if id == start {
-            return true;
-        }
-        steps += 1;
-        if steps > program.regions.len() {
-            return true;
-        }
-        current = region(program, id).and_then(|region| region.parent);
-    }
-    false
-}
-
-fn region_is_or_descendant(program: &Program<'_>, child: RegionId, ancestor: RegionId) -> bool {
-    let mut current = Some(child);
-    let mut steps = 0usize;
-    while let Some(id) = current {
-        if id == ancestor {
-            return true;
-        }
-        steps += 1;
-        if steps > program.regions.len() {
-            return false;
-        }
-        current = region(program, id).and_then(|region| region.parent);
-    }
-    false
-}
-
-fn op_inside_region(program: &Program<'_>, id: OpId, ancestor: RegionId) -> bool {
-    op(program, id)
-        .map(|op| region_is_or_descendant(program, op.region, ancestor))
-        .unwrap_or(false)
 }

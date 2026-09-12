@@ -1,7 +1,7 @@
 use vize_impeto::op::{
     EdgeKind, EffectId, EffectScope, Op, OpId, OpKind, Phase, Program, Region, RegionId, StateEdge,
 };
-use vize_impeto::verify::{ViolationCode, verify};
+use vize_impeto::verify::verify;
 use vize_s0::{Allocator, Span, String, cstr};
 
 fn base<'a>(allocator: &'a Allocator, phase: Phase) -> Program<'a> {
@@ -78,10 +78,7 @@ fn unresolved_state_edges_fail_exactly() {
     ));
 
     assert_eq!(
-        messages(&program)
-            .into_iter()
-            .filter(|line| line.starts_with("S3V004"))
-            .collect::<Vec<_>>(),
+        messages(&program),
         [
             "S3V004 @0:0 state edge source op#42 does not resolve",
             "S3V004 @0:0 state edge target op#99 does not resolve",
@@ -100,12 +97,13 @@ fn region_nesting_failures_name_the_parent_or_owner() {
         Span::new(80, 99),
     ));
 
-    assert!(
-        messages(&program).contains(&cstr!("S3V006 @80:99 region r#2 escapes parent region r#1"),)
+    assert_eq!(
+        messages(&program),
+        [
+            "S3V006 @80:99 region r#2 escapes parent region r#1",
+            "S3V006 @80:99 region r#2 is owned by op#0, but the owner lives in r#0",
+        ]
     );
-    assert!(messages(&program).contains(&cstr!(
-        "S3V006 @80:99 region r#2 is owned by op#0, but the owner lives in r#0"
-    ),));
 }
 
 #[test]
@@ -125,9 +123,10 @@ fn effect_scopes_must_contain_their_edges() {
         EffectId::new(0),
     ));
 
-    assert!(messages(&program).contains(&cstr!(
-        "S3V007 @20:60 edge op#1 -> op#3 leaves effect scope fx#0"
-    ),));
+    assert_eq!(
+        messages(&program),
+        ["S3V007 @20:60 edge op#1 -> op#3 leaves effect scope fx#0"]
+    );
 }
 
 #[test]
@@ -140,10 +139,8 @@ fn scheduled_phase_rejects_back_edges() {
         EdgeKind::DomOrder,
     ));
 
-    let violations = verify(&program);
-    assert!(violations.iter().any(|violation| {
-        violation.code == ViolationCode::ScheduledOrder
-            && cstr!("{violation}")
-                == cstr!("S3V008 @0:0 scheduled edge op#2 -> op#1 points backward or to itself")
-    }));
+    assert_eq!(
+        messages(&program),
+        ["S3V008 @0:0 scheduled edge op#2 -> op#1 points backward or to itself"]
+    );
 }
