@@ -10,7 +10,7 @@
 - [x] P3-2 Reactivity lattice fact group v1
 - [ ] P3-3 S2→S3 lowering + shared partition
 - [ ] P3-4 Lean reference semantics + differential runner
-- [ ] P3-5 Impeto op reference doc (before optional passes)
+- [x] P3-5 Impeto op reference doc (before optional passes)
 - [ ] P3-6 Vapor backend on S3
 - [ ] P3-7 VDOM patch flags from lattice facts
 - [ ] P3-8 SSR thin path
@@ -71,7 +71,8 @@ workflow.
 meaning under both interpretations, written **before any optional pass
 lands** (MIR anti-lesson); Lean file is the normative companion; Folio is the
 concrete syntax. _Accept:_ review point — signed off; doc cross-linked from
-rustdoc.
+rustdoc. _Landed 2026-09-12:_ see
+[P3-5 record](./phase-3-records/p3-5.md).
 
 **P3-6 Vapor on S3.** `vize_atelier_vapor` lowers S2→S3→generate with full
 semantic context; deletes the run-then-discard double transform

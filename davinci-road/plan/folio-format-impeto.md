@@ -20,8 +20,9 @@ Sections, in struct declaration order:
 | `[s3-folio.edges]`   | `from=<n> to=<n> kind=<dom-order\|effect-order\|data-dependency> effect=<n\|->` |
 | `[s3-folio.effects]` | `id=<n> owner=<n> region=<n> span=<start>:<end>`                                |
 
-The optional id value is spelled `-` when absent. The op mnemonic set is the
-P3-1 generalization of Vapor's OperationNode family:
+The optional id value is spelled `-` when absent. The op mnemonic set and its
+VDOM/Vapor meaning are defined in
+[`impeto-ops.md`](./impeto-ops.md). The P3-1 mnemonic set is:
 `impeto.set-prop`, `impeto.set-dynamic-props`, `impeto.set-text`,
 `impeto.set-event`, `impeto.set-html`, `impeto.set-template-ref`,
 `impeto.insert-node`, `impeto.prepend-node`, `impeto.directive`, `impeto.if`,
