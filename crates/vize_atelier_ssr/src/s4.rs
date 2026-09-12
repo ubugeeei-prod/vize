@@ -13,10 +13,7 @@ use vize_s0::{Allocator, String, cstr, profile, profiler::global_profiler};
 use vize_s1::SurfaceParseOptions;
 use vize_s3::verify::verify;
 
-pub use string_plan::{
-    SsrPartitionSummary, SsrStringPlan, SsrStringPlanError, SsrStringPlanErrorKind,
-    SsrStringPlanLowering, SsrStringSegment, SsrStringSegmentKind, lower_s2_to_string_plan,
-};
+use string_plan::lower_s2_to_string_plan;
 
 /// Option subset that decides whether the S4 bridge can mirror this SSR compile.
 #[derive(Debug, Clone, Copy)]
