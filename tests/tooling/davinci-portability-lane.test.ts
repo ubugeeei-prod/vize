@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 // TS-24 (davinci-road/plan/test-suites.md): the wasm32-wasip2 portability
-// lanes for the five Davinci `no_std` stage libraries. The lanes ride `clippy-and-test`
+// lanes for the six Davinci `no_std` stage libraries. The lanes ride `clippy-and-test`
 // as steps rather than as their own job because `.github/workflows/check.yml`
 // is over the 350-line ratchet and must not grow
 // (davinci-road/plan/phase-2-records/p2-14.md); this file is what keeps that
@@ -17,6 +17,7 @@ const portableStageCrates = [
   ["vize_s2", "vize_s2"],
   ["vize_impeto", "vize_impeto"],
   ["vize_s1_to_s2", "vize_s1_to_s2"],
+  ["vize_s2_to_s3", "vize_s2_to_s3"],
 ] as const;
 
 const packageArgs = portableStageCrates.map(([packageName]) => `-p ${packageName}`).join(" ");
@@ -32,7 +33,7 @@ test("TS-24: the wasm32-wasip2 lanes ride the required clippy-and-test job", () 
   assert.equal(ts24Rows.length, 1, "test-suites.md must define exactly one normative TS-24 row");
   assert.ok(
     ts24Rows[0].includes(`\`${defaultLane}\` + \`${noDefaultLane}\``),
-    "the normative TS-24 row must pin the same five-library commands as CI",
+    "the normative TS-24 row must pin the same six-library commands as CI",
   );
 
   // Required on every pull request: clippy-and-test carries no event guard,
@@ -57,7 +58,7 @@ test("TS-24: the wasm32-wasip2 lanes ride the required clippy-and-test job", () 
   // become evidence for a `no_std` claim merely because WASI provides std.
   assert.ok(
     job.includes(`        run: ${defaultLane} && ${noDefaultLane}`),
-    "TS-24 must build all five stage libraries with and without default features",
+    "TS-24 must build all six stage libraries with and without default features",
   );
   assert.doesNotMatch(job, /cargo build[^\n]*-p (?:vize_s0|vize_carton)[^\n]*wasm32-wasip2/);
   assert.match(
@@ -66,7 +67,7 @@ test("TS-24: the wasm32-wasip2 lanes ride the required clippy-and-test job", () 
   );
 });
 
-test("the no_std claim stays on all five stage libraries and excludes the std S0 foundation", () => {
+test("the no_std claim stays on all six stage libraries and excludes the std S0 foundation", () => {
   // The lane's target carries std (wasm32-wasip2 is not a std-less build), so
   // the `no_std` half of the claim is held by these attributes; the build
   // proves they are honest (a `std::` path in either crate stops compiling).
