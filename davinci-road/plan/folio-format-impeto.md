@@ -44,8 +44,8 @@ group without depending on the later S2-to-S3 lowering.
 
 Sections:
 
-| section                         | entry grammar                                                                                                        |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| section                          | entry grammar                                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `[s3-reactivity-folio.bindings]` | `id=<n> class=<class> verdict=<verdict> origin=<origin> effects=<effects> escape=<escape> span=<start>:<end>` |
 
 `class` is one of `static`, `props-stable`, `reactive`, or `unstable`.
