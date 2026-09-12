@@ -159,3 +159,56 @@ test("Vapor production selects only published stages for the S3 bridge", () => {
     },
   ]);
 });
+
+test("SSR production selects only published stages for the S4 bridge", () => {
+  const stageEdges = workspacePackage(metadata, "vize_atelier_ssr")
+    .dependencies.filter(
+      (dependency) => dependency.kind === null && publishedDavinciStages.has(dependency.name),
+    )
+    .map((dependency) => ({
+      name: dependency.name,
+      req: dependency.req,
+      rename: dependency.rename,
+      optional: dependency.optional,
+      features: dependency.features,
+    }))
+    .sort((left, right) => left.name.localeCompare(right.name));
+
+  assert.deepEqual(stageEdges, [
+    {
+      name: "vize_impeto",
+      req: versionRequirement("vize_impeto"),
+      rename: "vize_s3",
+      optional: false,
+      features: [],
+    },
+    {
+      name: "vize_s1",
+      req: versionRequirement("vize_s1"),
+      rename: null,
+      optional: false,
+      features: [],
+    },
+    {
+      name: "vize_s1_to_s2",
+      req: versionRequirement("vize_s1_to_s2"),
+      rename: null,
+      optional: false,
+      features: [],
+    },
+    {
+      name: "vize_s2",
+      req: versionRequirement("vize_s2"),
+      rename: null,
+      optional: false,
+      features: [],
+    },
+    {
+      name: "vize_s2_to_s3",
+      req: versionRequirement("vize_s2_to_s3"),
+      rename: null,
+      optional: false,
+      features: [],
+    },
+  ]);
+});

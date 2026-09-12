@@ -1,8 +1,9 @@
 use crate::{
     SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions,
+    s4::{self, SsrS4BridgeOptions, SsrS4BridgeStatus},
 };
 use vize_atelier_core::{
-    CompilerError, Namespace, RootNode,
+    CompilerError, ErrorCode, Namespace, RootNode,
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::{CustomElementMatcher, TemplateSyntaxMode},
     parser::parse_with_options_custom_elements_and_template_syntax,
@@ -160,6 +161,19 @@ fn compile_ssr_inner<'a>(
         );
     }
 
+    let s4_bridge_status = s4::lower_source_for_ssr(
+        allocator,
+        source,
+        SsrS4BridgeOptions {
+            comments: options.comments,
+            custom_renderer: options.custom_renderer,
+            experimental_in_tag_comments: options.experimental_in_tag_comments,
+            experimental_patterned_template: options.experimental_patterned_template,
+            template_syntax,
+            has_custom_elements: !custom_elements.is_empty(),
+        },
+    );
+
     let transform_opts = crate::stage_options::transform_options(&codegen_options);
     let transform_errors = profile!(
         "atelier.ssr.template.transform",
@@ -176,6 +190,11 @@ fn compile_ssr_inner<'a>(
 
     let mut errors = errors.to_vec();
     errors.extend(transform_errors);
+    if let SsrS4BridgeStatus::Rejected(diagnostics) = s4_bridge_status {
+        errors.extend(diagnostics.into_iter().map(|diagnostic| {
+            CompilerError::with_message(ErrorCode::ExtendPoint, diagnostic, None)
+        }));
+    }
     let codegen_ctx = SsrCodegenContext::new_with_experimental_options(
         allocator,
         &codegen_options,

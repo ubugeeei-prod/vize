@@ -100,6 +100,10 @@ remain before this task closes.
 **P3-8 SSR thin path.** S2→S4 string-plan lowering reading partition facts;
 `vize_atelier_ssr` codegen re-targets. _Accept:_ SSR corpus byte-parity
 (TS-11 empty for ssr).
+_First slice 2026-09-13:_ see
+[P3-8 record](./phase-3-records/p3-8.md) for the production-path S4 bridge,
+partition-fact string-plan witness, and byte-parity guard. The node emitters
+still need to move from the legacy AST walker onto the plan before P3-8 closes.
 
 **P3-9 S4 emitter + source maps.** Structured span-carrying emission document
 replaces `CodegenContext.code` string appends across dom/vapor/ssr; one

@@ -13,6 +13,8 @@ pub mod errors;
 #[cfg(test)]
 mod experimental_tests;
 pub mod options;
+#[doc(hidden)]
+pub mod s4;
 mod stage_options;
 pub mod steps;
 
@@ -27,6 +29,11 @@ pub use compile::{
 };
 pub use errors::SsrErrorCode;
 pub use options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
+#[doc(hidden)]
+pub use s4::{
+    SsrPartitionSummary, SsrStringPlan, SsrStringPlanError, SsrStringPlanErrorKind,
+    SsrStringPlanLowering, SsrStringSegment, SsrStringSegmentKind, lower_s2_to_string_plan,
+};
 pub use steps::{
     get_v_html_exp, get_v_model_exp, get_v_show_exp, get_v_text_exp, has_v_html, has_v_model,
     has_v_show, has_v_text,
