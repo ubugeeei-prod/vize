@@ -404,17 +404,6 @@
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
       {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
-        "line": 130,
-        "column": 7,
-        "endLine": 130,
-        "endColumn": 62,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -493,7 +482,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 15
+    "warningCount": 14
   },
   {
     "file": "app/components/BlueskyComments.vue",
@@ -822,17 +811,6 @@
     "file": "app/components/Code/FileTree.vue",
     "messages": [
       {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <li> element is empty but expects visible content",
-        "line": 60,
-        "column": 5,
-        "endLine": 60,
-        "endColumn": 47,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -867,7 +845,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 3
   },
   {
     "file": "app/components/Code/Header.vue",
@@ -1343,21 +1321,9 @@
   },
   {
     "file": "app/components/Diff/FileTree.vue",
-    "messages": [
-      {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <li> element is empty but expects visible content",
-        "line": 130,
-        "column": 5,
-        "endLine": 130,
-        "endColumn": 47,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/Diff/Hunk.vue",

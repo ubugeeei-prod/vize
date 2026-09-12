@@ -6808,21 +6808,10 @@
         "column": 19,
         "endLine": 38,
         "endColumn": 22
-      },
-      {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
-        "line": 52,
-        "column": 9,
-        "endLine": 52,
-        "endColumn": 25,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
       }
     ],
     "errorCount": 2,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Tooltip/stories/Tooltip.story.vue",

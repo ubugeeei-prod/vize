@@ -157,4 +157,28 @@ mod tests {
         let result = linter.lint_template(r#"<label :for="inputId">Name:</label>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
     }
+
+    #[test]
+    fn test_invalid_missing_for_id() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<label for="email">Email</label>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_component_anchor_prop() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<QTooltip anchor="bottom middle">Help</QTooltip>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_native_anchor_attribute() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<button anchor="menu">Open</button>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
 }

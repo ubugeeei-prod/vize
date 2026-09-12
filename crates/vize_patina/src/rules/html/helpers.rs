@@ -122,7 +122,12 @@ pub fn has_palpable_content(element: &ElementNode) -> bool {
         match child {
             TemplateChildNode::Text(text) if !text.content.trim().is_empty() => return true,
             TemplateChildNode::Interpolation(_) => return true,
-            TemplateChildNode::Element(el) if el.tag_type != ElementType::Template => return true,
+            TemplateChildNode::Element(el) if el.tag_type == ElementType::Template => {
+                if has_palpable_content(el) {
+                    return true;
+                }
+            }
+            TemplateChildNode::Element(_) => return true,
             _ => {}
         }
     }

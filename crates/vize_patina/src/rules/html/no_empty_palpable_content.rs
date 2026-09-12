@@ -111,6 +111,16 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_with_template_child_content() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<p><template v-if="ready"><span>text</span></template></p>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
     fn test_valid_with_aria_label() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<p aria-label="description"></p>"#, "test.vue");

@@ -32,8 +32,8 @@ const ID_REFERENCE_ATTRIBUTES: &[&str] = &[
 
 /// Get the `ElementIdKind` for an attribute name.
 #[inline]
-fn get_id_kind(attr_name: &str) -> Option<ElementIdKind> {
-    if attr_name == "id" {
+fn get_id_kind(attr_name: &str, is_component: bool) -> Option<ElementIdKind> {
+    let kind = if attr_name == "id" {
         Some(ElementIdKind::Id)
     } else if attr_name == "for" {
         Some(ElementIdKind::For)
@@ -43,6 +43,15 @@ fn get_id_kind(attr_name: &str) -> Option<ElementIdKind> {
         Some(ElementIdKind::OtherReference)
     } else {
         None
+    }?;
+
+    // Component props such as Quasar's `anchor` are not necessarily HTML ID
+    // references. Keep ARIA references checked, but do not infer non-ARIA
+    // reference semantics from component props.
+    if is_component && matches!(kind, ElementIdKind::OtherReference) {
+        None
+    } else {
+        Some(kind)
     }
 }
 
@@ -52,7 +61,11 @@ impl Drawer {
     /// Collects both:
     /// - Static IDs: `id="foo"`, `for="bar"`, etc.
     /// - Dynamic IDs: `:id="expr"`, `:for="expr"`, etc.
-    pub(in crate::drawer) fn collect_element_ids(&mut self, el: &ElementNode<'_>) {
+    pub(in crate::drawer) fn collect_element_ids(
+        &mut self,
+        el: &ElementNode<'_>,
+        is_component: bool,
+    ) {
         let scope_id = self.croquis.scopes.current_id();
         let in_loop = self.is_in_vfor_scope();
 
@@ -60,7 +73,7 @@ impl Drawer {
             match prop {
                 PropNode::Attribute(attr) => {
                     let attr_name = attr.name;
-                    if let Some(kind) = get_id_kind(attr_name)
+                    if let Some(kind) = get_id_kind(attr_name, is_component)
                         && let Some(value) = &attr.value
                     {
                         self.croquis.element_ids.push(ElementIdInfo {
@@ -88,7 +101,7 @@ impl Drawer {
                             }
                         };
 
-                        if let Some(kind) = get_id_kind(arg_name)
+                        if let Some(kind) = get_id_kind(arg_name, is_component)
                             && let Some(ref exp) = dir.exp
                         {
                             let content = match exp {

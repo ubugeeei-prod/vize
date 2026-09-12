@@ -910,17 +910,6 @@
         "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
       },
       {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
-        "line": 36,
-        "column": 5,
-        "endLine": 36,
-        "endColumn": 47,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -955,7 +944,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 7
+    "warningCount": 6
   },
   {
     "file": "app/components/list/Account.vue",

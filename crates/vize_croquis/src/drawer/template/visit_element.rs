@@ -72,7 +72,10 @@ impl Drawer {
         // Element attrs execute outside the v-slot props they define. They can
         // still reference same-element v-for aliases and petite-vue v-scope
         // bindings.
-        profile!("croquis.template.element_ids", self.collect_element_ids(el));
+        profile!(
+            "croquis.template.element_ids",
+            self.collect_element_ids(el, is_component)
+        );
 
         self.process_element_directives(el, scope_vars, is_component, tag);
         self.check_element_directive_refs(el, scope_vars);
