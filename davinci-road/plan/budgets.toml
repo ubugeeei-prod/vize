@@ -302,6 +302,16 @@ wall_time = "report-only"
 # Minimum coverage per backend and mapping category. Populated before P3-9
 # merges; deletion of the legacy recovery requires new-path coverage >= the
 # old heuristic's measured coverage.
+dom_static_template = { backend = "dom", category = "static-template", anchors_min = 6, coverage_pct_min = 95, span_accuracy_pct_min = 100 }
+dom_rewritten_identifier = { backend = "dom", category = "rewritten-identifier", anchors_min = 7, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
+dom_section_boundary = { backend = "dom", category = "section-boundary", anchors_min = 3, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
+vapor_static_template = { backend = "vapor", category = "static-template", anchors_min = 6, coverage_pct_min = 95, span_accuracy_pct_min = 100 }
+vapor_rewritten_identifier = { backend = "vapor", category = "rewritten-identifier", anchors_min = 7, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
+vapor_section_boundary = { backend = "vapor", category = "section-boundary", anchors_min = 3, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
+ssr_static_template = { backend = "ssr", category = "static-template", anchors_min = 6, coverage_pct_min = 95, span_accuracy_pct_min = 100 }
+ssr_rewritten_identifier = { backend = "ssr", category = "rewritten-identifier", anchors_min = 7, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
+ssr_section_boundary = { backend = "ssr", category = "section-boundary", anchors_min = 3, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
+legacy_sfc_text_matching_recovery = { backend = "legacy-sfc", category = "text-matching-recovery", anchors_min = 7, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
 
 [resource]
 # Resident-tier ceilings: rss_peak_bytes per machine preset, cold_start_ms,

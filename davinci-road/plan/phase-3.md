@@ -14,7 +14,7 @@
 - [ ] P3-6 Vapor backend on S3
 - [ ] P3-7 VDOM patch flags from lattice facts
 - [ ] P3-8 SSR thin path
-- [ ] P3-9 S4 structured emitter + universal source maps
+- [ ] P3-9 S4 structured emitter + universal source maps _(slice 1 pins TS-31 source-map budgets before emitter migration; see [record](./phase-3-records/p3-9.md))_
 - [ ] P3-10 Try-measure-commit extraction
 - [ ] P3-11 IVM oracle
 - [ ] P3-12 Behavioral (sprout) runner incl. IME scripts
