@@ -6,7 +6,7 @@
 
 ## TODO index
 
-- [ ] P3-1 `vize_impeto` crate + phase validator
+- [x] P3-1 `vize_impeto` crate + phase validator
 - [ ] P3-2 Reactivity lattice fact group v1
 - [ ] P3-3 S2→S3 lowering + shared partition
 - [ ] P3-4 Lean reference semantics + differential runner
@@ -30,7 +30,8 @@
 DOM/effect ordering, named phases `built → partitioned → scheduled` with a
 between-pass validator (edges resolve, regions nest, effects well-scoped —
 TS-27), `no_std + alloc`, folio from birth (TS-16). _Accept:_ TS-16/24/27;
-size asserts.
+size asserts. **Landed 2026-09-12:** see
+[P3-1 record](./phase-3-records/p3-1.md).
 
 **P3-2 Reactivity lattice v1.** Fact group classifying bindings/expressions
 (static → props-stable → reactive → unstable) using the React-Compiler effect

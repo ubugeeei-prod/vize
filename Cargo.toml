@@ -23,6 +23,7 @@ members = [
   "crates/vize_davinci",
   "crates/vize_davinci_derive",
   "crates/vize_s2",
+  "crates/vize_impeto",
   "crates/vize_s1_to_s2",
   "crates/vize_s1",
   "crates/vize_fresco",
@@ -74,6 +75,7 @@ vize_curator = { path = "crates/vize_curator" }
 # dependency graph from crates.io.
 vize_davinci = { path = "crates/vize_davinci", version = "=0.422.0" }
 vize_davinci_derive = { path = "crates/vize_davinci_derive", version = "=0.422.0" }
+vize_impeto = { path = "crates/vize_impeto", version = "=0.422.0" }
 
 # Davinci stage aliases. These are the preferred implementation names for new
 # code; S0 still aliases the published Carton package until a compatibility
@@ -81,6 +83,7 @@ vize_davinci_derive = { path = "crates/vize_davinci_derive", version = "=0.422.0
 vize_s0 = { package = "vize_carton", path = "crates/vize_carton", version = "=0.422.0" }
 vize_s1 = { path = "crates/vize_s1", version = "=0.422.0" }
 vize_s2 = { path = "crates/vize_s2", version = "=0.422.0" }
+vize_s3 = { package = "vize_impeto", path = "crates/vize_impeto", version = "=0.422.0" }
 vize_s1_to_s2 = { path = "crates/vize_s1_to_s2", version = "=0.422.0" }
 
 # OXC dependencies (pinned to a specific upstream revision for reproducibility)

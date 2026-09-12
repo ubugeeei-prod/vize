@@ -7,18 +7,19 @@
 
 ## The exact claim
 
-The claim covers exactly four **library targets**:
+The claim covers exactly five **library targets**:
 
 | layer                 | Cargo alias in Davinci code | package id      | role                                         |
 | --------------------- | --------------------------- | --------------- | -------------------------------------------- |
 | shared infrastructure | `vize_davinci`              | `vize_davinci`  | Folio, passes, diagnostics, stage vocabulary |
 | S1                    | `vize_s1`                   | `vize_s1`       | lossless surface tree                        |
 | S2                    | `vize_s2`                   | `vize_s2`       | neutral semantic IR                          |
+| S3                    | `vize_s3`                   | `vize_impeto`   | reactivity and backend scheduling IR         |
 | S1 → S2               | `vize_s1_to_s2`             | `vize_s1_to_s2` | Vue surface lowering and S2 passes           |
 
 Every library has both `#![no_std]` and `extern crate alloc`. Its source can
 use `core`, `alloc`, and dependency APIs without importing the `std` prelude.
-The required wasm32-wasip2 lane builds all four libraries together.
+The required wasm32-wasip2 lane builds all five libraries together.
 
 #### One opt-in exception: `vize_s1_to_s2`'s `typescript` feature
 
@@ -44,11 +45,11 @@ so the portability claim is proved without it; the witness batteries in
 `vize_s0` is the workspace dependency alias for the package
 `vize_carton`. It is Davinci's allocator, compact-storage, configuration,
 profiling, and host-service foundation. Carton defines and bridges std types
-and is **accepted std infrastructure by design**; it is not a fifth `no_std`
+and is **accepted std infrastructure by design**; it is not a sixth `no_std`
 stage library and must not be presented as one.
 
 Rust permits a `#![no_std]` library to depend on a library that uses std.
-Therefore the four attributes describe their source boundary, not a std-less
+Therefore the five attributes describe their source boundary, not a std-less
 link. wasm32-wasip2 includes Rust `std`, so the target can compile the accepted
 edges below. Embedded targets without `std` remain out of scope.
 
@@ -69,11 +70,13 @@ visible. `cargo tree --edges normal --depth 1` gives this first-degree ledger:
 | `vize_davinci`            | `vize_s0`; `vize_davinci_derive`                                                                                                                                                                 | S0 is the accepted std foundation; the proc macro runs on the host and emits `core`-compatible code                                                                             |
 | S1 / `vize_s1`            | `vize_s0`; `vize_armature`; `vize_relief`                                                                                                                                                        | accepted std parser/tokenizer and AST construction edges                                                                                                                        |
 | S2 / `vize_s2`            | `vize_s0`; `vize_davinci`; `oxc_ast`; `oxc_parser`; `oxc_span`                                                                                                                                   | accepted std OXC expression parsing plus lower-layer edges                                                                                                                      |
+| S3 / `vize_s3`            | `vize_s0`; `vize_davinci`                                                                                                                                                                        | accepted S0 storage plus shared Davinci Folio/diagnostic infrastructure; package id remains `vize_impeto`                                                                       |
 | S1 → S2 / `vize_s1_to_s2` | `vize_s0`; `vize_davinci`; S1; S2; `htmlize`; `oxc_ast`; `oxc_ast_visit`; `oxc_parser`; `oxc_semantic`; `oxc_span`; `oxc_syntax`; and, only under `typescript`, `oxc_codegen`; `oxc_transformer` | accepted conversion-layer closure; dependency direction remains downward. The two feature-gated OXC crates are the TS lane's type erasure and are absent from the default build |
 
-The aliases `vize_s0`, `vize_s1`, `vize_s2`, and `vize_s1_to_s2` are the
-primary architectural names. S1, S2, and S1→S2 package ids now match that
-vocabulary; S0 still retains `vize_carton` until its own compatibility change.
+The aliases `vize_s0`, `vize_s1`, `vize_s2`, `vize_s3`, and
+`vize_s1_to_s2` are the primary architectural names. S1, S2, and S1→S2
+package ids now match that vocabulary; S3 keeps the Impeto package id; S0 still
+retains `vize_carton` until its own compatibility change.
 
 Carton's own direct dependencies include both `no_std`-capable storage crates
 (`compact_str`, `smallvec`, `rustc-hash`) and std-bound host services
@@ -84,7 +87,7 @@ smoothed into a claim that the dependency closure is std-less.
 
 ## Feature-off lane
 
-The default and `--no-default-features` checks cover the same four libraries.
+The default and `--no-default-features` checks cover the same five libraries.
 S1 and S1 → S2 currently expose only opt-in differential-corpus features;
 neither has a default feature. `vize_davinci` and S2 have no feature table.
 The second check is intentionally retained so a future default feature cannot
@@ -97,7 +100,7 @@ A speculative `std` feature is not required. The libraries are unconditionally
 
 The required lane proves all of the following on a 32-bit target:
 
-- all four library targets and their accepted dependency closure build
+- all five library targets and their accepted dependency closure build
   for `wasm32-wasip2`;
 - direct accidental reliance on the std prelude in a stage library fails;
 - pointer-width-specific layout assertions are correctly guarded;
@@ -113,9 +116,9 @@ TS-24 is an unconditional step of `.github/workflows/check.yml`'s
 `clippy-and-test` job:
 
 ```sh
-cargo build -p vize_davinci -p vize_s1 -p vize_s2 \
+cargo build -p vize_davinci -p vize_s1 -p vize_s2 -p vize_impeto \
   -p vize_s1_to_s2 --lib --target wasm32-wasip2
-cargo build -p vize_davinci -p vize_s1 -p vize_s2 \
+cargo build -p vize_davinci -p vize_s1 -p vize_s2 -p vize_impeto \
   -p vize_s1_to_s2 --lib --target wasm32-wasip2 --no-default-features
 ```
 
@@ -125,7 +128,7 @@ target comes from `rust-toolchain.toml`, and
 
 - unconditional required-job placement;
 - both exact commands and the `--lib` boundary;
-- the four `#![no_std]`/`extern crate alloc` attribute pairs;
+- the five `#![no_std]`/`extern crate alloc` attribute pairs;
 - the S0 alias and its exclusion from the claim;
 - the current `davinci-opt` host-binary path.
 
@@ -145,5 +148,5 @@ and remains the authoritative lane.
 A library joins or leaves this contract only when all four surfaces change in
 one reviewed slice: its crate attribute, both CI commands, the tooling test's
 crate list, and this dependency ledger. Public documentation must use the
-same precise wording: four `no_std` stage-library sources over accepted std
+same precise wording: five `no_std` stage-library sources over accepted std
 edges, founded on std-hosted S0/Carton.

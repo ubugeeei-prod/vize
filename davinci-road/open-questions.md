@@ -8,10 +8,10 @@
 ## Decided (stubs)
 
 - **Naming** → charter #11. Stage aliases are the primary implementation names
-  (`vize_s1`, `vize_s2`, `vize_s1_to_s2`, future `vize_s3`). S1 has already
-  been mechanically renamed from Sinopia; remaining art names stay courtesy
-  aliases and, where not yet renamed, historical package ids until their own
-  rename PRs land.
+  (`vize_s1`, `vize_s2`, `vize_s3`, `vize_s1_to_s2`). S1 has already been
+  mechanically renamed from Sinopia; S3 currently keeps the `vize_impeto`
+  package id; remaining art names stay courtesy aliases and, where not yet
+  renamed, historical package ids until their own rename PRs land.
 - **S3 scope** → charter #9. DOM + Vapor through S3; SSR thin S2→S4 path
   reading partition facts. Phase 3 measurements keep veto power.
 - **Incrementality** → charter #10. salsa in the resident tier only; fused

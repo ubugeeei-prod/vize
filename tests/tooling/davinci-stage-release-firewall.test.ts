@@ -3,7 +3,13 @@ import { test } from "node:test";
 
 import { metadata, workspacePackage, type Package } from "./support/davinci-stage-dependencies.ts";
 
-const publishedDavinciStages = new Set(["vize_davinci", "vize_s1", "vize_s2", "vize_s1_to_s2"]);
+const publishedDavinciStages = new Set([
+  "vize_davinci",
+  "vize_s1",
+  "vize_s2",
+  "vize_impeto",
+  "vize_s1_to_s2",
+]);
 
 function isPublishable(pkg: Package): boolean {
   return pkg.publish === null || pkg.publish.length > 0;

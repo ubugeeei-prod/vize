@@ -2,7 +2,7 @@
 
 S0 (`vize_s0`, retained package id `vize_carton`) is the storage vocabulary for
 Davinci stage code. This keeps representation decisions visible at one layer
-instead of letting each S1/S2 consumer select a different standard-library
+instead of letting each S1/S2/S3 consumer select a different standard-library
 type.
 
 | Need                     | Type                              | Rule                                                                                         |
@@ -16,13 +16,13 @@ type.
 The `davinci-opt` files under `crates/vize_davinci/src/bin/davinci-opt/` are an
 explicit host edge. They may use `std` for paths, environment, filesystem, I/O,
 and exit codes. That exception does not extend to `vize_davinci` library code
-or to S1, S2, and S1-to-S2 libraries. Importing or aliasing the `std`, `vec`,
+or to S1, S2, S3, and S1-to-S2 libraries. Importing or aliasing the `std`, `vec`,
 or `collections` modules does not bypass the boundary.
 
 ## Retained `alloc::vec::Vec` inventory
 
-The four library trees in the reviewed inventory contain 77 production files,
-89 direct `alloc::vec::Vec` paths, and 304 bound `Vec`/`StdVec` uses. "Direct"
+The five library trees in the reviewed inventory contain 79 production files,
+91 direct `alloc::vec::Vec` paths, and 316 bound `Vec`/`StdVec` uses. "Direct"
 counts imports and fully-qualified paths; "bound" counts every type,
 constructor, and method path reached through a direct `Vec` import or alias.
 The executable ledger requires strict equality, so both growth and reduction
@@ -30,8 +30,8 @@ must update the file row and aggregate evidence in the same change.
 
 | Category | Files | Direct paths | Bound uses | Reason                                                                                                             |
 | -------- | ----: | -----------: | ---------: | ------------------------------------------------------------------------------------------------------------------ |
-| contract |    13 |           24 |         65 | Owned Folio and S2 serialization data has input-defined cardinality and forms a stable contract.                   |
-| analysis |     7 |            8 |         18 | Diagnostics, side tables, filters, and verifier results grow with the input; no inline bound is established.       |
+| contract |    14 |           25 |         69 | Owned Folio, S2/S3 serialization data, and stage dumps have input-defined cardinality and form stable contracts.   |
+| analysis |     8 |            9 |         26 | Diagnostics, side tables, filters, and verifier results grow with the input; no inline bound is established.       |
 | lower    |    13 |           13 |         52 | Lowering worklists and owned results grow with source-tree shape. Bounded substructures may migrate independently. |
 | pass     |    12 |           12 |         42 | Facts, provenance, and traversal worklists grow with the number of operations.                                     |
 | emit     |    32 |           32 |        127 | Ordered output buffers and collected emission inputs grow with the document.                                       |
@@ -71,6 +71,11 @@ or count and fails the gate instead of becoming a `no_std` escape from S0.
 | s2       | `vize_s0::String`       |    11 |           11 |         55 |
 | s2       | `vize_s0::Vec`          |     9 |            9 |         17 |
 | s2       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
+| s3       | `alloc::vec::Vec`       |     2 |            2 |         12 |
+| s3       | `alloc::string::String` |     0 |            0 |          0 |
+| s3       | `vize_s0::String`       |     2 |            2 |          5 |
+| s3       | `vize_s0::Vec`          |     1 |            1 |          8 |
+| s3       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s1_to_s2 | `alloc::vec::Vec`       |    57 |           57 |        221 |
 | s1_to_s2 | `alloc::string::String` |     0 |            0 |          0 |
 | s1_to_s2 | `vize_s0::String`       |    82 |           86 |        426 |

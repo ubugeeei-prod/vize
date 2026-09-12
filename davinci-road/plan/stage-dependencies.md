@@ -9,6 +9,7 @@ compatibility change is still required.
 | S0 source and storage foundation | `vize_s0`            | `vize_carton`      |
 | S1 lossless surface tree         | `vize_s1`            | `vize_s1`          |
 | S2 semantic IR                   | `vize_s2`            | `vize_s2`          |
+| S3 reactivity/backend scheduling | `vize_s3`            | `vize_impeto`      |
 | S1 to S2 lowering                | `vize_s1_to_s2`      | `vize_s1_to_s2`    |
 
 `vize_davinci` is shared infrastructure rather than another artifact stage. It
@@ -26,6 +27,7 @@ may point only to an earlier tier:
 | 1          | `vize_davinci`  | `vize_s0`                                       |
 | 1          | `vize_s1`       | `vize_s0`                                       |
 | 2          | `vize_s2`       | `vize_s0`, `vize_davinci`                       |
+| 3          | `vize_s3`       | `vize_s0`, `vize_davinci`                       |
 | 3          | `vize_s1_to_s2` | `vize_s0`, `vize_davinci`, `vize_s1`, `vize_s2` |
 
 S0 must never depend on a later tier. The conversion crate is the only current
@@ -36,9 +38,9 @@ S0 strings and collections, inventories retained `alloc::vec::Vec` sites, and
 keeps `std` confined to the explicit `davinci-opt` host edge.
 
 Cargo manifests use dependency renames where the package id still differs from
-the preferred crate name. Today that exception is S0/Carton, so source imports
-stay on `vize_s0`, `vize_s1`, `vize_s2`, and `vize_s1_to_s2` while package
-publication remains compatible.
+the preferred crate name. Today those exceptions are S0/Carton and S3/Impeto,
+so source imports stay on `vize_s0`, `vize_s1`, `vize_s2`, `vize_s3`, and
+`vize_s1_to_s2` while package publication remains compatible.
 `tests/tooling/davinci-stage-dependencies.test.ts` reads Cargo metadata to pin
 every spelling and reject a reversed tier edge or cycle.
 

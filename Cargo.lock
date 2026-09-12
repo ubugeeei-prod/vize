@@ -3923,6 +3923,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_impeto"
+version = "0.422.0"
+dependencies = [
+ "vize_carton",
+ "vize_davinci",
+]
+
+[[package]]
 name = "vize_maestro"
 version = "0.422.0"
 dependencies = [

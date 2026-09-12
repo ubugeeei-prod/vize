@@ -27,6 +27,7 @@ const libraryRoots = [
   "crates/vize_davinci/src",
   "crates/vize_s1/src",
   "crates/vize_s2/src",
+  "crates/vize_impeto/src",
   "crates/vize_s1_to_s2/src",
 ];
 const inventoryPath = path.join(repoRoot, "davinci-road/plan/storage-inventory.tsv");
@@ -50,6 +51,7 @@ function scopeFor(file: string): StorageScope {
   if (file.startsWith("crates/vize_davinci/")) return "infra";
   if (file.startsWith("crates/vize_s1/")) return "s1";
   if (file.startsWith("crates/vize_s2/")) return "s2";
+  if (file.startsWith("crates/vize_impeto/")) return "s3";
   if (file.startsWith("crates/vize_s1_to_s2/")) return "s1_to_s2";
   throw new Error(`unknown storage scope: ${file}`);
 }
@@ -167,7 +169,7 @@ test("the plan summaries are generated from the exact inventory", () => {
   const scopeRows = new Map(
     [
       ...plan.matchAll(
-        /^\|\s*(infra|s1|s2|s1_to_s2)\s*\|\s*`([^`]+)`\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|/gmu,
+        /^\|\s*(infra|s1|s2|s3|s1_to_s2)\s*\|\s*`([^`]+)`\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|/gmu,
       ),
     ].map(([, scope, type, files, directPaths, boundUses]) => [
       `${scope}:${type}`,
@@ -186,7 +188,7 @@ test("the plan summaries are generated from the exact inventory", () => {
       assert.deepEqual(scopeRows.get(`${scope}:${names[kind]}`), kinds[kind]);
     }
   }
-  assert.equal(scopeRows.size, 20);
+  assert.equal(scopeRows.size, 25);
 });
 
 function tableRows(source: string, keyPattern: RegExp): Record<string, unknown> {

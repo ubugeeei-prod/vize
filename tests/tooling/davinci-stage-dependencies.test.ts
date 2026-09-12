@@ -20,6 +20,13 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
   ["vize_s1", [["vize_carton", "vize_s0"]]],
   ["vize_s2", [["vize_carton", "vize_s0"]]],
   [
+    "vize_impeto",
+    [
+      ["vize_carton", "vize_s0"],
+      ["vize_davinci", null],
+    ],
+  ],
+  [
     "vize_s1_to_s2",
     [
       ["vize_carton", "vize_s0"],
@@ -34,6 +41,7 @@ const publishedDavinciStages = new Set([
   "vize_davinci",
   "vize_s1",
   "vize_s2",
+  "vize_impeto",
   "vize_s1_to_s2",
 ]);
 
@@ -60,6 +68,7 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_davinci", 1],
     ["vize_s1", 1],
     ["vize_s2", 2],
+    ["vize_impeto", 3],
     ["vize_s1_to_s2", 3],
   ]);
   const expectedEdges = new Map<string, string[]>([
@@ -67,6 +76,7 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_davinci", ["vize_carton"]],
     ["vize_s1", ["vize_carton"]],
     ["vize_s2", ["vize_carton", "vize_davinci"]],
+    ["vize_impeto", ["vize_carton", "vize_davinci"]],
     ["vize_s1_to_s2", ["vize_carton", "vize_davinci", "vize_s1", "vize_s2"]],
   ]);
 
@@ -154,6 +164,19 @@ test("Davinci S1-to-S2 uses the physical crate package and directory", () => {
   const lockfile = readRepoFile("Cargo.lock");
   assert.match(lockfile, /^name = "vize_s1_to_s2"$/m);
   assert.doesNotMatch(lockfile, /\bvize_ricalco\b/u);
+});
+
+test("Davinci S3 uses the Impeto package through the stage alias", () => {
+  const workspaceManifest = readRepoFile("Cargo.toml");
+  assert.match(workspaceManifest, /^\s*"crates\/vize_impeto",$/m);
+  assert.deepEqual(workspaceDependencyDeclaration("vize_s3"), {
+    path: "crates/vize_impeto",
+    version: `=${workspacePackage(metadata, "vize_impeto").version}`,
+  });
+  assert.doesNotMatch(workspaceManifest, /^vize_s3 = \{ path = "crates\/vize_s3"/m);
+
+  const impetoManifest = readRepoFile("crates", "vize_impeto", "Cargo.toml");
+  assert.match(impetoManifest, /^name = "vize_impeto"$/m);
 });
 
 test("Davinci S1-to-S2 source paths use the physical S2 folio type", () => {

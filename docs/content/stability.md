@@ -96,6 +96,7 @@ details are not compatibility surfaces.
 | `vize_davinci`       | Experimental          | Davinci pipeline and dump-format authors  | `vize_davinci::{Folio, Diagnostic, NodeId}`      | No minimum; note breaks when practical |
 | `vize_davinci_derive` | Experimental        | Davinci dump-format authors               | `vize_davinci_derive::Folio`                     | No minimum; note breaks when practical |
 | `vize_doctor`        | Experimental          | Application health analyzer authors       | `vize_doctor::{DoctorFinding, FindingEvidence}` | No minimum; note breaks when practical |
+| `vize_impeto`        | Experimental          | Davinci backend-scheduling authors        | `vize_impeto::{op, verify, S3Folio}`             | No minimum; note breaks when practical |
 | `vize_atelier_core`  | Alpha-supported       | Custom Vue compiler backend authors       | `vize_atelier_core::{transform, generate}`      | One minor with `#[deprecated]`         |
 | `vize_atelier_dom`   | Alpha-supported       | VDOM compiler and bundler integrations    | `vize_atelier_dom::compile_template`            | One minor with `#[deprecated]`         |
 | `vize_atelier_vapor` | Experimental          | Opt-in Vapor compiler integrations        | `vize_atelier_vapor::compile_vapor`             | No minimum; note breaks when practical |

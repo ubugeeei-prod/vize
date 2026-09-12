@@ -1,9 +1,9 @@
 //! Canonical Davinci stage names and their current crate spellings.
 //!
 //! Human-facing implementation names are the short stage aliases (`s0`, `s1`,
-//! `s2`, `s1_to_s2`). S1 and S2 have been mechanically renamed to their stage
-//! names; remaining art-name packages stay visible until their own rename PRs
-//! land.
+//! `s2`, `s3`, `s1_to_s2`). S1 and S2 have been mechanically renamed to their
+//! stage names. S3 keeps its Impeto package id while new code imports it through
+//! the `vize_s3` alias.
 
 /// The stage a Davinci diagnostic came from.
 ///
@@ -111,6 +111,14 @@ pub const S2: LayerCrate = LayerCrate {
     role: "semantic UI IR",
 };
 
+/// S3: reactivity and backend scheduling IR.
+pub const S3: LayerCrate = LayerCrate {
+    id: "s3",
+    crate_alias: "vize_s3",
+    package: "vize_impeto",
+    role: "reactivity and backend scheduling IR",
+};
+
 /// S1→S2: Vue lowering from the lossless surface tree into the semantic IR.
 pub const S1_TO_S2: ConversionCrate = ConversionCrate {
     id: "s1_to_s2",
@@ -122,19 +130,21 @@ pub const S1_TO_S2: ConversionCrate = ConversionCrate {
 };
 
 /// Davinci layer crates that exist in the workspace today.
-pub const LAYERS: &[LayerCrate] = &[S0, S1, S2];
+pub const LAYERS: &[LayerCrate] = &[S0, S1, S2, S3];
 
 /// Historical artifact-only view retained for compatibility.
 ///
-/// New code should use [`LAYERS`] when it needs the complete S0/S1/S2 stack.
-pub const ARTIFACT_STAGES: &[StageCrate] = &[S1, S2];
+/// New code should use [`LAYERS`] when it needs the complete S0/S1/S2/S3 stack.
+pub const ARTIFACT_STAGES: &[StageCrate] = &[S1, S2, S3];
 
 /// Conversion crates that exist in the workspace today.
 pub const CONVERSIONS: &[ConversionCrate] = &[S1_TO_S2];
 
 #[cfg(test)]
 mod tests {
-    use super::{ARTIFACT_STAGES, CONVERSIONS, LAYERS, S0, S1, S1_TO_S2, S2, Stage, StageCrate};
+    use super::{
+        ARTIFACT_STAGES, CONVERSIONS, LAYERS, S0, S1, S1_TO_S2, S2, S3, Stage, StageCrate,
+    };
 
     #[test]
     fn diagnostic_stage_identifiers_remain_logical_names() {
@@ -159,6 +169,7 @@ mod tests {
         assert_eq!(S0.crate_alias, "vize_s0");
         assert_eq!(S1.crate_alias, "vize_s1");
         assert_eq!(S2.crate_alias, "vize_s2");
+        assert_eq!(S3.crate_alias, "vize_s3");
         assert_eq!(S1_TO_S2.crate_alias, "vize_s1_to_s2");
         assert_eq!(S1_TO_S2.id, "s1_to_s2");
     }
@@ -168,19 +179,20 @@ mod tests {
         assert_eq!(S0.package, "vize_carton");
         assert_eq!(S1.package, "vize_s1");
         assert_eq!(S2.package, "vize_s2");
+        assert_eq!(S3.package, "vize_impeto");
         assert_eq!(S1_TO_S2.package, "vize_s1_to_s2");
     }
 
     #[test]
     fn conversion_names_its_stage_edges() {
         assert_eq!((S1_TO_S2.from, S1_TO_S2.to), (S1.id, S2.id));
-        assert_eq!(LAYERS.len(), 3);
+        assert_eq!(LAYERS.len(), 4);
         assert_eq!(CONVERSIONS.len(), 1);
     }
 
     #[test]
     fn historical_artifact_view_excludes_the_s0_foundation() {
         let _: StageCrate = S1;
-        assert_eq!(ARTIFACT_STAGES, [S1, S2]);
+        assert_eq!(ARTIFACT_STAGES, [S1, S2, S3]);
     }
 }

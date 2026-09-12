@@ -170,7 +170,7 @@ Corsa/tsgo API surface (native project sessions), the existing
 host interface), and Maestro's editor features. One mapping model, three
 transports — this is what retires the current canon/maestro mapping split.
 
-### S3 — reactivity IR (future alias `vize_s3`, planned package `vize_impeto`)
+### S3 — reactivity IR (alias `vize_s3`, package `vize_impeto`)
 
 Named for Leonardo's concept of impetus — how motion propagates. The
 generalization of today's Vapor IR: flat, id-based operations
@@ -292,7 +292,8 @@ Non-negotiable, inherited from "Be Fast Above All":
 
 ## Portability: `no_std` core, WASI as a first-class target
 
-Davinci-owned crates (`vize_davinci`, `vize_s2`, `vize_s3`/`vize_impeto`) are
+Davinci-owned crates (`vize_davinci`, `vize_s1`, `vize_s2`, `vize_s3` /
+`vize_impeto`, and `vize_s1_to_s2`) are
 written `no_std + alloc` from birth: stage data, passes, and emitters depend on
 the arena and core types only, with `std` gated to the edges (filesystem,
 threads/rayon, process spawning, clocks). CI builds the core for
