@@ -22,7 +22,7 @@ pub struct SsrCompilerOptions {
     #[serde(default)]
     pub experimental_in_tag_comments: bool,
 
-    /// Enable experimental `v-match` / `v-case` patterned template desugaring.
+    /// Enable experimental `v-match` / `v-when` patterned template desugaring.
     #[serde(default)]
     pub experimental_patterned_template: bool,
 
@@ -98,4 +98,14 @@ mod tests {
         assert!(opts.binding_metadata.is_none());
         assert!(opts.croquis.is_none());
     }
+}
+
+/// Experimental SSR codegen options kept separate from [`SsrCompilerOptions`]
+/// so existing Rust struct literals remain source-compatible.
+#[derive(Debug, Clone, Default)]
+pub struct SsrCompilerExperimentalOptions {
+    /// Current SFC component name for self-reference resolution.
+    pub component_name: Option<String>,
+    /// Treat the reserved `<Self>` tag as a reference to the current SFC.
+    pub self_component: bool,
 }

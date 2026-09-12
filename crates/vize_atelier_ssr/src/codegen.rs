@@ -4,13 +4,14 @@
 //! to build HTML strings on the server side.
 
 mod component_binding;
+mod component_resolution;
 mod element;
 pub(crate) mod helpers;
 mod scope_prefix;
 
-use crate::options::SsrCompilerOptions;
+use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_core::{RootNode, RuntimeHelper, TemplateChildNode};
-use vize_s0::{Allocator, FxHashSet, SmallVec, String, ToCompactString, camelize, capitalize};
+use vize_s0::{Allocator, FxHashSet, SmallVec, String, ToCompactString};
 
 /// SSR codegen result
 #[derive(Debug, Default)]
@@ -35,6 +36,10 @@ pub struct SsrCodegenContext<'a> {
     #[allow(dead_code)]
     pub(crate) allocator: &'a Allocator,
     pub(crate) options: &'a SsrCompilerOptions,
+    /// Current component name for opt-in experimental self references.
+    pub(crate) component_name: Option<String>,
+    /// Whether the reserved `<Self>` tag resolves to the current component.
+    pub(crate) experimental_self_component: bool,
     /// Output buffer
     pub(crate) code: Vec<u8>,
     /// Indent level
@@ -65,9 +70,28 @@ pub struct SsrCodegenContext<'a> {
 
 impl<'a> SsrCodegenContext<'a> {
     pub fn new(allocator: &'a Allocator, options: &'a SsrCompilerOptions, source: &'a str) -> Self {
+        Self::new_with_experimental_options(
+            allocator,
+            options,
+            source,
+            SsrCompilerExperimentalOptions::default(),
+        )
+    }
+
+    pub fn new_with_experimental_options(
+        allocator: &'a Allocator,
+        options: &'a SsrCompilerOptions,
+        source: &'a str,
+        experimental_options: SsrCompilerExperimentalOptions,
+    ) -> Self {
+        let component_name = experimental_options
+            .component_name
+            .or_else(|| options.component_name.clone());
         Self {
             allocator,
             options,
+            component_name,
+            experimental_self_component: experimental_options.self_component,
             source,
             code: Vec::with_capacity(1024),
             indent_level: 0,
@@ -232,20 +256,6 @@ impl<'a> SsrCodegenContext<'a> {
     /// Use a core helper (from vue)
     pub(crate) fn use_core_helper(&mut self, helper: RuntimeHelper) {
         self.core_helpers.insert(helper);
-    }
-
-    pub(crate) fn is_self_component_reference(&self, component: &str) -> bool {
-        let Some(component_name) = self.options.component_name.as_deref() else {
-            return false;
-        };
-
-        if component == component_name {
-            return true;
-        }
-
-        let camel = camelize(component);
-        let pascal = capitalize(camel.as_str());
-        pascal == component_name
     }
 
     pub(crate) fn push_scoped_params(&mut self, params: FxHashSet<String>) {

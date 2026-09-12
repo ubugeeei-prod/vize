@@ -2,10 +2,11 @@ use crate::CompilerOptions;
 use vize_atelier_core::options::ParserOptions;
 use vize_atelier_dom::DomCompilerOptions;
 
-pub(super) fn experimental_flags(opts: &CompilerOptions) -> (bool, bool) {
+pub(super) fn experimental_flags(opts: &CompilerOptions) -> (bool, bool, bool) {
     (
         opts.experimental_in_tag_comments.unwrap_or(false),
         opts.experimental_patterned_template.unwrap_or(false),
+        opts.experimental_self_component.unwrap_or(false),
     )
 }
 
@@ -18,7 +19,11 @@ pub(super) fn compiler_parser_options(opts: &CompilerOptions) -> ParserOptions {
 }
 
 pub(super) fn experimental_dom_options(opts: &CompilerOptions) -> DomCompilerOptions {
-    let (experimental_in_tag_comments, experimental_patterned_template) = experimental_flags(opts);
+    let (
+        experimental_in_tag_comments,
+        experimental_patterned_template,
+        _experimental_self_component,
+    ) = experimental_flags(opts);
     DomCompilerOptions {
         experimental_in_tag_comments,
         experimental_patterned_template,

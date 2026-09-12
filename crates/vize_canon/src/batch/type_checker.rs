@@ -177,6 +177,11 @@ impl BatchTypeChecker {
         self.project.set_experimental_in_tag_comments(enabled);
     }
 
+    /// Enable experimental strict checking of provided slot child types.
+    pub fn set_experimental_strict_slot_children(&mut self, enabled: bool) {
+        self.project.set_experimental_strict_slot_children(enabled);
+    }
+
     /// Set the configured Vue dialect (`vue.version`; default
     /// [`VueVersion::V3`](vize_carton::config::VueVersion::V3)).
     ///

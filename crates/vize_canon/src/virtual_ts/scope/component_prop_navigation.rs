@@ -15,7 +15,7 @@ pub(super) fn emit_references(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
-    ctx: &ComponentPropsContext<'_>,
+    ctx: &ComponentPropsContext<'_, '_>,
     checkable_usages: &[(usize, &ComponentUsage)],
 ) {
     ts.push_str("\n  // Component template navigation references\n");
@@ -58,7 +58,7 @@ fn emit_prop_references(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
-    ctx: &ComponentPropsContext<'_>,
+    ctx: &ComponentPropsContext<'_, '_>,
     idx: usize,
     usage: &ComponentUsage,
     component_gen_range: &Range<usize>,
@@ -142,7 +142,7 @@ fn prop_navigation_source_range(
 fn emit_slot_references(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: &ComponentPropsContext<'_>,
+    ctx: &ComponentPropsContext<'_, '_>,
     idx: usize,
     usage: &ComponentUsage,
 ) {

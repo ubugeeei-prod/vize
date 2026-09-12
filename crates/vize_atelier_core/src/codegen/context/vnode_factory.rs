@@ -2,7 +2,7 @@ use vize_s0::{FxHashSet, String, ToCompactString};
 
 use crate::codegen::helpers::default_helper_alias;
 use crate::codegen::source_map::SourceMapBuilder;
-use crate::options::CodegenOptions;
+use crate::options::{CodegenExperimentalOptions, CodegenOptions};
 use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, RuntimeHelper};
 
@@ -19,6 +19,23 @@ impl CodegenContext {
         vnode_factory: Option<&str>,
         merge_props: bool,
     ) -> Self {
+        Self::new_with_vnode_factory_merge_props_and_experimentals(
+            options,
+            vnode_factory,
+            merge_props,
+            CodegenExperimentalOptions::default(),
+        )
+    }
+
+    pub(in crate::codegen) fn new_with_vnode_factory_merge_props_and_experimentals(
+        options: CodegenOptions,
+        vnode_factory: Option<&str>,
+        merge_props: bool,
+        experimental_options: CodegenExperimentalOptions,
+    ) -> Self {
+        let component_name = experimental_options
+            .component_name
+            .or_else(|| options.component_name.clone());
         let map_builder = options.source_map.then(SourceMapBuilder::new);
         Self {
             code: String::with_capacity(4096),
@@ -30,6 +47,8 @@ impl CodegenContext {
             runtime_module_name: options.runtime_module_name.to_compact_string(),
             options,
             merge_props,
+            component_name,
+            experimental_self_component: experimental_options.self_component,
             pure: false,
             used_helpers: RuntimeHelpers::default(),
             cache_index: 0,

@@ -72,6 +72,7 @@ const isRootSelected = ref(false)
             is_ts: true,
             inline: true,
             component_name: None,
+            experimental_self_component: false,
             bindings: Some(&binding_metadata),
             croquis: Some(croquis),
         },

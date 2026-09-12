@@ -8,11 +8,15 @@ const fileOptions = buildCompileFileOptions("/src/App.vue", {
   vapor: false,
   experimentalInTagComments: true,
   experimentalPatternedTemplate: true,
+  experimentalSelfComponent: true,
+  experimentalStrictSlotChildren: true,
   experimentalServerScript: true,
 });
 
 assert.equal(fileOptions.experimentalInTagComments, true);
 assert.equal(fileOptions.experimentalPatternedTemplate, true);
+assert.equal(fileOptions.experimentalSelfComponent, true);
+assert.equal(fileOptions.experimentalStrictSlotChildren, true);
 assert.equal(fileOptions.experimentalServerScript, true);
 
 const batchInput = {
@@ -21,12 +25,16 @@ const batchInput = {
   vapor: false,
   experimentalInTagComments: true,
   experimentalPatternedTemplate: true,
+  experimentalSelfComponent: true,
+  experimentalStrictSlotChildren: true,
   experimentalServerScript: true,
 };
 const batchOptions = buildCompileBatchOptions(batchInput);
 
 assert.equal(batchOptions.experimentalInTagComments, true);
 assert.equal(batchOptions.experimentalPatternedTemplate, true);
+assert.equal(batchOptions.experimentalSelfComponent, true);
+assert.equal(batchOptions.experimentalStrictSlotChildren, true);
 assert.equal(batchOptions.experimentalServerScript, true);
 assert.equal(batchOptions.includeSourceMap, false);
 

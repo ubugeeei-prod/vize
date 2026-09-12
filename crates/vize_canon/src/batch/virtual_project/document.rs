@@ -139,6 +139,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
             dialect: document_options.dialect,
             template_syntax: TemplateSyntaxMode::default(),
             experimental_in_tag_comments: false,
+            experimental_strict_slot_children: false,
             hoist_shared_preamble,
             omit_vite_client_reference: false,
             runtime_prop_resolve_cache: None,

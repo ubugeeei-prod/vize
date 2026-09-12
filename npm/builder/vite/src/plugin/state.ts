@@ -92,7 +92,11 @@ export type CompileOptionsForRequest = {
   Partial<
     Pick<
       VizeOptions,
-      "experimentalInTagComments" | "experimentalPatternedTemplate" | "experimentalServerScript"
+      | "experimentalInTagComments"
+      | "experimentalPatternedTemplate"
+      | "experimentalSelfComponent"
+      | "experimentalStrictSlotChildren"
+      | "experimentalServerScript"
     >
   >;
 
@@ -131,6 +135,12 @@ export function getCompileOptionsForRequest(
   }
   if (state.mergedOptions?.experimentalPatternedTemplate) {
     options.experimentalPatternedTemplate = true;
+  }
+  if (state.mergedOptions?.experimentalSelfComponent) {
+    options.experimentalSelfComponent = true;
+  }
+  if (state.mergedOptions?.experimentalStrictSlotChildren) {
+    options.experimentalStrictSlotChildren = true;
   }
   if (state.mergedOptions?.experimentalServerScript) {
     options.experimentalServerScript = true;

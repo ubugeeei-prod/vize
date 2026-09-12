@@ -32,6 +32,7 @@ pub(super) struct TemplateOnlyInput<'a> {
     pub(super) has_scoped: bool,
     pub(super) is_vapor: bool,
     pub(super) template_is_ts: bool,
+    pub(super) experimental_self_component: bool,
 }
 
 pub(super) fn compile_template_only(
@@ -59,6 +60,7 @@ pub(super) fn compile_template_only(
                     is_ts: input.template_is_ts,
                     inline: false,
                     component_name: Some(input.component_name),
+                    experimental_self_component: input.experimental_self_component,
                     bindings: None,
                     croquis: None,
                 },
@@ -85,6 +87,7 @@ pub(super) fn compile_template_only(
                     is_ts: input.template_is_ts,
                     inline: false,
                     component_name: Some(input.component_name),
+                    experimental_self_component: input.experimental_self_component,
                     bindings: None,
                     croquis: None,
                 },

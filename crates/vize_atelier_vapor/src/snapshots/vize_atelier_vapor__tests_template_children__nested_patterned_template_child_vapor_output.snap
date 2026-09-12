@@ -5,29 +5,35 @@ expression: vapor_output(NESTED)
 errors=[]
 templates=["<li>X</li>", "<li>Inner fallback</li>", "<p>Outer fallback</p>", "<div><footer>tail</footer></div>"]
 code=
-import { child as _child, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+import { child as _child, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
 const t0 = _template("<li>X</li>")
 const t1 = _template("<li>Inner fallback</li>")
-const t2 = _template("<p>Outer fallback</p>", true)
+const t2 = _template("<p>Outer fallback</p>")
 const t3 = _template("<div><footer>tail</footer></div>", true)
 
 export function render(_ctx) {
   const n1 = t3()
   const n0 = _child(n1)
   _setInsertionState(n1, null, true)
-  const n2 = _createIf(() => ((_ctx.outer) === ('open')), () => {
+  const n2 = _createFor(() => ([_ctx.outer]), (_for_item0) => {
     _setInsertionState(n1, null, true)
-    const n4 = _createIf(() => ((_ctx.inner) === ('x')), () => {
-      const n6 = t0()
+    const n4 = _createIf(() => ((_for_item0.value) === ('open')), () => {
+      const n6 = _createFor(() => ([_ctx.inner]), (_for_item1) => {
+        const n8 = _createIf(() => ((_for_item1.value) === ('x')), () => {
+          const n10 = t0()
+          return n10
+        }, () => {
+          const n12 = t1()
+          return n12
+        })
+        return n8
+      })
       return n6
     }, () => {
-      const n8 = t1()
-      return n8
+      const n14 = t2()
+      return n14
     })
     return n4
-  }, () => {
-    const n10 = t2()
-    return n10
   })
   _renderEffect(() => _setClass(n0, _ctx.cls))
   return n1

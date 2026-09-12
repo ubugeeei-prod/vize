@@ -7,6 +7,8 @@ export interface ExperimentalOptions {
   inTagComment?: ExperimentalSwitch;
   pattenedTemplate?: ExperimentalSwitch;
   patternedTemplate?: ExperimentalSwitch;
+  selfComponent?: ExperimentalSwitch;
+  strictSlotChildren?: ExperimentalSwitch;
   serverScript?: ExperimentalSwitch;
   "server script"?: ExperimentalSwitch;
 }
@@ -14,6 +16,8 @@ export interface ExperimentalOptions {
 export interface ExperimentalCompileFlags {
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
+  experimentalSelfComponent?: boolean;
+  experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
 }
 

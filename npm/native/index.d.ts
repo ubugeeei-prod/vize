@@ -69,6 +69,8 @@ export interface BatchCompileOptionsNapi {
   templateSyntax?: string;
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
+  experimentalSelfComponent?: boolean;
+  experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
@@ -247,6 +249,8 @@ export interface CompilerOptions {
   sourceMap?: boolean;
   /** Filename for source map */
   filename?: string;
+  /** Current component name for direct template compilation. */
+  componentName?: string;
   /** Output mode: "vdom" or "vapor" */
   outputMode?: string;
   /** Whether the template contains TypeScript */
@@ -259,8 +263,12 @@ export interface CompilerOptions {
   templateSyntax?: string;
   /** Enable experimental Vue in-tag comments (`// ...`) inside opening tags. */
   experimentalInTagComments?: boolean;
-  /** Enable experimental `v-match` / `v-case` patterned template desugaring. */
+  /** Enable experimental `v-match` / `v-when` patterned template desugaring. */
   experimentalPatternedTemplate?: boolean;
+  /** Enable experimental reserved `<Self>` component references. */
+  experimentalSelfComponent?: boolean;
+  /** Accepted for option-shape parity; strict slot checks run through SFC/check surfaces. */
+  experimentalStrictSlotChildren?: boolean;
   /** Enable experimental server-script related RFC surface. */
   experimentalServerScript?: boolean;
   /** Module name for runtime imports. */
@@ -975,6 +983,8 @@ export interface SfcCompileOptionsNapi {
   templateSyntax?: string;
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
+  experimentalSelfComponent?: boolean;
+  experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;

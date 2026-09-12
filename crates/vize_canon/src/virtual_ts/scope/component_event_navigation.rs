@@ -17,7 +17,7 @@ use crate::virtual_ts::expressions::generated_prop_value;
 pub(super) fn emit_event_references(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: &ComponentPropsContext<'_>,
+    ctx: &ComponentPropsContext<'_, '_>,
     checkable_usages: &[(usize, &ComponentUsage)],
 ) {
     let navigation_ctx = EventNavigationContext {
@@ -51,7 +51,7 @@ pub(super) fn emit_event_references(
 pub(super) fn emit_scoped_event_references(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: &VForPropsContext<'_>,
+    ctx: &VForPropsContext<'_, '_>,
     usages: &[(usize, &ComponentUsage)],
     indent: &str,
 ) {

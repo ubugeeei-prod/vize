@@ -18,8 +18,8 @@ pub(crate) use extraction::{
 };
 pub(crate) use vapor::compile_template_block_vapor;
 
-use vize_atelier_core::CodegenOptions;
 use vize_atelier_core::TemplateSyntaxMode;
+use vize_atelier_core::{CodegenExperimentalOptions, CodegenOptions};
 use vize_s0::Allocator;
 
 use vize_atelier_core::CompilerErrorWithSource;
@@ -64,6 +64,7 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) is_ts: bool,
     pub(crate) inline: bool,
     pub(crate) component_name: Option<&'a str>,
+    pub(crate) experimental_self_component: bool,
     pub(crate) bindings: Option<&'a BindingMetadata>,
     pub(crate) croquis: Option<vize_croquis::croquis::Croquis>,
 }
@@ -85,6 +86,7 @@ pub(crate) fn compile_template_block(
         is_ts,
         inline,
         component_name,
+        experimental_self_component,
         bindings,
         croquis,
     } = ctx;
@@ -101,12 +103,12 @@ pub(crate) fn compile_template_block(
     if options.ssr {
         let ssr_opts = vize_atelier_ssr::SsrCompilerOptions {
             scope_id: scope_attr,
-            component_name: component_name.map(|name| name.to_compact_string()),
             comments: compiler_options.is_some_and(|opts| opts.comments),
             experimental_in_tag_comments: compiler_options
                 .is_some_and(|opts| opts.experimental_in_tag_comments),
             experimental_patterned_template: compiler_options
                 .is_some_and(|opts| opts.experimental_patterned_template),
+            component_name: component_name.map(|name| name.to_compact_string()),
             inline: false,
             is_ts,
             custom_renderer: options.custom_renderer,
@@ -115,15 +117,20 @@ pub(crate) fn compile_template_block(
             binding_metadata: bindings.cloned(),
             croquis: croquis.map(Box::new),
         };
+        let ssr_experimental_options = vize_atelier_ssr::SsrCompilerExperimentalOptions {
+            component_name: component_name.map(|name| name.to_compact_string()),
+            self_component: experimental_self_component,
+        };
 
         let (_, errors, result) = profile!(
             "atelier.sfc.template.ssr",
-            vize_atelier_ssr::compile_ssr_with_custom_elements_and_template_syntax(
+            vize_atelier_ssr::compile_ssr_with_custom_elements_template_syntax_and_experimental_options(
                 allocator,
                 &template.content,
                 ssr_opts,
                 template_syntax,
                 custom_elements.clone(),
+                ssr_experimental_options,
             )
         );
 
@@ -177,7 +184,10 @@ pub(crate) fn compile_template_block(
     dom_opts.is_ts = is_ts;
     dom_opts.custom_renderer = options.custom_renderer;
     dom_opts.dialect = options.dialect;
-    dom_opts.component_name = component_name.map(|name| name.to_compact_string());
+    let codegen_experimental_options = CodegenExperimentalOptions {
+        component_name: component_name.map(|name| name.to_compact_string()),
+        self_component: experimental_self_component,
+    };
 
     // For script setup, use inline mode to match Vue's actual compiler behavior
     // Inline mode generates direct closure references (e.g., msg instead of $setup.msg)
@@ -203,7 +213,7 @@ pub(crate) fn compile_template_block(
     let (errors, result) = if route_through_sections {
         profile!(
             "atelier.sfc.template.dom",
-            vize_atelier_dom::compile_sfc_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
+            vize_atelier_dom::compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options(
                 allocator,
                 &template.content,
                 dom_opts,
@@ -211,12 +221,13 @@ pub(crate) fn compile_template_block(
                 hoisted_scope_attr,
                 custom_elements.clone(),
                 codegen_options.clone(),
+                codegen_experimental_options.clone(),
             )
         )
     } else {
         let (_, errors, result) = profile!(
             "atelier.sfc.template.dom",
-            vize_atelier_dom::compile_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_and_codegen_options(
+            vize_atelier_dom::compile_template_with_custom_elements_template_syntax_hoisted_scope_id_codegen_and_experimental_options(
                 allocator,
                 &template.content,
                 dom_opts,
@@ -224,6 +235,7 @@ pub(crate) fn compile_template_block(
                 hoisted_scope_attr,
                 custom_elements.clone(),
                 codegen_options.clone(),
+                codegen_experimental_options,
             )
         );
         (

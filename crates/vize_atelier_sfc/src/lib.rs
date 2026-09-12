@@ -84,7 +84,9 @@ pub use compile::compile_sfc_with_vue_parser_quirks;
 pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
 pub use compile::{
     SfcScriptOutputMode, compile_sfc_for_adapter,
+    compile_sfc_for_adapter_with_experimental_options,
     compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
+    compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options,
     compile_sfc_with_template_syntax_and_codegen_options,
 };
 pub use compile_script::props::{
@@ -100,9 +102,9 @@ pub use script::{TypeResolutionBatchGuard, begin_type_resolution_batch};
 pub use source_map::build_sfc_source_map;
 pub use types::{
     BindingMetadata, BindingType, BlockLocation, PadOption, PropsDestructure, ScriptCompileOptions,
-    SfcCompileOptions, SfcCompileResult, SfcCustomBlock, SfcDescriptor, SfcError, SfcMacroArtifact,
-    SfcParseOptions, SfcScriptBlock, SfcStyleBlock, SfcTemplateBlock, StyleCompileOptions,
-    TemplateCompileOptions,
+    SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcCustomBlock,
+    SfcDescriptor, SfcError, SfcMacroArtifact, SfcParseOptions, SfcScriptBlock, SfcStyleBlock,
+    SfcTemplateBlock, StyleCompileOptions, TemplateCompileOptions,
 };
 
 // Re-export key types from dependencies
@@ -111,6 +113,8 @@ pub use vize_atelier_dom::compile_template;
 
 #[cfg(test)]
 mod compile_tests;
+#[cfg(test)]
+mod experimental_tests;
 #[cfg(test)]
 mod parse_tests;
 #[cfg(test)]

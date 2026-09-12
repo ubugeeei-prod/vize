@@ -16,7 +16,7 @@ use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 use super::component_event_navigation;
 use super::component_prop_checker::has_inference_props;
-use super::component_slots::generate_component_slot_checks;
+use super::component_slots::{ComponentSlotCheckMeta, generate_component_slot_checks};
 use super::context::{ComponentPropsContext, VForPropsContext};
 
 pub(super) fn is_empty_props_usage(usage: &ComponentUsage) -> bool {
@@ -30,7 +30,7 @@ pub(super) fn is_empty_props_usage(usage: &ComponentUsage) -> bool {
 pub(super) fn generate_empty_root_checks(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: &ComponentPropsContext<'_>,
+    ctx: &ComponentPropsContext<'_, '_>,
     usages: &[(usize, &ComponentUsage)],
     closure_scope_ids: &FxHashSet<u32>,
 ) {
@@ -50,27 +50,31 @@ pub(super) fn generate_empty_root_checks(
         mappings,
         summary: ctx.summary,
         options: ctx.options,
+        template_ast: ctx.template_ast,
         syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
         template_prop_names: ctx.template_prop_names,
         source_context: ctx.source_context(),
         indent: "  ",
+        experimental_strict_slot_children: ctx.experimental_strict_slot_children,
     };
     generate_empty_checks(&mut empty_context, &root_usages);
 }
 
-struct EmptyChecksContext<'a, 'b> {
+struct EmptyChecksContext<'a, 'template, 'b> {
     ts: &'b mut String,
     mappings: &'b mut Vec<VizeMapping>,
     summary: &'a Croquis,
     options: &'a VirtualTsOptions,
+    template_ast: Option<&'a vize_relief::RootNode<'template>>,
     syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     template_prop_names: &'a FxHashSet<String>,
     source_context: ComponentPropSource<'a>,
     indent: &'b str,
+    experimental_strict_slot_children: bool,
 }
 
 fn generate_empty_checks(
-    ctx: &mut EmptyChecksContext<'_, '_>,
+    ctx: &mut EmptyChecksContext<'_, '_, '_>,
     usages: &[(usize, &ComponentUsage)],
 ) {
     let ts = &mut *ctx.ts;
@@ -100,7 +104,19 @@ fn generate_empty_checks(
         );
         profile!(
             "canon.virtual_ts.empty_component_slot_checks",
-            generate_component_slot_checks(&mut check_context, usage, idx, component_ref.as_str())
+            generate_component_slot_checks(
+                &mut check_context,
+                usage,
+                idx,
+                component_ref.as_str(),
+                ComponentSlotCheckMeta {
+                    summary: ctx.summary,
+                    options: ctx.options,
+                    syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
+                    template_ast: ctx.template_ast,
+                    experimental_strict_slot_children: ctx.experimental_strict_slot_children,
+                },
+            )
         );
         append!(*ts, "{arrow_indent}}},\n");
     }
@@ -112,7 +128,7 @@ fn generate_empty_checks(
 pub(super) fn generate_scope_checks(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: &VForPropsContext<'_>,
+    ctx: &VForPropsContext<'_, '_>,
     scope_id: u32,
     indent: &str,
 ) {
@@ -139,7 +155,19 @@ pub(super) fn generate_scope_checks(
                 indent,
             );
             generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str());
-            generate_component_slot_checks(&mut check_context, usage, idx, component_ref.as_str());
+            generate_component_slot_checks(
+                &mut check_context,
+                usage,
+                idx,
+                component_ref.as_str(),
+                ComponentSlotCheckMeta {
+                    summary: ctx.summary,
+                    options: ctx.options,
+                    syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
+                    template_ast: ctx.template_ast,
+                    experimental_strict_slot_children: ctx.experimental_strict_slot_children,
+                },
+            );
         });
     }
     let empty_usages: Vec<_> = usages
@@ -153,10 +181,12 @@ pub(super) fn generate_scope_checks(
             mappings,
             summary: ctx.summary,
             options: ctx.options,
+            template_ast: ctx.template_ast,
             syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
             template_prop_names: ctx.template_prop_names,
             source_context: ctx.source_context,
             indent,
+            experimental_strict_slot_children: ctx.experimental_strict_slot_children,
         };
         generate_empty_checks(&mut empty_context, &empty_usages);
     }

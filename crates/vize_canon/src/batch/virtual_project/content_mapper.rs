@@ -158,6 +158,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
             dialect: VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),
             experimental_in_tag_comments: false,
+            experimental_strict_slot_children: false,
             hoist_shared_preamble: false,
             omit_vite_client_reference: true,
             runtime_prop_resolve_cache: None,

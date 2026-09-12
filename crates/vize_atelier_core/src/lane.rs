@@ -275,7 +275,9 @@ pub(crate) fn transform_inner<'a>(
     }
 
     if ctx.options.experimental_patterned_template {
-        patterned_template::desugar_patterned_templates(allocator, root);
+        patterned_template::desugar_patterned_templates(&mut ctx, root);
+    } else {
+        patterned_template::diagnose_disabled_patterned_templates(&mut ctx, root);
     }
 
     // Transform the root children

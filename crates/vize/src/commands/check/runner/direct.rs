@@ -31,6 +31,11 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     } else {
         crate::config::load_config_with_features_and_source(args.config.as_deref())
     };
+    let experimental_vue = if args.no_config {
+        crate::config::ConfigExperimentalVueFlags::default()
+    } else {
+        crate::config::load_config_experimental_vue_flags_with_source(args.config.as_deref()).flags
+    };
     let compiler_template_syntax = loaded_config
         .source_path
         .as_deref()
@@ -117,6 +122,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         jsx_typecheck,
         template_syntax: template_syntax_mode(compiler_template_syntax),
         experimental_in_tag_comments: loaded_config.features.experimental_in_tag_comments,
+        experimental_strict_slot_children: experimental_vue.strict_slot_children,
         dialect,
         check_props: config.type_checker.check_props && !args.no_check_props,
         check_template_bindings: config.type_checker.check_template_bindings

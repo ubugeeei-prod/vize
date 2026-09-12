@@ -190,11 +190,7 @@ impl<'a> SsrCodegenContext<'a> {
             return binding_expr;
         }
 
-        self.use_core_helper(RuntimeHelper::ResolveComponent);
-        let mut out = String::from("_resolveComponent(");
-        out.push_str(&quoted_js_string(el.tag));
-        out.push(')');
-        out
+        self.resolved_component_callee(el.tag)
     }
 
     pub(super) fn dynamic_component_callee(&mut self, el: &ElementNode) -> String {

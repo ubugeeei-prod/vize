@@ -84,16 +84,22 @@ pub(super) fn s2_emit_supported(
     template_syntax: TemplateSyntaxMode,
     has_croquis: bool,
     s2_emit_selection: S2EmitSelection,
+    experimental_self_component: bool,
 ) -> bool {
     matches!(
         s2_emit_selection,
         S2EmitSelection::Allowed | S2EmitSelection::RequireSections
     ) && !options.ssr
         && !options.experimental_patterned_template
+        && !experimental_self_component
         && !options.custom_renderer
         && options.dialect == vize_s0::config::VueVersion::V3
         && template_syntax == TemplateSyntaxMode::Standard
         && !has_croquis
+}
+
+pub(super) fn source_may_contain_patterned_template_syntax(source: &str) -> bool {
+    source.contains("v-match") || source.contains("v-when") || source.contains("v-case")
 }
 
 /// The published DOM option surface projected onto the S2 emitter.

@@ -1,4 +1,6 @@
-use crate::{SsrCodegenContext, SsrCodegenResult, SsrCompilerOptions};
+use crate::{
+    SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions,
+};
 use vize_atelier_core::{
     CompilerError, Namespace, RootNode,
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
@@ -27,6 +29,7 @@ pub fn compile_ssr_with_options<'a>(
         options,
         TemplateSyntaxMode::Standard,
         CustomElementMatcher::default(),
+        SsrCompilerExperimentalOptions::default(),
     )
 }
 
@@ -43,6 +46,7 @@ pub fn compile_ssr_with_vue_parser_quirks<'a>(
         options,
         TemplateSyntaxMode::Quirks,
         CustomElementMatcher::default(),
+        SsrCompilerExperimentalOptions::default(),
     )
 }
 
@@ -60,6 +64,7 @@ pub fn compile_ssr_with_template_syntax<'a>(
         options,
         template_syntax,
         CustomElementMatcher::default(),
+        SsrCompilerExperimentalOptions::default(),
     )
 }
 
@@ -72,7 +77,55 @@ pub fn compile_ssr_with_custom_elements_and_template_syntax<'a>(
     template_syntax: TemplateSyntaxMode,
     custom_elements: CustomElementMatcher,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(allocator, source, options, template_syntax, custom_elements)
+    compile_ssr_inner(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        SsrCompilerExperimentalOptions::default(),
+    )
+}
+
+/// Compile SSR with declarative custom-element patterns and opt-in
+/// experimental codegen context.
+#[doc(hidden)]
+pub fn compile_ssr_with_custom_elements_template_syntax_and_experimental_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_inner(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+    )
+}
+
+/// Compile SSR with an explicit template syntax mode and opt-in experimental
+/// codegen context.
+#[doc(hidden)]
+pub fn compile_ssr_with_template_syntax_and_experimental_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    experimental_options: SsrCompilerExperimentalOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_inner(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        CustomElementMatcher::default(),
+        experimental_options,
+    )
 }
 
 fn compile_ssr_inner<'a>(
@@ -81,6 +134,7 @@ fn compile_ssr_inner<'a>(
     options: SsrCompilerOptions,
     template_syntax: TemplateSyntaxMode,
     custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     let codegen_options = options.clone();
     let parser_opts = crate::stage_options::parser_options(&options);
@@ -122,7 +176,12 @@ fn compile_ssr_inner<'a>(
 
     let mut errors = errors.to_vec();
     errors.extend(transform_errors);
-    let codegen_ctx = SsrCodegenContext::new(allocator, &codegen_options, source);
+    let codegen_ctx = SsrCodegenContext::new_with_experimental_options(
+        allocator,
+        &codegen_options,
+        source,
+        experimental_options,
+    );
     let codegen_result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
 
     (root, errors, codegen_result)

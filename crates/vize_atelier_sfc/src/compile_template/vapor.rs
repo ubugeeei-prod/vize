@@ -3,7 +3,8 @@
 use super::string_tracking::{StringTrackState, count_braces_with_state};
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_atelier_vapor::{
-    VaporCompilerOptions, compile_vapor_with_custom_elements_template_syntax_and_diagnostics,
+    VaporCompilerExperimentalOptions, VaporCompilerOptions,
+    compile_vapor_with_custom_elements_template_syntax_diagnostics_and_experimental_options,
 };
 use vize_s0::{Allocator, String, ToCompactString};
 
@@ -30,6 +31,8 @@ pub(crate) fn compile_template_block_vapor(
         scope_id,
         has_scoped,
         bindings,
+        component_name,
+        experimental_self_component,
         ..
     } = ctx;
 
@@ -45,15 +48,21 @@ pub(crate) fn compile_template_block_vapor(
             .is_some_and(|opts| opts.experimental_patterned_template),
         ..Default::default()
     };
+    let experimental_options = VaporCompilerExperimentalOptions {
+        component_name: component_name.map(|name| name.to_compact_string()),
+        self_component: experimental_self_component,
+    };
 
     // Compile template with Vapor
-    let (result, diagnostics) = compile_vapor_with_custom_elements_template_syntax_and_diagnostics(
-        allocator,
-        &template.content,
-        vapor_opts,
-        template_syntax,
-        custom_elements.clone(),
-    );
+    let (result, diagnostics) =
+        compile_vapor_with_custom_elements_template_syntax_diagnostics_and_experimental_options(
+            allocator,
+            &template.content,
+            vapor_opts,
+            template_syntax,
+            custom_elements.clone(),
+            experimental_options,
+        );
 
     if !result.error_messages.is_empty() {
         let mut message = String::from("Vapor template compilation errors: ");

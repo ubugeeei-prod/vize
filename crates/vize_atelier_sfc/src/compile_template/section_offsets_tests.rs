@@ -69,6 +69,7 @@ fn test_slice_template_parts_matches_line_scanner() {
                     is_ts: false,
                     inline,
                     component_name: Some("TestComp"),
+                    experimental_self_component: false,
                     bindings: Some(&bindings),
                     croquis: None,
                 },

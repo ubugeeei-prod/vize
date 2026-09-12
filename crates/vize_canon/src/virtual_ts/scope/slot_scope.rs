@@ -196,7 +196,7 @@ pub(super) fn generate_v_slot_scope(
 pub(super) fn generate_v_slot_props_scope(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: &VForPropsContext<'_>,
+    ctx: &VForPropsContext<'_, '_>,
     scope: &Scope,
     data: &VSlotScopeData,
     indent: &str,

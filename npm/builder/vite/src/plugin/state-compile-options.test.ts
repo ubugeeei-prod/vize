@@ -59,6 +59,8 @@ assert.deepEqual(
       mergedOptions: {
         experimentalInTagComments: true,
         experimentalPatternedTemplate: true,
+        experimentalSelfComponent: true,
+        experimentalStrictSlotChildren: true,
         experimentalServerScript: true,
       },
     },
@@ -73,6 +75,8 @@ assert.deepEqual(
     styleTrim: true,
     experimentalInTagComments: true,
     experimentalPatternedTemplate: true,
+    experimentalSelfComponent: true,
+    experimentalStrictSlotChildren: true,
     experimentalServerScript: true,
   },
   "Request compile options should pass experimental flags to native compilation",

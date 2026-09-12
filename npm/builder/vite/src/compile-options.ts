@@ -12,6 +12,8 @@ export interface CompileFileOptions extends PluginVueCompileOptions {
   templateSyntax?: "standard" | "strict" | "quirks";
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
+  experimentalSelfComponent?: boolean;
+  experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
@@ -28,6 +30,8 @@ export interface CompileBatchOptions extends PluginVueCompileOptions {
   templateSyntax?: "standard" | "strict" | "quirks";
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
+  experimentalSelfComponent?: boolean;
+  experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
@@ -47,6 +51,8 @@ export function buildCompileFileOptions(
     ...(options.customElements === undefined ? {} : { customElements: options.customElements }),
     experimentalInTagComments: options.experimentalInTagComments ?? false,
     experimentalPatternedTemplate: options.experimentalPatternedTemplate ?? false,
+    experimentalSelfComponent: options.experimentalSelfComponent ?? false,
+    experimentalStrictSlotChildren: options.experimentalStrictSlotChildren ?? false,
     experimentalServerScript: options.experimentalServerScript ?? false,
     scopeId: `data-v-${generateScopeId(filePath)}`,
     styleTrim: options.styleTrim,
@@ -82,6 +88,8 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     ...(options.customElements === undefined ? {} : { customElements: options.customElements }),
     experimentalInTagComments: options.experimentalInTagComments ?? false,
     experimentalPatternedTemplate: options.experimentalPatternedTemplate ?? false,
+    experimentalSelfComponent: options.experimentalSelfComponent ?? false,
+    experimentalStrictSlotChildren: options.experimentalStrictSlotChildren ?? false,
     experimentalServerScript: options.experimentalServerScript ?? false,
     // Opt into exactly the optional payloads the bundler pipeline consumes:
     // per-block style metadata, macro artifacts, and HMR content hashes.

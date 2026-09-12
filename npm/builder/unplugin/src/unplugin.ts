@@ -72,6 +72,8 @@ export function normalizeOptions(
     vapor: rawOptions.vapor ?? false,
     experimentalInTagComments: rawOptions.experimentalInTagComments ?? false,
     experimentalPatternedTemplate: rawOptions.experimentalPatternedTemplate ?? false,
+    experimentalSelfComponent: rawOptions.experimentalSelfComponent ?? false,
+    experimentalStrictSlotChildren: rawOptions.experimentalStrictSlotChildren ?? false,
     experimentalServerScript: rawOptions.experimentalServerScript ?? false,
     jsxMode: rawOptions.jsxMode,
     jsxCompat: rawOptions.jsxCompat,

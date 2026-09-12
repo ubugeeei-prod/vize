@@ -7,7 +7,9 @@ use crate::DomCompilerOptions;
 use vize_atelier_core::{
     CompilerError, RootNode,
     codegen::{CodegenResult, CodegenResultWithSections},
-    options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
+    options::{
+        CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
+    },
 };
 use vize_s0::{Allocator, String};
 
@@ -30,6 +32,35 @@ pub fn compile_template_with_custom_elements_and_template_syntax_and_codegen_opt
         custom_elements,
         codegen_options,
     )
+}
+
+/// Compile with declarative custom-element patterns and opt-in experimental
+/// codegen context.
+#[doc(hidden)]
+pub fn compile_template_with_custom_elements_template_syntax_codegen_and_experimental_options<
+    'a,
+>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    let (root, errors, result) = compile_template_inner_with_sections(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        None,
+        DomCompilePipelineOptions::allow_s2_with_experimental_options(
+            custom_elements,
+            codegen_options,
+            codegen_experimental_options,
+        ),
+    );
+    (root, errors, result.into_result())
 }
 
 /// Compile with section metadata and declarative custom-element patterns.
@@ -76,6 +107,35 @@ pub fn compile_template_with_custom_elements_and_template_syntax_and_hoisted_sco
         hoisted_scope_id,
         custom_elements,
         codegen_options,
+        CodegenExperimentalOptions::default(),
+    )
+}
+
+/// Compile with declarative custom-element patterns, an SFC hoisted scope ID,
+/// and opt-in experimental codegen context.
+#[doc(hidden)]
+#[allow(clippy::too_many_arguments)]
+pub fn compile_template_with_custom_elements_template_syntax_hoisted_scope_id_codegen_and_experimental_options<
+    'a,
+>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    compile_template_inner_for_sfc(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+        custom_elements,
+        codegen_options,
+        codegen_experimental_options,
     )
 }
 
@@ -106,5 +166,34 @@ pub fn compile_sfc_template_with_custom_elements_and_template_syntax_and_hoisted
         hoisted_scope_id,
         custom_elements,
         codegen_options,
+        CodegenExperimentalOptions::default(),
+    )
+}
+
+/// Compile an SFC template block with section metadata, custom-element
+/// patterns, and opt-in experimental codegen context.
+#[doc(hidden)]
+#[allow(clippy::too_many_arguments)]
+pub fn compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options<
+    'a,
+>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+) -> (Vec<CompilerError>, CodegenResultWithSections) {
+    compile_template_inner_for_sfc_with_sections(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+        custom_elements,
+        codegen_options,
+        codegen_experimental_options,
     )
 }

@@ -24,7 +24,15 @@ fn imported_directive_binding_name(name: &str) -> String {
     binding
 }
 
-fn is_self_component_reference(component: &str, component_name: &str) -> bool {
+fn is_self_component_reference(
+    component: &str,
+    component_name: &str,
+    experimental_self_component: bool,
+) -> bool {
+    if experimental_self_component && component == "Self" && !component_name.is_empty() {
+        return true;
+    }
+
     if component == component_name {
         return true;
     }
@@ -32,6 +40,18 @@ fn is_self_component_reference(component: &str, component_name: &str) -> bool {
     let camel = camelize(component);
     let pascal = capitalize(&camel);
     pascal == component_name
+}
+
+fn component_resolution_name<'a>(
+    component: &'a str,
+    component_name: &'a str,
+    experimental_self_component: bool,
+) -> &'a str {
+    if experimental_self_component && component == "Self" && !component_name.is_empty() {
+        component_name
+    } else {
+        component
+    }
 }
 
 /// Generate preamble from a list of helpers.
@@ -130,20 +150,28 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
             continue;
         }
 
+        let current_component_name = ctx.component_name.clone().unwrap_or_default();
+        let experimental_self_component = ctx.experimental_self_component;
+        let resolution_name = component_resolution_name(
+            component,
+            current_component_name.as_str(),
+            experimental_self_component,
+        );
+        let is_self_component = is_self_component_reference(
+            component,
+            current_component_name.as_str(),
+            experimental_self_component,
+        );
+
         ctx.use_helper(RuntimeHelper::ResolveComponent);
         ctx.push("const ");
         ctx.push(&to_valid_asset_identifier("component", component));
         ctx.push(" = ");
         ctx.push(ctx.helper(RuntimeHelper::ResolveComponent));
         ctx.push("(\"");
-        ctx.push(component);
+        ctx.push(resolution_name);
         ctx.push("\"");
-        if ctx
-            .options
-            .component_name
-            .as_deref()
-            .is_some_and(|name| is_self_component_reference(component, name))
-        {
+        if is_self_component {
             ctx.push(", true");
         }
         ctx.push(")");

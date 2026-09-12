@@ -6,12 +6,13 @@ export interface SfcCompileOptionsNapi {
   filename?: string;
   sourceMap?: boolean;
   ssr?: boolean;
-  /** Enable Vapor mode compilation */
   vapor?: boolean;
   /** Template syntax compatibility mode */
   templateSyntax?: "standard" | "strict" | "quirks";
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
+  experimentalSelfComponent?: boolean;
+  experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
   /** Preserve TypeScript in output when true */
   isTs?: boolean;

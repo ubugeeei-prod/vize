@@ -34,9 +34,9 @@ use std::{
 
 use vize_atelier_core::{CodegenOptions, options::CustomElementMatcher};
 use vize_atelier_sfc::{
-    ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-    TemplateCompileOptions, compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
-    parse_sfc,
+    ScriptCompileOptions, SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions,
+    StyleCompileOptions, TemplateCompileOptions,
+    compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options, parse_sfc,
 };
 use vize_s0::cstr;
 use vize_s0::profile;
@@ -248,12 +248,15 @@ fn compile_file_inner(
 
     let result = profile!(
         "atelier.sfc.compile",
-        compile_sfc_with_custom_elements_template_syntax_and_codegen_options(
+        compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(
             &descriptor,
             compile_opts,
             settings.template_syntax,
             custom_elements,
-            CodegenOptions::default()
+            CodegenOptions::default(),
+            SfcCompileExperimentalOptions {
+                self_component: settings.experimental_self_component,
+            }
         )
     )
     .map_err(|e| CompileError {

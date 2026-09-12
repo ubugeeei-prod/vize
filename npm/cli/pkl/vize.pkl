@@ -60,6 +60,8 @@ class ExperimentalsConfig {
   inTagComment: Boolean? = null
   pattenedTemplate: Boolean? = null
   patternedTemplate: Boolean? = null
+  selfComponent: Boolean? = null
+  strictSlotChildren: Boolean? = null
   serverScript: Boolean? = null
 }
 

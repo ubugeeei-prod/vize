@@ -121,7 +121,9 @@ export default defineConfig({
     vapor: false,
     jsxVapor: false,
     intagComment: false,
-    pattenedTemplate: false,
+    patternedTemplate: false,
+    selfComponent: false,
+    strictSlotChildren: false,
     serverScript: false,
   },
   vite: {
@@ -238,25 +240,27 @@ extension so both TypeScript and embedded JSX parse correctly. See the
 
 Important shared fields:
 
-| Field                            | Used by                        | Purpose                                                            |
-| -------------------------------- | ------------------------------ | ------------------------------------------------------------------ |
-| `compiler.sourceMap`             | Vite plugin                    | Enable source maps                                                 |
-| `compiler.ssr`                   | npm build, Vite plugin         | Force SSR compilation                                              |
-| `compiler.vapor`                 | npm build, Vite plugin         | Enable Vapor compilation                                           |
-| `compiler.customRenderer`        | npm build, Vite plugin         | Treat lowercase non-HTML tags as custom renderer elements          |
-| `compiler.customElements`        | npm build, Vite plugin         | Tag patterns compiled as custom elements instead of Vue components |
-| `compiler.templateSyntax`        | npm build, Vite plugin         | Choose standard, strict, or quirks template syntax mode            |
-| `experimentals.vapor`            | npm build, Vite plugin         | Opt into experimental SFC Vapor before compiler support            |
-| `experimentals.jsxVapor`         | Vite plugin                    | Opt into experimental JSX Vapor by default                         |
-| `experimentals.intagComment`     | npm build, Vite plugin, syntax | Opt into in-tag `//` comments                                      |
-| `experimentals.pattenedTemplate` | npm build, Vite plugin         | Opt into `v-match` / `v-case` templates                            |
-| `experimentals.serverScript`     | npm build, Vite plugin         | Preserve server-script RFC opt-in surface                          |
-| `compiler.compatibility`         | integrations                   | Opt into legacy Vue, Nuxt, CDN, Vapor, or Webpack bridges          |
-| `compiler.scriptExt`             | npm build                      | Preserve TypeScript output or downcompile to JavaScript            |
-| `vite.scanPatterns`              | Vite plugin                    | Pre-compile matching Vue files                                     |
-| `linter.preset`                  | npm lint                       | Select the Patina lint preset                                      |
-| `typeChecker.strict`             | npm check                      | Enable strict checks                                               |
-| `formatter.printWidth`           | npm fmt                        | Set formatting width                                               |
+| Field                              | Used by                        | Purpose                                                            |
+| ---------------------------------- | ------------------------------ | ------------------------------------------------------------------ |
+| `compiler.sourceMap`               | Vite plugin                    | Enable source maps                                                 |
+| `compiler.ssr`                     | npm build, Vite plugin         | Force SSR compilation                                              |
+| `compiler.vapor`                   | npm build, Vite plugin         | Enable Vapor compilation                                           |
+| `compiler.customRenderer`          | npm build, Vite plugin         | Treat lowercase non-HTML tags as custom renderer elements          |
+| `compiler.customElements`          | npm build, Vite plugin         | Tag patterns compiled as custom elements instead of Vue components |
+| `compiler.templateSyntax`          | npm build, Vite plugin         | Choose standard, strict, or quirks template syntax mode            |
+| `experimentals.vapor`              | npm build, Vite plugin         | Opt into experimental SFC Vapor before compiler support            |
+| `experimentals.jsxVapor`           | Vite plugin                    | Opt into experimental JSX Vapor by default                         |
+| `experimentals.intagComment`       | npm build, Vite plugin, syntax | Opt into in-tag `//` comments                                      |
+| `experimentals.patternedTemplate`  | npm build, Vite plugin         | Opt into `v-match` / `v-when` patterned templates                  |
+| `experimentals.selfComponent`      | npm build, Vite plugin         | Opt into reserved `<Self>` recursive component resolution          |
+| `experimentals.strictSlotChildren` | npm check                      | Opt into strict slot child contract checks                         |
+| `experimentals.serverScript`       | npm build, Vite plugin         | Preserve server-script RFC opt-in surface                          |
+| `compiler.compatibility`           | integrations                   | Opt into legacy Vue, Nuxt, CDN, Vapor, or Webpack bridges          |
+| `compiler.scriptExt`               | npm build                      | Preserve TypeScript output or downcompile to JavaScript            |
+| `vite.scanPatterns`                | Vite plugin                    | Pre-compile matching Vue files                                     |
+| `linter.preset`                    | npm lint                       | Select the Patina lint preset                                      |
+| `typeChecker.strict`               | npm check                      | Enable strict checks                                               |
+| `formatter.printWidth`             | npm fmt                        | Set formatting width                                               |
 
 ### Template syntax
 
@@ -283,6 +287,18 @@ Vue upstream reference:
 
 - [`forAliasRE`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/utils.ts#L571)
 - [`stripParensRE` in `parseForExpression`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/parser.ts#L493-L530)
+
+### Experimental Vue RFC Flags
+
+Every experimental Vue RFC flag is off by default. Set a key to `true` or `{}` in
+`experimentals` to enable it for the matching tool; `false` and `null` keep it disabled. The
+historical typo `pattenedTemplate` is still accepted as an alias for `patternedTemplate`, but new
+configs should use `patternedTemplate`.
+
+Supported opt-ins cover in-tag `//` comments, `v-match` / `v-when` patterned templates, reserved
+`<Self>` recursion, and virtual-TypeScript slot child contract checks. See
+[`docs/experimental-vue-rfc-flags.md`](./docs/experimental-vue-rfc-flags.md) for syntax, examples,
+tool coverage, and upstream RFC links.
 
 ## Programmatic Config Helpers
 

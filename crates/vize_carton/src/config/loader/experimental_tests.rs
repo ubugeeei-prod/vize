@@ -1,4 +1,7 @@
-use super::{load_compiler_vapor, load_config_with_features_and_source};
+use super::{
+    load_compiler_vapor, load_config_experimental_vue_flags_with_source,
+    load_config_with_features_and_source,
+};
 use crate::config::JsxMode;
 
 #[test]
@@ -13,6 +16,8 @@ fn load_config_reads_experimentals() {
             "jsxVapor": {},
             "intagComment": {},
             "pattenedTemplate": {},
+            "selfComponent": {},
+            "strictSlotChildren": {},
             "serverScript": {}
           }
         }"#,
@@ -27,6 +32,9 @@ fn load_config_reads_experimentals() {
     assert!(loaded.features.experimental_server_script);
     assert!(loaded.features.type_checker_jsx_typecheck);
     assert_eq!(loaded.features.jsx_mode, Some(JsxMode::Vapor));
+    let experimental_vue = load_config_experimental_vue_flags_with_source(Some(&config_path));
+    assert!(experimental_vue.flags.self_component);
+    assert!(experimental_vue.flags.strict_slot_children);
     assert_eq!(load_compiler_vapor(Some(&config_path)), Some(true));
 }
 
@@ -43,6 +51,8 @@ fn load_config_accepts_experimental_aliases_and_false_switches() {
             "jsxVapor": {},
             "inTagComment": true,
             "patternedTemplate": false,
+            "self_component": null,
+            "strict_slot_children": true,
             "server script": null
           }
         }"#,
@@ -55,5 +65,8 @@ fn load_config_accepts_experimental_aliases_and_false_switches() {
     assert!(!loaded.features.experimental_server_script);
     assert!(loaded.features.type_checker_jsx_typecheck);
     assert_eq!(loaded.features.jsx_mode, Some(JsxMode::Vdom));
+    let experimental_vue = load_config_experimental_vue_flags_with_source(Some(&config_path));
+    assert!(!experimental_vue.flags.self_component);
+    assert!(experimental_vue.flags.strict_slot_children);
     assert_eq!(load_compiler_vapor(Some(&config_path)), Some(false));
 }

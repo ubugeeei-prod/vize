@@ -153,6 +153,9 @@ export function compileFile(
   const experimentalInTagComments = options.compilerOptions?.experimentalInTagComments ?? false;
   const experimentalPatternedTemplate =
     options.compilerOptions?.experimentalPatternedTemplate ?? false;
+  const experimentalSelfComponent = options.compilerOptions?.experimentalSelfComponent ?? false;
+  const experimentalStrictSlotChildren =
+    options.compilerOptions?.experimentalStrictSlotChildren ?? false;
   const experimentalServerScript = options.compilerOptions?.experimentalServerScript ?? false;
   const tauKey =
     transformAssetUrls === false
@@ -160,7 +163,7 @@ export function compileFile(
       : transformAssetUrls === true
         ? "tau=true"
         : `tau=${JSON.stringify(transformAssetUrls)}`;
-  const cacheKey = `${filePath}:ssr=${ssr}:vapor=${vapor}:ts=${autoIsTs}:map=${sourceMap}:ce=${isCustomElement}:syntax=${templateSyntax}:xic=${experimentalInTagComments}:xpt=${experimentalPatternedTemplate}:xss=${experimentalServerScript}:root=${rootCtx}:prod=${isProd}:${tauKey}`;
+  const cacheKey = `${filePath}:ssr=${ssr}:vapor=${vapor}:ts=${autoIsTs}:map=${sourceMap}:ce=${isCustomElement}:syntax=${templateSyntax}:xic=${experimentalInTagComments}:xpt=${experimentalPatternedTemplate}:xsc=${experimentalSelfComponent}:xslot=${experimentalStrictSlotChildren}:xss=${experimentalServerScript}:root=${rootCtx}:prod=${isProd}:${tauKey}`;
 
   const contentHash = computeContentHash(source);
   const cached = compilationCache.get(cacheKey);

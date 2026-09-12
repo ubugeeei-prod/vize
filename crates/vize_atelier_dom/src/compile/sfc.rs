@@ -7,12 +7,15 @@ use crate::options::DomCompilerOptions;
 use vize_atelier_core::{
     CompilerError, RootNode,
     codegen::{CodegenResult, CodegenResultWithSections},
-    options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
+    options::{
+        CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
+    },
 };
 use vize_s0::{Allocator, String, profile};
 
 mod selector;
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -21,8 +24,10 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     hoisted_scope_id: Option<String>,
     custom_elements: CustomElementMatcher,
     codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
     let codegen_opts = stage_options::codegen_options(&options, codegen_options.clone());
+    let experimental_self_component = codegen_experimental_options.self_component;
     let use_s2_emit = stage_options::s2_emit_supported(
         &options,
         &codegen_opts,
@@ -30,7 +35,8 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
         template_syntax,
         options.croquis.is_some(),
         pipeline::S2EmitSelection::RequireSections,
-    );
+        experimental_self_component,
+    ) && !stage_options::source_may_contain_patterned_template_syntax(source);
 
     let mut force_compat_sections = false;
     let fast_path_supported = selector::s2_sfc_fast_path_supported_source(source);
@@ -56,9 +62,17 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     }
 
     let pipeline_options = if force_compat_sections {
-        DomCompilePipelineOptions::require_sections_compat(custom_elements, codegen_options)
+        DomCompilePipelineOptions::require_sections_compat_with_experimental_options(
+            custom_elements,
+            codegen_options,
+            codegen_experimental_options,
+        )
     } else {
-        DomCompilePipelineOptions::require_sections(custom_elements, codegen_options)
+        DomCompilePipelineOptions::require_sections_with_experimental_options(
+            custom_elements,
+            codegen_options,
+            codegen_experimental_options,
+        )
     };
 
     let (_, errors, result) = compile_template_inner_with_sections(
@@ -72,6 +86,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     (errors, result)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn compile_template_inner_for_sfc<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -80,6 +95,7 @@ pub(super) fn compile_template_inner_for_sfc<'a>(
     hoisted_scope_id: Option<String>,
     custom_elements: CustomElementMatcher,
     codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
     let (root, errors, result) = compile_template_inner_with_sections(
         allocator,
@@ -87,7 +103,11 @@ pub(super) fn compile_template_inner_for_sfc<'a>(
         options,
         template_syntax,
         hoisted_scope_id,
-        DomCompilePipelineOptions::require_sections_compat(custom_elements, codegen_options),
+        DomCompilePipelineOptions::require_sections_compat_with_experimental_options(
+            custom_elements,
+            codegen_options,
+            codegen_experimental_options,
+        ),
     );
     (root, errors, result.into_result())
 }

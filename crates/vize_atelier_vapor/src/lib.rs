@@ -37,18 +37,22 @@ mod tests_template_children;
 mod tests_valueless_attr;
 
 pub use compile::{
-    VaporCompileResult, VaporCompilerOptions, compile_vapor,
+    VaporCompileResult, VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor,
     compile_vapor_with_custom_elements_and_template_syntax,
     compile_vapor_with_custom_elements_template_syntax_and_diagnostics,
-    compile_vapor_with_diagnostics, compile_vapor_with_template_syntax,
-    compile_vapor_with_template_syntax_and_diagnostics,
+    compile_vapor_with_custom_elements_template_syntax_and_experimental_options,
+    compile_vapor_with_custom_elements_template_syntax_diagnostics_and_experimental_options,
+    compile_vapor_with_diagnostics, compile_vapor_with_experimental_options,
+    compile_vapor_with_template_syntax, compile_vapor_with_template_syntax_and_diagnostics,
+    compile_vapor_with_template_syntax_and_experimental_options,
 };
 #[allow(deprecated)]
 pub use compile::{
     compile_vapor_with_vue_parser_quirks, compile_vapor_with_vue_parser_quirks_and_diagnostics,
 };
 pub use generate::{
-    VaporGenerateOptions, VaporGenerateResult, generate_vapor, generate_vapor_with_options,
+    VaporGenerateExperimentalOptions, VaporGenerateOptions, VaporGenerateResult, generate_vapor,
+    generate_vapor_with_options, generate_vapor_with_options_and_experimentals,
 };
 pub use generators::{
     GenerateContext, build_text_expression, can_inline_text, can_optimize_for, can_use_ternary,

@@ -35,6 +35,10 @@ pub struct CodegenContext {
     /// JavaScript object spreads instead; the public core codegen entry points
     /// keep the existing `true` behavior.
     pub(super) merge_props: bool,
+    /// Current component name for opt-in experimental self references.
+    pub(super) component_name: Option<String>,
+    /// Whether the reserved `<Self>` tag resolves to the current component.
+    pub(super) experimental_self_component: bool,
     /// Pure annotation for tree-shaking
     pub(super) pure: bool,
     /// Helpers used during codegen

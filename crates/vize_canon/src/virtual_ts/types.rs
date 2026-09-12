@@ -247,8 +247,7 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
     pub(crate) options_api: bool,
     /// Preserve the typed authored default component in the public instance.
-    /// Declaration-producing callers enable this until the batch path can do
-    /// so without changing its committed virtual-code baselines.
+    /// Declaration-producing callers enable this until batch baselines move.
     pub(crate) preserve_authored_component: bool,
     /// Public-facing component symbol used by Content Mapper hover responses.
     /// `None` preserves the internal default export used by batch projections.
@@ -282,6 +281,7 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     /// `<script setup>`. Split-script analysis joins the two blocks with one
     /// newline, while the authored closing/opening tags occupy more bytes.
     pub(crate) split_script_setup_offsets: Option<(usize, usize)>,
+    pub(crate) experimental_strict_slot_children: bool,
 }
 
 impl VirtualTsGenerationOptions<'_> {

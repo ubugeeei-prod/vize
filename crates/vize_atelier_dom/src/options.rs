@@ -46,7 +46,7 @@ pub struct DomCompilerOptions {
     #[serde(default)]
     pub experimental_in_tag_comments: bool,
 
-    /// Enable experimental `v-match` / `v-case` patterned template desugaring.
+    /// Enable experimental `v-match` / `v-when` patterned template desugaring.
     #[serde(default)]
     pub experimental_patterned_template: bool,
 

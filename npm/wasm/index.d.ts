@@ -64,15 +64,14 @@ export interface CompilerOptions {
   cacheHandlers?: boolean;
   /** Scope ID for scoped CSS */
   scopeId?: string;
-  /** Whether in SSR mode */
   ssr?: boolean;
   /** Whether to generate a source map for direct VDOM template compilation */
   sourceMap?: boolean;
-  /** Filename used for source-map identity, SFC parsing, and generated module IDs */
+  /** Filename used for source-map identity, SFC parsing, and module IDs */
   filename?: string;
+  componentName?: string;
   /** Output mode: "vdom" or "vapor" */
   outputMode?: "vdom" | "vapor";
-  /** Whether the template contains TypeScript */
   isTs?: boolean;
   /** Whether the template targets a custom renderer instead of the DOM. */
   customRenderer?: boolean;
@@ -80,10 +79,11 @@ export interface CompilerOptions {
   customElements?: string[];
   /** Template syntax compatibility mode. */
   templateSyntax?: "standard" | "strict" | "quirks";
-  /** Enable Vue in-tag comments (`// ...`) inside opening tags. */
+  /** Enable Vue in-tag comments inside opening tags. */
   experimentalInTagComments?: boolean;
-  /** Enable `v-match` / `v-case` patterned template desugaring. */
+  /** Enable `v-match` / `v-when` patterned template desugaring. */
   experimentalPatternedTemplate?: boolean;
+  experimentalSelfComponent?: boolean;
   /** Runtime package imported by generated VDOM modules and SFC client output. */
   runtimeModuleName?: string;
   /** Runtime global read by function-mode VDOM and standalone SFC client output. */

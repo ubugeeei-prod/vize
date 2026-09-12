@@ -32,8 +32,9 @@ pub mod walk_probe;
 // Re-export from vize_relief (AST, errors, options)
 pub use vize_relief::errors::{CompilerError, CompilerErrorWithSource, CompilerResult, ErrorCode};
 pub use vize_relief::options::{
-    BindingMetadata, BindingType, CodegenMode, CodegenOptions, CompilerOptions, ParseMode,
-    ParserOptions, TemplateSyntaxMode, TextMode, TransformOptions, WhitespaceStrategy,
+    BindingMetadata, BindingType, CodegenExperimentalOptions, CodegenMode, CodegenOptions,
+    CompilerOptions, ParseMode, ParserOptions, TemplateSyntaxMode, TextMode, TransformOptions,
+    WhitespaceStrategy,
 };
 pub use vize_relief::{
     ArrayElement, ArrayExpression, AssignmentExpression, AttributeNode, BlockStatement,
@@ -62,7 +63,8 @@ pub use vize_armature::{
 
 pub use codegen::{
     CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections, generate,
-    generate_with_sections,
+    generate_with_experimental_options, generate_with_sections,
+    generate_with_sections_and_experimental_options,
 };
 #[allow(deprecated)]
 pub use lane::{

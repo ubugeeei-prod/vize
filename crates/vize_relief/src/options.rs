@@ -237,6 +237,17 @@ impl Default for CodegenOptions {
     }
 }
 
+/// Experimental codegen options that are intentionally kept out of
+/// [`CodegenOptions`] so new opt-in features can be added without changing
+/// externally constructible option literals.
+#[derive(Debug, Clone, Default)]
+pub struct CodegenExperimentalOptions {
+    /// Current SFC component name for self-reference resolution.
+    pub component_name: Option<String>,
+    /// Treat the reserved `<Self>` tag as a reference to the current SFC.
+    pub self_component: bool,
+}
+
 /// Codegen output mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]

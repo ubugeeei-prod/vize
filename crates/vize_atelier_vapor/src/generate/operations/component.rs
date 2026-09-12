@@ -25,12 +25,21 @@ pub(super) fn emit_component_resolution(ctx: &mut GenerateContext, component_var
         return;
     }
 
+    let resolution_name = ctx.component_resolution_name(tag);
     ctx.use_helper("resolveComponent");
-    ctx.push_line(&cstr!(
-        "const {} = _resolveComponent(\"{}\")",
-        component_var,
-        tag
-    ));
+    if ctx.is_self_component_reference(tag) {
+        ctx.push_line(&cstr!(
+            "const {} = _resolveComponent(\"{}\", true)",
+            component_var,
+            resolution_name
+        ));
+    } else {
+        ctx.push_line(&cstr!(
+            "const {} = _resolveComponent(\"{}\")",
+            component_var,
+            resolution_name
+        ));
+    }
 }
 
 /// Generate CreateComponent

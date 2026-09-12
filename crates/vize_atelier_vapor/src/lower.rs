@@ -8,7 +8,7 @@ mod directive;
 mod element;
 mod text;
 
-use vize_carton::{Allocator, String, Vec};
+use vize_carton::{Allocator, String, Vec, ensure_sufficient_stack};
 
 use crate::ir::{BlockIRNode, RootIRNode};
 use vize_atelier_core::{RootNode, TemplateChildNode};
@@ -63,6 +63,13 @@ pub(crate) fn transform_to_ir_with_diagnostics<'a>(
 
 /// Transform children nodes
 pub(crate) fn transform_children<'a>(
+    ctx: &mut TransformContext<'a>,
+    children: &[TemplateChildNode<'a>],
+) -> BlockIRNode<'a> {
+    ensure_sufficient_stack(|| transform_children_guarded(ctx, children))
+}
+
+fn transform_children_guarded<'a>(
     ctx: &mut TransformContext<'a>,
     children: &[TemplateChildNode<'a>],
 ) -> BlockIRNode<'a> {

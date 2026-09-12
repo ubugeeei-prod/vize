@@ -1,6 +1,8 @@
 use vize_atelier_core::{
     CompilerError, RootNode,
-    codegen::{CodegenResult, CodegenResultWithSections, generate_with_sections},
+    codegen::{
+        CodegenResult, CodegenResultWithSections, generate_with_sections_and_experimental_options,
+    },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
     parser::parse_with_options_custom_elements_and_template_syntax,
@@ -43,6 +45,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     let DomCompilePipelineOptions {
         custom_elements,
         codegen_options,
+        codegen_experimental_options,
         s2_emit_selection,
     } = pipeline_options;
     let parser_opts = stage_options::parser_options(&options);
@@ -91,7 +94,8 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         template_syntax,
         has_croquis,
         s2_emit_selection,
-    );
+        codegen_experimental_options.self_component,
+    ) && !stage_options::source_may_contain_patterned_template_syntax(source);
     let s2_custom_elements = custom_elements.clone();
     if use_s2_emit
         && !codegen_opts.source_map
@@ -150,7 +154,11 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         Some(result) => source_map::attach_compat_map(&root, &codegen_opts, result),
         None => profile!(
             "atelier.dom.template.codegen_compat",
-            generate_with_sections(&root, codegen_opts)
+            generate_with_sections_and_experimental_options(
+                &root,
+                codegen_opts,
+                codegen_experimental_options
+            )
         ),
     };
 

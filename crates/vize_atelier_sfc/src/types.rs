@@ -167,6 +167,14 @@ pub struct TemplateCompileOptions {
     pub compiler_options: Option<vize_atelier_dom::DomCompilerOptions>,
 }
 
+/// Experimental SFC compiler options kept separate from [`SfcCompileOptions`]
+/// so existing Rust struct literals remain source-compatible.
+#[derive(Debug, Clone, Default)]
+pub struct SfcCompileExperimentalOptions {
+    /// Treat the reserved `<Self>` tag as a reference to the current SFC.
+    pub self_component: bool,
+}
+
 /// Style compile options
 #[derive(Debug, Clone, Default)]
 pub struct StyleCompileOptions {

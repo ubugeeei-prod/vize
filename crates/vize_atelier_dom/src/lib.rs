@@ -27,9 +27,12 @@ mod tests;
 
 pub use compile::custom_elements::{
     compile_sfc_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
+    compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options,
     compile_template_with_custom_elements_and_template_syntax_and_codegen_options,
     compile_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_and_codegen_options,
     compile_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
+    compile_template_with_custom_elements_template_syntax_codegen_and_experimental_options,
+    compile_template_with_custom_elements_template_syntax_hoisted_scope_id_codegen_and_experimental_options,
 };
 /// The differential lanes' old side — see its own docs for why the ordinary
 /// entry points cannot serve as one.
@@ -42,6 +45,7 @@ pub use compile::{
     compile_template_with_template_syntax_and_hoisted_scope_id,
     compile_template_with_template_syntax_and_hoisted_scope_id_with_sections,
     compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
+    compile_template_with_template_syntax_codegen_and_experimental_options,
 };
 #[allow(deprecated)]
 pub use compile::{

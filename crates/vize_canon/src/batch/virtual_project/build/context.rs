@@ -32,6 +32,7 @@ pub(in crate::batch::virtual_project) struct VirtualBuildContext<'a> {
     pub(in crate::batch::virtual_project) dialect: vize_carton::config::VueVersion,
     pub(in crate::batch::virtual_project) template_syntax: TemplateSyntaxMode,
     pub(in crate::batch::virtual_project) experimental_in_tag_comments: bool,
+    pub(in crate::batch::virtual_project) experimental_strict_slot_children: bool,
     pub(in crate::batch::virtual_project) hoist_shared_preamble: bool,
     pub(in crate::batch::virtual_project) preserve_relative_declarations: bool,
     pub(in crate::batch::virtual_project) preserve_declaration_spelling: bool,

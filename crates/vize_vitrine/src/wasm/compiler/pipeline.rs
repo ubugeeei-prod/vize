@@ -2,15 +2,19 @@ use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_sy
 use vize_atelier_core::options::{BindingMetadata, CodegenMode, CustomElementMatcher};
 use vize_atelier_dom::{
     DomCompilerOptions,
-    compile_template_with_custom_elements_and_template_syntax_and_codegen_options,
+    compile_template_with_custom_elements_template_syntax_codegen_and_experimental_options,
 };
-use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_custom_elements_and_template_syntax};
+use vize_atelier_ssr::{
+    SsrCompilerExperimentalOptions, SsrCompilerOptions,
+    compile_ssr_with_custom_elements_template_syntax_and_experimental_options,
+};
 use vize_atelier_vapor::{
-    VaporCompilerOptions, compile_vapor_with_custom_elements_and_template_syntax,
+    VaporCompilerExperimentalOptions, VaporCompilerOptions,
+    compile_vapor_with_custom_elements_template_syntax_and_experimental_options,
 };
 use vize_s0::Allocator;
 
-use super::compiler_codegen_options;
+use super::{compiler_codegen_experimental_options, compiler_codegen_options, self_component_name};
 use crate::wasm::ast::build_ast_json;
 use crate::wasm::experimentals::{experimental_dom_options, experimental_flags};
 
@@ -22,7 +26,11 @@ pub(in crate::wasm) fn compile_internal(
 ) -> Result<CompileResult, String> {
     let allocator = Allocator::new();
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())?;
-    let (experimental_in_tag_comments, experimental_patterned_template) = experimental_flags(opts);
+    let (
+        experimental_in_tag_comments,
+        experimental_patterned_template,
+        experimental_self_component,
+    ) = experimental_flags(opts);
 
     if opts.ssr.unwrap_or(false) && !vapor && binding_metadata.is_none() {
         let ssr_opts = SsrCompilerOptions {
@@ -30,15 +38,22 @@ pub(in crate::wasm) fn compile_internal(
             custom_renderer: opts.custom_renderer.unwrap_or(false),
             experimental_in_tag_comments,
             experimental_patterned_template,
+            component_name: self_component_name(opts).map(Into::into),
             ..Default::default()
         };
-        let (root, errors, result) = compile_ssr_with_custom_elements_and_template_syntax(
-            &allocator,
-            template,
-            ssr_opts,
-            template_syntax,
-            custom_elements(opts),
-        );
+        let ssr_experimental_opts = SsrCompilerExperimentalOptions {
+            component_name: self_component_name(opts).map(Into::into),
+            self_component: experimental_self_component,
+        };
+        let (root, errors, result) =
+            compile_ssr_with_custom_elements_template_syntax_and_experimental_options(
+                &allocator,
+                template,
+                ssr_opts,
+                template_syntax,
+                custom_elements(opts),
+                ssr_experimental_opts,
+            );
         let fatal: Vec<_> = errors
             .iter()
             .filter(|error| !error.is_recoverable())
@@ -66,12 +81,17 @@ pub(in crate::wasm) fn compile_internal(
             binding_metadata,
             ..Default::default()
         };
-        let result = compile_vapor_with_custom_elements_and_template_syntax(
+        let vapor_experimental_opts = VaporCompilerExperimentalOptions {
+            component_name: self_component_name(opts).map(Into::into),
+            self_component: experimental_self_component,
+        };
+        let result = compile_vapor_with_custom_elements_template_syntax_and_experimental_options(
             &allocator,
             template,
             vapor_opts,
             template_syntax,
             custom_elements(opts),
+            vapor_experimental_opts,
         );
         if !result.error_messages.is_empty() {
             return Err(result
@@ -111,19 +131,21 @@ pub(in crate::wasm) fn compile_internal(
         source_map: opts.source_map.unwrap_or(false),
         is_ts: opts.is_ts.unwrap_or(false),
         custom_renderer: opts.custom_renderer.unwrap_or(false),
+        component_name: self_component_name(opts).map(Into::into),
         binding_metadata,
         inline: has_binding_metadata,
         ..experimental_dom_options(opts)
     };
 
     let (root, errors, result) =
-        compile_template_with_custom_elements_and_template_syntax_and_codegen_options(
+        compile_template_with_custom_elements_template_syntax_codegen_and_experimental_options(
             &allocator,
             template,
             dom_opts,
             template_syntax,
             custom_elements(opts),
             compiler_codegen_options(opts, "template.vue"),
+            compiler_codegen_experimental_options(opts),
         );
     let fatal: Vec<_> = errors
         .iter()

@@ -55,6 +55,7 @@ pub(super) struct VueCodegenOptions<'a> {
     pub(super) dialect: VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
     pub(super) experimental_in_tag_comments: bool,
+    pub(super) experimental_strict_slot_children: bool,
     /// Hoist shared helpers to the batch ambient `.d.ts`; socket sessions keep
     /// them inline because they do not materialize that file.
     pub(super) hoist_shared_preamble: bool,
@@ -273,6 +274,8 @@ pub(super) fn generate_vue_virtual_ts(
                 lib_references: None,
                 omit_vite_client_reference: codegen_options.omit_vite_client_reference,
                 split_script_setup_offsets,
+                experimental_strict_slot_children: codegen_options
+                    .experimental_strict_slot_children,
             },
         )
     );

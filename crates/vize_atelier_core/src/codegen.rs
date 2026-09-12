@@ -7,6 +7,7 @@ mod component_binding;
 mod context;
 mod element;
 mod emit;
+mod entry;
 mod expression;
 mod generate;
 mod helpers;
@@ -34,9 +35,10 @@ pub use context::{CodegenContext, CodegenResult, CodegenResultWithSections, Code
 pub use helpers::is_constant_simple_expression;
 // Shared with the dialect-gated Vue 2 filter transform, which builds the same
 // `_filter_<name>` asset id the codegen preamble declares.
-pub use emit::{
-    generate, generate_with_merge_props, generate_with_sections, generate_with_vnode_factory,
-    generate_with_vnode_factory_and_merge_props,
+pub use entry::{
+    generate, generate_with_experimental_options, generate_with_merge_props,
+    generate_with_sections, generate_with_sections_and_experimental_options,
+    generate_with_vnode_factory, generate_with_vnode_factory_and_merge_props,
 };
 #[cfg(feature = "legacy")]
 pub(crate) use helpers::to_valid_asset_identifier;

@@ -1,9 +1,12 @@
 //! Scope-aware component props type checks, including recursion into nested
 //! v-for/v-slot closure scopes.
 
-use vize_carton::{FxHashMap, FxHashSet, String, append, camelize, capitalize, cstr, profile};
+mod closure_scopes;
 
-use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind, analysis::ComponentUsage};
+use closure_scopes::generate_closure_component_props_recursive;
+pub(super) use closure_scopes::recurse_child_closure_scopes;
+use vize_carton::{FxHashMap, FxHashSet, String, append, camelize, capitalize, profile};
+use vize_croquis::{Croquis, ScopeData, ScopeKind, analysis::ComponentUsage};
 
 use crate::virtual_ts::VizeSemanticLink;
 use crate::virtual_ts::component_reference::component_binding_reference;
@@ -15,13 +18,11 @@ use super::component_prop_checker::{
     append_per_prop_aliases, append_prop_check_helpers, append_prop_checker_alias,
 };
 use super::component_prop_navigation;
-use super::component_slots::{append_component_slot_check_helpers, generate_component_slot_checks};
-use super::context::{ComponentPropsContext, GlobalComponentCheck, VForPropsContext};
-use super::emit::{append_v_for_comment, emit_v_for_loop_open};
-use super::empty_component_props::{
-    generate_empty_root_checks, generate_scope_checks, is_empty_props_usage,
+use super::component_slots::{
+    ComponentSlotCheckMeta, append_component_slot_check_helpers, generate_component_slot_checks,
 };
-use super::slot_scope::generate_v_slot_props_scope;
+use super::context::{ComponentPropsContext, GlobalComponentCheck, VForPropsContext};
+use super::empty_component_props::{generate_empty_root_checks, is_empty_props_usage};
 use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 
 /// Generate component props type checks (scope-aware).
@@ -30,13 +31,20 @@ pub(super) fn generate_component_props(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
-    ctx: &ComponentPropsContext<'_>,
+    ctx: &ComponentPropsContext<'_, '_>,
     checkable_usages: &[(usize, &ComponentUsage)],
 ) {
     let summary = ctx.summary;
     if checkable_usages.is_empty() {
         return;
     }
+    let slot_check_meta = ComponentSlotCheckMeta {
+        summary,
+        options: ctx.options,
+        syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
+        template_ast: ctx.template_ast,
+        experimental_strict_slot_children: ctx.experimental_strict_slot_children,
+    };
 
     let mut components_by_scope: FxHashMap<u32, Vec<(usize, &ComponentUsage)>> =
         FxHashMap::default();
@@ -52,7 +60,7 @@ pub(super) fn generate_component_props(
     // Generic children expose `__vizeCheck<T>(props)`; fallback contextual
     // typing is limited to inline function props to avoid duplicate errors.
     append_prop_check_helpers(ts, checkable_usages, ctx.check_unknown_props);
-    append_component_slot_check_helpers(ts);
+    append_component_slot_check_helpers(ts, ctx.experimental_strict_slot_children);
 
     for &(idx, usage) in checkable_usages {
         let component_ref = component_binding_reference(
@@ -169,7 +177,13 @@ pub(super) fn generate_component_props(
                 ctx.source_context(),
                 "  ",
             );
-            generate_component_slot_checks(&mut check_context, usage, idx, component_ref.as_str())
+            generate_component_slot_checks(
+                &mut check_context,
+                usage,
+                idx,
+                component_ref.as_str(),
+                slot_check_meta,
+            )
         });
     }
 
@@ -186,6 +200,7 @@ pub(super) fn generate_component_props(
         let props_ctx = VForPropsContext {
             summary,
             options: ctx.options,
+            template_ast: ctx.template_ast,
             components_by_scope: &components_by_scope,
             children_map: ctx.children_map,
             vfor_enclosing_guards: &vfor_enclosing_guards,
@@ -193,6 +208,7 @@ pub(super) fn generate_component_props(
             syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
             source_context: ctx.source_context(),
             preserve_event_navigation: ctx.preserve_event_navigation,
+            experimental_strict_slot_children: ctx.experimental_strict_slot_children,
         };
         profile!(
             "canon.virtual_ts.closure_component_props",
@@ -202,7 +218,7 @@ pub(super) fn generate_component_props(
 }
 
 pub(super) fn collect_checkable_usages<'a>(
-    ctx: &ComponentPropsContext<'a>,
+    ctx: &ComponentPropsContext<'a, '_>,
 ) -> Vec<(usize, &'a ComponentUsage)> {
     let external_template_bindings: FxHashSet<&str> = ctx
         .options
@@ -249,96 +265,4 @@ fn component_name_matches_external_template_binding(
     [name, camel_name.as_str(), pascal_name.as_str()]
         .iter()
         .any(|candidate| external_template_bindings.contains(candidate))
-}
-
-fn generate_closure_component_props_recursive(
-    ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
-    ctx: &VForPropsContext<'_>,
-    scope: &Scope,
-    indent: &str,
-) {
-    let scope_id = scope.id.as_u32();
-    let inner_indent = vize_carton::cstr!("{indent}  ");
-    match scope.data() {
-        ScopeData::VFor(data) => {
-            let enclosing_guard = ctx.vfor_enclosing_guards.get(&scope_id).map(String::as_str);
-            let (loop_indent, vfor_inner_indent) = if enclosing_guard.is_some() {
-                (cstr!("{indent}  "), cstr!("{inner_indent}  "))
-            } else {
-                (String::from(indent), inner_indent.clone())
-            };
-            if let Some(guard) = enclosing_guard {
-                append!(*ts, "{indent}if ({guard}) {{\n");
-            }
-
-            append_v_for_comment(
-                ts,
-                &loop_indent,
-                "Component props in v-for scope",
-                data.value_alias.as_str(),
-                data.source.as_str(),
-            );
-            emit_v_for_loop_open(
-                ts,
-                mappings,
-                ctx.source_context.offset,
-                ctx.summary.scopes.v_for_source_offset(scope.id),
-                &loop_indent,
-                scope,
-                ctx.template_prop_names,
-            );
-
-            // Mark v-for variables as used to avoid TS6133
-            for value in &data.value_bindings {
-                append!(*ts, "{vfor_inner_indent}void {value};\n");
-            }
-            if let Some(ref key) = data.key_alias {
-                append!(*ts, "{vfor_inner_indent}void {key};\n");
-            }
-            if let Some(ref index) = data.index_alias {
-                append!(*ts, "{vfor_inner_indent}void {index};\n");
-            }
-
-            // Emit component prop checks for this scope
-            generate_scope_checks(ts, mappings, ctx, scope_id, &vfor_inner_indent);
-
-            // Recursively handle child closure scopes (v-for and v-slot)
-            recurse_child_closure_scopes(ts, mappings, ctx, scope_id, &vfor_inner_indent);
-
-            ts.push_str(&loop_indent);
-            ts.push_str("});\n");
-            if enclosing_guard.is_some() {
-                append!(*ts, "{indent}}}\n");
-            }
-        }
-        ScopeData::VSlot(data) => {
-            generate_v_slot_props_scope(ts, mappings, ctx, scope, data, indent, &inner_indent);
-        }
-        _ => {}
-    }
-}
-
-/// Recurse into a scope's direct v-for/v-slot child scopes, emitting their
-/// component prop checks at the given indent.
-pub(super) fn recurse_child_closure_scopes(
-    ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
-    ctx: &VForPropsContext<'_>,
-    scope_id: u32,
-    indent: &str,
-) {
-    let Some(child_ids) = ctx.children_map.get(&scope_id) else {
-        return;
-    };
-    for &child_id in child_ids {
-        if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id)
-            && matches!(child_scope.kind, ScopeKind::VFor | ScopeKind::VSlot)
-        {
-            profile!(
-                "canon.virtual_ts.closure_component_props",
-                generate_closure_component_props_recursive(ts, mappings, ctx, child_scope, indent)
-            );
-        }
-    }
 }

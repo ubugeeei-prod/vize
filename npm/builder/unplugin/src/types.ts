@@ -9,6 +9,8 @@ export interface SfcCompileOptionsNapi {
   templateSyntax?: VizeTemplateSyntax;
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
+  experimentalSelfComponent?: boolean;
+  experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
@@ -103,6 +105,8 @@ export interface VizeUnpluginOptions {
   vapor?: boolean;
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
+  experimentalSelfComponent?: boolean;
+  experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
   /**
    * Default output mode for `.jsx`/`.tsx` components without a `"use vue:*"`
@@ -196,6 +200,8 @@ export interface NormalizedVizeUnpluginOptions {
   vapor: boolean;
   experimentalInTagComments: boolean;
   experimentalPatternedTemplate: boolean;
+  experimentalSelfComponent: boolean;
+  experimentalStrictSlotChildren: boolean;
   experimentalServerScript: boolean;
   /** Default JSX output mode; `undefined` when unset (treated as VDOM). */
   jsxMode?: "vdom" | "vapor";

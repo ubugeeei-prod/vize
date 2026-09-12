@@ -1,4 +1,7 @@
-use super::{VaporCompilerOptions, compile_vapor};
+use super::{
+    VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor,
+    compile_vapor_with_experimental_options,
+};
 use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_carton::{Allocator, FxHashMap};
 
@@ -33,6 +36,26 @@ fn test_compile_custom_renderer_intrinsics_with_bound_lowercase_component() {
     assert_eq!(
         component_resolution_lines(&result.code),
         vec!["const _component_primitive = _ctx.Primitive"]
+    );
+}
+
+#[test]
+fn test_experimental_self_component_resolves_current_component() {
+    let allocator = Allocator::new();
+    let result = compile_vapor_with_experimental_options(
+        &allocator,
+        r#"<Self />"#,
+        VaporCompilerOptions::default(),
+        VaporCompilerExperimentalOptions {
+            component_name: Some("TreeNode".into()),
+            self_component: true,
+        },
+    );
+
+    assert_eq!(result.error_messages.len(), 0);
+    assert_eq!(
+        component_resolution_lines(&result.code),
+        vec!["const _component_Self = _resolveComponent(\"TreeNode\", true)"]
     );
 }
 

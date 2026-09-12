@@ -39,6 +39,9 @@ pub struct CompilerOptions {
     /// Filename for source map
     #[serde(default)]
     pub filename: Option<String>,
+    /// Current component name for direct template compilation.
+    #[serde(default)]
+    pub component_name: Option<String>,
     /// Output mode: "vdom" or "vapor"
     #[serde(default)]
     pub output_mode: Option<String>,
@@ -57,9 +60,16 @@ pub struct CompilerOptions {
     /// Enable experimental Vue in-tag comments (`// ...`) inside opening tags.
     #[serde(default)]
     pub experimental_in_tag_comments: Option<bool>,
-    /// Enable experimental `v-match` / `v-case` patterned template desugaring.
+    /// Enable experimental `v-match` / `v-when` patterned template desugaring.
     #[serde(default)]
     pub experimental_patterned_template: Option<bool>,
+    /// Enable experimental reserved `<Self>` component references.
+    #[serde(default)]
+    pub experimental_self_component: Option<bool>,
+    /// Accepted for option-shape parity; strict slot child checks run through
+    /// SFC/check surfaces rather than direct template compilation.
+    #[serde(default)]
+    pub experimental_strict_slot_children: Option<bool>,
     /// Enable experimental server-script related RFC surface.
     #[serde(default)]
     pub experimental_server_script: Option<bool>,

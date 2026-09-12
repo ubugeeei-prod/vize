@@ -16,13 +16,16 @@ use vize_s0::Allocator;
 
 use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
 use vize_atelier_core::{
-    codegen::generate,
+    codegen::generate_with_experimental_options,
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
-    options::{CodegenMode, CodegenOptions, ParserOptions, TransformOptions},
+    options::{
+        CodegenExperimentalOptions, CodegenMode, CodegenOptions, ParserOptions, TransformOptions,
+    },
     parser::parse_with_options_custom_elements_and_template_syntax,
 };
 use vize_atelier_vapor::{
-    VaporCompilerOptions, compile_vapor_with_custom_elements_and_template_syntax,
+    VaporCompilerExperimentalOptions, VaporCompilerOptions,
+    compile_vapor_with_custom_elements_template_syntax_and_experimental_options,
 };
 
 /// Compile Vue template to VDom render function
@@ -91,6 +94,7 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         } else {
             CodegenMode::Function
         },
+        component_name: self_component_name(&opts).map(Into::into),
         source_map: opts.source_map.unwrap_or(false),
         ssr: opts.ssr.unwrap_or(false),
         prefix_identifiers: opts.prefix_identifiers.unwrap_or(is_module_mode),
@@ -106,7 +110,11 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
             .into(),
         ..Default::default()
     };
-    let result = generate(&root, codegen_opts);
+    let codegen_experimental_opts = CodegenExperimentalOptions {
+        component_name: None,
+        self_component: opts.experimental_self_component.unwrap_or(false),
+    };
+    let result = generate_with_experimental_options(&root, codegen_opts, codegen_experimental_opts);
 
     // Collect helpers
     let helpers: Vec<String> = root.helpers.iter().map(|h| h.name().to_string()).collect();
@@ -141,7 +149,11 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
         experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
         ..Default::default()
     };
-    let result = compile_vapor_with_custom_elements_and_template_syntax(
+    let vapor_experimental_opts = VaporCompilerExperimentalOptions {
+        component_name: self_component_name(&opts).map(Into::into),
+        self_component: opts.experimental_self_component.unwrap_or(false),
+    };
+    let result = compile_vapor_with_custom_elements_template_syntax_and_experimental_options(
         &allocator,
         &template,
         vapor_opts,
@@ -149,6 +161,7 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
         vize_atelier_core::options::CustomElementMatcher::from_patterns(
             crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
         ),
+        vapor_experimental_opts,
     );
 
     if !result.error_messages.is_empty() {
@@ -171,6 +184,18 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
         helpers: vec![],
         templates: Some(result.templates.iter().map(|s| s.to_string()).collect()),
     })
+}
+
+fn self_component_name(opts: &CompilerOptions) -> Option<String> {
+    opts.component_name
+        .clone()
+        .or_else(|| component_name_from_filename(opts.filename.as_deref()))
+}
+
+fn component_name_from_filename(filename: Option<&str>) -> Option<String> {
+    let filename = filename?;
+    let stem = std::path::Path::new(filename).file_stem()?.to_str()?.trim();
+    (!stem.is_empty()).then(|| stem.to_string())
 }
 
 /// Parse template to AST only

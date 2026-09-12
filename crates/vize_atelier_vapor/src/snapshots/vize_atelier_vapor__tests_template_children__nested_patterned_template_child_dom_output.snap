@@ -5,18 +5,24 @@ expression: dom_output(NESTED)
 errors=[]
 components=[]
 preamble=
-const { createElementVNode: _createElementVNode, normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode } = Vue
+const { createElementVNode: _createElementVNode, normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, renderList: _renderList } = Vue
 
 code=
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("div", null, [
-    ((outer) === ('open'))
-      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
-        ((inner) === ('x'))
-          ? (_openBlock(), _createElementBlock("li", { key: 0 }, "X"))
-          : (_openBlock(), _createElementBlock("li", { key: 1 }, "Inner fallback"))
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([outer], (__vize_match) => {
+      return (_openBlock(), _createElementBlock(_Fragment, null, [
+        ((__vize_match) === ('open'))
+          ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList([inner], (__vize_match) => {
+            return (_openBlock(), _createElementBlock(_Fragment, null, [
+              ((__vize_match) === ('x'))
+                ? (_openBlock(), _createElementBlock("li", { key: 0 }, "X"))
+                : (_openBlock(), _createElementBlock("li", { key: 1 }, "Inner fallback"))
+            ], 64 /* STABLE_FRAGMENT */))
+          }), 256 /* UNKEYED_FRAGMENT */))
+          : (_openBlock(), _createElementBlock("p", { key: 1 }, "Outer fallback"))
       ], 64 /* STABLE_FRAGMENT */))
-      : (_openBlock(), _createElementBlock("p", { key: 1 }, "Outer fallback")),
+    }), 256 /* UNKEYED_FRAGMENT */)),
     _createElementVNode("footer", {
       class: _normalizeClass(cls)
     }, "tail", 2 /* CLASS */)

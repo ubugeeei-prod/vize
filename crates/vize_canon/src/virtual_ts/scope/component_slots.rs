@@ -1,14 +1,29 @@
 //! Required-slot checks for component usages.
 
-use vize_carton::{FxHashSet, String, append, cstr};
-use vize_croquis::analysis::ComponentUsage;
+mod child_types;
+mod slot_syntax;
+mod strict_children;
+
+use vize_carton::{CompactString, FxHashSet, String, append};
+use vize_croquis::{Croquis, analysis::ComponentUsage};
+use vize_relief::RootNode;
 
 use crate::virtual_ts::expressions::ComponentPropCheckContext;
-use crate::virtual_ts::types::VizeMapping;
+use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
+use self::strict_children::generate_strict_slot_child_checks;
 use super::vif_guard::append_ignored_vif_guard_open;
 
-pub(super) fn append_component_slot_check_helpers(ts: &mut String) {
+#[derive(Clone, Copy)]
+pub(super) struct ComponentSlotCheckMeta<'a, 'template> {
+    pub(super) summary: &'a Croquis,
+    pub(super) options: &'a VirtualTsOptions,
+    pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
+    pub(super) template_ast: Option<&'a RootNode<'template>>,
+    pub(super) experimental_strict_slot_children: bool,
+}
+
+pub(super) fn append_component_slot_check_helpers(ts: &mut String, strict_children: bool) {
     // `$slots` declarations in third-party component libraries frequently
     // describe callable slot names, not whether the parent must provide them.
     // Required-slot checks therefore trust only Vize's own explicit marker.
@@ -24,6 +39,14 @@ pub(super) fn append_component_slot_check_helpers(ts: &mut String) {
     ts.push_str(
         "  type __VizeRequiredSlots<__S, __P> = __VizeIsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [__VizeMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: __VizeMissingRequiredSlots<__S, __P> };\n",
     );
+    if strict_children {
+        ts.push_str(
+            "  type __VizeSlotChildren<__S, __K extends PropertyKey> = __VizeIsAny<__S> extends true ? any : string extends keyof __S ? any : __K extends keyof __S ? ReturnType<Extract<NonNullable<__S[__K]>, (...args: any[]) => any>> : any;\n",
+        );
+        ts.push_str(
+            "  type __VizeProvidedSlotChildren<__T extends unknown[]> = __T extends [infer __Only] ? __Only | __T : __T;\n",
+        );
+    }
 }
 
 pub(super) fn generate_component_slot_checks(
@@ -31,44 +54,51 @@ pub(super) fn generate_component_slot_checks(
     usage: &ComponentUsage,
     idx: usize,
     component_ref: &str,
+    meta: ComponentSlotCheckMeta<'_, '_>,
 ) {
-    let ts = &mut *ctx.ts;
-    let mappings = &mut *ctx.mappings;
     let indent = ctx.indent;
     let expr_indent = if usage.vif_guard.is_some() {
-        cstr!("{indent}  ")
+        vize_carton::cstr!("{indent}  ")
     } else {
         String::from(indent)
     };
 
     if let Some(ref guard) = usage.vif_guard {
-        append_ignored_vif_guard_open(ts, indent, guard, "Inference-only guard");
+        append_ignored_vif_guard_open(ctx.ts, indent, guard, "Inference-only guard");
     }
 
-    let contract_name = cstr!("__VizeSlotContract_{idx}");
-    append!(
-        *ts,
-        "{expr_indent}type {contract_name} = __VizeStructuralSlots<typeof {component_ref}>;\n"
-    );
+    let contract_name = vize_carton::cstr!("__VizeSlotContract_{idx}");
+    {
+        let ts = &mut *ctx.ts;
+        let mappings = &mut *ctx.mappings;
+        append!(
+            *ts,
+            "{expr_indent}type {contract_name} = __VizeStructuralSlots<typeof {component_ref}>;\n"
+        );
 
-    let provided_slots = provided_slots_type(usage);
-    let check_name = cstr!("__vize_required_slots_{idx}");
-    let gen_start = ts.len();
-    append!(
-        *ts,
-        "{expr_indent}const {check_name}: __VizeRequiredSlots<{contract_name}, {provided_slots}> = {{}};\n"
-    );
-    append!(*ts, "{expr_indent}void {check_name};\n");
-    let gen_end = ts.len();
-    let tag_src_start = (ctx.source_context.offset + usage.start + 1) as usize;
-    mappings.push(VizeMapping {
-        gen_range: gen_start..gen_end,
-        src_range: tag_src_start..tag_src_start + usage.name.len(),
-        sub_spans: Vec::new(),
-    });
+        let provided_slots = provided_slots_type(usage);
+        let check_name = vize_carton::cstr!("__vize_required_slots_{idx}");
+        let gen_start = ts.len();
+        append!(
+            *ts,
+            "{expr_indent}const {check_name}: __VizeRequiredSlots<{contract_name}, {provided_slots}> = {{}};\n"
+        );
+        append!(*ts, "{expr_indent}void {check_name};\n");
+        let gen_end = ts.len();
+        let tag_src_start = (ctx.source_context.offset + usage.start + 1) as usize;
+        mappings.push(VizeMapping {
+            gen_range: gen_start..gen_end,
+            src_range: tag_src_start..tag_src_start + usage.name.len(),
+            sub_spans: Vec::new(),
+        });
+    }
+
+    if meta.experimental_strict_slot_children {
+        generate_strict_slot_child_checks(ctx, usage, idx, contract_name.as_str(), meta);
+    }
 
     if usage.vif_guard.is_some() {
-        append!(*ts, "{indent}}}\n");
+        append!(*ctx.ts, "{indent}}}\n");
     }
 }
 
@@ -94,7 +124,7 @@ fn provided_slots_type(usage: &ComponentUsage) -> String {
     output
 }
 
-fn push_ts_string_literal(output: &mut String, value: &str) {
+pub(super) fn push_ts_string_literal(output: &mut String, value: &str) {
     output.push('"');
     for character in value.chars() {
         match character {

@@ -28,6 +28,7 @@ pub(super) struct CheckerSettings {
     pub(super) jsx_typecheck: bool,
     pub(super) template_syntax: vize_atelier_core::TemplateSyntaxMode,
     pub(super) experimental_in_tag_comments: bool,
+    pub(super) experimental_strict_slot_children: bool,
     pub(super) dialect: VueVersion,
     pub(super) check_props: bool,
     pub(super) check_template_bindings: bool,
@@ -125,6 +126,7 @@ pub(super) fn execute_program(
     }
     checker.set_template_syntax(settings.template_syntax);
     checker.set_experimental_in_tag_comments(settings.experimental_in_tag_comments);
+    checker.set_experimental_strict_slot_children(settings.experimental_strict_slot_children);
     checker.set_dialect(settings.dialect);
     checker.set_virtual_ts_checks(
         settings.check_props,

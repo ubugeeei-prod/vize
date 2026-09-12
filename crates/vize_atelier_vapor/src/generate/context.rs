@@ -6,10 +6,11 @@ use super::{
 };
 
 mod complex_expression;
+mod component_resolution;
 mod scopes;
 pub(crate) use scopes::{ForScope, SlotScope};
 use vize_atelier_core::options::BindingMetadata;
-use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, camelize, capitalize, cstr};
+use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, cstr};
 use vize_croquis::builtins::is_global_allowed;
 
 /// Generate context
@@ -55,6 +56,10 @@ pub(crate) struct GenerateContext<'a> {
     /// closure (JSX/TSX authoring), so free identifiers resolve to enclosing
     /// scope variables and must stay bare instead of being `_ctx.`-prefixed.
     pub(crate) jsx_closure: bool,
+    /// Current SFC component name for experimental `<Self>` resolution.
+    pub(crate) component_name: Option<&'a str>,
+    /// Treat the reserved `<Self>` tag as a reference to the current SFC.
+    pub(crate) experimental_self_component: bool,
 }
 
 impl<'a> GenerateContext<'a> {
@@ -83,6 +88,8 @@ impl<'a> GenerateContext<'a> {
             standalone_text_elements,
             binding_metadata,
             jsx_closure: false,
+            component_name: None,
+            experimental_self_component: false,
         }
     }
 
@@ -232,35 +239,6 @@ impl<'a> GenerateContext<'a> {
 
     pub(crate) fn is_component_resolved(&self, component: &str) -> bool {
         self.resolved_components.contains(component)
-    }
-
-    pub(crate) fn resolve_component_binding_expr(&self, component: &str) -> Option<String> {
-        let bindings = self.binding_metadata?;
-
-        let resolve_base = |name: &str| {
-            if bindings.bindings.contains_key(name) {
-                return Some(name.to_compact_string());
-            }
-
-            let camel = camelize(name);
-            if bindings.bindings.contains_key(camel.as_str()) {
-                return Some(camel);
-            }
-
-            let pascal = capitalize(&camel);
-            if bindings.bindings.contains_key(pascal.as_str()) {
-                return Some(pascal);
-            }
-
-            None
-        };
-
-        if let Some((base, suffix)) = component.split_once('.') {
-            let resolved_base = resolve_base(base)?;
-            return Some(cstr!("_ctx.{}.{}", resolved_base, suffix));
-        }
-
-        resolve_base(component).map(|binding| cstr!("_ctx.{}", binding))
     }
 
     pub(crate) fn mark_component_resolved(&mut self, component: &str) {

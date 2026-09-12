@@ -20,8 +20,6 @@ use super::vif_guard::{
 };
 use super::{children::generate_child_scopes, component_event_navigation::emit_event_references};
 
-/// Generates the Croquis scope chain as a recursive tree so nested v-for/v-slot
-/// scopes remain contained within their parent closures.
 pub(crate) fn generate_scope_closures(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -103,7 +101,6 @@ pub(crate) fn generate_scope_closures(
                 .iter()
                 .filter(|scope| {
                     scope.parent().is_some_and(|pid| {
-                        // Resolve the parent via O(1) indexed lookup (was O(n^2)).
                         summary.scopes.get_scope(pid).is_some_and(|parent| {
                             matches!(parent.kind, ScopeKind::VFor | ScopeKind::VSlot)
                         })
@@ -121,6 +118,7 @@ pub(crate) fn generate_scope_closures(
     }
     let props_ctx = ComponentPropsContext {
         summary,
+        template_ast: options.template_ast,
         template_source: options.template_ast.map(|root| root.source),
         children_map: &children_map,
         vfor_enclosing_guards: &vfor_enclosing_guards,
@@ -132,6 +130,7 @@ pub(crate) fn generate_scope_closures(
         check_unresolved_global_components: options.check_unresolved_global_components,
         legacy_vue2: options.legacy_vue2,
         check_unknown_props: check_options.check_unknown_props,
+        experimental_strict_slot_children: options.experimental_strict_slot_children,
     };
     let usages = check_options
         .check_props

@@ -75,12 +75,14 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     /// plain binding), so those keep the free-name emission instead of the
     /// public-instance property access.
     pub(crate) script_content: Option<&'a str>,
+    pub(crate) experimental_strict_slot_children: bool,
 }
 
 /// Context for recursive component prop checks inside v-for scopes.
-pub(crate) struct VForPropsContext<'a> {
+pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) summary: &'a Croquis,
     pub(crate) options: &'a VirtualTsOptions,
+    pub(crate) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(crate) components_by_scope: &'a FxHashMap<u32, Vec<(usize, &'a ComponentUsage)>>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(crate) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
@@ -88,6 +90,7 @@ pub(crate) struct VForPropsContext<'a> {
     pub(crate) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(crate) source_context: ComponentPropSource<'a>,
     pub(crate) preserve_event_navigation: bool,
+    pub(crate) experimental_strict_slot_children: bool,
 }
 
 pub(super) struct EventHandlerExprContext<'a> {
@@ -114,8 +117,9 @@ pub(super) struct EventHandlerExprContext<'a> {
     pub(super) indent: &'a str,
 }
 
-pub(super) struct ComponentPropsContext<'a> {
+pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) summary: &'a Croquis,
+    pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) template_source: Option<&'a str>,
     pub(super) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(super) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
@@ -127,9 +131,10 @@ pub(super) struct ComponentPropsContext<'a> {
     pub(super) check_unresolved_global_components: GlobalComponentCheck,
     pub(super) legacy_vue2: bool,
     pub(super) check_unknown_props: bool,
+    pub(super) experimental_strict_slot_children: bool,
 }
 
-impl<'a> ComponentPropsContext<'a> {
+impl<'a> ComponentPropsContext<'a, '_> {
     pub(super) const fn source_context(&self) -> ComponentPropSource<'a> {
         ComponentPropSource::new(
             self.template_source,

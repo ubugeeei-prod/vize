@@ -37,6 +37,10 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     fn resolve_component_binding(&self, component: &str) -> Option<ComponentBinding> {
+        if self.experimental_self_component && component == "Self" {
+            return None;
+        }
+
         let metadata = self.options.binding_metadata.as_ref()?;
         let resolve_base = |name: &str| {
             if let Some(binding_type) = metadata.bindings.get(name) {

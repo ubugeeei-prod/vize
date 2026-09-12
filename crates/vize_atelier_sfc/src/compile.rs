@@ -16,7 +16,7 @@ mod template_only;
 #[cfg(test)]
 mod tests;
 
-use crate::compile_script::artifacts::{erase_artifact_macro_statements, extract_macro_artifacts};
+use crate::compile_script::artifacts::erase_artifact_macro_statements;
 use crate::compile_script::lazy_hydration::transform_lazy_hydration_macros;
 use crate::compile_script::props::{is_valid_identifier, validate_macro_scope_for_descriptor};
 use crate::compile_script::{TemplateParts, compile_script_setup_inline_with_context};
@@ -27,8 +27,8 @@ use crate::compile_template::{
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
 use crate::types::{
-    BindingMetadata, BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
-    SfcMacroArtifact,
+    BindingMetadata, BindingType, SfcCompileExperimentalOptions, SfcCompileOptions,
+    SfcCompileResult, SfcDescriptor, SfcError,
 };
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 
@@ -36,9 +36,10 @@ use self::bindings::{
     collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
 };
 use self::diagnostics::{create_v_model_reactive_const_warning, create_vapor_ssr_fallback_warning};
+pub(crate) use self::helpers::is_ts_lang;
 use self::helpers::{
-    demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
-    trim_trailing_newlines,
+    demote_v_model_reactive_const_bindings, extract_component_name,
+    extract_descriptor_macro_artifacts, generate_scope_id, trim_trailing_newlines,
 };
 use self::normal_script::extract_normal_script_content;
 use self::output_module::{
@@ -53,31 +54,12 @@ pub use crate::compile_script::ScriptCompileResult;
 pub use entry::compile_sfc_with_vue_parser_quirks;
 pub use entry::{
     SfcScriptOutputMode, compile_sfc, compile_sfc_for_adapter,
+    compile_sfc_for_adapter_with_experimental_options,
     compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
+    compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options,
     compile_sfc_with_template_syntax, compile_sfc_with_template_syntax_and_codegen_options,
 };
 use vize_carton::{String, ToCompactString, profile};
-
-pub(crate) fn is_ts_lang(lang: Option<&str>) -> bool {
-    matches!(lang, Some("ts" | "tsx"))
-}
-
-fn extract_descriptor_macro_artifacts(descriptor: &SfcDescriptor) -> Vec<SfcMacroArtifact> {
-    let mut artifacts = Vec::new();
-
-    if let Some(script) = descriptor.script.as_ref() {
-        artifacts.extend(extract_macro_artifacts(&script.content, script.loc.start));
-    }
-    if let Some(script_setup) = descriptor.script_setup.as_ref() {
-        artifacts.extend(extract_macro_artifacts(
-            &script_setup.content,
-            script_setup.loc.start,
-        ));
-    }
-
-    artifacts.sort_by_key(|artifact| artifact.start);
-    artifacts
-}
 
 fn compile_sfc_inner(
     descriptor: &SfcDescriptor,
@@ -86,6 +68,7 @@ fn compile_sfc_inner(
     custom_elements: CustomElementMatcher,
     codegen_options: CodegenOptions,
     script_output: SfcScriptOutputMode,
+    experimental_options: SfcCompileExperimentalOptions,
 ) -> Result<SfcCompileResult, SfcError> {
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
@@ -181,6 +164,7 @@ fn compile_sfc_inner(
                 has_scoped,
                 is_vapor,
                 template_is_ts,
+                experimental_self_component: experimental_options.self_component,
             },
             css,
             errors,
@@ -304,6 +288,7 @@ fn compile_sfc_inner(
                             is_ts: template_is_ts,
                             inline: false,
                             component_name: Some(&component_name),
+                            experimental_self_component: experimental_options.self_component,
                             bindings: options_api_bindings.as_ref(),
                             croquis: None,
                         },
@@ -331,6 +316,7 @@ fn compile_sfc_inner(
                             is_ts: template_is_ts,
                             inline: false,
                             component_name: Some(&component_name),
+                            experimental_self_component: experimental_options.self_component,
                             bindings: options_api_bindings.as_ref(),
                             croquis: None,
                         },
@@ -634,6 +620,7 @@ fn compile_sfc_inner(
                         is_ts: template_is_ts,
                         inline: false,
                         component_name: Some(&component_name),
+                        experimental_self_component: experimental_options.self_component,
                         bindings: Some(&script_bindings),
                         croquis: None,
                     },
@@ -659,6 +646,7 @@ fn compile_sfc_inner(
                         is_ts: template_is_ts,
                         inline: !script_output.separates_template(),
                         component_name: Some(&component_name),
+                        experimental_self_component: experimental_options.self_component,
                         bindings: Some(&script_bindings),
                         croquis: Some(croquis),
                     },

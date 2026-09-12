@@ -5,16 +5,21 @@ expression: dom_output(V_MATCH)
 errors=[]
 components=[]
 preamble=
-const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
+const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, renderList: _renderList } = Vue
 
 const _hoisted_1 = /*#__PURE__*/ _createElementVNode("li", null, "Plain")
 
 code=
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("div", null, [
-    [((status) === ('ready'))
-      ? (_openBlock(), _createElementBlock("li", { key: 0 }, "Ready"))
-      : _createCommentVNode("v-if", true), _hoisted_1],
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([status], (__vize_match) => {
+      return (_openBlock(), _createElementBlock(_Fragment, null, [
+        ((__vize_match) === ('ready'))
+          ? (_openBlock(), _createElementBlock("li", { key: 0 }, "Ready"))
+          : _createCommentVNode("v-if", true),
+        _hoisted_1
+      ], 64 /* STABLE_FRAGMENT */))
+    }), 256 /* UNKEYED_FRAGMENT */)),
     _createElementVNode("span", null, _toDisplayString(x), 1 /* TEXT */)
   ]))
 }

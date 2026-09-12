@@ -1,22 +1,26 @@
 //! The `Compiler` WASM class, its free-function aliases, and the internal
 //! template/SFC compilation pipeline.
 
+mod codegen_options;
 mod free_fns;
 pub(in crate::wasm) mod pipeline;
 
+pub(in crate::wasm) use codegen_options::{
+    compiler_codegen_experimental_options, compiler_codegen_options, self_component_name,
+};
 pub use free_fns::*;
 
 use vize_s0::Allocator;
 use wasm_bindgen::prelude::*;
 
 use crate::{CompilerOptions, template_syntax::resolve_template_syntax};
-use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher};
+use vize_atelier_core::options::CustomElementMatcher;
 use vize_atelier_core::parser::parse_with_options_custom_elements_and_template_syntax;
 use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 use vize_atelier_sfc::{
-    ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
-    StyleCompileOptions, TemplateCompileOptions,
-    compile_sfc_for_adapter as sfc_compile_for_adapter, parse_sfc,
+    ScriptCompileOptions, SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions,
+    SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions,
+    compile_sfc_for_adapter_with_experimental_options as sfc_compile_for_adapter, parse_sfc,
 };
 
 use super::ast::build_ast_json;
@@ -27,20 +31,6 @@ use super::sfc_types::{
     SfcScriptResult, SfcWasmResult, descriptor_to_wasm, macro_artifact_to_wasm,
 };
 use pipeline::compile_internal;
-
-fn compiler_codegen_options(opts: &CompilerOptions, default_filename: &str) -> CodegenOptions {
-    let mut codegen_options = CodegenOptions {
-        filename: opts.filename.as_deref().unwrap_or(default_filename).into(),
-        ..CodegenOptions::default()
-    };
-    if let Some(runtime_module_name) = opts.runtime_module_name.as_deref() {
-        codegen_options.runtime_module_name = runtime_module_name.into();
-    }
-    if let Some(runtime_global_name) = opts.runtime_global_name.as_deref() {
-        codegen_options.runtime_global_name = runtime_global_name.into();
-    }
-    codegen_options
-}
 
 /// WASM Compiler instance
 #[wasm_bindgen]
@@ -269,6 +259,9 @@ impl Compiler {
                 SfcScriptOutputMode::InlineTemplate
             } else {
                 SfcScriptOutputMode::SeparateTemplate
+            },
+            SfcCompileExperimentalOptions {
+                self_component: opts.experimental_self_component.unwrap_or(false),
             },
         );
         let sfc_result = match compile_result {

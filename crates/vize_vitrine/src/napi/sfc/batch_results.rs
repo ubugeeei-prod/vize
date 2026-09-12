@@ -37,7 +37,8 @@ fn compile_sfc_batch_with_results_inner(
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
         StyleCompileOptions, TemplateCompileOptions,
-        compile_sfc_for_adapter as sfc_compile_for_adapter, parse_sfc as sfc_parse,
+        compile_sfc_for_adapter_with_experimental_options as sfc_compile_for_adapter,
+        parse_sfc as sfc_parse,
     };
 
     let total_count = files.len();
@@ -185,6 +186,7 @@ fn compile_sfc_batch_with_results_inner(
                 custom_elements.clone(),
                 vize_atelier_core::CodegenOptions::default(),
                 script_output,
+                experimentals.sfc_options(),
             );
 
             match compile_result {

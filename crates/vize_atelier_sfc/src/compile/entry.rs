@@ -1,5 +1,7 @@
 use super::compile_sfc_inner;
-use crate::types::{SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError};
+use crate::types::{
+    SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
+};
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 
 /// Script/template assembly selected by adapter-facing compiler entrypoints.
@@ -30,6 +32,7 @@ pub fn compile_sfc(
         CustomElementMatcher::default(),
         CodegenOptions::default(),
         SfcScriptOutputMode::InlineTemplate,
+        SfcCompileExperimentalOptions::default(),
     )
 }
 
@@ -46,6 +49,7 @@ pub fn compile_sfc_with_vue_parser_quirks(
         CustomElementMatcher::default(),
         CodegenOptions::default(),
         SfcScriptOutputMode::InlineTemplate,
+        SfcCompileExperimentalOptions::default(),
     )
 }
 
@@ -63,6 +67,7 @@ pub fn compile_sfc_with_template_syntax(
         CustomElementMatcher::default(),
         CodegenOptions::default(),
         SfcScriptOutputMode::InlineTemplate,
+        SfcCompileExperimentalOptions::default(),
     )
 }
 
@@ -102,6 +107,28 @@ pub fn compile_sfc_with_custom_elements_template_syntax_and_codegen_options(
     )
 }
 
+/// Compile with declarative custom-element patterns, adapter codegen defaults,
+/// and opt-in experimental template codegen context.
+#[doc(hidden)]
+pub fn compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(
+    descriptor: &SfcDescriptor,
+    options: SfcCompileOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    experimental_options: SfcCompileExperimentalOptions,
+) -> Result<SfcCompileResult, SfcError> {
+    compile_sfc_inner(
+        descriptor,
+        options,
+        template_syntax,
+        custom_elements,
+        codegen_options,
+        SfcScriptOutputMode::InlineTemplate,
+        experimental_options,
+    )
+}
+
 /// Compile an SFC with an explicit adapter-facing script output mode.
 #[doc(hidden)]
 pub fn compile_sfc_for_adapter(
@@ -112,6 +139,29 @@ pub fn compile_sfc_for_adapter(
     codegen_options: CodegenOptions,
     script_output: SfcScriptOutputMode,
 ) -> Result<SfcCompileResult, SfcError> {
+    compile_sfc_for_adapter_with_experimental_options(
+        descriptor,
+        options,
+        template_syntax,
+        custom_elements,
+        codegen_options,
+        script_output,
+        SfcCompileExperimentalOptions::default(),
+    )
+}
+
+/// Compile an SFC with an explicit adapter-facing script output mode and
+/// opt-in experimental template codegen context.
+#[doc(hidden)]
+pub fn compile_sfc_for_adapter_with_experimental_options(
+    descriptor: &SfcDescriptor,
+    options: SfcCompileOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    script_output: SfcScriptOutputMode,
+    experimental_options: SfcCompileExperimentalOptions,
+) -> Result<SfcCompileResult, SfcError> {
     compile_sfc_inner(
         descriptor,
         options,
@@ -119,5 +169,6 @@ pub fn compile_sfc_for_adapter(
         custom_elements,
         codegen_options,
         script_output,
+        experimental_options,
     )
 }

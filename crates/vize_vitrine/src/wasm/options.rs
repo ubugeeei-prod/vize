@@ -35,6 +35,7 @@ define_compiler_option_inventory! {
     Ssr => ("ssr", "boolean"),
     SourceMap => ("sourceMap", "boolean"),
     Filename => ("filename", "string"),
+    ComponentName => ("componentName", "string"),
     OutputMode => ("outputMode", r#""vdom" | "vapor""#),
     IsTs => ("isTs", "boolean"),
     CustomRenderer => ("customRenderer", "boolean"),
@@ -42,6 +43,7 @@ define_compiler_option_inventory! {
     TemplateSyntax => ("templateSyntax", r#""standard" | "strict" | "quirks""#),
     ExperimentalInTagComments => ("experimentalInTagComments", "boolean"),
     ExperimentalPatternedTemplate => ("experimentalPatternedTemplate", "boolean"),
+    ExperimentalSelfComponent => ("experimentalSelfComponent", "boolean"),
     RuntimeModuleName => ("runtimeModuleName", "string"),
     RuntimeGlobalName => ("runtimeGlobalName", "string"),
     ScriptExt => ("scriptExt", r#""preserve" | "downcompile""#),
@@ -121,6 +123,7 @@ pub(crate) fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions
             ssr: get_bool(CompilerOption::Ssr),
             source_map: get_bool(CompilerOption::SourceMap),
             filename: get_string(CompilerOption::Filename),
+            component_name: get_string(CompilerOption::ComponentName),
             output_mode: get_string(CompilerOption::OutputMode),
             is_ts: get_bool(CompilerOption::IsTs),
             custom_renderer: get_bool(CompilerOption::CustomRenderer),
@@ -130,6 +133,8 @@ pub(crate) fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions
             experimental_patterned_template: get_bool(
                 CompilerOption::ExperimentalPatternedTemplate,
             ),
+            experimental_self_component: get_bool(CompilerOption::ExperimentalSelfComponent),
+            experimental_strict_slot_children: None,
             // Reserved by the shared native type, but no WASM compiler stage
             // implements it. Keep it out of the public WASM option inventory.
             experimental_server_script: None,

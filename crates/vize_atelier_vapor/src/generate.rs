@@ -3,191 +3,32 @@
 //! Generates JavaScript code from Vapor IR.
 mod context;
 mod destructure;
+mod entry;
 mod expression;
 mod expression_retained;
 mod helpers;
 mod operations;
 mod setup;
 
-use std::fmt::Write;
-
-use crate::ir::{BlockIRNode, CreateComponentIRNode, NegativeBranch, OperationNode, RootIRNode};
-use vize_atelier_core::options::BindingMetadata;
-use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
+use crate::ir::{BlockIRNode, CreateComponentIRNode, NegativeBranch, OperationNode};
+use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, ensure_sufficient_stack};
 
 use context::GenerateContext;
+pub use entry::{
+    VaporGenerateExperimentalOptions, VaporGenerateOptions, VaporGenerateResult, generate_vapor,
+    generate_vapor_with_options, generate_vapor_with_options_and_experimentals,
+};
 use helpers::generate_effect;
 use operations::generate_operation;
-use setup::{collect_delegate_events, escape_template, generate_imports};
-
-/// Vapor code generation result
-pub struct VaporGenerateResult {
-    /// Generated code
-    pub code: String,
-    /// Static templates
-    pub templates: Vec<String>,
-}
-
-/// Options for Vapor code generation.
-#[derive(Debug, Clone, Copy, Default)]
-pub struct VaporGenerateOptions {
-    /// JSX closure mode: the render code runs inside the authoring component
-    /// function, so free identifiers stay bare instead of `_ctx.`-prefixed.
-    pub jsx_closure: bool,
-}
-
-/// Generate Vapor code from IR
-pub fn generate_vapor(
-    ir: &RootIRNode<'_>,
-    binding_metadata: Option<&BindingMetadata>,
-) -> VaporGenerateResult {
-    generate_vapor_with_options(ir, binding_metadata, VaporGenerateOptions::default())
-}
-
-/// Generate Vapor code from IR with explicit [`VaporGenerateOptions`].
-pub fn generate_vapor_with_options(
-    ir: &RootIRNode<'_>,
-    binding_metadata: Option<&BindingMetadata>,
-    options: VaporGenerateOptions,
-) -> VaporGenerateResult {
-    let mut ctx = GenerateContext::new(
-        &ir.element_template_map,
-        &ir.standalone_text_elements,
-        binding_metadata,
-        ir.source,
-    );
-    ctx.jsx_closure = options.jsx_closure;
-
-    // Template helper is always used if we have templates
-    if !ir.templates.is_empty() {
-        ctx.use_helper("template");
-    }
-
-    // Collect root template indices (templates used in top-level block returns
-    // and in root-level v-if branches that return a single element)
-    let mut root_template_indices: FxHashSet<usize> = FxHashSet::default();
-    // Only mark as root if there's a single root return (not a fragment)
-    if ir.block.returns.len() == 1 {
-        let element_id = ir.block.returns[0];
-        if let Some(&template_index) = ir.element_template_map.get(&element_id) {
-            root_template_indices.insert(template_index);
-        }
-    }
-    // Also mark templates from root-level v-if branches as root
-    for op in ir.block.operation.iter() {
-        if let OperationNode::If(if_node) = op {
-            collect_root_if_templates(
-                if_node,
-                &ir.element_template_map,
-                &mut root_template_indices,
-            );
-        }
-    }
-
-    // Generate template declarations (to separate string, we'll prepend imports later)
-    let mut template_code = String::default();
-    for (i, template) in ir.templates.iter().enumerate() {
-        let is_root = root_template_indices.contains(&i);
-        let is_svg = template.starts_with("<svg");
-        match (is_root, is_svg) {
-            (true, true) => writeln!(
-                template_code,
-                "const t{} = _template(\"{}\", true, 1)",
-                i,
-                escape_template(template)
-            ),
-            (true, false) => writeln!(
-                template_code,
-                "const t{} = _template(\"{}\", true)",
-                i,
-                escape_template(template)
-            ),
-            (false, true) => writeln!(
-                template_code,
-                "const t{} = _template(\"{}\", false, 1)",
-                i,
-                escape_template(template)
-            ),
-            (false, false) => writeln!(
-                template_code,
-                "const t{} = _template(\"{}\")",
-                i,
-                escape_template(template)
-            ),
-        }
-        .ok();
-    }
-
-    // First step: collect delegate events.
-    collect_delegate_events(&mut ctx, &ir.block);
-
-    // Generate component function body first to collect used helpers
-    ctx.push_line("export function render(_ctx) {");
-    ctx.indent();
-
-    if block_has_template_refs(&ir.block) {
-        ctx.use_helper("createTemplateRefSetter");
-        ctx.push_line("const _setRef = _ctx.vaporTemplateRefSetter || _createTemplateRefSetter()");
-    }
-
-    let custom_directives = collect_custom_directives(&ir.block);
-    if !custom_directives.is_empty() {
-        ctx.use_helper("resolveDirective");
-        for directive in custom_directives {
-            ctx.push_line(&vize_carton::cstr!(
-                "const _directive_{} = _resolveDirective(\"{}\")",
-                directive_resolution_ident(directive.as_str()),
-                directive
-            ));
-        }
-    }
-
-    // Generate block content (includes template instantiation, text nodes, operations, effects, return)
-    generate_block(&mut ctx, &ir.block, &ir.element_template_map);
-
-    ctx.deindent();
-    ctx.push_line("}");
-
-    // Generate delegate events code (after templates, before function)
-    let mut delegate_code = String::default();
-    if !ctx.delegate_events.is_empty() {
-        ctx.use_helper("delegateEvents");
-        let mut events: Vec<_> = ctx.delegate_events.iter().collect();
-        events.sort();
-        for event in events {
-            writeln!(delegate_code, "_delegateEvents(\"{}\")", event).ok();
-        }
-    }
-
-    // Now generate imports at the front with only used helpers
-    let imports = generate_imports(&ctx);
-
-    // Combine: imports + templates + delegate events + function body
-    let mut final_code = imports;
-    if !template_code.is_empty() {
-        final_code.push_str(&template_code);
-    }
-    if !delegate_code.is_empty() {
-        final_code.push_str(&delegate_code);
-    }
-    // Add blank line before function
-    if !final_code.is_empty() {
-        final_code.push('\n');
-    }
-    final_code.push_str(&ctx.code);
-
-    VaporGenerateResult {
-        code: final_code,
-        templates: ir.templates.iter().map(|t| String::new(t)).collect(),
-    }
-}
 
 fn block_has_template_refs(block: &BlockIRNode<'_>) -> bool {
-    block.operation.iter().any(operation_has_template_refs)
-        || block
-            .effect
-            .iter()
-            .any(|effect| effect.operations.iter().any(operation_has_template_refs))
+    ensure_sufficient_stack(|| {
+        block.operation.iter().any(operation_has_template_refs)
+            || block
+                .effect
+                .iter()
+                .any(|effect| effect.operations.iter().any(operation_has_template_refs))
+    })
 }
 
 fn operation_has_template_refs(op: &OperationNode<'_>) -> bool {
@@ -312,6 +153,14 @@ fn generate_block(
     block: &BlockIRNode<'_>,
     element_template_map: &FxHashMap<usize, usize>,
 ) {
+    ensure_sufficient_stack(|| generate_block_guarded(ctx, block, element_template_map));
+}
+
+fn generate_block_guarded(
+    ctx: &mut GenerateContext,
+    block: &BlockIRNode<'_>,
+    element_template_map: &FxHashMap<usize, usize>,
+) {
     // Instantiate templates for elements in this block's returns
     for element_id in block.returns.iter() {
         if let Some(&template_index) = element_template_map.get(element_id) {
@@ -405,6 +254,16 @@ fn maybe_generate_text_ref(ctx: &mut GenerateContext, op: &OperationNode<'_>) {
 
 /// Collect root template indices from v-if branches (recursive for v-else-if chains)
 fn collect_root_if_templates(
+    if_node: &crate::ir::IfIRNode<'_>,
+    element_template_map: &FxHashMap<usize, usize>,
+    root_indices: &mut FxHashSet<usize>,
+) {
+    ensure_sufficient_stack(|| {
+        collect_root_if_templates_guarded(if_node, element_template_map, root_indices);
+    });
+}
+
+fn collect_root_if_templates_guarded(
     if_node: &crate::ir::IfIRNode<'_>,
     element_template_map: &FxHashMap<usize, usize>,
     root_indices: &mut FxHashSet<usize>,

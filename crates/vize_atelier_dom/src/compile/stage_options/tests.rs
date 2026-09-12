@@ -32,6 +32,7 @@ fn optimize_imports_codegen_option_does_not_disarm_s2() {
         TemplateSyntaxMode::Standard,
         false,
         super::S2EmitSelection::Allowed,
+        false,
     ));
 }
 
@@ -44,6 +45,7 @@ fn opaque_custom_element_predicates_enter_the_s2_lane() {
         TemplateSyntaxMode::Standard,
         false,
         super::S2EmitSelection::Allowed,
+        false,
     ));
 }
 
@@ -55,6 +57,7 @@ fn supported(options: DomCompilerOptions) -> bool {
         TemplateSyntaxMode::Standard,
         false,
         super::S2EmitSelection::Allowed,
+        false,
     )
 }
 

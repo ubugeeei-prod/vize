@@ -210,6 +210,10 @@ impl VirtualProject {
         self.experimental_in_tag_comments = enabled;
     }
 
+    pub(crate) fn set_experimental_strict_slot_children(&mut self, enabled: bool) {
+        self.experimental_strict_slot_children = enabled;
+    }
+
     /// Get the project root.
     pub fn project_root(&self) -> &Path {
         &self.project_root

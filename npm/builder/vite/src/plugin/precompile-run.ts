@@ -51,6 +51,8 @@ function resolvePrecompileBatchOptions(state: VizePluginState): CompileBatchOpti
     templateSyntax: state.mergedOptions.templateSyntax ?? "standard",
     experimentalInTagComments: state.mergedOptions.experimentalInTagComments ?? false,
     experimentalPatternedTemplate: state.mergedOptions.experimentalPatternedTemplate ?? false,
+    experimentalSelfComponent: state.mergedOptions.experimentalSelfComponent ?? false,
+    experimentalStrictSlotChildren: state.mergedOptions.experimentalStrictSlotChildren ?? false,
     experimentalServerScript: state.mergedOptions.experimentalServerScript ?? false,
     runtimeModuleName: state.mergedOptions.runtimeModuleName,
     runtimeGlobalName: state.mergedOptions.runtimeGlobalName,

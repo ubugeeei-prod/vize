@@ -27,8 +27,8 @@ use discovery::{CONFIG_FILE_NAMES, resolve_dir_path, resolve_file_path};
 use parse::{parse_raw_config_file, try_parse_raw_candidate};
 
 use super::model::{
-    ConfigEntryFiles, ConfigEntryIgnore, ConfigFeatureFlags, LinterConfig, RawVizeConfig,
-    VizeConfig,
+    ConfigEntryFiles, ConfigEntryIgnore, ConfigExperimentalVueFlags, ConfigFeatureFlags,
+    LinterConfig, RawVizeConfig, VizeConfig,
 };
 pub use compiler_keys::*;
 pub use {jsx::load_compiler_jsx_compat, vapor::load_compiler_vapor};
@@ -45,6 +45,12 @@ pub struct LoadedConfigWithFeatures {
     pub config: VizeConfig,
     pub source_path: Option<PathBuf>,
     pub features: ConfigFeatureFlags,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct LoadedConfigExperimentalVueFlags {
+    pub source_path: Option<PathBuf>,
+    pub flags: ConfigExperimentalVueFlags,
 }
 
 #[derive(Debug, Clone)]
@@ -127,6 +133,17 @@ pub fn load_config_with_features_and_source(path: Option<&Path>) -> LoadedConfig
         config,
         source_path: loaded.source_path,
         features,
+    }
+}
+
+/// Load only the opt-in Vue RFC experimental flags from configuration.
+pub fn load_config_experimental_vue_flags_with_source(
+    path: Option<&Path>,
+) -> LoadedConfigExperimentalVueFlags {
+    let loaded = load_raw_config_with_source(path);
+    LoadedConfigExperimentalVueFlags {
+        flags: loaded.config.experimental_vue_flags(),
+        source_path: loaded.source_path,
     }
 }
 

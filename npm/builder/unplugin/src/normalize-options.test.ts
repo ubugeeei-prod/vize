@@ -8,6 +8,8 @@ void test("defaults from an empty options object", (t) => {
   t.assert.equal(options.vapor, false);
   t.assert.equal(options.experimentalInTagComments, false);
   t.assert.equal(options.experimentalPatternedTemplate, false);
+  t.assert.equal(options.experimentalSelfComponent, false);
+  t.assert.equal(options.experimentalStrictSlotChildren, false);
   t.assert.equal(options.experimentalServerScript, false);
   t.assert.equal(options.customRenderer, false);
   t.assert.equal(options.templateSyntax, "standard");
@@ -128,11 +130,15 @@ void test("experimental options pass through", (t) => {
     isProduction: true,
     experimentalInTagComments: true,
     experimentalPatternedTemplate: true,
+    experimentalSelfComponent: true,
+    experimentalStrictSlotChildren: true,
     experimentalServerScript: true,
   });
 
   t.assert.equal(options.experimentalInTagComments, true);
   t.assert.equal(options.experimentalPatternedTemplate, true);
+  t.assert.equal(options.experimentalSelfComponent, true);
+  t.assert.equal(options.experimentalStrictSlotChildren, true);
   t.assert.equal(options.experimentalServerScript, true);
 });
 

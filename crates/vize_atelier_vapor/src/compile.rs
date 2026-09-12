@@ -3,7 +3,8 @@
 //! Wires together parsing, the core transform lane, Vapor IR lowering, and
 //! code generation behind the public `compile_vapor*` functions.
 
-use crate::generate::generate_vapor;
+mod entry;
+
 use crate::lower as vapor_lower;
 use crate::s3::{self, VaporS3BridgeOptions, VaporS3BridgeStatus};
 use vize_atelier_core::{
@@ -13,6 +14,20 @@ use vize_atelier_core::{
     parser::parse_with_options_custom_elements_and_template_syntax,
 };
 use vize_carton::{Allocator, String};
+
+pub use entry::{
+    compile_vapor, compile_vapor_with_custom_elements_and_template_syntax,
+    compile_vapor_with_custom_elements_template_syntax_and_diagnostics,
+    compile_vapor_with_custom_elements_template_syntax_and_experimental_options,
+    compile_vapor_with_custom_elements_template_syntax_diagnostics_and_experimental_options,
+    compile_vapor_with_diagnostics, compile_vapor_with_experimental_options,
+    compile_vapor_with_template_syntax, compile_vapor_with_template_syntax_and_diagnostics,
+    compile_vapor_with_template_syntax_and_experimental_options,
+};
+#[allow(deprecated)]
+pub use entry::{
+    compile_vapor_with_vue_parser_quirks, compile_vapor_with_vue_parser_quirks_and_diagnostics,
+};
 
 /// Vapor compiler options
 #[derive(Debug, Clone, Default)]
@@ -29,8 +44,19 @@ pub struct VaporCompilerOptions {
     pub custom_renderer: bool,
     /// Enable experimental Vue in-tag comments (`// ...`) inside opening tags.
     pub experimental_in_tag_comments: bool,
-    /// Enable experimental `v-match` / `v-case` patterned template desugaring.
+    /// Enable experimental `v-match` / `v-when` patterned template desugaring.
     pub experimental_patterned_template: bool,
+}
+
+/// Experimental Vapor compiler options kept separate from
+/// [`VaporCompilerOptions`] so existing Rust struct literals remain
+/// source-compatible.
+#[derive(Debug, Clone, Default)]
+pub struct VaporCompilerExperimentalOptions {
+    /// Current SFC component name for self-reference resolution.
+    pub component_name: Option<String>,
+    /// Treat the reserved `<Self>` tag as a reference to the current SFC.
+    pub self_component: bool,
 }
 
 /// Vapor compilation result
@@ -44,140 +70,23 @@ pub struct VaporCompileResult {
     pub error_messages: Vec<String>,
 }
 
-/// Compile a Vue template to Vapor mode
-pub fn compile_vapor<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: VaporCompilerOptions,
-) -> VaporCompileResult {
-    compile_vapor_inner(
-        allocator,
-        source,
-        options,
-        TemplateSyntaxMode::Standard,
-        CustomElementMatcher::default(),
-    )
-    .0
-}
-
-/// Compile a Vue template to Vapor mode with Vue parser quirk compatibility.
-#[deprecated(note = "use compile_vapor_with_template_syntax instead")]
-pub fn compile_vapor_with_vue_parser_quirks<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: VaporCompilerOptions,
-) -> VaporCompileResult {
-    compile_vapor_inner(
-        allocator,
-        source,
-        options,
-        TemplateSyntaxMode::Quirks,
-        CustomElementMatcher::default(),
-    )
-    .0
-}
-
-/// Compile a Vue template to Vapor mode with an explicit template syntax mode.
-#[doc(hidden)]
-pub fn compile_vapor_with_template_syntax<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: VaporCompilerOptions,
-    template_syntax: TemplateSyntaxMode,
-) -> VaporCompileResult {
-    compile_vapor_inner(
-        allocator,
-        source,
-        options,
-        template_syntax,
-        CustomElementMatcher::default(),
-    )
-    .0
-}
-
-/// Compile with declarative custom-element patterns.
-#[doc(hidden)]
-pub fn compile_vapor_with_custom_elements_and_template_syntax<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: VaporCompilerOptions,
-    template_syntax: TemplateSyntaxMode,
-    custom_elements: CustomElementMatcher,
-) -> VaporCompileResult {
-    compile_vapor_inner(allocator, source, options, template_syntax, custom_elements).0
-}
-
-/// Compile a Vue template to Vapor mode and return parser diagnostics.
-#[doc(hidden)]
-pub fn compile_vapor_with_diagnostics<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: VaporCompilerOptions,
-) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
-    compile_vapor_inner(
-        allocator,
-        source,
-        options,
-        TemplateSyntaxMode::Standard,
-        CustomElementMatcher::default(),
-    )
-}
-
-/// Compile a Vue template to Vapor mode with Vue parser quirks and return parser diagnostics.
-#[doc(hidden)]
-#[deprecated(note = "use compile_vapor_with_template_syntax_and_diagnostics instead")]
-pub fn compile_vapor_with_vue_parser_quirks_and_diagnostics<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: VaporCompilerOptions,
-) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
-    compile_vapor_inner(
-        allocator,
-        source,
-        options,
-        TemplateSyntaxMode::Quirks,
-        CustomElementMatcher::default(),
-    )
-}
-
-/// Compile a Vue template to Vapor mode with template syntax mode and return parser diagnostics.
-#[doc(hidden)]
-pub fn compile_vapor_with_template_syntax_and_diagnostics<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: VaporCompilerOptions,
-    template_syntax: TemplateSyntaxMode,
-) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
-    compile_vapor_inner(
-        allocator,
-        source,
-        options,
-        template_syntax,
-        CustomElementMatcher::default(),
-    )
-}
-
-/// Compile with template syntax, diagnostics, and declarative custom-element patterns.
-#[doc(hidden)]
-pub fn compile_vapor_with_custom_elements_template_syntax_and_diagnostics<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: VaporCompilerOptions,
-    template_syntax: TemplateSyntaxMode,
-    custom_elements: CustomElementMatcher,
-) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
-    compile_vapor_inner(allocator, source, options, template_syntax, custom_elements)
-}
-
 fn compile_vapor_inner<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     options: VaporCompilerOptions,
     template_syntax: TemplateSyntaxMode,
     custom_elements: CustomElementMatcher,
+    experimental_options: VaporCompilerExperimentalOptions,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     vize_carton::ensure_sufficient_stack(|| {
-        compile_vapor_inner_with_stack(allocator, source, options, template_syntax, custom_elements)
+        compile_vapor_inner_with_stack(
+            allocator,
+            source,
+            options,
+            template_syntax,
+            custom_elements,
+            experimental_options,
+        )
     })
 }
 
@@ -187,6 +96,7 @@ fn compile_vapor_inner_with_stack<'a>(
     options: VaporCompilerOptions,
     template_syntax: TemplateSyntaxMode,
     custom_elements: CustomElementMatcher,
+    experimental_options: VaporCompilerExperimentalOptions,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     // Parse
     let parser_opts = ParserOptions {
@@ -262,7 +172,15 @@ fn compile_vapor_inner_with_stack<'a>(
     }
 
     // Generate Vapor code
-    let result = generate_vapor(&ir, binding_metadata.as_ref());
+    let result = crate::generate::generate_vapor_with_options_and_experimentals(
+        &ir,
+        binding_metadata.as_ref(),
+        crate::generate::VaporGenerateOptions::default(),
+        crate::generate::VaporGenerateExperimentalOptions {
+            component_name: experimental_options.component_name.as_deref(),
+            self_component: experimental_options.self_component,
+        },
+    );
 
     (
         VaporCompileResult {

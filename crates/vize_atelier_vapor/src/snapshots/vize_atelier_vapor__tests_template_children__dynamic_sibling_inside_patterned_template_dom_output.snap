@@ -5,16 +5,21 @@ expression: dom_output(DYNAMIC_SIBLING)
 errors=[]
 components=[]
 preamble=
-const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
+const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, renderList: _renderList } = Vue
 
 code=
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("div", null, [
-    [((status) === ('ready'))
-      ? (_openBlock(), _createElementBlock("li", { key: 0 }, "Ready"))
-      : _createCommentVNode("v-if", true), _createElementVNode("li", { id: plainId }, [
-      _createElementVNode("span", null, _toDisplayString(label), 1 /* TEXT */)
-    ], 8 /* PROPS */, ["id"])],
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([status], (__vize_match) => {
+      return (_openBlock(), _createElementBlock(_Fragment, null, [
+        ((__vize_match) === ('ready'))
+          ? (_openBlock(), _createElementBlock("li", { key: 0 }, "Ready"))
+          : _createCommentVNode("v-if", true),
+        _createElementVNode("li", { id: plainId }, [
+          _createElementVNode("span", null, _toDisplayString(label), 1 /* TEXT */)
+        ], 8 /* PROPS */, ["id"])
+      ], 64 /* STABLE_FRAGMENT */))
+    }), 256 /* UNKEYED_FRAGMENT */)),
     _createElementVNode("footer", {
       class: _normalizeClass(cls)
     }, "Tail", 2 /* CLASS */)

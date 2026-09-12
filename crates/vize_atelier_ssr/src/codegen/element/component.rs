@@ -57,14 +57,8 @@ impl<'a> SsrCodegenContext<'a> {
         if let Some(binding_expr) = setup_binding.as_deref() {
             self.push(binding_expr);
         } else {
-            self.use_core_helper(RuntimeHelper::ResolveComponent);
-            self.push("_resolveComponent(\"");
-            self.push(tag);
-            self.push("\"");
-            if self.is_self_component_reference(tag) {
-                self.push(", true");
-            }
-            self.push(")");
+            let callee = self.resolved_component_callee(tag);
+            self.push(&callee);
         }
         self.push(", ");
         self.push(&props);

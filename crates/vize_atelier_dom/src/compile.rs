@@ -5,7 +5,9 @@ pub mod custom_elements;
 use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections};
 use vize_atelier_core::{
     CompilerError, RootNode,
-    options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
+    options::{
+        CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
+    },
 };
 use vize_s0::{Allocator, String};
 
@@ -106,6 +108,32 @@ pub fn compile_template_with_template_syntax_and_codegen_options<'a>(
         CustomElementMatcher::default(),
         codegen_options,
     )
+}
+
+/// Compile a Vue template with adapter-provided codegen defaults and opt-in
+/// experimental codegen context.
+#[doc(hidden)]
+pub fn compile_template_with_template_syntax_codegen_and_experimental_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    let (root, errors, result) = compile_template_inner_with_sections(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        None,
+        DomCompilePipelineOptions::allow_s2_with_experimental_options(
+            CustomElementMatcher::default(),
+            codegen_options,
+            codegen_experimental_options,
+        ),
+    );
+    (root, errors, result.into_result())
 }
 
 /// Compile a Vue template for DOM with an explicit scope ID for hoisted static VNodes.

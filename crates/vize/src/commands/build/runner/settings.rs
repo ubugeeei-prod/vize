@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_s0::String;
-use vize_s0::config::{ConfigFeatureFlags, VueVersion};
+use vize_s0::config::{ConfigExperimentalVueFlags, ConfigFeatureFlags, VueVersion};
 use vize_s0::hash::hash_bytes;
 
 use crate::commands::build::{BuildArgs, ScriptExtension};
@@ -12,6 +12,7 @@ use crate::commands::davinci_ice;
 pub(super) struct BuildConfigSettings {
     pub(super) compiler_template_syntax: Option<&'static str>,
     pub(super) features: ConfigFeatureFlags,
+    pub(super) experimental_vue: ConfigExperimentalVueFlags,
     pub(super) vapor: Option<bool>,
     pub(super) custom_elements: Vec<String>,
     pub(super) dialect: Option<VueVersion>,
@@ -23,6 +24,7 @@ pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> Build
         return BuildConfigSettings {
             compiler_template_syntax: None,
             features: ConfigFeatureFlags::default(),
+            experimental_vue: ConfigExperimentalVueFlags::default(),
             vapor: None,
             custom_elements: Vec::new(),
             dialect: None,
@@ -32,6 +34,8 @@ pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> Build
     BuildConfigSettings {
         compiler_template_syntax: crate::config::load_compiler_template_syntax(config),
         features: crate::config::load_config_with_features_and_source(config).features,
+        experimental_vue: crate::config::load_config_experimental_vue_flags_with_source(config)
+            .flags,
         vapor: crate::config::load_compiler_vapor(config),
         custom_elements: crate::config::load_compiler_custom_elements(config),
         dialect: crate::config::load_compiler_vue_version(config),
@@ -48,6 +52,7 @@ pub(super) struct CompileFileSettings {
     pub(super) template_syntax: TemplateSyntaxMode,
     pub(super) experimental_in_tag_comments: bool,
     pub(super) experimental_patterned_template: bool,
+    pub(super) experimental_self_component: bool,
     /// Vue dialect from `vue.version`; defaults to [`VueVersion::V3`] and is
     /// threaded into each file's compile options.
     pub(super) dialect: VueVersion,
@@ -127,6 +132,7 @@ impl CompileFileSettings {
                 .unwrap_or_else(|| template_syntax_mode(build_config.compiler_template_syntax)),
             experimental_in_tag_comments: build_config.features.experimental_in_tag_comments,
             experimental_patterned_template: build_config.features.experimental_patterned_template,
+            experimental_self_component: build_config.experimental_vue.self_component,
             dialect: build_config.dialect.unwrap_or_default(),
             script_ext: args.script_ext,
             record_profile_totals: args.profile,
@@ -160,6 +166,7 @@ impl CompileFileSettings {
             | (u16::from(dialect_bits(self.dialect)) << 6)
             | (u16::from(self.experimental_in_tag_comments) << 9)
             | (u16::from(self.experimental_patterned_template) << 10)
+            | (u16::from(self.experimental_self_component) << 11)
     }
 
     pub(super) fn custom_elements_hash(&self) -> u64 {

@@ -26,6 +26,8 @@ export function resolveExperimentalOptions(
       config?.pattenedTemplate,
       config?.patternedTemplate,
     ),
+    selfComponent: enabled(options?.selfComponent, config?.selfComponent),
+    strictSlotChildren: enabled(options?.strictSlotChildren, config?.strictSlotChildren),
     serverScript: enabled(
       options?.serverScript,
       options?.["server script"],
@@ -48,6 +50,8 @@ export function resolveExperimentalCompilerOptions(
     jsxCompat: options.jsxCompat ?? compilerConfig?.jsxCompat,
     experimentalInTagComments: experimentals.inTagComments,
     experimentalPatternedTemplate: experimentals.patternedTemplate,
+    experimentalSelfComponent: experimentals.selfComponent,
+    experimentalStrictSlotChildren: experimentals.strictSlotChildren,
     experimentalServerScript: experimentals.serverScript,
   };
 }

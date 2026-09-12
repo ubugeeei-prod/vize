@@ -1,5 +1,6 @@
 //! Helper functions for SFC compilation.
 
+use crate::compile_script::artifacts::extract_macro_artifacts;
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::{BindingPattern, Expression, Statement, VariableDeclarationKind};
 use oxc_parser::Parser as OxcParser;
@@ -7,7 +8,30 @@ use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString};
 
 use crate::script::{ScriptCompileContext, resolve_template_v_model_identifiers};
-use crate::types::{BindingMetadata, BindingType};
+use crate::types::{BindingMetadata, BindingType, SfcDescriptor, SfcMacroArtifact};
+
+pub(crate) fn is_ts_lang(lang: Option<&str>) -> bool {
+    matches!(lang, Some("ts" | "tsx"))
+}
+
+pub(super) fn extract_descriptor_macro_artifacts(
+    descriptor: &SfcDescriptor,
+) -> Vec<SfcMacroArtifact> {
+    let mut artifacts = Vec::new();
+
+    if let Some(script) = descriptor.script.as_ref() {
+        artifacts.extend(extract_macro_artifacts(&script.content, script.loc.start));
+    }
+    if let Some(script_setup) = descriptor.script_setup.as_ref() {
+        artifacts.extend(extract_macro_artifacts(
+            &script_setup.content,
+            script_setup.loc.start,
+        ));
+    }
+
+    artifacts.sort_by_key(|artifact| artifact.start);
+    artifacts
+}
 
 /// Generate scope ID from filename
 pub(super) fn generate_scope_id(filename: &str) -> String {

@@ -725,6 +725,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             preserve_event_navigation: generation_options.preserve_event_navigation,
                             has_default_alias: declared_default_alias,
                             script_content,
+                            experimental_strict_slot_children: generation_options
+                                .experimental_strict_slot_children,
                         },
                     )
                 );
@@ -737,8 +739,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 &syntactic_type_only_imported_names,
             );
 
-            // In projects that opt into unused-local diagnostics, this list is
-            // narrowed to template-referenced names so user TS6133 can surface.
             profile!(
                 "canon.virtual_ts.emit_setup_binding_anchors",
                 emit_setup_binding_anchors(

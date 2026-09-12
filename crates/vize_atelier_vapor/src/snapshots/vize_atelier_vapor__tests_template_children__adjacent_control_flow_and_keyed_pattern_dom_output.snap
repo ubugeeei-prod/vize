@@ -13,14 +13,18 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     (aside)
       ? (_openBlock(), _createElementBlock("aside", { key: 0 }, "Aside"))
       : _createCommentVNode("v-if", true),
-    ((status) === ('ready'))
-      ? (_openBlock(true), _createElementBlock(_Fragment, { key: 1 }, _renderList(items, (item) => {
-        return (_openBlock(), _createElementBlock("li", {
-          key: item.id,
-          class: _normalizeClass(item.kind)
-        }, _toDisplayString(item.label), 3 /* TEXT, CLASS */))
-      }), 128 /* KEYED_FRAGMENT */))
-      : (_openBlock(), _createElementBlock("li", { key: 2 }, "Empty")),
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([status], (__vize_match) => {
+      return (_openBlock(), _createElementBlock(_Fragment, null, [
+        ((__vize_match) === ('ready'))
+          ? (_openBlock(true), _createElementBlock(_Fragment, { key: 1 }, _renderList(items, (item) => {
+            return (_openBlock(), _createElementBlock("li", {
+              key: item.id,
+              class: _normalizeClass(item.kind)
+            }, _toDisplayString(item.label), 3 /* TEXT, CLASS */))
+          }), 128 /* KEYED_FRAGMENT */))
+          : (_openBlock(), _createElementBlock("li", { key: 2 }, "Empty"))
+      ], 64 /* STABLE_FRAGMENT */))
+    }), 256 /* UNKEYED_FRAGMENT */)),
     _createElementVNode("p", null, "Last")
   ]))
 }

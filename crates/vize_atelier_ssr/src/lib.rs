@@ -1,12 +1,5 @@
 //! Vue SSR compiler for Vize.
 //!
-//! This module provides SSR-specific compilation including:
-//! - SSR code generation with template literals and `_push()` calls
-//! - SSR-specific directive transforms (v-model, v-show)
-//! - SSR slot rendering
-//! - SSR component rendering
-//! - SSR teleport and suspense handling
-//!
 //! **Atelier** (/ˌætəlˈjeɪ/) is an artist's workshop or studio. The "ssr" atelier
 //! specializes in server-side rendering output, producing HTML strings instead of
 //! VNode trees.
@@ -17,6 +10,8 @@
 pub mod codegen;
 mod compile;
 pub mod errors;
+#[cfg(test)]
+mod experimental_tests;
 pub mod options;
 mod stage_options;
 pub mod steps;
@@ -25,11 +20,13 @@ pub use codegen::{SsrCodegenContext, SsrCodegenResult};
 #[allow(deprecated)]
 pub use compile::compile_ssr_with_vue_parser_quirks;
 pub use compile::{
-    compile_ssr, compile_ssr_with_custom_elements_and_template_syntax, compile_ssr_with_options,
-    compile_ssr_with_template_syntax,
+    compile_ssr, compile_ssr_with_custom_elements_and_template_syntax,
+    compile_ssr_with_custom_elements_template_syntax_and_experimental_options,
+    compile_ssr_with_options, compile_ssr_with_template_syntax,
+    compile_ssr_with_template_syntax_and_experimental_options,
 };
 pub use errors::SsrErrorCode;
-pub use options::SsrCompilerOptions;
+pub use options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 pub use steps::{
     get_v_html_exp, get_v_model_exp, get_v_show_exp, get_v_text_exp, has_v_html, has_v_model,
     has_v_show, has_v_text,

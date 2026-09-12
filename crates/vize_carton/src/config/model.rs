@@ -15,8 +15,7 @@ mod vue;
 use self::{compiler::RawCompilerConfig, experimentals::RawExperimentalsConfig, vue::RawVueConfig};
 use serde::{Deserialize, Serialize};
 
-use crate::String;
-use crate::dialect::VueDialect;
+use crate::{String, dialect::VueDialect};
 pub use compiler::{JsxCompat, JsxMode};
 pub(crate) use entries::RawConfigEntry;
 pub use entries::{
@@ -24,6 +23,7 @@ pub use entries::{
     LinterConfigPlanWithConfigRuleOptions, LinterConfigPlanWithRuleOptions, ResolvedLinterConfig,
     ResolvedLinterConfigWithConfigRuleOptions,
 };
+pub use experimentals::ConfigExperimentalVueFlags;
 pub use formatter::{
     ArrowParens, AttributeSortOrder, EndOfLine, FormatterConfig, QuoteProps, TrailingComma,
 };
@@ -79,8 +79,7 @@ pub struct VizeConfig {
     pub global_types: GlobalTypesConfig,
 }
 
-/// Feature flags parsed from config keys that are not exposed as stable Rust
-/// model fields.
+/// Feature flags parsed from config keys outside stable Rust model fields.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ConfigFeatureFlags {
     /// Resolve Vue 3 Options API template bindings during type checking.
