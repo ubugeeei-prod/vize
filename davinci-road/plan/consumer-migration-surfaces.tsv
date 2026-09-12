@@ -918,7 +918,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/codegen/helpers/destructu
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/scope_prefix.rs	3	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/compile.rs	11	s0	S0	stage	vize_s0	preferred	5
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/experimental_tests.rs	6	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/lib.rs	49	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/lib.rs	48	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/options.rs	5	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_ssr/src/options.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/s4.rs	12	s0	S0	stage	vize_s0	preferred	1
