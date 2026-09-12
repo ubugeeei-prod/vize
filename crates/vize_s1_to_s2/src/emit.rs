@@ -86,6 +86,7 @@ mod once;
 mod options;
 mod outlet;
 mod outlet_props;
+mod patch;
 mod prefix;
 mod props;
 mod props_bind;

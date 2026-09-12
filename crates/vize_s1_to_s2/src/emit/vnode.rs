@@ -16,9 +16,8 @@ use super::children::children_need_text_flag;
 use super::directive;
 use super::flag::emit_patch_flag;
 use super::namespace;
-use super::props::{
-    BindPropsOptions, admit_element_bindings, apply_static_ref_patch, bind_patch, emit_bind_props,
-};
+use super::patch::{apply_static_ref_patch, binding_patch_facts};
+use super::props::{BindPropsOptions, admit_element_bindings, emit_bind_props};
 use super::props_dynamic::emit_dynamic_props;
 use super::props_static::PropHoistPosition;
 use super::vnode_children::emit_children;
@@ -238,7 +237,7 @@ pub(super) fn emit_call(
             None
         };
     let hoist = hoisted_props.is_some();
-    let patch = bind_patch(
+    let patch = binding_patch_facts(
         &element.bindings,
         false,
         if_key,

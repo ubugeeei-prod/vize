@@ -23,10 +23,10 @@ use super::create_slots;
 use super::directive;
 use super::flag::emit_patch_flag;
 use super::js::asset_ident;
-use super::props::{
-    BindPropsOptions, apply_static_ref_patch, bind_patch, emit_bind_props,
-    prune_legacy_patchless_dynamic_props,
+use super::patch::{
+    apply_static_ref_patch, binding_patch_facts, prune_legacy_patchless_dynamic_props,
 };
+use super::props::{BindPropsOptions, emit_bind_props};
 use super::props_dynamic::emit_dynamic_props;
 use super::props_static;
 use super::props_static::PropHoistPosition as Position;
@@ -166,7 +166,7 @@ pub(super) fn emit_call(
                 .clone(),
         );
     }
-    let mut patch = bind_patch(
+    let mut patch = binding_patch_facts(
         &component.bindings,
         true,
         if_key,

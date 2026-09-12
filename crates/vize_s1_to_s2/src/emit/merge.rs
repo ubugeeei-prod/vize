@@ -18,9 +18,10 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::on::{event_key_for, needs_hydration};
+use super::patch::PatchFacts;
 use super::prefix::Site;
 use super::props::{
-    BindName, Patch, PropsObjectOptions, StaticBindKeyCasing, bind_name, bind_value,
+    BindName, PropsObjectOptions, StaticBindKeyCasing, bind_name, bind_value,
     bind_value_is_static_patchless, emit_props_object, has_prop_modifier, is_emitted_key_bind,
     static_bind_key,
 };
@@ -63,7 +64,7 @@ pub(super) fn object_patch<'a>(
     constant_handler: &dyn Fn(&str) -> bool,
     handler_is_cached: &dyn Fn(&OnOp<'a>) -> bool,
     caches_handlers: bool,
-) -> Patch {
+) -> PatchFacts {
     let mut dynamic_props = StdVec::new();
     let mut flag = 16i32;
     for binding in bindings.iter() {
@@ -140,7 +141,7 @@ pub(super) fn object_patch<'a>(
             _ => {}
         }
     }
-    Patch {
+    PatchFacts {
         flag,
         dynamic_props,
     }

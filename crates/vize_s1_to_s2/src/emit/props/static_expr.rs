@@ -5,7 +5,7 @@ use vize_s2::op::BindOp;
 
 use super::bind_value;
 
-pub(super) fn bind_value_uses_legacy_patchless_runtime_expr(bind: &BindOp<'_>) -> bool {
+pub(in crate::emit) fn bind_value_uses_legacy_patchless_runtime_expr(bind: &BindOp<'_>) -> bool {
     match bind_value(bind) {
         Ok(value) => value
             .js()

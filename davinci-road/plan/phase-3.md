@@ -92,6 +92,10 @@ lowering remains until S3 owns typed generation payloads.
 lattice-fact consumption; flags become explicit S3 decisions (or S2→S4
 annotations if S3 detour measures badly — decide by TS-22). _Accept:_ corpus
 DOM byte-parity (TS-11 empty); patch-flag equivalence fixtures.
+_First slice 2026-09-13:_ see
+[P3-7 record](./phase-3-records/p3-7.md) for the S2→S4 annotation boundary and
+the initial `PatchFacts` split. The owner-keyed fact table and corpus gate
+remain before this task closes.
 
 **P3-8 SSR thin path.** S2→S4 string-plan lowering reading partition facts;
 `vize_atelier_ssr` codegen re-targets. _Accept:_ SSR corpus byte-parity
