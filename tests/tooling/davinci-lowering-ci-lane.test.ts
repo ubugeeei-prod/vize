@@ -17,7 +17,11 @@ test("feature-gated S1-to-S2 corpus lanes ride the required clippy-and-test job"
   const manifest = readRepoFile("crates", "vize_s1_to_s2", "Cargo.toml");
   const suites = readRepoFile("davinci-road", "plan", "test-suites.md");
 
-  assert.match(suites, /\| TS-20 \| Lowering totality fuzz\s+\| `cargo test -p vize_s1_to_s2`/);
+  assert.match(
+    suites,
+    /\| TS-20 \| Lowering totality fuzz\s+\| `cargo test -p vize_s1_to_s2` \/ `cargo test -p vize_s2_to_s3`/u,
+  );
+  assert.match(suites, /`s2_to_s3_lowering`/u);
   for (const name of ["davinci_lowering_corpus", "davinci_dom_corpus"]) {
     assert.match(
       manifest,

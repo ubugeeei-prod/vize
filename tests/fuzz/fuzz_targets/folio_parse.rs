@@ -5,9 +5,9 @@
 // Drives the hand-written Davinci folio parsers with arbitrary UTF-8
 // under the invariant that *no input must panic*: parsers return
 // `Result<_, FolioError>` for malformed pages, so a panic here is always
-// a bug. Three parsers share the input — the S2 Disegno page
-// (`vize_s2`, path `crates/vize_s2`), the croquis page, and the repro page
-// (`vize_davinci`).
+// a bug. Four parsers share the input — the S2 Disegno page
+// (`vize_s2`, path `crates/vize_s2`), the S3 Impeto page, the croquis page,
+// and the repro page (`vize_davinci`).
 //
 // When an input does parse, the mode-explicit round-trip law is asserted
 // on it: the canonical `Full`-mode print must re-parse to a document
@@ -20,6 +20,7 @@ use vize_davinci::folio::croquis::CroquisFolio;
 use vize_davinci::folio::repro::ReproFolio;
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_s2::folio::DisegnoFolio;
+use vize_s3::folio::S3Folio;
 
 fn round_trip<F: Folio + PartialEq + core::fmt::Debug>(source: &str) {
     let Ok(parsed) = F::parse(source) else {
@@ -35,6 +36,7 @@ fuzz_target!(|data: &[u8]| {
         return;
     };
     round_trip::<DisegnoFolio>(source);
+    round_trip::<S3Folio>(source);
     round_trip::<CroquisFolio>(source);
     round_trip::<ReproFolio>(source);
 });

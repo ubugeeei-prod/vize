@@ -8,7 +8,7 @@
 
 - [x] P3-1 `vize_impeto` crate + phase validator
 - [x] P3-2 Reactivity lattice fact group v1
-- [ ] P3-3 S2→S3 lowering + shared partition
+- [x] P3-3 S2→S3 lowering + shared partition
 - [ ] P3-4 Lean reference semantics + differential runner
 - [x] P3-5 Impeto op reference doc (before optional passes)
 - [ ] P3-6 Vapor backend on S3
@@ -55,7 +55,9 @@ discipline: pure expressions vs effectful ops separated. _Accept:_ TS-17
 pass snapshots; TS-20 totality fuzz extended to S2→S3.
 _First slice 2026-09-12:_ see
 [P3-3 record](./phase-3-records/p3-3.md) for the `vize_s2_to_s3` crate,
-total lowering skeleton, and exported partition fact contract.
+total lowering skeleton, and exported partition fact contract. _Closed
+2026-09-12:_ TS-17 S3 Folio snapshots and TS-20 S2→S3 fuzz coverage were added
+to the same record.
 
 **P3-4 Lean reference + differential.** `formal/impeto/` Lean package
 (CI-lenient lane per charter #39): executable small-step semantics for S3 ops

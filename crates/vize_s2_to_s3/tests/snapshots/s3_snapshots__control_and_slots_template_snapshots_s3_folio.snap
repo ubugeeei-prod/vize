@@ -1,0 +1,48 @@
+---
+source: crates/vize_s2_to_s3/tests/s3_snapshots.rs
+expression: "snapshot(r#\"<section><p v-if=\"ready\">ready</p><slot name=\"body\"><span v-text=\"fallback\" /></slot></section>\"#)"
+---
+[s3-folio]
+phase=built
+
+[s3-folio.regions]
+id=0 parent=- owner=- span=0:95
+id=1 parent=0 owner=0 span=9:85
+id=2 parent=1 owner=1 span=9:34
+id=3 parent=2 owner=2 span=25:30
+id=4 parent=1 owner=4 span=52:78
+id=5 parent=4 owner=5 span=52:78
+
+[s3-folio.ops]
+id=0 kind=impeto.insert-node region=0 effect=- span=0:95
+id=1 kind=impeto.if region=1 effect=0 span=9:34
+id=2 kind=impeto.insert-node region=2 effect=1 span=9:34
+id=3 kind=impeto.set-text region=3 effect=2 span=25:30
+id=4 kind=impeto.slot-outlet region=1 effect=3 span=34:85
+id=5 kind=impeto.insert-node region=4 effect=4 span=52:78
+id=6 kind=impeto.set-text region=4 effect=5 span=58:75
+
+[s3-folio.edges]
+from=1 to=2 kind=effect-order effect=-
+from=2 to=3 kind=effect-order effect=-
+from=3 to=4 kind=effect-order effect=-
+from=4 to=5 kind=effect-order effect=-
+from=5 to=6 kind=effect-order effect=-
+from=1 to=4 kind=dom-order effect=-
+
+[s3-folio.effects]
+id=0 owner=1 region=1 span=9:34
+id=1 owner=2 region=2 span=9:34
+id=2 owner=3 region=3 span=25:30
+id=3 owner=4 region=1 span=34:85
+id=4 owner=5 region=4 span=52:78
+id=5 owner=6 region=4 span=58:75
+
+[s3-partition-facts]
+op=0 kind=static span=0:95
+op=1 kind=dynamic span=9:34
+op=2 kind=dynamic span=9:34
+op=3 kind=dynamic span=25:30
+op=4 kind=dynamic span=34:85
+op=5 kind=dynamic span=52:78
+op=6 kind=dynamic span=58:75

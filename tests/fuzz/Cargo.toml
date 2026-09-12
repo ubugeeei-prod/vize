@@ -32,6 +32,8 @@ vize_s0 = { package = "vize_carton", path = "../../crates/vize_carton" }
 vize_s1 = { path = "../../crates/vize_s1" }
 vize_s1_to_s2 = { path = "../../crates/vize_s1_to_s2" }
 vize_s2 = { path = "../../crates/vize_s2" }
+vize_s2_to_s3 = { path = "../../crates/vize_s2_to_s3" }
+vize_s3 = { package = "vize_impeto", path = "../../crates/vize_impeto" }
 
 [[bin]]
 name = "sfc_parse"
@@ -71,6 +73,13 @@ bench = false
 [[bin]]
 name = "s1_lowering"
 path = "fuzz_targets/s1_lowering.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "s2_to_s3_lowering"
+path = "fuzz_targets/s2_to_s3_lowering.rs"
 test = false
 doc = false
 bench = false

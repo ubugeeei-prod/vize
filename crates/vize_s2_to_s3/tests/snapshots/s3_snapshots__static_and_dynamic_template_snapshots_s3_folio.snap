@@ -1,0 +1,35 @@
+---
+source: crates/vize_s2_to_s3/tests/s3_snapshots.rs
+expression: "snapshot(r#\"<main class=\"shell\"><button :disabled=\"locked\" @click=\"save\">{{ label }}</button></main>\"#)"
+---
+[s3-folio]
+phase=built
+
+[s3-folio.regions]
+id=0 parent=- owner=- span=0:88
+id=1 parent=0 owner=0 span=20:81
+id=2 parent=1 owner=1 span=61:72
+
+[s3-folio.ops]
+id=0 kind=impeto.insert-node region=0 effect=- span=0:88
+id=1 kind=impeto.insert-node region=1 effect=- span=20:81
+id=2 kind=impeto.set-prop region=1 effect=0 span=28:46
+id=3 kind=impeto.set-event region=1 effect=1 span=47:60
+id=4 kind=impeto.set-text region=2 effect=2 span=61:72
+
+[s3-folio.edges]
+from=2 to=3 kind=effect-order effect=-
+from=2 to=3 kind=dom-order effect=-
+from=3 to=4 kind=effect-order effect=-
+
+[s3-folio.effects]
+id=0 owner=2 region=1 span=28:46
+id=1 owner=3 region=1 span=47:60
+id=2 owner=4 region=2 span=61:72
+
+[s3-partition-facts]
+op=0 kind=static span=0:88
+op=1 kind=static span=20:81
+op=2 kind=dynamic span=28:46
+op=3 kind=dynamic span=47:60
+op=4 kind=dynamic span=61:72

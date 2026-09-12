@@ -4090,7 +4090,9 @@ dependencies = [
 name = "vize_s2_to_s3"
 version = "0.423.1"
 dependencies = [
+ "insta",
  "vize_carton",
+ "vize_davinci",
  "vize_impeto",
  "vize_s1",
  "vize_s1_to_s2",

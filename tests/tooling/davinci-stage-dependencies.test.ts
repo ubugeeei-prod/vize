@@ -140,9 +140,19 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
   );
   assert.match(manifest, /^vize_s1_to_s2 = \{ path = "\.\.\/\.\.\/crates\/vize_s1_to_s2" \}$/m);
   assert.match(manifest, /^vize_s2 = \{ path = "\.\.\/\.\.\/crates\/vize_s2" \}$/m);
+  assert.match(manifest, /^vize_s2_to_s3 = \{ path = "\.\.\/\.\.\/crates\/vize_s2_to_s3" \}$/m);
+  assert.match(
+    manifest,
+    /^vize_s3 = \{ package = "vize_impeto", path = "\.\.\/\.\.\/crates\/vize_impeto" \}$/m,
+  );
   assert.doesNotMatch(manifest, /^vize_(?:carton|disegno|ricalco) = /m);
 
-  for (const target of ["folio_parse.rs", "s1_lowering.rs", "template_compile.rs"]) {
+  for (const target of [
+    "folio_parse.rs",
+    "s1_lowering.rs",
+    "s2_to_s3_lowering.rs",
+    "template_compile.rs",
+  ]) {
     const source = readRepoFile("tests", "fuzz", "fuzz_targets", target);
     assert.doesNotMatch(source, /\bvize_(?:carton|disegno|ricalco)::/u);
   }
