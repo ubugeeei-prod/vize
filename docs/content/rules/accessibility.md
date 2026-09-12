@@ -307,13 +307,13 @@ page gives them a full example section or a compact rule note.
 | `a11y/heading-has-content` | `warning` | `h1`-`h6` elements need visible text, interpolation, accessible children, or an ARIA name. |
 | `a11y/heading-levels` | `warning` | Heading levels should not skip outline steps, for example from `h1` directly to `h3`. |
 | `a11y/iframe-has-title` | `warning` | Each `iframe` needs a non-empty static title or a dynamic title binding. |
-| `a11y/landmark-roles` | `warning` | Landmarks such as `main`, `nav`, and `region` must avoid duplicate or ambiguous page structure; repeated navigation/region landmarks need distinct labels. |
+| `a11y/landmark-roles` | `warning` | Allows only one `main` landmark and reports repeated same-role landmarks, such as `nav` or `region`, when they have missing or duplicate labels. |
 | `a11y/media-has-caption` | `warning` | `video` and `audio` need captions via `track kind="captions"` unless the rule can prove captions are unnecessary, such as muted ambient media. |
 | `a11y/no-access-key` | `warning` | Native elements should not use `accesskey`, which collides with browser, OS, and assistive-technology shortcuts. |
 | `a11y/no-autofocus` | `warning` | `autofocus` is disallowed because automatic focus movement interrupts reading order and keyboard flow. |
 | `a11y/no-distracting-elements` | `warning` | Deprecated moving or flashing elements such as `marquee` and `blink` are rejected. |
 | `a11y/no-redundant-roles` | `warning` | Explicit roles that duplicate native semantics, such as `button role="button"`, are reported and can be fixed by removing the role. |
 | `a11y/no-role-presentation-on-focusable` | `error` | Focusable elements must not use `role="presentation"` or `role="none"`, because focus remains while semantics disappear. |
-| `a11y/placeholder-label-option` | `warning` | The first empty-value placeholder option in a `select` should be `disabled` or `hidden` so it cannot be submitted as a real choice. |
-| `a11y/role-has-required-aria-props` | `warning` | Roles that require ARIA state, such as checkbox or slider, must include the required properties like `aria-checked` or value bounds. |
+| `a11y/placeholder-label-option` | `warning` | Checks the first `option` child in a `select`; when that first option has an empty static `value`, it must be `disabled` or `hidden`. |
+| `a11y/role-has-required-aria-props` | `warning` | Roles that require ARIA state must include the enforced required property, such as `aria-checked` for checkbox or `aria-valuenow` for slider. |
 | `a11y/use-list` | `warning` | Text that looks like a bullet list should use semantic `ul`/`ol` and `li` markup so assistive technology can expose list boundaries and item counts. |

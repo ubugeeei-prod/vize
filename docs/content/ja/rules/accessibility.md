@@ -309,13 +309,13 @@ ID を指していることを要求します。
 | `a11y/heading-has-content` | `warning` | `h1`-`h6` には、表示テキスト、補間、アクセシブルな子要素、または ARIA による名前付けが必要です。 |
 | `a11y/heading-levels` | `warning` | 見出しは `h1` から直接 `h3` に飛ぶような outline level のスキップを避けます。 |
 | `a11y/iframe-has-title` | `warning` | 各 `iframe` には、空でない静的 title または動的 title binding が必要です。 |
-| `a11y/landmark-roles` | `warning` | `main`、`nav`、`region` などの landmark は重複や曖昧な構造を避け、複数の navigation/region には区別できるラベルが必要です。 |
+| `a11y/landmark-roles` | `warning` | `main` landmark は 1 つだけ許可し、`nav` や `region` など同じ role の landmark が複数ある場合は、ラベルの欠落や重複を報告します。 |
 | `a11y/media-has-caption` | `warning` | `video` と `audio` には `track kind="captions"` が必要です。ただし muted の ambient media など、caption が不要だと判定できる場合は許可されます。 |
 | `a11y/no-access-key` | `warning` | ネイティブ要素の `accesskey` は、ブラウザ、OS、支援技術の shortcut と衝突しやすいため禁止します。 |
 | `a11y/no-autofocus` | `warning` | 自動 focus 移動は読み上げ順や keyboard flow を中断するため、`autofocus` を禁止します。 |
 | `a11y/no-distracting-elements` | `warning` | `marquee` や `blink` のような、動きや点滅を発生させる古い要素を拒否します。 |
 | `a11y/no-redundant-roles` | `warning` | `button role="button"` のように native semantics と重複する明示 role を報告し、role の削除で修正できます。 |
 | `a11y/no-role-presentation-on-focusable` | `error` | focus 可能な要素で `role="presentation"` や `role="none"` を使うと、focus は残るのに semantics だけ消えるため禁止します。 |
-| `a11y/placeholder-label-option` | `warning` | `select` の最初の empty-value placeholder option は、送信可能な通常選択肢にならないよう `disabled` または `hidden` にします。 |
-| `a11y/role-has-required-aria-props` | `warning` | checkbox や slider のように ARIA state が必須の role には、`aria-checked` や値の範囲など required property が必要です。 |
+| `a11y/placeholder-label-option` | `warning` | `select` の最初の `option` 子を確認し、その先頭 option の静的な `value` が空なら `disabled` または `hidden` を要求します。 |
+| `a11y/role-has-required-aria-props` | `warning` | ARIA state が必須の role には、checkbox の `aria-checked` や slider の `aria-valuenow` など、実装が要求する required property が必要です。 |
 | `a11y/use-list` | `warning` | 箇条書きに見えるテキストは semantic な `ul`/`ol` と `li` にして、支援技術が list の境界や item 数を扱えるようにします。 |
