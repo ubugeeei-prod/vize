@@ -35,15 +35,14 @@ export default defineConfig({
 ```
 
 ```ts
-compileTemplate(source, {
-  experimentalPatternedTemplate: true,
-  experimentalInTagComments: true,
-  experimentalSelfComponent: true,
-  experimentalStrictSlotChildren: true,
-});
+compile(templateSource, { experimentalPatternedTemplate: true });
+compileVapor(templateSource, { experimentalSelfComponent: true, componentName: "TreeNode" });
+parseTemplate(templateSource, { experimentalInTagComments: true });
+compileSfc(sfcSource, { filename: "TreeNode.vue", experimentalStrictSlotChildren: true });
 ```
 
-direct `compileTemplate` field は `pattenedTemplate` や `intagComment` のような alias を解釈しません。direct Vite plugin value は shared config より優先され、明示的な opt-out も優先されます。
+`compile`、`compileVapor`、`parseTemplate`、`compileSfc*` の direct native field は
+`pattenedTemplate` や `intagComment` のような alias を解釈せず、`{}` switch object も受け付けません。direct Vite plugin value は shared config より優先され、明示的な opt-out も優先されます。
 
 ## Current Scope
 
@@ -53,6 +52,8 @@ direct `compileTemplate` field は `pattenedTemplate` や `intagComment` のよ�
 | #831 | in-tag `//` parser support、`root.comments` の source text、AST comment を保持する compile pipeline | runtime output なし、child comment node なし、browser in-DOM template support なし |
 | #833 | DOM、SSR、Vapor compilation の exact `<Self>` current-component resolution | render-function / JSX macro なし。flag 有効時は local/imported component named `Self` が shadow される |
 | #734 | default slot と named slot の provided children に対する virtual TypeScript assertion | template codegen change なし。open slot contract と `any` は TypeScript 側の permissive check に degrade |
+
+entry-point と proof checklist は [Experimentals Reference](./experimentals-reference.md) にあります。
 
 ## Patterned Templates
 
@@ -132,6 +133,17 @@ unguarded top-level fallback は一意で、最後でなければなりません
 </template>
 ```
 
+`v-match` には少なくとも 1 つ direct branch が必要です。`v-when` は directive argument や modifier を使えません。
+
+```vue
+<template v-match="status"></template>
+
+<template v-match="status">
+  <p v-when:ready="'ready'">Ready</p>
+  <p v-when.once="'ready'">Ready again</p>
+</template>
+```
+
 `let` と `var` binding は rejected です。現時点で Vize が受け付ける binding declaration は `const` だけです。`v-when` は directive argument や modifier も拒否します。`v-case` と `v-case.default` は古い Vize 実験の互換 alias としてだけ残しており、新しい template では `v-when` と `_` を使います。
 
 ### Patterned Type Boundary
@@ -203,6 +215,17 @@ import OtherSelf from "./OtherSelf.vue";
 
 tag は exact かつ case-sensitive です。flag が有効な場合だけ `<Self>` が予約されます。`<self>` は特別ではありません。render function と JSX はこの flag の対象外です。
 
+SFC filename がない low-level template call では、明示的に name を渡してください。
+
+```ts
+import { compile } from "@vizejs/native";
+
+compile("<Self :node=\"node\" />", {
+  componentName: "TreeNode",
+  experimentalSelfComponent: true,
+});
+```
+
 ## Strict Slot Children
 
 `strictSlotChildren` は RFC #734 の tooling 側を実装します。parent が component slot に渡す child node に対して virtual TypeScript assertion を追加します。template codegen や runtime rendering は変えません。
@@ -261,6 +284,16 @@ child mapping:
 | named `<template #footer>` | named slot と比較 |
 | comment と structural-only wrapper | child value を持たない場合は skip |
 
+RFC #734 の return shape は TypeScript cardinality contract として保持します。
+
+| Slot return contract | Vize virtual TS での意味 |
+| --- | --- |
+| `() => HTMLInputElement` | input child 1 つ。single-child shorthand を受け付ける |
+| `() => HTMLInputElement[]` | input child 0 個以上 |
+| `() => [HTMLInputElement, HTMLInputElement]` | tuple order どおり input child 2 つ |
+| `() => (typeof TabItem)[]` | `TabItem` component child 0 個以上 |
+| `() => [typeof TabItem, HTMLButtonElement]` | `TabItem` child 1 つ、その後に button child 1 つ |
+
 `__VizeProvidedSlotChildren<__T>` は、slot contract の accepted child type が 1 つの場合、single child を `Only` または `[Only]` のどちらとしても受け付けます。multi-child contract では tuple/array shape を保ちます。open slot index signature と `any` は `any` に degrade するため、TypeScript は strict child diagnostic を出しません。built-in、dynamic component、`KeepAlive`、`Teleport`、`Transition`、`TransitionGroup`、`Suspense` は現時点では strict component child type に寄与しません。
 
 slot contract が props に依存する advanced component library は `__vizeResolveSlots` を expose できます。`defineSlots` を使う component は parent のために `__vizeSlots` marker を export します。required slot-name check は別の仕組みです。この flag は既存の virtual-TS slot model に child node type check を追加します。
@@ -272,6 +305,7 @@ slot contract が props に依存する advanced component library は `__vizeRe
 - flag の default は off
 - shared config と direct plugin option は document された precedence で解決される
 - direct compiler field は final boolean
+- low-level docs は実在 entry point の `compile`、`compileVapor`、`parseTemplate`、`compileSfc*` を名前で示す
 - bad syntax は黙って compile されず diagnostic になる
 - DOM、SSR、Vapor、SFC、WASM、または `vize check` coverage が surface matrix と一致する
 - docs には good example、flag-off または invalid-placement example、implementation boundary がある

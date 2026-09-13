@@ -37,16 +37,15 @@ export default defineConfig({
 ```
 
 ```ts
-compileTemplate(source, {
-  experimentalPatternedTemplate: true,
-  experimentalInTagComments: true,
-  experimentalSelfComponent: true,
-  experimentalStrictSlotChildren: true,
-});
+compile(templateSource, { experimentalPatternedTemplate: true });
+compileVapor(templateSource, { experimentalSelfComponent: true, componentName: "TreeNode" });
+parseTemplate(templateSource, { experimentalInTagComments: true });
+compileSfc(sfcSource, { filename: "TreeNode.vue", experimentalStrictSlotChildren: true });
 ```
 
-Direct `compileTemplate` fields do not understand aliases such as `pattenedTemplate` or
-`intagComment`. Direct Vite plugin values still win over shared config, including explicit opt-outs.
+Direct native fields on `compile`, `compileVapor`, `parseTemplate`, and `compileSfc*` do not
+understand aliases such as `pattenedTemplate` or `intagComment`, and they do not accept `{}` switch
+objects. Direct Vite plugin values still win over shared config, including explicit opt-outs.
 
 ## Current Scope
 
@@ -56,6 +55,8 @@ Direct `compileTemplate` fields do not understand aliases such as `pattenedTempl
 | #831 | parser support for in-tag `//`, source text in `root.comments`, and compile pipelines that preserve the AST comment | no runtime output, no child comment node, and no browser in-DOM template support |
 | #833 | exact `<Self>` current-component resolution in DOM, SSR, and Vapor compilation | no render-function or JSX macro; a local/imported component named `Self` is shadowed when the flag is enabled |
 | #734 | virtual TypeScript assertions for provided default and named slot children | no template codegen change; open slot contracts and `any` degrade to TypeScript's own permissive checks |
+
+For entry-point and proof checklists, see [Experimentals Reference](./experimentals-reference.md).
 
 ## Patterned Templates
 
@@ -135,6 +136,18 @@ An unguarded top-level fallback must be unique and last:
   <p v-when="_">Other</p>
   <p v-when="'ready'">Ready</p>
   <p v-when="(_)">Again</p>
+</template>
+```
+
+`v-match` must have at least one direct branch, and `v-when` cannot use directive arguments or
+modifiers:
+
+```vue
+<template v-match="status"></template>
+
+<template v-match="status">
+  <p v-when:ready="'ready'">Ready</p>
+  <p v-when.once="'ready'">Ready again</p>
 </template>
 ```
 
@@ -229,6 +242,17 @@ import OtherSelf from "./OtherSelf.vue";
 The tag is exact and case-sensitive. `<Self>` is reserved only when the flag is enabled; `<self>` is
 not special. Render functions and JSX are outside this flag.
 
+Low-level template calls must provide a name explicitly when no SFC filename is available:
+
+```ts
+import { compile } from "@vizejs/native";
+
+compile("<Self :node=\"node\" />", {
+  componentName: "TreeNode",
+  experimentalSelfComponent: true,
+});
+```
+
 ## Strict Slot Children
 
 `strictSlotChildren` implements the tooling side of RFC #734. It adds virtual TypeScript assertions
@@ -292,6 +316,16 @@ Child mapping:
 | Named `<template #footer>` | checked against the named slot |
 | Comments and structural-only wrappers | skipped when they do not contribute a child value |
 
+RFC #734's return shapes are preserved as TypeScript cardinality contracts:
+
+| Slot return contract | Meaning in Vize virtual TS |
+| --- | --- |
+| `() => HTMLInputElement` | one input child, accepting the single-child shorthand |
+| `() => HTMLInputElement[]` | zero or more input children |
+| `() => [HTMLInputElement, HTMLInputElement]` | exactly two input children in tuple order |
+| `() => (typeof TabItem)[]` | zero or more `TabItem` component children |
+| `() => [typeof TabItem, HTMLButtonElement]` | one `TabItem` child followed by one button child |
+
 `__VizeProvidedSlotChildren<__T>` accepts a single child as either `Only` or `[Only]` when the slot
 contract has one accepted child type, and preserves tuple/array shapes for multi-child contracts.
 Open slot index signatures and `any` degrade to `any`, so TypeScript will not produce strict child
@@ -310,6 +344,7 @@ Before documenting a new experimental behavior, pin all of these facts in tests:
 - the flag defaults to off
 - shared config and direct plugin options resolve with the documented precedence
 - direct compiler fields are final booleans
+- low-level docs name the real entry points: `compile`, `compileVapor`, `parseTemplate`, and `compileSfc*`
 - bad syntax produces diagnostics instead of silently compiling
 - DOM, SSR, Vapor, SFC, WASM, or `vize check` coverage matches the surface matrix
 - docs include a good example, a flag-off or invalid-placement example, and an implementation boundary

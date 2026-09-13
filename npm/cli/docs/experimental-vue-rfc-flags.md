@@ -7,6 +7,15 @@ The full docs site reference is https://vizejs.dev/guide/experimentals. The RFC-
 at https://vizejs.dev/guide/experimentals-vue-rfcs. They cover backend experiments such as
 `serverScript`, `vapor`, and `jsxVapor` from the shared Experimentals page.
 
+## Resolution Surfaces
+
+| Surface                          | Accepted option shape                                                                               | Off and override behavior                                                                                       |
+| -------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `vize.config.*`                  | `experimentals` switch values                                                                       | Shared default for npm commands, `vize check`, LSP sessions, and Vite plugin instances that load project config |
+| Direct `vize({ experimentals })` | the same switch values                                                                              | Wins over shared config; `false` and `null` explicitly disable a shared opt-in for that plugin invocation       |
+| Native template APIs             | `experimental*` boolean fields on `compile`, `compileVapor`, and `parseTemplate` options            | Caller must pass final booleans; aliases and `{}` are not resolved                                              |
+| Native SFC APIs                  | `experimental*` boolean fields on `compileSfc`, `compileSfcBatch`, and `compileSfcBatchWithResults` | Caller must pass final booleans; `strictSlotChildren` is meaningful for SFC/check virtual TypeScript surfaces   |
+
 ```json
 {
   "experimentals": {
@@ -42,7 +51,9 @@ opening tags.
 Comments may appear after the tag name, between complete attributes or
 directives, or after the final attribute before `>` / `/>`. They are collected as
 source annotations for tooling and do not generate runtime output. The normal
-template `comments` compiler option does not enable or disable this syntax.
+template `comments` compiler option does not enable or disable this syntax. If
+the flag is off, `//` in an opening tag fails as invalid tag syntax instead of
+being passed through as an attribute.
 
 Upstream reference: https://github.com/vuejs/rfcs/pull/831
 
@@ -100,6 +111,9 @@ normal component tag.
 
 The flag is threaded through DOM, SSR, and Vapor compilation surfaces. Direct
 template APIs can also receive `componentName` when no SFC filename is available.
+When the flag is off, `<Self>` remains an ordinary component tag. When it is on,
+the exact uppercase tag shadows a local/imported/global component also named
+`Self`; lowercase `<self>` is not special.
 
 Upstream reference: https://github.com/vuejs/rfcs/pull/833
 
@@ -130,6 +144,10 @@ With the flag enabled, Vize synthesizes slot child assertions so TypeScript can
 compare the provided child nodes with the slot return contract. Native DOM
 children map to their corresponding `HTML*Element`, component children map to
 `typeof ComponentRef`, and text/interpolation children map to `string`.
+Single-child, array, and tuple return shapes are preserved, so
+`() => HTMLInputElement`, `() => HTMLInputElement[]`, and
+`() => [HTMLInputElement, HTMLInputElement]` describe different cardinality
+contracts.
 
 The check is intentionally virtual-TS-only because the RFC describes a tooling
 constraint, not a runtime compiler transform.

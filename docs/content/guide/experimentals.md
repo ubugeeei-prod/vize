@@ -115,6 +115,9 @@ only when an integration already owns config resolution.
 | `vapor` | Falls back to SFC Vapor when stable Vapor is unset | SFCs keep the stable/default backend | Vite plugin, package build config | `vize({ vapor })` and `compiler.vapor` win |
 | `jsxVapor` | Falls back to JSX/TSX Vapor when stable JSX mode is unset | JSX/TSX keep the stable/default backend | Vite plugin, package build config | `vize({ jsxMode })` and `compiler.jsxMode` win |
 
+For entry-point coverage, smallest useful proofs, and low-level native API examples, see
+[Experimentals Reference](./experimentals-reference.md).
+
 ## Flag Reference
 
 | Flag | Upstream / source | Resolved field | Compatibility names |
@@ -335,16 +338,7 @@ Prefer `compiler.jsxMode: "vapor"` or direct `vize({ jsxMode: "vapor" })` for a 
 
 ## Direct API Fields
 
-Most applications should configure `experimentals`. Lower-level integrations that already perform their own config resolution can pass native compiler fields directly:
-
-```ts
-compileTemplate(source, {
-  experimentalInTagComments: true,
-  experimentalPatternedTemplate: true,
-  experimentalSelfComponent: true,
-  experimentalStrictSlotChildren: true,
-  experimentalServerScript: true,
-});
-```
-
-These fields are already resolved booleans. They do not understand aliases, `{}` switch objects, or shared-config precedence. Use them only at integration boundaries where the caller owns those rules.
+Most applications should configure `experimentals`. Lower-level integrations can pass resolved
+boolean fields to `compile`, `compileVapor`, `parseTemplate`, `compileSfc`, `compileSfcBatch`, or
+`compileSfcBatchWithResults`. Those fields do not understand aliases, `{}` switch objects, or
+shared-config precedence; see [Experimentals Reference](./experimentals-reference.md#direct-api-fields).
