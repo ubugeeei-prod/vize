@@ -181,14 +181,14 @@ pub(super) fn register_explicit_ambient_imports_with_session(
 ) -> Vec<vize_canon::PackageRouteBinding> {
     let keep_package_local =
         super::resolve::project_root_has_package_boundary(context.project_root);
+    // Declarations reached through the program tsconfig's `files`/`include` are
+    // program members wherever they live; default runs already keep them past
+    // the nearest package root (#5629), so explicit runs must not drop them.
     let mut ambient_declarations = collect_ambient_declaration_files(
         context.project_root,
         Some(context.tsconfig_path),
         tsconfig_input_cache,
-    )
-    .into_iter()
-    .filter(|path| !keep_package_local || path.starts_with(context.project_root))
-    .collect::<Vec<_>>();
+    );
     ambient_declarations.extend(
         context
             .additional_ambient_declarations

@@ -49,7 +49,12 @@ fn write_file(root: &Path, relative_path: &str, content: &str) {
     std::fs::write(file_path, content).unwrap();
 }
 
-fn assert_external_declaration_is_checked(case_name: &str, tsconfig: &str) {
+fn assert_external_declaration_is_checked(
+    case_name: &str,
+    tsconfig: &str,
+    inputs: &[&str],
+    expected_file_count: u64,
+) {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
@@ -80,7 +85,9 @@ export {};
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(workspace.join("app"))
         .env("CORSA_PATH", corsa_path)
-        .args(["check", "--tsconfig", "tsconfig.json", "--format", "json"])
+        .arg("check")
+        .args(inputs)
+        .args(["--tsconfig", "tsconfig.json", "--format", "json"])
         .output()
         .unwrap();
 
@@ -92,7 +99,17 @@ export {};
     );
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     assert_eq!(json["errorCount"], 0, "{stdout}\n{stderr}");
-    assert_eq!(json["fileCount"], 2, "{stdout}\n{stderr}");
+    assert_eq!(json["fileCount"], expected_file_count, "{stdout}\n{stderr}");
+    let program_has_shared_declaration =
+        json["programs"][0]["files"]
+            .as_array()
+            .is_some_and(|files| {
+                files.iter().any(|file| {
+                    file.as_str()
+                        .is_some_and(|file| file.ends_with("shared/globals.d.ts"))
+                })
+            });
+    assert!(program_has_shared_declaration, "{stdout}\n{stderr}");
 
     let _ = std::fs::remove_dir_all(&workspace);
 }
@@ -111,6 +128,8 @@ fn check_keeps_tsconfig_files_entry_outside_nearest_package_root() {
   },
   "files": ["../shared/globals.d.ts", "src/a.ts"]
 }"#,
+        &[],
+        2,
     );
 }
 
@@ -128,5 +147,27 @@ fn check_keeps_tsconfig_include_entry_outside_nearest_package_root() {
   },
   "include": ["../shared/**/*.d.ts", "src/**/*"]
 }"#,
+        &[],
+        2,
+    );
+}
+
+#[test]
+fn check_keeps_tsconfig_files_entry_outside_nearest_package_root_for_explicit_inputs() {
+    assert_external_declaration_is_checked(
+        "files-explicit-input",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "files": ["../shared/globals.d.ts"],
+  "include": ["src/**/*"]
+}"#,
+        &["src/a.ts"],
+        1,
     );
 }
