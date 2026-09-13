@@ -103,6 +103,19 @@ fn binding_segments_carry_typed_payloads() {
 }
 
 #[test]
+fn custom_directive_values_carry_expression_payloads() {
+    with_plan(r#"<div v-example="value" />"#, |lowered| {
+        assert!(lowered.errors.is_empty(), "{:?}", lowered.errors);
+        assert!(has_payload(
+            &lowered.plan.segments,
+            SsrStringSegmentKind::Directive,
+            SsrStringPayloadKind::Expression,
+            "value",
+        ));
+    });
+}
+
+#[test]
 fn stale_partition_facts_are_rejected() {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, "<p>{{ msg }}</p>");

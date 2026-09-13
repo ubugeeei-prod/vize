@@ -45,7 +45,7 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |          1170 |                   815 |               355 |             158 |     373 |            1032 |      669 |           578 |           719 |
+| Compiler                   |          1171 |                   816 |               355 |             158 |     373 |            1033 |      669 |           579 |           720 |
 | Linter                     |           373 |                   373 |                 0 |             298 |     301 |             726 |      246 |           388 |           569 |
 | Typechecker                |           957 |                   260 |               697 |             439 |     214 |             896 |      714 |           516 |           735 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            20 |
@@ -63,7 +63,7 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | Davinci          |          30 |              10 |       20 |
 | S0               |         968 |             512 |      456 |
 | S1               |          12 |               5 |        7 |
-| S2               |          44 |              24 |       20 |
+| S2               |          45 |              25 |       20 |
 | S1->S2           |         116 |              15 |      101 |
 | old AST/parser   |          85 |              65 |       20 |
 | Croquis analysis |          73 |              57 |       16 |
@@ -79,7 +79,7 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | `crates/vize_atelier_sfc/src/script/define_props_destructure/collector.rs:6` | source   | S0 2<br>raw OXC 15                                                                                   |    17 |
 | `crates/vize_atelier_core/src/steps/expression/prefix.rs:6`                  | source   | S0 1<br>Croquis analysis 1<br>raw OXC 14                                                             |    16 |
 
-Additional source/manifest rows are in the TSV: 341 omitted.
+Additional source/manifest rows are in the TSV: 342 omitted.
 
 #### Top test/dev files
 

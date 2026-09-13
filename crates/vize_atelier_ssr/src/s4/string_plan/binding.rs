@@ -67,7 +67,7 @@ pub(super) fn binding_payload<'a>(binding: &s2::BindingOp<'a>) -> Option<SsrStri
             .or_else(|| op.name.and_then(name_source).map(slot_payload)),
         s2::BindingOp::VueDirective(op) => op
             .value
-            .map(|value| directive_payload(value.source()))
+            .map(|value| expression_payload(value.source()))
             .or_else(|| op.argument.and_then(name_source).map(directive_payload))
             .or_else(|| Some(directive_payload(op.name))),
         s2::BindingOp::VueCssBind(op) => Some(expression_payload(op.value.source())),
