@@ -25,14 +25,14 @@ pub(super) fn emit_element(
                         element,
                         false,
                         key,
-                        (false, None, PropHoistPosition::Nested),
+                        (false, id, PropHoistPosition::Nested),
                         true,
                         false,
                     )
                 })
             });
         }
-        emit_block(cx, element, key)
+        emit_block(cx, element, key, id)
     })
 }
 
@@ -40,6 +40,7 @@ fn emit_block(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
     key: Option<&str>,
+    id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     directive::wrap_element(cx, element, |cx| {
         cx.buf.use_open_block();
@@ -53,7 +54,7 @@ fn emit_block(
                 element,
                 true,
                 key,
-                (false, None, PropHoistPosition::Nested),
+                (false, id, PropHoistPosition::Nested),
                 true,
                 false,
             )

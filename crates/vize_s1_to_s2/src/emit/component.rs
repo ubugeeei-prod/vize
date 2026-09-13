@@ -23,9 +23,7 @@ use super::create_slots;
 use super::directive;
 use super::flag::emit_patch_flag;
 use super::js::asset_ident;
-use super::patch::{
-    apply_static_ref_patch, binding_patch_facts, prune_legacy_patchless_dynamic_props,
-};
+use super::patch::{apply_static_ref_patch, prune_legacy_patchless_dynamic_props};
 use super::props::{BindPropsOptions, emit_bind_props};
 use super::props_dynamic::emit_dynamic_props;
 use super::props_static;
@@ -166,16 +164,7 @@ pub(super) fn emit_call(
                 .clone(),
         );
     }
-    let mut patch = binding_patch_facts(
-        &component.bindings,
-        true,
-        if_key,
-        for_item,
-        cx.is_ts,
-        &|name| cx.reads_constant_binding_name(name),
-        &|on| super::on::caches_handler(cx, on),
-        cx.caches_handlers(),
-    );
+    let mut patch = cx.materialize_patch_facts(id, &component.bindings, true, if_key, for_item);
     if skip_is {
         patch.dynamic_props.retain(|name| name.as_str() != "is");
         if patch.dynamic_props.is_empty() {

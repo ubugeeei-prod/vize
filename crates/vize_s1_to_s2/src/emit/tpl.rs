@@ -81,7 +81,7 @@ fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<()
             register_unwrapped_if_child_props_hoist(cx, attributes, bindings, id)?;
             let previous = cx.template_if_branch_root;
             cx.template_if_branch_root = true;
-            let result = super::emit_if_branch_call(cx, element, key);
+            let result = super::emit_if_branch_call(cx, element, key, id);
             cx.template_if_branch_root = previous;
             result
         }

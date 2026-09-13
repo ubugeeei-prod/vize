@@ -16,7 +16,7 @@ use super::children::children_need_text_flag;
 use super::directive;
 use super::flag::emit_patch_flag;
 use super::namespace;
-use super::patch::{apply_static_ref_patch, binding_patch_facts};
+use super::patch::apply_static_ref_patch;
 use super::props::{BindPropsOptions, admit_element_bindings, emit_bind_props};
 use super::props_dynamic::emit_dynamic_props;
 use super::props_static::PropHoistPosition;
@@ -165,13 +165,14 @@ pub(super) fn emit_if_branch_element(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
     key: &str,
+    id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     emit_block(
         cx,
         element,
         Some(key),
         false,
-        (true, None, PropHoistPosition::Nested),
+        (true, id, PropHoistPosition::Nested),
     )
 }
 
@@ -237,16 +238,7 @@ pub(super) fn emit_call(
             None
         };
     let hoist = hoisted_props.is_some();
-    let patch = binding_patch_facts(
-        &element.bindings,
-        false,
-        if_key,
-        for_item,
-        cx.is_ts,
-        &|name| cx.reads_constant_binding_name(name),
-        &|on| super::on::caches_handler(cx, on),
-        cx.caches_handlers(),
-    );
+    let patch = cx.materialize_patch_facts(id, &element.bindings, false, if_key, for_item);
     let text_flag = !once && !memo_block && children_need_text_flag(cx, &element.children);
     let mut flag = patch.flag;
     if text_flag {

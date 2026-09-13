@@ -12,7 +12,7 @@
 - [ ] P3-4 Lean reference semantics + differential runner
 - [x] P3-5 Impeto op reference doc (before optional passes)
 - [ ] P3-6 Vapor backend on S3
-- [ ] P3-7 VDOM patch flags from lattice facts
+- [ ] P3-7 VDOM patch flags from lattice facts _(slice 2 materializes the owner-keyed patch-facts table; see [record](./phase-3-records/p3-7.md))_
 - [ ] P3-8 SSR thin path
 - [ ] P3-9 S4 structured emitter + universal source maps _(slice 1 pins TS-31 source-map budgets before emitter migration; see [record](./phase-3-records/p3-9.md))_
 - [ ] P3-10 Try-measure-commit extraction _(slice 1 pins optimization budgets before extraction; see [record](./phase-3-records/p3-10.md))_
@@ -94,8 +94,11 @@ annotations if S3 detour measures badly — decide by TS-22). _Accept:_ corpus
 DOM byte-parity (TS-11 empty); patch-flag equivalence fixtures.
 _First slice 2026-09-13:_ see
 [P3-7 record](./phase-3-records/p3-7.md) for the S2→S4 annotation boundary and
-the initial `PatchFacts` split. The owner-keyed fact table and corpus gate
-remain before this task closes.
+the initial `PatchFacts` split.
+_Second slice 2026-09-13:_ `PatchFactsTable` is now owner-keyed by
+`ui.element` / `ui.component` `NodeId` and read by the VNode writers before
+printing patch flags or dynamic-props arguments. Reactivity-lattice integration
+and the DOM corpus gate remain before P3-7 closes.
 
 **P3-8 SSR thin path.** S2→S4 string-plan lowering reading partition facts;
 `vize_atelier_ssr` codegen re-targets. _Accept:_ SSR corpus byte-parity

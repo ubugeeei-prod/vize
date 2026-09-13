@@ -64,6 +64,7 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
         scopes: &lowered.scopes,
         wrappers: &lowered.wrappers,
         for_wrappers: &lowered.for_wrappers,
+        patch_facts: super::patch::PatchFactsTable::new(),
         walk: PageWalk::new(),
         scope_names: StdVec::new(),
         if_branch_key: 0,

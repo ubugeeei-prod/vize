@@ -147,6 +147,7 @@ struct EmitCx<'facts> {
     scopes: &'facts SideTable<ScopeFacts>,
     wrappers: &'facts SideTable<WrapperKeys>,
     for_wrappers: &'facts SideTable<ForWrapper>,
+    patch_facts: patch::PatchFactsTable,
     walk: PageWalk,
     scope_names: StdVec<String>,
     /// Sibling `v-if` chains share one counter; nested chains reset.

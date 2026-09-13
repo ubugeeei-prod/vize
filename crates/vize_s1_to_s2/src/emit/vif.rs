@@ -243,9 +243,9 @@ fn branch_key_js(
 fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<(), EmitError> {
     match branch.region.ops.as_slice() {
         [Op::Element(element)] => {
-            let _id = cx.walk.mint();
+            let id = cx.walk.mint();
             cx.walk.skip(element.bindings.len());
-            super::emit_if_branch_call(cx, element, key)
+            super::emit_if_branch_call(cx, element, key, id)
         }
         [Op::Component(component)] => {
             let _id = cx.walk.mint();

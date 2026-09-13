@@ -21,8 +21,9 @@ pub(super) fn emit_if_branch_call(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
     key: &str,
+    id: Option<NodeId>,
 ) -> Result<(), EmitError> {
-    vnode::emit_if_branch_element(cx, element, key)
+    vnode::emit_if_branch_element(cx, element, key, id)
 }
 
 pub(super) fn emit_for_op(

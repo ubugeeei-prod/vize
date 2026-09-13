@@ -7,7 +7,8 @@
 //! few position-local masks (`v-for`, `v-once`, `v-memo`).
 
 use alloc::vec::Vec as StdVec;
-
+use smallvec::SmallVec;
+use vize_davinci::id::NodeId;
 use vize_s0::String;
 use vize_s2::op::{Attribute, BindingOp, OnOp};
 
@@ -17,9 +18,54 @@ use super::props::{
     is_emitted_key_bind, static_bind_key,
 };
 
+pub(super) struct PatchFactsTable {
+    entries: SmallVec<[(NodeId, PatchFacts); 16]>,
+}
+
+impl PatchFactsTable {
+    pub(super) fn new() -> Self {
+        Self {
+            entries: SmallVec::new(),
+        }
+    }
+
+    fn materialize(&mut self, owner: Option<NodeId>, facts: PatchFacts) -> PatchFacts {
+        let Some(owner) = owner else {
+            return facts;
+        };
+        self.entries.push((owner, facts));
+        let (_, facts) = self.entries.pop().expect("patch fact was just pushed");
+        facts
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) struct PatchFacts {
     pub flag: i32,
     pub dynamic_props: StdVec<String>,
+}
+
+impl super::EmitCx<'_> {
+    pub(super) fn materialize_patch_facts<'a>(
+        &mut self,
+        owner: Option<NodeId>,
+        bindings: &[BindingOp<'a>],
+        is_component: bool,
+        if_key: Option<&str>,
+        for_item: bool,
+    ) -> PatchFacts {
+        let facts = binding_patch_facts(
+            bindings,
+            is_component,
+            if_key,
+            for_item,
+            self.is_ts,
+            &|name| self.reads_constant_binding_name(name),
+            &|on| super::on::caches_handler(self, on),
+            self.caches_handlers(),
+        );
+        self.patch_facts.materialize(owner, facts)
+    }
 }
 
 #[allow(clippy::too_many_arguments)]

@@ -4073,6 +4073,7 @@ dependencies = [
  "oxc_span",
  "oxc_syntax",
  "oxc_transformer",
+ "smallvec",
  "toml",
  "vize_atelier_core",
  "vize_atelier_dom",
