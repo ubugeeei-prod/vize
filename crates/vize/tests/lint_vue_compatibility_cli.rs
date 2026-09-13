@@ -2,17 +2,23 @@ use std::{
     fs,
     path::{Path, PathBuf},
     process::{Command, Output},
+    sync::atomic::{AtomicU64, Ordering},
 };
+
+static NEXT_TEMP_PROJECT: AtomicU64 = AtomicU64::new(0);
 
 fn temp_project_dir() -> PathBuf {
     let nonce = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    std::env::temp_dir().join(format!(
-        "vize-lint-vue-compatibility-{}-{nonce}",
-        std::process::id()
-    ))
+    let sequence = NEXT_TEMP_PROJECT.fetch_add(1, Ordering::Relaxed);
+    let project_root = std::env::temp_dir().join(format!(
+        "vize-lint-vue-compatibility-{}-{sequence}-{nonce}",
+        std::process::id(),
+    ));
+    fs::create_dir_all(&project_root).unwrap();
+    project_root
 }
 
 fn write_project_file(root: &Path, path: &str, content: &str) {
