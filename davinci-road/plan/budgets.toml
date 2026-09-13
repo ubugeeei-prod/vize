@@ -313,6 +313,24 @@ ssr_rewritten_identifier = { backend = "ssr", category = "rewritten-identifier",
 ssr_section_boundary = { backend = "ssr", category = "section-boundary", anchors_min = 3, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
 legacy_sfc_text_matching_recovery = { backend = "legacy-sfc", category = "text-matching-recovery", anchors_min = 7, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
 
+[optimization]
+# P3-10 Try-measure-commit extraction tiers. Each `candidate_budget` is the
+# per-component decrementing budget for one compile, keyed to the future `-O`
+# selection. `reactive_edge` and `update_path` are correctness-adjacent
+# constraints, so their epsilons start at zero; emitted size is the objective
+# but may not regress unless this table is deliberately loosened.
+o0 = { tier = "O0", candidate_budget = 0, emitted_size_epsilon_pct = 0, reactive_edge_epsilon_pct = 0, update_path_epsilon_pct = 0, required_improvements_min = 0, tie_policy = "reject" }
+o1 = { tier = "O1", candidate_budget = 8, emitted_size_epsilon_pct = 0, reactive_edge_epsilon_pct = 0, update_path_epsilon_pct = 0, required_improvements_min = 1, tie_policy = "reject" }
+o2 = { tier = "O2", candidate_budget = 32, emitted_size_epsilon_pct = 0, reactive_edge_epsilon_pct = 0, update_path_epsilon_pct = 0, required_improvements_min = 1, tie_policy = "reject" }
+o3 = { tier = "O3", candidate_budget = 128, emitted_size_epsilon_pct = 0, reactive_edge_epsilon_pct = 0, update_path_epsilon_pct = 0, required_improvements_min = 1, tie_policy = "reject" }
+
+[target.p3-10]
+task_start_rev = "b891e186eb92bc8c4fe84cfcc838cdb5ceece841"
+task_start_date = "2026-09-13"
+objective_metric = "emitted-size"
+constraint_metrics = ["reactive-edge", "update-path"]
+tie_policy = "reject"
+
 [resource]
 # Resident-tier ceilings: rss_peak_bytes per machine preset, cold_start_ms,
 # idle_cpu_pct (mean over a 60 s idle window), keystroke_p95_ms — with the

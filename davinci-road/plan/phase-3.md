@@ -15,7 +15,7 @@
 - [ ] P3-7 VDOM patch flags from lattice facts
 - [ ] P3-8 SSR thin path
 - [ ] P3-9 S4 structured emitter + universal source maps _(slice 1 pins TS-31 source-map budgets before emitter migration; see [record](./phase-3-records/p3-9.md))_
-- [ ] P3-10 Try-measure-commit extraction
+- [ ] P3-10 Try-measure-commit extraction _(slice 1 pins optimization budgets before extraction; see [record](./phase-3-records/p3-10.md))_
 - [ ] P3-11 IVM oracle
 - [ ] P3-12 Behavioral (sprout) runner incl. IME scripts
 - [ ] P3-13 Optimization remarks + corpus remarks-diff
@@ -130,6 +130,10 @@ pinned in `budgets.toml` at task start from corpus distributions, ties reject
 in favor of the simpler shape) — under a decrementing per-component budget;
 `-O` tiers = budget constants in `budgets.toml`. _Accept:_ TS-17 snapshots of decisions; TS-32 remarks record
 applied/missed; no output regression (TS-11/TS-33).
+_First slice 2026-09-13:_ see
+[P3-10 record](./phase-3-records/p3-10.md) for the task-start budget pin,
+zero-epsilon metric policy, and `-O0` through `-O3` candidate budgets. The S3
+placement alternatives and extraction pass remain open.
 
 **P3-11 IVM oracle.** Incremental-update ≡ from-scratch render on the Lean
 reference for keyed/unkeyed `v-for`, conditional toggles, mixed non-linear
