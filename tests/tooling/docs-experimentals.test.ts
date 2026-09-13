@@ -52,9 +52,10 @@ const sectionHeadings = [
 
 const rfcDetailSnippets = [
   "## Opt-in Contract",
+  "## Current Scope",
   "## Patterned Templates",
   "### Patterned Diagnostics",
-  "### Patterned Deferred Syntax",
+  "### Patterned Type Boundary",
   "## In-Tag Comments",
   "## Self Component",
   "## Strict Slot Children",
@@ -64,11 +65,20 @@ const rfcDetailSnippets = [
   "experimentalSelfComponent",
   "experimentalStrictSlotChildren",
   "v-match`, `v-when`, and `v-case` report that the opt-in is required",
+  "upstream type-tooling acceptance contract for narrowing and exhaustiveness",
+  "does not yet certify exhaustiveness",
   "Binding inside an or-pattern alternative is also deferred",
-  "The comment is not a child node",
+  "root.comments",
+  "CommentKind::InTag",
+  "`//` consumes the closing delimiter when `>` or `/>` stays on the same line",
   "Raw in-DOM templates are parsed by the browser first",
-  "If the flag is off, a local component binding named `Self` keeps its ordinary meaning",
+  "local/imported component named `Self` is shadowed",
+  "Avoid naming a component import `Self`",
+  "defineSlots",
   "__VizeProvidedSlotChildren<[typeof TabItem, HTMLButtonElement]>",
+  "__VizeProvidedSlotChildren<__T>` accepts a single child as either `Only` or `[Only]`",
+  "Open slot index signatures and `any` degrade to `any`",
+  "Built-ins, dynamic components",
   "Required slot-name checks are separate",
 ];
 
@@ -88,6 +98,10 @@ test("experimentals docs fully describe experimental opt-in flags", () => {
     experimentals,
     /\| `strictSlotChildren` \| Emits virtual TypeScript child assertions/,
   );
+  assert.match(experimentals, /Off behavior/);
+  assert.match(experimentals, /`v-match`, `v-when`, and `v-case` report the required opt-in/);
+  assert.match(experimentals, /`vize\(\{ vapor \}\)` and `compiler\.vapor` win/);
+  assert.match(experimentals, /`vize\(\{ jsxMode \}\)` and `compiler\.jsxMode` win/);
   assert.match(experimentals, /DOM, SSR, Vapor, SFC, WASM compile APIs/);
   assert.match(experimentals, /`vize check`, LSP\/type-check project APIs/);
   assert.match(
@@ -111,18 +125,26 @@ test("experimentals docs fully describe experimental opt-in flags", () => {
 
   assert.match(experimentals, /`v-when="_"` is the fallback pattern and must be unique/);
   assert.match(experimentals, /bindings inside alternatives are not supported yet/);
+  assert.match(experimentals, /Exhaustiveness and branch narrowing remain tooling boundaries/);
   assert.match(experimentals, /`v-case` remains a compatibility alias/);
   assert.match(experimentals, /`\?=`, `\|=`, and `~=` are\s+not public Vize syntax/);
   assert.match(experimentals, /<template v-match="entry">/);
   assert.match(experimentals, /\/\/ @vue-expect-error legacy API accepts string IDs/);
+  assert.match(experimentals, /same-line `>` or `\/>` is consumed as comment text/);
   assert.match(experimentals, /<a href="https:\/\/example\.test\/path\/\/segment">Link<\/a>/);
   assert.match(experimentals, /<Self v-for="child in node\.children"/);
   assert.match(experimentals, /The reserved tag is exact and case-sensitive/);
+  assert.match(experimentals, /shadows local, imported, and global components named `Self`/);
   assert.match(experimentals, /readonly __vizeSlots\?:/);
   assert.match(experimentals, /Named slots and default slots are both checked/);
+  assert.match(experimentals, /`defineSlots` contracts export the same marker shape/);
+  assert.match(experimentals, /Slot contracts using open index signatures or `any` degrade/);
   assert.match(experimentals, /serverScript: true/);
+  assert.match(experimentals, /the native field stays disabled/);
   assert.match(experimentals, /vapor: true/);
+  assert.match(experimentals, /explicit `vize\(\{ vapor: false \}\)` is a per-plugin opt-out/);
   assert.match(experimentals, /jsxVapor: true/);
+  assert.match(experimentals, /`jsxMode: "vdom"` is the explicit opt-out/);
   assert.match(experimentals, /compileTemplate\(source, \{/);
 });
 
@@ -132,11 +154,14 @@ test("experimentals RFC detail page documents entrypoints and implementation bou
     "utf8",
   );
 
-  assert.match(details, /no RFC feature is enabled unless the matching Vize flag is explicitly on/);
+  assert.match(
+    details,
+    /no RFC feature is enabled\s+unless the matching Vize flag is explicitly on/,
+  );
   assert.match(details, /Use `experimentals` in shared config and plugin config/);
-  assert.match(details, /direct `compileTemplate` fields\s+do not understand aliases/);
+  assert.match(details, /Direct `compileTemplate` fields\s+do not understand aliases/);
   assert.match(details, /`let` and `var` bindings are rejected/);
-  assert.match(details, /`v-case` only as a compatibility alias/);
+  assert.match(details, /`v-case` and `v-case\.default` are kept only/);
   assert.match(details, /`<Self>` is an ordinary component tag/);
   assert.match(details, /no extra child-type assertions are generated/);
   assert.match(details, /Advanced component libraries can expose `__vizeResolveSlots`/);
@@ -164,8 +189,15 @@ test("Japanese experimentals docs mirror the complete reference", () => {
   assert.match(experimentals, /## Surface Matrix/);
   assert.match(experimentals, /## Direct API Fields/);
   assert.match(experimentals, /`vize check`, LSP\/type-check project API/);
+  assert.match(experimentals, /必要な opt-in を報告/);
+  assert.match(experimentals, /`vize\(\{ vapor \}\)` と `compiler\.vapor` が優先/);
+  assert.match(experimentals, /`vize\(\{ jsxMode \}\)` と `compiler\.jsxMode` が優先/);
   assert.match(experimentals, /`v-when="_"` は fallback pattern/);
   assert.match(experimentals, /`v-case` は古い Vize 実験の互換 alias/);
+  assert.match(experimentals, /同じ行の `>` \/ `\/>` は comment text として消費されます/);
+  assert.match(experimentals, /component named `Self` を shadow/);
+  assert.match(experimentals, /`defineSlots` contract も同じ marker shape/);
+  assert.match(experimentals, /TypeScript の permissive behavior に degrade/);
   assert.match(experimentals, /`<Self>` は特別ですが、`<self>` は特別ではありません/);
   for (const key of experimentalKeys) {
     assert.match(experimentals, new RegExp(escapeRegExp(key)), `${key} must be documented in ja`);
@@ -183,12 +215,23 @@ test("Japanese experimentals RFC detail page mirrors the implementation boundari
 
   assert.match(details, /## Opt-in Contract/);
   assert.match(details, /RFC flag はすべて独立しています/);
+  assert.match(details, /## Current Scope/);
   assert.match(details, /direct `compileTemplate` field は/);
   assert.match(details, /`let` と `var` binding は rejected/);
-  assert.match(details, /`v-case` は古い experiment との互換 alias/);
+  assert.match(details, /`v-case` と `v-case\.default` は古い Vize 実験の互換 alias/);
+  assert.match(
+    details,
+    /exhaustiveness、unreachable branch、将来追加された union member をまだ certify しません/,
+  );
+  assert.match(details, /`CommentKind::InTag`/);
+  assert.match(details, /closing delimiter まで comment として消費します/);
+  assert.match(details, /component named `Self` より先に解決されます/);
   assert.match(details, /`<self>` は特別/);
-  assert.match(details, /required slot\s+name check は別の仕組み/);
+  assert.match(details, /`defineSlots` からも得られます/);
+  assert.match(details, /required slot-name check は別の仕組み/);
   assert.match(details, /__VizeProvidedSlotChildren<\[typeof TabItem, HTMLButtonElement\]>/);
+  assert.match(details, /single child を `Only` または `\[Only\]`/);
+  assert.match(details, /open slot index signature と `any` は `any` に degrade/);
   for (const key of rfcExperimentalKeys) {
     assert.match(details, new RegExp(escapeRegExp(key)), `${key} must be documented in ja`);
   }
@@ -237,6 +280,9 @@ test("cli experimental docs point at the complete experimentals reference", () =
   assert.match(cliDoc, /https:\/\/vizejs\.dev\/guide\/experimentals-vue-rfcs/);
   assert.match(cliDoc, /`serverScript`, `vapor`, and `jsxVapor`/);
   assert.match(cliDoc, /Avoid\s+setting a recommended name and its alias together/);
+  assert.match(cliDoc, /direct Vite plugin\s+options can opt out with `false` or `null`/);
+  assert.match(cliDoc, /Use `vize\(\{ vapor: false \}\)` as a\s+per-plugin opt-out/);
+  assert.match(cliDoc, /`jsxMode: "vdom"` is the explicit opt-out/);
   assert.doesNotMatch(cliDoc, /`experimentals\.intagComment` enables/);
 });
 

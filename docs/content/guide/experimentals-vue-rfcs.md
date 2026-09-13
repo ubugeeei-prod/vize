@@ -5,8 +5,9 @@ title: Vue RFC Experimental Details
 # Vue RFC Experimental Details
 
 This page expands the Vue-RFC part of [Experimentals](./experimentals.md). It documents Vize's
-shipped opt-in contract and implementation limits. The upstream pull requests remain the design
-sources, but no RFC feature is enabled unless the matching Vize flag is explicitly on.
+shipped opt-in contract, the examples each flag enables, and the boundaries that are still RFC or
+tooling work. The upstream pull requests remain the design sources, but no RFC feature is enabled
+unless the matching Vize flag is explicitly on.
 
 ## Opt-in Contract
 
@@ -36,25 +37,25 @@ export default defineConfig({
 ```
 
 ```ts
-vize({
-  experimentals: {
-    patternedTemplate: false,
-    inTagComment: true,
-  },
-});
-```
-
-```ts
 compileTemplate(source, {
   experimentalPatternedTemplate: true,
   experimentalInTagComments: true,
   experimentalSelfComponent: true,
+  experimentalStrictSlotChildren: true,
 });
 ```
 
-In the second example, the direct plugin value disables patterned templates for that plugin instance
-even if shared config enables it, while in-tag comments stay on. The direct `compileTemplate` fields
-do not understand aliases such as `pattenedTemplate` or `intagComment`.
+Direct `compileTemplate` fields do not understand aliases such as `pattenedTemplate` or
+`intagComment`. Direct Vite plugin values still win over shared config, including explicit opt-outs.
+
+## Current Scope
+
+| RFC | Vize ships today | Boundary to keep explicit |
+| --- | --- | --- |
+| #823 | parser support, runtime lowering, branch-local bindings, guards, rest/as patterns, diagnostics for flag-off and invalid placement | the upstream type-tooling acceptance contract for narrowing and exhaustiveness is not yet certified by `vize check` |
+| #831 | parser support for in-tag `//`, source text in `root.comments`, and compile pipelines that preserve the AST comment | no runtime output, no child comment node, and no browser in-DOM template support |
+| #833 | exact `<Self>` current-component resolution in DOM, SSR, and Vapor compilation | no render-function or JSX macro; a local/imported component named `Self` is shadowed when the flag is enabled |
+| #734 | virtual TypeScript assertions for provided default and named slot children | no template codegen change; open slot contracts and `any` degrade to TypeScript's own permissive checks |
 
 ## Patterned Templates
 
@@ -63,17 +64,33 @@ expression is evaluated once, direct branch children are tested in source order,
 matching branch renders.
 
 ```vue
+<script setup lang="ts">
+type Result =
+  | { status: "success"; data: { title: string; published: boolean } }
+  | { status: "error"; error: { message: string; retriable: boolean } }
+  | { status: "loading" }
+  | { status: "empty" };
+
+const result = ref<Result>({ status: "loading" });
+</script>
+
 <template v-match="result">
-  <ArticleView v-when="{ status: 'success', data: const article }" :article="article" />
+  <ArticleView
+    v-when="{ status: 'success', data: const article } if (article.published)"
+    :article="article"
+  />
   <RetryBanner
     v-when="{ status: 'error', error: const error } if (error.retriable)"
     :error="error"
   />
+  <p v-when="{ status: 'empty' } | { status: 'loading' }">Waiting for content.</p>
   <ErrorBanner v-when="{ status: 'error', error: const error }" :error="error" />
-  <LoadingSpinner v-when="{ status: 'loading' }" />
-  <p v-when="_">Unknown result.</p>
+  <p v-when="_">Unpublished article.</p>
 </template>
 ```
+
+Bindings are branch-local. They are visible to the element carrying `v-when`, its attributes and
+directives, its guard expression, and its children. Sibling branches cannot read them.
 
 Supported branch patterns:
 
@@ -83,15 +100,13 @@ Supported branch patterns:
 | Value | `v-when="Status.Ready"` | compares with an identifier or member expression |
 | Wildcard | `v-when="_"` | always matches and introduces no binding |
 | Const binding | `v-when="const value"` | always matches and binds `value` in this branch |
-| Object | `v-when="{ kind: 'ok', value: const data }"` | open structural object match |
-| Object rest | `v-when="{ kind: 'error', ...const payload }"` | binds remaining own enumerable properties |
-| Array rest | `v-when="[const first, ...const rest]"` | requires an array and collects extra items |
+| Object | `v-when="{ kind: 'ok', value: const data }"` | open structural object match; extra properties are allowed |
+| Object shorthand | `v-when="{ kind: 'ok', const data }"` | `{ const data }` means `{ data: const data }` |
+| Object rest | `v-when="{ kind: 'error', ...const payload }"` | binds remaining own enumerable properties; lone `...` is accepted |
+| Array / tuple | `v-when="[const first, ...const rest]"` | requires `Array.isArray`; rest allows additional items |
 | Or | `v-when="'idle' | 'loading'"` | tries alternatives from left to right |
 | As binding | `v-when="{ kind: 'ok' } as const whole"` | binds the matched value as `whole` |
 | Guard | `v-when="{ error: const e } if (e.retriable)"` | runs after the pattern succeeds |
-
-Bindings are branch-local. They are visible to the element carrying `v-when`, its attributes and
-directives, its children, and the guard expression. They are not visible to sibling branches.
 
 ### Patterned Diagnostics
 
@@ -124,19 +139,18 @@ An unguarded top-level fallback must be unique and last:
 ```
 
 `let` and `var` bindings are rejected. `const` is the only binding declaration Vize accepts today.
+`v-when` also rejects directive arguments and modifiers. `v-case` and `v-case.default` are kept only
+as compatibility aliases for older Vize experiments; new templates should use `v-when` and `_`.
 
-```vue
-<template v-match="entry">
-  <p v-when="{ data: let article }">{{ article }}</p>
-</template>
-```
+### Patterned Type Boundary
 
-### Patterned Deferred Syntax
-
-Vize accepts `v-case` only as a compatibility alias for older experiments. New code should use
-`v-when`. The shorthand candidates discussed in the RFC are not public Vize syntax: `?=`, `|=`, and
-`~=` are not parsed as branch attributes. Binding inside an or-pattern alternative is also deferred,
-so split those cases into separate branches when a branch needs a binding.
+RFC #823 treats branch narrowing and exhaustiveness as upstream type-tooling acceptance criteria.
+Current Vize lowering does not yet certify exhaustiveness, unreachable branches, or future union
+members in `vize check`. Use `v-when="_"` when you need a runtime fallback, and keep manual union
+coverage tests when missing-case diagnostics are required. Binding inside an or-pattern alternative
+is also deferred, so split those cases into separate branches when a branch needs a binding. The
+shorthand candidates discussed in the RFC are not public Vize syntax: `?=`, `|=`, and `~=` are not
+parsed as branch attributes.
 
 ## In-Tag Comments
 
@@ -154,10 +168,14 @@ RFC #831. Vize keeps their source text for parser/tooling fidelity and does not 
 ```
 
 Allowed placements are after the tag name, between complete attributes/directives, and after the
-last attribute before `>` or `/>`. The comment is not a child node, so it does not behave like
-`<!-- ... -->` and does not depend on the template `comments` option.
+last attribute before `>` or `/>`. Put the closing delimiter on the next line after a trailing
+comment: `//` consumes the closing delimiter when `>` or `/>` stays on the same line. The syntax is
+not valid inside a tag name, attribute name, directive name, argument, modifier, or attribute value.
 
-The parser still treats `//` inside an attribute value as text:
+The comment is stored on the template root `comments` list with `CommentKind::InTag`. It is not an
+element prop, not a child `<!-- ... -->` node, and not controlled by the normal template `comments`
+option; `comments: false` still preserves in-tag comments for tooling. `//` inside an attribute value
+remains text:
 
 ```vue
 <template>
@@ -165,8 +183,8 @@ The parser still treats `//` inside an attribute value as text:
 </template>
 ```
 
-This is intended for SFC and tooling pipelines that parse the template themselves. Raw in-DOM
-templates are parsed by the browser first, so do not use in-tag comments there.
+This syntax is intended for SFC and tooling pipelines that parse templates themselves. Raw in-DOM
+templates are parsed by the browser first, so do not rely on in-tag comments there.
 
 ## Self Component
 
@@ -176,7 +194,7 @@ templates are parsed by the browser first, so do not use in-tag comments there.
 <template>
   <li>
     {{ node.id }}
-    <ul>
+    <ul v-if="node.children.length">
       <Self v-for="child in node.children" :key="child.id" :node="child" />
     </ul>
   </li>
@@ -192,8 +210,24 @@ Resolution rules:
 | Direct template API | uses `componentName` when provided |
 | No name available | keeps normal component resolution semantics |
 
+When the flag is enabled, `<Self>` is resolved before local, imported, or global components named
+`Self`. Avoid naming a component import `Self`; rename the import if you need the other component.
+Props, attrs, events, directives, refs, `v-if`, `v-for`, `v-show`, and slots behave like any other
+component usage. Recursive templates still need a termination condition.
+
+```vue
+<script setup lang="ts">
+import OtherSelf from "./OtherSelf.vue";
+</script>
+
+<template>
+  <Self />
+  <OtherSelf />
+</template>
+```
+
 The tag is exact and case-sensitive. `<Self>` is reserved only when the flag is enabled; `<self>` is
-not special. If the flag is off, a local component binding named `Self` keeps its ordinary meaning.
+not special. Render functions and JSX are outside this flag.
 
 ## Strict Slot Children
 
@@ -212,6 +246,15 @@ declare const Tabs: {
 };
 ```
 
+The same public contract can come from `defineSlots` in an SFC:
+
+```ts
+defineSlots<{
+  default(): [typeof TabItem, HTMLButtonElement];
+  footer(): [HTMLButtonElement];
+}>();
+```
+
 ```vue
 <template>
   <Tabs>
@@ -227,17 +270,33 @@ declare const Tabs: {
 
 With the flag enabled, Vize represents the provided default slot as
 `__VizeProvidedSlotChildren<[typeof TabItem, HTMLButtonElement]>` and asks TypeScript to compare it
-with the component's `__vizeSlots.default` return type.
+with the component's `__vizeSlots.default` return type. A mismatched child becomes a TypeScript
+diagnostic:
+
+```vue
+<template>
+  <Tabs>
+    <div />
+  </Tabs>
+</template>
+```
 
 Child mapping:
 
 | Provided child | Virtual TypeScript type |
 | --- | --- |
 | Native element such as `<button>` | `HTMLButtonElement` |
+| SVG or MathML element | `SVGElement` or `MathMLElement` fallback when no narrower DOM type is known |
 | Imported component such as `<TabItem>` | `typeof TabItem` |
 | Text or interpolation | `string` |
 | Named `<template #footer>` | checked against the named slot |
 | Comments and structural-only wrappers | skipped when they do not contribute a child value |
+
+`__VizeProvidedSlotChildren<__T>` accepts a single child as either `Only` or `[Only]` when the slot
+contract has one accepted child type, and preserves tuple/array shapes for multi-child contracts.
+Open slot index signatures and `any` degrade to `any`, so TypeScript will not produce strict child
+diagnostics there. Built-ins, dynamic components, `KeepAlive`, `Teleport`, `Transition`,
+`TransitionGroup`, and `Suspense` do not currently contribute strict component child types.
 
 Advanced component libraries can expose `__vizeResolveSlots` when the slot contract depends on props.
 Components that use `defineSlots` export a `__vizeSlots` marker for parents. Required slot-name
@@ -253,4 +312,4 @@ Before documenting a new experimental behavior, pin all of these facts in tests:
 - direct compiler fields are final booleans
 - bad syntax produces diagnostics instead of silently compiling
 - DOM, SSR, Vapor, SFC, WASM, or `vize check` coverage matches the surface matrix
-- docs include both a good example and a flag-off or invalid-placement example
+- docs include a good example, a flag-off or invalid-placement example, and an implementation boundary

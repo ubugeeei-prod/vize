@@ -6,23 +6,20 @@ title: Vue RFC Experimental Details
 
 # Vue RFC Experimental Details
 
-このページは [Experimentals](./experimentals.md) の Vue RFC 部分を詳しく説明します。ここで
-document しているのは Vize が ship している opt-in contract と実装上の制限です。上流 PR は設計
-source ですが、対応する Vize flag を明示的に on にしない限り RFC 機能は有効になりません。
+このページは [Experimentals](./experimentals.md) の Vue RFC 部分を詳しく説明します。Vize が ship している opt-in contract、各 flag で有効になる example、まだ RFC または tooling work として扱う boundary をまとめています。上流 PR は design source ですが、対応する Vize flag を明示的に on にしない限り RFC 機能は有効になりません。
 
 ## Opt-in Contract
 
 RFC flag はすべて独立しています。1 つの proposal を有効にしても、別の proposal は有効になりません。
 
-| RFC | Vize config flag | direct compiler field | 対象 | flag が off の場合 |
+| RFC | Vize config flag | Direct compiler field | 対象 | flag が off の場合 |
 | --- | --- | --- | --- | --- |
 | [#823](https://github.com/vuejs/rfcs/pull/823) patterned templates | `experimentals.patternedTemplate` | `experimentalPatternedTemplate` | DOM, SSR, Vapor, SFC, WASM compile API | `v-match`、`v-when`、`v-case` は opt-in が必要だと報告 |
 | [#831](https://github.com/vuejs/rfcs/pull/831) in-tag comments | `experimentals.inTagComment` | `experimentalInTagComments` | Parser, DOM, SSR, Vapor, SFC, WASM compile API | opening tag 内の `//` は不正な tag syntax として parse |
 | [#833](https://github.com/vuejs/rfcs/pull/833) self references | `experimentals.selfComponent` | `experimentalSelfComponent` | DOM, SSR, Vapor, SFC, WASM compile API | `<Self>` は通常の component tag |
 | [#734](https://github.com/vuejs/rfcs/pull/734) strict slot children | `experimentals.strictSlotChildren` | `experimentalStrictSlotChildren` | `vize check`, LSP, virtual-TS project API | 追加の child-type assertion は生成しない |
 
-共有 config と plugin config では `experimentals` を使います。direct compiler field は、alias、
-precedence、`{}` switch object をすでに final boolean に解決した integration だけが使います。
+共有 config と plugin config では `experimentals` を使います。direct compiler field は、alias、precedence、`{}` switch object をすでに final boolean に解決した integration だけが使います。
 
 ```ts
 import { defineConfig } from "vize";
@@ -38,44 +35,56 @@ export default defineConfig({
 ```
 
 ```ts
-vize({
-  experimentals: {
-    patternedTemplate: false,
-    inTagComment: true,
-  },
-});
-```
-
-```ts
 compileTemplate(source, {
   experimentalPatternedTemplate: true,
   experimentalInTagComments: true,
   experimentalSelfComponent: true,
+  experimentalStrictSlotChildren: true,
 });
 ```
 
-2 つ目の例では、direct plugin value が shared config の patterned templates opt-in をその plugin
-instance だけ無効化し、in-tag comments は有効のままにします。direct `compileTemplate` field は
-`pattenedTemplate` や `intagComment` のような alias を解釈しません。
+direct `compileTemplate` field は `pattenedTemplate` や `intagComment` のような alias を解釈しません。direct Vite plugin value は shared config より優先され、明示的な opt-out も優先されます。
+
+## Current Scope
+
+| RFC | Vize が現在 ship しているもの | 明示しておく boundary |
+| --- | --- | --- |
+| #823 | parser support、runtime lowering、branch-local binding、guard、rest/as pattern、flag-off と invalid placement の diagnostic | narrowing と exhaustiveness の upstream type-tooling acceptance contract は、まだ `vize check` では certified ではない |
+| #831 | in-tag `//` parser support、`root.comments` の source text、AST comment を保持する compile pipeline | runtime output なし、child comment node なし、browser in-DOM template support なし |
+| #833 | DOM、SSR、Vapor compilation の exact `<Self>` current-component resolution | render-function / JSX macro なし。flag 有効時は local/imported component named `Self` が shadow される |
+| #734 | default slot と named slot の provided children に対する virtual TypeScript assertion | template codegen change なし。open slot contract と `any` は TypeScript 側の permissive check に degrade |
 
 ## Patterned Templates
 
-`patternedTemplate` は RFC #823 の long-form `v-match` / `v-when` syntax を実装します。subject
-expression は 1 回だけ評価され、direct branch child は source order で検査され、最初に match した
-branch だけが render されます。
+`patternedTemplate` は RFC #823 の long-form `v-match` / `v-when` syntax を実装します。subject expression は 1 回だけ評価され、direct branch child は source order で検査され、最初に match した branch だけが render されます。
 
 ```vue
+<script setup lang="ts">
+type Result =
+  | { status: "success"; data: { title: string; published: boolean } }
+  | { status: "error"; error: { message: string; retriable: boolean } }
+  | { status: "loading" }
+  | { status: "empty" };
+
+const result = ref<Result>({ status: "loading" });
+</script>
+
 <template v-match="result">
-  <ArticleView v-when="{ status: 'success', data: const article }" :article="article" />
+  <ArticleView
+    v-when="{ status: 'success', data: const article } if (article.published)"
+    :article="article"
+  />
   <RetryBanner
     v-when="{ status: 'error', error: const error } if (error.retriable)"
     :error="error"
   />
+  <p v-when="{ status: 'empty' } | { status: 'loading' }">Waiting for content.</p>
   <ErrorBanner v-when="{ status: 'error', error: const error }" :error="error" />
-  <LoadingSpinner v-when="{ status: 'loading' }" />
-  <p v-when="_">Unknown result.</p>
+  <p v-when="_">Unpublished article.</p>
 </template>
 ```
+
+binding は branch-local です。`v-when` を持つ element、attribute/directive、guard expression、children から見えます。sibling branch からは読めません。
 
 対応している branch pattern:
 
@@ -85,15 +94,13 @@ branch だけが render されます。
 | Value | `v-when="Status.Ready"` | identifier または member expression と比較 |
 | Wildcard | `v-when="_"` | 常に match し、binding は導入しない |
 | Const binding | `v-when="const value"` | 常に match し、この branch で `value` を bind |
-| Object | `v-when="{ kind: 'ok', value: const data }"` | open structural object match |
-| Object rest | `v-when="{ kind: 'error', ...const payload }"` | 残りの own enumerable property を bind |
-| Array rest | `v-when="[const first, ...const rest]"` | array であることを要求し、追加 item を collect |
+| Object | `v-when="{ kind: 'ok', value: const data }"` | open structural object match。余分な property は許容 |
+| Object shorthand | `v-when="{ kind: 'ok', const data }"` | `{ const data }` は `{ data: const data }` |
+| Object rest | `v-when="{ kind: 'error', ...const payload }"` | 残りの own enumerable property を bind。lone `...` も accepted |
+| Array / tuple | `v-when="[const first, ...const rest]"` | `Array.isArray` を要求。rest は追加 item を許容 |
 | Or | `v-when="'idle' | 'loading'"` | alternatives を左から右に試す |
 | As binding | `v-when="{ kind: 'ok' } as const whole"` | matched value を `whole` として bind |
 | Guard | `v-when="{ error: const e } if (e.retriable)"` | pattern 成功後に実行 |
-
-binding は branch-local です。`v-when` を持つ element、attributes/directives、children、guard
-expression から見えます。sibling branch からは見えません。
 
 ### Patterned Diagnostics
 
@@ -125,26 +132,15 @@ unguarded top-level fallback は一意で、最後でなければなりません
 </template>
 ```
 
-`let` と `var` binding は rejected です。現時点で Vize が受け付ける binding declaration は `const`
-だけです。
+`let` と `var` binding は rejected です。現時点で Vize が受け付ける binding declaration は `const` だけです。`v-when` は directive argument や modifier も拒否します。`v-case` と `v-case.default` は古い Vize 実験の互換 alias としてだけ残しており、新しい template では `v-when` と `_` を使います。
 
-```vue
-<template v-match="entry">
-  <p v-when="{ data: let article }">{{ article }}</p>
-</template>
-```
+### Patterned Type Boundary
 
-### Patterned Deferred Syntax
-
-`v-case` は古い experiment との互換 alias としてだけ受け付けます。新しい code は `v-when` を使って
-ください。RFC で議論されている shorthand candidate は Vize の public syntax ではありません。
-`?=`、`|=`、`~=` は branch attribute として parse されません。or-pattern alternative 内の binding
-も deferred なので、binding が必要な場合は branch を分けてください。
+RFC #823 は branch narrowing と exhaustiveness を upstream type-tooling acceptance criteria としています。現在の Vize lowering は、`vize check` で exhaustiveness、unreachable branch、将来追加された union member をまだ certify しません。runtime fallback が必要なら `v-when="_"` を使い、missing-case diagnostic が必要な場合は手元の union coverage test を残してください。or-pattern alternative 内の binding も deferred なので、binding が必要な場合は branch を分けます。RFC で議論された shorthand candidate は Vize の public syntax ではありません。`?=`、`|=`、`~=` は branch attribute として parse されません。
 
 ## In-Tag Comments
 
-`inTagComment` は RFC #831 の opening tag attribute list 内 compile-time-only `//` comment を実装します。
-Vize は parser/tooling fidelity のために source text を保持し、runtime code は emit しません。
+`inTagComment` は RFC #831 の opening tag attribute list 内 compile-time-only `//` comment を実装します。Vize は parser/tooling fidelity のために source text を保持し、runtime code は emit しません。
 
 ```vue
 <template>
@@ -156,11 +152,9 @@ Vize は parser/tooling fidelity のために source text を保持し、runtime
 </template>
 ```
 
-置ける場所は tag name の後、complete attribute/directive の間、最後の attribute の後かつ `>` / `/>`
-の前です。この comment は child node ではないので `<!-- ... -->` とは違い、template `comments`
-option にも左右されません。
+置ける場所は tag name の後、complete attribute/directive の間、最後の attribute の後かつ `>` / `/>` の前です。trailing comment の後では closing delimiter を次の行に置いてください。`>` や `/>` を同じ行に置くと `//` が closing delimiter まで comment として消費します。この syntax は tag name、attribute name、directive name、argument、modifier、attribute value の中では使えません。
 
-attribute value 内の `//` は通常の text として扱われます。
+comment は template root の `comments` list に `CommentKind::InTag` として保存されます。element prop ではなく、child `<!-- ... -->` node でもなく、通常の template `comments` option にも左右されません。`comments: false` でも tooling 用の in-tag comment は保持されます。attribute value 内の `//` は通常の text のままです。
 
 ```vue
 <template>
@@ -168,8 +162,7 @@ attribute value 内の `//` は通常の text として扱われます。
 </template>
 ```
 
-この機能は template を自分で parse する SFC/tooling pipeline 向けです。raw in-DOM template は先に
-browser に parse されるため、そこで in-tag comment に依存しないでください。
+この syntax は template を自分で parse する SFC/tooling pipeline 向けです。raw in-DOM template は先に browser に parse されるため、そこで in-tag comment に依存しないでください。
 
 ## Self Component
 
@@ -179,7 +172,7 @@ browser に parse されるため、そこで in-tag comment に依存しない�
 <template>
   <li>
     {{ node.id }}
-    <ul>
+    <ul v-if="node.children.length">
       <Self v-for="child in node.children" :key="child.id" :node="child" />
     </ul>
   </li>
@@ -195,13 +188,24 @@ resolution rule:
 | direct template API | `componentName` が渡されていれば使う |
 | name がない | 通常の component resolution semantics を維持 |
 
-tag は exact かつ case-sensitive です。flag が有効な場合だけ `<Self>` が予約されます。`<self>` は特別
-ではありません。flag が off の場合、`Self` という local component binding は通常どおり扱われます。
+flag が有効な場合、`<Self>` は local、imported、global component named `Self` より先に解決されます。別 component を使いたい場合は import 名を `Self` にしないでください。props、attrs、events、directives、refs、`v-if`、`v-for`、`v-show`、slot は通常の component usage と同じです。recursive template には termination condition が必要です。
+
+```vue
+<script setup lang="ts">
+import OtherSelf from "./OtherSelf.vue";
+</script>
+
+<template>
+  <Self />
+  <OtherSelf />
+</template>
+```
+
+tag は exact かつ case-sensitive です。flag が有効な場合だけ `<Self>` が予約されます。`<self>` は特別ではありません。render function と JSX はこの flag の対象外です。
 
 ## Strict Slot Children
 
-`strictSlotChildren` は RFC #734 の tooling 側を実装します。parent が component slot に渡す child node
-に対して virtual TypeScript assertion を追加します。template codegen や runtime rendering は変えません。
+`strictSlotChildren` は RFC #734 の tooling 側を実装します。parent が component slot に渡す child node に対して virtual TypeScript assertion を追加します。template codegen や runtime rendering は変えません。
 
 ```ts
 import TabItem from "./TabItem.vue";
@@ -212,6 +216,15 @@ declare const Tabs: {
     footer: () => [HTMLButtonElement];
   };
 };
+```
+
+同じ public contract は SFC の `defineSlots` からも得られます。
+
+```ts
+defineSlots<{
+  default(): [typeof TabItem, HTMLButtonElement];
+  footer(): [HTMLButtonElement];
+}>();
 ```
 
 ```vue
@@ -227,23 +240,30 @@ declare const Tabs: {
 </template>
 ```
 
-flag が有効な場合、Vize は provided default slot を
-`__VizeProvidedSlotChildren<[typeof TabItem, HTMLButtonElement]>` と表現し、component の
-`__vizeSlots.default` return type と比較するよう TypeScript に渡します。
+flag が有効な場合、Vize は provided default slot を `__VizeProvidedSlotChildren<[typeof TabItem, HTMLButtonElement]>` と表現し、component の `__vizeSlots.default` return type と比較するよう TypeScript に渡します。mismatch した child は TypeScript diagnostic になります。
+
+```vue
+<template>
+  <Tabs>
+    <div />
+  </Tabs>
+</template>
+```
 
 child mapping:
 
 | Provided child | Virtual TypeScript type |
 | --- | --- |
 | `<button>` などの native element | `HTMLButtonElement` |
+| SVG または MathML element | 狭い DOM type が分からない場合は `SVGElement` または `MathMLElement` fallback |
 | `<TabItem>` などの imported component | `typeof TabItem` |
 | text または interpolation | `string` |
 | named `<template #footer>` | named slot と比較 |
 | comment と structural-only wrapper | child value を持たない場合は skip |
 
-slot contract が props に依存する advanced component library は `__vizeResolveSlots` を expose できます。
-`defineSlots` を使う component は parent のために `__vizeSlots` marker を export します。required slot
-name check は別の仕組みです。この flag は既存の virtual-TS slot model に child node type check を追加します。
+`__VizeProvidedSlotChildren<__T>` は、slot contract の accepted child type が 1 つの場合、single child を `Only` または `[Only]` のどちらとしても受け付けます。multi-child contract では tuple/array shape を保ちます。open slot index signature と `any` は `any` に degrade するため、TypeScript は strict child diagnostic を出しません。built-in、dynamic component、`KeepAlive`、`Teleport`、`Transition`、`TransitionGroup`、`Suspense` は現時点では strict component child type に寄与しません。
+
+slot contract が props に依存する advanced component library は `__vizeResolveSlots` を expose できます。`defineSlots` を使う component は parent のために `__vizeSlots` marker を export します。required slot-name check は別の仕組みです。この flag は既存の virtual-TS slot model に child node type check を追加します。
 
 ## Verification Checklist
 
@@ -254,4 +274,4 @@ name check は別の仕組みです。この flag は既存の virtual-TS slot m
 - direct compiler field は final boolean
 - bad syntax は黙って compile されず diagnostic になる
 - DOM、SSR、Vapor、SFC、WASM、または `vize check` coverage が surface matrix と一致する
-- docs には good example と flag-off または invalid-placement example の両方がある
+- docs には good example、flag-off または invalid-placement example、implementation boundary がある

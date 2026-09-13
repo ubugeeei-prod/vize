@@ -16,7 +16,7 @@ title: Experimentals
 - Vue RFC [#734](https://github.com/vuejs/rfcs/pull/734) strict slot child checks
 - server-script、SFC Vapor、JSX Vapor routing などの Vize backend experiments
 
-RFC ごとの example、API entry point、flag off 時の挙動、deferred syntax は [Vue RFC Experimental Details](./experimentals-vue-rfcs.md) にまとめています。
+下の表は、すべての public switch の off 時の挙動と precedence まで含めた契約です。RFC ごとの diagnostic、direct API entry point、implementation boundary、deferred syntax は [Vue RFC Experimental Details](./experimentals-vue-rfcs.md) に詳しくまとめています。
 
 ## 推奨設定
 
@@ -105,29 +105,29 @@ config resolution をすでに所有している integration だけが直接使�
 
 ## Surface Matrix
 
-| Flag | 主な効果 | 消費される場所 | runtime behavior |
-| --- | --- | --- | --- |
-| `patternedTemplate` | `v-match` / `v-when` を parse して lower する | DOM, SSR, Vapor, SFC, WASM compile API | 通常の conditional render code に変換 |
-| `inTagComment` | opening tag 内の `//` comment を parse する | Parser, DOM, SSR, Vapor, SFC, WASM compile API | runtime output なし |
-| `selfComponent` | exact `<Self>` を current component として扱う | DOM, SSR, Vapor, SFC, WASM compile API | Vue の maybe-self-reference hint 付きで resolve |
-| `strictSlotChildren` | virtual TypeScript child assertion を出す | `vize check`, LSP/type-check project API | compiler/runtime output なし |
-| `serverScript` | server-script compiler plumbing を有効化する | それを expose する native compiler integration | host 定義の実験的挙動 |
-| `vapor` | stable Vapor が未設定なら SFC Vapor backend を選ぶ | Vite plugin, package build config | SFC output backend を変更 |
-| `jsxVapor` | stable JSX mode が未設定なら JSX/TSX を Vapor にする | Vite plugin, package build config | JSX/TSX output backend を変更 |
+| Flag | 有効時の挙動 | off 時の挙動 | enforce される場所 | boundary |
+| --- | --- | --- | --- | --- |
+| `patternedTemplate` | `v-match` / direct `v-when` branch を parse して lower | `v-match`、`v-when`、`v-case` は必要な opt-in を報告 | DOM, SSR, Vapor, SFC, WASM compile API | `vize check` は exhaustiveness をまだ certify しない |
+| `inTagComment` | opening tag の `//` comment を parse し tooling 用に保持 | `//` は不正な tag syntax | Parser, DOM, SSR, Vapor, SFC, WASM compile API | runtime output なし、browser in-DOM support なし |
+| `selfComponent` | exact `<Self>` を current component として扱う | `<Self>` は通常の component tag | DOM, SSR, Vapor, SFC, WASM compile API | render function と JSX は対象外 |
+| `strictSlotChildren` | virtual TypeScript child assertion を出す | child-type assertion は生成されない | `vize check`, LSP/type-check project API | open slot と `any` は TypeScript の permissive behavior のまま |
+| `serverScript` | native compiler integration に `experimentalServerScript` を渡す | native flag は `false` のまま | それを expose する native compiler integration | runtime が semantics を document するまでは host-defined |
+| `vapor` | stable Vapor が未設定なら SFC Vapor に fallback | SFC は stable/default backend のまま | Vite plugin, package build config | `vize({ vapor })` と `compiler.vapor` が優先 |
+| `jsxVapor` | stable JSX mode が未設定なら JSX/TSX Vapor に fallback | JSX/TSX は stable/default backend のまま | Vite plugin, package build config | `vize({ jsxMode })` と `compiler.jsxMode` が優先 |
 
 ## Flag Reference
 
-| Flag | upstream / source | resolved compiler field | default | compatibility names |
-| --- | --- | --- | --- | --- |
-| `patternedTemplate` | Vue RFC [#823](https://github.com/vuejs/rfcs/pull/823) | `experimentalPatternedTemplate` | off | `pattenedTemplate` |
-| `inTagComment` | Vue RFC [#831](https://github.com/vuejs/rfcs/pull/831) | `experimentalInTagComments` | off | `intagComment` |
-| `selfComponent` | Vue RFC [#833](https://github.com/vuejs/rfcs/pull/833) | `experimentalSelfComponent` | off | `self_component` in JSON |
-| `strictSlotChildren` | Vue RFC [#734](https://github.com/vuejs/rfcs/pull/734) | `experimentalStrictSlotChildren` | off | `strict_slot_children` in JSON |
-| `serverScript` | Server script compiler experiment | `experimentalServerScript` | off | `"server script"`, `server_script` in JSON |
-| `vapor` | SFC Vapor backend routing | `compiler.vapor` fallback | off | none |
-| `jsxVapor` | JSX/TSX Vapor default | `compiler.jsxMode` fallback | off | none |
+| Flag | upstream / source | resolved field | compatibility names |
+| --- | --- | --- | --- |
+| `patternedTemplate` | Vue RFC [#823](https://github.com/vuejs/rfcs/pull/823) | `experimentalPatternedTemplate` | `pattenedTemplate` |
+| `inTagComment` | Vue RFC [#831](https://github.com/vuejs/rfcs/pull/831) | `experimentalInTagComments` | `intagComment` |
+| `selfComponent` | Vue RFC [#833](https://github.com/vuejs/rfcs/pull/833) | `experimentalSelfComponent` | `self_component` in JSON |
+| `strictSlotChildren` | Vue RFC [#734](https://github.com/vuejs/rfcs/pull/734) | `experimentalStrictSlotChildren` | `strict_slot_children` in JSON |
+| `serverScript` | Server script compiler experiment | `experimentalServerScript` | `"server script"`, `server_script` in JSON |
+| `vapor` | SFC Vapor backend routing | `compiler.vapor` fallback | none |
+| `jsxVapor` | JSX/TSX Vapor default | `compiler.jsxMode` fallback | none |
 
-推奨 flag と alias を同時に設定しないでください。互換 alias は古い config を読み続けるためにありますが、 混在すると precedence が読みづらくなります。新しい config では `patternedTemplate`、 `inTagComment`、`selfComponent`、`strictSlotChildren`、`serverScript`、`vapor`、`jsxVapor` を使います。
+推奨 flag と alias を同時に設定しないでください。互換 alias は古い config を読み続けるためにありますが、混在すると compatibility resolution order に依存した挙動になります。新しい config では `patternedTemplate`、`inTagComment`、`selfComponent`、`strictSlotChildren`、`serverScript`、`vapor`、`jsxVapor` を使います。
 
 ## Patterned Templates
 
@@ -155,7 +155,7 @@ const entry = ref<Entry>({ kind: "draft", reason: "editing" });
   <article v-when="{ kind: 'article', data: const article } if (article.published)">
     {{ article.title }}
   </article>
-  <p v-when="'draft' | 'archived'">Hidden</p>
+  <p v-when="{ kind: 'draft' } | { kind: 'archived' }">Hidden</p>
   <p v-when="_">No published article</p>
 </template>
 ```
@@ -180,7 +180,7 @@ match 対象の式は 1 回だけ評価されます。branch は上から順に�
 
 `v-case` は古い Vize 実験の互換 alias として残っていますが、新しい template では `v-when` を使います。 RFC #823 で議論されている shorthand candidate は Vize の public syntax ではありません。`?=`、`|=`、 `~=` は有効化されません。
 
-不正な placement は黙って compile せず diagnostic になります。`v-when` branch は `v-match` container の direct child である必要があり、`v-match` には少なくとも 1 つ direct branch が必要です。`v-when` は directive argument や modifier を受け付けません。flag が無効な場合、Vize は `experimentals.patternedTemplate` が必要だと報告します。
+不正な placement は黙って compile せず diagnostic になります。`v-when` branch は `v-match` container の direct child である必要があり、`v-match` には少なくとも 1 つ direct branch が必要です。`v-when` は directive argument や modifier を受け付けません。flag が無効な場合、Vize は `experimentals.patternedTemplate` が必要だと報告します。exhaustiveness と branch narrowing は tooling boundary なので、依存する前に RFC detail page を確認してください。
 
 ## In-Tag Comments
 
@@ -204,7 +204,7 @@ export default defineConfig({
 </template>
 ```
 
-comment は tag name の後、complete attribute/directive の間、最後の attribute の後かつ `>` / `/>` の前に置けます。tooling と source mapping 用の in-tag comment として保持されますが、child comment node としては出ず、runtime output も生成しません。attribute value 内の `//` は通常の文字列です。
+comment は tag name の後、complete attribute/directive の間、最後の attribute の後かつ `>` / `/>` の前に置けます。trailing `//` の後は closing delimiter を次の行に置いてください。同じ行の `>` / `/>` は comment text として消費されます。Vize は source text を tooling 用に template root の `comments` list へ保持しますが、child node にはせず runtime output も生成しません。attribute value 内の `//` は通常の文字列です。
 
 ```vue
 <template>
@@ -243,7 +243,7 @@ defineProps<{
 </template>
 ```
 
-SFC build では、Vize は compiler metadata または filename から current component name を取り、 `<Self>` をその component に解決します。SFC filename がない direct template API では `componentName` を渡せます。`selfComponent` が無効なら `<Self>` は通常の component tag のままで、`Self` という local component binding も通常どおり扱われます。
+SFC build では、Vize は compiler metadata または filename から current component name を取り、 `<Self>` をその component に解決します。SFC filename がない direct template API では `componentName` を渡せます。`selfComponent` が無効なら `<Self>` は通常の component tag のままで、`Self` という local component binding も通常どおり扱われます。flag が on の場合、exact `<Self>` は local、imported、global component named `Self` を shadow します。
 
 flag は DOM、SSR、Vapor compilation に通されます。有効かつ component name がある場合、emitted component resolution は current component name と Vue の maybe-self-reference hint を使います。reserved tag は exact かつ case-sensitive です。`<Self>` は特別ですが、`<self>` は特別ではありません。
 
@@ -287,9 +287,9 @@ Vize は提供された children をその contract と比較します。
 </template>
 ```
 
-flag が有効な場合、Vize は slot child assertion を合成し、TypeScript が provided node と slot return contract を比較できるようにします。native DOM child は対応する `HTML*Element`、component child は `typeof ComponentRef`、text/interpolation child は `string` に map されます。named slot と default slot はどちらも検査対象です。値を持たない comment や structural wrapper node は skip されます。
+flag が有効な場合、Vize は slot child assertion を合成し、TypeScript が provided node と slot return contract を比較できるようにします。native DOM child は対応する `HTML*Element`、component child は `typeof ComponentRef`、text/interpolation child は `string` に map されます。named slot と default slot はどちらも検査対象です。`defineSlots` contract も同じ marker shape を export します。値を持たない comment や structural wrapper node は skip されます。
 
-これは tooling constraint なので、失敗は `vize check` または language server の TypeScript diagnostic として出ます。Vue template を compile するだけの build では enforce されません。
+これは tooling constraint なので、失敗は `vize check` または language server の TypeScript diagnostic として出ます。Vue template を compile するだけの build では enforce されません。open index signature や `any` を使う slot contract は TypeScript の permissive behavior に degrade します。
 
 ## Server Script
 
@@ -303,7 +303,7 @@ export default defineConfig({
 });
 ```
 
-この flag は native `experimentalServerScript` compiler field に解決されます。一部 runtime では、compiler stage が実験を support するまで switch を reserved のままにします。application code は安定した syntax contract として依存しないでください。framework がこの switch を消費し始めた場合は、その host 固有の documentation を優先してください。
+この flag は native `experimentalServerScript` compiler field に解決されます。省略、`false`、`null` の場合、native field は disabled のままです。一部 runtime では、compiler stage が実験を support するまで switch を reserved のままにします。application code は安定した syntax contract として依存しないでください。framework がこの switch を消費し始めた場合は、その host 固有の documentation を優先してください。
 
 ## Vapor
 
@@ -317,7 +317,7 @@ export default defineConfig({
 });
 ```
 
-project が Vapor を安定した build choice として採用した場合は、`compiler.vapor` または direct `vize({ vapor })` を使ってください。`experimentals.vapor` は trial run、compatibility probe、experimental fallback path のテスト用に残します。
+project が Vapor を安定した build choice として採用した場合は、`compiler.vapor` または direct `vize({ vapor })` を使ってください。stable/direct value は `experimentals.vapor` が `true` でも優先されるため、明示的な `vize({ vapor: false })` は per-plugin opt-out です。`experimentals.vapor` は trial run、compatibility probe、experimental fallback path のテスト用に残します。
 
 ## JSX Vapor
 
@@ -331,7 +331,7 @@ export default defineConfig({
 });
 ```
 
-project-wide の backend choice として安定運用するなら `compiler.jsxMode: "vapor"` または direct `vize({ jsxMode: "vapor" })` を使ってください。component-level の `"use vue:vapor"` と `"use vue:vdom"` directive は、その source file 自体の意図として扱われ、default mode を上書きできます。
+project-wide の backend choice として安定運用するなら `compiler.jsxMode: "vapor"` または direct `vize({ jsxMode: "vapor" })` を使ってください。stable/direct value は `experimentals.jsxVapor` より優先され、`jsxMode: "vdom"` は明示的な opt-out です。component-level の `"use vue:vapor"` と `"use vue:vdom"` directive は、その source file 自体の意図として扱われ、default mode を上書きできます。
 
 ## Direct API Fields
 

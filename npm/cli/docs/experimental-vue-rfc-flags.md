@@ -138,7 +138,9 @@ Upstream reference: https://github.com/vuejs/rfcs/pull/734/files
 
 ## Backend Experimentals
 
-The RFC flags above share the same switch semantics as the backend experiments:
+The RFC flags above share switch semantics and precedence with backend experiments. Shared
+`vize.config.*` enables them by default for tools that read project config, while direct Vite plugin
+options can opt out with `false` or `null` for one plugin invocation.
 
 ```json
 {
@@ -150,11 +152,15 @@ The RFC flags above share the same switch semantics as the backend experiments:
 }
 ```
 
-- `serverScript` resolves to the native `experimentalServerScript` compiler flag. Some runtimes keep
-  this switch reserved until their compiler stage supports the experiment.
-- `vapor` routes SFC compilation through experimental Vapor backend support when stable
-  `compiler.vapor` is not set.
-- `jsxVapor` defaults JSX and TSX files to Vapor output when stable `compiler.jsxMode` is not set.
+- `serverScript` resolves to the native `experimentalServerScript` compiler flag. Missing keys,
+  `false`, and `null` leave that native flag disabled. Some runtimes keep this switch reserved until
+  their compiler stage supports the experiment.
+- `vapor` routes SFC compilation through experimental Vapor backend support only when direct
+  `vize({ vapor })` and stable `compiler.vapor` are both unset. Use `vize({ vapor: false })` as a
+  per-plugin opt-out.
+- `jsxVapor` defaults JSX and TSX files to Vapor output only when direct `vize({ jsxMode })` and
+  stable `compiler.jsxMode` are both unset. `jsxMode: "vdom"` is the explicit opt-out, and per-file
+  `"use vue:vapor"` / `"use vue:vdom"` directives still win for that component.
 
 Prefer stable `compiler.vapor` or `compiler.jsxMode: "vapor"` when those choices are no longer
 experiments for the project.

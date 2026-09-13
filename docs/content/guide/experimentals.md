@@ -14,7 +14,8 @@ Use this page as the source of truth when enabling:
 - Vue RFC [#734](https://github.com/vuejs/rfcs/pull/734) strict slot child checks
 - Vize backend experiments such as server-script, SFC Vapor, and JSX Vapor routing
 
-For RFC-specific examples, API entry points, flag-off behavior, and deferred syntax, see
+The tables below cover every public switch, including off behavior and precedence. RFC-specific
+diagnostics, direct API entry points, implementation boundaries, and deferred syntax are expanded in
 [Vue RFC Experimental Details](./experimentals-vue-rfcs.md).
 
 ## Recommended Config
@@ -104,29 +105,29 @@ only when an integration already owns config resolution.
 
 ## Surface Matrix
 
-| Flag | Main effect | Consumed by | Runtime behavior |
-| --- | --- | --- | --- |
-| `patternedTemplate` | Parses and lowers `v-match` / `v-when` | DOM, SSR, Vapor, SFC, WASM compile APIs | Rewrites to ordinary conditional render code |
-| `inTagComment` | Parses `//` comments inside opening tags | Parser, DOM, SSR, Vapor, SFC, WASM compile APIs | No generated runtime output |
-| `selfComponent` | Treats exact `<Self>` as the current component | DOM, SSR, Vapor, SFC, WASM compile APIs | Resolves with Vue's maybe-self-reference hint |
-| `strictSlotChildren` | Emits virtual TypeScript child assertions | `vize check`, LSP/type-check project APIs | No compiler/runtime output |
-| `serverScript` | Enables reserved server-script compiler plumbing | Native compiler integrations that expose it | Experimental host-defined behavior |
-| `vapor` | Selects SFC Vapor backend when stable Vapor is unset | Vite plugin, package build config | Changes SFC output backend |
-| `jsxVapor` | Defaults JSX/TSX to Vapor when stable JSX mode is unset | Vite plugin, package build config | Changes JSX/TSX output backend |
+| Flag | Enabled behavior | Off behavior | Enforced by | Boundary |
+| --- | --- | --- | --- | --- |
+| `patternedTemplate` | Parses and lowers `v-match` / direct `v-when` branches | `v-match`, `v-when`, and `v-case` report the required opt-in | DOM, SSR, Vapor, SFC, WASM compile APIs | `vize check` does not yet certify exhaustiveness |
+| `inTagComment` | Parses `//` comments in opening tags and preserves them for tooling | `//` is invalid tag syntax | Parser, DOM, SSR, Vapor, SFC, WASM compile APIs | No runtime output and no browser in-DOM support |
+| `selfComponent` | Treats exact `<Self>` as the current component | `<Self>` is an ordinary component tag | DOM, SSR, Vapor, SFC, WASM compile APIs | Render functions and JSX are outside this flag |
+| `strictSlotChildren` | Emits virtual TypeScript child assertions | No child-type assertions are generated | `vize check`, LSP/type-check project APIs | Open slots and `any` remain TypeScript-permissive |
+| `serverScript` | Passes `experimentalServerScript` to native compiler integrations | The native flag stays `false` | Native compiler integrations that expose it | Host-defined until a runtime documents semantics |
+| `vapor` | Falls back to SFC Vapor when stable Vapor is unset | SFCs keep the stable/default backend | Vite plugin, package build config | `vize({ vapor })` and `compiler.vapor` win |
+| `jsxVapor` | Falls back to JSX/TSX Vapor when stable JSX mode is unset | JSX/TSX keep the stable/default backend | Vite plugin, package build config | `vize({ jsxMode })` and `compiler.jsxMode` win |
 
 ## Flag Reference
 
-| Flag | Upstream / source | Resolved compiler field | Default | Compatibility names |
-| --- | --- | --- | --- | --- |
-| `patternedTemplate` | Vue RFC [#823](https://github.com/vuejs/rfcs/pull/823) | `experimentalPatternedTemplate` | off | `pattenedTemplate` |
-| `inTagComment` | Vue RFC [#831](https://github.com/vuejs/rfcs/pull/831) | `experimentalInTagComments` | off | `intagComment` |
-| `selfComponent` | Vue RFC [#833](https://github.com/vuejs/rfcs/pull/833) | `experimentalSelfComponent` | off | `self_component` in JSON |
-| `strictSlotChildren` | Vue RFC [#734](https://github.com/vuejs/rfcs/pull/734) | `experimentalStrictSlotChildren` | off | `strict_slot_children` in JSON |
-| `serverScript` | Server script compiler experiment | `experimentalServerScript` | off | `"server script"`, `server_script` in JSON |
-| `vapor` | SFC Vapor backend routing | `compiler.vapor` fallback | off | none |
-| `jsxVapor` | JSX/TSX Vapor default | `compiler.jsxMode` fallback | off | none |
+| Flag | Upstream / source | Resolved field | Compatibility names |
+| --- | --- | --- | --- |
+| `patternedTemplate` | Vue RFC [#823](https://github.com/vuejs/rfcs/pull/823) | `experimentalPatternedTemplate` | `pattenedTemplate` |
+| `inTagComment` | Vue RFC [#831](https://github.com/vuejs/rfcs/pull/831) | `experimentalInTagComments` | `intagComment` |
+| `selfComponent` | Vue RFC [#833](https://github.com/vuejs/rfcs/pull/833) | `experimentalSelfComponent` | `self_component` in JSON |
+| `strictSlotChildren` | Vue RFC [#734](https://github.com/vuejs/rfcs/pull/734) | `experimentalStrictSlotChildren` | `strict_slot_children` in JSON |
+| `serverScript` | Server script compiler experiment | `experimentalServerScript` | `"server script"`, `server_script` in JSON |
+| `vapor` | SFC Vapor backend routing | `compiler.vapor` fallback | none |
+| `jsxVapor` | JSX/TSX Vapor default | `compiler.jsxMode` fallback | none |
 
-Do not set a recommended flag and its alias at the same time. Compatibility aliases exist so older configs keep loading, but mixed spelling makes precedence hard to read. New config should use `patternedTemplate`, `inTagComment`, `selfComponent`, `strictSlotChildren`, `serverScript`, `vapor`, and `jsxVapor`.
+Do not set a recommended flag and its alias at the same time. Compatibility aliases exist so older configs keep loading, but mixed spelling makes behavior depend on compatibility resolution order. New config should use `patternedTemplate`, `inTagComment`, `selfComponent`, `strictSlotChildren`, `serverScript`, `vapor`, and `jsxVapor`.
 
 ## Patterned Templates
 
@@ -154,7 +155,7 @@ const entry = ref<Entry>({ kind: "draft", reason: "editing" });
   <article v-when="{ kind: 'article', data: const article } if (article.published)">
     {{ article.title }}
   </article>
-  <p v-when="'draft' | 'archived'">Hidden</p>
+  <p v-when="{ kind: 'draft' } | { kind: 'archived' }">Hidden</p>
   <p v-when="_">No published article</p>
 </template>
 ```
@@ -179,7 +180,7 @@ Supported patterns include:
 
 `v-case` remains a compatibility alias for older Vize experiments, but new templates should use `v-when`. The shorthand candidates discussed in RFC #823 are not enabled: `?=`, `|=`, and `~=` are not public Vize syntax.
 
-Invalid placements are reported instead of silently compiling. A `v-when` branch must be a direct child of a `v-match` container, `v-match` must have at least one direct branch, and `v-when` does not accept directive arguments or modifiers. Without the flag, Vize reports that `experimentals.patternedTemplate` is required.
+Invalid placements are reported instead of silently compiling. A `v-when` branch must be a direct child of a `v-match` container, `v-match` must have at least one direct branch, and `v-when` does not accept directive arguments or modifiers. Without the flag, Vize reports that `experimentals.patternedTemplate` is required. Exhaustiveness and branch narrowing remain tooling boundaries; see the RFC detail page before depending on them.
 
 ## In-Tag Comments
 
@@ -203,7 +204,7 @@ export default defineConfig({
 </template>
 ```
 
-The comment may appear after the tag name, between complete attributes or directives, or after the last attribute before `>` or `/>`. It is stored as an in-tag comment for tooling and source mapping; it is not emitted as a child comment node and it does not generate runtime output. `//` inside an attribute value remains ordinary text:
+The comment may appear after the tag name, between complete attributes or directives, or after the last attribute before `>` or `/>`. Put the closing delimiter on the next line after a trailing `//`, because same-line `>` or `/>` is consumed as comment text. Vize stores the source text on the template root `comments` list for tooling; it is not emitted as a child node and it does not generate runtime output. `//` inside an attribute value remains ordinary text:
 
 ```vue
 <template>
@@ -242,7 +243,7 @@ defineProps<{
 </template>
 ```
 
-In SFC builds, Vize resolves `<Self>` to the current component name from compiler metadata or from the filename. Direct template APIs can pass `componentName` when no SFC filename is available. Without `selfComponent`, `<Self>` stays a normal component tag and any local component binding named `Self` keeps its ordinary meaning.
+In SFC builds, Vize resolves `<Self>` to the current component name from compiler metadata or from the filename. Direct template APIs can pass `componentName` when no SFC filename is available. Without `selfComponent`, `<Self>` stays a normal component tag and any local component binding named `Self` keeps its ordinary meaning. With the flag on, exact `<Self>` shadows local, imported, and global components named `Self`.
 
 The flag is threaded through DOM, SSR, and Vapor compilation. When enabled and a component name is available, emitted component resolution uses the current component name and Vue's maybe-self-reference hint. The reserved tag is exact and case-sensitive: `<Self>` is special, while `<self>` is not.
 
@@ -286,9 +287,9 @@ Vize compares provided children with that contract:
 </template>
 ```
 
-With the flag enabled, Vize synthesizes slot child assertions so TypeScript can compare the provided nodes with the slot return contract. Native DOM children map to their corresponding `HTML*Element`, component children map to `typeof ComponentRef`, and text or interpolation children map to `string`. Named slots and default slots are both checked. Comments and structural wrapper nodes are skipped when they do not contribute a child value.
+With the flag enabled, Vize synthesizes slot child assertions so TypeScript can compare the provided nodes with the slot return contract. Native DOM children map to their corresponding `HTML*Element`, component children map to `typeof ComponentRef`, and text or interpolation children map to `string`. Named slots and default slots are both checked. `defineSlots` contracts export the same marker shape. Comments and structural wrapper nodes are skipped when they do not contribute a child value.
 
-Because this is a tooling constraint, failures appear as TypeScript diagnostics from `vize check` or the language server. Builds that only compile Vue templates will not enforce it.
+Because this is a tooling constraint, failures appear as TypeScript diagnostics from `vize check` or the language server. Builds that only compile Vue templates will not enforce it. Slot contracts using open index signatures or `any` degrade to TypeScript's permissive behavior.
 
 ## Server Script
 
@@ -302,7 +303,7 @@ export default defineConfig({
 });
 ```
 
-The flag resolves to the native `experimentalServerScript` compiler field. Some runtimes keep this switch reserved until their compiler stage supports the experiment, so application code should not rely on it as a stable syntax contract. Prefer feature-specific host documentation when a framework starts consuming this switch.
+The flag resolves to the native `experimentalServerScript` compiler field; when it is omitted, `false`, or `null`, the native field stays disabled. Some runtimes keep this switch reserved until their compiler stage supports the experiment, so application code should not rely on it as a stable syntax contract. Prefer feature-specific host documentation when a framework starts consuming this switch.
 
 ## Vapor
 
@@ -316,7 +317,7 @@ export default defineConfig({
 });
 ```
 
-Prefer `compiler.vapor` or direct `vize({ vapor })` when a project has made Vapor a stable build choice. Keep `experimentals.vapor` for trial runs, compatibility probes, and tests that need to prove the experimental fallback path still works.
+Prefer `compiler.vapor` or direct `vize({ vapor })` when a project has made Vapor a stable build choice. Those stable/direct values win even when `experimentals.vapor` is `true`, so an explicit `vize({ vapor: false })` is a per-plugin opt-out. Keep `experimentals.vapor` for trial runs, compatibility probes, and tests that need to prove the experimental fallback path still works.
 
 ## JSX Vapor
 
@@ -330,7 +331,7 @@ export default defineConfig({
 });
 ```
 
-Prefer `compiler.jsxMode: "vapor"` or direct `vize({ jsxMode: "vapor" })` for a stable project-wide backend choice. Component-level `"use vue:vapor"` and `"use vue:vdom"` directives still describe the source file's own intent and can override the default mode for that file.
+Prefer `compiler.jsxMode: "vapor"` or direct `vize({ jsxMode: "vapor" })` for a stable project-wide backend choice. Those stable/direct values win over `experimentals.jsxVapor`, and `jsxMode: "vdom"` is the explicit opt-out. Component-level `"use vue:vapor"` and `"use vue:vdom"` directives still describe the source file's own intent and can override the default mode for that file.
 
 ## Direct API Fields
 
