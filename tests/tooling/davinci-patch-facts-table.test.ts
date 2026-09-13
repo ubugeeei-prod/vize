@@ -14,6 +14,15 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const emitRoot = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit.rs");
 const runPath = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit", "run.rs");
 const patchPath = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit", "patch.rs");
+const patchTestsPath = path.join(
+  repoRoot,
+  "crates",
+  "vize_s1_to_s2",
+  "src",
+  "emit",
+  "patch",
+  "tests.rs",
+);
 const vnodePath = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit", "vnode.rs");
 const componentPath = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit", "component.rs");
 const dispatchPath = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit", "dispatch.rs");
@@ -53,4 +62,16 @@ test("if-branch native roots keep their owner id through dispatch", () => {
   assert.match(dispatchSource, /key: &str,\n    id: Option<NodeId>,/);
   assert.match(dispatchSource, /vnode::emit_if_branch_element\(cx, element, key, id\)/);
   assert.match(vnodeSource, /\(true, id, PropHoistPosition::Nested\)/);
+});
+
+test("patch equivalence fixtures observe materialized table rows", () => {
+  const patchTestsSource = read(patchTestsPath);
+
+  assert.match(
+    patchTestsSource,
+    /dom_emit_observes_materialized_table_for_patch_equivalence_fixtures/,
+  );
+  assert.match(patchTestsSource, /emit_dom_source_patch_facts_observed/);
+  assert.match(patchTestsSource, /observed\.materialized_entries/);
+  assert.match(patchTestsSource, /8 \/\* PROPS \*\/, \[\\"id\\"\]/);
 });

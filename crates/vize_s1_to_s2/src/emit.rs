@@ -135,7 +135,6 @@ pub use self::entry::{
 };
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
 pub use self::options::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
-use self::run::emit_dom_with_emit_budget;
 pub use self::run::{emit_dom, emit_dom_with_options};
 
 /// Per-emit numbering + helper buffer. Page-order ids re-derive the

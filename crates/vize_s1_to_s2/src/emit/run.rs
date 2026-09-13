@@ -20,6 +20,13 @@ use super::{
     component, directive, filter, fragment, helper_preference, prefix, static_cache,
 };
 
+pub(super) struct DomEmitObservation {
+    pub(super) emit: DomEmit,
+    pub(super) emit_visits: u32,
+    #[cfg(test)]
+    pub(super) patch_fact_entries: usize,
+}
+
 /// Emit a DOM render function from an already-lowered (and typically
 /// transformed) S2 artifact under the shipped default options. `facts`
 /// is the transform product compounds compile from.
@@ -41,6 +48,14 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
     facts: &'f S2Facts,
     options: &DomEmitOptions<'f>,
 ) -> Result<(DomEmit, u32), EmitError> {
+    emit_dom_observed(lowered, facts, options).map(|observed| (observed.emit, observed.emit_visits))
+}
+
+pub(super) fn emit_dom_observed<'f>(
+    lowered: &'f Lowered<'_>,
+    facts: &'f S2Facts,
+    options: &DomEmitOptions<'f>,
+) -> Result<DomEmitObservation, EmitError> {
     if options.is_ts && !cfg!(feature = "typescript") {
         return Err(EmitError::unsupported(
             UnsupportedReason::TypeScriptLaneUnavailable,
@@ -153,10 +168,12 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
     }
     cache_slots::renumber(&mut cx);
     let emit_visits = cx.walk.visits();
+    #[cfg(test)]
+    let patch_fact_entries = cx.patch_facts.materialized_len();
     let (preamble, imports_len) = cx.buf.preamble_with_imports_len(options);
     let code = cx.buf.code;
-    Ok((
-        DomEmit {
+    Ok(DomEmitObservation {
+        emit: DomEmit {
             preamble,
             code,
             sections: DomEmitSections {
@@ -168,5 +185,7 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
             },
         },
         emit_visits,
-    ))
+        #[cfg(test)]
+        patch_fact_entries,
+    })
 }

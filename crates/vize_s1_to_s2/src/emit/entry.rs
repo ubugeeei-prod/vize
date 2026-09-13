@@ -77,5 +77,5 @@ pub fn emit_dom_source_with_options<'a>(
 ) -> Result<DomEmit, EmitError> {
     let mut observer = NoObserver;
     emit_dom_source_with_options_and_observer(allocator, source, caps, options, &mut observer)
-        .map(|(emit, _)| emit)
+        .map(|observed| observed.emit)
 }

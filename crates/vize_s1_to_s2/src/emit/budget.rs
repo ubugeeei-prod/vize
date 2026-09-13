@@ -5,7 +5,8 @@ use vize_s1::{SurfaceParseOptions, parse_with_options};
 use crate::lower::{LegacyCaps, lower_with_caps_and_comment_policy};
 use crate::pass::{TransformProfile, run_dom_transform_with_profile};
 
-use super::{DomEmit, DomEmitOptions, EmitError, emit_dom_with_emit_budget};
+use super::run::{DomEmitObservation, emit_dom_observed};
+use super::{DomEmit, DomEmitOptions, EmitError};
 
 /// Observer-facing counts for the S2 DOM emitter.
 ///
@@ -34,6 +35,13 @@ pub struct ObservedDomEmit {
     pub budget: DomEmitBudget,
 }
 
+#[cfg(test)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ObservedPatchFactsEmit {
+    pub(crate) emit: DomEmit,
+    pub(crate) materialized_entries: usize,
+}
+
 pub fn emit_dom_source_observed<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -57,7 +65,7 @@ pub fn emit_dom_source_observed_with_options<'a>(
     options: &DomEmitOptions<'_>,
 ) -> Result<ObservedDomEmit, EmitError> {
     let mut transform = BudgetObserver::new();
-    let (emit, emit_visits) = emit_dom_source_with_options_and_observer(
+    let observed = emit_dom_source_with_options_and_observer(
         allocator,
         source,
         caps,
@@ -65,12 +73,31 @@ pub fn emit_dom_source_observed_with_options<'a>(
         &mut transform,
     )?;
     Ok(ObservedDomEmit {
-        emit,
+        emit: observed.emit,
         budget: DomEmitBudget {
             transform,
             emit_walks: 1,
-            emit_visits,
+            emit_visits: observed.emit_visits,
         },
+    })
+}
+
+#[cfg(test)]
+pub(crate) fn emit_dom_source_patch_facts_observed<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+) -> Result<ObservedPatchFactsEmit, EmitError> {
+    let mut observer = vize_davinci::pass::NoObserver;
+    let observed = emit_dom_source_with_options_and_observer(
+        allocator,
+        source,
+        LegacyCaps::VUE3,
+        &DomEmitOptions::DEFAULT,
+        &mut observer,
+    )?;
+    Ok(ObservedPatchFactsEmit {
+        emit: observed.emit,
+        materialized_entries: observed.patch_fact_entries,
     })
 }
 
@@ -80,7 +107,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
     caps: LegacyCaps,
     options: &DomEmitOptions<'_>,
     observer: &mut O,
-) -> Result<(DomEmit, u32), EmitError> {
+) -> Result<DomEmitObservation, EmitError> {
     ensure_sufficient_stack(|| {
         let (tree, errors) = parse_with_options(
             allocator,
@@ -103,7 +130,6 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
             profile = profile.without_static_analysis();
         }
         let facts = run_dom_transform_with_profile(&mut lowered, observer, profile);
-        let (emit, emit_visits) = emit_dom_with_emit_budget(&lowered, &facts, options)?;
-        Ok((emit, emit_visits))
+        emit_dom_observed(&lowered, &facts, options)
     })
 }

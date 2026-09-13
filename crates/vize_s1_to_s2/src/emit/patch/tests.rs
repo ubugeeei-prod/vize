@@ -92,6 +92,44 @@ fn patch_facts_table_retains_owner_keyed_entries() {
 }
 
 #[test]
+fn dom_emit_observes_materialized_table_for_patch_equivalence_fixtures() {
+    let cases = [
+        (
+            "native prop",
+            r#"<div :id="id"></div>"#,
+            1,
+            "8 /* PROPS */, [\"id\"]",
+        ),
+        (
+            "component prop",
+            r#"<Foo :class="cls" />"#,
+            1,
+            "8 /* PROPS */, [\"class\"]",
+        ),
+        (
+            "native siblings",
+            r#"<div :id="id"></div><span :class="cls"></span>"#,
+            2,
+            "2 /* CLASS */",
+        ),
+    ];
+    for (name, source, materialized_entries, patch_site) in cases {
+        let allocator = vize_s0::Allocator::new();
+        let observed =
+            crate::emit::budget::emit_dom_source_patch_facts_observed(&allocator, source)
+                .unwrap_or_else(|error| panic!("{name}: S2 emit refused: {error:?}"));
+        assert_eq!(
+            observed.materialized_entries, materialized_entries,
+            "{name}: DOM emit must retain one owner-keyed table row per VNode owner"
+        );
+        assert!(
+            observed.emit.assembled().contains(patch_site),
+            "{name}: emitted patch site must stay byte-compatible through the table"
+        );
+    }
+}
+
+#[test]
 fn lattice_inputs_keep_dense_ids_stable() {
     for (kind, id) in [
         (BindingKind::SetupLet, 0),

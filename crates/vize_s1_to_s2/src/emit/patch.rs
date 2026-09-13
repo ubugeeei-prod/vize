@@ -54,6 +54,11 @@ impl PatchFactsTable {
     }
 
     #[cfg(test)]
+    pub(super) fn materialized_len(&self) -> usize {
+        self.entries.len()
+    }
+
+    #[cfg(test)]
     fn get(&self, owner: NodeId) -> Option<&StoredPatchFacts> {
         self.entries
             .iter()
@@ -62,7 +67,7 @@ impl PatchFactsTable {
 
     #[cfg(test)]
     fn len(&self) -> usize {
-        self.entries.len()
+        self.materialized_len()
     }
 }
 
