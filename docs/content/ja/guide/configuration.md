@@ -225,6 +225,9 @@ export default defineConfig({
 });
 ```
 
+Experimental Vue RFC と backend flag は top-level `experimentals` に置きます。flag 一覧、opt-in の値、
+alias、優先順位は [Experimentals](./experimentals.md) を参照してください。省略、`false`、`null` は無効です。
+
 ## テンプレートの構文
 
 `compiler.templateSyntax` のデフォルトは `"standard"` です。

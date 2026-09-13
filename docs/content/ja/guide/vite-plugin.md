@@ -192,6 +192,7 @@ vize({
 | `customRenderer`       | `compiler.customRenderer` または `vize({ customRenderer })` | 小文字の非 HTML タグをカスタム レンダラー要素として扱います。 `<TresMesh>` のような PascalCase タグには一致しません。                                                 |
 | `customElements`       | `compiler.customElements` または `vize({ customElements })` | カスタム要素としてコンパイルするタグパターン。 TresJS の PascalCase レンダラータグには `["Tres*"]` を使います。                                                     |
 | `templateSyntax`       | `compiler.templateSyntax` または `vize({ templateSyntax })` | `"standard"`、`"strict"`、または `"quirks"` テンプレート構文処理を選択します。                                                                                     |
+| `experimentals`        | top-level `experimentals` または `vize({ experimentals })`  | 完全 opt-in の Vue RFC と backend experiments。省略、`false`、`null` は無効です。                                                                                 |
 | `include`              | `vite.include` または `vize({ include })`                   | プラグインがコンパイルする必要があるファイル。                                                                                                                     |
 | `exclude`              | `vite.exclude` または `vize({ exclude })`                   | プラグインが無視する必要があるファイル。                                                                                                                           |
 | `scanPatterns`         | `vite.scanPatterns` または `vize({ scanPatterns })`         | 起動時のプリコンパイルに使用される Glob パターン。                                                                                                                 |
@@ -201,6 +202,9 @@ vize({
 | `config`               | `vize({ config })`                                          | Vite Plus ランタイム設定のインライン共有構成。                                                                                                                     |
 | `handleNodeModulesVue` | `vize({ handleNodeModulesVue })`                            | `node_modules` からインポートされた `.vue` ファイルをオンデマンドでコンパイルします。                                                                              |
 | `debug`                | `vize({ debug })`                                           | プラグインのデバッグ ログを出力します。                                                                                                                            |
+
+`experimentals` の flag 一覧、opt-in の値、alias、shared-config precedence は
+[Experimentals](./experimentals.md) を参照してください。
 
 一般的なレシピ:
 
