@@ -45,16 +45,6 @@ test("VNode and component writers read materialized patch facts", () => {
   assert.doesNotMatch(componentSource, /binding_patch_facts/);
 });
 
-test("Patch facts consume reactivity-lattice binding metadata", () => {
-  const patchSource = read(patchPath);
-
-  assert.match(patchSource, /vize_impeto::lattice::\{/);
-  assert.match(patchSource, /fn binding_kind_lattice_input/);
-  assert.match(patchSource, /evaluate_binding\(binding_kind_lattice_input\(kind\)\)/);
-  assert.match(patchSource, /reads_lattice_static_patch_binding_name/);
-  assert.match(patchSource, /handler_static_patch_binding/);
-});
-
 test("if-branch native roots keep their owner id through dispatch", () => {
   const dispatchSource = read(dispatchPath);
   const vnodeSource = read(vnodePath);

@@ -47,6 +47,17 @@ fn handler_patch_gate_keeps_the_shipped_constant_surface() {
 }
 
 #[test]
+fn patch_facts_materialize_lattice_handler_gate() {
+    let setup_const = materialized_handler_facts(BindingKind::SetupConst);
+    assert_eq!(setup_const.flag, 0);
+    assert!(setup_const.dynamic_props.is_empty());
+
+    let setup_ref = materialized_handler_facts(BindingKind::SetupRef);
+    assert_eq!(setup_ref.flag, 8);
+    assert_eq!(setup_ref.dynamic_props, [String::from("onClick")]);
+}
+
+#[test]
 fn lattice_inputs_keep_dense_ids_stable() {
     for (kind, id) in [
         (BindingKind::SetupLet, 0),
@@ -69,4 +80,33 @@ fn lattice_inputs_keep_dense_ids_stable() {
     ] {
         assert_eq!(binding_kind_lattice_input(kind).id.index(), id);
     }
+}
+
+fn materialized_handler_facts(kind: BindingKind) -> PatchFacts {
+    let allocator = vize_s0::Allocator::new();
+    let arena = &allocator;
+    let handler = "handler";
+    let on = BindingOp::On(vize_s0::Box::new_in(
+        OnOp {
+            name: Some(vize_s2::op::DynamicName::Static("click")),
+            modifiers: vize_s0::Vec::new_in(&arena),
+            handler: Some(vize_s2::expr::ExprRef::parse_js_in(
+                &allocator,
+                handler,
+                Span::new(0, handler.len() as u32),
+            )),
+            span: Span::new(0, handler.len() as u32),
+        },
+        &arena,
+    ));
+    binding_patch_facts(
+        &[on],
+        false,
+        None,
+        false,
+        false,
+        &|name| name == handler && handler_static_patch_binding(kind),
+        &|_| false,
+        false,
+    )
 }
