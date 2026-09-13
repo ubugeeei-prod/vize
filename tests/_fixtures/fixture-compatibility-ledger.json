@@ -803,7 +803,8 @@
           "tests/_fixtures/_git/vuetify",
           "tests/_fixtures/_git/vant",
           "tests/_fixtures/_git/vue-select",
-          "tests/_fixtures/_git/primevue"
+          "tests/_fixtures/_git/primevue",
+          "tests/_fixtures/_git/tailwind-config-viewer"
         ]
       },
       "evidence": {
