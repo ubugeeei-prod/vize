@@ -221,6 +221,9 @@ export default defineConfig({
 });
 ```
 
+Experimental Vue RFC and backend flags live under top-level `experimentals`; see
+[Experimentals](./experimentals.md). Omitted keys, `false`, and `null` are off.
+
 ## Template Syntax
 
 `compiler.templateSyntax` defaults to `"standard"`.
@@ -370,6 +373,12 @@ export default defineConfig({
 });
 ```
 
+### Lint Rule Options
+
+Some rules accept typed settings under `linter.ruleOptions`; see
+[Rule Options](../rules/options.md) for the complete table. Severity still belongs in
+`linter.rules`.
+
 Use `typeChecker` for the npm check path:
 
 ```ts
@@ -403,11 +412,7 @@ installed `lib/tsc` executable. Keep ambient declarations, generated auto-import
 such as `vize:check:app` for `--tsconfig` or `--corsa-path` overrides.
 
 ```json
-{
-  "typeChecker": {
-    "servers": 1
-  }
-}
+{ "typeChecker": { "servers": 1 } }
 ```
 
 `typeChecker.servers` is reserved for future Corsa worker pools. The direct project-session runner
@@ -419,13 +424,7 @@ Shared config currently covers the gallery file set and route:
 
 ```ts
 export default defineConfig({
-  musea: {
-    include: ["src/**/*.art.vue"],
-    exclude: ["node_modules/**", "dist/**"],
-    basePath: "/__musea__",
-    storybookCompat: false,
-    inlineArt: false,
-  },
+  musea: { include: ["src/**/*.art.vue"], exclude: ["node_modules/**", "dist/**"], basePath: "/__musea__", storybookCompat: false, inlineArt: false },
 });
 ```
 

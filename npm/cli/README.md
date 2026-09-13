@@ -120,7 +120,7 @@ export default defineConfig({
   experimentals: {
     vapor: false,
     jsxVapor: false,
-    intagComment: false,
+    inTagComment: false,
     patternedTemplate: false,
     selfComponent: false,
     strictSlotChildren: false,
@@ -250,7 +250,7 @@ Important shared fields:
 | `compiler.templateSyntax`          | npm build, Vite plugin         | Choose standard, strict, or quirks template syntax mode            |
 | `experimentals.vapor`              | npm build, Vite plugin         | Opt into experimental SFC Vapor before compiler support            |
 | `experimentals.jsxVapor`           | Vite plugin                    | Opt into experimental JSX Vapor by default                         |
-| `experimentals.intagComment`       | npm build, Vite plugin, syntax | Opt into in-tag `//` comments                                      |
+| `experimentals.inTagComment`       | npm build, Vite plugin, syntax | Opt into in-tag `//` comments                                      |
 | `experimentals.patternedTemplate`  | npm build, Vite plugin         | Opt into `v-match` / `v-when` patterned templates                  |
 | `experimentals.selfComponent`      | npm build, Vite plugin         | Opt into reserved `<Self>` recursive component resolution          |
 | `experimentals.strictSlotChildren` | npm check                      | Opt into strict slot child contract checks                         |
@@ -292,8 +292,8 @@ Vue upstream reference:
 
 Every experimental Vue RFC flag is off by default. Set a key to `true` or `{}` in
 `experimentals` to enable it for the matching tool; `false` and `null` keep it disabled. The
-historical typo `pattenedTemplate` is still accepted as an alias for `patternedTemplate`, but new
-configs should use `patternedTemplate`.
+historical names `intagComment` and `pattenedTemplate` are still accepted as aliases for
+`inTagComment` and `patternedTemplate`, but new configs should use the recommended names.
 
 Supported opt-ins cover in-tag `//` comments, `v-match` / `v-when` patterned templates, reserved
 `<Self>` recursion, and virtual-TypeScript slot child contract checks. See

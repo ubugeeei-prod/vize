@@ -6,40 +6,23 @@ title: アクセシビリティルール
 
 # アクセシビリティ ルール
 
-アクセシビリティ ルールは、Patina の単一ファイル テンプレート ルールです。困難なマークアップをキャッチします
-支援技術またはキーボード ナビゲーションと組み合わせて使用します。
+アクセシビリティ ルールは Patina の単一ファイル テンプレート ルールです。支援技術、
+キーボード ナビゲーション、安定した要素関連付けで扱いにくいマークアップを検出します。
 
-## `a11y/img-alt`
-
-`<img>` には `alt` 属性が必要です。
-
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <img src="/avatar.png" />
-</template>
-```
-
-良い：
-
-```vue
-<template>
-  <img src="/avatar.png" alt="User avatar" />
-</template>
-```
+このページではすべてのルールを同じ粒度で説明します。プリセットへの所属は既定で有効になる
+場所の違いを示すだけで、二軍扱いの "Additional" 区分はありません。現在のアクセシビリティ
+ルールは `linter.ruleOptions` を受け取らないため、重大度は `linter.rules` で調整します。
 
 ## `a11y/alt-text`
 
-代替テキストが必要なメディア要素には代替テキストが必要です。
+画像 input、area、object、image など、代替テキストが必要なメディア要素にテキスト代替を
+要求します。
 
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
 
-悪い：
+悪い:
 
 ```vue
 <template>
@@ -47,22 +30,150 @@ title: アクセシビリティルール
 </template>
 ```
 
-良い：
+良い:
 
 ```vue
 <template>
-  <input type="image" src="/submit.png" alt="Submit" />
+  <input type="image" src="/submit.png" alt="Submit search" />
+</template>
+```
+
+## `a11y/anchor-has-content`
+
+アンカーに、表示テキスト、アクセシブルなラベル、またはラベル付けされた子要素による
+アクセシブルな内容を要求します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <a href="/settings"></a>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <a href="/settings">Settings</a>
+</template>
+```
+
+## `a11y/anchor-is-valid`
+
+アンカーに有効なリンク先を要求します。静的な `href` はスキーム正規化後に検査されるため、
+大文字小文字が混じった `javascript:` URL や HTML デコード後の制御文字も検出されます。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <a href="#" @click="openPanel">Open panel</a>
+  <a href="JaVaScRiPt:void(0)">Run action</a>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <button type="button" @click="openPanel">Open panel</button>
+  <a href="/docs/javascript:void">JavaScript URL guide</a>
+</template>
+```
+
+## `a11y/aria-props`
+
+無効な ARIA 属性を禁止します。スペルミスした属性がアクセシビリティ ツリーから黙って消える
+前に検出します。
+
+既定の重大度: `error`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <button aria-lable="Save changes">Save</button>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <button aria-label="Save changes">Save</button>
+</template>
+```
+
+## `a11y/aria-role`
+
+ARIA role が有効な具象 role であることを要求します。抽象 role や未知の role 名では、期待した
+セマンティクスは作られません。
+
+既定の重大度: `error`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <section role="datepicker">...</section>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <section role="dialog" aria-label="Choose a date">...</section>
+</template>
+```
+
+## `a11y/aria-unsupported-elements`
+
+ARIA セマンティクスをサポートしない要素で ARIA 属性を使うことを禁止します。
+
+既定の重大度: `error`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <meta charset="utf-8" aria-hidden="true" />
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <meta charset="utf-8" />
 </template>
 ```
 
 ## `a11y/click-events-have-key-events`
 
-キーボード ハンドラーが存在しない場合、非ネイティブのインタラクティブ要素のクリック ハンドラーをレポートします。
+非ネイティブのインタラクティブ要素に click ハンドラーを置く場合、対応するキーボード
+ハンドラーを要求します。可能な場合はネイティブ コントロールを使います。
 
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
 
-悪い：
+悪い:
 
 ```vue
 <template>
@@ -70,7 +181,7 @@ title: アクセシビリティルール
 </template>
 ```
 
-良い：
+良い:
 
 ```vue
 <template>
@@ -78,62 +189,15 @@ title: アクセシビリティルール
 </template>
 ```
 
-## `a11y/interactive-supports-focus`
-
-インタラクティブな役割を持つ要素がフォーカス可能である必要があります。
-
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <span role="button" @click="open">Open</span>
-</template>
-```
-
-良い：
-
-```vue
-<template>
-  <button type="button" @click="open">Open</button>
-</template>
-```
-
-## `a11y/label-has-for`
-
-ラベルをフォーム コントロールに関連付ける必要があります。
-
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <label>Email</label>
-  <input id="email" />
-</template>
-```
-
-良い：
-
-```vue
-<template>
-  <label for="email">Email</label>
-  <input id="email" />
-</template>
-```
-
 ## `a11y/form-control-has-label`
 
-コントロールには表示ラベルまたはプログラムラベルが必要です。
+フォーム コントロールに表示ラベルまたはプログラム上のアクセシブル名を要求します。
 
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
 
-悪い：
+悪い:
 
 ```vue
 <template>
@@ -141,7 +205,7 @@ title: アクセシビリティルール
 </template>
 ```
 
-良い：
+良い:
 
 ```vue
 <template>
@@ -152,68 +216,257 @@ title: アクセシビリティルール
 </template>
 ```
 
-## `a11y/no-aria-hidden-on-focusable`
+## `a11y/heading-has-content`
 
-支援技術に隠されたフォーカス可能な要素をレポートします。
+見出し要素にアクセシブルな内容を要求します。
 
-デフォルトの重大度: `error`
-プリセット: `happy-path`、`nuxt`、`opinionated`
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
 
-悪い：
-
-```vue
-<template>
-  <button aria-hidden="true" @click="close">Close</button>
-</template>
-```
-
-良い：
+悪い:
 
 ```vue
 <template>
-  <button aria-label="Close" @click="close">Close</button>
+  <h2></h2>
 </template>
 ```
 
-## `a11y/no-static-element-interactions`
-
-静的要素のマウスまたはキーボードのハンドラーを報告します。
-
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
-
-悪い：
+良い:
 
 ```vue
 <template>
-  <section @click="select">Select</section>
+  <h2>Billing settings</h2>
 </template>
 ```
 
-良い：
+## `a11y/heading-levels`
+
+見出しレベルの飛び越しを禁止します。予測しやすい見出し構造は、キーボードや支援技術での
+ページ走査を助けます。
+
+既定の重大度: `warning`
+プリセット: `nuxt`, `opinionated`
+オプション: なし
+
+悪い:
 
 ```vue
 <template>
-  <button type="button" @click="select">Select</button>
+  <h1>Account</h1>
+  <h3>Billing</h3>
 </template>
 ```
 
-## `a11y/tabindex-no-positive`
-
-予測が難しいカスタム タブ オーダーが作成されるため、正の `tabindex` 値が報告されます。
-
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
-
-悪い：
+良い:
 
 ```vue
 <template>
-  <button tabindex="3">Save</button>
+  <h1>Account</h1>
+  <h2>Billing</h2>
 </template>
 ```
 
-良い：
+## `a11y/iframe-has-title`
+
+iframe 要素に、埋め込む内容を説明する `title` 属性を要求します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <iframe src="/checkout"></iframe>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <iframe src="/checkout" title="Checkout preview"></iframe>
+</template>
+```
+
+## `a11y/img-alt`
+
+画像に `alt` 属性を要求します。装飾画像では属性を省略せず、空文字の `alt` を使います。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <img src="/avatar.png" />
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <img src="/avatar.png" alt="User avatar" />
+</template>
+```
+
+## `a11y/interactive-supports-focus`
+
+インタラクティブな ARIA role を持つ要素にフォーカス可能性を要求します。振る舞いに合う場合は
+ネイティブのインタラクティブ要素を優先します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <span role="button" @click="open">Open</span>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <button type="button" @click="open">Open</button>
+</template>
+```
+
+## `a11y/label-has-for`
+
+`for`/`id` またはコントロールを包む形で、ラベルとフォーム コントロールの関連付けを要求します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <label>Email</label>
+  <input id="email" />
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <label for="email">Email</label>
+  <input id="email" />
+</template>
+```
+
+## `a11y/landmark-roles`
+
+ページ領域を確実に見つけられるよう、ランドマークの配置と一意性を検査します。
+
+既定の重大度: `warning`
+プリセット: `nuxt`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <main>Dashboard</main>
+  <main>Settings</main>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <main>Dashboard</main>
+  <nav aria-label="Settings">...</nav>
+</template>
+```
+
+## `a11y/media-has-caption`
+
+音声を含む audio/video コンテンツに、キャプションまたはテキスト トラックを要求します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <video src="/demo.mp4" controls />
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <video src="/demo.mp4" controls>
+    <track kind="captions" src="/demo.en.vtt" srclang="en" label="English" />
+  </video>
+</template>
+```
+
+## `a11y/mouse-events-have-key-events`
+
+マウス hover ハンドラーを使う場合に、対応する focus/blur ハンドラーも要求します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <button
+    type="button"
+    @focus="showPreview"
+    @blur="hidePreview"
+    @mouseenter="showPreview"
+    @mouseleave="hidePreview"
+  >
+    Preview
+  </button>
+</template>
+```
+
+## `a11y/no-access-key`
+
+ブラウザーや支援技術のショートカットと競合しやすい `accesskey` 属性を禁止します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <button accesskey="s">Save</button>
+</template>
+```
+
+良い:
 
 ```vue
 <template>
@@ -221,101 +474,344 @@ title: アクセシビリティルール
 </template>
 ```
 
-## `a11y/anchor-is-valid`
+## `a11y/no-aria-hidden-on-focusable`
 
-アンカーには有効なリンク ターゲットが必要です。
-静的な `href` 値はスキームの正規化後にチェックされるため、`JaVaScRiPt:` と HTML デコードされた
-`java&#x0A;script:` 内の制御文字は、同様の不一致スキームでも引き続き報告されます。
-許可されたままにします。
+フォーカス可能な要素に `aria-hidden="true"` を付けることを禁止します。アクセシビリティ
+ツリーから消えたまま、キーボード フォーカスだけ受け取る状態を防ぎます。
 
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
+既定の重大度: `error`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
 
-悪い：
-
-```vue
-<template>
-  <a href="#" @click="open">Open</a>
-  <a href="JaVaScRiPt:void(0)">Open</a>
-</template>
-```
-
-良い：
+悪い:
 
 ```vue
 <template>
-  <button type="button" @click="open">Open</button>
-  <a href="/docs/javascript:void">Docs</a>
+  <button aria-hidden="true" @click="close">Close</button>
 </template>
 ```
 
-## `a11y/mouse-events-have-key-events`
-
-マウス hover のハンドラーを使う場合は、対応する focus と blur のハンドラーも必要です。
-
-デフォルトの重大度: `warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
+良い:
 
 ```vue
-<!-- 悪い -->
-<div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
+<template>
+  <button aria-label="Close" @click="close">Close</button>
+</template>
+```
 
-<!-- 良い -->
-<div tabindex="0" @mouseenter="showPreview" @mouseleave="hidePreview" @focus="showPreview" @blur="hidePreview">Preview</div>
+## `a11y/no-autofocus`
+
+ページ読み込みやダイアログ表示時にフォーカスが予期せず移動するため、`autofocus` を禁止します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <input autofocus name="query" />
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <input name="query" />
+</template>
+```
+
+## `a11y/no-distracting-elements`
+
+`<marquee>` や `<blink>` などの注意を逸らす旧式要素を禁止します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <marquee>Limited offer</marquee>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <p>Limited offer</p>
+</template>
 ```
 
 ## `a11y/no-i-for-icon`
 
-よく使われる icon 用 CSS class によって、`<i>` 要素が icon だけに使われている場合に報告します。
+アイコン専用要素として `<i>` を使うことを禁止します。アイコンが意味を持つ場合は、ニュートラルな
+要素とアクセシブルなテキスト経路を組み合わせます。
 
-デフォルトの重大度: `warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
 
 ```vue
-<!-- 悪い -->
-<i class="material-icons">home</i>
+<template>
+  <button>
+    <i class="material-icons">delete</i>
+  </button>
+</template>
+```
 
-<!-- 良い -->
-<span class="material-icons" aria-hidden="true">home</span>
-<span class="sr-only">Home</span>
+良い:
+
+```vue
+<template>
+  <button>
+    <span class="material-icons" aria-hidden="true">delete</span>
+    <span class="sr-only">Delete item</span>
+  </button>
+</template>
+```
+
+## `a11y/no-redundant-roles`
+
+要素が暗黙にもつ role と重複する ARIA role を禁止します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <button role="button">Save</button>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <button>Save</button>
+</template>
 ```
 
 ## `a11y/no-refer-to-non-existent-id`
 
-`for`、`aria-labelledby`、`aria-describedby` などの静的な ID 参照が、同じ template 内に存在する
-ID を指していることを要求します。
+ARIA の ID 参照やラベル関連付けが、同じテンプレート内に存在する要素を指すことを要求します。
 
-デフォルトの重大度: `warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
 
 ```vue
-<!-- 悪い -->
-<label for="email">Email</label>
-<input id="user-email" />
-
-<!-- 良い -->
-<label for="email">Email</label>
-<input id="email" />
+<template>
+  <button aria-labelledby="save-label">Save</button>
+</template>
 ```
 
-## 追加のアクセシビリティ ルール
+良い:
 
-ドキュメントの詳しさだけの違いで、この一覧のルールも同じ Patina template pipeline、同じ設定、
-同じ severity で実行されます。
+```vue
+<template>
+  <span id="save-label">Save changes</span>
+  <button aria-labelledby="save-label">Save</button>
+</template>
+```
 
-| ルール | デフォルト | 確認する内容 |
-| --- | --- | --- |
-| `a11y/anchor-has-content` | `warning` | アンカーには、テキスト、補間、アクセシブルな子要素、空でない画像 `alt`、`aria-label`、`aria-labelledby` のいずれかによるアクセシブルネームが必要です。 |
-| `a11y/aria-props` | `error` | 有効な `aria-*` 属性だけを許可し、`aria-lable` のような typo がアクセシビリティツリーから静かに消える前に検出します。 |
-| `a11y/aria-role` | `error` | `role` の値は具体的な WAI-ARIA role である必要があり、不明な role や抽象 role は拒否します。 |
-| `a11y/aria-unsupported-elements` | `error` | metadata、script、style など支援技術に公開されない要素では、ARIA 属性や role を禁止します。 |
-| `a11y/heading-has-content` | `warning` | `h1`-`h6` には、表示テキスト、補間、アクセシブルな子要素、または ARIA による名前付けが必要です。 |
-| `a11y/heading-levels` | `warning` | 見出しは `h1` から直接 `h3` に飛ぶような outline level のスキップを避けます。 |
-| `a11y/iframe-has-title` | `warning` | 各 `iframe` には、空でない静的 title または動的 title binding が必要です。 |
-| `a11y/landmark-roles` | `warning` | `main` landmark は 1 つだけ許可し、`nav` や `region` など同じ role の landmark が複数ある場合は、ラベルの欠落や重複を報告します。 |
-| `a11y/media-has-caption` | `warning` | `video` と `audio` には `track kind="captions"` が必要です。ただし muted の ambient media など、caption が不要だと判定できる場合は許可されます。 |
-| `a11y/no-access-key` | `warning` | ネイティブ要素の `accesskey` は、ブラウザ、OS、支援技術の shortcut と衝突しやすいため禁止します。 |
-| `a11y/no-autofocus` | `warning` | 自動 focus 移動は読み上げ順や keyboard flow を中断するため、`autofocus` を禁止します。 |
-| `a11y/no-distracting-elements` | `warning` | `marquee` や `blink` のような、動きや点滅を発生させる古い要素を拒否します。 |
-| `a11y/no-redundant-roles` | `warning` | `button role="button"` のように native semantics と重複する明示 role を報告し、role の削除で修正できます。 |
-| `a11y/no-role-presentation-on-focusable` | `error` | focus 可能な要素で `role="presentation"` や `role="none"` を使うと、focus は残るのに semantics だけ消えるため禁止します。 |
-| `a11y/placeholder-label-option` | `warning` | `select` の最初の `option` 子を確認し、その先頭 option の静的な `value` が空なら `disabled` または `hidden` を要求します。 |
-| `a11y/role-has-required-aria-props` | `warning` | ARIA state が必須の role には、checkbox の `aria-checked` や slider の `aria-valuenow` など、実装が要求する required property が必要です。 |
-| `a11y/use-list` | `warning` | 箇条書きに見えるテキストは semantic な `ul`/`ol` と `li` にして、支援技術が list の境界や item 数を扱えるようにします。 |
+## `a11y/no-role-presentation-on-focusable`
+
+フォーカス可能な要素で `role="presentation"` または `role="none"` を使うことを禁止します。
+
+既定の重大度: `error`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <a href="/billing" role="presentation">Billing</a>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <a href="/billing">Billing</a>
+</template>
+```
+
+## `a11y/no-static-element-interactions`
+
+対応するインタラクティブ role やネイティブ コントロールを持たない静的要素のイベント
+ハンドラーを禁止します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <section @keydown.enter="select">Select</section>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <button type="button" @keydown.enter="select">Select</button>
+</template>
+```
+
+## `a11y/placeholder-label-option`
+
+`<select>` 内のプレースホルダー `<option>` に `disabled` または `hidden` を要求し、実際の選択肢
+として送信されないようにします。
+
+既定の重大度: `warning`
+プリセット: `nuxt`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <select v-model="country">
+    <option value="">Choose a country</option>
+    <option value="jp">Japan</option>
+  </select>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <select v-model="country">
+    <option value="" disabled>Choose a country</option>
+    <option value="jp">Japan</option>
+  </select>
+</template>
+```
+
+## `a11y/role-has-required-aria-props`
+
+ARIA の state/property 属性を必要とする role に、その必須属性を要求します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <span role="checkbox">Receive updates</span>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <span role="checkbox" aria-checked="false">Receive updates</span>
+</template>
+```
+
+## `a11y/tabindex-no-positive`
+
+予測しにくい独自のタブ順序を作ってしまうため、正の `tabindex` 値を禁止します。
+
+既定の重大度: `warning`
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <button tabindex="3">Save</button>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <button>Save</button>
+</template>
+```
+
+## `a11y/use-list`
+
+箇条書きのようなテキストにリスト要素を使うことを提案します。スクリーン リーダーがリスト構造を
+通知できるようにするためです。
+
+既定の重大度: `warning`
+プリセット: `nuxt`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <p>- First task</p>
+  <p>- Second task</p>
+</template>
+```
+
+良い:
+
+```vue
+<template>
+  <ul>
+    <li>First task</li>
+    <li>Second task</li>
+  </ul>
+</template>
+```
+
+## `vue/use-unique-element-ids`
+
+静的な要素 ID と ID 参照に、リテラルではなく `useId()` を使うことを要求します。同じ
+コンポーネントが複数回レンダーされたときの重複 ID を防ぎ、label や ARIA の関連付けを安定させます。
+
+既定の重大度: `warning`
+プリセット: `nuxt`, `opinionated`
+オプション: なし
+
+悪い:
+
+```vue
+<template>
+  <label for="email">Email</label>
+  <input id="email" />
+</template>
+```
+
+良い:
+
+```vue
+<script setup>
+import { useId } from "vue";
+
+const emailId = useId();
+</script>
+
+<template>
+  <label :for="emailId">Email</label>
+  <input :id="emailId" />
+</template>
+```

@@ -1,26 +1,14 @@
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { relative, resolve } from "node:path";
-
 const require = createRequire(import.meta.url);
-
 const workspaceRoot = resolve(import.meta.dirname, "../..");
 const rulesRoot = resolve(workspaceRoot, "crates/vize_patina/src/rules");
 const githubBlobBase = "https://github.com/ubugeeei-prod/vize/blob/main/";
-
-const categoryOrder = [
-  "Essential",
-  "StronglyRecommended",
-  "Recommended",
-  "Accessibility",
-  "HtmlConformance",
-  "TypeAware",
-  "Vapor",
-  "Ecosystem",
-  "CSS",
-  "Musea",
-  "Script",
-];
+const categoryOrder =
+  "Essential StronglyRecommended Recommended Accessibility HtmlConformance TypeAware Vapor Ecosystem CSS Musea Script".split(
+    " ",
+  );
 
 const categoryLabels = {
   Accessibility: "Accessibility",
@@ -36,10 +24,14 @@ const categoryLabels = {
   Vapor: "Vapor",
 };
 
-const presetLabels = {
-  "general-recommended": "happy-path",
-};
+const presetLabels = { "general-recommended": "happy-path" };
+const configurableRuleOptions = new Set(
+  "musea/prefer-design-tokens script/custom-event-name-casing script/no-restricted-globals script/no-restricted-members vue/attribute-hyphenation vue/component-name-in-template-casing vue/html-self-closing vue/no-mutating-props vue/sfc-element-order vue/v-on-event-hyphenation".split(
+    " ",
+  ),
+);
 
+const existingRulePresetsByName = readExistingRulePresets();
 const nativeRulesByName = loadNativeRulesByName();
 const sourceRulesByName = readPatinaSourceRules();
 const scriptRegistryByName = readScriptRegistry();
@@ -73,9 +65,11 @@ const lines = [
   "",
   "# All Patina Rules",
   "",
-  `This page lists all ${rules.length} Patina rule implementations declared under \`crates/vize_patina/src/rules\`. The category pages keep the longer examples; this page is the compact reference for coverage, default severity, preset membership, fixability, and source implementation.`,
+  `This page lists all ${rules.length} Patina rule implementations declared under \`crates/vize_patina/src/rules\`. The category pages keep the longer examples; this page is the compact reference for coverage, default severity, preset membership, fixability, rule-option support, and source implementation.`,
   "",
   "Preset names use Vize CLI terminology. The oxlint plugin metadata name `general-recommended` is shown here as `happy-path`. `_none_` means the rule is opt-in, host-driven, or outside the bundled lint presets.",
+  "",
+  "Rules marked with `ruleOptions` accept typed project-local settings under `linter.ruleOptions`; see [Rule Options](./options.md) for the complete option shapes.",
   "",
   "## Categories",
   "",
@@ -96,8 +90,8 @@ for (const category of sortedCategories) {
     "",
     `## ${label} (${group.length})`,
     "",
-    "| Rule | Severity | Presets | Fixable | Implementation | Description |",
-    "| --- | --- | --- | --- | --- | --- |",
+    "| Rule | Severity | Presets | Fixable | Options | Implementation | Description |",
+    "| --- | --- | --- | --- | --- | --- | --- |",
   );
 
   for (const rule of group) {
@@ -107,6 +101,7 @@ for (const category of sortedCategories) {
         code(rule.defaultSeverity),
         formatPresets(rule.presets),
         rule.fixable ? "Yes" : "No",
+        formatRuleOptions(rule),
         implementationLink(rule),
         escapeCell(rule.description),
       ]
@@ -231,6 +226,7 @@ function mergeRuleMetadata(sourceRule) {
   const nativeRule = nativeRulesByName.get(sourceRule.name);
   const scriptRegistry = scriptRegistryByName.get(sourceRule.name);
   const cssPresets = cssPresetRules.has(sourceRule.name) ? ["opinionated", "nuxt"] : null;
+  const existingPresets = existingRulePresetsByName.get(sourceRule.name);
 
   return {
     ...sourceRule,
@@ -239,8 +235,25 @@ function mergeRuleMetadata(sourceRule) {
     defaultSeverity: sourceRule.defaultSeverity ?? nativeRule?.defaultSeverity ?? "warning",
     description: sourceRule.description || nativeRule?.description || "",
     fixable: scriptRegistry?.fixable ?? sourceRule.fixable ?? nativeRule?.fixable ?? false,
-    presets: scriptRegistry?.presets ?? cssPresets ?? nativeRule?.presets ?? [],
+    presets: scriptRegistry?.presets ?? cssPresets ?? nativeRule?.presets ?? existingPresets ?? [],
   };
+}
+
+function readExistingRulePresets() {
+  try {
+    return new Map(
+      readFileSync(resolve(import.meta.dirname, "../content/rules/all.md"), "utf8")
+        .split("\n")
+        .flatMap((line) => {
+          const match = line.match(/^\| `([^`]+)` \| `[^`]+` \| (.*?) \| /);
+          return match
+            ? [[match[1], [...match[2].matchAll(/`([^`]+)`/g)].map((preset) => preset[1])]]
+            : [];
+        }),
+    );
+  } catch {
+    return new Map();
+  }
 }
 
 function walkRustFiles(directory) {
@@ -312,14 +325,15 @@ function escapeCell(value) {
 }
 
 function formatPresets(presets) {
-  if (presets.length === 0) {
-    return "_none_";
-  }
-
+  if (presets.length === 0) return "_none_";
   return presets
     .map((preset) => presetLabels[preset] ?? preset)
     .map(code)
     .join(", ");
+}
+
+function formatRuleOptions(rule) {
+  return configurableRuleOptions.has(rule.name) ? "[`ruleOptions`](./options.md)" : "No";
 }
 
 function implementationLink(rule) {

@@ -208,6 +208,7 @@ vize({
 | `customRenderer`       | `compiler.customRenderer` or `vize({ customRenderer })` | Treat lowercase non-HTML tags as custom renderer elements. Does not match PascalCase tags such as `<TresMesh>`.                                 |
 | `customElements`       | `compiler.customElements` or `vize({ customElements })` | Tag patterns compiled as custom elements instead of Vue components. Use `["Tres*"]` for TresJS PascalCase renderer tags.                        |
 | `templateSyntax`       | `compiler.templateSyntax` or `vize({ templateSyntax })` | Choose `"standard"`, `"strict"`, or `"quirks"` template syntax handling.                                                                        |
+| `experimentals`        | top-level `experimentals` or `vize({ experimentals })`  | Fully opt-in Vue RFC and backend experiments. Missing keys, `false`, and `null` are off.                                                        |
 | `include`              | `vite.include` or `vize({ include })`                   | Files that the plugin should compile.                                                                                                           |
 | `exclude`              | `vite.exclude` or `vize({ exclude })`                   | Files that the plugin should ignore.                                                                                                            |
 | `scanPatterns`         | `vite.scanPatterns` or `vize({ scanPatterns })`         | Glob patterns used for startup pre-compilation.                                                                                                 |
@@ -217,6 +218,9 @@ vize({
 | `config`               | `vize({ config })`                                      | Inline shared config for Vite Plus runtime settings.                                                                                            |
 | `handleNodeModulesVue` | `vize({ handleNodeModulesVue })`                        | Compile `.vue` files imported from `node_modules` on demand.                                                                                    |
 | `debug`                | `vize({ debug })`                                       | Print plugin debug logs.                                                                                                                        |
+
+For the full `experimentals` flag table, opt-in rules, aliases, and shared-config precedence, see
+[Experimentals](./experimentals.md).
 
 Common recipes:
 

@@ -143,12 +143,10 @@ For the common case of forbidding a runtime-environment global (typical sidecar 
 ESLint installed for those alone. Its default deny list is `process`, `localStorage`, and
 `sessionStorage`, reported on each bare reference.
 
-Two script rules also accept project-local configuration under `linter.ruleOptions` (#1891), so teams
-can enforce their own architecture conventions through `vize lint`. `script/no-restricted-globals`
-takes a `globals` list that **replaces** the built-in default list; `script/no-restricted-members` is
-off until configured and flags `<object>.<property>` accesses from a `members` list. Options are typed
-(`name` / `object` / `property` plus an optional `message`, with unknown keys rejected); a missing
-`message` falls back to a generic advisory.
+Several rules accept project-local configuration under `linter.ruleOptions`; see
+[Rule Options](../rules/options.md) for the full typed inventory. The script example below shows
+`script/no-restricted-globals` replacing the built-in `process` / `localStorage` / `sessionStorage`
+deny list and `script/no-restricted-members` flagging configured `<object>.<property>` accesses.
 
 ```json
 {

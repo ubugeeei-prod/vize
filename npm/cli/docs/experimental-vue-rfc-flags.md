@@ -1,13 +1,15 @@
 # Experimental Vue RFC Flags
 
-Every flag in this page is fully opt-in. Vize keeps these RFC surfaces disabled
-unless the matching `experimentals` key is `true` or `{}` in `vize.config.*`.
-Use `false` or `null` to keep a flag disabled.
+Every flag in this page is fully opt-in. Vize keeps these RFC surfaces disabled unless the matching
+`experimentals` key is `true` or `{}` in `vize.config.*`. Missing keys, `false`, and `null` are off.
+
+The full docs site reference is https://vizejs.dev/guide/experimentals. It also covers backend
+experiments such as `serverScript`, `vapor`, and `jsxVapor`.
 
 ```json
 {
   "experimentals": {
-    "intagComment": true,
+    "inTagComment": true,
     "patternedTemplate": true,
     "selfComponent": true,
     "strictSlotChildren": true
@@ -15,12 +17,13 @@ Use `false` or `null` to keep a flag disabled.
 }
 ```
 
-`pattenedTemplate` remains accepted as a historical alias for
-`patternedTemplate`, but new configs should use `patternedTemplate`.
+The historical names `intagComment` and `pattenedTemplate` remain accepted as aliases for
+`inTagComment` and `patternedTemplate`, but new configs should use the recommended names. Avoid
+setting a recommended name and its alias together.
 
 ## In-Tag Comments
 
-`experimentals.intagComment` enables compile-time-only `//` comments inside
+`experimentals.inTagComment` enables compile-time-only `//` comments inside
 opening tags.
 
 ```vue
@@ -131,3 +134,26 @@ The check is intentionally virtual-TS-only because the RFC describes a tooling
 constraint, not a runtime compiler transform.
 
 Upstream reference: https://github.com/vuejs/rfcs/pull/734/files
+
+## Backend Experimentals
+
+The RFC flags above share the same switch semantics as the backend experiments:
+
+```json
+{
+  "experimentals": {
+    "serverScript": true,
+    "vapor": true,
+    "jsxVapor": true
+  }
+}
+```
+
+- `serverScript` resolves to the native `experimentalServerScript` compiler flag. Some runtimes keep
+  this switch reserved until their compiler stage supports the experiment.
+- `vapor` routes SFC compilation through experimental Vapor backend support when stable
+  `compiler.vapor` is not set.
+- `jsxVapor` defaults JSX and TSX files to Vapor output when stable `compiler.jsxMode` is not set.
+
+Prefer stable `compiler.vapor` or `compiler.jsxMode: "vapor"` when those choices are no longer
+experiments for the project.
