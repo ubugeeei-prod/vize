@@ -56,7 +56,10 @@ function assertPercent(value: unknown, field: string, id: string): asserts value
 }
 
 test("optimization budgets pin every P3-10 -O tier", () => {
-  assert.deepEqual(Object.keys(budgets.optimization).sort(), REQUIRED_TIERS.map(([id]) => id));
+  assert.deepEqual(
+    Object.keys(budgets.optimization).sort(),
+    REQUIRED_TIERS.map(([id]) => id),
+  );
   for (const [id, tier, candidateBudget, requiredImprovements] of REQUIRED_TIERS) {
     const entry = budgets.optimization[id];
     assert.deepEqual(
