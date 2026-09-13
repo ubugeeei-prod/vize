@@ -58,6 +58,40 @@ fn patch_facts_materialize_lattice_handler_gate() {
 }
 
 #[test]
+fn patch_facts_table_retains_owner_keyed_entries() {
+    let mut table = PatchFactsTable::new();
+    let owner = NodeId::from_index(7).expect("test owner id exists");
+    let mut dynamic_props = StdVec::new();
+    dynamic_props.push(String::from("id"));
+    let first = PatchFacts {
+        flag: 8,
+        dynamic_props,
+    };
+
+    assert_eq!(table.materialize(None, first.clone()), first);
+    assert_eq!(table.len(), 0);
+    assert_eq!(table.materialize(Some(owner), first.clone()), first);
+    assert_eq!(
+        table.get(owner),
+        Some(&StoredPatchFacts::from_patch(&first))
+    );
+
+    let replacement = PatchFacts {
+        flag: 16,
+        dynamic_props: StdVec::new(),
+    };
+    assert_eq!(
+        table.materialize(Some(owner), replacement.clone()),
+        replacement
+    );
+    assert_eq!(
+        table.get(owner),
+        Some(&StoredPatchFacts::from_patch(&replacement))
+    );
+    assert_eq!(table.len(), 1);
+}
+
+#[test]
 fn lattice_inputs_keep_dense_ids_stable() {
     for (kind, id) in [
         (BindingKind::SetupLet, 0),

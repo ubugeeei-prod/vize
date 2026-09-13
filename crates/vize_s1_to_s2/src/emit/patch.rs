@@ -7,6 +7,7 @@
 //! position inputs, then the VNode writer only applies the few position-local
 //! masks (`v-for`, `v-once`, `v-memo`).
 
+mod storage;
 #[cfg(test)]
 mod tests;
 
@@ -26,9 +27,10 @@ use super::props::{
     bind_value_uses_legacy_patchless_runtime_expr, has_prop_modifier, is_dynamic_bind_name,
     is_emitted_key_bind, static_bind_key,
 };
+use storage::StoredPatchFacts;
 
 pub(super) struct PatchFactsTable {
-    entries: SmallVec<[(NodeId, PatchFacts); 16]>,
+    entries: SmallVec<[(NodeId, StoredPatchFacts); 16]>,
 }
 
 impl PatchFactsTable {
@@ -42,9 +44,25 @@ impl PatchFactsTable {
         let Some(owner) = owner else {
             return facts;
         };
-        self.entries.push((owner, facts));
-        let (_, facts) = self.entries.pop().expect("patch fact was just pushed");
+        let stored = StoredPatchFacts::from_patch(&facts);
+        if let Some((_, entry)) = self.entries.iter_mut().find(|(id, _)| *id == owner) {
+            *entry = stored;
+        } else {
+            self.entries.push((owner, stored));
+        }
         facts
+    }
+
+    #[cfg(test)]
+    fn get(&self, owner: NodeId) -> Option<&StoredPatchFacts> {
+        self.entries
+            .iter()
+            .find_map(|(id, facts)| (*id == owner).then_some(facts))
+    }
+
+    #[cfg(test)]
+    fn len(&self) -> usize {
+        self.entries.len()
     }
 }
 

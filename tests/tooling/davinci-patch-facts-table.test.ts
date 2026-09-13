@@ -28,7 +28,8 @@ test("EmitCx carries an owner-keyed PatchFacts inline table", () => {
   const patchSource = read(patchPath);
 
   assert.match(patchSource, /struct PatchFactsTable/);
-  assert.match(patchSource, /SmallVec<\[\(NodeId, PatchFacts\); 16\]>/);
+  assert.match(patchSource, /SmallVec<\[\(NodeId, StoredPatchFacts\); 16\]>/);
+  assert.match(patchSource, /StoredPatchFacts::from_patch/);
   assert.match(emitSource, /patch_facts: patch::PatchFactsTable,/);
   assert.match(runSource, /patch_facts: super::patch::PatchFactsTable::new\(\),/);
 });
