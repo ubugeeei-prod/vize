@@ -237,13 +237,16 @@ fn vue_runtime_support_stays_native_without_reachability_work() {
     );
 
     let mut resolver = PackageRouteResolver::default();
-    let discovered = collect_transitive_local_imports_with_resolver(
+    let mut canonical_paths = CanonicalPathCache::default();
+    let mut session = LocalImportSession::new(&mut resolver);
+    let discovered = collect_transitive_local_imports_with_session(
         &[entry],
         root.path(),
-        &mut CanonicalPathCache::default(),
+        &mut canonical_paths,
         false,
         None,
         &mut resolver,
+        &mut session,
     );
 
     assert!(discovered.registrations.is_empty());
@@ -287,16 +290,19 @@ fn vue_dist_javascript_subpath_stays_native_when_allow_js() {
     );
 
     let mut resolver = PackageRouteResolver::default();
-    let discovered = collect_transitive_local_imports_with_resolver(
+    let mut canonical_paths = CanonicalPathCache::default();
+    let mut session = LocalImportSession::new(&mut resolver);
+    let discovered = collect_transitive_local_imports_with_session(
         &[entry],
         root.path(),
-        &mut CanonicalPathCache::default(),
+        &mut canonical_paths,
         ImportFileOptions {
             include_js: true,
             include_jsx: false,
         },
         None,
         &mut resolver,
+        &mut session,
     );
 
     assert!(discovered.registrations.is_empty());

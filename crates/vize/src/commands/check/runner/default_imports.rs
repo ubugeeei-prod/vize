@@ -1,7 +1,5 @@
-use std::{
-    fs,
-    path::{Path, PathBuf},
-};
+use std::fs;
+use std::path::{Path, PathBuf};
 
 use vize_s0::FxHashSet;
 
@@ -12,7 +10,8 @@ use super::{
 };
 use crate::commands::check::{
     imports::{
-        ImportFileOptions, TransitiveLocalImports, collect_transitive_local_imports_with_resolver,
+        ImportFileOptions, LocalImportSession, TransitiveLocalImports,
+        collect_transitive_local_imports_with_session,
     },
     imports_aliases::PathAliasResolver,
     imports_package_routes::sort_package_route_bindings,
@@ -90,7 +89,8 @@ pub(super) fn collect_default_run_files(
     retain_unignored(&mut files, context.check_ignore_set);
     let inputs = files.clone();
     let mut reported_files = canonical_file_set(&files, canonical_paths);
-    let discovered = register_transitive_local_imports(
+    let mut import_session = LocalImportSession::new(resolver);
+    let discovered = register_transitive_local_imports_with_session(
         &mut files,
         LocalImportContext {
             cwd: context.cwd,
@@ -101,6 +101,7 @@ pub(super) fn collect_default_run_files(
         },
         canonical_paths,
         resolver,
+        &mut import_session,
     );
     reported_files.extend(canonical_file_set(&discovered.authored, canonical_paths));
     let mut package_routes = discovered.package_routes;
@@ -112,7 +113,7 @@ pub(super) fn collect_default_run_files(
     );
     // Imports reached only through hidden ambient declarations provide type
     // context, but are not authored members of the checked program.
-    let hidden_discovered = register_transitive_local_imports(
+    let hidden_discovered = register_transitive_local_imports_with_session(
         &mut files,
         LocalImportContext {
             cwd: context.cwd,
@@ -123,6 +124,7 @@ pub(super) fn collect_default_run_files(
         },
         canonical_paths,
         resolver,
+        &mut import_session,
     );
     package_routes.extend(hidden_discovered.package_routes);
     sort_package_route_bindings(&mut package_routes);
@@ -150,12 +152,32 @@ pub(super) fn register_ambient_declaration_files(
     }
 }
 
+#[cfg(test)]
 pub(super) fn register_explicit_ambient_imports(
     files: &mut Vec<PathBuf>,
     context: ExplicitAmbientImportContext<'_>,
     tsconfig_input_cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
     package_routes: &mut vize_canon::PackageRouteResolver,
+) -> Vec<vize_canon::PackageRouteBinding> {
+    let mut import_session = LocalImportSession::new(package_routes);
+    register_explicit_ambient_imports_with_session(
+        files,
+        context,
+        tsconfig_input_cache,
+        canonical_paths,
+        package_routes,
+        &mut import_session,
+    )
+}
+
+pub(super) fn register_explicit_ambient_imports_with_session(
+    files: &mut Vec<PathBuf>,
+    context: ExplicitAmbientImportContext<'_>,
+    tsconfig_input_cache: &mut TsconfigInputCache,
+    canonical_paths: &mut CanonicalPathCache,
+    package_routes: &mut vize_canon::PackageRouteResolver,
+    import_session: &mut LocalImportSession,
 ) -> Vec<vize_canon::PackageRouteBinding> {
     let keep_package_local =
         super::resolve::project_root_has_package_boundary(context.project_root);
@@ -181,18 +203,18 @@ pub(super) fn register_explicit_ambient_imports(
         .filter(|path| should_register_explicit_ambient_declaration(path))
         .cloned()
         .collect::<Vec<_>>();
-    let discovered = collect_transitive_local_imports_from(
+    let mut discovered = collect_local_imports_with_session(
         &ambient_declarations,
-        LocalImportContext {
-            cwd: context.cwd,
-            tsconfig_path: Some(context.tsconfig_path),
-            import_options: context.import_options,
-            explicit_input_root: Some(context.explicit_input_root),
-            validate_inputs: true,
-        },
+        context.cwd,
+        Some(context.tsconfig_path),
+        context.import_options,
         canonical_paths,
         package_routes,
+        import_session,
     );
+    discovered
+        .registrations
+        .retain(|path| local_import_is_allowed(path, Some(context.explicit_input_root), true));
     files.extend(discovered.registrations);
     files.extend(program_ambient_declarations);
     files.sort();
@@ -236,19 +258,21 @@ pub(super) fn canonical_file_set(
         .collect()
 }
 
-pub(super) fn register_transitive_local_imports(
+pub(super) fn register_transitive_local_imports_with_session(
     files: &mut Vec<PathBuf>,
     context: LocalImportContext<'_>,
     canonical_paths: &mut CanonicalPathCache,
     package_routes: &mut vize_canon::PackageRouteResolver,
+    import_session: &mut LocalImportSession,
 ) -> RegisteredLocalImports {
-    let discovered = collect_local_imports(
+    let discovered = collect_local_imports_with_session(
         files,
         context.cwd,
         context.tsconfig_path,
         context.import_options,
         canonical_paths,
         package_routes,
+        import_session,
     );
     // The explicit-root boundary constrains user-selected roots and files that
     // enter Vize's mirror. It must not hide authored modules that TypeScript
@@ -270,42 +294,24 @@ pub(super) fn register_transitive_local_imports(
     }
 }
 
-pub(super) fn collect_transitive_local_imports_from(
-    roots: &[PathBuf],
-    context: LocalImportContext<'_>,
-    canonical_paths: &mut CanonicalPathCache,
-    package_routes: &mut vize_canon::PackageRouteResolver,
-) -> TransitiveLocalImports {
-    let mut discovered = collect_local_imports(
-        roots,
-        context.cwd,
-        context.tsconfig_path,
-        context.import_options,
-        canonical_paths,
-        package_routes,
-    );
-    discovered.registrations.retain(|path| {
-        local_import_is_allowed(path, context.explicit_input_root, context.validate_inputs)
-    });
-    discovered
-}
-
-fn collect_local_imports(
+fn collect_local_imports_with_session(
     roots: &[PathBuf],
     cwd: &Path,
     tsconfig_path: Option<&Path>,
     import_options: ImportFileOptions,
     canonical_paths: &mut CanonicalPathCache,
     package_routes: &mut vize_canon::PackageRouteResolver,
+    import_session: &mut LocalImportSession,
 ) -> TransitiveLocalImports {
     let aliases = PathAliasResolver::from_tsconfig(tsconfig_path);
-    collect_transitive_local_imports_with_resolver(
+    collect_transitive_local_imports_with_session(
         roots,
         cwd,
         canonical_paths,
         import_options,
         Some(&aliases),
         package_routes,
+        import_session,
     )
 }
 

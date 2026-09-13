@@ -50,13 +50,16 @@ fn symlinked_workspace_build_output_package_gets_a_shadow_route() {
     symlink(&package, &link).unwrap();
 
     let mut resolver = PackageRouteResolver::default();
-    let discovered = collect_transitive_local_imports_with_resolver(
+    let mut canonical_paths = CanonicalPathCache::default();
+    let mut session = LocalImportSession::new(&mut resolver);
+    let discovered = collect_transitive_local_imports_with_session(
         &[entry],
         &app,
-        &mut CanonicalPathCache::default(),
+        &mut canonical_paths,
         false,
         None,
         &mut resolver,
+        &mut session,
     );
 
     assert!(discovered.registrations.is_empty());

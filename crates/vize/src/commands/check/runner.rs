@@ -39,11 +39,12 @@ mod socket;
 mod tests;
 mod text_style;
 
+use crate::commands::check::imports::LocalImportSession;
 use collect::collect_check_files_with_ignores;
 use default_imports::{
     DefaultRunFileContext, ExplicitAmbientImportContext, LocalImportContext, canonical_file_set,
     collect_default_run_files, register_ambient_declaration_files,
-    register_explicit_ambient_imports, register_transitive_local_imports,
+    register_explicit_ambient_imports_with_session, register_transitive_local_imports_with_session,
 };
 #[cfg(test)]
 use diagnostics::is_suppressed_false_positive;
@@ -166,9 +167,10 @@ fn prepare_and_execute(
     let mut import_time = Duration::ZERO;
     let mut authored_imports = Vec::new();
     let mut package_routes = std::mem::take(&mut candidate.package_routes);
+    let mut import_session = LocalImportSession::new(package_route_resolver);
     if !args.patterns.is_empty() || candidate.rebuild_supporting_files {
         let import_start = Instant::now();
-        let discovered = register_transitive_local_imports(
+        let discovered = register_transitive_local_imports_with_session(
             &mut candidate.files,
             LocalImportContext {
                 cwd,
@@ -179,6 +181,7 @@ fn prepare_and_execute(
             },
             canonical_paths,
             package_route_resolver,
+            &mut import_session,
         );
         import_time += import_start.elapsed();
         authored_imports = discovered.authored;
@@ -192,7 +195,7 @@ fn prepare_and_execute(
             cache,
         );
         let import_start = Instant::now();
-        let discovered = register_transitive_local_imports(
+        let discovered = register_transitive_local_imports_with_session(
             &mut candidate.files,
             LocalImportContext {
                 cwd,
@@ -203,6 +206,7 @@ fn prepare_and_execute(
             },
             canonical_paths,
             package_route_resolver,
+            &mut import_session,
         );
         import_time += import_start.elapsed();
         package_routes.extend(discovered.package_routes);
@@ -242,7 +246,7 @@ fn prepare_and_execute(
                 &candidate.files,
             );
         let import_start = Instant::now();
-        package_routes.extend(register_explicit_ambient_imports(
+        package_routes.extend(register_explicit_ambient_imports_with_session(
             &mut candidate.files,
             ExplicitAmbientImportContext::new(
                 &project_root,
@@ -255,6 +259,7 @@ fn prepare_and_execute(
             cache,
             canonical_paths,
             package_route_resolver,
+            &mut import_session,
         ));
         import_time += import_start.elapsed();
     }

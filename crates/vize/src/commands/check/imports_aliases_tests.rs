@@ -115,13 +115,16 @@ fn wildcard_alias_js_type_import_registers_sources_that_need_package_shadows() {
         PathAliasResolver::from_tsconfig(Some(root.path().join("tsconfig.json").as_path()));
 
     let mut package_resolver = vize_canon::PackageRouteResolver::default();
-    let discovered = super::super::imports::collect_transitive_local_imports_with_resolver(
+    let mut canonical_paths = CanonicalPathCache::default();
+    let mut import_session = super::super::imports::LocalImportSession::new(&mut package_resolver);
+    let discovered = super::super::imports::collect_transitive_local_imports_with_session(
         std::slice::from_ref(&entry),
         root.path(),
-        &mut CanonicalPathCache::default(),
+        &mut canonical_paths,
         false,
         Some(&resolver),
         &mut package_resolver,
+        &mut import_session,
     );
 
     assert_eq!(discovered.registrations, vec![form.canonicalize().unwrap()]);

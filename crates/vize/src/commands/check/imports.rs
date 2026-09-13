@@ -18,10 +18,8 @@ use super::path_cache::CanonicalPathCache;
 
 #[path = "imports_cache.rs"]
 mod cache;
-use cache::{PackageLookupCache, ResolutionContextCache};
 #[path = "imports_registration.rs"]
 mod registration;
-use registration::VirtualRegistrationCache;
 use registration::non_relative_import_needs_virtual_registration;
 #[path = "imports_resolution.rs"]
 mod resolution;
@@ -30,6 +28,9 @@ pub(super) use resolution::{resolve_import_base, resolve_import_base_with_inputs
 #[path = "imports_specifiers.rs"]
 mod specifiers;
 use specifiers::{extract_module_specifier_occurrences, is_relative_specifier};
+#[path = "imports_session.rs"]
+mod session;
+pub(super) use session::LocalImportSession;
 
 /// Source extensions whose imports carry TypeScript types worth pulling into the
 /// virtual project, in module-resolution precedence order.
@@ -53,31 +54,31 @@ pub(super) fn collect_transitive_local_imports(
     options: impl Into<ImportFileOptions>,
     aliases: Option<&PathAliasResolver>,
 ) -> TransitiveLocalImports {
-    collect_transitive_local_imports_with_resolver(
+    let mut packages = PackageRouteResolver::default();
+    let mut session = LocalImportSession::new(&mut packages);
+    collect_transitive_local_imports_with_session(
         roots,
         cwd,
         canonical_paths,
         options,
         aliases,
-        &mut PackageRouteResolver::default(),
+        &mut packages,
+        &mut session,
     )
 }
 
-pub(super) fn collect_transitive_local_imports_with_resolver(
+pub(super) fn collect_transitive_local_imports_with_session(
     roots: &[PathBuf],
     cwd: &Path,
     canonical_paths: &mut CanonicalPathCache,
     options: impl Into<ImportFileOptions>,
     aliases: Option<&PathAliasResolver>,
     packages: &mut PackageRouteResolver,
+    session: &mut LocalImportSession,
 ) -> TransitiveLocalImports {
-    packages.begin_validation_epoch();
     let options = options.into();
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registered: FxHashSet<PathBuf> = FxHashSet::default();
-    let mut registration_cache = VirtualRegistrationCache::default();
-    let mut resolution_contexts = ResolutionContextCache::default();
-    let mut package_lookups = PackageLookupCache::default();
     let mut queue: Vec<(PathBuf, bool, bool)> = Vec::new();
 
     // Seed the visited set with the roots so they are never re-registered.
@@ -126,7 +127,8 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
                             file.extension().map(std::ffi::OsString::from),
                             occurrence.mode,
                         );
-                        let (context, context_inputs) = resolution_contexts
+                        let (context, context_inputs) = session
+                            .resolution_contexts
                             .entry(context_key)
                             .or_insert_with(|| match aliases {
                                 Some(aliases) => aliases.package_resolution_context(
@@ -151,7 +153,8 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
                             source_options,
                             context.clone(),
                         );
-                        let lookup = package_lookups
+                        let lookup = session
+                            .package_lookups
                             .entry(lookup_key)
                             .or_insert_with(|| {
                                 packages.lookup_with_context(
@@ -213,7 +216,7 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
                         options,
                         aliases,
                         Some(packages),
-                        &mut registration_cache,
+                        &mut session.registration_cache,
                         &mut discovery,
                     );
                 }
@@ -227,7 +230,7 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
                     options,
                     aliases,
                     None,
-                    &mut registration_cache,
+                    &mut session.registration_cache,
                     &mut discovery,
                 )
             };
