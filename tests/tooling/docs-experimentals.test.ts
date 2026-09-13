@@ -18,6 +18,15 @@ const experimentalKeys = [
   "jsxVapor",
 ];
 
+const rfcExperimentalKeys = [
+  "patternedTemplate",
+  "pattenedTemplate",
+  "inTagComment",
+  "intagComment",
+  "selfComponent",
+  "strictSlotChildren",
+];
+
 const rfcLinks = [
   "https://github.com/vuejs/rfcs/pull/823",
   "https://github.com/vuejs/rfcs/pull/831",
@@ -41,6 +50,28 @@ const sectionHeadings = [
   "## Direct API Fields",
 ];
 
+const rfcDetailSnippets = [
+  "## Opt-in Contract",
+  "## Patterned Templates",
+  "### Patterned Diagnostics",
+  "### Patterned Deferred Syntax",
+  "## In-Tag Comments",
+  "## Self Component",
+  "## Strict Slot Children",
+  "## Verification Checklist",
+  "experimentalPatternedTemplate",
+  "experimentalInTagComments",
+  "experimentalSelfComponent",
+  "experimentalStrictSlotChildren",
+  "v-match`, `v-when`, and `v-case` report that the opt-in is required",
+  "Binding inside an or-pattern alternative is also deferred",
+  "The comment is not a child node",
+  "Raw in-DOM templates are parsed by the browser first",
+  "If the flag is off, a local component binding named `Self` keeps its ordinary meaning",
+  "__VizeProvidedSlotChildren<[typeof TabItem, HTMLButtonElement]>",
+  "Required slot-name checks are separate",
+];
+
 test("experimentals docs fully describe experimental opt-in flags", () => {
   const experimentals = fs.readFileSync(
     path.join(repoRoot, "docs/content/guide/experimentals.md"),
@@ -48,6 +79,7 @@ test("experimentals docs fully describe experimental opt-in flags", () => {
   );
 
   assert.match(experimentals, /# Experimentals/);
+  assert.match(experimentals, /\[Vue RFC Experimental Details\]\(\.\/experimentals-vue-rfcs\.md\)/);
   assert.match(experimentals, /Missing keys, `false`, and `null` are off/);
   assert.match(experimentals, /Direct Vite plugin\s+options win over shared config/);
   assert.match(experimentals, /Do not set a recommended flag and its alias at the same time/);
@@ -94,6 +126,32 @@ test("experimentals docs fully describe experimental opt-in flags", () => {
   assert.match(experimentals, /compileTemplate\(source, \{/);
 });
 
+test("experimentals RFC detail page documents entrypoints and implementation boundaries", () => {
+  const details = fs.readFileSync(
+    path.join(repoRoot, "docs/content/guide/experimentals-vue-rfcs.md"),
+    "utf8",
+  );
+
+  assert.match(details, /no RFC feature is enabled unless the matching Vize flag is explicitly on/);
+  assert.match(details, /Use `experimentals` in shared config and plugin config/);
+  assert.match(details, /direct `compileTemplate` fields\s+do not understand aliases/);
+  assert.match(details, /`let` and `var` bindings are rejected/);
+  assert.match(details, /`v-case` only as a compatibility alias/);
+  assert.match(details, /`<Self>` is an ordinary component tag/);
+  assert.match(details, /no extra child-type assertions are generated/);
+  assert.match(details, /Advanced component libraries can expose `__vizeResolveSlots`/);
+
+  for (const snippet of rfcDetailSnippets) {
+    const pattern = snippet.includes(" ")
+      ? escapeRegExp(snippet).replaceAll(" ", "\\s+")
+      : escapeRegExp(snippet);
+    assert.match(details, new RegExp(pattern), `${snippet} must be documented`);
+  }
+  for (const link of rfcLinks) {
+    assert.match(details, new RegExp(escapeRegExp(link)), `${link} must be linked`);
+  }
+});
+
 test("Japanese experimentals docs mirror the complete reference", () => {
   const experimentals = fs.readFileSync(
     path.join(repoRoot, "docs/content/ja/guide/experimentals.md"),
@@ -101,6 +159,7 @@ test("Japanese experimentals docs mirror the complete reference", () => {
   );
 
   assert.match(experimentals, /# Experimentals/);
+  assert.match(experimentals, /\[Vue RFC Experimental Details\]\(\.\/experimentals-vue-rfcs\.md\)/);
   assert.match(experimentals, /## 推奨設定/);
   assert.match(experimentals, /## Surface Matrix/);
   assert.match(experimentals, /## Direct API Fields/);
@@ -113,6 +172,28 @@ test("Japanese experimentals docs mirror the complete reference", () => {
   }
   for (const link of rfcLinks) {
     assert.match(experimentals, new RegExp(escapeRegExp(link)), `${link} must be linked in ja`);
+  }
+});
+
+test("Japanese experimentals RFC detail page mirrors the implementation boundaries", () => {
+  const details = fs.readFileSync(
+    path.join(repoRoot, "docs/content/ja/guide/experimentals-vue-rfcs.md"),
+    "utf8",
+  );
+
+  assert.match(details, /## Opt-in Contract/);
+  assert.match(details, /RFC flag はすべて独立しています/);
+  assert.match(details, /direct `compileTemplate` field は/);
+  assert.match(details, /`let` と `var` binding は rejected/);
+  assert.match(details, /`v-case` は古い experiment との互換 alias/);
+  assert.match(details, /`<self>` は特別/);
+  assert.match(details, /required slot\s+name check は別の仕組み/);
+  assert.match(details, /__VizeProvidedSlotChildren<\[typeof TabItem, HTMLButtonElement\]>/);
+  for (const key of rfcExperimentalKeys) {
+    assert.match(details, new RegExp(escapeRegExp(key)), `${key} must be documented in ja`);
+  }
+  for (const link of rfcLinks) {
+    assert.match(details, new RegExp(escapeRegExp(link)), `${link} must be linked in ja`);
   }
 });
 
@@ -153,6 +234,7 @@ test("cli experimental docs point at the complete experimentals reference", () =
   assert.match(cliReadme, /historical names `intagComment` and `pattenedTemplate`/);
   assert.doesNotMatch(cliReadme, /`experimentals\.intagComment`/);
   assert.match(cliDoc, /https:\/\/vizejs\.dev\/guide\/experimentals/);
+  assert.match(cliDoc, /https:\/\/vizejs\.dev\/guide\/experimentals-vue-rfcs/);
   assert.match(cliDoc, /`serverScript`, `vapor`, and `jsxVapor`/);
   assert.match(cliDoc, /Avoid\s+setting a recommended name and its alias together/);
   assert.doesNotMatch(cliDoc, /`experimentals\.intagComment` enables/);

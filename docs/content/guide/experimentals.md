@@ -14,6 +14,9 @@ Use this page as the source of truth when enabling:
 - Vue RFC [#734](https://github.com/vuejs/rfcs/pull/734) strict slot child checks
 - Vize backend experiments such as server-script, SFC Vapor, and JSX Vapor routing
 
+For RFC-specific examples, API entry points, flag-off behavior, and deferred syntax, see
+[Vue RFC Experimental Details](./experimentals-vue-rfcs.md).
+
 ## Recommended Config
 
 Prefer the recommended camelCase names in new TypeScript config:

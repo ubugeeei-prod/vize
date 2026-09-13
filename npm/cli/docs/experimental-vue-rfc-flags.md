@@ -3,8 +3,9 @@
 Every flag in this page is fully opt-in. Vize keeps these RFC surfaces disabled unless the matching
 `experimentals` key is `true` or `{}` in `vize.config.*`. Missing keys, `false`, and `null` are off.
 
-The full docs site reference is https://vizejs.dev/guide/experimentals. It also covers backend
-experiments such as `serverScript`, `vapor`, and `jsxVapor`.
+The full docs site reference is https://vizejs.dev/guide/experimentals. The RFC-specific details are
+at https://vizejs.dev/guide/experimentals-vue-rfcs. They cover backend experiments such as
+`serverScript`, `vapor`, and `jsxVapor` from the shared Experimentals page.
 
 ```json
 {

@@ -16,6 +16,8 @@ title: Experimentals
 - Vue RFC [#734](https://github.com/vuejs/rfcs/pull/734) strict slot child checks
 - server-script、SFC Vapor、JSX Vapor routing などの Vize backend experiments
 
+RFC ごとの example、API entry point、flag off 時の挙動、deferred syntax は [Vue RFC Experimental Details](./experimentals-vue-rfcs.md) にまとめています。
+
 ## 推奨設定
 
 新しい TypeScript config では推奨 camelCase 名を使ってください。
