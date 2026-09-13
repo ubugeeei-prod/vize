@@ -2,7 +2,7 @@
   "schemaVersion": 8,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
-    "minimumProjectCount": 38,
+    "minimumProjectCount": 39,
     "trackingIssue": 3952
   },
   "projects": [
@@ -2139,7 +2139,69 @@
       "vueGlobs": ["packages/**/*.vue", "examples/**/*.vue"],
       "tsconfig": "tsconfig.json",
       "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
-      "diff": "curator-compare"
+      "diff": "curator-compare",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "examples/scroll-box/src/app.vue",
+          "symbol": "rootHeight",
+          "usageAnchor": ":height=\"rootHeight\"",
+          "declarationAnchor": "const rootHeight = computed(() => layoutHeight.value);",
+          "hoverContains": ["const rootHeight: any"],
+          "renameTo": "__vizeRenamedRootHeight"
+        },
+        "componentBoundary": {
+          "importerFile": "examples/basic-template/src/app.vue",
+          "componentFile": "examples/basic-template/src/counter.vue",
+          "tagName": "Counter",
+          "tagAnchor": "<Counter ",
+          "completionItemCount": 28,
+          "completionItems": [
+            { "label": "v-if", "rank": 0 },
+            { "label": "v-else-if", "rank": 1 },
+            { "label": "v-else", "rank": 2 },
+            { "label": "v-for", "rank": 3 },
+            { "label": "v-on", "rank": 4 },
+            { "label": "v-bind", "rank": 5 },
+            { "label": "v-model", "rank": 6 },
+            { "label": "v-slot", "rank": 7 },
+            { "label": "v-show", "rank": 8 },
+            { "label": "v-pre", "rank": 9 },
+            { "label": "v-once", "rank": 10 },
+            { "label": "v-memo", "rank": 11 },
+            { "label": "v-cloak", "rank": 12 },
+            { "label": "v-text", "rank": 13 },
+            { "label": "v-html", "rank": 14 },
+            { "label": "@", "rank": 15 },
+            { "label": ":", "rank": 16 },
+            { "label": "#", "rank": 17 },
+            { "label": "@click", "rank": 18 },
+            { "label": "@input", "rank": 19 },
+            { "label": "@change", "rank": 20 },
+            { "label": "@submit", "rank": 21 },
+            { "label": "@keydown", "rank": 22 },
+            { "label": "@keyup", "rank": 23 },
+            { "label": "@focus", "rank": 24 },
+            { "label": "@blur", "rank": 25 },
+            { "label": "@mouseenter", "rank": 26 },
+            { "label": "@mouseleave", "rank": 27 }
+          ],
+          "dependencyEdit": {
+            "anchor": "<script setup lang=\"ts\">\n",
+            "replacement": "<script setup lang=\"ts\">\ndefineProps<{ vizeOracleProbe?: string }>();\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "examples/basic-template/src/__VizeOracleCounter.vue",
+          "renamedFile": "examples/basic-template/src/__VizeOracleRenamedCounter.vue",
+          "originalImportSpecifier": "./counter.vue",
+          "copiedImportSpecifier": "./__VizeOracleCounter.vue",
+          "renamedImportSpecifier": "./__VizeOracleRenamedCounter.vue",
+          "requireDeletedImportDiagnostic": false,
+          "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
+          "markerSymbol": "__vizeVueTuiFileLifecycleMarker__"
+        }
+      }
     },
     {
       "id": "vue-termui",
