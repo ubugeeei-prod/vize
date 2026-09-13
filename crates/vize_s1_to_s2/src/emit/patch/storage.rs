@@ -1,5 +1,4 @@
-use smallvec::SmallVec;
-use vize_s0::String;
+use vize_s0::{SmallVec, String};
 
 use super::PatchFacts;
 
