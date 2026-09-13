@@ -3,15 +3,24 @@
 //! P3-7 starts moving patch flags out of ad-hoc call construction and into a
 //! named fact surface. The current facts are still DOM-realization facts: they
 //! consume S2 binding ops, static-value classification, handler cache facts,
-//! and the emitter's position inputs, then the VNode writer only applies the
-//! few position-local masks (`v-for`, `v-once`, `v-memo`).
+//! the S3 reactivity-lattice view of binding metadata, and the emitter's
+//! position inputs, then the VNode writer only applies the few position-local
+//! masks (`v-for`, `v-once`, `v-memo`).
+
+#[cfg(test)]
+mod tests;
 
 use alloc::vec::Vec as StdVec;
 use smallvec::SmallVec;
 use vize_davinci::id::NodeId;
-use vize_s0::String;
+use vize_impeto::lattice::{
+    BindingFact, BindingId, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind,
+    ReactivityClass, Verdict, evaluate_binding,
+};
+use vize_s0::{Span, String};
 use vize_s2::op::{Attribute, BindingOp, OnOp};
 
+use super::options::BindingKind;
 use super::props::{
     BindName, StaticBindKeyCasing, bind_name, bind_value_is_static_patchless,
     bind_value_uses_legacy_patchless_runtime_expr, has_prop_modifier, is_dynamic_bind_name,
@@ -60,11 +69,21 @@ impl super::EmitCx<'_> {
             if_key,
             for_item,
             self.is_ts,
-            &|name| self.reads_constant_binding_name(name),
+            &|name| {
+                self.reads_constant_binding_name(name)
+                    && self.reads_lattice_static_patch_binding_name(name)
+            },
             &|on| super::on::caches_handler(self, on),
             self.caches_handlers(),
         );
         self.patch_facts.materialize(owner, facts)
+    }
+
+    fn reads_lattice_static_patch_binding_name(&self, name: &str) -> bool {
+        self.scope
+            .bindings()
+            .and_then(|table| table.kind(name))
+            .is_some_and(handler_static_patch_binding)
     }
 }
 
@@ -231,5 +250,75 @@ pub(super) fn apply_static_ref_patch(attributes: &[Attribute<'_>], flag: &mut i3
     // a ref on its own.
     if has_static_ref && *flag & (2 | 4 | 8 | 16) == 0 {
         *flag |= 512;
+    }
+}
+
+fn handler_static_patch_binding(kind: BindingKind) -> bool {
+    matches!(kind, BindingKind::SetupConst | BindingKind::LiteralConst)
+        && binding_kind_lattice_fact(kind).fires_as(ReactivityClass::Static)
+}
+
+fn binding_kind_lattice_fact(kind: BindingKind) -> BindingFact {
+    evaluate_binding(binding_kind_lattice_input(kind))
+}
+
+fn binding_kind_lattice_input(kind: BindingKind) -> BindingInput {
+    BindingInput {
+        id: BindingId::new(binding_kind_lattice_id(kind)),
+        origin: binding_kind_origin(kind),
+        effects: binding_kind_effects(kind),
+        escape: EscapeKind::None,
+        verdict: Verdict::Proven,
+        span: Span::new(0, 0),
+    }
+}
+
+fn binding_kind_origin(kind: BindingKind) -> BindingOrigin {
+    match kind {
+        BindingKind::Props | BindingKind::PropsAliased => BindingOrigin::Prop,
+        _ => BindingOrigin::Local,
+    }
+}
+
+fn binding_kind_effects(kind: BindingKind) -> EffectSet {
+    match kind {
+        BindingKind::SetupConst
+        | BindingKind::LiteralConst
+        | BindingKind::ExternalModule
+        | BindingKind::JsGlobalUniversal
+        | BindingKind::JsGlobalBrowser
+        | BindingKind::JsGlobalNode
+        | BindingKind::JsGlobalDeno
+        | BindingKind::JsGlobalBun => EffectSet::empty(),
+        BindingKind::Props | BindingKind::PropsAliased => EffectSet::one(EffectKind::ReadProp),
+        BindingKind::SetupLet => EffectSet::one(EffectKind::MutateLocal),
+        BindingKind::SetupMaybeRef
+        | BindingKind::SetupRef
+        | BindingKind::SetupReactiveConst
+        | BindingKind::Data
+        | BindingKind::Options
+        | BindingKind::VueGlobal => EffectSet::one(EffectKind::ReadReactive),
+    }
+}
+
+fn binding_kind_lattice_id(kind: BindingKind) -> u32 {
+    match kind {
+        BindingKind::SetupLet => 0,
+        BindingKind::SetupMaybeRef => 1,
+        BindingKind::SetupRef => 2,
+        BindingKind::SetupReactiveConst => 3,
+        BindingKind::SetupConst => 4,
+        BindingKind::Props => 5,
+        BindingKind::PropsAliased => 6,
+        BindingKind::Data => 7,
+        BindingKind::Options => 8,
+        BindingKind::LiteralConst => 9,
+        BindingKind::JsGlobalUniversal => 10,
+        BindingKind::JsGlobalBrowser => 11,
+        BindingKind::JsGlobalNode => 12,
+        BindingKind::JsGlobalDeno => 13,
+        BindingKind::JsGlobalBun => 14,
+        BindingKind::VueGlobal => 15,
+        BindingKind::ExternalModule => 16,
     }
 }

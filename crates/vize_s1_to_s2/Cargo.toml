@@ -48,6 +48,7 @@ oxc_syntax = { workspace = true }
 smallvec = { workspace = true }
 vize_s0 = { workspace = true }
 vize_davinci = { workspace = true }
+vize_impeto = { workspace = true }
 vize_s1 = { workspace = true }
 vize_s2 = { workspace = true }
 
