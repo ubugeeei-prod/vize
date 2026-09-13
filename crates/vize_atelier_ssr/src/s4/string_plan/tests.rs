@@ -1,4 +1,7 @@
-use super::{SsrStringPlanErrorKind, SsrStringSegmentKind, lower_s2_to_string_plan};
+use super::{
+    SsrStringPayloadKind, SsrStringPlanErrorKind, SsrStringSegment, SsrStringSegmentKind,
+    lower_s2_to_string_plan,
+};
 use vize_s0::Allocator;
 use vize_s1::parse;
 use vize_s2_to_s3::{PartitionKind, lower};
@@ -37,6 +40,64 @@ fn static_and_dynamic_segments_read_partition_facts() {
                     .iter()
                     .any(|segment| segment.partition == PartitionKind::Dynamic)
             );
+            assert!(has_payload(
+                &lowered.plan.segments,
+                SsrStringSegmentKind::OpenElement,
+                SsrStringPayloadKind::TagName,
+                "main",
+            ));
+            assert!(has_payload(
+                &lowered.plan.segments,
+                SsrStringSegmentKind::StaticAttribute,
+                SsrStringPayloadKind::AttributeName,
+                "class",
+            ));
+            assert!(has_payload(
+                &lowered.plan.segments,
+                SsrStringSegmentKind::Text,
+                SsrStringPayloadKind::Text,
+                "Hi",
+            ));
+            assert!(has_payload(
+                &lowered.plan.segments,
+                SsrStringSegmentKind::DynamicText,
+                SsrStringPayloadKind::Expression,
+                "name",
+            ));
+        },
+    );
+}
+
+#[test]
+fn binding_segments_carry_typed_payloads() {
+    with_plan(
+        r#"<slot name="item" :title="label" v-html="raw" v-text="text" />"#,
+        |lowered| {
+            assert!(lowered.errors.is_empty(), "{:?}", lowered.errors);
+            assert!(has_payload(
+                &lowered.plan.segments,
+                SsrStringSegmentKind::SlotOutlet,
+                SsrStringPayloadKind::SlotName,
+                "item",
+            ));
+            assert!(has_payload(
+                &lowered.plan.segments,
+                SsrStringSegmentKind::DynamicAttribute,
+                SsrStringPayloadKind::Expression,
+                "label",
+            ));
+            assert!(has_payload(
+                &lowered.plan.segments,
+                SsrStringSegmentKind::RawHtml,
+                SsrStringPayloadKind::Expression,
+                "raw",
+            ));
+            assert!(has_payload(
+                &lowered.plan.segments,
+                SsrStringSegmentKind::DynamicText,
+                SsrStringPayloadKind::Expression,
+                "text",
+            ));
         },
     );
 }
@@ -58,4 +119,18 @@ fn stale_partition_facts_are_rejected() {
             .iter()
             .any(|error| error.kind == SsrStringPlanErrorKind::MissingPartitionFact)
     );
+}
+
+fn has_payload(
+    segments: &[SsrStringSegment<'_>],
+    segment_kind: SsrStringSegmentKind,
+    payload_kind: SsrStringPayloadKind,
+    source: &str,
+) -> bool {
+    segments.iter().any(|segment| {
+        segment.kind == segment_kind
+            && segment
+                .payload
+                .is_some_and(|payload| payload.kind == payload_kind && payload.source == source)
+    })
 }

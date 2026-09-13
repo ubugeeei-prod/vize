@@ -1,12 +1,14 @@
 //! S2->S4 string-plan lowering for SSR.
 
 mod binding;
+mod payload;
 
 use vize_s0::{Allocator, Span, Vec};
 use vize_s2::op as s2;
 use vize_s2_to_s3::{PartitionFacts, PartitionKind};
 
-use binding::{binding_kind, binding_source, binding_span, slot_name};
+use binding::{binding_kind, binding_payload, binding_span};
+pub use payload::{SsrStringPayload, SsrStringPayloadKind};
 
 /// SSR string plan emitted from S2 before JavaScript text generation.
 #[derive(Debug)]
@@ -31,9 +33,9 @@ pub struct SsrStringSegment<'a> {
     pub kind: SsrStringSegmentKind,
     pub partition: PartitionKind,
     pub span: Span,
-    /// Borrowed payload for textual segments: tag names, text content, attribute
-    /// names, or expression source depending on [`SsrStringSegmentKind`].
-    pub source: Option<&'a str>,
+    /// Borrowed payload for textual segments, typed before code generation so
+    /// callers do not need to infer meaning from [`SsrStringSegmentKind`].
+    pub payload: Option<SsrStringPayload<'a>>,
 }
 
 /// The stable SSR S4 vocabulary for the first string-plan slice.
@@ -139,14 +141,20 @@ impl<'facts, 'a> Cx<'facts, 'a> {
                     SsrStringSegmentKind::OpenElement,
                     partition,
                     element.span,
-                    Some(element.tag),
+                    Some(SsrStringPayload::new(
+                        SsrStringPayloadKind::TagName,
+                        element.tag,
+                    )),
                 );
                 for attr in &element.attributes {
                     self.push(
                         SsrStringSegmentKind::StaticAttribute,
                         partition,
                         attr.span,
-                        Some(attr.name),
+                        Some(SsrStringPayload::new(
+                            SsrStringPayloadKind::AttributeName,
+                            attr.name,
+                        )),
                     );
                 }
                 self.lower_bindings(&element.bindings);
@@ -155,7 +163,10 @@ impl<'facts, 'a> Cx<'facts, 'a> {
                     SsrStringSegmentKind::CloseElement,
                     partition,
                     element.span,
-                    Some(element.tag),
+                    Some(SsrStringPayload::new(
+                        SsrStringPayloadKind::TagName,
+                        element.tag,
+                    )),
                 );
             }
             s2::Op::Component(component) => {
@@ -164,14 +175,20 @@ impl<'facts, 'a> Cx<'facts, 'a> {
                     SsrStringSegmentKind::Component,
                     partition,
                     component.span,
-                    Some(component.name),
+                    Some(SsrStringPayload::new(
+                        SsrStringPayloadKind::ComponentName,
+                        component.name,
+                    )),
                 );
                 for attr in &component.attributes {
                     self.push(
                         SsrStringSegmentKind::StaticAttribute,
                         partition,
                         attr.span,
-                        Some(attr.name),
+                        Some(SsrStringPayload::new(
+                            SsrStringPayloadKind::AttributeName,
+                            attr.name,
+                        )),
                     );
                 }
                 self.lower_bindings(&component.bindings);
@@ -183,7 +200,10 @@ impl<'facts, 'a> Cx<'facts, 'a> {
                     SsrStringSegmentKind::Text,
                     partition,
                     text.span,
-                    Some(text.content),
+                    Some(SsrStringPayload::new(
+                        SsrStringPayloadKind::Text,
+                        text.content,
+                    )),
                 );
             }
             s2::Op::Interpolation(interpolation) => {
@@ -192,7 +212,10 @@ impl<'facts, 'a> Cx<'facts, 'a> {
                     SsrStringSegmentKind::DynamicText,
                     partition,
                     interpolation.span,
-                    Some(interpolation.expression.source()),
+                    Some(SsrStringPayload::new(
+                        SsrStringPayloadKind::Expression,
+                        interpolation.expression.source(),
+                    )),
                 );
             }
             s2::Op::Comment(comment) => {
@@ -201,7 +224,10 @@ impl<'facts, 'a> Cx<'facts, 'a> {
                     SsrStringSegmentKind::Comment,
                     partition,
                     comment.span,
-                    Some(comment.content),
+                    Some(SsrStringPayload::new(
+                        SsrStringPayloadKind::Comment,
+                        comment.content,
+                    )),
                 );
             }
             s2::Op::If(if_op) => {
@@ -217,7 +243,10 @@ impl<'facts, 'a> Cx<'facts, 'a> {
                     SsrStringSegmentKind::For,
                     partition,
                     for_op.span,
-                    Some(for_op.binding.source.source()),
+                    Some(SsrStringPayload::new(
+                        SsrStringPayloadKind::ForBinding,
+                        for_op.binding.source.source(),
+                    )),
                 );
                 self.lower_region(&for_op.region);
             }
@@ -227,14 +256,17 @@ impl<'facts, 'a> Cx<'facts, 'a> {
                     SsrStringSegmentKind::SlotOutlet,
                     partition,
                     slot.span,
-                    slot_name(&slot.name),
+                    payload::slot_name_payload(&slot.name),
                 );
                 for attr in &slot.attributes {
                     self.push(
                         SsrStringSegmentKind::StaticAttribute,
                         partition,
                         attr.span,
-                        Some(attr.name),
+                        Some(SsrStringPayload::new(
+                            SsrStringPayloadKind::AttributeName,
+                            attr.name,
+                        )),
                     );
                 }
                 self.lower_bindings(&slot.bindings);
@@ -251,7 +283,7 @@ impl<'facts, 'a> Cx<'facts, 'a> {
                 binding_kind(binding),
                 partition,
                 span,
-                binding_source(binding),
+                binding_payload(binding),
             );
         }
     }
@@ -284,7 +316,7 @@ impl<'facts, 'a> Cx<'facts, 'a> {
         kind: SsrStringSegmentKind,
         partition: PartitionKind,
         span: Span,
-        source: Option<&'a str>,
+        payload: Option<SsrStringPayload<'a>>,
     ) {
         if partition.is_dynamic() {
             self.plan.partition.dynamic_segments =
@@ -297,7 +329,7 @@ impl<'facts, 'a> Cx<'facts, 'a> {
             kind,
             partition,
             span,
-            source,
+            payload,
         });
     }
 }

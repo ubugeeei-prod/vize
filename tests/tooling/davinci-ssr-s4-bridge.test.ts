@@ -30,4 +30,6 @@ test("Davinci SSR compile path imports the S4 string-plan bridge", () => {
   assert.match(bridge, /vize_s2_to_s3::lower/u);
   assert.match(bridge, /vize_s3::verify::verify/u);
   assert.match(plan, /PartitionFacts/u);
+  assert.match(plan, /SsrStringPayloadKind/u);
+  assert.doesNotMatch(plan, /source:\s*Option<&'a str>/u);
 });
