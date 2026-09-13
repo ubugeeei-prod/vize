@@ -35,12 +35,23 @@ test("TS-28 fixture ladder is declared and non-vacuous", () => {
     .sort();
 
   assert.ok(folios.length >= 3, "TS-28 must start with a non-vacuous fixture ladder");
+  assert.ok(
+    folios.some((folio) => folio.startsWith("rust-lowered-")),
+    "TS-28 must include at least one fixture emitted by the Rust S2->S3 lowering path",
+  );
   for (const folio of folios) {
     const trace = folio.replace(/\.s3\.folio$/u, ".trace");
     assert.ok(fs.existsSync(path.join(fixtureRoot, trace)), `${trace} is missing`);
     assert.match(main, new RegExp(`fixtures/${folio.replaceAll(".", "\\.")}`, "u"));
     assert.match(main, new RegExp(`fixtures/${trace.replaceAll(".", "\\.")}`, "u"));
   }
+});
+
+test("TS-28 Rust lowering bridge is covered by an ordinary cargo test", () => {
+  const bridge = readRepoFile("crates", "vize_s2_to_s3", "tests", "lean_reference_fixture.rs");
+  assert.match(bridge, /rust_lowered_static_dynamic_fixture_matches_impeto_reference_input/u);
+  assert.match(bridge, /formal\/impeto\/fixtures\/rust-lowered-static-dynamic\.s3\.folio/u);
+  assert.match(bridge, /S3Folio::of\(&lowered\.program\)\.print_to_string\(FolioMode::Full\)/u);
 });
 
 test("TS-28 command in the suite registry names the executable runner", () => {
