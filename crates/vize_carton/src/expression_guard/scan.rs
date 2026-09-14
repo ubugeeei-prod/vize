@@ -90,7 +90,7 @@ pub(super) fn speculative_type_angle_open_kind(
     }
 }
 
-fn starts_valid_identifier_escape(bytes: &[u8], marker: usize) -> bool {
+pub(super) fn starts_valid_identifier_escape(bytes: &[u8], marker: usize) -> bool {
     decode_identifier_escape(bytes, marker).is_some_and(is_identifier_start)
 }
 

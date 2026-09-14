@@ -91,10 +91,10 @@ fn slow_unit_reproducer_is_rejected_by_the_expression_guard() {
     // Delimiters are balanced, so the guard's other rejection reason is not what
     // is doing the work: the verdict rests entirely on the angle budget. Every
     // one of the 837 unclosed angles now counts. The reproducer also carries
-    // 29 malformed escaped identifier starts, which add recovery cost in the
+    // 90 malformed escaped identifier starts, which add recovery cost in the
     // same speculative chain.
     assert!(expression_has_balanced_delimiters(REPRODUCER));
-    assert_eq!(expression_nesting_depth(REPRODUCER), 866);
+    assert_eq!(expression_nesting_depth(REPRODUCER), 927);
     assert!(!expression_is_safe_to_parse(REPRODUCER));
     assert_eq!(classify(REPRODUCER), Outcome::RejectedByGuard);
 
@@ -147,22 +147,18 @@ const CONTROL_REPS: usize = 1000;
 /// verdict.
 const REPRODUCER_REPS: usize = 3;
 
-/// The reproducer with `&&z` injected after every tenth `<`.
+/// The reproducer with `&&z` injected after every `<`.
 ///
-/// Same alphabet, same `<` density, slightly longer — but `&&` cannot appear
+/// Same alphabet, same `<` density, longer — but `&&` cannot appear
 /// inside a type-argument list, so it ends OXC's speculation exactly like the
 /// guard's own reset does. The guard accepts it, which makes it a control that
 /// measures a *full TypeScript parse* of an equivalent input.
 fn control_input() -> String {
     let mut control = String::with_capacity(REPRODUCER.len() * 2);
-    let mut angles = 0usize;
     for c in REPRODUCER.chars() {
         control.push(c);
         if c == '<' {
-            angles += 1;
-            if angles.is_multiple_of(10) {
-                control.push_str("&&z");
-            }
+            control.push_str("&&z");
         }
     }
     control

@@ -9,7 +9,7 @@ pub mod scan;
 use scan::{
     SpeculativeTypeAngleOpen, keyword_allows_regex_after, skip_block_comment, skip_identifier,
     skip_line_comment, skip_number, skip_quoted, skip_regex, skip_template_text,
-    speculative_type_angle_open_kind,
+    speculative_type_angle_open_kind, starts_valid_identifier_escape,
 };
 
 pub use scan::is_expression_trailing_trivia;
@@ -282,6 +282,8 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
             b'\\' => {
                 if matches!(bytes.get(i + 1), Some(b'\'' | b'"' | b'`')) {
                     i += 1;
+                } else if track_type_angles && !starts_valid_identifier_escape(bytes, i) {
+                    malformed_type_escape_opens += 1;
                 }
                 can_start_regex = false;
             }
