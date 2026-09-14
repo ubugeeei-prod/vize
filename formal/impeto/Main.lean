@@ -10,7 +10,8 @@ def fixtures : List Fixture := [
   { folio := "fixtures/static-text.s3.folio", trace := "fixtures/static-text.trace" },
   { folio := "fixtures/dynamic-button.s3.folio", trace := "fixtures/dynamic-button.trace" },
   { folio := "fixtures/control-flow.s3.folio", trace := "fixtures/control-flow.trace" },
-  { folio := "fixtures/rust-lowered-static-dynamic.s3.folio", trace := "fixtures/rust-lowered-static-dynamic.trace" }
+  { folio := "fixtures/rust-lowered-static-dynamic.s3.folio", trace := "fixtures/rust-lowered-static-dynamic.trace" },
+  { folio := "fixtures/rust-lowered-control-slots.s3.folio", trace := "fixtures/rust-lowered-control-slots.trace" }
 ]
 
 def joinLines : List String -> String

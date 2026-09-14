@@ -49,8 +49,9 @@ test("TS-28 fixture ladder is declared and non-vacuous", () => {
 
 test("TS-28 Rust lowering bridge is covered by an ordinary cargo test", () => {
   const bridge = readRepoFile("crates", "vize_s2_to_s3", "tests", "lean_reference_fixture.rs");
-  assert.match(bridge, /rust_lowered_static_dynamic_fixture_matches_impeto_reference_input/u);
+  assert.match(bridge, /rust_lowered_fixtures_match_impeto_reference_inputs/u);
   assert.match(bridge, /formal\/impeto\/fixtures\/rust-lowered-static-dynamic\.s3\.folio/u);
+  assert.match(bridge, /formal\/impeto\/fixtures\/rust-lowered-control-slots\.s3\.folio/u);
   assert.match(bridge, /S3Folio::of\(&lowered\.program\)\.print_to_string\(FolioMode::Full\)/u);
 });
 
