@@ -198,9 +198,6 @@ export default defineConfig({
       history: "src/families/interaction/history/history.ts",
       id: "src/families/foundations/id/id.ts",
       "inert-outside": "src/families/accessibility/inert-outside/inert-outside.ts",
-      "interaction-modality":
-        "src/families/accessibility/interaction-modality/interaction-modality.ts",
-      focus: "src/families/accessibility/focus/focus.ts",
       "focus-scope": "src/families/accessibility/focus-scope/focus-scope.ts",
       "focus-guards": "src/families/accessibility/focus-guards/focus-guards.ts",
       hover: "src/families/interaction/hover/hover.ts",
@@ -219,6 +216,10 @@ export default defineConfig({
       spinner: "src/families/feedback/spinner/spinner.ts",
       "status-light": "src/families/feedback/status-light/status-light.ts",
       press: "src/families/interaction/press/press.ts",
+      "interaction-modality":
+        "src/families/accessibility/interaction-modality/interaction-modality.ts",
+      focus: "src/families/accessibility/focus/focus.ts",
+      "interaction-hooks": "src/families/interaction/interaction-hooks/interaction-hooks.ts",
       "scroll-lock": "src/families/accessibility/scroll-lock/scroll-lock.ts",
       shortcut: "src/families/interaction/shortcut/shortcut.ts",
       sortable: "src/families/interaction/sortable/sortable.ts",

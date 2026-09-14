@@ -404,6 +404,11 @@
       "import": "./dist/interaction-modality.mjs",
       "default": "./dist/interaction-modality.mjs"
     },
+    "./interaction-hooks": {
+      "types": "./dist/interaction-hooks.d.mts",
+      "import": "./dist/interaction-hooks.mjs",
+      "default": "./dist/interaction-hooks.mjs"
+    },
     "./focus": {
       "types": "./dist/focus.d.mts",
       "import": "./dist/focus.mjs",

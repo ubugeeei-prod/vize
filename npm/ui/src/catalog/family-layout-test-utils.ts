@@ -106,6 +106,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["icon-button", "src/families/layout/icon/"],
   ["inert-outside", "src/families/accessibility/inert-outside/"],
   ["interaction-modality", "src/families/accessibility/interaction-modality/"],
+  ["interaction-hooks", "src/families/interaction/interaction-hooks/"],
   ["kbd", "src/families/typography/kbd/"],
   ["link", "src/families/navigation/link/"],
   ["list", "src/families/layout/list/"],

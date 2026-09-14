@@ -5,6 +5,7 @@ import {
 } from "../../../catalog/family-catalog-types.ts";
 
 const hoverFamilyRoot = "src/families/interaction/hover/";
+const interactionHooksFamilyRoot = "src/families/interaction/interaction-hooks/";
 const longPressFamilyRoot = "src/families/interaction/long-press/";
 const moveFamilyRoot = "src/families/interaction/move/";
 const pointerGraceFamilyRoot = "src/families/interaction/pointer-grace/";
@@ -31,6 +32,37 @@ export const interactionGestureFamilyCatalog = [
     aliases: ["hover", "pointer", "pen"],
     upstreamCoverage: ["React Aria useHover", "Pointer Events hover"],
     dependencies: [],
+    maturity: "stable",
+    owner: catalogOwner,
+  },
+  {
+    canonicalName: "interaction-hooks",
+    title: "Interaction Hooks",
+    packageSubpath: "./interaction-hooks",
+    entryFile: `${interactionHooksFamilyRoot}interaction-hooks.ts`,
+    sourceFiles: [
+      `${interactionHooksFamilyRoot}interaction-hooks.ts`,
+      `${interactionHooksFamilyRoot}interaction-hooks-types.ts`,
+      `${interactionHooksFamilyRoot}interaction-hooks-example.vue`,
+    ],
+    behaviorContract: `${interactionHooksFamilyRoot}interaction-hooks.behavior.md`,
+    tests: [
+      `${interactionHooksFamilyRoot}interaction-hooks.test.ts`,
+      `${interactionHooksFamilyRoot}interaction-hooks-ssr.test.ts`,
+    ],
+    typeTests: [`${interactionHooksFamilyRoot}interaction-hooks.types.test-d.ts`],
+    rendererFixture: "families/interaction/interaction-hooks/interaction-hooks-example.vue",
+    qualityGates: interactionQualityGates,
+    bundleBudget: {
+      exportName: "createInteractionHooks",
+      retainedSignature: "Interaction hook cleanup failed",
+      allowedRetainedFamilies: ["focus", "hover", "interaction-modality", "press"],
+      maximumJavaScriptGzipBytes: 7_600,
+      maximumCssGzipBytes: 0,
+    },
+    aliases: ["interaction hooks", "React Aria hooks", "press hover focus"],
+    upstreamCoverage: ["React Aria usePress", "React Aria useHover", "React Aria useFocusRing"],
+    dependencies: ["focus", "hover", "press"],
     maturity: "stable",
     owner: catalogOwner,
   },
