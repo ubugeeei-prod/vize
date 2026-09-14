@@ -75,7 +75,7 @@ the move is called out in release notes when it changes. Downstream packagers sh
 | Alpha-supported       | `vize`, `@vizejs/native`, `@vizejs/vite-plugin`                                                               | Intended for early production trials with release-note-backed breaking changes.                |
 | Compatibility preview | `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/nuxt-lint-config`, `@vizejs/musea-nuxt` | Expected to work for common host setups, but host-framework compatibility can move quickly.    |
 | Experimental          | `oxlint-plugin-vize`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/wasm`                 | Public packages, but APIs, commands, output, and workflow shape may change during alpha.       |
-| Experimental          | `@vizejs/composable`, `@vizejs/data`, `@vizejs/router`, `@vizejs/ui`, `@vizejs/marquette`                     | Public libraries, but API families and generated evidence contracts may change during alpha.   |
+| Experimental          | `@vizejs/composable`, `@vizejs/data`, `@vizejs/devtools`, `@vizejs/router`, `@vizejs/ui`, `@vizejs/marquette` | Public libraries, but API families and generated evidence contracts may change during alpha.   |
 | Incubating            | `@vizejs/fresco`, `@vizejs/fresco-native`, editor extension packages                                          | Useful for development and feedback, but not yet part of the v1 alpha production-ready target. |
 
 ## Rust Crate Support Tiers

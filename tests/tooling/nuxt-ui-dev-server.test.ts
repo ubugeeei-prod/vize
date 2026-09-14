@@ -9,6 +9,7 @@ import {
   withViteNodeRequestBudget,
 } from "../app/dev/nuxt-ui-vite-node.ts";
 import { normalizeNuxtUiSnapshotHtml } from "../app/dev/nuxt-ui-snapshot.ts";
+import { withVitePlusBinFallback } from "../_helpers/vite-plus-path.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -45,6 +46,16 @@ test("nuxt-ui readiness delay also applies to TCP readiness fallback", () => {
     nuxtUiSetup.includes("readyPattern: /Local:\\s+http:\\/\\/(?:localhost|0\\.0\\.0\\.0):5317/,"),
   );
   assert.match(nuxtUiSetup, /readyDelay: 10_000/);
+});
+
+test("app dev server keeps vite-plus shims as a fallback", () => {
+  const vitePlusBin = path.join(process.env.HOME ?? "", ".vite-plus", "bin");
+  const input = ["/usr/local/bin", vitePlusBin, "/usr/bin", vitePlusBin].join(path.delimiter);
+
+  assert.equal(
+    withVitePlusBinFallback(input),
+    ["/usr/local/bin", "/usr/bin", vitePlusBin].join(path.delimiter),
+  );
 });
 
 test("nuxt-ui boots widen the playground vite-node request budget", () => {

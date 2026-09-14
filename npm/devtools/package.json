@@ -1,0 +1,77 @@
+{
+  "name": "@vizejs/devtools",
+  "version": "0.424.11",
+  "description": "Typed SSR-safe devtools trace foundations for Vize applications",
+  "keywords": [
+    "devtools",
+    "reactivity",
+    "ssr",
+    "trace",
+    "vize",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
+    "directory": "npm/devtools"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./panel": {
+      "types": "./dist/panel.d.mts",
+      "import": "./dist/panel.mjs",
+      "default": "./dist/panel.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vp test run",
+    "check": "vp check src vite.config.ts tsconfig.json tsconfig.typecheck.json && vp exec vue-tsc --noEmit -p tsconfig.typecheck.json",
+    "check:fix": "vp check --fix src vite.config.ts tsconfig.json tsconfig.typecheck.json",
+    "check:types": "vp exec vue-tsc --noEmit -p tsconfig.typecheck.json",
+    "fmt": "vp fmt --write src vite.config.ts tsconfig.json tsconfig.typecheck.json"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "@vitejs/plugin-vue": "catalog:vite-stack",
+    "@vue/compiler-sfc": "catalog:vue-stable",
+    "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable",
+    "vue-tsc": "catalog:typescript"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "experimental",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}

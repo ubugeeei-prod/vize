@@ -74,6 +74,7 @@ test("stability page documents v1 alpha support tiers", () => {
     "@vizejs/musea-mcp-server",
     "@vizejs/wasm",
     "@vizejs/composable",
+    "@vizejs/devtools",
     "@vizejs/ui",
     "@vizejs/marquette",
     "@vizejs/fresco",

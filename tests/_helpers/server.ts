@@ -1,8 +1,8 @@
 import { execSync, spawn, type ChildProcess } from "node:child_process";
 import { createConnection } from "node:net";
 import type { AppConfig } from "./apps.ts";
+import { withVitePlusBinFallback } from "./vite-plus-path.ts";
 
-const VITE_PLUS_BIN = `${process.env.HOME ?? ""}/.vite-plus/bin`;
 const PROCESS_LOGS = new WeakMap<ChildProcess, string[]>();
 const PROCESS_LOG_EMISSION = new WeakMap<
   ChildProcess,
@@ -204,7 +204,7 @@ export function waitForServerReady(
 export function startDevServer(app: AppConfig): ChildProcess {
   const env = {
     ...process.env,
-    PATH: `${VITE_PLUS_BIN}:${process.env.PATH}`,
+    PATH: withVitePlusBinFallback(),
     NODE_ENV: "development",
     BROWSER: "none",
     ...app.env,
@@ -233,7 +233,7 @@ export function startPreviewServer(app: AppConfig): ChildProcess {
 
   const env = {
     ...process.env,
-    PATH: `${VITE_PLUS_BIN}:${process.env.PATH}`,
+    PATH: withVitePlusBinFallback(),
     NODE_ENV: "production",
     ...app.env,
   };
@@ -358,7 +358,7 @@ export function runBuild(app: AppConfig): void {
 
   const env = {
     ...process.env,
-    PATH: `${VITE_PLUS_BIN}:${process.env.PATH}`,
+    PATH: withVitePlusBinFallback(),
     NODE_ENV: "production",
     ...app.env,
   };

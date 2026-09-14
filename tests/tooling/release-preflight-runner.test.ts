@@ -148,6 +148,7 @@ test("release metadata inventory discovers every non-private npm and editor pack
       "npm/compose/core/package.json",
       "npm/compose/data/package.json",
       "npm/compose/router/package.json",
+      "npm/devtools/package.json",
       "npm/framework/musea-nuxt/package.json",
       "npm/framework/nuxt-lint-config/package.json",
       "npm/framework/nuxt/package.json",
@@ -335,10 +336,7 @@ test("verify-only mode warns without blocking on observed typecheck drift", () =
 test("release metadata inventory ignores untracked package manifests", () => {
   const untrackedDirectory = path.join(repoRoot, "npm", `.preflight-untracked-${process.pid}`);
   fs.mkdirSync(untrackedDirectory, { recursive: true });
-  fs.writeFileSync(
-    path.join(untrackedDirectory, "package.json"),
-    '{"name":"untracked-release-output","version":"9.9.9"}',
-  );
+  fs.writeFileSync(path.join(untrackedDirectory, "package.json"), '{"name":"x","version":"9.9.9"}');
   try {
     assert.equal(
       readPackageManifests().some((manifest) => manifest.path.includes(".preflight-untracked-")),
