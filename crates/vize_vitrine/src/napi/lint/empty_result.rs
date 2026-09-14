@@ -1,11 +1,12 @@
 //! Empty lint result formatting for native callers.
 
+use super::super::lint_fix::LINT_EXTENSIONS_DISPLAY;
 use vize_patina::{OutputFormat, format_results};
 
 /// Render a valid response when no files match the requested patterns.
 pub(super) fn format_empty_lint_output(patterns: &[String], format: OutputFormat) -> String {
     if format == OutputFormat::Text {
-        return format!("No .vue or .html files found matching patterns: {patterns:?}");
+        return format!("No {LINT_EXTENSIONS_DISPLAY} files found matching patterns: {patterns:?}");
     }
 
     format_results(&[], &[], format).into()
@@ -29,7 +30,9 @@ mod tests {
     fn text_empty_output_explains_the_unmatched_patterns() {
         let output = format_empty_lint_output(&["missing".to_owned()], OutputFormat::Text);
 
-        assert!(output.contains("No .vue or .html files found"));
+        assert!(output.contains(
+            "No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx files found"
+        ));
         assert!(output.contains("missing"));
     }
 }

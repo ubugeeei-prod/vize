@@ -115,6 +115,9 @@ config resolution をすでに所有している integration だけが直接使�
 | `vapor` | stable Vapor が未設定なら SFC Vapor に fallback | SFC は stable/default backend のまま | Vite plugin, package build config | `vize({ vapor })` と `compiler.vapor` が優先 |
 | `jsxVapor` | stable JSX mode が未設定なら JSX/TSX Vapor に fallback | JSX/TSX は stable/default backend のまま | Vite plugin, package build config | `vize({ jsxMode })` と `compiler.jsxMode` が優先 |
 
+entry-point coverage、最小の proof、low-level native API example は
+[Experimentals Reference](./experimentals-reference.md) を参照してください。
+
 ## Flag Reference
 
 | Flag | upstream / source | resolved field | compatibility names |
@@ -335,16 +338,8 @@ project-wide の backend choice として安定運用するなら `compiler.jsxM
 
 ## Direct API Fields
 
-ほとんどの application は `experimentals` を設定します。config resolution を自前で済ませる低レベル integration だけが、native compiler field を直接渡してください。
-
-```ts
-compileTemplate(source, {
-  experimentalInTagComments: true,
-  experimentalPatternedTemplate: true,
-  experimentalSelfComponent: true,
-  experimentalStrictSlotChildren: true,
-  experimentalServerScript: true,
-});
-```
-
-これらの field は解決済み boolean です。alias、`{}` switch object、shared-config precedence は解釈しません。 caller がその解決ルールを所有する integration boundary でだけ使います。
+ほとんどの application は `experimentals` を設定します。低レベル integration は、解決済み boolean
+field を `compile`、`compileVapor`、`parseTemplate`、`compileSfc`、`compileSfcBatch`、
+`compileSfcBatchWithResults` に渡せます。これらの field は alias、`{}` switch object、
+shared-config precedence を解釈しません。詳しくは
+[Experimentals Reference](./experimentals-reference.md#direct-api-fields) を参照してください。

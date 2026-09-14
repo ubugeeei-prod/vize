@@ -77,14 +77,17 @@ export default {
 
 #[test]
 fn test_plain_default_exported_design_tokens_are_not_options_api() {
-    let source = r#"
+    let source = r##"
+/**
+ * Do not edit directly, this file was auto-generated.
+ */
 export default {
-  breakpoint: {
-    s: { value: 600 },
-    m: { value: 1200 }
-  }
-}
-"#;
+  color: {
+    white: { value: "#ffffff" },
+    primary: { value: "#4bc4cc" },
+  },
+};
+"##;
     let result = lint_script(source);
     assert_eq!(result.error_count, 0, "got: {:?}", result.diagnostics);
 }

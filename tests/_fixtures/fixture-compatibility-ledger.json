@@ -804,7 +804,15 @@
           "tests/_fixtures/_git/vant",
           "tests/_fixtures/_git/vue-select",
           "tests/_fixtures/_git/primevue",
-          "tests/_fixtures/_git/tailwind-config-viewer"
+          "tests/_fixtures/_git/tailwind-config-viewer",
+          "tests/_fixtures/_git/vue-draggable-next",
+          "tests/_fixtures/_git/vue-uploader",
+          "tests/_fixtures/_git/prevue",
+          "tests/_fixtures/_git/vue-element-admin",
+          "tests/_fixtures/_git/vue-virtual-scroller",
+          "tests/_fixtures/_git/vue-multiselect",
+          "tests/_fixtures/_git/portal-vue",
+          "tests/_fixtures/_git/buefy"
         ]
       },
       "evidence": {

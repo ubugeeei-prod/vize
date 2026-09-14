@@ -1,0 +1,14 @@
+vdom op#0 create-element
+vdom op#1 branch effect#0
+vdom op#2 create-element effect#1
+vdom op#3 set-text effect#2
+vdom op#4 render-slot effect#3
+vdom op#5 create-element effect#4
+vdom op#6 set-text effect#5
+vapor op#0 create-node
+vapor op#1 conditional-effect effect#0
+vapor op#2 create-node effect#1
+vapor op#3 text-effect effect#2
+vapor op#4 slot-effect effect#3
+vapor op#5 create-node effect#4
+vapor op#6 text-effect effect#5

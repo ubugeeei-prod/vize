@@ -3,6 +3,14 @@
 use std::{fs, path::Path};
 use vize_s0::{String, ToCompactString};
 
+const LINT_EXTENSIONS: &[&str] = &[
+    "vue", "html", "htm", "js", "mjs", "cjs", "ts", "mts", "cts", "jsx", "tsx",
+];
+
+#[cfg(feature = "napi")]
+pub(super) const LINT_EXTENSIONS_DISPLAY: &str =
+    ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx";
+
 pub(super) fn lint_file_with_optional_fix(
     linter: &vize_patina::Linter,
     path: &Path,
@@ -57,7 +65,7 @@ pub(super) fn is_standalone_html_filename(filename: &str) -> bool {
 }
 
 pub(super) fn is_lintable_extension(extension: &str) -> bool {
-    matches!(extension, "vue" | "html" | "htm")
+    LINT_EXTENSIONS.contains(&extension)
 }
 
 fn is_script_filename(filename: &str) -> bool {
@@ -67,7 +75,7 @@ fn is_script_filename(filename: &str) -> bool {
         .is_some_and(|extension| {
             matches!(
                 extension,
-                "js" | "jsx" | "mjs" | "cjs" | "ts" | "tsx" | "mts" | "cts"
+                "js" | "mjs" | "cjs" | "ts" | "mts" | "cts" | "jsx" | "tsx"
             )
         })
 }
@@ -140,19 +148,19 @@ mod tests {
     }
 
     #[test]
-    fn script_extensions_do_not_expand_directory_collection() {
+    fn script_extensions_are_lintable_directory_targets() {
         for (filename, extension) in [
             ("nuxt.config.js", "js"),
-            ("nuxt.config.jsx", "jsx"),
             ("nuxt.config.mjs", "mjs"),
             ("nuxt.config.cjs", "cjs"),
             ("nuxt.config.ts", "ts"),
-            ("nuxt.config.tsx", "tsx"),
             ("nuxt.config.mts", "mts"),
             ("nuxt.config.cts", "cts"),
+            ("nuxt.config.jsx", "jsx"),
+            ("nuxt.config.tsx", "tsx"),
         ] {
             assert!(is_script_filename(filename));
-            assert!(!is_lintable_extension(extension));
+            assert!(is_lintable_extension(extension));
         }
     }
 

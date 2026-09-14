@@ -120,3 +120,44 @@ await nextTick()
         output_details(&output)
     );
 }
+
+#[test]
+fn opinionated_lint_allows_generated_design_token_js_data_object() {
+    let project_root = tempfile::tempdir().unwrap();
+    write_project_file(
+        project_root.path(),
+        "src/tokens.js",
+        r##"/**
+ * Do not edit directly, this file was auto-generated.
+ */
+export default {
+  color: {
+    white: { value: "#ffffff" },
+    primary: { value: "#4bc4cc" },
+  },
+};
+"##,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project_root.path())
+        .args([
+            "lint",
+            "--preset",
+            "opinionated",
+            "--no-config",
+            "--format",
+            "json",
+            "src",
+        ])
+        .output()
+        .unwrap();
+
+    assert!(output.status.success(), "{}", output_details(&output));
+    assert_eq!(
+        json_rule_ids(&output),
+        BTreeSet::new(),
+        "{}",
+        output_details(&output)
+    );
+}
