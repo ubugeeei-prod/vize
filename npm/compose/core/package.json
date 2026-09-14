@@ -57,6 +57,11 @@
       "import": "./dist/disposal-scope.mjs",
       "default": "./dist/disposal-scope.mjs"
     },
+    "./document-visibility": {
+      "types": "./dist/document-visibility.d.mts",
+      "import": "./dist/document-visibility.mjs",
+      "default": "./dist/document-visibility.mjs"
+    },
     "./event-listener": {
       "types": "./dist/event-listener.d.mts",
       "import": "./dist/event-listener.mjs",

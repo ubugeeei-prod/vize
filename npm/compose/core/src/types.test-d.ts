@@ -14,6 +14,7 @@ import {
   type UnavailableCapability,
 } from "./capability.js";
 import { COMPOSABLE_CATALOG, type ComposableCatalog } from "./catalog.js";
+import { type PageVisibilityState, useDocumentVisibility } from "./document-visibility.js";
 import { type TextDirection, useLocale } from "./locale.js";
 import { createDisposalScope, type DisposalError } from "./disposal-scope.js";
 import { retryAsync, type RetryAsyncOptions } from "./retry-async.js";
@@ -121,6 +122,17 @@ type _LocaleDirectionNeverWidensToUndefined = Expect<
 
 // @ts-expect-error the public direction ref never exposes capability absence.
 const _undefinedDirection: undefined = locale.direction.value;
+
+const visibility = useDocumentVisibility({ host: () => undefined, ssrState: "hidden" });
+type _DocumentVisibilityStateStaysClosed = Expect<
+  Equal<typeof visibility.state.value, PageVisibilityState>
+>;
+type _DocumentVisibilitySupportedIsBoolean = Expect<
+  Equal<typeof visibility.supported.value, boolean>
+>;
+
+// @ts-expect-error server fallback accepts only closed visibility states.
+useDocumentVisibility({ ssrState: "prerender" });
 
 const runtimeCapability = availableCapability({ kind: "camera" } as const);
 const adapterCapability = availableCapability(1 as const, "native-camera");

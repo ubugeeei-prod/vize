@@ -14,6 +14,7 @@ export const rootEntry = {
     "./capability",
     "./catalog",
     "./disposal-scope",
+    "./document-visibility",
     "./event-listener",
     "./locale",
     "./media-query",
@@ -77,6 +78,13 @@ export const entries = [
     gzipBudgetBytes: 2 * 1024,
     runtimeExports: ["DISPOSAL_ERROR_CODE", "DisposalError", "createDisposalScope"],
     utilities: ["createDisposalScope"],
+  },
+  {
+    subpath: "./document-visibility",
+    source: "src/document-visibility.ts",
+    gzipBudgetBytes: 1.5 * 1024,
+    runtimeExports: ["useDocumentVisibility"],
+    utilities: ["useDocumentVisibility"],
   },
   {
     subpath: "./event-listener",

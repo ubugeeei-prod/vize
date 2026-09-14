@@ -30,6 +30,7 @@ const sentinels = {
   "capability-is-available": ["isCapabilityAvailable"],
   "capability-is-unavailable": ["isCapabilityUnavailable"],
   catalog: ["COMPOSABLE_CATALOG", "provenance-preserving source-copy installer"],
+  "document-visibility": ["useDocumentVisibility", "visibilitychange"],
   "disposal-scope": ["createDisposalScope", "VIZE_COMPOSE_DISPOSAL_FAILED"],
   "event-listener": ["useEventListener", "isListening"],
   "media-query": ["useMediaQuery", "matchMedia"],
@@ -93,6 +94,12 @@ const utilities: readonly UtilityCase[] = [
     binding: "isCapabilityUnavailable",
     entry: "index",
     module: "capability-is-unavailable",
+    shared: [],
+  },
+  {
+    binding: "useDocumentVisibility",
+    entry: "index",
+    module: "document-visibility",
     shared: [],
   },
   {

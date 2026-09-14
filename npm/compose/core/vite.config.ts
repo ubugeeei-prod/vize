@@ -13,6 +13,7 @@ export default defineConfig({
       "async-resource": "src/async-resource.ts",
       capability: "src/capability.ts",
       catalog: "src/catalog.ts",
+      "document-visibility": "src/document-visibility.ts",
       "disposal-scope": "src/disposal-scope.ts",
       "event-listener": "src/event-listener.ts",
       locale: "src/locale.ts",

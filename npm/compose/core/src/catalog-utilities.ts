@@ -115,6 +115,18 @@ export const utilities = [
     dependencies: ["tryOnScopeDispose"],
   },
   {
+    name: "useDocumentVisibility",
+    entry: "./document-visibility",
+    category: "events",
+    stability: "experimental",
+    targets: browserTargets,
+    ssr: "deterministic-fallback",
+    hydration: "caller-managed",
+    cleanupOwners: ["reactive-scope"],
+    runtimeGlobals: ["document"],
+    dependencies: [],
+  },
+  {
     name: "useEventListener",
     entry: "./event-listener",
     category: "events",
