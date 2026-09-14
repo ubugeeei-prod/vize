@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 
 use vize_s0::path::canonicalize_non_verbatim;
 
+/// Per-test scratch directory under `target/vize-tests`, unique per process and case.
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -14,6 +15,7 @@ fn unique_case_dir(name: &str) -> PathBuf {
         ))
 }
 
+/// Write `content` at `root/rel`, creating parent directories, and return the path.
 fn write(root: &Path, rel: &str, content: &str) -> PathBuf {
     let path = root.join(rel);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();

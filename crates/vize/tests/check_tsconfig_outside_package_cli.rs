@@ -49,6 +49,11 @@ fn write_file(root: &Path, relative_path: &str, content: &str) {
     std::fs::write(file_path, content).unwrap();
 }
 
+/// Run `vize check` in a workspace whose tsconfig references a declaration file
+/// outside the nearest package root and assert it stays a program member.
+///
+/// `inputs` are the explicit CLI inputs (empty for a default run) and
+/// `expected_file_count` is the `fileCount` the JSON output must report.
 fn assert_external_declaration_is_checked(
     case_name: &str,
     tsconfig: &str,
@@ -114,6 +119,8 @@ export {};
     let _ = std::fs::remove_dir_all(&workspace);
 }
 
+/// Default run: a tsconfig `files` entry outside the nearest package root stays
+/// a program member (#5629).
 #[test]
 fn check_keeps_tsconfig_files_entry_outside_nearest_package_root() {
     assert_external_declaration_is_checked(
@@ -133,6 +140,8 @@ fn check_keeps_tsconfig_files_entry_outside_nearest_package_root() {
     );
 }
 
+/// Default run: a tsconfig `include` glob outside the nearest package root stays
+/// a program member (#5629).
 #[test]
 fn check_keeps_tsconfig_include_entry_outside_nearest_package_root() {
     assert_external_declaration_is_checked(
@@ -152,6 +161,8 @@ fn check_keeps_tsconfig_include_entry_outside_nearest_package_root() {
     );
 }
 
+/// Explicit inputs (`vize check src/a.ts`) must keep a tsconfig `files` entry that
+/// lives outside the nearest package root, matching the default run (#5629).
 #[test]
 fn check_keeps_tsconfig_files_entry_outside_nearest_package_root_for_explicit_inputs() {
     assert_external_declaration_is_checked(
@@ -166,6 +177,28 @@ fn check_keeps_tsconfig_files_entry_outside_nearest_package_root_for_explicit_in
   },
   "files": ["../shared/globals.d.ts"],
   "include": ["src/**/*"]
+}"#,
+        &["src/a.ts"],
+        1,
+    );
+}
+
+/// Explicit inputs must also keep a declaration reached through an `include`
+/// glob outside the nearest package root; `files` and `include` are collected
+/// on separate branches, so each needs its own explicit-input case.
+#[test]
+fn check_keeps_tsconfig_include_entry_outside_nearest_package_root_for_explicit_inputs() {
+    assert_external_declaration_is_checked(
+        "include-explicit-input",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["../shared/**/*.d.ts", "src/**/*"]
 }"#,
         &["src/a.ts"],
         1,
