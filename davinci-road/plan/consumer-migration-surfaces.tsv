@@ -2687,6 +2687,7 @@ typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner.rs	147	s0
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/collect_tests.rs	11	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/collect.rs	10	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/collect.rs	273	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/default_imports_explicit_ambient_tests.rs	3	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/default_imports_tests.rs	3	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/default_imports.rs	4	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/diagnostics.rs	9	s0	S0	stage	vize_s0	preferred	3
