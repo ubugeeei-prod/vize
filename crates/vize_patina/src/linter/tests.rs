@@ -5,6 +5,7 @@ use vize_s0::{Allocator, ToCompactString};
 mod basic;
 mod css;
 mod directives;
+mod dynamic_component;
 mod jsx;
 mod jsx_deprecated_attr;
 mod jsx_fallback;

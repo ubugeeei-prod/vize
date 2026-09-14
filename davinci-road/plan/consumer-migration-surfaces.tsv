@@ -1728,8 +1728,10 @@ linter	Linter	source	crates/vize_patina/src/rules/vue/no_useless_template_attrib
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs	28	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	test/dev	crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs	115	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_v_html.rs	41	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs	27	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs	27	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs	30	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs	30	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component/dynamic_component.rs	2	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component/dynamic_component.rs	2	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/permitted_contents.rs	34	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/permitted_contents.rs	34	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/prop_name_casing.rs	40	old_ast	old AST/parser	old	vize_relief	legacy	1

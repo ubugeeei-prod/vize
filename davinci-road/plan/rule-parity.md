@@ -26,9 +26,9 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 ## File accounting
 
-- `.rs` files under `crates/vize_patina/src/rules/**`: **378**
+- `.rs` files under `crates/vize_patina/src/rules/**`: **380**
 - rule-defining files (exactly one `static META` each): **248** → **248 rules**
-- non-rule files: **130** — 28 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 4 `*_tests.rs` companions, 98 helper/data files (rule submodules, shared tables, private utilities)
+- non-rule files: **132** — 28 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 4 `*_tests.rs` companions, 100 helper/data files (rule submodules, shared tables, private utilities)
 
 ## Summary
 
