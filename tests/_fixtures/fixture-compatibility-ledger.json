@@ -810,7 +810,8 @@
           "tests/_fixtures/_git/prevue",
           "tests/_fixtures/_git/vue-element-admin",
           "tests/_fixtures/_git/vue-virtual-scroller",
-          "tests/_fixtures/_git/vue-multiselect"
+          "tests/_fixtures/_git/vue-multiselect",
+          "tests/_fixtures/_git/portal-vue"
         ]
       },
       "evidence": {
