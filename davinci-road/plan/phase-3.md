@@ -165,6 +165,11 @@ CI-lenient lane; failures block S3-semantics changes, not unrelated PRs.
 
 **P3-16 Phase exit.**
 
+_First slice 2026-09-14:_ see
+[P3-16 record](./phase-3-records/p3-16.md) for the executable Phase 3
+status ledger that keeps TODO entries, slice records, and remaining-work
+claims in sync. Phase exit remains open until the gates below are terminal.
+
 - [ ] Vapor: TS-33 behavioral parity green; SSR **and VDOM**: TS-11 byte-empty (P3-7 changes patch-flag derivation, so DOM parity re-gates here)
 - [ ] TS-31 source-map coverage ≥ budget on all three backends
 - [ ] Vapor compile bench beats the pinned double-transform floor
