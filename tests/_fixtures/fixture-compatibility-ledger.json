@@ -808,7 +808,8 @@
           "tests/_fixtures/_git/vue-draggable-next",
           "tests/_fixtures/_git/vue-uploader",
           "tests/_fixtures/_git/prevue",
-          "tests/_fixtures/_git/vue-element-admin"
+          "tests/_fixtures/_git/vue-element-admin",
+          "tests/_fixtures/_git/vue-virtual-scroller"
         ]
       },
       "evidence": {
