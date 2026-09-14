@@ -6,6 +6,7 @@
  */
 
 import fs from "node:fs";
+import path from "node:path";
 import { PNG } from "pngjs";
 
 /**
@@ -26,6 +27,7 @@ export async function readPng(filepath: string): Promise<PNG> {
  * Write PNG object to file.
  */
 export async function writePng(png: PNG, filepath: string): Promise<void> {
+  await fs.promises.mkdir(path.dirname(filepath), { recursive: true });
   return new Promise((resolve, reject) => {
     png.pack().pipe(fs.createWriteStream(filepath)).on("finish", resolve).on("error", reject);
   });

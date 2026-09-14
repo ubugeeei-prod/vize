@@ -12,6 +12,7 @@ function summary(overrides: Partial<VrtSummary>): VrtSummary {
     failed: 0,
     new: 0,
     skipped: 0,
+    errors: 0,
     duration: 25,
     ...overrides,
   };
@@ -23,6 +24,10 @@ void test("VRT CI blocks on visual diffs", () => {
 
 void test("VRT CI allows skipped variants", () => {
   assert.equal(hasCiBlockingVrtResult(summary({ skipped: 1, passed: 0 })), false);
+});
+
+void test("VRT CI blocks on runner errors", () => {
+  assert.equal(hasCiBlockingVrtResult(summary({ errors: 1, passed: 0 })), true);
 });
 
 void test("VRT CI allows clean and newly-created baselines", () => {

@@ -15,7 +15,7 @@ import { PNG } from "pngjs";
 import { readPng, writePng, colorDelta, isAntiAliased, fileExists } from "./comparison.js";
 import type { VrtResult } from "./types.js";
 import type { MuseaVrtRunner } from "./runner.js";
-import { buildVariantUrl } from "./utils.js";
+import { buildSnapshotName, buildVariantUrl } from "./utils.js";
 
 /**
  * Capture screenshot and compare with baseline.
@@ -39,17 +39,15 @@ export async function captureAndCompare(
   const comparison = runner.getComparison();
 
   const snapshotDir = options.snapshotDir;
-  const artBaseName = path.basename(art.path, ".art.vue");
-  const viewportName = viewport.name || `${viewport.width}x${viewport.height}`;
-  const snapshotName = `${artBaseName}--${variantName}--${viewportName}.png`;
+  const snapshotName = buildSnapshotName(art.path, variantName, viewport);
   const snapshotPath = path.join(snapshotDir, snapshotName);
   const currentPath = path.join(snapshotDir, "current", snapshotName);
   const diffPath = path.join(snapshotDir, "diff", snapshotName);
 
   // Ensure directories exist
   await fs.promises.mkdir(path.dirname(snapshotPath), { recursive: true });
-  await fs.promises.mkdir(path.join(snapshotDir, "current"), { recursive: true });
-  await fs.promises.mkdir(path.join(snapshotDir, "diff"), { recursive: true });
+  await fs.promises.mkdir(path.dirname(currentPath), { recursive: true });
+  await fs.promises.mkdir(path.dirname(diffPath), { recursive: true });
 
   let context: BrowserContext | null = null;
   let page: Page | null = null;

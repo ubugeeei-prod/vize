@@ -86,11 +86,13 @@ export function generateVrtReport(results: VrtResult[], summary: VrtSummary): st
     .stat.passed::before { background: var(--musea-success); }
     .stat.failed::before { background: var(--musea-error); }
     .stat.new::before { background: var(--musea-info); }
+    .stat.error::before { background: var(--musea-warning); }
     .stat.skipped::before { background: var(--musea-warning); }
     .stat-value { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 0.25rem; }
     .stat.passed .stat-value { color: var(--musea-success); }
     .stat.failed .stat-value { color: var(--musea-error); }
     .stat.new .stat-value { color: var(--musea-info); }
+    .stat.error .stat-value { color: var(--musea-warning); }
     .stat.skipped .stat-value { color: var(--musea-warning); }
     .stat-label { color: var(--musea-text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
 
@@ -173,11 +175,15 @@ export function generateVrtReport(results: VrtResult[], summary: VrtSummary): st
       <div class="stat passed"><div class="stat-value">${summary.passed}</div><div class="stat-label">Passed</div></div>
       <div class="stat failed"><div class="stat-value">${summary.failed}</div><div class="stat-label">Failed</div></div>
       <div class="stat new"><div class="stat-value">${summary.new}</div><div class="stat-label">New</div></div>
+      <div class="stat error"><div class="stat-value">${summary.errors ?? 0}</div><div class="stat-label">Errors</div></div>
       <div class="stat skipped"><div class="stat-value">${summary.skipped}</div><div class="stat-label">Skipped</div></div>
     </div>
 
     ${
-      summary.failed === 0 && summary.skipped === 0 && summary.total > 0
+      summary.failed === 0 &&
+      (summary.errors ?? 0) === 0 &&
+      summary.skipped === 0 &&
+      summary.total > 0
         ? `<div class="all-passed">
             <div class="all-passed-icon">✓</div>
             <div class="all-passed-text">All ${summary.total} visual tests passed</div>
@@ -188,6 +194,7 @@ export function generateVrtReport(results: VrtResult[], summary: VrtSummary): st
     <div class="filters">
       <button class="filter-btn active" data-filter="all">All<span class="count">(${summary.total})</span></button>
       <button class="filter-btn" data-filter="failed">Failed<span class="count">(${summary.failed})</span></button>
+      <button class="filter-btn" data-filter="error">Errors<span class="count">(${summary.errors ?? 0})</span></button>
       <button class="filter-btn" data-filter="passed">Passed<span class="count">(${summary.passed})</span></button>
       <button class="filter-btn" data-filter="new">New<span class="count">(${summary.new})</span></button>
     </div>

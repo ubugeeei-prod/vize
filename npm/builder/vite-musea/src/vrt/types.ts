@@ -37,6 +37,7 @@ export interface VrtSummary {
   failed: number;
   new: number;
   skipped: number;
+  errors?: number;
   duration: number;
 }
 

@@ -19,7 +19,7 @@ import path from "node:path";
 
 import { fileExists, matchGlob } from "./comparison.js";
 import { captureAndCompare } from "./runner-comparison.js";
-import { computeSummary } from "./utils.js";
+import { buildSnapshotName, computeSummary } from "./utils.js";
 
 export type { VrtResult, VrtSummary, ExtendedVrtOptions, PixelCompareOptions } from "./types.js";
 
@@ -202,9 +202,11 @@ export class MuseaVrtRunner {
     const currentDir = path.join(snapshotDir, "current");
 
     for (const result of results) {
-      const currentPath = path.join(currentDir, path.basename(result.snapshotPath));
+      const currentPath =
+        result.currentPath ?? path.join(currentDir, path.basename(result.snapshotPath));
 
       if (await fileExists(currentPath)) {
+        await fs.promises.mkdir(path.dirname(result.snapshotPath), { recursive: true });
         await fs.promises.copyFile(currentPath, result.snapshotPath);
         updated++;
         console.log(`[vrt] Updated: ${path.basename(result.snapshotPath)}`);
@@ -240,12 +242,10 @@ export class MuseaVrtRunner {
       const validNames = new Set<string>();
 
       for (const art of artFiles) {
-        const artBaseName = path.basename(art.path, ".art.vue");
         for (const variant of art.variants) {
           if (variant.skipVrt) continue;
           for (const viewport of this.options.viewports) {
-            const viewportName = viewport.name || `${viewport.width}x${viewport.height}`;
-            validNames.add(`${artBaseName}--${variant.name}--${viewportName}.png`);
+            validNames.add(buildSnapshotName(art.path, variant.name, viewport));
           }
         }
       }

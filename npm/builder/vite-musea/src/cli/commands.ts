@@ -16,7 +16,7 @@ import type { ArtFileInfo } from "../types/index.js";
 import type { CliOptions } from "./index.js";
 
 export function hasCiBlockingVrtResult(summary: VrtSummary): boolean {
-  return summary.failed > 0;
+  return summary.failed > 0 || (summary.errors ?? 0) > 0;
 }
 
 export function isArtFileInput(filePath: string): boolean {
@@ -68,6 +68,7 @@ export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Prom
     console.log(`    Passed:  ${summary.passed}`);
     console.log(`    Failed:  ${summary.failed}`);
     console.log(`    New:     ${summary.new}`);
+    console.log(`    Errors:  ${summary.errors ?? 0}`);
     console.log(`    Skipped: ${summary.skipped}`);
     console.log(`    Total:   ${summary.total}`);
     console.log(`    Duration: ${(summary.duration / 1000).toFixed(2)}s\n`);
@@ -149,9 +150,9 @@ export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Prom
       console.log(`  HTML report: ${htmlPath}\n`);
     }
 
-    // CI mode - exit with error if visual diffs occurred.
+    // CI mode - exit with error if visual diffs or runner errors occurred.
     if (options.ci && hasCiBlockingVrtResult(summary)) {
-      console.log("  CI mode: Exiting with error due to failures\n");
+      console.log("  CI mode: Exiting with error due to failures or errors\n");
       process.exit(1);
     }
   } finally {

@@ -29,6 +29,23 @@ void test("anti-aliased pixels still count as visual diffs", async () => {
   assert.equal(await fileExists(diffPath), true);
 });
 
+void test("compareImages creates nested diff directories before writing", async () => {
+  const workspace = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-vrt-diff-dir-"));
+  const baselinePath = path.join(workspace, "baseline.png");
+  const currentPath = path.join(workspace, "current.png");
+  const diffPath = path.join(workspace, "diff", "MyChip--Outlined%20%2F%20squared--desktop.png");
+  const baseline = createSolidPng(1, 1, { r: 255, g: 255, b: 255 });
+  const current = createSolidPng(1, 1, { r: 0, g: 0, b: 0 });
+
+  await writePng(baseline, baselinePath);
+  await writePng(current, currentPath);
+
+  const result = await compareImages(baselinePath, currentPath, diffPath, {});
+
+  assert.equal(result.diffPixels, 1);
+  assert.equal(await fileExists(diffPath), true);
+});
+
 function createSolidPng(
   width: number,
   height: number,
