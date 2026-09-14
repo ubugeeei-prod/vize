@@ -1,0 +1,65 @@
+{
+  "name": "@vizejs/data",
+  "version": "0.424.11",
+  "description": "Typed SSR data resource foundations for Vize applications",
+  "keywords": [
+    "data-fetching",
+    "resource",
+    "ssr",
+    "type-safe",
+    "vize",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
+    "directory": "npm/compose/data"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vp exec node --test 'src/**/*.test.ts'",
+    "check": "vp check src vite.config.ts && vp exec tsc --noEmit -p tsconfig.json",
+    "check:fix": "vp check --fix src vite.config.ts",
+    "check:types": "vp exec tsc --noEmit -p tsconfig.json",
+    "fmt": "vp fmt --write src vite.config.ts"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "experimental",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}
