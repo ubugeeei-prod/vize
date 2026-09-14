@@ -806,6 +806,7 @@
           "tests/_fixtures/_git/primevue",
           "tests/_fixtures/_git/tailwind-config-viewer",
           "tests/_fixtures/_git/vue-draggable-next",
+          "tests/_fixtures/_git/vue-uploader",
           "tests/_fixtures/_git/prevue"
         ]
       },
