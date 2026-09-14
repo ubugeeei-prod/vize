@@ -44,20 +44,17 @@ const instance = getCurrentInstance();
 
 #[test]
 fn lint_script_allows_generated_default_exported_data_objects() {
-    let source = r#"
+    let source = r##"
 /**
  * Do not edit directly, this file was auto-generated.
  */
 export default {
-  breakpoint: {
-    m: {
-      key: '{breakpoint.m}',
-      value: 960,
-      type: 'dimension'
-    }
-  }
-}
-"#;
+  color: {
+    white: { value: "#ffffff" },
+    primary: { value: "#4bc4cc" },
+  },
+};
+"##;
     let result = Linter::with_preset(LintPreset::Opinionated).lint_script(source, "tokens.js");
 
     assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);

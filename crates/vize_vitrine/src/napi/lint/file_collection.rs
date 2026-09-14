@@ -51,7 +51,8 @@ fn sort_unique_file_paths(files: &mut Vec<PathBuf>) {
 
 #[cfg(test)]
 mod tests {
-    use super::sort_unique_file_paths;
+    use super::{collect_lint_files, sort_unique_file_paths};
+    use std::fs;
     use std::path::PathBuf;
 
     #[test]
@@ -69,6 +70,50 @@ mod tests {
             vec![
                 PathBuf::from("src/Alpha.vue"),
                 PathBuf::from("src/Zeta.vue")
+            ]
+        );
+    }
+
+    #[test]
+    fn directory_collection_includes_script_files() {
+        let directory = tempfile::tempdir().unwrap();
+        let source_dir = directory.path().join("src");
+        fs::create_dir_all(&source_dir).unwrap();
+        for filename in [
+            "App.vue",
+            "index.html",
+            "tokens.js",
+            "tokens.mjs",
+            "tokens.cjs",
+            "tokens.ts",
+            "tokens.mts",
+            "tokens.cts",
+            "tokens.jsx",
+            "tokens.tsx",
+            "README.md",
+        ] {
+            fs::write(source_dir.join(filename), "").unwrap();
+        }
+
+        let files = collect_lint_files(&[source_dir.to_string_lossy().into_owned()]);
+        let names = files
+            .iter()
+            .map(|path| path.file_name().unwrap().to_string_lossy().into_owned())
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            names,
+            vec![
+                "App.vue",
+                "index.html",
+                "tokens.cjs",
+                "tokens.cts",
+                "tokens.js",
+                "tokens.jsx",
+                "tokens.mjs",
+                "tokens.mts",
+                "tokens.ts",
+                "tokens.tsx",
             ]
         );
     }
