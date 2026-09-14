@@ -57,5 +57,11 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "incubating",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
   }
 }

@@ -6,6 +6,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const npmStabilityLink =
+  "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers";
 const rustStabilityLink =
   "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers";
 
@@ -16,6 +18,20 @@ type CargoPackage = {
   publish: string[] | null;
   readme: string | null;
   targets: Array<{ crate_types: string[]; kind: string[]; src_path: string }>;
+};
+
+type NpmPackage = {
+  filePath: string;
+  metadata?: { vize?: { stability?: string; stabilityDocs?: string } };
+  name: string;
+  private?: boolean;
+  publishConfig?: { access?: string };
+};
+
+type NpmPackageRow = {
+  contract: string;
+  packageName: string;
+  tier: string;
 };
 
 type RustCrateRow = {
@@ -53,11 +69,70 @@ test("stability page documents v1 alpha support tiers", () => {
     "@vizejs/rspack-plugin",
     "@vizejs/nuxt",
     "@vizejs/nuxt-lint-config",
+    "@vizejs/musea-nuxt",
     "@vizejs/vite-plugin-musea",
+    "@vizejs/musea-mcp-server",
     "@vizejs/wasm",
+    "@vizejs/composable",
+    "@vizejs/ui",
+    "@vizejs/marquette",
     "@vizejs/fresco",
+    "@vizejs/fresco-native",
   ]) {
     assert.match(stability, new RegExp(escapeRegExp(`\`${packageName}\``)));
+  }
+});
+
+test("npm package support table matches package metadata", () => {
+  const stability = fs.readFileSync(path.join(root, "docs/content/stability.md"), "utf8");
+  const table = stability.match(
+    /## Package Support Tiers(?<body>[\s\S]*?)## Rust Crate Support Tiers/,
+  )?.groups?.body;
+  assert.ok(table, "missing checked npm package support table");
+
+  const rows = table
+    .split("\n")
+    .filter((line) =>
+      /^\| (Alpha-supported|Compatibility preview|Experimental|Incubating)\s+\|/.test(line),
+    )
+    .flatMap(parseNpmPackageRows);
+  const rowsByPackage = new Map<string, NpmPackageRow>();
+  for (const row of rows) {
+    assert.equal(
+      rowsByPackage.has(row.packageName),
+      false,
+      `${row.packageName} must have exactly one package support row`,
+    );
+    rowsByPackage.set(row.packageName, row);
+  }
+
+  const publicPackages = collectPublicNpmPackages();
+  assert.deepEqual(
+    [...rowsByPackage.keys()].toSorted(),
+    publicPackages.map((pkg) => pkg.name).toSorted(),
+  );
+
+  const tierLabels = new Map([
+    ["alpha-supported", "Alpha-supported"],
+    ["compatibility-preview", "Compatibility preview"],
+    ["experimental", "Experimental"],
+    ["incubating", "Incubating"],
+  ]);
+
+  for (const pkg of publicPackages) {
+    const stabilityMetadata = pkg.metadata?.vize?.stability;
+    assert.ok(stabilityMetadata, `${pkg.name} must declare metadata.vize.stability`);
+    assert.equal(
+      pkg.metadata?.vize?.stabilityDocs,
+      npmStabilityLink,
+      `${pkg.name} must link the checked npm support table`,
+    );
+    assert.ok(tierLabels.has(stabilityMetadata), `${pkg.name} uses an unknown stability tier`);
+
+    const row = rowsByPackage.get(pkg.name);
+    assert.ok(row, `missing npm support row for ${pkg.name}`);
+    assert.equal(row.tier, tierLabels.get(stabilityMetadata), `${pkg.name} tier drift`);
+    assert.ok(row.contract, `${pkg.name} must inherit a documented support contract`);
   }
 });
 
@@ -130,6 +205,52 @@ test("Rust crate stability table matches Cargo metadata and crate documentation"
     }
   }
 });
+
+function collectPublicNpmPackages(): NpmPackage[] {
+  return collectPackageManifestPaths(path.join(root, "npm"))
+    .map((filePath) => {
+      const packageJson = JSON.parse(fs.readFileSync(filePath, "utf8")) as Omit<
+        NpmPackage,
+        "filePath"
+      >;
+      return { ...packageJson, filePath };
+    })
+    .filter((pkg) => pkg.private !== true && pkg.publishConfig?.access === "public");
+}
+
+function collectPackageManifestPaths(dir: string): string[] {
+  const manifests: string[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const entryPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      manifests.push(...collectPackageManifestPaths(entryPath));
+    } else if (entry.name === "package.json") {
+      manifests.push(entryPath);
+    }
+  }
+  return manifests;
+}
+
+function parseNpmPackageRows(line: string): NpmPackageRow[] {
+  const cells = line
+    .split("|")
+    .slice(1, -1)
+    .map((cell) => cell.trim());
+  assert.equal(cells.length, 3, `invalid npm support table row: ${line}`);
+
+  const packageNames = [...cells[1].matchAll(/`(?<name>[^`]+)`/g)].map((match) => {
+    const packageName = match.groups?.name;
+    assert.ok(packageName, `invalid package name in support table: ${cells[1]}`);
+    return packageName;
+  });
+  assert.ok(packageNames.length > 0, `missing package names in support table row: ${line}`);
+
+  return packageNames.map((packageName) => ({
+    packageName,
+    tier: cells[0],
+    contract: cells[2],
+  }));
+}
 
 function parseRustCrateRow(line: string): RustCrateRow {
   const cells = line

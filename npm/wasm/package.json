@@ -12,6 +12,12 @@
     "url": "git+https://github.com/ubugeeei-prod/vize.git",
     "directory": "npm/wasm"
   },
+  "metadata": {
+    "vize": {
+      "stability": "experimental",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  },
   "files": [
     "index.js",
     "index.d.ts",
