@@ -1,0 +1,4 @@
+vapor op#0 create-node
+vapor op#1 assign-prop effect#0
+vapor op#2 listen effect#1
+vapor op#3 text-effect effect#2

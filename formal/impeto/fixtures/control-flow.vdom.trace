@@ -1,0 +1,4 @@
+vdom op#0 create-element
+vdom op#1 branch effect#0
+vdom op#2 create-element
+vdom op#3 set-text

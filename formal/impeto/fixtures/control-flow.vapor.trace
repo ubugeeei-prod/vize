@@ -1,0 +1,4 @@
+vapor op#0 create-node
+vapor op#1 conditional-effect effect#0
+vapor op#2 create-node
+vapor op#3 text-effect

@@ -49,3 +49,6 @@ jobs:
       - name: Run TS-28 fixture differential
         working-directory: formal/impeto
         run: lake exe impetoRef --check-fixtures
+      - name: Run TS-28 backend trace split
+        working-directory: formal/impeto
+        run: lake exe impetoRef --check-backend-fixtures

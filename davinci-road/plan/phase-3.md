@@ -67,7 +67,9 @@ on the fixture ladder.
 _First slice 2026-09-12:_ see
 [P3-4 record](./phase-3-records/p3-4.md) for the pinned Lean package, the
 initial S3 Folio parser, executable reference traces, and CI-lenient TS-28
-workflow.
+workflow. _Third slice 2026-09-15:_ backend-specific `.vdom.trace` and
+`.vapor.trace` artifacts are now checked by the Lean runner and mirrored by the
+Rust S2→S3 fixture bridge; compiled-output trace comparison remains open.
 
 **P3-5 Op reference doc.** `davinci-road/plan/impeto-ops.md`: every op's
 meaning under both interpretations, written **before any optional pass

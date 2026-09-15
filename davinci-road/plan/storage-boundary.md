@@ -73,7 +73,7 @@ or count and fails the gate instead of becoming a `no_std` escape from S0.
 | s2       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s3       | `alloc::vec::Vec`       |     3 |            3 |         13 |
 | s3       | `alloc::string::String` |     0 |            0 |          0 |
-| s3       | `vize_s0::String`       |     2 |            2 |          5 |
+| s3       | `vize_s0::String`       |     3 |            3 |          9 |
 | s3       | `vize_s0::Vec`          |     2 |            2 |         10 |
 | s3       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s1_to_s2 | `alloc::vec::Vec`       |    57 |           57 |        221 |
