@@ -36,8 +36,24 @@ function recordIds(): string[] {
     .sort((a, b) => numericId(a) - numericId(b));
 }
 
+function recordFiles(): string[] {
+  return fs
+    .readdirSync(recordsRoot)
+    .filter((file) => /^p3-\d+\.md$/u.test(file))
+    .sort((a, b) => numericId(recordFileId(a)) - numericId(recordFileId(b)));
+}
+
+function recordFileId(file: string): string {
+  return file.replace(/\.md$/u, "").toUpperCase();
+}
+
 function numericId(id: string): number {
   return Number(/^P3-(?<number>\d+)$/u.exec(id)?.groups?.number);
+}
+
+function lineMentionsTask(line: string, id: string): boolean {
+  const escaped = id.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  return new RegExp(`(^|[^A-Z0-9-])${escaped}(?!\\d)`, "u").test(line);
 }
 
 function recordPath(id: string): string {
@@ -92,5 +108,37 @@ test("Phase 3 task index and record slices stay in sync", () => {
       /\b(?:remain|remaining|remains|open)\b/iu,
       `${id} has a slice record but must still name its remaining work`,
     );
+  }
+});
+
+test("completed Phase 3 tasks are not described as unfinished in sibling records", () => {
+  const completedTasks = [...phaseTaskIndex()].filter(([, checked]) => checked).map(([id]) => id);
+  const unfinishedTerms = [
+    "does not close",
+    "still needs",
+    "still remains open",
+    "remains open",
+    "remaining work",
+  ];
+
+  for (const file of recordFiles()) {
+    const fileId = recordFileId(file);
+    const source = fs.readFileSync(path.join(recordsRoot, file), "utf8");
+    const lines = source.split("\n");
+
+    for (const completedId of completedTasks) {
+      if (completedId === fileId) continue;
+
+      for (const [lineIndex, line] of lines.entries()) {
+        if (!lineMentionsTask(line, completedId)) continue;
+
+        const saysUnfinished = unfinishedTerms.some((term) => line.toLowerCase().includes(term));
+        assert.equal(
+          saysUnfinished,
+          false,
+          `${file}:${lineIndex + 1} describes completed ${completedId} as unfinished`,
+        );
+      }
+    }
   }
 });

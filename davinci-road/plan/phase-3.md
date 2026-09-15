@@ -176,9 +176,11 @@ _First slice 2026-09-14:_ see
 [P3-16 record](./phase-3-records/p3-16.md) for the executable Phase 3
 status ledger that keeps TODO entries, slice records, and remaining-work
 claims in sync. Phase exit remains open until the gates below are terminal.
+_Second slice 2026-09-15:_ the same guard now rejects stale sibling records
+that still describe a completed Phase 3 task as unfinished.
 
 - [ ] Vapor: TS-33 behavioral parity green; SSR **and VDOM**: TS-11 byte-empty (P3-7 changes patch-flag derivation, so DOM parity re-gates here)
 - [ ] TS-31 source-map coverage ≥ budget on all three backends
 - [ ] Vapor compile bench beats the pinned double-transform floor
 - [ ] TS-32 remarks-diff clean; old vapor/ssr lanes + flags deleted
-- [ ] TS-27/28/29/30 all mandatory-green; TS-20 totality fuzz extended to S2→S3 green
+- [ ] TS-27/TS-28/TS-29/TS-30 all mandatory-green; TS-20 totality fuzz extended to S2→S3 green
