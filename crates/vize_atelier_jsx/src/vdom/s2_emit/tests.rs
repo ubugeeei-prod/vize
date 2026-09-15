@@ -330,13 +330,3 @@ fn element_v_show_emits_from_s2() {
          [_vShow, visible]\n  ])\n}"
     );
 }
-
-#[test]
-fn component_v_slots_still_refuses_s2_projection() {
-    let allocator = Allocator::new();
-    let source = "const A = () => <B v-slots={slots} />";
-    let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
-    let root = lowered.roots.pop().expect("one JSX root");
-
-    assert_eq!(root.s2.err(), Some(crate::s2::S2Refusal::Directive));
-}

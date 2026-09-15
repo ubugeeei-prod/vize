@@ -221,7 +221,9 @@ fn lower_binding<'a>(
             native_model_kind,
             &mut cx.features,
         ),
-        "show" | "html" | "text" => lower_vue_directive(allocator, directive, element_type),
+        "show" | "html" | "text" | "slots" => {
+            lower_vue_directive(allocator, directive, element_type)
+        }
         "slot" => lower_slot_content(allocator, directive, node, cx),
         _ => Err(S2Refusal::Directive),
     }

@@ -152,6 +152,36 @@ fn component_default_children_project_to_s2_regions() {
 }
 
 #[test]
+fn forwarded_v_slots_projects_to_s2_slots_spread() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <Panel v-slots={slots} />";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    assert!(!lowered.has_errors(), "{:?}", lowered.diagnostics);
+    let root = lowered.roots.first().expect("one JSX root");
+
+    let s2 = root.s2.as_ref().expect("forwarded slots project to S2");
+    assert_eq!(s2.op_count, 2);
+    assert!(s2.features.has_slot_carriers());
+    let Op::Component(component) = &s2.root.ops[0] else {
+        panic!("root is a component");
+    };
+    assert_eq!(component.name, "Panel");
+    assert_eq!(component.bindings.len(), 1);
+    let BindingOp::VueDirective(directive) = &component.bindings[0] else {
+        panic!("binding is vue.directive slots spread");
+    };
+    assert_eq!(directive.name, "slots");
+    assert!(directive.argument.is_none());
+    assert!(directive.modifiers.is_empty());
+    let value = directive
+        .value
+        .as_ref()
+        .expect("forwarded slots has a value");
+    assert_eq!(value.source(), "slots");
+    assert_eq!(value.span().start, source.find("slots}").unwrap() as u32);
+}
+
+#[test]
 fn fragment_children_project_to_one_s2_region() {
     let allocator = Allocator::new();
     let source = "const App = () => <><span />{count}</>;";

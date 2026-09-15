@@ -7,7 +7,9 @@ use vize_s1_to_s2::{
     DomEmitMode, DomEmitOptions, LegacyCaps, Lowered as S2Lowered, emit_dom_with_options,
 };
 use vize_s2::expr::ExprRef;
-use vize_s2::op::{BindingOp, ComponentOp, DynamicName, ElementOp, ModelOp, Op, Region};
+use vize_s2::op::{
+    BindingOp, ComponentOp, DynamicName, ElementOp, ModelOp, Op, Region, VueDirectiveOp,
+};
 
 use crate::s2::{JsxS2Root, S2Refusal};
 
@@ -279,8 +281,16 @@ fn component_binding_is_supported(binding: &BindingOp<'_>, dynamic_component: bo
         }
         BindingOp::Model(model) => component_model_is_supported(model),
         BindingOp::VueShow(_) => true,
+        BindingOp::VueDirective(directive) => component_slots_spread_is_supported(directive),
         _ => false,
     }
+}
+
+fn component_slots_spread_is_supported(directive: &VueDirectiveOp<'_>) -> bool {
+    directive.name == "slots"
+        && directive.argument.is_none()
+        && directive.modifiers.is_empty()
+        && matches!(directive.value, Some(ExprRef::Js(_)))
 }
 
 fn component_model_is_supported(model: &ModelOp<'_>) -> bool {

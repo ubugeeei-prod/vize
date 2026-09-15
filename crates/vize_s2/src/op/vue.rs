@@ -18,14 +18,15 @@ use vize_s0::{Span, Vec};
 use super::DynamicName;
 use crate::expr::ExprRef;
 
-/// `vue.directive` - a Vue custom directive (`v-pin:top.lazy="value"`),
-/// carried through S2 for a consumer that understands it.
+/// `vue.directive` - a Vue directive carried through S2 for a consumer
+/// that understands it (`v-pin:top.lazy="value"`).
 ///
-/// Built-in directives never appear here: they normalize into `ui.*` ops
-/// at lowering (`v-if` into [`super::IfOp`], `v-model` into
-/// [`super::ModelOp`], ...); only user-defined directives survive as
-/// dialect ops, exactly as the shipped pipeline emits runtime directive
-/// references for them today.
+/// Most built-ins normalize into `ui.*` ops at lowering (`v-if` into
+/// [`super::IfOp`], `v-model` into [`super::ModelOp`], ...). The exception is
+/// JSX `v-slots={slots}` forwarding: the value is an opaque slots object, so it
+/// rides here as `name == "slots"` until component DOM emission spreads it into
+/// the children argument. Other entries are user-defined directives, exactly as
+/// the shipped pipeline emits runtime directive references for them today.
 #[derive(Debug)]
 pub struct VueDirectiveOp<'a> {
     /// Directive name without the `v-` prefix, a slice of the source.

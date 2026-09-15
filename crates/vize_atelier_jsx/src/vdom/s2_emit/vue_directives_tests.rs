@@ -34,6 +34,26 @@ fn element_v_text_emits_from_s2() {
     assert_eq!(s2.code, relief.code);
 }
 
+#[test]
+fn component_v_slots_forwarding_emits_from_s2() {
+    let source = "const A = () => <B v-slots={slots} />";
+    let s2 = compile_case(source, EmitRoute::ForceS2, "forwarded slots project to S2");
+    let relief = compile_case(
+        source,
+        EmitRoute::ForceRelief,
+        "forwarded slots fall back to Relief",
+    );
+
+    assert_eq!(s2.preamble, relief.preamble);
+    assert_eq!(s2.code, relief.code);
+    assert!(
+        s2.code
+            .contains("_createBlock(_component_B, null, slots, 1024 /* DYNAMIC_SLOTS */)"),
+        "{}",
+        s2.code
+    );
+}
+
 #[derive(Clone, Copy)]
 enum EmitRoute {
     ForceS2,

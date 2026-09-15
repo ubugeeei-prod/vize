@@ -129,6 +129,16 @@ fn s2_vdom_admitted_cases_match_relief_codegen() {
             JsxLang::Jsx,
         ),
         (
+            "component forwarded v-slots",
+            "const A = () => <List v-slots={slots} />;",
+            JsxLang::Jsx,
+        ),
+        (
+            "component forwarded v-slots with default child",
+            "const A = () => <List v-slots={slots}><li>{item}</li></List>;",
+            JsxLang::Jsx,
+        ),
+        (
             "component scoped render prop default slot",
             "const A = () => <List>{(row) => <li>{row}</li>}</List>;",
             JsxLang::Jsx,
