@@ -5,6 +5,8 @@ on:
     branches: [main, davinci]
     paths:
       - "formal/impeto/**"
+      - "crates/vize_atelier_dom/**"
+      - "crates/vize_atelier_vapor/**"
       - "crates/vize_impeto/**"
       - "crates/vize_s2_to_s3/**"
       - "davinci-road/plan/phase-3.md"
@@ -14,6 +16,8 @@ on:
     branches: [main, davinci]
     paths:
       - "formal/impeto/**"
+      - "crates/vize_atelier_dom/**"
+      - "crates/vize_atelier_vapor/**"
       - "crates/vize_impeto/**"
       - "crates/vize_s2_to_s3/**"
       - "davinci-road/plan/phase-3.md"
@@ -35,9 +39,17 @@ jobs:
   impeto-reference:
     name: Impeto Lean reference (TS-28)
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: davinci-lean
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1.6.0
         with:
           lake-package-directory: formal/impeto
@@ -52,3 +64,5 @@ jobs:
       - name: Run TS-28 backend trace split
         working-directory: formal/impeto
         run: lake exe impetoRef --check-backend-fixtures
+      - name: Run TS-28 compiled backend trace
+        run: cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace

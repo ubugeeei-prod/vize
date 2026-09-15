@@ -63,7 +63,9 @@ to the same record.
 (CI-lenient lane per charter #39): executable small-step semantics for S3 ops
 under both Vapor and VDOM interpretations; runner compares compiled-output
 behavior traces vs reference on S3 fixtures (TS-28). _Accept:_ runner in CI
-on the fixture ladder.
+on the fixture ladder. The 2026-09-15 compiled-trace slice wires the first
+DOM/Vapor emitted-code observation gate into TS-28; P3-4 still exits only once
+mounted behavior traces use the same reference contract.
 _First slice 2026-09-12:_ see
 [P3-4 record](./phase-3-records/p3-4.md) for the pinned Lean package, the
 initial S3 Folio parser, executable reference traces, and CI-lenient TS-28

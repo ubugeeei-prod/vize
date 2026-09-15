@@ -26,6 +26,7 @@ test("TS-28 pins the Lean toolchain and CI package directory", () => {
   assert.match(workflow, /lake-package-directory:\s*formal\/impeto/u);
   assert.match(workflow, /lake exe impetoRef --check-fixtures/u);
   assert.match(workflow, /lake exe impetoRef --check-backend-fixtures/u);
+  assert.match(workflow, /cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace/u);
 });
 
 test("TS-28 fixture ladder is declared and non-vacuous", () => {
@@ -65,10 +66,28 @@ test("TS-28 Rust lowering bridge is covered by an ordinary cargo test", () => {
   assert.match(bridge, /backend_trace_text\(TraceBackend::Vapor, &lowered\.program\)/u);
 });
 
+test("TS-28 compiled backend trace gate covers both emitted backends", () => {
+  const gate = readRepoFile(
+    "crates",
+    "vize_atelier_vapor",
+    "tests",
+    "davinci_s3_compiled_trace.rs",
+  );
+  assert.match(gate, /compiled_backend_traces_match_s3_reference_ladder/u);
+  assert.match(gate, /compile_template_with_options/u);
+  assert.match(gate, /compile_vapor/u);
+  assert.match(gate, /STATIC_DYNAMIC_VAPOR_COMPILED_KNOWN_GAP/u);
+  assert.match(gate, /CONTROL_SLOTS_VAPOR_COMPILED_KNOWN_GAP/u);
+  assert.match(gate, /rust-lowered-static-dynamic\.vdom\.trace/u);
+  assert.match(gate, /rust-lowered-static-dynamic\.vapor\.trace/u);
+  assert.match(gate, /rust-lowered-control-slots\.vdom\.trace/u);
+  assert.match(gate, /rust-lowered-control-slots\.vapor\.trace/u);
+});
+
 test("TS-28 command in the suite registry names the executable runner", () => {
   const suites = readRepoFile("davinci-road", "plan", "test-suites.md");
   assert.match(
     suites,
-    /\| TS-28 \| Lean reference differential\s+\| `cd formal\/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures`/u,
+    /\| TS-28 \| Lean reference differential\s+\| `cd formal\/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures && cd \.\.\/\.\. && cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace`/u,
   );
 });
