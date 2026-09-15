@@ -9,9 +9,11 @@ const referenceHeadings = [
   "## Entry Points",
   "## Flag Contracts",
   "## Direct API Fields",
+  "## Config Recipes",
   "## Failure Examples",
   "## Slot Cardinality",
   "## Implementation Coverage",
+  "## Release Safety Checklist",
 ];
 
 const rfcLinks = [
@@ -30,8 +32,15 @@ test("experimentals reference documents entrypoints, proofs, and low-level APIs"
   assertReference(reference);
   assert.match(reference, /No aliases, no `\{\}` switch object/);
   assert.match(reference, /caller owns those rules/);
+  assert.match(reference, /Do not group unrelated RFC switches/);
+  assert.match(reference, /do not promote an experimental flag to default-on/);
   assert.match(reference, /`patternedTemplate` stays fail-closed/);
   assert.match(reference, /`inTagComment` is not a second expression grammar/);
+  assert.match(reference, /direct Vite plugin values can enable and explicitly opt out/);
+  assert.match(
+    reference,
+    /`false`, `null`, `true`, and `\{\}` keep the documented switch semantics/,
+  );
 });
 
 test("Japanese experimentals reference mirrors entrypoints and proofs", () => {
@@ -43,8 +52,12 @@ test("Japanese experimentals reference mirrors entrypoints and proofs", () => {
   assertReference(reference);
   assert.match(reference, /alias なし、`\{\}` switch object なし/);
   assert.match(reference, /caller がその解決ルールを所有/);
+  assert.match(reference, /無関係な RFC switch を 1 つの/);
+  assert.match(reference, /experimental flag を shared config で default-on に昇格しません/);
   assert.match(reference, /`patternedTemplate` は構造が違うと fail-closed/);
   assert.match(reference, /第 2 の expression grammar ではありません/);
+  assert.match(reference, /direct Vite plugin value が shared config を有効化でき/);
+  assert.match(reference, /`false`、`null`、`true`、`\{\}` が documented switch semantics/);
 });
 
 function assertReference(reference: string): void {

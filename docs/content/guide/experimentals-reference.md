@@ -94,6 +94,54 @@ compileSfcBatchWithResults(files, {
 These fields are already resolved booleans. They do not understand aliases, `{}` switch objects, or
 shared-config precedence. Use them only at integration boundaries where the caller owns those rules.
 
+## Config Recipes
+
+Enable the smallest flag set that proves the intended behavior. Do not group unrelated RFC switches
+behind one project toggle, and do not promote an experimental flag to default-on in shared config
+until the feature has moved to a stable `compiler` or tool option.
+
+One RFC proposal in shared config:
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  experimentals: {
+    inTagComment: true,
+  },
+});
+```
+
+Temporary per-plugin opt-out while shared config stays enabled:
+
+```ts
+import { defineConfig } from "vite";
+import vize from "@vizejs/vite-plugin";
+
+export default defineConfig({
+  plugins: [
+    vize({
+      experimentals: {
+        inTagComment: false,
+        patternedTemplate: null,
+      },
+    }),
+  ],
+});
+```
+
+Low-level integration after config resolution:
+
+```ts
+compile(templateSource, {
+  experimentalInTagComments: resolvedExperimentals.inTagComments,
+  experimentalPatternedTemplate: resolvedExperimentals.patternedTemplate,
+});
+```
+
+In native API calls, never pass compatibility aliases such as `intagComment` or switch objects such
+as `{}`. Resolve them before calling the compiler.
+
 ## Failure Examples
 
 `patternedTemplate` stays fail-closed when structure is wrong:
@@ -142,3 +190,17 @@ RFC #734 return shapes are preserved as TypeScript cardinality contracts:
 | Native SFC APIs | `compileSfc`, `compileSfcBatch`, and `compileSfcBatchWithResults` forward the same booleans per file or batch |
 | Type-checking APIs | `strictSlotChildren` is proven through virtual TypeScript diagnostics, not through runtime output snapshots |
 | Boundary tests | Deferred RFC behavior has a negative assertion or documented absence, so users do not infer support from nearby syntax |
+
+## Release Safety Checklist
+
+Before release notes claim an experimental surface, check all of these against the shipped entry
+point:
+
+- default-off behavior is verified for the public config key and the direct native field
+- aliases are documented as compatibility inputs, not as recommended names
+- direct Vite plugin values can enable and explicitly opt out of shared config
+- `false`, `null`, `true`, and `{}` keep the documented switch semantics
+- backend fallback flags such as `vapor` and `jsxVapor` lose to stable `compiler` options
+- RFC examples include both an enabled example and a flag-off or invalid-shape diagnostic example
+- boundaries name deferred behavior, such as patterned-template exhaustiveness or strict slot
+  support for dynamic components

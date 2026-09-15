@@ -94,6 +94,54 @@ compileSfcBatchWithResults(files, {
 これらの field は解決済み boolean です。alias、`{}` switch object、shared-config precedence
 は解釈しません。caller がその解決ルールを所有する integration boundary でだけ使います。
 
+## Config Recipes
+
+意図した behavior を証明する最小の flag set だけを有効にします。無関係な RFC switch を 1 つの
+project toggle にまとめないでください。また、feature が stable な `compiler` option または tool
+option に移るまでは、experimental flag を shared config で default-on に昇格しません。
+
+shared config で 1 つの RFC proposal だけを有効にする例:
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  experimentals: {
+    inTagComment: true,
+  },
+});
+```
+
+shared config は有効のまま、一時的に plugin instance だけ opt-out する例:
+
+```ts
+import { defineConfig } from "vite";
+import vize from "@vizejs/vite-plugin";
+
+export default defineConfig({
+  plugins: [
+    vize({
+      experimentals: {
+        inTagComment: false,
+        patternedTemplate: null,
+      },
+    }),
+  ],
+});
+```
+
+config resolution 後の低レベル integration:
+
+```ts
+compile(templateSource, {
+  experimentalInTagComments: resolvedExperimentals.inTagComments,
+  experimentalPatternedTemplate: resolvedExperimentals.patternedTemplate,
+});
+```
+
+native API call には `intagComment` のような compatibility alias や `{}` のような switch object を
+渡しません。compiler を呼ぶ前に解決してください。
+
 ## Failure Examples
 
 `patternedTemplate` は構造が違うと fail-closed です。
@@ -142,3 +190,15 @@ RFC #734 の return shape は TypeScript cardinality contract として保持し
 | Native SFC API | `compileSfc`、`compileSfcBatch`、`compileSfcBatchWithResults` が per-file / batch で同じ boolean を forward する |
 | Type-checking API | `strictSlotChildren` は runtime output snapshot ではなく virtual TypeScript diagnostic で証明する |
 | Boundary test | deferred RFC behavior は negative assertion または documented absence を持ち、近い syntax から support を推測させない |
+
+## Release Safety Checklist
+
+release note で experimental surface を claim する前に、shipped entry point に対して以下を確認します。
+
+- public config key と direct native field の default-off behavior が検証されている
+- alias は recommended name ではなく compatibility input として記載されている
+- direct Vite plugin value が shared config を有効化でき、かつ明示的に opt-out できる
+- `false`、`null`、`true`、`{}` が documented switch semantics を維持する
+- `vapor` や `jsxVapor` のような backend fallback flag は stable `compiler` option より弱い
+- RFC example には enabled example と flag-off または invalid-shape diagnostic example の両方がある
+- boundary が patterned-template exhaustiveness や dynamic component に対する strict slot support などの deferred behavior を明記している

@@ -377,6 +377,12 @@ export default defineConfig({
 });
 ```
 
+### Lint Rule Options
+
+一部の rule は `linter.ruleOptions` に型付き設定を受け取ります。完全な一覧は
+[ルール オプション](../rules/options.md) を参照してください。重大度は引き続き
+`linter.rules` で設定します。
+
 npm チェック パスには `typeChecker` を使用します。
 
 ```ts

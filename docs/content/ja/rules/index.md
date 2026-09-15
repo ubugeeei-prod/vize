@@ -14,6 +14,8 @@ Bad/Good の例に近い検出動作なので、参照を ESLint ルールのよ
 
 - [すべての緑青ルール](./all.md): すべての緑青ルールの実装に関する 1 ページのメタデータ テーブル、
   GitHub ソース リンクを含む。
+- [ルール オプション](./options.md): すべての configurable rule の型付き
+  `linter.ruleOptions` shape、既定値、置き換え挙動、例。
 - [Vue ルール](./vue.md): SFC テンプレート構造、Vue ディレクティブ、コンポーネント規約、および
   単一ファイルの Vue の正当性チェック。
 - [タイプとスクリプトのルール](./type-and-script.md): TypeScript チェッカーによる診断と Vapor

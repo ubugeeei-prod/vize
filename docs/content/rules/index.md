@@ -12,6 +12,8 @@ manual.
 
 - [All Patina rules](./all.md): one-page metadata table for every Patina rule implementation,
   including GitHub source links.
+- [Rule Options](./options.md): typed `linter.ruleOptions` shapes, defaults, replacement
+  behavior, and examples for every configurable rule.
 - [Vue rules](./vue.md): SFC template structure, Vue directives, component conventions, and
   single-file Vue correctness checks.
 - [Type and script rules](./type-and-script.md): TypeScript checker-backed diagnostics and Vapor

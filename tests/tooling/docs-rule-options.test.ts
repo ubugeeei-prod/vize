@@ -21,9 +21,43 @@ const configurableRuleOptions = [
 test("rule option docs enumerate every typed lint rule option", () => {
   const optionsDoc = fs.readFileSync(path.join(repoRoot, "docs/content/rules/options.md"), "utf8");
 
-  assert.match(optionsDoc, /# Rule Options/);
-  assert.match(optionsDoc, /Unknown\s+option fields are rejected/);
-  assert.match(optionsDoc, /later matching config entries replace the full option object/);
+  assertRuleOptionsReference(optionsDoc, {
+    title: /# Rule Options/,
+    unknownFields: /Unknown\s+option fields are rejected/,
+    scopedReplacement: /later matching config entries replace the full option object/,
+    badLabel: "Bad",
+    goodLabel: "Good",
+  });
+});
+
+test("Japanese rule option docs mirror every typed lint rule option", () => {
+  const optionsDoc = fs.readFileSync(
+    path.join(repoRoot, "docs/content/ja/rules/options.md"),
+    "utf8",
+  );
+
+  assertRuleOptionsReference(optionsDoc, {
+    title: /# ルール オプション/,
+    unknownFields: /未知の option field は拒否/,
+    scopedReplacement: /option object 全体を置き換え/,
+    badLabel: "悪い",
+    goodLabel: "良い",
+  });
+});
+
+function assertRuleOptionsReference(
+  optionsDoc: string,
+  labels: {
+    title: RegExp;
+    unknownFields: RegExp;
+    scopedReplacement: RegExp;
+    badLabel: string;
+    goodLabel: string;
+  },
+): void {
+  assert.match(optionsDoc, labels.title);
+  assert.match(optionsDoc, labels.unknownFields);
+  assert.match(optionsDoc, labels.scopedReplacement);
 
   for (const ruleId of configurableRuleOptions) {
     assert.match(
@@ -31,8 +65,12 @@ test("rule option docs enumerate every typed lint rule option", () => {
       new RegExp(escapeRegExp(`| \`${ruleId}\` |`)),
       `${ruleId} must be documented in the lint rule option table`,
     );
+    const section = sectionFor(optionsDoc, `## \`${ruleId}\``);
+    assert.ok(section.includes(labels.badLabel), `${ruleId} must include a bad example`);
+    assert.ok(section.includes(labels.goodLabel), `${ruleId} must include a good example`);
+    assert.match(section, /```(?:json|ts|vue)[\s\S]*?```/u, `${ruleId} must include code`);
   }
-});
+}
 
 test("configuration docs link to the full lint rule option reference", () => {
   const configuration = fs.readFileSync(
@@ -42,6 +80,22 @@ test("configuration docs link to the full lint rule option reference", () => {
 
   assert.match(configuration, /### Lint Rule Options/);
   assert.match(configuration, /\[Rule Options\]\(\.\.\/rules\/options\.md\)/);
+
+  const jaConfiguration = fs.readFileSync(
+    path.join(repoRoot, "docs/content/ja/guide/configuration.md"),
+    "utf8",
+  );
+
+  assert.match(jaConfiguration, /### Lint Rule Options/);
+  assert.match(jaConfiguration, /\[ルール オプション\]\(\.\.\/rules\/options\.md\)/);
+});
+
+test("rules overview links to lint rule option references", () => {
+  const index = fs.readFileSync(path.join(repoRoot, "docs/content/rules/index.md"), "utf8");
+  const jaIndex = fs.readFileSync(path.join(repoRoot, "docs/content/ja/rules/index.md"), "utf8");
+
+  assert.match(index, /\[Rule Options\]\(\.\/options\.md\)/);
+  assert.match(jaIndex, /\[ルール オプション\]\(\.\/options\.md\)/);
 });
 
 test("all rules reference shows which rules accept lint rule options", () => {
@@ -70,4 +124,11 @@ test("all rules reference shows which rules accept lint rule options", () => {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function sectionFor(source: string, heading: string): string {
+  const start = source.indexOf(heading);
+  assert.notEqual(start, -1, `missing ${heading}`);
+  const next = source.indexOf("\n## ", start + heading.length);
+  return source.slice(start, next === -1 ? source.length : next);
 }

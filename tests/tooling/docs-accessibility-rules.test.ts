@@ -86,7 +86,8 @@ for (const locale of locales) {
       assert.ok(section.includes(locale.optionsLabel), `${ruleId} must document rule options`);
       assert.ok(section.includes(locale.badLabel), `${ruleId} must include a bad example`);
       assert.ok(section.includes(locale.goodLabel), `${ruleId} must include a good example`);
-      assert.match(section, /```vue[\s\S]*```/u, `${ruleId} must include Vue code examples`);
+      const examples = [...section.matchAll(/```vue\n[\s\S]*?\n```/gu)];
+      assert.ok(examples.length >= 2, `${ruleId} must include bad and good Vue examples`);
     }
   });
 }

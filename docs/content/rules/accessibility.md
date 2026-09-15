@@ -4,347 +4,827 @@ title: Accessibility Rules
 
 # Accessibility Rules
 
-Accessibility rules are Patina single-file template rules. All rules below are documented at the
-same level: preset membership changes where a rule is enabled by default, but there is no secondary
-"additional" tier. Current accessibility rules take no `linter.ruleOptions`; configure severity with
-`linter.rules`.
-## `a11y/alt-text`
-Requires text alternatives for media elements. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
-Bad:
-```vue
-<input type="image" src="/submit.png" />
+Accessibility rules are Patina single-file template rules. They flag markup that is hard to use
+with assistive technology, keyboard navigation, stable element relationships, or accessible media.
+
+Every rule below is documented at the same level. Preset membership only says where the rule is
+enabled by default; it does not create a lower-priority "additional" tier. Current accessibility
+rules do not accept `linter.ruleOptions`, so tune severity with `linter.rules`.
+
+```json
+{
+  "linter": {
+    "rules": {
+      "a11y/img-alt": "error",
+      "a11y/label-has-for": "warn",
+      "vue/use-unique-element-ids": "warn"
+    }
+  }
+}
 ```
-Good:
+
+## `a11y/alt-text`
+
+Requires text alternatives for media elements such as image inputs, `area`, `object`, and SVG
+`image`. Decorative imagery still needs an explicit empty alternative when the element type supports
+one, so reviewers can tell the omission was intentional.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
+Bad:
+
 ```vue
-<input type="image" src="/submit.png" alt="Submit search" />
+<template>
+  <input type="image" src="/submit.png" />
+</template>
+```
+
+Good:
+
+```vue
+<template>
+  <input type="image" src="/submit.png" alt="Submit search" />
+</template>
 ```
 
 ## `a11y/anchor-has-content`
-Requires anchors to expose visible text, an accessible label, or labelled children. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires anchors to expose visible text, an accessible label, or labelled children. Empty links are
+announced without useful context and become mystery stops in keyboard navigation.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<a href="/settings"></a>
+<template>
+  <a href="/settings"></a>
+</template>
 ```
+
 Good:
+
 ```vue
-<a href="/settings">Settings</a>
+<template>
+  <a href="/settings">Settings</a>
+</template>
 ```
 
 ## `a11y/anchor-is-valid`
-Requires anchors to have real link targets; static `href` values are normalized before checking. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires anchors to have real link targets. Static `href` values are normalized before checking, so
+mixed-case `javascript:` URLs and decoded control characters are still rejected.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<a href="#" @click="openPanel">Open panel</a>
+<template>
+  <a href="#" @click="openPanel">Open panel</a>
+  <a href="JaVaScRiPt:void(0)">Run action</a>
+</template>
 ```
+
 Good:
+
 ```vue
-<button type="button" @click="openPanel">Open panel</button>
+<template>
+  <button type="button" @click="openPanel">Open panel</button>
+  <a href="/docs/javascript-urls">JavaScript URL guide</a>
+</template>
 ```
 
 ## `a11y/aria-props`
-Disallows invalid or misspelled ARIA attributes. Default severity: `error`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Disallows invalid or misspelled ARIA attributes before they silently disappear from the
+accessibility tree.
+
+Default severity: `error`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<button aria-lable="Save changes">Save</button>
+<template>
+  <button aria-lable="Save changes">Save</button>
+</template>
 ```
+
 Good:
+
 ```vue
-<button aria-label="Save changes">Save</button>
+<template>
+  <button aria-label="Save changes">Save</button>
+</template>
 ```
 
 ## `a11y/aria-role`
-Requires ARIA roles to be valid concrete roles. Default severity: `error`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires ARIA roles to be valid concrete roles. Unknown and abstract roles do not create the
+semantics authors expect.
+
+Default severity: `error`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<section role="datepicker">...</section>
+<template>
+  <section role="datepicker">...</section>
+</template>
 ```
+
 Good:
+
 ```vue
-<section role="dialog" aria-label="Choose a date">...</section>
+<template>
+  <section role="dialog" aria-label="Choose a date">...</section>
+</template>
 ```
 
 ## `a11y/aria-unsupported-elements`
-Disallows ARIA attributes on elements that do not support ARIA semantics. Default severity: `error`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Disallows ARIA attributes on elements that cannot expose ARIA semantics.
+
+Default severity: `error`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<meta charset="utf-8" aria-hidden="true" />
+<template>
+  <meta charset="utf-8" aria-hidden="true" />
+</template>
 ```
+
 Good:
+
 ```vue
-<meta charset="utf-8" />
+<template>
+  <meta charset="utf-8" />
+</template>
 ```
 
 ## `a11y/click-events-have-key-events`
-Requires keyboard access when click handlers are used on non-native interactive elements. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires keyboard access when click handlers are used on non-native interactive elements. Prefer a
+native control when the intended behavior already exists in HTML.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<div role="button" @click="save">Save</div>
+<template>
+  <div role="button" @click="save">Save</div>
+</template>
 ```
+
 Good:
+
 ```vue
-<button type="button" @click="save">Save</button>
+<template>
+  <button type="button" @click="save">Save</button>
+</template>
 ```
 
 ## `a11y/form-control-has-label`
-Requires form controls to have a visible label or programmatic accessible name. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires form controls to have a visible label or programmatic accessible name.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<input type="search" />
+<template>
+  <input type="search" />
+</template>
 ```
+
 Good:
+
 ```vue
-<label>Search <input type="search" /></label>
+<template>
+  <label>
+    Search
+    <input type="search" />
+  </label>
+</template>
 ```
 
 ## `a11y/heading-has-content`
-Requires heading elements to have accessible content. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires heading elements to have accessible content.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<h2></h2>
+<template>
+  <h2></h2>
+</template>
 ```
+
 Good:
+
 ```vue
-<h2>Billing settings</h2>
+<template>
+  <h2>Billing settings</h2>
+</template>
 ```
 
 ## `a11y/heading-levels`
-Disallows skipped heading levels so the page outline stays predictable. Default severity: `warning`; Presets: `nuxt`, `opinionated`; Options: none.
+
+Disallows skipped heading levels so the page outline stays predictable for keyboard and assistive
+technology navigation.
+
+Default severity: `warning`
+Presets: `nuxt`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<h1>Account</h1><h3>Billing</h3>
+<template>
+  <h1>Account</h1>
+  <h3>Billing</h3>
+</template>
 ```
+
 Good:
+
 ```vue
-<h1>Account</h1><h2>Billing</h2>
+<template>
+  <h1>Account</h1>
+  <h2>Billing</h2>
+</template>
 ```
 
 ## `a11y/iframe-has-title`
-Requires iframe elements to describe embedded content with `title`. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires iframe elements to describe embedded content with `title`.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<iframe src="/checkout"></iframe>
+<template>
+  <iframe src="/checkout"></iframe>
+</template>
 ```
+
 Good:
+
 ```vue
-<iframe src="/checkout" title="Checkout preview"></iframe>
+<template>
+  <iframe src="/checkout" title="Checkout preview"></iframe>
+</template>
 ```
 
 ## `a11y/img-alt`
-Requires images to include `alt`; decorative images should use empty `alt`. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires images to include `alt`. Decorative images should use `alt=""` rather than omitting the
+attribute.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<img src="/avatar.png" />
+<template>
+  <img src="/avatar.png" />
+</template>
 ```
+
 Good:
+
 ```vue
-<img src="/avatar.png" alt="User avatar" />
+<template>
+  <img src="/avatar.png" alt="User avatar" />
+</template>
 ```
 
 ## `a11y/interactive-supports-focus`
-Requires elements with interactive roles to be focusable. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires elements with interactive roles to be focusable. Native interactive elements are usually
+the clearest fix when the semantics match.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<span role="button" @click="open">Open</span>
+<template>
+  <span role="button" @click="open">Open</span>
+</template>
 ```
+
 Good:
+
 ```vue
-<button type="button" @click="open">Open</button>
+<template>
+  <button type="button" @click="open">Open</button>
+</template>
 ```
 
 ## `a11y/label-has-for`
-Requires labels to be associated with controls through `for`/`id` or wrapping. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires labels to be associated with controls through `for`/`id` or by wrapping the control.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<label>Email</label><input id="email" />
+<template>
+  <label>Email</label>
+  <input id="email" />
+</template>
 ```
+
 Good:
+
 ```vue
-<label for="email">Email</label><input id="email" />
+<template>
+  <label for="email">Email</label>
+  <input id="email" />
+</template>
 ```
 
 ## `a11y/landmark-roles`
-Validates landmark placement and uniqueness. Default severity: `warning`; Presets: `nuxt`, `opinionated`; Options: none.
+
+Validates landmark placement and uniqueness so page regions are discoverable and not ambiguous.
+
+Default severity: `warning`
+Presets: `nuxt`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<main>Dashboard</main><main>Settings</main>
+<template>
+  <main>Dashboard</main>
+  <main>Settings</main>
+</template>
 ```
+
 Good:
+
 ```vue
-<main>Dashboard</main><nav aria-label="Settings">...</nav>
+<template>
+  <main>Dashboard</main>
+  <nav aria-label="Settings">...</nav>
+</template>
 ```
 
 ## `a11y/media-has-caption`
-Requires captions or text tracks for audio and video with spoken content. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires captions or text tracks for audio and video with spoken content.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<video src="/demo.mp4" controls />
+<template>
+  <video src="/demo.mp4" controls />
+</template>
 ```
+
 Good:
+
 ```vue
-<video src="/demo.mp4" controls><track kind="captions" src="/demo.en.vtt" srclang="en" label="English" /></video>
+<template>
+  <video src="/demo.mp4" controls>
+    <track kind="captions" src="/demo.en.vtt" srclang="en" label="English" />
+  </video>
+</template>
 ```
 
 ## `a11y/mouse-events-have-key-events`
-Requires focus and blur handlers when hover handlers are used. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires matching focus and blur handlers when hover handlers are used.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
+<template>
+  <div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
+</template>
 ```
+
 Good:
+
 ```vue
-<button @focus="showPreview" @blur="hidePreview" @mouseenter="showPreview" @mouseleave="hidePreview">Preview</button>
+<template>
+  <button
+    type="button"
+    @focus="showPreview"
+    @blur="hidePreview"
+    @mouseenter="showPreview"
+    @mouseleave="hidePreview"
+  >
+    Preview
+  </button>
+</template>
 ```
 
 ## `a11y/no-access-key`
-Disallows `accesskey` because shortcuts conflict across browsers and assistive technology. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Disallows `accesskey` because custom shortcuts conflict across browsers, operating systems, and
+assistive technology.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<button accesskey="s">Save</button>
+<template>
+  <button accesskey="s">Save</button>
+</template>
 ```
+
 Good:
+
 ```vue
-<button>Save</button>
+<template>
+  <button>Save</button>
+</template>
 ```
 
 ## `a11y/no-aria-hidden-on-focusable`
-Disallows `aria-hidden="true"` on focusable elements. Default severity: `error`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Disallows `aria-hidden="true"` on focusable elements. This prevents a control from disappearing
+from the accessibility tree while still receiving keyboard focus.
+
+Default severity: `error`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<button aria-hidden="true" @click="close">Close</button>
+<template>
+  <button aria-hidden="true" @click="close">Close</button>
+</template>
 ```
+
 Good:
+
 ```vue
-<button aria-label="Close" @click="close">Close</button>
+<template>
+  <button aria-label="Close" @click="close">Close</button>
+</template>
 ```
 
 ## `a11y/no-autofocus`
-Disallows `autofocus` because it can move focus unexpectedly. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Disallows `autofocus` because it can move focus unexpectedly when a page or dialog appears.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<input autofocus name="query" />
+<template>
+  <input autofocus name="query" />
+</template>
 ```
+
 Good:
+
 ```vue
-<input name="query" />
+<template>
+  <input name="query" />
+</template>
 ```
 
 ## `a11y/no-distracting-elements`
-Disallows distracting legacy elements such as `<marquee>` and `<blink>`. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Disallows distracting legacy elements such as `<marquee>` and `<blink>`.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<marquee>Limited offer</marquee>
+<template>
+  <marquee>Limited offer</marquee>
+</template>
 ```
+
 Good:
+
 ```vue
-<p>Limited offer</p>
+<template>
+  <p>Limited offer</p>
+</template>
 ```
 
 ## `a11y/no-i-for-icon`
-Disallows using `<i>` as an icon-only element. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Disallows using `<i>` as an icon-only element. Use a neutral element plus an accessible text path
+when the icon has meaning.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<button><i class="material-icons">delete</i></button>
+<template>
+  <button>
+    <i class="material-icons">delete</i>
+  </button>
+</template>
 ```
+
 Good:
+
 ```vue
-<button><span class="material-icons" aria-hidden="true">delete</span><span class="sr-only">Delete item</span></button>
+<template>
+  <button>
+    <span class="material-icons" aria-hidden="true">delete</span>
+    <span class="sr-only">Delete item</span>
+  </button>
+</template>
 ```
 
 ## `a11y/no-redundant-roles`
-Disallows ARIA roles that duplicate an element's implicit role. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Disallows ARIA roles that duplicate an element's implicit role.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<button role="button">Save</button>
+<template>
+  <button role="button">Save</button>
+</template>
 ```
+
 Good:
+
 ```vue
-<button>Save</button>
+<template>
+  <button>Save</button>
+</template>
 ```
 
 ## `a11y/no-refer-to-non-existent-id`
-Requires ARIA ID references and label relationships to point at existing elements. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires ARIA ID references and label relationships to point at elements that exist in the same
+template.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<button aria-labelledby="save-label">Save</button>
+<template>
+  <button aria-labelledby="save-label">Save</button>
+</template>
 ```
+
 Good:
+
 ```vue
-<span id="save-label">Save changes</span><button aria-labelledby="save-label">Save</button>
+<template>
+  <span id="save-label">Save changes</span>
+  <button aria-labelledby="save-label">Save</button>
+</template>
 ```
 
 ## `a11y/no-role-presentation-on-focusable`
-Disallows `role="presentation"` or `role="none"` on focusable elements. Default severity: `error`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Disallows `role="presentation"` or `role="none"` on focusable elements.
+
+Default severity: `error`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<a href="/billing" role="presentation">Billing</a>
+<template>
+  <a href="/billing" role="presentation">Billing</a>
+</template>
 ```
+
 Good:
+
 ```vue
-<a href="/billing">Billing</a>
+<template>
+  <a href="/billing">Billing</a>
+</template>
 ```
 
 ## `a11y/no-static-element-interactions`
-Disallows event handlers on static elements that do not expose matching interactive semantics. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Disallows event handlers on static elements that do not expose matching interactive semantics.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<section @keydown.enter="select">Select</section>
+<template>
+  <section @keydown.enter="select">Select</section>
+</template>
 ```
+
 Good:
+
 ```vue
-<button type="button" @keydown.enter="select">Select</button>
+<template>
+  <button type="button" @keydown.enter="select">Select</button>
+</template>
 ```
 
 ## `a11y/placeholder-label-option`
-Requires placeholder `<option>` entries to be disabled or hidden. Default severity: `warning`; Presets: `nuxt`, `opinionated`; Options: none.
+
+Requires placeholder `<option>` entries to be disabled or hidden so placeholder choices are not
+submitted as real selections.
+
+Default severity: `warning`
+Presets: `nuxt`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<select><option value="">Choose</option><option value="jp">Japan</option></select>
+<template>
+  <select v-model="country">
+    <option value="">Choose a country</option>
+    <option value="jp">Japan</option>
+  </select>
+</template>
 ```
+
 Good:
+
 ```vue
-<select><option value="" disabled>Choose</option><option value="jp">Japan</option></select>
+<template>
+  <select v-model="country">
+    <option value="" disabled>Choose a country</option>
+    <option value="jp">Japan</option>
+  </select>
+</template>
 ```
 
 ## `a11y/role-has-required-aria-props`
-Requires ARIA roles to include their required state or property attributes. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Requires ARIA roles to include the state or property attributes that the role needs.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<span role="checkbox">Receive updates</span>
+<template>
+  <span role="checkbox">Receive updates</span>
+</template>
 ```
+
 Good:
+
 ```vue
-<span role="checkbox" aria-checked="false">Receive updates</span>
+<template>
+  <span role="checkbox" aria-checked="false">Receive updates</span>
+</template>
 ```
 
 ## `a11y/tabindex-no-positive`
-Disallows positive `tabindex` values that create a custom tab order. Default severity: `warning`; Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`; Options: none.
+
+Disallows positive `tabindex` values because they create a custom tab order that is hard to predict
+and maintain.
+
+Default severity: `warning`
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<button tabindex="3">Save</button>
+<template>
+  <button tabindex="3">Save</button>
+</template>
 ```
+
 Good:
+
 ```vue
-<button>Save</button>
+<template>
+  <button>Save</button>
+</template>
 ```
 
 ## `a11y/use-list`
-Suggests list elements for bullet-like text so list structure is announced. Default severity: `warning`; Presets: `nuxt`, `opinionated`; Options: none.
+
+Suggests list elements for bullet-like text so screen readers can announce list structure.
+
+Default severity: `warning`
+Presets: `nuxt`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<p>- First task</p><p>- Second task</p>
+<template>
+  <p>- First task</p>
+  <p>- Second task</p>
+</template>
 ```
+
 Good:
+
 ```vue
-<ul><li>First task</li><li>Second task</li></ul>
+<template>
+  <ul>
+    <li>First task</li>
+    <li>Second task</li>
+  </ul>
+</template>
 ```
 
 ## `vue/use-unique-element-ids`
-Requires static IDs and ID references to use `useId()` instead of literals. Default severity: `warning`; Presets: `nuxt`, `opinionated`; Options: none.
+
+Requires static IDs and ID references to use `useId()` instead of literals. This avoids duplicate
+IDs when the same component renders multiple times and keeps label/ARIA relationships stable.
+
+Default severity: `warning`
+Presets: `nuxt`, `opinionated`
+Options: none
+
 Bad:
+
 ```vue
-<label for="email">Email</label><input id="email" />
+<template>
+  <label for="email">Email</label>
+  <input id="email" />
+</template>
 ```
+
 Good:
+
 ```vue
-<script setup>import { useId } from "vue"; const emailId = useId();</script><template><label :for="emailId">Email</label><input :id="emailId" /></template>
+<script setup>
+import { useId } from "vue";
+
+const emailId = useId();
+</script>
+
+<template>
+  <label :for="emailId">Email</label>
+  <input :id="emailId" />
+</template>
 ```
