@@ -4,7 +4,8 @@ title: Vue Rule Options
 
 # Vue Rule Options
 
-Vue rule option examples cover component name casing, prop mutation depth, SFC block order, self closing tags, event names, and attribute casing.. The main [Rule Options](./options.md) page lists the complete option table,
+Vue rule option examples cover component name casing, prop mutation depth, SFC block order,
+self-closing tags, event names, and attribute casing. The main [Rule Options](./options.md) page lists the complete option table,
 unknown-field behavior, and scoped replacement semantics.
 
 ## `vue/component-name-in-template-casing`
@@ -186,8 +187,8 @@ Good:
 
 ## `vue/attribute-hyphenation`
 
-Use this option for static prop names on custom components. `always` reports camelCase authored
-attributes; `never` reports hyphenated authored attributes. Native attributes, `aria-*`, `data-*`,
+Use this option for static prop names on custom components. `always` reports camelCase-authored
+attributes; `never` reports authored attributes that are hyphenated. Native attributes, `aria-*`, `data-*`,
 SVG mixed-case attributes, dynamic arguments, and directive shorthand that is parsed as an attribute
 are skipped.
 

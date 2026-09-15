@@ -4,7 +4,7 @@ title: Script Rule Options
 
 # Script Rule Options
 
-Script rule option examples cover restricted globals, restricted members, and custom event casing.. The main [Rule Options](./options.md) page lists the complete option table,
+Script rule option examples cover restricted globals, restricted members, and custom event casing. The main [Rule Options](./options.md) page lists the complete option table,
 unknown-field behavior, and scoped replacement semantics.
 
 ## `script/no-restricted-globals`

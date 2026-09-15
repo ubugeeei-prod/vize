@@ -4,7 +4,7 @@ title: Musea Rule Options
 
 # Musea Rule Options
 
-Musea rule option examples cover design-token inventory configuration.. The main [Rule Options](./options.md) page lists the complete option table,
+Musea rule option examples cover design-token inventory configuration. The main [Rule Options](./options.md) page lists the complete option table,
 unknown-field behavior, and scoped replacement semantics.
 
 ## `musea/prefer-design-tokens`
