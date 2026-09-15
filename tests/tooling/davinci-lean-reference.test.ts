@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { traceCompiledBackend } from "./support/davinci-runtime-trace.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const formalRoot = path.join(repoRoot, "formal", "impeto");
@@ -23,6 +24,9 @@ test("TS-28 pins the Lean toolchain and CI package directory", () => {
     workflow,
     /leanprover\/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1\.6\.0/u,
   );
+  assert.match(workflow, /voidzero-dev\/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1/u);
+  assert.match(workflow, /node-version-file:\s*package\.json/u);
+  assert.match(workflow, /run-install:\s*false/u);
   assert.match(workflow, /lake-package-directory:\s*formal\/impeto/u);
   assert.match(workflow, /lake exe impetoRef --check-fixtures/u);
   assert.match(workflow, /lake exe impetoRef --check-backend-fixtures/u);
@@ -67,22 +71,64 @@ test("TS-28 Rust lowering bridge is covered by an ordinary cargo test", () => {
   assert.match(bridge, /backend_trace_text\(TraceBackend::Vapor, &lowered\.program\)/u);
 });
 
-test("TS-28 compiled backend trace gate executes both emitted backends", () => {
+test("TS-28 compiled backend trace gate executes both emitted backends", async () => {
   const gate = readRepoFile(
     "crates",
     "vize_atelier_vapor",
     "tests",
     "davinci_s3_compiled_trace.rs",
   );
-  const runner = readRepoFile("tests", "tooling", "support", "davinci-runtime-trace.mjs");
   assert.match(gate, /compiled_backend_runtime_traces_match_s3_reference_ladder/u);
   assert.match(gate, /runtime_backend_trace/u);
   assert.match(gate, /compile_template_with_options/u);
   assert.match(gate, /compile_vapor/u);
   assert.match(gate, /davinci-runtime-trace\.mjs/u);
-  assert.match(runner, /traceCompiledBackend/u);
-  assert.match(runner, /mountVdom/u);
-  assert.match(runner, /createVaporHelpers/u);
+
+  assert.deepEqual(
+    await traceCompiledBackend({
+      backend: "vdom",
+      code: `
+        import { createElementBlock, openBlock, toDisplayString } from "vue";
+        export function render(_ctx, _cache) {
+          return (
+            openBlock(),
+            createElementBlock("p", { id: "msg", textContent: toDisplayString(label) }, null, 9, ["id", "textContent"])
+          );
+        }
+      `,
+      context: { label: "ready" },
+    }),
+    ["create-element", "patch-prop", "set-text"],
+  );
+  assert.deepEqual(
+    await traceCompiledBackend({
+      backend: "vapor",
+      code: `
+        import { child, renderEffect, setText, template } from "vue";
+        const t0 = template("<p></p>");
+        export function render(_ctx) {
+          const n0 = t0();
+          const c0 = child(n0, 0);
+          renderEffect(() => setText(c0, label));
+          return n0;
+        }
+      `,
+      context: { label: "ready" },
+    }),
+    ["create-node", "text-effect"],
+  );
+  await assert.rejects(
+    traceCompiledBackend({
+      backend: "vapor",
+      code: `
+        import { createForStatic } from "vue";
+        export function render(_ctx) {
+          return createForStatic(1, () => {});
+        }
+      `,
+    }),
+    /unsupported vue runtime helper: createForStatic/u,
+  );
   assert.match(gate, /STATIC_DYNAMIC_VAPOR_COMPILED_KNOWN_GAP/u);
   assert.match(gate, /CONTROL_SLOTS_VAPOR_COMPILED_KNOWN_GAP/u);
   assert.match(gate, /rust-lowered-static-dynamic\.vdom\.trace/u);

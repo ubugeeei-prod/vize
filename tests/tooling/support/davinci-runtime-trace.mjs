@@ -52,7 +52,7 @@ async function evaluateRender(code, helpers, bindings, context) {
   const lexicalContext = Object.entries(context).filter(([name]) => isIdentifierName(name));
   const helperDeclarations = bindings
     .map(([localName, importedName]) => {
-      return `const ${localName} = __state.helpers[${JSON.stringify(importedName)}] ?? __state.noop;`;
+      return `const ${localName} = __state.helperValue(${JSON.stringify(importedName)});`;
     })
     .join("\n");
   const contextDeclarations = lexicalContext
@@ -66,7 +66,7 @@ async function evaluateRender(code, helpers, bindings, context) {
     rewritten,
     "export { render };",
   ].join("\n");
-  globalThis[stateKey] = { context, helpers, noop };
+  globalThis[stateKey] = { context, helperValue: (name) => helperValue(helpers, name), helpers };
 
   let module;
   try {
@@ -81,6 +81,13 @@ async function evaluateRender(code, helpers, bindings, context) {
     throw new Error("compiled module did not export render()");
   }
   return render;
+}
+
+function helperValue(helpers, name) {
+  if (Object.prototype.hasOwnProperty.call(helpers, name)) {
+    return helpers[name];
+  }
+  throw new Error(`unsupported vue runtime helper: ${name}`);
 }
 
 function isIdentifierName(name) {
