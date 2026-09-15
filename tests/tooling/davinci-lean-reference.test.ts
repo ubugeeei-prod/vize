@@ -27,6 +27,7 @@ test("TS-28 pins the Lean toolchain and CI package directory", () => {
   assert.match(workflow, /lake exe impetoRef --check-fixtures/u);
   assert.match(workflow, /lake exe impetoRef --check-backend-fixtures/u);
   assert.match(workflow, /cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace/u);
+  assert.match(workflow, /tests\/tooling\/support\/davinci-runtime-trace\.mjs/u);
 });
 
 test("TS-28 fixture ladder is declared and non-vacuous", () => {
@@ -66,16 +67,22 @@ test("TS-28 Rust lowering bridge is covered by an ordinary cargo test", () => {
   assert.match(bridge, /backend_trace_text\(TraceBackend::Vapor, &lowered\.program\)/u);
 });
 
-test("TS-28 compiled backend trace gate covers both emitted backends", () => {
+test("TS-28 compiled backend trace gate executes both emitted backends", () => {
   const gate = readRepoFile(
     "crates",
     "vize_atelier_vapor",
     "tests",
     "davinci_s3_compiled_trace.rs",
   );
-  assert.match(gate, /compiled_backend_traces_match_s3_reference_ladder/u);
+  const runner = readRepoFile("tests", "tooling", "support", "davinci-runtime-trace.mjs");
+  assert.match(gate, /compiled_backend_runtime_traces_match_s3_reference_ladder/u);
+  assert.match(gate, /runtime_backend_trace/u);
   assert.match(gate, /compile_template_with_options/u);
   assert.match(gate, /compile_vapor/u);
+  assert.match(gate, /davinci-runtime-trace\.mjs/u);
+  assert.match(runner, /traceCompiledBackend/u);
+  assert.match(runner, /mountVdom/u);
+  assert.match(runner, /createVaporHelpers/u);
   assert.match(gate, /STATIC_DYNAMIC_VAPOR_COMPILED_KNOWN_GAP/u);
   assert.match(gate, /CONTROL_SLOTS_VAPOR_COMPILED_KNOWN_GAP/u);
   assert.match(gate, /rust-lowered-static-dynamic\.vdom\.trace/u);
@@ -88,6 +95,6 @@ test("TS-28 command in the suite registry names the executable runner", () => {
   const suites = readRepoFile("davinci-road", "plan", "test-suites.md");
   assert.match(
     suites,
-    /\| TS-28 \| Lean reference differential\s+\| `cd formal\/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures && cd \.\.\/\.\. && cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace`/u,
+    /\| TS-28 \| Lean reference differential\s+\| `cd formal\/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures && cd \.\.\/\.\. && cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace` \| exact agreement on observable semantics; known runtime trace gaps are enumerated fail-closed/u,
   );
 });

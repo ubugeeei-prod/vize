@@ -11,6 +11,8 @@ on:
       - "crates/vize_s2_to_s3/**"
       - "davinci-road/plan/phase-3.md"
       - "davinci-road/plan/test-suites.md"
+      - "tests/tooling/davinci-lean-reference.test.ts"
+      - "tests/tooling/support/davinci-runtime-trace.mjs"
       - ".github/workflows/davinci-lean.yml"
   pull_request:
     branches: [main, davinci]
@@ -22,6 +24,8 @@ on:
       - "crates/vize_s2_to_s3/**"
       - "davinci-road/plan/phase-3.md"
       - "davinci-road/plan/test-suites.md"
+      - "tests/tooling/davinci-lean-reference.test.ts"
+      - "tests/tooling/support/davinci-runtime-trace.mjs"
       - ".github/workflows/davinci-lean.yml"
   workflow_dispatch:
 

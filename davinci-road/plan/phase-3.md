@@ -63,15 +63,18 @@ to the same record.
 (CI-lenient lane per charter #39): executable small-step semantics for S3 ops
 under both Vapor and VDOM interpretations; runner compares compiled-output
 behavior traces vs reference on S3 fixtures (TS-28). _Accept:_ runner in CI
-on the fixture ladder. The 2026-09-15 compiled-trace slice wires the first
-DOM/Vapor emitted-code observation gate into TS-28; P3-4 still exits only once
-mounted behavior traces use the same reference contract.
+on the fixture ladder. The 2026-09-15 compiled-runtime slice evaluates emitted
+DOM/Vapor render functions under a deterministic JS host trace runner in TS-28;
+P3-4 still exits only once the mounted behavior runner uses the same reference
+contract.
 _First slice 2026-09-12:_ see
 [P3-4 record](./phase-3-records/p3-4.md) for the pinned Lean package, the
 initial S3 Folio parser, executable reference traces, and CI-lenient TS-28
 workflow. _Third slice 2026-09-15:_ backend-specific `.vdom.trace` and
 `.vapor.trace` artifacts are now checked by the Lean runner and mirrored by the
-Rust S2→S3 fixture bridge; compiled-output trace comparison remains open.
+Rust S2→S3 fixture bridge. _Fifth slice 2026-09-15:_ compiled DOM/Vapor render
+functions are now executed by the TS-28 cargo gate through the shared JS runtime
+trace runner; full mounted DOM/Vapor behavior remains open.
 
 **P3-5 Op reference doc.** `davinci-road/plan/impeto-ops.md`: every op's
 meaning under both interpretations, written **before any optional pass

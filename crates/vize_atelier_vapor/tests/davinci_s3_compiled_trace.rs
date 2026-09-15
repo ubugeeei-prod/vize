@@ -1,10 +1,16 @@
-//! TS-28 compiled-output bridge for the S3 backend reference traces.
+//! TS-28 compiled-runtime bridge for the S3 backend reference traces.
 
 #![allow(
     clippy::disallowed_macros,
     clippy::disallowed_methods,
     clippy::disallowed_types
 )]
+
+use std::{
+    io::Write,
+    path::Path,
+    process::{Command, Stdio},
+};
 
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
@@ -78,10 +84,10 @@ const CONTROL_SLOTS_VAPOR_COMPILED_KNOWN_GAP: &[&str] = &[
 ];
 
 #[test]
-fn compiled_backend_traces_match_s3_reference_ladder_or_known_gap() {
+fn compiled_backend_runtime_traces_match_s3_reference_ladder_or_known_gap() {
     for fixture in FIXTURES {
         let vdom_code = compile_dom(fixture.source);
-        let actual_vdom = compiled_vdom_trace(&vdom_code);
+        let actual_vdom = runtime_backend_trace("vdom", fixture.name, &vdom_code);
         let expected_vdom = reference_labels(fixture.vdom_trace);
         assert_eq!(
             actual_vdom, expected_vdom,
@@ -90,7 +96,7 @@ fn compiled_backend_traces_match_s3_reference_ladder_or_known_gap() {
         );
 
         let vapor_code = compile_vapor_template(fixture.source);
-        let actual_vapor = compiled_vapor_trace(&vapor_code);
+        let actual_vapor = runtime_backend_trace("vapor", fixture.name, &vapor_code);
         let expected_vapor = reference_labels(fixture.vapor_trace);
         assert_vapor_trace_matches_reference_or_known_gap(
             fixture.name,
@@ -103,8 +109,8 @@ fn compiled_backend_traces_match_s3_reference_ladder_or_known_gap() {
 
 fn assert_vapor_trace_matches_reference_or_known_gap(
     fixture_name: &str,
-    actual: &[&'static str],
-    expected: &[&'static str],
+    actual: &[String],
+    expected: &[String],
     code: &str,
 ) {
     if actual == expected {
@@ -114,8 +120,8 @@ fn assert_vapor_trace_matches_reference_or_known_gap(
     // Exact known gap: Vapor emits delegated listeners before the shared
     // dynamic render effect, while the S3 trace currently orders prop/listen/text.
     if fixture_name == "rust-lowered-static-dynamic"
-        && expected == STATIC_DYNAMIC_VAPOR_REFERENCE
-        && actual == STATIC_DYNAMIC_VAPOR_COMPILED_KNOWN_GAP
+        && labels_match(expected, STATIC_DYNAMIC_VAPOR_REFERENCE)
+        && labels_match(actual, STATIC_DYNAMIC_VAPOR_COMPILED_KNOWN_GAP)
     {
         return;
     }
@@ -123,8 +129,8 @@ fn assert_vapor_trace_matches_reference_or_known_gap(
     // Exact known gap: Vapor currently builds the slot fallback before the
     // sibling conditional block, while the S3 trace orders conditional/slot.
     if fixture_name == "rust-lowered-control-slots"
-        && expected == CONTROL_SLOTS_VAPOR_REFERENCE
-        && actual == CONTROL_SLOTS_VAPOR_COMPILED_KNOWN_GAP
+        && labels_match(expected, CONTROL_SLOTS_VAPOR_REFERENCE)
+        && labels_match(actual, CONTROL_SLOTS_VAPOR_COMPILED_KNOWN_GAP)
     {
         return;
     }
@@ -133,6 +139,13 @@ fn assert_vapor_trace_matches_reference_or_known_gap(
         actual, expected,
         "{fixture_name} Vapor compiled trace diverged from S3 reference:\n{code}"
     );
+}
+
+fn labels_match(actual: &[String], expected: &[&str]) -> bool {
+    actual
+        .iter()
+        .map(String::as_str)
+        .eq(expected.iter().copied())
 }
 
 fn compile_dom(source: &str) -> String {
@@ -154,11 +167,63 @@ fn compile_vapor_template(source: &str) -> String {
     result.code.to_string()
 }
 
-fn reference_labels(trace: &'static str) -> Vec<&'static str> {
+fn runtime_backend_trace(backend: &str, fixture_name: &str, code: &str) -> Vec<String> {
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let runner = repo_root.join("tests/tooling/support/davinci-runtime-trace.mjs");
+    let payload = serde_json::json!({
+        "backend": backend,
+        "code": code,
+        "context": {
+            "$slots": {},
+            "fallback": "fallback",
+            "label": "Save",
+            "locked": true,
+            "ready": true
+        }
+    });
+    let mut child = Command::new("node")
+        .arg(&runner)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap_or_else(|error| {
+            panic!("{fixture_name} {backend} runtime trace runner failed to start: {error}")
+        });
+
+    child
+        .stdin
+        .take()
+        .expect("runtime trace runner stdin")
+        .write_all(payload.to_string().as_bytes())
+        .expect("write runtime trace runner input");
+
+    let output = child
+        .wait_with_output()
+        .expect("wait for runtime trace runner");
+    if !output.status.success() {
+        panic!(
+            "{fixture_name} {backend} runtime trace runner failed with status {}\nstdout:\n{}\nstderr:\n{}",
+            output.status,
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr),
+        );
+    }
+
+    serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+        panic!(
+            "{fixture_name} {backend} runtime trace runner returned invalid JSON: {error}\nstdout:\n{}",
+            String::from_utf8_lossy(&output.stdout),
+        )
+    })
+}
+
+fn reference_labels(trace: &'static str) -> Vec<String> {
     trace
         .lines()
         .filter(|line| !line.trim().is_empty())
         .map(trace_label)
+        .map(str::to_string)
         .collect()
 }
 
@@ -166,177 +231,4 @@ fn trace_label(line: &'static str) -> &'static str {
     line.split_whitespace()
         .nth(2)
         .unwrap_or_else(|| panic!("bad trace line: {line}"))
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-struct Event {
-    pos: usize,
-    order: usize,
-    label: &'static str,
-}
-
-fn compiled_vdom_trace(code: &str) -> Vec<&'static str> {
-    let mut events = Vec::new();
-    push_all(&mut events, code, "_createElementBlock(", "create-element");
-    push_all(&mut events, code, "_createElementVNode(", "create-element");
-    push_all(&mut events, code, "\n    ? ", "branch");
-    push_all(&mut events, code, "\n      ? ", "branch");
-    push_all(&mut events, code, "disabled:", "patch-prop");
-    push_all(&mut events, code, "onClick:", "patch-event");
-    push_vdom_display_string_events(&mut events, code);
-    push_all(&mut events, code, ", \"ready\"", "set-text");
-    push_all(&mut events, code, "textContent:", "set-text");
-    push_all(&mut events, code, "_renderSlot(", "render-slot");
-    event_labels(events)
-}
-
-fn push_vdom_display_string_events(events: &mut Vec<Event>, code: &str) {
-    for (pos, _) in code.match_indices("_toDisplayString(") {
-        let line_start = code[..pos].rfind('\n').map_or(0, |index| index + 1);
-        if code[line_start..pos].contains("textContent:") {
-            continue;
-        }
-        events.push(Event {
-            pos,
-            order: events.len(),
-            label: "set-text",
-        });
-    }
-}
-
-fn compiled_vapor_trace(code: &str) -> Vec<&'static str> {
-    let mut events = Vec::new();
-    let templates = vapor_templates(code);
-    push_template_instantiations(&mut events, code, &templates);
-    push_all(&mut events, code, "_createIf(", "conditional-effect");
-    push_all(&mut events, code, "_createFor(", "list-effect");
-    push_all(&mut events, code, "_createSlot(", "slot-effect");
-    push_all(
-        &mut events,
-        code,
-        "_setDynamicProps(",
-        "assign-dynamic-props",
-    );
-    push_all(&mut events, code, "_setProp(", "assign-prop");
-    push_all(&mut events, code, "_setText(", "text-effect");
-    push_all(&mut events, code, ".$evt", "listen");
-    push_all(&mut events, code, "_on(", "listen");
-    event_labels(events)
-}
-
-fn push_all(events: &mut Vec<Event>, source: &str, needle: &str, label: &'static str) {
-    for (pos, _) in source.match_indices(needle) {
-        events.push(Event {
-            pos,
-            order: events.len(),
-            label,
-        });
-    }
-}
-
-fn event_labels(mut events: Vec<Event>) -> Vec<&'static str> {
-    events.sort();
-    events.into_iter().map(|event| event.label).collect()
-}
-
-fn vapor_templates(source: &str) -> Vec<(usize, &str)> {
-    let mut templates = Vec::new();
-    let mut search = 0;
-    while let Some(rel) = source[search..].find("const t") {
-        let id_start = search + rel + "const t".len();
-        let Some((id, id_end)) = parse_digits(source, id_start) else {
-            search = id_start;
-            continue;
-        };
-        let Some(call_rel) = source[id_end..].find("_template(\"") else {
-            search = id_end;
-            continue;
-        };
-        let template_start = id_end + call_rel + "_template(\"".len();
-        let Some(template_end) = js_string_end(source, template_start) else {
-            break;
-        };
-        templates.push((id, &source[template_start..template_end]));
-        search = template_end + 1;
-    }
-    templates
-}
-
-fn push_template_instantiations(
-    events: &mut Vec<Event>,
-    source: &str,
-    templates: &[(usize, &str)],
-) {
-    let mut search = 0;
-    while let Some(rel) = source[search..].find(" = t") {
-        let pos = search + rel;
-        let id_start = pos + " = t".len();
-        let Some((id, id_end)) = parse_digits(source, id_start) else {
-            search = id_start;
-            continue;
-        };
-        if !source[id_end..].starts_with("()") {
-            search = id_end;
-            continue;
-        }
-        let template = templates
-            .iter()
-            .find_map(|(template_id, template)| (*template_id == id).then_some(*template))
-            .unwrap_or_else(|| panic!("missing template t{id}"));
-        for label in template_labels(template) {
-            events.push(Event {
-                pos,
-                order: events.len(),
-                label,
-            });
-        }
-        search = id_end + 2;
-    }
-}
-
-fn template_labels(template: &str) -> Vec<&'static str> {
-    let mut labels = Vec::new();
-    let mut offset = 0;
-    while let Some(rel) = template[offset..].find('<') {
-        let tag_start = offset + rel;
-        if !template[offset..tag_start].trim().is_empty() {
-            labels.push("text-effect");
-        }
-        if let Some(next) = template[tag_start + 1..].chars().next()
-            && !matches!(next, '/' | '!' | '?')
-        {
-            labels.push("create-node");
-        }
-        let Some(end_rel) = template[tag_start..].find('>') else {
-            break;
-        };
-        offset = tag_start + end_rel + 1;
-    }
-    if !template[offset..].trim().is_empty() {
-        labels.push("text-effect");
-    }
-    labels
-}
-
-fn parse_digits(source: &str, start: usize) -> Option<(usize, usize)> {
-    let mut end = start;
-    let bytes = source.as_bytes();
-    while bytes.get(end).is_some_and(u8::is_ascii_digit) {
-        end += 1;
-    }
-    (end > start).then(|| (source[start..end].parse().expect("digits parse"), end))
-}
-
-fn js_string_end(source: &str, start: usize) -> Option<usize> {
-    let mut escaped = false;
-    for (rel, byte) in source[start..].bytes().enumerate() {
-        if escaped {
-            escaped = false;
-        } else if byte == b'\\' {
-            escaped = true;
-        } else if byte == b'"' {
-            return Some(start + rel);
-        }
-    }
-    None
 }

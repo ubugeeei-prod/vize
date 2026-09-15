@@ -41,6 +41,7 @@ vize_davinci = { workspace = true }
 vize_atelier_dom = { workspace = true }
 
 insta = { workspace = true }
+serde_json = { workspace = true }
 
 [[bench]]
 name = "davinci"

@@ -3695,6 +3695,7 @@ dependencies = [
  "oxc_span",
  "oxc_syntax",
  "serde",
+ "serde_json",
  "thiserror 2.0.20",
  "vize_atelier_core",
  "vize_atelier_dom",
