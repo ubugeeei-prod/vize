@@ -25,6 +25,8 @@ use vize_s0::{
 
 #[test]
 fn source_map_template_compile_uses_s2_with_the_compatibility_map() {
+    let _guard = lock_profiler();
+    reset_profiler();
     let source = r#"<section id="app">{{ msg }}<span :title="title">ok</span></section>"#;
     let codegen = CodegenOptions {
         filename: "MappedTemplate.vue".into(),
@@ -52,6 +54,8 @@ fn source_map_template_compile_uses_s2_with_the_compatibility_map() {
 
 #[test]
 fn source_map_sfc_sections_compile_uses_s2_with_the_compatibility_map() {
+    let _guard = lock_profiler();
+    reset_profiler();
     let source = r#"<section id="app">{{ msg }}<span :title="title">ok</span></section>"#;
     let codegen = CodegenOptions {
         filename: "MappedSfcTemplate.vue".into(),
@@ -79,6 +83,8 @@ fn source_map_sfc_sections_compile_uses_s2_with_the_compatibility_map() {
 
 #[test]
 fn in_tag_comment_source_map_compile_uses_s2_with_the_compatibility_map() {
+    let _guard = lock_profiler();
+    reset_profiler();
     let source =
         "<button // keep the parse extension covered\n  @click=\"go\">{{ label }}</button>";
     let options = DomCompilerOptions {
@@ -137,15 +143,9 @@ fn compile_template_selected_with_profile(
     options: DomCompilerOptions,
     codegen: CodegenOptions,
 ) -> (Compiled, CounterSummary) {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-    profiler.disable();
-    profiler.clear();
-    profiler.enable();
+    let _profile = ProfileScope::enable();
     let selected = compile_template_selected(source, options, codegen);
-    let counters = profiler.counter_summary();
-    profiler.disable();
-    profiler.clear();
+    let counters = _profile.counter_summary();
     (selected, counters)
 }
 
@@ -154,15 +154,9 @@ fn compile_sfc_selected_with_profile(
     options: DomCompilerOptions,
     codegen: CodegenOptions,
 ) -> (Compiled, CounterSummary) {
-    let _guard = lock_profiler();
-    let profiler = global_profiler();
-    profiler.disable();
-    profiler.clear();
-    profiler.enable();
+    let _profile = ProfileScope::enable();
     let selected = compile_sfc_selected(source, options, codegen);
-    let counters = profiler.counter_summary();
-    profiler.disable();
-    profiler.clear();
+    let counters = _profile.counter_summary();
     (selected, counters)
 }
 
@@ -268,6 +262,33 @@ fn counter_total(counters: &CounterSummary, name: &str) -> Option<u64> {
         .iter()
         .find(|entry| entry.name == name)
         .map(|entry| entry.total)
+}
+
+fn reset_profiler() {
+    let profiler = global_profiler();
+    profiler.disable();
+    profiler.clear();
+}
+
+struct ProfileScope;
+
+impl ProfileScope {
+    fn enable() -> Self {
+        let profiler = global_profiler();
+        profiler.clear();
+        profiler.enable();
+        Self
+    }
+
+    fn counter_summary(&self) -> CounterSummary {
+        global_profiler().counter_summary()
+    }
+}
+
+impl Drop for ProfileScope {
+    fn drop(&mut self) {
+        reset_profiler();
+    }
 }
 
 fn lock_profiler() -> std::sync::MutexGuard<'static, ()> {
