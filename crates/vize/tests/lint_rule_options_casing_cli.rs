@@ -2,18 +2,22 @@ use std::{
     fs,
     path::{Path, PathBuf},
     process::{Command, Output},
+    sync::atomic::{AtomicU64, Ordering},
 };
 use vize_s0::cstr;
+
+static NEXT_TEMP_PROJECT_ID: AtomicU64 = AtomicU64::new(0);
 
 fn temp_project_dir() -> PathBuf {
     let nonce = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_nanos();
+    let id = NEXT_TEMP_PROJECT_ID.fetch_add(1, Ordering::Relaxed);
     std::env::temp_dir().join(
         cstr!(
-            "vize-lint-rule-options-casing-{}-{nonce}",
-            std::process::id()
+            "vize-lint-rule-options-casing-{}-{nonce}-{id}",
+            std::process::id(),
         )
         .as_str(),
     )
