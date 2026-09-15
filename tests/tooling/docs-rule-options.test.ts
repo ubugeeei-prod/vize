@@ -19,7 +19,12 @@ const configurableRuleOptions = [
 ];
 
 test("rule option docs enumerate every typed lint rule option", () => {
-  const optionsDoc = fs.readFileSync(path.join(repoRoot, "docs/content/rules/options.md"), "utf8");
+  const optionsDoc = readDocs([
+    path.join(repoRoot, "docs/content/rules/options.md"),
+    path.join(repoRoot, "docs/content/rules/options-script.md"),
+    path.join(repoRoot, "docs/content/rules/options-vue.md"),
+    path.join(repoRoot, "docs/content/rules/options-musea.md"),
+  ]);
 
   assertRuleOptionsReference(optionsDoc, {
     title: /# Rule Options/,
@@ -124,6 +129,10 @@ test("all rules reference shows which rules accept lint rule options", () => {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function readDocs(paths: string[]): string {
+  return paths.map((filePath) => fs.readFileSync(filePath, "utf8")).join("\n");
 }
 
 function sectionFor(source: string, heading: string): string {

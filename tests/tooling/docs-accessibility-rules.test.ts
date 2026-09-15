@@ -42,7 +42,13 @@ const accessibilityRules = [
 const locales = [
   {
     label: "English",
-    path: path.join(repoRoot, "docs/content/rules/accessibility.md"),
+    paths: [
+      path.join(repoRoot, "docs/content/rules/accessibility.md"),
+      path.join(repoRoot, "docs/content/rules/accessibility-core.md"),
+      path.join(repoRoot, "docs/content/rules/accessibility-structure.md"),
+      path.join(repoRoot, "docs/content/rules/accessibility-interactions.md"),
+      path.join(repoRoot, "docs/content/rules/accessibility-integrity.md"),
+    ],
     severityLabel: "Default severity:",
     presetsLabel: "Presets:",
     optionsLabel: "Options:",
@@ -52,7 +58,7 @@ const locales = [
   },
   {
     label: "Japanese",
-    path: path.join(repoRoot, "docs/content/ja/rules/accessibility.md"),
+    paths: [path.join(repoRoot, "docs/content/ja/rules/accessibility.md")],
     severityLabel: "既定の重大度:",
     presetsLabel: "プリセット:",
     optionsLabel: "オプション:",
@@ -64,7 +70,7 @@ const locales = [
 
 for (const locale of locales) {
   test(`${locale.label} accessibility docs expand every rule with examples`, () => {
-    const source = fs.readFileSync(locale.path, "utf8");
+    const source = readDocs(locale.paths);
     assert.doesNotMatch(
       source,
       locale.forbiddenHeading,
@@ -90,4 +96,8 @@ for (const locale of locales) {
       assert.ok(examples.length >= 2, `${ruleId} must include bad and good Vue examples`);
     }
   });
+}
+
+function readDocs(paths: string[]): string {
+  return paths.map((filePath) => fs.readFileSync(filePath, "utf8")).join("\n");
 }
