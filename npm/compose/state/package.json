@@ -42,10 +42,10 @@
     "build": "vp pack",
     "dev": "vp pack --watch",
     "test": "vp exec node --test 'src/**/*.test.ts'",
-    "check": "vp check src vite.config.ts && vp exec tsc --noEmit -p tsconfig.json",
-    "check:fix": "vp check --fix src vite.config.ts",
+    "check": "vp check src fixtures vite.config.ts && vp exec tsc --noEmit -p tsconfig.json",
+    "check:fix": "vp check --fix src fixtures vite.config.ts",
     "check:types": "vp exec tsc --noEmit -p tsconfig.json",
-    "fmt": "vp fmt --write src vite.config.ts"
+    "fmt": "vp fmt --write src fixtures vite.config.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:typescript",

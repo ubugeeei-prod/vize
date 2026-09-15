@@ -1,4 +1,6 @@
 import {
+  createControllableState,
+  createStateDiagnosticsManifest,
   createStateStore,
   defineStateModel,
   defineStateTransitions,
@@ -59,6 +61,9 @@ const store = createStateStore(counter);
 store.dispatch({ type: "increment", by: 2 }) satisfies CounterState;
 store.command("incrementBy", 3) satisfies CounterState;
 store.state.count satisfies number;
+store.undo() satisfies CounterState;
+store.redo() satisfies CounterState;
+store.history.canUndo satisfies boolean;
 
 // @ts-expect-error action payload is exact.
 store.dispatch({ type: "increment" });
@@ -66,6 +71,28 @@ store.dispatch({ type: "increment" });
 store.dispatch({ type: "remove", id: "x" });
 // @ts-expect-error commands keep argument tuples.
 store.command("incrementBy", "3");
+
+const controlled = createControllableState({
+  value: () => ({ count: 1 }),
+  onChange(next) {
+    next.count satisfies number;
+  },
+});
+controlled.controlled satisfies true;
+controlled.value.count satisfies number;
+
+const uncontrolled = createControllableState({
+  defaultValue: { count: 0 },
+});
+uncontrolled.controlled satisfies false;
+uncontrolled.set((previous) => ({ count: previous.count + 1 })) satisfies { count: number };
+
+// @ts-expect-error controlled state cannot also declare a default value.
+createControllableState({ value: () => ({ count: 1 }), defaultValue: { count: 0 } });
+
+const diagnostics = createStateDiagnosticsManifest([counter], { production: false });
+diagnostics.models[0]?.commands satisfies readonly string[] | undefined;
+
 defineStateModel({
   key: "broken",
   // @ts-expect-error source ownership is Vue-only.

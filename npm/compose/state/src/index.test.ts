@@ -4,7 +4,9 @@ import { test } from "node:test";
 
 import {
   canTransition,
+  createControllableState,
   createMemoryStatePersistence,
+  createStateDiagnosticsManifest,
   createStateManifest,
   createStateStore,
   defineStateModel,
@@ -91,6 +93,35 @@ void test("groups transactions and supports deterministic rollback", () => {
   assert.deepEqual(store.state, { items: [], pending: false });
 });
 
+void test("tracks bounded undo and redo history across actions and transactions", () => {
+  const store = createStateStore(cart, { history: { capacity: 2 } });
+
+  store.dispatch({ type: "add", sku: "book" });
+  store.transaction([{ type: "add", sku: "pen" }, { type: "checkout" }]);
+  store.dispatch({ type: "reset" });
+
+  assert.deepEqual(store.history, {
+    canUndo: true,
+    canRedo: false,
+    undoDepth: 2,
+    redoDepth: 0,
+    capacity: 2,
+  });
+
+  assert.deepEqual(store.undo(), { items: ["book", "pen"], pending: true });
+  assert.deepEqual(store.undo(), { items: ["book"], pending: false });
+  assert.deepEqual(store.redo(), { items: ["book", "pen"], pending: true });
+
+  store.clearHistory();
+  assert.deepEqual(store.history, {
+    canUndo: false,
+    canRedo: false,
+    undoDepth: 0,
+    redoDepth: 0,
+    capacity: 2,
+  });
+});
+
 void test("rolls back optimistic updates when confirmation fails", async () => {
   const store = createStateStore(cart);
 
@@ -103,6 +134,63 @@ void test("rolls back optimistic updates when confirmation fails", async () => {
   });
   assert.equal(rolledBack.status, "rolled-back");
   assert.deepEqual(store.state.items, ["book"]);
+  assert.deepEqual(store.history, {
+    canUndo: true,
+    canRedo: false,
+    undoDepth: 1,
+    redoDepth: 0,
+    capacity: 100,
+  });
+});
+
+void test("does not clobber newer updates when optimistic confirmation loses a race", async () => {
+  const store = createStateStore(cart);
+  let rejectOptimistic: ((reason?: unknown) => void) | undefined;
+
+  const stale = store.optimistic(
+    { type: "add", sku: "book" },
+    () =>
+      new Promise<void>((_resolve, reject) => {
+        rejectOptimistic = reject;
+      }),
+  );
+  store.dispatch({ type: "add", sku: "pen" });
+  assert.ok(rejectOptimistic);
+  rejectOptimistic(new Error("late failure"));
+
+  const result = await stale;
+  assert.equal(result.status, "superseded");
+  assert.deepEqual(store.state.items, ["book", "pen"]);
+});
+
+void test("supports controlled and uncontrolled state without request globals", () => {
+  let external = { count: 2 };
+  const changes: unknown[] = [];
+  const controlled = createControllableState({
+    value: () => external,
+    onChange(next, context) {
+      changes.push({ next, previous: context.previous, controlled: context.controlled });
+    },
+  });
+
+  assert.equal(controlled.controlled, true);
+  assert.deepEqual(controlled.value, { count: 2 });
+  assert.deepEqual(
+    controlled.set((state) => ({ count: state.count + 1 })),
+    { count: 3 },
+  );
+  assert.deepEqual(controlled.value, { count: 2 });
+  assert.deepEqual(changes, [{ next: { count: 3 }, previous: { count: 2 }, controlled: true }]);
+  external = { count: 3 };
+  assert.deepEqual(controlled.snapshot(), { count: 3 });
+
+  const uncontrolled = createControllableState({
+    defaultValue: { open: false },
+  });
+  assert.equal(uncontrolled.controlled, false);
+  assert.deepEqual(uncontrolled.set({ open: true }), { open: true });
+  assert.deepEqual(uncontrolled.value, { open: true });
+  assert.deepEqual(uncontrolled.reset(), { open: false });
 });
 
 void test("serializes SSR state and hydrates identity per request", () => {
@@ -188,6 +276,33 @@ void test("emits generator metadata from source-owned Vue fixtures", () => {
   const fixture = readFileSync(new URL("../fixtures/CartPanel.vue", import.meta.url), "utf8");
   assert.match(fixture, /<template>/);
   assert.match(fixture, /<script setup lang="ts">/);
+
+  const controllableFixture = readFileSync(
+    new URL("../fixtures/ControllablePanel.vue", import.meta.url),
+    "utf8",
+  );
+  assert.match(controllableFixture, /createControllableState/);
+});
+
+void test("keeps dev diagnostics empty for production manifests", () => {
+  assert.deepEqual(createStateDiagnosticsManifest([cart]), {
+    schemaVersion: 1,
+    production: false,
+    models: [
+      {
+        key: "cart.session",
+        source: "../fixtures/CartPanel.vue",
+        version: 2,
+        commands: ["addMany"],
+        persistence: true,
+        meta: { owner: "commerce" },
+      },
+    ],
+  });
+
+  const production = createStateDiagnosticsManifest([cart], { production: true });
+  assert.deepEqual(production, { schemaVersion: 1, production: true, models: [] });
+  assert.doesNotMatch(JSON.stringify(production), /cart\.session|CartPanel|commerce|addMany/);
 });
 
 void test("finite transitions are validated at runtime", () => {

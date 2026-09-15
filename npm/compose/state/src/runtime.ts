@@ -1,5 +1,4 @@
 import type {
-  AllowedTransition,
   AnyStateModelDefinition,
   CreateStateStoreOptions,
   InferAction,
@@ -8,21 +7,16 @@ import type {
   InferState,
   StateAction,
   StateCommandMap,
+  StateHistoryOptions,
   StateHydrationResult,
-  StateManifest,
   StateModelDefinition,
   StatePersistenceAdapter,
   StateSnapshot,
   StateStore,
-  StateTransitionTable,
 } from "./types.ts";
+import { STATE_ERROR, validateModel } from "./validation.ts";
 
-const STATE_ERROR = {
-  invalidKey: "VIZE_STATE_INVALID_KEY",
-  invalidSource: "VIZE_STATE_SOURCE_NOT_VUE",
-  invalidVersion: "VIZE_STATE_INVALID_VERSION",
-  missingCommand: "VIZE_STATE_UNKNOWN_COMMAND",
-} as const;
+const DEFAULT_HISTORY_CAPACITY = 100;
 
 /** Define a typed reducer store and preserve literal model metadata. */
 export function defineStateModel<
@@ -46,11 +40,37 @@ export function createStateStore<const Model extends AnyStateModelDefinition>(
   validateModel(model);
   const now = options.now ?? Date.now;
   let state = restoreState(model, options.snapshot, now).state;
+  let past: InferState<Model>[] = [];
+  let future: InferState<Model>[] = [];
+  const historyCapacity = resolveHistoryCapacity(options.history);
   let transactionId = 0;
+  let revision = 0;
 
-  const apply = (action: InferAction<Model>) => {
-    state = model.reducer(state, action) as InferState<Model>;
+  const remember = (before: InferState<Model>, after: InferState<Model>) => {
+    if (historyCapacity === 0 || Object.is(before, after)) return;
+    past.push(before);
+    if (past.length > historyCapacity) past = past.slice(past.length - historyCapacity);
+    future = [];
+  };
+
+  const commit = (next: InferState<Model>, recordHistory = true) => {
+    const before = state;
+    state = next;
+    if (recordHistory) remember(before, state);
+    if (!Object.is(before, state)) revision += 1;
     return state;
+  };
+
+  const reduce = (current: InferState<Model>, action: InferAction<Model>) =>
+    model.reducer(current, action) as InferState<Model>;
+
+  const reduceAll = (
+    current: InferState<Model>,
+    actions: readonly InferAction<Model>[],
+  ): InferState<Model> => {
+    let next = current;
+    for (const action of actions) next = reduce(next, action);
+    return next;
   };
 
   const store = {
@@ -61,8 +81,17 @@ export function createStateStore<const Model extends AnyStateModelDefinition>(
     get state() {
       return state;
     },
+    get history() {
+      return {
+        canUndo: past.length > 0,
+        canRedo: future.length > 0,
+        undoDepth: past.length,
+        redoDepth: future.length,
+        capacity: historyCapacity,
+      };
+    },
     dispatch(action) {
-      return apply(action);
+      return commit(reduce(state, action));
     },
     command(name, ...args) {
       const command = (model.commands as InferCommands<Model> | undefined)?.[name];
@@ -75,12 +104,11 @@ export function createStateStore<const Model extends AnyStateModelDefinition>(
       ) => InferAction<Model> | readonly InferAction<Model>[];
       const output = runCommand({ state }, ...args);
       const actions = Array.isArray(output) ? output : [output];
-      for (const action of actions) apply(action as InferAction<Model>);
-      return state;
+      return commit(reduceAll(state, actions as readonly InferAction<Model>[]));
     },
     transaction(actions) {
       const before = state;
-      for (const action of actions) apply(action);
+      commit(reduceAll(state, actions));
       return {
         id: ++transactionId,
         actions: [...actions],
@@ -90,17 +118,58 @@ export function createStateStore<const Model extends AnyStateModelDefinition>(
     },
     async optimistic(action, confirm) {
       const before = state;
-      apply(action);
+      const beforeRevision = revision;
+      const previousPast = past.slice();
+      const previousFuture = future.slice();
+      commit(reduce(state, action));
+      const optimisticRevision = revision;
       try {
         await confirm();
         return { status: "committed", state } as const;
       } catch (reason) {
+        if (revision !== optimisticRevision) {
+          return { status: "superseded", state, reason } as const;
+        }
         state = before;
+        past = previousPast;
+        future = previousFuture;
+        revision = beforeRevision;
         return { status: "rolled-back", state, reason } as const;
       }
     },
     rollback(transaction) {
+      const current = state;
+      if (Object.is(state, transaction.after) && past[past.length - 1] === transaction.before) {
+        past = past.slice(0, -1);
+      }
       state = transaction.before;
+      future = [];
+      if (!Object.is(current, state)) revision += 1;
+    },
+    undo() {
+      if (past.length === 0) return state;
+      const previous = past[past.length - 1] as InferState<Model>;
+      past = past.slice(0, -1);
+      future = [state, ...future];
+      state = previous;
+      revision += 1;
+      return state;
+    },
+    redo() {
+      if (future.length === 0) return state;
+      const next = future[0] as InferState<Model>;
+      future = future.slice(1);
+      if (historyCapacity > 0) {
+        past.push(state);
+        if (past.length > historyCapacity) past = past.slice(past.length - historyCapacity);
+      }
+      state = next;
+      revision += 1;
+      return state;
+    },
+    clearHistory() {
+      past = [];
+      future = [];
     },
     snapshot(): StateSnapshot<InferKey<Model>, InferState<Model>> {
       return {
@@ -184,50 +253,6 @@ export function createMemoryStatePersistence(
   };
 }
 
-/** Emit metadata for generators, documentation, and devtools. */
-export function createStateManifest<const Models extends readonly AnyStateModelDefinition[]>(
-  models: Models,
-): StateManifest {
-  for (const model of models) validateModel(model);
-  return {
-    schemaVersion: 1,
-    models: models.map((model) => ({
-      key: model.key,
-      source: model.source,
-      version: model.version,
-      meta: model.meta ?? {},
-      persistence: model.persistence != null,
-    })),
-  };
-}
-
-/** Define a literal finite-state table for type-checked transitions. */
-export function defineStateTransitions<const Table extends StateTransitionTable>(
-  table: Table,
-): Table {
-  return table;
-}
-
-/** Runtime guard for finite-state transitions. */
-export function canTransition<
-  const Table extends StateTransitionTable,
-  const From extends keyof Table & string,
->(table: Table, from: From, to: string): to is AllowedTransition<Table, From> {
-  return table[from]?.includes(to) ?? false;
-}
-
-/** Assert and return a literal transition destination. */
-export function transitionState<
-  const Table extends StateTransitionTable,
-  const From extends keyof Table & string,
-  const To extends AllowedTransition<Table, From>,
->(table: Table, from: From, to: To): To {
-  if (!canTransition(table, from, to)) {
-    throw new Error(`Invalid state transition ${from} -> ${String(to)}`);
-  }
-  return to;
-}
-
 function restoreState<const Model extends AnyStateModelDefinition>(
   model: Model,
   snapshot: StateSnapshot | undefined,
@@ -276,14 +301,9 @@ function restoreState<const Model extends AnyStateModelDefinition>(
   return { status, state: restored as InferState<Model>, recovered: false };
 }
 
-function validateModel(model: Pick<AnyStateModelDefinition, "key" | "source" | "version">): void {
-  if (!model.key) throw new Error(`[${STATE_ERROR.invalidKey}] State model key is required`);
-  if (!model.source.endsWith(".vue")) {
-    throw new Error(`[${STATE_ERROR.invalidSource}] State model ${model.key} must use .vue`);
-  }
-  if (!Number.isInteger(model.version) || model.version < 1) {
-    throw new Error(
-      `[${STATE_ERROR.invalidVersion}] State model ${model.key} version must be >= 1`,
-    );
-  }
+function resolveHistoryCapacity(options: false | StateHistoryOptions | undefined): number {
+  if (options === false) return 0;
+  const capacity = options?.capacity ?? DEFAULT_HISTORY_CAPACITY;
+  if (!Number.isFinite(capacity) || capacity < 0) return DEFAULT_HISTORY_CAPACITY;
+  return Math.trunc(capacity);
 }

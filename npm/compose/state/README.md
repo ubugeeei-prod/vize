@@ -23,6 +23,7 @@ const counterModel = defineStateModel({
 
 const counter = createStateStore(counterModel);
 counter.dispatch({ type: "increment", by: 1 });
+counter.undo();
 </script>
 
 <template>
@@ -33,3 +34,8 @@ counter.dispatch({ type: "increment", by: 1 });
 Server renderers can call `serializeStateSnapshot(store)` and restore the client with
 `hydrateStateStore(model, snapshot)`. App-facing model examples are authored as `.vue` SFCs so
 generators can keep ownership metadata attached to real source files.
+
+Headless components can use `createControllableState()` for controlled props or uncontrolled local
+defaults. Devtools can call `createStateDiagnosticsManifest(models)` during development; production
+manifests deliberately return an empty model list so command names, `.vue` sources, and metadata are
+not emitted into production diagnostics payloads.

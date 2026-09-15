@@ -143,6 +143,11 @@ export interface StatePersistenceAdapter {
 export interface CreateStateStoreOptions<State> {
   readonly now?: () => number;
   readonly snapshot?: StateSnapshot<StateModelKey, State>;
+  readonly history?: false | StateHistoryOptions;
+}
+
+export interface StateHistoryOptions {
+  readonly capacity?: number;
 }
 
 export interface StateTransaction<State, Action extends StateAction> {
@@ -153,9 +158,17 @@ export interface StateTransaction<State, Action extends StateAction> {
 }
 
 export interface StateOptimisticResult<State> {
-  readonly status: "committed" | "rolled-back";
+  readonly status: "committed" | "rolled-back" | "superseded";
   readonly state: State;
   readonly reason?: unknown;
+}
+
+export interface StateHistoryStatus {
+  readonly canUndo: boolean;
+  readonly canRedo: boolean;
+  readonly undoDepth: number;
+  readonly redoDepth: number;
+  readonly capacity: number;
 }
 
 /** Runtime store returned by createStateStore. */
@@ -165,6 +178,7 @@ export interface StateStore<Model extends AnyStateModelDefinition> {
   readonly source: Model["source"];
   readonly version: Model["version"];
   readonly state: InferState<Model>;
+  readonly history: StateHistoryStatus;
   readonly dispatch: (action: InferAction<Model>) => InferState<Model>;
   readonly command: <Name extends keyof InferCommands<Model> & string>(
     name: Name,
@@ -178,6 +192,9 @@ export interface StateStore<Model extends AnyStateModelDefinition> {
     confirm: () => void | Promise<void>,
   ) => Promise<StateOptimisticResult<InferState<Model>>>;
   readonly rollback: (transaction: StateTransaction<InferState<Model>, InferAction<Model>>) => void;
+  readonly undo: () => InferState<Model>;
+  readonly redo: () => InferState<Model>;
+  readonly clearHistory: () => void;
   readonly snapshot: () => StateSnapshot<InferKey<Model>, InferState<Model>>;
 }
 
@@ -209,3 +226,58 @@ export type AllowedTransition<
   Table extends StateTransitionTable,
   From extends keyof Table & string,
 > = Table[From][number] & string;
+
+export type StateValueUpdater<State> = State | ((previous: Readonly<State>) => State);
+
+export interface StateChangeContext<State> {
+  readonly previous: Readonly<State>;
+  readonly next: Readonly<State>;
+  readonly controlled: boolean;
+}
+
+export type StateChangeHandler<State> = (next: State, context: StateChangeContext<State>) => void;
+
+export interface ControlledStateOptions<State> {
+  readonly value: () => State;
+  readonly defaultValue?: never;
+  readonly onChange?: StateChangeHandler<State>;
+  readonly equals?: (left: Readonly<State>, right: Readonly<State>) => boolean;
+}
+
+export interface UncontrolledStateOptions<State> {
+  readonly defaultValue: State;
+  readonly value?: never;
+  readonly onChange?: StateChangeHandler<State>;
+  readonly equals?: (left: Readonly<State>, right: Readonly<State>) => boolean;
+}
+
+export type ControllableStateOptions<State> =
+  | ControlledStateOptions<State>
+  | UncontrolledStateOptions<State>;
+
+export interface ControllableState<State, Controlled extends boolean = boolean> {
+  readonly controlled: Controlled;
+  readonly value: State;
+  readonly set: (next: StateValueUpdater<State>) => State;
+  readonly reset: () => State;
+  readonly snapshot: () => State;
+}
+
+export interface StateDiagnosticsOptions {
+  readonly production?: boolean;
+}
+
+export interface StateDiagnosticsManifest {
+  readonly schemaVersion: 1;
+  readonly production: boolean;
+  readonly models: readonly StateDiagnosticsEntry[];
+}
+
+export interface StateDiagnosticsEntry {
+  readonly key: StateModelKey;
+  readonly source: StateSourceSpecifier;
+  readonly version: number;
+  readonly commands: readonly string[];
+  readonly persistence: boolean;
+  readonly meta: StateModelMeta;
+}
