@@ -1,0 +1,13 @@
+{
+  "context": { "locked": true, "label": "Save" },
+  "steps": [
+    { "patch": { "locked": false, "label": "Publish" } },
+    { "event": "click", "selector": "button" },
+    { "patch": { "label": null } },
+    { "patch": { "label": 42 } },
+    { "patch": { "label": true } },
+    { "patch": { "label": "\u96ea\n\"ready\"" } },
+    { "event": "click", "selector": "button" },
+    { "patch": { "locked": true, "label": "Saved" } }
+  ]
+}

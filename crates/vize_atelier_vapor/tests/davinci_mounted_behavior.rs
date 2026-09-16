@@ -80,19 +80,23 @@ fn assert_backends(source: &str, context: Value, steps: Value) -> Value {
 
 #[test]
 fn mounted_dynamic_button_updates_and_dispatches_events() {
+    let scenario: Value = serde_json::from_str(include_str!(
+        "../../../formal/impeto/fixtures/rust-lowered-static-dynamic.scenario.json"
+    ))
+    .unwrap();
+    let expected: Value = serde_json::from_str(include_str!(
+        "../../../formal/impeto/fixtures/rust-lowered-static-dynamic.behavior.json"
+    ))
+    .unwrap();
     let trace = assert_backends(
         r#"<main class="shell"><button :disabled="locked" @click="save">{{ label }}</button></main>"#,
-        json!({"locked": true, "label": "Save"}),
-        json!([{"patch": {"locked": false, "label": "Publish"}}, {"event": "click", "selector": "button"}]),
+        scenario["context"].clone(),
+        scenario["steps"].clone(),
     );
-    assert_eq!(trace[0]["tree"][0]["children"][0]["disabled"], true);
-    assert_eq!(trace[1]["tree"][0]["children"][0]["disabled"], false);
     assert_eq!(
-        trace[1]["tree"][0]["children"][0]["children"],
-        json!(["Publish"])
+        trace, expected,
+        "mounted behavior differs from Lean reference"
     );
-    assert_eq!(trace[2]["events"], json!(["save"]));
-    assert_eq!(trace[3]["tree"], json!([]));
 }
 
 #[test]

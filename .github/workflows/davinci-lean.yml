@@ -82,6 +82,11 @@ jobs:
       - name: Run TS-28 backend trace split
         working-directory: formal/impeto
         run: lake exe impetoRef --check-backend-fixtures
+      - name: Run TS-28 stateful reference differential
+        working-directory: formal/impeto
+        run: lake exe impetoRef --check-stateful-fixtures
+      - name: Check Rust S3 graph and value fixture provenance
+        run: cargo test -p vize_s2_to_s3 --test lean_reference_fixture
       - name: Run TS-28 compiled backend trace
         run: cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace
       - name: Run TS-30 mounted backend behavior

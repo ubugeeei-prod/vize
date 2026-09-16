@@ -1,0 +1,125 @@
+[
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": { "class": "shell" },
+        "children": [
+          {
+            "tag": "button",
+            "attributes": { "disabled": "" },
+            "children": ["Save"],
+            "disabled": true
+          }
+        ]
+      }
+    ],
+    "events": []
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": { "class": "shell" },
+        "children": [
+          { "tag": "button", "attributes": {}, "children": ["Publish"], "disabled": false }
+        ]
+      }
+    ],
+    "events": []
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": { "class": "shell" },
+        "children": [
+          { "tag": "button", "attributes": {}, "children": ["Publish"], "disabled": false }
+        ]
+      }
+    ],
+    "events": ["save"]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": { "class": "shell" },
+        "children": [{ "tag": "button", "attributes": {}, "children": [], "disabled": false }]
+      }
+    ],
+    "events": ["save"]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": { "class": "shell" },
+        "children": [{ "tag": "button", "attributes": {}, "children": ["42"], "disabled": false }]
+      }
+    ],
+    "events": ["save"]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": { "class": "shell" },
+        "children": [{ "tag": "button", "attributes": {}, "children": ["true"], "disabled": false }]
+      }
+    ],
+    "events": ["save"]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": { "class": "shell" },
+        "children": [
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": ["\u96ea\n\"ready\""],
+            "disabled": false
+          }
+        ]
+      }
+    ],
+    "events": ["save"]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": { "class": "shell" },
+        "children": [
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": ["\u96ea\n\"ready\""],
+            "disabled": false
+          }
+        ]
+      }
+    ],
+    "events": ["save", "save"]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": { "class": "shell" },
+        "children": [
+          {
+            "tag": "button",
+            "attributes": { "disabled": "" },
+            "children": ["Saved"],
+            "disabled": true
+          }
+        ]
+      }
+    ],
+    "events": ["save", "save"]
+  },
+  { "tree": [], "events": ["save", "save"] }
+]

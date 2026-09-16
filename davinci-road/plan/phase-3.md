@@ -74,7 +74,11 @@ workflow. _Third slice 2026-09-15:_ backend-specific `.vdom.trace` and
 `.vapor.trace` artifacts are now checked by the Lean runner and mirrored by the
 Rust S2→S3 fixture bridge. _Fifth slice 2026-09-15:_ compiled DOM/Vapor render
 functions are now executed by the TS-28 cargo gate through the shared JS runtime
-trace runner; full mounted DOM/Vapor behavior remains open.
+trace runner. _Stateful slice 2026-09-16:_ the dynamic-button fixture now feeds
+Rust-owned S3 values into independent Lean semantics and compares the same full
+JSON observations against both mounted Vue runtimes, including patches, clicks
+and unmount. Broader control/list/model semantics and scheduling proofs remain
+open; this does not close P3-4.
 
 **P3-5 Op reference doc.** `davinci-road/plan/impeto-ops.md`: every op's
 meaning under both interpretations, written **before any optional pass

@@ -30,6 +30,8 @@ test("TS-28 pins the Lean toolchain and CI package directory", () => {
   assert.match(workflow, /lake-package-directory:\s*formal\/impeto/u);
   assert.match(workflow, /lake exe impetoRef --check-fixtures/u);
   assert.match(workflow, /lake exe impetoRef --check-backend-fixtures/u);
+  assert.match(workflow, /lake exe impetoRef --check-stateful-fixtures/u);
+  assert.match(workflow, /cargo test -p vize_s2_to_s3 --test lean_reference_fixture/u);
   assert.match(workflow, /cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace/u);
   assert.match(workflow, /tests\/tooling\/support\/davinci-runtime-trace\.mjs/u);
   assert.match(workflow, /tests\/tooling\/support\/davinci-mounted-trace\.mjs/u);
@@ -61,6 +63,7 @@ test("TS-28 fixture ladder is declared and non-vacuous", () => {
   assert.match(main, /--check-backend-fixtures/u);
   assert.match(main, /--trace-vdom/u);
   assert.match(main, /--trace-vapor/u);
+  assert.match(main, /--check-stateful-fixtures/u);
 });
 
 test("TS-28 Rust lowering bridge is covered by an ordinary cargo test", () => {
@@ -72,6 +75,54 @@ test("TS-28 Rust lowering bridge is covered by an ordinary cargo test", () => {
   assert.match(bridge, /reference_trace_text\(&lowered\.program\)/u);
   assert.match(bridge, /backend_trace_text\(TraceBackend::Vdom, &lowered\.program\)/u);
   assert.match(bridge, /backend_trace_text\(TraceBackend::Vapor, &lowered\.program\)/u);
+  assert.match(
+    bridge,
+    /S3ValuesFolio::of\(&lowered\.program\)\.print_to_string\(FolioMode::Full\)/u,
+  );
+  assert.match(bridge, /rust-lowered-static-dynamic\.values\.folio/u);
+});
+
+test("TS-28 stateful reference and mounted backends share full observations and steps", () => {
+  const stem = "rust-lowered-static-dynamic";
+  const scenario = JSON.parse(
+    fs.readFileSync(path.join(fixtureRoot, `${stem}.scenario.json`), "utf8"),
+  );
+  const trace = JSON.parse(
+    fs.readFileSync(path.join(fixtureRoot, `${stem}.behavior.json`), "utf8"),
+  );
+  assert.equal(trace.length, scenario.steps.length + 2);
+  assert.deepEqual(trace[0].events, []);
+  assert.deepEqual(trace.at(-1), { tree: [], events: ["save", "save"] });
+  assert.deepEqual(
+    trace.slice(0, -1).map((snapshot) => snapshot.tree[0].children[0].disabled),
+    [true, false, false, false, false, false, false, false, true],
+  );
+  assert.deepEqual(
+    trace.slice(0, -1).map((snapshot) => snapshot.tree[0].children[0].children),
+    [
+      ["Save"],
+      ["Publish"],
+      ["Publish"],
+      [],
+      ["42"],
+      ["true"],
+      ['\u96ea\n"ready"'],
+      ['\u96ea\n"ready"'],
+      ["Saved"],
+    ],
+  );
+  const mounted = readRepoFile(
+    "crates",
+    "vize_atelier_vapor",
+    "tests",
+    "davinci_mounted_behavior.rs",
+  );
+  assert.match(mounted, /rust-lowered-static-dynamic\.scenario\.json/u);
+  assert.match(mounted, /rust-lowered-static-dynamic\.behavior\.json/u);
+  assert.match(mounted, /assert_eq!\(\s*trace, expected,/u);
+  const main = readRepoFile("formal", "impeto", "Main.lean");
+  assert.match(main, /BehaviorTests\.check/u);
+  assert.match(main, /Behavior\.check "fixtures\/rust-lowered-static-dynamic"/u);
 });
 
 test("TS-28 compiled backend trace gate executes both emitted backends", async () => {
@@ -144,6 +195,6 @@ test("TS-28 command in the suite registry names the executable runner", () => {
   const suites = readRepoFile("davinci-road", "plan", "test-suites.md");
   assert.match(
     suites,
-    /\| TS-28 \| Lean reference differential\s+\| `cd formal\/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures && cd \.\.\/\.\. && cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace` \| exact agreement on observable semantics; known runtime trace gaps are enumerated fail-closed/u,
+    /\| TS-28 \| Lean reference differential\s+\| `cd formal\/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures && lake exe impetoRef --check-stateful-fixtures && cd \.\.\/\.\. && cargo test -p vize_s2_to_s3 --test lean_reference_fixture && cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace --test davinci_mounted_behavior` \| exact agreement on observable semantics; stateful subset and remaining operation-order gaps are explicit/u,
   );
 });
