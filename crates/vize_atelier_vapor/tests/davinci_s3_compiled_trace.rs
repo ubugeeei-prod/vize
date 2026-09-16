@@ -64,24 +64,6 @@ const STATIC_DYNAMIC_VAPOR_COMPILED_KNOWN_GAP: &[&str] = &[
     "assign-prop",
     "text-effect",
 ];
-const CONTROL_SLOTS_VAPOR_REFERENCE: &[&str] = &[
-    "create-node",
-    "conditional-effect",
-    "create-node",
-    "text-effect",
-    "slot-effect",
-    "create-node",
-    "text-effect",
-];
-const CONTROL_SLOTS_VAPOR_COMPILED_KNOWN_GAP: &[&str] = &[
-    "create-node",
-    "slot-effect",
-    "create-node",
-    "text-effect",
-    "conditional-effect",
-    "create-node",
-    "text-effect",
-];
 
 #[test]
 fn compiled_backend_runtime_traces_match_s3_reference_ladder_or_known_gap() {
@@ -122,15 +104,6 @@ fn assert_vapor_trace_matches_reference_or_known_gap(
     if fixture_name == "rust-lowered-static-dynamic"
         && labels_match(expected, STATIC_DYNAMIC_VAPOR_REFERENCE)
         && labels_match(actual, STATIC_DYNAMIC_VAPOR_COMPILED_KNOWN_GAP)
-    {
-        return;
-    }
-
-    // Exact known gap: Vapor currently builds the slot fallback before the
-    // sibling conditional block, while the S3 trace orders conditional/slot.
-    if fixture_name == "rust-lowered-control-slots"
-        && labels_match(expected, CONTROL_SLOTS_VAPOR_REFERENCE)
-        && labels_match(actual, CONTROL_SLOTS_VAPOR_COMPILED_KNOWN_GAP)
     {
         return;
     }

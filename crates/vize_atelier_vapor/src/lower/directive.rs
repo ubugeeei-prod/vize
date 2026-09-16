@@ -289,7 +289,6 @@ pub(crate) fn transform_directive<'a>(
             }
         }
         "text" => {
-            // v-text
             if let Some(ref exp) = dir.exp
                 && let ExpressionNode::Simple(val_exp) = exp
             {
@@ -299,6 +298,7 @@ pub(crate) fn transform_directive<'a>(
 
                 let set_text = SetTextIRNode {
                     element: element_id,
+                    is_element: true,
                     values,
                 };
 

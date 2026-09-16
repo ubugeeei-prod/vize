@@ -48,8 +48,15 @@ pub(crate) fn generate_operation_inline(
             Some(generate_set_dynamic_props_inline(ctx, set_props))
         }
         OperationNode::SetText(set_text) => {
-            ctx.use_helper("setText");
-            let text_ref = if let Some(text_var) = ctx.text_nodes.get(&set_text.element) {
+            let helper = if set_text.is_element {
+                "setElementText"
+            } else {
+                "setText"
+            };
+            ctx.use_helper(helper);
+            let text_ref = if !set_text.is_element
+                && let Some(text_var) = ctx.text_nodes.get(&set_text.element)
+            {
                 text_var.clone()
             } else {
                 cstr!("n{}", set_text.element)
@@ -70,9 +77,9 @@ pub(crate) fn generate_operation_inline(
                 .collect();
 
             if values.len() == 1 {
-                Some(cstr!("_setText({text_ref}, {})", values[0]))
+                Some(cstr!("_{helper}({text_ref}, {})", values[0]))
             } else {
-                Some(cstr!("_setText({text_ref}, {})", values.join(" + ")))
+                Some(cstr!("_{helper}({text_ref}, {})", values.join(" + ")))
             }
         }
         _ => None,

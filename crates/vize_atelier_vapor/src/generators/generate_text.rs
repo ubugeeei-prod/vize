@@ -7,6 +7,11 @@ use vize_carton::{String, ToCompactString, cstr};
 /// Generate SetText code
 pub fn generate_set_text(ctx: &mut GenerateContext, set_text: &SetTextIRNode<'_>) {
     let element = cstr!("_n{}", set_text.element);
+    let helper = if set_text.is_element {
+        "setElementText"
+    } else {
+        "setText"
+    };
 
     let values: Vec<String> = set_text
         .values
@@ -21,11 +26,11 @@ pub fn generate_set_text(ctx: &mut GenerateContext, set_text: &SetTextIRNode<'_>
         .collect();
 
     if values.len() == 1 {
-        ctx.push_line_fmt(format_args!("_setText({element}, {})", values[0]));
+        ctx.push_line_fmt(format_args!("_{helper}({element}, {})", values[0]));
     } else if values.is_empty() {
-        ctx.push_line_fmt(format_args!("_setText({element}, \"\")"));
+        ctx.push_line_fmt(format_args!("_{helper}({element}, \"\")"));
     } else {
-        ctx.push_line_fmt(format_args!("_setText({element}, {})", values.join(" + ")));
+        ctx.push_line_fmt(format_args!("_{helper}({element}, {})", values.join(" + ")));
     }
 }
 

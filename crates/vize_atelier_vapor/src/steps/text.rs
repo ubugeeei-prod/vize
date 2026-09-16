@@ -18,6 +18,7 @@ pub fn transform_interpolation<'a>(
 
     let set_text = SetTextIRNode {
         element: element_id,
+        is_element: false,
         values,
     };
 

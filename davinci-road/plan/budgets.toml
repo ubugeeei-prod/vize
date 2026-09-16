@@ -258,12 +258,12 @@ ssr_stress-deep = { walks = 2, visits = 144 }
 ssr_stress-wide = { walks = 2, visits = 4 }
 ssr_stress-interp = { walks = 2, visits = 2002 }
 
-vapor_small = { walks = 2, visits = 25 }
-vapor_medium = { walks = 2, visits = 102 }
-vapor_large = { walks = 2, visits = 127 }
-vapor_stress-deep = { walks = 2, visits = 256 }
+vapor_small = { walks = 2, visits = 23 }
+vapor_medium = { walks = 2, visits = 82 }
+vapor_large = { walks = 2, visits = 118 }
+vapor_stress-deep = { walks = 2, visits = 203 }
 vapor_stress-wide = { walks = 2, visits = 4 }
-vapor_stress-interp = { walks = 2, visits = 3102 }
+vapor_stress-interp = { walks = 2, visits = 3002 }
 
 [target.phase-2]
 # The phase-2 improvement target, pinned at phase start per P2-12a, so the

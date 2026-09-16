@@ -63,14 +63,19 @@ three tables — a cross-check on the probe rather than a coincidence.
 
 ### Vapor (`compile_vapor`, default options)
 
+Ratchet updated 2026-09-16: source-ordered dynamic/structural lowering removes
+the separate structural-child scan for parents with dynamic children. Mounted
+TS-30 traces and the existing compiler fixtures verify that both kinds of
+children still execute. This measures node visits, not wall-clock speed.
+
 | fixture       | walks | visits | transform | vapor_lower |
 | ------------- | ----: | -----: | --------: | ----------: |
-| small         |     2 |     25 |         8 |          17 |
-| medium        |     2 |    102 |        33 |          69 |
-| large         |     2 |    127 |        57 |          70 |
-| stress-deep   |     2 |    256 |        72 |         184 |
+| small         |     2 |     23 |         8 |          15 |
+| medium        |     2 |     82 |        33 |          49 |
+| large         |     2 |    118 |        57 |          61 |
+| stress-deep   |     2 |    203 |        72 |         131 |
 | stress-wide   |     2 |      4 |         2 |           2 |
-| stress-interp |     2 |   3102 |      1001 |        2101 |
+| stress-interp |     2 |   3002 |      1001 |        2001 |
 
 ## What the numbers say
 
@@ -81,8 +86,8 @@ three tables — a cross-check on the probe rather than a coincidence.
   duplicate-work story of [motivation.md](../motivation.md), in the traversal
   dimension rather than the parse dimension.
 - **Vapor lowering re-walks the same children several times.** `stress-deep`:
-  72 transform visits against 184 lowering visits (2.6×); `stress-interp`:
-  1001 against 2101 (2.1×). Vapor lowering has six distinct child-list walkers
+  72 transform visits against 131 lowering visits (1.8×); `stress-interp`:
+  1001 against 2001 (2.0×). Vapor lowering has six distinct child-list walkers
   (`transform_children`, the `<template>` peel, three deferred-children loops
   and the text-run collector) and an element whose children are dynamic is
   walked by more than one of them. Region-owning `ui.for` / `ui.if` ops

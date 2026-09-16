@@ -13,6 +13,9 @@ on:
       - "davinci-road/plan/test-suites.md"
       - "tests/tooling/davinci-lean-reference.test.ts"
       - "tests/tooling/support/davinci-runtime-trace.mjs"
+      - "tests/tooling/support/davinci-mounted-trace.mjs"
+      - "tests/package.json"
+      - "pnpm-lock.yaml"
       - ".github/workflows/davinci-lean.yml"
   pull_request:
     branches: [main, davinci]
@@ -26,6 +29,9 @@ on:
       - "davinci-road/plan/test-suites.md"
       - "tests/tooling/davinci-lean-reference.test.ts"
       - "tests/tooling/support/davinci-runtime-trace.mjs"
+      - "tests/tooling/support/davinci-mounted-trace.mjs"
+      - "tests/package.json"
+      - "pnpm-lock.yaml"
       - ".github/workflows/davinci-lean.yml"
   workflow_dispatch:
 
@@ -60,6 +66,8 @@ jobs:
         with:
           node-version-file: package.json
           run-install: false
+      - name: Install mounted runtime dependencies
+        run: vp install --frozen-lockfile --prefer-offline
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1.6.0
         with:
           lake-package-directory: formal/impeto
@@ -76,3 +84,5 @@ jobs:
         run: lake exe impetoRef --check-backend-fixtures
       - name: Run TS-28 compiled backend trace
         run: cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace
+      - name: Run TS-30 mounted backend behavior
+        run: cargo test -p vize_atelier_vapor --test davinci_mounted_behavior

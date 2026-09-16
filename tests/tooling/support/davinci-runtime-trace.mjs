@@ -3,6 +3,11 @@ import { pathToFileURL } from "node:url";
 
 const importPattern = /import\s*\{([^}]+)\}\s*from\s*["']vue["'];?/gu;
 
+export async function evaluateCompiledRender(code, runtime) {
+  const { body, bindings } = stripVueImports(code);
+  return evaluateRender(body, runtime, bindings, {});
+}
+
 export async function traceCompiledBackend({ backend, code, context = {} }) {
   const trace = [];
   const renderContext = { $slots: {}, save: noop, ...context };
@@ -210,6 +215,9 @@ function createVaporHelpers(trace) {
       trace.push("assign-prop");
     },
     setText: () => {
+      trace.push("text-effect");
+    },
+    setElementText: () => {
       trace.push("text-effect");
     },
     template: (html) => () => {

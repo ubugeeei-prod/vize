@@ -173,6 +173,7 @@ fn transform_combined_block_text<'a>(
 
     let set_text = SetTextIRNode {
         element: element_id,
+        is_element: false,
         values,
     };
     ctx.push_dynamic_operation(block, OperationNode::SetText(set_text));

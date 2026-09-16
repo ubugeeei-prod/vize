@@ -32,6 +32,9 @@ test("TS-28 pins the Lean toolchain and CI package directory", () => {
   assert.match(workflow, /lake exe impetoRef --check-backend-fixtures/u);
   assert.match(workflow, /cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace/u);
   assert.match(workflow, /tests\/tooling\/support\/davinci-runtime-trace\.mjs/u);
+  assert.match(workflow, /tests\/tooling\/support\/davinci-mounted-trace\.mjs/u);
+  assert.match(workflow, /vp install --frozen-lockfile --prefer-offline/u);
+  assert.match(workflow, /cargo test -p vize_atelier_vapor --test davinci_mounted_behavior/u);
 });
 
 test("TS-28 fixture ladder is declared and non-vacuous", () => {
@@ -130,7 +133,7 @@ test("TS-28 compiled backend trace gate executes both emitted backends", async (
     /unsupported vue runtime helper: createForStatic/u,
   );
   assert.match(gate, /STATIC_DYNAMIC_VAPOR_COMPILED_KNOWN_GAP/u);
-  assert.match(gate, /CONTROL_SLOTS_VAPOR_COMPILED_KNOWN_GAP/u);
+  assert.doesNotMatch(gate, /CONTROL_SLOTS_VAPOR_COMPILED_KNOWN_GAP/u);
   assert.match(gate, /rust-lowered-static-dynamic\.vdom\.trace/u);
   assert.match(gate, /rust-lowered-static-dynamic\.vapor\.trace/u);
   assert.match(gate, /rust-lowered-control-slots\.vdom\.trace/u);

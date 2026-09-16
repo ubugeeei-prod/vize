@@ -104,10 +104,17 @@ pub(super) fn generate_set_dynamic_props(
 
 /// Generate SetText
 pub(super) fn generate_set_text(ctx: &mut GenerateContext, set_text: &SetTextIRNode<'_>) {
-    ctx.use_helper("setText");
+    let helper = if set_text.is_element {
+        "setElementText"
+    } else {
+        "setText"
+    };
+    ctx.use_helper(helper);
 
     // Use text node reference if available, otherwise use element directly
-    let text_ref = if let Some(text_var) = ctx.text_nodes.get(&set_text.element) {
+    let text_ref = if !set_text.is_element
+        && let Some(text_var) = ctx.text_nodes.get(&set_text.element)
+    {
         text_var.clone()
     } else {
         cstr!("n{}", set_text.element)
@@ -128,10 +135,10 @@ pub(super) fn generate_set_text(ctx: &mut GenerateContext, set_text: &SetTextIRN
         .collect();
 
     if values.len() == 1 {
-        ctx.push_line_fmt(format_args!("_setText({}, {})", text_ref, values[0]));
+        ctx.push_line_fmt(format_args!("_{helper}({}, {})", text_ref, values[0]));
     } else {
         ctx.push_line_fmt(format_args!(
-            "_setText({}, {})",
+            "_{helper}({}, {})",
             text_ref,
             values.join(" + ")
         ));

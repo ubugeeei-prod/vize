@@ -1322,6 +1322,9 @@ importers:
       graphql:
         specifier: 16.14.2
         version: 16.14.2
+      happy-dom:
+        specifier: catalog:testing
+        version: 20.11.2
       naive-ui:
         specifier: 2.44.1
         version: 2.44.1(vue@3.6.0-beta.10(typescript@6.0.3))

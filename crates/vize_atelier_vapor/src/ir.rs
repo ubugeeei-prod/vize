@@ -152,6 +152,7 @@ pub struct SetDynamicPropsIRNode<'a> {
 #[derive(Debug)]
 pub struct SetTextIRNode<'a> {
     pub element: usize,
+    pub is_element: bool,
     pub values: Vec<'a, Box<'a, SimpleExpressionNode<'a>>>,
 }
 

@@ -60,6 +60,7 @@
     "chart.js": "4.5.1",
     "element-plus": "2.14.1",
     "graphql": "16.14.2",
+    "happy-dom": "catalog:testing",
     "naive-ui": "2.44.1",
     "pixelmatch": "7.2.0",
     "pngjs": "catalog:content",

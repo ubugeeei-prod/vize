@@ -27,12 +27,12 @@ use vize_davinci::legacy_plan;
 
 /// fixture name -> (stage tree-walks, template-node visits) per fused compile.
 const BASELINE: [(&str, u64, u64); 6] = [
-    ("small", 2, 25),
-    ("medium", 2, 102),
-    ("large", 2, 127),
-    ("stress-deep", 2, 256),
+    ("small", 2, 23),
+    ("medium", 2, 82),
+    ("large", 2, 118),
+    ("stress-deep", 2, 203),
     ("stress-wide", 2, 4),
-    ("stress-interp", 2, 3102),
+    ("stress-interp", 2, 3002),
 ];
 
 #[test]

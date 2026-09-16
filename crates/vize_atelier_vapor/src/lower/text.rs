@@ -50,6 +50,7 @@ pub(crate) fn transform_interpolation<'a>(
 
     let set_text = SetTextIRNode {
         element: element_id,
+        is_element: false,
         values,
     };
 
@@ -184,6 +185,7 @@ fn flush_text_run<'a>(
             block,
             OperationNode::SetText(SetTextIRNode {
                 element: text_id,
+                is_element: false,
                 values: run_values,
             }),
         );
