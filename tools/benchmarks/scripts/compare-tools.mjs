@@ -23,6 +23,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 
 import { renderProvenanceLines, resolveBackend } from "./benchmark-provenance.mjs";
+import { resolveVuePackageDir } from "./check-gate-env.mjs";
 import { createLargeSfcSource } from "./compare-tools-large-sfc.mjs";
 import { buildMetadata } from "./compare-tools-metadata.mjs";
 import { DEFAULT_MUSEA_FILE_COUNT, measureMuseaSurface } from "./compare-tools-musea.mjs";
@@ -35,8 +36,10 @@ import {
 import {
   createTypecheckToolVariants,
   prepareTypecheckDir,
+  prepareTypecheckPackages,
   typecheckToolBins,
 } from "./compare-tools-typecheck.mjs";
+import { gateTypecheckVariants } from "./typecheck-readiness.mjs";
 import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.mjs";
 import { linkColdNodeModules } from "./nuxt-build-cache.mjs";
 
@@ -323,11 +326,7 @@ function prepareLargeSfcDir(blockCount) {
           noEmit: true,
           skipLibCheck: true,
           paths: {
-            vue: [
-              relative(outputDir, join(rootDir, "node_modules", "vue"))
-                .split(sep)
-                .join("/"),
-            ],
+            vue: [relative(outputDir, resolveVuePackageDir()).split(sep).join("/")],
           },
         },
         include: [filename],
@@ -886,53 +885,26 @@ async function measureCheck(inputDir, files, options) {
   if (!options.backend.ready) {
     throw new Error(`Type-check surface requires a ready tsgo backend: ${options.backend.reason}`);
   }
-  // Measure the backend that the artifact records, not whatever the ambient
-  // resolution happens to find.
-  const corsaArgs = ["--corsa-path", options.backend.corsaPath];
-  const tsconfigPath = join(checkDir, "tsconfig.json");
-
-  const variants = [
-    ...createTypecheckToolVariants({
+  const variants = gateTypecheckVariants(
+    createTypecheckToolVariants({
       fileCount: files.length,
-      checkDir,
-      tsconfigPath,
+      vizeBin,
       corsaPath: options.backend.corsaPath,
       resolveWorkspaceBin,
-      runCommand,
     }),
-    {
-      id: "vize-check-1t",
-      label: "Vize check (1T)",
-      files: files.length,
-      measure: () =>
-        runCommand(
-          vizeBin,
-          ["check", ".", "--quiet", "--servers", "1", "--tsconfig", tsconfigPath, ...corsaArgs],
-          {
-            cwd: checkDir,
-            allowNonZeroExit: true,
-            env: { RAYON_NUM_THREADS: "1" },
-          },
-        ),
-    },
-    {
-      id: "vize-check-max",
-      label: "Vize check (max)",
-      files: files.length,
-      measure: () =>
-        runCommand(vizeBin, ["check", ".", "--quiet", "--tsconfig", tsconfigPath, ...corsaArgs], {
-          cwd: checkDir,
-          allowNonZeroExit: true,
-        }),
-    },
-  ];
+    checkDir,
+    prepareTypecheckPackages,
+  );
 
   return createSurface({
     id: "check",
     label: "Type check",
     files: files.length,
     bytes: totalFileBytes(inputDir, files),
-    variants: await measureVariants(variants, options),
+    variants: (await measureVariants(variants, options)).map((measured) => ({
+      ...measured,
+      correctness: variants.find((variant) => variant.id === measured.id).correctness,
+    })),
     baselineId: "vue-tsc",
     vizeSingleId: "vize-check-1t",
     vizeMaxId: "vize-check-max",

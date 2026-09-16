@@ -1,11 +1,33 @@
-import { writeFileSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { existsSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
+import { dirname, join, relative, sep } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { resolveVuePackageDir } from "./check-gate-env.mjs";
+import { runTypecheckCommand } from "./typecheck-command.mjs";
+
+const benchDir = dirname(fileURLToPath(import.meta.url));
 
 const GOLAR_CONFIG = `import { defineConfig } from "golar/unstable";
 import "@golar/vue";
 
 export default defineConfig({});
 `;
+
+export function prepareTypecheckPackages(dir) {
+  const packages = [
+    ["golar", join(benchDir, "node_modules", "golar")],
+    ["@golar", join(benchDir, "node_modules", "@golar")],
+    ["vue", resolveVuePackageDir()],
+  ];
+  for (const [name, source] of packages) {
+    const target = join(dir, "node_modules", name);
+    if (!existsSync(target)) {
+      mkdirSync(dirname(target), { recursive: true });
+      symlinkSync(source, target, "dir");
+    }
+  }
+  writeFileSync(join(dir, "golar.config.ts"), GOLAR_CONFIG);
+}
 
 export function prepareTypecheckDir({ inputDir, files, workRoot, copySelectedFiles }) {
   const outputDir = join(workRoot, `check-${files.length}`);
@@ -15,23 +37,23 @@ export function prepareTypecheckDir({ inputDir, files, workRoot, copySelectedFil
     `${JSON.stringify(
       {
         extends: relative(outputDir, join(inputDir, "tsconfig.json")).split(sep).join("/"),
+        vueCompilerOptions: { strictTemplates: true },
         include: files,
       },
       null,
       2,
     )}\n`,
   );
-  writeFileSync(join(outputDir, "golar.config.ts"), GOLAR_CONFIG);
+  prepareTypecheckPackages(outputDir);
   return outputDir;
 }
 
 export function createTypecheckToolVariants({
   fileCount,
-  checkDir,
-  tsconfigPath,
+  vizeBin,
   corsaPath,
   resolveWorkspaceBin,
-  runCommand,
+  runCommand = runTypecheckCommand,
 }) {
   const vueTscBin = resolveWorkspaceBin("vue-tsc");
   const verterTscBin = resolveWorkspaceBin("verter-tsc");
@@ -41,20 +63,18 @@ export function createTypecheckToolVariants({
       id: "vue-tsc",
       label: "vue-tsc",
       files: fileCount,
-      measure: () =>
-        runCommand(vueTscBin, ["--noEmit", "-p", tsconfigPath], {
-          cwd: checkDir,
-          allowNonZeroExit: true,
+      run: (cwd) =>
+        runCommand(vueTscBin, ["--noEmit", "-p", join(cwd, "tsconfig.json"), "--pretty", "false"], {
+          cwd,
         }),
     },
     {
       id: "verter-tsc",
       label: "verter-tsc",
       files: fileCount,
-      measure: () =>
-        runCommand(verterTscBin, ["--noEmit", "-p", tsconfigPath], {
-          cwd: checkDir,
-          allowNonZeroExit: true,
+      run: (cwd) =>
+        runCommand(verterTscBin, ["--noEmit", "-p", join(cwd, "tsconfig.json")], {
+          cwd,
           env: { VERTER_TSGO_BIN: corsaPath },
         }),
     },
@@ -62,22 +82,43 @@ export function createTypecheckToolVariants({
       id: "golar-typecheck",
       label: "Golar typecheck",
       files: fileCount,
-      measure: () =>
+      run: (cwd) =>
         runCommand(golarBin, ["typecheck"], {
-          cwd: checkDir,
-          allowNonZeroExit: true,
+          cwd,
         }),
     },
     {
       id: "golar-default",
       label: "Golar (lint+check)",
       files: fileCount,
-      measure: () =>
+      run: (cwd) =>
         runCommand(golarBin, [], {
-          cwd: checkDir,
-          allowNonZeroExit: true,
+          cwd,
         }),
     },
+    ...["1t", "max"].map((lane) => ({
+      id: `vize-check-${lane}`,
+      label: `Vize check (${lane === "1t" ? "1T" : "max"})`,
+      files: fileCount,
+      format: "json",
+      run: (cwd) =>
+        runCommand(
+          vizeBin,
+          [
+            "check",
+            ".",
+            "--quiet",
+            "--format",
+            "json",
+            "--tsconfig",
+            join(cwd, "tsconfig.json"),
+            "--corsa-path",
+            corsaPath,
+            ...(lane === "1t" ? ["--servers", "1"] : []),
+          ],
+          { cwd, env: lane === "1t" ? { RAYON_NUM_THREADS: "1" } : {} },
+        ),
+    })),
   ];
 }
 

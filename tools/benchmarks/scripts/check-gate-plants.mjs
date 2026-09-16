@@ -187,7 +187,7 @@ export function prepareMinimalPlants(workRoot, vuePackageDir) {
  * tsconfig with it, so scale-degradation cannot hide behind a passing
  * one-file gate.
  */
-export function prepareCorpusPlant(checkDir, tsconfig) {
+export function prepareCorpusPlant(checkDir, tsconfig, beforePlant) {
   const dir = `${checkDir}-gate-plant`;
   rmSync(dir, { recursive: true, force: true });
   // Copy everything, including node_modules symlinks: a plant copy that drops
@@ -195,6 +195,12 @@ export function prepareCorpusPlant(checkDir, tsconfig) {
   // gate for the wrong reason (verified: the Booleanish half of the plant
   // disappears while the script half survives via runtime stubs).
   cpSync(checkDir, dir, { recursive: true, verbatimSymlinks: true });
+  try {
+    beforePlant?.(dir);
+  } catch (error) {
+    rmSync(dir, { recursive: true, force: true });
+    throw error;
+  }
   writeFileSync(join(dir, CORPUS_PLANT_FILE), CORPUS_PLANT_SOURCE);
   const planted = {
     ...tsconfig,
