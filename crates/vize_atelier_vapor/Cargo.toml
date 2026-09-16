@@ -39,6 +39,7 @@ vize_davinci = { workspace = true }
 # The DOM backend is compiled alongside Vapor in the cross-backend agreement
 # tests (`<template>` children must lower the same way in both backends).
 vize_atelier_dom = { workspace = true }
+vize_atelier_ssr = { workspace = true }
 
 insta = { workspace = true }
 serde_json = { workspace = true }

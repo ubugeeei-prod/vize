@@ -1,6 +1,30 @@
 use vize_s0::{Allocator, Box, String, Vec};
 
-use crate::{DirectiveNode, ExpressionNode, PropNode, SimpleExpressionNode, SourceLocation};
+use crate::{
+    DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode,
+    SourceLocation, TemplateChildNode,
+};
+
+pub(super) fn install_match_scope<'a>(
+    allocator: &'a Allocator,
+    el: &mut ElementNode<'a>,
+    scope: PropNode<'a>,
+) {
+    if el.tag == "template" {
+        el.tag_type = ElementType::Template;
+        el.props.push(scope);
+        return;
+    }
+    // Only the branches enter the match scope; the authored host keeps its
+    // element/component identity, props, directives, and enclosing bindings.
+    let mut wrapper = ElementNode::new(allocator, "template", el.loc.clone());
+    wrapper.tag_type = ElementType::Template;
+    wrapper.ns = el.ns;
+    wrapper.children = std::mem::replace(&mut el.children, Vec::new_in(&allocator));
+    wrapper.props.push(scope);
+    el.children
+        .push(TemplateChildNode::Element(Box::new_in(wrapper, &allocator)));
+}
 
 pub(super) fn rewrite_case_directive<'a>(
     allocator: &'a Allocator,

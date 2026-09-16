@@ -7,11 +7,11 @@ mod syntax;
 use vize_s0::{Allocator, Box, String, Vec, cstr, ensure_sufficient_stack};
 
 use crate::{
-    DirectiveNode, ElementNode, ElementType, ErrorCode, PropNode, RootNode, SourceLocation,
-    TemplateChildNode, TransformContext,
+    DirectiveNode, ElementNode, ErrorCode, PropNode, RootNode, SourceLocation, TemplateChildNode,
+    TransformContext,
 };
 
-use self::directives::{create_directive, rewrite_case_directive};
+use self::directives::{create_directive, install_match_scope, rewrite_case_directive};
 use self::lowering::{
     build_binding_for_expression, build_case_pattern, build_guard_condition, guard_suffix,
     is_wildcard_pattern, pattern_condition_with_guard, pattern_without_guard,
@@ -129,16 +129,14 @@ fn rewrite_match_element<'a>(
     }
 
     el.props.remove(match_idx);
-    el.props.push(create_directive(
+    let scope = create_directive(
         allocator,
         "for",
         "v-for",
         Some(cstr!("{MATCH_VALUE_IDENT} in [{match_expr}]")),
         match_loc,
-    ));
-    el.tag = "template";
-    el.tag_type = ElementType::Template;
-    el.is_self_closing = false;
+    );
+    install_match_scope(allocator, el, scope);
 }
 
 const MATCH_VALUE_IDENT: &str = "__vize_match";

@@ -3,38 +3,43 @@ source: crates/vize_atelier_vapor/src/tests_template_children.rs
 expression: vapor_output(NESTED)
 ---
 errors=[]
-templates=["<li>X</li>", "<li>Inner fallback</li>", "<p>Outer fallback</p>", "<div><footer>tail</footer></div>"]
+templates=["<li>X</li>", "<li>Inner fallback</li>", "<ul></ul>", "<p>Outer fallback</p>", "<div><section></section><footer>tail</footer></div>"]
 code=
-import { child as _child, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
+import { child as _child, next as _next, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
 const t0 = _template("<li>X</li>")
 const t1 = _template("<li>Inner fallback</li>")
-const t2 = _template("<p>Outer fallback</p>")
-const t3 = _template("<div><footer>tail</footer></div>", true)
+const t2 = _template("<ul></ul>")
+const t3 = _template("<p>Outer fallback</p>")
+const t4 = _template("<div><section></section><footer>tail</footer></div>", true)
 
 export function render(_ctx) {
-  const n1 = t3()
-  const n0 = _child(n1)
-  _setInsertionState(n1, null, true)
-  const n2 = _createFor(() => ([_ctx.outer]), (_for_item0) => {
-    _setInsertionState(n1, null, true)
-    const n4 = _createIf(() => ((_for_item0.value) === ('open')), () => {
-      const n6 = _createFor(() => ([_ctx.inner]), (_for_item1) => {
-        const n8 = _createIf(() => ((_for_item1.value) === ('x')), () => {
-          const n10 = t0()
-          return n10
-        }, () => {
-          const n12 = t1()
-          return n12
-        })
-        return n8
-      })
-      return n6
-    }, () => {
+  const n2 = t4()
+  const n0 = _child(n2)
+  const n1 = _next(n0, 1)
+  _setInsertionState(n0, null, true)
+  const n3 = _createFor(() => ([_ctx.outer]), (_for_item0) => {
+    _setInsertionState(n0, null, true)
+    const n5 = _createIf(() => ((_for_item0.value) === ('open')), () => {
       const n14 = t2()
+      _setInsertionState(n14, null, true)
+      const n7 = _createFor(() => ([_ctx.inner]), (_for_item1) => {
+        _setInsertionState(n14, null, true)
+        const n9 = _createIf(() => ((_for_item1.value) === ('x')), () => {
+          const n11 = t0()
+          return n11
+        }, () => {
+          const n13 = t1()
+          return n13
+        })
+        return n9
+      })
       return n14
+    }, () => {
+      const n16 = t3()
+      return n16
     })
-    return n4
+    return n5
   })
-  _renderEffect(() => _setClass(n0, _ctx.cls))
-  return n1
+  _renderEffect(() => _setClass(n1, _ctx.cls))
+  return n2
 }

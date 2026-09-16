@@ -3,7 +3,9 @@ use vize_s0::{String, cstr};
 use crate::{SourceLocation, TransformContext};
 
 use super::super::report_pattern_error;
-use super::super::syntax::{split_top_level_colon, split_top_level_commas};
+use super::super::syntax::{
+    is_valid_ident, split_top_level_colon, split_top_level_commas, strip_outer_pair,
+};
 use super::{
     CompiledPattern, PatternLoweringState, binding_pattern, is_valid_binding_pattern,
     join_conditions, lower_pattern, next_dummy, property_access, starts_with_binding_keyword,
@@ -27,9 +29,7 @@ pub(super) fn lower_object_pattern(
     let mut as_bindings = std::vec::Vec::new();
     let mut rest_binding = None;
 
-    conditions.push(cstr!(
-        "({subject_expr}) != null && (typeof ({subject_expr}) === \"object\" || typeof ({subject_expr}) === \"function\")"
-    ));
+    conditions.push(cstr!("({subject_expr}) != null"));
     for part in parts {
         let part = part.trim();
         if part.is_empty() {
@@ -50,6 +50,12 @@ pub(super) fn lower_object_pattern(
             .unwrap_or((part, part));
         let key = key.trim();
         let value = value.trim();
+        let presence_key = if is_valid_ident(key) {
+            cstr!("\"{key}\"")
+        } else {
+            String::from(strip_outer_pair(key, '[', ']').unwrap_or(key))
+        };
+        conditions.push(cstr!("({presence_key}) in Object({subject_expr})"));
         let property_expr = property_access(subject_expr, key);
         let compiled = lower_pattern(ctx, value, &property_expr, loc, state);
         if compiled.condition != "true" {
@@ -94,7 +100,12 @@ pub(super) fn lower_array_pattern(
     loc: &SourceLocation,
     state: &mut PatternLoweringState,
 ) -> CompiledPattern {
-    let parts = split_top_level_commas(inner);
+    let mut parts = split_top_level_commas(inner);
+    // A trailing comma is punctuation, not an extra array element. This also
+    // makes the empty pattern have length zero.
+    if parts.last().is_some_and(|part| part.trim().is_empty()) {
+        parts.pop();
+    }
     let has_rest = parts.iter().any(|part| part.trim().starts_with("..."));
     let has_rest_binding = parts.iter().any(|part| {
         part.trim()
@@ -105,9 +116,18 @@ pub(super) fn lower_array_pattern(
     let mut binding_items = std::vec::Vec::new();
     let mut as_bindings = std::vec::Vec::new();
     let mut rest_binding = None;
-    let mut element_count = 0usize;
+    let element_count = parts
+        .iter()
+        .filter(|part| !part.trim().starts_with("..."))
+        .count();
+    let mut element_index = 0usize;
 
     conditions.push(cstr!("Array.isArray({subject_expr})"));
+    conditions.push(if has_rest {
+        cstr!("({subject_expr}).length >= {element_count}")
+    } else {
+        cstr!("({subject_expr}).length === {element_count}")
+    });
     for part in parts {
         let part = part.trim();
         if let Some(rest) = part.strip_prefix("...") {
@@ -117,10 +137,10 @@ pub(super) fn lower_array_pattern(
             continue;
         }
 
-        let property_expr = cstr!("({subject_expr})[{element_count}]");
+        let property_expr = cstr!("({subject_expr})[{element_index}]");
         if part.is_empty() {
             binding_items.push(String::from(""));
-            element_count += 1;
+            element_index += 1;
             continue;
         }
 
@@ -136,13 +156,7 @@ pub(super) fn lower_array_pattern(
             binding_items.push(String::from(""));
         }
         as_bindings.extend(compiled.as_bindings);
-        element_count += 1;
-    }
-
-    if has_rest {
-        conditions.push(cstr!("({subject_expr}).length >= {element_count}"));
-    } else {
-        conditions.push(cstr!("({subject_expr}).length === {element_count}"));
+        element_index += 1;
     }
 
     let has_binding_items =
