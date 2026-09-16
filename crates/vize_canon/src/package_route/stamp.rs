@@ -70,6 +70,7 @@ impl InputStamp {
 
     /// Keep the bytes registered in the semantic project as the authority.
     /// Re-reading disk here could acknowledge an edit the project never saw.
+    #[cfg(any(feature = "native", test))]
     pub(crate) fn capture_source(path: impl Into<PathBuf>, content: &[u8]) -> Self {
         Self::capture_input(path.into(), Some(content), true)
     }
