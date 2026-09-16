@@ -280,13 +280,9 @@ fn model_codegen_resolves_identifiers_with_and_without_prefixing() {
             },
         );
         assert!(result.error_messages.is_empty());
-        assert!(
-            result
-                .code
-                .contains("() => (_ctx.value), _value => (_ctx.value = _value)"),
-            "{}",
+        insta::assert_snapshot!(
+            format!("native_model_prefix_{prefix_identifiers}"),
             result.code
         );
-        assert!(!result.code.contains("_ctx._ctx"));
     }
 }
