@@ -12,7 +12,7 @@ use crate::op::Program;
 use crate::operand::{OperandRole, OperandValue, ValueKind};
 
 /// op, role, target, region, attribute name, kind, text, qualifier, start, end.
-type OperandRow = (
+pub type OperandRow = (
     u32,
     String,
     Option<u32>,
@@ -85,7 +85,9 @@ impl FolioValue for FolioOperand {
         if !value.is_well_formed() {
             return Err(FolioError::new(line, cstr!("malformed S3 operand value")));
         }
-        if row.4.is_some() != matches!(role, OperandRole::Attribute | OperandRole::ModelAttribute)
+        if !role.accepts_target(row.2.is_some())
+            || row.4.is_some()
+                != matches!(role, OperandRole::Attribute | OperandRole::ModelAttribute)
             || row.3.is_some() != (role == OperandRole::Condition)
             || (row.3.is_some() && row.2.is_some())
         {

@@ -40,6 +40,9 @@ fn invalid(program: &Program<'_>, operand: &Operand<'_>) -> Option<&'static str>
     if operand.name.is_some() != attribute {
         return Some("attribute name must occur exactly on attribute roles");
     }
+    if !operand.role.accepts_target(operand.target.is_some()) {
+        return Some("target presence does not match operand role");
+    }
     if let Some(target_id) = operand.target {
         let Some(target) = op(program, target_id) else {
             return Some("target does not resolve");

@@ -3,7 +3,7 @@ use vize_davinci::folio::value::FolioValue;
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_impeto::op::{OpId, Phase, Program, RegionId};
 use vize_impeto::operand::{Operand, OperandRole, OperandValue, ValueKind};
-use vize_impeto::values_folio::{FolioOperand, S3ValuesFolio};
+use vize_impeto::values_folio::{FolioOperand, OperandRow, S3ValuesFolio};
 use vize_s0::{Allocator, Span, String, cstr};
 
 fn parse_row(json: &str, line: usize) -> Result<FolioOperand, FolioError> {
@@ -20,7 +20,7 @@ fn every_role_and_value_kind_round_trips_without_losing_escaped_text() {
             program.operands.push(Operand {
                 op: OpId::new(0),
                 role,
-                target: None,
+                target: (!role.accepts_target(false)).then_some(OpId::new(1)),
                 region: (role == OperandRole::Condition).then_some(RegionId::new(1)),
                 name: attribute.then_some("data-\"key\\\n\u{03bb}"),
                 value: OperandValue {
@@ -49,7 +49,12 @@ fn every_role_and_value_kind_round_trips_without_losing_escaped_text() {
     for operand in folio.operands {
         let mut text = String::default();
         operand.print_value(&mut text).unwrap();
-        assert!(text.starts_with("operand=["));
+        let row: OperandRow = operand.0;
+        assert_eq!(row.0, 0);
+        assert_eq!(
+            text,
+            cstr!("operand={}", serde_json::to_string(&row).unwrap())
+        );
         assert_eq!(text.lines().count(), 1);
     }
 }
@@ -93,7 +98,37 @@ fn malformed_rows_fail_on_the_authored_line() {
 
 #[test]
 fn absent_and_empty_literal_values_remain_distinct() {
-    let absent = parse_row("[0,\"value\",null,null,null,\"absent\",\"\",\"\",0,0]", 1).unwrap();
-    let literal = parse_row("[0,\"value\",null,null,null,\"literal\",\"\",\"\",0,0]", 1).unwrap();
+    let absent = parse_row("[0,\"value\",1,null,null,\"absent\",\"\",\"\",0,0]", 1).unwrap();
+    let literal = parse_row("[0,\"value\",1,null,null,\"literal\",\"\",\"\",0,0]", 1).unwrap();
     assert_ne!(absent, literal);
+}
+
+#[test]
+fn value_rows_reject_missing_binding_targets_and_unexpected_structural_targets() {
+    for role in [
+        "binding-kind",
+        "value",
+        "modifier",
+        "model-read",
+        "model-write",
+        "params",
+    ] {
+        let row = json!([0, role, null, null, null, "literal", "x", "", 0, 1]);
+        assert!(parse_row(&serde_json::to_string(&row).unwrap(), 1).is_err());
+    }
+    let attribute = json!([
+        0,
+        "model-attribute",
+        null,
+        null,
+        "trim",
+        "absent",
+        "",
+        "",
+        0,
+        0
+    ]);
+    assert!(parse_row(&serde_json::to_string(&attribute).unwrap(), 1).is_err());
+    let text = json!([0, "text", 1, null, null, "literal", "x", "", 0, 1]);
+    assert!(parse_row(&serde_json::to_string(&text).unwrap(), 1).is_err());
 }

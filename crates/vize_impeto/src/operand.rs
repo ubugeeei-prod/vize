@@ -32,6 +32,30 @@ pub enum OperandRole {
 }
 
 impl OperandRole {
+    /// Binding payloads need a materialized target; structural payloads do not.
+    #[must_use]
+    pub const fn accepts_target(self, present: bool) -> bool {
+        match self {
+            Self::BindingKind
+            | Self::Value
+            | Self::Modifier
+            | Self::ModelRead
+            | Self::ModelWrite
+            | Self::ModelAttribute
+            | Self::Params => present,
+            Self::Tag | Self::Name => true,
+            Self::Namespace
+            | Self::Attribute
+            | Self::Text
+            | Self::Comment
+            | Self::Condition
+            | Self::ForSource
+            | Self::ForValue
+            | Self::ForKey
+            | Self::ForIndex => !present,
+        }
+    }
+
     pub const ALL: [Self; 18] = [
         Self::Tag,
         Self::Namespace,

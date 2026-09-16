@@ -1,7 +1,7 @@
 use vize_impeto::op::{Op, OpId, OpKind, Phase, Program, Region, RegionId};
 use vize_impeto::operand::{Operand, OperandRole as Role, OperandValue, ValueKind};
 use vize_impeto::verify::{ViolationCode, verify};
-use vize_s0::{Allocator, Span};
+use vize_s0::{Allocator, Span, cstr};
 
 fn program(arena: &Allocator) -> Program<'_> {
     let mut program = Program::new(arena, Phase::Built);
@@ -46,7 +46,14 @@ fn rejects(operand: Operand<'_>, message: &str) {
     assert_eq!(violations.len(), 1, "{violations:?}");
     assert_eq!(violations[0].code, ViolationCode::Operand);
     assert_eq!(violations[0].span, operand.value.span);
-    assert!(violations[0].message.contains(message), "{violations:?}");
+    assert_eq!(
+        violations[0].message,
+        cstr!(
+            "operand {} for {}: {message}",
+            operand.role.as_str(),
+            operand.op
+        )
+    );
 }
 
 #[test]
@@ -89,7 +96,7 @@ fn operand_owners_targets_and_spans_must_resolve() {
                 target: Some(OpId::new(target)),
                 ..binding()
             },
-            "containing materialized operation",
+            "target is not a containing materialized operation in the same region",
         );
     }
     rejects(
@@ -135,21 +142,21 @@ fn attributes_and_conditions_enforce_their_role_contracts() {
             name: Some("id"),
             ..binding()
         },
-        "attribute name",
+        "attribute name must occur exactly on attribute roles",
     );
     rejects(
         Operand {
             role: Role::Attribute,
             ..binding()
         },
-        "attribute name",
+        "attribute name must occur exactly on attribute roles",
     );
     rejects(
         Operand {
             region: Some(RegionId::new(1)),
             ..binding()
         },
-        "only condition operands",
+        "only condition operands may reference a branch",
     );
     let condition = Operand {
         op: OpId::new(0),
@@ -172,13 +179,69 @@ fn attributes_and_conditions_enforce_their_role_contracts() {
             op: OpId::new(2),
             ..condition
         },
-        "condition branch must be owned",
+        "condition branch must be owned by its if operation",
     );
     rejects(
         Operand {
             region: Some(RegionId::ROOT),
             ..condition
         },
-        "condition branch must be owned",
+        "condition branch must be owned by its if operation",
     );
+}
+
+#[test]
+fn every_role_enforces_its_target_policy_in_every_phase() {
+    for role in Role::ALL {
+        for present in [false, true] {
+            let expected = match role {
+                Role::BindingKind
+                | Role::Value
+                | Role::Modifier
+                | Role::ModelRead
+                | Role::ModelWrite
+                | Role::ModelAttribute
+                | Role::Params => present,
+                Role::Tag | Role::Name => true,
+                _ => !present,
+            };
+            let arena = Allocator::default();
+            let mut program = program(&arena);
+            let condition = role == Role::Condition;
+            program.operands.push(Operand {
+                op: if condition {
+                    OpId::new(0)
+                } else {
+                    OpId::new(2)
+                },
+                role,
+                target: present.then_some(OpId::new(1)),
+                region: condition.then_some(RegionId::new(1)),
+                name: matches!(role, Role::Attribute | Role::ModelAttribute).then_some("id"),
+                ..binding()
+            });
+            for phase in [Phase::Built, Phase::Partitioned, Phase::Scheduled] {
+                program.phase = phase;
+                let violations = verify(&program);
+                if expected {
+                    assert_eq!(
+                        violations,
+                        [],
+                        "{role:?}/{present}/{phase:?}: {violations:?}"
+                    );
+                } else {
+                    assert_eq!(violations.len(), 1, "{violations:?}");
+                    assert_eq!(violations[0].code, ViolationCode::Operand);
+                    assert_eq!(
+                        violations[0].message,
+                        cstr!(
+                            "operand {} for {}: target presence does not match operand role",
+                            role.as_str(),
+                            program.operands[0].op
+                        )
+                    );
+                }
+            }
+        }
+    }
 }
