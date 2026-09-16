@@ -6,7 +6,8 @@
     clippy::disallowed_types
 )]
 
-use serde_json::{Value, json};
+use serde::Deserialize;
+use serde_json::{Map, Value, json};
 use std::{
     io::Write,
     path::Path,
@@ -78,9 +79,35 @@ fn assert_backends(source: &str, context: Value, steps: Value) -> Value {
     dom
 }
 
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Scenario {
+    context: Map<String, Value>,
+    steps: Vec<Value>,
+}
+
+#[test]
+fn mounted_scenario_rejects_missing_and_malformed_fields() {
+    for value in [
+        json!({}),
+        json!({"context": {}}),
+        json!({"steps": []}),
+        json!({"context": null, "steps": []}),
+        json!({"context": [], "steps": []}),
+        json!({"context": {}, "steps": null}),
+        json!({"context": {}, "steps": {}}),
+        json!({"context": {}, "steps": [], "ignored": true}),
+    ] {
+        assert!(serde_json::from_value::<Scenario>(value).is_err());
+    }
+    let valid = serde_json::from_value::<Scenario>(json!({"context": {}, "steps": []})).unwrap();
+    assert!(valid.context.is_empty());
+    assert!(valid.steps.is_empty());
+}
+
 #[test]
 fn mounted_dynamic_button_updates_and_dispatches_events() {
-    let scenario: Value = serde_json::from_str(include_str!(
+    let scenario: Scenario = serde_json::from_str(include_str!(
         "../../../formal/impeto/fixtures/rust-lowered-static-dynamic.scenario.json"
     ))
     .unwrap();
@@ -90,8 +117,8 @@ fn mounted_dynamic_button_updates_and_dispatches_events() {
     .unwrap();
     let trace = assert_backends(
         r#"<main class="shell"><button :disabled="locked" @click="save">{{ label }}</button></main>"#,
-        scenario["context"].clone(),
-        scenario["steps"].clone(),
+        Value::Object(scenario.context),
+        Value::Array(scenario.steps),
     );
     assert_eq!(
         trace, expected,
