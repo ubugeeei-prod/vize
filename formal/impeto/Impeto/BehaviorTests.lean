@@ -69,11 +69,14 @@ def referenceTests (program : Program) (rows : List Operand) (script : Json) : E
     expectError "unsupported state" (Behavior.run program rows (<- Json.parse text))
   for text in [
     "{}", "{\"patch\":{},\"ignored\":true}", "{\"patch\":{\"save\":null}}",
+    "{\"activate\":\"missing\"}", "{\"activate\":false}",
+    "{\"activate\":\"button\",\"event\":\"click\"}",
+    "{\"activate\":\"button\",\"patch\":{}}",
     "{\"event\":\"change\",\"selector\":\"button\"}",
     "{\"event\":\"click\",\"selector\":\"missing\"}",
     "{\"event\":\"click\",\"selector\":\"button\"}"
   ] do
-    -- The original context is locked, so the final case checks disabled clicks.
+    -- Activation is supported when locked; synthetic dispatch remains excluded.
     expectError "unsupported step" (Behavior.run program rows
       (script.setObjVal! "steps" (.arr #[<- Json.parse text])))
 
