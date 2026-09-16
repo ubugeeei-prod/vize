@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { parse as parseYaml } from "yaml";
 import { traceCompiledBackend } from "./support/davinci-runtime-trace.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -13,30 +14,82 @@ function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(repoRoot, ...segments), "utf8");
 }
 
+type Step = {
+  uses?: string;
+  run?: string;
+  if?: unknown;
+  "continue-on-error"?: boolean;
+  "working-directory"?: string;
+  with?: Record<string, unknown>;
+};
+type Workflow = {
+  on: Record<"push" | "pull_request", { paths: string[] }>;
+  jobs: Record<string, { steps: Step[]; if?: unknown }>;
+};
+
+function assertLeanWorkflow(workflow: Workflow): void {
+  const job = workflow.jobs["impeto-reference"];
+  assert.ok(job);
+  assert.equal(job.if, undefined);
+  const lean = job.steps.find((step) => step.uses?.startsWith("leanprover/lean-action@"));
+  assert.equal(lean?.uses, "leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596");
+  assert.equal(lean?.with?.["lake-package-directory"], "formal/impeto");
+  assert.equal(lean?.with?.build, "true");
+  const vp = job.steps.find((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
+  assert.equal(vp?.uses, "voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa");
+  assert.equal(vp?.with?.["node-version-file"], "package.json");
+  assert.equal(vp?.with?.["run-install"], false);
+  for (const step of job.steps) {
+    assert.equal(step.if, undefined);
+    assert.notEqual(step["continue-on-error"], true);
+  }
+  assert.deepEqual(
+    job.steps.flatMap((step) =>
+      step.run ? [[step["working-directory"] ?? ".", step.run.trim()]] : [],
+    ),
+    [
+      [".", "vp install --frozen-lockfile --prefer-offline"],
+      ["formal/impeto", "lake exe impetoRef --check-fixtures"],
+      ["formal/impeto", "lake exe impetoRef --check-backend-fixtures"],
+      ["formal/impeto", "lake exe impetoRef --check-stateful-fixtures"],
+      [".", "cargo test -p vize_s2_to_s3 --test lean_reference_fixture"],
+      [".", "cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace"],
+      [".", "cargo test -p vize_atelier_vapor --test davinci_mounted_behavior"],
+    ],
+  );
+  for (const event of ["push", "pull_request"] as const) {
+    for (const file of ["davinci-runtime-trace.mjs", "davinci-mounted-trace.mjs"]) {
+      assert.ok(workflow.on[event].paths.includes(`tests/tooling/support/${file}`));
+    }
+  }
+}
+
 test("TS-28 pins the Lean toolchain and CI package directory", () => {
   assert.equal(
     readRepoFile("formal", "impeto", "lean-toolchain").trim(),
     "leanprover/lean4:v4.33.1",
   );
 
-  const workflow = readRepoFile(".github", "workflows", "davinci-lean.yml");
-  assert.match(
-    workflow,
-    /leanprover\/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1\.6\.0/u,
-  );
-  assert.match(workflow, /voidzero-dev\/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1/u);
-  assert.match(workflow, /node-version-file:\s*package\.json/u);
-  assert.match(workflow, /run-install:\s*false/u);
-  assert.match(workflow, /lake-package-directory:\s*formal\/impeto/u);
-  assert.match(workflow, /lake exe impetoRef --check-fixtures/u);
-  assert.match(workflow, /lake exe impetoRef --check-backend-fixtures/u);
-  assert.match(workflow, /lake exe impetoRef --check-stateful-fixtures/u);
-  assert.match(workflow, /cargo test -p vize_s2_to_s3 --test lean_reference_fixture/u);
-  assert.match(workflow, /cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace/u);
-  assert.match(workflow, /tests\/tooling\/support\/davinci-runtime-trace\.mjs/u);
-  assert.match(workflow, /tests\/tooling\/support\/davinci-mounted-trace\.mjs/u);
-  assert.match(workflow, /vp install --frozen-lockfile --prefer-offline/u);
-  assert.match(workflow, /cargo test -p vize_atelier_vapor --test davinci_mounted_behavior/u);
+  assertLeanWorkflow(parseYaml(readRepoFile(".github", "workflows", "davinci-lean.yml")));
+});
+
+test("TS-28 rejects commented, moved and disabled workflow commands", () => {
+  const source = readRepoFile(".github", "workflows", "davinci-lean.yml");
+  const command = "lake exe impetoRef --check-stateful-fixtures";
+  const commented = source.replace(`run: ${command}`, `run: "true" # ${command}`);
+  assert.throws(() => assertLeanWorkflow(parseYaml(commented)), assert.AssertionError);
+  const moved: Workflow = parseYaml(source);
+  const steps = moved.jobs["impeto-reference"].steps;
+  const index = steps.findIndex((step) => step.run === command);
+  assert.notEqual(index, -1);
+  moved.jobs.unrelated = { steps: steps.splice(index, 1) };
+  assert.throws(() => assertLeanWorkflow(moved), assert.AssertionError);
+  for (const field of ["if", "continue-on-error"] as const) {
+    const disabled: Workflow = parseYaml(source);
+    disabled.jobs["impeto-reference"].steps.find((step) => step.run === command)![field] =
+      field !== "if";
+    assert.throws(() => assertLeanWorkflow(disabled), assert.AssertionError);
+  }
 });
 
 test("TS-28 fixture ladder is declared and non-vacuous", () => {
@@ -193,8 +246,23 @@ test("TS-28 compiled backend trace gate executes both emitted backends", async (
 
 test("TS-28 command in the suite registry names the executable runner", () => {
   const suites = readRepoFile("davinci-road", "plan", "test-suites.md");
-  assert.match(
-    suites,
-    /\| TS-28 \| Lean reference differential\s+\| `cd formal\/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures && lake exe impetoRef --check-stateful-fixtures && cd \.\.\/\.\. && cargo test -p vize_s2_to_s3 --test lean_reference_fixture && cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace --test davinci_mounted_behavior` \| exact agreement on observable semantics; stateful subset and remaining operation-order gaps are explicit/u,
-  );
+  const rows = suites
+    .split("\n")
+    .filter((line) => line.startsWith("|"))
+    .map((line) =>
+      line
+        .split("|")
+        .slice(1, -1)
+        .map((cell) => cell.trim()),
+    )
+    .filter((cells) => cells[0] === "TS-28");
+  assert.deepEqual(rows, [
+    [
+      "TS-28",
+      "Lean reference differential",
+      "`cd formal/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures && lake exe impetoRef --check-stateful-fixtures && cd ../.. && cargo test -p vize_s2_to_s3 --test lean_reference_fixture && cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace --test davinci_mounted_behavior`",
+      "exact agreement on observable semantics; stateful subset and remaining operation-order gaps are explicit",
+      "P3-4",
+    ],
+  ]);
 });
