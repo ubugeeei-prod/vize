@@ -125,40 +125,36 @@ Vite configs are not rewritten automatically. See [Project Setup](https://vizejs
 Vize is in its Real World Testing phase: fix requests and PRs are very welcome, and we are looking for
 reasonably large Vue projects to use as test beds.
 
+<!-- benchmark:readme:start -->
+
 ## Benchmarks
 
-Measured on Blacksmith `blacksmith-32vcpu-ubuntu-2404`, median of 5 runs. The corpus is **not** the
-same size for every row — it is given per row below, and only SFC compile, Lint, and Format run at
-15,000 SFCs.
+One committed artifact supplies the README and every locale. File counts are stated per row.
 
-| Surface     |  Files | Existing tool      | Existing |    Vize |            Speedup |
-| ----------- | -----: | ------------------ | -------: | ------: | -----------------: |
-| SFC compile | 15,000 | @vue/compiler-sfc  |   17.15s | 329.2ms |          **52.1×** |
-| Lint        | 15,000 | eslint-plugin-vue  |   56.20s | 324.8ms |         **173.0×** |
-| Format      | 15,000 | Prettier           |  143.13s |   2.83s |          **50.6×** |
-| Type check  |    500 | vue-tsc            |    5.57s | 498.1ms | n/a (cross-engine) |
-| Vite build  |  1,000 | @vitejs/plugin-vue |    1.71s | 631.7ms |           **2.7×** |
-| Nuxt build  |    500 | Nuxt compiler      |    6.83s |   6.59s |           **1.0×** |
+| Runner                                   | Measured                 | Runs | Warmups |
+| ---------------------------------------- | ------------------------ | ---- | ------- |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3    | 1       |
 
-Every row is taken from one committed snapshot,
-`tools/benchmarks/results/tool-benchmark-latest.json`
-([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — the same
-artifact the published [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith)
-renders — and `tests/tooling/readme-benchmark-rows.test.ts` pins them to it so the two cannot drift
-apart again.
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
-The type-check row publishes no single speedup on purpose: `vue-tsc` runs the JavaScript TypeScript
-compiler while `vize check` runs native tsgo (Corsa), so one ratio would credit TypeScript's Go
-rewrite to the Vue layer. Both timings above are real and were measured in the same run; they are
-ranked within each engine class in the snapshot instead.
+Versions: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
 
-The Nuxt row is a genuine but _diluted_ comparison: both variants run the same Nitro/Vite/Rollup
-pipeline and differ only in the SFC compiler, and SFC compilation is roughly 2% of that build, so
-end-to-end time is dominated by work neither compiler owns. It is published because it is what a
-Nuxt user actually experiences, not because it isolates Vize.
+| Surface     | Files | Existing tool      | Existing | Vize    | Speedup    |
+| ----------- | ----- | ------------------ | -------- | ------- | ---------- |
+| SFC compile | 3,000 | @vue/compiler-sfc  | 3.57s    | 65.0ms  | **54.8×**  |
+| Lint        | 3,000 | eslint-plugin-vue  | 20.75s   | 114.0ms | **182.0×** |
+| Format      | 3,000 | Prettier           | 29.72s   | 351.4ms | **84.6×**  |
+| Type check  | 500   | verter-tsc         | 2.08s    | 1.37s   | **1.5×**   |
+| Vite build  | 1,000 | @vitejs/plugin-vue | 1.66s    | 889.2ms | **1.9×**   |
+| Nuxt build  | 250   | Nuxt compiler      | 3.07s    | 3.21s   | **1.0×**   |
 
-See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith) for
-methodology and per-variant numbers.
+Type-check ratios compare Vize with verter-tsc using the same pinned native tsgo backend. Each timed invocation passes diagnostic-work validation. Diagnostic coverage differs between tools; these ratios do not prove accuracy parity or a performance improvement over an earlier Vize version. Rejected comparators have no published timing or rank.
+
+Nuxt measures the entire build pipeline, not isolated SFC compilation. Most build work is shared by both variants. Its ratio is 0.95x before rounding to one decimal in the table; a ratio below 1 means Vize was slower in this run.
+
+See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith) for per-variant timings, diagnostic counts, rejected measurements and methodology.
+
+<!-- benchmark:readme:end -->
 
 ## Credits
 

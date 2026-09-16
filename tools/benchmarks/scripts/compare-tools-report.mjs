@@ -228,7 +228,7 @@ function engineClassNote(surface) {
   if (published == null) {
     return `No cross-class ratio is published for ${surface.label}: the incumbent runs the JavaScript TypeScript compiler while Vize runs native tsgo, so a single number would credit TypeScript's Go rewrite to the Vue layer.`;
   }
-  return `The ${surface.label} ratio compares Vize with ${published.label}, the incumbent that runs the same native tsgo engine, so it is the Vue layer alone. ${declared?.label ?? "The JavaScript-engine incumbent"} is listed above as a same-run reference timing and never as a ratio: it drives the JavaScript TypeScript compiler, so a single number against it would credit TypeScript's Go rewrite to the Vue layer.`;
+  return `The ${surface.label} ratio compares Vize with ${published.label} using the same native tsgo engine, but diagnostic coverage can differ; this is not an accuracy-parity claim. ${declared?.label ?? "The JavaScript-engine incumbent"} is listed above as a same-run reference timing and never as a ratio: it drives the JavaScript TypeScript compiler, so a single number against it would credit TypeScript's Go rewrite to the Vue layer.`;
 }
 
 export function renderEngineClassSections(surfaces, formatMs) {

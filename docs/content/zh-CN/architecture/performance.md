@@ -10,50 +10,35 @@ title: 性能
 
 Vize通过利用Rust的零成本抽象和原生多线程，相比标准基于JavaScript的Vue编译器实现了显著的性能提升。速度不是可有可无的——它是开发者经验的前提条件。
 
+<!-- benchmark:environment:start -->
+
 ## 基准环境
 
-本页涉及两种测量环境，下面的每个数字都会说明它来自哪一种。
+README 与所有语言页面均由同一个已提交的产物生成。文件数量按行标明。
 
-**参考运行器。** 跨工具对比由 Tool Benchmark 工作流测量，并提交到
-`tools/benchmarks/results/tool-benchmark-latest.json`。该产物是可引用的来源，
-[Blacksmith 基准快照](./performance-blacksmith) 完整发布了它。
+| 运行环境                                 | 测量时间                 | 测量次数 | 预热次数 |
+| ---------------------------------------- | ------------------------ | -------- | -------- |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1        |
 
-|          |                                                      |
-| -------- | ---------------------------------------------------- |
-| **机器** | `blacksmith-32vcpu-ubuntu-2404`（32 vCPU，AMD EPYC） |
-| **快照** | 提交 `1511788d96ea`，2026-07-30                      |
-| **方法** | 1 次预热后 5 次测量运行的中位数                      |
-| **版本** | vize 0.303.0 · vue 3.6.0-beta.10 · Node v24.14.0     |
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
-**本地工作站。** 下面的 Linter、Formatter 和类型检查器表格仍由本地基准
-（`tools/benchmarks/scripts/lint.ts`、`tools/benchmarks/scripts/fmt.ts`、`tools/benchmarks/scripts/check.ts`）手工维护，并在此环境测得。
-它们尚不能在参考运行器上复现，因此请将其视为方向性参考。
+版本: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
 
-|             |                                         |
-| ----------- | --------------------------------------- |
-| **机器**    | MacBook Pro（M2 Max，12 核，96 GB RAM） |
-| **OS**      | macOS 15.3.2（Darwin 24.3.0）           |
-| **Node.js** | v24.14.0                                |
-| **Vite**    | v8.0.0（Rolldown）                      |
-| **Vue**     | v3.6.0-beta.10                          |
+下方本地 Linter、Formatter 和实现分析属于历史测量，并非此快照的结果。记录的环境为 MacBook Pro M2 Max（12 核、96 GB RAM）、macOS 15.3.2、Node v24.14.0、Vite v8.0.0 和 Vue v3.6.0-beta.10。
 
-## 基准测试：15,000 SFC 文件
+## 基准：SFC 编译
 
-在参考运行器上编译 **15,000 个生成的 Vue SFC 文件**（共 58.7 MB）：
+文件数: **3,000** (12,302,100 bytes).
 
-|                            | @vue/compiler-sfc | Vize    | 加速      |
-| -------------------------- | ----------------- | ------- | --------- |
-| **单线程**                 | 17.15s            | 3.95s   | **4.3x**  |
-| **全部核心（32 vCPU）**    | 6.08s             | 329.2ms | **18.5x** |
-| **compiler-sfc 1T 对 max** | 17.15s            | 329.2ms | **52.1x** |
+|               | @vue/compiler-sfc | Vize    | 速度比    |
+| ------------- | ----------------- | ------- | --------- |
+| 1T            | 3.57s             | 835.3ms | **4.3x**  |
+| workers / max | 1.61s             | 65.0ms  | **24.7x** |
+| 1T / max      | 3.57s             | 65.0ms  | **54.8x** |
 
-来源：已提交快照 `tools/benchmarks/results/tool-benchmark-latest.json` 的 `compile` 表面
-（[run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)）——
-与 `README.md` 和 [Blacksmith 基准快照](./performance-blacksmith) 发布的是同一份产物。
+[完整方法与验证结果](./performance-blacksmith)
 
-单线程的改进来自 Rust 的零成本抽象（无 GC、无 JIT 预热、对缓存友好的内存布局）。多线程的改进来自 Rayon 的工作窃取线程池，它随 CPU 核心数扩展。
-
-> **注意：** 该快照取自 vize 0.303.0，早于“性能架构选择”中描述的 arena 与表达式工作。它有记录日期且可复现，但并不是对当前代码树的测量。在参考运行器上重新记录跨工具表面的工作仍在待办中。
+<!-- benchmark:environment:end -->
 
 ## 为什么是 Rust？
 
@@ -203,20 +188,32 @@ Profile Report还包括严格的审计部分，检查工作时间的累积覆盖
 
 跑`vp run --workspace-root bench:fmt`来繁殖。
 
-## 基准测试：类型检查器 — 正史与vue-tsc的对比
+<!-- benchmark:typecheck:start -->
 
-类型检查 **500 个生成的 Vue SFC 文件**，采用当前 Corsa 支持的诊断路径（本地工作站）：
+## 基准：类型检查
 
-|          | vue-tsc （ST） | 维泽正典（ST） | 加速               | vue-tsc （MT） | Vize正典（MT） | 加速               | **vue-tsc ST vs Vize MT** |
-| -------- | -------------- | -------------- | ------------------ | -------------- | -------------- | ------------------ | ------------------------- |
-| **时间** | 4.38秒         | 511毫秒        | n/a (cross-engine) | 4.41秒         | 493毫秒        | n/a (cross-engine) | n/a (cross-engine)        |
-| **评分** | 114 文件/秒    | 979个文件/秒   |                    | 113 个文件/秒  | 1.0k 文件/秒   |                    |                           |
+README 与所有语言页面均由同一个已提交的产物生成。文件数量按行标明。
 
-类型检查行跨越两个 TypeScript 引擎：vue-tsc 运行 JavaScript 编译器，而 Vize check 运行原生 tsgo (Corsa)。因此不发布单一倍率（`n/a (cross-engine)`），改为在每个引擎类内部排名；单一数字会把 TypeScript 的 Go 重写记在 Vue 层的账上。两个耗时都是实测值，且来自同一次运行；按引擎类的排名见 [Blacksmith 基准快照](./performance-blacksmith)。
+| 运行环境                                 | 测量时间                 | 测量次数 | 预热次数 |
+| ---------------------------------------- | ------------------------ | -------- | -------- |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1        |
 
-> **注：**Vize正能仍处于早期开发阶段，Corsa支持的诊断路径仍在追赶Vue-TSC的保真度。这些测量反映了当前以CLI为先的本地实现，采用项目会话备份，随着诊断覆盖和奇偶校验的提升，这些指标将发生变化。
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
-在`cargo build --release -p vize`后运行`node tools/benchmarks/scripts/check.ts 500`以复现这个快速基准测试。
+版本: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
+
+| 项目              | 文件数 | 比较工具   | 比较工具中位数 | Vize 1T | Vize max | 速度比   |
+| ----------------- | ------ | ---------- | -------------- | ------- | -------- | -------- |
+| 类型检查          | 500    | verter-tsc | 2.08s          | 2.03s   | 1.37s    | **1.5x** |
+| 大型 SFC 类型检查 | 1      | verter-tsc | 1.58s          | 186.4ms | 190.1ms  | **8.3x** |
+
+类型检查速度比比较使用同一固定版本原生 tsgo 的 Vize 和 verter-tsc。每次计时都通过诊断工作验证，但不同工具的诊断覆盖范围并不相同。这些比值不代表准确性相同，也不代表相对于旧版 Vize 的性能提升。未通过验证的比较工具不发布耗时或排名。
+
+[完整方法与验证结果](./performance-blacksmith)
+
+以下分析为历史本地测量，不属于本次参考环境比较。
+
+<!-- benchmark:typecheck:end -->
 
 ### 类型检查员配置文件
 
@@ -247,16 +244,28 @@ Rust侧的 `virtual project` 阶段——每文件的 SFC 解析，Croquis 分�
 
 该灯具当前配置文件保持CLI诊断解析在~7毫秒。大部分时间现在都集中在 Corsa CLI 命令本身。将框架自动导入存根提升到一个环境文件中，也使生成的最大虚拟TS文件从约275KB减少到144KB。
 
-## 基准测试：Vite 插件 — @vizejs/vite-plugin 与 @vitejs/plugin-vue 的比较
+<!-- benchmark:vite:start -->
 
-Vite 构建，包含**1,000个Vue SFC导入**（全部导入于单一条目）：
+## 基准：Vite 插件
 
-|              | @vitejs/plugin-vue | @vizejs/vite-plugin | 加速     |
-| ------------ | ------------------ | ------------------- | -------- |
-| **建造时间** | 1.71s              | 631.7ms             | **2.7x** |
+README 与所有语言页面均由同一个已提交的产物生成。文件数量按行标明。
 
-> 注：`@vizejs/vite-plugin`仅替代了Vue的SFC编译步骤——性能差异完全来自该步骤。依赖关系解析、模图构建、捆绑（Rolldown）及其他所有 Vite 内部结构与 `@vitejs/plugin-vue` 完全相同。关于纯编译性能，请参见上文的[编译器基准测试](#benchmark-15000-sfc-files)。`@vizejs/vite-plugin` 热切地利用原生多线程编译预编译`.vue`文件，这也使 HMR 更快。
+| 运行环境                                 | 测量时间                 | 测量次数 | 预热次数 |
+| ---------------------------------------- | ------------------------ | -------- | -------- |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1        |
 
-此行取自已提交的快照 `tools/benchmarks/results/tool-benchmark-latest.json` 的 `vite` 面 ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) —— 与 `README.md` 和 [Blacksmith 基准快照](/architecture/performance-blacksmith) 发布的是同一份产物。`tests/tooling/docs-vite-benchmark-row.test.ts` 在所有语言版本中将其固定到该产物。
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+
+版本: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
+
+文件数: **1,000**.
+
+|           | @vitejs/plugin-vue | @vizejs/vite-plugin | 速度比   |
+| --------- | ------------------ | ------------------- | -------- |
+| Vite 构建 | 1.66s              | 889.2ms             | **1.9x** |
+
+[完整方法与验证结果](./performance-blacksmith)
+
+<!-- benchmark:vite:end -->
 
 在此之前发布的数字 —— `957ms` / `479ms` / `2.0x` —— 来自 #3392 之前的 `tools/benchmarks/scripts/vite.ts`：它让 Vize 带着自身预热留下的持久预编译缓存运行，而 `@vitejs/plugin-vue` 从零开始编译。该测试工具现在会在其运行的机器上分别报告冷启动和热启动两行，因此它的输出是本地诊断值，而不是可发布的加速比。请使用 `vp run --workspace-root bench:vite` 来比较改动前后的自身表现。

@@ -7,10 +7,8 @@
  * rendered from -- held `1.66s / 732.5ms / 2.3x` and `6.79s / 6.42s / 1.1x`.
  * A reader got a different answer depending on which page they opened.
  *
- * This pins the README's Vite and Nuxt rows to the artifact. The remaining rows
- * are deliberately not covered here: the type-check rows are being reworked
- * separately as a cross-engine retraction, and the compile/lint/format rows
- * come from a different run.
+ * Every row is now published from the same validated artifact, including the
+ * same-native-engine type-check comparison against verter-tsc.
  */
 
 import assert from "node:assert/strict";
@@ -89,13 +87,33 @@ function expectedRow(
   ];
 }
 
-test("the README Vite and Nuxt rows match the committed benchmark snapshot", () => {
+test("every README row matches the committed benchmark snapshot", () => {
   const surfaces = readSnapshot();
   const rows = readReadmeRows();
 
   assert.deepEqual(
-    [rows.get("Vite build"), rows.get("Nuxt build")],
+    ["SFC compile", "Lint", "Format", "Type check", "Vite build", "Nuxt build"].map((label) =>
+      rows.get(label),
+    ),
     [
+      expectedRow(
+        surfaces,
+        "compile",
+        "SFC compile",
+        "@vue/compiler-sfc",
+        "vue-compiler-sfc-1t",
+        "vize-native-max",
+      ),
+      expectedRow(
+        surfaces,
+        "lint",
+        "Lint",
+        "eslint-plugin-vue",
+        "eslint-plugin-vue-1t",
+        "vize-lint-max",
+      ),
+      expectedRow(surfaces, "fmt", "Format", "Prettier", "prettier-cli", "vize-fmt-max"),
+      expectedRow(surfaces, "check", "Type check", "verter-tsc", "verter-tsc", "vize-check-max"),
       expectedRow(
         surfaces,
         "vite",
