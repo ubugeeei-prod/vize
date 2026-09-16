@@ -270,7 +270,7 @@ const t0 = _template("<input>", true)
 
 export function render(_ctx) {
   const n0 = t0()
-  _applyTextModel(n0, () => (_ctx.val), _value => (_ctx.val = _value))
+  _applyTextModel(n0, () => (val), _value => (val = _value))
   return n0
 }
 
