@@ -1,4 +1,5 @@
 mod checkers_support;
+mod keyof_scope;
 use super::{is_cli_diagnostic_line, is_global_diagnostic_line, parse_cli_diagnostics};
 use crate::batch::VirtualProject;
 use crate::batch::executor::diagnostics::DiagnosticMapper;
@@ -8,7 +9,6 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
 };
 use vize_carton::cstr;
-
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
 

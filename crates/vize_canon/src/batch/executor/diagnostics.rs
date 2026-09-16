@@ -49,6 +49,7 @@ pub(super) struct DiagnosticMapper<'a> {
     preserve_unused_diagnostics: bool,
     original_sources: FxHashMap<PathBuf, CachedSource>,
     virtual_line_indexes: FxHashMap<PathBuf, LineIndex>,
+    keyof_assignments: FxHashMap<PathBuf, keyof_indexed_assignment::AssignmentIndex>,
 }
 
 impl<'a> DiagnosticMapper<'a> {
@@ -58,6 +59,7 @@ impl<'a> DiagnosticMapper<'a> {
             preserve_unused_diagnostics: project.tsconfig_preserves_unused_diagnostics(),
             original_sources: FxHashMap::default(),
             virtual_line_indexes: FxHashMap::default(),
+            keyof_assignments: FxHashMap::default(),
         }
     }
 
@@ -192,21 +194,6 @@ impl<'a> DiagnosticMapper<'a> {
         }
 
         self.original_sources.get(path)
-    }
-
-    pub(super) fn is_keyof_indexed_assignment(
-        &mut self,
-        virtual_path: &Path,
-        line: u32,
-        column: u32,
-    ) -> bool {
-        let Some(file) = self.project.find_by_diagnostic_virtual(virtual_path) else {
-            return false;
-        };
-        let Some(offset) = self.virtual_offset(file, line, column) else {
-            return false;
-        };
-        keyof_indexed_assignment::matches_at(&file.content, &file.virtual_path, offset)
     }
 }
 
