@@ -108,6 +108,11 @@ fn is_interactive_element(tag: &str) -> bool {
     INTERACTIVE_ELEMENTS.contains(&tag)
 }
 
+fn forbids_interactive_descendants(tag: &str) -> bool {
+    // Details is interactive, but its content model explicitly permits flow controls.
+    tag != "details" && is_interactive_element(tag)
+}
+
 /// Check if an element has a transparent content model.
 #[inline]
 fn is_transparent_parent(tag: &str) -> bool {
@@ -194,8 +199,9 @@ impl PermittedContents {
 
         if !is_unknown_component
             && is_interactive_element(tag)
-            && ctx
-                .has_ancestor(|ancestor| is_interactive_element(content_model_tag(ancestor.tag())))
+            && ctx.has_ancestor(|ancestor| {
+                forbids_interactive_descendants(content_model_tag(ancestor.tag()))
+            })
         {
             let message = ctx.lint().t_fmt(
                 "vue/permitted-contents.interactive_nesting",
@@ -276,7 +282,7 @@ impl Rule for PermittedContents {
         if !is_unknown_component
             && is_interactive_element(tag)
             && ctx.has_ancestor(|ancestor| {
-                is_interactive_element(content_model_tag(ancestor.tag.as_str()))
+                forbids_interactive_descendants(content_model_tag(ancestor.tag.as_str()))
             })
         {
             let message = ctx.t_fmt(

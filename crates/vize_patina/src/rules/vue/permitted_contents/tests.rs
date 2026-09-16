@@ -166,6 +166,44 @@ fn test_repaired_flow_content_in_anchor_when_outer_context_is_phrasing() {
 // ===== Invalid: Interactive nesting =====
 
 #[test]
+fn test_details_permits_interactive_flow_content() {
+    let linter = create_linter();
+    let result = linter.lint_template_rules_only(
+        r#"<details><summary>Options</summary><fieldset><label><input type="checkbox" />Enabled</label><select><option>A</option></select><button>Apply</button></fieldset></details>"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 0, "{:#?}", result.diagnostics);
+}
+
+#[test]
+fn test_details_does_not_hide_invalid_interactive_nesting() {
+    let linter = create_linter();
+    let result = linter.lint_template_rules_only(
+        r##"<details><summary>Options</summary><a href="#"><button>Apply</button></a></details>"##,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 1);
+}
+
+#[test]
+fn test_jsx_details_content_model() {
+    let linter = create_linter();
+    for (source, errors) in [
+        (
+            r#"const view = <details><summary>Options</summary><label><input />Enabled</label><select><option>A</option></select></details>"#,
+            0,
+        ),
+        (
+            r##"const view = <details><summary>Options</summary><a href="#"><button>Apply</button></a></details>"##,
+            1,
+        ),
+    ] {
+        let result = linter.lint_jsx(source, "test.tsx", vize_atelier_jsx::JsxLang::Tsx);
+        assert_eq!(result.error_count, errors, "{:#?}", result.diagnostics);
+    }
+}
+
+#[test]
 fn test_repaired_a_in_a() {
     let linter = create_linter();
     let result =

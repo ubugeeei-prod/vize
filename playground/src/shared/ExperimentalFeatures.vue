@@ -57,18 +57,18 @@ function selectExample(event: Event) {
   </details>
 </template>
 
-<style>
+<style scoped>
 .experimental-features {
   flex: 0 0 auto;
   border-bottom: 1px solid var(--border-color);
   padding: 8px 16px;
   font-size: 12px;
 }
-.experimental-features summary {
+.experimental-features :deep(summary) {
   cursor: pointer;
   width: fit-content;
 }
-.experimental-features fieldset {
+.experimental-features :deep(fieldset) {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -78,21 +78,21 @@ function selectExample(event: Event) {
   padding: 0;
   min-width: 0;
 }
-.experimental-features .experimental-choices {
+.experimental-features :deep(.experimental-choices) {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 16px;
 }
-.experimental-features label {
+.experimental-features :deep(label) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   min-height: 28px;
 }
-.experimental-features input {
+.experimental-features :deep(input) {
   accent-color: var(--accent-rust);
 }
-.experimental-features select {
+.experimental-features :deep(select) {
   max-width: 100%;
   min-height: 30px;
   background: var(--bg-primary);
@@ -102,7 +102,7 @@ function selectExample(event: Event) {
   padding: 4px 8px;
   font: inherit;
 }
-.experimental-features .sr-only {
+.experimental-features :deep(.sr-only) {
   position: absolute;
   width: 1px;
   height: 1px;
