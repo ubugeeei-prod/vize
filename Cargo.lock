@@ -3936,6 +3936,7 @@ dependencies = [
 name = "vize_impeto"
 version = "0.424.11"
 dependencies = [
+ "serde_json",
  "vize_carton",
  "vize_davinci",
 ]

@@ -1,6 +1,7 @@
 use vize_s0::{Allocator, Span, Vec};
 
 use super::{EffectId, OpId, OpKind, Phase, Region, RegionId, StateEdge};
+use crate::operand::Operand;
 
 /// One flat Impeto operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -50,6 +51,8 @@ pub struct Program<'a> {
     pub ops: Vec<'a, Op>,
     pub edges: Vec<'a, StateEdge>,
     pub effects: Vec<'a, EffectScope>,
+    /// Executable value information, addressed by operation and region ids.
+    pub operands: Vec<'a, Operand<'a>>,
 }
 
 impl<'a> Program<'a> {
@@ -62,6 +65,7 @@ impl<'a> Program<'a> {
             ops: Vec::new_in(&allocator),
             edges: Vec::new_in(&allocator),
             effects: Vec::new_in(&allocator),
+            operands: Vec::new_in(&allocator),
         }
     }
 

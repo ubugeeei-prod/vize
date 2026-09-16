@@ -26,5 +26,7 @@ extern crate alloc;
 pub mod folio;
 pub mod lattice;
 pub mod op;
+pub mod operand;
 pub mod trace;
+pub mod values_folio;
 pub mod verify;
