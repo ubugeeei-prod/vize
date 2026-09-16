@@ -151,17 +151,56 @@ export interface DataErrorState<
   readonly updatedAt: number;
 }
 
-export interface DataLoadOptions {
+/** Context used to compute deterministic retry backoff. */
+export interface DataRetryDelayContext<
+  Key extends DataResourceKey = DataResourceKey,
+  Input = unknown,
+> {
+  readonly key: Key;
+  readonly input: Input;
+  readonly attempt: number;
+  readonly error: unknown;
+}
+
+/** Retry backoff in milliseconds or a deterministic backoff factory. */
+export type DataRetryDelay<Key extends DataResourceKey = DataResourceKey, Input = unknown> =
+  | number
+  | ((context: DataRetryDelayContext<Key, Input>) => number);
+
+/** Testable sleep hook used by retry backoff. */
+export type DataSleep = (milliseconds: number, signal: AbortSignal) => Promise<void>;
+
+export interface DataLoadOptions<Key extends DataResourceKey = DataResourceKey, Input = unknown> {
   readonly reason?: DataLoadReason;
   readonly signal?: AbortSignal;
   readonly policy?: "dedupe" | "cache-first" | "revalidate" | "replace";
+  /**
+   * Additional attempts after the first loader call.
+   *
+   * @default 0
+   */
+  readonly retries?: number;
+
+  /**
+   * Backoff before retry attempts.
+   *
+   * @default 0
+   */
+  readonly retryDelayMs?: DataRetryDelay<Key, Input>;
+
+  /**
+   * Abort the load after this many milliseconds.
+   *
+   * @default undefined
+   */
+  readonly deadlineMs?: number;
 }
 
 export interface DataClient {
   readonly load: <Resource extends AnyDataResourceDefinition>(
     resource: Resource,
     input: InferInput<Resource>,
-    options?: DataLoadOptions,
+    options?: DataLoadOptions<InferKey<Resource>, InferInput<Resource>>,
   ) => Promise<
     DataState<InferKey<Resource>, InferInput<Resource>, InferData<Resource>, InferError<Resource>>
   >;
@@ -182,6 +221,7 @@ export interface DataClient {
 export interface DataClientOptions {
   readonly now?: () => number;
   readonly snapshot?: DataSnapshot;
+  readonly sleep?: DataSleep;
 }
 
 export interface DataSnapshot {

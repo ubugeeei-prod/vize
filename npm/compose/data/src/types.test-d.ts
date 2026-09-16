@@ -35,6 +35,30 @@ if (loaded.status === "success") {
   loaded.data.title satisfies string;
 }
 
+await client.load(
+  article,
+  { id: "intro" },
+  {
+    deadlineMs: 500,
+    retries: 2,
+    retryDelayMs(context) {
+      context.key satisfies "article.byId";
+      context.input satisfies { id: string };
+      context.attempt satisfies number;
+      context.error satisfies unknown;
+      return context.attempt * 10;
+    },
+  },
+);
+
+createDataClient({
+  sleep(milliseconds, signal) {
+    milliseconds satisfies number;
+    signal satisfies AbortSignal;
+    return Promise.resolve();
+  },
+});
+
 // @ts-expect-error missing resource input
 await client.load(article, {});
 

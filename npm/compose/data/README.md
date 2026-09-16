@@ -15,7 +15,15 @@ const articleResource = defineDataResource({
 });
 
 const data = createDataClient();
-const article = await data.load(articleResource, { id: "intro" });
+const article = await data.load(
+  articleResource,
+  { id: "intro" },
+  {
+    retries: 2,
+    retryDelayMs: ({ attempt }) => attempt * 100,
+    deadlineMs: 1500,
+  },
+);
 </script>
 
 <template>
@@ -27,4 +35,4 @@ const article = await data.load(articleResource, { id: "intro" });
 
 Server renderers can call `serializeDataSnapshot(data)` and hydrate the client with
 `hydrateDataClient(snapshot)`. Hydrated success entries satisfy the first client load without
-issuing duplicate network work.
+issuing duplicate network work; `policy: "replace"` opts back into a fresh request.
