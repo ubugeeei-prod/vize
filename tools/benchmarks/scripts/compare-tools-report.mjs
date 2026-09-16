@@ -237,6 +237,24 @@ export function renderEngineClassSections(surfaces, formatMs) {
     lines.push("");
     lines.push(engineClassNote(surface));
     lines.push("");
+    const checked = surface.variants.filter((variant) => variant.correctness != null);
+    if (checked.length > 0) {
+      lines.push(
+        "Type-check work validation (strict templates; before warmup; diagnostics rechecked on every run):",
+      );
+      lines.push("");
+      lines.push(
+        "| Row | Minimal plants | Corpus plant | Diagnostics | Exit status | Diagnostic SHA-256 |",
+      );
+      lines.push("| --- | ---: | --- | ---: | ---: | --- |");
+      for (const variant of checked) {
+        const proof = variant.correctness;
+        lines.push(
+          `| ${variant.label} | ${proof.minimalPlants.length} | ${proof.corpusPlant ? "passed" : "failed"} | ${proof.diagnosticCount} | ${proof.status} | \`${proof.diagnosticFingerprint}\` |`,
+        );
+      }
+      lines.push("");
+    }
   }
   return lines;
 }
