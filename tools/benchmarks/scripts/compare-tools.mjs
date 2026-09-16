@@ -39,7 +39,8 @@ import {
   prepareTypecheckPackages,
   typecheckToolBins,
 } from "./compare-tools-typecheck.mjs";
-import { gateTypecheckVariants } from "./typecheck-readiness.mjs";
+import { gateTypecheckVariants, recordTypecheckRejection } from "./typecheck-readiness.mjs";
+import { measureVariants } from "./compare-tools-measure.mjs";
 import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.mjs";
 import { linkColdNodeModules } from "./nuxt-build-cache.mjs";
 
@@ -107,15 +108,6 @@ function selectedTasks(value) {
   return DEFAULT_TASKS.filter((task) => requested.has(task));
 }
 
-function median(values) {
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  if (sorted.length % 2 === 1) {
-    return sorted[mid];
-  }
-  return (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
 export function formatMs(ms) {
   if (!Number.isFinite(ms)) {
     return "n/a";
@@ -134,17 +126,6 @@ export function formatMs(ms) {
 
 function formatRunList(values) {
   return values.map(formatMs).join(", ");
-}
-
-function formatThroughput(files, ms) {
-  if (!Number.isFinite(ms) || ms <= 0) {
-    return "n/a";
-  }
-  const filesPerSecond = (files / ms) * 1000;
-  if (filesPerSecond >= 1000) {
-    return `${(filesPerSecond / 1000).toFixed(1)}k files/s`;
-  }
-  return `${filesPerSecond.toFixed(0)} files/s`;
 }
 
 function formatBytes(bytes) {
@@ -433,35 +414,6 @@ ${vizeOptions}
   );
 
   return outputDir;
-}
-
-async function measureVariants(variants, options) {
-  for (let i = 0; i < options.warmups; i++) {
-    for (const variant of variants) {
-      await variant.measure({ phase: "warmup", iteration: i });
-    }
-  }
-
-  const runsById = new Map(variants.map((variant) => [variant.id, []]));
-  for (let i = 0; i < options.runs; i++) {
-    const ordered = i % 2 === 0 ? variants : [...variants].reverse();
-    for (const variant of ordered) {
-      const ms = await variant.measure({ phase: "measure", iteration: i });
-      runsById.get(variant.id).push(ms);
-    }
-  }
-
-  return variants.map((variant) => {
-    const runs = runsById.get(variant.id).map((ms) => Number(ms.toFixed(3)));
-    const medianMs = Number(median(runs).toFixed(3));
-    return {
-      id: variant.id,
-      label: variant.label,
-      medianMs,
-      runs,
-      throughput: formatThroughput(variant.files, medianMs),
-    };
-  });
 }
 
 function vueCompileSfc(compiler, source, filename) {
@@ -885,6 +837,9 @@ async function measureCheck(inputDir, files, options) {
   if (!options.backend.ready) {
     throw new Error(`Type-check surface requires a ready tsgo backend: ${options.backend.reason}`);
   }
+  const rejectedVariants = [];
+  const onRejected = (variant, error, phase) =>
+    recordTypecheckRejection(rejectedVariants, variant, error, phase);
   const variants = gateTypecheckVariants(
     createTypecheckToolVariants({
       fileCount: files.length,
@@ -894,6 +849,7 @@ async function measureCheck(inputDir, files, options) {
     }),
     checkDir,
     prepareTypecheckPackages,
+    onRejected,
   );
 
   return createSurface({
@@ -901,10 +857,11 @@ async function measureCheck(inputDir, files, options) {
     label: "Type check",
     files: files.length,
     bytes: totalFileBytes(inputDir, files),
-    variants: (await measureVariants(variants, options)).map((measured) => ({
+    variants: (await measureVariants(variants, options, onRejected)).map((measured) => ({
       ...measured,
       correctness: variants.find((variant) => variant.id === measured.id).correctness,
     })),
+    rejectedVariants,
     baselineId: "vue-tsc",
     vizeSingleId: "vize-check-1t",
     vizeMaxId: "vize-check-max",

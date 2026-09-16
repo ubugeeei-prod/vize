@@ -42,7 +42,15 @@ export function assertCorpusPlant(baseline, planted) {
     ) ||
     JSON.stringify(unchanged) !== JSON.stringify(baseline.diagnostics)
   ) {
-    throw new Error("missed the corpus-scale plant or changed baseline diagnostics");
+    const previous = new Set(baseline.diagnostics.map(JSON.stringify));
+    const current = new Set(unchanged.map(JSON.stringify));
+    throw new Error(
+      `missed the corpus-scale plant or changed baseline diagnostics: ${JSON.stringify({
+        plants: additions,
+        added: unchanged.filter((d) => !previous.has(JSON.stringify(d))).slice(0, 3),
+        removed: baseline.diagnostics.filter((d) => !current.has(JSON.stringify(d))).slice(0, 3),
+      })}`,
+    );
   }
 }
 
@@ -62,8 +70,8 @@ export function checkedMeasurement(variant, cwd, baseline) {
   };
 }
 
-/** Validate every lane before warmup; a failure prevents publishing the artifact. */
-export function gateTypecheckVariants(variants, checkDir, prepareProject) {
+/** Validate every lane before warmup; rejected lanes cannot publish timings. */
+export function gateTypecheckVariants(variants, checkDir, prepareProject, onRejected) {
   const plants = prepareMinimalPlants(`${checkDir}-readiness`, resolveVuePackageDir());
   let corpus;
   try {
@@ -80,16 +88,16 @@ export function gateTypecheckVariants(variants, checkDir, prepareProject) {
             normalizeTypecheckResult(variant.run(dir), dir, variant.format),
           );
         } catch (error) {
-          throw new Error(
-            `${variant.id}: refusing to publish a type-check timing: ${error.message}`,
-            { cause: error },
-          );
+          corpusBaselines.set(variant.id, error);
         }
       }
     });
     for (const dir of [...Object.values(plants.dirs), corpus.dir]) prepareProject(dir);
-    return variants.map((variant) => {
+    return variants.flatMap((variant) => {
       try {
+        if (corpusBaselines.get(variant.id) instanceof Error) {
+          throw corpusBaselines.get(variant.id);
+        }
         const run = (dir) => normalizeTypecheckResult(variant.run(dir), dir, variant.format);
         for (const plant of MINIMAL_PLANTS) assertMinimalPlant(run(plants.dirs[plant.id]), plant);
         const baseline = run(checkDir);
@@ -108,6 +116,10 @@ export function gateTypecheckVariants(variants, checkDir, prepareProject) {
           },
         };
       } catch (error) {
+        if (onRejected) {
+          onRejected(variant, error, "preflight");
+          return [];
+        }
         throw new Error(
           `${variant.id}: refusing to publish a type-check timing: ${error.message}`,
           {
@@ -120,4 +132,11 @@ export function gateTypecheckVariants(variants, checkDir, prepareProject) {
     plants.cleanup();
     corpus?.cleanup();
   }
+}
+
+export const OPTIONAL_TYPECHECK_VARIANTS = new Set(["golar-typecheck", "golar-default"]);
+
+export function recordTypecheckRejection(rejected, variant, error, phase) {
+  if (!OPTIONAL_TYPECHECK_VARIANTS.has(variant.id)) throw error;
+  rejected.push({ id: variant.id, label: variant.label, phase, reason: error.message });
 }

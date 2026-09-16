@@ -17,6 +17,7 @@
  */
 
 import { ENGINE_CLASSES } from "./check-gate-report.mjs";
+import { OPTIONAL_TYPECHECK_VARIANTS } from "./typecheck-readiness.mjs";
 
 export const CROSS_ENGINE_CELL = "n/a (cross-engine)";
 
@@ -70,6 +71,17 @@ function assertRequiredEngineVariants(surface) {
     );
   }
   const actualIds = new Set(surface.variants.map((variant) => variant.id));
+  for (const rejected of surface.rejectedVariants ?? []) {
+    if (
+      !OPTIONAL_TYPECHECK_VARIANTS.has(rejected.id) ||
+      actualIds.has(rejected.id) ||
+      !["preflight", "warmup", "measure"].includes(rejected.phase) ||
+      typeof rejected.reason !== "string" ||
+      !rejected.reason.trim()
+    )
+      throw new Error(`compare-tools: invalid rejected type-check variant: ${rejected.id}`);
+    actualIds.add(rejected.id);
+  }
   const missing = Object.keys(expected).filter((id) => !actualIds.has(id));
   if (missing.length > 0) {
     throw new Error(
@@ -237,6 +249,13 @@ export function renderEngineClassSections(surfaces, formatMs) {
     lines.push("");
     lines.push(engineClassNote(surface));
     lines.push("");
+    for (const rejected of surface.rejectedVariants ?? []) {
+      lines.push(
+        `${rejected.label}: rejected during ${rejected.phase}; no timing or rank published.`,
+      );
+      lines.push("");
+      lines.push("```text", rejected.reason.replaceAll("```", "'''"), "```", "");
+    }
     const checked = surface.variants.filter((variant) => variant.correctness != null);
     if (checked.length > 0) {
       lines.push(
