@@ -6,6 +6,11 @@ use vize_s3::op::{
 
 use crate::{PartitionFact, PartitionFacts, PartitionKind};
 
+mod binding_operands;
+mod classify;
+mod operands;
+use classify::{binding_kind, binding_partition, binding_span, region_span};
+
 /// Result of one S2→S3 lowering.
 #[derive(Debug)]
 pub struct Lowered<'a> {
@@ -22,6 +27,7 @@ pub fn lower<'a>(allocator: &'a Allocator, root: &s2::Region<'_>) -> Lowered<'a>
 }
 
 struct Cx<'a> {
+    allocator: &'a Allocator,
     program: Program<'a>,
     partition: PartitionFacts<'a>,
     next_op: u32,
@@ -33,6 +39,7 @@ struct Cx<'a> {
 impl<'a> Cx<'a> {
     fn new(allocator: &'a Allocator) -> Self {
         Self {
+            allocator,
             program: Program::new(allocator, Phase::Built),
             partition: PartitionFacts::new(allocator),
             next_op: 0,
@@ -61,12 +68,13 @@ impl<'a> Cx<'a> {
         owner: OpId,
         fallback_span: Span,
         inherited: PartitionKind,
-    ) {
+    ) -> RegionId {
         let id = self.mint_region();
         let span = region_span(region, fallback_span);
         self.program
             .push_region(Region::child(id, parent, owner, span));
         self.lower_ops(region, id, inherited);
+        id
     }
 
     fn lower_ops(
@@ -98,7 +106,8 @@ impl<'a> Cx<'a> {
             s2::Op::Element(element) => {
                 let kind = inherited.join(PartitionKind::Static);
                 let id = self.push_op(OpKind::InsertNode, target_region, element.span, kind);
-                self.lower_bindings(&element.bindings, target_region, inherited);
+                self.capture_element(id, element);
+                self.lower_bindings(&element.bindings, target_region, id, inherited);
                 self.lower_region(
                     &element.children,
                     target_region,
@@ -111,21 +120,30 @@ impl<'a> Cx<'a> {
             s2::Op::Component(component) => {
                 let kind = inherited.join(PartitionKind::Dynamic);
                 let id = self.push_op(OpKind::CreateComponent, target_region, component.span, kind);
-                self.lower_bindings(&component.bindings, target_region, kind);
+                self.capture_component(id, component);
+                self.lower_bindings(&component.bindings, target_region, id, kind);
                 self.lower_region(&component.children, target_region, id, component.span, kind);
                 id
             }
             s2::Op::Text(text) => {
-                self.push_op(OpKind::SetText, target_region, text.span, inherited)
+                let id = self.push_op(OpKind::SetText, target_region, text.span, inherited);
+                self.capture_text(id, text.content, text.span, false);
+                id
             }
-            s2::Op::Interpolation(interpolation) => self.push_op(
-                OpKind::SetText,
-                target_region,
-                interpolation.span,
-                PartitionKind::Dynamic,
-            ),
+            s2::Op::Interpolation(interpolation) => {
+                let id = self.push_op(
+                    OpKind::SetText,
+                    target_region,
+                    interpolation.span,
+                    PartitionKind::Dynamic,
+                );
+                self.capture_interpolation(id, interpolation.expression);
+                id
+            }
             s2::Op::Comment(comment) => {
-                self.push_op(OpKind::InsertNode, target_region, comment.span, inherited)
+                let id = self.push_op(OpKind::InsertNode, target_region, comment.span, inherited);
+                self.capture_text(id, comment.content, comment.span, true);
+                id
             }
             s2::Op::If(if_op) => {
                 let id = self.push_op(
@@ -135,13 +153,14 @@ impl<'a> Cx<'a> {
                     PartitionKind::Dynamic,
                 );
                 for branch in &if_op.branches {
-                    self.lower_region(
+                    let region = self.lower_region(
                         &branch.region,
                         target_region,
                         id,
                         branch.span,
                         PartitionKind::Dynamic,
                     );
+                    self.capture_condition(id, region, branch.condition, branch.span);
                 }
                 id
             }
@@ -152,6 +171,7 @@ impl<'a> Cx<'a> {
                     for_op.span,
                     PartitionKind::Dynamic,
                 );
+                self.capture_for(id, &for_op.binding);
                 self.lower_region(
                     &for_op.region,
                     target_region,
@@ -168,7 +188,8 @@ impl<'a> Cx<'a> {
                     slot.span,
                     PartitionKind::Dynamic,
                 );
-                self.lower_bindings(&slot.bindings, target_region, PartitionKind::Dynamic);
+                self.capture_slot(id, slot);
+                self.lower_bindings(&slot.bindings, target_region, id, PartitionKind::Dynamic);
                 self.lower_region(
                     &slot.fallback,
                     target_region,
@@ -185,6 +206,7 @@ impl<'a> Cx<'a> {
         &mut self,
         bindings: &[s2::BindingOp<'_>],
         target_region: RegionId,
+        target: OpId,
         inherited: PartitionKind,
     ) {
         let mut previous = None;
@@ -192,6 +214,7 @@ impl<'a> Cx<'a> {
             let span = binding_span(binding);
             let partition = inherited.join(binding_partition(binding));
             let id = self.push_op(binding_kind(binding), target_region, span, partition);
+            self.capture_binding(id, target, binding);
             if let Some(from) = previous {
                 self.program
                     .push_edge(StateEdge::new(from, id, EdgeKind::DomOrder));
@@ -250,76 +273,4 @@ impl<'a> Cx<'a> {
         self.next_effect = self.next_effect.saturating_add(1);
         id
     }
-}
-
-fn binding_kind(binding: &s2::BindingOp<'_>) -> OpKind {
-    match binding {
-        s2::BindingOp::Bind(bind) if bind.name.is_none() => OpKind::SetDynamicProps,
-        s2::BindingOp::Bind(_) => OpKind::SetProp,
-        s2::BindingOp::On(_) => OpKind::SetEvent,
-        s2::BindingOp::Model(_) | s2::BindingOp::VueSync(_) => OpKind::SetProp,
-        s2::BindingOp::SlotContent(_) | s2::BindingOp::VueSlotScope(_) => OpKind::SlotOutlet,
-        s2::BindingOp::VueDirective(_)
-        | s2::BindingOp::VueOnce(_)
-        | s2::BindingOp::VueMemo(_)
-        | s2::BindingOp::VueShow(_)
-        | s2::BindingOp::VueCloak(_) => OpKind::Directive,
-        s2::BindingOp::VueCssBind(_) => OpKind::SetDynamicProps,
-        s2::BindingOp::VueHtml(_) => OpKind::SetHtml,
-        s2::BindingOp::VueText(_) => OpKind::SetText,
-    }
-}
-
-fn binding_partition(binding: &s2::BindingOp<'_>) -> PartitionKind {
-    match binding {
-        s2::BindingOp::VueOnce(_) | s2::BindingOp::VueCloak(_) => PartitionKind::Static,
-        _ => PartitionKind::Dynamic,
-    }
-}
-
-fn binding_span(binding: &s2::BindingOp<'_>) -> Span {
-    match binding {
-        s2::BindingOp::Bind(op) => op.span,
-        s2::BindingOp::On(op) => op.span,
-        s2::BindingOp::Model(op) => op.span,
-        s2::BindingOp::SlotContent(op) => op.span,
-        s2::BindingOp::VueDirective(op) => op.span,
-        s2::BindingOp::VueCssBind(op) => op.span,
-        s2::BindingOp::VueSync(op) => op.span,
-        s2::BindingOp::VueSlotScope(op) => op.span,
-        s2::BindingOp::VueOnce(op) => op.span,
-        s2::BindingOp::VueMemo(op) => op.span,
-        s2::BindingOp::VueShow(op) => op.span,
-        s2::BindingOp::VueHtml(op) => op.span,
-        s2::BindingOp::VueText(op) => op.span,
-        s2::BindingOp::VueCloak(op) => op.span,
-    }
-}
-
-fn region_span(region: &s2::Region<'_>, fallback: Span) -> Span {
-    let mut span = None;
-    for op in &region.ops {
-        span = Some(match span {
-            Some(current) => union_span(current, op_span(op)),
-            None => op_span(op),
-        });
-    }
-    span.unwrap_or(fallback)
-}
-
-fn op_span(op: &s2::Op<'_>) -> Span {
-    match op {
-        s2::Op::Element(op) => op.span,
-        s2::Op::Component(op) => op.span,
-        s2::Op::Text(op) => op.span,
-        s2::Op::Interpolation(op) => op.span,
-        s2::Op::Comment(op) => op.span,
-        s2::Op::If(op) => op.span,
-        s2::Op::For(op) => op.span,
-        s2::Op::Slot(op) => op.span,
-    }
-}
-
-fn union_span(left: Span, right: Span) -> Span {
-    Span::new(left.start.min(right.start), left.end.max(right.end))
 }

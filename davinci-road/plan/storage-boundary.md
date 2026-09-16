@@ -21,8 +21,8 @@ or `collections` modules does not bypass the boundary.
 
 ## Retained `alloc::vec::Vec` inventory
 
-The five library trees in the reviewed inventory contain 80 production files,
-92 direct `alloc::vec::Vec` paths, and 317 bound `Vec`/`StdVec` uses. "Direct"
+The five library trees in the reviewed inventory contain 82 production files,
+94 direct `alloc::vec::Vec` paths, and 319 bound `Vec`/`StdVec` uses. "Direct"
 counts imports and fully-qualified paths; "bound" counts every type,
 constructor, and method path reached through a direct `Vec` import or alias.
 The executable ledger requires strict equality, so both growth and reduction
@@ -30,8 +30,8 @@ must update the file row and aggregate evidence in the same change.
 
 | Category | Files | Direct paths | Bound uses | Reason                                                                                                             |
 | -------- | ----: | -----------: | ---------: | ------------------------------------------------------------------------------------------------------------------ |
-| contract |    15 |           26 |         70 | Owned Folio, S2/S3 serialization data, and stage dumps have input-defined cardinality and form stable contracts.   |
-| analysis |     8 |            9 |         26 | Diagnostics, side tables, filters, and verifier results grow with the input; no inline bound is established.       |
+| contract |    16 |           27 |         71 | Owned Folio, S2/S3 serialization data, and stage dumps have input-defined cardinality and form stable contracts.   |
+| analysis |     9 |           10 |         27 | Diagnostics, side tables, filters, and verifier results grow with the input; no inline bound is established.       |
 | lower    |    13 |           13 |         52 | Lowering worklists and owned results grow with source-tree shape. Bounded substructures may migrate independently. |
 | pass     |    12 |           12 |         42 | Facts, provenance, and traversal worklists grow with the number of operations.                                     |
 | emit     |    32 |           32 |        127 | Ordered output buffers and collected emission inputs grow with the document.                                       |
@@ -42,6 +42,12 @@ exact ledger and aggregate in the same commit, making reintroduction fail.
 Mechanical conversion of source-sized buffers is not a goal because it can
 move large payloads onto the stack or add spill bookkeeping without reducing
 allocations.
+
+S3 value payloads use an arena-owned operand sequence. The separate owned
+`values_folio.rs` page retains a source-sized `Vec` for serialization and S0
+strings for tuple fields; `verify/operands.rs` appends input-sized diagnostics
+to the existing verifier buffer. These are contract and analysis storage,
+respectively, not additional owned IR sequences.
 
 The second `alloc::vec::Vec` import in `side_table.rs` is `#[cfg(test)]`
 size/test evidence. The scanner excludes the complete attributed item or
@@ -71,10 +77,10 @@ or count and fails the gate instead of becoming a `no_std` escape from S0.
 | s2       | `vize_s0::String`       |    11 |           11 |         55 |
 | s2       | `vize_s0::Vec`          |     9 |            9 |         17 |
 | s2       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
-| s3       | `alloc::vec::Vec`       |     3 |            3 |         13 |
+| s3       | `alloc::vec::Vec`       |     5 |            5 |         15 |
 | s3       | `alloc::string::String` |     0 |            0 |          0 |
-| s3       | `vize_s0::String`       |     3 |            3 |          9 |
-| s3       | `vize_s0::Vec`          |     2 |            2 |         10 |
+| s3       | `vize_s0::String`       |     4 |            4 |         19 |
+| s3       | `vize_s0::Vec`          |     2 |            2 |         12 |
 | s3       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s1_to_s2 | `alloc::vec::Vec`       |    57 |           57 |        221 |
 | s1_to_s2 | `alloc::string::String` |     0 |            0 |          0 |

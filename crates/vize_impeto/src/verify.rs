@@ -16,6 +16,7 @@ use lookup::{
 };
 
 mod lookup;
+mod operands;
 
 /// Which invariant a [`Violation`] reports.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -28,6 +29,7 @@ pub enum ViolationCode {
     RegionNesting,
     EffectScope,
     ScheduledOrder,
+    Operand,
 }
 
 impl ViolationCode {
@@ -43,6 +45,7 @@ impl ViolationCode {
             Self::RegionNesting => "S3V006",
             Self::EffectScope => "S3V007",
             Self::ScheduledOrder => "S3V008",
+            Self::Operand => "S3V009",
         }
     }
 }
@@ -82,6 +85,7 @@ pub fn verify(program: &Program<'_>) -> Vec<Violation> {
     check_ops(program, &mut out);
     check_effects(program, &mut out);
     check_edges(program, &mut out);
+    operands::check(program, &mut out);
     out
 }
 
