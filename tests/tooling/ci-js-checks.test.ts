@@ -7,7 +7,10 @@ import { fileURLToPath } from "node:url";
 import { checkTasks } from "../../tools/config/vite-plus/tasks/check.ts";
 import {
   checkedPackagesBeforeNativeBuild,
+  checkedPackages,
   nativeBuiltCheckPackages,
+  packedPackages,
+  testedPackages,
 } from "../../tools/config/vite-plus/task-inputs.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -39,4 +42,26 @@ test("CI JS checks keep native-backed UI lint behind the native build", () => {
     "pnpm check:static",
     "pnpm check:story-testbed",
   ]);
+});
+
+test("every Compose package participates in workspace checks, tests, and builds", () => {
+  const composeRoot = path.join(root, "npm", "compose");
+  for (const entry of fs.readdirSync(composeRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(composeRoot, entry.name, "package.json"), "utf8"),
+    ) as { scripts?: Record<string, string> };
+    const pkg = `./npm/compose/${entry.name}`;
+    for (const [script, packages] of Object.entries({
+      check: checkedPackages,
+      test: testedPackages,
+      build: packedPackages,
+    })) {
+      assert.ok(manifest.scripts?.[script], `${pkg} must provide ${script}`);
+      assert.ok(
+        packages.some((candidate) => candidate === pkg),
+        `${pkg} is missing from workspace ${script} gates`,
+      );
+    }
+  }
 });
