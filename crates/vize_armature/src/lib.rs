@@ -17,6 +17,7 @@
 //! - Error recovery and detailed error reporting
 
 pub mod parser;
+pub mod patterns;
 pub mod tokenizer;
 
 /// Legacy Vue (v0.10 / v0.11 / v1 / v2) support. Gated behind the `legacy` feature and

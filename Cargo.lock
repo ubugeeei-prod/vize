@@ -3539,6 +3539,7 @@ dependencies = [
  "oxc_ast",
  "oxc_parser",
  "oxc_span",
+ "oxc_syntax",
  "serde",
  "thiserror 2.0.20",
  "vize_carton",
