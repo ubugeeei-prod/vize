@@ -11,11 +11,12 @@ use vize_atelier_dom::{DomCompilerOptions, compile_template_legacy_with_options}
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_s0::Allocator;
 use vize_s1_to_s2::{
-    DomEmitMode, DomEmitOptions, EmitError, LegacyCaps, emit_dom_source,
-    emit_dom_source_with_options,
+    DomEmitMode, DomEmitOptions, EmitError, LegacyCaps,
+    emit_dom_source_patch_facts_observed_with_options,
 };
 
 /// Which shipped-lane option surface the comparison runs under.
+#[allow(dead_code)]
 #[derive(Clone, Copy)]
 pub enum Lane {
     /// `compile_template` defaults.
@@ -40,6 +41,8 @@ pub struct Report {
     pub old_error_skips: u64,
     pub s2_refusal_count: u64,
     pub divergence_count: u64,
+    pub patch_fact_compared: u64,
+    pub patch_fact_entries: u64,
     pub old_error_codes: Vec<ErrorCode>,
     pub old_error_reasons: BTreeMap<String, u64>,
     pub unreadable: Vec<String>,
@@ -52,6 +55,7 @@ pub struct Report {
     pub divergences: Vec<String>,
 }
 
+#[allow(dead_code)]
 pub fn compare_sweep(sweep: &CorpusSweep) -> Report {
     compare_sweep_lane(sweep, Lane::Default)
 }
@@ -87,6 +91,7 @@ fn component_name_of(path: &str) -> std::string::String {
         .to_owned()
 }
 
+#[allow(dead_code)]
 pub fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
     compare_sfc_template_lane(name, source, report, Lane::Default)
 }
@@ -199,33 +204,45 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
     let old = format!("{}\n{}", old.preamble, old.code);
 
     let new_allocator = Allocator::new();
+    let default_options = DomEmitOptions::DEFAULT;
+    let prefixed_options = DomEmitOptions {
+        prefix_identifiers: true,
+        ..DomEmitOptions::DEFAULT
+    };
+    let binding_options = DomEmitOptions {
+        mode: DomEmitMode::Module,
+        prefix_identifiers: true,
+        is_ts,
+        component_name: component_name.as_deref(),
+        bindings: table.as_ref(),
+        ..DomEmitOptions::DEFAULT
+    };
     let emitted = match lane {
-        Lane::Default => emit_dom_source(&new_allocator, &template.content),
-        Lane::Prefixed => emit_dom_source_with_options(
+        Lane::Default => emit_dom_source_patch_facts_observed_with_options(
             &new_allocator,
             &template.content,
             LegacyCaps::VUE3,
-            &DomEmitOptions {
-                prefix_identifiers: true,
-                ..DomEmitOptions::DEFAULT
-            },
+            &default_options,
         ),
-        Lane::Bindings => emit_dom_source_with_options(
+        Lane::Prefixed => emit_dom_source_patch_facts_observed_with_options(
             &new_allocator,
             &template.content,
             LegacyCaps::VUE3,
-            &DomEmitOptions {
-                mode: DomEmitMode::Module,
-                prefix_identifiers: true,
-                is_ts,
-                component_name: component_name.as_deref(),
-                bindings: table.as_ref(),
-                ..DomEmitOptions::DEFAULT
-            },
+            &prefixed_options,
+        ),
+        Lane::Bindings => emit_dom_source_patch_facts_observed_with_options(
+            &new_allocator,
+            &template.content,
+            LegacyCaps::VUE3,
+            &binding_options,
         ),
     };
     let new = match emitted {
-        Ok(emit) => emit.assembled(),
+        Ok(observed) => {
+            report.patch_fact_compared += 1;
+            report.patch_fact_entries += observed.materialized_entries as u64;
+            observed.emit.assembled()
+        }
         Err(error) => {
             report.s2_refusal_count += 1;
             let reason = refusal_reason(&error);
@@ -303,8 +320,9 @@ pub fn assert_clean_corpus(report: &Report) {
         report.unreadable_count == 0
             && report.unexpected_old_error_skips == 0
             && report.s2_refusal_count == 0
-            && report.divergence_count == 0,
-        "corpus unreadable files ({}):\n{}\n\ncorpus old-lane error skips ({}) by reason {:?}:\n{}\n\nunexpected old-lane error skips ({}):\n{}\n\ncorpus S2 refusals ({}) by reason {:?}:\n{}\n\ncorpus divergences ({}):\n{}",
+            && report.divergence_count == 0
+            && report.patch_fact_entries > 0,
+        "corpus unreadable files ({}):\n{}\n\ncorpus old-lane error skips ({}) by reason {:?}:\n{}\n\nunexpected old-lane error skips ({}):\n{}\n\ncorpus S2 refusals ({}) by reason {:?}:\n{}\n\ncorpus divergences ({}):\n{}\n\ncorpus patch facts: compared={} materialized_entries={}",
         report.unreadable_count,
         report.unreadable.join("\n"),
         report.old_error_skips,
@@ -317,5 +335,7 @@ pub fn assert_clean_corpus(report: &Report) {
         report.s2_refusals.join("\n"),
         report.divergence_count,
         report.divergences.join("\n"),
+        report.patch_fact_compared,
+        report.patch_fact_entries,
     );
 }

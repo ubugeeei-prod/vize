@@ -126,6 +126,11 @@ pub use self::budget::{
     DomEmitBudget, ObservedDomEmit, emit_dom_source_observed,
     emit_dom_source_observed_with_options, emit_dom_source_with_caps_observed,
 };
+#[cfg(any(test, feature = "davinci-differential"))]
+pub use self::budget::{
+    ObservedPatchFactsEmit, emit_dom_source_patch_facts_observed,
+    emit_dom_source_patch_facts_observed_with_options,
+};
 use self::buf::Buf;
 pub(crate) use self::custom_element::tag_pattern_matches;
 use self::dispatch::{emit_for_item_call, emit_for_op, emit_if_branch_call, emit_if_op};

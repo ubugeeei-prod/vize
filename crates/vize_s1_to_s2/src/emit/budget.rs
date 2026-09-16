@@ -35,11 +35,12 @@ pub struct ObservedDomEmit {
     pub budget: DomEmitBudget,
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "davinci-differential"))]
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct ObservedPatchFactsEmit {
-    pub(crate) emit: DomEmit,
-    pub(crate) materialized_entries: usize,
+#[doc(hidden)]
+pub struct ObservedPatchFactsEmit {
+    pub emit: DomEmit,
+    pub materialized_entries: usize,
 }
 
 pub fn emit_dom_source_observed<'a>(
@@ -82,19 +83,31 @@ pub fn emit_dom_source_observed_with_options<'a>(
     })
 }
 
-#[cfg(test)]
-pub(crate) fn emit_dom_source_patch_facts_observed<'a>(
+#[cfg(any(test, feature = "davinci-differential"))]
+#[doc(hidden)]
+pub fn emit_dom_source_patch_facts_observed<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> Result<ObservedPatchFactsEmit, EmitError> {
-    let mut observer = vize_davinci::pass::NoObserver;
-    let observed = emit_dom_source_with_options_and_observer(
+    emit_dom_source_patch_facts_observed_with_options(
         allocator,
         source,
         LegacyCaps::VUE3,
         &DomEmitOptions::DEFAULT,
-        &mut observer,
-    )?;
+    )
+}
+
+#[cfg(any(test, feature = "davinci-differential"))]
+#[doc(hidden)]
+pub fn emit_dom_source_patch_facts_observed_with_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+) -> Result<ObservedPatchFactsEmit, EmitError> {
+    let mut observer = vize_davinci::pass::NoObserver;
+    let observed =
+        emit_dom_source_with_options_and_observer(allocator, source, caps, options, &mut observer)?;
     Ok(ObservedPatchFactsEmit {
         emit: observed.emit,
         materialized_entries: observed.patch_fact_entries,

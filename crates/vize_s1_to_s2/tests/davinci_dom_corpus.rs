@@ -56,6 +56,12 @@ fn dom_emit_agrees_on_sfc_templates_body() {
     assert_eq!(report.old_error_skips, 0, "battery old-lane error skips");
     assert_empty("battery S2 refusals", &report.s2_refusals);
     assert_empty("battery divergences", &report.divergences);
+    assert!(
+        report.patch_fact_entries > 0,
+        "battery must materialize patch facts before the corpus gate: compared={} materialized_entries={}",
+        report.patch_fact_compared,
+        report.patch_fact_entries,
+    );
 
     let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
         eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
@@ -69,12 +75,13 @@ fn dom_emit_agrees_on_sfc_templates_body() {
 
     let corpus = compare_sweep(&sweep);
     eprintln!(
-        "davinci DOM corpus sweep: files={} unreadable={} parsed={} templates={} compared={} old_error_skips={} s2_refusals={} divergences={}",
+        "davinci DOM corpus sweep: files={} unreadable={} parsed={} templates={} compared={} patch_fact_entries={} old_error_skips={} s2_refusals={} divergences={}",
         corpus.files,
         corpus.unreadable_count,
         corpus.parsed,
         corpus.templates,
         corpus.compared,
+        corpus.patch_fact_entries,
         corpus.old_error_skips,
         corpus.s2_refusal_count,
         corpus.divergence_count,

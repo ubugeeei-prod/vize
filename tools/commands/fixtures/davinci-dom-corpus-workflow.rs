@@ -313,6 +313,9 @@ fn validate_corpus_evidence(artifact: &str) -> Validation {
     if evidence.files == 0 || evidence.templates == 0 || evidence.compared == 0 {
         failures.push("corpus log proves no DOM-output comparisons".to_string());
     }
+    if evidence.patch_fact_entries == 0 {
+        failures.push("corpus log proves no patch-fact materialization".to_string());
+    }
     if evidence.unreadable != 0 {
         failures.push(format!(
             "corpus log unreadable inputs: unreadable={}",
@@ -367,6 +370,7 @@ struct CorpusEvidence {
     parsed: usize,
     templates: usize,
     compared: usize,
+    patch_fact_entries: usize,
     old_error_skips: usize,
     old_error_reasons: BTreeMap<String, usize>,
     s2_refusals: usize,
@@ -383,6 +387,7 @@ fn parse_corpus_evidence(log_text: &str) -> CorpusEvidence {
         parsed: 0,
         templates: 0,
         compared: 0,
+        patch_fact_entries: 0,
         old_error_skips: 0,
         old_error_reasons: BTreeMap::new(),
         s2_refusals: 0,
@@ -390,7 +395,7 @@ fn parse_corpus_evidence(log_text: &str) -> CorpusEvidence {
     };
     let scope =
         Regex::new(r"scope=canonical closure_evidence=(true|false) submodules=(\d+)").unwrap();
-    let sweep = Regex::new(r"files=(\d+) unreadable=(\d+) parsed=(\d+) templates=(\d+) compared=(\d+) old_error_skips=(\d+) s2_refusals=(\d+) divergences=(\d+)").unwrap();
+    let sweep = Regex::new(r"files=(\d+) unreadable=(\d+) parsed=(\d+) templates=(\d+) compared=(\d+)(?: patch_fact_entries=(\d+))? old_error_skips=(\d+) s2_refusals=(\d+) divergences=(\d+)").unwrap();
     let reasons = Regex::new(r"old-lane error reasons: (\{.*\})").unwrap();
     for line in corpus_evidence_lines(log_text) {
         let line = strip_ansi(&line);
@@ -406,9 +411,12 @@ fn parse_corpus_evidence(log_text: &str) -> CorpusEvidence {
             evidence.parsed = captures[3].parse().unwrap_or(0);
             evidence.templates = captures[4].parse().unwrap_or(0);
             evidence.compared = captures[5].parse().unwrap_or(0);
-            evidence.old_error_skips = captures[6].parse().unwrap_or(0);
-            evidence.s2_refusals = captures[7].parse().unwrap_or(0);
-            evidence.divergences = captures[8].parse().unwrap_or(0);
+            evidence.patch_fact_entries = captures
+                .get(6)
+                .map_or(0, |capture| capture.as_str().parse().unwrap_or(0));
+            evidence.old_error_skips = captures[7].parse().unwrap_or(0);
+            evidence.s2_refusals = captures[8].parse().unwrap_or(0);
+            evidence.divergences = captures[9].parse().unwrap_or(0);
             continue;
         }
         if let Some(captures) = reasons.captures(&line) {
@@ -512,11 +520,12 @@ fn append_corpus_summary(
     common::append_text(
         summary_path,
         &format!(
-            "## Davinci S2 DOM Corpus\n\n- mode: `{mode}`\n- outcome: `{outcome}`\n- verdict: `{verdict}`\n- manifest DOM-output comparisons: `{}`\n- gitlinks: `{}`\n- submodule status rows: `{}`\n- compared templates: `{}`\n- old-lane error reasons: `{}`\n\n{}\n",
+            "## Davinci S2 DOM Corpus\n\n- mode: `{mode}`\n- outcome: `{outcome}`\n- verdict: `{verdict}`\n- manifest DOM-output comparisons: `{}`\n- gitlinks: `{}`\n- submodule status rows: `{}`\n- compared templates: `{}`\n- patch-fact entries: `{}`\n- old-lane error reasons: `{}`\n\n{}\n",
             validation.manifest_dom_output_comparisons,
             validation.selected_gitlinks,
             validation.submodule_status_rows,
             validation.evidence.compared,
+            validation.evidence.patch_fact_entries,
             {
                 let reasons = format_reason_counts(&validation.evidence.old_error_reasons);
                 if reasons.is_empty() {

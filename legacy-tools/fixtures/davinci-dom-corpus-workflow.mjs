@@ -106,6 +106,7 @@ export function parseCorpusEvidence(logText) {
     parsed: 0,
     templates: 0,
     compared: 0,
+    patchFactEntries: 0,
     oldErrorSkips: 0,
     oldErrorReasons: {},
     s2Refusals: 0,
@@ -120,7 +121,7 @@ export function parseCorpusEvidence(logText) {
       continue;
     }
     const sweep =
-      /files=(\d+) unreadable=(\d+) parsed=(\d+) templates=(\d+) compared=(\d+) old_error_skips=(\d+) s2_refusals=(\d+) divergences=(\d+)/.exec(
+      /files=(\d+) unreadable=(\d+) parsed=(\d+) templates=(\d+) compared=(\d+)(?: patch_fact_entries=(\d+))? old_error_skips=(\d+) s2_refusals=(\d+) divergences=(\d+)/.exec(
         line,
       );
     if (sweep) {
@@ -129,9 +130,10 @@ export function parseCorpusEvidence(logText) {
       evidence.parsed = Number(sweep[3]);
       evidence.templates = Number(sweep[4]);
       evidence.compared = Number(sweep[5]);
-      evidence.oldErrorSkips = Number(sweep[6]);
-      evidence.s2Refusals = Number(sweep[7]);
-      evidence.divergences = Number(sweep[8]);
+      evidence.patchFactEntries = Number(sweep[6] ?? 0);
+      evidence.oldErrorSkips = Number(sweep[7]);
+      evidence.s2Refusals = Number(sweep[8]);
+      evidence.divergences = Number(sweep[9]);
       continue;
     }
     const oldErrorReasons = /old-lane error reasons: (\{.*\})/.exec(line);
@@ -180,6 +182,9 @@ export function validateCorpusEvidence(artifact = artifactDir) {
   }
   if (evidence.files === 0 || evidence.templates === 0 || evidence.compared === 0) {
     failures.push("corpus log proves no DOM-output comparisons");
+  }
+  if (evidence.patchFactEntries === 0) {
+    failures.push("corpus log proves no patch-fact materialization");
   }
   if (evidence.unreadable !== 0) {
     failures.push(`corpus log unreadable inputs: unreadable=${evidence.unreadable}`);
@@ -379,6 +384,7 @@ async function appendCorpusSummary(mode, outcome, verdict, summaryPath) {
       `- gitlinks: \`${validation.selectedGitlinks}\``,
       `- submodule status rows: \`${validation.submoduleStatusRows}\``,
       `- compared templates: \`${validation.evidence.compared}\``,
+      `- patch-fact entries: \`${validation.evidence.patchFactEntries}\``,
       `- old-lane error reasons: \`${formatReasonCounts(validation.evidence.oldErrorReasons) || "none"}\``,
       "",
       ...evidence,

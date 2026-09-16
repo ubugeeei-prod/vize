@@ -106,6 +106,11 @@ _Second slice 2026-09-13:_ `PatchFactsTable` is now owner-keyed by
 `ui.element` / `ui.component` `NodeId` and read by the VNode writers before
 printing patch flags or dynamic-props arguments. Reactivity-lattice integration
 and the DOM corpus gate remain before P3-7 closes.
+_Sixth slice 2026-09-16:_ the S2 DOM corpus runner now emits
+`patch_fact_entries` evidence and the Real Project Matrix artifact validator
+rejects a clean byte-parity run that never materialized owner-keyed patch facts.
+P3-7 still closes only after a terminal green Real Project Matrix run records
+that evidence for the hydrated corpus.
 
 **P3-8 SSR thin path.** S2→S4 string-plan lowering reading partition facts;
 `vize_atelier_ssr` codegen re-targets. _Accept:_ SSR corpus byte-parity

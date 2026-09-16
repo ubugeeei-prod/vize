@@ -76,6 +76,11 @@ pub use emit::{
     emit_dom_source_with_caps, emit_dom_source_with_caps_observed, emit_dom_source_with_options,
     emit_dom_with_options,
 };
+#[cfg(any(test, feature = "davinci-differential"))]
+pub use emit::{
+    ObservedPatchFactsEmit, emit_dom_source_patch_facts_observed,
+    emit_dom_source_patch_facts_observed_with_options,
+};
 pub use lower::{
     LegacyCaps, Lowered, LoweringFeatures, OpFamily, lower, lower_source_block,
     lower_source_block_with_caps, lower_style_block, lower_style_block_in, lower_with_caps,

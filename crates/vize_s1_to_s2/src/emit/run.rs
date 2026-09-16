@@ -23,7 +23,7 @@ use super::{
 pub(super) struct DomEmitObservation {
     pub(super) emit: DomEmit,
     pub(super) emit_visits: u32,
-    #[cfg(test)]
+    #[cfg(any(test, feature = "davinci-differential"))]
     pub(super) patch_fact_entries: usize,
 }
 
@@ -168,7 +168,7 @@ pub(super) fn emit_dom_observed<'f>(
     }
     cache_slots::renumber(&mut cx);
     let emit_visits = cx.walk.visits();
-    #[cfg(test)]
+    #[cfg(any(test, feature = "davinci-differential"))]
     let patch_fact_entries = cx.patch_facts.materialized_len();
     let (preamble, imports_len) = cx.buf.preamble_with_imports_len(options);
     let code = cx.buf.code;
@@ -185,7 +185,7 @@ pub(super) fn emit_dom_observed<'f>(
             },
         },
         emit_visits,
-        #[cfg(test)]
+        #[cfg(any(test, feature = "davinci-differential"))]
         patch_fact_entries,
     })
 }

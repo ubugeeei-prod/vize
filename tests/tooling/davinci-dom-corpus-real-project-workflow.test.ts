@@ -89,6 +89,8 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
   assert.match(helperSource, /"record-only"/);
   assert.match(helperSource, /EXPECTED_DOM_OUTPUT_COMPARISONS: usize = 144/);
   assert.match(helperSource, /EXPECTED_OLD_ERROR_SKIPS: usize = 16/);
+  assert.match(helperSource, /patch_fact_entries/);
+  assert.match(helperSource, /corpus log proves no patch-fact materialization/);
   assert.match(helperSource, /"ExtendPoint", 1/);
   assert.match(helperSource, /"VSlotDuplicateSlotNames", 1/);
   assert.match(helperSource, /corpus old-lane skip allowlist drift/);
@@ -147,7 +149,7 @@ test("S2 DOM corpus workflow helper extracts canonical evidence", () => {
 test("S2 DOM corpus workflow extracts old-lane skip reasons from corpus logs", () => {
   const log = [
     "davinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=146",
-    "davinci DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 old_error_skips=2 s2_refusals=0 divergences=0",
+    "davinci DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 patch_fact_entries=1 old_error_skips=2 s2_refusals=0 divergences=0",
     "corpus old-lane error skips (2):",
     '/repo/tests/_fixtures/_git/a.vue: 2 old-lane blocking errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: None }, CompilerError { code: MissingEndTag, message: "Element is missing end tag.", loc: None }]',
     '/repo/tests/_fixtures/_git/b.vue: 1 old-lane blocking errors: [CompilerError { code: DuplicateAttribute, message: "Duplicate attribute.", loc: None }]',
@@ -169,7 +171,7 @@ test("S2 DOM corpus workflow extracts old-lane skip reasons from corpus logs", (
 
 test("S2 DOM corpus workflow prefers explicit old-lane reason counts", () => {
   const log = [
-    "davinci DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 old_error_skips=2 s2_refusals=0 divergences=0",
+    "davinci DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 patch_fact_entries=1 old_error_skips=2 s2_refusals=0 divergences=0",
     'davinci DOM corpus old-lane error reasons: {"InvalidEndTag": 2, "VIfSameKey": 1}',
   ].join("\n");
 
@@ -274,7 +276,7 @@ test("S2 DOM corpus workflow validates closure evidence artifacts", () => {
       join(artifact, "dom-corpus.log"),
       [
         "\u001B[32mdavinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=146\u001B[0m",
-        "davinci DOM corpus sweep: files=37448 unreadable=0 parsed=37448 templates=35000 compared=34984 old_error_skips=16 s2_refusals=0 divergences=0",
+        "davinci DOM corpus sweep: files=37448 unreadable=0 parsed=37448 templates=35000 compared=34984 patch_fact_entries=44912 old_error_skips=16 s2_refusals=0 divergences=0",
         'davinci DOM corpus old-lane error reasons: {"ExtendPoint":1,"InvalidEndTag":20,"MissingEndTag":10,"MissingWhitespaceBetweenAttributes":4,"VElseNoAdjacentIf":1,"VIfSameKey":4,"VSlotDuplicateSlotNames":1}',
       ].join("\n"),
     );
@@ -293,6 +295,7 @@ test("S2 DOM corpus workflow validates closure evidence artifacts", () => {
       parsed: 37448,
       templates: 35000,
       compared: 34984,
+      patchFactEntries: 44912,
       oldErrorSkips: 16,
       oldErrorReasons: expectedOldErrorReasons,
       s2Refusals: 0,
@@ -332,6 +335,7 @@ test("S2 DOM corpus workflow rejects stale or dirty evidence artifacts", () => {
       "corpus log is missing canonical closure evidence",
       "corpus log submodules 0 != 146",
       "corpus log proves no DOM-output comparisons",
+      "corpus log proves no patch-fact materialization",
       "corpus log unreadable inputs: unreadable=3",
       "corpus old-lane skip allowlist drift: old_error_skips=2/16 reasons=InvalidEndTag=1,VIfSameKey=1 expected_reasons=ExtendPoint=1,InvalidEndTag=20,MissingEndTag=10,MissingWhitespaceBetweenAttributes=4,VElseNoAdjacentIf=1,VIfSameKey=4,VSlotDuplicateSlotNames=1",
       "corpus log is not clean: s2_refusals=1 divergences=1",

@@ -53,7 +53,7 @@ impl PatchFactsTable {
         facts
     }
 
-    #[cfg(test)]
+    #[cfg(any(test, feature = "davinci-differential"))]
     pub(super) fn materialized_len(&self) -> usize {
         self.entries.len()
     }
