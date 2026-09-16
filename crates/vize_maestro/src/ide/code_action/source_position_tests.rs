@@ -48,7 +48,7 @@ fn check_source(source: &str, newline: &str) {
             offset_to_position(source, insert),
             offset_to_position(source, insert),
         ),
-        new_text: format!("{indent}<!-- @vize:forget vue/no-multi-spaces -->{newline}"),
+        new_text: vize_s0::cstr!("{indent}<!-- @vize:forget vue/no-multi-spaces -->{newline}").into(),
     };
     let actions = CodeActionService::code_actions(&ctx, range);
     assert_eq!(
