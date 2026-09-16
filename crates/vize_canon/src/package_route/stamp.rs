@@ -12,6 +12,7 @@ pub(crate) struct InputStamp {
     kind: Option<InputKind>,
     content_digest: Option<u64>,
     symlink_target: Option<PathBuf>,
+    source_content: bool,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -64,7 +65,16 @@ impl InputStampCache {
 
 impl InputStamp {
     pub(crate) fn capture(path: impl Into<PathBuf>) -> Self {
-        let path = path.into();
+        Self::capture_input(path.into(), None, false)
+    }
+
+    /// Keep the bytes registered in the semantic project as the authority.
+    /// Re-reading disk here could acknowledge an edit the project never saw.
+    pub(crate) fn capture_source(path: impl Into<PathBuf>, content: &[u8]) -> Self {
+        Self::capture_input(path.into(), Some(content), true)
+    }
+
+    fn capture_input(path: PathBuf, content: Option<&[u8]>, source_content: bool) -> Self {
         let metadata = std::fs::symlink_metadata(&path).ok();
         let modified = metadata
             .as_ref()
@@ -86,10 +96,13 @@ impl InputStamp {
         // Metadata keeps warm lookup O(depth) without rehashing megabytes;
         // actual package links/manifests and source inputs retain strong
         // same-mtime content stamps.
-        let content_digest = (matches!(kind, Some(InputKind::File))
-            && !super::graph_inputs::is_large_lockfile(&path))
-        .then(|| std::fs::read(&path).ok().map(|content| digest(&content)))
-        .flatten();
+        let content_digest = content.map(digest).or_else(|| {
+            ((matches!(kind, Some(InputKind::File))
+                && !super::graph_inputs::is_large_lockfile(&path))
+                || (source_content && matches!(kind, Some(InputKind::Symlink))))
+            .then(|| std::fs::read(&path).ok().map(|content| digest(&content)))
+            .flatten()
+        });
         let symlink_target = matches!(kind, Some(InputKind::Symlink))
             .then(|| std::fs::read_link(&path).ok())
             .flatten();
@@ -100,14 +113,19 @@ impl InputStamp {
             kind,
             content_digest,
             symlink_target,
+            source_content,
         }
     }
 
     pub(crate) fn is_current(&self) -> bool {
-        *self == Self::capture(&self.path)
+        *self == Self::capture_input(self.path.clone(), None, self.source_content)
     }
 
     pub(crate) fn is_current_with_cache(&self, cache: &mut InputStampCache) -> bool {
+        // Route-cache epochs hold filesystem stamps, not registered-source stamps.
+        if self.source_content {
+            return self.is_current();
+        }
         *self == cache.capture(&self.path)
     }
 }
@@ -194,5 +212,43 @@ mod tests {
         assert!(stamp.is_current_with_cache(&mut cache));
         assert_eq!(cache.len(), 1);
         assert_eq!(cache.captures(), 1);
+    }
+
+    #[test]
+    fn registered_source_stamps_do_not_reuse_filesystem_cache_authority() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("source.ts");
+        let content = b"export const value = 1;";
+        std::fs::write(&path, content).unwrap();
+        let stamp = InputStamp::capture_source(&path, content);
+        let mut cache = InputStampCache::default();
+        cache.capture(&path);
+        assert!(stamp.is_current());
+        assert!(stamp.is_current_with_cache(&mut cache));
+        std::fs::write(&path, "export const value = 2;").unwrap();
+        assert!(!stamp.is_current());
+        assert!(!stamp.is_current_with_cache(&mut cache));
+        assert_eq!(cache.captures(), 1);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn source_stamps_track_symlink_content_and_target_without_becoming_always_dirty() {
+        let root = tempfile::tempdir().unwrap();
+        let target = root.path().join("target.ts");
+        let link = root.path().join("source.ts");
+        let content = b"export const value = 1;";
+        std::fs::write(&target, content).unwrap();
+        std::os::unix::fs::symlink(&target, &link).unwrap();
+        let stamp = InputStamp::capture_source(&link, content);
+        assert!(stamp.is_current());
+        std::fs::write(&target, "export const value = 2;").unwrap();
+        assert!(!stamp.is_current());
+        let other = root.path().join("other.ts");
+        std::fs::write(&other, content).unwrap();
+        std::fs::remove_file(&link).unwrap();
+        std::os::unix::fs::symlink(&other, &link).unwrap();
+        assert!(!stamp.is_current());
+        assert!(InputStamp::capture_source(&link, content).is_current());
     }
 }

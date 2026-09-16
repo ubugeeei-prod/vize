@@ -9,6 +9,9 @@ use super::super::error::{CorsaError, CorsaResult};
 use super::super::source_policy::SourceFilePolicy;
 use super::super::virtual_project::VirtualProject;
 
+#[cfg(test)]
+mod snapshot_tests;
+
 /// Source membership carried across incremental checks.
 ///
 /// The initial virtual project stays immutable so full checks preserve their
@@ -162,7 +165,14 @@ fn stamp_project_inputs(
         .cloned()
         .chain(project.governing_config_paths())
         .map(|path| {
-            let stamp = crate::package_route::stamp::InputStamp::capture(path.clone());
+            use crate::package_route::stamp::InputStamp;
+            let content = project
+                .find_by_original(&path)
+                .and_then(|file| project.original_content_for_virtual(&file.virtual_path));
+            let stamp = content.map_or_else(
+                || InputStamp::capture(path.clone()),
+                |content| InputStamp::capture_source(path.clone(), content.as_bytes()),
+            );
             (path, stamp)
         })
         .collect()
