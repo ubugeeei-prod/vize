@@ -57,7 +57,7 @@ export const interactionGestureFamilyCatalog = [
       exportName: "createInteractionHooks",
       retainedSignature: "Interaction hook cleanup failed",
       allowedRetainedFamilies: ["focus", "hover", "interaction-modality", "press"],
-      maximumJavaScriptGzipBytes: 7_600,
+      maximumJavaScriptGzipBytes: 8_200,
       maximumCssGzipBytes: 0,
     },
     aliases: ["interaction hooks", "React Aria hooks", "press hover focus"],

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { test } from "vite-plus/test";
+import { nextTick } from "vue";
 
 import { mountInteraction } from "../../../testing/mount.ts";
 import { createInteractionHooks } from "./interaction-hooks.ts";
@@ -27,6 +28,7 @@ function pointer(type: string): PointerEvent {
 test("composes press, hover, and focus-ring handlers for one host", () => {
   const phases: string[] = [];
   const controller = createInteractionHooks({
+    modality: { document },
     press: { onPress: (event) => phases.push(event.pointerType) },
     hover: { onHoverStart: (event) => phases.push(event.type) },
     focusRing: { autoFocus: true, onFocus: (event) => phases.push(event.type) },
@@ -42,7 +44,34 @@ test("composes press, hover, and focus-ring handlers for one host", () => {
 
     assert.equal(controller.isHovered.value, true);
     assert.equal(controller.isFocused.value, true);
+    assert.equal(controller.currentModality.value, "virtual");
     assert.deepEqual(phases, ["hoverstart", "focus", "virtual"]);
+  } finally {
+    controller.dispose();
+    release();
+    button.remove();
+  }
+});
+
+test("composes shortcut and press key handlers without either replacing the other", () => {
+  const phases: string[] = [];
+  const controller = createInteractionHooks({
+    press: { onPressStart: (event) => phases.push(`press:${event.pointerType}`) },
+    shortcuts: { platform: "standard" },
+  });
+  controller.shortcutController?.register({
+    shortcut: "Mod+K",
+    handler: () => phases.push("shortcut"),
+  });
+  const button = document.createElement("button");
+  document.body.append(button);
+  const release = bindProps(button, controller.interactionProps);
+
+  try {
+    button.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: " ", code: "Space" }));
+    button.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "k", ctrlKey: true }));
+
+    assert.deepEqual(phases, ["press:keyboard", "shortcut"]);
   } finally {
     controller.dispose();
     release();
@@ -68,18 +97,21 @@ test("literal false removes feature controllers and leaves remaining props stabl
     focusWithin: false,
     hover: false,
     press: false,
+    shortcuts: false,
   });
   controller.dispose();
 });
 
 test("example fixture reflects composed activation state in mounted DOM", async () => {
   const handle = mountInteraction(InteractionHooksExample);
-  const button = handle.getByRole("button", { name: "Activated 0 times" });
+  const button = handle.getByRole("button", { name: "Activated 0 times Shortcut 0" });
 
   assert.equal(button.getAttribute("data-vize-ui"), "interaction-hooks-example");
   assert.equal(button.getAttribute("data-focused"), null);
   await handle.click(button);
+  button.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "k", ctrlKey: true }));
+  await nextTick();
 
-  assert.equal(button.textContent?.trim(), "Activated 1 times");
+  assert.equal(button.textContent?.replace(/\s+/g, " ").trim(), "Activated 1 times Shortcut 1");
   handle.unmount();
 });

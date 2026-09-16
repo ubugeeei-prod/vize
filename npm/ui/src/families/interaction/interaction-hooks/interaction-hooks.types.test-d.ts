@@ -7,8 +7,14 @@ import {
   createInteractionHooks,
   type InteractionHooksController,
   type InteractionHooksProps,
+  type InteractionShortcutController,
+  type InteractionShortcutProps,
 } from "./interaction-hooks.ts";
 import type { FocusProps } from "../../accessibility/focus/focus.ts";
+import type {
+  InteractionModality,
+  InteractionModalityTracker,
+} from "../../accessibility/interaction-modality/interaction-modality.ts";
 import type { HoverController, HoverProps } from "../hover/hover.ts";
 import type { PressController, PressProps } from "../press/press.ts";
 
@@ -23,7 +29,9 @@ export const controller = createInteractionHooks({
   isDisabled: disabled,
   focusWithin: false,
   hover: { pointerType: () => "pen" as const },
+  modality: { document: null, initialModality: "keyboard" },
   press: { keyboardBehavior: () => "link" as const },
+  shortcuts: { platform: "standard" },
 });
 
 type _ControllerShape = Expect<
@@ -36,10 +44,22 @@ type _ControllerShape = Expect<
 >;
 type _PressController = Expect<Equal<typeof controller.press, PressController>>;
 type _HoverController = Expect<Equal<typeof controller.hover, HoverController>>;
+type _ModalityController = Expect<
+  Equal<typeof controller.modalityTracker, InteractionModalityTracker>
+>;
+type _ShortcutController = Expect<
+  Equal<typeof controller.shortcutController, InteractionShortcutController>
+>;
 type _FocusWithinDisabled = Expect<Equal<typeof controller.focusWithin, null>>;
 type _PressedIsReadonly = Expect<Equal<typeof controller.isPressed, Readonly<ShallowRef<boolean>>>>;
+type _ModalityIsReadonly = Expect<
+  Equal<typeof controller.currentModality, Readonly<ShallowRef<InteractionModality | null>>>
+>;
 type _PropsIncludeEnabledFamilies = Expect<
-  Equal<typeof controller.interactionProps, Readonly<PressProps & HoverProps & FocusProps>>
+  Equal<
+    typeof controller.interactionProps,
+    Readonly<PressProps & HoverProps & FocusProps & InteractionShortcutProps>
+  >
 >;
 
 export const vueAttributes: HTMLAttributes = controller.interactionProps;
@@ -49,7 +69,9 @@ export const withinOnly = createInteractionHooks({
   focusRing: false,
   focusWithin: {},
   hover: false,
+  modality: false,
   press: false,
+  shortcuts: false,
 });
 type _WithinProps = Expect<Equal<typeof withinOnly.interactionProps, Readonly<FocusProps>>>;
 

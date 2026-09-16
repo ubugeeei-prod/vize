@@ -14,13 +14,15 @@ export const interactionHooksRuntimeFixture: RuntimeFixture = {
     assert.match(html, /data-vize-ui="interaction-hooks-example"/);
     assert.match(html, /type="button"/);
     assert.match(html, /Activated 0 times/);
+    assert.match(html, /Shortcut 0/);
     assert.doesNotMatch(html, /data-focused=/);
+    assert.doesNotMatch(html, /data-modality=/);
     assert.doesNotMatch(html, /data-pressed=/);
   },
   assertHydratedDom(host) {
     const button = host.querySelector('[data-vize-ui="interaction-hooks-example"]');
     assert.ok(button instanceof HTMLButtonElement);
     assert.equal(button.type, "button");
-    assert.equal(button.textContent?.trim(), "Activated 0 times");
+    assert.equal(button.textContent?.replace(/\s+/g, " ").trim(), "Activated 0 times Shortcut 0");
   },
 };
