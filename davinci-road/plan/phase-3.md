@@ -12,7 +12,7 @@
 - [ ] P3-4 Lean reference semantics + differential runner
 - [x] P3-5 Impeto op reference doc (before optional passes)
 - [ ] P3-6 Vapor backend on S3
-- [ ] P3-7 VDOM patch flags from lattice facts _(slice 2 materializes the owner-keyed patch-facts table; see [record](./phase-3-records/p3-7.md))_
+- [x] P3-7 VDOM patch flags from lattice facts _(owner-keyed table and hydrated DOM corpus gate; see [record](./phase-3-records/p3-7.md))_
 - [ ] P3-8 SSR thin path
 - [ ] P3-9 S4 structured emitter + universal source maps _(slice 1 pins TS-31 source-map budgets before emitter migration; see [record](./phase-3-records/p3-9.md))_
 - [ ] P3-10 Try-measure-commit extraction _(slice 1 pins optimization budgets before extraction; see [record](./phase-3-records/p3-10.md))_
@@ -104,13 +104,15 @@ _First slice 2026-09-13:_ see
 the initial `PatchFacts` split.
 _Second slice 2026-09-13:_ `PatchFactsTable` is now owner-keyed by
 `ui.element` / `ui.component` `NodeId` and read by the VNode writers before
-printing patch flags or dynamic-props arguments. Reactivity-lattice integration
-and the DOM corpus gate remain before P3-7 closes.
+printing patch flags or dynamic-props arguments. Subsequent slices integrate
+binding metadata through the reactivity lattice and gate the DOM corpus.
 _Sixth slice 2026-09-16:_ the S2 DOM corpus runner now emits
 `patch_fact_entries` evidence and the Real Project Matrix artifact validator
 rejects a clean byte-parity run that never materialized owner-keyed patch facts.
-P3-7 still closes only after a terminal green Real Project Matrix run records
-that evidence for the hydrated corpus.
+_Closed 2026-09-16:_ [Real Project Matrix run 35055720056](https://github.com/ubugeeei-prod/vize/actions/runs/35055720056)
+is terminal green on `0e6985a4cb846e393daa1fad705b069e09bf85fa` with 42,279
+comparisons, 390,264 patch-fact entries, zero S2 refusals, and zero divergences.
+The [record](./phase-3-records/p3-7.md) preserves the corpus scope and exclusions.
 
 **P3-8 SSR thin path.** S2→S4 string-plan lowering reading partition facts;
 `vize_atelier_ssr` codegen re-targets. _Accept:_ SSR corpus byte-parity
