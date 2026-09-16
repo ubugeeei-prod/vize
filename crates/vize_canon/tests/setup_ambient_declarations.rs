@@ -13,6 +13,17 @@ fn setup(script: &str) -> String {
     format!("<script setup lang=\"ts\">\n{script}\n</script>\n<template><div /></template>")
 }
 
+fn authored_setup_body(output: &str) -> &str {
+    output
+        .split_once("  // User setup code\n")
+        .unwrap()
+        .1
+        .split_once("  // @vize-map:")
+        .unwrap()
+        .0
+        .trim()
+}
+
 fn assert_module_declaration(source: &str, declaration: &str, hoisted: bool) {
     let output = virtual_source(source);
     let setup = output.find("// ========== Setup Scope ==========").unwrap();
@@ -91,7 +102,10 @@ fn adjacent_code_is_never_lost_by_line_based_emission() {
     let declaration = "declare const label: string;";
     let source = setup(&format!("{declaration} const invalid: number = 'bad';"));
     assert_module_declaration(&source, declaration, false);
-    assert!(virtual_source(&source).contains("const invalid: number = 'bad';"));
+    assert_eq!(
+        authored_setup_body(&virtual_source(&source)),
+        "declare const label: string; const invalid: number = 'bad';"
+    );
 }
 
 #[test]
@@ -154,9 +168,11 @@ fn long_dependency_chains_keep_all_transitive_local_captures_in_setup() {
         ));
     }
     let output = virtual_source(&setup(&script));
-    let setup = output.find("// ========== Setup Scope ==========").unwrap();
-    assert!(!output[..setup].contains("declare const value_"));
-    assert_eq!(output[setup..].matches("declare const value_").count(), 256);
+    assert_eq!(
+        authored_setup_body(&output),
+        script.trim().replace('\n', "\n  ")
+    );
+    assert_eq!(output.matches("declare const value_").count(), 256);
 }
 
 #[test]
@@ -170,5 +186,16 @@ fn large_overload_sets_are_kept_as_one_declaration_group() {
         output[..setup].matches("declare function label(").count(),
         256
     );
-    assert!(!output[setup..].contains("declare function label("));
+    assert_eq!(authored_setup_body(&output), "");
+}
+
+#[test]
+fn one_local_capture_or_runtime_implementation_blocks_the_whole_overload_group() {
+    for script in [
+        "const local = 1;\ndeclare function label(value: string): string;\ndeclare function label(value: typeof local): number;\ndeclare const alias: typeof label;",
+        "declare function label(value: string): string;\nfunction label(value: string) { return value; }",
+    ] {
+        let output = virtual_source(&setup(script));
+        assert_eq!(authored_setup_body(&output), script.replace('\n', "\n  "));
+    }
 }
