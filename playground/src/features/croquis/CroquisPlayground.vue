@@ -42,16 +42,18 @@ const {
 
 <template>
   <div class="croquis-playground">
-    <CroquisSource
-      ref="editorRef"
-      v-model="source"
-      v-model:visualize="showScopeVisualization"
-      v-model:experimentals="experimentals"
-      :scopes="editorScopes"
-      :diagnostics="monacoDiagnostics"
-      :theme
-      @example="loadExample"
-    />
+    <div class="panel input-panel">
+      <CroquisSource
+        ref="editorRef"
+        v-model="source"
+        v-model:visualize="showScopeVisualization"
+        v-model:experimentals="experimentals"
+        :scopes="editorScopes"
+        :diagnostics="monacoDiagnostics"
+        :theme
+        @example="loadExample"
+      />
+    </div>
 
     <div class="panel output-panel">
       <div class="panel-header">

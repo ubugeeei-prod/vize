@@ -21,25 +21,23 @@ defineExpose({
 </script>
 
 <template>
-  <div class="panel input-panel">
-    <div class="panel-header">
-      <div class="header-title">
-        <svg class="icon" viewBox="0 0 24 24"><path :d="mdiCodeTags" fill="currentColor" /></svg>
-        <h2>Source</h2>
-      </div>
-      <div class="panel-actions">
-        <label class="toggle-label">
-          <input v-model="visualize" type="checkbox" />
-          <span>Visualize Scopes</span>
-        </label>
-        <button class="btn-ghost" @click="source = ANALYSIS_PRESET">Reset</button>
-      </div>
+  <div class="panel-header">
+    <div class="header-title">
+      <svg class="icon" viewBox="0 0 24 24"><path :d="mdiCodeTags" fill="currentColor" /></svg>
+      <h2>Source</h2>
     </div>
-    <div class="experimental-controls">
-      <ExperimentalFeatures v-model="experimentals" scope="croquis" @example="loadExample" />
+    <div class="panel-actions">
+      <label class="toggle-label">
+        <input v-model="visualize" type="checkbox" />
+        <span>Visualize Scopes</span>
+      </label>
+      <button class="btn-ghost" @click="source = ANALYSIS_PRESET">Reset</button>
     </div>
-    <div class="editor-container">
-      <MonacoEditor ref="editor" v-model="source" language="vue" :scopes :diagnostics :theme />
-    </div>
+  </div>
+  <div class="experimental-controls">
+    <ExperimentalFeatures v-model="experimentals" scope="croquis" @example="loadExample" />
+  </div>
+  <div class="editor-container">
+    <MonacoEditor ref="editor" v-model="source" language="vue" :scopes :diagnostics :theme />
   </div>
 </template>
