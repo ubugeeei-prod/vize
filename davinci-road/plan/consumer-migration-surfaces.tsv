@@ -2314,9 +2314,14 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/option
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/options_api.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/options_api.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/options_api.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_blocks.rs	14	s0	S0	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_blocks.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/script_blocks.rs	163	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_blocks.rs	16	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_blocks.rs	16	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/script_blocks.rs	166	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_blocks/ambient.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_blocks/ambient.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_blocks/ambient.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_blocks/ambient.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_blocks/ambient.rs	3	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module.rs	6	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	1
