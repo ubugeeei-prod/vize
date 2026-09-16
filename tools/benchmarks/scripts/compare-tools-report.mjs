@@ -76,6 +76,8 @@ function assertRequiredEngineVariants(surface) {
       !OPTIONAL_TYPECHECK_VARIANTS.has(rejected.id) ||
       actualIds.has(rejected.id) ||
       !["preflight", "warmup", "measure"].includes(rejected.phase) ||
+      typeof rejected.label !== "string" ||
+      !rejected.label.trim() ||
       typeof rejected.reason !== "string" ||
       !rejected.reason.trim()
     )

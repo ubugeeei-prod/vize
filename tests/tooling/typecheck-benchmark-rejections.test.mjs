@@ -216,6 +216,16 @@ void test("rejected optional comparators are accounted for but cannot affect a r
   const rendered = renderEngineClassSections([surface], String).join("\n");
   assert.match(rendered, /golar-default: rejected during preflight; no timing or rank published/u);
   assert.match(rendered, /unstable diagnostics/u);
+  for (const label of [undefined, null, "", " ", 1]) {
+    assert.throws(
+      () =>
+        createSurface({
+          ...input,
+          rejectedVariants: [{ ...rejectedVariants[0], label }, rejectedVariants[1]],
+        }),
+      /invalid rejected/u,
+    );
+  }
   for (const id of ["verter-tsc", "vize-check-max", "vue-tsc"]) {
     assert.throws(
       () =>
