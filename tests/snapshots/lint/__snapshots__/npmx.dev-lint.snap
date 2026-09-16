@@ -1413,19 +1413,8 @@
   },
   {
     "file": "app/components/Diff/SidebarPanel.vue",
-    "messages": [
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <select> is an interactive element and cannot be nested inside another interactive element",
-        "line": 222,
-        "column": 11,
-        "endLine": 226,
-        "endColumn": 12
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -1694,16 +1683,6 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <label> is an interactive element and cannot be nested inside another interactive element",
-        "line": 160,
-        "column": 13,
-        "endLine": 163,
-        "endColumn": 14
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1715,7 +1694,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 6
   },
   {
@@ -2506,19 +2485,8 @@
   },
   {
     "file": "app/components/Org/OperationsQueue.vue",
-    "messages": [
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <button> is an interactive element and cannot be nested inside another interactive element",
-        "line": 427,
-        "column": 11,
-        "endLine": 432,
-        "endColumn": 12
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
