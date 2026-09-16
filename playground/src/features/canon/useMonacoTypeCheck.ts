@@ -1,8 +1,12 @@
-import { ref, computed, type Ref } from "vue";
+import { ref, computed } from "vue";
 import * as monaco from "monaco-editor";
-import type { WasmModule, TypeCheckResult, TypeCheckCapabilities } from "../../wasm/index";
+import type { TypeCheckResult, TypeCheckCapabilities } from "../../wasm/index";
 import { VUE_GLOBALS_DECLARATIONS } from "./vueTypeDeclarations";
 import { generateHelp } from "./generateHelp";
+import type { UseMonacoTypeCheckOptions } from "./typeCheckOptions";
+import type { VirtualTsMapping } from "../../wasm/types/analysis";
+import { offsetToLineColumn } from "../../utils/position";
+import { mapGeneratedRange, parseSourceMap } from "./sourceMappings";
 
 interface Diagnostic {
   message: string;
@@ -15,13 +19,6 @@ interface Diagnostic {
   severity: "error" | "warning" | "info";
 }
 
-interface SourceMapEntry {
-  genStart: number;
-  genEnd: number;
-  srcStart: number;
-  srcEnd: number;
-}
-
 interface TsDiagnostic {
   start: number;
   length: number;
@@ -31,19 +28,9 @@ interface TsDiagnostic {
   code: number;
 }
 
-interface UseMonacoTypeCheckOptions {
-  source: Ref<string>;
-  compiler: () => WasmModule | null;
-  strictMode: Ref<boolean>;
-  includeVirtualTs: Ref<boolean>;
-  checkProps: Ref<boolean>;
-  checkEmits: Ref<boolean>;
-  checkTemplateBindings: Ref<boolean>;
-  useMonacoTs: Ref<boolean>;
-}
-
 export function useMonacoTypeCheck({
   source,
+  experimentals,
   compiler: getCompiler,
   strictMode,
   checkProps,
@@ -58,7 +45,8 @@ export function useMonacoTypeCheck({
   const tsDiagnostics = ref<Diagnostic[]>([]);
 
   let virtualTsModel: monaco.editor.ITextModel | null = null;
-  let cachedSourceMap: SourceMapEntry[] = [];
+  let cachedSourceMap: VirtualTsMapping[] = [];
+  let checkVersion = 0;
   let hoverProviderDisposable: monaco.IDisposable | null = null;
   let hasConfiguredTypeScript = false;
   let isTypeScriptReady = false;
@@ -264,7 +252,7 @@ export function useMonacoTypeCheck({
   }
 
   // Get TypeScript diagnostics from Monaco Worker
-  async function getTypeScriptDiagnostics(virtualTs: string): Promise<Diagnostic[]> {
+  async function getTypeScriptDiagnostics(virtualTs: string): Promise<TsDiagnostic[]> {
     if (!virtualTs) return [];
 
     if (virtualTsModel) {
@@ -284,39 +272,7 @@ export function useMonacoTypeCheck({
         client.getSyntacticDiagnostics(VIRTUAL_TS_URI.toString()),
       ]);
 
-      const allDiags = [...syntacticDiags, ...semanticDiags] as TsDiagnostic[];
-
-      console.log(
-        "[TypeCheck] Virtual TS diagnostics:",
-        allDiags.length,
-        JSON.stringify(allDiags, null, 2),
-      );
-
-      return allDiags.map((d) => {
-        const startPos = virtualTsModel!.getPositionAt(d.start);
-        const endPos = virtualTsModel!.getPositionAt(d.start + d.length);
-
-        let message = "Unknown error";
-        if (typeof d.messageText === "string") {
-          message = d.messageText;
-        } else if (d.messageText && typeof d.messageText === "object") {
-          message = d.messageText.messageText || "Unknown error";
-        } else if (typeof d.message === "string") {
-          message = d.message;
-        }
-
-        const severity = d.category === 1 ? "error" : d.category === 0 ? "warning" : "info";
-
-        return {
-          message,
-          code: d.code,
-          startLine: startPos.lineNumber,
-          startColumn: startPos.column,
-          endLine: endPos.lineNumber,
-          endColumn: endPos.column,
-          severity: severity as "error" | "warning" | "info",
-        };
-      });
+      return [...syntacticDiags, ...semanticDiags] as TsDiagnostic[];
     } catch (e) {
       if (isTypeScriptRegistrationError(e)) {
         isTypeScriptReady = false;
@@ -327,81 +283,31 @@ export function useMonacoTypeCheck({
     }
   }
 
-  function parseSourceMap(virtualTs: string): SourceMapEntry[] {
-    const entries: SourceMapEntry[] = [];
-    const regex = /\/\/ @vize-map:\s*(\d+):(\d+)\s*->\s*(\d+):(\d+)/g;
-    let match;
-    while ((match = regex.exec(virtualTs)) !== null) {
-      entries.push({
-        genStart: parseInt(match[1]),
-        genEnd: parseInt(match[2]),
-        srcStart: parseInt(match[3]),
-        srcEnd: parseInt(match[4]),
-      });
-    }
-    return entries;
-  }
-
   function mapDiagnosticsToSource(
-    tsDiags: Diagnostic[],
-    virtualTs: string,
+    tsDiags: TsDiagnostic[],
+    mappings: VirtualTsMapping[],
     vueSource: string,
   ): Diagnostic[] {
-    const sourceMapEntries = parseSourceMap(virtualTs);
     const mapped: Diagnostic[] = [];
-
-    function lineColToOffset(content: string, line: number, col: number): number {
-      const lines = content.split("\n");
-      let offset = 0;
-      for (let i = 0; i < line - 1 && i < lines.length; i++) {
-        offset += lines[i].length + 1;
-      }
-      return offset + col - 1;
-    }
-
-    function offsetToLineCol(content: string, offset: number): { line: number; col: number } {
-      const lines = content.split("\n");
-      let currentOffset = 0;
-      for (let i = 0; i < lines.length; i++) {
-        const lineEnd = currentOffset + lines[i].length + 1;
-        if (offset < lineEnd) {
-          return { line: i + 1, col: offset - currentOffset + 1 };
-        }
-        currentOffset = lineEnd;
-      }
-      return { line: lines.length, col: 1 };
-    }
-
     for (const diag of tsDiags) {
-      const diagOffset = lineColToOffset(virtualTs, diag.startLine, diag.startColumn);
-      const diagEndOffset = lineColToOffset(
-        virtualTs,
-        diag.endLine || diag.startLine,
-        diag.endColumn || diag.startColumn,
-      );
-
-      for (const entry of sourceMapEntries) {
-        if (diagOffset >= entry.genStart && diagOffset <= entry.genEnd) {
-          const relativeOffset = diagOffset - entry.genStart;
-          const srcOffset = entry.srcStart + relativeOffset;
-          const srcEndOffset = Math.min(entry.srcEnd, srcOffset + (diagEndOffset - diagOffset));
-
-          const startPos = offsetToLineCol(vueSource, srcOffset);
-          const endPos = offsetToLineCol(vueSource, srcEndOffset);
-          const help = diag.code ? generateHelp(diag.code, diag.message) : undefined;
-
-          mapped.push({
-            ...diag,
-            startLine: startPos.line,
-            startColumn: startPos.col,
-            endLine: endPos.line,
-            endColumn: endPos.col,
-            message: diag.code ? `[vize:TS${diag.code}] ${diag.message}` : `[vize] ${diag.message}`,
-            help,
-          });
-          break;
-        }
-      }
+      const range = mapGeneratedRange(diag.start, diag.start + diag.length, mappings);
+      if (!range) continue;
+      const start = offsetToLineColumn(vueSource, range.start);
+      const end = offsetToLineColumn(vueSource, range.end);
+      const message =
+        typeof diag.messageText === "string"
+          ? diag.messageText
+          : (diag.messageText?.messageText ?? diag.message ?? "Unknown error");
+      mapped.push({
+        startLine: start.line,
+        startColumn: start.column,
+        endLine: end.line,
+        endColumn: end.column,
+        code: diag.code,
+        severity: diag.category === 1 ? "error" : diag.category === 0 ? "warning" : "info",
+        message: `[vize:TS${diag.code}] ${message}`,
+        help: generateHelp(diag.code, message),
+      });
     }
 
     return mapped;
@@ -458,23 +364,29 @@ export function useMonacoTypeCheck({
     if (!comp) return;
 
     const startTime = performance.now();
+    const version = ++checkVersion;
+    const checkedSource = source.value;
     error.value = null;
+    tsDiagnostics.value = [];
 
     try {
-      const result = comp.typeCheck(source.value, {
+      const result = comp.typeCheck(checkedSource, {
         filename: "example.vue",
         strict: strictMode.value,
         includeVirtualTs: true,
         checkProps: checkProps.value,
         checkEmits: checkEmits.value,
         checkTemplateBindings: checkTemplateBindings.value,
+        ...experimentals.value,
       });
       typeCheckResult.value = result;
 
       if (useMonacoTs.value && result.virtualTs) {
-        cachedSourceMap = parseSourceMap(result.virtualTs);
+        const mappings = result.sourceMappings ?? parseSourceMap(result.virtualTs);
+        cachedSourceMap = mappings;
         const tsDiags = await getTypeScriptDiagnostics(result.virtualTs);
-        tsDiagnostics.value = mapDiagnosticsToSource(tsDiags, result.virtualTs, source.value);
+        if (version !== checkVersion || source.value !== checkedSource) return;
+        tsDiagnostics.value = mapDiagnosticsToSource(tsDiags, mappings, checkedSource);
       } else {
         tsDiagnostics.value = [];
         cachedSourceMap = [];
@@ -482,6 +394,7 @@ export function useMonacoTypeCheck({
 
       checkTime.value = performance.now() - startTime;
     } catch (e) {
+      if (version !== checkVersion) return;
       error.value = e instanceof Error ? e.message : String(e);
       typeCheckResult.value = null;
       tsDiagnostics.value = [];
@@ -499,6 +412,7 @@ export function useMonacoTypeCheck({
   }
 
   function dispose() {
+    checkVersion++;
     if (virtualTsModel) {
       virtualTsModel.dispose();
       virtualTsModel = null;

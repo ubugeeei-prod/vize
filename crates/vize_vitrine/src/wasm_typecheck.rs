@@ -70,6 +70,18 @@ pub fn type_check_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValu
     opts.check_props = check_props;
     opts.check_emits = check_emits;
     opts.check_template_bindings = check_template_bindings;
+    opts.experimental_in_tag_comments =
+        js_sys::Reflect::get(&options, &JsValue::from_str("experimentalInTagComments"))
+            .ok()
+            .and_then(|value| value.as_bool())
+            .unwrap_or(false);
+    opts.experimental_strict_slot_children = js_sys::Reflect::get(
+        &options,
+        &JsValue::from_str("experimentalStrictSlotChildren"),
+    )
+    .ok()
+    .and_then(|value| value.as_bool())
+    .unwrap_or(false);
 
     let result = if legacy_vue2 {
         type_check_sfc_with_legacy_vue2(source, &opts)
@@ -103,6 +115,23 @@ pub fn type_check_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValu
             })
         }).collect::<Vec<_>>(),
         "virtualTs": result.virtual_ts,
+        "sourceMappings": result.virtual_ts.as_ref().map(|code| {
+            result.virtual_ts_mappings.iter().map(|mapping| {
+                let offset = crate::wasm::utf8_byte_to_utf16_offset;
+                serde_json::json!({
+                    "genStart": offset(code, mapping.gen_range.start as u32),
+                    "genEnd": offset(code, mapping.gen_range.end as u32),
+                    "srcStart": offset(source, mapping.src_range.start as u32),
+                    "srcEnd": offset(source, mapping.src_range.end as u32),
+                    "subSpans": mapping.sub_spans.iter().map(|span| serde_json::json!({
+                        "genStart": offset(code, span.gen_range.start as u32),
+                        "genEnd": offset(code, span.gen_range.end as u32),
+                        "srcStart": offset(source, span.src_range.start as u32),
+                        "srcEnd": offset(source, span.src_range.end as u32),
+                    })).collect::<Vec<_>>(),
+                })
+            }).collect::<Vec<_>>()
+        }),
         "errorCount": result.error_count,
         "warningCount": result.warning_count,
         "analysisTimeMs": result.analysis_time_ms,

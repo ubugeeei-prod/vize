@@ -34,7 +34,7 @@
 //! |  - check_props_typing()             |
 //! |  - check_emits_typing()             |
 //! |  - check_template_bindings()        |
-//! |  - generate_virtual_ts_with_scopes()|
+//! |  - virtual_ts generation           |
 //! +-------------------------------------+
 //! ```
 
@@ -43,7 +43,6 @@ mod checks;
 mod runner;
 #[cfg(test)]
 mod tests;
-mod virtual_ts;
 
 pub use analysis::{
     SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity,

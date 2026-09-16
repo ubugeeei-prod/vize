@@ -9,6 +9,8 @@ export interface TypeCheckOptions {
   checkEmits?: boolean;
   checkTemplateBindings?: boolean;
   legacyVue2?: boolean;
+  experimentalInTagComments?: boolean;
+  experimentalStrictSlotChildren?: boolean;
 }
 
 export interface TypeCheckRelatedLocation {
@@ -31,9 +33,19 @@ export interface TypeCheckDiagnostic {
 export interface TypeCheckResult {
   diagnostics: TypeCheckDiagnostic[];
   virtualTs?: string;
+  sourceMappings?: VirtualTsMapping[] | null;
   errorCount: number;
   warningCount: number;
   analysisTimeMs?: number;
+}
+
+/** Half-open UTF-16 ranges in virtual TypeScript and the authored SFC. */
+export interface VirtualTsMapping {
+  genStart: number;
+  genEnd: number;
+  srcStart: number;
+  srcEnd: number;
+  subSpans?: VirtualTsMapping[];
 }
 
 export interface TypeCheckCapability {

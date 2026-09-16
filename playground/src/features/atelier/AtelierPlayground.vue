@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, watch, onMounted, onUnmounted } from "vue";
+import { computed, watch } from "vue";
+import ExperimentalFeatures from "../../shared/ExperimentalFeatures.vue";
+import { useCompilerInit } from "../../utils/useCompilerInit";
 import MonacoEditor from "../../shared/MonacoEditor.vue";
 import CodeHighlight from "../../shared/CodeHighlight.vue";
 import { useTheme } from "../../utils/useTheme";
@@ -23,6 +25,8 @@ const { theme } = useTheme();
 const { copyToClipboard } = useClipboard();
 
 const {
+  experimentals,
+  loadExample,
   inputMode,
   source,
   output,
@@ -73,41 +77,13 @@ watch(
   { immediate: true },
 );
 
-// Workaround for vite-plugin-vize prop reactivity issue
-let hasCompilerInitialized = false;
-let pollInterval: ReturnType<typeof setInterval> | null = null;
+useCompilerInit(compile);
 
-function tryInitialize() {
-  const compiler = getWasm();
-  if (compiler && !hasCompilerInitialized) {
-    hasCompilerInitialized = true;
-    if (pollInterval) {
-      clearInterval(pollInterval);
-      pollInterval = null;
-    }
-    compile();
-  }
+function loadExperimentalExample(key: string) {
+  inputMode.value = "sfc";
+  activeTab.value = "code";
+  loadExample(key);
 }
-
-onMounted(() => {
-  tryInitialize();
-  if (!hasCompilerInitialized) {
-    pollInterval = setInterval(tryInitialize, 100);
-    setTimeout(() => {
-      if (pollInterval) {
-        clearInterval(pollInterval);
-        pollInterval = null;
-      }
-    }, 10000);
-  }
-});
-
-onUnmounted(() => {
-  if (pollInterval) {
-    clearInterval(pollInterval);
-    pollInterval = null;
-  }
-});
 </script>
 
 <template>
@@ -118,6 +94,13 @@ onUnmounted(() => {
         <button class="btn-ghost" @click="handlePresetChange(selectedPreset)">Reset</button>
         <button class="btn-ghost" @click="copyToClipboard(source)">Copy</button>
       </div>
+    </div>
+    <div class="experimental-controls">
+      <ExperimentalFeatures
+        v-model="experimentals"
+        scope="compiler"
+        @example="loadExperimentalExample"
+      />
     </div>
     <div class="editor-container">
       <MonacoEditor v-model="source" :language="editorLanguage" :theme />

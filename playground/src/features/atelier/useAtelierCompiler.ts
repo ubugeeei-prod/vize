@@ -1,4 +1,4 @@
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onScopeDispose } from "vue";
 import { PRESETS, type PresetKey, type InputMode } from "../../presets";
 import type {
   CompilerOptions,
@@ -17,6 +17,7 @@ import {
 } from "./codeOutputs";
 import { mapToObject, filterAstProperties } from "./astHelpers";
 import { useClipboard } from "../../utils/useClipboard";
+import { useExperimentalFeatures } from "../../shared/experimentalFeatures";
 
 type TabType = "code" | "ast" | "bindings" | "tokens" | "helpers" | "sfc" | "css";
 
@@ -25,6 +26,7 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
 
   const inputMode = ref<InputMode>("sfc");
   const source = ref(PRESETS.propsDestructure.code);
+  const { options: experimentals, loadExample } = useExperimentalFeatures("compiler", source);
   const output = ref<CompileResult | null>(null);
   const sfcResult = ref<SfcCompileResult | null>(null);
   const error = ref<string | null>(null);
@@ -84,7 +86,11 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
     return groups;
   });
 
-  async function compileCssFromSfcResult(compiler: WasmModule, result: SfcCompileResult | null) {
+  async function compileCssFromSfcResult(
+    compiler: WasmModule,
+    result: SfcCompileResult | null,
+    version = compileVersion,
+  ) {
     if (!result?.descriptor?.styles?.length) {
       cssResult.value = null;
       formattedCss.value = "";
@@ -100,24 +106,30 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
       scoped: hasScoped || cssOptions.value.scoped,
     });
     cssResult.value = css;
-    formattedCss.value = await formatCss(css.code);
+    const formatted = await formatCss(css.code);
+    if (version === compileVersion) formattedCss.value = formatted;
   }
 
+  let compileVersion = 0;
   async function compile() {
     const compiler = getCompiler();
     if (!compiler) return;
+    const version = ++compileVersion;
 
     isCompiling.value = true;
     error.value = null;
 
     try {
       const startTime = performance.now();
+      const compilerOptions = { ...options.value, ...experimentals.value };
 
       if (inputMode.value === "sfc") {
         try {
-          const result = compiler.compileSfc(source.value, options.value);
+          const result = compiler.compileSfc(source.value, compilerOptions);
+          if (result.errors?.length) throw new Error(result.errors.join("\n"));
           sfcResult.value = result;
-          await compileCssFromSfcResult(compiler, result);
+          await compileCssFromSfcResult(compiler, result, version);
+          if (version !== compileVersion) return;
 
           if (result?.script?.code) {
             output.value = {
@@ -132,14 +144,16 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
             output.value = null;
           }
 
-          codeOutputs.value = await compileCodeOutputs({
+          const outputs = await compileCodeOutputs({
             compiler,
             inputMode: inputMode.value,
             source: source.value,
-            options: options.value,
+            options: compilerOptions,
             baseOutput: output.value,
             baseSfcResult: sfcResult.value,
           });
+          if (version !== compileVersion) return;
+          codeOutputs.value = outputs;
           codeOutputVersion.value += 1;
           compileTime.value = performance.now() - startTime;
         } catch (sfcError) {
@@ -147,27 +161,30 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
           throw sfcError;
         }
       } else {
-        const result = compiler.compile(source.value, options.value);
+        const result = compiler.compile(source.value, compilerOptions);
         output.value = result;
         sfcResult.value = null;
         cssResult.value = null;
         formattedCss.value = "";
-        codeOutputs.value = await compileCodeOutputs({
+        const outputs = await compileCodeOutputs({
           compiler,
           inputMode: inputMode.value,
           source: source.value,
-          options: options.value,
+          options: compilerOptions,
           baseOutput: result,
           baseSfcResult: null,
         });
+        if (version !== compileVersion) return;
+        codeOutputs.value = outputs;
         codeOutputVersion.value += 1;
         compileTime.value = performance.now() - startTime;
       }
     } catch (e) {
+      if (version !== compileVersion) return;
       error.value = e instanceof Error ? e.message : String(e);
       codeOutputs.value = createEmptyCodeOutputs();
     } finally {
-      isCompiling.value = false;
+      if (version === compileVersion) isCompiling.value = false;
     }
   }
 
@@ -200,9 +217,13 @@ ${output.value?.helpers?.join("\n") || "None"}`.trim();
   }
 
   let compileTimer: ReturnType<typeof setTimeout> | null = null;
+  onScopeDispose(() => {
+    compileVersion += 1;
+    if (compileTimer) clearTimeout(compileTimer);
+  });
 
   watch(
-    [source, options, inputMode],
+    [source, options, inputMode, experimentals],
     () => {
       if (!getCompiler()) return;
       if (compileTimer) clearTimeout(compileTimer);
@@ -229,6 +250,8 @@ ${output.value?.helpers?.join("\n") || "None"}`.trim();
   });
 
   return {
+    experimentals,
+    loadExample,
     inputMode,
     source,
     output,

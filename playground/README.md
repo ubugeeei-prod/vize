@@ -32,8 +32,24 @@ vp run --filter './playground' build
 
 ## Tech Stack
 
-- React 18
+- Vue 3 SFCs with Vapor compilation
 - Vite
 - Monaco Editor
 - Prism for syntax highlighting
 - WASM (Vize)
+## Experimental Features
+
+The source panel in Atelier, Canon, and Croquis includes an Experimental section.
+All flags are off by default. Selections are remembered separately per tool;
+choosing an example enables its flag and replaces that tool's source.
+
+| Tool | Available flags |
+| --- | --- |
+| Atelier | In-tag comments, patterned templates, Self component |
+| Canon | In-tag comments, strict slot children |
+| Croquis | In-tag comments |
+
+Atelier applies the selected flags to VDOM, SSR, and Vapor outputs. Canon emits
+strict slot child contracts into Virtual TS and Monaco checks them in the browser.
+It does not run the CLI's project-wide Corsa checker. Reserved server-script
+semantics and patterned-template exhaustiveness are not advertised as supported.

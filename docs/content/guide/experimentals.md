@@ -252,6 +252,12 @@ The flag is threaded through DOM, SSR, and Vapor compilation. When enabled and a
 
 ## Strict Slot Children
 
+The [Playground](https://vizejs.dev/play/?tab=canon) exposes this flag under
+**Experimental** in Canon. Its sample provides an input to a button-only slot.
+With TypeScript (Monaco) enabled, the generated child contract produces a type
+diagnostic; the Virtual TS tab also shows the assertion. This is a single-file
+browser check, not the CLI's project-wide Corsa checker.
+
 Enable `strictSlotChildren` to add virtual-TypeScript checks for slot children from Vue RFC #734. This flag is for `vize check`, the LSP/type-check project APIs, and declaration-aware virtual code; ordinary template compilation does not add runtime behavior.
 
 ```ts

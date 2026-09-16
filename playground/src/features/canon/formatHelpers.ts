@@ -117,7 +117,6 @@ export function formatMessage(message: string): string {
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       // Highlight type names in quotes: 'TypeName' or "TypeName"
-      .replace(/'([^']+)'/g, '<code class="msg-type">$1</code>')
-      .replace(/"([^"]+)"/g, '<code class="msg-type">$1</code>')
+      .replace(/(['"])([^'"\n]+)\1/g, '<code class="msg-type">$2</code>')
   );
 }

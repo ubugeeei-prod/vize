@@ -15,6 +15,9 @@ export interface CompilerOptions {
   scriptExt?: "preserve" | "downcompile";
   customRenderer?: boolean;
   templateSyntax?: "standard" | "strict" | "quirks";
+  experimentalInTagComments?: boolean;
+  experimentalPatternedTemplate?: boolean;
+  experimentalSelfComponent?: boolean;
   bindingMetadata?: SfcBindingMetadata;
 }
 

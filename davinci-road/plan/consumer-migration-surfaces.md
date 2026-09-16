@@ -45,9 +45,9 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |          1172 |                   816 |               356 |             158 |     373 |            1032 |      671 |           582 |           724 |
+| Compiler                   |          1175 |                   816 |               359 |             158 |     373 |            1032 |      674 |           583 |           725 |
 | Linter                     |           374 |                   374 |                 0 |             299 |     301 |             728 |      246 |           389 |           572 |
-| Typechecker                |           958 |                   261 |               697 |             439 |     214 |             896 |      715 |           517 |           737 |
+| Typechecker                |           957 |                   260 |               697 |             437 |     214 |             893 |      715 |           516 |           737 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            20 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            71 |
 | LSP                        |           301 |                   301 |                 0 |             115 |      47 |             349 |      114 |           174 |           410 |
@@ -61,7 +61,7 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
 | Davinci          |          30 |              10 |       20 |
-| S0               |         969 |             511 |      458 |
+| S0               |         972 |             511 |      461 |
 | S1               |          12 |               5 |        7 |
 | S2               |          45 |              25 |       20 |
 | S1->S2           |         116 |              15 |      101 |
@@ -91,7 +91,7 @@ Additional source/manifest rows are in the TSV: 343 omitted.
 | `crates/vize_atelier_sfc/src/compile_script/props/tests.rs:4` | test/dev | S0 15                                         |    15 |
 | `crates/vize_atelier_core/tests/s2_support/compare.rs:10`     | test/dev | Davinci 3<br>S0 4<br>S1 1<br>S2 1<br>S1->S2 4 |    13 |
 
-Additional test/dev rows are in the TSV: 268 omitted.
+Additional test/dev rows are in the TSV: 269 omitted.
 
 ### Linter
 
@@ -134,9 +134,9 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |         958 |             545 |      413 |
-| old AST/parser   |         181 |              44 |      137 |
-| Croquis analysis |         258 |             129 |      129 |
+| S0               |         957 |             544 |      413 |
+| old AST/parser   |         180 |              43 |      137 |
+| Croquis analysis |         257 |             128 |      129 |
 | raw OXC          |         214 |             178 |       36 |
 
 #### Top source and manifest files
@@ -149,7 +149,7 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 | `crates/vize_canon/src/virtual_ts/scope/context.rs:3`                          | source   | S0 4<br>old AST/parser 4<br>Croquis analysis 3              |    11 |
 | `crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs:7` | source   | S0 10                                                       |    10 |
 
-Additional source/manifest rows are in the TSV: 342 omitted.
+Additional source/manifest rows are in the TSV: 341 omitted.
 
 #### Top test/dev files
 

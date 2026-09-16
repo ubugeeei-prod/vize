@@ -2,7 +2,6 @@ use vize_s0::Allocator;
 use vize_s0::cstr;
 
 use crate::script_parse::collect_script_parse_diagnostics;
-use crate::virtual_ts::generate_virtual_ts_with_offsets_legacy_vue2;
 
 use super::{
     analysis::{SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity},
@@ -10,7 +9,6 @@ use super::{
         check_emits_typing, check_fallthrough_attrs, check_invalid_exports, check_props_typing,
         check_reactivity, check_setup_context, check_template_bindings,
     },
-    virtual_ts::generate_virtual_ts_with_scopes,
 };
 
 pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeCheckResult {
@@ -40,7 +38,7 @@ fn type_check_sfc_impl(
     options_api: bool,
     legacy_vue2: bool,
 ) -> SfcTypeCheckResult {
-    use vize_atelier_core::parser::parse;
+    use vize_atelier_core::{options::ParserOptions, parser::parse_with_options};
     use vize_atelier_sfc::{SfcParseOptions, croquis::SfcCroquisOptions, parse_sfc};
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -99,7 +97,14 @@ fn type_check_sfc_impl(
     let mut has_template_parse_errors = false;
     let (template_offset, template_ast) = if let Some(ref template) = descriptor.template {
         let template_offset = template.loc.start as u32;
-        let (root, errors) = parse(&allocator, &template.content);
+        let (root, errors) = parse_with_options(
+            &allocator,
+            &template.content,
+            ParserOptions {
+                experimental_in_tag_comments: options.experimental_in_tag_comments,
+                ..Default::default()
+            },
+        );
         let mut hard_template_error = false;
         for error in errors {
             if error.is_recoverable() {
@@ -202,35 +207,23 @@ fn type_check_sfc_impl(
 
     // Generate virtual TypeScript with scope information if requested
     if options.include_virtual_ts && !has_template_parse_errors && !has_script_parse_errors {
-        result.virtual_ts = Some(if legacy_vue2 {
-            generate_virtual_ts_with_offsets_legacy_vue2(
-                &summary,
-                script_content.as_deref(),
-                template_ast.as_ref(),
-                script_offset,
-                template_offset,
-                &crate::virtual_ts::VirtualTsOptions::default(),
-            )
-            .code
-        } else if options_api {
-            crate::virtual_ts::generate_virtual_ts_with_offsets_options_api(
-                &summary,
-                script_content.as_deref(),
-                template_ast.as_ref(),
-                script_offset,
-                template_offset,
-                &crate::virtual_ts::VirtualTsOptions::default(),
-            )
-            .code
-        } else {
-            generate_virtual_ts_with_scopes(
-                &summary,
-                script_content.as_deref(),
-                script_offset,
-                template_ast.as_ref(),
-                template_offset,
-            )
-        });
+        let output = crate::virtual_ts::generate_virtual_ts_with_offsets_and_checks(
+            &summary,
+            script_content.as_deref(),
+            template_ast.as_ref(),
+            script_offset,
+            template_offset,
+            &crate::virtual_ts::VirtualTsOptions::default(),
+            crate::virtual_ts::VirtualTsGenerationOptions {
+                legacy_vue2,
+                options_api,
+                preserve_authored_component: options_api,
+                experimental_strict_slot_children: options.experimental_strict_slot_children,
+                ..Default::default()
+            },
+        );
+        result.virtual_ts = Some(output.code);
+        result.virtual_ts_mappings = output.mappings;
     }
 
     // Record analysis time on native only

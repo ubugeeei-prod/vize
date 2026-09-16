@@ -56,6 +56,9 @@ pub struct SfcTypeCheckResult {
     /// Generated virtual TypeScript (for debugging/IDE integration)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub virtual_ts: Option<String>,
+    /// Byte mappings retained for adapters; their coordinate system is adapter-specific.
+    #[serde(skip)]
+    pub virtual_ts_mappings: Vec<crate::virtual_ts::VizeMapping>,
     /// Error count
     pub error_count: usize,
     /// Warning count
@@ -71,6 +74,7 @@ impl SfcTypeCheckResult {
         Self {
             diagnostics: Vec::new(),
             virtual_ts: None,
+            virtual_ts_mappings: Vec::new(),
             error_count: 0,
             warning_count: 0,
             analysis_time_ms: None,
@@ -116,6 +120,10 @@ pub struct SfcTypeCheckOptions {
     pub check_fallthrough_attrs: bool,
     /// Strict mode - report more potential issues
     pub strict: bool,
+    /// Accept Vue RFC in-tag comments in the template parser.
+    pub experimental_in_tag_comments: bool,
+    /// Emit strict slot child contracts in virtual TypeScript.
+    pub experimental_strict_slot_children: bool,
 }
 
 impl SfcTypeCheckOptions {
@@ -132,6 +140,8 @@ impl SfcTypeCheckOptions {
             check_invalid_exports: true,
             check_fallthrough_attrs: true,
             strict: false,
+            experimental_in_tag_comments: false,
+            experimental_strict_slot_children: false,
         }
     }
 

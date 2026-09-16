@@ -3,6 +3,9 @@ import "./TypeCheckPlayground.css";
 import { ref, watch, computed, onMounted, onUnmounted, inject, type ComputedRef } from "vue";
 import MonacoEditor from "../../shared/MonacoEditor.vue";
 import CodeHighlight from "../../shared/CodeHighlight.vue";
+import ExperimentalFeatures from "../../shared/ExperimentalFeatures.vue";
+import { useExperimentalFeatures } from "../../shared/experimentalFeatures";
+import { useCompilerInit } from "../../utils/useCompilerInit";
 import { type WasmModule, getWasm } from "../../wasm/index";
 import { TYPECHECK_PRESET, TYPECHECK_TYPED_PRESET } from "../../shared/presets/typecheck";
 import {
@@ -23,6 +26,7 @@ const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");
 const theme = computed<"dark" | "light">(() => _injectedTheme?.value ?? "light");
 
 const source = ref(TYPECHECK_PRESET);
+const { options: experimentals, loadExample } = useExperimentalFeatures("typechecker", source);
 const activeTab = ref<"diagnostics" | "virtualTs" | "capabilities">("diagnostics");
 
 // Options
@@ -50,6 +54,7 @@ const {
   dispose,
 } = useMonacoTypeCheck({
   source,
+  experimentals,
   compiler: () => props.compiler ?? getWasm(),
   strictMode,
   includeVirtualTs,
@@ -127,6 +132,7 @@ watch(
     typeCheck();
   },
 );
+watch(experimentals, typeCheck, { deep: true });
 
 watch(
   () => props.compiler,
@@ -138,44 +144,18 @@ watch(
   },
 );
 
-// Workaround for vite-plugin-vize prop reactivity issue
-let hasCompilerInitialized = false;
-let pollInterval: ReturnType<typeof setInterval> | null = null;
-
-function tryInitialize() {
-  const compiler = getWasm();
-  if (compiler && !hasCompilerInitialized) {
-    hasCompilerInitialized = true;
-    if (pollInterval) {
-      clearInterval(pollInterval);
-      pollInterval = null;
-    }
-    typeCheck();
-    loadCapabilities();
-  }
-}
-
 onMounted(async () => {
   loadOptions();
   await configureTypeScript();
   registerHoverProvider();
-  tryInitialize();
-  if (!hasCompilerInitialized) {
-    pollInterval = setInterval(tryInitialize, 100);
-    setTimeout(() => {
-      if (pollInterval) {
-        clearInterval(pollInterval);
-        pollInterval = null;
-      }
-    }, 10000);
-  }
+});
+useCompilerInit(() => {
+  typeCheck();
+  loadCapabilities();
 });
 
 onUnmounted(() => {
-  if (pollInterval) {
-    clearInterval(pollInterval);
-    pollInterval = null;
-  }
+  if (checkTimer) clearTimeout(checkTimer);
   dispose();
 });
 </script>
@@ -194,6 +174,9 @@ onUnmounted(() => {
           <button class="btn-ghost" @click="setPreset('untyped')">Untyped</button>
           <button class="btn-ghost" @click="setPreset('typed')">Typed</button>
         </div>
+      </div>
+      <div class="experimental-controls">
+        <ExperimentalFeatures v-model="experimentals" scope="typechecker" @example="loadExample" />
       </div>
       <div class="editor-container">
         <MonacoEditor v-model="source" language="vue" :diagnostics :theme />

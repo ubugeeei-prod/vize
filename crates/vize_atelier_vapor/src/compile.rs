@@ -161,15 +161,33 @@ fn compile_vapor_inner_with_stack<'a>(
         experimental_patterned_template: options.experimental_patterned_template,
         ..Default::default()
     };
-    transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
-        allocator,
-        &mut root,
-        transform_opts,
-        None,
-        custom_elements,
-        template_syntax.is_quirks(),
-        None,
-    );
+    let transform_errors =
+        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+            allocator,
+            &mut root,
+            transform_opts,
+            None,
+            custom_elements,
+            template_syntax.is_quirks(),
+            None,
+        );
+    let fatal: Vec<_> = transform_errors
+        .iter()
+        .filter(|error| !error.is_recoverable())
+        .collect();
+    if !fatal.is_empty() {
+        let mut diagnostics = parser_diagnostics;
+        diagnostics.extend(transform_errors.iter().cloned());
+        return (
+            VaporCompileResult {
+                code: String::default(),
+                templates: Vec::new(),
+                map: None,
+                error_messages: fatal.iter().map(|error| error.message.clone()).collect(),
+            },
+            diagnostics,
+        );
+    }
 
     // Lower to Vapor IR
     let (ir, mut transform_diagnostics) =

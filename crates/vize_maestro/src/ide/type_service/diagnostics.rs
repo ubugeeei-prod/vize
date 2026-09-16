@@ -61,6 +61,8 @@ impl TypeService {
             check_invalid_exports: lsp_options.check_invalid_exports,
             check_fallthrough_attrs: lsp_options.check_fallthrough_attrs,
             include_virtual_ts: false,
+            experimental_in_tag_comments: false,
+            experimental_strict_slot_children: false,
         };
 
         let result = if lsp_options.legacy_vue2 {

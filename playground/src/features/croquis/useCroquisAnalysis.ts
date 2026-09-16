@@ -13,6 +13,7 @@ import type { Diagnostic } from "../../shared/MonacoEditor.vue";
 import type { WasmModule, CroquisResult, BindingDisplay } from "../../wasm/index";
 import { ANALYSIS_PRESET } from "../../shared/presets/croquis";
 import { parseVirLines } from "./useVirTokenizer";
+import { useExperimentalFeatures } from "../../shared/experimentalFeatures";
 
 interface EditorRef {
   applyScopeDecorations: (scopes: unknown[]) => void;
@@ -23,6 +24,7 @@ export function useCroquisAnalysis(getCompilerProp: () => WasmModule | null) {
   const theme = computed<"dark" | "light">(() => _injectedTheme?.value ?? "light");
 
   const source = ref(ANALYSIS_PRESET);
+  const { options: experimentals, loadExample } = useExperimentalFeatures("croquis", source);
   const analysisResult = ref<CroquisResult | null>(null);
   const error = ref<string | null>(null);
   const activeTab = ref<"vir" | "stats" | "reactivity" | "bindings" | "scopes" | "diagnostics">(
@@ -82,6 +84,7 @@ export function useCroquisAnalysis(getCompilerProp: () => WasmModule | null) {
     try {
       const result = compiler.analyzeSfc(source.value, {
         filename: "Component.vue",
+        ...experimentals.value,
       });
       analysisResult.value = result;
       analysisTime.value = performance.now() - startTime;
@@ -98,12 +101,12 @@ export function useCroquisAnalysis(getCompilerProp: () => WasmModule | null) {
 
   let analyzeTimer: ReturnType<typeof setTimeout> | null = null;
   watch(
-    source,
+    [source, experimentals],
     () => {
       if (analyzeTimer) clearTimeout(analyzeTimer);
       analyzeTimer = setTimeout(analyze, 300);
     },
-    { immediate: false },
+    { immediate: false, deep: true },
   );
 
   watch(
@@ -128,6 +131,7 @@ export function useCroquisAnalysis(getCompilerProp: () => WasmModule | null) {
     }
   });
   onUnmounted(() => {
+    if (analyzeTimer) clearTimeout(analyzeTimer);
     if (compilerPollTimer) clearInterval(compilerPollTimer);
   });
 
@@ -178,6 +182,8 @@ export function useCroquisAnalysis(getCompilerProp: () => WasmModule | null) {
   const virLines = computed(() => parseVirLines(virText.value));
 
   return {
+    experimentals,
+    loadExample,
     theme,
     source,
     analysisResult,

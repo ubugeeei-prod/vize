@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import "./CroquisPlayground.css";
-import MonacoEditor from "../../shared/MonacoEditor.vue";
+import CroquisSource from "./CroquisSource.vue";
 import { type WasmModule, getWasm } from "../../wasm/index";
-import { ANALYSIS_PRESET } from "../../shared/presets/croquis";
-import { mdiCodeTags, mdiChartTimelineVariant, mdiCheck, mdiCloseCircle, mdiAlert } from "@mdi/js";
+import { mdiChartTimelineVariant, mdiCheck, mdiCloseCircle, mdiAlert } from "@mdi/js";
 import { useCroquisAnalysis } from "./useCroquisAnalysis";
 import CroquisStatsPanel from "./CroquisStatsPanel.vue";
 import ReactivityOverlayPanel from "./ReactivityOverlayPanel.vue";
@@ -15,6 +14,8 @@ const props = defineProps<{
 }>();
 
 const {
+  experimentals,
+  loadExample,
   theme,
   source,
   error,
@@ -41,31 +42,16 @@ const {
 
 <template>
   <div class="croquis-playground">
-    <div class="panel input-panel">
-      <div class="panel-header">
-        <div class="header-title">
-          <svg class="icon" viewBox="0 0 24 24"><path :d="mdiCodeTags" fill="currentColor" /></svg>
-          <h2>Source</h2>
-        </div>
-        <div class="panel-actions">
-          <label class="toggle-label">
-            <input v-model="showScopeVisualization" type="checkbox" />
-            <span>Visualize Scopes</span>
-          </label>
-          <button class="btn-ghost" @click="source = ANALYSIS_PRESET">Reset</button>
-        </div>
-      </div>
-      <div class="editor-container">
-        <MonacoEditor
-          ref="editorRef"
-          v-model="source"
-          language="vue"
-          :scopes="editorScopes"
-          :diagnostics="monacoDiagnostics"
-          :theme="theme"
-        />
-      </div>
-    </div>
+    <CroquisSource
+      ref="editorRef"
+      v-model="source"
+      v-model:visualize="showScopeVisualization"
+      v-model:experimentals="experimentals"
+      :scopes="editorScopes"
+      :diagnostics="monacoDiagnostics"
+      :theme
+      @example="loadExample"
+    />
 
     <div class="panel output-panel">
       <div class="panel-header">

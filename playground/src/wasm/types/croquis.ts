@@ -275,6 +275,7 @@ export interface Croquis {
 
 export interface CroquisOptions {
   filename?: string;
+  experimentalInTagComments?: boolean;
 }
 
 export interface CroquisResult {

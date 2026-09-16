@@ -8,28 +8,24 @@
 )]
 
 use super::source_offsets::{ScriptOffsetMapper, to_sfc_utf16_range};
-use super::to_js_value;
 use vize_s0::Allocator;
-use wasm_bindgen::prelude::*;
-
-/// Analyze Vue SFC for semantic information (scopes, bindings, etc.)
-#[wasm_bindgen(js_name = "analyzeSfc")]
-pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    let filename: String = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
-        .ok()
-        .and_then(|v| v.as_string())
-        .unwrap_or_else(|| "anonymous.vue".to_string());
-
-    let result =
-        analyze_sfc_json(source, &filename).map_err(|message| JsValue::from_str(&message))?;
-    to_js_value(&result)
-}
+mod entry;
+pub use entry::analyze_sfc_wasm;
 
 /// The `analyzeSfc` result as a plain `serde_json::Value` - the whole
 /// analysis short of the FFI conversion, so native tests can pin the
 /// croquis alias and the Spolvero feed byte-exactly (P2-18).
+#[cfg(test)]
 pub(super) fn analyze_sfc_json(source: &str, filename: &str) -> Result<serde_json::Value, String> {
-    use vize_atelier_core::parser::parse;
+    analyze_sfc_json_with_options(source, filename, false)
+}
+
+pub(super) fn analyze_sfc_json_with_options(
+    source: &str,
+    filename: &str,
+    in_tag_comments: bool,
+) -> Result<serde_json::Value, String> {
+    use vize_atelier_core::{options::ParserOptions, parser::parse_with_options};
     use vize_atelier_sfc::{
         SfcParseOptions,
         croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
@@ -56,7 +52,17 @@ pub(super) fn analyze_sfc_json(source: &str, filename: &str) -> Result<serde_jso
 
     let analysis = if let Some(ref template) = descriptor.template {
         let allocator = Allocator::new();
-        let (root, _errors) = parse(&allocator, &template.content);
+        let (root, errors) = parse_with_options(
+            &allocator,
+            &template.content,
+            ParserOptions {
+                experimental_in_tag_comments: in_tag_comments,
+                ..Default::default()
+            },
+        );
+        if let Some(error) = errors.iter().find(|error| !error.is_recoverable()) {
+            return Err(format!("Template parse error: {}", error.message));
+        }
         analyze_sfc_descriptor_with_context(&descriptor, Some(&root), SfcCroquisOptions::full())
     } else {
         analyze_sfc_descriptor_with_context(&descriptor, None, SfcCroquisOptions::full())

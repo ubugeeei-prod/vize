@@ -67,6 +67,8 @@ impl DiagnosticService {
             check_invalid_exports: false,
             check_fallthrough_attrs: true,
             strict,
+            experimental_in_tag_comments: false,
+            experimental_strict_slot_children: false,
         };
 
         vize_canon::type_check_sfc(content, &options)
