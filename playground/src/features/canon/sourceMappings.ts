@@ -1,5 +1,18 @@
 import type { VirtualTsMapping } from "../../wasm/types/analysis";
 
+export function mapSourceOffset(offset: number, mappings: readonly VirtualTsMapping[]) {
+  const mapping = mappings
+    .flatMap((entry) => [...(entry.subSpans ?? []), entry])
+    .filter(
+      (entry) =>
+        offset >= entry.srcStart &&
+        offset < entry.srcEnd &&
+        entry.genEnd - entry.genStart === entry.srcEnd - entry.srcStart,
+    )
+    .sort((a, b) => a.srcEnd - a.srcStart - (b.srcEnd - b.srcStart))[0];
+  return mapping ? mapping.genStart + offset - mapping.srcStart : null;
+}
+
 export function parseSourceMap(virtualTs: string): VirtualTsMapping[] {
   return Array.from(
     virtualTs.matchAll(/\/\/ @vize-map:\s*(\d+):(\d+)\s*->\s*(\d+):(\d+)/g),

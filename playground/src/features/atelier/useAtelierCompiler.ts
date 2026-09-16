@@ -86,11 +86,13 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
     return groups;
   });
 
+  let cssFormatVersion = 0;
   async function compileCssFromSfcResult(
     compiler: WasmModule,
     result: SfcCompileResult | null,
     version = compileVersion,
   ) {
+    const formatVersion = ++cssFormatVersion;
     if (!result?.descriptor?.styles?.length) {
       cssResult.value = null;
       formattedCss.value = "";
@@ -107,7 +109,9 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
     });
     cssResult.value = css;
     const formatted = await formatCss(css.code);
-    if (version === compileVersion) formattedCss.value = formatted;
+    if (version === compileVersion && formatVersion === cssFormatVersion) {
+      formattedCss.value = formatted;
+    }
   }
 
   let compileVersion = 0;
@@ -219,12 +223,15 @@ ${output.value?.helpers?.join("\n") || "None"}`.trim();
   let compileTimer: ReturnType<typeof setTimeout> | null = null;
   onScopeDispose(() => {
     compileVersion += 1;
+    cssFormatVersion += 1;
     if (compileTimer) clearTimeout(compileTimer);
   });
 
   watch(
     [source, options, inputMode, experimentals],
     () => {
+      compileVersion += 1;
+      isCompiling.value = false;
       if (!getCompiler()) return;
       if (compileTimer) clearTimeout(compileTimer);
       compileTimer = setTimeout(compile, 300);

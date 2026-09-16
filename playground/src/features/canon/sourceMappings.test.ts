@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { mapGeneratedRange, parseSourceMap } from "./sourceMappings";
+import { mapGeneratedRange, mapSourceOffset, parseSourceMap } from "./sourceMappings";
 
 describe("virtual TypeScript source mappings", () => {
   const mapping = { genStart: 10, genEnd: 20, srcStart: 30, srcEnd: 40 };
@@ -24,5 +24,12 @@ describe("virtual TypeScript source mappings", () => {
     expect(parseSourceMap("// @vize-map: 10:20 -> 30:40\n// @vize-map: binding:x")).toEqual([
       mapping,
     ]);
+  });
+
+  it("maps hover offsets through expression subspans, not synthetic scaffolding", () => {
+    const synthetic = { ...mapping, genEnd: 100 };
+    expect(mapSourceOffset(32, [synthetic])).toBeNull();
+    expect(mapSourceOffset(32, [{ ...synthetic, subSpans: [mapping] }])).toBe(12);
+    expect(mapSourceOffset(40, [mapping])).toBeNull();
   });
 });

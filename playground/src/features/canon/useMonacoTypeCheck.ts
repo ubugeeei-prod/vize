@@ -6,7 +6,7 @@ import { generateHelp } from "./generateHelp";
 import type { UseMonacoTypeCheckOptions } from "./typeCheckOptions";
 import type { VirtualTsMapping } from "../../wasm/types/analysis";
 import { offsetToLineColumn } from "../../utils/position";
-import { mapGeneratedRange, parseSourceMap } from "./sourceMappings";
+import { mapGeneratedRange, mapSourceOffset, parseSourceMap } from "./sourceMappings";
 
 interface Diagnostic {
   message: string;
@@ -155,12 +155,7 @@ export function useMonacoTypeCheck({
   }
 
   function mapSourceToGenerated(srcOffset: number): number | null {
-    for (const entry of cachedSourceMap) {
-      if (srcOffset >= entry.srcStart && srcOffset < entry.srcEnd) {
-        return entry.genStart + (srcOffset - entry.srcStart);
-      }
-    }
-    return null;
+    return mapSourceOffset(srcOffset, cachedSourceMap);
   }
 
   function findDiagnosticAtPosition(line: number, col: number): Diagnostic | null {
