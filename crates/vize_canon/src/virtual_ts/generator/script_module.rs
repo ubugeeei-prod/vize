@@ -129,7 +129,10 @@ fn declaration_has_runtime_value(declaration: &Declaration<'_>) -> bool {
     )
 }
 
-fn include_leading_ts_directive_comments(script: &str, spans: Vec<(u32, u32)>) -> Vec<(u32, u32)> {
+pub(super) fn include_leading_ts_directive_comments(
+    script: &str,
+    spans: Vec<(u32, u32)>,
+) -> Vec<(u32, u32)> {
     spans
         .into_iter()
         .map(|(start, end)| {
