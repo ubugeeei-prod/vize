@@ -11,6 +11,8 @@ mod canonical_dependency_tests;
 #[cfg(test)]
 mod canonical_rename_tests;
 #[cfg(test)]
+mod canonical_rename_version_tests;
+#[cfg(test)]
 mod canonical_tests;
 mod external_mirror;
 mod html_attribute;
