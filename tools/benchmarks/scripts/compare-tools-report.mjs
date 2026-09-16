@@ -96,6 +96,10 @@ export function formatSpeedup(value) {
   if (!Number.isFinite(value)) {
     return "n/a";
   }
+  if (value > 0 && value < 1) {
+    const rounded = value.toFixed(2);
+    return `${Number(rounded) === 0 || Number(rounded) === 1 ? value : rounded}x`;
+  }
   return `${value.toFixed(1)}x`;
 }
 
@@ -231,47 +235,62 @@ function engineClassNote(surface) {
   return `The ${surface.label} ratio compares Vize with ${published.label} using the same native tsgo engine, but diagnostic coverage can differ; this is not an accuracy-parity claim. ${declared?.label ?? "The JavaScript-engine incumbent"} is listed above as a same-run reference timing and never as a ratio: it drives the JavaScript TypeScript compiler, so a single number against it would credit TypeScript's Go rewrite to the Vue layer.`;
 }
 
-export function renderEngineClassSections(surfaces, formatMs) {
+export const ENGINE_CLASS_TEXT = {
+  heading: (surface) => `${surface.label} — engine classes ranked separately`,
+  columns: ["Engine class", "Row", "Median", "Relative to fastest in class"],
+  group: (group) => group.label,
+  note: engineClassNote,
+  rejected: (variant) =>
+    `${variant.label}: rejected during ${variant.phase}; no timing or rank published.`,
+  validation:
+    "Type-check work validation (strict templates; before warmup; diagnostics rechecked on every run):",
+  proofColumns: [
+    "Row",
+    "Minimal plants",
+    "Corpus plant",
+    "Diagnostics",
+    "Exit status",
+    "Diagnostic SHA-256",
+  ],
+  passed: "passed",
+  failed: "failed",
+};
+
+export function renderEngineClassSections(surfaces, formatMs, t = ENGINE_CLASS_TEXT) {
   const lines = [];
   for (const surface of surfaces) {
     if (surface.engineClassRanking == null) {
       continue;
     }
-    lines.push(`#### ${surface.label} — engine classes ranked separately`);
+    lines.push(`#### ${t.heading(surface)}`);
     lines.push("");
-    lines.push("| Engine class | Row | Median | Relative to fastest in class |");
+    lines.push(`| ${t.columns.join(" | ")} |`);
     lines.push("| --- | --- | ---: | ---: |");
     for (const group of surface.engineClassRanking) {
       for (const row of group.rows) {
         lines.push(
-          `| ${group.label} | ${row.label} | ${formatMs(row.medianMs)} | ${row.relativeToFastest == null ? "n/a" : `${row.relativeToFastest.toFixed(2)}x`} |`,
+          `| ${t.group(group)} | ${row.label} | ${formatMs(row.medianMs)} | ${row.relativeToFastest == null ? "n/a" : `${row.relativeToFastest.toFixed(2)}x`} |`,
         );
       }
     }
     lines.push("");
-    lines.push(engineClassNote(surface));
+    lines.push(t.note(surface));
     lines.push("");
     for (const rejected of surface.rejectedVariants ?? []) {
-      lines.push(
-        `${rejected.label}: rejected during ${rejected.phase}; no timing or rank published.`,
-      );
+      lines.push(t.rejected(rejected));
       lines.push("");
       lines.push("```text", rejected.reason.replaceAll("```", "'''"), "```", "");
     }
     const checked = surface.variants.filter((variant) => variant.correctness != null);
     if (checked.length > 0) {
-      lines.push(
-        "Type-check work validation (strict templates; before warmup; diagnostics rechecked on every run):",
-      );
+      lines.push(t.validation);
       lines.push("");
-      lines.push(
-        "| Row | Minimal plants | Corpus plant | Diagnostics | Exit status | Diagnostic SHA-256 |",
-      );
+      lines.push(`| ${t.proofColumns.join(" | ")} |`);
       lines.push("| --- | ---: | --- | ---: | ---: | --- |");
       for (const variant of checked) {
         const proof = variant.correctness;
         lines.push(
-          `| ${variant.label} | ${proof.minimalPlants.length} | ${proof.corpusPlant ? "passed" : "failed"} | ${proof.diagnosticCount} | ${proof.status} | \`${proof.diagnosticFingerprint}\` |`,
+          `| ${variant.label} | ${proof.minimalPlants.length} | ${proof.corpusPlant ? t.passed : t.failed} | ${proof.diagnosticCount} | ${proof.status} | \`${proof.diagnosticFingerprint}\` |`,
         );
       }
       lines.push("");

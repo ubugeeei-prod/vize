@@ -30,7 +30,7 @@ Large SFC: 300 repeated template blocks (225.6 KB). Nuxt import set: 250 SFC fil
 | Format                                 | 3,000 | Prettier CLI           |          29.72s |   1.07s |  351.4ms |   84.6x |
 | Type check                             |   500 | verter-tsc             |           2.08s |   2.03s |    1.37s |    1.5x |
 | Vite build (end-to-end)                | 1,000 | @vitejs/plugin-vue     |           1.66s |     n/a |  889.2ms |    1.9x |
-| Nuxt SPA build (end-to-end)            |   250 | Nuxt default compiler  |           3.07s |     n/a |    3.21s |    1.0x |
+| Nuxt SPA build (end-to-end)            |   250 | Nuxt default compiler  |           3.07s |     n/a |    3.21s |   0.95x |
 | Musea plugin hooks (art gallery build) |   240 | n/a                    |             n/a |     n/a |   30.9ms |     n/a |
 
 #### Large SFC type check — engine classes ranked separately

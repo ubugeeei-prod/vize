@@ -25,7 +25,7 @@ README と全言語のページは、同じコミット済み成果物から生�
 | フォーマット        | 3,000      | Prettier CLI           | 29.72s             | 1.07s   | 351.4ms  | **84.6x**  |
 | 型検査              | 500        | verter-tsc             | 2.08s              | 2.03s   | 1.37s    | **1.5x**   |
 | Vite ビルド         | 1,000      | @vitejs/plugin-vue     | 1.66s              | n/a     | 889.2ms  | **1.9x**   |
-| Nuxt ビルド         | 250        | Nuxt default compiler  | 3.07s              | n/a     | 3.21s    | **1.0x**   |
+| Nuxt ビルド         | 250        | Nuxt default compiler  | 3.07s              | n/a     | 3.21s    | **0.95x**  |
 | Musea               | 240        | n/a                    | n/a                | n/a     | 30.9ms   | n/a        |
 
 型検査の速度比は、同じバージョンに固定したネイティブ tsgo を使う Vize と verter-tsc の比較です。各計測で診断処理の検証を通過していますが、ツール間で診断の対応範囲は異なります。精度の同等性や、過去の Vize からの性能改善を示す倍率ではありません。検証を通過しなかった比較ツールには、時間や順位を掲載しません。
@@ -34,75 +34,75 @@ README と全言語のページは、同じコミット済み成果物から生�
 
 ## 診断処理の検証
 
-#### Large SFC type check — engine classes ranked separately
+#### 巨大 SFC 型検査: エンジン種別ごとの順位
 
-| Engine class                    | Row              |  Median | Relative to fastest in class |
-| ------------------------------- | ---------------- | ------: | ---------------------------: |
-| JS TypeScript engine (tsc)      | vue-tsc          |   1.34s |                        1.00x |
-| native TypeScript engine (tsgo) | Vize check (1T)  | 186.4ms |                        1.00x |
-| native TypeScript engine (tsgo) | Vize check (max) | 190.1ms |                        1.02x |
-| native TypeScript engine (tsgo) | verter-tsc       |   1.58s |                        8.48x |
+| エンジン種別                          | 比較対象         |  中央値 | 同種の最速比 |
+| ------------------------------------- | ---------------- | ------: | -----------: |
+| JavaScript TypeScript エンジン (tsc)  | vue-tsc          |   1.34s |        1.00x |
+| ネイティブ TypeScript エンジン (tsgo) | Vize check (1T)  | 186.4ms |        1.00x |
+| ネイティブ TypeScript エンジン (tsgo) | Vize check (max) | 190.1ms |        1.02x |
+| ネイティブ TypeScript エンジン (tsgo) | verter-tsc       |   1.58s |        8.48x |
 
-The Large SFC type check ratio compares Vize with verter-tsc using the same native tsgo engine, but diagnostic coverage can differ; this is not an accuracy-parity claim. vue-tsc is listed above as a same-run reference timing and never as a ratio: it drives the JavaScript TypeScript compiler, so a single number against it would credit TypeScript's Go rewrite to the Vue layer.
+速度比は同じネイティブ tsgo エンジンの比較に限定しています。診断範囲は異なるため、精度の同等性を示すものではありません。JavaScript TypeScript エンジンの vue-tsc は同じ実行の参考値として掲載し、エンジンをまたぐ速度比は算出しません。
 
-Golar typecheck: rejected during preflight; no timing or rank published.
+Golar typecheck (事前検証): 検証で除外。実行時間と順位は掲載しません。
 
 ```text
 missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["LargeDashboard.vue","error","1019","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1111","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1157","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["LargeDashboard.vue","error","1019","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1111","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1157","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
 ```
 
-Golar (lint+check): rejected during preflight; no timing or rank published.
+Golar (lint+check) (事前検証): 検証で除外。実行時間と順位は掲載しません。
 
 ```text
 missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["LargeDashboard.vue","error","1088","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1111","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1203","89","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["LargeDashboard.vue","error","1088","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1111","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."],["LargeDashboard.vue","error","1203","88","TS2353","Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
 ```
 
-Type-check work validation (strict templates; before warmup; diagnostics rechecked on every run):
+型検査の実行検証（厳密なテンプレート検査、ウォームアップ前の検証、毎回の診断再確認）:
 
-| Row              | Minimal plants | Corpus plant | Diagnostics | Exit status | Diagnostic SHA-256                                                 |
-| ---------------- | -------------: | ------------ | ----------: | ----------: | ------------------------------------------------------------------ |
-| vue-tsc          |              4 | passed       |         300 |           2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
-| verter-tsc       |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
-| Vize check (1T)  |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
-| Vize check (max) |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| 比較対象         | 最小エラー注入 | コーパスへの注入 | 診断数 | 終了コード | 診断 SHA-256                                                       |
+| ---------------- | -------------: | ---------------- | -----: | ---------: | ------------------------------------------------------------------ |
+| vue-tsc          |              4 | 成功             |    300 |          2 | `508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb` |
+| verter-tsc       |              4 | 成功             |      0 |          0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (1T)  |              4 | 成功             |      0 |          0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (max) |              4 | 成功             |      0 |          0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
 
-#### Type check — engine classes ranked separately
+#### 型検査: エンジン種別ごとの順位
 
-| Engine class                    | Row              | Median | Relative to fastest in class |
-| ------------------------------- | ---------------- | -----: | ---------------------------: |
-| JS TypeScript engine (tsc)      | vue-tsc          |  6.75s |                        1.00x |
-| native TypeScript engine (tsgo) | Vize check (max) |  1.37s |                        1.00x |
-| native TypeScript engine (tsgo) | Vize check (1T)  |  2.03s |                        1.47x |
-| native TypeScript engine (tsgo) | verter-tsc       |  2.08s |                        1.51x |
+| エンジン種別                          | 比較対象         | 中央値 | 同種の最速比 |
+| ------------------------------------- | ---------------- | -----: | -----------: |
+| JavaScript TypeScript エンジン (tsc)  | vue-tsc          |  6.75s |        1.00x |
+| ネイティブ TypeScript エンジン (tsgo) | Vize check (max) |  1.37s |        1.00x |
+| ネイティブ TypeScript エンジン (tsgo) | Vize check (1T)  |  2.03s |        1.47x |
+| ネイティブ TypeScript エンジン (tsgo) | verter-tsc       |  2.08s |        1.51x |
 
-The Type check ratio compares Vize with verter-tsc using the same native tsgo engine, but diagnostic coverage can differ; this is not an accuracy-parity claim. vue-tsc is listed above as a same-run reference timing and never as a ratio: it drives the JavaScript TypeScript compiler, so a single number against it would credit TypeScript's Go rewrite to the Vue layer.
+速度比は同じネイティブ tsgo エンジンの比較に限定しています。診断範囲は異なるため、精度の同等性を示すものではありません。JavaScript TypeScript エンジンの vue-tsc は同じ実行の参考値として掲載し、エンジンをまたぐ速度比は算出しません。
 
-Golar typecheck: rejected during preflight; no timing or rank published.
+Golar typecheck (事前検証): 検証で除外。実行時間と順位は掲載しません。
 
 ```text
 missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["Component0007.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0017.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0027.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["Component0007.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0017.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0027.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
 ```
 
-Golar (lint+check): rejected during preflight; no timing or rank published.
+Golar (lint+check) (事前検証): 検証で除外。実行時間と順位は掲載しません。
 
 ```text
 missed the corpus-scale plant or changed baseline diagnostics: {"plants":[["__CheckGatePlant.vue","error","2","7","TS2322","Type 'string' is not assignable to type 'number'."],["__CheckGatePlant.vue","error","7","26","TS2322","Type 'string' is not assignable to type 'Booleanish | undefined'."]],"added":[["Component0037.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0057.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0197.vue","error","8","73","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]],"removed":[["Component0037.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0057.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."],["Component0197.vue","error","8","72","TS2353","Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'."]]}
 ```
 
-Type-check work validation (strict templates; before warmup; diagnostics rechecked on every run):
+型検査の実行検証（厳密なテンプレート検査、ウォームアップ前の検証、毎回の診断再確認）:
 
-| Row              | Minimal plants | Corpus plant | Diagnostics | Exit status | Diagnostic SHA-256                                                 |
-| ---------------- | -------------: | ------------ | ----------: | ----------: | ------------------------------------------------------------------ |
-| vue-tsc          |              4 | passed       |         450 |           2 | `ca130bc55a0235c3dada35ca3a7aca8558f63858d7d03ec3ec586f4828773dd5` |
-| verter-tsc       |              4 | passed       |        4250 |           1 | `7f6641e728fa345abc3ac7eebb7f77a5e694c0cdaf81bf951c8829c0b2c32cfe` |
-| Vize check (1T)  |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
-| Vize check (max) |              4 | passed       |           0 |           0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| 比較対象         | 最小エラー注入 | コーパスへの注入 | 診断数 | 終了コード | 診断 SHA-256                                                       |
+| ---------------- | -------------: | ---------------- | -----: | ---------: | ------------------------------------------------------------------ |
+| vue-tsc          |              4 | 成功             |    450 |          2 | `ca130bc55a0235c3dada35ca3a7aca8558f63858d7d03ec3ec586f4828773dd5` |
+| verter-tsc       |              4 | 成功             |   4250 |          1 | `7f6641e728fa345abc3ac7eebb7f77a5e694c0cdaf81bf951c8829c0b2c32cfe` |
+| Vize check (1T)  |              4 | 成功             |      0 |          0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
+| Vize check (max) |              4 | 成功             |      0 |          0 | `6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87` |
 
 ## 各ツールの実測値
 
 ### SFC コンパイル
 
-| Variant                                   | Median (ms) | Runs (ms)                   |
+| 比較対象                                  | 中央値 (ms) | 各回の時間 (ms)             |
 | ----------------------------------------- | ----------- | --------------------------- |
 | @vue/compiler-sfc (1T)                    | 3565.85     | 3567.88, 3565.85, 3550.948  |
 | @vue/compiler-sfc (32 workers)            | 1606.347    | 1697.16, 1528.422, 1606.347 |
@@ -114,7 +114,7 @@ Type-check work validation (strict templates; before warmup; diagnostics recheck
 
 ### 巨大 SFC コンパイル
 
-| Variant                                   | Median (ms) | Runs (ms)                 |
+| 比較対象                                  | 中央値 (ms) | 各回の時間 (ms)           |
 | ----------------------------------------- | ----------- | ------------------------- |
 | @vue/compiler-sfc (1T)                    | 61.376      | 64.493, 61.376, 56.331    |
 | @vue/compiler-sfc (1 workers)             | 203.181     | 189.705, 203.181, 204.253 |
@@ -126,7 +126,7 @@ Type-check work validation (strict templates; before warmup; diagnostics recheck
 
 ### 巨大 SFC 型検査
 
-| Variant          | Median (ms) | Runs (ms)                    |
+| 比較対象         | 中央値 (ms) | 各回の時間 (ms)              |
 | ---------------- | ----------- | ---------------------------- |
 | vue-tsc          | 1337.752    | 1348.946, 1315.192, 1337.752 |
 | verter-tsc       | 1580.097    | 1580.097, 1611.568, 1563.42  |
@@ -135,7 +135,7 @@ Type-check work validation (strict templates; before warmup; diagnostics recheck
 
 ### Lint
 
-| Variant                        | Median (ms) | Runs (ms)                       |
+| 比較対象                       | 中央値 (ms) | 各回の時間 (ms)                 |
 | ------------------------------ | ----------- | ------------------------------- |
 | eslint-plugin-vue (1T)         | 20752.434   | 20609.852, 20830.969, 20752.434 |
 | eslint-plugin-vue (32 workers) | 6984.314    | 6984.314, 6989.249, 6969.495    |
@@ -144,7 +144,7 @@ Type-check work validation (strict templates; before warmup; diagnostics recheck
 
 ### フォーマット
 
-| Variant        | Median (ms) | Runs (ms)                       |
+| 比較対象       | 中央値 (ms) | 各回の時間 (ms)                 |
 | -------------- | ----------- | ------------------------------- |
 | Prettier CLI   | 29723.111   | 28949.562, 29745.493, 29723.111 |
 | Vize fmt (1T)  | 1072.253    | 1059.388, 1104.777, 1072.253    |
@@ -152,7 +152,7 @@ Type-check work validation (strict templates; before warmup; diagnostics recheck
 
 ### 型検査
 
-| Variant          | Median (ms) | Runs (ms)                    |
+| 比較対象         | 中央値 (ms) | 各回の時間 (ms)              |
 | ---------------- | ----------- | ---------------------------- |
 | vue-tsc          | 6754.668    | 6435.819, 6754.668, 6772.635 |
 | verter-tsc       | 2079.699    | 2079.699, 2075.939, 2102.418 |
@@ -161,21 +161,21 @@ Type-check work validation (strict templates; before warmup; diagnostics recheck
 
 ### Vite ビルド
 
-| Variant             | Median (ms) | Runs (ms)                    |
+| 比較対象            | 中央値 (ms) | 各回の時間 (ms)              |
 | ------------------- | ----------- | ---------------------------- |
 | @vitejs/plugin-vue  | 1656.557    | 1656.557, 1600.439, 1730.685 |
 | @vizejs/vite-plugin | 889.18      | 889.18, 881.988, 947.765     |
 
 ### Nuxt ビルド
 
-| Variant               | Median (ms) | Runs (ms)                    |
+| 比較対象              | 中央値 (ms) | 各回の時間 (ms)              |
 | --------------------- | ----------- | ---------------------------- |
 | Nuxt default compiler | 3067.515    | 3083.42, 3067.515, 3057.014  |
 | @vizejs/nuxt          | 3213.326    | 3259.084, 3213.326, 3176.535 |
 
 ### Musea
 
-| Variant                                                        | Median (ms) | Runs (ms)              |
+| 比較対象                                                       | 中央値 (ms) | 各回の時間 (ms)        |
 | -------------------------------------------------------------- | ----------- | ---------------------- |
 | options: preserve configured Rollup inputs                     | 0.002       | 0.009, 0.002, 0.001    |
 | buildStart: scan + parse art files                             | 16.52       | 16.817, 16.52, 15.88   |

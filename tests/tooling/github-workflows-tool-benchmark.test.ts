@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
+import { stagedSnapshotFiles } from "./support/benchmark-staging.ts";
 
 import {
   hostedOrBlacksmithExact,
@@ -90,13 +92,19 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
     /publish-snapshot\.mjs --json tool-benchmark-artifact\/tool-benchmark-results\.json/,
   );
   assert.match(commitJob, /publish-snapshot\.mjs --check/);
-  assert.match(commitJob, /git add README\.md/);
-  assert.match(commitJob, /docs\/content\/architecture\/performance\{,-blacksmith\}\.md/);
-  assert.match(
-    commitJob,
-    /docs\/content\/\{ja,zh-CN,fr,pt-BR\}\/architecture\/performance\{,-blacksmith\}\.md/,
+  const step = parse(workflow).jobs["tool-benchmark-commit"].steps.find(
+    (step: { name?: string }) => step.name === "Commit benchmark snapshot",
   );
-  assert.match(commitJob, /tools\/benchmarks\/results\/tool-benchmark-latest\.json/);
+  const expectedFiles = [
+    "README.md",
+    "tools/benchmarks/results/tool-benchmark-latest.json",
+    ...["", "ja/", "zh-CN/", "fr/", "pt-BR/"].flatMap((locale) =>
+      ["performance", "performance-blacksmith"].map(
+        (page) => `docs/content/${locale}architecture/${page}.md`,
+      ),
+    ),
+  ].sort();
+  assert.deepEqual(stagedSnapshotFiles(step.run, expectedFiles), expectedFiles);
   assert.match(commitJob, /git commit -m "docs: update blacksmith benchmark snapshot"/);
   assert.match(commitJob, /git push origin HEAD:\$\{\{\s*github\.ref_name\s*\}\}/);
   assert.doesNotMatch(commitJob, /codex/i);

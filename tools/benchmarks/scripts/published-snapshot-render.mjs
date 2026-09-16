@@ -1,6 +1,7 @@
 import { formatMs, renderDocument } from "./compare-tools.mjs";
-import { getVariant, renderEngineClassSections } from "./compare-tools-report.mjs";
+import { formatSpeedup, getVariant, renderEngineClassSections } from "./compare-tools-report.mjs";
 import { SNAPSHOT_LOCALES, SURFACE_ORDER, surfaceLabel } from "./published-snapshot-locales.mjs";
+import { diagnosticText } from "./published-snapshot-diagnostics.mjs";
 
 export const RESULT_PATH = "tools/benchmarks/results/tool-benchmark-latest.json";
 const REPOSITORY = "https://github.com/ubugeeei-prod/vize";
@@ -48,7 +49,7 @@ export function summaryTable(data, locale, ids = SURFACE_ORDER) {
           formatMs(baseline?.medianMs),
           single ? formatMs(single.medianMs) : "n/a",
           formatMs(max.medianMs),
-          s.primarySpeedup == null ? "n/a" : `**${s.primarySpeedup.toFixed(1)}x**`,
+          s.primarySpeedup == null ? "n/a" : `**${formatSpeedup(s.primarySpeedup)}**`,
         ],
       ];
     }),
@@ -73,7 +74,7 @@ export function readmeSection(data) {
       tool,
       formatMs(getVariant(s, s.speedupBaselineId).medianMs),
       formatMs(getVariant(s, s.vizeMaxId).medianMs),
-      `**${s.primarySpeedup.toFixed(1)}×**`,
+      `**${formatSpeedup(s.primarySpeedup).replace("x", "×")}**`,
     ];
   });
   return [
@@ -81,7 +82,7 @@ export function readmeSection(data) {
     provenance(data, "en"),
     table(["Surface", "Files", "Existing tool", "Existing", "Vize", "Speedup"], rows),
     SNAPSHOT_LOCALES.en.note,
-    `Nuxt measures the entire build pipeline, not isolated SFC compilation. Most build work is shared by both variants. Its ratio is ${nuxt.primarySpeedup.toFixed(2)}x before rounding to one decimal in the table; a ratio below 1 means Vize was slower in this run.`,
+    `Nuxt measures the entire build pipeline, not isolated SFC compilation. Most build work is shared by both variants. Its ratio is ${formatSpeedup(nuxt.primarySpeedup)}; a ratio below 1 means Vize was slower in this run.`,
     "See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith) for per-variant timings, diagnostic counts, rejected measurements and methodology.",
   ].join("\n\n");
 }
@@ -111,7 +112,7 @@ export function snapshotPage(data, locale) {
     "",
     `## ${t.diagnostics}`,
     "",
-    ...renderEngineClassSections(data.surfaces, formatMs),
+    ...renderEngineClassSections(data.surfaces, formatMs, diagnosticText(locale)),
     `## ${t.details}`,
     "",
   ];
@@ -120,7 +121,7 @@ export function snapshotPage(data, locale) {
       `### ${surfaceLabel(surface, locale)}`,
       "",
       table(
-        ["Variant", "Median (ms)", "Runs (ms)"],
+        diagnosticText(locale).sampleColumns,
         surface.variants.map((variant) => [
           variant.label,
           variant.medianMs,

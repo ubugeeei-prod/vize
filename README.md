@@ -146,11 +146,11 @@ Versions: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0
 | Format      | 3,000 | Prettier           | 29.72s   | 351.4ms | **84.6×**  |
 | Type check  | 500   | verter-tsc         | 2.08s    | 1.37s   | **1.5×**   |
 | Vite build  | 1,000 | @vitejs/plugin-vue | 1.66s    | 889.2ms | **1.9×**   |
-| Nuxt build  | 250   | Nuxt compiler      | 3.07s    | 3.21s   | **1.0×**   |
+| Nuxt build  | 250   | Nuxt compiler      | 3.07s    | 3.21s   | **0.95×**  |
 
 Type-check ratios compare Vize with verter-tsc using the same pinned native tsgo backend. Each timed invocation passes diagnostic-work validation. Diagnostic coverage differs between tools; these ratios do not prove accuracy parity or a performance improvement over an earlier Vize version. Rejected comparators have no published timing or rank.
 
-Nuxt measures the entire build pipeline, not isolated SFC compilation. Most build work is shared by both variants. Its ratio is 0.95x before rounding to one decimal in the table; a ratio below 1 means Vize was slower in this run.
+Nuxt measures the entire build pipeline, not isolated SFC compilation. Most build work is shared by both variants. Its ratio is 0.95x; a ratio below 1 means Vize was slower in this run.
 
 See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith) for per-variant timings, diagnostic counts, rejected measurements and methodology.
 

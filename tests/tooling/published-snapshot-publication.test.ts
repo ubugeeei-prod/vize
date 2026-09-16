@@ -11,6 +11,7 @@ import {
 } from "../../tools/benchmarks/scripts/publish-snapshot.mjs";
 import { RESULT_PATH } from "../../tools/benchmarks/scripts/published-snapshot-render.mjs";
 import { SNAPSHOT_LOCALES } from "../../tools/benchmarks/scripts/published-snapshot-locales.mjs";
+import { diagnosticText } from "../../tools/benchmarks/scripts/published-snapshot-diagnostics.mjs";
 import {
   updateReadme,
   updatePerformance,
@@ -41,7 +42,31 @@ test("re-rendering is idempotent and retains every rejected comparator and raw s
       }
     }
     assert.ok(page.includes(artifact.commit.runUrl));
-    assert.ok(page.includes("strict templates"));
+    const t = diagnosticText(locale);
+    assert.ok(page.includes(t.validation));
+    const rows = page
+      .split("\n")
+      .filter((line: string) => line.startsWith("|"))
+      .map((line: string) =>
+        line
+          .split("|")
+          .slice(1, -1)
+          .map((cell) => cell.trim()),
+      );
+    for (const header of [
+      t.columns,
+      t.proofColumns,
+      ...(locale === "en" ? [] : [t.sampleColumns]),
+    ]) {
+      assert.deepEqual(
+        rows.find((row: string[]) => row[0] === header[0] && row.length === header.length),
+        header,
+      );
+    }
+    if (locale !== "en") {
+      assert.ok(!page.includes("engine classes ranked separately"));
+      assert.ok(!page.includes("diagnostics rechecked on every run"));
+    }
     for (const surface of artifact.surfaces) {
       for (const variant of surface.variants) {
         if (variant.correctness)

@@ -83,7 +83,7 @@ function expectedRow(
     tool,
     formatMs(variant(baselineId).medianMs),
     formatMs(variant(vizeId).medianMs),
-    `**${surface.primarySpeedup.toFixed(1)}×**${speedupSuffix}`,
+    `**${surface.primarySpeedup.toFixed(surface.primarySpeedup < 1 ? 2 : 1)}×**${speedupSuffix}`,
   ];
 }
 
