@@ -302,7 +302,7 @@ test("the type-check summary ranks engine classes and rates the in-class one", (
     "| native TypeScript engine (tsgo) | Vize check (1T) | 2.00s | 4.00x |",
     "| native TypeScript engine (tsgo) | Golar (lint+check) | 2.50s | 5.00x |",
     "",
-    "The Type check ratio compares Vize with verter-tsc, the incumbent that runs the same native tsgo engine, so it is the Vue layer alone. vue-tsc is listed above as a same-run reference timing and never as a ratio: it drives the JavaScript TypeScript compiler, so a single number against it would credit TypeScript's Go rewrite to the Vue layer.",
+    "The Type check ratio compares Vize with verter-tsc using the same native tsgo engine, but diagnostic coverage can differ; this is not an accuracy-parity claim. vue-tsc is listed above as a same-run reference timing and never as a ratio: it drives the JavaScript TypeScript compiler, so a single number against it would credit TypeScript's Go rewrite to the Vue layer.",
     "",
     "Fairness notes:",
     "- only note",

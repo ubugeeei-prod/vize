@@ -10,52 +10,35 @@ title: Desempenho
 
 O Vize alcança melhorias significativas de desempenho em relação ao compilador padrão baseado em JavaScript do Vue ao aproveitar as abstrações de custo zero e o multithreading nativo da Rust. Velocidade não é algo agradável — é um pré-requisito para a experiência do desenvolvedor.
 
-## Ambiente de Benchmark
+<!-- benchmark:environment:start -->
 
-Dois ambientes de medição aparecem nesta página, e cada número abaixo diz de qual deles veio.
+## Ambiente de medição
 
-**Runner de referência.** As comparações entre ferramentas são medidas pelo workflow Tool Benchmark
-e versionadas em `tools/benchmarks/results/tool-benchmark-latest.json`. Esse artefato é a fonte citável, e o
-[snapshot de benchmark do Blacksmith](./performance-blacksmith) o publica na íntegra.
+Um único artefato versionado alimenta o README e todos os idiomas. A quantidade de arquivos é indicada em cada linha.
 
-|              |                                                      |
-| ------------ | ---------------------------------------------------- |
-| **Máquina**  | `blacksmith-32vcpu-ubuntu-2404` (32 vCPU, AMD EPYC)  |
-| **Snapshot** | commit `1511788d96ea`, 2026-07-30                    |
-| **Método**   | mediana de 5 execuções medidas após 1 de aquecimento |
-| **Versões**  | vize 0.303.0 · vue 3.6.0-beta.10 · Node v24.14.0     |
+| Ambiente                                 | Data                     | Medições | Aquecimentos |
+| ---------------------------------------- | ------------------------ | -------- | ------------ |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1            |
 
-**Estação de trabalho local.** As tabelas do linter, do formatador e do verificador de tipos mais
-adiante ainda são mantidas à mão a partir de benches locais (`tools/benchmarks/scripts/lint.ts`, `tools/benchmarks/scripts/fmt.ts`,
-`tools/benchmarks/scripts/check.ts`) e foram medidas aqui. Elas ainda não são reproduzíveis no runner de referência,
-portanto leia-as como indicativas.
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
-|             |                                             |
-| ----------- | ------------------------------------------- |
-| **Máquina** | MacBook Pro (M2 Max, 12 núcleos, 96 GB RAM) |
-| **SO**      | macOS 15.3.2 (Darwin 24.3.0)                |
-| **Node.js** | v24.14.0                                    |
-| **Vite**    | v8.0.0 (Rolldown)                           |
-| **Vue**     | v3.6.0-beta.10                              |
+Versões: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
 
-## Benchmark: 15.000 arquivos SFC
+As medições locais de linter, formatador e os perfis abaixo são históricos e não pertencem a este snapshot. Ambiente registrado: MacBook Pro M2 Max (12 núcleos, 96 GB RAM), macOS 15.3.2, Node v24.14.0, Vite v8.0.0 e Vue v3.6.0-beta.10.
 
-Compilando **15.000 arquivos Vue SFC gerados** (58,7 MB no total) no runner de referência:
+## Benchmark: compilação SFC
 
-|                                | @vue/compiler-sfc | Vize    | Aceleração |
-| ------------------------------ | ----------------- | ------- | ---------- |
-| **Thread única**               | 17,15s            | 3,95s   | **4,3x**   |
-| **Todos os núcleos (32 vCPU)** | 6,08s             | 329,2ms | **18,5x**  |
-| **compiler-sfc 1T vs max**     | 17,15s            | 329,2ms | **52,1x**  |
+Arquivos: **3,000** (12,302,100 bytes).
 
-Fonte: a superfície `compile` do snapshot versionado `tools/benchmarks/results/tool-benchmark-latest.json`
-([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — o mesmo
-artefato que `README.md` e o [snapshot de benchmark do Blacksmith](./performance-blacksmith)
-publicam.
+|               | @vue/compiler-sfc | Vize    | Razão     |
+| ------------- | ----------------- | ------- | --------- |
+| 1T            | 3.57s             | 835.3ms | **4.3x**  |
+| workers / max | 1.61s             | 65.0ms  | **24.7x** |
+| 1T / max      | 3.57s             | 65.0ms  | **54.8x** |
 
-A melhoria em thread única vem das abstrações de custo zero do Rust (sem GC, sem aquecimento JIT, layout de memória amigável ao cache). A melhoria multithread vem do pool de threads com roubo de trabalho do Rayon, que escala com a contagem de núcleos da CPU.
+[Metodologia e resultados completos](./performance-blacksmith)
 
-> **Nota:** este snapshot foi tirado na vize 0.303.0, antes do trabalho de arena e de expressões descrito em "Escolhas de Arquitetura para Desempenho". Ele é datado e reproduzível, mas não é uma medição da árvore atual. A regravação das superfícies entre ferramentas no runner de referência está pendente.
+<!-- benchmark:environment:end -->
 
 ## Por que Rust?
 
@@ -204,20 +187,32 @@ Formatação de **15.000 arquivos Vue SFC**, estação de trabalho local:
 
 Correr `vp run --workspace-root bench:fmt` para se reproduzir.
 
-## Benchmark: Type Checker — cânone vs vue-tsc
+<!-- benchmark:typecheck:start -->
 
-Verificação de tipos de **500 arquivos Vue SFC gerados** com o caminho de diagnóstico atual respaldado pela Corsa, estação de trabalho local:
+## Benchmark: verificação de tipos
 
-|           | vue-tsc (ST)   | Cânone Vize (ST) | Aceleração         | vue-tsc (MT)   | Cânone Vize (MT) | Aceleração         | **vue-tsc ST vs Vize MT** |
-| --------- | -------------- | ---------------- | ------------------ | -------------- | ---------------- | ------------------ | ------------------------- |
-| **Tempo** | 4,38s          | 511ms            | n/a (cross-engine) | 4,41s          | 493ms            | n/a (cross-engine) | n/a (cross-engine)        |
-| **Taxa**  | 114 arquivos/s | 979 arquivos/s   |                    | 113 arquivos/s | 1.0k arquivos/s  |                    |                           |
+Um único artefato versionado alimenta o README e todos os idiomas. A quantidade de arquivos é indicada em cada linha.
 
-As linhas de verificação de tipo abrangem dois mecanismos TypeScript: o vue-tsc executa o compilador JavaScript enquanto o Vize check executa o tsgo nativo (Corsa). Por isso nenhuma razão única é publicada (`n/a (cross-engine)`); cada classe de mecanismo é classificada separadamente, já que um número único atribuiria a reescrita em Go do TypeScript à camada Vue. Os dois tempos são reais e foram medidos na mesma execução; veja o [snapshot de benchmark Blacksmith](./performance-blacksmith) para o ranking por classe de mecanismo.
+| Ambiente                                 | Data                     | Medições | Aquecimentos |
+| ---------------------------------------- | ------------------------ | -------- | ------------ |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1            |
 
-> **Nota:** O canhão Vize ainda está em desenvolvimento inicial e o caminho de diagnóstico apoiado pela Corsa ainda está alcançando a fidelidade vue-tsc. Essas medições refletem a implementação nativa atual com CLI primeiro, com um recurso de reserva por sessão de projeto, e mudarão à medida que a cobertura e a paridade de diagnóstico melhoram.
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
-Execute `node tools/benchmarks/scripts/check.ts 500` após `cargo build --release -p vize` para reproduzir esse benchmark rápido.
+Versões: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
+
+| Medição              | Arquivos | Ferramenta comparada | Mediana comparada | Vize 1T | Vize max | Razão    |
+| -------------------- | -------- | -------------------- | ----------------- | ------- | -------- | -------- |
+| Verificação de tipos | 500      | verter-tsc           | 2.08s             | 2.03s   | 1.37s    | **1.5x** |
+| Tipos em SFC grande  | 1        | verter-tsc           | 1.58s             | 186.4ms | 190.1ms  | **8.3x** |
+
+As razões da verificação de tipos comparam Vize e verter-tsc usando a mesma versão fixa do tsgo nativo. Cada execução cronometrada valida o trabalho de diagnóstico, mas a cobertura varia entre ferramentas. Essas razões não demonstram precisão equivalente nem uma melhoria sobre uma versão anterior do Vize. Comparadores rejeitados não recebem tempo publicado nem classificação.
+
+[Metodologia e resultados completos](./performance-blacksmith)
+
+Os perfis abaixo são medições locais históricas e não fazem parte desta comparação.
+
+<!-- benchmark:typecheck:end -->
 
 ### Perfil do verificador de tipos
 
@@ -248,16 +243,28 @@ Corsa ser ativada.
 
 O perfil atual desse aparelho mantém a análise diagnóstica do CLI em ~7ms. A maior parte do tempo agora está no comando CLI da Corsa. A autoimportação de stubs do framework em um único arquivo ambiente também reduziu o maior arquivo Virtual TS gerado de cerca de 275KB para 144KB.
 
-## Benchmark: Vite Plugin — @vizejs/vite-plugin vs @vitejs/plugin-vue
+<!-- benchmark:vite:start -->
 
-Build do Vite com **1.000 importações do SFC Vue** (todas importadas em uma única entrada):
+## Benchmark: plugin Vite
 
-|                         | @vitejs/plugin-vue | @vizejs/vite-plugin | Aceleração |
-| ----------------------- | ------------------ | ------------------- | ---------- |
-| **Tempo de Construção** | 1.71s              | 631.7ms             | **2.7x**   |
+Um único artefato versionado alimenta o README e todos os idiomas. A quantidade de arquivos é indicada em cada linha.
 
-> Nota: `@vizejs/vite-plugin` substitui apenas a etapa de compilação do Vue SFC — a diferença de desempenho vem inteiramente dessa parte. A resolução de dependências, construção de grafos de módulos, agrupamento (Rolldown) e todos os outros internos do Vite são idênticos aos `@vitejs/plugin-vue`. Para performance pura em compilações, veja o [Compiler benchmark](#benchmark-15000-sfc-files) acima. `@vizejs/vite-plugin` pré-compila `.vue` arquivos com entusiasmo usando compilação multithreaded nativa, que também permite um HMR mais rápido.
+| Ambiente                                 | Data                     | Medições | Aquecimentos |
+| ---------------------------------------- | ------------------------ | -------- | ------------ |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1            |
 
-Esta linha é a superfície `vite` do snapshot commitado `tools/benchmarks/results/tool-benchmark-latest.json` ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — o mesmo artefato que `README.md` e o [snapshot de benchmark Blacksmith](/architecture/performance-blacksmith) publicam. `tests/tooling/docs-vite-benchmark-row.test.ts` a fixa nesse artefato, em todos os idiomas.
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+
+Versões: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
+
+Arquivos: **1,000**.
+
+|            | @vitejs/plugin-vue | @vizejs/vite-plugin | Razão    |
+| ---------- | ------------------ | ------------------- | -------- |
+| Build Vite | 1.66s              | 889.2ms             | **1.9x** |
+
+[Metodologia e resultados completos](./performance-blacksmith)
+
+<!-- benchmark:vite:end -->
 
 O número publicado aqui até agora — `957ms` / `479ms` / `2.0x` — veio de `tools/benchmarks/scripts/vite.ts` antes de #3392, que media o Vize com um cache de pré-compilação persistente deixado quente pelo próprio warmup enquanto o `@vitejs/plugin-vue` compilava do zero. Esse harness agora reporta linhas separadas de cold e warm na máquina em que roda, então produz um diagnóstico local, não um speedup publicável. Use `vp run --workspace-root bench:vite` para comparar uma mudança consigo mesma.

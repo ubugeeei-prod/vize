@@ -85,7 +85,17 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
     /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch' && inputs\.commit_results && startsWith\(github\.ref, 'refs\/heads\/'\) && github\.ref_name != 'main'\s*\}\}/,
   );
   assert.match(commitJob, /contents:\s*write/);
-  assert.match(commitJob, /docs\/content\/architecture\/performance-blacksmith\.md/);
+  assert.match(
+    commitJob,
+    /publish-snapshot\.mjs --json tool-benchmark-artifact\/tool-benchmark-results\.json/,
+  );
+  assert.match(commitJob, /publish-snapshot\.mjs --check/);
+  assert.match(commitJob, /git add README\.md/);
+  assert.match(commitJob, /docs\/content\/architecture\/performance\{,-blacksmith\}\.md/);
+  assert.match(
+    commitJob,
+    /docs\/content\/\{ja,zh-CN,fr,pt-BR\}\/architecture\/performance\{,-blacksmith\}\.md/,
+  );
   assert.match(commitJob, /tools\/benchmarks\/results\/tool-benchmark-latest\.json/);
   assert.match(commitJob, /git commit -m "docs: update blacksmith benchmark snapshot"/);
   assert.match(commitJob, /git push origin HEAD:\$\{\{\s*github\.ref_name\s*\}\}/);

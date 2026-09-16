@@ -276,13 +276,13 @@ jobs:
 
       - name: Commit benchmark snapshot
         run: |
-          mkdir -p docs/content/architecture tools/benchmarks/results
-          cp tool-benchmark-artifact/performance-blacksmith.md docs/content/architecture/performance-blacksmith.md
-          cp tool-benchmark-artifact/tool-benchmark-results.json tools/benchmarks/results/tool-benchmark-latest.json
-          vp check --fix docs/content/architecture/performance-blacksmith.md tools/benchmarks/results/tool-benchmark-latest.json
+          node tools/benchmarks/scripts/publish-snapshot.mjs --json tool-benchmark-artifact/tool-benchmark-results.json
+          node tools/benchmarks/scripts/publish-snapshot.mjs --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/content/architecture/performance-blacksmith.md tools/benchmarks/results/tool-benchmark-latest.json
+          git add README.md tools/benchmarks/results/tool-benchmark-latest.json \
+            docs/content/architecture/performance{,-blacksmith}.md \
+            docs/content/{ja,zh-CN,fr,pt-BR}/architecture/performance{,-blacksmith}.md
           if git diff --cached --quiet; then
             echo "No benchmark snapshot changes to commit."
           else

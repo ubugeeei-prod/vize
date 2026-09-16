@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "kind": "tool-comparison",
-  "generatedAt": "2026-07-30T15:44:33.256Z",
+  "generatedAt": "2026-09-16T08:19:25.262Z",
   "commit": {
-    "sha": "1511788d96ead5621f0b2bd3727d644c4e104d09",
-    "ref": "tools/benchmarks/scripts/regenerate-blacksmith-snapshot",
+    "sha": "f9cc50ee2e2ff14cd120241cd87a0162446df65b",
+    "ref": "6148/merge",
     "repository": "ubugeeei-prod/vize",
-    "runUrl": "https://github.com/ubugeeei-prod/vize/actions/runs/30557718030"
+    "runUrl": "https://github.com/ubugeeei-prod/vize/actions/runs/35072615669"
   },
   "runner": {
     "label": "blacksmith-32vcpu-ubuntu-2404",
@@ -19,114 +19,127 @@
     "node": "v24.14.0"
   },
   "versions": {
-    "vize": "vize 0.303.0",
-    "tsgo": "Version 7.0.0-dev.20260602.1",
+    "vize": "vize 0.424.11",
+    "tsgo": "Version 7.0.2",
     "vueTsc": "Version 6.0.3",
+    "verterTsc": "verter-tsc 0.0.1-beta.3",
+    "golar": "Golar version 0.1.10",
     "typescript": null,
     "vue": "3.6.0-beta.10",
     "eslint": "v10.4.1",
     "prettier": "3.8.3",
     "node": "v24.14.0"
   },
+  "binaries": {
+    "vize": "dc5e840133beec86106ca27c496ca01fbff4299a8aef6c3a0f2fca3131f88fe3",
+    "tsgo": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+    "vueTsc": "811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d",
+    "verterTsc": "81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224",
+    "golar": "a100c0e559b6cf85fc3e67a65f0b8eedcee0ccf624022fc4882bea2a3d6316da",
+    "eslint": "41dd060d45aca4a2144b94862e21e285bbb726b19e61db7a03c5b2e0b67973cc",
+    "prettier": "a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428"
+  },
   "backend": {
     "engine": "tsgo-native",
-    "corsaPath": "/home/runner/_work/vize/vize/node_modules/.bin/tsgo",
-    "corsaVersion": "Version 7.0.0-dev.20260602.1",
+    "corsaPath": "/home/runner/_work/vize/vize/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+    "corsaVersion": "Version 7.0.2",
     "ready": true,
     "reason": null
   },
   "input": {
     "dir": "/home/runner/_work/vize/vize/tools/benchmarks/scripts/__in__",
-    "fileCount": 15000,
-    "totalBytes": 61516500,
+    "fileCount": 3000,
+    "totalBytes": 12302100,
     "checkFileCount": 500,
     "viteFileCount": 1000,
-    "nuxtFileCount": 500,
-    "largeBlocks": 900,
-    "largeSfcBytes": 691059
+    "nuxtFileCount": 250,
+    "museaFileCount": 240,
+    "largeBlocks": 300,
+    "largeSfcBytes": 231011
   },
   "settings": {
-    "runs": 5,
+    "runs": 3,
     "warmups": 1,
-    "tasks": ["compile", "large", "lint", "fmt", "check", "vite", "nuxt"]
+    "tasks": ["compile", "large", "lint", "fmt", "check", "vite", "nuxt", "musea"]
   },
   "commands": {
-    "workflowDispatch": "gh workflow run tool-benchmark.yml --ref <branch> -f file_count=15000 -f check_file_count=500 -f vite_file_count=1000 -f nuxt_file_count=500 -f large_blocks=900 -f runs=5 -f warmups=1 -f commit_results=true",
-    "generate": "node tools/benchmarks/scripts/generate.mjs 15000",
-    "benchmark": "node tools/benchmarks/scripts/compare-tools.mjs --input tools/benchmarks/scripts/__in__ --vize-bin target/release/vize --runs 5 --warmups 1 --check-file-count 500 --vite-file-count 1000 --nuxt-file-count 500 --large-blocks 900 --runner-label \"blacksmith-32vcpu-ubuntu-2404\" --out tool-benchmark-summary.md --json tool-benchmark-results.json --doc performance-blacksmith.md"
+    "workflowDispatch": "gh workflow run tool-benchmark.yml --ref <branch> -f file_count=3000 -f check_file_count=500 -f vite_file_count=1000 -f nuxt_file_count=250 -f musea_file_count=240 -f large_blocks=300 -f runs=3 -f warmups=1 -f commit_results=true",
+    "generate": "node tools/benchmarks/scripts/generate.mjs 3000",
+    "benchmark": "node tools/benchmarks/scripts/compare-tools.mjs --input tools/benchmarks/scripts/__in__ --vize-bin target/release/vize --runs 3 --warmups 1 --check-file-count 500 --vite-file-count 1000 --nuxt-file-count 250 --musea-file-count 240 --large-blocks 300 --runner-label \"ubuntu-24.04\" --out tool-benchmark-summary.md --json tool-benchmark-results.json --doc performance-blacksmith.md"
   },
   "fairness": [
     "All tools run on the same generated Vue SFC corpus from the same checkout and lockfile.",
-    "The 15,000-SFC rows are the many-file workload; the large-SFC rows isolate one large component.",
+    "The 3,000-SFC rows are the many-file workload; the large-SFC rows isolate one large component.",
     "Reported times are medians; measured runs alternate variant order after warmup runs.",
     "Destructive formatter runs receive a fresh copy of the same input before each invocation.",
     "SFC compile Vize max uses `compileSfcBatchWithResults` wall time so the primary number includes generated output crossing the JS/native boundary; the stats-only native `timeMs` is shown only in variant details. Explicit sequence variants run 1→max and max→1 in one Node process and measure the second call's full JavaScript wall time, including scoped pool creation.",
     "Vite build timings exclude fixture copy/setup; the Vize max lane sets `precompileBatchSize` to the benchmark file count so Blacksmith max runs one native precompile batch instead of the memory-safe default chunks.",
-    "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed.",
+    "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `tools/benchmarks/scripts/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.",
+    "Musea rows are the one surface that does not run on the shared SFC corpus: `@vizejs/vite-plugin-musea` only does work for `.art.vue` files, so the lane generates its own pinned art corpus from `tools/benchmarks/scripts/musea-corpus.mjs`. They publish no speedup because no incumbent tool performs this work, and they measure the plugin's own `buildStart`/`load`/`transform` hooks rather than an end-to-end build — by the same reasoning as the Nuxt row above, a whole-build number would sit under the noise floor and could not move when the plugin regresses. `tools/benchmarks/scripts/musea.mjs` runs the lane on its own.",
     "Single-thread lanes are shown where useful, and the primary speedup compares the incumbent default/single-thread lane with Vize's max runner lane.",
-    "Type-check rows span two TypeScript engines: vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa). No cross-engine ratio is published for that surface — it is ranked within each engine class instead, so TypeScript's Go rewrite is never credited to the Vue layer; tools/benchmarks/scripts/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating."
+    "Type-check rows span two TypeScript engines: vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa). Their ratio is never published — it would credit TypeScript's Go rewrite to the Vue layer. The published type-check speedup is measured against verter-tsc instead, the incumbent Vue type checker that drives the same native tsgo binary, so it is the Vue layer alone; vue-tsc stays in the table as a same-run reference timing ranked inside its own engine class, and a run where no same-engine incumbent resolves publishes no ratio at all. tools/benchmarks/scripts/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating."
   ],
   "surfaces": [
     {
       "id": "compile",
       "label": "SFC compile",
-      "files": 15000,
-      "bytes": 61516500,
+      "files": 3000,
+      "bytes": 12302100,
       "variants": [
         {
           "id": "vue-compiler-sfc-1t",
           "label": "@vue/compiler-sfc (1T)",
-          "medianMs": 17152.877,
-          "runs": [17819.521, 17112.058, 16916.262, 17152.877, 17221.425],
-          "throughput": "874 files/s"
+          "medianMs": 3565.85,
+          "runs": [3567.88, 3565.85, 3550.948],
+          "throughput": "841 files/s"
         },
         {
           "id": "vue-compiler-sfc-workers",
           "label": "@vue/compiler-sfc (32 workers)",
-          "medianMs": 6075.983,
-          "runs": [6075.983, 6160.388, 6032.722, 6161.073, 5804.856],
-          "throughput": "2.5k files/s"
+          "medianMs": 1606.347,
+          "runs": [1697.16, 1528.422, 1606.347],
+          "throughput": "1.9k files/s"
         },
         {
           "id": "vize-native-1t",
           "label": "Vize native loop (1T)",
-          "medianMs": 3951.92,
-          "runs": [3849.487, 3893.792, 3951.92, 4129.36, 3969.115],
-          "throughput": "3.8k files/s"
+          "medianMs": 835.251,
+          "runs": [897.995, 835.251, 834.409],
+          "throughput": "3.6k files/s"
         },
         {
           "id": "vize-native-max",
           "label": "Vize native batch results (max)",
-          "medianMs": 329.205,
-          "runs": [329.205, 326.491, 345.119, 328.883, 340.781],
-          "throughput": "45.6k files/s"
+          "medianMs": 65.028,
+          "runs": [59.568, 71.303, 65.028],
+          "throughput": "46.1k files/s"
         },
         {
           "id": "vize-native-core-max",
           "label": "Vize native batch stats-only (core max)",
-          "medianMs": 187.809,
-          "runs": [183.109, 185.322, 187.809, 193.979, 189.336],
-          "throughput": "79.9k files/s"
+          "medianMs": 35.54,
+          "runs": [34.897, 35.54, 39.299],
+          "throughput": "84.4k files/s"
         },
         {
           "id": "vize-native-sequence-1-max",
           "label": "Vize batch sequence (1→32T, measures 32T)",
-          "medianMs": 206.863,
-          "runs": [194.877, 206.863, 205.945, 212.396, 212.974],
-          "throughput": "72.5k files/s"
+          "medianMs": 37.278,
+          "runs": [37.278, 36.847, 37.976],
+          "throughput": "80.5k files/s"
         },
         {
           "id": "vize-native-sequence-max-1",
           "label": "Vize batch sequence (32T→1, measures 1T)",
-          "medianMs": 3123.118,
-          "runs": [3293.425, 3301.079, 3087.024, 3123.118, 3112.967],
-          "throughput": "4.8k files/s"
+          "medianMs": 612.523,
+          "runs": [612.523, 588.983, 613.67],
+          "throughput": "4.9k files/s"
         }
       ],
       "baselineId": "vue-compiler-sfc-1t",
       "vizeSingleId": "vize-native-1t",
       "vizeMaxId": "vize-native-max",
-      "primarySpeedup": 52.103938275542596,
+      "primarySpeedup": 54.83560927600418,
       "speedupBaselineId": "vue-compiler-sfc-1t",
       "speedupStatus": "ranked",
       "engineClassRanking": null
@@ -135,62 +148,62 @@
       "id": "large-compile",
       "label": "Large SFC compile",
       "files": 1,
-      "bytes": 691059,
+      "bytes": 231011,
       "variants": [
         {
           "id": "vue-compiler-sfc-1t",
           "label": "@vue/compiler-sfc (1T)",
-          "medianMs": 199.36,
-          "runs": [200.972, 191.181, 193.759, 200.31, 199.36],
-          "throughput": "5 files/s"
+          "medianMs": 61.376,
+          "runs": [64.493, 61.376, 56.331],
+          "throughput": "16 files/s"
         },
         {
           "id": "vue-compiler-sfc-workers",
           "label": "@vue/compiler-sfc (1 workers)",
-          "medianMs": 468.019,
-          "runs": [454.414, 474.621, 475.43, 468.019, 466.291],
-          "throughput": "2 files/s"
+          "medianMs": 203.181,
+          "runs": [189.705, 203.181, 204.253],
+          "throughput": "5 files/s"
         },
         {
           "id": "vize-native-1t",
           "label": "Vize native loop (1T)",
-          "medianMs": 66.48,
-          "runs": [74.893, 62.548, 66.48, 62.222, 75.208],
-          "throughput": "15 files/s"
+          "medianMs": 16.263,
+          "runs": [16.263, 15.058, 17.05],
+          "throughput": "61 files/s"
         },
         {
           "id": "vize-native-max",
           "label": "Vize native batch results (max)",
-          "medianMs": 64.849,
-          "runs": [66.738, 62.304, 63.275, 64.849, 67.817],
-          "throughput": "15 files/s"
+          "medianMs": 15.244,
+          "runs": [15.177, 15.902, 15.244],
+          "throughput": "66 files/s"
         },
         {
           "id": "vize-native-core-max",
           "label": "Vize native batch stats-only (core max)",
-          "medianMs": 58.845,
-          "runs": [58.605, 58.845, 56.971, 60.738, 59.057],
-          "throughput": "17 files/s"
+          "medianMs": 11.67,
+          "runs": [11.374, 12.518, 11.67],
+          "throughput": "86 files/s"
         },
         {
           "id": "vize-native-sequence-1-max",
           "label": "Vize batch sequence (1→32T, measures 32T)",
-          "medianMs": 51.978,
-          "runs": [57.538, 51.978, 51.762, 48.436, 52.583],
-          "throughput": "19 files/s"
+          "medianMs": 12.469,
+          "runs": [12.587, 11.654, 12.469],
+          "throughput": "80 files/s"
         },
         {
           "id": "vize-native-sequence-max-1",
           "label": "Vize batch sequence (32T→1, measures 1T)",
-          "medianMs": 52.226,
-          "runs": [52.226, 54.816, 56.119, 50.1, 50.081],
-          "throughput": "19 files/s"
+          "medianMs": 12.33,
+          "runs": [12.33, 12.615, 12.214],
+          "throughput": "81 files/s"
         }
       ],
       "baselineId": "vue-compiler-sfc-1t",
       "vizeSingleId": "vize-native-1t",
       "vizeMaxId": "vize-native-max",
-      "primarySpeedup": 3.074218569291739,
+      "primarySpeedup": 4.026239832065075,
       "speedupBaselineId": "vue-compiler-sfc-1t",
       "speedupStatus": "ranked",
       "engineClassRanking": null
@@ -199,28 +212,85 @@
       "id": "large-check",
       "label": "Large SFC type check",
       "files": 1,
-      "bytes": 691059,
+      "bytes": 231011,
       "variants": [
         {
           "id": "vue-tsc",
           "label": "vue-tsc",
-          "medianMs": 1753.632,
-          "runs": [1779.714, 1776.348, 1700.789, 1690.186, 1753.632],
-          "throughput": "1 files/s"
+          "medianMs": 1337.752,
+          "runs": [1348.946, 1315.192, 1337.752],
+          "throughput": "1 files/s",
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 300,
+            "diagnosticFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb",
+            "corpusBaselineFingerprint": "508e4fa9ce85b1cd8051ee934c78c5bc2a9dd3a8ac7ff4b44f3d8dcf7263a2eb"
+          }
+        },
+        {
+          "id": "verter-tsc",
+          "label": "verter-tsc",
+          "medianMs": 1580.097,
+          "runs": [1580.097, 1611.568, 1563.42],
+          "throughput": "1 files/s",
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
         },
         {
           "id": "vize-check-1t",
           "label": "Vize check (1T)",
-          "medianMs": 251.013,
-          "runs": [251.013, 257.824, 255.216, 247.958, 246.176],
-          "throughput": "4 files/s"
+          "medianMs": 186.426,
+          "runs": [186.426, 181.091, 188.789],
+          "throughput": "5 files/s",
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
         },
         {
           "id": "vize-check-max",
           "label": "Vize check (max)",
-          "medianMs": 252.521,
-          "runs": [261.716, 252.521, 263.205, 251.813, 245.554],
-          "throughput": "4 files/s"
+          "medianMs": 190.067,
+          "runs": [190.067, 190.793, 183.272],
+          "throughput": "5 files/s",
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        }
+      ],
+      "rejectedVariants": [
+        {
+          "id": "golar-typecheck",
+          "label": "Golar typecheck",
+          "phase": "preflight",
+          "reason": "missed the corpus-scale plant or changed baseline diagnostics: {\"plants\":[[\"__CheckGatePlant.vue\",\"error\",\"2\",\"7\",\"TS2322\",\"Type 'string' is not assignable to type 'number'.\"],[\"__CheckGatePlant.vue\",\"error\",\"7\",\"26\",\"TS2322\",\"Type 'string' is not assignable to type 'Booleanish | undefined'.\"]],\"added\":[[\"LargeDashboard.vue\",\"error\",\"1019\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1111\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1157\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]],\"removed\":[[\"LargeDashboard.vue\",\"error\",\"1019\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1111\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1157\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]]}"
+        },
+        {
+          "id": "golar-default",
+          "label": "Golar (lint+check)",
+          "phase": "preflight",
+          "reason": "missed the corpus-scale plant or changed baseline diagnostics: {\"plants\":[[\"__CheckGatePlant.vue\",\"error\",\"2\",\"7\",\"TS2322\",\"Type 'string' is not assignable to type 'number'.\"],[\"__CheckGatePlant.vue\",\"error\",\"7\",\"26\",\"TS2322\",\"Type 'string' is not assignable to type 'Booleanish | undefined'.\"]],\"added\":[[\"LargeDashboard.vue\",\"error\",\"1088\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1111\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1203\",\"89\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]],\"removed\":[[\"LargeDashboard.vue\",\"error\",\"1088\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1111\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"LargeDashboard.vue\",\"error\",\"1203\",\"88\",\"TS2353\",\"Object literal may only specify known properties, and ''data-index'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]]}"
         }
       ],
       "baselineId": "vue-tsc",
@@ -234,9 +304,9 @@
         "vize-check-1t": "tsgo-native",
         "vize-check-max": "tsgo-native"
       },
-      "primarySpeedup": null,
-      "speedupBaselineId": null,
-      "speedupStatus": "cross-engine",
+      "primarySpeedup": 8.313368443759305,
+      "speedupBaselineId": "verter-tsc",
+      "speedupStatus": "in-class",
       "engineClassRanking": [
         {
           "engineClass": "typescript-js",
@@ -245,7 +315,7 @@
             {
               "id": "vue-tsc",
               "label": "vue-tsc",
-              "medianMs": 1753.632,
+              "medianMs": 1337.752,
               "relativeToFastest": 1
             }
           ]
@@ -257,14 +327,20 @@
             {
               "id": "vize-check-1t",
               "label": "Vize check (1T)",
-              "medianMs": 251.013,
+              "medianMs": 186.426,
               "relativeToFastest": 1
             },
             {
               "id": "vize-check-max",
               "label": "Vize check (max)",
-              "medianMs": 252.521,
-              "relativeToFastest": 1.006
+              "medianMs": 190.067,
+              "relativeToFastest": 1.02
+            },
+            {
+              "id": "verter-tsc",
+              "label": "verter-tsc",
+              "medianMs": 1580.097,
+              "relativeToFastest": 8.476
             }
           ]
         }
@@ -273,42 +349,42 @@
     {
       "id": "lint",
       "label": "Lint",
-      "files": 15000,
-      "bytes": 61516500,
+      "files": 3000,
+      "bytes": 12302100,
       "variants": [
         {
           "id": "eslint-plugin-vue-1t",
           "label": "eslint-plugin-vue (1T)",
-          "medianMs": 56196.188,
-          "runs": [56779.947, 57537.83, 55598.756, 56196.188, 54773.778],
-          "throughput": "267 files/s"
+          "medianMs": 20752.434,
+          "runs": [20609.852, 20830.969, 20752.434],
+          "throughput": "145 files/s"
         },
         {
           "id": "eslint-plugin-vue-workers",
           "label": "eslint-plugin-vue (32 workers)",
-          "medianMs": 13500.922,
-          "runs": [13845.791, 13554.506, 13419.852, 13500.922, 13483.468],
-          "throughput": "1.1k files/s"
+          "medianMs": 6984.314,
+          "runs": [6984.314, 6989.249, 6969.495],
+          "throughput": "430 files/s"
         },
         {
           "id": "vize-lint-1t",
           "label": "Vize lint (1T)",
-          "medianMs": 1956.378,
-          "runs": [1991.639, 1956.378, 1889.425, 1892.85, 1991.248],
-          "throughput": "7.7k files/s"
+          "medianMs": 432.254,
+          "runs": [431.379, 432.254, 447.485],
+          "throughput": "6.9k files/s"
         },
         {
           "id": "vize-lint-max",
           "label": "Vize lint (max)",
-          "medianMs": 324.842,
-          "runs": [320.803, 321.233, 341.63, 330.518, 324.842],
-          "throughput": "46.2k files/s"
+          "medianMs": 114.045,
+          "runs": [114.045, 108.49, 120.315],
+          "throughput": "26.3k files/s"
         }
       ],
       "baselineId": "eslint-plugin-vue-1t",
       "vizeSingleId": "vize-lint-1t",
       "vizeMaxId": "vize-lint-max",
-      "primarySpeedup": 172.99545009573887,
+      "primarySpeedup": 181.96706563198737,
       "speedupBaselineId": "eslint-plugin-vue-1t",
       "speedupStatus": "ranked",
       "engineClassRanking": null
@@ -316,35 +392,35 @@
     {
       "id": "fmt",
       "label": "Format",
-      "files": 15000,
-      "bytes": 61516500,
+      "files": 3000,
+      "bytes": 12302100,
       "variants": [
         {
           "id": "prettier-cli",
           "label": "Prettier CLI",
-          "medianMs": 143128.339,
-          "runs": [140886.925, 143128.339, 142426.069, 144611.806, 145967.312],
-          "throughput": "105 files/s"
+          "medianMs": 29723.111,
+          "runs": [28949.562, 29745.493, 29723.111],
+          "throughput": "101 files/s"
         },
         {
           "id": "vize-fmt-1t",
           "label": "Vize fmt (1T)",
-          "medianMs": 6626.14,
-          "runs": [5695.226, 6626.14, 6487.95, 6719.387, 6799.847],
-          "throughput": "2.3k files/s"
+          "medianMs": 1072.253,
+          "runs": [1059.388, 1104.777, 1072.253],
+          "throughput": "2.8k files/s"
         },
         {
           "id": "vize-fmt-max",
           "label": "Vize fmt (max)",
-          "medianMs": 2826.331,
-          "runs": [7826.395, 2826.331, 2749.018, 2559.819, 3042.73],
-          "throughput": "5.3k files/s"
+          "medianMs": 351.408,
+          "runs": [351.408, 342.484, 358.852],
+          "throughput": "8.5k files/s"
         }
       ],
       "baselineId": "prettier-cli",
       "vizeSingleId": "vize-fmt-1t",
       "vizeMaxId": "vize-fmt-max",
-      "primarySpeedup": 50.64103921302919,
+      "primarySpeedup": 84.58290932477348,
       "speedupBaselineId": "prettier-cli",
       "speedupStatus": "ranked",
       "engineClassRanking": null
@@ -358,23 +434,80 @@
         {
           "id": "vue-tsc",
           "label": "vue-tsc",
-          "medianMs": 5570.171,
-          "runs": [5626.503, 5476.288, 5565.582, 5801.934, 5570.171],
-          "throughput": "90 files/s"
+          "medianMs": 6754.668,
+          "runs": [6435.819, 6754.668, 6772.635],
+          "throughput": "74 files/s",
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 2,
+            "diagnosticCount": 450,
+            "diagnosticFingerprint": "ca130bc55a0235c3dada35ca3a7aca8558f63858d7d03ec3ec586f4828773dd5",
+            "corpusBaselineFingerprint": "ca130bc55a0235c3dada35ca3a7aca8558f63858d7d03ec3ec586f4828773dd5"
+          }
+        },
+        {
+          "id": "verter-tsc",
+          "label": "verter-tsc",
+          "medianMs": 2079.699,
+          "runs": [2079.699, 2075.939, 2102.418],
+          "throughput": "240 files/s",
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 1,
+            "diagnosticCount": 4250,
+            "diagnosticFingerprint": "7f6641e728fa345abc3ac7eebb7f77a5e694c0cdaf81bf951c8829c0b2c32cfe",
+            "corpusBaselineFingerprint": "0c1091004ca22ed62e51246af4ac06e343b5900ea1b203638fef0bc7c160dab9"
+          }
         },
         {
           "id": "vize-check-1t",
           "label": "Vize check (1T)",
-          "medianMs": 593.577,
-          "runs": [595.196, 576.692, 593.749, 577.619, 593.577],
-          "throughput": "842 files/s"
+          "medianMs": 2025.704,
+          "runs": [2025.704, 1996.936, 2046.702],
+          "throughput": "247 files/s",
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
         },
         {
           "id": "vize-check-max",
           "label": "Vize check (max)",
-          "medianMs": 498.074,
-          "runs": [496.036, 498.074, 501.954, 512.524, 479.49],
-          "throughput": "1.0k files/s"
+          "medianMs": 1374.02,
+          "runs": [1384.116, 1332.651, 1374.02],
+          "throughput": "364 files/s",
+          "correctness": {
+            "minimalPlants": ["script", "templateProp", "templateEvent", "componentProp"],
+            "corpusPlant": true,
+            "strictTemplates": true,
+            "status": 0,
+            "diagnosticCount": 0,
+            "diagnosticFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87",
+            "corpusBaselineFingerprint": "6f6df0f8037998d14783ed2bdf8e9cf61e2837b6b595f5f53c8933069ef0dc87"
+          }
+        }
+      ],
+      "rejectedVariants": [
+        {
+          "id": "golar-typecheck",
+          "label": "Golar typecheck",
+          "phase": "preflight",
+          "reason": "missed the corpus-scale plant or changed baseline diagnostics: {\"plants\":[[\"__CheckGatePlant.vue\",\"error\",\"2\",\"7\",\"TS2322\",\"Type 'string' is not assignable to type 'number'.\"],[\"__CheckGatePlant.vue\",\"error\",\"7\",\"26\",\"TS2322\",\"Type 'string' is not assignable to type 'Booleanish | undefined'.\"]],\"added\":[[\"Component0007.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0017.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0027.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]],\"removed\":[[\"Component0007.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0017.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0027.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]]}"
+        },
+        {
+          "id": "golar-default",
+          "label": "Golar (lint+check)",
+          "phase": "preflight",
+          "reason": "missed the corpus-scale plant or changed baseline diagnostics: {\"plants\":[[\"__CheckGatePlant.vue\",\"error\",\"2\",\"7\",\"TS2322\",\"Type 'string' is not assignable to type 'number'.\"],[\"__CheckGatePlant.vue\",\"error\",\"7\",\"26\",\"TS2322\",\"Type 'string' is not assignable to type 'Booleanish | undefined'.\"]],\"added\":[[\"Component0037.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0057.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0197.vue\",\"error\",\"8\",\"73\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]],\"removed\":[[\"Component0037.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0057.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"],[\"Component0197.vue\",\"error\",\"8\",\"72\",\"TS2353\",\"Object literal may only specify known properties, and ''data-kind'' does not exist in type 'HTMLAttributes & ReservedProps'.\"]]}"
         }
       ],
       "baselineId": "vue-tsc",
@@ -388,9 +521,9 @@
         "vize-check-1t": "tsgo-native",
         "vize-check-max": "tsgo-native"
       },
-      "primarySpeedup": null,
-      "speedupBaselineId": null,
-      "speedupStatus": "cross-engine",
+      "primarySpeedup": 1.5135871384696002,
+      "speedupBaselineId": "verter-tsc",
+      "speedupStatus": "in-class",
       "engineClassRanking": [
         {
           "engineClass": "typescript-js",
@@ -399,7 +532,7 @@
             {
               "id": "vue-tsc",
               "label": "vue-tsc",
-              "medianMs": 5570.171,
+              "medianMs": 6754.668,
               "relativeToFastest": 1
             }
           ]
@@ -411,14 +544,20 @@
             {
               "id": "vize-check-max",
               "label": "Vize check (max)",
-              "medianMs": 498.074,
+              "medianMs": 1374.02,
               "relativeToFastest": 1
             },
             {
               "id": "vize-check-1t",
               "label": "Vize check (1T)",
-              "medianMs": 593.577,
-              "relativeToFastest": 1.192
+              "medianMs": 2025.704,
+              "relativeToFastest": 1.474
+            },
+            {
+              "id": "verter-tsc",
+              "label": "verter-tsc",
+              "medianMs": 2079.699,
+              "relativeToFastest": 1.514
             }
           ]
         }
@@ -433,22 +572,22 @@
         {
           "id": "vite-plugin-vue",
           "label": "@vitejs/plugin-vue",
-          "medianMs": 1711.721,
-          "runs": [1733.209, 1651.916, 1630.62, 1711.721, 2017.761],
-          "throughput": "584 files/s"
+          "medianMs": 1656.557,
+          "runs": [1656.557, 1600.439, 1730.685],
+          "throughput": "604 files/s"
         },
         {
           "id": "vize-vite-plugin",
           "label": "@vizejs/vite-plugin",
-          "medianMs": 631.67,
-          "runs": [782.45, 631.67, 635.394, 611.982, 616.324],
-          "throughput": "1.6k files/s"
+          "medianMs": 889.18,
+          "runs": [889.18, 881.988, 947.765],
+          "throughput": "1.1k files/s"
         }
       ],
       "baselineId": "vite-plugin-vue",
       "vizeSingleId": null,
       "vizeMaxId": "vize-vite-plugin",
-      "primarySpeedup": 2.7098342488957843,
+      "primarySpeedup": 1.8630164871004746,
       "speedupBaselineId": "vite-plugin-vue",
       "speedupStatus": "ranked",
       "engineClassRanking": null
@@ -456,30 +595,598 @@
     {
       "id": "nuxt",
       "label": "Nuxt SPA build (end-to-end)",
-      "files": 500,
-      "bytes": 2050350,
+      "files": 250,
+      "bytes": 1025175,
       "variants": [
         {
           "id": "nuxt-default",
           "label": "Nuxt default compiler",
-          "medianMs": 6825.073,
-          "runs": [6825.073, 6617.655, 6780.768, 6979.657, 7008.791],
-          "throughput": "73 files/s"
+          "medianMs": 3067.515,
+          "runs": [3083.42, 3067.515, 3057.014],
+          "throughput": "81 files/s"
         },
         {
           "id": "vize-nuxt",
           "label": "@vizejs/nuxt",
-          "medianMs": 6588.984,
-          "runs": [6588.984, 6417.209, 6293.842, 6603.32, 6706.736],
-          "throughput": "76 files/s"
+          "medianMs": 3213.326,
+          "runs": [3259.084, 3213.326, 3176.535],
+          "throughput": "78 files/s"
         }
       ],
       "baselineId": "nuxt-default",
       "vizeSingleId": null,
       "vizeMaxId": "vize-nuxt",
-      "primarySpeedup": 1.0358308655780617,
+      "primarySpeedup": 0.9546230292226807,
       "speedupBaselineId": "nuxt-default",
       "speedupStatus": "ranked",
+      "engineClassRanking": null
+    },
+    {
+      "id": "musea",
+      "label": "Musea plugin hooks (art gallery build)",
+      "files": 240,
+      "bytes": 389840,
+      "variants": [
+        {
+          "id": "musea-options",
+          "label": "options: preserve configured Rollup inputs",
+          "medianMs": 0.002,
+          "msPerUnit": 0.002,
+          "runs": [0.009, 0.002, 0.001],
+          "units": 1,
+          "unitLabel": "build hooks",
+          "digest": "836b4ad1c5a4e4607258e6f145ee3419b6837fed4d9a6d015f0947a4bae8fa13",
+          "throughput": "500.0k build hooks/s"
+        },
+        {
+          "id": "musea-build-start",
+          "label": "buildStart: scan + parse art files",
+          "medianMs": 16.52,
+          "msPerUnit": 0.068833,
+          "runs": [16.817, 16.52, 15.88],
+          "units": 240,
+          "unitLabel": "art files",
+          "digest": "e2176d3d38a433f7efb0b83438998a9b5886c6df3a84e46ffcd4e3eb4e0738f2",
+          "throughput": "14.5k art files/s"
+        },
+        {
+          "id": "musea-load",
+          "label": "load: generate art modules",
+          "medianMs": 9.163,
+          "msPerUnit": 0.038179,
+          "runs": [11.451, 9.163, 8.979],
+          "units": 240,
+          "unitLabel": "art files",
+          "digest": "e2176d3d38a433f7efb0b83438998a9b5886c6df3a84e46ffcd4e3eb4e0738f2",
+          "throughput": "26.2k art files/s"
+        },
+        {
+          "id": "musea-transform",
+          "label": "transform: TS to JS on generated modules",
+          "medianMs": 4.048,
+          "msPerUnit": 0.016867,
+          "runs": [4.048, 4.459, 3.772],
+          "units": 240,
+          "unitLabel": "art files",
+          "digest": "d0161f3f0e9c988f6595a3006034f024c2ebe7d4a7e9596ac94009dcd7b912ff",
+          "throughput": "59.3k art files/s"
+        },
+        {
+          "id": "musea-nuxt-virtual",
+          "label": "musea-nuxt: resolve Nuxt mock specifiers",
+          "medianMs": 0.097,
+          "msPerUnit": 0.000045,
+          "runs": [0.097, 0.102, 0.046],
+          "units": 2160,
+          "unitLabel": "resolutions",
+          "digest": "8b501b1fd2c7c18017f188fd2d13724ee5f78c3ae3e084a13952b14bca51a5e2",
+          "throughput": "22.3M resolutions/s"
+        },
+        {
+          "id": "musea-plugin-total",
+          "label": "whole plugin: config + options + buildStart + load + transform",
+          "medianMs": 30.852,
+          "msPerUnit": 0.12855,
+          "runs": [33.577, 29.868, 30.852],
+          "units": 240,
+          "unitLabel": "art files",
+          "digest": "ad92480f10967d92865f32341c5a23a57752b5367a0b2d6f1c62ae3a1f080327",
+          "throughput": "7.8k art files/s"
+        }
+      ],
+      "baselineId": null,
+      "vizeSingleId": null,
+      "vizeMaxId": "musea-plugin-total",
+      "variantCount": 720,
+      "artifacts": {
+        "museaNuxt": {
+          "sha256": "a7e42f758b20a227391dab8ca738e18640db919ff358990e587dc0cc97e92313",
+          "pinned": true
+        },
+        "museaPlugin": {
+          "sha256": "c9917c45f16cd8d216967aea6c753ea91c07efc9a891d8a825e65588cc4f9215",
+          "pinned": true
+        },
+        "museaPlugin:a11y-Ci9EEv6F.mjs": {
+          "sha256": "7b6fd0ef06cf0f13e537420f0957445f39ee1d379afe2412c2b46d60efddb3e4",
+          "pinned": true
+        },
+        "museaPlugin:a11y/index.mjs": {
+          "sha256": "9acd3d8677d4ceb27fc68a8319d22ddea6619d73c9457cccd4bdd43dc738c0ba",
+          "pinned": true
+        },
+        "museaPlugin:autogen-B-N0cJbZ.mjs": {
+          "sha256": "ac456bc03bc8bd908060dddb30baf6580137c4747cb81fabb19d0ec25a7fc19c",
+          "pinned": true
+        },
+        "museaPlugin:autogen/index.mjs": {
+          "sha256": "70f3926b7d6d268cfab092953c287160754061e66d92a271105fbf390688aabd",
+          "pinned": true
+        },
+        "museaPlugin:cli/index.mjs": {
+          "sha256": "5e509c2c01e6b818631f1efc8bdf4da4051974c5545adbf2d8ac8178b8d56358",
+          "pinned": true
+        },
+        "museaPlugin:gallery-DnAsudTG.mjs": {
+          "sha256": "771f8db8b42c1289910a7445d7b776f0f689f60203a556e25db8ce586432096c",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/MonacoEditor-B5OyIH1m.js": {
+          "sha256": "956a64735c43912bf8f88d06125a6204a7d7f625194efeee3b9f49c23c7a8363",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/MonacoEditor-Db3Q217Z.css": {
+          "sha256": "3281191a529588c5b4a52c602ca16c2103ea494d6018574b877cd4b09cb64dd5",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/abap-08VXUWAP.js": {
+          "sha256": "bffb36886b330040548e09a7c68fa82f1d414134008ecc3188dcd9db87cd677a",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/apex-BWPQTe0t.js": {
+          "sha256": "794bb6262709d298e6318113816555bb314425ecb111f89ebe58cbe37e8cb774",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/azcli-Bc_sGQ0U.js": {
+          "sha256": "2c3464d88876c09b13064125e728844a66cb31e3021ae346bb9683671699cd10",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/bat-i0X4ZdIN.js": {
+          "sha256": "1c6f14208c883c792f2cf7d81efc333f0987c17062845ae5fc0377e057d138fe",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/bicep-B5-_aFwp.js": {
+          "sha256": "2ea49cdc88d9d11eb71a63206916c8c59188f4533e204ef0fd7005cec109807d",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/cameligo-DMUM7wLl.js": {
+          "sha256": "f8cf8a6a9453b4ac6482c32d39360ea484400aa198c783aeda4cfcf58ced7350",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/clojure-Cm7r79vr.js": {
+          "sha256": "bc5c1f46b0ce8785c78dc51206bb6cabb2c49e4f60380207b522fd74c12f2b45",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/codicon-Brq4_Ui5.ttf": {
+          "sha256": "cc2472e239e17062e7760af87f8f5997720cc0d94aa014a615c418baaf6333a8",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/coffee-Ba7i2nA0.js": {
+          "sha256": "e5690905b616659b886795524f4349b37e19af5ae72519b06384dc4fb63409a1",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/cpp-C7h46wYY.js": {
+          "sha256": "0f16cff9f7780af91337017f6be26bd4871a5005e6c04adb6d01047e246437f5",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/csharp-BKxtCVv1.js": {
+          "sha256": "b5c2b4c55aff810ce2372f02543c3e90c404c1e8487bd343df88c5d24b7c737e",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/csp-bTuwJoIa.js": {
+          "sha256": "a54603c0e0cfb172abe2c86bc617d1834fd6458dd32d3f1fe68997ee760fc3b6",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/css-DIMkf-bt.js": {
+          "sha256": "361b35ed3c739617f90ee999b6bcfe6e7047c1d30c52df58401c50486f5fd8e4",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/css.worker-BjrR-8m8.js": {
+          "sha256": "cb0ca775c6f05da4106150dacfd39536f25f75105a8c7590c04834af1508c398",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/cssMode-BWWzBUk5.js": {
+          "sha256": "13564b34cb198d857ca87646e4116cf12e6fece845ac4649faaeb92658703dbb",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/cypher-CVaqCwHa.js": {
+          "sha256": "0181ad561c8c1c97516cec2918b11f00f0321c07705dcdc9d03fe68cde282d58",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/dart-onAF5SnQ.js": {
+          "sha256": "41649fe3b34c16edb251df57152184ba2b03adf729fa0bec731f56ce7b8c636c",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/dockerfile-DZFCIeNp.js": {
+          "sha256": "84814a9784122bacec9f8f423f729a7262a98a8bf05a74d995e7a9aa5e55007a",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/ecl-D05T4iGw.js": {
+          "sha256": "f1dcbc07ef5c96168389bccfb33cd78f1edcf598f4b76a54c35f6b8083a50243",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/editor-8AbsNvUX.css": {
+          "sha256": "b5e048bbfd096ae7fc3f1e13918e62ca9942fbdc4ddc62fb3b4b074fbcc200ee",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/editor.api-C7kRTlDS.js": {
+          "sha256": "8a6bdd6a1ee9f20593b1ef5e98d901b1ba11a1b013bc4526da8178a021c20ac1",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/editor.worker-s_hwqnK9.js": {
+          "sha256": "c957dae83bacf62eef6d71b2d28f4994598cbcfad9e9edb770880c5bc15f3c1f",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/elixir-6RTg0lbw.js": {
+          "sha256": "fc0336d16849bf07801e67d229927011a21e2e0ef5b7c8e4494260455cf93f4c",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/flow9-C5_-GSwl.js": {
+          "sha256": "9146223a874645367aa89e7189e958f0abb9c815e5b0439bf64c5263815a8dbd",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/freemarker2-D5qYoWcn.js": {
+          "sha256": "f6d063166fb108a9e8d2dd9c786102c0b1c63e7d9121c745130634424b75e3a6",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/fsharp-C8Ef5oNN.js": {
+          "sha256": "5137a827baefcb111c2ff8747bbe07924c9f9ea8f3d4a7a07a7b6e7c25f69e45",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/go-C-y9NEjX.js": {
+          "sha256": "ca236e02f3a5f8225d83597bb65b036ea8caae5f79549ea37213bb2979bcb085",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/graphql-fmXr3nnJ.js": {
+          "sha256": "a66e3b8eacf8ad4017403825f7cc7978fbefc5fd1f80ea6c044f8059848c5186",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/handlebars-BPh2NhGB.js": {
+          "sha256": "c517a1dfcbb9116cb021f72c4d07557a52305659b6e7cd7186f296991cfa388b",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/hcl-CpzslTdj.js": {
+          "sha256": "15310bb6f51d2670886bac778d8c23351697bd2a8393bff1e1295361e84c99d2",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/html-VzRJrOtd.js": {
+          "sha256": "b51f358f953f251e283fb0b5514cd534403764d0d8a55c1503130e2a3c65bc09",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/html.worker-BFmRaMni.js": {
+          "sha256": "0a844fb62d6f4ce9779e240603d229559ebf136e70c9ecee83c7e0b9e79c4289",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/htmlMode-BbOT-uyH.js": {
+          "sha256": "b00d3624f7d5b34926613feb4e67a78664dd19f83732443645451856207adf02",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/index-BD1UzCKA.css": {
+          "sha256": "633cc61e0fead283ea62d78027b35909d9163f79f2ac360c1c8862f8fb65c8a8",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/index-qxYSmh_-.js": {
+          "sha256": "737ab3d1d103ba2c7485c6e25cf3698e26f70204b6b02cabe2a072d4b85ba985",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/ini-sBoK_t0W.js": {
+          "sha256": "e9017a169ebca71c2edba3ee62e01ae57969c0330ca295c1f201e3e17829a54e",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/java-BEtHBSE6.js": {
+          "sha256": "77d3a91eeaf54e004f8ec321e6208afecebe2435232146b41f68135373800953",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/javascript-DZuuvDeD.js": {
+          "sha256": "f14466fd5b93ee16e29556b32c177a8ae5c90cb55ef804d3466398960f03f3ec",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/json.worker-CD0GJfW6.js": {
+          "sha256": "d678cbe7ddcae01f3bd7dbc8dee782438070963a2e5db91d5c56114bfdf987e4",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/jsonMode-SmA2ZClY.js": {
+          "sha256": "5b3623a587a5d78983a95af10f2381673134938d322dbe5176c1d2d4cf63bb79",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/julia-Bri6UV-V.js": {
+          "sha256": "1a01df2b09226f1f376180126ae2717b2f4239a7829c30b4f853bd0c8e61d70c",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/kotlin-BOotOW0E.js": {
+          "sha256": "cbd90a8ca4d40a492021fd1766b9f4696d0cdbcc9969a6efac0acd8cc862f643",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/less-B9JPFI3C.js": {
+          "sha256": "44afa50e036a60b51d9e8946705b63e56e4d85d8f6ae10108de80b312b642dbc",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/lexon-CfSJPG6W.js": {
+          "sha256": "df071e61a9754e5ff7a082a5bab4f6f5ee3a082c251f40d85d1c47ca48ba6807",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/liquid-BVS1iXA-.js": {
+          "sha256": "bba2aada1313d3683a9c1fae950def1b362aa910de596f20c56bf8af16d67565",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/lspLanguageFeatures-Cjxz_0Ho.js": {
+          "sha256": "4d354f6ba30e3e132cbd679a6122f2e376ca51f13c48e613ac3f822203f4cac7",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/lua-CsQS60Ue.js": {
+          "sha256": "4faf3305fbfc61b59039430ea0a0c7952e992d741bbd4a15cc8aa37dd29a37cd",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/m3-D-oSqn_W.js": {
+          "sha256": "c22429b1cf9e8ee53e35dfcdd44124bbbd06bc5c42291d9e9f1ff814c68b1115",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/markdown-Cimd5fb3.js": {
+          "sha256": "621e51234c4fea96a2a3a6e0dd59151f1c0216d7cb4a963361ee29aa302c7977",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/mdx-DD28jO-L.js": {
+          "sha256": "52721cba9fe38764fdfd47e742b5099ce93c25e987cd5f6e9e79f0fbef9ea1a3",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/mips-CIPQ_RoX.js": {
+          "sha256": "31ff67847e1488dbf870ec71f466f3644c1c6a700bc9e5f59ea6727835709fef",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/msdax-DauUninz.js": {
+          "sha256": "c7e11cd45bd941f372201b9f1b7685fa76e18ed59609be2dacd125db0ee63915",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/mysql-SOo6toE5.js": {
+          "sha256": "b34d7be6f8a903da0877bc96c65faee230d0a7a7000f52e5cc8950f789275331",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/objective-c-FvmIjYaQ.js": {
+          "sha256": "fb4eab2690dc37ba7b619e074368450ed02be3c30b4fec782134e12d1474a573",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/pascal-DrH0SRf2.js": {
+          "sha256": "2f334989ddf5ad3a0cd557d71162ebf9eeadade1526083d1b35797f1069bf3bc",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/pascaligo-D-ptJ9y-.js": {
+          "sha256": "224cfd072a59e3ff45f37adcec85b544858b47e90b0617f54fe3e6ab4de832ad",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/perl-oz_6vUea.js": {
+          "sha256": "c580f25e97de8b3bb096498919558aaa55e0fd2764d408cb73c66e3702cc2240",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/pgsql-DTj74zXo.js": {
+          "sha256": "da731f252a2c8651c92bb10b22b77a69d67236aef1ad58bed8119212e4aa6a07",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/php-nr791fC2.js": {
+          "sha256": "a592c0b5ded4d8136c1c45c1fe91e3d1a9aba10fba9cd690dedbdd575c960c97",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/pla-CopQ2nXW.js": {
+          "sha256": "17aa9ef936a2a049be2b7d64aea32486f961c1edb7cf1c5c270f2612f2fef7ef",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/postiats-43DmfD33.js": {
+          "sha256": "de5f427d26790893b215cba9cf83c78dd4401d1198d6fe6c467691b123960580",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/powerquery-D3hlyOfw.js": {
+          "sha256": "87bfb26727836297fc573ec8fa8f8074e5cbebbdc40e844d7a56306fea006273",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/powershell-DmHpPYUd.js": {
+          "sha256": "7d2fa4e26c98b5b27b23e9d3e00384db158153a042e32053b0ef2eb512369180",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/protobuf-C531GsRP.js": {
+          "sha256": "084d9064c607e6db8ae6a69c261142379120ab495d0020a7f19332eddac203f0",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/pug-Z5eAx3Zn.js": {
+          "sha256": "dd6fd0e69c38d8f4a1bd74de666762779629cd2dbd644288b46dcd6cc6646486",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/python-BiGCUOvL.js": {
+          "sha256": "9043d5e20b04a03c23301fe4a5b801a20ff3dc8ac24156dd87bb0ce3a5ea7417",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/qsharp-DkqhCAOL.js": {
+          "sha256": "ef671378a8ae53aa91c7323d8f82956feaf6cb9bbb623f4ef83a69a8932bb30f",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/r-BwWrilGY.js": {
+          "sha256": "923bf047ed7decb6ba5ab3df467b6f739552e06715b3b49550872ae5bae00e1e",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/razor-BdNIBW4a.js": {
+          "sha256": "751c152170857135c74da5712772751f7183fc61dbfb1ef320f054f0201027aa",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/redis-ClamHrr6.js": {
+          "sha256": "3fa2881b96c9456be6c8fcc6d7840ee516499668f8f69ce7fa9e210ea4854393",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/redshift-DT7zqm-g.js": {
+          "sha256": "3e62d2f263de782216bbe34bc3548c53b9d9a7de16bd6edaa8a006ed36c9bf77",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/register-BQ5qO17Y.js": {
+          "sha256": "876365820ae2b96ad195002bbca0e05836a70a875cf1ee39cb391709afae9d9a",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/restructuredtext-BYgofb2h.js": {
+          "sha256": "52688aefe9a0825bd762aaceb78342771e2828d3681e2963d577e6564470ee60",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/ruby-DezsRK8O.js": {
+          "sha256": "721bbb944308c8e3388ef74930f0b5e192b98720f1889f4b324a033ef094a130",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/rust-DdL9SqIa.js": {
+          "sha256": "306a2b66455042750a665f7329a1c5feb4a33b408dec0e54802755dae2963b87",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/sb-CcwsVR0C.js": {
+          "sha256": "c4079c95ca545fc031101180dbc5e529e188c7faa1881bbf18bf8701b2d2eb67",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/scala-DHpiXF5c.js": {
+          "sha256": "c82c096cd169dd2e720592c7723690c3c74a254fa64817cf00e968dd5c98314a",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/scheme-BeGwcela.js": {
+          "sha256": "cfc22daf2ad0cd716773a3ca1f5a66a11e07ba918c860aa329c1e940d870c4ae",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/scss-gp-XZpBa.js": {
+          "sha256": "7110a8b2dc55041f461998cf79b16e2f25d9793b07155446cbfc97b45f8b8cfd",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/shell-CC2rA5mh.js": {
+          "sha256": "9380df24541bab1a9ab0999d08c542e6d63905cfd8116a61579e6896cfedba3c",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/solidity-BEEn4gHE.js": {
+          "sha256": "6a06945b7a04d32e929fc5f86cd1097fc29dfa4fcee24a330b4c0e73ba43ddf5",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/sophia-CRfGWb83.js": {
+          "sha256": "5f597679cef7e39dcc86886aeaba4dc7aa6a1ecb8abedde2cade18568a70c631",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/sparql-D_Lu-MrJ.js": {
+          "sha256": "dc978506d1a47be041882cd4e6733cdc38b0bb579cd48fbfedd44f10ad6cd84f",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/sql-NEE52Syq.js": {
+          "sha256": "fa4fe9ccff8882e93028a9fa6961b1a485b8eb480880fa480fdf4057b0de7cd0",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/st-DbInun42.js": {
+          "sha256": "e2eaa622ad805796cece9e9832b5bb9ca398ade0d0371b693633990778ce5ffe",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/swift-Bxkupp3x.js": {
+          "sha256": "3c0a146a88fdc340b543cb4e7c1b0379fcad231cda24b6315e8f1d830584e0b4",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/systemverilog-Bz4Y3fRF.js": {
+          "sha256": "37c0497660cf7404b76122dff7e73a5a3a5e1e20bc01488f142d1bf37411bbce",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/tcl-DISqw1ZD.js": {
+          "sha256": "b460f0ae3471b62c331c14155f86981cfc76b6f9f3c826ec937328b9137c9c62",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/toggleHighContrast-B39EEDqx.js": {
+          "sha256": "90c896394ca07d7cbb8b9c6dace33af6a94be1d3f10070b050095af97355310b",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/toggleHighContrast-CFGa3V3O.css": {
+          "sha256": "69d007659e83e5e6ddc2931432630afc8ee7ff5c92aaeb29cccc59992e37af93",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/ts.worker-BFy34-VB.js": {
+          "sha256": "10abf27091c1bc1157b063f5a2b1346663d51f2e984af92328d4cb3690937660",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/tsMode-d3dEcYGg.js": {
+          "sha256": "bd5ade52b9a1e5d6f50110343f5b86b68deda98e05f5cc19dfecd091a7e1d936",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/twig-De2hgUGE.js": {
+          "sha256": "ed42be999634b7600e1b6ba924576151f93f84de2343134edfbc56fe95ec6119",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/typescript-B51Kbxgt.js": {
+          "sha256": "2663cc40ba193a0ddaf67a6353347734aed2d0ccef663321be876d2f97cbf617",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/typespec-B8J7ngcE.js": {
+          "sha256": "e128961ad6029fe9fb0c0168430de115b5e95ce1335085603eb1673317832f40",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/vb-DV3o63ZY.js": {
+          "sha256": "83a1714a1a12ba92d31b12ab18752ddf5a4ee85a02ad8f67a4c310a674aab6c3",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/vs-BBmQVzdb.js": {
+          "sha256": "ae49b735c30bf40a24a57364fd5fc133117787eecbe0af6d89ab4ddb1ac6e419",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/wgsl-DpFanUEy.js": {
+          "sha256": "335b9279c9f8966b751b7990c9309dc53e267c70b8837023240c3b72e530020e",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/workers-DBTa0nL3.js": {
+          "sha256": "1b5f997f2214ddeed307514cab7e598e5712142ba64cb689c6ba5e3a6f03a639",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/xml-DeDP833m.js": {
+          "sha256": "6c08255116012fa74a10d5f9945cc58c058c484eb97c9b249f79f736a13d829f",
+          "pinned": true
+        },
+        "museaPlugin:gallery/assets/yaml-Dcbt7d1o.js": {
+          "sha256": "d99e4735faf006d434396a1e478f03e9a05f83f3a894017e88545b64747513f7",
+          "pinned": true
+        },
+        "museaPlugin:gallery/index.html": {
+          "sha256": "cf9de1440961d9104c8a799cd6798d025041d48d87c5b48c5a772f278add7f7d",
+          "pinned": true
+        },
+        "museaPlugin:options-CGA4BetG.mjs": {
+          "sha256": "9c0c07ab2a1a32b097db81cfb5242dff8efb9c1fd7c2bb8ce99f3293496c30ca",
+          "pinned": true
+        },
+        "museaPlugin:template-B_y7_OsF.mjs": {
+          "sha256": "4c71d90f3fa8e4f7098f9b79f66e4de13cddf2eccbefd86b994907f08da0e6e2",
+          "pinned": true
+        },
+        "museaPlugin:vrt-UxzWFygI.mjs": {
+          "sha256": "eab5301bb66ae427dcabbab9bfc975529a47ccfbeabd79d7d745292bda6663d9",
+          "pinned": true
+        },
+        "museaPlugin:vrt.mjs": {
+          "sha256": "dd0c30568dcb78b9089d91cf290c546043d069efeffe75064c344f6f39c63fb5",
+          "pinned": true
+        },
+        "native": {
+          "sha256": "cf96bebfe5aa04cd760602eb4ea98c952d2e0efde7bdef9993523c91504d9921",
+          "pinned": true
+        },
+        "nativeLoader:index.js": {
+          "sha256": "40692a65032911af09b08c161f7d8c5b7572405b251a7c3831f7a0df9f2d7a2f",
+          "pinned": true
+        },
+        "nativeLoader:native-binding.js": {
+          "sha256": "13a15d0eaf0dd2e15f0aede8a17ae8c601fb9606d1b11903ce148428b8ef466e",
+          "pinned": true
+        },
+        "nativeLoader:native-targets.js": {
+          "sha256": "ad0e2d2a898271aaeaa5d4fb365a979e6ad518385b8332715a79dc4cbe133460",
+          "pinned": true
+        },
+        "nativeLoader:package.json": {
+          "sha256": "e806bbef61920cea7e93d2b5d6d3010192ced5c5f6625ed50cebd006af75e956",
+          "pinned": true
+        }
+      },
+      "primarySpeedup": null,
+      "speedupBaselineId": null,
+      "speedupStatus": "unavailable",
       "engineClassRanking": null
     }
   ]

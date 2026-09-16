@@ -10,50 +10,35 @@ title: パフォーマンス
 
 Vize は、Rust のゼロコスト抽象化とネイティブ マルチスレッドを活用することで、標準の JavaScript ベースの Vue コンパイラと比較して大幅なパフォーマンスの向上を実現します。スピードはあればいいものではなく、開発者のエクスペリエンスの前提条件です。
 
+<!-- benchmark:environment:start -->
+
 ## ベンチマーク環境
 
-このページには 2 つの測定環境が登場します。以下のすべての数値は、どちらで測定されたものかを明示しています。
+README と全言語のページは、同じコミット済み成果物から生成します。ファイル数は各行に記載しています。
 
-**リファレンスランナー。** ツール間の比較は Tool Benchmark ワークフローで測定され、
-`tools/benchmarks/results/tool-benchmark-latest.json` にコミットされます。この成果物が引用可能な出典であり、
-[Blacksmith ベンチマーク スナップショット](./performance-blacksmith) がその全体を公開しています。
+| ランナー                                 | 計測日時                 | 計測回数 | ウォームアップ |
+| ---------------------------------------- | ------------------------ | -------- | -------------- |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1              |
 
-|                      |                                                     |
-| -------------------- | --------------------------------------------------- |
-| **マシン**           | `blacksmith-32vcpu-ubuntu-2404` (32 vCPU、AMD EPYC) |
-| **スナップショット** | コミット `1511788d96ea`、2026-07-30                 |
-| **測定方法**         | ウォームアップ 1 回の後、計測 5 回の中央値          |
-| **バージョン**       | vize 0.303.0 · vue 3.6.0-beta.10 · Node v24.14.0    |
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
-**ローカルワークステーション。** 以下のリンター、フォーマッタ、型チェッカーの表は、ローカルベンチ
-(`tools/benchmarks/scripts/lint.ts`、`tools/benchmarks/scripts/fmt.ts`、`tools/benchmarks/scripts/check.ts`) から手作業で維持されており、この環境で測定された
-ものです。リファレンスランナーではまだ再現できないため、参考値として読んでください。
+バージョン: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
 
-|             |                                          |
-| ----------- | ---------------------------------------- |
-| **マシン**  | MacBook Pro (M2 Max、12 コア、96 GB RAM) |
-| **OS**      | macOS 15.3.2 (Darwin 24.3.0)             |
-| **Node.js** | v24.14.0                                 |
-| **Vite**    | v8.0.0 (Rolldown)                        |
-| **Vue**     | v3.6.0-beta.10                           |
+以下のローカル環境での Linter・Formatter・実装プロファイルは過去の計測で、このスナップショットの結果ではありません。記録された環境は MacBook Pro M2 Max (12 コア、96 GB RAM)、macOS 15.3.2、Node v24.14.0、Vite v8.0.0、Vue v3.6.0-beta.10 です。
 
-## ベンチマーク: 15,000 SFC ファイル
+## ベンチマーク: SFC コンパイル
 
-**15,000 個の生成された Vue SFC ファイル**(合計 58.7 MB)をリファレンスランナーでコンパイル:
+ファイル数: **3,000** (12,302,100 bytes).
 
-|                            | @vue/compiler-sfc | Vize    | 高速化    |
-| -------------------------- | ----------------- | ------- | --------- |
-| **シングルスレッド**       | 17.15s            | 3.95s   | **4.3x**  |
-| **全コア (32 vCPU)**       | 6.08s             | 329.2ms | **18.5x** |
-| **compiler-sfc 1T 対 max** | 17.15s            | 329.2ms | **52.1x** |
+|               | @vue/compiler-sfc | Vize    | 速度比    |
+| ------------- | ----------------- | ------- | --------- |
+| 1T            | 3.57s             | 835.3ms | **4.3x**  |
+| workers / max | 1.61s             | 65.0ms  | **24.7x** |
+| 1T / max      | 3.57s             | 65.0ms  | **54.8x** |
 
-出典: コミット済みスナップショット `tools/benchmarks/results/tool-benchmark-latest.json` の `compile` サーフェス
-([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — `README.md` と
-[Blacksmith ベンチマーク スナップショット](./performance-blacksmith) が公開しているものと同じ成果物です。
+[詳しい計測方法と検証結果](./performance-blacksmith)
 
-シングルスレッドの改善は、Rust のゼロコスト抽象化 (GC なし、JIT ウォームアップなし、キャッシュに優しいメモリ レイアウト) から来ています。マルチスレッドの改善は、CPU コア数に応じてスケールする Rayon のワークスチール スレッド プールによるものです。
-
-> **注意:** このスナップショットは vize 0.303.0 時点のもので、「パフォーマンスのためのアーキテクチャの選択」で説明するアリーナと式の作業が入る前のものです。日付が記録されており再現可能ですが、現在のツリーの測定値ではありません。ツール間サーフェスをリファレンスランナーで再記録する作業は保留中です。
+<!-- benchmark:environment:end -->
 
 ## なぜ Rust なのか?
 
@@ -172,8 +157,8 @@ Vite プラグイン (`@vizejs/vite-plugin`) はファイル単位でキャッ�
 **15,000 個の Vue SFC ファイル**のリンティング (ローカルワークステーション):
 
 |          | eslint-プラグイン-vue (ST) | Vize Patina (ST) | スピードアップ | eslint-プラグイン-vue (MT) | Vize Patina (MT) | スピードアップ | **eslint ST 対 Vize MT** |
-| -------- | -------------------------- | -------------------- | -------------- | -------------------------- | -------------------- | -------------- | ------------------------ |
-| **時間** | 45.08秒                    | 4.02秒               | **11.2x**      | 16.38秒                    | 784ミリ秒            | **20.9x**      | **57.5x**                |
+| -------- | -------------------------- | ---------------- | -------------- | -------------------------- | ---------------- | -------------- | ------------------------ |
+| **時間** | 45.08秒                    | 4.02秒           | **11.2x**      | 16.38秒                    | 784ミリ秒        | **20.9x**      | **57.5x**                |
 
 再現するには、`vp run --workspace-root bench:lint` を実行します。
 
@@ -197,25 +182,37 @@ OXC 式は安全でないテンプレートとフローティング Promise チ�
 **15,000 個の Vue SFC ファイル**のフォーマット (ローカルワークステーション):
 
 |          | プリティア (CLI) | Vize Glyph (ST) | スピードアップ | Vize Glyph (MT) | **Prettier CLI と Vize MT** |
-| -------- | ---------------- | ---------------- | -------------- | ---------------- | --------------------------- |
-| **時間** | 101.20秒         | 2.97秒           | **34.1x**      | 835ミリ秒        | **121.2x**                  |
+| -------- | ---------------- | --------------- | -------------- | --------------- | --------------------------- |
+| **時間** | 101.20秒         | 2.97秒          | **34.1x**      | 835ミリ秒       | **121.2x**                  |
 
 再現するには、`vp run --workspace-root bench:fmt` を実行します。
 
-## ベンチマーク: 型チェッカー — canon 対 vue-tsc
+<!-- benchmark:typecheck:start -->
 
-現在の Corsa-backed 診断パスを使用した**500 個の生成された Vue SFC ファイル**のタイプ チェック (ローカルワークステーション):
+## ベンチマーク: 型検査
 
-|          | vue-tsc (ST)    | Vize Canon (ST) | スピードアップ     | vue-tsc (MT)    | Vize Canon (MT) | スピードアップ     | **vue-tsc ST と Vize MT** |
-| -------- | --------------- | ----------------- | ------------------ | --------------- | ----------------- | ------------------ | ------------------------- |
-| **時間** | 4.38秒          | 511ミリ秒         | n/a (cross-engine) | 4.41秒          | 493ミリ秒         | n/a (cross-engine) | n/a (cross-engine)        |
-| **料金** | 114 ファイル/秒 | 979 ファイル/秒   |                    | 113 ファイル/秒 | 1.0k ファイル/秒  |                    |                           |
+README と全言語のページは、同じコミット済み成果物から生成します。ファイル数は各行に記載しています。
 
-タイプチェックの行は 2 つの TypeScript エンジンにまたがります。vue-tsc は JavaScript コンパイラを、Vize check はネイティブ tsgo (Corsa) を実行するため、単一の倍率は公開せず (`n/a (cross-engine)`)、エンジンクラスごとに順位付けします。単一の数値は TypeScript の Go 書き直しを Vue レイヤーの成果として誤って伝えてしまいます。両方の計測値は実測であり、同じ実行で得られたものです。エンジンクラスごとの順位は [Blacksmith ベンチマーク スナップショット](./performance-blacksmith) を参照してください。
+| ランナー                                 | 計測日時                 | 計測回数 | ウォームアップ |
+| ---------------------------------------- | ------------------------ | -------- | -------------- |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1              |
 
-> **注意:**Vize canon はまだ開発初期段階にあり、Corsa を利用した診断パスは vue-tsc の忠実度にまだ追いついていません。これらの測定値は、プロジェクト セッション フォールバックを備えた現在の CLI ファースト ネイティブ実装を反映しており、診断カバレッジとパリティが向上するにつれて変化します。
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
-この簡単なベンチマークを再現するには、`cargo build --release -p vize` の後に `node tools/benchmarks/scripts/check.ts 500` を実行します。
+バージョン: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
+
+| 対象            | ファイル数 | 比較ツール | 比較ツールの中央値 | Vize 1T | Vize max | 速度比   |
+| --------------- | ---------- | ---------- | ------------------ | ------- | -------- | -------- |
+| 型検査          | 500        | verter-tsc | 2.08s              | 2.03s   | 1.37s    | **1.5x** |
+| 巨大 SFC 型検査 | 1          | verter-tsc | 1.58s              | 186.4ms | 190.1ms  | **8.3x** |
+
+型検査の速度比は、同じバージョンに固定したネイティブ tsgo を使う Vize と verter-tsc の比較です。各計測で診断処理の検証を通過していますが、ツール間で診断の対応範囲は異なります。精度の同等性や、過去の Vize からの性能改善を示す倍率ではありません。検証を通過しなかった比較ツールには、時間や順位を掲載しません。
+
+[詳しい計測方法と検証結果](./performance-blacksmith)
+
+以下のプロファイルは過去のローカル計測であり、今回の比較には含まれません。
+
+<!-- benchmark:typecheck:end -->
 
 ### タイプチェッカープロファイル
 
@@ -241,21 +238,33 @@ Rust 側の `virtual project` フェーズ — ファイルごとの SFC 解析�
 `tools/benchmarks/scripts/check.ts` は、フィクスチャが存在する場合、`tests/_fixtures/_git/npmx.dev` アプリも測定します。これにより、実際のアプリケーション フィクスチャ上の診断マッピング パスが取得されます。
 
 | 治具            | ソース SFC ファイル | 仮想ファイル | 診断  | Vize Canon |
-| --------------- | ------------------- | ------------ | ----- | ------------ |
-| npmx.dev アプリ | 134                 | 226          | 1,053 | 1.94秒       |
+| --------------- | ------------------- | ------------ | ----- | ---------- |
+| npmx.dev アプリ | 134                 | 226          | 1,053 | 1.94秒     |
 
 このフィクスチャの現在のプロファイルでは、CLI 診断解析が約 7 ミリ秒に維持されます。現在、ほとんどの時間は Corsa CLI コマンド自体に費やされています。フレームワークの自動インポート スタブを 1 つのアンビエント ファイルにホイストすると、生成される最大の仮想 TS ファイルも約 275 KB から 144 KB に削減されました。
 
-## ベンチマーク: Vite プラグイン — @vizejs/vite-plugin 対 @vitejs/plugin-vue
+<!-- benchmark:vite:start -->
 
-- \*1,000 個の Vue SFC インポート\*\*を含む Vite ビルド (すべて 1 つのエントリでインポート)。Blacksmith `blacksmith-32vcpu-ubuntu-2404` 上で計測、5 回の実行の中央値:
+## ベンチマーク: Vite プラグイン
 
-|                | @vitejs/plugin-vue | @vizejs/vite-plugin | スピードアップ |
-| -------------- | ------------------ | ------------------- | -------------- |
-| **ビルド時間** | 1.71s              | 631.7ms             | **2.7x**       |
+README と全言語のページは、同じコミット済み成果物から生成します。ファイル数は各行に記載しています。
 
-> 注: `@vizejs/vite-plugin` は Vue SFC コンパイル手順のみを置き換えます。パフォーマンスの違いは完全にその部分から生じます。依存関係の解決、モジュール グラフの構築、バンドル (ロールダウン)、およびその他すべての Vite 内部は `@vitejs/plugin-vue` と同一です。純粋なコンパイルのパフォーマンスについては、上記の [コンパイラ ベンチマーク](#benchmark-15000-sfc-files) を参照してください。 `@vizejs/vite-plugin` は、ネイティブ マルチスレッド コンパイルを使用して `.vue` ファイルを積極的にプリコンパイルします。これにより、より高速な HMR も可能になります。
+| ランナー                                 | 計測日時                 | 計測回数 | ウォームアップ |
+| ---------------------------------------- | ------------------------ | -------- | -------------- |
+| `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1              |
 
-この行はコミット済みスナップショット `tools/benchmarks/results/tool-benchmark-latest.json` の `vite` サーフェス ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) です。`README.md` と [Blacksmith ベンチマーク スナップショット](/architecture/performance-blacksmith) が公開しているものと同じ成果物であり、`tests/tooling/docs-vite-benchmark-row.test.ts` が全ロケールでこの成果物に固定しています。
+[Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
+
+バージョン: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
+
+ファイル数: **1,000**.
+
+|             | @vitejs/plugin-vue | @vizejs/vite-plugin | 速度比   |
+| ----------- | ------------------ | ------------------- | -------- |
+| Vite ビルド | 1.66s              | 889.2ms             | **1.9x** |
+
+[詳しい計測方法と検証結果](./performance-blacksmith)
+
+<!-- benchmark:vite:end -->
 
 それまでここに掲載していた `957ms` / `479ms` / `2.0x` は、#3392 以前の `tools/benchmarks/scripts/vite.ts` によるものでした。このハーネスは、ウォームアップが残した永続プリコンパイル キャッシュ付きの Vize と、ゼロからコンパイルする `@vitejs/plugin-vue` を比較していました。現在このハーネスは実行マシン上でコールドとウォームを別々に報告するため、その出力はローカルな診断値であり、公開できる速度比ではありません。`vp run --workspace-root bench:vite` は変更前後の自己比較に使ってください。
