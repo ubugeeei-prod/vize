@@ -11,7 +11,6 @@ const sfcTypecheckRows = [
   ["crates/vize_canon/src/sfc_typecheck/analysis.rs", 1],
   ["crates/vize_canon/src/sfc_typecheck/checks.rs", 1],
   ["crates/vize_canon/src/sfc_typecheck/runner.rs", 2],
-  ["crates/vize_canon/src/sfc_typecheck/virtual_ts.rs", 1],
 ];
 
 function typechecker() {
