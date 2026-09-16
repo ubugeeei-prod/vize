@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use tower_lsp::lsp_types::{
     AnnotatedTextEdit, DocumentChangeOperation, DocumentChanges, OneOf,
-    OptionalVersionedTextDocumentIdentifier, TextDocumentEdit, TextEdit, Url, WorkspaceEdit,
+    OptionalVersionedTextDocumentIdentifier, ResourceOp, TextDocumentEdit, TextEdit, Url,
+    WorkspaceEdit,
 };
 
 use super::super::super::rename_merge::order_edits_by_position;
@@ -56,6 +57,9 @@ pub(crate) fn merge_canonical_workspace_edits(
             Some(())
         })?;
     }
+    if let Some(incoming) = document_changes.take() {
+        document_changes = Some(coalesce_document_changes(incoming)?);
+    }
     let edit = WorkspaceEdit {
         changes: (!changes.is_empty()).then_some(changes),
         document_changes,
@@ -87,6 +91,65 @@ fn visit_documents(
         }
     }
     Some(())
+}
+
+fn coalesce_document_changes(changes: DocumentChanges) -> Option<DocumentChanges> {
+    match changes {
+        DocumentChanges::Edits(incoming) => {
+            let mut edits = Vec::new();
+            for edit in incoming {
+                merge_document_edit(&mut edits, edit);
+            }
+            Some(DocumentChanges::Edits(edits))
+        }
+        DocumentChanges::Operations(incoming) => {
+            let mut operations = Vec::new();
+            let mut indices = HashMap::new();
+            for operation in incoming {
+                let DocumentChangeOperation::Edit(edit) = operation else {
+                    operations.push(operation);
+                    continue;
+                };
+                let uri = &edit.text_document.uri;
+                if let Some(&index) = indices.get(uri) {
+                    // Moving edits across a resource mutation needs a separate
+                    // post-operation coordinate/version contract. Fail closed.
+                    if operations[index + 1..].iter().any(|operation| {
+                        matches!(operation, DocumentChangeOperation::Op(resource) if resource_touches(resource, uri))
+                    }) {
+                        return None;
+                    }
+                    let DocumentChangeOperation::Edit(existing) = &mut operations[index] else {
+                        unreachable!();
+                    };
+                    for entry in edit.edits {
+                        push_annotatable_edit_to(existing, entry);
+                    }
+                } else {
+                    indices.insert(uri.clone(), operations.len());
+                    operations.push(DocumentChangeOperation::Edit(edit));
+                }
+            }
+            Some(DocumentChanges::Operations(operations))
+        }
+    }
+}
+
+fn resource_touches(operation: &ResourceOp, uri: &Url) -> bool {
+    let contains = |root: &Url| {
+        uri == root
+            || match (uri.to_file_path(), root.to_file_path()) {
+                (Ok(file), Ok(root)) => file.starts_with(root),
+                _ => false,
+            }
+    };
+    match operation {
+        ResourceOp::Create(operation) => contains(&operation.uri),
+        ResourceOp::Rename(operation) => {
+            contains(&operation.old_uri) || contains(&operation.new_uri)
+        }
+        ResourceOp::Delete(operation) => contains(&operation.uri),
+    }
 }
 
 fn merge_document_change_sets(current: &mut Option<DocumentChanges>, incoming: DocumentChanges) {

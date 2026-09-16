@@ -1,7 +1,7 @@
 use tower_lsp::lsp_types::{
-    CreateFile, DocumentChangeOperation, DocumentChanges, OneOf,
-    OptionalVersionedTextDocumentIdentifier, Position, Range, ResourceOp, TextDocumentEdit,
-    TextEdit, Url, WorkspaceEdit,
+    CreateFile, DeleteFile, DocumentChangeOperation, DocumentChanges, OneOf,
+    OptionalVersionedTextDocumentIdentifier, Position, Range, RenameFile, ResourceOp,
+    TextDocumentEdit, TextEdit, Url, WorkspaceEdit,
 };
 
 use super::merge_canonical_workspace_edits;
@@ -109,6 +109,7 @@ fn known_versions_survive_unknown_results_in_every_container_and_query_order() {
                         .collect(),
                 };
                 let expected_version = versions[0].or(versions[1]);
+                assert_eq!(edits.len(), 1);
                 for edit in &edits {
                     assert_eq!(edit.text_document.version, expected_version);
                     assert_eq!(edit.text_document.uri, uri);
@@ -152,13 +153,101 @@ fn promoted_plain_edits_keep_the_known_version_and_resource_operation_order() {
         ..WorkspaceEdit::default()
     };
     let merged = merge_canonical_workspace_edits([first, second]).unwrap();
+    let mut combined = document_edit(&uri, Some(9), 1);
+    combined.edits.extend(document_edit(&uri, Some(9), 3).edits);
     assert_eq!(merged.changes, None);
     assert_eq!(
         merged.document_changes,
         Some(DocumentChanges::Operations(vec![
             create,
+            DocumentChangeOperation::Edit(combined),
+        ]))
+    );
+}
+
+#[test]
+fn resource_mutations_between_same_document_edits_fail_closed() {
+    let uri = Url::parse("file:///workspace/dir/dependency.ts").unwrap();
+    let other = Url::parse("file:///workspace/elsewhere.ts").unwrap();
+    for affected in [uri.clone(), Url::parse("file:///workspace/dir").unwrap()] {
+        for resource in [
+            ResourceOp::Create(CreateFile {
+                uri: affected.clone(),
+                options: None,
+                annotation_id: None,
+            }),
+            ResourceOp::Delete(DeleteFile {
+                uri: affected.clone(),
+                options: None,
+            }),
+            ResourceOp::Rename(RenameFile {
+                old_uri: affected.clone(),
+                new_uri: other.clone(),
+                options: None,
+                annotation_id: None,
+            }),
+            ResourceOp::Rename(RenameFile {
+                old_uri: other.clone(),
+                new_uri: affected.clone(),
+                options: None,
+                annotation_id: None,
+            }),
+        ] {
+            for version in [None, Some(9)] {
+                let edits = vec![
+                    DocumentChangeOperation::Edit(document_edit(&uri, version, 1)),
+                    DocumentChangeOperation::Op(resource.clone()),
+                    DocumentChangeOperation::Edit(document_edit(&uri, version, 3)),
+                ];
+                assert_eq!(
+                    merge_canonical_workspace_edits([WorkspaceEdit {
+                        document_changes: Some(DocumentChanges::Operations(edits.clone())),
+                        ..WorkspaceEdit::default()
+                    }]),
+                    None
+                );
+                assert_eq!(
+                    merge_canonical_workspace_edits(edits.into_iter().map(|op| WorkspaceEdit {
+                        document_changes: Some(DocumentChanges::Operations(vec![op])),
+                        ..WorkspaceEdit::default()
+                    })),
+                    None
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn unrelated_resource_operations_keep_their_order_while_edits_coalesce() {
+    let uri = Url::parse("file:///workspace/dir-long/dependency.ts").unwrap();
+    let before = DocumentChangeOperation::Op(ResourceOp::Create(CreateFile {
+        uri: Url::parse("file:///workspace/new.ts").unwrap(),
+        options: None,
+        annotation_id: None,
+    }));
+    let between = DocumentChangeOperation::Op(ResourceOp::Delete(DeleteFile {
+        uri: Url::parse("file:///workspace/dir").unwrap(),
+        options: None,
+    }));
+    let mut combined = document_edit(&uri, Some(9), 1);
+    combined.edits.extend(document_edit(&uri, Some(9), 3).edits);
+    let merged = merge_canonical_workspace_edits([WorkspaceEdit {
+        document_changes: Some(DocumentChanges::Operations(vec![
+            before.clone(),
             DocumentChangeOperation::Edit(document_edit(&uri, Some(9), 1)),
+            between.clone(),
             DocumentChangeOperation::Edit(document_edit(&uri, Some(9), 3)),
+        ])),
+        ..WorkspaceEdit::default()
+    }])
+    .unwrap();
+    assert_eq!(
+        merged.document_changes,
+        Some(DocumentChanges::Operations(vec![
+            before,
+            DocumentChangeOperation::Edit(combined),
+            between,
         ]))
     );
 }
