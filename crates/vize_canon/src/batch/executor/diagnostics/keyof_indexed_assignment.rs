@@ -1,7 +1,6 @@
 use std::path::Path;
 
 use oxc_ast::ast::{Expression, TSIndexedAccessType, TSType, TSTypeOperatorOperator};
-use oxc_span::{GetSpan, Span};
 
 mod index;
 use index::TypeReferences;
@@ -36,53 +35,43 @@ fn matches_at(source: &str, path: &Path, offset: u32) -> bool {
     AssignmentIndex::new(source, path).matches_at(offset)
 }
 
-fn keyof_operand_from_cast(expression: &Expression<'_>) -> Option<Span> {
+fn keyof_operand_from_cast<'expr, 'ast>(
+    expression: &'expr Expression<'ast>,
+) -> Option<&'expr TSType<'ast>> {
     let Expression::TSAsExpression(ts_as) = peel_expression(expression) else {
         return None;
     };
     keyof_operand(&ts_as.type_annotation)
 }
 
-fn keyof_indexed_object_from_cast(
-    expression: &Expression<'_>,
-    source: &str,
+fn keyof_indexed_object_from_cast<'expr, 'ast>(
+    expression: &'expr Expression<'ast>,
     types: &TypeReferences,
-) -> Option<Span> {
+) -> Option<&'expr TSType<'ast>> {
     let Expression::TSAsExpression(ts_as) = peel_expression(expression) else {
         return None;
     };
     let TSType::TSIndexedAccessType(indexed) = peel_type(&ts_as.type_annotation) else {
         return None;
     };
-    keyof_indexed_object(indexed, source, types)
+    keyof_indexed_object(indexed, types)
 }
 
-fn keyof_indexed_object(
-    indexed: &TSIndexedAccessType<'_>,
-    source: &str,
+fn keyof_indexed_object<'ty, 'ast>(
+    indexed: &'ty TSIndexedAccessType<'ast>,
     types: &TypeReferences,
-) -> Option<Span> {
+) -> Option<&'ty TSType<'ast>> {
     let object = peel_type(&indexed.object_type);
     let keyof = keyof_operand(&indexed.index_type)?;
-    let object = object_span(object);
-    types.equivalent(source, object, keyof).then_some(object)
+    types.equivalent(object, keyof).then_some(object)
 }
 
-fn keyof_operand(ty: &TSType<'_>) -> Option<Span> {
+fn keyof_operand<'ty, 'ast>(ty: &'ty TSType<'ast>) -> Option<&'ty TSType<'ast>> {
     let TSType::TSTypeOperatorType(operator) = peel_type(ty) else {
         return None;
     };
     (operator.operator == TSTypeOperatorOperator::Keyof)
-        .then(|| object_span(peel_type(&operator.type_annotation)))
-}
-
-fn object_span(ty: &TSType<'_>) -> Span {
-    match ty {
-        TSType::TSParenthesizedType(parenthesized) => {
-            object_span(peel_type(&parenthesized.type_annotation))
-        }
-        _ => ty.span(),
-    }
+        .then(|| peel_type(&operator.type_annotation))
 }
 
 fn peel_expression<'expr, 'ast>(expression: &'expr Expression<'ast>) -> &'expr Expression<'ast> {
@@ -99,16 +88,6 @@ fn peel_type<'ty, 'ast>(ty: &'ty TSType<'ast>) -> &'ty TSType<'ast> {
         TSType::TSParenthesizedType(parenthesized) => peel_type(&parenthesized.type_annotation),
         _ => ty,
     }
-}
-
-fn same_type_text(source: &str, left: Span, right: Span) -> bool {
-    span_text(source, left).is_some_and(|left| {
-        span_text(source, right).is_some_and(|right| left.trim() == right.trim())
-    })
-}
-
-fn span_text(source: &str, span: Span) -> Option<&str> {
-    source.get(span.start as usize..span.end as usize)
 }
 
 #[cfg(test)]

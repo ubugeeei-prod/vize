@@ -1824,7 +1824,6 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/diagnostics.
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/executor/diagnostics.rs	238	s0	S0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/diagnostics/dedup.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/diagnostics/keyof_indexed_assignment.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/diagnostics/keyof_indexed_assignment/index.rs	3	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/diagnostics/keyof_indexed_assignment/index.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/diagnostics/keyof_indexed_assignment/index.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/diagnostics/keyof_indexed_assignment/index.rs	3	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1

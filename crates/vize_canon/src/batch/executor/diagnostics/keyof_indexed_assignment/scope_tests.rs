@@ -106,6 +106,22 @@ fn shadowing_types_do_not_compare_equal_by_spelling() {
 }
 
 #[test]
+fn equivalent_types_ignore_trivia_but_preserve_literal_contents() {
+    for rhs_type in ["Box < T >", "Box/* note */<T>", "Box<\nT\n>"] {
+        let source = format!(
+            "type Box<T> = {{ text: T; count: number }}; function assign<T>(target: Box<T>, key: string) {{ \
+             const value = null as unknown as {rhs_type}[keyof Box<T>]; \
+             target[key as keyof Box < T >] = value; }}"
+        );
+        assert!(matches_assignment(&source), "{rhs_type}");
+    }
+    assert!(!matches_assignment(
+        "type Box<T> = { text: T; count: number }; const target = {} as Box<'a b'>; \
+         const key = 'text'; target[key as keyof Box<'a b'>] = null as unknown as Box<'ab'>[keyof Box<'ab'>];"
+    ));
+}
+
+#[test]
 fn nested_scopes_keep_unshadowed_bindings_and_types() {
     assert!(matches_assignment(
         "type A = { text: string; count: number }; declare const target: A; \
