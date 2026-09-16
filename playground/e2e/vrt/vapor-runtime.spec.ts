@@ -96,3 +96,50 @@ test("playground main tabs and output tabs stay runtime-clean in Vapor mode", as
 
   expect(issues).toEqual([]);
 });
+
+test("experimental controls drive compiler, typechecker, and Croquis in Vapor mode", async ({
+  page,
+}) => {
+  await page.goto("/?tab=atelier");
+  await waitForTabReady(page, ".compile-time");
+  await page.locator(".experimental-features summary").click();
+  await page.getByLabel("Experimental example").selectOption("experimentalPatternedTemplate");
+  await expect(page.locator(".output-panel")).toContainText("Ready");
+  for (const target of ["SSR", "Vapor"]) {
+    await page.getByRole("button", { name: target, exact: true }).click();
+    await expect(page.locator(".code-header h4")).toHaveText(`${target} Output`);
+    await expect(page.locator(".output-panel")).toContainText("Ready");
+  }
+  await page.getByLabel("Patterned templates", { exact: true }).uncheck();
+  await expect(page.locator(".output-panel")).toContainText(
+    "require `experimentals.patternedTemplate`",
+  );
+  await page.getByLabel("Patterned templates", { exact: true }).check();
+  await expect(page.getByRole("button", { name: "Vapor", exact: true })).toBeVisible();
+
+  await page.locator(".main-tabs > button", { hasText: "Canon" }).click();
+  await waitForTabReady(page, ".perf-badge");
+  await page.locator(".experimental-features summary").click();
+  await page.getByLabel("Experimental example").selectOption("experimentalStrictSlotChildren");
+  await expect(page.locator(".diagnostic-message")).toContainText("HTMLInputElement");
+  await expect(page.getByText("8:15", { exact: true })).toBeVisible();
+  await page.getByLabel("Strict slot children", { exact: true }).uncheck();
+  await expect(page.getByText("No type issues found", { exact: true })).toBeVisible();
+
+  await page.locator(".main-tabs > button", { hasText: "Croquis" }).click();
+  await waitForTabReady(page, ".perf-badge");
+  await expect(page.locator("main .panel").first()).toHaveClass("panel input-panel");
+  await page.locator(".experimental-features summary").click();
+  await page.getByLabel("Experimental example").selectOption("experimentalInTagComments");
+  await page.getByRole("button", { name: "Bindings", exact: true }).click();
+  await expect(page.locator(".binding-name")).toHaveText(["label"]);
+  await expect(page.getByText("in-template", { exact: true })).toBeVisible();
+  await page.getByLabel("In-tag comments", { exact: true }).uncheck();
+  await expect(page.locator(".output-panel")).toContainText("Template parse error");
+  await page.getByLabel("In-tag comments", { exact: true }).check();
+  await expect(page.getByText("in-template", { exact: true })).toBeVisible();
+  await page.reload();
+  await waitForTabReady(page, ".perf-badge");
+  await page.locator(".experimental-features summary").click();
+  await expect(page.getByLabel("In-tag comments", { exact: true })).toBeChecked();
+});
