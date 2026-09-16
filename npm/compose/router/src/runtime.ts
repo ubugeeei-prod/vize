@@ -112,23 +112,85 @@ export function serializeRouteMatch<Route extends RouteDefinition>(
   };
 }
 
-/** Hydrate serialized SSR route state against the client route table. */
+/**
+ * Reconcile SSR state with the client table, optionally checking the activation URL.
+ * Returns undefined for stale or malformed state; integrations must match/load afresh.
+ */
 export function hydrateRouteState<const Routes extends readonly RouteDefinition[]>(
   routes: Routes,
   state: SerializedRouteState<RouteNames<Routes>>,
+  input?: string | URL,
 ): RouteMatch<Routes[number]> | undefined {
-  if (state.schemaVersion !== 1) return undefined;
-  const route = routes.find((candidate) => candidate.name === state.name);
-  if (!route) return undefined;
-  return {
-    route,
-    name: route.name,
-    pathname: state.pathname,
-    params: state.params,
-    query: state.query,
-    hash: state.hash,
-    meta: route.meta ?? {},
-  } as RouteMatch<Routes[number]>;
+  if (
+    !state ||
+    state.schemaVersion !== 1 ||
+    typeof state.name !== "string" ||
+    typeof state.pathname !== "string" ||
+    !state.pathname.startsWith("/") ||
+    state.pathname.startsWith("//") ||
+    typeof state.hash !== "string" ||
+    !isRecord(state.params) ||
+    !isRecord(state.query) ||
+    !Object.values(state.params).every(
+      (value) => value === undefined || typeof value === "string",
+    ) ||
+    !Object.values(state.query).every(
+      (value) =>
+        typeof value === "string" ||
+        (Array.isArray(value) && value.every((item) => typeof item === "string")),
+    )
+  )
+    return undefined;
+
+  const matcher = createRouterMatcher(routes);
+  try {
+    const match = matcher.match(state.pathname);
+    const params = Object.fromEntries(
+      Object.entries(state.params).filter(([, value]) => value !== undefined),
+    );
+    if (
+      !match ||
+      match.name !== state.name ||
+      match.pathname !== state.pathname ||
+      !sameRecord(match.params, params)
+    )
+      return undefined;
+    if (input !== undefined) {
+      const current = matcher.match(input);
+      if (
+        !current ||
+        current.name !== match.name ||
+        current.pathname !== match.pathname ||
+        current.hash !== state.hash ||
+        !sameRecord(current.query, state.query)
+      )
+        return undefined;
+    }
+    return { ...match, query: state.query, hash: state.hash };
+  } catch (error) {
+    if (error instanceof URIError || error instanceof TypeError) return undefined;
+    throw error;
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function sameRecord(left: object, right: object): boolean {
+  const entries = Object.entries(left);
+  return (
+    entries.length === Object.keys(right).length &&
+    entries.every(([key, value]) => {
+      if (!Object.hasOwn(right, key)) return false;
+      const other = (right as Record<string, unknown>)[key];
+      return Array.isArray(value)
+        ? Array.isArray(other) &&
+            value.length === other.length &&
+            value.every((item, index) => item === other[index])
+        : value === other;
+    })
+  );
 }
 
 function validateRoutes(routes: readonly RouteDefinition[]): void {
@@ -208,18 +270,18 @@ function toUrl(input: string | URL): URL {
 }
 
 function parseQuery(searchParams: URLSearchParams): RouteQuery {
-  const query: Record<string, string | string[]> = {};
+  const query = new Map<string, string | string[]>();
   for (const [key, value] of searchParams) {
-    const current = query[key];
+    const current = query.get(key);
     if (current == null) {
-      query[key] = value;
+      query.set(key, value);
     } else if (Array.isArray(current)) {
       current.push(value);
     } else {
-      query[key] = [current, value];
+      query.set(key, [current, value]);
     }
   }
-  return query;
+  return Object.fromEntries(query);
 }
 
 function stringifyQuery(query: RouteResolveOptions["query"]): string {

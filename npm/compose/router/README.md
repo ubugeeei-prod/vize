@@ -23,3 +23,11 @@ router.resolve("user", { id: "42" });
 
 Route components are declared as `.vue` specifiers. JavaScript render-function component sources are
 not part of this package surface.
+
+SSR integrations can pass `serializeRouteMatch(match, data)` through their own safe serialization
+channel, then call `hydrateRouteState(routes, state, currentUrl)` during client activation. Hydration
+rematches the pathname against the current table and checks route identity, decoded params, query,
+and hash. Malformed or stale handoffs return `undefined`; match and load the current URL afresh in
+that case. The optional third argument checks the activation URL without reading browser globals.
+Omitting it reconciles the serialized pathname and params only; it cannot detect navigation since
+the server render. Query key order is ignored, while repeated-value order is preserved.
