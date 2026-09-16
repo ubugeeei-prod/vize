@@ -153,3 +153,140 @@ fn mounted_slot_before_branch_preserves_authored_order() {
         assert_eq!(trace[index]["tree"][0]["children"][1]["tag"], "p");
     }
 }
+
+#[test]
+fn mounted_text_model_defers_composition_until_commit() {
+    let trace = assert_backends(
+        r#"<section><input v-model="value"><output>{{ value }}</output></section>"#,
+        json!({"value": "initial"}),
+        json!([
+            {"event": "compositionstart", "selector": "input"},
+            {"event": "input", "selector": "input", "value": "\u{306b}\u{307b}\u{3093}"},
+            {"event": "compositionend", "selector": "input", "value": "\u{65e5}\u{672c}"},
+            {"patch": {"value": "external"}}
+        ]),
+    );
+    assert_eq!(
+        trace[2]["tree"][0]["children"][1]["children"],
+        json!(["initial"])
+    );
+    assert_eq!(
+        trace[3]["tree"][0]["children"][1]["children"],
+        json!(["\u{65e5}\u{672c}"])
+    );
+    assert_eq!(trace[4]["tree"][0]["children"][0]["value"], "external");
+}
+
+#[test]
+fn mounted_lazy_text_model_commits_on_change() {
+    let trace = assert_backends(
+        r#"<section><input v-model.lazy="value"><output>{{ value }}</output></section>"#,
+        json!({"value": "initial"}),
+        json!([
+            {"event": "input", "selector": "input", "value": "pending"},
+            {"event": "change", "selector": "input", "value": "committed"}
+        ]),
+    );
+    assert_eq!(
+        trace[1]["tree"][0]["children"][1]["children"],
+        json!(["initial"])
+    );
+    assert_eq!(
+        trace[2]["tree"][0]["children"][1]["children"],
+        json!(["committed"])
+    );
+}
+
+#[test]
+fn mounted_trim_number_model_preserves_numeric_values() {
+    let trace = assert_backends(
+        r#"<section><input v-model.trim.number="value"><output>{{ typeof value }}:{{ value }}</output></section>"#,
+        json!({"value": 0}),
+        json!([{"event": "input", "selector": "input", "value": " 42 "}, {"event": "change", "selector": "input"}]),
+    );
+    assert_eq!(
+        trace[1]["tree"][0]["children"][1]["children"],
+        json!(["number:42"])
+    );
+    assert_eq!(trace[2]["tree"][0]["children"][0]["value"], "42");
+}
+
+#[test]
+fn mounted_checkbox_model_updates_array_membership() {
+    let trace = assert_backends(
+        r#"<section><input type="checkbox" value="b" v-model="values"><output>{{ values.join(',') }}</output></section>"#,
+        json!({"values": ["a"]}),
+        json!([{"event": "change", "selector": "input", "checked": true}, {"event": "change", "selector": "input", "checked": false}, {"patch": {"values": ["b"]}}]),
+    );
+    assert_eq!(
+        trace[1]["tree"][0]["children"][1]["children"],
+        json!(["a,b"])
+    );
+    assert_eq!(trace[2]["tree"][0]["children"][1]["children"], json!(["a"]));
+    assert_eq!(trace[3]["tree"][0]["children"][0]["checked"], true);
+}
+
+#[test]
+fn mounted_select_multiple_model_reconciles_selection() {
+    let trace = assert_backends(
+        r#"<section><select multiple v-model="values"><option value="a">A</option><option value="b">B</option></select><output>{{ values.join(',') }}</output></section>"#,
+        json!({"values": ["a"]}),
+        json!([{"event": "change", "selector": "select", "selectedValues": ["a", "b"]}, {"patch": {"values": ["b"]}}]),
+    );
+    assert_eq!(
+        trace[1]["tree"][0]["children"][1]["children"],
+        json!(["a,b"])
+    );
+    assert_eq!(
+        trace[2]["tree"][0]["children"][0]["children"][0]["selected"],
+        false
+    );
+    assert_eq!(
+        trace[2]["tree"][0]["children"][0]["children"][1]["selected"],
+        true
+    );
+}
+
+#[test]
+fn mounted_model_resolves_member_and_computed_bindings() {
+    for binding in ["form.value", "form[key]"] {
+        let source = format!(
+            r#"<section><input v-model="{binding}"><output>{{{{ form.value }}}}</output></section>"#
+        );
+        let trace = assert_backends(
+            &source,
+            json!({"form": {"value": "initial"}, "key": "value"}),
+            json!([{"event": "input", "selector": "input", "value": "typed"}, {"patch": {"form": {"value": "external"}}}]),
+        );
+        assert_eq!(trace[0]["tree"][0]["children"][0]["value"], "initial");
+        assert_eq!(
+            trace[1]["tree"][0]["children"][1]["children"],
+            json!(["typed"])
+        );
+        assert_eq!(trace[2]["tree"][0]["children"][0]["value"], "external");
+    }
+}
+
+#[test]
+fn model_codegen_resolves_identifiers_with_and_without_prefixing() {
+    for prefix_identifiers in [false, true] {
+        let allocator = Allocator::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<input v-model="value">"#,
+            VaporCompilerOptions {
+                prefix_identifiers,
+                ..Default::default()
+            },
+        );
+        assert!(result.error_messages.is_empty());
+        assert!(
+            result
+                .code
+                .contains("() => (_ctx.value), _value => (_ctx.value = _value)"),
+            "{}",
+            result.code
+        );
+        assert!(!result.code.contains("_ctx._ctx"));
+    }
+}

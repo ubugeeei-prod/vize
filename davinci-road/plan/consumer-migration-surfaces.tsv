@@ -982,7 +982,7 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations.rs	18
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/component_props.rs	2	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/component_slots.rs	2	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/component.rs	2	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/directives.rs	3	s0	S0	stage	vize_carton	compat	7
+compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/directives.rs	3	s0	S0	stage	vize_carton	compat	5
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/dom.rs	2	s0	S0	stage	vize_carton	compat	4
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/events.rs	2	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/for_loop.rs	2	s0	S0	stage	vize_carton	compat	1

@@ -163,10 +163,12 @@ intermediate input → compositionend, `.lazy`/`.number`/`.trim`, checkbox
 arrays, select-multiple (TS-30). _Accept:_ trace equality across backends and
 vs reference.
 
-_First slice 2026-09-16:_ [P3-12 record](./phase-3-records/p3-12.md)
+_Progress 2026-09-16:_ [P3-12 record](./phase-3-records/p3-12.md)
 covers the mounted Vue runtime gate, reactive button and slot/branch scripts,
-and the `v-text` and source-order defects it exposed. IME/model scripts and
-stateful Lean differential traces remain open.
+IME composition, model modifiers, checkbox arrays, select-multiple, and member
+bindings. It records the `v-text`, source-order, and model-expression defects
+exposed by those scripts. Broader keyed interactions and stateful Lean
+differential traces remain open.
 
 **P3-13 Remarks.** `{pass, kind: applied|missed, span, args}` structured
 remarks through the observer; corpus remarks-diff job (TS-32); missed-remarks

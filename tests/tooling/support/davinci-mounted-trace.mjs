@@ -12,6 +12,7 @@ export async function traceMountedBackend({ backend, code, context = {}, steps =
   for (const key of [
     "window",
     "document",
+    "Document",
     "Node",
     "Text",
     "Comment",
@@ -58,6 +59,10 @@ export async function traceMountedBackend({ backend, code, context = {}, steps =
         assert.ok(target, `missing interaction target: ${step.selector}`);
         if (Object.hasOwn(step, "value")) target.value = step.value;
         if (Object.hasOwn(step, "checked")) target.checked = step.checked;
+        if (step.selectedValues) {
+          for (const option of target.options)
+            option.selected = step.selectedValues.includes(option.value);
+        }
         target.dispatchEvent(new window.Event(step.event, { bubbles: true, cancelable: true }));
       } else {
         throw new Error(`unknown interaction step: ${JSON.stringify(step)}`);
@@ -122,6 +127,8 @@ function observeChildren(parent) {
         element.checked = node.checked;
       }
       if (node.localName === "button") element.disabled = node.disabled;
+      if (node.localName === "select") element.value = node.value;
+      if (node.localName === "option") element.selected = node.selected;
       children.push(element);
     }
   }

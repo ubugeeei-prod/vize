@@ -144,14 +144,7 @@ pub(super) fn generate_directive(ctx: &mut GenerateContext, directive: &Directiv
 fn generate_v_model(ctx: &mut GenerateContext, directive: &DirectiveIRNode<'_>) {
     let element = cstr!("n{}", directive.element);
 
-    let binding = if let Some(ref exp) = directive.dir.exp {
-        match exp {
-            ExpressionNode::Simple(e) => String::new(e.content),
-            _ => vize_carton::String::from(""),
-        }
-    } else {
-        vize_carton::String::from("")
-    };
+    let binding = directive_value(ctx, directive);
 
     let helper = if directive.tag == "select" {
         "applySelectModel"
@@ -183,12 +176,12 @@ fn generate_v_model(ctx: &mut GenerateContext, directive: &DirectiveIRNode<'_>) 
 
     if mod_parts.is_empty() {
         ctx.push_line_fmt(format_args!(
-            "_{}({}, () => (_ctx.{}), _value => (_ctx.{} = _value))",
+            "_{}({}, () => ({}), _value => ({} = _value))",
             helper, element, binding, binding
         ));
     } else {
         ctx.push_line_fmt(format_args!(
-            "_{}({}, () => (_ctx.{}), _value => (_ctx.{} = _value), {{ {} }})",
+            "_{}({}, () => ({}), _value => ({} = _value), {{ {} }})",
             helper,
             element,
             binding,
