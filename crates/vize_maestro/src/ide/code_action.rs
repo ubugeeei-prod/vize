@@ -13,6 +13,9 @@ use tower_lsp::lsp_types::{
 // Shared, UTF-16-correct offset->(line, column) conversion (#1389).
 use vize_s0::line_index::offset_to_line_col;
 
+#[cfg(test)]
+mod source_position_tests;
+
 /// Code action service for providing quick fixes and refactorings.
 pub struct CodeActionService;
 
@@ -21,8 +24,8 @@ pub struct CodeActionService;
 struct TemplateLint {
     /// Template block content (the text the linter ran against).
     content: String,
-    /// 1-indexed line where the template block starts inside the SFC.
-    start_line: u32,
+    /// Byte offset where the template content starts inside the SFC.
+    start_offset: usize,
     /// Lint diagnostics for the template block.
     result: vize_patina::LintResult,
 }
@@ -315,7 +318,7 @@ impl CodeActionService {
         let result = linter.lint_template(&template.content, ctx.uri.path());
         Some(TemplateLint {
             content: template.content.to_string(),
-            start_line: template.loc.start_line as u32,
+            start_offset: template.loc.start,
             result,
         })
     }
@@ -328,9 +331,6 @@ impl CodeActionService {
     ) -> Vec<CodeActionOrCommand> {
         let mut actions = Vec::new();
 
-        let template_content = lint.content.as_str();
-        let template_start_line = lint.start_line;
-
         for lint_diag in &lint.result.diagnostics {
             // Check if diagnostic has a fix
             let Some(ref fix) = lint_diag.fix else {
@@ -338,13 +338,9 @@ impl CodeActionService {
             };
 
             // Convert lint diagnostic position to SFC position
-            let (start_line, start_col) =
-                offset_to_line_col(template_content, lint_diag.start as usize);
-            let (end_line, end_col) = offset_to_line_col(template_content, lint_diag.end as usize);
-
             let diag_range = Range {
-                start: template_position(template_start_line, start_line, start_col),
-                end: template_position(template_start_line, end_line, end_col),
+                start: template_position(&ctx.content, lint.start_offset, lint_diag.start as usize),
+                end: template_position(&ctx.content, lint.start_offset, lint_diag.end as usize),
             };
 
             // Check if the diagnostic range overlaps with the requested range
@@ -356,28 +352,16 @@ impl CodeActionService {
             let edits: Vec<TextEdit> = fix
                 .edits
                 .iter()
-                .map(|edit| {
-                    let (edit_start_line, edit_start_col) =
-                        offset_to_line_col(template_content, edit.start as usize);
-                    let (edit_end_line, edit_end_col) =
-                        offset_to_line_col(template_content, edit.end as usize);
-
-                    TextEdit {
-                        range: Range {
-                            start: template_position(
-                                template_start_line,
-                                edit_start_line,
-                                edit_start_col,
-                            ),
-                            end: template_position(
-                                template_start_line,
-                                edit_end_line,
-                                edit_end_col,
-                            ),
-                        },
-                        #[allow(clippy::disallowed_methods)]
-                        new_text: edit.new_text.to_string(),
-                    }
+                .map(|edit| TextEdit {
+                    range: Range {
+                        start: template_position(
+                            &ctx.content,
+                            lint.start_offset,
+                            edit.start as usize,
+                        ),
+                        end: template_position(&ctx.content, lint.start_offset, edit.end as usize),
+                    },
+                    new_text: edit.new_text.to_string(),
                 })
                 .collect();
 
@@ -420,17 +404,21 @@ impl CodeActionService {
         let mut actions = Vec::new();
 
         let template_content = lint.content.as_str();
-        let template_start_line = lint.start_line;
+        let newline = if ctx
+            .content
+            .find('\n')
+            .is_some_and(|end| ctx.content[..end].ends_with('\r'))
+        {
+            "\r\n"
+        } else {
+            "\n"
+        };
 
         for lint_diag in &lint.result.diagnostics {
             // Convert diagnostic position to SFC position
-            let (start_line, start_col) =
-                offset_to_line_col(template_content, lint_diag.start as usize);
-            let (end_line, end_col) = offset_to_line_col(template_content, lint_diag.end as usize);
-
             let diag_range = Range {
-                start: template_position(template_start_line, start_line, start_col),
-                end: template_position(template_start_line, end_line, end_col),
+                start: template_position(&ctx.content, lint.start_offset, lint_diag.start as usize),
+                end: template_position(&ctx.content, lint.start_offset, lint_diag.end as usize),
             };
 
             if !ranges_overlap(&diag_range, &range) {
@@ -440,15 +428,17 @@ impl CodeActionService {
             // Compute indentation of the diagnostic line
             let indent = get_line_indent(template_content, lint_diag.start as usize);
 
-            // Insert `<!-- @vize:forget <rule_name> -->\n` before the line
-            let sfc_line = template_position(template_start_line, start_line, 0).line;
-            let insert_pos = Position {
-                line: sfc_line,
-                character: 0,
-            };
+            // The first content line can follow `<template>` on the same line.
+            let line_start = template_content[..lint_diag.start as usize]
+                .rfind('\n')
+                .map_or(0, |offset| offset + 1);
+            let insert_pos = template_position(&ctx.content, lint.start_offset, line_start);
 
             #[allow(clippy::disallowed_macros)]
-            let new_text = format!("{}<!-- @vize:forget {} -->\n", indent, lint_diag.rule_name,);
+            let new_text = format!(
+                "{}<!-- @vize:forget {} -->{newline}",
+                indent, lint_diag.rule_name
+            );
 
             let edit = TextEdit {
                 range: Range {
@@ -500,29 +490,22 @@ impl CodeActionService {
         let linter = vize_patina::Linter::new();
         let result = linter.lint_template(&template.content, ctx.uri.path());
 
-        let template_start_line = template.loc.start_line as u32;
-
         let mut all_edits: Vec<TextEdit> = Vec::new();
 
         for lint_diag in result.diagnostics {
             if let Some(ref fix) = lint_diag.fix {
                 for edit in &fix.edits {
-                    let (edit_start_line, edit_start_col) =
-                        offset_to_line_col(&template.content, edit.start as usize);
-                    let (edit_end_line, edit_end_col) =
-                        offset_to_line_col(&template.content, edit.end as usize);
-
                     all_edits.push(TextEdit {
                         range: Range {
                             start: template_position(
-                                template_start_line,
-                                edit_start_line,
-                                edit_start_col,
+                                &ctx.content,
+                                template.loc.start,
+                                edit.start as usize,
                             ),
                             end: template_position(
-                                template_start_line,
-                                edit_end_line,
-                                edit_end_col,
+                                &ctx.content,
+                                template.loc.start,
+                                edit.end as usize,
                             ),
                         },
                         #[allow(clippy::disallowed_methods)]
@@ -568,11 +551,9 @@ impl CodeActionService {
     }
 }
 
-fn template_position(template_start_line: u32, line: u32, character: u32) -> Position {
-    Position {
-        line: template_start_line.saturating_sub(1) + line,
-        character,
-    }
+fn template_position(source: &str, template_start: usize, offset: usize) -> Position {
+    let (line, character) = offset_to_line_col(source, template_start + offset);
+    Position { line, character }
 }
 
 /// Get the leading whitespace (indentation) for the line containing the given byte offset.
@@ -814,7 +795,7 @@ mod tests {
     #[test]
     fn template_position_maps_content_lines_to_lsp_lines() {
         assert_eq!(
-            template_position(1, 1, 17),
+            template_position("<template>\n<div title=\"hi\"  class=\"a\">", 10, 18),
             Position {
                 line: 1,
                 character: 17,
