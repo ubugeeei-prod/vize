@@ -167,11 +167,12 @@ test("TS-28 stateful reference and mounted backends share full observations and 
   assert.deepEqual(trace.at(-1), { tree: [], events: ["save", "save"] });
   assert.deepEqual(
     trace.slice(0, -1).map((snapshot) => snapshot.tree[0].children[0].disabled),
-    [true, false, false, false, false, false, false, false, true],
+    [true, true, false, false, false, false, false, false, false, true, true],
   );
   assert.deepEqual(
     trace.slice(0, -1).map((snapshot) => snapshot.tree[0].children[0].children),
     [
+      ["Save"],
       ["Save"],
       ["Publish"],
       ["Publish"],
@@ -180,6 +181,7 @@ test("TS-28 stateful reference and mounted backends share full observations and 
       ["true"],
       ['\u96ea\n"ready"'],
       ['\u96ea\n"ready"'],
+      ["Saved"],
       ["Saved"],
     ],
   );

@@ -52,7 +52,14 @@ export async function traceMountedBackend({ backend, code, context = {}, steps =
     await vue.nextTick();
     snapshot();
     for (const step of steps) {
-      if (step.patch) {
+      if (Object.hasOwn(step, "activate")) {
+        assert.deepEqual(Object.keys(step), ["activate"], "unexpected activation fields");
+        assert.equal(step.activate, "button", "unsupported activation target");
+        const targets = host.querySelectorAll("button");
+        assert.equal(targets.length, 1, "expected one activation target");
+        assert.ok(targets[0] instanceof window.HTMLButtonElement, "expected an HTML button");
+        targets[0].click();
+      } else if (step.patch) {
         Object.assign(state, step.patch);
       } else if (step.event) {
         const target = host.querySelector(step.selector);
