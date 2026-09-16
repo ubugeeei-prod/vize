@@ -18,19 +18,20 @@ type Step = {
   uses?: string;
   run?: string;
   if?: unknown;
-  "continue-on-error"?: boolean;
+  "continue-on-error"?: unknown;
   "working-directory"?: string;
   with?: Record<string, unknown>;
 };
 type Workflow = {
   on: Record<"push" | "pull_request", { paths: string[] }>;
-  jobs: Record<string, { steps: Step[]; if?: unknown }>;
+  jobs: Record<string, { steps: Step[]; if?: unknown; "continue-on-error"?: unknown }>;
 };
 
 function assertLeanWorkflow(workflow: Workflow): void {
   const job = workflow.jobs["impeto-reference"];
   assert.ok(job);
   assert.equal(job.if, undefined);
+  assert.ok(job["continue-on-error"] === undefined || job["continue-on-error"] === false);
   const lean = job.steps.find((step) => step.uses?.startsWith("leanprover/lean-action@"));
   assert.equal(lean?.uses, "leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596");
   assert.equal(lean?.with?.["lake-package-directory"], "formal/impeto");
@@ -41,7 +42,7 @@ function assertLeanWorkflow(workflow: Workflow): void {
   assert.equal(vp?.with?.["run-install"], false);
   for (const step of job.steps) {
     assert.equal(step.if, undefined);
-    assert.notEqual(step["continue-on-error"], true);
+    assert.ok(step["continue-on-error"] === undefined || step["continue-on-error"] === false);
   }
   assert.deepEqual(
     job.steps.flatMap((step) =>
@@ -90,6 +91,24 @@ test("TS-28 rejects commented, moved and disabled workflow commands", () => {
       field !== "if";
     assert.throws(() => assertLeanWorkflow(disabled), assert.AssertionError);
   }
+});
+
+test("TS-28 rejects failure-ignore settings at job and step scopes", () => {
+  const source = readRepoFile(".github", "workflows", "davinci-lean.yml");
+  for (const scope of ["job", "step"] as const) {
+    for (const value of [true, "${{ true }}", "${{ false }}", "false", null]) {
+      const workflow: Workflow = parseYaml(source);
+      const job = workflow.jobs["impeto-reference"];
+      const target = scope === "job" ? job : job.steps.find((step) => step.run)!;
+      target["continue-on-error"] = value;
+      assert.throws(() => assertLeanWorkflow(workflow), assert.AssertionError);
+    }
+  }
+  const explicitFalse: Workflow = parseYaml(source);
+  const job = explicitFalse.jobs["impeto-reference"];
+  job["continue-on-error"] = false;
+  for (const step of job.steps) step["continue-on-error"] = false;
+  assertLeanWorkflow(explicitFalse);
 });
 
 test("TS-28 fixture ladder is declared and non-vacuous", () => {
