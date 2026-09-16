@@ -18,6 +18,11 @@ function assign(value: boolean) {
 }
 "#;
     assert!(!matches_assignment(source));
+    assert!(!matches_assignment(
+        "type A = { text: string; count: number }; declare const target: A; \
+         declare const key: string; function assign(value: boolean) { \
+         var value = null as unknown as A[keyof A]; target[key as keyof A] = value; }"
+    ));
 }
 
 #[test]
@@ -54,6 +59,8 @@ fn writes_and_widened_annotations_cannot_prove_an_alias_type() {
         "let value = null as unknown as A[keyof A]; ({ value } = { value: true });",
         "let value = null as unknown as A[keyof A]; function mutate() { value = true; }",
         "let value = null as unknown as A[keyof A]; for (value of [true]) {}",
+        "var value = null as unknown as A[keyof A]; var value = true;",
+        "var value: unknown; var value = null as unknown as A[keyof A];",
     ] {
         let source = format!(
             "type A = {{ text: string; count: number }}; declare const target: A; \

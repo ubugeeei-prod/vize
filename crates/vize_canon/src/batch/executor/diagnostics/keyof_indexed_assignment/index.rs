@@ -125,6 +125,7 @@ impl<'a> Visit<'a> for Visitor<'_> {
         if declarator.type_annotation.is_none()
             && let BindingPattern::BindingIdentifier(id) = &declarator.id
             && let Some(symbol) = id.symbol_id.get()
+            && self.types.scoping.symbol_redeclarations(symbol).is_empty()
             && !self
                 .types
                 .scoping
