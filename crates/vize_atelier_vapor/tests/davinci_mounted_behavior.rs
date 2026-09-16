@@ -111,19 +111,27 @@ fn mounted_dynamic_button_updates_and_dispatches_events() {
         "../../../formal/impeto/fixtures/rust-lowered-static-dynamic.scenario.json"
     ))
     .unwrap();
-    let expected: Value = serde_json::from_str(include_str!(
+    let mut expected: Value = serde_json::from_str(include_str!(
         "../../../formal/impeto/fixtures/rust-lowered-static-dynamic.behavior.json"
     ))
     .unwrap();
-    let trace = assert_backends(
+    for source in [
         r#"<main class="shell"><button :disabled="locked" @click="save">{{ label }}</button></main>"#,
-        Value::Object(scenario.context),
-        Value::Array(scenario.steps),
-    );
-    assert_eq!(
-        trace, expected,
-        "mounted behavior differs from Lean reference"
-    );
+        r#"<main class="shell"><button :disabled="locked">{{ label }}</button></main>"#,
+    ] {
+        let trace = assert_backends(
+            source,
+            Value::Object(scenario.context.clone()),
+            Value::Array(scenario.steps.clone()),
+        );
+        assert_eq!(
+            trace, expected,
+            "mounted behavior differs from Lean reference"
+        );
+        for snapshot in expected.as_array_mut().unwrap() {
+            snapshot["events"] = json!([]);
+        }
+    }
 }
 
 #[test]

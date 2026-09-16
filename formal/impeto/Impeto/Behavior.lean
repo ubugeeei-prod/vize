@@ -15,18 +15,18 @@ def validateState (context : Json) : Except String Unit := do
 def snapshot (tree : Json) (events : List String) : Json :=
   Json.mkObj [("tree", tree), ("events", .arr (events.map Json.str).toArray)]
 
-def buttonIsDisabled (program : Program) (rows : List Operand) (context : Json) : Except String Bool := do
+def buttonState (program : Program) (rows : List Operand) (context : Json) : Except String (Bool × Bool) := do
   let buttons := program.ops.filter (fun op => op.kind == .insertNode &&
     (Values.one rows op.id "tag").toOption.any (fun row => row.text == "button"))
   let [button] := buttons | throw "expected one interaction target"
   let bindings := Observation.attached program rows button.id
-  if (bindings.filter (fun op => op.kind == .setEvent)).length != 1 then
-    throw "expected one click handler"
+  let handlers := bindings.filter (fun op => op.kind == .setEvent)
+  if handlers.length > 1 then throw "unsupported multiple click handlers"
   let mut disabled := false
   for op in bindings do
     if op.kind == .setProp then
       disabled <- (<- Observation.evaluate context (<- Values.one rows op.id "value")).getBool?
-  pure disabled
+  pure (disabled, !handlers.isEmpty)
 
 def run (program : Program) (rows : List Operand) (script : Json) : Except String Json := do
   if (<- keys script) != ["context", "steps"] then throw "unsupported scenario fields"
@@ -45,15 +45,17 @@ def run (program : Program) (rows : List Operand) (script : Json) : Except Strin
     else if fields == ["activate"] then
       if (<- step.getObjVal? "activate") != .str "button" then
         throw "unsupported activation target"
-      if !(<- buttonIsDisabled program rows context) then
+      let (disabled, hasHandler) <- buttonState program rows context
+      if !disabled && hasHandler then
         events := events ++ ["save"]
     else if fields == ["event", "selector"] then
       if (<- step.getObjVal? "event") != .str "click" ||
           (<- step.getObjVal? "selector") != .str "button" then
         throw "unsupported interaction"
-      if (<- buttonIsDisabled program rows context) then
+      let (disabled, hasHandler) <- buttonState program rows context
+      if disabled then
         throw "disabled synthetic dispatch is outside this reference subset"
-      events := events ++ ["save"]
+      if hasHandler then events := events ++ ["save"]
     else throw "unsupported interaction step"
     trace := trace ++ [snapshot (<- Observation.render program rows context) events]
   pure (.arr (trace ++ [snapshot (.arr #[]) events]).toArray)

@@ -5,14 +5,14 @@ import test from "node:test";
 
 const runner = fileURLToPath(new URL("./support/davinci-mounted-trace.mjs", import.meta.url));
 
-function run(steps: unknown[], buttons = 1) {
+function run(steps: unknown[], buttons = 1, hasHandler = true) {
   return spawnSync(process.execPath, [runner], {
     input: JSON.stringify({
       backend: "vdom",
       code: `import { createElementVNode as h } from "vue";
         export function render(ctx) {
           return h("main", null, Array.from({ length: ${buttons} }, () =>
-            h("button", { disabled: ctx.locked, onClick: ctx.save }, "Save")));
+            h("button", { disabled: ctx.locked, onClick: ${hasHandler ? "ctx.save" : "undefined"} }, "Save")));
         }`,
       context: { locked: true },
       steps,
@@ -72,6 +72,33 @@ test("activation does not silently redefine synthetic event dispatch", () => {
     snapshot(true, []),
     snapshot(true, ["save"]),
     { tree: [], events: ["save"] },
+  ]);
+});
+
+test("activation without a handler never records a save event", () => {
+  const result = run(
+    [
+      { activate: "button" },
+      { patch: { locked: false } },
+      { activate: "button" },
+      { event: "click", selector: "button" },
+      { patch: { locked: true } },
+      { activate: "button" },
+    ],
+    1,
+    false,
+  );
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), [
+    snapshot(true, []),
+    snapshot(true, []),
+    snapshot(false, []),
+    snapshot(false, []),
+    snapshot(false, []),
+    snapshot(true, []),
+    snapshot(true, []),
+    { tree: [], events: [] },
   ]);
 });
 

@@ -39,6 +39,20 @@ def parserTests : Except String Unit := do
 
 def referenceTests (program : Program) (rows : List Operand) (script : Json) : Except String Unit := do
   let _ <- Behavior.run program rows script
+  let noHandler := { program with
+    ops := program.ops.filter (fun op => op.id != 3)
+    edges := program.edges.filter (fun edge => edge.source != 3 && edge.target != 3)
+    effects := program.effects.filter (fun effect => effect.owner != 3) }
+  let noHandlerRows := rows.filter (fun row => row.op != 3)
+  let withHandler <- Behavior.run program rows script
+  let expected := .arr ((<- withHandler.getArr?).map (fun snapshot =>
+    snapshot.setObjVal! "events" (.arr #[])))
+  if (<- Behavior.run noHandler noHandlerRows script) != expected then
+    throw "handler-free activation must preserve the full trace without save events"
+  let duplicate := program.ops.filter (fun op => op.id == 3) |>.map (fun op => { op with id := 99 })
+  let duplicateRows := rows.filter (fun row => row.op == 3) |>.map (fun row => { row with op := 99 })
+  expectError "multiple click handlers" (Behavior.run
+    { program with ops := program.ops ++ duplicate } (rows ++ duplicateRows) script)
   for kind in ["opaque", "foreign", "vue.filter", "absent"] do
     expectError "unsupported expression kind" (Behavior.run program
       (rows.map (fun row => if row.role == "text" then { row with kind } else row)) script)
