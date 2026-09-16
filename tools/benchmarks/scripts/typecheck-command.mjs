@@ -33,15 +33,10 @@ export function normalizeTypecheckResult(result, cwd, format) {
   if (!(format === "json" ? [0, 1] : [0, 1, 2]).includes(result.status)) {
     throw new Error(`type-check process exited with ${result.status}\n${output}`);
   }
-  if (
-    /^(?:\w*Error \[ERR_[A-Z_]+\]|panic:|fatal error:|Segmentation fault|Trace\/BPT trap)/mu.test(
-      output,
-    )
-  ) {
-    throw new Error(`type-check process failed\n${output}`);
-  }
   const diagnostics = [];
+  let summaryErrorCount;
   if (format === "json") {
+    if (result.stderr.trim()) throw new Error(`unexpected type-check stderr\n${result.stderr}`);
     const report = JSON.parse(result.stdout);
     if (!Array.isArray(report.files)) throw new Error("type-check report has no files");
     for (const entry of report.files) {
@@ -57,17 +52,37 @@ export function normalizeTypecheckResult(result, cwd, format) {
       }
     }
   } else {
+    let continuation = false;
     for (const line of output.split(/\r?\n/u)) {
       const match = /^(.+?)\((\d+),(\d+)\): (error|warning) (TS\d+): (.*)$/u.exec(line);
       if (match) {
         const [, file, line, column, kind, code, message] = match;
         diagnostics.push([sourcePath(file, cwd), kind, line, column, code, message]);
-      } else if (/^[ \t]+\S/u.test(line) && diagnostics.length > 0) {
+        continuation = true;
+      } else if (
+        continuation &&
+        /^[ \t]+\S/u.test(line) &&
+        !/^\s+(?:\w*Error(?:\s*\[[^\]]+\])?:|at\s|panic:|fatal error:)/u.test(line)
+      ) {
         diagnostics.at(-1)[5] += `\n${line.trimEnd()}`;
+      } else if (/^Found \d+ error\(s\) in \d+ file\(s\)\.$/u.test(line)) {
+        summaryErrorCount = Number(/^Found (\d+)/u.exec(line)[1]);
+        continuation = false;
+      } else if (
+        !line.trim() ||
+        line === "Using config from ./golar.config.ts..." ||
+        /^verter-tsc: checking \d+ \.vue file\(s\)\.\.\.$/u.test(line)
+      ) {
+        continuation = false;
+      } else {
+        throw new Error(`unexpected type-check output\n${line}`);
       }
     }
   }
   const errors = diagnostics.filter((d) => d[1] === "error").length;
+  if (summaryErrorCount != null && summaryErrorCount !== errors) {
+    throw new Error("type-check summary count does not match its diagnostics");
+  }
   if ((result.status !== 0 && errors === 0) || (result.status === 0 && errors > 0)) {
     throw new Error(`type-check exit status disagrees with diagnostics\n${output}`);
   }
