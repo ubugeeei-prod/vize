@@ -11,6 +11,9 @@ const source = defineModel<string>({ required: true });
 const visualize = defineModel<boolean>("visualize", { required: true });
 const experimentals = defineModel<ExperimentalOptions>("experimentals", { required: true });
 const emit = defineEmits<{ example: [key: string] }>();
+function loadExample(key: string) {
+  emit("example", key);
+}
 const editor = ref<InstanceType<typeof MonacoEditor> | null>(null);
 defineExpose({
   applyScopeDecorations: (scopes: ScopeDecoration[]) => editor.value?.applyScopeDecorations(scopes),
@@ -33,11 +36,7 @@ defineExpose({
       </div>
     </div>
     <div class="experimental-controls">
-      <ExperimentalFeatures
-        v-model="experimentals"
-        scope="croquis"
-        @example="emit('example', $event)"
-      />
+      <ExperimentalFeatures v-model="experimentals" scope="croquis" @example="loadExample" />
     </div>
     <div class="editor-container">
       <MonacoEditor ref="editor" v-model="source" language="vue" :scopes :diagnostics :theme />
