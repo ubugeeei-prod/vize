@@ -40,11 +40,12 @@ impl PatternParser<'_> {
             if !keys.insert(key_value.clone()) {
                 return Err(self.error("Duplicate pattern property."));
             }
+            let end = pattern.span.end;
             properties.push(PatternProperty {
                 key,
                 key_value,
                 pattern,
-                span: Span::new(start as u32, self.pos as u32),
+                span: Span::new(start as u32, end),
             });
             if self.eat("}") {
                 break;
@@ -79,6 +80,9 @@ impl PatternParser<'_> {
         } else {
             None
         };
+        let end = binding
+            .as_ref()
+            .map_or(start as u32 + 3, |binding| binding.span.end);
         self.space();
         if !self.source[self.pos..].starts_with(close) {
             return Err(self
@@ -86,7 +90,7 @@ impl PatternParser<'_> {
         }
         Ok(PatternRest {
             binding,
-            span: Span::new(start as u32, self.pos as u32),
+            span: Span::new(start as u32, end),
         })
     }
 

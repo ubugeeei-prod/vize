@@ -109,7 +109,7 @@ Supported branch patterns:
 | Object rest | `v-when="{ kind: 'error', ...const payload }"` | binds remaining own enumerable properties; lone `...` is accepted |
 | Array / tuple | `v-when="[const first, ...const rest]"` | requires `Array.isArray`; rest allows additional items |
 | Or | `v-when="'idle' | 'loading'"` | tries alternatives from left to right |
-| As binding | `v-when="{ kind: 'ok' } as const whole"` | binds the matched value as `whole` |
+| As binding | Croquis: `v-when="{ kind: 'ok' } as whole"`; compiler only: `as const whole` | binds the matched value as `whole` |
 | Guard | `v-when="{ error: const e } if (e.retriable)"` | runs after the pattern succeeds |
 
 ### Patterned Diagnostics

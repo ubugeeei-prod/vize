@@ -2,6 +2,8 @@ use crate::{Croquis, Drawer, DrawerOptions, ScopeData, ScopeKind};
 use vize_armature::parse;
 use vize_carton::Allocator;
 
+mod recovery;
+
 fn analyze(source: &str, script: &str, enabled: bool) -> Croquis {
     let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, source);

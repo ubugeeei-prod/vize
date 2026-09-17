@@ -25,8 +25,17 @@ impl Drawer {
         el: &ElementNode<'_>,
         scope_vars: &mut Vec<CompactString>,
     ) {
+        self.visit_element_with_pattern_parent(el, scope_vars, false);
+    }
+
+    pub(in crate::drawer::template) fn visit_element_with_pattern_parent(
+        &mut self,
+        el: &ElementNode<'_>,
+        scope_vars: &mut Vec<CompactString>,
+        direct_match_child: bool,
+    ) {
         let tag = el.tag;
-        self.check_orphan_pattern_arm(el);
+        self.check_orphan_pattern_arm(el, direct_match_child);
         let is_component = is_component_tag(tag);
         let mut subtree_end = None;
 

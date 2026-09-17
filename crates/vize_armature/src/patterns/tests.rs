@@ -2,6 +2,44 @@ use super::{PatternBinding, PatternExpression, PatternKind, parse_match_pattern}
 use oxc_span::Span;
 
 #[test]
+fn pattern_spans_exclude_trailing_trivia() {
+    let source = "value | Other   if (x)";
+    let arm = parse_match_pattern(source).unwrap();
+    assert_eq!(
+        &source[arm.pattern.span.start as usize..arm.pattern.span.end as usize],
+        "value | Other"
+    );
+    let PatternKind::Or(alternatives) = arm.pattern.kind else {
+        panic!()
+    };
+    for (pattern, expected) in alternatives.iter().zip(["value", "Other"]) {
+        assert_eq!(
+            &source[pattern.span.start as usize..pattern.span.end as usize],
+            expected
+        );
+    }
+    let source = "{ a: value  , b: Other | Third \t, ...const rest \t}";
+    let PatternKind::Object { properties, rest } =
+        parse_match_pattern(source).unwrap().pattern.kind
+    else {
+        panic!()
+    };
+    for (property, expected) in properties.iter().zip(["a: value", "b: Other | Third"]) {
+        assert_eq!(
+            &source[property.span.start as usize..property.span.end as usize],
+            expected
+        );
+    }
+    let rest = rest.unwrap();
+    assert_eq!(
+        &source[rest.span.start as usize..rest.span.end as usize],
+        "...const rest"
+    );
+    let attribute = super::parse_match_attribute("value&#32;if (x)").unwrap();
+    assert_eq!(attribute.pattern.span, Span::new(0, 5));
+}
+
+#[test]
 fn parses_long_form_bindings_with_authored_byte_ranges() {
     let source =
         "{ const value, data: [const head, ...const tail], ...const rest } as result if (head > 0)";

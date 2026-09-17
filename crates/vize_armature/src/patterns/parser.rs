@@ -75,8 +75,9 @@ impl<'s> PatternParser<'s> {
             if self.bindings.len() != bindings_before {
                 return Err(self.error("Bindings inside or-patterns are not supported."));
             }
+            let end = alternatives.last().map_or(start, |last| last.span.end);
             pattern = MatchPattern {
-                span: Span::new(start, self.pos as u32),
+                span: Span::new(start, end),
                 kind: PatternKind::Or(alternatives),
             };
         }
@@ -152,6 +153,7 @@ impl<'s> PatternParser<'s> {
                     expression.text = String::from(expression.text.trim_end());
                     expression.span.end = start as u32 + expression.text.len() as u32;
                     self.validate_expression(&expression.text, "value pattern")?;
+                    self.pos = expression.span.end as usize;
                     PatternKind::Value(expression)
                 }
             }

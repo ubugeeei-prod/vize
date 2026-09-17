@@ -15,7 +15,11 @@ pub(super) fn directive<'a, 's>(
 }
 
 impl Drawer {
-    pub(in crate::drawer::template) fn check_orphan_pattern_arm(&mut self, el: &ElementNode<'_>) {
+    pub(in crate::drawer::template) fn check_orphan_pattern_arm(
+        &mut self,
+        el: &ElementNode<'_>,
+        direct_match_child: bool,
+    ) {
         if !self.options.experimental_patterned_template {
             return;
         }
@@ -41,7 +45,9 @@ impl Drawer {
             return;
         };
         let scope = self.croquis.scopes.current_scope();
-        if scope.kind != ScopeKind::VWhen || scope.span.start != el.loc.span.start {
+        if !direct_match_child
+            && (scope.kind != ScopeKind::VWhen || scope.span.start != el.loc.span.start)
+        {
             self.pattern_diagnostic(
                 "v-when must be a direct child of v-match.",
                 dir.loc.span.start,
