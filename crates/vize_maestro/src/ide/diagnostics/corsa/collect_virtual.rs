@@ -177,6 +177,21 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
                 return None;
             }
 
+            let code = diag.code.as_ref().and_then(|code| match code {
+                serde_json::Value::Number(number) => {
+                    number.as_u64().and_then(|n| n.try_into().ok())
+                }
+                serde_json::Value::String(text) => text.trim_start_matches("TS").parse().ok(),
+                _ => None,
+            });
+            let unreachable = line_character_to_byte_offset(
+                virtual_ts,
+                diag.range.start.line,
+                diag.range.start.character,
+            )
+            .is_some_and(|offset| {
+                vize_canon::virtual_ts::is_unreachable_pattern_diagnostic(virtual_ts, offset, code)
+            });
             Some(Diagnostic {
                 range: Range {
                     start: Position {
@@ -188,12 +203,16 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
                         character: end_char,
                     },
                 },
-                severity: diag.severity.map(|s| match s {
-                    1 => DiagnosticSeverity::ERROR,
-                    2 => DiagnosticSeverity::WARNING,
-                    3 => DiagnosticSeverity::INFORMATION,
-                    _ => DiagnosticSeverity::HINT,
-                }),
+                severity: if unreachable {
+                    Some(DiagnosticSeverity::WARNING)
+                } else {
+                    diag.severity.map(|s| match s {
+                        1 => DiagnosticSeverity::ERROR,
+                        2 => DiagnosticSeverity::WARNING,
+                        3 => DiagnosticSeverity::INFORMATION,
+                        _ => DiagnosticSeverity::HINT,
+                    })
+                },
                 code: diag.code.map(corsa_diagnostic_code),
                 source: Some(sources::TYPE_CHECKER.to_string()),
                 message: rewrite_corsa_message(&diag.message, content),

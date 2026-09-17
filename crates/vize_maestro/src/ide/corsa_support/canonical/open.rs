@@ -53,6 +53,7 @@ pub(super) async fn open_canonical_virtual_document_with_overlays_strict(
             CorsaVueVirtualDocumentOptions {
                 options_api: ctx.state.options_api_enabled(),
                 legacy_vue2: ctx.state.legacy_vue2_enabled(),
+                experimental_patterned_template: ctx.state.patterned_template_enabled(),
                 preserve_event_navigation: true,
                 dialect: ctx.state.type_checker_vue_version(),
             },

@@ -107,7 +107,7 @@ config resolution をすでに所有している integration だけが直接使�
 
 | Flag | 有効時の挙動 | off 時の挙動 | enforce される場所 | boundary |
 | --- | --- | --- | --- | --- |
-| `patternedTemplate` | `v-match` / direct `v-when` branch を parse して lower | `v-match`、`v-when`、`v-case` は必要な opt-in を報告 | DOM, SSR, Vapor, SFC, WASM compile API | Canon は narrowing・網羅性検査に対応。Editor への opt-in 設定伝達と navigation は未対応 |
+| `patternedTemplate` | `v-match` / direct `v-when` branch を parse して lower | `v-match`、`v-when`、`v-case` は必要な opt-in を報告 | DOM, SSR, Vapor, SFC, WASM compile API | Canon と native Maestro は narrowing・網羅性検査に対応。Content Mapper と navigation の全組合せの検証は未完了 |
 | `inTagComment` | opening tag の `//` comment を parse し tooling 用に保持 | `//` は不正な tag syntax | Parser, DOM, SSR, Vapor, SFC, WASM compile API | runtime output なし、browser in-DOM support なし |
 | `selfComponent` | exact `<Self>` を current component として扱う | `<Self>` は通常の component tag | DOM, SSR, Vapor, SFC, WASM compile API | render function と JSX は対象外 |
 | `strictSlotChildren` | virtual TypeScript child assertion を出す | child-type assertion は生成されない | `vize check`, LSP/type-check project API | open slot と `any` は TypeScript の permissive behavior のまま |

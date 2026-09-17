@@ -27,6 +27,7 @@ mod interface_extends_tests;
 mod legacy_vue2_vuetify_tests;
 mod macro_type_mappings;
 pub mod mapping;
+mod pattern_diagnostics;
 mod props;
 #[cfg(test)]
 mod public_instance_guard_tests;
@@ -57,6 +58,7 @@ pub use helpers::{
     DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_SETUP_HELPERS,
     VUE_TYPE_HELPERS,
 };
+pub use pattern_diagnostics::is_unreachable_pattern_diagnostic;
 pub use semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
 #[cfg(feature = "native")]
 pub(crate) use types::CSS_MODULE_GLOBAL_MARKER;

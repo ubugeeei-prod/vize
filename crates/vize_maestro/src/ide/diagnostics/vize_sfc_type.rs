@@ -24,12 +24,21 @@ impl DiagnosticService {
             }
 
             let config = state.get_type_checker_config();
-            if !config.check_fallthrough_attrs {
+            if !config.check_fallthrough_attrs
+                && !content.contains("v-match")
+                && !content.contains("v-when")
+            {
                 return;
             }
 
-            let vize_type_diags =
-                Self::collect_vize_sfc_type_diagnostics(uri, content, line_index, config.strict);
+            let vize_type_diags = Self::collect_vize_sfc_type_diagnostics(
+                uri,
+                content,
+                line_index,
+                config.strict,
+                config.check_fallthrough_attrs,
+                state.patterned_template_enabled(),
+            );
             tracing::info!(
                 "collect: vize-owned SFC type diagnostics: {}",
                 vize_type_diags.len()
@@ -46,7 +55,7 @@ impl DiagnosticService {
     ///
     /// Native editor builds use Corsa for TS diagnostics, so the synchronous
     /// legacy type checker must stay out of the hot path. The fallthrough-attrs
-    /// warning is different: it is a Vize semantic diagnostic with authored SFC
+    /// warning and patterned syntax are Vize diagnostics with authored SFC
     /// byte offsets, and Corsa has no equivalent. Keep this collector narrow so
     /// sync diagnostics do not reintroduce old type false positives.
     #[cfg(feature = "native")]
@@ -55,6 +64,8 @@ impl DiagnosticService {
         content: &str,
         line_index: &LineIndex<'_>,
         strict: bool,
+        check_fallthrough_attrs: bool,
+        experimental_patterned_template: bool,
     ) -> Vec<Diagnostic> {
         let options = vize_canon::SfcTypeCheckOptions {
             filename: uri.path().to_string().into(),
@@ -65,17 +76,19 @@ impl DiagnosticService {
             check_reactivity: false,
             check_setup_context: false,
             check_invalid_exports: false,
-            check_fallthrough_attrs: true,
+            check_fallthrough_attrs,
             strict,
             experimental_in_tag_comments: false,
-            experimental_patterned_template: false,
+            experimental_patterned_template,
             experimental_strict_slot_children: false,
         };
 
         vize_canon::type_check_sfc(content, &options)
             .diagnostics
             .into_iter()
-            .filter(|diagnostic| diagnostic.code.as_deref() == Some("fallthrough-attrs"))
+            .filter(|diagnostic| matches!(diagnostic.code.as_deref(),
+                    Some("fallthrough-attrs" | "patterned-template" | "V_MATCH_SYNTAX")
+            ))
             .map(|diagnostic| {
                 let (start_line, start_character) = line_index.line_col(diagnostic.start as usize);
                 let (end_line, end_character) = line_index.line_col(diagnostic.end as usize);
@@ -104,8 +117,8 @@ impl DiagnosticService {
                     }),
                     code: diagnostic
                         .code
-                        .map(|code| NumberOrString::String(code.to_string())),
-                    code_description: Some(CodeDescription {
+                        .as_ref().map(|code| NumberOrString::String(code.to_string())),
+                    code_description: (diagnostic.code.as_deref() == Some("fallthrough-attrs")).then(|| CodeDescription {
                         href: Url::parse(
                             "https://github.com/ubugeeei-prod/vize/wiki/type-errors#fallthrough-attrs",
                         )

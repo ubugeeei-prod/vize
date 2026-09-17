@@ -172,8 +172,9 @@ pub(super) fn emit_match(
                     ": __VizePatterns.Reachable<{narrowed}> = true;\n{inner}void {marker};\n"
                 );
             }
-            let condition =
-                cstr!("((value: {subject_type}): value is {subject_type} & {narrowed} => true)");
+            let condition = cstr!(
+                "((value: {subject_type}): value is {subject_type} & {narrowed} => (void value, true))"
+            );
             append!(
                 *ts,
                 "{inner}if ({condition}({local}) && {condition}(({subject_text}))) {{\n"

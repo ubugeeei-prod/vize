@@ -36,6 +36,8 @@ mod vue_document_package_tests;
 #[cfg(all(test, unix))]
 mod vue_document_package_typed_tests;
 #[cfg(test)]
+mod vue_document_pattern_tests;
+#[cfg(test)]
 mod vue_document_tests;
 #[cfg(test)]
 mod vue_project_mapping_tests;

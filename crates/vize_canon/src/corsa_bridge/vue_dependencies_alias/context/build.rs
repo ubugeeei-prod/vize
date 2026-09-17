@@ -48,6 +48,7 @@ pub(super) fn build(
     project.set_virtual_ts_options(environment.virtual_ts_options.clone());
     project.set_options_api(options.options_api);
     project.set_legacy_vue2(options.legacy_vue2);
+    project.set_experimental_patterned_template(options.experimental_patterned_template);
     project.set_dialect(options.dialect);
     if let Some(tsconfig) = configured_tsconfig {
         project.set_tsconfig_path(Some(tsconfig));

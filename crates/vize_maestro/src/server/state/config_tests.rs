@@ -3,6 +3,28 @@ use vize_s0::cstr;
 use super::ServerState;
 
 #[test]
+fn patterned_template_opt_in_is_reloaded_by_both_config_loaders() {
+    let dir = tempfile::tempdir().unwrap();
+    for load in [
+        ServerState::load_workspace_config,
+        ServerState::load_lsp_config,
+    ] {
+        let state = ServerState::new();
+        assert!(!state.patterned_template_enabled());
+        for (config, expected) in [
+            (r#"{"experimentals":{"patternedTemplate":true}}"#, true),
+            (r#"{"experimentals":{"patternedTemplate":false}}"#, false),
+            (r#"{"experimentals":{"patternedTemplate":{}}}"#, true),
+            ("{}", false),
+        ] {
+            std::fs::write(dir.path().join("vize.config.json"), config).unwrap();
+            load(&state, dir.path());
+            assert_eq!(state.patterned_template_enabled(), expected);
+        }
+    }
+}
+
+#[test]
 fn language_server_legacy_vue2_reaches_logged_lsp_feature_payload() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(

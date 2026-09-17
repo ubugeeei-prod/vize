@@ -68,7 +68,7 @@ Croquis は `analyzeSfc(source, { experimentalPatternedTemplate: true })` と Pl
 チェックボックスで root・nested match を解析できます。RFC の parser で分岐内の宣言、
 外側を参照する value pattern、guard、構文診断を記録し、HTML entity を含む元の位置を維持します。
 この parser は `pattern as name` を使い、コンパイラの旧 `as const name` とは異なります。
-Canon も同じ parser を使い、`typeCheck(source, { experimentalPatternedTemplate: true, includeVirtualTs: true })`、Playground Canon のチェックボックス、`experimentals.patternedTemplate` を有効にした `vize check` で型検査できます。Editor の診断では opt-in はまだ無効です。Editor / Content Mapper への設定伝達、コンパイラ側の構文統一、LSP navigation は今回の対応に含まれません。
+Canon も同じ parser を使い、`typeCheck(source, { experimentalPatternedTemplate: true, includeVirtualTs: true })`、Playground Canon のチェックボックス、`experimentals.patternedTemplate` を有効にした `vize check` で型検査できます。Native Maestro も同じ workspace 設定を読み、構文・未網羅エラーと到達不能 branch の警告を報告し、未保存の編集を再検査します。Root pattern binding の hover は絞り込んだ型を、definition は元の宣言位置を返します。workspace flag を変更したら language server を再起動してください。Content Mapper への設定伝達、コンパイラ側の構文統一、guard・nested closure・or-pattern binding を含む rename/completion の全組合せの検証は未完了です。
 残作業は [#6176](https://github.com/ubugeeei-prod/vize/issues/6176) で追跡します。
 
 ```vue

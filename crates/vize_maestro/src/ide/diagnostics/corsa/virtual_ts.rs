@@ -83,6 +83,7 @@ impl DiagnosticService {
                 preserve_event_navigation: false,
                 dialect: Default::default(),
                 preserve_missing_vue_diagnostics: false,
+                experimental_patterned_template: false,
             },
         )
         .ok()?;

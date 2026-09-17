@@ -93,6 +93,8 @@ impl ServerState {
     }
 
     fn apply_config_features(&self, features: vize_s0::config::ConfigFeatureFlags) {
+        self.experimental_patterned_template
+            .store(features.experimental_patterned_template, Ordering::SeqCst);
         *self.type_checker_options_api.write() = features.type_checker_options_api;
         // `type_checker_legacy_vue2` already folds in a Vue 2 / 2.7 dialect
         // (`ConfigFeatureFlags::from`), so the LSP and `vize check` agree on
@@ -107,6 +109,15 @@ impl ServerState {
             lsp_features.legacy_vue2 = enabled;
         }
         lsp_features.apply_effective_compatibility();
+    }
+
+    pub(crate) fn patterned_template_enabled(&self) -> bool {
+        self.experimental_patterned_template.load(Ordering::SeqCst)
+    }
+
+    /// JSX checking is opt-in so ordinary React files are not treated as Vue.
+    pub(crate) fn jsx_typecheck_enabled(&self) -> bool {
+        *self.type_checker_jsx_typecheck.read()
     }
 
     /// Effective Vue language version used by every native type-check surface.

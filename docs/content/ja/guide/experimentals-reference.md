@@ -30,7 +30,7 @@ field は project policy をすでに解決した integration 向けです。
 
 | Flag | 有効化する場面 | 最小の proof | flag の外側に残るもの |
 | --- | --- | --- | --- |
-| `patternedTemplate` | project が RFC [#823](https://github.com/vuejs/rfcs/pull/823) の `v-match` / `v-when` branch を authored template で使うと決めたとき | direct `v-match` child を持つ flagged component と、flag-off で `experimentals.patternedTemplate` を報告する component を compile | Editor 診断への opt-in 設定伝達、navigation、or-pattern binding |
+| `patternedTemplate` | project が RFC [#823](https://github.com/vuejs/rfcs/pull/823) の `v-match` / `v-when` branch を authored template で使うと決めたとき | direct `v-match` child を持つ flagged component と、flag-off で `experimentals.patternedTemplate` を報告する component を compile | Content Mapper の設定伝達、editor navigation の全組合せの検証、or-pattern binding |
 | `inTagComment` | `@vue-expect-error` などの line-local annotation を opening tag の対象 prop 近くに置きたい tooling | tagged component を parse し、comment が `root.comments` に保持されつつ output code が変わらないことを assert | browser in-DOM template、runtime comment、通常の `comments` compiler option |
 | `selfComponent` | recursive SFC が RFC [#833](https://github.com/vuejs/rfcs/pull/833) self-reference を `name` option や filename inference だけに依存せず持ちたいとき | `componentName` または SFC metadata 付きで `<Self />` を compile し、local import named `Self` が target ではないことを確認 | JSX、render function、lowercase `<self>` |
 | `strictSlotChildren` | library / application が RFC [#734](https://github.com/vuejs/rfcs/pull/734) typed slot-child contract を公開し、`vize check` や LSP diagnostic が欲しいとき | valid な default/named slot tuple と TypeScript が reject する invalid child を type-check | runtime rendering、open `any` slot contract、built-in/dynamic component child typing |

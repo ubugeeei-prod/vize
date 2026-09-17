@@ -15,6 +15,7 @@ mod options_api;
 mod options_api_bridge;
 mod options_api_props_identifiers;
 mod options_api_support;
+mod preamble;
 mod script_blocks;
 mod script_module;
 mod setup_helpers;
@@ -135,12 +136,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         ts.push('\n');
     }
 
-    // Module scope: Extract imports, re-exports, and type declarations to module level.
-    // Type declarations (interface, type, enum) must be at module level so they
-    // are accessible from `export type Props = ...` outside __setup().
+    // Module-level declarations stay accessible to exported props outside __setup().
     ts.push_str("// ========== Module Scope (imports) ==========\n");
     if !hoist_shared_preamble {
-        ts.push_str(legacy_vue2::vue_type_helpers(legacy_vue2, dialect));
+        preamble::emit_embedded_helpers(&mut ts, summary, legacy_vue2, dialect);
     }
     emit_slot_payload_helpers(&mut ts, summary, !hoist_shared_preamble);
 

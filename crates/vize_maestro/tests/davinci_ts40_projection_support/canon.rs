@@ -20,6 +20,7 @@ pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord
         VueDocumentVirtualTsOptions {
             options_api: fixture.options_api,
             legacy_vue2: fixture.legacy_vue2,
+            experimental_patterned_template: false,
             preserve_event_navigation: true,
             dialect: Default::default(),
             preserve_missing_vue_diagnostics: true,

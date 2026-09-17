@@ -20,12 +20,6 @@ impl DiagnosticMapper<'_> {
         let Some(offset) = self.virtual_offset(file, line, column) else {
             return false;
         };
-        let rest = &file.content[offset as usize..];
-        let Some((name, suffix)) = rest.split_once(':') else {
-            return false;
-        };
-        name.starts_with("__vize_match_")
-            && name.ends_with("unreachable")
-            && suffix.starts_with(" __VizePatterns.Reachable<")
+        crate::virtual_ts::is_unreachable_pattern_diagnostic(&file.content, offset as usize, code)
     }
 }

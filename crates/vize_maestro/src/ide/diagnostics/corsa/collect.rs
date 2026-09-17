@@ -135,6 +135,7 @@ impl DiagnosticService {
                 CorsaVueVirtualDocumentOptions {
                     options_api,
                     legacy_vue2,
+                    experimental_patterned_template: state.patterned_template_enabled(),
                     preserve_event_navigation: false,
                     dialect: state.type_checker_vue_version(),
                 },
@@ -177,6 +178,7 @@ impl DiagnosticService {
                     CorsaVueVirtualDocumentOptions {
                         options_api,
                         legacy_vue2,
+                        experimental_patterned_template: state.patterned_template_enabled(),
                         preserve_event_navigation: false,
                         dialect: state.type_checker_vue_version(),
                     },

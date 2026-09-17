@@ -39,6 +39,7 @@ pub struct VueDocumentVirtualTs {
 pub struct VueDocumentVirtualTsOptions {
     pub options_api: bool,
     pub legacy_vue2: bool,
+    pub experimental_patterned_template: bool,
     pub preserve_event_navigation: bool,
     pub dialect: vize_carton::config::VueVersion,
     pub preserve_missing_vue_diagnostics: bool,
@@ -49,6 +50,7 @@ impl Default for VueDocumentVirtualTsOptions {
         Self {
             options_api: false,
             legacy_vue2: false,
+            experimental_patterned_template: false,
             preserve_event_navigation: false,
             dialect: vize_carton::config::VueVersion::default(),
             preserve_missing_vue_diagnostics: true,
@@ -139,7 +141,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
             dialect: document_options.dialect,
             template_syntax: TemplateSyntaxMode::default(),
             experimental_in_tag_comments: false,
-            experimental_patterned_template: false,
+            experimental_patterned_template: document_options.experimental_patterned_template,
             experimental_strict_slot_children: false,
             hoist_shared_preamble,
             omit_vite_client_reference: false,

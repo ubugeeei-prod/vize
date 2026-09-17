@@ -315,6 +315,7 @@ fn generate_vue_document_with_options(
         VueDocumentVirtualTsOptions {
             options_api: options.options_api,
             legacy_vue2: options.legacy_vue2,
+            experimental_patterned_template: options.experimental_patterned_template,
             preserve_event_navigation: options.preserve_event_navigation,
             dialect: options.dialect,
             preserve_missing_vue_diagnostics: true,
