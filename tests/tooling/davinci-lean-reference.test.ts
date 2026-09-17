@@ -199,6 +199,58 @@ test("TS-28 stateful reference and mounted backends share full observations and 
   assert.match(main, /Behavior\.check "fixtures\/rust-lowered-static-dynamic"/u);
 });
 
+test("TS-28 control and slot stateful observations share one authored template", () => {
+  const stem = "rust-lowered-control-slots";
+  const scenario = JSON.parse(
+    fs.readFileSync(path.join(fixtureRoot, `${stem}.scenario.json`), "utf8"),
+  );
+  const trace = JSON.parse(
+    fs.readFileSync(path.join(fixtureRoot, `${stem}.behavior.json`), "utf8"),
+  );
+  assert.equal(trace.length, scenario.steps.length + 2);
+  assert.deepEqual(trace.at(-1), { tree: [], events: [] });
+  assert.ok(trace.every((snapshot) => snapshot.events.length === 0));
+  assert.deepEqual(
+    trace.slice(0, -1).map((snapshot) => snapshot.tree[0].children.map((child) => child.tag)),
+    [
+      ["p", "span"],
+      ["span"],
+      ["p", "span"],
+      ["p", "span"],
+      ["p", "span"],
+      ["span"],
+      ["p", "span"],
+      ["span"],
+      ["p", "span"],
+    ],
+  );
+  assert.deepEqual(
+    trace.slice(0, -1).map((snapshot) => snapshot.tree[0].children.at(-1).children),
+    [
+      ["fallback"],
+      ["waiting"],
+      ["done"],
+      [],
+      ["42"],
+      ["false"],
+      ['\u96ea\n"ready"'],
+      ['\u96ea\n"ready"'],
+      ["restored"],
+    ],
+  );
+  const main = readRepoFile("formal", "impeto", "Main.lean");
+  assert.match(main, /ControlTests\.check/u);
+  assert.match(main, /Behavior\.check "fixtures\/rust-lowered-control-slots"/u);
+  for (const [crate, file] of [
+    ["vize_s2_to_s3", "lean_reference_fixture.rs"],
+    ["vize_atelier_vapor", "davinci_s3_compiled_trace.rs"],
+    ["vize_atelier_vapor", "davinci_mounted_behavior.rs"],
+  ]) {
+    const gate = readRepoFile("crates", crate, "tests", file);
+    assert.match(gate, /include_str!\([\s\S]*rust-lowered-control-slots\.template\.txt/u);
+  }
+});
+
 test("TS-28 compiled backend trace gate executes both emitted backends", async () => {
   const gate = readRepoFile(
     "crates",

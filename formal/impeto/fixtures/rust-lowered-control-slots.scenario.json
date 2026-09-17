@@ -1,0 +1,53 @@
+{
+  "context": {
+    "ready": true,
+    "fallback": "fallback"
+  },
+  "steps": [
+    {
+      "patch": {
+        "ready": false,
+        "fallback": "waiting"
+      }
+    },
+    {
+      "patch": {
+        "ready": true,
+        "fallback": "done"
+      }
+    },
+    {
+      "patch": {
+        "fallback": null
+      }
+    },
+    {
+      "patch": {
+        "fallback": 42
+      }
+    },
+    {
+      "patch": {
+        "ready": false,
+        "fallback": false
+      }
+    },
+    {
+      "patch": {
+        "ready": true,
+        "fallback": "\u96ea\n\"ready\""
+      }
+    },
+    {
+      "patch": {
+        "ready": false
+      }
+    },
+    {
+      "patch": {
+        "ready": true,
+        "fallback": "restored"
+      }
+    }
+  ]
+}

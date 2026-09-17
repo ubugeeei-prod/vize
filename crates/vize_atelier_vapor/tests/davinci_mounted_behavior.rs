@@ -136,20 +136,23 @@ fn mounted_dynamic_button_updates_and_dispatches_events() {
 
 #[test]
 fn mounted_branch_and_slot_fallback_update_together() {
+    let scenario: Scenario = serde_json::from_str(include_str!(
+        "../../../formal/impeto/fixtures/rust-lowered-control-slots.scenario.json"
+    ))
+    .unwrap();
+    let expected: Value = serde_json::from_str(include_str!(
+        "../../../formal/impeto/fixtures/rust-lowered-control-slots.behavior.json"
+    ))
+    .unwrap();
     let trace = assert_backends(
-        r#"<section><p v-if="ready">ready</p><slot name="body"><span v-text="fallback"></span></slot></section>"#,
-        json!({"ready": true, "fallback": "fallback"}),
-        json!([{"patch": {"ready": false, "fallback": "waiting"}}, {"patch": {"ready": true, "fallback": "done"}}]),
-    );
-    assert_eq!(trace[0]["tree"][0]["children"].as_array().unwrap().len(), 2);
-    assert_eq!(trace[1]["tree"][0]["children"].as_array().unwrap().len(), 1);
-    assert_eq!(
-        trace[1]["tree"][0]["children"][0]["children"],
-        json!(["waiting"])
+        include_str!("../../../formal/impeto/fixtures/rust-lowered-control-slots.template.txt")
+            .trim_end(),
+        Value::Object(scenario.context),
+        Value::Array(scenario.steps),
     );
     assert_eq!(
-        trace[2]["tree"][0]["children"][1]["children"],
-        json!(["done"])
+        trace, expected,
+        "mounted control/slot behavior differs from Lean reference"
     );
 }
 

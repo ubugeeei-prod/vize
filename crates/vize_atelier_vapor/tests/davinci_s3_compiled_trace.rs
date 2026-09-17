@@ -25,7 +25,8 @@ struct Fixture {
 
 const STATIC_DYNAMIC_SOURCE: &str =
     r#"<main class="shell"><button :disabled="locked" @click="save">{{ label }}</button></main>"#;
-const CONTROL_SLOTS_SOURCE: &str = r#"<section><p v-if="ready">ready</p><slot name="body"><span v-text="fallback"></span></slot></section>"#;
+const CONTROL_SLOTS_SOURCE: &str =
+    include_str!("../../../formal/impeto/fixtures/rust-lowered-control-slots.template.txt");
 
 const FIXTURES: &[Fixture] = &[
     Fixture {
@@ -68,7 +69,7 @@ const STATIC_DYNAMIC_VAPOR_COMPILED_KNOWN_GAP: &[&str] = &[
 #[test]
 fn compiled_backend_runtime_traces_match_s3_reference_ladder_or_known_gap() {
     for fixture in FIXTURES {
-        let vdom_code = compile_dom(fixture.source);
+        let vdom_code = compile_dom(fixture.source.trim_end());
         let actual_vdom = runtime_backend_trace("vdom", fixture.name, &vdom_code);
         let expected_vdom = reference_labels(fixture.vdom_trace);
         assert_eq!(
@@ -77,7 +78,7 @@ fn compiled_backend_runtime_traces_match_s3_reference_ladder_or_known_gap() {
             fixture.name, vdom_code
         );
 
-        let vapor_code = compile_vapor_template(fixture.source);
+        let vapor_code = compile_vapor_template(fixture.source.trim_end());
         let actual_vapor = runtime_backend_trace("vapor", fixture.name, &vapor_code);
         let expected_vapor = reference_labels(fixture.vapor_trace);
         assert_vapor_trace_matches_reference_or_known_gap(

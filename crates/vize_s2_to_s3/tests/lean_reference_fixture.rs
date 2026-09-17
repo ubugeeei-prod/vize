@@ -10,22 +10,35 @@ use vize_s3::verify::verify;
 
 const STATIC_DYNAMIC_SOURCE: &str =
     r#"<main class="shell"><button :disabled="locked" @click="save">{{ label }}</button></main>"#;
-const CONTROL_SLOTS_SOURCE: &str = r#"<section><p v-if="ready">ready</p><slot name="body"><span v-text="fallback" /></slot></section>"#;
+const CONTROL_SLOTS_SOURCE: &str =
+    include_str!("../../../formal/impeto/fixtures/rust-lowered-control-slots.template.txt");
 
 #[test]
 fn rust_lowered_values_match_stateful_reference_input() {
-    let allocator = Allocator::default();
-    let (tree, errors) = vize_s1::parse(&allocator, STATIC_DYNAMIC_SOURCE);
-    assert!(errors.is_empty(), "{errors:?}");
-    let s2 = vize_s1_to_s2::lower(&allocator, &tree, &errors);
-    let lowered = lower(&allocator, &s2.root);
-    assert_eq!(verify(&lowered.program), []);
-    let actual = S3ValuesFolio::of(&lowered.program).print_to_string(FolioMode::Full);
-    assert_eq!(
-        actual.trim_end_matches('\n'),
-        include_str!("../../../formal/impeto/fixtures/rust-lowered-static-dynamic.values.folio")
-            .trim_end_matches('\n')
-    );
+    for (source, expected) in [
+        (
+            STATIC_DYNAMIC_SOURCE,
+            include_str!(
+                "../../../formal/impeto/fixtures/rust-lowered-static-dynamic.values.folio"
+            ),
+        ),
+        (
+            CONTROL_SLOTS_SOURCE,
+            include_str!("../../../formal/impeto/fixtures/rust-lowered-control-slots.values.folio"),
+        ),
+    ] {
+        let allocator = Allocator::default();
+        let (tree, errors) = vize_s1::parse(&allocator, source.trim_end());
+        assert!(errors.is_empty(), "{errors:?}");
+        let s2 = vize_s1_to_s2::lower(&allocator, &tree, &errors);
+        let lowered = lower(&allocator, &s2.root);
+        assert_eq!(verify(&lowered.program), []);
+        let actual = S3ValuesFolio::of(&lowered.program).print_to_string(FolioMode::Full);
+        assert_eq!(
+            actual.trim_end_matches('\n'),
+            expected.trim_end_matches('\n')
+        );
+    }
 }
 
 #[test]
@@ -66,7 +79,8 @@ fn assert_rust_lowered_fixture(
     expected_vapor: &str,
 ) {
     let allocator = Allocator::default();
-    let (tree, errors) = vize_s1::parse(&allocator, source);
+    let (tree, errors) = vize_s1::parse(&allocator, source.trim_end());
+    assert!(errors.is_empty(), "{errors:?}");
     let s2 = vize_s1_to_s2::lower(&allocator, &tree, &errors);
     let lowered = lower(&allocator, &s2.root);
     assert_eq!(verify(&lowered.program), []);

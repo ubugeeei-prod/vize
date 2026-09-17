@@ -16,17 +16,9 @@ def snapshot (tree : Json) (events : List String) : Json :=
   Json.mkObj [("tree", tree), ("events", .arr (events.map Json.str).toArray)]
 
 def buttonState (program : Program) (rows : List Operand) (context : Json) : Except String (Bool × Bool) := do
-  let buttons := program.ops.filter (fun op => op.kind == .insertNode &&
-    (Values.one rows op.id "tag").toOption.any (fun row => row.text == "button"))
-  let [button] := buttons | throw "expected one interaction target"
-  let bindings := Observation.attached program rows button.id
-  let handlers := bindings.filter (fun op => op.kind == .setEvent)
-  if handlers.length > 1 then throw "unsupported multiple click handlers"
-  let mut disabled := false
-  for op in bindings do
-    if op.kind == .setProp then
-      disabled <- (<- Observation.evaluate context (<- Values.one rows op.id "value")).getBool?
-  pure (disabled, !handlers.isEmpty)
+  let [button] := (<- Observation.observe program rows context).buttons
+    | throw "expected one interaction target"
+  pure button
 
 def run (program : Program) (rows : List Operand) (script : Json) : Except String Json := do
   if (<- keys script) != ["context", "steps"] then throw "unsupported scenario fields"

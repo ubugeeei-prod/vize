@@ -1,5 +1,6 @@
 import Impeto
 import Impeto.BehaviorTests
+import Impeto.ControlTests
 
 open Impeto
 
@@ -137,7 +138,12 @@ def main (args : List String) : IO UInt32 := do
   | ["--check-stateful-fixtures"] =>
       let code <- BehaviorTests.check
       if code != 0 then pure code
-      else Behavior.check "fixtures/rust-lowered-static-dynamic"
+      else
+        let code <- ControlTests.check
+        if code != 0 then return code
+        let code <- Behavior.check "fixtures/rust-lowered-static-dynamic"
+        if code != 0 then pure code
+        else Behavior.check "fixtures/rust-lowered-control-slots"
   | ["--check", folioPath, tracePath] => checkPair folioPath tracePath
   | ["--trace", folioPath] => printTrace folioPath
   | ["--trace-vdom", folioPath] => printBackendTrace .vdom folioPath

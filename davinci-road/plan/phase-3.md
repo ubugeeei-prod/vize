@@ -77,8 +77,10 @@ functions are now executed by the TS-28 cargo gate through the shared JS runtime
 trace runner. _Stateful slice 2026-09-16:_ the dynamic-button fixture now feeds
 Rust-owned S3 values into independent Lean semantics and compares the same full
 JSON observations against both mounted Vue runtimes, including patches, clicks
-and unmount. Broader control/list/model semantics and scheduling proofs remain
-open; this does not close P3-4.
+and unmount. _Control/slot slice 2026-09-18:_ both Rust-lowered template fixtures
+now share full stateful observations, including boolean condition changes and
+absent-slot fallback `v-text` updates. Keyed lists, supplied slots, native model
+semantics and scheduling proofs remain open; this does not close P3-4.
 
 **P3-5 Op reference doc.** `davinci-road/plan/impeto-ops.md`: every op's
 meaning under both interpretations, written **before any optional pass
