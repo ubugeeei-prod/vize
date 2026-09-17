@@ -2,7 +2,10 @@ use crate::ir::{CreateComponentIRNode, IRProp};
 use vize_atelier_core::steps::{is_event_handler_reference_node, is_function_expression_node};
 use vize_carton::{String, ToCompactString, cstr};
 
-use super::{super::context::GenerateContext, events::is_inline_statement_block};
+use super::{
+    super::{context::GenerateContext, escape_js_string_literal},
+    events::is_inline_statement_block,
+};
 
 /// Generate props object string for a component
 pub(super) fn generate_component_props_str(
@@ -12,8 +15,11 @@ pub(super) fn generate_component_props_str(
     if component.props.is_empty() {
         return "null".to_compact_string();
     }
-    let has_spreads = component.props.iter().any(|p| p.key.content == "$");
-    if has_spreads {
+    let has_dynamic_sources = component
+        .props
+        .iter()
+        .any(|p| !p.key.is_static || p.key.content == "$");
+    if has_dynamic_sources {
         return generate_component_spread_props_str(ctx, &component.props);
     }
 
@@ -41,7 +47,14 @@ fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[IRProp<'_
     let mut static_group: std::vec::Vec<&IRProp<'_>> = std::vec::Vec::new();
 
     for prop in props {
-        if prop.key.content == "$" {
+        if !prop.key.is_static {
+            push_component_static_prop_group(ctx, &mut sources, &mut static_group);
+            let key = ctx.resolve_expression_node(&prop.key);
+            let value = component_prop_expression_value(ctx, prop);
+            // Function sources return direct values, unlike static prop
+            // groups whose values are getters. Their keys stay reactive.
+            sources.push(cstr!("() => ({{ [{}]: {} }})", key, value));
+        } else if prop.key.content == "$" {
             push_component_static_prop_group(ctx, &mut sources, &mut static_group);
             if let Some(first) = prop.values.first() {
                 let resolved = ctx.resolve_expression_node(first);
@@ -166,50 +179,42 @@ fn format_component_prop_entry(prop: &IRProp<'_>, value: String) -> String {
         return cstr!("[{}]: {}", key, value);
     }
     if should_quote_component_prop_key(key) {
-        cstr!("\"{}\": {}", key, value)
+        cstr!("\"{}\": {}", escape_js_string_literal(key), value)
     } else {
         cstr!("{}: {}", key, value)
     }
 }
 
 fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> String {
-    let is_event = prop.key.is_handler_key;
-    if let Some(first) = prop.values.first() {
-        if first.content.starts_with("__RAW__") {
-            return String::from(&first.content[7..]);
-        }
-        if first.is_static {
-            return cstr!("() => (\"{}\")", first.content);
-        }
-        let resolved = ctx.resolve_expression_node(first);
-        if is_event {
-            if is_function_expression_node(first) || is_event_handler_reference_node(first) {
-                cstr!("() => ({})", resolved)
-            } else if is_inline_statement_block(first.content) {
-                cstr!("() => ($event => {{ {} }})", resolved)
-            } else {
-                cstr!("() => ($event => ({}))", resolved)
-            }
-        } else {
-            cstr!("() => ({})", resolved)
-        }
-    } else {
-        // A valueless static attribute (`<Comp data-probe />`) is an empty
-        // string prop, matching the vdom compiler; `undefined` would drop the
-        // attribute from the rendered element entirely.
-        cstr!("() => (\"\")")
+    if let Some(first) = prop.values.first()
+        && let Some(raw) = first.content.strip_prefix("__RAW__")
+    {
+        return String::from(raw);
     }
+    cstr!("() => ({})", component_prop_expression_value(ctx, prop))
 }
 
 fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> String {
     if let Some(first) = prop.values.first() {
-        if first.content.starts_with("__RAW__") {
-            return String::from(&first.content[7..]);
+        if let Some(raw) = first.content.strip_prefix("__RAW__") {
+            return cstr!("({})()", raw);
         }
         if first.is_static {
-            return cstr!("\"{}\"", first.content);
+            return cstr!("\"{}\"", escape_js_string_literal(first.content));
         }
-        ctx.resolve_expression_node(first)
+        let resolved = ctx.resolve_expression_node(first);
+        if prop.key.is_handler_key
+            && !is_function_expression_node(first)
+            && !is_event_handler_reference_node(first)
+        {
+            if is_inline_statement_block(first.content) {
+                cstr!("$event => {{ {} }}", resolved)
+            } else {
+                cstr!("$event => ({})", resolved)
+            }
+        } else {
+            resolved
+        }
     } else {
         cstr!("\"\"")
     }

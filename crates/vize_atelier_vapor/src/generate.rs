@@ -20,6 +20,7 @@ pub use entry::{
 };
 use helpers::generate_effect;
 use operations::generate_operation;
+pub(crate) use setup::escape_js_string_literal;
 
 fn block_has_template_refs(block: &BlockIRNode<'_>) -> bool {
     ensure_sufficient_stack(|| {

@@ -15,6 +15,9 @@ use vize_atelier_sfc::{
     SfcCompileOptions, SfcScriptOutputMode, compile_sfc_for_adapter, parse_sfc,
 };
 
+#[path = "vapor_runtime_contracts/models.rs"]
+mod models;
+
 const CHILD: &str = r#"<script setup>
 defineProps({ label: String });
 const emit = defineEmits(['example']);

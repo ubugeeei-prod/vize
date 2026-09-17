@@ -127,9 +127,11 @@ try {
   assert.equal(host.childNodes.length, 0, "SFC unmount left nodes behind");
   assert.deepEqual(diagnostics, []);
   const settledEvents = [...events];
+  const settledState = JSON.stringify(state);
   for (const button of detachedButtons) button.click();
   await vue.nextTick();
   assert.deepEqual(events, settledEvents, "unmounted component still emitted events");
+  assert.equal(JSON.stringify(state), settledState, "unmounted component still updated state");
   snapshots.push({ tree: [], namespaces: [], events: [...events] });
   process.stdout.write(JSON.stringify(snapshots));
 } finally {
