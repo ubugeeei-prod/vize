@@ -17,10 +17,21 @@ use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
-#[path = "davinci_mounted_behavior/control.rs"]
-mod control;
+mod davinci_mounted_behavior {
+    mod control;
+}
 
 fn mounted_trace(backend: &str, source: &str, context: Value, steps: Value) -> Value {
+    mounted_trace_with_patterned_template(backend, source, context, steps, false)
+}
+
+fn mounted_trace_with_patterned_template(
+    backend: &str,
+    source: &str,
+    context: Value,
+    steps: Value,
+    experimental_patterned_template: bool,
+) -> Value {
     let allocator = Allocator::new();
     let code = if backend == "vdom" {
         let (_, errors, result) = compile_template_with_options(
@@ -28,6 +39,7 @@ fn mounted_trace(backend: &str, source: &str, context: Value, steps: Value) -> V
             source,
             DomCompilerOptions {
                 prefix_identifiers: true,
+                experimental_patterned_template,
                 ..Default::default()
             },
         );
@@ -39,6 +51,7 @@ fn mounted_trace(backend: &str, source: &str, context: Value, steps: Value) -> V
             source,
             VaporCompilerOptions {
                 prefix_identifiers: true,
+                experimental_patterned_template,
                 ..Default::default()
             },
         );

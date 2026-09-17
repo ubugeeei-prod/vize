@@ -1,4 +1,45 @@
-use super::*;
+use super::super::*;
+
+#[test]
+fn mounted_patterned_template_buttons_deliver_events_after_arm_changes() {
+    let source = r#"<template v-match="status"><button v-when="'ready'" @click="save">Ready</button><button v-when="_" @click="save">Waiting</button></template>"#;
+    let context = json!({"status": "ready"});
+    let steps = json!([
+        {"activate": "button"},
+        {"patch": {"status": "pending"}},
+        {"activate": "button"},
+        {"patch": {"status": "ready"}},
+        {"activate": "button"}
+    ]);
+    let mut expected = vec![];
+    for (label, count) in [
+        ("Ready", 0),
+        ("Ready", 1),
+        ("Waiting", 1),
+        ("Waiting", 2),
+        ("Ready", 2),
+        ("Ready", 3),
+    ] {
+        expected.push(json!({
+            "tree": [{"tag": "button", "attributes": {}, "children": [label], "disabled": false}],
+            "events": vec!["save"; count]
+        }));
+    }
+    expected.push(json!({"tree": [], "events": ["save", "save", "save"]}));
+    for backend in ["vdom", "vapor"] {
+        assert_eq!(
+            mounted_trace_with_patterned_template(
+                backend,
+                source,
+                context.clone(),
+                steps.clone(),
+                true
+            ),
+            json!(expected),
+            "{backend}"
+        );
+    }
+}
 
 #[test]
 fn mounted_nested_event_paths_deliver_once_per_activation() {
