@@ -3699,6 +3699,7 @@ dependencies = [
  "thiserror 2.0.20",
  "vize_atelier_core",
  "vize_atelier_dom",
+ "vize_atelier_ssr",
  "vize_carton",
  "vize_croquis",
  "vize_davinci",

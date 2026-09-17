@@ -10,16 +10,18 @@ const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNo
 code=
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("div", null, [
-    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([status], (__vize_match) => {
-      return (_openBlock(), _createElementBlock(_Fragment, null, [
-        ((__vize_match) === ('ready'))
-          ? (_openBlock(), _createElementBlock("li", { key: 0 }, "Ready"))
-          : _createCommentVNode("v-if", true),
-        _createElementVNode("li", { id: plainId }, [
-          _createElementVNode("span", null, _toDisplayString(label), 1 /* TEXT */)
-        ], 8 /* PROPS */, ["id"])
-      ], 64 /* STABLE_FRAGMENT */))
-    }), 256 /* UNKEYED_FRAGMENT */)),
+    _createElementVNode("ul", null, [
+      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([status], (__vize_match) => {
+        return (_openBlock(), _createElementBlock(_Fragment, null, [
+          ((__vize_match) === ('ready'))
+            ? (_openBlock(), _createElementBlock("li", { key: 0 }, "Ready"))
+            : _createCommentVNode("v-if", true),
+          _createElementVNode("li", { id: plainId }, [
+            _createElementVNode("span", null, _toDisplayString(label), 1 /* TEXT */)
+          ], 8 /* PROPS */, ["id"])
+        ], 64 /* STABLE_FRAGMENT */))
+      }), 256 /* UNKEYED_FRAGMENT */))
+    ]),
     _createElementVNode("footer", {
       class: _normalizeClass(cls)
     }, "Tail", 2 /* CLASS */)

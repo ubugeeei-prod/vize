@@ -105,7 +105,8 @@ fn test_compile_experimental_patterned_template_shorthand_rest_as_and_nan() {
     assert!(errors.is_empty(), "Errors: {:?}", errors);
     let full = format!("{}\n{}", result.preamble, result.code);
     assert!(
-        full.contains("typeof (__vize_match) === \"object\""),
+        full.contains("(\"kind\") in Object(__vize_match)")
+            && full.contains("(\"data\") in Object(__vize_match)"),
         "{full}"
     );
     assert!(

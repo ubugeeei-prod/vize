@@ -119,6 +119,7 @@ impl<'a> SsrCodegenContext<'a> {
                 PropNode::Attribute(attr) => {
                     if (attr.name == "class" && has_dynamic_class)
                         || (attr.name == "style" && has_dynamic_style)
+                        || vize_s0::is_reserved_prop(attr.name)
                     {
                         continue;
                     }
@@ -130,7 +131,6 @@ impl<'a> SsrCodegenContext<'a> {
                     self.push_string_part_static(attr.name);
                     if let Some(value) = &attr.value {
                         self.push_string_part_static("=\"");
-                        // Escape HTML attribute value
                         self.push_string_part_static(&escape_html_attr(value.content));
                         self.push_string_part_static("\"");
                     }
@@ -388,19 +388,18 @@ impl<'a> SsrCodegenContext<'a> {
     ) {
         use vize_atelier_core::ExpressionNode;
 
-        // Get the argument (attribute name)
         let arg_name = match &dir.arg {
             Some(ExpressionNode::Simple(simple)) if simple.is_static => Some(simple.content),
             _ => None,
         };
 
-        // Get the expression
         let exp = match &dir.exp {
             Some(exp) => self.expression_to_string(exp),
             None => return,
         };
 
         match arg_name {
+            Some(name) if vize_s0::is_reserved_prop(name) => {}
             Some("class") => {
                 self.use_ssr_helper(RuntimeHelper::SsrRenderClass);
                 self.push_string_part_static(" class=\"");

@@ -136,12 +136,7 @@ pub(super) fn split_top_level_keyword<'a>(
 }
 
 pub(super) fn is_valid_ident(s: &str) -> bool {
-    let mut chars = s.chars();
-    match chars.next() {
-        Some(ch) if ch.is_ascii_alphabetic() || ch == '_' || ch == '$' => {}
-        _ => return false,
-    }
-    chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
+    oxc_syntax::identifier::is_identifier_name(s)
 }
 
 pub(super) fn split_top_level_or(expr: &str) -> Option<std::vec::Vec<&str>> {
