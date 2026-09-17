@@ -72,6 +72,8 @@ describe("patterned Canon with real WASM and Monaco TypeScript", () => {
       endColumn: 26,
     });
     expect(check.diagnostics.value[0].message).toContain("Non-exhaustive v-match");
+    expect(check.diagnostics.value[0].help).toContain("Guards do not prove coverage");
+    expect(check.diagnostics.value[0].help).not.toContain("Type assertion");
   });
 
   it("keeps unreachable arms warning-only", async () => {
@@ -79,6 +81,8 @@ describe("patterned Canon with real WASM and Monaco TypeScript", () => {
 <template v-match="value"><p v-when="'a'"/><p v-when="'a'"/><p v-when="'b'"/></template>`);
     expect(check.diagnostics.value).toHaveLength(1);
     expect(check.diagnostics.value[0].severity).toBe("warning");
+    expect(check.diagnostics.value[0].message).toContain("Unreachable v-when");
+    expect(check.diagnostics.value[0].help).toContain("check its pattern and order");
     expect(check.errorCount.value).toBe(0);
     expect(check.warningCount.value).toBe(1);
   });

@@ -39,30 +39,43 @@ export function mapDiagnosticsToSource(
       typeof diag.messageText === "string"
         ? diag.messageText
         : (diag.messageText?.messageText ?? diag.message ?? "Unknown error");
+    const pattern = patternDiagnostic(diag, virtualTs, message);
     mapped.push({
       startLine: start.line,
       startColumn: start.column,
       endLine: end.line,
       endColumn: end.column,
       code: diag.code,
-      severity: isUnreachablePattern(diag, virtualTs)
+      severity: pattern?.warning
         ? "warning"
         : diag.category === 1
           ? "error"
           : diag.category === 0
             ? "warning"
             : "info",
-      message: `[vize:TS${diag.code}] ${message}`,
-      help: generateHelp(diag.code, message),
+      message: `[vize:TS${diag.code}] ${pattern?.message ?? message}`,
+      help: pattern?.help ?? generateHelp(diag.code, message),
     });
   }
 
   return mapped;
 }
 
-function isUnreachablePattern(diag: TsDiagnostic, virtualTs: string) {
-  if (diag.code !== 2322) return false;
-  return /^__vize_match_\w*unreachable: __VizePatterns\.Reachable</.test(
-    virtualTs.slice(diag.start),
-  );
+function patternDiagnostic(diag: TsDiagnostic, virtualTs: string, details: string) {
+  if (diag.code !== 2322) return;
+  const assertion = virtualTs.slice(diag.start);
+  if (/^__vize_match_\w*unreachable: __VizePatterns\.Reachable</.test(assertion)) {
+    return {
+      warning: true,
+      message: "Unreachable v-when: the pattern cannot match any remaining value.",
+      help: "Remove this arm or check its pattern and order. Earlier unguarded arms may already cover it.",
+    };
+  }
+  if (/^__vize_match_\w+: __VizePatterns\.Exhaustiveness</.test(assertion)) {
+    return {
+      warning: false,
+      message: "Non-exhaustive v-match: not all possible values are covered.",
+      help: `Add branches for the remaining values or an unguarded \`v-when="_"\` fallback. Guards do not prove coverage.\n\n**TypeScript details:**\n\`\`\`text\n${details}\n\`\`\``,
+    };
+  }
 }

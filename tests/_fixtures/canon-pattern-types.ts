@@ -49,4 +49,4 @@ const open: Done<Subtract<string, Lit<"ok">>> = true;
 declare let readonly: Match<{ readonly x?: "a" | "b" }, Obj<"x", Lit<"a">>>;
 // @ts-expect-error Refining a present optional property must preserve readonly.
 readonly.x = "a";
-export {};
+export { complete, missing, optional, value, open };
