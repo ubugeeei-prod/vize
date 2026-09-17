@@ -27,7 +27,11 @@ fn native_patterns_report_authored_errors_hover_definition_and_unsaved_repairs()
     );
 
     let hover = fixture.request("textDocument/hover", SOURCE, "value.toUpperCase");
-    assert!(hover.to_string().contains("number"), "{hover:#}");
+    assert_eq!(
+        hover["contents"],
+        json!({"kind": "markdown", "value": "```typescript\nconst value: number\n```"}),
+        "{hover:#}"
+    );
     let definition = fixture.request("textDocument/definition", SOURCE, "value.toUpperCase");
     assert_eq!(definition["uri"], fixture.uri);
     let declaration = position(SOURCE, "value }");
@@ -90,11 +94,9 @@ fn native_patterns_opt_out_and_malformed_syntax_never_report_clean() {
     let diagnostics = disabled.open(&valid);
     assert_eq!(diagnostics.as_array().unwrap().len(), 1, "{diagnostics:#}");
     assert_eq!(diagnostics[0]["code"], "V_MATCH_SYNTAX");
-    assert!(
-        diagnostics[0]["message"]
-            .as_str()
-            .unwrap()
-            .contains("experimentals.patternedTemplate")
+    assert_eq!(
+        diagnostics[0]["message"],
+        "`v-match` / `v-when` patterned templates require `experimentals.patternedTemplate`."
     );
     disabled.shutdown();
 
