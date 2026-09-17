@@ -48,6 +48,20 @@ fn independent_ambient_values_reach_module_scope_verbatim() {
 }
 
 #[test]
+fn ambient_global_type_references_retain_module_visibility() {
+    for declaration in [
+        "declare const label: HTMLElement;",
+        "declare const label: ReadonlyArray<Promise<Date>>;",
+        "declare function label<T extends HTMLElement>(value: T): Promise<T>;",
+        "declare const label: Application.Settings;",
+        "declare const label: Missing;",
+        "declare class Label { value: HTMLElement; }",
+    ] {
+        assert_module_declaration(&setup(declaration), declaration, true);
+    }
+}
+
+#[test]
 fn hoisted_type_and_ambient_dependencies_remain_visible() {
     let declarations = [
         "declare const first: Label;",
@@ -73,6 +87,15 @@ fn setup_local_dependencies_are_not_lifted_or_widened() {
     ] {
         assert_module_declaration(&source, declaration, false);
     }
+}
+
+#[test]
+fn global_type_wrappers_do_not_hide_setup_local_dependencies() {
+    let script = "class Local {}\ndeclare const first: Local;\ndeclare const second: ReadonlyArray<typeof first>;";
+    assert_eq!(
+        authored_setup_body(&virtual_source(&setup(script))),
+        script.replace('\n', "\n  ")
+    );
 }
 
 #[test]
@@ -123,7 +146,8 @@ fn duplicate_bindings_and_unresolved_setup_helpers_fail_closed() {
     for script in [
         "declare const label: string;\nconst label = 1;",
         "declare const label: typeof defineProps;",
-        "declare const label: Missing;",
+        "declare const label: defineProps;",
+        "declare const label: typeof document;",
     ] {
         let declaration = script.lines().next().unwrap();
         assert_module_declaration(&setup(script), declaration, false);

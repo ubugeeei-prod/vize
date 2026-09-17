@@ -47,7 +47,7 @@ observational guard for planning only. It does not change rollout state.
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
 | Compiler                   |          1180 |                   820 |               360 |             158 |     378 |            1037 |      679 |           587 |           733 |
 | Linter                     |           374 |                   374 |                 0 |             299 |     301 |             728 |      246 |           389 |           572 |
-| Typechecker                |           967 |                   265 |               702 |             447 |     222 |             913 |      723 |           528 |           763 |
+| Typechecker                |           967 |                   265 |               702 |             447 |     223 |             914 |      723 |           528 |           764 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            20 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            71 |
 | LSP                        |           306 |                   306 |                 0 |             123 |      51 |             358 |      122 |           180 |           423 |
@@ -137,7 +137,7 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 | S0               |         967 |             546 |      421 |
 | old AST/parser   |         184 |              47 |      137 |
 | Croquis analysis |         263 |             134 |      129 |
-| raw OXC          |         222 |             186 |       36 |
+| raw OXC          |         223 |             187 |       36 |
 
 #### Top source and manifest files
 

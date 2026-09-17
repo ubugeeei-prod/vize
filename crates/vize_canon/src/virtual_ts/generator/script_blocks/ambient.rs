@@ -5,9 +5,11 @@ use oxc_ast::ast::Statement;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::{GetSpan, SourceType, Span};
+use oxc_syntax::reference::ReferenceFlags;
 use vize_croquis::{Croquis, ScopeData, ScopeKind};
 
 use super::super::script_module::include_leading_ts_directive_comments;
+use crate::virtual_ts::helpers::SETUP_SCOPE_HELPER_NAMES;
 
 pub(super) fn extend_module_spans(
     summary: &Croquis,
@@ -94,10 +96,16 @@ pub(super) fn extend_module_spans(
     }
 
     let mut blocked = vec![false; candidates.len()];
-    // Unresolved authored names may be supplied by setup-only macro/auto-import
-    // helpers. Until their scope is known, keep the declaration where it was.
+    // Unresolved type-only references are resolved by the project's ambient
+    // declarations in either scope. Value queries can capture setup helpers.
     for reference_id in scoping.root_unresolved_references_ids().flatten() {
         let reference = scoping.get_reference(reference_id);
+        let flags = reference.flags() - ReferenceFlags::Namespace;
+        if flags.is_type_only()
+            && !SETUP_SCOPE_HELPER_NAMES.contains(&semantic.reference_name(reference))
+        {
+            continue;
+        }
         if let Some(index) = containing(&candidates, semantic.reference_span(reference)) {
             blocked[index] = true;
         }
