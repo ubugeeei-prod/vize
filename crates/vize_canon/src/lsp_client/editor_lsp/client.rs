@@ -234,7 +234,7 @@ impl CorsaProjectClient {
         )
     }
 
-    fn editor_lsp_session(&mut self) -> Result<&mut EditorLspSession, String> {
+    pub(super) fn editor_lsp_session(&mut self) -> Result<&mut EditorLspSession, String> {
         let project_root = self.editor_lsp_project_root();
         if self.editor_lsp.is_none() {
             self.editor_lsp = Some(EditorLspSession::spawn(
