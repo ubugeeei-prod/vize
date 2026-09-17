@@ -16,6 +16,44 @@ mod package_routes;
 mod project_surface;
 
 #[test]
+fn patterned_references_and_rename_fail_closed_without_a_checker() {
+    crate::runtime::block_on(async {
+        let project = tempfile::tempdir().unwrap();
+        fs::write(
+            project.path().join("vize.config.json"),
+            r#"{"experimentals":{"patternedTemplate":true}}"#,
+        )
+        .unwrap();
+        let state = ServerState::new();
+        state.load_workspace_config(project.path());
+        let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();
+        let source = "<script setup>const value = 1; const result = { value: 2 };</script>\n<template v-match=\"result\"><p v-when=\"{ const value }\">{{ value }}</p></template>";
+        let ctx = IdeContext::with_content(
+            &state,
+            &uri,
+            source.find("value }}").unwrap(),
+            source.into(),
+        );
+        assert_eq!(ReferencesService::references(&ctx, true), None);
+        assert_eq!(crate::ide::RenameService::rename(&ctx, "renamed"), None);
+        for bridge in [None, Some(Arc::new(CorsaBridge::new()))] {
+            assert_eq!(
+                ReferencesService::references_with_corsa(&ctx, true, bridge.clone()).await,
+                None
+            );
+            assert_eq!(
+                crate::ide::RenameService::prepare_rename_with_corsa(&ctx, bridge.clone()).await,
+                None
+            );
+            assert_eq!(
+                crate::ide::RenameService::rename_with_corsa(&ctx, "renamed", bridge).await,
+                None
+            );
+        }
+    });
+}
+
+#[test]
 fn canonical_references_cross_vue_files_and_honor_include_declaration() {
     crate::runtime::block_on(async {
         let Some(tsgo_path) = resolve_tsgo_binary() else {

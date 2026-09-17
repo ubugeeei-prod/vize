@@ -30,11 +30,12 @@ use tower_lsp::lsp_types::{Position, Range};
 use super::{MaestroServer, server_capabilities};
 use crate::ide::{
     CompletionService, DocumentHighlightService, DocumentLinkService, HoverService, IdeContext,
-    ReferencesService, RenameService, SemanticTokensService, position_to_offset,
+    RenameService, SemanticTokensService, position_to_offset,
 };
 
 mod call_hierarchy;
 mod navigation;
+mod references;
 mod signature_help;
 use call_hierarchy::{
     CHIncomingParams, CHIncomingResponse, CHItems, CHOutgoingParams, CHOutgoingResponse,
@@ -270,66 +271,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
-        if !self.state.lsp_features().references {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document_position.text_document.uri;
-        let position = params.text_document_position.position;
-        let include_declaration = params.context.include_declaration;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-            return Ok(None);
-        };
-
-        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
-
-        // Type-aware references for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
-        // Routed before the SFC path since JSX documents never produce an SFC
-        // block type. React `.tsx` is untouched when the flag is off.
-        #[cfg(feature = "native")]
-        if crate::utils::is_jsx_path(uri.path()) {
-            if self.state.jsx_typecheck_enabled() {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                if let Some(locations) = crate::ide::JsxReferencesService::references(
-                    &ctx,
-                    include_declaration,
-                    corsa_bridge,
-                )
-                .await
-                {
-                    return Ok(Some(locations));
-                }
-            }
-            return Ok(None);
-        }
-
-        #[cfg(feature = "native")]
-        {
-            let locations = if self.state.lsp_features().cross_file {
-                ReferencesService::references_with_corsa(
-                    &ctx,
-                    include_declaration,
-                    self.state.get_corsa_bridge().await,
-                )
-                .await
-            } else {
-                ReferencesService::references(&ctx, include_declaration)
-            };
-            if let Some(locations) = locations {
-                return Ok(Some(locations));
-            }
-        }
-
-        #[cfg(not(feature = "native"))]
-        if let Some(locations) = ReferencesService::references(&ctx, include_declaration) {
-            return Ok(Some(locations));
-        }
-
-        Ok(None)
+        references::references(self, params).await
     }
 
     async fn document_highlight(

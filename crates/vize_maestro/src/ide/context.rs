@@ -87,7 +87,11 @@ impl<'a> IdeContext<'a> {
             };
             if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) {
                 if completion {
-                    find_block_at_completion_offset(&descriptor, offset)
+                    find_block_at_completion_offset(&descriptor, offset).or_else(|| {
+                        (state.patterned_template_enabled()
+                            && root_match_subject_at(&descriptor, offset))
+                        .then_some(BlockType::Template)
+                    })
                 } else {
                     find_block_at_offset(&descriptor, offset)
                 }
@@ -153,6 +157,45 @@ impl<'a> IdeContext<'a> {
             Some(BlockType::Art(ArtCursorPosition::VariantTemplate(_)))
         )
     }
+}
+
+fn root_match_subject_at(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>, offset: usize) -> bool {
+    use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
+    let Some(template) = descriptor.template.as_ref() else {
+        return false;
+    };
+    if offset < template.loc.tag_start
+        || offset >= template.loc.start
+        || !template.has_root_match()
+        || template.src.is_some()
+        || template.lang.as_deref().is_some_and(|lang| lang != "html")
+    {
+        return false;
+    }
+    let Some(header) = descriptor
+        .source
+        .get(template.loc.tag_start..template.loc.start)
+    else {
+        return false;
+    };
+    let allocator = vize_s0::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, header);
+    let Some(TemplateChildNode::Element(element)) = root.children.first() else {
+        return false;
+    };
+    element.props.iter().any(|prop| {
+        let PropNode::Directive(dir) = prop else {
+            return false;
+        };
+        let Some(ExpressionNode::Simple(expression)) = &dir.exp else {
+            return false;
+        };
+        dir.name == "match"
+            && dir.arg.is_none()
+            && dir.modifiers.is_empty()
+            && offset >= template.loc.tag_start + expression.loc.span.start as usize
+            && offset <= template.loc.tag_start + expression.loc.span.end as usize
+    })
 }
 
 #[cfg(test)]

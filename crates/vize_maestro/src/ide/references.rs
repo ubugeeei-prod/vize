@@ -33,6 +33,9 @@ pub struct ReferencesService;
 impl ReferencesService {
     /// Find all references to the symbol at the current position.
     pub fn references(ctx: &IdeContext, include_declaration: bool) -> Option<Vec<Location>> {
+        if ctx.state.patterned_template_enabled() {
+            return None;
+        }
         let word = Self::get_word_at_offset(&ctx.content, ctx.offset)?;
 
         if word.is_empty() {
@@ -87,6 +90,9 @@ impl ReferencesService {
     ) -> Option<Vec<Location>> {
         let canonical_locations =
             canonical::references(ctx, include_declaration, corsa_bridge.as_deref()).await;
+        if ctx.state.patterned_template_enabled() {
+            return canonical_locations;
+        }
         if canonical_locations
             .as_ref()
             .is_some_and(|locations| !locations.is_empty())

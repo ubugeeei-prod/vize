@@ -7,10 +7,6 @@ use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, Documentation, MarkupContent,
     MarkupKind,
 };
-use vize_atelier_sfc::croquis::{
-    SfcCroquisOptions, analyze_sfc_descriptor, analyze_sfc_descriptor_with_context_legacy_vue2,
-    analyze_sfc_descriptor_with_context_options_api,
-};
 use vize_croquis::ScopeKind;
 use vize_relief::BindingType;
 
@@ -110,44 +106,8 @@ pub(crate) fn analyzed_template_binding_completions(
         return petite_vue_scope_binding_completions(ctx);
     }
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+    let Some((croquis, template_start)) = crate::ide::template_scope::analyze(ctx) else {
         return Vec::new();
-    };
-
-    // Parse the template so v-for / v-slot scopes land in the Croquis scope
-    // chain. Without the AST, `analyze_sfc_descriptor` skips template-level
-    // analysis and we lose nested binding visibility.
-    let template_block = descriptor.template.as_ref();
-    let allocator = vize_s0::Allocator::new();
-    let template_parse =
-        template_block.map(|tb| (vize_armature::parse(&allocator, &tb.content), tb.loc.start));
-
-    let croquis_options = SfcCroquisOptions::full();
-    let croquis = if ctx.state.legacy_vue2_enabled() {
-        analyze_sfc_descriptor_with_context_legacy_vue2(
-            &descriptor,
-            template_parse.as_ref().map(|((ast, _), _)| ast),
-            croquis_options,
-        )
-        .croquis
-    } else if ctx.state.options_api_enabled() {
-        analyze_sfc_descriptor_with_context_options_api(
-            &descriptor,
-            template_parse.as_ref().map(|((ast, _), _)| ast),
-            croquis_options,
-        )
-        .croquis
-    } else {
-        analyze_sfc_descriptor(
-            &descriptor,
-            template_parse.as_ref().map(|((ast, _), _)| ast),
-            croquis_options,
-        )
     };
 
     let mut items_vec = Vec::new();
@@ -155,15 +115,16 @@ pub(crate) fn analyzed_template_binding_completions(
     // Scope-aware completion: include bindings introduced by v-for / v-slot /
     // event-handler scopes that contain the cursor. Top-level setup bindings
     // are added by the loop below; we de-dup by name.
-    if let Some((_, template_start)) = template_parse.as_ref() {
-        let template_local = ctx.offset.saturating_sub(*template_start) as u32;
-        for (name, _binding, scope_kind) in croquis.scopes.bindings_visible_at(template_local) {
+    let mut locals = BTreeSet::new();
+    {
+        let template_local = ctx.offset.saturating_sub(template_start) as u32;
+        for (name, _binding, scope_kind) in
+            crate::ide::template_scope::bindings_visible_at(&croquis, template_local)
+        {
             if !is_template_scope_kind(scope_kind) {
                 continue;
             }
-            if croquis.bindings.contains(name) {
-                continue;
-            }
+            locals.insert(name);
             items_vec.push(template_scope_completion_item(name, scope_kind));
         }
     }
@@ -179,6 +140,9 @@ pub(crate) fn analyzed_template_binding_completions(
     };
 
     for (name, binding_type) in croquis.bindings.iter() {
+        if locals.contains(name) {
+            continue;
+        }
         if !include_vue3_details
             && (!is_legacy_vue2_binding(binding_type)
                 || binding_type == BindingType::Props && macro_prop_names.contains(name))
@@ -318,7 +282,11 @@ fn petite_vue_scope_binding_completions(ctx: &IdeContext) -> Vec<CompletionItem>
 fn is_template_scope_kind(kind: ScopeKind) -> bool {
     matches!(
         kind,
-        ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::EventHandler | ScopeKind::Callback
+        ScopeKind::VFor
+            | ScopeKind::VSlot
+            | ScopeKind::VWhen
+            | ScopeKind::EventHandler
+            | ScopeKind::Callback
     )
 }
 
@@ -350,6 +318,7 @@ fn template_scope_label(kind: ScopeKind) -> &'static str {
     match kind {
         ScopeKind::VFor => "v-for",
         ScopeKind::VSlot => "v-slot",
+        ScopeKind::VWhen => "v-when",
         ScopeKind::EventHandler => "event handler",
         ScopeKind::Callback => "callback",
         _ => "local",

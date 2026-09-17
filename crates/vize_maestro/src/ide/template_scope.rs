@@ -1,8 +1,12 @@
 //! Authored template-scope bindings such as `v-for` aliases.
 #![allow(clippy::disallowed_types)]
 
+mod analysis;
 mod v_for;
 mod v_slot;
+#[cfg(feature = "native")]
+pub(crate) use analysis::may_reference_style_binding;
+pub(crate) use analysis::{analyze, bindings_visible_at};
 
 #[cfg(test)]
 mod tests;

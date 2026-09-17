@@ -90,3 +90,54 @@ fn non_script_blocks_keep_their_existing_boundaries() {
         }
     }
 }
+
+#[test]
+fn root_pattern_completion_is_limited_to_enabled_subject_insertion_points() {
+    let project = tempfile::tempdir().unwrap();
+    std::fs::write(
+        project.path().join("vize.config.json"),
+        r#"{"experimentals":{"patternedTemplate":true}}"#,
+    )
+    .unwrap();
+    let enabled = ServerState::new();
+    enabled.load_workspace_config(project.path());
+    let disabled = ServerState::new();
+    let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();
+    let source = "<template v-match=\"result\" lang=\"html\"><p v-when=\"_\"/></template>";
+    let start = source.find("result").unwrap();
+    let end = start + "result".len();
+    for offset in 0..source.find('>').unwrap() {
+        let expected = (start..=end)
+            .contains(&offset)
+            .then_some(BlockType::Template);
+        assert_eq!(
+            IdeContext::with_content_for_completion(&enabled, &uri, offset, source.into())
+                .block_type,
+            expected,
+            "offset {offset}"
+        );
+        assert_eq!(
+            IdeContext::with_content(&enabled, &uri, offset, source.into()).block_type,
+            None
+        );
+        assert_eq!(
+            IdeContext::with_content_for_completion(&disabled, &uri, offset, source.into())
+                .block_type,
+            None
+        );
+    }
+    for source in [
+        "<template src=\"./other.html\" v-match=\"result\"/>",
+        "<template lang=\"pug\" v-match=\"result\">p</template>",
+        "<template v-match:arg=\"result\"><p/></template>",
+        "<template v-match.once=\"result\"><p/></template>",
+    ] {
+        let offset = source.find("result").unwrap();
+        assert_eq!(
+            IdeContext::with_content_for_completion(&enabled, &uri, offset, source.into())
+                .block_type,
+            None,
+            "{source}"
+        );
+    }
+}

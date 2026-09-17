@@ -9,6 +9,7 @@ use super::{
 use crate::ide::{IdeContext, corsa_support};
 
 mod component_props;
+mod patterns;
 
 use component_props::retain_component_prop_edits;
 
@@ -46,6 +47,9 @@ pub(in crate::ide::rename) async fn rename(
     bridge: Option<&CorsaBridge>,
 ) -> Answer<WorkspaceEdit> {
     match rename_strict(ctx, new_name, bridge).await {
+        Ok(Answer::Unavailable) | Err(_) if ctx.state.patterned_template_enabled() => {
+            Answer::Available(None)
+        }
         Ok(answer) => answer,
         Err(error) => error.into_lenient_answer(),
     }
@@ -233,7 +237,11 @@ async fn rename_strict_inner(
     }
     record(&mut trace, || CanonicalRenameStage::Complete);
     Ok(Answer::Available(
-        corsa_support::merge_canonical_workspace_edits(mapped),
+        corsa_support::merge_canonical_workspace_edits(mapped).and_then(|mut edit| {
+            (!ctx.state.patterned_template_enabled()
+                || patterns::rewrite_shorthand_bindings(ctx, &document, &mut edit, new_name))
+            .then_some(edit)
+        }),
     ))
 }
 

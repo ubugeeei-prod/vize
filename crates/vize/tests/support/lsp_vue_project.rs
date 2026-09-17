@@ -12,6 +12,10 @@ pub struct Fixture {
 
 impl Fixture {
     pub fn new(source: &str, enabled: bool) -> Self {
+        Self::new_with_cross_file(source, enabled, false)
+    }
+
+    pub fn new_with_cross_file(source: &str, enabled: bool, cross_file: bool) -> Self {
         let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
             .unwrap()
@@ -34,7 +38,7 @@ impl Fixture {
             serde_json::to_vec(&json!({
                 "experimentals": { "patternedTemplate": enabled },
                 "typeChecker": { "corsaPath": runtime, "checkFallthroughAttrs": false },
-                "lsp": { "lint": false, "typecheck": true, "hover": true }
+                "lsp": { "lint": false, "typecheck": true, "hover": true, "crossFile": cross_file }
             }))
             .unwrap(),
         )
@@ -46,7 +50,7 @@ impl Fixture {
         lsp.send(
             json!({ "jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
                 "processId": null, "rootUri": file_uri(project.path()), "capabilities": {},
-                "initializationOptions": { "lint": false, "typecheck": true, "hover": true }
+                "initializationOptions": { "lint": false, "typecheck": true, "hover": true, "crossFile": cross_file }
             }}),
         );
         assert!(lsp.recv_response(1)["result"].is_object());
@@ -86,13 +90,22 @@ impl Fixture {
     }
 
     pub fn request(&mut self, method: &str, source: &str, needle: &str) -> Value {
+        self.request_with(method, source, needle, json!({}))
+    }
+
+    pub fn request_with(
+        &mut self,
+        method: &str,
+        source: &str,
+        needle: &str,
+        mut params: Value,
+    ) -> Value {
         let id = self.next_id;
         self.next_id += 1;
-        self.lsp.send(
-            json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": {
-                "textDocument": { "uri": self.uri }, "position": position(source, needle)
-            }}),
-        );
+        params["textDocument"] = json!({ "uri": self.uri });
+        params["position"] = position(source, needle);
+        self.lsp
+            .send(json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params }));
         let response = self.lsp.recv_response(id);
         assert!(response.get("error").is_none(), "{response:#}");
         response["result"].clone()

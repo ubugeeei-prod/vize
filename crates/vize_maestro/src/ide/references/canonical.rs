@@ -59,7 +59,9 @@ pub(super) async fn references(
     // its references live in this SFC and the already-open project surface;
     // materializing every workspace SFC for it takes minutes on a
     // component-library-sized workspace and cannot add hits.
-    let document = if is_script_setup_local_binding(ctx) {
+    let document_only =
+        ctx.state.patterned_template_enabled() && !ctx.state.lsp_features().cross_file;
+    let document = if document_only || is_script_setup_local_binding(ctx) {
         corsa_support::open_canonical_virtual_project_document_strict(ctx, bridge)
             .await
             .ok()
@@ -107,6 +109,9 @@ pub(super) async fn references(
     }
     let mut mapped = corsa_support::map_canonical_corsa_locations(ctx, &document, locations);
     mapped.extend(style_locations(ctx, &document, &mapped));
+    if document_only {
+        mapped.retain(|location| location.uri == *ctx.uri);
+    }
     mapped.sort_by(|left, right| {
         left.uri
             .as_str()
@@ -234,6 +239,9 @@ fn collect_style_locations(
         return;
     }
     let ctx = IdeContext::with_content(query.state, uri, offset, source.to_owned());
+    if !crate::ide::template_scope::may_reference_style_binding(&ctx, &word) {
+        return;
+    }
     locations.extend(ReferencesService::find_references_in_style(&ctx, &word));
 }
 
