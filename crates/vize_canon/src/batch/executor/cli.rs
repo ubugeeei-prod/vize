@@ -476,6 +476,16 @@ fn parse_cli_diagnostics(
         let Some(last) = diagnostics.last_mut().filter(|_| last_was_kept) else {
             continue;
         };
+        if last.severity == 2 && last.code == Some(2322) && !line.trim().is_empty() {
+            if patterns::warning_summary_count(line).is_some() {
+                last_was_kept = false;
+                continue;
+            }
+            if !patterns::is_warning_continuation(line) {
+                last.severity = 1;
+                last_was_kept = false;
+            }
+        }
         let line = line.trim();
         if line.is_empty() {
             continue;

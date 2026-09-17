@@ -1825,6 +1825,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/cli/diagnost
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/executor/cli/diagnostic_paths.rs	204	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/cli/import_resolution.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/executor/cli/import_resolution.rs	47	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/executor/cli/patterns/tests.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/executor/cli/tests.rs	11	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/declaration_maps.rs	8	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/executor/declaration_maps.rs	195	s0	S0	stage	vize_carton	compat	1
@@ -2628,7 +2629,8 @@ typechecker	Typechecker	test/dev	crates/vize_canon/tests/no_space_default_export
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/options_api_runtime_props_value_scope.rs	2	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/options_api_runtime_props_value_scope.rs	2	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/options_api_runtime_props_value_scope.rs	2	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	test/dev	crates/vize_canon/tests/patterned_typechecking.rs	282	s0	S0	stage	vize_s0	preferred	2
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/patterned_typechecking.rs	285	s0	S0	stage	vize_s0	preferred	2
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/patterned_typechecking/component_props.rs	40	s0	S0	stage	vize_s0	preferred	2
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/plain_script_named_exports.rs	17	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/plain_script_named_exports.rs	17	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/plain_script_namespace_hoisting.rs	70	raw_oxc	raw OXC	raw	oxc_allocator	raw	1

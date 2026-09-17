@@ -77,5 +77,12 @@ fn configured_pattern_check_distinguishes_errors_warnings_and_flag_off() {
     );
     let (success, result) = check();
     assert!(!success, "{result}");
-    assert!(result["errorCount"].as_u64().unwrap() > 0, "{result}");
+    assert_eq!(result["errorCount"], 1, "{result}");
+    assert_eq!(result["warningCount"], 0, "{result}");
+    assert_eq!(
+        result["files"][0]["diagnostics"],
+        serde_json::json!([
+            "error:2:11 `v-match` / `v-when` patterned templates require `experimentals.patternedTemplate`."
+        ])
+    );
 }

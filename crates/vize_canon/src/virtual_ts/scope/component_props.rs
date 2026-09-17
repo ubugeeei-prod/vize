@@ -95,7 +95,7 @@ pub(super) fn generate_component_props(
 
     component_prop_navigation::emit_references(ts, mappings, semantic_links, ctx, checkable_usages);
 
-    // Collect all closure scope IDs (v-for and v-slot)
+    // Collect all scopes whose component checks need a replayed environment.
     let closure_scope_ids: FxHashSet<u32> = summary
         .scopes
         .iter()
@@ -108,7 +108,7 @@ pub(super) fn generate_component_props(
         .map(|s| s.id.as_u32())
         .collect();
 
-    // Root closure scopes: VFor/VSlot scopes whose parent is NOT a closure scope
+    // Nested closure scopes are replayed recursively from their root.
     let root_closure_scope_ids: FxHashSet<u32> = summary
         .scopes
         .iter()
@@ -157,7 +157,7 @@ pub(super) fn generate_component_props(
     ts.push_str("\n  // Component props value checks (template scope)\n");
     for &(idx, usage) in checkable_usages {
         if closure_scope_ids.contains(&usage.scope_id.as_u32()) {
-            continue; // Will be emitted inside v-for/v-slot scope
+            continue; // Emitted inside the replayed closure scope.
         }
         if is_empty_props_usage(usage) {
             continue;
@@ -199,9 +199,6 @@ pub(super) fn generate_component_props(
     generate_empty_root_checks(ts, mappings, ctx, checkable_usages, &closure_scope_ids);
 
     for scope in summary.scopes.iter() {
-        if !matches!(scope.kind, ScopeKind::VFor | ScopeKind::VSlot) {
-            continue;
-        }
         // Only process root closure scopes; nested ones are handled recursively
         if !root_closure_scope_ids.contains(&scope.id.as_u32()) {
             continue;

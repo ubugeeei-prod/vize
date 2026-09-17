@@ -94,7 +94,11 @@ describe("patterned Canon with real WASM and Monaco TypeScript", () => {
     const diagnostic = check.typeCheckResult.value!.diagnostics.find((d) =>
       d.message.includes("Duplicate"),
     )!;
-    expect(source.value.slice(diagnostic.start, diagnostic.end)).toContain("rows");
+    const duplicate = "const rows, const rows";
+    const expectedStart = source.value.indexOf(duplicate) + duplicate.length;
+    const expectedEnd = source.value.indexOf('">', expectedStart);
+    expect(diagnostic.start).toBe(expectedStart);
+    expect(diagnostic.end).toBe(expectedEnd);
     source.value = valid;
     experimentals.value = { experimentalPatternedTemplate: false };
     await check.typeCheck();

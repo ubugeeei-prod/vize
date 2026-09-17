@@ -3,6 +3,9 @@ use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerTrait, SfcBlockType, SfcTypeCheckOptions, type_check_sfc,
 };
 
+#[path = "patterned_typechecking/component_props.rs"]
+mod component_props;
+
 fn write(root: &Path, name: &str, source: &str) {
     let path = root.join(name);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
