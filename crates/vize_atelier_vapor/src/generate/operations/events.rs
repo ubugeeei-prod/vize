@@ -66,7 +66,7 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
     };
 
     if set_event.delegate {
-        // Use delegation
+        ctx.add_delegate_event(event_name);
         ctx.push_line_fmt(format_args!(
             "{}.$evt{} = _createInvoker({})",
             element, event_name, wrapped_handler

@@ -1,19 +1,7 @@
-//! Import generation, delegate event collection, and template escaping.
+//! Import generation and template escaping.
 
 use super::context::GenerateContext;
-use crate::ir::{BlockIRNode, OperationNode};
 use vize_carton::{String, cstr};
-
-/// Collect delegate events from block
-pub(crate) fn collect_delegate_events(ctx: &mut GenerateContext, block: &BlockIRNode<'_>) {
-    for op in block.operation.iter() {
-        if let OperationNode::SetEvent(set_event) = op
-            && set_event.delegate
-        {
-            ctx.add_delegate_event(set_event.key.content);
-        }
-    }
-}
 
 /// Generate imports based on used helpers
 pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {

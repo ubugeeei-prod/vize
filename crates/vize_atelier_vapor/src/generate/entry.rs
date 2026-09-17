@@ -9,7 +9,7 @@ use vize_atelier_core::{
 use vize_carton::{FxHashSet, String};
 
 use super::context::GenerateContext;
-use super::setup::{collect_delegate_events, escape_template, generate_imports};
+use super::setup::{escape_template, generate_imports};
 use super::{
     block_has_template_refs, collect_custom_directives, collect_root_if_templates,
     directive_resolution_ident, generate_block,
@@ -143,7 +143,6 @@ pub fn generate_vapor_with_options_and_experimentals(
         .ok();
     }
 
-    collect_delegate_events(&mut ctx, &ir.block);
     ctx.push_line("export function render(_ctx) {");
     ctx.indent();
 

@@ -17,6 +17,9 @@ use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
+#[path = "davinci_mounted_behavior/control.rs"]
+mod control;
+
 fn mounted_trace(backend: &str, source: &str, context: Value, steps: Value) -> Value {
     let allocator = Allocator::new();
     let code = if backend == "vdom" {
