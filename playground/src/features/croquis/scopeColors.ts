@@ -30,6 +30,8 @@ export function getScopeColorClass(kind: string): string {
     VFor: "scope-vfor",
     vSlot: "scope-vslot",
     VSlot: "scope-vslot",
+    "v-match": "scope-block",
+    "v-when": "scope-vslot",
     EventHandler: "scope-event-handler",
     // External modules
     extern: "scope-external-module",

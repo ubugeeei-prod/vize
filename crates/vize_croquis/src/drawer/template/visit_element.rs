@@ -4,7 +4,7 @@
 //! info (which must be entered before other directives), second pass
 //! processes v-bind, v-if, v-show, v-model, v-on in the correct scope.
 
-mod bounds;
+pub(super) mod bounds;
 mod first_pass;
 mod scopes;
 mod second_pass;
@@ -26,6 +26,7 @@ impl Drawer {
         scope_vars: &mut Vec<CompactString>,
     ) {
         let tag = el.tag;
+        self.check_orphan_pattern_arm(el);
         let is_component = is_component_tag(tag);
         let mut subtree_end = None;
 
@@ -206,8 +207,10 @@ impl Drawer {
         // Children form a fresh sibling group, so the running `v-if` branch
         // chain is saved and reset here and restored afterwards.
         let saved_branch_conditions = std::mem::take(&mut self.vif_branch_conditions);
-        for child in el.children.iter() {
-            self.visit_template_child(child, scope_vars);
+        if !self.visit_patterned_children(el, scope_vars) {
+            for child in el.children.iter() {
+                self.visit_template_child(child, scope_vars);
+            }
         }
         self.vif_branch_conditions = saved_branch_conditions;
     }

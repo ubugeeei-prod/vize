@@ -3,7 +3,7 @@ use vize_relief::{ElementNode, TemplateChildNode};
 /// End offset of an element's full subtree (including children) in the source.
 /// `ElementNode::loc` only covers the opening tag, so v-for / v-slot scopes
 /// that should extend over the element's interior fall back to this helper.
-pub(super) fn element_subtree_end(el: &ElementNode<'_>) -> u32 {
+pub(in crate::drawer::template) fn element_subtree_end(el: &ElementNode<'_>) -> u32 {
     el.children
         .last()
         .map(template_child_end)

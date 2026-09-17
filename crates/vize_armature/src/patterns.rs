@@ -1,15 +1,17 @@
 //! Parsed long-form patterns for the RFC 823 compiler and tooling consumers.
 //!
-//! Spans are byte offsets in the decoded directive expression, not the enclosing
-//! template. Consumers must map these through the directive's authored span.
+//! Spans are expression-relative bytes. `parse_match_attribute` rebases decoded
+//! spans into the authored attribute; consumers then add the attribute offset.
 //! Grammar follows the Vue reference at 83c5fcc2f (see patterns/LICENSE).
 
 mod aggregate;
+mod attribute;
 mod parser;
 #[cfg(test)]
 mod tests;
 mod tokens;
 
+pub use attribute::{attribute_source_offset, parse_match_attribute};
 use oxc_span::Span;
 use vize_s0::String;
 

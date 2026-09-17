@@ -46,6 +46,11 @@ impl Drawer {
                 let PropNode::Directive(dir) = prop else {
                     continue;
                 };
+                if self.options.experimental_patterned_template
+                    && matches!(dir.name, "match" | "when")
+                {
+                    continue;
+                }
 
                 if dir.name != "slot" {
                     self.collect_dynamic_directive_argument(dir, scope_vars);
@@ -118,6 +123,8 @@ impl Drawer {
                     && dir.name != "slot"
                     && dir.name != "on"
                     && dir.name != "bind"
+                    && !(self.options.experimental_patterned_template
+                        && matches!(dir.name, "match" | "when"))
                 {
                     self.check_expression_refs(exp, scope_vars);
                 }

@@ -58,14 +58,14 @@ For entry-point and proof checklists, see [Experimentals Reference](./experiment
 
 ## Patterned Templates
 
-`patternedTemplate` implements the long-form `v-match` / `v-when` syntax from RFC #823. The subject
-expression is evaluated once, direct branch children are tested in source order, and only the first
-matching branch renders.
+`patternedTemplate` implements the long-form `v-match` / `v-when` syntax from RFC #823. The subject expression is evaluated once, direct branch children are tested in source order, and only the first matching branch renders.
 
 Inline HTML SFCs accept outer `<template v-match>` with nested-match semantics in DOM, SSR, and Vapor.
 Header-only subject edits invalidate HMR; parsed `template.content` remains the original block body.
 External `src`, preprocessors, and descriptors missing original source metadata are rejected.
 Canon narrowing/exhaustiveness remains unsupported; assembled SFC source maps remain script-only.
+
+Croquis accepts `analyzeSfc(source, { experimentalPatternedTemplate: true })` and the Playground Croquis checkbox for root and nested matches. Its strict RFC parser records branch-local declarations, enclosing value lookups, guard references, and syntax diagnostics with authored ranges (including HTML entities). It uses `pattern as name`, not the compiler's older `as const name` spelling. Canon narrowing, coverage checks, and LSP navigation remain tracked in [#6176](https://github.com/ubugeeei-prod/vize/issues/6176).
 
 ```vue
 <script setup lang="ts">

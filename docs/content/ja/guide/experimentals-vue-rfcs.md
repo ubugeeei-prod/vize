@@ -64,6 +64,13 @@ inline HTML の SFC では最外周の `<template>` にも `v-match` を指定�
 parse 結果の `template.content` は引き続きブロック本文のみです。外部 `src`、プリプロセッサ言語、元の source metadata が失われた descriptor はこの形式では拒否します。
 このコンパイラ対応だけでは Playground の Canon の分岐内 narrowing・網羅性検査は有効になりません。結合した SFC の source map も既存の script-only の制限が残ります。
 
+Croquis は `analyzeSfc(source, { experimentalPatternedTemplate: true })` と Playground の
+チェックボックスで root・nested match を解析できます。RFC の parser で分岐内の宣言、
+外側を参照する value pattern、guard、構文診断を記録し、HTML entity を含む元の位置を維持します。
+この parser は `pattern as name` を使い、コンパイラの旧 `as const name` とは異なります。
+これは意味解析の対応であり、Canon の型 narrowing・網羅性検査や LSP navigation の完了ではありません。
+残作業は [#6176](https://github.com/ubugeeei-prod/vize/issues/6176) で追跡します。
+
 ```vue
 <script setup lang="ts">
 type Result =

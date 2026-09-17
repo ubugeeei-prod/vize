@@ -132,6 +132,7 @@ impl CroquisSemanticSummary {
                     summary.event_handler_scope_count += 1;
                 }
                 ScopeKind::Callback => summary.callback_scope_count += 1,
+                ScopeKind::VMatch | ScopeKind::VWhen => summary.template_scope_count += 1,
                 _ => {}
             }
         }

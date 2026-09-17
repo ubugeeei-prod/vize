@@ -62,6 +62,7 @@ impl SfcCroquisOptions {
                 detect_undefined: false,
                 analyze_hoisting: false,
                 collect_template_expressions: false,
+                experimental_patterned_template: false,
             },
             merge_scripts: true,
         }

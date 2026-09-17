@@ -4,7 +4,7 @@
 //! It uses a state machine to tokenize HTML/Vue templates.
 
 pub mod char_codes;
-mod entity_decode;
+pub(crate) mod entity_decode;
 mod in_tag_comment;
 mod sequences;
 mod states;

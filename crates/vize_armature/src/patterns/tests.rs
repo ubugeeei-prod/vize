@@ -208,3 +208,23 @@ fn nesting_is_bounded_without_limiting_wide_patterns() {
     assert_eq!(elements.len(), 10000);
     assert_eq!(rest, None);
 }
+
+#[test]
+fn incomplete_edits_are_bounded_and_never_panic() {
+    for source in [
+        "{ kind: 'ready', data: [const item, ...const rest] } as whole if (item > 0)",
+        "([1, 2] | [3, 4]) as pair",
+        "{ '\\ud800': const value, ...const rest }",
+        "{ const \u{65e5}\u{672c} } if (\u{65e5}\u{672c}.length > 0)",
+    ] {
+        for end in source
+            .char_indices()
+            .map(|(offset, _)| offset)
+            .chain([source.len()])
+        {
+            if let Err(error) = parse_match_pattern(&source[..end]) {
+                assert!(error.offset as usize <= end, "{source}: {error:?}");
+            }
+        }
+    }
+}

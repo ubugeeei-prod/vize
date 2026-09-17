@@ -12,7 +12,19 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
             .ok()
             .and_then(|value| value.as_bool())
             .unwrap_or(false);
-    let result = super::analyze_sfc_json_with_options(source, &filename, in_tag_comments)
-        .map_err(|message| JsValue::from_str(&message))?;
+    let patterned_template = js_sys::Reflect::get(
+        &options,
+        &JsValue::from_str("experimentalPatternedTemplate"),
+    )
+    .ok()
+    .and_then(|value| value.as_bool())
+    .unwrap_or(false);
+    let result = super::analyze_sfc_json_with_options(
+        source,
+        &filename,
+        in_tag_comments,
+        patterned_template,
+    )
+    .map_err(|message| JsValue::from_str(&message))?;
     crate::wasm::to_js_value(&result)
 }

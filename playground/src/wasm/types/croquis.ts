@@ -61,6 +61,8 @@ export type ScopeKind =
   | "block"
   | "vFor"
   | "vSlot"
+  | "v-match"
+  | "v-when"
   | "class"
   | "staticBlock"
   | "catch";
@@ -276,6 +278,7 @@ export interface Croquis {
 export interface CroquisOptions {
   filename?: string;
   experimentalInTagComments?: boolean;
+  experimentalPatternedTemplate?: boolean;
 }
 
 export interface CroquisResult {

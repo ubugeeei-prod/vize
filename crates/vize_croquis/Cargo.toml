@@ -9,6 +9,7 @@ description = "Croquis - Semantic analysis layer for Vize. Quick sketches of mea
 metadata.vize.stability = "compatibility-preview"
 
 [dependencies]
+vize_armature.workspace = true
 vize_carton.workspace = true
 vize_relief.workspace = true
 phf.workspace = true
@@ -37,7 +38,6 @@ davinci-differential = []
 [dev-dependencies]
 davinci_test_support.workspace = true
 tempfile.workspace = true
-vize_armature.workspace = true
 insta.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]

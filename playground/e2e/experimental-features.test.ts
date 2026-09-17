@@ -23,7 +23,7 @@ describe("experimental feature controls", () => {
         { experimentalInTagComments: "true", experimentalSelfComponent: true },
         "croquis",
       ),
-    ).toEqual({ experimentalInTagComments: false });
+    ).toEqual({ experimentalInTagComments: false, experimentalPatternedTemplate: false });
     expect(parseExperimentalOptions(null, "compiler")).toEqual({});
     expect(parseExperimentalOptions([], "compiler")).toEqual({});
     expect(featuresFor("typechecker").map(({ key }) => key)).toEqual([

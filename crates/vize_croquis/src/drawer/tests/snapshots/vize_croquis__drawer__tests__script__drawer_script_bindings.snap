@@ -1289,6 +1289,7 @@ Croquis {
     type_exports: [],
     invalid_exports: [],
     template_expressions: [],
+    pattern_diagnostics: [],
     element_ids: [],
     import_statements: [],
     re_exports: [],

@@ -8,8 +8,8 @@
 )]
 
 use super::source_offsets::{ScriptOffsetMapper, to_sfc_utf16_range};
-use vize_s0::Allocator;
 mod entry;
+mod input;
 pub use entry::analyze_sfc_wasm;
 
 /// The `analyzeSfc` result as a plain `serde_json::Value` - the whole
@@ -17,56 +17,17 @@ pub use entry::analyze_sfc_wasm;
 /// croquis alias and the Spolvero feed byte-exactly (P2-18).
 #[cfg(test)]
 pub(super) fn analyze_sfc_json(source: &str, filename: &str) -> Result<serde_json::Value, String> {
-    analyze_sfc_json_with_options(source, filename, false)
+    analyze_sfc_json_with_options(source, filename, false, false)
 }
 
 pub(super) fn analyze_sfc_json_with_options(
     source: &str,
     filename: &str,
     in_tag_comments: bool,
+    patterned_template: bool,
 ) -> Result<serde_json::Value, String> {
-    use vize_atelier_core::{options::ParserOptions, parser::parse_with_options};
-    use vize_atelier_sfc::{
-        SfcParseOptions,
-        croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
-        parse_sfc,
-    };
-
-    // Parse SFC first
-    let parse_opts = SfcParseOptions {
-        filename: filename.to_string().into(),
-        ..Default::default()
-    };
-
-    let descriptor = match parse_sfc(source, parse_opts) {
-        Ok(d) => d,
-        Err(e) => return Err(e.message.to_string()),
-    };
-
-    // Track template offset for coordinate adjustment
-    let template_offset: u32 = descriptor
-        .template
-        .as_ref()
-        .map(|t| t.loc.start as u32)
-        .unwrap_or(0);
-
-    let analysis = if let Some(ref template) = descriptor.template {
-        let allocator = Allocator::new();
-        let (root, errors) = parse_with_options(
-            &allocator,
-            &template.content,
-            ParserOptions {
-                experimental_in_tag_comments: in_tag_comments,
-                ..Default::default()
-            },
-        );
-        if let Some(error) = errors.iter().find(|error| !error.is_recoverable()) {
-            return Err(format!("Template parse error: {}", error.message));
-        }
-        analyze_sfc_descriptor_with_context(&descriptor, Some(&root), SfcCroquisOptions::full())
-    } else {
-        analyze_sfc_descriptor_with_context(&descriptor, None, SfcCroquisOptions::full())
-    };
+    let (descriptor, template_offset, analysis) =
+        input::analyze(source, filename, in_tag_comments, patterned_template)?;
 
     let script_offset = analysis.script_offset;
     let summary = analysis.croquis;
@@ -94,6 +55,8 @@ pub(super) fn analyze_sfc_json_with_options(
                     | vize_croquis::ScopeKind::VSlot
                     | vize_croquis::ScopeKind::EventHandler
                     | vize_croquis::ScopeKind::Callback
+                    | vize_croquis::ScopeKind::VMatch
+                    | vize_croquis::ScopeKind::VWhen
             );
 
             // Adjust spans to SFC coordinates (skip global scopes at 0:0)
@@ -276,6 +239,13 @@ pub(super) fn analyze_sfc_json_with_options(
         .collect();
     let spolvero = vize_curator::inspector::spolvero_value("analyze-sfc", spolvero_pages);
 
+    let diagnostics = input::diagnostics(source, template_offset, &summary);
+    let warnings = summary
+        .pattern_diagnostics
+        .iter()
+        .filter(|d| d.warning)
+        .count();
+    let errors = summary.pattern_diagnostics.len() - warnings;
     // Build result with croquis wrapper to match TypeScript interface
     let result = serde_json::json!({
         "croquis": {
@@ -318,7 +288,7 @@ pub(super) fn analyze_sfc_json_with_options(
                 "end": end,
             })
             }).collect::<Vec<serde_json::Value>>(),
-            "diagnostics": [],
+            "diagnostics": diagnostics,
             "stats": {
                 "binding_count": bindings.len(),
                 "unused_binding_count": summary.unused_bindings.len(),
@@ -326,11 +296,11 @@ pub(super) fn analyze_sfc_json_with_options(
                 "macro_count": macros.len(),
                 "type_export_count": summary.type_exports.len(),
                 "invalid_export_count": summary.invalid_exports.len(),
-                "error_count": 0,
-                "warning_count": 0,
+                "error_count": errors,
+                "warning_count": warnings,
             },
         },
-        "diagnostics": [],
+        "diagnostics": diagnostics,
         // `vir` is deprecated in favor of the folio alias below; both carry
         // the same croquis folio text for now (Davinci P0-10). Consumers
         // should migrate to `folio.croquis`. Byte-identity of the two keys

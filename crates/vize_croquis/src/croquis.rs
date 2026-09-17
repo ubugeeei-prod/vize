@@ -147,6 +147,8 @@ pub struct Croquis {
 
     /// Template expressions for type checking (interpolations, v-bind, etc.)
     pub template_expressions: Vec<TemplateExpression>,
+    /// Structural and pattern syntax diagnostics, in template-relative bytes.
+    pub pattern_diagnostics: Vec<crate::patterns::PatternDiagnostic>,
 
     /// Element IDs found in template (for cross-file uniqueness checking)
     pub element_ids: Vec<ElementIdInfo>,

@@ -15,6 +15,8 @@ pub struct DrawerOptions {
     pub analyze_hoisting: bool,
     /// Collect template expressions for type checking
     pub collect_template_expressions: bool,
+    /// Opt in to RFC 823 pattern syntax and lexical arm scopes.
+    pub experimental_patterned_template: bool,
 }
 
 impl DrawerOptions {
@@ -28,6 +30,7 @@ impl DrawerOptions {
             detect_undefined: true,
             analyze_hoisting: true,
             collect_template_expressions: true,
+            experimental_patterned_template: false,
         }
     }
 
@@ -41,6 +44,7 @@ impl DrawerOptions {
             detect_undefined: true,
             analyze_hoisting: false,
             collect_template_expressions: false,
+            experimental_patterned_template: false,
         }
     }
 
@@ -54,6 +58,7 @@ impl DrawerOptions {
             detect_undefined: false,
             analyze_hoisting: true,
             collect_template_expressions: false,
+            experimental_patterned_template: false,
         }
     }
 }

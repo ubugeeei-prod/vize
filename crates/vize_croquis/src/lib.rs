@@ -78,6 +78,8 @@ pub use vize_carton::{
 };
 
 // Re-export core types
+pub mod patterns;
+
 pub use scope::{
     BindingFlags, BlockKind, BlockScopeData, CallbackScopeData, ClientOnlyScopeData,
     ClosureScopeData, EventHandlerScopeData, ExternalModuleScopeData, JsGlobalScopeData, JsRuntime,

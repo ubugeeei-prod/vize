@@ -9,7 +9,7 @@ use htmlize::{Context, ENTITIES, ENTITY_MAX_LENGTH, ENTITY_MIN_LENGTH};
 /// If `input` starts with a valid entity, returns the first decoded scalar and the number of
 /// bytes consumed (including `&` and an optional `;`). Otherwise `None` so the tokenizer can
 /// emit `&` as literal text.
-pub(super) fn try_decode_entity(input: &[u8], context: Context) -> Option<(char, usize)> {
+pub(crate) fn try_decode_entity(input: &[u8], context: Context) -> Option<(char, usize)> {
     if input.first() != Some(&b'&') {
         return None;
     }

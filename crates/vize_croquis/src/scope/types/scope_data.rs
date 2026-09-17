@@ -248,6 +248,10 @@ pub enum ScopeData {
     VFor(VForScopeData),
     /// v-slot specific data
     VSlot(VSlotScopeData),
+    /// Parsed subject and arm metadata; all offsets are template-relative bytes.
+    VMatch(crate::patterns::MatchScopeData),
+    /// Parsed arm, including declaration spans and its optional guard.
+    VWhen(crate::patterns::WhenScopeData),
     /// Event handler specific data
     EventHandler(EventHandlerScopeData),
     /// Callback specific data
