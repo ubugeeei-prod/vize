@@ -181,7 +181,6 @@ void test("Atelier core expression codegen imports S0 through the preferred phys
   const scan = scanConsumerMigrationSurfaces();
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
   assert.ok(compiler);
-
   const expectedRows = [
     ["crates/vize_atelier_core/src/codegen/expression.rs", "source", 2],
     ["crates/vize_atelier_core/src/codegen/expression/comment_rewrite.rs", "source", 1],
@@ -263,7 +262,8 @@ void test("Atelier core singleton and element step slices import S0 through the 
     ["crates/vize_atelier_core/src/runtime_helpers.rs", "source", 1],
     ["crates/vize_atelier_core/src/lane/options.rs", "source", 1],
     ["crates/vize_atelier_core/src/lane/structural_keys.rs", "source", 1],
-    ["crates/vize_atelier_core/src/lane/context.rs", "source", 4],
+    ["crates/vize_atelier_core/src/lane/context.rs", "source", 3],
+    ["crates/vize_atelier_core/src/lane/context/for_bindings.rs", "source", 1],
     ["crates/vize_atelier_core/src/steps/element.rs", "source", 3],
     ["crates/vize_atelier_core/src/steps/element.rs", "test", 1],
   ];
