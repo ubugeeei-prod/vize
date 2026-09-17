@@ -265,7 +265,7 @@ export function render(_ctx) {
   const _component_MyComponent = _resolveComponent("MyComponent")
   const n0 = _createComponentWithFallback(_component_MyComponent, {
     modelValue: () => (_ctx.value),
-    "onUpdate:modelValue": () => _value => (_ctx.value = _value)
+    "onUpdate:modelValue": () => ($event => ((_ctx.value) = $event))
   }, null, true)
   return n0
 }
@@ -282,7 +282,7 @@ export function render(_ctx) {
   const _component_MyComponent = _resolveComponent("MyComponent")
   const n0 = _createComponentWithFallback(_component_MyComponent, {
     title: () => (_ctx.pageTitle),
-    "onUpdate:title": () => _value => (_ctx.pageTitle = _value)
+    "onUpdate:title": () => ($event => ((_ctx.pageTitle) = $event))
   }, null, true)
   return n0
 }
