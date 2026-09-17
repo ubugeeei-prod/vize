@@ -17,8 +17,12 @@ export function createAutoInsertMiddleware(
 
   return {
     async didChange(event, next): Promise<void> {
+      const documentVersion = event.document.version;
+      const editor = window.activeTextEditor;
+      const client = getClient();
+      const wasApplyingSnippet = applyingSnippet;
       await next(event);
-      if (applyingSnippet || !config.get<boolean>("autoInsert.enable", false)) {
+      if (wasApplyingSnippet || !config.get<boolean>("autoInsert.enable", false)) {
         return;
       }
 
@@ -27,11 +31,12 @@ export function createAutoInsertMiddleware(
       // report the caret between the braces, matching Volar's wire contract.
       await new Promise<void>((resolve) => setTimeout(resolve, 0));
 
-      const client = getClient();
-      const editor = window.activeTextEditor;
       if (
         !client ||
         !editor ||
+        getClient() !== client ||
+        window.activeTextEditor !== editor ||
+        event.document.version !== documentVersion ||
         !supportsAutoInsert(client) ||
         !shouldRequest(event, editor, config)
       ) {
@@ -40,7 +45,6 @@ export function createAutoInsertMiddleware(
 
       const [change] = event.contentChanges;
       const selection = editor.selection.active;
-      const documentVersion = event.document.version;
       const snippet = await client
         .sendRequest<string | null>(AUTO_INSERT_METHOD, {
           textDocument: { uri: event.document.uri.toString() },
@@ -54,6 +58,10 @@ export function createAutoInsertMiddleware(
         .catch(() => null);
       if (
         !snippet ||
+        getClient() !== client ||
+        window.activeTextEditor !== editor ||
+        !config.get<boolean>("autoInsert.enable", false) ||
+        !shouldRequest(event, editor, config) ||
         editor.document.version !== documentVersion ||
         !editor.selection.active.isEqual(selection)
       ) {
@@ -87,7 +95,9 @@ export function shouldRequest(
 ): boolean {
   if (
     event.contentChanges.length !== 1 ||
+    event.document.isClosed ||
     editor.document !== event.document ||
+    !editor.selection.isEmpty ||
     editor.selections.length !== 1
   ) {
     return false;

@@ -45,8 +45,54 @@ exports.runAutoInsertSmoke = async function runAutoInsertSmoke() {
   );
   assert.ok(insertedLine.includes("{{  }}</main>"), insertedLine);
 
+  for (const invalidate of ["selection", "editor"]) {
+    await assertDelayedResponseIgnored({ document, editor, logPath, invalidate });
+  }
   await disableVizeAndWaitForShutdown(logPath);
 };
+
+async function assertDelayedResponseIgnored({ document, editor, logPath, invalidate }) {
+  await vscode.window.showTextDocument(document);
+  const interpolation = document.lineAt(5).text.indexOf("{{");
+  assert.ok(interpolation >= 0, "expected an authored interpolation");
+  const at = new vscode.Position(5, interpolation + 2);
+  editor.selection = new vscode.Selection(at, at);
+  const gate = `${logPath}.hold-auto-insert`;
+  const beforeCount = methodMessages(readLogEntries(logPath), "volar/client/autoInsert").length;
+  fs.writeFileSync(gate, "hold");
+  try {
+    await vscode.commands.executeCommand("type", { text: "{" });
+    const entries = await waitForLogEntries(
+      logPath,
+      (items) => methodMessages(items, "volar/client/autoInsert").length > beforeCount,
+      "held automatic insertion request",
+    );
+    const request = methodMessages(entries, "volar/client/autoInsert").at(-1);
+    assert.equal(request.params.change.text, "{}", "held request must produce a real snippet");
+    const before = document.getText();
+    if (invalidate === "selection") {
+      const active = editor.selection.active;
+      editor.selection = new vscode.Selection(active.translate(0, -1), active);
+    } else {
+      await vscode.window.showTextDocument(await openWorkspaceDocument("src", "Variant.art.vue"));
+    }
+    fs.unlinkSync(gate);
+    await waitForLogEntries(
+      logPath,
+      (items) =>
+        items.some((entry) => entry.event === "auto-insert-response" && entry.id === request.id),
+      "released automatic insertion response",
+    );
+    await sleep(250);
+    assert.equal(
+      document.getText(),
+      before,
+      `stale ${invalidate} response changed the authored document`,
+    );
+  } finally {
+    fs.rmSync(gate, { force: true });
+  }
+}
 
 function getFakeServer() {
   const serverPath = process.env.VIZE_TEST_SERVER_PATH;
