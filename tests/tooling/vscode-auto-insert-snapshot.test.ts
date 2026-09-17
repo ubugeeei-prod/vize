@@ -5,8 +5,33 @@ import type { TextDocumentChangeEvent, TextEditor } from "vscode";
 import type { LanguageClient } from "vscode-languageclient/node.js";
 import { waitForAutoInsertIdle } from "../../editors/vscode/src/auto-insert-test-state.ts";
 
-const window = { activeTextEditor: undefined as TextEditor | undefined };
-Object.assign(globalThis, { __vizeAutoInsertWindow: window });
+function emitter<T>() {
+  const listeners = new Set<(event: T) => unknown>();
+  return {
+    listeners,
+    event: (listener: (event: T) => unknown) => {
+      listeners.add(listener);
+      return { dispose: () => listeners.delete(listener) };
+    },
+    fire(event: T) {
+      for (const listener of listeners) listener(event);
+    },
+  };
+}
+const selectionChanged = emitter<{ textEditor: TextEditor }>();
+const editorChanged = emitter<TextEditor | undefined>();
+const documentChanged = emitter<TextDocumentChangeEvent>();
+const documentClosed = emitter<unknown>();
+const window = {
+  activeTextEditor: undefined as TextEditor | undefined,
+  onDidChangeTextEditorSelection: selectionChanged.event,
+  onDidChangeActiveTextEditor: editorChanged.event,
+};
+const workspace = {
+  onDidChangeTextDocument: documentChanged.event,
+  onDidCloseTextDocument: documentClosed.event,
+};
+Object.assign(globalThis, { __vizeAutoInsertWindow: window, __vizeAutoInsertWorkspace: workspace });
 const hooks = registerHooks({
   resolve(specifier, context, next) {
     if (specifier === "./auto-insert-test-state.js") {
@@ -22,6 +47,7 @@ const hooks = registerHooks({
           format: "module",
           shortCircuit: true,
           source: `export const window = globalThis.__vizeAutoInsertWindow;
+            export const workspace = globalThis.__vizeAutoInsertWorkspace;
             export class SnippetString { constructor(value) { this.value = value; } }`,
         }
       : next(url, context);
@@ -39,13 +65,24 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
-function scenario() {
+function scenario(text = "{}") {
   const response = deferred<string | null>();
   const requested = deferred<void>();
   const requests: unknown[] = [];
   const insertions: unknown[] = [];
-  const document = { version: 1, isClosed: false, uri: { toString: () => "file:///App.vue" } };
-  const position = { line: 0, character: 2, isEqual: (other: unknown) => other === position };
+  const positionAt = (character: number) => ({
+    line: 0,
+    character,
+    isEqual: (other: { line: number; character: number }) =>
+      other.line === 0 && other.character === character,
+  });
+  const document = {
+    version: 1,
+    isClosed: false,
+    uri: { toString: () => "file:///App.vue" },
+    positionAt,
+  };
+  const position = positionAt(1 + (text === "{}" ? 1 : text.length));
   const editor = {
     document,
     selection: { active: position, isEmpty: true },
@@ -72,11 +109,120 @@ function scenario() {
   });
   const event = {
     document,
-    contentChanges: [{ rangeOffset: 1, rangeLength: 0, text: "{}" }],
+    contentChanges: [{ rangeOffset: 1, rangeLength: 0, text }],
   } as unknown as TextDocumentChangeEvent;
   const run = (next: () => Promise<void> = async () => {}) => middleware.didChange!(event, next);
-  return { run, document, editor, position, state, response, requested, requests, insertions };
+  return {
+    run,
+    event,
+    document,
+    editor,
+    position,
+    state,
+    response,
+    requested,
+    requests,
+    insertions,
+  };
 }
+
+test("ordinary insertion triggers wait for the end of the inserted UTF-16 text", async () => {
+  for (const text of ["=", ">", "/", "value", "\u{10400}value"]) {
+    const s = scenario(text);
+    s.editor.selection.active = s.document.positionAt(1);
+    const running = s.run();
+    await Promise.resolve();
+    assert.deepEqual(s.requests, []);
+    s.editor.selection.active = s.position;
+    selectionChanged.fire({ textEditor: s.editor as unknown as TextEditor });
+    await s.requested.promise;
+    s.response.resolve(null);
+    await running;
+    assert.deepEqual(s.requests, [
+      {
+        textDocument: { uri: "file:///App.vue" },
+        selection: { line: 0, character: 1 + text.length },
+        change: { rangeOffset: 1, rangeLength: 0, text },
+      },
+    ]);
+  }
+});
+
+test("non-trigger edits do not subscribe or wait for a caret update", async () => {
+  for (const text of ["", " ", "\n", "a\nb"]) {
+    const s = scenario(text);
+    s.editor.selection.active = s.document.positionAt(0);
+    await s.run();
+    assert.deepEqual(s.requests, []);
+    for (const event of [selectionChanged, editorChanged, documentChanged, documentClosed]) {
+      assert.equal(event.listeners.size, 0);
+    }
+  }
+});
+
+for (const reason of ["edit", "close", "editor", "selection", "timeout"]) {
+  test(`selection settlement cancels on ${reason} without a stale request`, async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    const s = scenario();
+    s.editor.selection.active = s.document.positionAt(1);
+    const running = s.run();
+    await Promise.resolve();
+    if (reason === "edit") {
+      s.document.version++;
+      documentChanged.fire(s.event);
+    } else if (reason === "close") {
+      s.document.isClosed = true;
+      documentClosed.fire(s.document);
+    } else if (reason === "editor") {
+      window.activeTextEditor = undefined;
+      editorChanged.fire(undefined);
+    } else if (reason === "selection") {
+      s.editor.selection.active = s.document.positionAt(0);
+      selectionChanged.fire({ textEditor: s.editor as unknown as TextEditor });
+    } else {
+      t.mock.timers.tick(1_000);
+    }
+    await running;
+    assert.deepEqual(s.requests, []);
+    assert.deepEqual(s.insertions, []);
+    for (const event of [selectionChanged, editorChanged, documentChanged, documentClosed]) {
+      assert.equal(event.listeners.size, 0);
+    }
+  });
+}
+
+test("auto insertion waits for the authored caret even beyond the next timer turn", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const s = scenario();
+  s.editor.selection.active = s.document.positionAt(1);
+  const running = s.run();
+  try {
+    await Promise.resolve();
+    t.mock.timers.tick(1);
+    await Promise.resolve();
+    assert.deepEqual(s.requests, [], "the pre-typing caret must never reach the server");
+    s.editor.selection.active = s.position;
+    selectionChanged.fire({ textEditor: s.editor as unknown as TextEditor });
+    await s.requested.promise;
+    s.response.resolve(" $0 ");
+    await running;
+    assert.deepEqual(s.requests, [
+      {
+        textDocument: { uri: "file:///App.vue" },
+        selection: { line: 0, character: 2 },
+        change: { rangeOffset: 1, rangeLength: 0, text: "{}" },
+      },
+    ]);
+    assert.equal(s.insertions.length, 1);
+    for (const event of [selectionChanged, editorChanged, documentChanged, documentClosed]) {
+      assert.equal(event.listeners.size, 0, "selection wait listeners must be disposed");
+    }
+  } finally {
+    s.response.resolve(null);
+    t.mock.timers.tick(1_000);
+    await running;
+  }
+});
 
 test("auto insertion uses the exact unchanged authored snapshot", async () => {
   const s = scenario();

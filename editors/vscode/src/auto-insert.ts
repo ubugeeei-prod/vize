@@ -1,4 +1,12 @@
-import { SnippetString, window, type TextDocumentChangeEvent, type TextEditor } from "vscode";
+import {
+  SnippetString,
+  window,
+  workspace,
+  type Disposable,
+  type Position,
+  type TextDocumentChangeEvent,
+  type TextEditor,
+} from "vscode";
 import type { LanguageClient, Middleware } from "vscode-languageclient/node.js";
 import type { VizeConfigurationLike } from "./extension-core.js";
 import { trackAutoInsertForHostTest } from "./auto-insert-test-state.js";
@@ -27,11 +35,6 @@ export function createAutoInsertMiddleware(
         return;
       }
 
-      // VS Code updates the active selection immediately after emitting the
-      // document change. Yield once so paired-character changes such as "{}"
-      // report the caret between the braces, matching Volar's wire contract.
-      await new Promise<void>((resolve) => setTimeout(resolve, 0));
-
       if (
         !client ||
         !editor ||
@@ -39,13 +42,25 @@ export function createAutoInsertMiddleware(
         window.activeTextEditor !== editor ||
         event.document.version !== documentVersion ||
         !supportsAutoInsert(client) ||
-        !shouldRequest(event, editor, config)
+        event.contentChanges.length !== 1 ||
+        !isTriggerEnabled(event.contentChanges[0].text, config)
       ) {
         return;
       }
 
+      const selection = await waitForAuthoredSelection(event, editor, documentVersion);
+      if (
+        !selection ||
+        getClient() !== client ||
+        window.activeTextEditor !== editor ||
+        !config.get<boolean>("autoInsert.enable", false) ||
+        event.document.version !== documentVersion ||
+        !shouldRequest(event, editor, config) ||
+        !editor.selection.active.isEqual(selection)
+      ) {
+        return;
+      }
       const [change] = event.contentChanges;
-      const selection = editor.selection.active;
       const snippet = await client
         .sendRequest<string | null>(AUTO_INSERT_METHOD, {
           textDocument: { uri: event.document.uri.toString() },
@@ -86,6 +101,58 @@ export function createAutoInsertMiddleware(
   };
 }
 
+async function waitForAuthoredSelection(
+  event: TextDocumentChangeEvent,
+  editor: TextEditor,
+  version: number,
+): Promise<Position | undefined> {
+  const { document, contentChanges } = event;
+  if (contentChanges.length !== 1 || editor.document !== document || document.isClosed) return;
+  const [change] = contentChanges;
+  // VS Code delivers document and selection updates separately. The paired
+  // brace edit leaves the caret inside the pair; ordinary edits leave it at the end.
+  const expected = document.positionAt(
+    change.rangeOffset + (change.text === "{}" ? 1 : change.text.length),
+  );
+  const currentSelection = () =>
+    window.activeTextEditor === editor &&
+    !document.isClosed &&
+    document.version === version &&
+    editor.selection.isEmpty &&
+    editor.selections.length === 1 &&
+    editor.selection.active.isEqual(expected)
+      ? editor.selection.active
+      : undefined;
+  const settled = currentSelection();
+  if (settled) return settled;
+
+  return new Promise((resolve) => {
+    const subscriptions: Disposable[] = [];
+    const finish = (position?: Position) => {
+      clearTimeout(timeout);
+      for (const subscription of subscriptions) subscription.dispose();
+      resolve(position);
+    };
+    // A programmatic edit need not move the caret. Bound the wait and skip it,
+    // never send the old caret just because a timer elapsed.
+    const timeout = setTimeout(() => finish(), 1_000);
+    subscriptions.push(
+      window.onDidChangeTextEditorSelection((change) => {
+        if (change.textEditor === editor) finish(currentSelection());
+      }),
+      window.onDidChangeActiveTextEditor((active) => {
+        if (active !== editor) finish();
+      }),
+      workspace.onDidChangeTextDocument((change) => {
+        if (change.document === document && document.version !== version) finish();
+      }),
+      workspace.onDidCloseTextDocument((closed) => {
+        if (closed === document) finish();
+      }),
+    );
+  });
+}
+
 function supportsAutoInsert(client: LanguageClient): boolean {
   const experimental = client.initializeResult?.capabilities.experimental as
     | { autoInsertionProvider?: AutoInsertionProvider }
@@ -107,7 +174,10 @@ export function shouldRequest(
   ) {
     return false;
   }
-  const text = event.contentChanges[0].text;
+  return isTriggerEnabled(event.contentChanges[0].text, config);
+}
+
+function isTriggerEnabled(text: string, config: VizeConfigurationLike): boolean {
   if (text === "{}") {
     return config.get<boolean>("autoInsert.bracketSpacing", true);
   }
