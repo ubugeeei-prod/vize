@@ -198,15 +198,15 @@ impl PatternParser<'_> {
         }
     }
 
-    pub fn validate_expression(&self, source: &str) -> Result<()> {
+    pub fn validate_expression(&self, source: &str, kind: &str) -> Result<()> {
         if !expression_is_safe_to_parse(source) {
-            return Err(self.error("Unsafe or unbalanced guard expression."));
+            return Err(self.error(&vize_s0::cstr!("Unsafe or unbalanced {kind} expression.")));
         }
         let expression = oxc_parser::Parser::new(&self.js, source, SourceType::ts())
             .parse_expression()
-            .map_err(|_| self.error("Invalid guard expression."))?;
+            .map_err(|_| self.error(&vize_s0::cstr!("Invalid {kind} expression.")))?;
         if !is_expression_trailing_trivia(&source[expression.span().end as usize..]) {
-            return Err(self.error("Unexpected token after guard expression."));
+            return Err(self.error(&vize_s0::cstr!("Unexpected token after {kind} expression.")));
         }
         Ok(())
     }

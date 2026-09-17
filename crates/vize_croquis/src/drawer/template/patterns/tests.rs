@@ -260,6 +260,11 @@ fn invalid_structure_and_patterns_are_diagnosed() {
             false,
         ),
         (
+            r#"<div v-match="x"><p v-when="values[class]" /></div>"#,
+            "Invalid value pattern expression",
+            false,
+        ),
+        (
             r#"<div v-match="x"><p v-when="_"/><p v-when="1"/></div>"#,
             "last and unique",
             false,

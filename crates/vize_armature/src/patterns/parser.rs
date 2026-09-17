@@ -37,7 +37,7 @@ impl<'s> PatternParser<'s> {
             if self.source.as_bytes().get(end) != Some(&b')') || start >= end {
                 return Err(self.error("Expected if (guard)."));
             }
-            self.validate_expression(&self.source[start..end])?;
+            self.validate_expression(&self.source[start..end], "guard")?;
             self.pos = end;
             let guard = self.expression(start);
             self.pos += 1;
@@ -151,6 +151,7 @@ impl<'s> PatternParser<'s> {
                     let mut expression = self.expression(start);
                     expression.text = String::from(expression.text.trim_end());
                     expression.span.end = start as u32 + expression.text.len() as u32;
+                    self.validate_expression(&expression.text, "value pattern")?;
                     PatternKind::Value(expression)
                 }
             }
