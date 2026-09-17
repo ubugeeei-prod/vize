@@ -84,6 +84,68 @@ def referenceTests (program : Program) (rows : List Operand) (script : Json) : E
   expectError "duplicate v-text binding" (Behavior.run { program with ops := program.ops ++ [duplicate] }
     (rows ++ duplicateRows) script)
 
+def inactiveValueTests (program : Program) (rows : List Operand) : Except String Unit := do
+  let script := Json.mkObj [("context", Json.mkObj [("ready", .bool false),
+    ("fallback", .str "fallback")]), ("steps", .arr #[])]
+  let tag <- Values.one rows 2 "tag"
+  let attr := { tag with role := "attribute", name := some "title", text := "hidden" }
+  let mutate := fun (id : Nat) (role : String) (f : Operand -> Operand) =>
+    rows.map (fun row => if row.op == id && row.role == role then f row else row)
+  let _ <- Behavior.run program (rows ++ [attr]) script
+  for (label, damaged) in [
+    ("inactive dynamic tag", mutate 2 "tag" (fun row => { row with kind := "js" })),
+    ("inactive unsupported tag", mutate 2 "tag" (fun row => { row with text := "script" })),
+    ("inactive dynamic namespace", mutate 2 "namespace" (fun row => { row with kind := "js" })),
+    ("inactive unsupported namespace", mutate 2 "namespace" (fun row => { row with text := "svg" })),
+    ("inactive dynamic attribute", rows ++ [{ attr with kind := "js" }]),
+    ("inactive unnamed attribute", rows ++ [{ attr with name := none }]),
+    ("inactive unsupported attribute", rows ++ [{ attr with name := some "onclick" }]),
+    ("inactive duplicate attribute", rows ++ [attr, attr]),
+    ("inactive unsupported text", mutate 3 "text" (fun row => { row with kind := "opaque" })),
+    ("inactive compound text", mutate 3 "text" (fun row => { row with kind := "js", text := "missing()" }))
+  ] do
+    expectError label (Behavior.run program damaged script)
+  let _ <- Behavior.run program
+    (mutate 3 "text" (fun row => { row with kind := "js", text := "missing" })) script
+  let some element := program.ops.find? (fun op => op.id == 2) | throw "missing branch element"
+  let binding := { element with id := 99, kind := OpKind.setProp }
+  let name := { tag with op := 99, role := "name", target := some 2, text := "disabled" }
+  let value := { name with role := "value", kind := "js", text := "missing" }
+  let kind := { name with role := "binding-kind", text := "bind" }
+  let buttonRows := mutate 2 "tag" (fun row => { row with text := "button" })
+  let _ <- Behavior.run { program with ops := program.ops ++ [binding] }
+    (buttonRows ++ [name, value, kind]) script
+  expectError "inactive property on non-button" (Behavior.run
+    { program with ops := program.ops ++ [binding] } (rows ++ [name, value, kind]) script)
+  let eventRows := [{ name with text := "click" }, { value with text := "save" },
+    { kind with text := "on" }]
+  for (label, ops, operands) in [
+    ("inactive unsupported property", [binding], [{ name with text := "title" }, value, kind]),
+    ("inactive unsupported prop expression", [binding], [name, { value with text := "missing()" }, kind]),
+    ("inactive literal property", [binding], [name, { value with kind := "literal" }, kind]),
+    ("inactive duplicate properties", [binding, { binding with id := 100 }],
+      [name, value, kind] ++ [name, value, kind].map (fun row => { row with op := 100 })),
+    ("inactive duplicate events", [{ binding with kind := .setEvent }, { binding with id := 100, kind := .setEvent }],
+      eventRows ++ eventRows.map (fun row => { row with op := 100 })),
+    ("inactive unsupported event", [{ binding with kind := .setEvent }],
+      [{ name with text := "focus" }, { value with text := "save" }, { kind with text := "on" }]),
+    ("inactive unsupported handler", [{ binding with kind := .setEvent }],
+      [{ name with text := "click" }, value, { kind with text := "on" }]),
+    ("inactive v-text with children", [{ binding with kind := .setText }],
+      [value, { kind with text := "vue.text" }])
+  ] do
+    expectError label (Behavior.run { program with ops := program.ops ++ ops }
+      (buttonRows ++ operands) script)
+  let textBinding := { binding with kind := OpKind.setText }
+  let textRows := [value, { kind with text := "vue.text" }]
+  let withoutText := { program with ops := program.ops.filter (fun op => op.id != 3) }
+  let withoutTextRows := rows.filter (fun row => row.op != 3)
+  let _ <- Behavior.run { withoutText with ops := withoutText.ops ++ [textBinding] }
+    (withoutTextRows ++ textRows) script
+  expectError "inactive duplicate v-text" (Behavior.run
+    { withoutText with ops := withoutText.ops ++ [textBinding, { textBinding with id := 100 }] }
+    (withoutTextRows ++ textRows ++ textRows.map (fun row => { row with op := 100 })) script)
+
 def branchTests (program : Program) (rows : List Operand) : Except String Unit := do
   let first <- Values.one rows 1 "condition"
   let second := { first with region := some 6, text := "other" }
@@ -152,6 +214,7 @@ def check : IO UInt32 := do
     let program <- Folio.parseProgram graph
     let rows <- Values.parse values
     referenceTests program rows (<- Json.parse script)
+    inactiveValueTests program rows
     branchTests program rows
     activationTests program rows
   match result with

@@ -9,10 +9,13 @@ def identifier (text : String) : Bool :=
   | [] => false
   | first :: rest => start first && rest.all (fun c => start c || c.isDigit)
 
+def validateExpression (row : Operand) : Except String Unit := do
+  if row.kind != "literal" && !(row.kind == "js" && identifier row.text) then
+    throw s!"unsupported expression {row.kind}: {row.text}"
+
 def evaluate (context : Json) (row : Operand) : Except String Json := do
-  if row.kind == "literal" then pure (.str row.text)
-  else if row.kind == "js" && identifier row.text then context.getObjVal? row.text
-  else throw s!"unsupported expression {row.kind}: {row.text}"
+  validateExpression row
+  if row.kind == "literal" then pure (.str row.text) else context.getObjVal? row.text
 
 def display (value : Json) : Except String String :=
   match value with
@@ -28,6 +31,47 @@ def display (value : Json) : Except String String :=
 
 def textBinding (rows : List Operand) (op : Op) : Bool :=
   op.kind == .setText && (Values.forOp rows op.id).any (fun row => row.role == "binding-kind")
+
+def attached (program : Program) (rows : List Operand) (id : Nat) : List Op :=
+  program.ops.filter (fun op => rows.any (fun row => row.op == op.id &&
+    row.role == "binding-kind" && row.target == some id))
+
+def staticElement (rows : List Operand) (id : Nat) : Except String (String × List (String × Json)) := do
+  let tag <- Values.literal (<- Values.one rows id "tag")
+  if !["main", "section", "div", "span", "p", "button"].contains tag then
+    throw s!"unsupported HTML tag {tag}"
+  if (<- Values.literal (<- Values.one rows id "namespace")) != "html" then
+    throw "unsupported namespace"
+  let mut attrs := []
+  for row in Values.forOp rows id do
+    if row.role == "attribute" then
+      let some name := row.name | throw "missing attribute name"
+      if !["class", "id", "title"].contains name || attrs.any (fun pair => pair.1 == name) then
+        throw "unsupported or duplicate static attribute"
+      attrs := attrs ++ [(name, .str (<- Values.literal row))]
+  pure (tag, attrs)
+
+def validateElementBindings (program : Program) (rows : List Operand) (op : Op)
+    (tag : String) : Except String Unit := do
+  let bindings := attached program rows op.id
+  for kind in [OpKind.setProp, .setEvent, .setText] do
+    if (bindings.filter (fun binding => binding.kind == kind)).length > 1 then
+      throw "unsupported multiple bindings of the same kind"
+  for binding in bindings do
+    if textBinding rows binding then
+      if program.regions.any (fun r => r.owner == some op.id &&
+          program.ops.any (fun child => child.region == r.id)) then
+        throw "unsupported v-text with authored children"
+    else
+      let name <- Values.literal (<- Values.one rows binding.id "name")
+      if binding.kind == .setProp then
+        if tag != "button" || name != "disabled" then throw "unsupported property"
+        if (<- Values.one rows binding.id "value").kind != "js" then
+          throw "unsupported property expression"
+      else if binding.kind == .setEvent then
+        let value <- Values.one rows binding.id "value"
+        if tag != "button" || name != "click" || value.kind != "js" || value.text != "save" then
+          throw "unsupported event binding"
 
 def validate (program : Program) (rows : List Operand) : Except String Unit := do
   if program.phase != .built then throw "stateful reference requires built S3"
@@ -65,14 +109,15 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
       | _ => throw s!"unsupported stateful op#{op.id}"
     if operands.any (fun row => !allowed.contains row.role) then throw "unsupported operand role"
     if op.kind == .insertNode then
-      let _ <- Values.one rows op.id "tag"
-      let _ <- Values.one rows op.id "namespace"
+      let (tag, _) <- staticElement rows op.id
+      validateElementBindings program rows op tag
     if op.kind == .setText && !isTextBinding then
-      let _ <- Values.one rows op.id "text"
+      validateExpression (<- Values.one rows op.id "text")
     if [.setProp, .setEvent].contains op.kind || isTextBinding then
       if operands.length != (if isTextBinding then 2 else 3) then
         throw "unexpected binding operand count"
       let value <- Values.one rows op.id "value"
+      validateExpression value
       let kind <- Values.one rows op.id "binding-kind"
       if value.target != kind.target ||
           !program.ops.any (fun target => some target.id == value.target &&
@@ -96,10 +141,6 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
       if children.length != 1 || operands.length != 1 then throw "unsupported slot shape"
       if (<- Values.literal (<- Values.one rows op.id "name")).isEmpty then
         throw "unsupported slot name"
-
-def attached (program : Program) (rows : List Operand) (id : Nat) : List Op :=
-  program.ops.filter (fun op => rows.any (fun row => row.op == op.id &&
-    row.role == "binding-kind" && row.target == some id))
 
 def appendNode (nodes : List Json) (node : Json) : List Json :=
   match nodes, node with
@@ -129,33 +170,12 @@ def renderRegion (program : Program) (rows : List Operand) (context : Json)
       for op in program.ops.filter (fun op => op.region == regionId) do
         match op.kind with
         | .insertNode =>
-            let tag <- Values.literal (<- Values.one rows op.id "tag")
-            if !["main", "section", "div", "span", "p", "button"].contains tag then
-              throw s!"unsupported HTML tag {tag}"
-            if (<- Values.literal (<- Values.one rows op.id "namespace")) != "html" then
-              throw "unsupported namespace"
-            let mut attrs := []
-            for row in Values.forOp rows op.id do
-              if row.role == "attribute" then
-                let some name := row.name | throw "missing attribute name"
-                if !["class", "id", "title"].contains name || attrs.any (fun pair => pair.1 == name) then
-                  throw "unsupported or duplicate static attribute"
-                attrs := attrs ++ [(name, .str (<- Values.literal row))]
+            let (tag, staticAttrs) <- staticElement rows op.id
+            let mut attrs := staticAttrs
             let mut disabled := false
             let bindings := attached program rows op.id
-            if (bindings.filter (fun binding => binding.kind == .setProp)).length > 1 then
-              throw "unsupported multiple prop bindings"
-            if (bindings.filter (fun binding => binding.kind == .setEvent)).length > 1 then
-              throw "unsupported multiple event bindings"
-            for binding in bindings.filter (fun binding => !textBinding rows binding) do
-              let name <- Values.literal (<- Values.one rows binding.id "name")
-              let value <- Values.one rows binding.id "value"
-              if binding.kind == .setProp then
-                if tag != "button" || name != "disabled" then throw "unsupported property"
-                disabled <- (<- evaluate context value).getBool?
-              else if binding.kind == .setEvent then
-                if tag != "button" || name != "click" || value.kind != "js" || value.text != "save" then
-                  throw "unsupported event binding"
+            for binding in bindings.filter (fun binding => binding.kind == .setProp) do
+              disabled <- (<- evaluate context (<- Values.one rows binding.id "value")).getBool?
             if disabled then attrs := attrs ++ [("disabled", .str "")]
             let child := program.regions.find? (fun r => r.owner == some op.id)
             let rendered <- match bindings.filter (textBinding rows) with
