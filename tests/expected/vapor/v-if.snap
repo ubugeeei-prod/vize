@@ -122,19 +122,20 @@ options: vapor
 --- INPUT ---
 <div v-if="a"><span v-if="b">nested</span></div>
 --- OUTPUT ---
-import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+import { child as _child, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<span>nested</span>")
-const t1 = _template("<div></div>", true)
+const t1 = _template("<div><!----></div>", true)
 
 export function render(_ctx) {
   const n0 = _createIf(() => (_ctx.a), () => {
-    const n5 = t1()
-    _setInsertionState(n5, null, true)
-    const n2 = _createIf(() => (_ctx.b), () => {
-      const n4 = t0()
-      return n4
+    const n2 = t1()
+    const n3 = _child(n2)
+    _setInsertionState(n2, n3, true)
+    const n4 = _createIf(() => (_ctx.b), () => {
+      const n6 = t0()
+      return n6
     })
-    return n5
+    return n2
   })
   return n0
 }

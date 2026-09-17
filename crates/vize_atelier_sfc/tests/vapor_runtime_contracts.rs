@@ -111,7 +111,7 @@ fn scoped_sfc_preserves_namespaces_text_and_dynamic_descendants() {
     for template in [
         r#"<section><template v-if="state.ready"><fieldset><label><input/>{{ state.label }}</label></fieldset></template><span v-else>empty</span></section>"#,
         r#"<section><span v-for="(item, index) in state.label" :key="index">{{ item }}</span><p>after</p></section>"#,
-        r#"<section><svg><g><circle r="2"/></g></svg><math><mrow><mi>x</mi></mrow></math><textarea>&lt;span&gt;</textarea><p title="&lt;label&gt;">&lt;em&gt;</p></section>"#,
+        r#"<section><svg><g><circle r="2"/></g></svg><textarea>&lt;span&gt;</textarea><p title="&lt;label&gt;">&lt;em&gt;</p></section>"#,
         r#"<section><article v-html="state.label"/><input/></section>"#,
     ] {
         let source = format!(

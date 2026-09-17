@@ -94,7 +94,11 @@ const snapshot = () => {
     for (const element of elements)
       assert.ok(element.hasAttribute("data-v-probe"), element.outerHTML);
   }
-  snapshots.push({ tree: observeChildren(host), events: [...events] });
+  snapshots.push({
+    tree: observeChildren(host),
+    namespaces: [...host.querySelectorAll("*")].map((element) => element.namespaceURI),
+    events: [...events],
+  });
 };
 try {
   app.mount(host);
@@ -126,7 +130,7 @@ try {
   for (const button of detachedButtons) button.click();
   await vue.nextTick();
   assert.deepEqual(events, settledEvents, "unmounted component still emitted events");
-  snapshots.push({ tree: [], events: [...events] });
+  snapshots.push({ tree: [], namespaces: [], events: [...events] });
   process.stdout.write(JSON.stringify(snapshots));
 } finally {
   if (host.childNodes.length) app.unmount();

@@ -7,7 +7,7 @@ options: vapor
 import { createSlot as _createSlot } from 'vue';
 
 export function render(_ctx) {
-  const n0 = _createSlot()
+  const n0 = _createSlot("default")
   return n0
 }
 
@@ -17,13 +17,14 @@ options: vapor
 --- INPUT ---
 <div><slot :row="item" :index="i"></slot></div>
 --- OUTPUT ---
-import { createSlot as _createSlot, insert as _insert, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+import { createSlot as _createSlot, insert as _insert, child as _child, template as _template } from 'vue';
+const t0 = _template("<div><!----></div>", true)
 
 export function render(_ctx) {
   const n1 = t0()
+  const n2 = _child(n1)
   const n0 = _createSlot("default", { row: () => (_ctx.item), index: () => (_ctx.i) })
-  _insert(n0, n1)
+  _insert(n0, n1, n2)
   return n1
 }
 

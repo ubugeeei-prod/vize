@@ -156,21 +156,22 @@ options: vapor
 --- INPUT ---
 <div v-for="row in rows" :key="row.id"><span v-for="cell in row.cells" :key="cell.id">{{ cell }}</span></div>
 --- OUTPUT ---
-import { setInsertionState as _setInsertionState, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+import { child as _child, setInsertionState as _setInsertionState, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
 const t0 = _template("<span> </span>")
-const t1 = _template("<div></div>")
+const t1 = _template("<div><!----></div>")
 
 export function render(_ctx) {
   const n0 = _createFor(() => (_ctx.rows), (_for_item0) => {
-    const n5 = t1()
-    _setInsertionState(n5, null, true)
-    const n2 = _createFor(() => (_for_item0.value.cells), (_for_item1) => {
-      const n4 = t0()
-      const x4 = _txt(n4)
-      _renderEffect(() => _setText(x4, _toDisplayString(_for_item1.value)))
-      return n4
+    const n2 = t1()
+    const n3 = _child(n2)
+    _setInsertionState(n2, n3, true)
+    const n4 = _createFor(() => (_for_item0.value.cells), (_for_item1) => {
+      const n6 = t0()
+      const x6 = _txt(n6)
+      _renderEffect(() => _setText(x6, _toDisplayString(_for_item1.value)))
+      return n6
     }, (cell) => (cell.id), 1)
-    return n5
+    return n2
   }, (row) => (row.id))
   return n0
 }

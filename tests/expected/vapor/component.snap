@@ -50,7 +50,7 @@ import { resolveComponent as _resolveComponent, createComponentWithFallback as _
 
 export function render(_ctx) {
   const _component_MyComponent = _resolveComponent("MyComponent")
-  const n0 = _createComponentWithFallback(_component_MyComponent, { onUpdate: () => _ctx.onUpdate }, null, true)
+  const n0 = _createComponentWithFallback(_component_MyComponent, { onUpdate: () => (_ctx.onUpdate) }, null, true)
   return n0
 }
 
