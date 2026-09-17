@@ -1,7 +1,9 @@
 import { commands, type Disposable } from "vscode";
+import { waitForAutoInsertIdle } from "./auto-insert-test-state.js";
 
 import {
   bindHostTestCommands,
+  HOST_TEST_COMMAND_ENVIRONMENT_FLAG,
   type HostTestLanguageClient,
   type HostTestServerInfo,
 } from "./host-test-core.js";
@@ -16,10 +18,16 @@ export function registerHostTestCommands(
   environment: Partial<Record<string, string>> = process.env,
   getServerInfo?: () => HostTestServerInfo | undefined,
 ): Disposable[] {
-  return bindHostTestCommands({
+  const registrations = bindHostTestCommands({
     environment,
     getClient,
     getServerInfo,
     register: (command, handler) => commands.registerCommand(command, handler),
   });
+  if (environment[HOST_TEST_COMMAND_ENVIRONMENT_FLAG] === "1") {
+    registrations.push(
+      commands.registerCommand("vize.test.waitForAutoInsertIdle", waitForAutoInsertIdle),
+    );
+  }
+  return registrations;
 }

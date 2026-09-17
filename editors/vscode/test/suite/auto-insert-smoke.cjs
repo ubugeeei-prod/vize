@@ -44,24 +44,37 @@ exports.runAutoInsertSmoke = async function runAutoInsertSmoke() {
     "automatic insertion snippet",
   );
   assert.ok(insertedLine.includes("{{  }}</main>"), insertedLine);
+  await vscode.commands.executeCommand("vize.test.waitForAutoInsertIdle");
 
+  const original = document.getText();
   for (const invalidate of ["selection", "editor"]) {
-    await assertDelayedResponseIgnored({ document, editor, logPath, invalidate });
+    await assertDelayedResponseIgnored({ document, editor, logPath, invalidate, original });
   }
   await disableVizeAndWaitForShutdown(logPath);
 };
 
-async function assertDelayedResponseIgnored({ document, editor, logPath, invalidate }) {
+async function assertDelayedResponseIgnored({ document, editor, logPath, invalidate, original }) {
   await vscode.window.showTextDocument(document);
+  assert.ok(
+    await editor.edit((edit) =>
+      edit.replace(
+        new vscode.Range(document.positionAt(0), document.positionAt(document.getText().length)),
+        original,
+      ),
+    ),
+    "restore the same authored document before each race",
+  );
   const interpolation = document.lineAt(5).text.indexOf("{{");
   assert.ok(interpolation >= 0, "expected an authored interpolation");
   const at = new vscode.Position(5, interpolation + 2);
+  await vscode.commands.executeCommand("vize.test.waitForAutoInsertIdle");
   editor.selection = new vscode.Selection(at, at);
   const gate = `${logPath}.hold-auto-insert`;
   const beforeCount = methodMessages(readLogEntries(logPath), "volar/client/autoInsert").length;
   fs.writeFileSync(gate, "hold");
   try {
-    await vscode.commands.executeCommand("type", { text: "{" });
+    assert.ok(await editor.edit((edit) => edit.insert(at, "{}")));
+    editor.selection = new vscode.Selection(at.translate(0, 1), at.translate(0, 1));
     const entries = await waitForLogEntries(
       logPath,
       (items) => methodMessages(items, "volar/client/autoInsert").length > beforeCount,
@@ -83,7 +96,7 @@ async function assertDelayedResponseIgnored({ document, editor, logPath, invalid
         items.some((entry) => entry.event === "auto-insert-response" && entry.id === request.id),
       "released automatic insertion response",
     );
-    await sleep(250);
+    await vscode.commands.executeCommand("vize.test.waitForAutoInsertIdle");
     assert.equal(
       document.getText(),
       before,

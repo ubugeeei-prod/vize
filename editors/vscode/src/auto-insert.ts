@@ -1,6 +1,7 @@
 import { SnippetString, window, type TextDocumentChangeEvent, type TextEditor } from "vscode";
 import type { LanguageClient, Middleware } from "vscode-languageclient/node.js";
 import type { VizeConfigurationLike } from "./extension-core.js";
+import { trackAutoInsertForHostTest } from "./auto-insert-test-state.js";
 
 export const AUTO_INSERT_METHOD = "volar/client/autoInsert";
 
@@ -15,7 +16,7 @@ export function createAutoInsertMiddleware(
 ): Middleware {
   let applyingSnippet = false;
 
-  return {
+  const middleware: Middleware = {
     async didChange(event, next): Promise<void> {
       const documentVersion = event.document.version;
       const editor = window.activeTextEditor;
@@ -78,6 +79,10 @@ export function createAutoInsertMiddleware(
         applyingSnippet = false;
       }
     },
+  };
+  return {
+    didChange: (event, next) =>
+      trackAutoInsertForHostTest(Promise.resolve(middleware.didChange!(event, next))),
   };
 }
 

@@ -58,6 +58,7 @@ try {
     extensionDevelopmentPath,
     extensionTestsPath,
     extensionTestsEnv: {
+      VIZE_TEST_ENABLE_HOST_COMMANDS: "1",
       VIZE_TEST_SERVER_LOG: fakeServerLogPath,
       VIZE_TEST_SERVER_PATH: fakeServerPath,
       VIZE_TEST_SERVER_VERSION: packageJson.version,

@@ -3,11 +3,15 @@ import { registerHooks } from "node:module";
 import { test } from "node:test";
 import type { TextDocumentChangeEvent, TextEditor } from "vscode";
 import type { LanguageClient } from "vscode-languageclient/node.js";
+import { waitForAutoInsertIdle } from "../../editors/vscode/src/auto-insert-test-state.ts";
 
 const window = { activeTextEditor: undefined as TextEditor | undefined };
 Object.assign(globalThis, { __vizeAutoInsertWindow: window });
 const hooks = registerHooks({
   resolve(specifier, context, next) {
+    if (specifier === "./auto-insert-test-state.js") {
+      return next("./auto-insert-test-state.ts", context);
+    }
     return specifier === "vscode"
       ? { url: "vize-test:auto-insert-vscode", shortCircuit: true }
       : next(specifier, context);
@@ -109,6 +113,41 @@ test("edits superseded while didChange is forwarded send no stale request", asyn
   await running;
   assert.deepEqual(s.requests, []);
   assert.deepEqual(s.insertions, []);
+});
+
+test("host barrier waits for response handling and the snippet application promise", async () => {
+  const previous = process.env.VIZE_TEST_ENABLE_HOST_COMMANDS;
+  process.env.VIZE_TEST_ENABLE_HOST_COMMANDS = "1";
+  const s = scenario();
+  const inserting = deferred<void>();
+  const applied = deferred<void>();
+  s.editor.insertSnippet = async () => {
+    inserting.resolve();
+    await applied.promise;
+    return true;
+  };
+  try {
+    const running = s.run();
+    await s.requested.promise;
+    let idle = false;
+    const barrier = waitForAutoInsertIdle().then(() => {
+      idle = true;
+    });
+    await Promise.resolve();
+    assert.equal(idle, false, "response is still pending");
+    s.response.resolve(" $0 ");
+    await inserting.promise;
+    assert.equal(idle, false, "snippet application is still pending");
+    applied.resolve();
+    await running;
+    await barrier;
+    assert.equal(idle, true);
+  } finally {
+    applied.resolve();
+    s.response.resolve(null);
+    if (previous === undefined) delete process.env.VIZE_TEST_ENABLE_HOST_COMMANDS;
+    else process.env.VIZE_TEST_ENABLE_HOST_COMMANDS = previous;
+  }
 });
 
 for (const [name, invalidate] of Object.entries({
