@@ -54,9 +54,11 @@ if (process.platform === "win32") {
 const profilePath = fs.mkdtempSync(path.join(os.tmpdir(), "vize-host-"));
 try {
   await runTests({
+    version: process.env.VIZE_TEST_VSCODE_VERSION ?? "1.107.1",
     extensionDevelopmentPath,
     extensionTestsPath,
     extensionTestsEnv: {
+      VIZE_TEST_ENABLE_HOST_COMMANDS: "1",
       VIZE_TEST_SERVER_LOG: fakeServerLogPath,
       VIZE_TEST_SERVER_PATH: fakeServerPath,
       VIZE_TEST_SERVER_VERSION: packageJson.version,

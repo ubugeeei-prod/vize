@@ -153,6 +153,13 @@ runs:
           vize-ci-apt-retry sudo apt-get install -y emacs-nox
         fi
 
+    - name: Run VS Code host lifecycle and delayed-response regressions
+      shell: bash
+      env:
+        NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+        VIZE_TEST_VSCODE_VERSION: "1.107.1"
+      run: xvfb-run -a vp run --workspace-root test:vscode-extension:host
+
     - name: Run VS Code host smoke against the real server
       shell: bash
       env:

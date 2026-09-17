@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const fs = require("node:fs");
+const { sendResponse } = require("./auto-insert-response.cjs");
 
 const args = process.argv.slice(2);
 const logPath = process.env.VIZE_TEST_SERVER_LOG;
@@ -119,11 +120,7 @@ function handleMessage(message) {
   }
 
   if (message.id !== undefined && message.method) {
-    send({
-      id: message.id,
-      jsonrpc: "2.0",
-      result: createResponse(message),
-    });
+    sendResponse(message, createResponse(message), send, appendLog, logPath);
     return;
   }
 }
