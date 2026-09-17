@@ -52,15 +52,7 @@ impl CompletionService {
         if !is_current(ctx.state, ctx.uri, revision) {
             return vec![];
         }
-        let items = match response {
-            Value::Array(items) => items,
-            Value::Object(mut object) => match object.remove("items") {
-                Some(Value::Array(items)) => items,
-                _ => return vec![],
-            },
-            _ => return vec![],
-        };
-        items
+        completion_items(response)
             .into_iter()
             .filter_map(|raw| {
                 let item = serde_json::from_value::<LspCompletionItem>(raw.clone()).ok()?;
@@ -108,6 +100,28 @@ impl CompletionService {
         }
         item
     }
+}
+
+fn completion_items(response: Value) -> Vec<Value> {
+    let Value::Object(mut list) = response else {
+        return match response {
+            Value::Array(items) => items,
+            _ => vec![],
+        };
+    };
+    let Some(Value::Array(mut items)) = list.remove("items") else {
+        return vec![];
+    };
+    if let Some(defaults) = list.get("itemDefaults").and_then(Value::as_object) {
+        for item in items.iter_mut().filter_map(Value::as_object_mut) {
+            for key in ["data", "insertTextFormat"] {
+                if let Some(value) = defaults.get(key) {
+                    item.entry(key).or_insert_with(|| value.clone());
+                }
+            }
+        }
+    }
+    items
 }
 
 fn can_resolve(state: &ServerState, uri: &Url, revision: u64) -> bool {

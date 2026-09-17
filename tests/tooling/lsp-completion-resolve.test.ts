@@ -104,7 +104,7 @@ test("completion resolves authored documentation through the real server", async
       String(resolved.detail),
     );
     assert.equal(
-      String(resolved.detail).split("\n").length,
+      String(resolved.detail).split(`${declarationName}(name: string): string`).length - 1,
       1,
       "one authored declaration, not duplicate projections",
     );

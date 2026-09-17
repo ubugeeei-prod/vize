@@ -2,6 +2,51 @@ use super::*;
 
 const SOURCE: &str = "<script setup>const value = 1</script>";
 
+#[test]
+fn list_defaults_supply_resolve_data_and_snippet_format() {
+    let items = completion_items(json!({
+        "items": [{"label": "greet", "insertText": "greet(${1:name})"}],
+        "itemDefaults": {"data": {"id": 3}, "insertTextFormat": 2, "editRange": {}}
+    }));
+    assert_eq!(
+        items,
+        vec![json!({"label": "greet", "insertText": "greet(${1:name})",
+        "data": {"id": 3}, "insertTextFormat": 2})]
+    );
+    let item = CompletionService::convert_lsp_completion(
+        serde_json::from_value(items[0].clone()).unwrap(),
+    );
+    assert_eq!(
+        item.insert_text_format,
+        Some(tower_lsp::lsp_types::InsertTextFormat::SNIPPET)
+    );
+}
+
+#[test]
+fn item_fields_override_defaults_including_explicit_null_data() {
+    let items = json!([
+        {"label": "one", "data": {"id": 1}, "insertTextFormat": 1},
+        {"label": "two", "data": null, "insertTextFormat": 2}
+    ]);
+    assert_eq!(
+        completion_items(json!({"items": items,
+            "itemDefaults": {"data": {"id": 3}, "insertTextFormat": 1}
+        })),
+        items.as_array().unwrap().clone()
+    );
+    assert_eq!(
+        completion_items(items.clone()),
+        items.as_array().unwrap().clone()
+    );
+}
+
+#[test]
+fn malformed_lists_cannot_create_candidates() {
+    for value in [Value::Null, json!({}), json!({"items": false})] {
+        assert_eq!(completion_items(value), Vec::<Value>::new());
+    }
+}
+
 fn fixture() -> (ServerState, Url, u64, CompletionItem) {
     let state = ServerState::new();
     state.apply_lsp_initialization_options(Some(&json!({ "editor": true, "typecheck": true })));
