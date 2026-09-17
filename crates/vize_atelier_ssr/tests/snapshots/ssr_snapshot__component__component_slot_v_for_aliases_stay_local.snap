@@ -8,7 +8,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
       if (_push) {
         _push(`<!--[-->`)
         _ssrRenderList(_ctx.deps, ([dep, version]) => {
-          _push(`<div${_ssrRenderAttr("key", dep)}>${_ssrInterpolate(dep)} ${_ssrInterpolate(version)}</div>`)
+          _push(`<div>${_ssrInterpolate(dep)} ${_ssrInterpolate(version)}</div>`)
         })
         _push(`<!--]-->`)
       } else {
