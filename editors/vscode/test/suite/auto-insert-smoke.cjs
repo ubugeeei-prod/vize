@@ -71,6 +71,16 @@ async function assertDelayedResponseIgnored({ document, editor, logPath, invalid
   editor.selection = new vscode.Selection(at, at);
   const gate = `${logPath}.hold-auto-insert`;
   const beforeCount = methodMessages(readLogEntries(logPath), "volar/client/autoInsert").length;
+  const selectionUpdates = [];
+  const selectionSubscription = vscode.window.onDidChangeTextEditorSelection((event) => {
+    if (event.textEditor === editor) {
+      selectionUpdates.push({
+        kind: event.kind,
+        version: document.version,
+        selections: event.selections,
+      });
+    }
+  });
   fs.writeFileSync(gate, "hold");
   try {
     assert.ok(await editor.edit((edit) => edit.insert(at, "{}")));
@@ -79,7 +89,12 @@ async function assertDelayedResponseIgnored({ document, editor, logPath, invalid
       logPath,
       (items) => methodMessages(items, "volar/client/autoInsert").length > beforeCount,
       "held automatic insertion request",
-    );
+    ).catch((error) => {
+      throw new Error(
+        `${error.message}\nSelection updates: ${JSON.stringify(selectionUpdates.slice(-20))}`,
+        { cause: error },
+      );
+    });
     const request = methodMessages(entries, "volar/client/autoInsert").at(-1);
     assert.equal(request.params.change.text, "{}", "held request must produce a real snippet");
     const before = document.getText();
@@ -103,6 +118,7 @@ async function assertDelayedResponseIgnored({ document, editor, logPath, invalid
       `stale ${invalidate} response changed the authored document`,
     );
   } finally {
+    selectionSubscription.dispose();
     fs.rmSync(gate, { force: true });
   }
 }

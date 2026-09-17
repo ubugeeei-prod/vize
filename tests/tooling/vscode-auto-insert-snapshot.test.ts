@@ -18,7 +18,7 @@ function emitter<T>() {
     },
   };
 }
-const selectionChanged = emitter<{ textEditor: TextEditor }>();
+const selectionChanged = emitter<{ textEditor: TextEditor; kind?: number }>();
 const editorChanged = emitter<TextEditor | undefined>();
 const documentChanged = emitter<TextDocumentChangeEvent>();
 const documentClosed = emitter<unknown>();
@@ -160,7 +160,7 @@ test("non-trigger edits do not subscribe or wait for a caret update", async () =
   }
 });
 
-for (const reason of ["edit", "close", "editor", "selection", "timeout"]) {
+for (const reason of ["edit", "close", "editor", "selection", "command", "timeout"]) {
   test(`selection settlement cancels on ${reason} without a stale request`, async (t) => {
     t.mock.timers.enable({ apis: ["setTimeout"] });
     const s = scenario();
@@ -176,9 +176,12 @@ for (const reason of ["edit", "close", "editor", "selection", "timeout"]) {
     } else if (reason === "editor") {
       window.activeTextEditor = undefined;
       editorChanged.fire(undefined);
-    } else if (reason === "selection") {
-      s.editor.selection.active = s.document.positionAt(0);
-      selectionChanged.fire({ textEditor: s.editor as unknown as TextEditor });
+    } else if (reason === "selection" || reason === "command") {
+      s.editor.selection.active = s.document.positionAt(reason === "command" ? 3 : 0);
+      selectionChanged.fire({
+        textEditor: s.editor as unknown as TextEditor,
+        kind: reason === "command" ? 3 : undefined,
+      });
     } else {
       t.mock.timers.tick(1_000);
     }
@@ -201,6 +204,10 @@ test("auto insertion waits for the authored caret even beyond the next timer tur
     t.mock.timers.tick(1);
     await Promise.resolve();
     assert.deepEqual(s.requests, [], "the pre-typing caret must never reach the server");
+    s.editor.selection.active = s.document.positionAt(3);
+    selectionChanged.fire({ textEditor: s.editor as unknown as TextEditor });
+    assert.equal(selectionChanged.listeners.size, 1, "the implicit edit-end caret is intermediate");
+    assert.deepEqual(s.requests, []);
     s.editor.selection.active = s.position;
     selectionChanged.fire({ textEditor: s.editor as unknown as TextEditor });
     await s.requested.promise;

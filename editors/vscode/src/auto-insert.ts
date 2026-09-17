@@ -114,6 +114,7 @@ async function waitForAuthoredSelection(
   const expected = document.positionAt(
     change.rangeOffset + (change.text === "{}" ? 1 : change.text.length),
   );
+  const insertedEnd = document.positionAt(change.rangeOffset + change.text.length);
   const currentSelection = () =>
     window.activeTextEditor === editor &&
     !document.isClosed &&
@@ -137,8 +138,21 @@ async function waitForAuthoredSelection(
     // never send the old caret just because a timer elapsed.
     const timeout = setTimeout(() => finish(), 1_000);
     subscriptions.push(
-      window.onDidChangeTextEditorSelection((change) => {
-        if (change.textEditor === editor) finish(currentSelection());
+      window.onDidChangeTextEditorSelection((selectionChange) => {
+        if (selectionChange.textEditor !== editor) return;
+        const selection = currentSelection();
+        // An editor.edit insertion first adjusts the caret to the end of the
+        // pair with no selection-change kind. The interior caret follows.
+        if (
+          !selection &&
+          selectionChange.kind === undefined &&
+          change.text === "{}" &&
+          editor.selection.isEmpty &&
+          editor.selections.length === 1 &&
+          editor.selection.active.isEqual(insertedEnd)
+        )
+          return;
+        finish(selection);
       }),
       window.onDidChangeActiveTextEditor((active) => {
         if (active !== editor) finish();
