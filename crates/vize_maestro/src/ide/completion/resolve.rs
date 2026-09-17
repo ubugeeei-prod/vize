@@ -15,24 +15,22 @@ const RESOLVE_DATA: &str = "vizeCompletion";
 
 #[cfg(test)]
 mod tests;
+mod visibility;
 
 impl CompletionService {
     pub(super) async fn request_canonical(
         ctx: &IdeContext<'_>,
         bridge: &CorsaBridge,
-    ) -> Vec<CompletionItem> {
+    ) -> Option<Vec<CompletionItem>> {
         // Sharing the diagnostic document avoids duplicate global declarations
         // and stale JSDoc from a second per-block TypeScript projection.
-        let Some(document) = corsa_support::open_canonical_virtual_document(ctx, bridge).await
-        else {
-            return vec![];
-        };
-        let Some((line, character)) =
-            corsa_support::canonical_source_offset_to_position(&document, ctx.offset)
-        else {
-            return vec![];
-        };
-        Self::request_resolvable(ctx, bridge, &document.request_uri, line, character).await
+        let document = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
+        let (line, character) =
+            corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?;
+        let mut items =
+            Self::request_resolvable(ctx, bridge, &document.request_uri, line, character).await;
+        visibility::retain_authored_bindings(ctx, &document, line, character, &mut items);
+        Some(items)
     }
 
     pub(super) async fn request_resolvable(

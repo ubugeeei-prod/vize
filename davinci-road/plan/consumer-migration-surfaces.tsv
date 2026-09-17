@@ -2802,6 +2802,7 @@ lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_alloc
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 lsp	LSP	source	crates/vize_maestro/src/document/store.rs	79	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide.rs	220	s0	S0	stage	vize_s0	preferred	1
@@ -2812,6 +2813,10 @@ lsp	LSP	test/dev	crates/vize_maestro/src/ide/code_action.rs	602	croquis	Croquis 
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/code_action/source_position_tests.rs	51	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/component_props_tests.rs	318	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/items.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/resolve/visibility.rs	3	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/resolve/visibility.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/resolve/visibility.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/resolve/visibility.rs	3	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/script.rs	24	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/script.rs	24	croquis	Croquis analysis	old	vize_croquis	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/context.rs	10	croquis	Croquis analysis	old	vize_croquis	legacy	1

@@ -241,8 +241,10 @@ impl super::CompletionService {
         is_setup: bool,
         bridge: &CorsaBridge,
     ) -> Vec<CompletionItem> {
-        if ctx.uri.path().ends_with(".vue") && !ctx.uri.path().ends_with(".art.vue") {
-            let mut items = Self::request_canonical(ctx, bridge).await;
+        if ctx.uri.path().ends_with(".vue")
+            && !ctx.uri.path().ends_with(".art.vue")
+            && let Some(mut items) = Self::request_canonical(ctx, bridge).await
+        {
             improve_unknown_reactive_completions(ctx, is_setup, &mut items);
             return items;
         }
