@@ -107,3 +107,65 @@ fn recovery_does_not_treat_indirect_arms_as_direct_children() {
             .all(|scope| !scope.has_binding("leaked"))
     );
 }
+
+#[test]
+fn invalid_arm_cohosts_do_not_dispatch_patterns_but_valid_descendants_do() {
+    for arm in [
+        "v-when=\"const outer\"",
+        "v-when",
+        "v-when=\"values[class]\"",
+    ] {
+        let source = format!(
+            r#"<template v-match="subject">
+          <Widget {arm} v-match="subject">
+            <p v-when="const leaked">{{{{ leaked }}}}{{{{ missing }}}}{{{{ outer }}}}</p>
+            <template v-match="subject"><b v-when="const valid">{{{{ valid }}}}</b></template>
+          </Widget>
+          <p v-when="_" />
+        </template>"#
+        );
+        let result = analyze(&source, "const subject = {}; const Widget = {};", true);
+        assert_eq!(
+            result
+                .scopes
+                .iter()
+                .filter(|scope| scope.kind == ScopeKind::VMatch)
+                .count(),
+            2,
+            "{arm}"
+        );
+        assert_eq!(
+            result
+                .scopes
+                .iter()
+                .filter(|scope| scope.kind == ScopeKind::VWhen)
+                .count(),
+            2,
+            "{arm}"
+        );
+        let mut missing: Vec<_> = result
+            .undefined_refs
+            .iter()
+            .map(|reference| reference.name.as_str())
+            .collect();
+        missing.sort_unstable();
+        assert_eq!(missing, ["leaked", "missing", "outer"], "{arm}");
+        assert!(
+            result
+                .component_usages
+                .iter()
+                .any(|usage| usage.name == "Widget")
+        );
+        assert!(
+            result
+                .scopes
+                .iter()
+                .all(|scope| !scope.has_binding("leaked") && !scope.has_binding("outer"))
+        );
+        assert!(result.scopes.iter().any(|scope| {
+            scope
+                .get_binding("valid")
+                .is_some_and(|binding| binding.is_used())
+        }));
+    }
+}

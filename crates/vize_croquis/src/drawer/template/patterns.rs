@@ -86,11 +86,11 @@ impl Drawer {
             return;
         };
         let Some(exp) = self.pattern_expression(dir, "v-when") else {
-            self.visit_element_with_pattern_parent(el, scope_vars, true);
+            self.visit_element_with_pattern_recovery(el, scope_vars, true);
             return;
         };
         if self.invalid_pattern_arm_host(el, dir) {
-            self.visit_element_with_pattern_parent(el, scope_vars, true);
+            self.visit_element_with_pattern_recovery(el, scope_vars, true);
             return;
         }
         let offset = exp.loc.span.start;
@@ -104,7 +104,7 @@ impl Drawer {
                 dir.loc.span.end,
                 false,
             );
-            self.visit_element_with_pattern_parent(el, scope_vars, true);
+            self.visit_element_with_pattern_recovery(el, scope_vars, true);
             return;
         };
         let arm = match parse_match_attribute(raw) {
@@ -113,7 +113,7 @@ impl Drawer {
                 let at = offset + error.offset;
                 let start = if at < exp.loc.span.end { at } else { offset };
                 self.pattern_diagnostic(error.message.as_str(), start, exp.loc.span.end, false);
-                self.visit_element_with_pattern_parent(el, scope_vars, true);
+                self.visit_element_with_pattern_recovery(el, scope_vars, true);
                 return;
             }
         };
