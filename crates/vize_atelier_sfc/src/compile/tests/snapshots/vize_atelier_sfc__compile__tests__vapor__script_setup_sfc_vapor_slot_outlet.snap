@@ -3,14 +3,15 @@ source: crates/vize_atelier_sfc/src/compile/tests/vapor.rs
 expression: result.code.as_str()
 ---
 import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
-import { createSlot as _createSlot, insert as _insert, template as _template } from 'vue';
+import { createSlot as _createSlot, insert as _insert, child as _child, template as _template } from 'vue';
 
-const t0 = _template("<div></div>", true)
+const t0 = _template("<div><!----></div>", true)
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
   const n1 = t0()
-  const n0 = _createSlot()
-  _insert(n0, n1)
+  const n2 = _child(n1)
+  const n0 = _createSlot("default")
+  _insert(n0, n1, n2)
   return n1
 }
 const __vaporRender = render

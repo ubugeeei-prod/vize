@@ -1,25 +1,27 @@
 ---
-source: crates/vize_atelier_vapor/src/lib.rs
+source: crates/vize_atelier_vapor/src/tests.rs
 expression: code.as_str()
 ---
 import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<span>a</span>", true)
-const t1 = _template("<div><button></button><main></main></div>", true)
+const t1 = _template("<div><button><!----></button><main><!----></main></div>", true)
 export function render(_ctx) {
 const n2 = t1()
 const n0 = _child(n2)
+const n3 = _child(n0)
 const n1 = _next(n0, 1)
-_setInsertionState(n0, null, true)
-const n3 = _createIf(() => (_ctx.dark), () => {
-const n5 = t0()
-return n5
+const n7 = _child(n1)
+_setInsertionState(n0, n3, true)
+const n4 = _createIf(() => (_ctx.dark), () => {
+const n6 = t0()
+return n6
 })
-_setInsertionState(n1, null, true)
-const n6 = _createIf(() => (_ctx.tab), () => {
-_setInsertionState(n1, null, true)
+_setInsertionState(n1, n7, true)
+const n8 = _createIf(() => (_ctx.tab), () => {
+_setInsertionState(n1, n7, true)
 const _component_MyComp = _resolveComponent("MyComp")
-const n8 = _createComponentWithFallback(_component_MyComp, null, null, true)
-return n8
+const n10 = _createComponentWithFallback(_component_MyComp, null, null, true)
+return n10
 })
 return n2
 }

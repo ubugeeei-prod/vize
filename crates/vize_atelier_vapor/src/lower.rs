@@ -32,7 +32,17 @@ pub(crate) fn transform_to_ir_with_diagnostics<'a>(
     root: &RootNode<'a>,
     source: &'a str,
 ) -> (RootIRNode<'a>, std::vec::Vec<String>) {
+    transform_to_ir_with_scope_id(allocator, root, source, None)
+}
+
+pub(crate) fn transform_to_ir_with_scope_id<'a>(
+    allocator: &'a Allocator,
+    root: &RootNode<'a>,
+    source: &'a str,
+    scope_id: Option<&str>,
+) -> (RootIRNode<'a>, std::vec::Vec<String>) {
     let mut ctx = TransformContext::new(allocator, source);
+    ctx.scope_id = scope_id.map(String::from);
 
     vize_atelier_core::walk_probe::record_walk(
         vize_atelier_core::walk_probe::WalkStage::VaporLower,

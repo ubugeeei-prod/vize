@@ -131,7 +131,9 @@ fn collect_text_runs<'a>(
                     );
                 });
             }
-            TemplateChildNode::Element(element) if element.tag_type == ElementType::Element => {
+            TemplateChildNode::Element(_)
+            | TemplateChildNode::If(_)
+            | TemplateChildNode::For(_) => {
                 flush_text_run(
                     ctx,
                     parent_element_id,

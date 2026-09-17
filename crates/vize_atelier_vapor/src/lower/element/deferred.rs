@@ -1,12 +1,6 @@
 //! Deferred child ID allocation for dynamic and control-flow descendants.
 
-mod control_flow;
-
 use crate::ir::InsertNodeIRNode;
-use control_flow::{
-    append_deferred_control_flow_children, transform_deferred_parent_control_flow_children,
-    transform_existing_element_control_flow_children,
-};
 use vize_carton::ensure_sufficient_stack;
 
 use super::component::transform_component;
@@ -16,86 +10,20 @@ use super::template::{
 };
 use super::{
     BlockIRNode, ChildRefIRNode, ElementNode, ElementType, NextRefIRNode, OperationNode, PropNode,
-    SlotOutletIRNode, String, TemplateChildNode, TransformContext, get_slot_outlet_name,
+    SlotOutletIRNode, TemplateChildNode, TransformContext, get_slot_outlet_name,
     get_slot_outlet_props, transform_children, transform_directive, transform_for_node_into_parent,
     transform_if_node_into_parent, transform_text_children,
 };
 
 /// Transform an element that has control flow children (`v-if`/`v-for`).
 ///
-/// The parent element ID is allocated after direct dynamic children so child
-/// refs remain stable while nested control-flow operations can still attach to
-/// the parent.
+/// Structural and component children share the same authored insertion anchors.
 pub(super) fn transform_element_with_control_flow_children<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
-    let template = generate_element_template(el);
-    let dynamic_child_count = count_dynamic_element_children(&el.children);
-    let child_ids: std::vec::Vec<usize> = (0..dynamic_child_count).map(|_| ctx.next_id()).collect();
-
-    if child_ids.is_empty() {
-        transform_element_with_deferred_control_flow_parent(ctx, el, block, template);
-        return;
-    }
-
-    // Allocate the parent after reserving direct dynamic child IDs so child refs
-    // still sort before the parent, while keeping all nested wiring anchored to it.
-    let element_id = ctx.next_id();
-
-    // Process props and events
-    for prop in el.props.iter() {
-        match prop {
-            PropNode::Directive(dir) => {
-                transform_directive(ctx, dir, element_id, el, block);
-            }
-            PropNode::Attribute(_attr) => {}
-        }
-    }
-
-    transform_template_ref(ctx, el, element_id, block);
-
-    transform_text_children(ctx, &el.children, element_id, block);
-
-    if !child_ids.is_empty() {
-        transform_dynamic_children_with_ids(ctx, el, element_id, block, &child_ids);
-    }
-
-    // Register template after nested wiring is emitted
-    ctx.add_template(element_id, template);
-
-    block.returns.push(element_id);
-}
-
-fn transform_element_with_deferred_control_flow_parent<'a>(
-    ctx: &mut TransformContext<'a>,
-    el: &ElementNode<'a>,
-    block: &mut BlockIRNode<'a>,
-    template: String,
-) {
-    let mut deferred_children = BlockIRNode::new(ctx.allocator);
-    transform_deferred_parent_control_flow_children(ctx, el, &mut deferred_children);
-
-    let element_id = ctx.next_id();
-
-    for prop in el.props.iter() {
-        match prop {
-            PropNode::Directive(dir) => {
-                transform_directive(ctx, dir, element_id, el, block);
-            }
-            PropNode::Attribute(_attr) => {}
-        }
-    }
-
-    transform_template_ref(ctx, el, element_id, block);
-
-    transform_text_children(ctx, &el.children, element_id, block);
-
-    append_deferred_control_flow_children(block, deferred_children, element_id);
-
-    ctx.add_template(element_id, template);
-    block.returns.push(element_id);
+    transform_element_with_dynamic_children(ctx, el, block);
 }
 
 /// Transform an element that has dynamic element children.
@@ -114,7 +42,7 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     let parent_id = ctx.next_id();
 
     // Generate template (includes all children inline)
-    let template = generate_element_template(el);
+    let template = generate_element_template(el, ctx.scope_id.as_deref());
 
     // Process parent props
     for prop in el.props.iter() {
@@ -192,10 +120,16 @@ fn transform_dynamic_children_in_slice<'a>(
         let TemplateChildNode::Element(child_el) = child else {
             match child {
                 TemplateChildNode::If(node) => {
-                    transform_if_node_into_parent(ctx, node, block, parent_id)
+                    let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index);
+                    transform_if_node_into_parent(ctx, node, block, parent_id, anchor);
+                    *rendered_index += 1;
+                    *in_text_run = false;
                 }
                 TemplateChildNode::For(node) => {
-                    transform_for_node_into_parent(ctx, node, block, parent_id)
+                    let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index);
+                    transform_for_node_into_parent(ctx, node, block, parent_id, anchor);
+                    *rendered_index += 1;
+                    *in_text_run = false;
                 }
                 _ => {}
             }
@@ -254,25 +188,42 @@ fn transform_dynamic_children_in_slice<'a>(
                     transform_existing_element(ctx, child_el, child_id, block);
                 });
             } else if child_el.tag_type == ElementType::Slot {
-                transform_slot_outlet_child(ctx, child_el, child_id, parent_id, block);
+                let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index);
+                transform_slot_outlet_child(ctx, child_el, child_id, parent_id, anchor, block);
             } else {
+                let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index);
                 transform_component(
                     ctx,
                     child_el,
                     block,
                     Some(child_id),
                     Some(parent_id),
-                    None,
+                    Some(anchor),
                     false,
                 );
             }
         }
 
-        if is_template_backed_element(child_el) {
-            *rendered_index += 1;
-            *in_text_run = false;
-        }
+        *rendered_index += 1;
+        *in_text_run = false;
     }
+}
+
+fn insertion_anchor<'a>(
+    ctx: &mut TransformContext<'a>,
+    block: &mut BlockIRNode<'a>,
+    parent_id: usize,
+    offset: usize,
+) -> usize {
+    let child_id = ctx.next_id();
+    block
+        .operation
+        .push(OperationNode::ChildRef(ChildRefIRNode {
+            child_id,
+            parent_id,
+            offset,
+        }));
+    child_id
 }
 
 fn transform_slot_outlet_child<'a>(
@@ -280,6 +231,7 @@ fn transform_slot_outlet_child<'a>(
     el: &ElementNode<'a>,
     element_id: usize,
     parent_id: usize,
+    anchor: usize,
     block: &mut BlockIRNode<'a>,
 ) {
     let name = get_slot_outlet_name(ctx, el);
@@ -298,7 +250,7 @@ fn transform_slot_outlet_child<'a>(
         .push(OperationNode::InsertNode(InsertNodeIRNode {
             elements: vize_carton::Vec::from_array_in([element_id], &ctx.allocator),
             parent: parent_id,
-            anchor: None,
+            anchor: Some(anchor),
         }));
 }
 
@@ -320,11 +272,6 @@ fn transform_existing_element<'a>(
 
     transform_text_children(ctx, &el.children, element_id, block);
 
-    if dynamic_child_count != 0 {
-        let child_ids: std::vec::Vec<usize> =
-            (0..dynamic_child_count).map(|_| ctx.next_id()).collect();
-        transform_dynamic_children_with_ids(ctx, el, element_id, block, &child_ids);
-    } else {
-        transform_existing_element_control_flow_children(ctx, el, element_id, block);
-    }
+    let child_ids: std::vec::Vec<usize> = (0..dynamic_child_count).map(|_| ctx.next_id()).collect();
+    transform_dynamic_children_with_ids(ctx, el, element_id, block, &child_ids);
 }

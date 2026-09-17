@@ -1,23 +1,24 @@
 ---
-source: crates/vize_atelier_vapor/src/lib.rs
+source: crates/vize_atelier_vapor/src/tests.rs
 expression: code.as_str()
 ---
-import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+import { child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
 const t0 = _template("<li> </li>")
-const t1 = _template("<ul></ul>", true)
+const t1 = _template("<ul><!----></ul>", true)
 _delegateEvents("click")
 export function render(_ctx) {
-const n3 = t1()
-_setInsertionState(n3, null, true)
-const n0 = _createFor(() => (_ctx.items), (_for_item0) => {
-const n2 = t0()
-const x2 = _txt(n2)
-n2.$evtclick = _createInvoker(() => (_ctx.pick(_for_item0.value.id)))
+const n0 = t1()
+const n1 = _child(n0)
+_setInsertionState(n0, n1, true)
+const n2 = _createFor(() => (_ctx.items), (_for_item0) => {
+const n4 = t0()
+const x4 = _txt(n4)
+n4.$evtclick = _createInvoker(() => (_ctx.pick(_for_item0.value.id)))
 _renderEffect(() => {
-_setClass(n2, ['row', { active: _ctx.selected.has(_for_item0.value.id) }, `kind-${_for_item0.value.kind}`])
-_setText(x2, _toDisplayString(_for_item0.value.name))
+_setClass(n4, ['row', { active: _ctx.selected.has(_for_item0.value.id) }, `kind-${_for_item0.value.kind}`])
+_setText(x4, _toDisplayString(_for_item0.value.name))
 })
-return n2
+return n4
 })
-return n3
+return n0
 }

@@ -124,7 +124,7 @@ pub(crate) fn transform_element<'a>(
 
     match el.tag_type {
         ElementType::Element => {
-            let template = generate_element_template(el);
+            let template = generate_element_template(el, ctx.scope_id.as_deref());
 
             // Process props and events
             for prop in el.props.iter() {

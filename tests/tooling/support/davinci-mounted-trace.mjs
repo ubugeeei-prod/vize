@@ -89,7 +89,7 @@ export async function traceMountedBackend({ backend, code, context = {}, steps =
   }
 }
 
-async function loadRuntime() {
+export async function loadRuntime() {
   const result = await build({
     configFile: false,
     logLevel: "silent",
@@ -115,7 +115,7 @@ async function loadRuntime() {
 }
 
 /** Ignore backend anchor comments; retain text, attributes, and live form state. */
-function observeChildren(parent) {
+export function observeChildren(parent) {
   const children = [];
   for (const node of parent.childNodes) {
     if (node.nodeType === 3) {

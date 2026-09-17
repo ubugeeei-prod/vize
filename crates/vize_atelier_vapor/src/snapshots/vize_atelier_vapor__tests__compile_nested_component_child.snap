@@ -1,13 +1,14 @@
 ---
-source: crates/vize_atelier_vapor/src/lib.rs
+source: crates/vize_atelier_vapor/src/tests.rs
 expression: code.as_str()
 ---
-import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, child as _child, setInsertionState as _setInsertionState, template as _template } from 'vue';
+const t0 = _template("<div><!----></div>", true)
 export function render(_ctx) {
 const n1 = t0()
+const n2 = _child(n1)
 const _component_MyComp = _resolveComponent("MyComp")
-_setInsertionState(n1, null, true)
+_setInsertionState(n1, n2, true)
 const n0 = _createComponentWithFallback(_component_MyComp, null, null, true)
 return n1
 }

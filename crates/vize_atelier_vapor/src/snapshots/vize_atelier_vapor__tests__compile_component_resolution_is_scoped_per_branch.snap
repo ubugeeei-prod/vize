@@ -1,30 +1,31 @@
 ---
-source: crates/vize_atelier_vapor/src/lib.rs
+source: crates/vize_atelier_vapor/src/tests.rs
 expression: code.as_str()
 ---
-import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
-const t0 = _template("<div></div>", true)
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, child as _child, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<div><!----></div>", true)
 export function render(_ctx) {
-const n8 = t0()
-_setInsertionState(n8, null, true)
-const n0 = _createIf(() => (_ctx.first), () => {
-_setInsertionState(n8, null, true)
-const _component_CodeHighlight = _resolveComponent("CodeHighlight")
-const n2 = _createComponentWithFallback(_component_CodeHighlight, null, null, true)
-return n2
-}, () => {
-_setInsertionState(n8, null, true)
-return _createIf(() => (_ctx.second), () => {
-_setInsertionState(n8, null, true)
+const n0 = t0()
+const n1 = _child(n0)
+_setInsertionState(n0, n1, true)
+const n2 = _createIf(() => (_ctx.first), () => {
+_setInsertionState(n0, n1, true)
 const _component_CodeHighlight = _resolveComponent("CodeHighlight")
 const n4 = _createComponentWithFallback(_component_CodeHighlight, null, null, true)
 return n4
 }, () => {
-_setInsertionState(n8, null, true)
+_setInsertionState(n0, n1, true)
+return _createIf(() => (_ctx.second), () => {
+_setInsertionState(n0, n1, true)
 const _component_CodeHighlight = _resolveComponent("CodeHighlight")
-const n7 = _createComponentWithFallback(_component_CodeHighlight, null, null, true)
-return n7
+const n6 = _createComponentWithFallback(_component_CodeHighlight, null, null, true)
+return n6
+}, () => {
+_setInsertionState(n0, n1, true)
+const _component_CodeHighlight = _resolveComponent("CodeHighlight")
+const n9 = _createComponentWithFallback(_component_CodeHighlight, null, null, true)
+return n9
 })
 })
-return n8
+return n0
 }

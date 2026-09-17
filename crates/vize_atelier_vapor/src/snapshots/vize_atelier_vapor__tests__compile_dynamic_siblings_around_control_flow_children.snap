@@ -2,22 +2,23 @@
 source: crates/vize_atelier_vapor/src/tests.rs
 expression: code.as_str()
 ---
-import { child as _child, next as _next, setClass as _setClass, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+import { child as _child, next as _next, setClass as _setClass, createInvoker as _createInvoker, delegateEvents as _delegateEvents, nthChild as _nthChild, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<button> Bindings </button>", true)
-const t1 = _template("<section><div class=\"tabs\"><button> Code </button><button> Helpers </button></div></section>", true)
+const t1 = _template("<section><div class=\"tabs\"><button> Code </button><!----><button> Helpers </button></div></section>", true)
 _delegateEvents("click")
 export function render(_ctx) {
 const n1 = t1()
 const n0 = _child(n1)
 const n2 = _child(n0)
-const n3 = _next(n2, 1)
+const n4 = _next(_child(n0), 1)
+const n3 = _nthChild(n0, 2)
 n2.$evtclick = _createInvoker(() => (_ctx.activeTab = 'code'))
-_setInsertionState(n0, null, true)
-const n4 = _createIf(() => (_ctx.inputMode === 'sfc'), () => {
-const n6 = t0()
-n6.$evtclick = _createInvoker(() => (_ctx.activeTab = 'bindings'))
-_renderEffect(() => _setClass(n6, ['tab', { active: _ctx.activeTab === 'bindings' }]))
-return n6
+_setInsertionState(n0, n4, true)
+const n5 = _createIf(() => (_ctx.inputMode === 'sfc'), () => {
+const n7 = t0()
+n7.$evtclick = _createInvoker(() => (_ctx.activeTab = 'bindings'))
+_renderEffect(() => _setClass(n7, ['tab', { active: _ctx.activeTab === 'bindings' }]))
+return n7
 })
 n3.$evtclick = _createInvoker(() => (_ctx.activeTab = 'helpers'))
 _renderEffect(() => {

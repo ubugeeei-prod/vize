@@ -9,6 +9,7 @@ pub(crate) struct TransformContext<'a> {
     /// The source string node-loc spans index into, used to recover covered
     /// text from a `SourceLocation`.
     pub(crate) source: &'a str,
+    pub(crate) scope_id: Option<String>,
     /// Atoms for the names lowering computes rather than slices out of the
     /// source (camelized prop keys, builtin directive names).
     pub(crate) interner: Interner<'a>,
@@ -25,6 +26,7 @@ impl<'a> TransformContext<'a> {
         Self {
             allocator,
             source,
+            scope_id: None,
             interner: Interner::new(allocator),
             temp_id: 0,
             templates: Vec::new_in(&allocator),

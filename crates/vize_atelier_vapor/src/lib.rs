@@ -45,7 +45,8 @@ pub use compile::{
     compile_vapor_with_custom_elements_template_syntax_and_experimental_options,
     compile_vapor_with_custom_elements_template_syntax_diagnostics_and_experimental_options,
     compile_vapor_with_diagnostics, compile_vapor_with_experimental_options,
-    compile_vapor_with_template_syntax, compile_vapor_with_template_syntax_and_diagnostics,
+    compile_vapor_with_sfc_context, compile_vapor_with_template_syntax,
+    compile_vapor_with_template_syntax_and_diagnostics,
     compile_vapor_with_template_syntax_and_experimental_options,
 };
 #[allow(deprecated)]

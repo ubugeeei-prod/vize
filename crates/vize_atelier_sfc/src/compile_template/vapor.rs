@@ -3,8 +3,7 @@
 use super::string_tracking::{StringTrackState, count_braces_with_state};
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_atelier_vapor::{
-    VaporCompilerExperimentalOptions, VaporCompilerOptions,
-    compile_vapor_with_custom_elements_template_syntax_diagnostics_and_experimental_options,
+    VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor_with_sfc_context,
 };
 use vize_s0::{Allocator, String, ToCompactString};
 
@@ -54,16 +53,18 @@ pub(crate) fn compile_template_block_vapor(
         ..VaporCompilerExperimentalOptions::default()
     };
 
+    let scope_attr = has_scoped.then(|| vize_s0::cstr!("data-v-{scope_id}"));
+
     // Compile template with Vapor
-    let (result, diagnostics) =
-        compile_vapor_with_custom_elements_template_syntax_diagnostics_and_experimental_options(
-            allocator,
-            &template.content,
-            vapor_opts,
-            template_syntax,
-            custom_elements.clone(),
-            experimental_options,
-        );
+    let (result, diagnostics) = compile_vapor_with_sfc_context(
+        allocator,
+        &template.content,
+        vapor_opts,
+        template_syntax,
+        custom_elements.clone(),
+        experimental_options,
+        scope_attr.as_deref(),
+    );
 
     if !result.error_messages.is_empty() {
         let mut message = String::from("Vapor template compilation errors: ");
@@ -77,18 +78,8 @@ pub(crate) fn compile_template_block_vapor(
     }
 
     // Process the Vapor output to extract imports and render function
-    let scope_attr = if has_scoped {
-        let mut attr = String::with_capacity(scope_id.len() + 7);
-        attr.push_str("data-v-");
-        attr.push_str(scope_id);
-        attr
-    } else {
-        String::default()
-    };
-
     let code = transform_vapor_template_output(
         &result.code,
-        has_scoped.then_some(scope_attr.as_str()),
         template,
         bindings,
         codegen_options.runtime_module_name.as_str(),
@@ -99,37 +90,6 @@ pub(crate) fn compile_template_block_vapor(
         warnings: recoverable_template_warnings(&diagnostics),
         sections: None,
     })
-}
-
-/// Add scope ID to template string
-pub(super) fn add_scope_id_to_template(template_line: &str, scope_id: &str) -> String {
-    // Find the template string content and add scope_id to the first element
-    if let Some(start) = template_line.find("\"<")
-        && let Some(end) = template_line.rfind(">\"")
-    {
-        let prefix = &template_line[..start + 2]; // up to and including "<"
-        let content = &template_line[start + 2..end + 1]; // element content
-        let suffix = &template_line[end + 1..]; // closing quote and paren
-
-        // Find end of first tag name
-        if let Some(tag_end) = content.find(|c: char| c.is_whitespace() || c == '>') {
-            let tag_name = &content[..tag_end];
-            let rest = &content[tag_end..];
-
-            // Insert scope_id attribute after tag name
-            let mut result = String::with_capacity(
-                prefix.len() + tag_name.len() + scope_id.len() + rest.len() + suffix.len() + 1,
-            );
-            result.push_str(prefix);
-            result.push_str(tag_name);
-            result.push(' ');
-            result.push_str(scope_id);
-            result.push_str(rest);
-            result.push_str(suffix);
-            return result;
-        }
-    }
-    template_line.to_compact_string()
 }
 
 fn rewrite_vapor_import(line: &str, runtime_module_name: &str) -> String {
@@ -156,7 +116,6 @@ fn is_render_signature(line: &str) -> bool {
 
 pub(super) fn transform_vapor_template_output(
     code: &str,
-    scope_attr: Option<&str>,
     template: &SfcTemplateBlock,
     bindings: Option<&BindingMetadata>,
     runtime_module_name: &str,
@@ -190,17 +149,8 @@ pub(super) fn transform_vapor_template_output(
             break;
         }
 
-        if trimmed.starts_with("const t") && trimmed.contains("_template(") {
-            if let Some(scope_id) = scope_attr {
-                output.push_str(&add_scope_id_to_template(line, scope_id));
-            } else {
-                output.push_str(line);
-            }
-            output.push('\n');
-        } else {
-            output.push_str(line);
-            output.push('\n');
-        }
+        output.push_str(line);
+        output.push('\n');
         index += 1;
     }
 

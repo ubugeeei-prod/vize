@@ -21,7 +21,8 @@ pub use entry::{
     compile_vapor_with_custom_elements_template_syntax_and_experimental_options,
     compile_vapor_with_custom_elements_template_syntax_diagnostics_and_experimental_options,
     compile_vapor_with_diagnostics, compile_vapor_with_experimental_options,
-    compile_vapor_with_template_syntax, compile_vapor_with_template_syntax_and_diagnostics,
+    compile_vapor_with_sfc_context, compile_vapor_with_template_syntax,
+    compile_vapor_with_template_syntax_and_diagnostics,
     compile_vapor_with_template_syntax_and_experimental_options,
 };
 #[allow(deprecated)]
@@ -84,6 +85,26 @@ fn compile_vapor_inner<'a>(
     custom_elements: CustomElementMatcher,
     experimental_options: VaporCompilerExperimentalOptions,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    compile_vapor_inner_scoped(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        None,
+    )
+}
+
+fn compile_vapor_inner_scoped<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: VaporCompilerExperimentalOptions,
+    scope_id: Option<&str>,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     vize_carton::ensure_sufficient_stack(|| {
         compile_vapor_inner_with_stack(
             allocator,
@@ -92,6 +113,7 @@ fn compile_vapor_inner<'a>(
             template_syntax,
             custom_elements,
             experimental_options,
+            scope_id,
         )
     })
 }
@@ -103,6 +125,7 @@ fn compile_vapor_inner_with_stack<'a>(
     template_syntax: TemplateSyntaxMode,
     custom_elements: CustomElementMatcher,
     experimental_options: VaporCompilerExperimentalOptions,
+    scope_id: Option<&str>,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     // Parse
     let parser_opts = ParserOptions {
@@ -191,7 +214,7 @@ fn compile_vapor_inner_with_stack<'a>(
 
     // Lower to Vapor IR
     let (ir, mut transform_diagnostics) =
-        vapor_lower::transform_to_ir_with_diagnostics(allocator, &root, source);
+        vapor_lower::transform_to_ir_with_scope_id(allocator, &root, source, scope_id);
     if let VaporS3BridgeStatus::Rejected(diagnostics) = s3_bridge_status {
         transform_diagnostics.extend(diagnostics);
     }

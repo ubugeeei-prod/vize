@@ -5,9 +5,9 @@ use super::super::{context::GenerateContext, generate_block, setup::escape_js_st
 
 /// Generate SlotOutlet
 ///
-/// Emits the Vapor runtime's `createSlot(name?, rawProps?, fallback?)` call,
+/// Emits the Vapor runtime's `createSlot(name, rawProps?, fallback?)` call,
 /// matching `@vue/compiler-vapor`:
-/// - a bare default outlet collapses to `_createSlot()`;
+/// - a bare default outlet explicitly names the `default` slot;
 /// - dynamic slot names are lazy: `() => (expr)`;
 /// - dynamic prop values are getter thunks (`key: () => (expr)`) while static
 ///   literal values are emitted directly;
@@ -26,11 +26,7 @@ pub(super) fn generate_slot_outlet(ctx: &mut GenerateContext, slot: &SlotOutletI
     let slot_props = build_slot_props(ctx, slot);
     match (slot_props, slot.fallback.as_ref()) {
         (None, None) => {
-            if slot.name.is_static && slot.name.content == "default" {
-                ctx.push_line_fmt(format_args!("const {name} = _createSlot()"));
-            } else {
-                ctx.push_line_fmt(format_args!("const {name} = _createSlot({slot_name})"));
-            }
+            ctx.push_line_fmt(format_args!("const {name} = _createSlot({slot_name})"));
         }
         (Some(props), None) => {
             ctx.push_line_fmt(format_args!(

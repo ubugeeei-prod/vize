@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_vapor/src/lib.rs
+source: crates/vize_atelier_vapor/src/tests.rs
 expression: code.as_str()
 ---
 import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, template as _template } from 'vue';
@@ -9,7 +9,7 @@ const _component_NuxtLink = _resolveComponent("NuxtLink")
 const n1 = _createComponentWithFallback(_component_NuxtLink, {
 to: () => (_ctx.to),
 target: () => ("_blank"),
-onClick: () => _ctx.onClick
+onClick: () => (_ctx.onClick)
 }, {
 "default": () => {
 const n0 = t0()

@@ -3,22 +3,24 @@ source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
 import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
-import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+import { createComponentWithFallback as _createComponentWithFallback, child as _child, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
 
-const t0 = _template("<group></group>", true)
-const t1 = _template("<mesh></mesh>", true)
+const t0 = _template("<group><!----></group>", true)
+const t1 = _template("<mesh><!----></mesh>", true)
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
-  const n4 = t1()
-  _setInsertionState(n4, null, true)
-  const n0 = _createIf(() => (_ctx.visible), () => {
-    const n3 = t0()
+  const n0 = t1()
+  const n1 = _child(n0)
+  _setInsertionState(n0, n1, true)
+  const n2 = _createIf(() => (_ctx.visible), () => {
+    const n5 = t0()
+    const n6 = _child(n5)
     const _component_primitive = _ctx.Primitive
-    _setInsertionState(n3, null, true)
-    const n2 = _createComponentWithFallback(_component_primitive, null, null, true)
-    return n3
+    _setInsertionState(n5, n6, true)
+    const n4 = _createComponentWithFallback(_component_primitive, null, null, true)
+    return n5
   })
-  return n4
+  return n0
 }
 const __vaporRender = render
 

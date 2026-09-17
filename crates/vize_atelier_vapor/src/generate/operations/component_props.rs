@@ -1,10 +1,8 @@
 use crate::ir::{CreateComponentIRNode, IRProp};
+use vize_atelier_core::steps::{is_event_handler_reference_node, is_function_expression_node};
 use vize_carton::{String, ToCompactString, cstr};
 
-use super::{
-    super::context::GenerateContext,
-    events::{is_inline_statement, is_inline_statement_block},
-};
+use super::{super::context::GenerateContext, events::is_inline_statement_block};
 
 /// Generate props object string for a component
 pub(super) fn generate_component_props_str(
@@ -175,8 +173,7 @@ fn format_component_prop_entry(prop: &IRProp<'_>, value: String) -> String {
 }
 
 fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> String {
-    let key = prop.key.content;
-    let is_event = key.starts_with("on") && key.len() > 2;
+    let is_event = prop.key.is_handler_key;
     if let Some(first) = prop.values.first() {
         if first.content.starts_with("__RAW__") {
             return String::from(&first.content[7..]);
@@ -186,12 +183,12 @@ fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> Stri
         }
         let resolved = ctx.resolve_expression_node(first);
         if is_event {
-            if is_inline_statement_block(first.content) {
+            if is_function_expression_node(first) || is_event_handler_reference_node(first) {
+                cstr!("() => ({})", resolved)
+            } else if is_inline_statement_block(first.content) {
                 cstr!("() => ($event => {{ {} }})", resolved)
-            } else if is_inline_statement(first.content) {
-                cstr!("() => ($event => ({}))", resolved)
             } else {
-                cstr!("() => {}", resolved)
+                cstr!("() => ($event => ({}))", resolved)
             }
         } else {
             cstr!("() => ({})", resolved)

@@ -579,14 +579,14 @@ fn test_compile_v_for_destructured_aliases_resolve_source_paths() {
     assert!(
         result
             .code
-            .contains(r#"_setProp(n2, "title", _for_item0.value.user.name)"#),
+            .contains(r#"_setProp(n4, "title", _for_item0.value.user.name)"#),
         "{}",
         result.code
     );
     assert!(
         result
             .code
-            .contains("_setText(x2, _toDisplayString(_for_item0.value.meta.count))"),
+            .contains("_setText(x4, _toDisplayString(_for_item0.value.meta.count))"),
         "{}",
         result.code
     );

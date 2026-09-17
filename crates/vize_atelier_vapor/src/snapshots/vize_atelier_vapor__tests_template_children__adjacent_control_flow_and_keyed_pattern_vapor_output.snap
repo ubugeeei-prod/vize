@@ -3,41 +3,43 @@ source: crates/vize_atelier_vapor/src/tests_template_children.rs
 expression: vapor_output(CONTROL_FLOW)
 ---
 errors=[]
-templates=["<aside>Aside</aside>", "<li> </li>", "<li>Empty</li>", "<div><ul></ul><p>Last</p></div>"]
+templates=["<aside>Aside</aside>", "<li> </li>", "<li>Empty</li>", "<div><!----><ul><!----></ul><p>Last</p></div>"]
 code=
-import { child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
+import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
 const t0 = _template("<aside>Aside</aside>", true)
 const t1 = _template("<li> </li>")
 const t2 = _template("<li>Empty</li>")
-const t3 = _template("<div><ul></ul><p>Last</p></div>", true)
+const t3 = _template("<div><!----><ul><!----></ul><p>Last</p></div>", true)
 
 export function render(_ctx) {
   const n1 = t3()
-  const n0 = _child(n1)
-  _setInsertionState(n1, null, true)
-  const n2 = _createIf(() => (_ctx.aside), () => {
-    const n4 = t0()
-    return n4
+  const n2 = _child(n1)
+  const n0 = _next(_child(n1), 1)
+  const n6 = _child(n0)
+  _setInsertionState(n1, n2, true)
+  const n3 = _createIf(() => (_ctx.aside), () => {
+    const n5 = t0()
+    return n5
   })
-  _setInsertionState(n0, null, true)
-  const n5 = _createFor(() => ([_ctx.status]), (_for_item0) => {
-    _setInsertionState(n0, null, true)
-    const n7 = _createIf(() => ((_for_item0.value) === ('ready')), () => {
-      const n9 = _createFor(() => (_ctx.items), (_for_item1) => {
-        const n11 = t1()
-        const x11 = _txt(n11)
+  _setInsertionState(n0, n6, true)
+  const n7 = _createFor(() => ([_ctx.status]), (_for_item0) => {
+    _setInsertionState(n0, n6, true)
+    const n9 = _createIf(() => ((_for_item0.value) === ('ready')), () => {
+      const n11 = _createFor(() => (_ctx.items), (_for_item1) => {
+        const n13 = t1()
+        const x13 = _txt(n13)
         _renderEffect(() => {
-          _setClass(n11, _for_item1.value.kind)
-          _setText(x11, _toDisplayString(_for_item1.value.label))
+          _setClass(n13, _for_item1.value.kind)
+          _setText(x13, _toDisplayString(_for_item1.value.label))
         })
-        return n11
+        return n13
       }, (item) => (item.id), 1)
-      return n9
+      return n11
     }, () => {
-      const n13 = t2()
-      return n13
+      const n15 = t2()
+      return n15
     })
-    return n7
+    return n9
   })
   return n1
 }

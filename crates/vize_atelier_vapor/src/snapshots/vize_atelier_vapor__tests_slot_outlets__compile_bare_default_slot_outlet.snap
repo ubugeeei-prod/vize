@@ -4,6 +4,6 @@ expression: code.as_str()
 ---
 import { createSlot as _createSlot } from 'vue';
 export function render(_ctx) {
-const n0 = _createSlot()
+const n0 = _createSlot("default")
 return n0
 }

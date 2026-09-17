@@ -3,16 +3,9 @@
 mod string_tracking;
 
 use super::extraction::{extract_template_parts, extract_template_parts_full};
-use super::vapor::{add_scope_id_to_template, transform_vapor_template_output};
+use super::vapor::transform_vapor_template_output;
 use crate::types::{BlockLocation, SfcTemplateBlock};
 use std::borrow::Cow;
-
-#[test]
-fn test_add_scope_id_to_template() {
-    let input = r#"const t0 = _template("<div class='container'>Hello</div>")"#;
-    let result = add_scope_id_to_template(input, "data-v-abc123");
-    insta::assert_snapshot!(result.as_str());
-}
 
 #[test]
 fn test_transform_vapor_template_output_current_render_format() {
@@ -41,7 +34,7 @@ export function render(_ctx) {
   return n0
 }"#;
 
-    let result = transform_vapor_template_output(vapor_code, None, &template, None, "vue")
+    let result = transform_vapor_template_output(vapor_code, &template, None, "vue")
         .expect("current Vapor output should be transformed");
     insta::assert_snapshot!(result.as_str());
 }

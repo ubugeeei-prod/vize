@@ -7,8 +7,31 @@ use vize_atelier_core::{
 use vize_carton::Allocator;
 
 use super::{
-    VaporCompileResult, VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor_inner,
+    VaporCompileResult, VaporCompilerExperimentalOptions, VaporCompilerOptions,
+    compile_vapor_inner, compile_vapor_inner_scoped,
 };
+
+/// Compile an SFC template with its scoped-style attribute on every native element.
+#[doc(hidden)]
+pub fn compile_vapor_with_sfc_context<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: VaporCompilerExperimentalOptions,
+    scope_id: Option<&str>,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    compile_vapor_inner_scoped(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        scope_id,
+    )
+}
 
 /// Compile a Vue template to Vapor mode
 pub fn compile_vapor<'a>(

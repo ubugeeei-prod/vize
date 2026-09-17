@@ -1,28 +1,31 @@
 ---
-source: crates/vize_atelier_vapor/src/lib.rs
+source: crates/vize_atelier_vapor/src/tests.rs
 expression: code.as_str()
 ---
-import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+import { child as _child, next as _next, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<span>a</span>")
 const t1 = _template("<i>b</i>")
-const t2 = _template("<section></section>", true)
-const t3 = _template("<div></div>", true)
+const t2 = _template("<section><!----><!----></section>", true)
+const t3 = _template("<div><!----></div>", true)
 export function render(_ctx) {
-const n9 = t3()
-_setInsertionState(n9, null, true)
-const n0 = _createIf(() => (_ctx.ok), () => {
-const n8 = t2()
-_setInsertionState(n8, null, true)
-const n2 = _createIf(() => (_ctx.inner), () => {
-const n4 = t0()
-return n4
-})
-_setInsertionState(n8, null, true)
-const n5 = _createIf(() => (_ctx.more), () => {
-const n7 = t1()
-return n7
-})
+const n0 = t3()
+const n1 = _child(n0)
+_setInsertionState(n0, n1, true)
+const n2 = _createIf(() => (_ctx.ok), () => {
+const n4 = t2()
+const n5 = _child(n4)
+const n9 = _next(_child(n4), 1)
+_setInsertionState(n4, n5, true)
+const n6 = _createIf(() => (_ctx.inner), () => {
+const n8 = t0()
 return n8
 })
-return n9
+_setInsertionState(n4, n9, true)
+const n10 = _createIf(() => (_ctx.more), () => {
+const n12 = t1()
+return n12
+})
+return n4
+})
+return n0
 }
