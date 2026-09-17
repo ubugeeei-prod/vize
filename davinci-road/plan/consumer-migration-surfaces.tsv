@@ -2992,7 +2992,7 @@ lsp	LSP	source	crates/vize_maestro/src/ide/musea.rs	35	croquis	Croquis analysis	
 lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/references/corsa_tests.rs	278	s0	S0	stage	vize_s0	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/references/corsa_tests.rs	275	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/references/corsa_tests/project_surface.rs	6	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/script.rs	9	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/script.rs	9	raw_oxc	raw OXC	raw	oxc_allocator	raw	1

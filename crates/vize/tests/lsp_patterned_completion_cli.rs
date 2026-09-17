@@ -76,6 +76,12 @@ fn native_pattern_completions_follow_root_arm_guard_and_loop_visibility() {
     let fallback = complete(&mut fixture, SOURCE, "rows.toUpperCase");
     labels(&fallback, &["rows", "result"], &["armOnly", "message"]);
     assert_eq!(fixture.change(SOURCE, 2), json!([]));
+    let props = SOURCE.replace("const rows = 'outer'", "defineProps<{ rows: string }>()");
+    assert_eq!(fixture.change(&props, 3), json!([]));
+    let items = complete(&mut fixture, &props, "rows.length }}");
+    labels(&items, &["rows", "armOnly", "result"], &["message"]);
+    let rows = items.iter().find(|item| item["label"] == "rows").unwrap();
+    assert_eq!(rows["detail"], "Local v-when binding");
     fixture.shutdown();
 }
 

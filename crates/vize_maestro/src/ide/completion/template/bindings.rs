@@ -112,9 +112,8 @@ pub(crate) fn analyzed_template_binding_completions(
 
     let mut items_vec = Vec::new();
 
-    // Scope-aware completion: include bindings introduced by v-for / v-slot /
-    // event-handler scopes that contain the cursor. Top-level setup bindings
-    // are added by the loop below; we de-dup by name.
+    // Include bindings from the arm, loop, slot, or callback at the cursor.
+    // De-duplicate outer setup bindings and props against these local names.
     let mut locals = BTreeSet::new();
     {
         let template_local = ctx.offset.saturating_sub(template_start) as u32;
@@ -170,6 +169,9 @@ pub(crate) fn analyzed_template_binding_completions(
 
     if include_vue3_details {
         for prop in croquis.macros.props() {
+            if locals.contains(prop.name.as_str()) {
+                continue;
+            }
             let prop_type = prop
                 .prop_type
                 .as_ref()
@@ -209,7 +211,9 @@ pub(crate) fn analyzed_template_binding_completions(
         for source in croquis.reactivity.sources() {
             // Reactive bindings are already surfaced by the bindings loop
             // above; skip known bindings so an identifier is not offered twice.
-            if croquis.bindings.contains(source.name.as_str()) {
+            if croquis.bindings.contains(source.name.as_str())
+                || locals.contains(source.name.as_str())
+            {
                 continue;
             }
             let kind_str = source.kind.to_display();
