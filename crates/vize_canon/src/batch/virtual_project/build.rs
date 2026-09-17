@@ -129,6 +129,7 @@ pub(super) fn build_vue_registered_file(
                 dialect: context.dialect,
                 template_syntax: context.template_syntax,
                 experimental_in_tag_comments: context.experimental_in_tag_comments,
+                experimental_patterned_template: context.experimental_patterned_template,
                 experimental_strict_slot_children: context.experimental_strict_slot_children,
                 hoist_shared_preamble: context.hoist_shared_preamble,
                 omit_vite_client_reference: false,

@@ -32,7 +32,7 @@ const label = 'Hello'
   {
     key: "experimentalPatternedTemplate",
     label: "Patterned templates",
-    scopes: ["compiler", "croquis"],
+    scopes: ["compiler", "typechecker", "croquis"],
     source: `<script setup lang="ts">
 const status = 'ready'
 </script>

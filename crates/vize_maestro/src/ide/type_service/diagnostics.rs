@@ -62,6 +62,7 @@ impl TypeService {
             check_fallthrough_attrs: lsp_options.check_fallthrough_attrs,
             include_virtual_ts: false,
             experimental_in_tag_comments: false,
+            experimental_patterned_template: false,
             experimental_strict_slot_children: false,
         };
 

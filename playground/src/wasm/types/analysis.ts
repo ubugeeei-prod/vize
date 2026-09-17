@@ -10,6 +10,7 @@ export interface TypeCheckOptions {
   checkTemplateBindings?: boolean;
   legacyVue2?: boolean;
   experimentalInTagComments?: boolean;
+  experimentalPatternedTemplate?: boolean;
   experimentalStrictSlotChildren?: boolean;
 }
 
@@ -33,6 +34,7 @@ export interface TypeCheckDiagnostic {
 export interface TypeCheckResult {
   diagnostics: TypeCheckDiagnostic[];
   virtualTs?: string;
+  virtualTsHelpers?: string | null;
   sourceMappings?: VirtualTsMapping[] | null;
   errorCount: number;
   warningCount: number;

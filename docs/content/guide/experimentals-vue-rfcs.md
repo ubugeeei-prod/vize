@@ -49,7 +49,7 @@ objects. Direct Vite plugin values still win over shared config, including expli
 
 | RFC | Vize ships today | Boundary to keep explicit |
 | --- | --- | --- |
-| #823 | parser support, runtime lowering, branch-local bindings, guards, rest/as patterns, diagnostics for flag-off and invalid placement | the upstream type-tooling acceptance contract for narrowing and exhaustiveness is not yet certified by `vize check` |
+| #823 | parser support, runtime lowering, branch-local bindings, guards, rest/as patterns, diagnostics for flag-off and invalid placement | Canon checks narrowing/coverage; complete editor navigation and compiler grammar convergence remain deferred |
 | #831 | parser support for in-tag `//`, source text in `root.comments`, and compile pipelines that preserve the AST comment | no runtime output, no child comment node, and no browser in-DOM template support |
 | #833 | exact `<Self>` current-component resolution in DOM, SSR, and Vapor compilation | no render-function or JSX macro; a local/imported component named `Self` is shadowed when the flag is enabled |
 | #734 | virtual TypeScript assertions for provided default and named slot children | no template codegen change; open slot contracts and `any` degrade to TypeScript's own permissive checks |
@@ -60,12 +60,10 @@ For entry-point and proof checklists, see [Experimentals Reference](./experiment
 
 `patternedTemplate` implements the long-form `v-match` / `v-when` syntax from RFC #823. The subject expression is evaluated once, direct branch children are tested in source order, and only the first matching branch renders.
 
-Inline HTML SFCs accept outer `<template v-match>` with nested-match semantics in DOM, SSR, and Vapor.
-Header-only subject edits invalidate HMR; parsed `template.content` remains the original block body.
-External `src`, preprocessors, and descriptors missing original source metadata are rejected.
-Canon narrowing/exhaustiveness remains unsupported; assembled SFC source maps remain script-only.
+Inline HTML SFCs accept outer `<template v-match>` with nested-match semantics in DOM, SSR, and Vapor. Header-only subject edits invalidate HMR; parsed `template.content` remains the original block body.
+External `src`, preprocessors, and descriptors missing original source metadata are rejected. Canon supports opt-in narrowing and coverage checks below; assembled compiler SFC source maps remain script-only.
 
-Croquis accepts `analyzeSfc(source, { experimentalPatternedTemplate: true })` and the Playground Croquis checkbox for root and nested matches. Its strict RFC parser records branch-local declarations, enclosing value lookups, guard references, and syntax diagnostics with authored ranges (including HTML entities). It uses `pattern as name`, not the compiler's older `as const name` spelling. Canon narrowing, coverage checks, and LSP navigation remain tracked in [#6176](https://github.com/ubugeeei-prod/vize/issues/6176).
+Croquis accepts `analyzeSfc(source, { experimentalPatternedTemplate: true })` and the Playground Croquis checkbox for root and nested matches. Its strict RFC parser records branch-local declarations, enclosing value lookups, guard references, and syntax diagnostics with authored ranges (including HTML entities). Canon uses the same parser through `typeCheck(source, { experimentalPatternedTemplate: true, includeVirtualTs: true })`, the Playground Canon checkbox, and `vize check` with `experimentals.patternedTemplate`. These tooling paths use `pattern as name`, not the compiler's older `as const name` spelling. Compiler grammar convergence and complete LSP navigation remain tracked in [#6176](https://github.com/ubugeeei-prod/vize/issues/6176).
 
 ```vue
 <script setup lang="ts">
@@ -160,10 +158,12 @@ as compatibility aliases for older Vize experiments; new templates should use `v
 
 ### Patterned Type Boundary
 
-RFC #823 requires branch narrowing and exhaustiveness; `vize check` does not yet certify exhaustiveness,
-unreachable branches, or future union members. Use `v-when="_"` for runtime fallback and manual union coverage tests.
-Binding inside an or-pattern alternative is also deferred: split cases needing bindings into separate branches.
-The RFC shorthand candidates `?=`, `|=`, and `~=` are not public Vize branch syntax.
+Canon narrows arm bindings and the original subject, checks missing coverage, and reports unreachable arms as warnings. The ordinary checked `pattern_matching.d.ts` declarations are shared once per TypeScript program, not copied into each template.
+Guards never prove coverage; optional property presence retains `undefined` and the missing-key space. Finite object/tuple unions, readonly arrays and rest bindings are supported. Open primitives, `any`, `unknown`, and union-valued value patterns remain conservative; use an unguarded `v-when="_"` when coverage cannot be proven.
+Missing coverage is an error anchored to the authored subject and fails `vize check`; warning-only unreachable arms do not fail it.
+WASM alone supplies structural diagnostics and virtual TypeScript; full type diagnostics require the Playground's Monaco TypeScript worker (or the native checker). Other virtual-TS hosts must register `virtualTsHelpers` once as an ambient declaration file.
+The full upstream type-tooling acceptance contract for narrowing and exhaustiveness also includes editor navigation and completion. Those editor paths are not yet certified by this experimental Canon support.
+Binding inside an or-pattern alternative is also deferred: split cases needing bindings into separate branches. The RFC shorthand candidates `?=`, `|=`, and `~=` are not public Vize branch syntax.
 
 ## In-Tag Comments
 

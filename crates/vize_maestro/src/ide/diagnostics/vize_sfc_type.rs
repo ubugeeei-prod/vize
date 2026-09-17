@@ -68,6 +68,7 @@ impl DiagnosticService {
             check_fallthrough_attrs: true,
             strict,
             experimental_in_tag_comments: false,
+            experimental_patterned_template: false,
             experimental_strict_slot_children: false,
         };
 

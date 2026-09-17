@@ -275,6 +275,7 @@ pub struct VirtualProject {
 
     /// Enable experimental Vue in-tag comments while parsing SFC templates.
     experimental_in_tag_comments: bool,
+    experimental_patterned_template: bool,
     /// Enable experimental strict checking of provided slot child types.
     experimental_strict_slot_children: bool,
 

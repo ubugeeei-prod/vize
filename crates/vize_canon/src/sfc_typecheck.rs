@@ -40,6 +40,7 @@
 
 mod analysis;
 mod checks;
+pub(crate) mod patterns;
 mod runner;
 #[cfg(test)]
 mod tests;

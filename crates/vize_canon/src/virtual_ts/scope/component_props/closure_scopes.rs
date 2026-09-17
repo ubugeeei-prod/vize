@@ -8,7 +8,7 @@ use super::super::emit::{append_v_for_comment, emit_v_for_loop_open};
 use super::super::empty_component_props::generate_scope_checks;
 use super::super::slot_scope::generate_v_slot_props_scope;
 
-pub(super) fn generate_closure_component_props_recursive(
+pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     ctx: &VForPropsContext<'_, '_>,
@@ -18,6 +18,13 @@ pub(super) fn generate_closure_component_props_recursive(
     let scope_id = scope.id.as_u32();
     let inner_indent = cstr!("{indent}  ");
     match scope.data() {
+        ScopeData::VMatch(_) => {
+            super::super::patterns::generate_props_match(ts, mappings, ctx, scope, indent)
+        }
+        ScopeData::VWhen(_) => {
+            generate_scope_checks(ts, mappings, ctx, scope_id, indent);
+            recurse_child_closure_scopes(ts, mappings, ctx, scope_id, indent);
+        }
         ScopeData::VFor(data) => {
             let enclosing_guard = ctx.vfor_enclosing_guards.get(&scope_id).map(String::as_str);
             let (loop_indent, vfor_inner_indent) = if enclosing_guard.is_some() {
@@ -84,7 +91,10 @@ pub(in crate::virtual_ts::scope) fn recurse_child_closure_scopes(
     };
     for &child_id in child_ids {
         if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id)
-            && matches!(child_scope.kind, ScopeKind::VFor | ScopeKind::VSlot)
+            && matches!(
+                child_scope.kind,
+                ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
+            )
         {
             profile!(
                 "canon.virtual_ts.closure_component_props",

@@ -18,6 +18,7 @@ mod options_api_support;
 mod script_blocks;
 mod script_module;
 mod setup_helpers;
+mod setup_lines;
 mod setup_props;
 pub(super) mod setup_scope;
 mod setup_type_exports;
@@ -448,20 +449,17 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
                 let line_start = src_byte_offset;
                 let line_end = line_start + raw_line.len(); // use raw length for span check
-                let source_token_start = line_start + line.len() - line.trim_start().len();
-                while module_span_index < module_spans.len()
-                    && module_spans[module_span_index].1 as usize <= line_start
-                {
-                    module_span_index += 1;
-                }
-                let is_module_level = module_spans[module_span_index..]
-                    .iter()
-                    .take_while(|&&(start, _)| (start as usize) < line_end)
-                    .any(|&(start, end)| line_start < end as usize && line_end > start as usize);
-                if is_module_level {
+                let Some(setup_line) = setup_lines::setup_line(
+                    line,
+                    line_start,
+                    &module_spans,
+                    &mut module_span_index,
+                ) else {
                     src_byte_offset += raw_byte_len;
                     continue;
-                }
+                };
+                let line = setup_line.as_ref();
+                let source_token_start = line_start + line.len() - line.trim_start().len();
                 ts.push_str("  "); // indentation (not in source)
                 let gen_content_start = ts.len();
 

@@ -55,6 +55,7 @@ pub(super) struct VueCodegenOptions<'a> {
     pub(super) dialect: VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
     pub(super) experimental_in_tag_comments: bool,
+    pub(super) experimental_patterned_template: bool,
     pub(super) experimental_strict_slot_children: bool,
     /// Hoist shared helpers to the batch ambient `.d.ts`; socket sessions keep
     /// them inline because they do not materialize that file.
@@ -76,6 +77,30 @@ pub(super) fn generate_vue_virtual_ts(
 ) -> CorsaResult<GeneratedVueFile> {
     let allocator = Allocator::new();
     let mut diagnostics = Vec::new();
+
+    let view = match vize_atelier_sfc::prepare_root_patterned_template(
+        descriptor,
+        codegen_options.experimental_patterned_template,
+        codegen_options.experimental_in_tag_comments,
+        codegen_options.template_syntax,
+    ) {
+        Ok(view) => view,
+        Err(error) => {
+            return Ok(GeneratedVueFile {
+                code: invalid_sfc_fallback_virtual_ts(),
+                mappings: Vec::new(),
+                semantic_links: Vec::new(),
+                diagnostics: vec![diagnostic_for_offset(
+                    path,
+                    source,
+                    error.loc.as_ref().map_or(0, |loc| loc.start as u32),
+                    error.message,
+                    SfcBlockType::Template,
+                )],
+            });
+        }
+    };
+    let descriptor = &*view;
 
     if let Some(ref script) = descriptor.script {
         let script_diagnostics = collect_script_parse_diagnostics(
@@ -189,7 +214,10 @@ pub(super) fn generate_vue_virtual_ts(
         });
     }
 
-    let croquis_options = SfcCroquisOptions::full();
+    let mut croquis_options = SfcCroquisOptions::full();
+    croquis_options
+        .analyzer_options
+        .experimental_patterned_template = codegen_options.experimental_patterned_template;
     let vue2_compat = codegen_options.legacy_vue2
         || matches!(codegen_options.dialect, VueVersion::V2 | VueVersion::V2_7);
 
@@ -213,6 +241,24 @@ pub(super) fn generate_vue_virtual_ts(
     );
     let split_script_setup_offsets = analysis.split_script_setup_offsets(descriptor);
     let mut croquis = analysis.croquis;
+    if !codegen_options.experimental_patterned_template {
+        croquis
+            .pattern_diagnostics
+            .extend(crate::sfc_typecheck::patterns::disabled_diagnostics(
+                template_ast.as_ref(),
+            ));
+    }
+    for pattern in &croquis.pattern_diagnostics {
+        let mut diagnostic = diagnostic_for_offset(
+            path,
+            source,
+            template_offset + pattern.start,
+            pattern.message.as_str().into(),
+            SfcBlockType::Template,
+        );
+        diagnostic.severity = if pattern.warning { 2 } else { 1 };
+        diagnostics.push(diagnostic);
+    }
     let script_content = analysis.script_content;
     let script_offset = analysis.script_offset;
     let local_runtime_prop_resolve_cache;

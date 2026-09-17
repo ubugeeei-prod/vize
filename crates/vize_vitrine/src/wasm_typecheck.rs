@@ -83,6 +83,13 @@ pub fn type_check_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValu
     .and_then(|value| value.as_bool())
     .unwrap_or(false);
 
+    opts.experimental_patterned_template = js_sys::Reflect::get(
+        &options,
+        &JsValue::from_str("experimentalPatternedTemplate"),
+    )
+    .ok()
+    .and_then(|value| value.as_bool())
+    .unwrap_or(false);
     let result = if legacy_vue2 {
         type_check_sfc_with_legacy_vue2(source, &opts)
     } else {
@@ -100,8 +107,8 @@ pub fn type_check_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValu
                     crate::typecheck::TypeSeverity::Hint => "hint",
                 },
                 "message": d.message,
-                "start": d.start,
-                "end": d.end,
+                "start": crate::wasm::utf8_byte_to_utf16_offset(source, d.start),
+                "end": crate::wasm::utf8_byte_to_utf16_offset(source, d.end),
                 "code": d.code,
                 "help": d.help,
                 "related": d.related.iter().map(|r| {
@@ -115,6 +122,7 @@ pub fn type_check_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValu
             })
         }).collect::<Vec<_>>(),
         "virtualTs": result.virtual_ts,
+        "virtualTsHelpers": result.virtual_ts_helpers,
         "sourceMappings": result.virtual_ts.as_ref().map(|code| {
             result.virtual_ts_mappings.iter().map(|mapping| {
                 let offset = crate::wasm::utf8_byte_to_utf16_offset;

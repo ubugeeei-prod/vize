@@ -20,13 +20,13 @@ const result = { kind: 'ok', rows: [1] };
   <p v-when="_">Empty</p>
 </template>`;
 
-  it("offers Croquis without falsely enabling Canon", () => {
+  it("offers patterned analysis in Croquis and Canon", () => {
     expect(featuresFor("croquis").some(({ key }) => key === "experimentalPatternedTemplate")).toBe(
       true,
     );
     expect(
       featuresFor("typechecker").some(({ key }) => key === "experimentalPatternedTemplate"),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("retains root/arm scope nesting and UTF-16 authored ranges", () => {

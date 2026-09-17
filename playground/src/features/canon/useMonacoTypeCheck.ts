@@ -2,31 +2,10 @@ import { ref, computed } from "vue";
 import * as monaco from "monaco-editor";
 import type { TypeCheckResult, TypeCheckCapabilities } from "../../wasm/index";
 import { VUE_GLOBALS_DECLARATIONS } from "./vueTypeDeclarations";
-import { generateHelp } from "./generateHelp";
+import { mapDiagnosticsToSource, type Diagnostic, type TsDiagnostic } from "./diagnosticMapping";
 import type { UseMonacoTypeCheckOptions } from "./typeCheckOptions";
 import type { VirtualTsMapping } from "../../wasm/types/analysis";
-import { offsetToLineColumn } from "../../utils/position";
-import { mapGeneratedRange, mapSourceOffset, parseSourceMap } from "./sourceMappings";
-
-interface Diagnostic {
-  message: string;
-  help?: string;
-  code?: number;
-  startLine: number;
-  startColumn: number;
-  endLine?: number;
-  endColumn?: number;
-  severity: "error" | "warning" | "info";
-}
-
-interface TsDiagnostic {
-  start: number;
-  length: number;
-  messageText: string | { messageText: string };
-  message?: string;
-  category: number;
-  code: number;
-}
+import { mapSourceOffset, parseSourceMap } from "./sourceMappings";
 
 export function useMonacoTypeCheck({
   source,
@@ -47,6 +26,8 @@ export function useMonacoTypeCheck({
   let virtualTsModel: monaco.editor.ITextModel | null = null;
   let cachedSourceMap: VirtualTsMapping[] = [];
   let checkVersion = 0;
+  let patternHelpers: monaco.IDisposable | null = null;
+  let patternHelpersSource: string | null = null;
   let hoverProviderDisposable: monaco.IDisposable | null = null;
   let hasConfiguredTypeScript = false;
   let isTypeScriptReady = false;
@@ -278,36 +259,6 @@ export function useMonacoTypeCheck({
     }
   }
 
-  function mapDiagnosticsToSource(
-    tsDiags: TsDiagnostic[],
-    mappings: VirtualTsMapping[],
-    vueSource: string,
-  ): Diagnostic[] {
-    const mapped: Diagnostic[] = [];
-    for (const diag of tsDiags) {
-      const range = mapGeneratedRange(diag.start, diag.start + diag.length, mappings);
-      if (!range) continue;
-      const start = offsetToLineColumn(vueSource, range.start);
-      const end = offsetToLineColumn(vueSource, range.end);
-      const message =
-        typeof diag.messageText === "string"
-          ? diag.messageText
-          : (diag.messageText?.messageText ?? diag.message ?? "Unknown error");
-      mapped.push({
-        startLine: start.line,
-        startColumn: start.column,
-        endLine: end.line,
-        endColumn: end.column,
-        code: diag.code,
-        severity: diag.category === 1 ? "error" : diag.category === 0 ? "warning" : "info",
-        message: `[vize:TS${diag.code}] ${message}`,
-        help: generateHelp(diag.code, message),
-      });
-    }
-
-    return mapped;
-  }
-
   function getPositionFromOffset(src: string, offset: number): { line: number; column: number } {
     const lines = src.substring(0, offset).split("\n");
     return { line: lines.length, column: lines[lines.length - 1].length + 1 };
@@ -375,13 +326,28 @@ export function useMonacoTypeCheck({
         ...experimentals.value,
       });
       typeCheckResult.value = result;
+      if (patternHelpersSource !== (result.virtualTsHelpers ?? null)) {
+        patternHelpers?.dispose();
+        patternHelpersSource = result.virtualTsHelpers ?? null;
+        patternHelpers = patternHelpersSource
+          ? monaco.typescript.typescriptDefaults.addExtraLib(
+              patternHelpersSource,
+              "vize-patterns.d.ts",
+            )
+          : null;
+      }
 
       if (useMonacoTs.value && result.virtualTs) {
         const mappings = result.sourceMappings ?? parseSourceMap(result.virtualTs);
         cachedSourceMap = mappings;
         const tsDiags = await getTypeScriptDiagnostics(result.virtualTs);
         if (version !== checkVersion || source.value !== checkedSource) return;
-        tsDiagnostics.value = mapDiagnosticsToSource(tsDiags, mappings, checkedSource);
+        tsDiagnostics.value = mapDiagnosticsToSource(
+          tsDiags,
+          mappings,
+          checkedSource,
+          result.virtualTs,
+        );
       } else {
         tsDiagnostics.value = [];
         cachedSourceMap = [];
@@ -407,6 +373,7 @@ export function useMonacoTypeCheck({
   }
 
   function dispose() {
+    patternHelpers?.dispose();
     checkVersion++;
     if (virtualTsModel) {
       virtualTsModel.dispose();

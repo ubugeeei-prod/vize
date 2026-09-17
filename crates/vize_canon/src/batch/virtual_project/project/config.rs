@@ -195,11 +195,12 @@ impl VirtualProject {
     }
 
     pub(crate) fn uses_shared_helpers(&self) -> bool {
-        !self.legacy_vue2
-            && !matches!(
-                self.dialect,
-                vize_carton::config::VueVersion::V2 | vize_carton::config::VueVersion::V2_7
-            )
+        self.experimental_patterned_template
+            || (!self.legacy_vue2
+                && !matches!(
+                    self.dialect,
+                    vize_carton::config::VueVersion::V2 | vize_carton::config::VueVersion::V2_7
+                ))
     }
 
     pub(crate) fn set_template_syntax(&mut self, template_syntax: TemplateSyntaxMode) {
@@ -208,6 +209,10 @@ impl VirtualProject {
 
     pub(crate) fn set_experimental_in_tag_comments(&mut self, enabled: bool) {
         self.experimental_in_tag_comments = enabled;
+    }
+
+    pub(crate) fn set_experimental_patterned_template(&mut self, enabled: bool) {
+        self.experimental_patterned_template = enabled;
     }
 
     pub(crate) fn set_experimental_strict_slot_children(&mut self, enabled: bool) {

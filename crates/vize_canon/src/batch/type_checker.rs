@@ -177,6 +177,11 @@ impl BatchTypeChecker {
         self.project.set_experimental_in_tag_comments(enabled);
     }
 
+    /// Enable experimental RFC 823 patterned template type checking.
+    pub fn set_experimental_patterned_template(&mut self, enabled: bool) {
+        self.project.set_experimental_patterned_template(enabled);
+    }
+
     /// Enable experimental strict checking of provided slot child types.
     pub fn set_experimental_strict_slot_children(&mut self, enabled: bool) {
         self.project.set_experimental_strict_slot_children(enabled);

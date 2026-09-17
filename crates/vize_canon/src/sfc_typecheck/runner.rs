@@ -66,6 +66,29 @@ fn type_check_sfc_impl(
         }
     };
 
+    let descriptor = match vize_atelier_sfc::prepare_root_patterned_template(
+        &descriptor,
+        options.experimental_patterned_template,
+        options.experimental_in_tag_comments,
+        Default::default(),
+    ) {
+        Ok(descriptor) => descriptor,
+        Err(error) => {
+            let start = error.loc.as_ref().map_or(0, |loc| loc.start as u32);
+            let end = error.loc.as_ref().map_or(start, |loc| loc.end as u32);
+            result.add_diagnostic(SfcTypeDiagnostic {
+                severity: SfcTypeSeverity::Error,
+                message: error.message,
+                start,
+                end,
+                code: error.code,
+                help: None,
+                related: Vec::new(),
+            });
+            return result;
+        }
+    };
+
     // Create allocator for template parsing
     let allocator = Allocator::new();
 
@@ -141,7 +164,10 @@ fn type_check_sfc_impl(
         (0, None)
     };
 
-    let croquis_options = SfcCroquisOptions::full();
+    let mut croquis_options = SfcCroquisOptions::full();
+    croquis_options
+        .analyzer_options
+        .experimental_patterned_template = options.experimental_patterned_template;
 
     // Croquis cannot resolve props inherited through imported/heritage types;
     // the resolved analysis merges the script compile context's props before
@@ -157,7 +183,27 @@ fn type_check_sfc_impl(
     );
     let script_content = analysis.script_content;
     let script_offset = analysis.script_offset;
-    let summary = analysis.croquis;
+    let mut summary = analysis.croquis;
+    if !options.experimental_patterned_template {
+        summary
+            .pattern_diagnostics
+            .extend(super::patterns::disabled_diagnostics(template_ast.as_ref()));
+    }
+    for diagnostic in &summary.pattern_diagnostics {
+        result.add_diagnostic(SfcTypeDiagnostic {
+            severity: if diagnostic.warning {
+                SfcTypeSeverity::Warning
+            } else {
+                SfcTypeSeverity::Error
+            },
+            message: diagnostic.message.as_str().into(),
+            start: template_offset + diagnostic.start,
+            end: template_offset + diagnostic.end,
+            code: Some("patterned-template".into()),
+            help: None,
+            related: Vec::new(),
+        });
+    }
 
     // Check props typing
     if options.check_props && !has_script_parse_errors {
@@ -223,6 +269,14 @@ fn type_check_sfc_impl(
             },
         );
         result.virtual_ts = Some(output.code);
+        if summary
+            .scopes
+            .iter()
+            .any(|scope| matches!(scope.data(), vize_croquis::ScopeData::VMatch(_)))
+        {
+            result.virtual_ts_helpers =
+                Some(include_str!("../virtual_ts/helpers/pattern_matching.d.ts"));
+        }
         result.virtual_ts_mappings = output.mappings;
     }
 

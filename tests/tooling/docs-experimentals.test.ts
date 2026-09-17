@@ -69,7 +69,7 @@ const rfcDetailSnippets = [
   "compileSfc*",
   "v-match`, `v-when`, and `v-case` report that the opt-in is required",
   "upstream type-tooling acceptance contract for narrowing and exhaustiveness",
-  "does not yet certify exhaustiveness",
+  "Missing coverage is an error anchored to the authored subject",
   "Binding inside an or-pattern alternative is also deferred",
   "root.comments",
   "CommentKind::InTag",
@@ -132,7 +132,7 @@ test("experimentals docs fully describe experimental opt-in flags", () => {
 
   assert.match(experimentals, /`v-when="_"` is the fallback pattern and must be unique/);
   assert.match(experimentals, /bindings inside alternatives are not supported yet/);
-  assert.match(experimentals, /Exhaustiveness and branch narrowing remain tooling boundaries/);
+  assert.match(experimentals, /Canon supports opt-in narrowing, missing-coverage errors/);
   assert.match(experimentals, /`v-case` remains a compatibility alias/);
   assert.match(experimentals, /`\?=`, `\|=`, and `~=` are\s+not public Vize syntax/);
   assert.match(experimentals, /<template v-match="entry">/);
@@ -234,10 +234,7 @@ test("Japanese experimentals RFC detail page mirrors the implementation boundari
   assert.match(details, /`let` と `var` binding は rejected/);
   assert.match(details, /`v-match` には少なくとも 1 つ direct branch が必要/);
   assert.match(details, /`v-case` と `v-case\.default` は古い Vize 実験の互換 alias/);
-  assert.match(
-    details,
-    /exhaustiveness、unreachable branch、将来追加された union member をまだ certify しません/,
-  );
+  assert.match(details, /網羅漏れは元の subject の位置に出て `vize check` を失敗させます/);
   assert.match(details, /`CommentKind::InTag`/);
   assert.match(details, /closing delimiter まで comment として消費します/);
   assert.match(details, /component named `Self` より先に解決されます/);

@@ -19,6 +19,7 @@ SfcTypeCheckResult {
         },
     ],
     virtual_ts: None,
+    virtual_ts_helpers: None,
     virtual_ts_mappings: [],
     error_count: 1,
     warning_count: 0,

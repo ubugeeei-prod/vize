@@ -177,6 +177,7 @@ pub const SHARED_PREAMBLE_DTS: &str = concat!(
     "declare function __vize_defineSlots<_T = unknown>(): _T;\n",
     "declare function __vize_withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>;\n",
     "declare function __vize_useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null>;\n",
+    include_str!("pattern_matching.d.ts"),
 );
 
 pub const DECLARATION_HELPERS_DTS: &str = concat!(

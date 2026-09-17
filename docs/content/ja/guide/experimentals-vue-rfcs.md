@@ -48,7 +48,7 @@ compileSfc(sfcSource, { filename: "TreeNode.vue", experimentalStrictSlotChildren
 
 | RFC | Vize が現在 ship しているもの | 明示しておく boundary |
 | --- | --- | --- |
-| #823 | parser support、runtime lowering、branch-local binding、guard、rest/as pattern、flag-off と invalid placement の diagnostic | narrowing と exhaustiveness の upstream type-tooling acceptance contract は、まだ `vize check` では certified ではない |
+| #823 | parser support、runtime lowering、branch-local binding、guard、rest/as pattern、flag-off と invalid placement の diagnostic | Canon は narrowing・網羅性を検査。editor navigation 全体と compiler grammar の統一は deferred |
 | #831 | in-tag `//` parser support、`root.comments` の source text、AST comment を保持する compile pipeline | runtime output なし、child comment node なし、browser in-DOM template support なし |
 | #833 | DOM、SSR、Vapor compilation の exact `<Self>` current-component resolution | render-function / JSX macro なし。flag 有効時は local/imported component named `Self` が shadow される |
 | #734 | default slot と named slot の provided children に対する virtual TypeScript assertion | template codegen change なし。open slot contract と `any` は TypeScript 側の permissive check に degrade |
@@ -62,13 +62,13 @@ entry-point と proof checklist は [Experimentals Reference](./experimentals-re
 inline HTML の SFC では最外周の `<template>` にも `v-match` を指定できます。
 直下の `v-when` は DOM・SSR・Vapor で内側の match と同じように動作し、ヘッダーの式だけの変更も template HMR を無効化します。
 parse 結果の `template.content` は引き続きブロック本文のみです。外部 `src`、プリプロセッサ言語、元の source metadata が失われた descriptor はこの形式では拒否します。
-このコンパイラ対応だけでは Playground の Canon の分岐内 narrowing・網羅性検査は有効になりません。結合した SFC の source map も既存の script-only の制限が残ります。
+Canon は後述の opt-in で分岐内 narrowing・網羅性検査に対応します。結合したコンパイラ SFC の source map は既存の script-only の制限が残ります。
 
 Croquis は `analyzeSfc(source, { experimentalPatternedTemplate: true })` と Playground の
 チェックボックスで root・nested match を解析できます。RFC の parser で分岐内の宣言、
 外側を参照する value pattern、guard、構文診断を記録し、HTML entity を含む元の位置を維持します。
 この parser は `pattern as name` を使い、コンパイラの旧 `as const name` とは異なります。
-これは意味解析の対応であり、Canon の型 narrowing・網羅性検査や LSP navigation の完了ではありません。
+Canon も同じ parser を使い、`typeCheck(source, { experimentalPatternedTemplate: true, includeVirtualTs: true })`、Playground Canon のチェックボックス、`experimentals.patternedTemplate` を有効にした `vize check` で型検査できます。コンパイラ側の構文統一や LSP navigation 全体の完了ではありません。
 残作業は [#6176](https://github.com/ubugeeei-prod/vize/issues/6176) で追跡します。
 
 ```vue
@@ -160,7 +160,13 @@ unguarded top-level fallback は一意で、最後でなければなりません
 
 ### Patterned Type Boundary
 
-RFC #823 は branch narrowing と exhaustiveness を upstream type-tooling acceptance criteria としています。現在の Vize lowering は、`vize check` で exhaustiveness、unreachable branch、将来追加された union member をまだ certify しません。runtime fallback が必要なら `v-when="_"` を使い、missing-case diagnostic が必要な場合は手元の union coverage test を残してください。or-pattern alternative 内の binding も deferred なので、binding が必要な場合は branch を分けます。RFC で議論された shorthand candidate は Vize の public syntax ではありません。`?=`、`|=`、`~=` は branch attribute として parse されません。
+Canon は arm の binding と元の subject を narrowing し、網羅漏れを error、到達不能 arm を warning として報告します。型アルゴリズムは通常の検証済み `pattern_matching.d.ts` として TypeScript program ごとに共有し、各 template に複製しません。
+
+guard 付き arm は網羅性の証明に使いません。optional property の存在検査は値の `undefined` と key が存在しない余地を維持します。有限の object・tuple union、readonly array、rest binding に対応します。open primitive、`any`、`unknown`、union 型の value pattern は保守的に扱い、網羅性を証明できない場合は guard なしの `v-when="_"` を使います。
+
+網羅漏れは元の subject の位置に出て `vize check` を失敗させます。到達不能 arm の warning だけなら成功します。WASM 単体は構造診断と virtual TypeScript を提供し、完全な型診断は Playground の Monaco TypeScript worker または native checker が行います。他の virtual-TS host は `virtualTsHelpers` を ambient declaration として一度だけ登録してください。
+
+RFC 全体の upstream type-tooling acceptance criteria に含まれる editor navigation・completion までは未認定です。or-pattern alternative 内の binding も deferred なので、binding が必要な場合は branch を分けます。`?=`、`|=`、`~=` は public branch syntax ではありません。
 
 ## In-Tag Comments
 

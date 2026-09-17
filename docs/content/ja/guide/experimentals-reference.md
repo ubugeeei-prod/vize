@@ -30,7 +30,7 @@ field は project policy をすでに解決した integration 向けです。
 
 | Flag | 有効化する場面 | 最小の proof | flag の外側に残るもの |
 | --- | --- | --- | --- |
-| `patternedTemplate` | project が RFC [#823](https://github.com/vuejs/rfcs/pull/823) の `v-match` / `v-when` branch を authored template で使うと決めたとき | direct `v-match` child を持つ flagged component と、flag-off で `experimentals.patternedTemplate` を報告する component を compile | type-checker exhaustiveness、unreachable-branch diagnostic、or-pattern binding |
+| `patternedTemplate` | project が RFC [#823](https://github.com/vuejs/rfcs/pull/823) の `v-match` / `v-when` branch を authored template で使うと決めたとき | direct `v-match` child を持つ flagged component と、flag-off で `experimentals.patternedTemplate` を報告する component を compile | editor navigation 全体、or-pattern binding |
 | `inTagComment` | `@vue-expect-error` などの line-local annotation を opening tag の対象 prop 近くに置きたい tooling | tagged component を parse し、comment が `root.comments` に保持されつつ output code が変わらないことを assert | browser in-DOM template、runtime comment、通常の `comments` compiler option |
 | `selfComponent` | recursive SFC が RFC [#833](https://github.com/vuejs/rfcs/pull/833) self-reference を `name` option や filename inference だけに依存せず持ちたいとき | `componentName` または SFC metadata 付きで `<Self />` を compile し、local import named `Self` が target ではないことを確認 | JSX、render function、lowercase `<self>` |
 | `strictSlotChildren` | library / application が RFC [#734](https://github.com/vuejs/rfcs/pull/734) typed slot-child contract を公開し、`vize check` や LSP diagnostic が欲しいとき | valid な default/named slot tuple と TypeScript が reject する invalid child を type-check | runtime rendering、open `any` slot contract、built-in/dynamic component child typing |
@@ -201,4 +201,4 @@ release note で experimental surface を claim する前に、shipped entry poi
 - `false`、`null`、`true`、`{}` が documented switch semantics を維持する
 - `vapor` や `jsxVapor` のような backend fallback flag は stable `compiler` option より弱い
 - RFC example には enabled example と flag-off または invalid-shape diagnostic example の両方がある
-- boundary が patterned-template exhaustiveness や dynamic component に対する strict slot support などの deferred behavior を明記している
+- boundary が patterned-template editor navigation や dynamic component に対する strict slot support などの deferred behavior を明記している

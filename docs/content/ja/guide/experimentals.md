@@ -107,7 +107,7 @@ config resolution をすでに所有している integration だけが直接使�
 
 | Flag | 有効時の挙動 | off 時の挙動 | enforce される場所 | boundary |
 | --- | --- | --- | --- | --- |
-| `patternedTemplate` | `v-match` / direct `v-when` branch を parse して lower | `v-match`、`v-when`、`v-case` は必要な opt-in を報告 | DOM, SSR, Vapor, SFC, WASM compile API | `vize check` は exhaustiveness をまだ certify しない |
+| `patternedTemplate` | `v-match` / direct `v-when` branch を parse して lower | `v-match`、`v-when`、`v-case` は必要な opt-in を報告 | DOM, SSR, Vapor, SFC, WASM compile API | Canon は narrowing・網羅性検査に対応。editor navigation 全体は未完了 |
 | `inTagComment` | opening tag の `//` comment を parse し tooling 用に保持 | `//` は不正な tag syntax | Parser, DOM, SSR, Vapor, SFC, WASM compile API | runtime output なし、browser in-DOM support なし |
 | `selfComponent` | exact `<Self>` を current component として扱う | `<Self>` は通常の component tag | DOM, SSR, Vapor, SFC, WASM compile API | render function と JSX は対象外 |
 | `strictSlotChildren` | virtual TypeScript child assertion を出す | child-type assertion は生成されない | `vize check`, LSP/type-check project API | open slot と `any` は TypeScript の permissive behavior のまま |
@@ -183,7 +183,7 @@ match 対象の式は 1 回だけ評価されます。branch は上から順に�
 
 `v-case` は古い Vize 実験の互換 alias として残っていますが、新しい template では `v-when` を使います。 RFC #823 で議論されている shorthand candidate は Vize の public syntax ではありません。`?=`、`|=`、 `~=` は有効化されません。
 
-不正な placement は黙って compile せず diagnostic になります。`v-when` branch は `v-match` container の direct child である必要があり、`v-match` には少なくとも 1 つ direct branch が必要です。`v-when` は directive argument や modifier を受け付けません。flag が無効な場合、Vize は `experimentals.patternedTemplate` が必要だと報告します。exhaustiveness と branch narrowing は tooling boundary なので、依存する前に RFC detail page を確認してください。
+不正な placement は黙って compile せず diagnostic になります。`v-when` branch は `v-match` container の direct child である必要があり、`v-match` には少なくとも 1 つ direct branch が必要です。`v-when` は directive argument や modifier を受け付けません。flag が無効な場合、Vize は `experimentals.patternedTemplate` が必要だと報告します。Canon は opt-in で branch narrowing、未網羅エラー、到達不能 branch の警告に対応します。残る compiler と editor の境界は RFC detail page を確認してください。
 
 ## In-Tag Comments
 

@@ -122,6 +122,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         jsx_typecheck,
         template_syntax: template_syntax_mode(compiler_template_syntax),
         experimental_in_tag_comments: loaded_config.features.experimental_in_tag_comments,
+        experimental_patterned_template: loaded_config.features.experimental_patterned_template,
         experimental_strict_slot_children: experimental_vue.strict_slot_children,
         dialect,
         check_props: config.type_checker.check_props && !args.no_check_props,

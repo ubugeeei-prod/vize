@@ -3,7 +3,7 @@
 
 mod closure_scopes;
 
-use closure_scopes::generate_closure_component_props_recursive;
+pub(super) use closure_scopes::generate_closure_component_props_recursive;
 pub(super) use closure_scopes::recurse_child_closure_scopes;
 use vize_carton::{FxHashMap, FxHashSet, String, append, camelize, capitalize, profile};
 use vize_croquis::{Croquis, ScopeData, ScopeKind, analysis::ComponentUsage};
@@ -99,7 +99,12 @@ pub(super) fn generate_component_props(
     let closure_scope_ids: FxHashSet<u32> = summary
         .scopes
         .iter()
-        .filter(|s| matches!(s.kind, ScopeKind::VFor | ScopeKind::VSlot))
+        .filter(|s| {
+            matches!(
+                s.kind,
+                ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
+            )
+        })
         .map(|s| s.id.as_u32())
         .collect();
 
@@ -108,15 +113,19 @@ pub(super) fn generate_component_props(
         .scopes
         .iter()
         .filter(|s| {
-            matches!(s.kind, ScopeKind::VFor | ScopeKind::VSlot)
-                && s.parent().is_none_or(|pid| {
-                    // O(1) arena lookup of the parent scope rather than a
-                    // linear find per scope (was O(n^2) over the arena).
-                    summary
-                        .scopes
-                        .get_scope(pid)
-                        .is_none_or(|p| !matches!(p.kind, ScopeKind::VFor | ScopeKind::VSlot))
+            matches!(
+                s.kind,
+                ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
+            ) && s.parent().is_none_or(|pid| {
+                // O(1) arena lookup of the parent scope rather than a
+                // linear find per scope (was O(n^2) over the arena).
+                summary.scopes.get_scope(pid).is_none_or(|p| {
+                    !matches!(
+                        p.kind,
+                        ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
+                    )
                 })
+            })
         })
         .map(|s| s.id.as_u32())
         .collect();

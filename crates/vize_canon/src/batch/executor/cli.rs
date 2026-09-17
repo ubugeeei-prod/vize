@@ -7,20 +7,22 @@ use super::super::{Diagnostic, TypeCheckResult, VirtualProject};
 use crate::batch::declaration_path::is_declaration_file;
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::executor::diagnostics::{
-    DiagnosticMapper, dedup_diagnostics, relative_module_resolves_on_disk,
-    restore_authored_paths_in_messages, should_skip_diagnostic, should_skip_original_diagnostic,
+    DiagnosticMapper, dedup_diagnostics, restore_authored_paths_in_messages,
 };
 use vize_carton::{FxHashMap, profile};
 use vize_carton::{String, cstr};
 
 mod checkers;
 mod diagnostic_paths;
+mod file_diagnostics;
 mod import_resolution;
+mod patterns;
 mod project_diagnostics;
 mod shard_sizing;
 
 use checkers::{checker_count, rejects_checkers_flag};
 use diagnostic_paths::normalize_cli_path;
+use file_diagnostics::parse_cli_diagnostic_line;
 use import_resolution::resolve_virtual_import;
 use shard_sizing::shard_count;
 
@@ -400,7 +402,7 @@ fn run_cli_for_config(
         });
     }
 
-    let success = output.status.success()
+    let success = (output.status.success() || patterns::only_pattern_warnings(&output, project))
         && diagnostics
             .iter()
             .all(|diagnostic| diagnostic.severity != 1);
@@ -422,7 +424,11 @@ fn run_cli_for_config(
     }
 
     Ok(TypeCheckResult {
-        exit_code: output.status.code().unwrap_or(if success { 0 } else { 1 }),
+        exit_code: if success {
+            0
+        } else {
+            output.status.code().unwrap_or(1)
+        },
         success,
         diagnostics,
     })
@@ -477,67 +483,6 @@ fn parse_cli_diagnostics(
         last.message.push('\n');
         last.message.push_str(line);
     }
-}
-
-fn parse_cli_diagnostic_line(
-    line: &str,
-    project: &VirtualProject,
-    mapper: &mut DiagnosticMapper<'_>,
-) -> Option<Diagnostic> {
-    let (prefix, suffix) = line.split_once("): ")?;
-    let open = prefix.rfind('(')?;
-    let path = &prefix[..open];
-    let position = &prefix[open + 1..];
-    let (line, column) = position.split_once(',')?;
-    let line = line.parse::<u32>().ok()?.saturating_sub(1);
-    let column = column.parse::<u32>().ok()?.saturating_sub(1);
-
-    let (severity, rest) = suffix.split_once(' ')?;
-    let severity = match severity {
-        "error" => 1,
-        "warning" => 2,
-        "info" => 3,
-        _ => return None,
-    };
-    let (code, message) = rest.split_once(": ")?;
-    let code = code
-        .strip_prefix("TS")
-        .and_then(|code| code.parse::<u32>().ok());
-    if should_skip_diagnostic(code, message) {
-        return None;
-    }
-    if code == Some(6133) && !mapper.preserves_unused_diagnostics() {
-        return None;
-    }
-
-    let virtual_path = normalize_cli_path(path, project.virtual_root());
-    if code == Some(2322) && mapper.is_keyof_indexed_assignment(&virtual_path, line, column) {
-        return None;
-    }
-    if let Some(diagnostic) =
-        project_diagnostics::config(&virtual_path, project, message, code, severity)
-    {
-        return Some(diagnostic);
-    }
-    let original = mapper.map_to_original(&virtual_path, line, column)?;
-    if should_skip_original_diagnostic(code, &original) {
-        return None;
-    }
-
-    // Suppress false `TS2307` for existing siblings outside an explicit subset.
-    if code == Some(2307) && relative_module_resolves_on_disk(message, &original.path) {
-        return None;
-    }
-
-    Some(Diagnostic {
-        message: mapper.devirtualized_module_message(&original, message.into()),
-        line: original.line,
-        column: original.column,
-        file: original.path,
-        code,
-        severity,
-        block_type: original.block_type,
-    })
 }
 
 fn output_contains_diagnostic_lines(output: &Output) -> bool {

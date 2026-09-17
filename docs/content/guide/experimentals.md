@@ -107,7 +107,7 @@ only when an integration already owns config resolution.
 
 | Flag | Enabled behavior | Off behavior | Enforced by | Boundary |
 | --- | --- | --- | --- | --- |
-| `patternedTemplate` | Parses and lowers `v-match` / direct `v-when` branches | `v-match`, `v-when`, and `v-case` report the required opt-in | DOM, SSR, Vapor, SFC, WASM compile APIs | `vize check` does not yet certify exhaustiveness |
+| `patternedTemplate` | Parses and lowers `v-match` / direct `v-when` branches | `v-match`, `v-when`, and `v-case` report the required opt-in | DOM, SSR, Vapor, SFC, WASM compile APIs | Canon checks coverage and narrows branches; complete editor navigation remains deferred |
 | `inTagComment` | Parses `//` comments in opening tags and preserves them for tooling | `//` is invalid tag syntax | Parser, DOM, SSR, Vapor, SFC, WASM compile APIs | No runtime output and no browser in-DOM support |
 | `selfComponent` | Treats exact `<Self>` as the current component | `<Self>` is an ordinary component tag | DOM, SSR, Vapor, SFC, WASM compile APIs | Render functions and JSX are outside this flag |
 | `strictSlotChildren` | Emits virtual TypeScript child assertions | No child-type assertions are generated | `vize check`, LSP/type-check project APIs | Open slots and `any` remain TypeScript-permissive |
@@ -183,7 +183,7 @@ Supported patterns include:
 
 `v-case` remains a compatibility alias for older Vize experiments, but new templates should use `v-when`. The shorthand candidates discussed in RFC #823 are not enabled: `?=`, `|=`, and `~=` are not public Vize syntax.
 
-Invalid placements are reported instead of silently compiling. A `v-when` branch must be a direct child of a `v-match` container, `v-match` must have at least one direct branch, and `v-when` does not accept directive arguments or modifiers. Without the flag, Vize reports that `experimentals.patternedTemplate` is required. Exhaustiveness and branch narrowing remain tooling boundaries; see the RFC detail page before depending on them.
+Invalid placements are reported instead of silently compiling. A `v-when` branch must be a direct child of a `v-match` container, `v-match` must have at least one direct branch, and `v-when` does not accept directive arguments or modifiers. Without the flag, Vize reports that `experimentals.patternedTemplate` is required. Canon supports opt-in narrowing, missing-coverage errors and unreachable-arm warnings; see the RFC detail page for the remaining compiler/editor boundaries.
 
 ## In-Tag Comments
 

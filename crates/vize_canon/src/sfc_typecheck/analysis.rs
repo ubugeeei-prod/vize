@@ -56,6 +56,9 @@ pub struct SfcTypeCheckResult {
     /// Generated virtual TypeScript (for debugging/IDE integration)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub virtual_ts: Option<String>,
+    /// Ambient pattern declarations to register once with the TypeScript host.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub virtual_ts_helpers: Option<&'static str>,
     /// Byte mappings retained for adapters; their coordinate system is adapter-specific.
     #[serde(skip)]
     pub virtual_ts_mappings: Vec<crate::virtual_ts::VizeMapping>,
@@ -74,6 +77,7 @@ impl SfcTypeCheckResult {
         Self {
             diagnostics: Vec::new(),
             virtual_ts: None,
+            virtual_ts_helpers: None,
             virtual_ts_mappings: Vec::new(),
             error_count: 0,
             warning_count: 0,
@@ -122,6 +126,8 @@ pub struct SfcTypeCheckOptions {
     pub strict: bool,
     /// Accept Vue RFC in-tag comments in the template parser.
     pub experimental_in_tag_comments: bool,
+    /// Type-check RFC 823 patterned template scopes.
+    pub experimental_patterned_template: bool,
     /// Emit strict slot child contracts in virtual TypeScript.
     pub experimental_strict_slot_children: bool,
 }
@@ -141,6 +147,7 @@ impl SfcTypeCheckOptions {
             check_fallthrough_attrs: true,
             strict: false,
             experimental_in_tag_comments: false,
+            experimental_patterned_template: false,
             experimental_strict_slot_children: false,
         }
     }

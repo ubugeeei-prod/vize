@@ -19,7 +19,11 @@ pub(super) fn generate_child_scopes(
             if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id)
                 && matches!(
                     child_scope.kind,
-                    ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::EventHandler
+                    ScopeKind::VFor
+                        | ScopeKind::VSlot
+                        | ScopeKind::EventHandler
+                        | ScopeKind::VMatch
+                        | ScopeKind::VWhen
                 )
             {
                 profile!(

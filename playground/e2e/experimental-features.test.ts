@@ -28,6 +28,7 @@ describe("experimental feature controls", () => {
     expect(parseExperimentalOptions([], "compiler")).toEqual({});
     expect(featuresFor("typechecker").map(({ key }) => key)).toEqual([
       "experimentalInTagComments",
+      "experimentalPatternedTemplate",
       "experimentalStrictSlotChildren",
     ]);
   });
