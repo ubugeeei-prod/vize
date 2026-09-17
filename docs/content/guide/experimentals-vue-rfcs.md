@@ -5,7 +5,7 @@ title: Vue RFC Experimental Details
 # Vue RFC Experimental Details
 
 This page expands [Experimentals](./experimentals.md) with opt-in contracts, examples, and tooling boundaries.
-Upstream RFCs remain the design sources; each feature requires its matching Vize flag.
+Upstream RFCs remain the design sources; no RFC feature is enabled unless the matching Vize flag is explicitly on.
 
 ## Opt-in Contract
 
@@ -160,9 +160,9 @@ as compatibility aliases for older Vize experiments; new templates should use `v
 
 ### Patterned Type Boundary
 
-RFC #823 requires branch narrowing and exhaustiveness; `vize check` does not yet certify these,
+RFC #823 requires branch narrowing and exhaustiveness; `vize check` does not yet certify exhaustiveness,
 unreachable branches, or future union members. Use `v-when="_"` for runtime fallback and manual union coverage tests.
-Bindings in or-pattern alternatives are deferred: split cases needing bindings into separate branches.
+Binding inside an or-pattern alternative is also deferred: split cases needing bindings into separate branches.
 The RFC shorthand candidates `?=`, `|=`, and `~=` are not public Vize branch syntax.
 
 ## In-Tag Comments
