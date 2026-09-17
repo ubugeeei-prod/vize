@@ -184,7 +184,7 @@ fn invalid_and_disabled_headers_report_the_authored_directive() {
         let error = compile_sfc(&descriptor, disabled).unwrap_err();
         assert_eq!(
             error.message,
-            "Root v-match requires experimentals.patternedTemplate."
+            "`v-match` / `v-when` patterned templates require `experimentals.patternedTemplate`."
         );
     }
 }

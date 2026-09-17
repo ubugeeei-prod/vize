@@ -4,10 +4,8 @@ title: Vue RFC Experimental Details
 
 # Vue RFC Experimental Details
 
-This page expands the Vue-RFC part of [Experimentals](./experimentals.md). It documents Vize's
-shipped opt-in contract, the examples each flag enables, and the boundaries that are still RFC or
-tooling work. The upstream pull requests remain the design sources, but no RFC feature is enabled
-unless the matching Vize flag is explicitly on.
+This page expands [Experimentals](./experimentals.md) with opt-in contracts, examples, and tooling boundaries.
+Upstream RFCs remain the design sources; each feature requires its matching Vize flag.
 
 ## Opt-in Contract
 
@@ -64,14 +62,10 @@ For entry-point and proof checklists, see [Experimentals Reference](./experiment
 expression is evaluated once, direct branch children are tested in source order, and only the first
 matching branch renders.
 
-For inline HTML SFCs, `v-match` may also appear on the outer `<template>` block.
-Its direct `v-when` arms behave like a nested match in DOM, SSR, and Vapor, and
-header-only subject edits invalidate template HMR. The parsed descriptor still
-exposes only the block body as `template.content`. External `src` templates,
-preprocessed languages, and descriptors without their original source metadata
-are rejected for this form. This compiler support does not enable Canon branch
-narrowing or exhaustiveness in the Playground. Assembled SFC source maps still
-have their existing script-only mapping limitation.
+Inline HTML SFCs accept outer `<template v-match>` with nested-match semantics in DOM, SSR, and Vapor.
+Header-only subject edits invalidate HMR; parsed `template.content` remains the original block body.
+External `src`, preprocessors, and descriptors missing original source metadata are rejected.
+Canon narrowing/exhaustiveness remains unsupported; assembled SFC source maps remain script-only.
 
 ```vue
 <script setup lang="ts">
@@ -166,13 +160,10 @@ as compatibility aliases for older Vize experiments; new templates should use `v
 
 ### Patterned Type Boundary
 
-RFC #823 treats branch narrowing and exhaustiveness as upstream type-tooling acceptance criteria.
-Current Vize lowering does not yet certify exhaustiveness, unreachable branches, or future union
-members in `vize check`. Use `v-when="_"` when you need a runtime fallback, and keep manual union
-coverage tests when missing-case diagnostics are required. Binding inside an or-pattern alternative
-is also deferred, so split those cases into separate branches when a branch needs a binding. The
-shorthand candidates discussed in the RFC are not public Vize syntax: `?=`, `|=`, and `~=` are not
-parsed as branch attributes.
+RFC #823 requires branch narrowing and exhaustiveness; `vize check` does not yet certify these,
+unreachable branches, or future union members. Use `v-when="_"` for runtime fallback and manual union coverage tests.
+Bindings in or-pattern alternatives are deferred: split cases needing bindings into separate branches.
+The RFC shorthand candidates `?=`, `|=`, and `~=` are not public Vize branch syntax.
 
 ## In-Tag Comments
 

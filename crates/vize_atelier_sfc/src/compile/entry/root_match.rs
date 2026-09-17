@@ -97,7 +97,7 @@ pub fn prepare_root_patterned_template<'d, 's>(
         let end = template.loc.tag_start + dir.loc.span.end as usize;
         if !enabled {
             return Err(error(
-                "Root v-match requires experimentals.patternedTemplate.",
+                "`v-match` / `v-when` patterned templates require `experimentals.patternedTemplate`.",
                 start,
                 end,
             ));
