@@ -8,6 +8,7 @@
 mod art_variant_tests;
 pub(in crate::ide) mod collect;
 mod collect_virtual;
+mod log_preview;
 pub(in crate::ide) use collect_virtual::corsa_diagnostic_code;
 mod mapping;
 mod message;

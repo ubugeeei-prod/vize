@@ -4,6 +4,7 @@ use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Posit
 use vize_s0::FxHashSet;
 
 use super::super::{VirtualTsResult, sources};
+use super::log_preview::log_preview;
 use super::mapping::{
     line_character_to_byte_offset, map_diagnostic_with_source_mappings, source_offset_to_position,
 };
@@ -84,7 +85,7 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
             i,
             diag.range.start.line,
             diag.range.end.line,
-            &diag.message[..diag.message.len().min(100)]
+            log_preview(&diag.message, 100)
         );
     }
 
@@ -112,7 +113,7 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
             if is_unused_warning && is_internal_var {
                 tracing::debug!(
                     "skipping internal variable warning: {}",
-                    &diag.message[..diag.message.len().min(80)]
+                    log_preview(&diag.message, 80)
                 );
                 return None;
             }
@@ -148,7 +149,7 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
                         tracing::debug!(
                             "skipping unmapped template error at line {}: {}",
                             diag.range.start.line,
-                            &diag.message[..diag.message.len().min(50)]
+                            log_preview(&diag.message, 50)
                         );
                         return None;
                     }
@@ -165,7 +166,7 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
                     tracing::debug!(
                         "skipping unplaceable script diagnostic at virtual line {}: {}",
                         diag.range.start.line,
-                        &diag.message[..diag.message.len().min(50)]
+                        log_preview(&diag.message, 50)
                     );
                     return None;
                 };

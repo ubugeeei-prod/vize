@@ -50,7 +50,7 @@ observational guard for planning only. It does not change rollout state.
 | Typechecker                |           967 |                   265 |               702 |             447 |     222 |             913 |      723 |           528 |           763 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            20 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            71 |
-| LSP                        |           303 |                   303 |                 0 |             115 |      51 |             349 |      120 |           176 |           416 |
+| LSP                        |           304 |                   304 |                 0 |             115 |      51 |             349 |      121 |           177 |           417 |
 
 ## Consumer details
 
@@ -226,7 +226,7 @@ Scope: lsp/ide commands plus Maestro editor/server crate. This is a lexical inve
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |         303 |             211 |       92 |
+| S0               |         304 |             211 |       93 |
 | old AST/parser   |          61 |              48 |       13 |
 | Croquis analysis |          54 |              39 |       15 |
 | raw OXC          |          51 |              51 |        0 |
@@ -253,7 +253,7 @@ Additional source/manifest rows are in the TSV: 120 omitted.
 | `crates/vize_maestro/src/server/state.rs:37`                     | test/dev | S0 7                       |     7 |
 | `crates/vize_maestro/src/ide/code_action.rs:602`                 | test/dev | Croquis analysis 5         |     5 |
 
-Additional test/dev rows are in the TSV: 56 omitted.
+Additional test/dev rows are in the TSV: 57 omitted.
 
 ## Independently mergeable no-rollout slices
 

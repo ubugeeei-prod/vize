@@ -3,6 +3,7 @@
 use tower_lsp::lsp_types::Url;
 
 use super::super::{DiagnosticService, SourceMapping, VirtualTsResult};
+use super::log_preview::log_preview;
 use vize_canon::{CorsaVueVirtualDocument, ImportRewriter, ImportSourceMap};
 
 struct VirtualTsMetadata {
@@ -233,7 +234,7 @@ impl DiagnosticService {
                                     line_idx - 1,
                                     start_val,
                                     end_val,
-                                    &line[..line.len().min(80)]
+                                    log_preview(line, 80)
                                 );
                             }
                         }

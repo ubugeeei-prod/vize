@@ -18,11 +18,11 @@ impl Fixture {
             .parent()
             .unwrap();
         let runtime = discover_corsa_in_ancestors(workspace)
-            .expect("patterned editor tests require the workspace TypeScript native runtime");
+            .expect("Vue editor tests require the workspace TypeScript native runtime");
         let cases = workspace.join("target/vize-tests/tests");
         std::fs::create_dir_all(&cases).unwrap();
         let project = tempfile::Builder::new()
-            .prefix("lsp-patterns-")
+            .prefix("lsp-vue-")
             .tempdir_in(cases)
             .unwrap();
         std::fs::write(project.path().join("tsconfig.json"), r#"{

@@ -2,7 +2,7 @@ use serde_json::{Value, json};
 
 #[path = "support/lsp_process.rs"]
 mod lsp_process;
-#[path = "lsp_patterned_template_cli/support.rs"]
+#[path = "support/lsp_vue_project.rs"]
 mod support;
 use support::{Fixture, position};
 
