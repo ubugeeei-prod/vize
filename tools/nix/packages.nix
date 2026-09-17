@@ -37,6 +37,14 @@ in
         };
 
       checks.package = vize;
+      checks.embedded-source-assets = pkgs.runCommand "vize-embedded-source-assets" { } ''
+        cmp \
+          ${vize.src}/crates/vize_canon/src/virtual_ts/helpers/pattern_matching.d.ts \
+          ${root + /crates/vize_canon/src/virtual_ts/helpers/pattern_matching.d.ts}
+        test ! -e ${vize.src}/playground/package.json
+        test ! -e ${vize.src}/crates/vize_canon/tests/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap
+        touch "$out"
+      '';
     };
 
   # Downstream flakes take the CLI through the overlay rather than reaching

@@ -39,6 +39,7 @@ let
   # `.snap` is deliberately not in the list. Insta snapshots are read only by
   # tests, which `doCheck = false` skips, and there are several thousand.
   crateAssetSuffixes = [
+    ".d.ts"
     ".json"
     ".txt"
   ];
