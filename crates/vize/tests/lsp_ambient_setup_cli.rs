@@ -17,12 +17,11 @@ fn ambient_global_types_keep_authored_navigation_and_unsaved_diagnostics() {
 
         let broken = source.replace("node.tagName", "node.toFixed()");
         let diagnostics = fixture.change(&broken, 2);
-        // #6210 tracks the pre-existing, overly broad reactive hint.
         assert_eq!(
             diagnostics,
             json!([{
                 "code": 2339,
-                "message": "Property 'toFixed' does not exist on type 'HTMLElement'.\n\nIf you intended to read the reactive value, try `.value`. (vize/types)",
+                "message": "Property 'toFixed' does not exist on type 'HTMLElement'.",
                 "range": token_range(&broken, "toFixed", "toFixed"),
                 "severity": 1,
                 "source": "vize/types"

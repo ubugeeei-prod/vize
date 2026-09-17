@@ -1,33 +1,12 @@
-//! Vue-flavored rewriting of raw Corsa/TypeScript diagnostic messages.
+//! Restore authored paths in Corsa/TypeScript diagnostic messages.
 
 use vize_canon::batch::restore_virtual_vue_specifiers;
-use vize_s0::cstr;
 
-/// Rewrite a Corsa diagnostic message with a Vue-flavored hint when the
-/// raw TypeScript phrasing has a more actionable Vue interpretation.
-///
-/// The original wording is preserved as the prefix so the user can still see
-/// what TypeScript reported. The added hint points at the most common Vue
-/// cause for that error shape.
+/// Preserve checker wording while hiding private virtual-document paths.
+/// Diagnostic text alone cannot prove Vue Ref identity, template unwrapping,
+/// or whether inserting `.value` would fix an error.
 pub(super) fn rewrite_corsa_message(message: &str, authored_source: &str) -> String {
-    let normalized_message =
-        strip_corsa_overlay_paths(&restore_virtual_vue_specifiers(message, authored_source));
-    let message = normalized_message.as_str();
-
-    if let Some(prop) = property_does_not_exist_property(message)
-        && prop != "value"
-    {
-        return cstr!(
-            "{message}\n\nIf you intended to read the reactive value, try `.value`. (vize/types)"
-        )
-        .into();
-    }
-    if message.starts_with("Type 'Ref<") && message.contains("is not assignable to type") {
-        return cstr!(
-            "{message}\n\nDid you forget `.value`? Vue refs need to be unwrapped in script context. (vize/types)"
-        ).into();
-    }
-    message.to_string()
+    strip_corsa_overlay_paths(&restore_virtual_vue_specifiers(message, authored_source))
 }
 
 fn strip_corsa_overlay_paths(message: &str) -> String {
@@ -95,36 +74,25 @@ fn is_path_boundary(character: char) -> bool {
         )
 }
 
-/// Extract the property name from a TS7053/TS2339 "Property 'X' does not
-/// exist on type 'Y'" message. Returns `None` for unrelated messages.
-fn property_does_not_exist_property(message: &str) -> Option<&str> {
-    let head = "Property '";
-    let after = message.strip_prefix(head)?;
-    let end = after.find('\'')?;
-    let rest = &after[end..];
-    if !rest.starts_with("' does not exist") {
-        return None;
-    }
-    Some(&after[..end])
-}
-
 #[cfg(test)]
 mod hint_tests {
     use vize_s0::cstr;
 
-    use super::{
-        property_does_not_exist_property, rewrite_corsa_message, strip_corsa_overlay_paths,
-    };
+    use super::{rewrite_corsa_message, strip_corsa_overlay_paths};
 
     #[test]
-    fn rewrites_property_does_not_exist_with_value_hint() {
-        let original = "Property 'toFixed' does not exist on type 'Ref<number>'.";
-        let rewritten = rewrite_corsa_message(original, "");
-        assert!(rewritten.contains(original));
-        assert!(
-            rewritten.contains(".value"),
-            "expected a .value hint, got {rewritten:?}"
-        );
+    fn property_diagnostics_do_not_imply_ref_identity_or_a_valid_unwrap() {
+        for receiver in [
+            "number",
+            "string",
+            "HTMLElement",
+            "Ref<number>",
+            "ComputedRef<number>",
+            "ShallowRef<number>",
+        ] {
+            let original = format!("Property 'toFixed' does not exist on type '{receiver}'.");
+            assert_eq!(rewrite_corsa_message(&original, ""), original);
+        }
     }
 
     #[test]
@@ -137,11 +105,10 @@ mod hint_tests {
     }
 
     #[test]
-    fn rewrites_ref_assignment_with_unwrap_hint() {
+    fn ref_named_assignment_diagnostics_do_not_imply_vue_identity() {
         let original = "Type 'Ref<number>' is not assignable to type 'number'.";
         let rewritten = rewrite_corsa_message(original, "");
-        assert!(rewritten.contains(original));
-        assert!(rewritten.contains("Did you forget `.value`"));
+        assert_eq!(rewritten, original);
     }
 
     #[test]
@@ -183,14 +150,15 @@ mod hint_tests {
     }
 
     #[test]
-    fn rewrites_internal_vue_suffix_before_adding_value_hint() {
+    fn rewrites_internal_vue_suffix_without_speculative_hints() {
         let original =
             "Property 'toFixed' does not exist on type 'typeof import(\"./Panel.vue.ts\")'.";
         let rewritten = rewrite_corsa_message(original, "");
 
-        assert!(rewritten.contains("./Panel.vue"));
-        assert!(!rewritten.contains(".vue.ts"));
-        assert!(rewritten.contains(".value"));
+        assert_eq!(
+            rewritten,
+            "Property 'toFixed' does not exist on type 'typeof import(\"./Panel.vue\")'."
+        );
     }
 
     #[test]
@@ -216,18 +184,6 @@ mod hint_tests {
         assert_eq!(
             strip_corsa_overlay_paths(original),
             "Related files: /repo/a.ts and /repo/b.ts"
-        );
-    }
-
-    #[test]
-    fn property_extractor_returns_name() {
-        assert_eq!(
-            property_does_not_exist_property("Property 'foo' does not exist on type 'Bar'."),
-            Some("foo")
-        );
-        assert_eq!(
-            property_does_not_exist_property("Cannot find name 'foo'."),
-            None
         );
     }
 
