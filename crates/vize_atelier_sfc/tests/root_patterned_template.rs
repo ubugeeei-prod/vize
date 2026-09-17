@@ -221,6 +221,70 @@ fn transformed_or_missing_source_metadata_is_rejected_without_a_panic() {
 }
 
 #[test]
+fn malformed_header_metadata_is_not_hidden_by_masking() {
+    let source =
+        "<!-- \u{1f600} -->\r\n<template v-match=\"result\"\r\n foo=><p v-when=\"_\"/></template>";
+    let descriptor = parse_sfc(source, Default::default()).unwrap();
+    for backend in ["vdom", "ssr", "vapor"] {
+        let error = compile_sfc(&descriptor, options(backend)).unwrap_err();
+        assert_eq!(error.code.as_deref(), Some("TEMPLATE_ERROR"));
+        assert_eq!(
+            error.message,
+            "Attribute `foo` is missing a value after `=`; continuing without the value."
+        );
+        let loc = error.loc.unwrap();
+        assert_eq!(loc.start, source.find("foo=>").unwrap() + 4);
+        assert_eq!(loc.end, loc.start + 1);
+        assert_eq!((loc.start_line, loc.start_column), (3, 6));
+        assert_eq!(&source[loc.start..loc.end], ">");
+
+        let recovered =
+            format!("<template v-match=\"result\" foo=\"a\" foo=\"b\">{ARMS}</template>");
+        let clean = format!("<template v-match=\"result\">{ARMS}</template>");
+        assert_eq!(compile(&recovered, backend), compile(&clean, backend));
+    }
+}
+
+#[test]
+fn header_validation_respects_parser_options() {
+    use vize_atelier_core::TemplateSyntaxMode;
+    use vize_atelier_sfc::compile_sfc_with_template_syntax;
+    for backend in ["vdom", "ssr", "vapor"] {
+        let clean = format!("<template v-match=\"result\">{ARMS}</template>");
+        let quirky = format!("<template v-match=\"result\"foo=\"ok\">{ARMS}</template>");
+        let descriptor = parse_sfc(&quirky, Default::default()).unwrap();
+        let result = compile_sfc_with_template_syntax(
+            &descriptor,
+            options(backend),
+            TemplateSyntaxMode::Quirks,
+        )
+        .unwrap();
+        assert_eq!(result.code, compile(&clean, backend));
+        assert_eq!(
+            compile_sfc(&descriptor, options(backend))
+                .unwrap_err()
+                .code
+                .as_deref(),
+            Some("TEMPLATE_ERROR")
+        );
+
+        let commented = r#"<template v-match="result"><p v-when="{ kind: 'ok', const data }"
+ // body metadata
+>{{ data }}</p><i v-when="_">other</i></template>"#;
+        let descriptor = parse_sfc(commented, Default::default()).unwrap();
+        let mut enabled = options(backend);
+        enabled
+            .template
+            .compiler_options
+            .as_mut()
+            .unwrap()
+            .experimental_in_tag_comments = true;
+        let result = compile_sfc(&descriptor, enabled).unwrap();
+        assert_eq!(result.code, compile(&clean, backend));
+    }
+}
+
+#[test]
 fn root_match_renders_updates_and_evaluates_the_subject_once() {
     use serde_json::{Value, json};
     use std::{

@@ -67,13 +67,29 @@ describe("experimental flags in real WASM", () => {
       const on = wasm.compileSfc(source, { ...target, experimentalPatternedTemplate: true });
       expect(on.errors ?? []).toEqual([]);
       expect(on.template?.code || on.script?.code).toMatch(/Ready/);
-      const nested = source
-        .replace("<template v-match=", "<template><template v-match=")
-        .replace("</template>", "</template></template>");
+      const nested = `<script setup lang="ts">
+const status = 'ready'
+</script>
+<template><template v-match="status">
+  <p v-when="'ready'">Ready</p>
+  <p v-when="_">Waiting</p>
+</template></template>`;
       const inner = wasm.compileSfc(nested, { ...target, experimentalPatternedTemplate: true });
+      expect(inner.errors ?? []).toEqual([]);
+      expect(inner.descriptor.template?.attrs).toEqual({});
+      expect(inner.descriptor.template?.content).toBe(
+        `<template v-match="status">\n  <p v-when="'ready'">Ready</p>\n  <p v-when="_">Waiting</p>\n</template>`,
+      );
+      expect(on.descriptor.template?.attrs["v-match"]).toBe("status");
       expect(on.template?.code).toBe(inner.template?.code);
       expect(on.script?.code).toBe(inner.script?.code);
       expect(on.descriptor.template?.content).not.toContain("v-match");
+      expect(() =>
+        wasm.compileSfc('<template v-match="status" foo=><p v-when="_"/></template>', {
+          ...target,
+          experimentalPatternedTemplate: true,
+        }),
+      ).toThrow("Attribute `foo` is missing a value after `=`");
     }
   });
 

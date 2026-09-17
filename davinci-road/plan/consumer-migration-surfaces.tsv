@@ -743,7 +743,7 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/bindings.rs	6	raw_o
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/bindings.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/diagnostics.rs	3	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/empty_component.rs	3	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/entry/root_match.rs	11	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/entry/root_match.rs	14	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/helpers.rs	4	s0	S0	stage	vize_carton	compat	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/helpers.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/helpers.rs	4	raw_oxc	raw OXC	raw	oxc_allocator	raw	1

@@ -204,9 +204,13 @@ impl Compiler {
             opts.is_ts = Some(true);
         }
 
+        let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
+            .map_err(|message| JsValue::from_str(&message))?;
         let template_view = vize_atelier_sfc::prepare_root_patterned_template(
             &descriptor,
             opts.experimental_patterned_template.unwrap_or(false),
+            opts.experimental_in_tag_comments.unwrap_or(false),
+            template_syntax,
         )
         .map_err(|error| JsValue::from_str(&error.message))?;
         let mut template_result = if let Some(template) = &template_view.template {
@@ -248,9 +252,6 @@ impl Compiler {
             vapor: use_vapor,
             scope_id: None,
         };
-
-        let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
-            .map_err(|message| JsValue::from_str(&message))?;
 
         let compile_result = sfc_compile_for_adapter(
             &descriptor,

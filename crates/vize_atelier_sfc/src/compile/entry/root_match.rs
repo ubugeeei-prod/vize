@@ -6,7 +6,10 @@ use crate::types::{
     SfcDescriptor, SfcError,
 };
 use std::borrow::Cow;
-use vize_atelier_core::{Allocator, PropNode, TemplateChildNode, parser::parse};
+use vize_atelier_core::{
+    Allocator, ParserOptions, PropNode, TemplateChildNode,
+    parser::parse_with_options_and_template_syntax,
+};
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_s0::String;
 
@@ -26,6 +29,12 @@ pub(super) fn compile_sfc_inner(
             .compiler_options
             .as_ref()
             .is_some_and(|options| options.experimental_patterned_template),
+        options
+            .template
+            .compiler_options
+            .as_ref()
+            .is_some_and(|options| options.experimental_in_tag_comments),
+        template_syntax,
     )?;
     super::super::compile_sfc_inner(
         &descriptor,
@@ -43,6 +52,8 @@ pub(super) fn compile_sfc_inner(
 pub fn prepare_root_patterned_template<'d, 's>(
     descriptor: &'d SfcDescriptor<'s>,
     enabled: bool,
+    in_tag_comments: bool,
+    template_syntax: TemplateSyntaxMode,
 ) -> Result<Cow<'d, SfcDescriptor<'s>>, SfcError> {
     let Some(template) = descriptor.template.as_ref().filter(|t| t.has_root_match()) else {
         return Ok(Cow::Borrowed(descriptor));
@@ -67,7 +78,10 @@ pub fn prepare_root_patterned_template<'d, 's>(
     let Some(original) = source
         .get(template.loc.tag_start..template.loc.tag_end)
         .filter(|_| {
-            source.get(template.loc.start..template.loc.end) == Some(template.content.as_ref())
+            template.loc.tag_start <= template.loc.start
+                && template.loc.end <= template.loc.tag_end
+                && source.get(template.loc.start..template.loc.end)
+                    == Some(template.content.as_ref())
         })
     else {
         return Err(error(
@@ -77,7 +91,15 @@ pub fn prepare_root_patterned_template<'d, 's>(
         ));
     };
     let allocator = Allocator::default();
-    let (root, _) = parse(&allocator, original);
+    let (root, diagnostics) = parse_with_options_and_template_syntax(
+        &allocator,
+        original,
+        ParserOptions {
+            experimental_in_tag_comments: in_tag_comments,
+            ..Default::default()
+        },
+        template_syntax,
+    );
     let Some(TemplateChildNode::Element(element)) = root.children.first() else {
         return Err(error(
             "Root v-match requires a template element.",
@@ -125,6 +147,27 @@ pub fn prepare_root_patterned_template<'d, 's>(
             template.loc.start,
         ));
     };
+    // Header metadata is masked below; body diagnostics still belong to the
+    // configured compiler lane, including its custom-element parser options.
+    let header_end = template.loc.start - template.loc.tag_start;
+    if let Some(fatal) = diagnostics.iter().find(|diagnostic| {
+        !diagnostic.is_recoverable()
+            && diagnostic
+                .loc
+                .as_ref()
+                .is_none_or(|loc| (loc.span.start as usize) < header_end)
+    }) {
+        let (start, end) = fatal.loc.as_ref().map_or((0, header_end), |loc| {
+            (loc.span.start as usize, loc.span.end as usize)
+        });
+        let mut fatal = error(
+            &fatal.message,
+            template.loc.tag_start + start,
+            template.loc.tag_start + end,
+        );
+        fatal.code = Some("TEMPLATE_ERROR".into());
+        return Err(fatal);
+    }
     // SFC metadata is not a template directive. Blank those parsed attribute
     // spans, retaining every byte offset and line break for diagnostics.
     let mut content = String::with_capacity(original.len());
