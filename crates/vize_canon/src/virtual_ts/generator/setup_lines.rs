@@ -50,10 +50,7 @@ mod tests {
         let source = "const a = 1; import X from 'x'; const b = 2;\r";
         let mut index = 0;
         let masked = setup_line(source, 0, &[(13, 31)], &mut index).unwrap();
-        assert_eq!(masked.len(), source.len());
-        assert_eq!(&masked[..13], "const a = 1; ");
-        assert!(masked.ends_with("const b = 2;\r"));
-        assert!(!masked.contains("import"));
+        assert_eq!(masked, "const a = 1;                    const b = 2;\r");
     }
 
     #[test]

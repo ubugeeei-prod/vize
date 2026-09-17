@@ -62,13 +62,12 @@ fn root_pattern_generates_typed_scopes_and_authored_mappings() {
     let on = type_check_sfc(APP, &options);
     assert!(on.diagnostics.is_empty(), "{:?}", on.diagnostics);
     let code = on.virtual_ts.unwrap();
-    assert!(code.contains("__VizePatterns.Match<"), "{code}");
-    assert!(code.contains("__VizePatterns.Exhaustiveness<"));
-    assert!(!code.contains("type SubtractObject"));
-    assert!(
-        on.virtual_ts_helpers
-            .unwrap()
-            .contains("type SubtractObject")
+    insta::assert_snapshot!("patterned_root_virtual_ts", code);
+    assert_eq!(
+        on.virtual_ts_helpers,
+        Some(include_str!(
+            "../src/virtual_ts/helpers/pattern_matching.d.ts"
+        ))
     );
     for name in ["rows", "rest", "whole"] {
         assert!(
@@ -155,17 +154,25 @@ fn unreachable_is_warning_but_guarded_coverage_is_an_error() {
     checker.scan_project().unwrap();
     let result = checker.check_project().unwrap();
     assert_eq!(result.diagnostics.len(), 2, "{:#?}", result.diagnostics);
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|d| d.file.ends_with("Unreachable.vue") && d.severity == 2 && d.line == 3)
-    );
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|d| d.file.ends_with("Guarded.vue") && d.severity == 1 && d.line == 1)
+    let mut actual: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|d| {
+            (
+                d.file.file_name().unwrap().to_str().unwrap(),
+                d.code,
+                d.severity,
+                d.line,
+            )
+        })
+        .collect();
+    actual.sort_unstable();
+    assert_eq!(
+        actual,
+        [
+            ("Guarded.vue", Some(2322), 1, 1),
+            ("Unreachable.vue", Some(2322), 2, 3)
+        ]
     );
 }
 
@@ -208,17 +215,21 @@ fn pattern_warnings_do_not_hide_backend_errors() {
     let result = checker.check_project().unwrap();
     assert!(!result.success, "{result:#?}");
     assert_ne!(result.exit_code, 0);
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|d| d.file.ends_with("error.ts") && d.severity == 1)
-    );
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|d| d.file.ends_with("Warning.vue") && d.severity == 2)
+    let mut actual: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|d| {
+            (
+                d.file.file_name().unwrap().to_str().unwrap(),
+                d.code,
+                d.severity,
+            )
+        })
+        .collect();
+    actual.sort_unstable();
+    assert_eq!(
+        actual,
+        [("Warning.vue", Some(2322), 2), ("error.ts", Some(2322), 1)]
     );
 }
 
@@ -285,10 +296,17 @@ fn native_scope_matrix_keeps_bindings_and_control_flow() {
 fn nested_flag_off_is_not_silently_unchecked() {
     let source = r#"<script setup>const subject = true;</script><template><div v-match="subject"><p v-when="_"/></div></template>"#;
     let result = type_check_sfc(source, &SfcTypeCheckOptions::new("Off.vue"));
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|d| d.message.contains("patternedTemplate"))
+    let diagnostics: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|d| d.message.as_str())
+        .collect();
+    assert_eq!(
+        diagnostics,
+        [
+            "`v-match` / `v-when` require `experimentals.patternedTemplate`.",
+            "`v-match` / `v-when` require `experimentals.patternedTemplate`.",
+            "Undefined reference '_' in template expression",
+        ]
     );
 }
