@@ -45,7 +45,7 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |          1178 |                   818 |               360 |             158 |     373 |            1034 |      675 |           584 |           727 |
+| Compiler                   |          1178 |                   818 |               360 |             158 |     375 |            1036 |      675 |           585 |           728 |
 | Linter                     |           374 |                   374 |                 0 |             299 |     301 |             728 |      246 |           389 |           572 |
 | Typechecker                |           956 |                   260 |               696 |             438 |     220 |             896 |      718 |           518 |           745 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            20 |
@@ -67,7 +67,7 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | S1->S2           |         116 |              15 |      101 |
 | old AST/parser   |          85 |              65 |       20 |
 | Croquis analysis |          73 |              57 |       16 |
-| raw OXC          |         373 |             344 |       29 |
+| raw OXC          |         375 |             346 |       29 |
 
 #### Top source and manifest files
 
@@ -79,7 +79,7 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | `crates/vize_atelier_sfc/src/script/define_props_destructure/collector.rs:6` | source   | S0 2<br>raw OXC 15                                                                                   |    17 |
 | `crates/vize_atelier_core/src/steps/expression/prefix.rs:6`                  | source   | S0 1<br>Croquis analysis 1<br>raw OXC 14                                                             |    16 |
 
-Additional source/manifest rows are in the TSV: 343 omitted.
+Additional source/manifest rows are in the TSV: 344 omitted.
 
 #### Top test/dev files
 

@@ -1,5 +1,5 @@
 //! TransformContext implementation.
-
+mod for_bindings;
 use vize_croquis::reactivity::ReactiveKind;
 use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
 use vize_s0::{Allocator, Box, CompactString, String, interner::Interner};
@@ -371,7 +371,7 @@ impl<'a> TransformContext<'a> {
             VForScopeData {
                 value_alias: CompactString::new(value_alias.unwrap_or("")),
                 value_bindings: value_alias
-                    .map(|alias| vize_s0::smallvec![CompactString::new(alias)])
+                    .map(for_bindings::value_bindings)
                     .unwrap_or_default(),
                 key_alias: key_alias.map(CompactString::new),
                 index_alias: index_alias.map(CompactString::new),

@@ -199,3 +199,26 @@ fn object_patterns_check_numeric_and_quoted_property_keys() {
         ]),
     );
 }
+
+#[test]
+fn object_patterns_preserve_unicode_static_property_keys() {
+    for (pattern, content) in [
+        ("{ \u{e9}: _ }", "present"),
+        ("{ \u{e9}: 1 }", "present"),
+        (
+            "{ \u{e9}: const value }",
+            "{{ value === 1 ? 'present' : 'wrong' }}",
+        ),
+    ] {
+        check(
+            &format!(
+                r#"<template v-match="subject"><p v-when="{pattern}">{content}</p><p v-when="_">absent</p></template>"#
+            ),
+            json!([
+                {"context": {"subject": {"\u{e9}": 1}, "\u{e9}": "wrong"}, "trees": [paragraph("present")]},
+                {"context": {"subject": {"wrong": 1}, "\u{e9}": "wrong"}, "trees": [paragraph("absent")]},
+                {"context": {"subject": {}}, "trees": [paragraph("absent")]}
+            ]),
+        );
+    }
+}
