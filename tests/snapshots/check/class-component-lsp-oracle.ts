@@ -32,9 +32,7 @@ const brokenPropUsageDiagnostic = {
   severity: 1,
   code: 2551,
   source: "vize/types",
-  message:
-    "Property 'nam' does not exist on type 'HelloDecorator'. Did you mean 'name'?" +
-    "\n\nIf you intended to read the reactive value, try `.value`. (vize/types)",
+  message: "Property 'nam' does not exist on type 'HelloDecorator'. Did you mean 'name'?",
 };
 
 test("class-component @Prop usage typo breaks and repairs over didChange", async () => {
