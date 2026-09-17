@@ -85,6 +85,7 @@ export function createTransformAnalyzeSfc(
       bindings: scope.bindings,
       children: childrenMap.get(scope.id) || [],
       depth: scope.depth || 0,
+      isTemplateScope: scope.isTemplateScope,
     }));
 
     // Transform bindings to match BindingDisplay interface

@@ -69,6 +69,7 @@ export type ScopeKind =
 
 export interface ScopeDisplay {
   id: number;
+  isTemplateScope?: boolean;
   parentIds?: number[]; // Multiple parent scopes (e.g., setup can access mod, universal, etc.)
   kind: ScopeKind;
   kindStr: string;
