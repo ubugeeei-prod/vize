@@ -40,6 +40,7 @@ pub use art_script::{
 pub use block::{
     ArtCursorPosition, ArtVariantInfo, BlockType, find_art_block_at_offset, find_block_at_offset,
 };
+pub(crate) use block::{find_art_block_at_completion_offset, find_block_at_completion_offset};
 pub(crate) use inline_art::inline_art_variants;
 
 /// Virtual code generator for SFC files.

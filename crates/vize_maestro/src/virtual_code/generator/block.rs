@@ -57,6 +57,32 @@ impl BlockType {
 
 /// Find which block contains the given offset in an SFC.
 pub fn find_block_at_offset(descriptor: &SfcDescriptor, offset: usize) -> Option<BlockType> {
+    find_block_at_position(descriptor, offset, false)
+}
+
+pub(crate) fn find_block_at_completion_offset(
+    descriptor: &SfcDescriptor,
+    offset: usize,
+) -> Option<BlockType> {
+    find_block_at_position(descriptor, offset, true)
+}
+
+fn is_script_position(
+    script: &vize_atelier_sfc::SfcScriptBlock,
+    offset: usize,
+    completion: bool,
+) -> bool {
+    offset >= script.loc.start
+        && (offset < script.loc.end
+            // The body end is an insertion point, but a self-closing tag's end is not.
+            || (completion && offset == script.loc.end && script.loc.end < script.loc.tag_end))
+}
+
+fn find_block_at_position(
+    descriptor: &SfcDescriptor,
+    offset: usize,
+    completion: bool,
+) -> Option<BlockType> {
     // Check template
     if let Some(ref template) = descriptor.template
         && offset >= template.loc.start
@@ -67,16 +93,14 @@ pub fn find_block_at_offset(descriptor: &SfcDescriptor, offset: usize) -> Option
 
     // Check script
     if let Some(ref script) = descriptor.script
-        && offset >= script.loc.start
-        && offset < script.loc.end
+        && is_script_position(script, offset, completion)
     {
         return Some(BlockType::Script);
     }
 
     // Check script setup
     if let Some(ref script_setup) = descriptor.script_setup
-        && offset >= script_setup.loc.start
-        && offset < script_setup.loc.end
+        && is_script_position(script_setup, offset, completion)
     {
         return Some(BlockType::ScriptSetup);
     }
@@ -164,6 +188,17 @@ fn find_inline_art_block_at_offset(
 ///
 /// Uses `vize_musea::parse_art()` to determine cursor position within art variant templates.
 pub fn find_art_block_at_offset(source: &str, offset: usize) -> Option<BlockType> {
+    find_art_block_at_position(source, offset, false)
+}
+
+pub(crate) fn find_art_block_at_completion_offset(
+    source: &str,
+    offset: usize,
+) -> Option<BlockType> {
+    find_art_block_at_position(source, offset, true)
+}
+
+fn find_art_block_at_position(source: &str, offset: usize, completion: bool) -> Option<BlockType> {
     // First check SFC blocks (script, style)
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: Default::default(),
@@ -173,14 +208,12 @@ pub fn find_art_block_at_offset(source: &str, offset: usize) -> Option<BlockType
     if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, options) {
         // Check script/script_setup/style blocks
         if let Some(ref script) = descriptor.script
-            && offset >= script.loc.start
-            && offset < script.loc.end
+            && is_script_position(script, offset, completion)
         {
             return Some(BlockType::Script);
         }
         if let Some(ref script_setup) = descriptor.script_setup
-            && offset >= script_setup.loc.start
-            && offset < script_setup.loc.end
+            && is_script_position(script_setup, offset, completion)
         {
             return Some(BlockType::ScriptSetup);
         }

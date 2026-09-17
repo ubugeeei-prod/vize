@@ -41,6 +41,7 @@ pub use generator::{
     art_target_component_from_source, find_art_block_at_offset, find_block_at_offset,
     find_define_art_component_name, find_define_art_target_component,
 };
+pub(crate) use generator::{find_art_block_at_completion_offset, find_block_at_completion_offset};
 pub use script_code::{ScriptCodeGenerator, extract_simple_bindings};
 pub use source_map::{MappingData, MappingFeatures, SourceMap, SourceMapping};
 pub use style_code::{StyleCodeGenerator, StyleMetadata};

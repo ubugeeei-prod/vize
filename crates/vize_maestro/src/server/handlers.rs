@@ -188,7 +188,7 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
+        let ctx = IdeContext::with_content_for_completion(&self.state, uri, offset, content);
         // JSX completion is opt-in so React remains untouched.
         #[cfg(feature = "native")]
         if crate::utils::is_jsx_path(uri.path()) {

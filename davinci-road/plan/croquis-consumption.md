@@ -280,7 +280,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `SfcDescriptor`                              | `vize`               |     1 |     2 |
 | `SfcDescriptor`                              | `vize_atelier_sfc`   |    15 |    38 |
 | `SfcDescriptor`                              | `vize_canon`         |     9 |    15 |
-| `SfcDescriptor`                              | `vize_maestro`       |     6 |    23 |
+| `SfcDescriptor`                              | `vize_maestro`       |     6 |    25 |
 | `SfcDescriptor`                              | `vize_patina`        |    10 |    14 |
 | `SfcDescriptor`                              | `vize_vitrine`       |     3 |     3 |
 | `SfcError`                                   | `vize_atelier_sfc`   |    20 |    57 |

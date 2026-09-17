@@ -6,7 +6,8 @@ use super::standalone_html_block_at_offset;
 use crate::server::ServerState;
 use crate::utils::is_standalone_html_path;
 use crate::virtual_code::{
-    ArtCursorPosition, BlockType, VirtualDocuments, find_art_block_at_offset, find_block_at_offset,
+    ArtCursorPosition, BlockType, VirtualDocuments, find_art_block_at_completion_offset,
+    find_art_block_at_offset, find_block_at_completion_offset, find_block_at_offset,
 };
 
 /// Context for IDE operations.
@@ -48,10 +49,34 @@ impl<'a> IdeContext<'a> {
         offset: usize,
         content: String,
     ) -> Self {
+        Self::with_content_at_position(state, uri, offset, content, false)
+    }
+
+    /// Create a completion context that includes script-body end insertion points.
+    pub(crate) fn with_content_for_completion(
+        state: &'a ServerState,
+        uri: &'a Url,
+        offset: usize,
+        content: String,
+    ) -> Self {
+        Self::with_content_at_position(state, uri, offset, content, true)
+    }
+
+    fn with_content_at_position(
+        state: &'a ServerState,
+        uri: &'a Url,
+        offset: usize,
+        content: String,
+        completion: bool,
+    ) -> Self {
         // Determine block type
         let block_type = if uri.path().ends_with(".art.vue") {
             // For art files, use art-specific block detection
-            find_art_block_at_offset(&content, offset)
+            if completion {
+                find_art_block_at_completion_offset(&content, offset)
+            } else {
+                find_art_block_at_offset(&content, offset)
+            }
         } else if is_standalone_html_path(uri.path()) {
             Some(standalone_html_block_at_offset(&content, offset))
         } else {
@@ -61,7 +86,11 @@ impl<'a> IdeContext<'a> {
                 ..Default::default()
             };
             if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) {
-                find_block_at_offset(&descriptor, offset)
+                if completion {
+                    find_block_at_completion_offset(&descriptor, offset)
+                } else {
+                    find_block_at_offset(&descriptor, offset)
+                }
             } else {
                 None
             }
@@ -125,3 +154,6 @@ impl<'a> IdeContext<'a> {
         )
     }
 }
+
+#[cfg(test)]
+mod tests;
