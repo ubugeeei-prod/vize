@@ -107,7 +107,7 @@ only when an integration already owns config resolution.
 
 | Flag | Enabled behavior | Off behavior | Enforced by | Boundary |
 | --- | --- | --- | --- | --- |
-| `patternedTemplate` | Parses and lowers `v-match` / direct `v-when` branches | `v-match`, `v-when`, and `v-case` report the required opt-in | DOM, SSR, Vapor, SFC, WASM compile APIs | Canon checks coverage and narrows branches; complete editor navigation remains deferred |
+| `patternedTemplate` | Parses and lowers `v-match` / direct `v-when` branches | `v-match`, `v-when`, and `v-case` report the required opt-in | DOM, SSR, Vapor, SFC, WASM compile APIs | Canon checks coverage and narrows branches; editor opt-in routing and navigation remain deferred |
 | `inTagComment` | Parses `//` comments in opening tags and preserves them for tooling | `//` is invalid tag syntax | Parser, DOM, SSR, Vapor, SFC, WASM compile APIs | No runtime output and no browser in-DOM support |
 | `selfComponent` | Treats exact `<Self>` as the current component | `<Self>` is an ordinary component tag | DOM, SSR, Vapor, SFC, WASM compile APIs | Render functions and JSX are outside this flag |
 | `strictSlotChildren` | Emits virtual TypeScript child assertions | No child-type assertions are generated | `vize check`, LSP/type-check project APIs | Open slots and `any` remain TypeScript-permissive |

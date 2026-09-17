@@ -68,7 +68,7 @@ Croquis は `analyzeSfc(source, { experimentalPatternedTemplate: true })` と Pl
 チェックボックスで root・nested match を解析できます。RFC の parser で分岐内の宣言、
 外側を参照する value pattern、guard、構文診断を記録し、HTML entity を含む元の位置を維持します。
 この parser は `pattern as name` を使い、コンパイラの旧 `as const name` とは異なります。
-Canon も同じ parser を使い、`typeCheck(source, { experimentalPatternedTemplate: true, includeVirtualTs: true })`、Playground Canon のチェックボックス、`experimentals.patternedTemplate` を有効にした `vize check` で型検査できます。コンパイラ側の構文統一や LSP navigation 全体の完了ではありません。
+Canon も同じ parser を使い、`typeCheck(source, { experimentalPatternedTemplate: true, includeVirtualTs: true })`、Playground Canon のチェックボックス、`experimentals.patternedTemplate` を有効にした `vize check` で型検査できます。Editor の診断では opt-in はまだ無効です。Editor / Content Mapper への設定伝達、コンパイラ側の構文統一、LSP navigation は今回の対応に含まれません。
 残作業は [#6176](https://github.com/ubugeeei-prod/vize/issues/6176) で追跡します。
 
 ```vue
