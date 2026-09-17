@@ -42,9 +42,8 @@ mod tests {
             .with_writer(std::io::sink)
             .finish();
         tracing::subscriber::with_default(subscriber, || {
-            let mappings = crate::ide::DiagnosticService::parse_vize_map_comments(&cstr!(
-                "label;\n{line}\n"
-            ));
+            let mappings =
+                crate::ide::DiagnosticService::parse_vize_map_comments(&cstr!("label;\n{line}\n"));
             let ranges = mappings
                 .iter()
                 .map(|mapping| mapping.as_ref().map(|m| (m.start, m.end)))
