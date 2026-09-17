@@ -64,6 +64,11 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
       | .slotOutlet => pure ["name"]
       | _ => throw s!"unsupported stateful op#{op.id}"
     if operands.any (fun row => !allowed.contains row.role) then throw "unsupported operand role"
+    if op.kind == .insertNode then
+      let _ <- Values.one rows op.id "tag"
+      let _ <- Values.one rows op.id "namespace"
+    if op.kind == .setText && !isTextBinding then
+      let _ <- Values.one rows op.id "text"
     if [.setProp, .setEvent].contains op.kind || isTextBinding then
       if operands.length != (if isTextBinding then 2 else 3) then
         throw "unexpected binding operand count"

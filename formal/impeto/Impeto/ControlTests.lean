@@ -14,6 +14,22 @@ def referenceTests (program : Program) (rows : List Operand) (script : Json) : E
   let condition <- Values.one rows 1 "condition"
   let slot <- Values.one rows 4 "name"
   let value <- Values.one rows 6 "value"
+  let hidden := Json.mkObj [("context", Json.mkObj [("ready", .bool false),
+    ("fallback", .str "fallback")]), ("steps", .arr #[])]
+  let _ <- Behavior.run program rows hidden
+  let text <- Values.one rows 3 "text"
+  let tag <- Values.one rows 2 "tag"
+  let namespaceRow <- Values.one rows 2 "namespace"
+  for (label, damaged) in [
+    ("inactive branch missing text", rows.filter (fun row => row.op != 3)),
+    ("inactive branch duplicate text", rows ++ [text]),
+    ("inactive branch targeted text", mutate 3 "text" (fun row => { row with target := some 2 })),
+    ("inactive branch missing tag", rows.filter (fun row => row.op != 2 || row.role != "tag")),
+    ("inactive branch duplicate tag", rows ++ [tag]),
+    ("inactive branch missing namespace", rows.filter (fun row => row.op != 2 || row.role != "namespace")),
+    ("inactive branch duplicate namespace", rows ++ [namespaceRow])
+  ] do
+    expectError label (Behavior.run program damaged hidden)
   for (label, damaged) in [
     ("missing condition", rows.filter (fun row => row.role != "condition")),
     ("duplicate condition", rows ++ [condition]),

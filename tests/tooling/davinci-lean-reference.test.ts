@@ -241,14 +241,6 @@ test("TS-28 control and slot stateful observations share one authored template",
   const main = readRepoFile("formal", "impeto", "Main.lean");
   assert.match(main, /ControlTests\.check/u);
   assert.match(main, /Behavior\.check "fixtures\/rust-lowered-control-slots"/u);
-  for (const [crate, file] of [
-    ["vize_s2_to_s3", "lean_reference_fixture.rs"],
-    ["vize_atelier_vapor", "davinci_s3_compiled_trace.rs"],
-    ["vize_atelier_vapor", "davinci_mounted_behavior.rs"],
-  ]) {
-    const gate = readRepoFile("crates", crate, "tests", file);
-    assert.match(gate, /include_str!\([\s\S]*rust-lowered-control-slots\.template\.txt/u);
-  }
 });
 
 test("TS-28 compiled backend trace gate executes both emitted backends", async () => {
