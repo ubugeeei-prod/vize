@@ -42,6 +42,12 @@ for (const fixture of cases) {
     case "own-undefined":
       context.subject = { field: undefined };
       break;
+    case "subject-evaluation":
+      context.readSubject = function () {
+        reads++;
+        return this.subject;
+      };
+      break;
     case "inherited-undefined":
       context.subject = Object.create({ field: undefined });
       break;

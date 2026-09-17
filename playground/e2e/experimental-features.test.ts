@@ -67,6 +67,13 @@ describe("experimental flags in real WASM", () => {
       const on = wasm.compileSfc(source, { ...target, experimentalPatternedTemplate: true });
       expect(on.errors ?? []).toEqual([]);
       expect(on.template?.code || on.script?.code).toMatch(/Ready/);
+      const nested = source
+        .replace("<template v-match=", "<template><template v-match=")
+        .replace("</template>", "</template></template>");
+      const inner = wasm.compileSfc(nested, { ...target, experimentalPatternedTemplate: true });
+      expect(on.template?.code).toBe(inner.template?.code);
+      expect(on.script?.code).toBe(inner.script?.code);
+      expect(on.descriptor.template?.content).not.toContain("v-match");
     }
   });
 

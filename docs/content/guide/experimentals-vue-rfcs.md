@@ -64,6 +64,15 @@ For entry-point and proof checklists, see [Experimentals Reference](./experiment
 expression is evaluated once, direct branch children are tested in source order, and only the first
 matching branch renders.
 
+For inline HTML SFCs, `v-match` may also appear on the outer `<template>` block.
+Its direct `v-when` arms behave like a nested match in DOM, SSR, and Vapor, and
+header-only subject edits invalidate template HMR. The parsed descriptor still
+exposes only the block body as `template.content`. External `src` templates,
+preprocessed languages, and descriptors without their original source metadata
+are rejected for this form. This compiler support does not enable Canon branch
+narrowing or exhaustiveness in the Playground. Assembled SFC source maps still
+have their existing script-only mapping limitation.
+
 ```vue
 <script setup lang="ts">
 type Result =

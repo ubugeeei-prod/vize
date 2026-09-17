@@ -37,11 +37,9 @@ const label = 'Hello'
 const status = 'ready'
 </script>
 
-<template>
-  <template v-match="status">
-    <p v-when="'ready'">Ready</p>
-    <p v-when="_">Waiting</p>
-  </template>
+<template v-match="status">
+  <p v-when="'ready'">Ready</p>
+  <p v-when="_">Waiting</p>
 </template>`,
   },
   {

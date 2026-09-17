@@ -1,7 +1,9 @@
-use super::compile_sfc_inner;
+mod root_match;
 use crate::types::{
     SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
 };
+use root_match::compile_sfc_inner;
+pub use root_match::prepare_root_patterned_template;
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 
 /// Script/template assembly selected by adapter-facing compiler entrypoints.

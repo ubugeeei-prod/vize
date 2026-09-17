@@ -221,7 +221,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `BindingType`                                | `vize_atelier_sfc`   |    17 |   131 |
 | `BindingType`                                | `vize_canon`         |     9 |    22 |
 | `BlockLocation`                              | `vize`               |     1 |     1 |
-| `BlockLocation`                              | `vize_atelier_sfc`   |     3 |     3 |
+| `BlockLocation`                              | `vize_atelier_sfc`   |     4 |     5 |
 | `BlockLocation`                              | `vize_glyph`         |     1 |     3 |
 | `BlockLocation`                              | `vize_maestro`       |     2 |     2 |
 | `BlockLocation`                              | `vize_patina`        |     1 |     2 |
@@ -275,12 +275,12 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `SfcCustomBlock`                             | `vize_atelier_sfc`   |     2 |     2 |
 | `SfcCustomBlock`                             | `vize_patina`        |     1 |     2 |
 | `SfcDescriptor`                              | `vize`               |     1 |     2 |
-| `SfcDescriptor`                              | `vize_atelier_sfc`   |    14 |    35 |
+| `SfcDescriptor`                              | `vize_atelier_sfc`   |    15 |    38 |
 | `SfcDescriptor`                              | `vize_canon`         |     9 |    15 |
 | `SfcDescriptor`                              | `vize_maestro`       |     6 |    23 |
 | `SfcDescriptor`                              | `vize_patina`        |    10 |    14 |
 | `SfcDescriptor`                              | `vize_vitrine`       |     2 |     2 |
-| `SfcError`                                   | `vize_atelier_sfc`   |    19 |    54 |
+| `SfcError`                                   | `vize_atelier_sfc`   |    20 |    57 |
 | `SfcError`                                   | `vize_canon`         |     2 |     2 |
 | `SfcError`                                   | `vize_patina`        |     1 |     2 |
 | `SfcParseOptions`                            | `vize`               |     9 |    12 |

@@ -1,6 +1,7 @@
 //! Zero-copy SFC descriptor types.
 
 mod errors;
+mod template;
 
 pub use errors::SfcError;
 pub use vize_relief::options::{BindingMetadata, BindingType};
@@ -84,13 +85,6 @@ impl<'a> SfcDescriptor<'a> {
             slotted: self.slotted,
             should_force_reload: self.should_force_reload,
         }
-    }
-
-    /// Compute the template block content hash.
-    pub fn template_hash(&self) -> Option<String> {
-        self.template
-            .as_ref()
-            .map(|template| vize_carton::hash::content_hash(&template.content))
     }
 
     /// Compute the combined style block content hash.

@@ -48,7 +48,6 @@ use self::output_module::{
 };
 use self::styles::compile_styles;
 
-// Re-export ScriptCompileResult for public API
 pub use crate::compile_script::ScriptCompileResult;
 #[allow(deprecated)]
 pub use entry::compile_sfc_with_vue_parser_quirks;
@@ -58,6 +57,7 @@ pub use entry::{
     compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
     compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options,
     compile_sfc_with_template_syntax, compile_sfc_with_template_syntax_and_codegen_options,
+    prepare_root_patterned_template,
 };
 use vize_carton::{String, ToCompactString, profile};
 

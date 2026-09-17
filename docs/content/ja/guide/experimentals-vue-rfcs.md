@@ -59,6 +59,11 @@ entry-point と proof checklist は [Experimentals Reference](./experimentals-re
 
 `patternedTemplate` は RFC #823 の long-form `v-match` / `v-when` syntax を実装します。subject expression は 1 回だけ評価され、direct branch child は source order で検査され、最初に match した branch だけが render されます。
 
+inline HTML の SFC では最外周の `<template>` にも `v-match` を指定できます。
+直下の `v-when` は DOM・SSR・Vapor で内側の match と同じように動作し、ヘッダーの式だけの変更も template HMR を無効化します。
+parse 結果の `template.content` は引き続きブロック本文のみです。外部 `src`、プリプロセッサ言語、元の source metadata が失われた descriptor はこの形式では拒否します。
+このコンパイラ対応だけでは Playground の Canon の分岐内 narrowing・網羅性検査は有効になりません。結合した SFC の source map も既存の script-only の制限が残ります。
+
 ```vue
 <script setup lang="ts">
 type Result =

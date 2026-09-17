@@ -204,7 +204,12 @@ impl Compiler {
             opts.is_ts = Some(true);
         }
 
-        let mut template_result = if let Some(template) = &descriptor.template {
+        let template_view = vize_atelier_sfc::prepare_root_patterned_template(
+            &descriptor,
+            opts.experimental_patterned_template.unwrap_or(false),
+        )
+        .map_err(|error| JsValue::from_str(&error.message))?;
+        let mut template_result = if let Some(template) = &template_view.template {
             match compile_internal(&template.content, &opts, use_vapor, None) {
                 Ok(r) => Some(r),
                 Err(e) => return Err(JsValue::from_str(&e)),
