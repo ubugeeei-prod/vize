@@ -12,7 +12,7 @@ defineProps<{ label: string }>();
         ><mi>{{ label }}</mi></mrow
       ></math
     >
-    <textarea>&lt;span&gt;</textarea>
+    <textarea aria-label="Raw text sample">&lt;span&gt;</textarea>
   </section>
 </template>
 
