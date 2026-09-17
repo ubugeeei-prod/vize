@@ -90,7 +90,7 @@ mod hint_tests {
             "ComputedRef<number>",
             "ShallowRef<number>",
         ] {
-            let original = format!("Property 'toFixed' does not exist on type '{receiver}'.");
+            let original = cstr!("Property 'toFixed' does not exist on type '{receiver}'.");
             assert_eq!(rewrite_corsa_message(&original, ""), original);
         }
     }
