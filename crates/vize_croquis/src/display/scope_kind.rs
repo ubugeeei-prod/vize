@@ -6,8 +6,6 @@ pub enum ScopeKind {
     Block,
     VFor,
     VSlot,
-    VMatch,
-    VWhen,
     EventHandler,
     Callback,
     ScriptSetup,
@@ -22,6 +20,8 @@ pub enum ScopeKind {
     VueGlobal,
     ExternalModule,
     Closure,
+    VMatch,
+    VWhen,
 }
 
 impl From<crate::scope::ScopeKind> for ScopeKind {

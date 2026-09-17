@@ -196,6 +196,39 @@ fn entity_and_multibyte_offsets_are_authored_bytes() {
 }
 
 #[test]
+fn existing_scope_discriminants_remain_stable() {
+    for (index, kind) in [
+        ScopeKind::Module,
+        ScopeKind::Function,
+        ScopeKind::Block,
+        ScopeKind::VFor,
+        ScopeKind::VSlot,
+        ScopeKind::EventHandler,
+        ScopeKind::Callback,
+        ScopeKind::ScriptSetup,
+        ScopeKind::NonScriptSetup,
+        ScopeKind::Universal,
+        ScopeKind::ClientOnly,
+        ScopeKind::JsGlobalUniversal,
+        ScopeKind::JsGlobalBrowser,
+        ScopeKind::JsGlobalNode,
+        ScopeKind::JsGlobalDeno,
+        ScopeKind::JsGlobalBun,
+        ScopeKind::VueGlobal,
+        ScopeKind::ExternalModule,
+        ScopeKind::Closure,
+        ScopeKind::VMatch,
+        ScopeKind::VWhen,
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        assert_eq!(kind as usize, index);
+        assert_eq!(crate::display::ScopeKind::from(kind) as usize, index);
+    }
+}
+
+#[test]
 fn invalid_structure_and_patterns_are_diagnosed() {
     for (source, message, warning) in [
         (
