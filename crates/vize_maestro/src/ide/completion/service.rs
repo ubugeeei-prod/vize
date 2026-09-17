@@ -227,12 +227,7 @@ impl super::CompletionService {
                     return vec![];
                 };
 
-                if let Ok(items) = bridge.completion(&uri, line, character).await {
-                    return items
-                        .into_iter()
-                        .map(Self::convert_lsp_completion)
-                        .collect();
-                }
+                return Self::request_resolvable(ctx, bridge, &uri, line, character).await;
             }
         }
 
@@ -246,6 +241,11 @@ impl super::CompletionService {
         is_setup: bool,
         bridge: &CorsaBridge,
     ) -> Vec<CompletionItem> {
+        if ctx.uri.path().ends_with(".vue") && !ctx.uri.path().ends_with(".art.vue") {
+            let mut items = Self::request_canonical(ctx, bridge).await;
+            improve_unknown_reactive_completions(ctx, is_setup, &mut items);
+            return items;
+        }
         if let Some(ref virtual_docs) = ctx.virtual_docs {
             let script_doc = if is_setup {
                 virtual_docs.script_setup.as_ref()
@@ -270,14 +270,10 @@ impl super::CompletionService {
                         return vec![];
                     };
 
-                    if let Ok(items) = bridge.completion(&uri, line, character).await {
-                        let mut items: Vec<_> = items
-                            .into_iter()
-                            .map(Self::convert_lsp_completion)
-                            .collect();
-                        improve_unknown_reactive_completions(ctx, is_setup, &mut items);
-                        return items;
-                    }
+                    let mut items =
+                        Self::request_resolvable(ctx, bridge, &uri, line, character).await;
+                    improve_unknown_reactive_completions(ctx, is_setup, &mut items);
+                    return items;
                 }
             }
         }

@@ -11,6 +11,8 @@
 
 mod dispatch;
 mod items;
+#[cfg(feature = "native")]
+mod resolve;
 mod script;
 mod service;
 #[cfg(feature = "native")]

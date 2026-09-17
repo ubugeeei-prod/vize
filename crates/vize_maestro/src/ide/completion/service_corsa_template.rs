@@ -37,12 +37,15 @@ pub(super) async fn complete(
         && let Some(doc) = corsa_support::open_canonical_virtual_document(ctx, bridge).await
         && let Some((line, character)) =
             corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)
-        && let Ok(items) = bridge.completion(&doc.request_uri, line, character).await
     {
-        return items
-            .into_iter()
-            .map(super::CompletionService::convert_lsp_completion)
-            .collect();
+        return super::CompletionService::request_resolvable(
+            ctx,
+            bridge,
+            &doc.request_uri,
+            line,
+            character,
+        )
+        .await;
     }
 
     vec![]

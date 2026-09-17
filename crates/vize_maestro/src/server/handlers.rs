@@ -189,9 +189,7 @@ impl LanguageServer for MaestroServer {
         };
 
         let ctx = IdeContext::with_content(&self.state, uri, offset, content);
-
-        // Type-aware completion for `.jsx`/`.tsx` (opt-in
-        // `typeChecker.jsxTypecheck`). React `.tsx` is untouched when off.
+        // JSX completion is opt-in so React remains untouched.
         #[cfg(feature = "native")]
         if crate::utils::is_jsx_path(uri.path()) {
             if self.state.jsx_typecheck_enabled() {
@@ -234,6 +232,8 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn completion_resolve(&self, item: CompletionItem) -> Result<CompletionItem> {
+        #[cfg(feature = "native")]
+        let item = CompletionService::resolve(&self.state, item).await;
         Ok(item)
     }
 

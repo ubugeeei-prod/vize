@@ -31,6 +31,7 @@ use vize_s0::{FxHashMap, FxHashSet, String, cstr};
 
 mod call_hierarchy;
 mod client;
+mod completion_resolve;
 mod declaration;
 mod file_rename;
 mod implementation;

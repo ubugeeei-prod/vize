@@ -15,6 +15,7 @@ use crate::corsa_client::CorsaProjectClient;
 
 #[path = "bridge/call_hierarchy.rs"]
 mod call_hierarchy;
+mod completion;
 #[path = "bridge/declaration.rs"]
 mod declaration;
 #[path = "bridge/documents.rs"]
