@@ -37,7 +37,9 @@ pub(super) async fn references(
         return Ok(None);
     }
     #[cfg(feature = "native")]
-    if server.state.lsp_features().cross_file || server.state.patterned_template_enabled() {
+    if server.state.lsp_features().cross_file
+        || crate::ide::template_scope::needs_patterned_navigation(&ctx)
+    {
         return Ok(ReferencesService::references_with_corsa(
             &ctx,
             include_declaration,

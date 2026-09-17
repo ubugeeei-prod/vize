@@ -43,11 +43,62 @@ impl ScopeChain {
                 }
             }
 
-            for parent in scope.parents.iter().copied() {
+            for parent in scope.parents.iter().rev().copied() {
                 to_visit.push(parent);
             }
         }
 
         out
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::scope::{Span, VueGlobalScopeData};
+    use vize_carton::smallvec;
+    use vize_relief::BindingType;
+
+    #[test]
+    fn lexical_parents_precede_additional_globals_and_children_shadow_both() {
+        let mut scopes = ScopeChain::new();
+        scopes.enter_vue_global_scope(
+            VueGlobalScopeData {
+                globals: smallvec!["shared".into()],
+            },
+            0,
+            10,
+        );
+        scopes.exit_scope();
+        scopes.enter_scope(ScopeKind::ScriptSetup);
+        scopes.add_binding(
+            "shared".into(),
+            ScopeBinding::new(BindingType::SetupConst, 42),
+        );
+        let child = scopes.enter_scope_with_vue_global(ScopeKind::VWhen);
+        scopes.current_scope_mut().span = Span::new(100, 200);
+        let project = |bindings: Vec<(&str, ScopeBinding, ScopeKind)>| {
+            bindings
+                .into_iter()
+                .filter(|(name, _, _)| *name == "shared")
+                .map(|(_, binding, kind)| (binding.declaration_offset, kind))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(
+            project(scopes.bindings_visible_from(child)),
+            vec![(42, ScopeKind::ScriptSetup)]
+        );
+        assert_eq!(
+            project(scopes.bindings_visible_at(150)),
+            vec![(42, ScopeKind::ScriptSetup)]
+        );
+        scopes.add_binding(
+            "shared".into(),
+            ScopeBinding::new(BindingType::SetupConst, 120),
+        );
+        assert_eq!(
+            project(scopes.bindings_visible_from(child)),
+            vec![(120, ScopeKind::VWhen)]
+        );
     }
 }

@@ -28,7 +28,9 @@ pub(super) async fn prepare(
     bridge: Option<&CorsaBridge>,
 ) -> Answer<PrepareRenameResponse> {
     match prepare_strict(ctx, bridge).await {
-        Ok(Answer::Unavailable) | Err(_) if ctx.state.patterned_template_enabled() => {
+        Ok(Answer::Unavailable) | Err(_)
+            if crate::ide::template_scope::needs_patterned_navigation(ctx) =>
+        {
             Answer::Available(None)
         }
         Ok(answer) => answer,

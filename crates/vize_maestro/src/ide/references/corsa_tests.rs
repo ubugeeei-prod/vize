@@ -55,6 +55,15 @@ fn patterned_references_and_rename_fail_closed_without_a_checker() {
 
 #[test]
 fn canonical_references_cross_vue_files_and_honor_include_declaration() {
+    check_ordinary_cross_file_references(false);
+}
+
+#[test]
+fn patterned_opt_in_preserves_ordinary_cross_file_references() {
+    check_ordinary_cross_file_references(true);
+}
+
+fn check_ordinary_cross_file_references(patterned: bool) {
     crate::runtime::block_on(async {
         let Some(tsgo_path) = resolve_tsgo_binary() else {
             return;
@@ -119,6 +128,14 @@ function unrelated() { const shared = 0; return shared }
         let child_uri = Url::from_file_path(&child_path).expect("child uri");
         let state = ServerState::new();
         state.set_workspace_root(project.path().to_path_buf());
+        if patterned {
+            fs::write(
+                project.path().join("vize.config.json"),
+                r#"{"experimentals":{"patternedTemplate":true}}"#,
+            )
+            .unwrap();
+            state.load_workspace_config(project.path());
+        }
         state.documents.open(
             parent_uri.clone(),
             parent_source.to_string(),
