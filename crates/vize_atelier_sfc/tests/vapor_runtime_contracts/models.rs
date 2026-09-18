@@ -21,7 +21,7 @@ pub(super) fn outputs(trace: &Value) -> Vec<&str> {
         .collect()
 }
 
-fn child_props(trace: &Value, index: usize) -> Value {
+pub(super) fn child_props(trace: &Value, index: usize) -> Value {
     serde_json::from_str(
         trace[index]["tree"][0]["children"][0]["children"][0]["children"][0]
             .as_str()

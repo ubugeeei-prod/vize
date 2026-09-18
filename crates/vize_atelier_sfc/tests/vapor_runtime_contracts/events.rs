@@ -1,5 +1,50 @@
 use super::super::{json, trace};
-use super::models::{CHILD, outputs, source};
+use super::models::{CHILD, child_props, outputs, source};
+
+#[test]
+fn nested_component_prop_and_event_arguments_share_the_selected_key() {
+    for (bind, on) in [(":", "@"), ("v-bind:", "v-on:")] {
+        let source = source(&format!(
+            r#"{bind}[state.keys['names]'][state.indices[state.index]]]="state.value" {on}[state.keys['events]'][state.indices[state.index]]]="state.value=$event.trim()""#
+        ));
+        let extra = json!({"childSource": CHILD,
+        "context": {"keys": {"names]": ["first", "second"], "events]": ["update:first", "update:second"]},
+            "indices": [0, 1], "index": 0, "value": "initial", "other": "untouched"},
+        "steps": [
+            {"click": ".first"},
+            {"patch": {"index": 1, "value": "external"}, "preserve": [".first", ".second"]},
+            {"click": ".first"},
+            {"click": ".second"},
+            {"patch": {"index": 0}},
+            {"click": ".second"},
+            {"click": ".first"},
+            {"patch": {"keys": {"names]": ["second", "first"], "events]": ["update:second", "update:first"]}}, "preserve": [".first", ".second"]},
+            {"click": ".first"},
+            {"click": ".second"}
+        ]});
+        let dom = trace(&source, "vdom", extra.clone());
+        assert_eq!(
+            outputs(&dom),
+            [
+                "initial|untouched",
+                "first|untouched",
+                "external|untouched",
+                "external|untouched",
+                "second|untouched",
+                "second|untouched",
+                "second|untouched",
+                "first|untouched",
+                "first|untouched",
+                "first|untouched",
+                "second|untouched"
+            ]
+        );
+        assert_eq!(child_props(&dom, 0), json!({"first": "initial"}));
+        assert_eq!(child_props(&dom, 2), json!({"second": "external"}));
+        assert_eq!(child_props(&dom, 8), json!({"second": "first"}));
+        assert_eq!(trace(&source, "vapor", extra), dom, "{bind} / {on}");
+    }
+}
 
 #[test]
 fn conditional_event_arguments_use_the_condition_not_an_unrelated_event_field() {
