@@ -112,9 +112,12 @@ try {
     });
     if (step.patch) Object.assign(state, step.patch);
     else {
-      const target = host.querySelector(step.click);
-      assert.ok(target, `missing click target: ${step.click}`);
-      target.click();
+      const selector = step.click ?? step.selector;
+      const target = host.querySelector(selector);
+      assert.ok(target, `missing event target: ${selector}`);
+      if (step.dispatch)
+        target.dispatchEvent(new window.Event(step.dispatch, { bubbles: true, cancelable: true }));
+      else target.click();
     }
     await vue.nextTick();
     for (const [selector, node] of retained)
