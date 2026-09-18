@@ -9,7 +9,7 @@ use super::{
 
 /// Generate props object string for a component
 pub(super) fn generate_component_props_str(
-    ctx: &GenerateContext,
+    ctx: &mut GenerateContext,
     component: &CreateComponentIRNode<'_>,
 ) -> String {
     if component.props.is_empty() {
@@ -20,6 +20,13 @@ pub(super) fn generate_component_props_str(
         .iter()
         .any(|p| !p.key.is_static || p.key.content == "$");
     if has_dynamic_sources {
+        if component
+            .props
+            .iter()
+            .any(|p| !p.key.is_static && p.key.is_handler_key)
+        {
+            ctx.use_helper("toHandlerKey");
+        }
         return generate_component_spread_props_str(ctx, &component.props);
     }
 
@@ -50,6 +57,13 @@ fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[IRProp<'_
         if !prop.key.is_static {
             push_component_static_prop_group(ctx, &mut sources, &mut static_group);
             let key = ctx.resolve_expression_node(&prop.key);
+            // Dynamic handler keys retain the event-name expression through
+            // lowering; convert after resolving its authored lexical scope.
+            let key = if prop.key.is_handler_key {
+                cstr!("_toHandlerKey({key})")
+            } else {
+                key
+            };
             let value = component_prop_expression_value(ctx, prop);
             // Function sources return direct values, unlike static prop
             // groups whose values are getters. Their keys stay reactive.

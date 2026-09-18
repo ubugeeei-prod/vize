@@ -119,22 +119,25 @@ pub(super) fn transform_component<'a>(
                     if let Some(ref arg) = dir.arg
                         && let ExpressionNode::Simple(event_exp) = arg
                     {
-                        let event_name = event_exp.content;
-                        let on_name = if event_name.is_empty() {
-                            "on"
+                        let mut key_node = if event_exp.is_static {
+                            let event_name = event_exp.content;
+                            let on_name = if event_name.is_empty() {
+                                "on"
+                            } else {
+                                let mut s = String::from("on");
+                                let mut chars = event_name.chars();
+                                if let Some(c) = chars.next() {
+                                    s.push(c.to_ascii_uppercase());
+                                }
+                                for c in chars {
+                                    s.push(c);
+                                }
+                                ctx.allocator.alloc_str(&s)
+                            };
+                            SimpleExpressionNode::new(on_name, true, event_exp.loc.clone())
                         } else {
-                            let mut s = String::from("on");
-                            let mut chars = event_name.chars();
-                            if let Some(c) = chars.next() {
-                                s.push(c.to_ascii_uppercase());
-                            }
-                            for c in chars {
-                                s.push(c);
-                            }
-                            ctx.allocator.alloc_str(&s)
+                            SimpleExpressionNode::from_node(event_exp)
                         };
-                        let mut key_node =
-                            SimpleExpressionNode::new(on_name, true, event_exp.loc.clone());
                         key_node.is_handler_key = true;
                         let key = Box::new_in(key_node, &ctx.allocator);
                         let mut values = Vec::new_in(&ctx.allocator);

@@ -16,6 +16,7 @@ use vize_atelier_sfc::{
 };
 
 mod vapor_runtime_contracts {
+    mod events;
     mod models;
 }
 

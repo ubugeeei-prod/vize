@@ -1,18 +1,18 @@
 use super::super::{Value, compile, json, trace};
 
-const CHILD: &str = r#"<script setup>
+pub(super) const CHILD: &str = r#"<script setup>
 const props = defineProps(['first', 'second', 'modelValue', 'fixed', 'firstModifiers', 'secondModifiers', 'modelModifiers', 'modelValueModifiers', 'fixedModifiers']);
 const emit = defineEmits(['update:first', 'update:second', 'update:modelValue', 'update:fixed']);
 const snapshot = () => JSON.stringify({ first: props.first, second: props.second, modelValue: props.modelValue, fixed: props.fixed, firstModifiers: props.firstModifiers, secondModifiers: props.secondModifiers, modelModifiers: props.modelModifiers, modelValueModifiers: props.modelValueModifiers, fixedModifiers: props.fixedModifiers });
 </script><template><div><pre>{{ snapshot() }}</pre><button class="first" @click="emit('update:first', ' first ')">first</button><button class="second" @click="emit('update:second', ' second ')">second</button><button class="default" @click="emit('update:modelValue', ' default ')">default</button><button class="fixed" @click="emit('update:fixed', ' 42 ')">fixed</button></div></template>"#;
 
-fn source(model: &str) -> String {
+pub(super) fn source(model: &str) -> String {
     format!(
         "<script setup>import Child from './Child.vue'; import {{ state }} from './fixture';</script><template><section><Child {model}/><output>{{{{ state.value }}}}|{{{{ state.other }}}}</output></section></template>"
     )
 }
 
-fn outputs(trace: &Value) -> Vec<&str> {
+pub(super) fn outputs(trace: &Value) -> Vec<&str> {
     trace
         .as_array()
         .unwrap()

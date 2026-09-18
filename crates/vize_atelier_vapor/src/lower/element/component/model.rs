@@ -38,7 +38,8 @@ pub(super) fn transform_component_v_model<'a>(
     let event_key = if is_static {
         cstr!("onUpdate:{prop_name}")
     } else {
-        cstr!("\"onUpdate:\" + ({prop_name})")
+        // Dynamic handler keys are event names until codegen applies toHandlerKey.
+        cstr!("\"update:\" + ({prop_name})")
     };
     let mut event_key_node = SimpleExpressionNode::new(
         ctx.allocator.alloc_str(&event_key),
