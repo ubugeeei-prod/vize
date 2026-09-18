@@ -83,28 +83,27 @@ fn rewrite_match_element<'a>(
         return;
     };
     let match_loc = dir.loc.clone();
-    let Some(subject) = dir
+    let errors_before = ctx.errors.len();
+    let subject = dir
         .exp
         .as_ref()
         .map(|exp| expression_source(exp, source))
-        .filter(|text| !text.trim().is_empty())
-    else {
+        .filter(|text| !text.trim().is_empty());
+    if subject.is_none() {
         report_pattern_error(ctx, &match_loc, "`v-match` requires a subject expression.");
-        return;
-    };
+    }
     if dir.arg.is_some() || !dir.modifiers.is_empty() {
         report_pattern_error(
             ctx,
             &match_loc,
             "`v-match` does not accept directive arguments or modifiers.",
         );
-        return;
     }
+    let valid_header = ctx.errors.len() == errors_before;
     let local = cstr!("{prefix}_{}", *next);
     *next += 1;
     let mut arms: std::vec::Vec<MatchArm> = std::vec::Vec::new();
     let mut fallback_seen = false;
-    let errors_before = ctx.errors.len();
     for child in &mut el.children {
         let TemplateChildNode::Element(child) = child else {
             continue;
@@ -136,7 +135,9 @@ fn rewrite_match_element<'a>(
         }
         fallback_seen |= matches!(arm.pattern.kind, PatternKind::Wildcard) && arm.guard.is_none();
         child.props.remove(case_idx);
-        install_arm_scope(ctx.allocator, child, &arm, &local, arms.len(), case_loc);
+        if valid_header {
+            install_arm_scope(ctx.allocator, child, &arm, &local, arms.len(), case_loc);
+        }
         arms.push(arm);
     }
     el.props.remove(match_idx);
@@ -150,6 +151,11 @@ fn rewrite_match_element<'a>(
         }
         return;
     }
+    // Invalid headers still consume and validate their direct arms, but cannot
+    // produce a selector or turn those arms into misleading orphan errors.
+    let Some(subject) = subject.filter(|_| valid_header) else {
+        return;
+    };
     let selector = generate_selector(&arms, &subject, &cstr!("{local}_select"));
     let scope = create_directive(
         ctx.allocator,

@@ -1084,6 +1084,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_walk_baseline
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/experimental_diagnostics.rs	2	s0	S0	stage	vize_carton	compat	3
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/nested_delegate_events.rs	8	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/patterned_template_grammar.rs	11	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/patterned_template_recovery.rs	6	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/patterned_template_runtime.rs	18	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize/src/commands/build/config.rs	16	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize/src/commands/build/runner.rs	22	s0	S0	stage	vize_s0	preferred	1
