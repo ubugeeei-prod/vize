@@ -12,6 +12,7 @@
 //! `vue-tsc` reports.
 
 mod ambient;
+pub(super) use ambient::AmbientProjection;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::{Croquis, ScopeKind, TypeExport};
@@ -106,7 +107,6 @@ impl ScriptBlockScopes {
                 spans.push((export.start, export.end));
             }
         }
-        ambient::extend_module_spans(summary, script, &mut spans);
         merge_overlapping_spans(spans)
     }
 

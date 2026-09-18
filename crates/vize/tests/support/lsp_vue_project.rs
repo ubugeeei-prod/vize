@@ -26,6 +26,10 @@ impl Fixture {
         Self::new_with_options(source, false, false, true)
     }
 
+    pub fn new_with_vue_and_cross_file(source: &str) -> Self {
+        Self::new_with_options(source, false, true, true)
+    }
+
     pub fn new_with_vue_and_patterns(source: &str) -> Self {
         Self::new_with_options(source, true, false, true)
     }

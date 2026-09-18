@@ -82,11 +82,17 @@ fn setup_local_dependencies_are_not_lifted_or_widened() {
         "const local = 'fixed';\ndeclare const first: typeof local;\ndeclare const second: typeof first;",
     );
     for declaration in [
-        "declare const first: typeof local;",
+        "declare const first:",
         "declare const second: typeof first;",
     ] {
-        assert_module_declaration(&source, declaration, false);
+        assert_module_declaration(&source, declaration, true);
     }
+    let output = virtual_source(&source);
+    assert_eq!(
+        authored_setup_body(&output),
+        "const local = 'fixed';\n  type __vize_ambient_0_type_0 = typeof local;"
+    );
+    assert_eq!(output.matches("const local = 'fixed';").count(), 1);
 }
 
 #[test]
@@ -94,7 +100,13 @@ fn global_type_wrappers_do_not_hide_setup_local_dependencies() {
     let script = "class Local {}\ndeclare const first: Local;\ndeclare const second: ReadonlyArray<typeof first>;";
     assert_eq!(
         authored_setup_body(&virtual_source(&setup(script))),
-        script.replace('\n', "\n  ")
+        "class Local {}\n  type __vize_ambient_0_type_0 = Local;"
+    );
+    assert_module_declaration(&setup(script), "declare const first:", true);
+    assert_module_declaration(
+        &setup(script),
+        "declare const second: ReadonlyArray<typeof first>;",
+        true,
     );
 }
 
@@ -121,6 +133,18 @@ fn nested_declarations_keep_their_authored_scope() {
 }
 
 #[test]
+fn captures_do_not_erase_signature_local_type_parameters_or_directives() {
+    for script in [
+        "class Local<T> { value!: T; }\ndeclare function label<T>(value: Local<T>): T;\ndeclare const alias: typeof label;",
+        "const local = 'fixed';\n// @ts-ignore pending scope support\ndeclare const label: typeof local;",
+    ] {
+        let output = virtual_source(&setup(script));
+        assert_eq!(authored_setup_body(&output), script.replace('\n', "\n  "));
+        assert!(!output.contains("__vize_ambient_"), "{output}");
+    }
+}
+
+#[test]
 fn adjacent_code_is_never_lost_by_line_based_emission() {
     let declaration = "declare const label: string;";
     let source = setup(&format!("{declaration} const invalid: number = 'bad';"));
@@ -132,9 +156,8 @@ fn adjacent_code_is_never_lost_by_line_based_emission() {
 }
 
 #[test]
-fn adjacent_local_captures_and_comment_scopes_stay_in_setup() {
+fn adjacent_comment_scopes_stay_in_setup() {
     for script in [
-        "const local = 'fixed'; declare const label: typeof local;",
         "// @ts-expect-error assignment\nconst invalid: number = 'bad'; declare const label: string;",
         "// @ts-ignore assignment\ndeclare const label: string; const invalid: number = 'bad';",
         "const before = 1; /** documented label */ declare const label: string;",
@@ -193,7 +216,7 @@ fn suppression_comments_follow_the_declaration() {
 }
 
 #[test]
-fn long_dependency_chains_keep_all_transitive_local_captures_in_setup() {
+fn long_dependency_chains_capture_the_local_type_once() {
     let mut script = String::from("const local = 'fixed';\n");
     for index in (0..256).rev() {
         let dependency = if index == 0 {
@@ -208,9 +231,11 @@ fn long_dependency_chains_keep_all_transitive_local_captures_in_setup() {
     let output = virtual_source(&setup(&script));
     assert_eq!(
         authored_setup_body(&output),
-        script.trim().replace('\n', "\n  ")
+        "const local = 'fixed';\n  type __vize_ambient_0_type_0 = typeof local;"
     );
     assert_eq!(output.matches("declare const value_").count(), 256);
+    let setup = output.find("// ========== Setup Scope ==========").unwrap();
+    assert_eq!(output[..setup].matches("declare const value_").count(), 256);
 }
 
 #[test]
@@ -228,12 +253,18 @@ fn large_overload_sets_are_kept_as_one_declaration_group() {
 }
 
 #[test]
-fn one_local_capture_or_runtime_implementation_blocks_the_whole_overload_group() {
-    for script in [
-        "const local = 1;\ndeclare function label(value: string): string;\ndeclare function label(value: typeof local): number;\ndeclare const alias: typeof label;",
-        "declare function label(value: string): string;\nfunction label(value: string) { return value; }",
-    ] {
-        let output = virtual_source(&setup(script));
-        assert_eq!(authored_setup_body(&output), script.replace('\n', "\n  "));
-    }
+fn overloads_capture_local_types_but_keep_runtime_merge_partners_in_setup() {
+    let script = "const local = 1;\ndeclare function label(value: string): string;\ndeclare function label(value: typeof local): number;\ndeclare const alias: typeof label;";
+    let output = virtual_source(&setup(script));
+    assert_eq!(
+        authored_setup_body(&output),
+        "const local = 1;\n  type __vize_ambient_0_type_0 = typeof local;"
+    );
+    let module = &output[..output.find("// ========== Setup Scope ==========").unwrap()];
+    assert_eq!(module.matches("declare function label(").count(), 2);
+    assert!(module.contains("declare const alias: typeof label;"));
+
+    let script = "declare function label(value: string): string;\nfunction label(value: string) { return value; }";
+    let output = virtual_source(&setup(script));
+    assert_eq!(authored_setup_body(&output), script.replace('\n', "\n  "));
 }

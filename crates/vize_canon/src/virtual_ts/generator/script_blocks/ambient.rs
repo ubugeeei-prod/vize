@@ -1,7 +1,10 @@
-//! Relocate only ambient declarations whose complete scope survives at module level.
+//! Relocate ambient declarations, evaluating captured types in their authored scope.
+
+mod projection;
+pub(in super::super) use projection::AmbientProjection;
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::Statement;
+use oxc_ast::{AstKind, ast::Statement};
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::{GetSpan, SourceType, Span};
@@ -15,9 +18,9 @@ pub(super) fn extend_module_spans(
     summary: &Croquis,
     script: Option<&str>,
     module_spans: &mut Vec<(u32, u32)>,
-) {
+) -> AmbientProjection {
     let Some(script) = script.filter(|source| source.contains("declare")) else {
-        return;
+        return AmbientProjection::default();
     };
     if summary.scopes.iter().any(|scope| {
         matches!(scope.kind, ScopeKind::NonScriptSetup)
@@ -27,13 +30,13 @@ pub(super) fn extend_module_spans(
         .iter()
         .any(|scope| matches!(scope.kind, ScopeKind::ScriptSetup))
     {
-        return;
+        return AmbientProjection::default();
     }
 
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return;
+        return AmbientProjection::default();
     }
     let comments: Vec<Span> = parsed
         .program
@@ -58,18 +61,27 @@ pub(super) fn extend_module_spans(
         })
         .collect();
     if candidates.is_empty() {
-        return;
+        return AmbientProjection::default();
     }
+    let capture_allowed: Vec<bool> = candidates
+        .iter()
+        .map(|span| {
+            include_leading_ts_directive_comments(script, vec![(span.start, span.end)])[0].0
+                == span.start
+        })
+        .collect();
 
     let built = SemanticBuilder::new()
         .with_build_nodes(true)
         .build(&parsed.program);
     if !built.diagnostics.is_empty() {
-        return;
+        return AmbientProjection::default();
     }
     let semantic = built.semantic;
     let scoping = semantic.scoping();
     let mut dependencies = vec![Vec::new(); candidates.len()];
+    let mut projection = AmbientProjection::default();
+    let mut captured = vec![Vec::new(); candidates.len()];
     // Both references and declaration merging must follow their resolved symbol.
     // Moving just one side of an ambient/runtime var or overload changes its type.
     for symbol in scoping.symbol_ids() {
@@ -95,6 +107,37 @@ pub(super) fn extend_module_spans(
             if let Some(index) = containing(&candidates, semantic.reference_span(reference)) {
                 if let Some(first) = representative {
                     dependencies[index].push(candidates[first]);
+                } else if scoping.symbol_scope_id(symbol) == scoping.root_scope_id()
+                    && declarations
+                        .iter()
+                        .all(|span| !covered(module_spans, *span))
+                    && capture_allowed[index]
+                    && let Some((span, value)) = semantic
+                        .nodes()
+                        .ancestor_kinds(reference.node_id())
+                        .find_map(|kind| {
+                            let reference = semantic.reference_span(reference);
+                            match kind {
+                                AstKind::TSTypeQuery(query)
+                                    if query.expr_name.span().contains_inclusive(reference) =>
+                                {
+                                    Some((query.span, false))
+                                }
+                                AstKind::TSTypeReference(ty)
+                                    if ty.type_name.span().contains_inclusive(reference) =>
+                                {
+                                    Some((ty.span, false))
+                                }
+                                AstKind::Class(class) => class
+                                    .super_class
+                                    .as_ref()
+                                    .filter(|base| base.span().contains_inclusive(reference))
+                                    .map(|base| (base.span(), true)),
+                                _ => None,
+                            }
+                        })
+                {
+                    captured[index].push((span, value));
                 } else {
                     dependencies[index].extend(declarations.iter().copied());
                 }
@@ -103,6 +146,39 @@ pub(super) fn extend_module_spans(
     }
 
     let mut blocked = vec![false; candidates.len()];
+    for captures in &mut captured {
+        captures.sort_by_key(|(span, _)| (span.start, std::cmp::Reverse(span.end)));
+        let mut end = 0;
+        captures.retain(|(span, _)| {
+            if span.start < end {
+                return false;
+            }
+            end = span.end;
+            true
+        });
+    }
+    // A captured type expression must not lose a signature-local type parameter.
+    for symbol in scoping.symbol_ids() {
+        if scoping.symbol_scope_id(symbol) == scoping.root_scope_id() {
+            continue;
+        }
+        for reference in semantic.symbol_references(symbol) {
+            if let Some(index) = containing(&candidates, semantic.reference_span(reference)) {
+                let reference = semantic.reference_span(reference);
+                if let Some(capture) = captured[index]
+                    .partition_point(|(span, _)| span.start <= reference.start)
+                    .checked_sub(1)
+                {
+                    let span = captured[index][capture].0;
+                    if span.contains_inclusive(reference)
+                        && !span.contains_inclusive(scoping.symbol_span(symbol))
+                    {
+                        blocked[index] = true;
+                    }
+                }
+            }
+        }
+    }
     // Unresolved type-only references are resolved by the project's ambient
     // declarations in either scope. Value queries can capture setup helpers.
     for reference_id in scoping.root_unresolved_references_ids().flatten() {
@@ -147,12 +223,28 @@ pub(super) fn extend_module_spans(
         }
         cursor += 1;
     }
+    projection.collect(
+        &candidates,
+        captured,
+        &blocked,
+        scoping
+            .symbol_ids()
+            .map(|id| scoping.symbol_name(id))
+            .chain(
+                scoping
+                    .root_unresolved_references_ids()
+                    .flatten()
+                    .map(|id| semantic.reference_name(scoping.get_reference(id))),
+            ),
+    );
     let spans = candidates
         .into_iter()
         .zip(blocked)
         .filter_map(|(span, blocked)| (!blocked).then_some((span.start, span.end)))
         .collect();
     module_spans.extend(include_leading_ts_directive_comments(script, spans));
+    *module_spans = super::super::spans::merge_overlapping_spans(std::mem::take(module_spans));
+    projection
 }
 
 fn covered(spans: &[(u32, u32)], span: Span) -> bool {

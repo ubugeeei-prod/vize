@@ -1,0 +1,129 @@
+[
+  {
+    "name": "literal",
+    "script": "const local = 'fixed';\ndeclare const label: typeof local;\nconst exact: 'fixed' = label;",
+    "expected": []
+  },
+  {
+    "name": "transitive",
+    "script": "const local = 'fixed';\ndeclare const first: typeof local;\ndeclare const label: typeof first;\nconst exact: 'fixed' = label;",
+    "expected": []
+  },
+  {
+    "name": "overloads",
+    "script": "const local = 'fixed';\ndeclare function label(value: typeof local): typeof local;\ndeclare function label(value: number): number;\nconst a: 'fixed' = label(local);\nconst b: number = label(1);",
+    "expected": []
+  },
+  {
+    "name": "heritage",
+    "script": "class Base<T> { constructor(public value: T) {} }\ndeclare class Derived extends Base<string> { extra: number; }\nconst label: string = new Derived('fixed').value;",
+    "expected": []
+  },
+  {
+    "name": "expose",
+    "script": "const local = 'fixed';\ndeclare const label: typeof local;\ndefineExpose({ label });",
+    "expected": []
+  },
+  {
+    "name": "export",
+    "script": "const local = 'fixed';\ndeclare const label: typeof local;\nexport type Label = typeof label;\nconst exact: Label = local;",
+    "expected": []
+  },
+  {
+    "name": "async",
+    "script": "const local = await Promise.resolve('fixed' as const);\ndeclare const label: typeof local;\nconst exact: 'fixed' = label;",
+    "expected": []
+  },
+  {
+    "name": "adjacent",
+    "script": "const local = 'fixed'; declare const label: typeof local; const exact: 'fixed' = label;",
+    "expected": []
+  },
+  {
+    "name": "adjacentFlow",
+    "script": "let local: string | number = 1; declare const first: typeof local; local = 'fixed'; declare const label: typeof local; const a: number = first; const b: string = label;",
+    "expected": []
+  },
+  {
+    "name": "flow",
+    "script": "let local: string | number = 1;\ndeclare const first: typeof local;\nlocal = 'fixed';\ndeclare const label: typeof local;\nconst a: number = first;\nconst b: string = label;",
+    "expected": []
+  },
+  {
+    "name": "classType",
+    "script": "class Local<T> { constructor(public value: T) {} }\ndeclare const label: Local<string>;\nconst exact: string = label.value;",
+    "expected": []
+  },
+  {
+    "name": "localType",
+    "script": "const local = { text: 'fixed' };\ntype Local = typeof local;\ndeclare const label: Local;\nconst exact: string = label.text;",
+    "expected": []
+  },
+  {
+    "name": "genericSignature",
+    "script": "const local = 'fixed';\ndeclare function label<T extends typeof local>(value: T): T;\nconst exact: 'fixed' = label(local);",
+    "expected": []
+  },
+  {
+    "name": "hygiene",
+    "script": "const __vize_ambient_0_type_0 = 1;\nconst local = 'fixed';\ndeclare const label: typeof local;\nconst exact: 'fixed' = label;",
+    "expected": []
+  },
+  {
+    "name": "escapedHygiene",
+    "script": "const \\u005f_vize_ambient_0_type_0 = 1;\nconst local = 'fixed';\ndeclare const label: typeof local;\nconst exact: 'fixed' = label;",
+    "expected": []
+  },
+  {
+    "name": "invalidHeritage",
+    "script": "const Base = 1;\ndeclare class Label extends Base {}",
+    "template": "<div />",
+    "expected": [
+      "src/App.vue(3,29): error TS2507: Type '1' is not a constructor function type."
+    ]
+  },
+  {
+    "name": "invalidTypeProperty",
+    "script": "const local = { text: 'fixed' };\ndeclare const label: typeof local.missing;",
+    "template": "<div />",
+    "expected": [
+      "src/App.vue(3,35): error TS2339: Property 'missing' does not exist on type '{ text: string; }'."
+    ]
+  },
+  {
+    "name": "invalidLiteralAndTemplate",
+    "script": "const local = 'fixed';\ndeclare const label: typeof local;\nconst wrong: 'other' = label;\nlabel.toFixed();",
+    "template": "{{ label.toFixed() }}",
+    "expected": [
+      "src/App.vue(4,7): error TS2322: Type '\"fixed\"' is not assignable to type '\"other\"'.",
+      "src/App.vue(5,7): error TS2551: Property 'toFixed' does not exist on type '\"fixed\"'. Did you mean 'fixed'?",
+      "src/App.vue(7,20): error TS2551: Property 'toFixed' does not exist on type '\"fixed\"'. Did you mean 'fixed'?"
+    ]
+  },
+  {
+    "name": "flowErrors",
+    "script": "let local: string | number = 1;\ndeclare const first: typeof local;\nlocal = 'fixed';\ndeclare const label: typeof local;\nconst wrongNumber: string = first;\nconst wrongString: number = label;",
+    "expected": [
+      "src/App.vue(6,7): error TS2322: Type 'number' is not assignable to type 'string'.",
+      "src/App.vue(7,7): error TS2322: Type 'string' is not assignable to type 'number'."
+    ]
+  },
+  {
+    "name": "forwardTypeQuery",
+    "script": "declare const label: typeof local;\nconst local = 'fixed';\nconst exact: 'fixed' = label;",
+    "expected": []
+  },
+  {
+    "name": "heritageExpression",
+    "script": "function createBase() { return class { value = 'fixed'; }; }\ndeclare class Derived extends createBase() { extra: number; }\nconst label: string = new Derived().value;",
+    "expected": []
+  },
+  {
+    "name": "exportConsumer",
+    "script": "const local = 'fixed';\ndeclare const label: typeof local;\nexport type Label = typeof label;\ndefineExpose({ label });",
+    "consumer": "import type { Label } from './App.vue';\nconst wrong: Label = 'other';\nconst exact: Label = 'fixed';\n",
+    "expected": [
+      "src/consumer.ts(2,7): error TS2322: Type '\"other\"' is not assignable to type '\"fixed\"'."
+    ]
+  }
+]

@@ -24,6 +24,29 @@ pub(super) struct SetupHelperComponentContext<'a> {
     pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
 }
 
+pub(super) fn emit_return_artifacts(
+    ts: &mut String,
+    summary: &Croquis,
+    define_emits_runtime_args: Option<&String>,
+    fields: &mut Vec<String>,
+) {
+    if let Some(expose) = summary.macros.define_expose()
+        && expose.type_args.is_none()
+        && let Some(runtime_args) = expose.runtime_args.as_ref()
+    {
+        append!(*ts, "\n  const __vize_exposed = ({runtime_args});\n");
+        fields.push("__vize_exposed".into());
+    }
+    if let Some(runtime_args) = define_emits_runtime_args {
+        append!(
+            *ts,
+            "\n  const __vize_emit_options = ({runtime_args});\n  const __vize_emits = defineEmits(__vize_emit_options);\n"
+        );
+        fields.push("__vize_emit_options".into());
+        fields.push("__vize_emits".into());
+    }
+}
+
 pub(super) fn emit_setup_helpers(
     ts: &mut String,
     component_context: SetupHelperComponentContext<'_>,

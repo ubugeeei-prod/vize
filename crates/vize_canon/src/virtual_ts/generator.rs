@@ -194,11 +194,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     if default_export_object.is_some() {
         ts.push_str(legacy_vue2::define_component_helper(legacy_vue2, dialect));
     }
-    // Collect all module-level statement spans from croquis analysis once and
-    // keep them sorted. Later script-body emission advances an index through
-    // this list, so each source line checks only the overlapping tail instead
-    // of rescanning imports/re-exports/type declarations from the start.
-    let module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
+    // Collect sorted module spans once for linear script-body emission.
+    let mut module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
         let mut module_spans = Vec::new();
         for imp in &summary.import_statements {
             module_spans.push((imp.start, imp.end));
@@ -212,6 +209,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         }
         script_blocks.module_spans(summary, script_content, module_spans)
     });
+    let mut ambient =
+        script_blocks::AmbientProjection::plan(summary, script_content, &mut module_spans);
 
     // Re-declare SFC generics on hoisted declarations with safe defaults.
     let generic_injection: Option<(String, Vec<String>)> = generic_param.map(|g| {
@@ -239,6 +238,15 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         profile!("canon.virtual_ts.emit_module_statements", {
             // Emit each module-level statement with source mapping
             for &(start, end) in &module_spans {
+                if ambient.emit_module_statement(
+                    &mut ts,
+                    &mut mappings,
+                    script,
+                    (start, end),
+                    script_source_offset,
+                ) {
+                    continue;
+                }
                 let text = &script[start as usize..end as usize];
 
                 // Splice the SFC generic parameters into a hoisted
@@ -430,7 +438,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             ts.push_str("  // User setup code\n");
             let script_gen_start = ts.len();
             // `split('\n')` preserves byte offsets for CRLF; `lines()` strips `\r`.
-            let mut src_byte_offset: usize = 0; // offset within script content
             let mut module_span_index = 0usize;
             let named_value_export_starts =
                 self::script_module::collect_named_value_export_starts(script);
@@ -442,9 +449,15 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             let mut emitted_default_alias = false;
             let uses_import_meta = self::script_module::emit_import_meta_polyfill(&mut ts, script);
 
-            for raw_line in script.split('\n') {
+            for (src_byte_offset, raw_line) in ambient.script_lines(script) {
+                ambient.emit_setup_captures(
+                    src_byte_offset,
+                    script,
+                    &mut ts,
+                    &mut mappings,
+                    script_source_offset,
+                );
                 let line = raw_line.strip_suffix('\r').unwrap_or(raw_line);
-                let raw_byte_len = raw_line.len() + 1;
 
                 let line_start = src_byte_offset;
                 let line_end = line_start + raw_line.len(); // use raw length for span check
@@ -454,7 +467,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     &module_spans,
                     &mut module_span_index,
                 ) else {
-                    src_byte_offset += raw_byte_len;
                     continue;
                 };
                 let line = setup_line.as_ref();
@@ -628,7 +640,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     append!(ts, "  const __default__ = {name};\n");
                     pending_class_alias = None;
                 }
-                src_byte_offset += raw_byte_len;
             }
             if let Some((_, name)) = pending_class_alias.take() {
                 // Defensive: the class body's closing brace was never seen.
@@ -796,25 +807,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     {
         setup_return_fields.push("__default__".into());
     }
-    if let Some(expose) = summary.macros.define_expose()
-        && expose.type_args.is_none()
-        && let Some(runtime_args) = expose.runtime_args.as_ref()
-    {
-        append!(ts, "\n  const __vize_exposed = ({runtime_args});\n");
-        setup_return_fields.push("__vize_exposed".into());
-    }
-    if let Some(runtime_args) = define_emits_runtime_args {
-        append!(
-            ts,
-            "\n  const __vize_emit_options = ({runtime_args});\n  const __vize_emits = defineEmits(__vize_emit_options);\n"
-        );
-        setup_return_fields.push("__vize_emit_options".into());
-        setup_return_fields.push("__vize_emits".into());
-    }
+    setup_helpers::emit_return_artifacts(
+        &mut ts,
+        summary,
+        define_emits_runtime_args,
+        &mut setup_return_fields,
+    );
     setup_props_plan.emit_options_api_artifact(&mut ts, options_api_props.as_ref());
-    if !setup_return_fields.is_empty() {
-        append!(ts, "\n  return {{ {} }};\n", setup_return_fields.join(", "));
-    }
+    ambient.emit_return(&mut ts, &setup_return_fields, &mut mappings);
 
     ts.push_str("}\n\n");
 
