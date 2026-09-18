@@ -1,3 +1,6 @@
+// Each integration target uses a different subset of this shared fixture.
+#![allow(dead_code)]
+
 use super::lsp_process::{LspProcess, file_uri};
 use serde_json::{Value, json};
 use std::path::Path;
@@ -16,6 +19,14 @@ impl Fixture {
     }
 
     pub fn new_with_cross_file(source: &str, enabled: bool, cross_file: bool) -> Self {
+        Self::new_with_options(source, enabled, cross_file, false)
+    }
+
+    pub fn new_with_vue(source: &str) -> Self {
+        Self::new_with_options(source, false, false, true)
+    }
+
+    fn new_with_options(source: &str, enabled: bool, cross_file: bool, real_vue: bool) -> Self {
         let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
             .unwrap()
@@ -29,6 +40,18 @@ impl Fixture {
             .prefix("lsp-vue-")
             .tempdir_in(cases)
             .unwrap();
+        if real_vue {
+            let vue = workspace
+                .join("playground/node_modules/vue")
+                .canonicalize()
+                .expect("Vue editor tests require the frozen Playground Vue dependency");
+            let modules = project.path().join("node_modules");
+            std::fs::create_dir_all(&modules).unwrap();
+            #[cfg(unix)]
+            std::os::unix::fs::symlink(&vue, modules.join("vue")).unwrap();
+            #[cfg(windows)]
+            std::os::windows::fs::symlink_dir(&vue, modules.join("vue")).unwrap();
+        }
         std::fs::write(project.path().join("tsconfig.json"), r#"{
             "compilerOptions": { "strict": true, "target": "ES2022", "module": "ESNext", "moduleResolution": "bundler", "noEmit": true },
             "include": ["*.vue"]

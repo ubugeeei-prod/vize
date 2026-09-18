@@ -41,7 +41,7 @@ const staleListBindingDiagnostic = {
 };
 
 // `this.list` inside `fetchData`, reached through the Options API typed
-// instance bridge. The LSP adds the Vue `.value` hint the CLI does not.
+// instance bridge. Preserve the checker message without a speculative ref hint.
 const staleListMemberDiagnostic = {
   range: {
     start: { line: 49, character: 13 },
@@ -50,9 +50,7 @@ const staleListMemberDiagnostic = {
   severity: 1,
   code: 2339,
   source: "vize/types",
-  message:
-    "Property 'list' does not exist on type '__VizeThis'.\n\n" +
-    "If you intended to read the reactive value, try `.value`. (vize/types)",
+  message: "Property 'list' does not exist on type '__VizeThis'.",
 };
 
 test("vue-element-admin data-key-only rename keeps every published range inside the document", async () => {
