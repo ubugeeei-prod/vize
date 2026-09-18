@@ -67,7 +67,7 @@ fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[IRProp<'_
             let value = component_prop_expression_value(ctx, prop);
             // Function sources return direct values, unlike static prop
             // groups whose values are getters. Their keys stay reactive.
-            sources.push(cstr!("() => ({{ [{}]: {} }})", key, value));
+            sources.push(cstr!("() => ({{ [({})]: {} }})", key, value));
         } else if prop.key.content == "$" {
             push_component_static_prop_group(ctx, &mut sources, &mut static_group);
             if let Some(first) = prop.values.first() {

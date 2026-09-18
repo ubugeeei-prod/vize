@@ -58,8 +58,8 @@ fn prefixed_templates_render_the_argument_through_ctx() {
             "  const _component_Comp = _resolveComponent(\"Comp\")\n",
             "  \n",
             "  return (_openBlock(), _createBlock(_component_Comp, _normalizeProps({ ",
-            "[_ctx.arg]: _ctx.value,\n",
-            "  [\"onUpdate:\" + _ctx.arg]: $event => ((_ctx.value) = $event) }), null, ",
+            "[(_ctx.arg)]: _ctx.value,\n",
+            "  [\"onUpdate:\" + (_ctx.arg)]: $event => ((_ctx.value) = $event) }), null, ",
             "16 /* FULL_PROPS */))\n",
             "}",
         )
@@ -78,9 +78,9 @@ fn prefixed_templates_render_the_modifiers_key_through_ctx() {
             "  const _component_Comp = _resolveComponent(\"Comp\")\n",
             "  \n",
             "  return (_openBlock(), _createBlock(_component_Comp, _normalizeProps({ ",
-            "[_ctx.arg]: _ctx.value,\n",
-            "  [\"onUpdate:\" + _ctx.arg]: $event => ((_ctx.value) = $event),\n",
-            "  [_ctx.arg + \"Modifiers\"]: { trim: true } }), null, 16 /* FULL_PROPS */))\n",
+            "[(_ctx.arg)]: _ctx.value,\n",
+            "  [\"onUpdate:\" + (_ctx.arg)]: $event => ((_ctx.value) = $event),\n",
+            "  [(_ctx.arg) + \"Modifiers\"]: { trim: true } }), null, 16 /* FULL_PROPS */))\n",
             "}",
         )
     );
@@ -97,8 +97,8 @@ fn unprefixed_templates_keep_the_argument_as_authored() {
             "function render(_ctx, _cache, $props, $setup, $data, $options) {\n",
             "  const _component_Comp = _resolveComponent(\"Comp\")\n",
             "  \n",
-            "  return (_openBlock(), _createBlock(_component_Comp, _normalizeProps({ [arg]: value,\n",
-            "  [\"onUpdate:\" + arg]: $event => ((value) = $event) }), null, 16 /* FULL_PROPS */))\n",
+            "  return (_openBlock(), _createBlock(_component_Comp, _normalizeProps({ [(arg)]: value,\n",
+            "  [\"onUpdate:\" + (arg)]: $event => ((value) = $event) }), null, 16 /* FULL_PROPS */))\n",
             "}",
         )
     );

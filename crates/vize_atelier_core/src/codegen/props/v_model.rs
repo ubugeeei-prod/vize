@@ -2,12 +2,16 @@
 
 use crate::{DirectiveNode, ExpressionNode};
 
-use super::super::{context::CodegenContext, expression::generate_expression};
+use super::super::{
+    context::CodegenContext,
+    expression::generate_expression,
+    helpers::{escape_js_string, is_valid_js_identifier},
+};
 
 /// Generate dynamic v-model on component as props.
 ///
-/// Emits `[prop]: value`, `["onUpdate:" + prop]: handler`, and, when modifiers
-/// were given, `[prop + "Modifiers"]: {…}`.
+/// Emits `[(prop)]: value`, `["onUpdate:" + (prop)]: handler`, and, when modifiers
+/// were given, `[(prop) + "Modifiers"]: {…}`.
 ///
 /// The argument goes through the shared expression emitter rather than being
 /// hard-prefixed with `_ctx.`: the element transform already ran
@@ -31,33 +35,39 @@ pub(super) fn generate_vmodel_prop(ctx: &mut CodegenContext, dir: &DirectiveNode
         })
         .unwrap_or_else(|| vize_s0::String::new("undefined"));
 
-    // [prop]: value
-    ctx.push("[");
+    // Parentheses preserve comma expressions and derived-key precedence.
+    ctx.push("[(");
     generate_expression(ctx, arg);
-    ctx.push("]: ");
+    ctx.push(")]: ");
     ctx.push(&value_exp);
     ctx.push(",");
     ctx.newline();
 
-    // ["onUpdate:" + prop]: $event => ((value) = $event)
-    ctx.push("[\"onUpdate:\" + ");
+    // ["onUpdate:" + (prop)]: $event => ((value) = $event)
+    ctx.push("[\"onUpdate:\" + (");
     generate_expression(ctx, arg);
-    ctx.push("]: $event => ((");
+    ctx.push(")]: $event => ((");
     ctx.push(&value_exp);
     ctx.push(") = $event)");
 
     if !dir.modifiers.is_empty() {
         ctx.push(",");
         ctx.newline();
-        // [prop + "Modifiers"]: { modifier: true }
-        ctx.push("[");
+        // [(prop) + "Modifiers"]: { modifier: true }
+        ctx.push("[(");
         generate_expression(ctx, arg);
-        ctx.push(" + \"Modifiers\"]: { ");
+        ctx.push(") + \"Modifiers\"]: { ");
         for (i, modifier) in dir.modifiers.iter().enumerate() {
             if i > 0 {
                 ctx.push(", ");
             }
-            ctx.push(modifier.content);
+            if is_valid_js_identifier(modifier.content) {
+                ctx.push(modifier.content);
+            } else {
+                ctx.push("\"");
+                ctx.push(&escape_js_string(modifier.content));
+                ctx.push("\"");
+            }
             ctx.push(": true");
         }
         ctx.push(" }");

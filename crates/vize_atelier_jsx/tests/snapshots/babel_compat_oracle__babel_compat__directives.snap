@@ -203,8 +203,8 @@ import { resolveComponent as _resolveComponent, normalizeProps as _normalizeProp
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
 
-  return (_openBlock(), _createBlock(_component_B, _normalizeProps({ [bar]: foo,
-  ["onUpdate:" + bar]: $event => ((foo) = $event) }), null, 16 /* FULL_PROPS */))
+  return (_openBlock(), _createBlock(_component_B, _normalizeProps({ [(bar)]: foo,
+  ["onUpdate:" + (bar)]: $event => ((foo) = $event) }), null, 16 /* FULL_PROPS */))
 }
 
 ## directives/v_models

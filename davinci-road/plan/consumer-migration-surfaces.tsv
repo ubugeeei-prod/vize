@@ -67,7 +67,7 @@ compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/events.rs	11
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/generate.rs	4	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/generate.rs	4	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/scan.rs	9	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/v_model.rs	29	s0	S0	stage	vize_s0	preferred	3
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/v_model.rs	33	s0	S0	stage	vize_s0	preferred	3
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/root.rs	11	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/create_slots.rs	11	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/detect.rs	6	s0	S0	stage	vize_s0	preferred	1
@@ -210,6 +210,12 @@ compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.r
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	118	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	12
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_sourcemap_prefixed_identifiers.rs	133	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_bind_on_argument.rs	11	s0	S0	stage	vize_s0	preferred	2
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_model_arguments.rs	1	s0	S0	stage	vize_s0	preferred	2
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_model_arguments.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_model_arguments.rs	1	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_model_arguments.rs	1	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_model_arguments.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_model_arguments.rs	1	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_slot_forwarding.rs	14	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_v_model_argument.rs	14	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/fuzz_slow_unit_js_ts_expression_3712.rs	25	raw_oxc	raw OXC	raw	oxc_allocator	raw	1

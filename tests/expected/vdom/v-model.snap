@@ -407,8 +407,8 @@ export function render(_ctx, _cache) {
   const _component_MyComponent = _resolveComponent("MyComponent")
 
   return (_openBlock(), _createBlock(_component_MyComponent, _normalizeProps({
-    [_ctx.prop]: _ctx.value,
-    ["onUpdate:" + _ctx.prop]: $event => ((_ctx.value) = $event)
+    [(_ctx.prop)]: _ctx.value,
+    ["onUpdate:" + (_ctx.prop)]: $event => ((_ctx.value) = $event)
   }), null, 16 /* FULL_PROPS */))
 }
 
@@ -424,9 +424,9 @@ export function render(_ctx, _cache) {
   const _component_MyComponent = _resolveComponent("MyComponent")
 
   return (_openBlock(), _createBlock(_component_MyComponent, _normalizeProps({
-    [_ctx.prop]: _ctx.value,
-    ["onUpdate:" + _ctx.prop]: $event => ((_ctx.value) = $event),
-    [_ctx.prop + "Modifiers"]: { trim: true }
+    [(_ctx.prop)]: _ctx.value,
+    ["onUpdate:" + (_ctx.prop)]: $event => ((_ctx.value) = $event),
+    [(_ctx.prop) + "Modifiers"]: { trim: true }
   }), null, 16 /* FULL_PROPS */))
 }
 

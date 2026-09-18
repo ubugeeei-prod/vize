@@ -78,8 +78,6 @@ fn dynamic_model_keys_values_listeners_and_modifiers_follow_argument_changes() {
 
 #[test]
 fn conditional_model_arguments_track_their_own_inputs() {
-    // Parenthesize the same expression for VDOM's derived-key precedence bug (#6216).
-    let reference = source("v-model:[(state.index?'second':'first')].trim=\"state.value\"");
     let source = source("v-model:[state.index?'second':'first'].trim=\"state.value\"");
     let extra = json!({"childSource": CHILD,
     "context": {"field": "second", "index": 0, "value": "initial", "other": "untouched"},
@@ -123,7 +121,7 @@ fn conditional_model_arguments_track_their_own_inputs() {
             json!({key: value, modifiers: {"trim": true}})
         );
     }
-    assert_eq!(actual, trace(&reference, "vdom", extra));
+    assert_eq!(actual, trace(&source, "vdom", extra));
 }
 
 #[test]
@@ -289,7 +287,6 @@ fn custom_modifiers_are_literal_keys_and_unmodified_models_stay_unmodified() {
                 ["initial|", " first |", " first |", " second |"]
             );
             assert_eq!(child_props(&actual, 0), json!({"first": "initial"}));
-            assert_eq!(actual, trace(&source, "vdom", extra));
         } else {
             assert_eq!(
                 outputs(&actual),
@@ -300,6 +297,7 @@ fn custom_modifiers_are_literal_keys_and_unmodified_models_stay_unmodified() {
                 json!({"second": "first", "secondModifiers": {"trim": true, "foo-bar": true}})
             );
         }
+        assert_eq!(actual, trace(&source, "vdom", extra));
     }
 }
 
