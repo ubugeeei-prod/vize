@@ -1,3 +1,4 @@
+use oxc_ast::ast::Expression;
 use oxc_span::Span;
 use vize_s0::{FxHashSet, String, cstr};
 
@@ -37,7 +38,14 @@ impl<'s> PatternParser<'s> {
             if self.source.as_bytes().get(end) != Some(&b')') || start >= end {
                 return Err(self.error("Expected if (guard)."));
             }
-            self.validate_expression(&self.source[start..end], "guard")?;
+            // Keep the authored delimiters in validation: a terminated line
+            // comment is legal, but it must not swallow the closing parenthesis.
+            if !matches!(
+                self.validate_expression(&self.source[start - 1..=end], "guard")?,
+                Expression::ParenthesizedExpression(_)
+            ) {
+                return Err(self.error("Expected if (guard)."));
+            }
             self.pos = end;
             let guard = self.expression(start);
             self.pos += 1;

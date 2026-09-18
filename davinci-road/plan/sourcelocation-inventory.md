@@ -75,7 +75,7 @@ sites:
 
 Line/column exist only at diagnostic- or LSP-rendering time under Davinci:
 derived from byte offsets via `vize_carton::line_index::LineIndex`
-(`crates/vize_carton/src/line_index.rs:23`) at the edge that needs them — exactly how the
+(`crates/vize_carton/src/line_index.rs:26`) at the edge that needs them — exactly how the
 source-map `finish()` step and Patina's output layer already worked. The
 eagerly-stored `Position { line, column }` pairs deleted with the type.
 Where each read went:

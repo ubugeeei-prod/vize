@@ -1,6 +1,7 @@
 //! Bidirectional authored/generated coordinate mapping for Canon documents.
 
 use tower_lsp::lsp_types::Range;
+use vize_s0::line_index::LineBreaks;
 
 use super::CanonicalMaterializedSource;
 use super::CanonicalVirtualDocument;
@@ -13,10 +14,7 @@ pub(crate) fn canonical_source_offset_to_position(
 ) -> Option<(u32, u32)> {
     let generated_offset =
         source_offset_to_virtual_generated_offset(&doc.virtual_result, source_offset)?;
-    Some(crate::ide::offset_to_position(
-        &doc.virtual_result.code,
-        generated_offset,
-    ))
+    Some(LineBreaks::Lsp.offset_to_position(&doc.virtual_result.code, generated_offset))
 }
 
 pub(super) fn source_offset_to_virtual_generated_offset(
@@ -124,14 +122,14 @@ pub(crate) fn map_virtual_result_lsp_range_to_source(
     virtual_result: &VirtualTsResult,
     range: &vize_canon::LspRange,
 ) -> Option<Range> {
-    let generated_start_post = crate::ide::position_to_offset(
+    let generated_start_post = LineBreaks::Lsp.position_to_offset(
         &virtual_result.code,
         range.start.line,
         range.start.character,
     )?;
-    let generated_end_post =
-        crate::ide::position_to_offset(&virtual_result.code, range.end.line, range.end.character)
-            .unwrap_or(generated_start_post);
+    let generated_end_post = LineBreaks::Lsp
+        .position_to_offset(&virtual_result.code, range.end.line, range.end.character)
+        .unwrap_or(generated_start_post);
     let generated_start_pre = virtual_result
         .import_source_map
         .get_original_offset(generated_start_post as u32) as usize;

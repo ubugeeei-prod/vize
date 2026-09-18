@@ -198,7 +198,11 @@ impl PatternParser<'_> {
         }
     }
 
-    pub fn validate_expression(&self, source: &str, kind: &str) -> Result<()> {
+    pub fn validate_expression<'a>(
+        &'a self,
+        source: &'a str,
+        kind: &str,
+    ) -> Result<Expression<'a>> {
         if !expression_is_safe_to_parse(source) {
             return Err(self.error(&vize_s0::cstr!("Unsafe or unbalanced {kind} expression.")));
         }
@@ -208,7 +212,7 @@ impl PatternParser<'_> {
         if !is_expression_trailing_trivia(&source[expression.span().end as usize..]) {
             return Err(self.error(&vize_s0::cstr!("Unexpected token after {kind} expression.")));
         }
-        Ok(())
+        Ok(expression)
     }
 }
 

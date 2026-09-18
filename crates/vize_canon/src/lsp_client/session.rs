@@ -294,21 +294,17 @@ fn remove_session_document(external_uri: &str, document_uri: &str) -> Option<Fil
 }
 
 pub(super) fn line_character_to_utf16_offset(text: &str, line: u32, character: u32) -> u32 {
-    let mut offset = 0u32;
-    let mut lines = text.split_inclusive('\n');
-
-    for _ in 0..line {
-        let Some(segment) = lines.next() else {
-            return text.encode_utf16().count() as u32;
-        };
-        offset += segment.encode_utf16().count() as u32;
-    }
-
-    let Some(segment) = lines.next() else {
-        return text.encode_utf16().count() as u32;
-    };
-    let line_without_break = segment.strip_suffix('\n').unwrap_or(segment);
-    let line_len = line_without_break.encode_utf16().count() as u32;
+    let start = vize_s0::line_index::LineBreaks::Lsp
+        .line_starts(text)
+        .nth(line as usize)
+        .unwrap_or(text.len());
+    let offset = text[..start].encode_utf16().count() as u32;
+    let line_len = text[start..]
+        .split(['\r', '\n'])
+        .next()
+        .unwrap_or_default()
+        .encode_utf16()
+        .count() as u32;
     offset + character.min(line_len)
 }
 

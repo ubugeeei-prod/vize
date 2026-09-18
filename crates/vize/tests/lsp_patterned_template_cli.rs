@@ -130,3 +130,56 @@ fn native_pattern_diagnostic_ranges_count_utf16_after_astral_characters() {
     assert_eq!(fixture.change(&repaired, 2), json!([]));
     fixture.shutdown();
 }
+
+#[test]
+fn native_pattern_guard_comments_keep_hover_definition_and_unsaved_updates() {
+    for newline in [
+        "\n",
+        "\r",
+        "\r\n",
+        "\u{2028}",
+        "\u{2029}",
+        "&#10;",
+        "&#13;&#10;",
+    ] {
+        check_guard_comment(newline);
+    }
+}
+
+fn check_guard_comment(newline: &str) {
+    let source = format!(
+        "<script setup lang=\"ts\">\r\nconst state = undefined as string | undefined;\r\n</script>\r\n<template v-match=\"state\">\r\n<p v-when=\"const text if (text !== undefined // guard ){newline})\">{{{{ '\u{1f600}' }}}}{{{{ text.toFixed() }}}}</p>\r\n<p v-when=\"_\"/>\r\n</template>"
+    );
+    let source = source.as_str();
+    let mut fixture = Fixture::new_with_vue_and_patterns(source);
+    let diagnostics = fixture.open(source);
+    assert_eq!(diagnostics.as_array().unwrap().len(), 1, "{diagnostics:#}");
+    assert_eq!(diagnostics[0]["code"], 2551);
+    assert_eq!(
+        diagnostics[0]["range"]["start"],
+        position(source, "toFixed"),
+        "{newline:?}: {diagnostics:#}"
+    );
+    let hover = fixture.request("textDocument/hover", source, "text.toFixed");
+    assert_eq!(hover["range"]["start"], position(source, "text.toFixed"));
+    assert_eq!(
+        hover["contents"],
+        json!({"kind": "markdown", "value": "```typescript\nconst text: string\n```"}),
+        "{hover:#}"
+    );
+    let definition = fixture.request("textDocument/definition", source, "text.toFixed");
+    assert_eq!(definition["uri"], fixture.uri);
+    assert_eq!(definition["range"]["start"], position(source, "text if"));
+    let repaired = source.replace("toFixed", "toUpperCase");
+    assert_eq!(fixture.change(&repaired, 2), json!([]));
+    let malformed = repaired.replace(&format!("// guard ){newline})"), "// guard )");
+    let diagnostics = fixture.change(&malformed, 3);
+    assert!(
+        diagnostics.as_array().unwrap().iter().any(|diagnostic| {
+            diagnostic["code"] == "patterned-template" && diagnostic["severity"] == 1
+        }),
+        "{diagnostics:#}"
+    );
+    assert_eq!(fixture.change(&repaired, 4), json!([]));
+    fixture.shutdown();
+}

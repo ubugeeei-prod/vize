@@ -5,7 +5,7 @@ use serde_json::Value;
 use super::super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 use crate::corsa_client::LspDiagnostic;
 use crate::file_uri::file_uri_to_path;
-use vize_carton::{FxHashMap, String};
+use vize_carton::{FxHashMap, String, line_index::LineBreaks};
 
 mod dedup;
 mod keyof_indexed_assignment;
@@ -33,6 +33,7 @@ pub(super) fn map_batch_diagnostics(
         .fold(0usize, |acc, (_, diagnostics)| acc + diagnostics.len());
     let mut diagnostics = Vec::with_capacity(diagnostic_count);
     let mut mapper = DiagnosticMapper::new(project);
+    mapper.virtual_line_breaks = LineBreaks::Lsp;
 
     for (uri, lsp_diagnostics) in results {
         let virtual_path = uri_to_path(uri.as_str());
@@ -51,6 +52,7 @@ pub(super) struct DiagnosticMapper<'a> {
     preserve_unused_diagnostics: bool,
     original_sources: FxHashMap<PathBuf, CachedSource>,
     virtual_line_indexes: FxHashMap<PathBuf, LineIndex>,
+    virtual_line_breaks: LineBreaks,
     keyof_assignments: FxHashMap<PathBuf, keyof_indexed_assignment::AssignmentIndex>,
 }
 
@@ -61,6 +63,7 @@ impl<'a> DiagnosticMapper<'a> {
             preserve_unused_diagnostics: project.tsconfig_preserves_unused_diagnostics(),
             original_sources: FxHashMap::default(),
             virtual_line_indexes: FxHashMap::default(),
+            virtual_line_breaks: LineBreaks::TypeScript,
             keyof_assignments: FxHashMap::default(),
         }
     }
@@ -83,9 +86,8 @@ impl<'a> DiagnosticMapper<'a> {
         )
     }
 
-    /// Map a Corsa position to a virtual source-map origin or to an explicitly
-    /// authored, in-place diagnostic path. The `checkJs` gate for JavaScript
-    /// SFCs also lives here (#3322).
+    /// Map a Corsa position to its authored source, honoring the JavaScript
+    /// SFC `checkJs` gate (#3322).
     pub(super) fn map_to_original(
         &mut self,
         virtual_path: &Path,
@@ -114,19 +116,10 @@ impl<'a> DiagnosticMapper<'a> {
         })
     }
 
-    fn virtual_offset(&mut self, file: &VirtualFile, line: u32, column: u32) -> Option<u32> {
-        if !self.virtual_line_indexes.contains_key(&file.virtual_path) {
-            self.virtual_line_indexes
-                .insert(file.virtual_path.clone(), LineIndex::new(&file.content));
-        }
-        let line_index = self.virtual_line_indexes.get(&file.virtual_path)?;
-        line_index.line_col_to_offset(&file.content, line, column)
-    }
-
     fn original_source(&mut self, path: &Path) -> Option<&CachedSource> {
         if !self.original_sources.contains_key(path) {
             let content: String = std::fs::read_to_string(path).ok()?.into();
-            let line_index = LineIndex::new(&content);
+            let line_index = LineIndex::for_backend(&content, self.virtual_line_breaks);
             self.original_sources.insert(
                 path.to_path_buf(),
                 CachedSource {

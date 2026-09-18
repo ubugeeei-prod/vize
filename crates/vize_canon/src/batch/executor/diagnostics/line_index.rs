@@ -1,9 +1,31 @@
+use vize_carton::line_index::LineBreaks;
+
+impl super::DiagnosticMapper<'_> {
+    pub(super) fn virtual_offset(
+        &mut self,
+        file: &super::VirtualFile,
+        line: u32,
+        column: u32,
+    ) -> Option<u32> {
+        if let Some(index) = self.virtual_line_indexes.get(&file.virtual_path) {
+            return index.line_col_to_offset(&file.content, line, column);
+        }
+        let index = LineIndex::for_backend(&file.content, self.virtual_line_breaks);
+        let offset = index.line_col_to_offset(&file.content, line, column);
+        self.virtual_line_indexes
+            .insert(file.virtual_path.clone(), index);
+        offset
+    }
+}
+
 pub(super) struct LineIndex {
     starts: Vec<usize>,
     len: usize,
+    backend: bool,
 }
 
 impl LineIndex {
+    #[cfg(test)]
     pub(super) fn new(content: &str) -> Self {
         let mut starts = vec![0];
         for (index, byte) in content.bytes().enumerate() {
@@ -15,6 +37,18 @@ impl LineIndex {
         Self {
             starts,
             len: content.len(),
+            backend: false,
+        }
+    }
+
+    /// Compiler and LSP line positions use distinct Unicode-break conventions.
+    /// The same convention is used when reporting authored source positions.
+    pub(super) fn for_backend(content: &str, breaks: LineBreaks) -> Self {
+        let starts = breaks.line_starts(content).collect();
+        Self {
+            starts,
+            len: content.len(),
+            backend: true,
         }
     }
 
@@ -23,7 +57,7 @@ impl LineIndex {
     pub(super) fn line_col_to_offset(&self, content: &str, line: u32, col: u32) -> Option<u32> {
         let line = usize::try_from(line).ok()?;
         let start = *self.starts.get(line)?;
-        let end = self.line_end(line);
+        let end = self.line_end(content, line);
         let mut current_col = 0u32;
         let mut offset = start;
 
@@ -59,7 +93,7 @@ impl LineIndex {
         let line = self.starts.partition_point(|start| *start <= offset);
         let line = line.saturating_sub(1);
         let start = *self.starts.get(line)?;
-        let end = self.line_end(line);
+        let end = self.line_end(content, line);
         let mut col = 0u32;
         let mut cursor = start;
         for ch in content[start..end].chars() {
@@ -72,11 +106,19 @@ impl LineIndex {
         Some((u32::try_from(line).ok()?, col))
     }
 
-    fn line_end(&self, line: usize) -> usize {
-        self.starts
-            .get(line + 1)
-            .map(|next_start| next_start.saturating_sub(1))
-            .unwrap_or(self.len)
+    fn line_end(&self, content: &str, line: usize) -> usize {
+        let Some(&next_start) = self.starts.get(line + 1) else {
+            return self.len;
+        };
+        let prefix = &content[..next_start];
+        let width = if self.backend && prefix.ends_with("\r\n") {
+            2
+        } else if self.backend && prefix.ends_with(['\u{2028}', '\u{2029}']) {
+            3
+        } else {
+            1
+        };
+        next_start - width
     }
 }
 
@@ -107,5 +149,23 @@ mod tests {
 
         assert_eq!(index.offset_to_line_col(content, 5), Some((0, 3)));
         assert_eq!(index.line_col_to_offset(content, 0, 3), Some(5));
+    }
+
+    #[test]
+    fn native_typescript_line_breaks_preserve_utf16_boundaries() {
+        for newline in ["\n", "\r", "\r\n", "\u{2028}", "\u{2029}"] {
+            let content = vize_carton::cstr!("\u{1f600}{newline}x{newline}");
+            let index = LineIndex::for_backend(&content, super::LineBreaks::TypeScript);
+            let second = 4 + newline.len() as u32;
+            assert_eq!(index.line_col_to_offset(&content, 0, 2), Some(4));
+            assert_eq!(index.line_col_to_offset(&content, 0, 3), None);
+            assert_eq!(index.line_col_to_offset(&content, 1, 0), Some(second));
+            assert_eq!(index.line_col_to_offset(&content, 1, 1), Some(second + 1));
+            assert_eq!(index.offset_to_line_col(&content, second), Some((1, 0)));
+            assert_eq!(
+                index.offset_to_line_col(&content, content.len() as u32),
+                Some((2, 0))
+            );
+        }
     }
 }

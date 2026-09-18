@@ -6,6 +6,10 @@ use vize_canon::{
 #[path = "patterned_typechecking/component_props.rs"]
 mod component_props;
 
+mod patterned_typechecking {
+    mod guards;
+}
+
 fn write(root: &Path, name: &str, source: &str) {
     let path = root.join(name);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();

@@ -26,6 +26,10 @@ impl Fixture {
         Self::new_with_options(source, false, false, true)
     }
 
+    pub fn new_with_vue_and_patterns(source: &str) -> Self {
+        Self::new_with_options(source, true, false, true)
+    }
+
     fn new_with_options(source: &str, enabled: bool, cross_file: bool, real_vue: bool) -> Self {
         let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
@@ -146,6 +150,7 @@ impl Fixture {
 
 pub fn position(source: &str, needle: &str) -> Value {
     let prefix = &source[..source.find(needle).expect("fixture needle")];
+    let prefix = prefix.replace("\r\n", "\n").replace('\r', "\n");
     let line = prefix.bytes().filter(|&b| b == b'\n').count();
     let start = prefix.rfind('\n').map_or(0, |n| n + 1);
     json!({ "line": line, "character": prefix[start..].encode_utf16().count() })

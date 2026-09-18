@@ -67,26 +67,8 @@ pub fn position_to_offset(rope: &Rope, position: Position) -> Option<usize> {
 /// This helper mirrors [`offset_to_position`] for call sites that already have
 /// string content instead of a reusable rope.
 pub fn offset_to_position_str(content: &str, offset: usize) -> Position {
-    let mut line = 0u32;
-    let mut character = 0u32;
-    let mut current_offset = 0usize;
-    let target = offset.min(content.len());
-
-    for ch in content.chars() {
-        if current_offset >= target {
-            break;
-        }
-
-        if ch == '\n' {
-            line += 1;
-            character = 0;
-        } else {
-            character += ch.len_utf16() as u32;
-        }
-
-        current_offset += ch.len_utf8();
-    }
-
+    let (line, character) =
+        vize_s0::line_index::LineBreaks::Lsp.offset_to_position(content, offset);
     Position { line, character }
 }
 
@@ -110,32 +92,17 @@ pub fn make_range(start_line: u32, start_char: u32, end_line: u32, end_char: u32
 /// For better performance with repeated conversions, use the Rope-based version.
 #[inline]
 pub fn position_to_offset_str(content: &str, line: u32, character: u32) -> usize {
-    let mut current_line = 0u32;
-    let mut current_offset = 0usize;
-
-    for (i, ch) in content.char_indices() {
-        if current_line == line {
-            // We're on the target line, count UTF-16 code units
-            let line_start = current_offset;
-            let mut utf16_units = 0u32;
-
-            for (j, c) in content[line_start..].char_indices() {
-                if c == '\n' || utf16_units >= character {
-                    return line_start + j;
-                }
-                utf16_units += c.len_utf16() as u32;
-            }
-            // End of file reached
-            return content.len();
+    let start = vize_s0::line_index::LineBreaks::Lsp
+        .line_starts(content)
+        .nth(line as usize)
+        .unwrap_or(content.len());
+    let mut utf16_units = 0u32;
+    for (at, ch) in content[start..].char_indices() {
+        if matches!(ch, '\r' | '\n') || utf16_units >= character {
+            return start + at;
         }
-
-        if ch == '\n' {
-            current_line += 1;
-        }
-        current_offset = i + ch.len_utf8();
+        utf16_units += ch.len_utf16() as u32;
     }
-
-    // If we're past all lines, return end of content
     content.len()
 }
 
@@ -341,5 +308,23 @@ mod tests {
         assert_eq!(position_to_offset_str(content, 0, 3), "a😀".len());
         assert_eq!(position_to_offset_str(content, 0, 4), "a😀b".len());
         assert_eq!(position_to_offset_str(content, 1, 1), content.len());
+    }
+
+    #[test]
+    fn string_positions_follow_lsp_breaks_and_utf16_columns() {
+        let source = "a\r\u{1f600}\u{2028}x\r\ny";
+        assert_eq!(
+            offset_to_position_str(source, source.find('x').unwrap()),
+            Position::new(1, 3)
+        );
+        assert_eq!(
+            position_to_offset_str(source, 1, 3),
+            source.find('x').unwrap()
+        );
+        assert_eq!(
+            position_to_offset_str(source, 1, 99),
+            source.find("\r\n").unwrap()
+        );
+        assert_eq!(position_to_offset_str(source, 2, 0), source.len() - 1);
     }
 }

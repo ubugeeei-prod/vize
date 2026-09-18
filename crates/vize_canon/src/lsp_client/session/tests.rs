@@ -121,6 +121,22 @@ fn utf16_offsets_clamp_to_line_boundaries() {
 }
 
 #[test]
+fn native_query_offsets_follow_lsp_line_terminators() {
+    for newline in ["\n", "\r", "\r\n"] {
+        let text = vize_s0::cstr!("\u{1f600}{newline}x");
+        let next = 2 + newline.encode_utf16().count() as u32;
+        assert_eq!(line_character_to_utf16_offset(&text, 0, 99), 2);
+        assert_eq!(line_character_to_utf16_offset(&text, 1, 0), next);
+        assert_eq!(line_character_to_utf16_offset(&text, 1, 99), next + 1);
+        assert_eq!(line_character_to_utf16_offset(&text, 2, 0), next + 1);
+    }
+    assert_eq!(
+        line_character_to_utf16_offset("a\u{2028}b\u{2029}c", 0, 4),
+        4
+    );
+}
+
+#[test]
 fn api_queries_use_uri_document_identifiers() {
     assert!(matches!(
         uri_document_identifier("file:///workspace/App.vue.ts"),

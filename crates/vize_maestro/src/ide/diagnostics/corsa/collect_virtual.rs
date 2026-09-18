@@ -2,6 +2,7 @@
 
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url};
 use vize_s0::FxHashSet;
+use vize_s0::line_index::LineBreaks;
 
 use super::super::{VirtualTsResult, sources};
 use super::log_preview::log_preview;
@@ -185,14 +186,17 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
                 serde_json::Value::String(text) => text.trim_start_matches("TS").parse().ok(),
                 _ => None,
             });
-            let unreachable = line_character_to_byte_offset(
-                virtual_ts,
-                diag.range.start.line,
-                diag.range.start.character,
-            )
-            .is_some_and(|offset| {
-                vize_canon::virtual_ts::is_unreachable_pattern_diagnostic(virtual_ts, offset, code)
-            });
+            let unreachable = LineBreaks::Lsp
+                .position_to_offset(
+                    virtual_ts,
+                    diag.range.start.line,
+                    diag.range.start.character,
+                )
+                .is_some_and(|offset| {
+                    vize_canon::virtual_ts::is_unreachable_pattern_diagnostic(
+                        virtual_ts, offset, code,
+                    )
+                });
             Some(Diagnostic {
                 range: Range {
                     start: Position {
@@ -256,14 +260,14 @@ fn is_generated_vue_ts_import_extension_diagnostic(
         return false;
     }
 
-    let Some(start) = line_character_to_byte_offset(
+    let Some(start) = LineBreaks::Lsp.position_to_offset(
         virtual_ts,
         diagnostic.range.start.line,
         diagnostic.range.start.character,
     ) else {
         return false;
     };
-    let Some(end) = line_character_to_byte_offset(
+    let Some(end) = LineBreaks::Lsp.position_to_offset(
         virtual_ts,
         diagnostic.range.end.line,
         diagnostic.range.end.character,

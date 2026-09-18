@@ -13,6 +13,9 @@
 
 use crate::lsp::Position;
 
+mod line_breaks;
+pub use line_breaks::LineBreaks;
+
 /// Precomputed byte offsets of every line start in a source string.
 ///
 /// Building this once and reusing it turns the per-call `O(offset)` scan of

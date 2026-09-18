@@ -155,3 +155,23 @@ fn trailing_line_comments_do_not_consume_generated_selector_code() {
         );
     }
 }
+
+#[test]
+fn guard_line_comments_preserve_selection_and_reactive_updates() {
+    for newline in [
+        "\n",
+        "\r",
+        "\r\n",
+        "\u{2028}",
+        "\u{2029}",
+        "&#10;",
+        "&#13;&#10;",
+    ] {
+        check(
+            &format!(
+                "<template v-match=\"subject\"><p v-when=\"const value if (value === 'ok' // guard ){newline})\">{{{{ value }}}}</p><p v-when=\"_\">other</p></template>"
+            ),
+            json!([{"context": {"subject": "ok"}, "steps": [{"patch": {"subject": "no"}}, {"patch": {"subject": "ok"}}], "trees": [paragraph("ok"), paragraph("other"), paragraph("ok")]}]),
+        );
+    }
+}

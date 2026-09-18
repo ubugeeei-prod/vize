@@ -93,46 +93,7 @@ pub fn offset_to_position(content: &str, offset: usize) -> (u32, u32) {
 /// Convert (line, character) position to byte offset in a document.
 #[inline]
 pub fn position_to_offset(content: &str, line: u32, character: u32) -> Option<usize> {
-    fn offset_in_line(content: &str, line_start: usize, character: u32) -> Option<usize> {
-        let mut utf16_units = 0u32;
-
-        for (relative_offset, ch) in content[line_start..].char_indices() {
-            if ch == '\n' {
-                return (utf16_units == character).then_some(line_start + relative_offset);
-            }
-            if utf16_units == character {
-                return Some(line_start + relative_offset);
-            }
-
-            let next_utf16_units = utf16_units + ch.len_utf16() as u32;
-            if character < next_utf16_units {
-                return None;
-            }
-            utf16_units = next_utf16_units;
-        }
-
-        (utf16_units == character).then_some(content.len())
-    }
-
-    let mut current_line = 0u32;
-    let mut line_start = 0usize;
-
-    for (offset, ch) in content.char_indices() {
-        if current_line == line {
-            return offset_in_line(content, line_start, character);
-        }
-
-        if ch == '\n' {
-            current_line += 1;
-            line_start = offset + ch.len_utf8();
-        }
-    }
-
-    if current_line == line {
-        return offset_in_line(content, line_start, character);
-    }
-
-    None
+    vize_s0::line_index::LineBreaks::Lsp.position_to_offset(content, line, character)
 }
 
 // =============================================================================
