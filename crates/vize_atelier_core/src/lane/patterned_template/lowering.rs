@@ -1,331 +1,107 @@
+//! Lazy RFC 823 selector lowering. See LICENSE for the Vue reference attribution.
+
 mod aggregate;
 
+use vize_armature::patterns::{MatchArm, MatchPattern, PatternKind};
 use vize_s0::{String, cstr};
 
-use crate::{SourceLocation, TransformContext};
-
-use self::aggregate::{lower_array_pattern, lower_object_pattern};
-use super::report_pattern_error;
-use super::syntax::{
-    is_valid_ident, split_top_level_keyword, split_top_level_or, strip_outer_pair,
-};
-
-#[derive(Debug, Default)]
-pub(super) struct CompiledPattern {
-    pub(super) condition: String,
-    pub(super) binding: Option<String>,
-    pub(super) as_bindings: std::vec::Vec<AsBinding>,
-    pub(super) guard: Option<String>,
+struct Selector<'a> {
+    prefix: &'a str,
+    next: usize,
+    tests: std::vec::Vec<String>,
+    copies: std::vec::Vec<String>,
+    bindings: std::vec::Vec<String>,
 }
 
-impl CompiledPattern {
-    fn has_bindings(&self) -> bool {
-        self.binding.is_some() || !self.as_bindings.is_empty()
+impl Selector<'_> {
+    fn temp(&mut self) -> String {
+        let name = cstr!("{}_{}", self.prefix, self.next);
+        self.next += 1;
+        name
     }
-}
 
-#[derive(Debug)]
-pub(super) struct AsBinding {
-    pub(super) pattern: String,
-    pub(super) source: String,
-}
-
-#[derive(Default)]
-pub(super) struct PatternLoweringState {
-    dummy_index: usize,
-}
-
-pub(super) fn pattern_without_guard(expr: &str) -> &str {
-    guard_split(expr).map_or(expr, |(pattern, _)| pattern)
-}
-
-pub(super) fn guard_suffix(expr: &str) -> Option<&str> {
-    guard_split(expr).map(|(_, guard)| guard)
-}
-
-fn guard_split(expr: &str) -> Option<(&str, &str)> {
-    let trimmed = expr.trim();
-    let (pattern, guard_with_parens) = split_top_level_keyword(trimmed, "if")?;
-    let guard_with_parens = guard_with_parens.trim();
-    let guard = guard_with_parens
-        .strip_prefix('(')
-        .and_then(|guard| guard.strip_suffix(')'))?;
-    Some((pattern.trim(), guard.trim()))
-}
-
-pub(super) fn build_case_pattern(
-    ctx: &mut TransformContext<'_>,
-    subject_expr: &str,
-    case_expr: &str,
-    loc: &SourceLocation,
-) -> CompiledPattern {
-    let guard = guard_suffix(case_expr).map(String::from);
-    let case_expr = pattern_without_guard(case_expr).trim();
-    let mut state = PatternLoweringState::default();
-    let mut pattern = lower_pattern(ctx, case_expr, subject_expr, loc, &mut state);
-    pattern.guard = guard;
-    pattern
-}
-
-pub(super) fn pattern_condition_with_guard(
-    pattern: &CompiledPattern,
-    subject_expr: &str,
-) -> String {
-    if pattern.guard.is_some() {
-        let guard_condition = build_guard_condition(pattern, subject_expr);
-        if pattern.condition == "true" {
-            guard_condition
-        } else {
-            let base = &pattern.condition;
-            cstr!("({base}) && ({guard_condition})")
+    fn emit(&mut self, pattern: &MatchPattern, value: &str) {
+        match &pattern.kind {
+            PatternKind::Wildcard => {}
+            PatternKind::Binding(binding) => {
+                self.bindings
+                    .push(cstr!("const {} = {value};", binding.name));
+            }
+            PatternKind::As { pattern, binding } => {
+                self.emit(pattern, value);
+                self.bindings
+                    .push(cstr!("const {} = {value};", binding.name));
+            }
+            PatternKind::Literal(literal) => {
+                self.tests
+                    .push(cstr!("if (!({value} === {})) return null;", literal.text));
+            }
+            PatternKind::Value(expression) => {
+                let expected = self.temp();
+                self.tests.push(cstr!(
+                    "const {expected} = {}; if (!({value} === {expected} || ({value} !== {value} && {expected} !== {expected}))) return null;",
+                    expression.text
+                ));
+            }
+            PatternKind::Or(patterns) => {
+                let mut alternatives = std::vec::Vec::new();
+                for pattern in patterns {
+                    let start = self.tests.len();
+                    self.emit(pattern, value);
+                    let tests = self
+                        .tests
+                        .drain(start..)
+                        .collect::<std::vec::Vec<_>>()
+                        .join(" ");
+                    alternatives.push(cstr!("(() => {{ {tests} return true; }})()"));
+                }
+                self.tests
+                    .push(cstr!("if (!({})) return null;", alternatives.join(" || ")));
+            }
+            PatternKind::Object { properties, rest } => {
+                self.object(properties, rest.as_ref(), value)
+            }
+            PatternKind::Array { elements, rest } => self.array(elements, rest.as_ref(), value),
         }
-    } else {
-        pattern.condition.clone()
     }
 }
 
-pub(super) fn build_guard_condition(pattern: &CompiledPattern, subject_expr: &str) -> String {
-    let Some(guard) = &pattern.guard else {
-        return String::from("true");
+/// Selection returns the arm index followed by its captured binding values.
+/// Guard and render scopes consume the same values; neither rereads the subject.
+pub(super) fn generate_selector(arms: &[MatchArm], subject: &str, prefix: &str) -> String {
+    let mut emitter = Selector {
+        prefix,
+        next: 0,
+        tests: std::vec::Vec::new(),
+        copies: std::vec::Vec::new(),
+        bindings: std::vec::Vec::new(),
     };
-    if !pattern.has_bindings() {
-        return guard.clone();
-    }
-
-    let mut out = String::from("(() => { ");
-    if let Some(binding) = &pattern.binding {
-        out.push_str("const ");
-        out.push_str(binding);
-        out.push_str(" = ");
-        out.push_str(subject_expr);
-        out.push_str("; ");
-    }
-    for as_binding in &pattern.as_bindings {
-        out.push_str("const ");
-        out.push_str(&as_binding.pattern);
-        out.push_str(" = ");
-        out.push_str(&as_binding.source);
-        out.push_str("; ");
-    }
-    out.push_str("return (");
-    out.push_str(guard);
-    out.push_str("); })()");
-    out
-}
-
-pub(super) fn build_binding_for_expression(
-    pattern: &CompiledPattern,
-    subject_expr: &str,
-) -> Option<String> {
-    if !pattern.has_bindings() {
-        return None;
-    }
-
-    let mut alias = String::from("{ ");
-    let mut source = String::from("[{ ");
-    let mut first = true;
-    if let Some(binding) = &pattern.binding {
-        alias.push_str("__vize_value: ");
-        alias.push_str(binding);
-        source.push_str("__vize_value: ");
-        source.push_str(subject_expr);
-        first = false;
-    }
-    for (index, as_binding) in pattern.as_bindings.iter().enumerate() {
-        if !first {
-            alias.push_str(", ");
-            source.push_str(", ");
+    let root = emitter.temp();
+    let mut code = cstr!("(({root}) => {{ ");
+    for (index, arm) in arms.iter().enumerate() {
+        emitter.tests.clear();
+        emitter.copies.clear();
+        emitter.bindings.clear();
+        emitter.emit(&arm.pattern, &root);
+        let result = emitter.temp();
+        code.push_str(&cstr!("{{ const {result} = (() => {{ "));
+        code.push_str(&emitter.tests.join(" "));
+        code.push(' ');
+        code.push_str(&emitter.copies.join(" "));
+        // Authored bindings must not put enclosing value-pattern reads in a TDZ.
+        code.push_str(" { ");
+        code.push_str(&emitter.bindings.join(" "));
+        if let Some(guard) = &arm.guard {
+            code.push_str(&cstr!(" if (!({})) return null;", guard.text));
         }
-        alias.push_str(&cstr!("__vize_as{index}: "));
-        alias.push_str(&as_binding.pattern);
-        source.push_str(&cstr!("__vize_as{index}: "));
-        source.push_str(&as_binding.source);
-        first = false;
-    }
-    alias.push_str(" }");
-    source.push_str(" }]");
-    alias.push_str(" in ");
-    alias.push_str(&source);
-    Some(alias)
-}
-
-fn lower_pattern(
-    ctx: &mut TransformContext<'_>,
-    pattern: &str,
-    subject_expr: &str,
-    loc: &SourceLocation,
-    state: &mut PatternLoweringState,
-) -> CompiledPattern {
-    let pattern = pattern.trim();
-    if pattern.is_empty() {
-        return CompiledPattern {
-            condition: String::from("false"),
-            ..Default::default()
-        };
-    }
-
-    if let Some((inner, alias)) = split_top_level_keyword(pattern, "as") {
-        let mut compiled = lower_pattern(ctx, inner, subject_expr, loc, state);
-        if let Some(binding) = binding_pattern(ctx, alias, loc) {
-            compiled.as_bindings.push(AsBinding {
-                pattern: binding,
-                source: String::from(subject_expr),
-            });
+        code.push_str(&cstr!(" return [{index}"));
+        for binding in &arm.bindings {
+            code.push_str(&cstr!(", {}", binding.name));
         }
-        return compiled;
+        code.push_str(&cstr!(
+            "]; }} }})(); if ({result} !== null) return {result}; }} "
+        ));
     }
-
-    if let Some(parts) = split_top_level_or(pattern) {
-        let mut conditions = std::vec::Vec::new();
-        let mut any_bindings = false;
-        for part in parts {
-            let compiled = lower_pattern(ctx, part, subject_expr, loc, state);
-            any_bindings |= compiled.has_bindings();
-            conditions.push(compiled.condition);
-        }
-        if any_bindings {
-            report_pattern_error(
-                ctx,
-                loc,
-                "`v-when` alternatives separated by `|` cannot introduce bindings yet.",
-            );
-        }
-        return CompiledPattern {
-            condition: join_conditions(&conditions, " || "),
-            ..Default::default()
-        };
-    }
-
-    if let Some(inner) = strip_outer_pair(pattern, '(', ')') {
-        return lower_pattern(ctx, inner, subject_expr, loc, state);
-    }
-
-    if pattern == "NaN" {
-        return CompiledPattern {
-            condition: cstr!("Number.isNaN({subject_expr})"),
-            ..Default::default()
-        };
-    }
-    if pattern == "_" {
-        return CompiledPattern {
-            condition: String::from("true"),
-            ..Default::default()
-        };
-    }
-    if let Some(binding) = binding_pattern(ctx, pattern, loc) {
-        return CompiledPattern {
-            condition: String::from("true"),
-            binding: Some(binding),
-            ..Default::default()
-        };
-    }
-
-    if starts_with_binding_keyword(pattern, "let") || starts_with_binding_keyword(pattern, "var") {
-        report_pattern_error(
-            ctx,
-            loc,
-            "`v-when` pattern bindings must use `const`; `let` and `var` are not supported.",
-        );
-        return CompiledPattern {
-            condition: String::from("false"),
-            ..Default::default()
-        };
-    }
-
-    if let Some(inner) = strip_outer_pair(pattern, '{', '}') {
-        return lower_object_pattern(ctx, inner, subject_expr, loc, state);
-    }
-    if let Some(inner) = strip_outer_pair(pattern, '[', ']') {
-        return lower_array_pattern(ctx, inner, subject_expr, loc, state);
-    }
-
-    CompiledPattern {
-        condition: cstr!("({subject_expr}) === ({pattern})"),
-        ..Default::default()
-    }
-}
-
-fn binding_pattern(
-    ctx: &mut TransformContext<'_>,
-    pattern: &str,
-    loc: &SourceLocation,
-) -> Option<String> {
-    let pattern = pattern.trim();
-    if let Some(rest) = pattern.strip_prefix("const ") {
-        let rest = rest.trim();
-        if is_valid_binding_pattern(rest) {
-            Some(String::from(rest))
-        } else {
-            report_pattern_error(
-                ctx,
-                loc,
-                "`v-when` const binding is missing a binding pattern.",
-            );
-            None
-        }
-    } else {
-        None
-    }
-}
-
-fn starts_with_binding_keyword(input: &str, keyword: &str) -> bool {
-    let Some(rest) = input.trim().strip_prefix(keyword) else {
-        return false;
-    };
-    rest.chars()
-        .next()
-        .is_some_and(|ch| ch.is_ascii_whitespace())
-}
-
-fn is_valid_binding_pattern(pattern: &str) -> bool {
-    let pattern = pattern.trim();
-    is_valid_ident(pattern)
-        || (pattern.starts_with('{') && pattern.ends_with('}'))
-        || (pattern.starts_with('[') && pattern.ends_with(']'))
-}
-
-pub(super) fn is_wildcard_pattern(pattern: &str) -> bool {
-    let mut pattern = pattern.trim();
-    while let Some(inner) = strip_outer_pair(pattern, '(', ')') {
-        pattern = inner.trim();
-    }
-    pattern == "_"
-}
-
-fn property_access(subject_expr: &str, key: &str) -> String {
-    let key = key.trim();
-    if is_valid_ident(key) {
-        cstr!("({subject_expr}).{key}")
-    } else if let Some(inner) = strip_outer_pair(key, '[', ']') {
-        cstr!("({subject_expr})[{inner}]")
-    } else {
-        cstr!("({subject_expr})[{key}]")
-    }
-}
-
-fn next_dummy(state: &mut PatternLoweringState) -> String {
-    let index = state.dummy_index;
-    state.dummy_index += 1;
-    cstr!("__vize_match_unused_{index}")
-}
-
-fn join_conditions(parts: &[String], op: &str) -> String {
-    if parts.is_empty() {
-        return String::from("true");
-    }
-    if parts.len() == 1 {
-        return parts[0].clone();
-    }
-
-    let mut out = String::from("(");
-    for (index, part) in parts.iter().enumerate() {
-        if index > 0 {
-            out.push_str(op);
-        }
-        out.push('(');
-        out.push_str(part);
-        out.push(')');
-    }
-    out.push(')');
-    out
+    code.push_str(&cstr!("return [-1]; }})(({subject}))"));
+    code
 }

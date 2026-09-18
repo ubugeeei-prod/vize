@@ -169,8 +169,8 @@ match 対象の式は 1 回だけ評価されます。branch は上から順に�
 
 | Pattern | Example | Notes |
 | --- | --- | --- |
-| Literal | `v-when="'ready'"`, `v-when="404"` | strict equality。`NaN` は `Number.isNaN` |
-| Value | `v-when="Status.Active"` | identifier と member expression を runtime value と比較 |
+| Literal | `v-when="'ready'"`, `v-when="404"` | strict equality |
+| Value | `v-when="Status.Active"` | identifier と member expression は `NaN` を含む SameValueZero で比較 |
 | Wildcard | `v-when="_"` | binding を導入せずに match |
 | Const binding | `v-when="const value"` | `let` / `var` は rejected |
 | Object | `v-when="{ kind: 'ok', value: const result }"` | 余分な object property は許容 |
@@ -178,7 +178,7 @@ match 対象の式は 1 回だけ評価されます。branch は上から順に�
 | Object rest | `v-when="{ kind: 'error', ...const payload }"` | rest binding も `const` 必須。lone `...` も accepted |
 | Array / tuple | `v-when="[const first, ...const rest]"` | `Array.isArray` が必要。rest があれば追加要素を許容 |
 | Or | `v-when="'idle' | 'loading'"` | alternatives は左から右。alternative 内 binding は未対応 |
-| As binding | `v-when="{ kind: 'ok', const data } as const entry"` | nested binding に加えて matched value も bind |
+| As binding | `v-when="{ kind: 'ok', const data } as entry"` | nested binding に加えて matched value も bind |
 | Guard | `v-when="{ kind: 'error', error: const e } if (e.retriable)"` | pattern match 後に guard を実行 |
 
 `v-case` は古い Vize 実験の互換 alias として残っていますが、新しい template では `v-when` を使います。 RFC #823 で議論されている shorthand candidate は Vize の public syntax ではありません。`?=`、`|=`、 `~=` は有効化されません。

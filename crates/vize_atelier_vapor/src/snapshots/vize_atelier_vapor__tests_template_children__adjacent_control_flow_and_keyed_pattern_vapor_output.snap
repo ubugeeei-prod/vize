@@ -22,9 +22,9 @@ export function render(_ctx) {
     return n5
   })
   _setInsertionState(n0, n6, true)
-  const n7 = _createFor(() => ([_ctx.status]), (_for_item0) => {
+  const n7 = _createFor(() => ([((__vize_match_0_select_0) => { { const __vize_match_0_select_1 = (() => { if (!(__vize_match_0_select_0 === 'ready')) return null;  {  return [0]; } })(); if (__vize_match_0_select_1 !== null) return __vize_match_0_select_1; } { const __vize_match_0_select_2 = (() => {   {  return [1]; } })(); if (__vize_match_0_select_2 !== null) return __vize_match_0_select_2; } return [-1]; })((_ctx.status))]), (_for_item0) => {
     _setInsertionState(n0, n6, true)
-    const n9 = _createIf(() => ((_for_item0.value) === ('ready')), () => {
+    const n9 = _createIf(() => (_for_item0.value[0] === 0), () => {
       const n11 = _createFor(() => (_ctx.items), (_for_item1) => {
         const n13 = t1()
         const x13 = _txt(n13)
@@ -35,10 +35,10 @@ export function render(_ctx) {
         return n13
       }, (item) => (item.id), 1)
       return n11
-    }, () => {
+}, () => _createIf(() => (_for_item0.value[0] === 1), () => {
       const n15 = t2()
       return n15
-    })
+    }))
     return n9
   })
   return n1

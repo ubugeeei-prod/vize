@@ -7,20 +7,23 @@ components=[]
 preamble=
 const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, createTextVNode: _createTextVNode, renderList: _renderList } = Vue
 
-const _hoisted_1 = /*#__PURE__*/ _createElementVNode("em", null, "mid")
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode("li", null, "Ready")
+const _hoisted_2 = /*#__PURE__*/ _createElementVNode("em", null, "mid")
 
 code=
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("div", null, [
     _createElementVNode("ul", null, [
-      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([status], (__vize_match) => {
+      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([((__vize_match_0_select_0) => { { const __vize_match_0_select_1 = (() => { if (!(__vize_match_0_select_0 === 'ready')) return null;  {  return [0]; } })(); if (__vize_match_0_select_1 !== null) return __vize_match_0_select_1; } return [-1]; })((status))], (__vize_match_0) => {
         return (_openBlock(), _createElementBlock(_Fragment, null, [
-          ((__vize_match) === ('ready'))
-            ? (_openBlock(), _createElementBlock("li", { key: 0 }, "Ready"))
+          (__vize_match_0[0] === 0)
+            ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
+              _hoisted_1
+            ], 64 /* STABLE_FRAGMENT */))
             : _createCommentVNode("v-if", true),
           _createTextVNode("Before "),
           _toDisplayString(a),
-          _hoisted_1,
+          _hoisted_2,
           _createTextVNode("After "),
           _toDisplayString(b)
         ], 64 /* STABLE_FRAGMENT */))

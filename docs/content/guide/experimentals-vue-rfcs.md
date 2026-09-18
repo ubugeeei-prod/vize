@@ -58,12 +58,12 @@ For entry-point and proof checklists, see [Experimentals Reference](./experiment
 
 ## Patterned Templates
 
-`patternedTemplate` implements the long-form `v-match` / `v-when` syntax from RFC #823. The subject expression is evaluated once, direct branch children are tested in source order, and only the first matching branch renders.
+`patternedTemplate` implements the long-form `v-match` / `v-when` syntax from RFC #823. The subject expression is evaluated once, direct branch children are tested in source order, and only the first matching branch renders. Pattern property reads are captured once per attempted arm. Guards and rendered bindings receive the same captured values, including rest-copy identity. Rest copies are deferred until the entire shape matches; failed shapes and later arms do not evaluate their guards. `v-when` cannot share its host with `v-if`, `v-else-if`, `v-else`, `v-for`, or `v-match`.
 
 Inline HTML SFCs accept outer `<template v-match>` with nested-match semantics in DOM, SSR, and Vapor. Header-only subject edits invalidate HMR; parsed `template.content` remains the original block body.
 External `src`, preprocessors, and descriptors missing original source metadata are rejected. Canon supports opt-in narrowing and coverage checks below; assembled compiler SFC source maps remain script-only.
 
-Croquis accepts `analyzeSfc(source, { experimentalPatternedTemplate: true })` and the Playground Croquis checkbox for root and nested matches. Its strict RFC parser records branch-local declarations, enclosing value lookups, guard references, and syntax diagnostics with authored ranges (including HTML entities). Canon uses the same parser through `typeCheck(source, { experimentalPatternedTemplate: true, includeVirtualTs: true })`, the Playground Canon checkbox, and `vize check` with `experimentals.patternedTemplate`. Native Maestro reads the same workspace opt-in: it reports structural and missing-coverage errors, preserves unreachable-arm warnings, and rechecks unsaved edits. Root-pattern binding hover and definition return the narrowed type and authored declaration. Restart the language server after changing the workspace flag. These tooling paths use `pattern as name`, not the compiler's older `as const name` spelling. Compiler grammar convergence, Content Mapper opt-in routing, and complete LSP rename/completion coverage for guards, nested closures, and or-pattern bindings remain tracked in [#6176](https://github.com/ubugeeei-prod/vize/issues/6176).
+Croquis accepts `analyzeSfc(source, { experimentalPatternedTemplate: true })` and the Playground Croquis checkbox for root and nested matches. Its strict RFC parser records branch-local declarations, enclosing value lookups, guard references, and syntax diagnostics with authored ranges (including HTML entities). Canon uses the same parser through `typeCheck(source, { experimentalPatternedTemplate: true, includeVirtualTs: true })`, the Playground Canon checkbox, and `vize check` with `experimentals.patternedTemplate`. Native Maestro reads the same workspace opt-in: it reports structural and missing-coverage errors, preserves unreachable-arm warnings, and rechecks unsaved edits. Root-pattern binding hover and definition return the narrowed type and authored declaration. Restart the language server after changing the workspace flag. DOM, Vapor, and SSR now share this pattern parser and use `pattern as name`; the obsolete `as const name` spelling is rejected. Content Mapper opt-in routing and complete LSP rename/completion coverage for guards, nested closures, and or-pattern bindings remain tracked in [#6176](https://github.com/ubugeeei-prod/vize/issues/6176).
 
 ```vue
 <script setup lang="ts">
@@ -98,8 +98,8 @@ Supported branch patterns:
 
 | Pattern | Example | Runtime check |
 | --- | --- | --- |
-| Literal | `v-when="'ready'"`, `v-when="404"` | strict equality; `NaN` uses `Number.isNaN` |
-| Value | `v-when="Status.Ready"` | compares with an identifier or member expression |
+| Literal | `v-when="'ready'"`, `v-when="404"` | strict equality |
+| Value | `v-when="Status.Ready"` | SameValueZero comparison with an identifier or member expression, including `NaN` |
 | Wildcard | `v-when="_"` | always matches and introduces no binding |
 | Const binding | `v-when="const value"` | always matches and binds `value` in this branch |
 | Object | `v-when="{ kind: 'ok', value: const data }"` | open structural object match; extra properties are allowed |
@@ -107,7 +107,7 @@ Supported branch patterns:
 | Object rest | `v-when="{ kind: 'error', ...const payload }"` | binds remaining own enumerable properties; lone `...` is accepted |
 | Array / tuple | `v-when="[const first, ...const rest]"` | requires `Array.isArray`; rest allows additional items |
 | Or | `v-when="'idle' | 'loading'"` | tries alternatives from left to right |
-| As binding | Croquis: `v-when="{ kind: 'ok' } as whole"`; compiler only: `as const whole` | binds the matched value as `whole` |
+| As binding | `v-when="{ kind: 'ok' } as whole"` | binds the matched value as `whole` |
 | Guard | `v-when="{ error: const e } if (e.retriable)"` | runs after the pattern succeeds |
 
 ### Patterned Diagnostics

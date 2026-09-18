@@ -1,4 +1,5 @@
-use vize_s0::{Allocator, Box, String, Vec};
+use vize_armature::patterns::MatchArm;
+use vize_s0::{Allocator, Box, String, Vec, cstr};
 
 use crate::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode,
@@ -10,7 +11,7 @@ pub(super) fn install_match_scope<'a>(
     el: &mut ElementNode<'a>,
     scope: PropNode<'a>,
 ) {
-    if el.tag == "template" {
+    if el.tag == "template" && !el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "if" | "else-if" | "else" | "for" | "slot"))) {
         el.tag_type = ElementType::Template;
         el.props.push(scope);
         return;
@@ -26,26 +27,62 @@ pub(super) fn install_match_scope<'a>(
         .push(TemplateChildNode::Element(Box::new_in(wrapper, &allocator)));
 }
 
-pub(super) fn rewrite_case_directive<'a>(
+pub(super) fn install_arm_scope<'a>(
     allocator: &'a Allocator,
-    dir: &mut DirectiveNode<'a>,
-    name: &'static str,
-    raw_name: &'static str,
-    condition: Option<String>,
+    el: &mut ElementNode<'a>,
+    arm: &MatchArm,
+    local: &str,
+    index: usize,
+    loc: SourceLocation,
 ) {
-    let loc = dir.loc.clone();
-    dir.name = name;
-    dir.raw_name = Some(raw_name);
-    dir.exp = condition.map(|condition| {
-        ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode::new(allocator.alloc_str(&condition), false, loc),
-            &allocator,
-        ))
-    });
-    dir.arg = None;
-    dir.modifiers = Vec::new_in(&allocator);
-    dir.for_parse_result = None;
-    dir.shorthand = false;
+    let mut branch = ElementNode::new(allocator, "template", el.loc.clone());
+    branch.tag_type = ElementType::Template;
+    branch.ns = el.ns;
+    let name = if index == 0 { "if" } else { "else-if" };
+    let raw = if index == 0 { "v-if" } else { "v-else-if" };
+    branch.props.push(create_directive(
+        allocator,
+        name,
+        raw,
+        Some(cstr!("{local}[0] === {index}")),
+        loc.clone(),
+    ));
+    let mut original = std::mem::replace(el, branch);
+    let mut content = Vec::new_in(&allocator);
+    let mut retained = Vec::new_in(&allocator);
+    if original.tag == "template" {
+        content = std::mem::replace(&mut original.children, Vec::new_in(&allocator));
+        retained = std::mem::replace(&mut original.props, Vec::new_in(&allocator));
+    } else {
+        content.push(TemplateChildNode::Element(Box::new_in(
+            original, &allocator,
+        )));
+    }
+    if arm.bindings.is_empty() && retained.is_empty() {
+        el.children = content;
+        return;
+    }
+    let mut bindings = ElementNode::new(allocator, "template", loc.clone());
+    bindings.tag_type = ElementType::Template;
+    bindings.ns = el.ns;
+    bindings.children = content;
+    bindings.props = retained;
+    let names = arm
+        .bindings
+        .iter()
+        .map(|binding| binding.name.as_str())
+        .collect::<std::vec::Vec<_>>()
+        .join(", ");
+    bindings.props.push(create_directive(
+        allocator,
+        "for",
+        "v-for",
+        Some(cstr!("[, {names}] in [{local}]")),
+        loc,
+    ));
+    el.children.push(TemplateChildNode::Element(Box::new_in(
+        bindings, &allocator,
+    )));
 }
 
 pub(super) fn create_directive<'a>(

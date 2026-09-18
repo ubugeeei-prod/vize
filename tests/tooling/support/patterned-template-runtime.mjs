@@ -59,6 +59,99 @@ for (const fixture of cases) {
         },
       });
       break;
+    case "changing-getter":
+      context.subject = Object.create({
+        get field() {
+          return ++reads;
+        },
+      });
+      break;
+    case "nested-getter":
+      context.subject = Object.create({
+        get field() {
+          reads++;
+          return { value: "nested" };
+        },
+      });
+      break;
+    case "rest-identity": {
+      installRestMemory(context);
+      break;
+    }
+    case "object-rest-copies": {
+      const symbol = Symbol("own");
+      context.subject = Object.create({ inherited: "excluded" });
+      Object.defineProperties(context.subject, {
+        field: { enumerable: true, get: () => (++reads, 1) },
+        extra: { enumerable: true, get: () => (++reads, 2) },
+        hidden: { value: "excluded" },
+        [symbol]: { value: 3, enumerable: true },
+      });
+      // Define an own data property instead of invoking the legacy setter.
+      Object.defineProperty(context.subject, "__proto__", {
+        value: "ordinary value",
+        enumerable: true,
+      });
+      installRestMemory(context);
+      context.inspectRest = (rest) => {
+        assert.equal(context.same(rest), true);
+        assert.equal(Object.getPrototypeOf(rest), Object.prototype);
+        assert.deepEqual(Reflect.ownKeys(rest), ["extra", "__proto__", symbol]);
+        for (const [key, value] of [
+          ["extra", 2],
+          ["__proto__", "ordinary value"],
+          [symbol, 3],
+        ]) {
+          assert.deepEqual(Object.getOwnPropertyDescriptor(rest, key), {
+            value,
+            enumerable: true,
+            configurable: true,
+            writable: true,
+          });
+        }
+        return "verified";
+      };
+      break;
+    }
+    case "deferred-rest-copy": {
+      const nested = Object.defineProperty({}, "extra", {
+        enumerable: true,
+        get() {
+          reads++;
+          throw new Error("discarded rest was copied");
+        },
+      });
+      context.subject = fixture.array ? [nested, 1] : { field: nested };
+      break;
+    }
+    case "array-rest-copies": {
+      class HostileArray extends Array {
+        static get [Symbol.species]() {
+          throw new Error("species accessed");
+        }
+        slice() {
+          throw new Error("slice called");
+        }
+      }
+      context.subject = new HostileArray(1, 2, 3);
+      installRestMemory(context);
+      context.inspectRest = (rest) => {
+        assert.equal(context.same(rest), true);
+        assert.equal(Object.getPrototypeOf(rest), Array.prototype);
+        assert.deepEqual(rest, [2, 3]);
+        return "verified";
+      };
+      break;
+    }
+    case "nan-value":
+      context.subject = NaN;
+      context.expected = {
+        get value() {
+          reads++;
+          return NaN;
+        },
+      };
+      break;
     case "short-array-getter": {
       context.subject = [1];
       Object.defineProperty(context.subject, "0", {
@@ -107,6 +200,15 @@ for (const fixture of cases) {
   assert.equal(reads, fixture.reads ?? 0, "unexpected property reads");
 }
 process.stdout.write(JSON.stringify({ passed: cases.length }));
+
+function installRestMemory(context) {
+  let remembered;
+  context.remember = (value) => {
+    remembered = value;
+    return true;
+  };
+  context.same = (value) => value === remembered;
+}
 
 function observe(parent) {
   const children = [];

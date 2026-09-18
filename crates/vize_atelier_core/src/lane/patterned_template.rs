@@ -1,30 +1,44 @@
-//! Experimental patterned template desugaring (`v-match` / `v-when`).
+//! Experimental patterned templates, sharing the parser used by Croquis/Canon.
 
 mod directives;
 mod lowering;
+mod names;
 mod syntax;
 
-use vize_s0::{Allocator, Box, String, Vec, cstr, ensure_sufficient_stack};
+use vize_armature::patterns::{
+    MatchArm, PatternKind, attribute_source_offset, parse_match_pattern,
+};
+use vize_s0::{String, Vec, cstr, ensure_sufficient_stack};
 
 use crate::{
     DirectiveNode, ElementNode, ErrorCode, PropNode, RootNode, SourceLocation, TemplateChildNode,
     TransformContext,
 };
 
-use self::directives::{create_directive, install_match_scope, rewrite_case_directive};
-use self::lowering::{
-    build_binding_for_expression, build_case_pattern, build_guard_condition, guard_suffix,
-    is_wildcard_pattern, pattern_condition_with_guard, pattern_without_guard,
-};
+use self::directives::{create_directive, install_arm_scope, install_match_scope};
+use self::lowering::generate_selector;
 use self::syntax::expression_source;
 
-/// Rewrite experimental `v-match` / `v-when` syntax into the existing `v-if`
-/// structural directive chain.
 pub fn desugar_patterned_templates<'a>(ctx: &mut TransformContext<'a>, root: &mut RootNode<'a>) {
-    let allocator = ctx.allocator;
-    let source = root.source;
-    rewrite_children(ctx, allocator, &mut root.children, source);
-    diagnose_remaining_patterned_directives(ctx, &root.children);
+    if !has_match(&root.children) {
+        diagnose_remaining_patterned_directives(ctx, &root.children, false);
+        return;
+    }
+    let prefix = names::unique_prefix(ctx, root);
+    rewrite_children(ctx, &mut root.children, root.source, &prefix, &mut 0);
+    diagnose_remaining_patterned_directives(ctx, &root.children, false);
+}
+
+fn has_match(children: &[TemplateChildNode<'_>]) -> bool {
+    children.iter().any(|child| {
+        let TemplateChildNode::Element(el) = child else {
+            return false;
+        };
+        el.props
+            .iter()
+            .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "match"))
+            || ensure_sufficient_stack(|| has_match(&el.children))
+    })
 }
 
 /// Report patterned-template directives when their opt-in flag is disabled.
@@ -32,288 +46,192 @@ pub fn diagnose_disabled_patterned_templates<'a>(
     ctx: &mut TransformContext<'a>,
     root: &RootNode<'a>,
 ) {
-    diagnose_disabled_children(ctx, &root.children);
-}
-
-fn diagnose_disabled_children<'a>(
-    ctx: &mut TransformContext<'a>,
-    children: &[TemplateChildNode<'a>],
-) {
-    for child in children {
-        let TemplateChildNode::Element(el) = child else {
-            continue;
-        };
-        for prop in el.props.iter() {
-            let PropNode::Directive(dir) = prop else {
-                continue;
-            };
-            if matches!(dir.name, "match" | "when" | "case") {
-                ctx.on_error_with_message(
-                    ErrorCode::ExtendPoint,
-                    "`v-match` / `v-when` patterned templates require `experimentals.patternedTemplate`.",
-                    Some(dir.loc.clone()),
-                );
-            }
-        }
-        ensure_sufficient_stack(|| diagnose_disabled_children(ctx, &el.children));
-    }
+    diagnose_remaining_patterned_directives(ctx, &root.children, true);
 }
 
 fn rewrite_children<'a>(
     ctx: &mut TransformContext<'a>,
-    allocator: &'a Allocator,
     children: &mut Vec<'a, TemplateChildNode<'a>>,
     source: &str,
+    prefix: &str,
+    next: &mut usize,
 ) {
     for child in children.iter_mut() {
         let TemplateChildNode::Element(el) = child else {
             continue;
         };
-
-        ensure_sufficient_stack(|| rewrite_children(ctx, allocator, &mut el.children, source));
-        rewrite_match_element(ctx, allocator, el, source);
+        rewrite_match_element(ctx, el, source, prefix, next);
+        ensure_sufficient_stack(|| rewrite_children(ctx, &mut el.children, source, prefix, next));
     }
 }
 
 fn rewrite_match_element<'a>(
     ctx: &mut TransformContext<'a>,
-    allocator: &'a Allocator,
     el: &mut ElementNode<'a>,
     source: &str,
+    prefix: &str,
+    next: &mut usize,
 ) {
-    let Some((match_idx, match_expr, match_loc)) = find_match_expression(el, source) else {
+    let Some(match_idx) = el
+        .props
+        .iter()
+        .position(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "match"))
+    else {
         return;
     };
-
-    let case_child_indexes: std::vec::Vec<usize> = el
-        .children
-        .iter()
-        .enumerate()
-        .filter_map(|(idx, child)| {
-            let TemplateChildNode::Element(case_el) = child else {
-                return None;
-            };
-            find_when_directive(case_el).map(|_| idx)
-        })
-        .collect();
-    let mut has_case = false;
+    let PropNode::Directive(dir) = &el.props[match_idx] else {
+        return;
+    };
+    let match_loc = dir.loc.clone();
+    let Some(subject) = dir
+        .exp
+        .as_ref()
+        .map(|exp| expression_source(exp, source))
+        .filter(|text| !text.trim().is_empty())
+    else {
+        report_pattern_error(ctx, &match_loc, "`v-match` requires a subject expression.");
+        return;
+    };
+    if dir.arg.is_some() || !dir.modifiers.is_empty() {
+        report_pattern_error(
+            ctx,
+            &match_loc,
+            "`v-match` does not accept directive arguments or modifiers.",
+        );
+        return;
+    }
+    let local = cstr!("{prefix}_{}", *next);
+    *next += 1;
+    let mut arms: std::vec::Vec<MatchArm> = std::vec::Vec::new();
     let mut fallback_seen = false;
-    for (case_order, child_index) in case_child_indexes.iter().copied().enumerate() {
-        let TemplateChildNode::Element(case_el) = &mut el.children[child_index] else {
+    let errors_before = ctx.errors.len();
+    for child in &mut el.children {
+        let TemplateChildNode::Element(child) = child else {
             continue;
         };
-        if is_unconditional_fallback_branch(case_el, source) {
-            if fallback_seen {
-                report_pattern_error(
-                    ctx,
-                    &case_el.loc,
-                    "`v-when=\"_\"` fallback arms must be unique within a `v-match` block.",
-                );
-            }
-            if case_order + 1 != case_child_indexes.len() {
-                report_pattern_error(
-                    ctx,
-                    &case_el.loc,
-                    "`v-when=\"_\"` fallback arms must be the last branch in a `v-match` block.",
-                );
-            }
-            fallback_seen = true;
+        let Some(case_idx) = child.props.iter().position(
+            |prop| matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "when" | "case")),
+        ) else {
+            continue;
+        };
+        let PropNode::Directive(dir) = &child.props[case_idx] else {
+            continue;
+        };
+        let case_loc = dir.loc.clone();
+        if dir.name == "when" && child.props.iter().any(|prop| matches!(prop, PropNode::Directive(other) if matches!(other.name, "if" | "else-if" | "else" | "for" | "match"))) {
+            report_pattern_error(ctx, &case_loc, "v-when cannot share an element with v-if, v-else-if, v-else, v-for or v-match.");
+            child.props.remove(case_idx);
+            continue;
         }
-        if rewrite_case_element(ctx, allocator, case_el, has_case, source) {
-            has_case = true;
+        let Some(arm) = parse_arm(ctx, dir, source) else {
+            child.props.remove(case_idx);
+            continue;
+        };
+        if fallback_seen {
+            report_pattern_error(
+                ctx,
+                &case_loc,
+                "`v-when=\"_\"` fallback arms must be last and unique within a `v-match` block.",
+            );
         }
+        fallback_seen |= matches!(arm.pattern.kind, PatternKind::Wildcard) && arm.guard.is_none();
+        child.props.remove(case_idx);
+        install_arm_scope(ctx.allocator, child, &arm, &local, arms.len(), case_loc);
+        arms.push(arm);
     }
-
-    if !has_case {
+    el.props.remove(match_idx);
+    if arms.is_empty() {
+        if ctx.errors.len() == errors_before {
+            report_pattern_error(
+                ctx,
+                &match_loc,
+                "`v-match` requires at least one direct `v-when` branch.",
+            );
+        }
         return;
     }
-
-    el.props.remove(match_idx);
+    let selector = generate_selector(&arms, &subject, &cstr!("{local}_select"));
     let scope = create_directive(
-        allocator,
+        ctx.allocator,
         "for",
         "v-for",
-        Some(cstr!("{MATCH_VALUE_IDENT} in [{match_expr}]")),
+        Some(cstr!("{local} in [{selector}]")),
         match_loc,
     );
-    install_match_scope(allocator, el, scope);
+    install_match_scope(ctx.allocator, el, scope);
 }
 
-const MATCH_VALUE_IDENT: &str = "__vize_match";
-
-fn find_match_expression(
-    el: &ElementNode<'_>,
+fn parse_arm(
+    ctx: &mut TransformContext<'_>,
+    dir: &DirectiveNode<'_>,
     source: &str,
-) -> Option<(usize, String, SourceLocation)> {
-    for (idx, prop) in el.props.iter().enumerate() {
-        if let PropNode::Directive(dir) = prop
-            && dir.name == "match"
-        {
-            let exp = dir.exp.as_ref().map(|exp| expression_source(exp, source))?;
-            return Some((idx, exp, dir.loc.clone()));
-        }
+) -> Option<MatchArm> {
+    let legacy_default =
+        dir.name == "case" && dir.modifiers.len() == 1 && dir.modifiers[0].content == "default";
+    if dir.arg.is_some() || (!dir.modifiers.is_empty() && !legacy_default) {
+        report_pattern_error(
+            ctx,
+            &dir.loc,
+            "`v-when` does not accept directive arguments or modifiers; use `v-when=\"_\"` for a fallback.",
+        );
+        return None;
     }
-    None
-}
-
-fn rewrite_case_element<'a>(
-    ctx: &mut TransformContext<'a>,
-    allocator: &'a Allocator,
-    el: &mut ElementNode<'a>,
-    has_previous_branch: bool,
-    source: &str,
-) -> bool {
-    let Some(case_idx) = find_when_directive(el) else {
-        return false;
-    };
-
-    let (is_default, case_expr, case_loc) = match &el.props[case_idx] {
-        PropNode::Directive(dir) => {
-            diagnose_when_directive_shape(ctx, dir);
-            let case_expr = dir.exp.as_ref().map(|exp| expression_source(exp, source));
-            let is_default = is_unconditional_fallback_directive(dir, case_expr.as_deref());
-            (is_default, case_expr, dir.loc.clone())
-        }
-        PropNode::Attribute(_) => return false,
-    };
-
-    if !is_default && case_expr.is_none() {
-        return false;
-    }
-
-    let mut case_dir = match el.props.remove(case_idx) {
-        PropNode::Directive(dir) => Box::unbox(dir),
-        PropNode::Attribute(_) => return false,
-    };
-
-    let pattern = case_expr
-        .as_deref()
-        .map(|case_expr| build_case_pattern(ctx, MATCH_VALUE_IDENT, case_expr, &case_loc));
-    let has_guard = case_expr.as_deref().and_then(guard_suffix).is_some();
-    let has_condition = !is_default || has_guard || !has_previous_branch;
-
-    let (directive_name, directive_raw_name) = if has_condition {
-        if has_previous_branch {
-            ("else-if", "v-else-if")
-        } else {
-            ("if", "v-if")
-        }
+    let expression = if legacy_default {
+        String::from("_")
+    } else if let Some(exp) = &dir.exp {
+        expression_source(exp, source)
     } else {
-        ("else", "v-else")
+        report_pattern_error(ctx, &dir.loc, "`v-when` requires a pattern.");
+        return None;
     };
-
-    let condition = match (is_default, pattern.as_ref()) {
-        (true, Some(pattern)) if pattern.guard.is_some() => {
-            Some(build_guard_condition(pattern, MATCH_VALUE_IDENT))
+    match parse_match_pattern(&expression) {
+        Ok(arm) => Some(arm),
+        Err(error) => {
+            let mut loc = dir
+                .exp
+                .as_ref()
+                .map_or_else(|| dir.loc.clone(), |exp| exp.loc().clone());
+            if let Some(raw) = source.get(loc.span.start as usize..loc.span.end as usize) {
+                let at = loc.span.start + attribute_source_offset(raw, error.offset);
+                if at < loc.span.end {
+                    loc.span.start = at;
+                }
+            }
+            report_pattern_error(ctx, &loc, &error.message);
+            None
         }
-        (true, _) if has_previous_branch => None,
-        (true, _) => Some(String::from("true")),
-        (false, Some(pattern)) => Some(pattern_condition_with_guard(pattern, MATCH_VALUE_IDENT)),
-        (false, None) => None,
-    };
-
-    rewrite_case_directive(
-        allocator,
-        &mut case_dir,
-        directive_name,
-        directive_raw_name,
-        condition,
-    );
-    el.props
-        .push(PropNode::Directive(Box::new_in(case_dir, &allocator)));
-
-    if let Some(pattern) = pattern
-        && let Some(binding_expr) = build_binding_for_expression(&pattern, MATCH_VALUE_IDENT)
-    {
-        el.props.push(create_directive(
-            allocator,
-            "for",
-            "v-for",
-            Some(binding_expr),
-            case_loc,
-        ));
     }
-
-    true
-}
-
-fn find_when_directive(el: &ElementNode<'_>) -> Option<usize> {
-    el.props.iter().position(
-        |prop| matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "when" | "case")),
-    )
 }
 
 fn diagnose_remaining_patterned_directives<'a>(
     ctx: &mut TransformContext<'a>,
     children: &[TemplateChildNode<'a>],
+    disabled: bool,
 ) {
     for child in children {
         let TemplateChildNode::Element(el) = child else {
             continue;
         };
-        for prop in el.props.iter() {
+        for prop in &el.props {
             let PropNode::Directive(dir) = prop else {
                 continue;
             };
-            match dir.name {
-                "match" => ctx.on_error_with_message(
-                    ErrorCode::ExtendPoint,
-                    "`v-match` requires at least one direct `v-when` branch.",
-                    Some(dir.loc.clone()),
-                ),
-                "when" | "case" => ctx.on_error_with_message(
-                    ErrorCode::ExtendPoint,
-                    "`v-when` branches must be direct children of a `v-match` container.",
-                    Some(dir.loc.clone()),
-                ),
-                _ => {}
+            if !matches!(dir.name, "match" | "when" | "case") {
+                continue;
             }
+            let message = if disabled {
+                "`v-match` / `v-when` patterned templates require `experimentals.patternedTemplate`."
+            } else if dir.name == "match" {
+                "`v-match` requires at least one direct `v-when` branch."
+            } else {
+                "`v-when` branches must be direct children of a `v-match` container."
+            };
+            report_pattern_error(ctx, &dir.loc, message);
         }
-        ensure_sufficient_stack(|| diagnose_remaining_patterned_directives(ctx, &el.children));
+        ensure_sufficient_stack(|| {
+            diagnose_remaining_patterned_directives(ctx, &el.children, disabled)
+        });
     }
-}
-
-fn diagnose_when_directive_shape(ctx: &mut TransformContext<'_>, dir: &DirectiveNode<'_>) {
-    if dir.arg.is_some() {
-        report_pattern_error(
-            ctx,
-            &dir.loc,
-            "`v-when` does not accept directive arguments.",
-        );
-    }
-    let allowed_case_default =
-        dir.name == "case" && dir.modifiers.len() == 1 && dir.modifiers[0].content == "default";
-    if !dir.modifiers.is_empty() && !allowed_case_default {
-        report_pattern_error(
-            ctx,
-            &dir.loc,
-            "`v-when` does not accept directive modifiers; use `v-when=\"_\"` for a fallback.",
-        );
-    }
-}
-
-fn is_unconditional_fallback_branch(el: &ElementNode<'_>, source: &str) -> bool {
-    let Some(case_idx) = find_when_directive(el) else {
-        return false;
-    };
-    let PropNode::Directive(dir) = &el.props[case_idx] else {
-        return false;
-    };
-    let case_expr = dir.exp.as_ref().map(|exp| expression_source(exp, source));
-    is_unconditional_fallback_directive(dir, case_expr.as_deref())
-}
-
-fn is_unconditional_fallback_directive(dir: &DirectiveNode<'_>, case_expr: Option<&str>) -> bool {
-    if dir.name == "case" && dir.modifiers.iter().any(|m| m.content == "default") {
-        return true;
-    }
-    let Some(case_expr) = case_expr else {
-        return false;
-    };
-    if guard_suffix(case_expr).is_some() {
-        return false;
-    }
-    is_wildcard_pattern(pattern_without_guard(case_expr))
 }
 
 fn report_pattern_error(ctx: &mut TransformContext<'_>, loc: &SourceLocation, message: &str) {

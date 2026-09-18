@@ -17,6 +17,10 @@ use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
+mod patterned_template_runtime {
+    mod evaluation;
+}
+
 fn compile(backend: &str, source: &str) -> String {
     let allocator = Allocator::new();
     match backend {

@@ -7,23 +7,37 @@ components=[]
 preamble=
 const { createElementVNode: _createElementVNode, normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, renderList: _renderList } = Vue
 
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode("li", null, "X")
+const _hoisted_2 = /*#__PURE__*/ _createElementVNode("li", null, "Inner fallback")
+const _hoisted_3 = /*#__PURE__*/ _createElementVNode("p", null, "Outer fallback")
+
 code=
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("div", null, [
     _createElementVNode("section", null, [
-      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([outer], (__vize_match) => {
+      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([((__vize_match_0_select_0) => { { const __vize_match_0_select_1 = (() => { if (!(__vize_match_0_select_0 === 'open')) return null;  {  return [0]; } })(); if (__vize_match_0_select_1 !== null) return __vize_match_0_select_1; } { const __vize_match_0_select_2 = (() => {   {  return [1]; } })(); if (__vize_match_0_select_2 !== null) return __vize_match_0_select_2; } return [-1]; })((outer))], (__vize_match_0) => {
         return (_openBlock(), _createElementBlock(_Fragment, null, [
-          ((__vize_match) === ('open'))
+          (__vize_match_0[0] === 0)
             ? (_openBlock(), _createElementBlock("ul", { key: 0 }, [
-              (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([inner], (__vize_match) => {
+              (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([((__vize_match_1_select_0) => { { const __vize_match_1_select_1 = (() => { if (!(__vize_match_1_select_0 === 'x')) return null;  {  return [0]; } })(); if (__vize_match_1_select_1 !== null) return __vize_match_1_select_1; } { const __vize_match_1_select_2 = (() => {   {  return [1]; } })(); if (__vize_match_1_select_2 !== null) return __vize_match_1_select_2; } return [-1]; })((inner))], (__vize_match_1) => {
                 return (_openBlock(), _createElementBlock(_Fragment, null, [
-                  ((__vize_match) === ('x'))
-                    ? (_openBlock(), _createElementBlock("li", { key: 0 }, "X"))
-                    : (_openBlock(), _createElementBlock("li", { key: 1 }, "Inner fallback"))
+                  (__vize_match_1[0] === 0)
+                    ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
+                      _hoisted_1
+                    ], 64 /* STABLE_FRAGMENT */))
+                    : (__vize_match_1[0] === 1)
+                      ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [
+                        _hoisted_2
+                      ], 64 /* STABLE_FRAGMENT */))
+                    : _createCommentVNode("v-if", true)
                 ], 64 /* STABLE_FRAGMENT */))
               }), 256 /* UNKEYED_FRAGMENT */))
             ]))
-            : (_openBlock(), _createElementBlock("p", { key: 1 }, "Outer fallback"))
+            : (__vize_match_0[0] === 1)
+              ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [
+                _hoisted_3
+              ], 64 /* STABLE_FRAGMENT */))
+            : _createCommentVNode("v-if", true)
         ], 64 /* STABLE_FRAGMENT */))
       }), 256 /* UNKEYED_FRAGMENT */))
     ]),

@@ -169,8 +169,8 @@ Supported patterns include:
 
 | Pattern | Example | Notes |
 | --- | --- | --- |
-| Literal | `v-when="'ready'"`, `v-when="404"` | Uses strict equality; `NaN` uses `Number.isNaN` |
-| Value | `v-when="Status.Active"` | Identifiers and member expressions compare to runtime values |
+| Literal | `v-when="'ready'"`, `v-when="404"` | Uses strict equality |
+| Value | `v-when="Status.Active"` | Identifiers and member expressions use SameValueZero comparison, including `NaN` |
 | Wildcard | `v-when="_"` | Matches without introducing a binding |
 | Const binding | `v-when="const value"` | `let` and `var` are rejected |
 | Object | `v-when="{ kind: 'ok', value: const result }"` | Extra object properties are allowed |
@@ -178,7 +178,7 @@ Supported patterns include:
 | Object rest | `v-when="{ kind: 'error', ...const payload }"` | Rest bindings must use `const`; lone `...` is accepted |
 | Array / tuple | `v-when="[const first, ...const rest]"` | Requires `Array.isArray`; rest allows additional items |
 | Or | `v-when="'idle' | 'loading'"` | Alternatives match left to right; bindings inside alternatives are not supported yet |
-| As binding | `v-when="{ kind: 'ok', const data } as const entry"` | Binds the matched value in addition to nested bindings |
+| As binding | `v-when="{ kind: 'ok', const data } as entry"` | Binds the matched value in addition to nested bindings |
 | Guard | `v-when="{ kind: 'error', error: const e } if (e.retriable)"` | The guard runs after the pattern matches |
 
 `v-case` remains a compatibility alias for older Vize experiments, but new templates should use `v-when`. The shorthand candidates discussed in RFC #823 are not enabled: `?=`, `|=`, and `~=` are not public Vize syntax.

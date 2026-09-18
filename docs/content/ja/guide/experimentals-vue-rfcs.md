@@ -67,9 +67,11 @@ Canon は後述の opt-in で分岐内 narrowing・網羅性検査に対応し�
 Croquis は `analyzeSfc(source, { experimentalPatternedTemplate: true })` と Playground の
 チェックボックスで root・nested match を解析できます。RFC の parser で分岐内の宣言、
 外側を参照する value pattern、guard、構文診断を記録し、HTML entity を含む元の位置を維持します。
-この parser は `pattern as name` を使い、コンパイラの旧 `as const name` とは異なります。
-Canon も同じ parser を使い、`typeCheck(source, { experimentalPatternedTemplate: true, includeVirtualTs: true })`、Playground Canon のチェックボックス、`experimentals.patternedTemplate` を有効にした `vize check` で型検査できます。Native Maestro も同じ workspace 設定を読み、構文・未網羅エラーと到達不能 branch の警告を報告し、未保存の編集を再検査します。Root pattern binding の hover は絞り込んだ型を、definition は元の宣言位置を返します。workspace flag を変更したら language server を再起動してください。Content Mapper への設定伝達、コンパイラ側の構文統一、guard・nested closure・or-pattern binding を含む rename/completion の全組合せの検証は未完了です。
+DOM・Vapor・SSR もこの parser に統一し、`pattern as name` を使います。旧 `as const name` は拒否します。
+Canon も同じ parser を使い、`typeCheck(source, { experimentalPatternedTemplate: true, includeVirtualTs: true })`、Playground Canon のチェックボックス、`experimentals.patternedTemplate` を有効にした `vize check` で型検査できます。Native Maestro も同じ workspace 設定を読み、構文・未網羅エラーと到達不能 branch の警告を報告し、未保存の編集を再検査します。Root pattern binding の hover は絞り込んだ型を、definition は元の宣言位置を返します。workspace flag を変更したら language server を再起動してください。Content Mapper への設定伝達、guard・nested closure・or-pattern binding を含む rename/completion の全組合せの検証は未完了です。
 残作業は [#6176](https://github.com/ubugeeei-prod/vize/issues/6176) で追跡します。
+
+pattern の property は各 arm の試行内で一度だけ読み、guard と描画側は rest copy を含めて同じ値を使います。rest copy は shape 全体の一致後に作り、shape が不一致の arm や後続の未試行 arm の guard は評価しません。`v-when` は `v-if`、`v-else-if`、`v-else`、`v-for`、`v-match` と同じ要素には指定できません。
 
 ```vue
 <script setup lang="ts">
@@ -103,8 +105,8 @@ binding は branch-local です。`v-when` を持つ element、attribute/directi
 
 | Pattern | Example | Runtime check |
 | --- | --- | --- |
-| Literal | `v-when="'ready'"`, `v-when="404"` | strict equality。`NaN` は `Number.isNaN` |
-| Value | `v-when="Status.Ready"` | identifier または member expression と比較 |
+| Literal | `v-when="'ready'"`, `v-when="404"` | strict equality |
+| Value | `v-when="Status.Ready"` | identifier または member expression と `NaN` を含む SameValueZero で比較 |
 | Wildcard | `v-when="_"` | 常に match し、binding は導入しない |
 | Const binding | `v-when="const value"` | 常に match し、この branch で `value` を bind |
 | Object | `v-when="{ kind: 'ok', value: const data }"` | open structural object match。余分な property は許容 |
@@ -112,7 +114,7 @@ binding は branch-local です。`v-when` を持つ element、attribute/directi
 | Object rest | `v-when="{ kind: 'error', ...const payload }"` | 残りの own enumerable property を bind。lone `...` も accepted |
 | Array / tuple | `v-when="[const first, ...const rest]"` | `Array.isArray` を要求。rest は追加 item を許容 |
 | Or | `v-when="'idle' | 'loading'"` | alternatives を左から右に試す |
-| As binding | Croquis: `v-when="{ kind: 'ok' } as whole"`; compiler のみ: `as const whole` | matched value を `whole` として bind |
+| As binding | `v-when="{ kind: 'ok' } as whole"` | matched value を `whole` として bind |
 | Guard | `v-when="{ error: const e } if (e.retriable)"` | pattern 成功後に実行 |
 
 ### Patterned Diagnostics

@@ -21,12 +21,7 @@ fn test_compile_experimental_patterned_template_when_branches() {
 
     assert!(errors.is_empty(), "Errors: {:?}", errors);
     let full = format!("{}\n{}", result.preamble, result.code);
-    assert!(full.contains("status"), "{full}");
-    assert!(full.contains("ready"), "{full}");
-    assert!(full.contains("? (_openBlock()"), "{full}");
-    assert!(!full.contains("_resolveDirective(\"case\")"), "{full}");
-    assert!(!full.contains("_resolveDirective(\"when\")"), "{full}");
-    assert!(!full.contains("_resolveDirective(\"match\")"), "{full}");
+    insta::assert_snapshot!(full);
 }
 
 #[test]
@@ -45,10 +40,7 @@ fn test_compile_experimental_patterned_template_or_when() {
 
     assert!(errors.is_empty(), "Errors: {:?}", errors);
     let full = format!("{}\n{}", result.preamble, result.code);
-    assert!(full.contains("__vize_match"), "{full}");
-    assert!(full.contains("(__vize_match) === ('ready')"), "{full}");
-    assert!(full.contains("(__vize_match) === ('done')"), "{full}");
-    assert!(!full.contains("_resolveDirective(\"when\")"), "{full}");
+    insta::assert_snapshot!(full);
 }
 
 #[test]
@@ -67,25 +59,7 @@ fn test_compile_experimental_patterned_template_object_const_binding_and_guard()
 
     assert!(errors.is_empty(), "Errors: {:?}", errors);
     let full = format!("{}\n{}", result.preamble, result.code);
-    assert!(
-        full.contains("_renderList([entry], (__vize_match)"),
-        "{full}"
-    );
-    assert!(
-        full.contains(r#"((__vize_match).kind) === ('article')"#),
-        "{full}"
-    );
-    assert!(
-        full.contains("const { data: article } = __vize_match; return (article.published);"),
-        "{full}"
-    );
-    assert!(
-        full.contains(
-            "_renderList([{ __vize_value: __vize_match }], ({ __vize_value: { data: article } }) =>",
-        ),
-        "{full}"
-    );
-    assert!(full.contains("_toDisplayString(article.title)"), "{full}");
+    insta::assert_snapshot!(full);
 }
 
 #[test]
@@ -98,24 +72,13 @@ fn test_compile_experimental_patterned_template_shorthand_rest_as_and_nan() {
 
     let (_, errors, result) = compile_template_with_options(
         &allocator,
-        r#"<template v-match="entry"><article v-when="{ kind: 'article', const data, ... } as const article">{{ article.kind }}:{{ data.title }}</article><p v-when="NaN">NaN</p></template>"#,
+        r#"<template v-match="entry"><article v-when="{ kind: 'article', const data, ... } as article">{{ article.kind }}:{{ data.title }}</article><p v-when="NaN">NaN</p></template>"#,
         options,
     );
 
     assert!(errors.is_empty(), "Errors: {:?}", errors);
     let full = format!("{}\n{}", result.preamble, result.code);
-    assert!(
-        full.contains("(\"kind\") in Object(__vize_match)")
-            && full.contains("(\"data\") in Object(__vize_match)"),
-        "{full}"
-    );
-    assert!(
-        full.contains(
-            "_renderList([{ __vize_value: __vize_match, __vize_as0: __vize_match }], ({ __vize_value: { data: data }, __vize_as0: article }) =>",
-        ),
-        "{full}"
-    );
-    assert!(full.contains("Number.isNaN(__vize_match)"), "{full}");
+    insta::assert_snapshot!(full);
 }
 
 #[test]
@@ -128,23 +91,13 @@ fn test_compile_experimental_patterned_template_array_rest_and_as_binding() {
 
     let (_, errors, result) = compile_template_with_options(
         &allocator,
-        r#"<template v-match="items"><p v-when="[const first, ...const rest] as const tuple">{{ tuple.length }}:{{ first }}:{{ rest.length }}</p></template>"#,
+        r#"<template v-match="items"><p v-when="[const first, ...const rest] as tuple">{{ tuple.length }}:{{ first }}:{{ rest.length }}</p></template>"#,
         options,
     );
 
     assert!(errors.is_empty(), "Errors: {:?}", errors);
     let full = format!("{}\n{}", result.preamble, result.code);
-    assert!(full.contains("Array.isArray(__vize_match)"), "{full}");
-    assert!(full.contains("(__vize_match).length >= 1"), "{full}");
-    assert!(
-        full.contains(
-            "_renderList([{ __vize_value: __vize_match, __vize_as0: __vize_match }], ({ __vize_value: [first, ...rest], __vize_as0: tuple }) =>",
-        ),
-        "{full}"
-    );
-    assert!(full.contains("_toDisplayString(tuple.length)"), "{full}");
-    assert!(full.contains("_toDisplayString(first)"), "{full}");
-    assert!(full.contains("_toDisplayString(rest.length)"), "{full}");
+    insta::assert_snapshot!(full);
 }
 
 #[test]
@@ -161,17 +114,12 @@ fn test_compile_experimental_patterned_template_reports_fallback_order() {
         options,
     );
 
-    assert!(
+    assert_eq!(
         errors
             .iter()
-            .any(|error| error.message.contains("must be the last branch")),
-        "fallback order must be reported: {:?}",
-        errors
-    );
-    assert!(
-        errors.iter().any(|error| error.message.contains("unique")),
-        "duplicate fallback must be reported: {:?}",
-        errors
+            .map(|error| error.message.as_str())
+            .collect::<Vec<_>>(),
+        ["`v-when=\"_\"` fallback arms must be last and unique within a `v-match` block."; 2]
     );
 }
 
@@ -189,12 +137,12 @@ fn test_compile_experimental_patterned_template_rejects_let_binding() {
         options,
     );
 
-    assert!(
+    assert_eq!(
         errors
             .iter()
-            .any(|error| error.message.contains("must use `const`")),
-        "let bindings must report a const-only diagnostic: {:?}",
-        errors
+            .map(|error| error.message.as_str())
+            .collect::<Vec<_>>(),
+        ["Only const pattern bindings are supported."]
     );
 }
 
