@@ -148,8 +148,8 @@ fn babel_compat_dynamic_component_argument_emits_computed_prop_keys() {
             "export function render(_ctx, _cache) {\n",
             "  const _component_B = _resolveComponent(\"B\")\n",
             "  \n",
-            "  return (_openBlock(), _createBlock(_component_B, _normalizeProps({ [bar]: foo,\n",
-            "  [\"onUpdate:\" + bar]: $event => ((foo) = $event) }), null, 16 /* FULL_PROPS */))\n",
+            "  return (_openBlock(), _createBlock(_component_B, _normalizeProps({ [(bar)]: foo,\n",
+            "  [\"onUpdate:\" + (bar)]: $event => ((foo) = $event) }), null, 16 /* FULL_PROPS */))\n",
             "}",
         )
     );
@@ -161,16 +161,16 @@ fn babel_compat_dynamic_component_argument_carries_modifiers_and_member_paths() 
         (
             "const A = () => <B v-model={[foo, bar, ['trim']]}/>;",
             concat!(
-                "{ [bar]: foo,\n",
-                "  [\"onUpdate:\" + bar]: $event => ((foo) = $event),\n",
-                "  [bar + \"Modifiers\"]: { trim: true } }",
+                "{ [(bar)]: foo,\n",
+                "  [\"onUpdate:\" + (bar)]: $event => ((foo) = $event),\n",
+                "  [(bar) + \"Modifiers\"]: { trim: true } }",
             ),
         ),
         (
             "const A = () => <B v-model={[foo, a.b]}/>;",
             concat!(
-                "{ [a.b]: foo,\n",
-                "  [\"onUpdate:\" + a.b]: $event => ((foo) = $event) }",
+                "{ [(a.b)]: foo,\n",
+                "  [\"onUpdate:\" + (a.b)]: $event => ((foo) = $event) }",
             ),
         ),
     ] {

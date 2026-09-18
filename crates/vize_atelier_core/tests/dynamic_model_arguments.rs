@@ -44,10 +44,17 @@ enum Key {
 struct Keys<'s> {
     source: &'s str,
     keys: Vec<Key>,
+    modifiers: Vec<(String, bool)>,
 }
 
 impl<'a> Visit<'a> for Keys<'_> {
     fn visit_object_property(&mut self, property: &ObjectProperty<'a>) {
+        if let Some(name) = property.key.static_name()
+            && let Expression::BooleanLiteral(value) = &property.value
+        {
+            self.modifiers
+                .push((String::new(name.as_ref()), value.value));
+        }
         if property.computed {
             let expression = property.key.as_expression().unwrap().get_inner_expression();
             let text = |expression: &Expression<'_>| {
@@ -104,6 +111,7 @@ fn derived_model_keys_concatenate_the_complete_argument_ast() {
             let mut visitor = Keys {
                 source: &output,
                 keys: Vec::new(),
+                modifiers: Vec::new(),
             };
             visitor.visit_program(&parsed.program);
             let Key::Argument(argument) = &visitor.keys[0] else {
@@ -132,5 +140,14 @@ fn dynamic_model_custom_modifier_names_emit_valid_literal_keys() {
         "{:?}\n{output}",
         parsed.diagnostics
     );
-    assert!(output.contains("\"foo-bar\": true"), "{output}");
+    let mut visitor = Keys {
+        source: &output,
+        keys: Vec::new(),
+        modifiers: Vec::new(),
+    };
+    visitor.visit_program(&parsed.program);
+    assert_eq!(
+        visitor.modifiers,
+        [(String::new("trim"), true), (String::new("foo-bar"), true)]
+    );
 }
