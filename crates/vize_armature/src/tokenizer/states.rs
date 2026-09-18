@@ -7,7 +7,7 @@ use super::{
     Tokenizer,
     char_codes::{
         AT, COLON, DASH, DOT, DOUBLE_QUOTE, EQ, EXCLAMATION_MARK, GRAVE_ACCENT, GT, LEFT_SQUARE,
-        LOWER_V, LT, NUMBER, QUESTION_MARK, RIGHT_SQUARE, SINGLE_QUOTE, SLASH,
+        LOWER_V, LT, NUMBER, QUESTION_MARK, SINGLE_QUOTE, SLASH,
     },
     types::{Callbacks, QuoteType, State, is_end_of_tag_section, is_tag_start_char, is_whitespace},
 };
@@ -488,24 +488,6 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             }
             self.state = State::InDirModifier;
             self.section_start = self.index + 1;
-        }
-    }
-
-    pub(super) fn state_in_dir_dynamic_arg(&mut self, c: u8) {
-        if c == RIGHT_SQUARE {
-            self.callbacks.on_dir_arg(self.section_start, self.index);
-            self.state = State::InDirArg;
-            self.section_start = self.index + 1;
-        } else if c == EQ || is_end_of_tag_section(c) {
-            self.callbacks
-                .on_error(ErrorCode::MissingDynamicDirectiveArgumentEnd, self.index);
-            if self.section_start < self.index {
-                self.callbacks.on_dir_arg(self.section_start, self.index);
-            }
-            self.callbacks.on_attrib_name_end(self.index);
-            self.section_start = self.index;
-            self.state = State::AfterAttrName;
-            self.state_after_attr_name(c);
         }
     }
 

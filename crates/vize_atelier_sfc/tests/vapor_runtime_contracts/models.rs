@@ -127,6 +127,99 @@ fn conditional_model_arguments_track_their_own_inputs() {
 }
 
 #[test]
+fn nested_computed_arguments_update_props_and_reject_stale_listeners() {
+    for argument in [
+        "state.names[state.index]",
+        "state.lookup[']'][state.indices[state.index]]",
+        "state.lookup[`]`][state.index]",
+    ] {
+        let binding = format!("v-model:[{argument}].trim=\"state.value\"");
+        let source = source(&binding);
+        let extra = json!({"childSource": CHILD,
+        "context": {"names": ["first", "second"], "lookup": {"]": ["first", "second"]},
+            "indices": [0, 1],
+            "index": 0, "value": "initial", "other": "untouched"},
+        "steps": [
+            {"click": ".first"},
+            {"patch": {"index": 1, "value": "external"}, "preserve": [".first", ".second"]},
+            {"click": ".first"},
+            {"click": ".second"},
+            {"patch": {"index": 0}},
+            {"click": ".second"},
+            {"click": ".first"}
+        ]});
+        let dom = trace(&source, "vdom", extra.clone());
+        assert_eq!(
+            outputs(&dom),
+            [
+                "initial|untouched",
+                "first|untouched",
+                "external|untouched",
+                "external|untouched",
+                "second|untouched",
+                "second|untouched",
+                "second|untouched",
+                "first|untouched"
+            ],
+            "{binding}"
+        );
+        for (index, key, value) in [
+            (0, "first", "initial"),
+            (2, "second", "external"),
+            (5, "first", "second"),
+        ] {
+            let modifiers = format!("{key}Modifiers");
+            let expected = json!({key: value, modifiers: {"trim": true}});
+            assert_eq!(child_props(&dom, index), expected, "{binding}");
+        }
+        assert_eq!(trace(&source, "vapor", extra), dom, "{binding}");
+    }
+}
+
+#[test]
+fn nested_native_bind_and_on_arguments_follow_independent_selections() {
+    for (bind, on) in [("v-bind:", "v-on:"), (":", "@")] {
+        let source = format!(
+            r#"<script setup>import {{ state }} from './fixture';</script><template><section><button {bind}[state.names[state.propIndex]]="state.label" {on}[state.events[state.eventIndex]]="state.value=state.label">change</button><output>{{{{ state.value }}}}|{{{{ state.other }}}}</output></section></template>"#
+        );
+        let extra = json!({"context": {"names": ["title", "aria-label"], "events": ["click", "mouseup"],
+        "propIndex": 0, "eventIndex": 0, "label": "first", "value": "initial", "other": "untouched"},
+        "steps": [
+            {"click": "button"},
+            {"patch": {"propIndex": 1, "label": "second"}, "preserve": ["button"]},
+            {"click": "button"},
+            {"patch": {"eventIndex": 1, "label": "inactive"}, "preserve": ["button"]},
+            {"click": "button"},
+            {"patch": {"eventIndex": 0, "label": "third"}, "preserve": ["button"]},
+            {"click": "button"}
+        ]});
+        let dom = trace(&source, "vdom", extra.clone());
+        assert_eq!(
+            outputs(&dom),
+            [
+                "initial|untouched",
+                "first|untouched",
+                "first|untouched",
+                "second|untouched",
+                "second|untouched",
+                "second|untouched",
+                "second|untouched",
+                "third|untouched"
+            ]
+        );
+        assert_eq!(
+            dom[0]["tree"][0]["children"][0]["attributes"],
+            json!({"title": "first"})
+        );
+        assert_eq!(
+            dom[2]["tree"][0]["children"][0]["attributes"],
+            json!({"aria-label": "second"})
+        );
+        assert_eq!(trace(&source, "vapor", extra), dom, "{bind} / {on}");
+    }
+}
+
+#[test]
 fn default_named_and_multiple_models_keep_distinct_modifier_contracts() {
     for model in [
         "v-model.trim=\"state.value\"",
