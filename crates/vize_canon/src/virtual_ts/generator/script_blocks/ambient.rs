@@ -35,6 +35,12 @@ pub(super) fn extend_module_spans(
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return;
     }
+    let comments: Vec<Span> = parsed
+        .program
+        .comments
+        .iter()
+        .map(|comment| comment.span)
+        .collect();
     let candidates: Vec<Span> = parsed
         .program
         .body
@@ -47,7 +53,8 @@ pub(super) fn extend_module_spans(
                 _ => false,
             };
             let span = statement.span();
-            (ambient && !covered(module_spans, span) && isolated_line(script, span)).then_some(span)
+            (ambient && !covered(module_spans, span) && relocatable_line(script, span, &comments))
+                .then_some(span)
         })
         .collect();
     if candidates.is_empty() {
@@ -161,12 +168,25 @@ fn containing(candidates: &[Span], span: Span) -> Option<usize> {
     (span.end <= candidates[index].end).then_some(index)
 }
 
-fn isolated_line(script: &str, span: Span) -> bool {
+fn relocatable_line(script: &str, span: Span, comments: &[Span]) -> bool {
     let start = span.start as usize;
     let end = span.end as usize;
     let line_start = script[..start].rfind('\n').map_or(0, |index| index + 1);
     let line_end = script[end..]
         .find('\n')
         .map_or(script.len(), |index| end + index);
-    script[line_start..start].trim().is_empty() && script[end..line_end].trim().is_empty()
+    if script[line_start..start].trim().is_empty() && script[end..line_end].trim().is_empty() {
+        return true;
+    }
+    // Setup emission masks exact spans, so neighboring statements stay put.
+    // Shared-line comments and directives must not move with only one statement.
+    let first_comment = comments.partition_point(|comment| comment.end as usize <= line_start);
+    if comments[first_comment..]
+        .iter()
+        .take_while(|comment| (comment.start as usize) < line_end)
+        .any(|comment| !(span.start <= comment.start && comment.end <= span.end))
+    {
+        return false;
+    }
+    include_leading_ts_directive_comments(script, vec![(span.start, span.end)])[0].0 == span.start
 }

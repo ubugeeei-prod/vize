@@ -9,35 +9,40 @@ use support::{Fixture, position};
 #[test]
 fn ambient_global_types_keep_authored_navigation_and_unsaved_diagnostics() {
     for newline in ["\n", "\r\n"] {
-        let source = "<script setup lang=\"ts\">\nnode.focus();\ndeclare const node: HTMLElement;\n</script>\n<template><div>{{ '\u{1f600}' }}{{ node.tagName }}</div></template>\n"
+        for script in [
+            "node.focus();\ndeclare const node: HTMLElement;",
+            "const prefix = '\u{1f600}'; node.focus(); declare const node: HTMLElement; const after = node.tagName;",
+        ] {
+            let source = format!("<script setup lang=\"ts\">\n{script}\n</script>\n<template><div>{{{{ '\u{1f600}' }}}}{{{{ node.tagName }}}}</div></template>\n")
             .replace('\n', newline);
-        let mut fixture = Fixture::new(&source, false);
-        assert_eq!(fixture.open(&source), json!([]));
-        assert_navigation(&mut fixture, &source, "HTMLElement");
+            let mut fixture = Fixture::new(&source, false);
+            assert_eq!(fixture.open(&source), json!([]));
+            assert_navigation(&mut fixture, &source, "HTMLElement");
 
-        let broken = source.replace("node.tagName", "node.toFixed()");
-        let diagnostics = fixture.change(&broken, 2);
-        assert_eq!(
-            diagnostics,
-            json!([{
-                "code": 2339,
-                "message": "Property 'toFixed' does not exist on type 'HTMLElement'.",
-                "range": token_range(&broken, "toFixed", "toFixed"),
-                "severity": 1,
-                "source": "vize/types"
-            }])
-        );
-        assert_eq!(fixture.change(&source, 3), json!([]));
+            let broken = source.replace("{{ node.tagName }}", "{{ node.toFixed() }}");
+            let diagnostics = fixture.change(&broken, 2);
+            assert_eq!(
+                diagnostics,
+                json!([{
+                    "code": 2339,
+                    "message": "Property 'toFixed' does not exist on type 'HTMLElement'.",
+                    "range": token_range(&broken, "toFixed", "toFixed"),
+                    "severity": 1,
+                    "source": "vize/types"
+                }])
+            );
+            assert_eq!(fixture.change(&source, 3), json!([]));
 
-        let changed_type = source
-            .replace("HTMLElement", "Date")
-            .replace("node.focus()", "node.getFullYear()")
-            .replace("node.tagName", "node.getFullYear()");
-        assert_eq!(fixture.change(&changed_type, 4), json!([]));
-        assert_navigation(&mut fixture, &changed_type, "Date");
-        assert_eq!(fixture.change(&source, 5), json!([]));
-        assert_navigation(&mut fixture, &source, "HTMLElement");
-        fixture.shutdown();
+            let changed_type = source
+                .replace("HTMLElement", "Date")
+                .replace("node.focus()", "node.getFullYear()")
+                .replace("node.tagName", "node.getFullYear()");
+            assert_eq!(fixture.change(&changed_type, 4), json!([]));
+            assert_navigation(&mut fixture, &changed_type, "Date");
+            assert_eq!(fixture.change(&source, 5), json!([]));
+            assert_navigation(&mut fixture, &source, "HTMLElement");
+            fixture.shutdown();
+        }
     }
 }
 

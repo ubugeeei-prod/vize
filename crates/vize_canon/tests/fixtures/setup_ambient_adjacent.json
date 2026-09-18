@@ -1,0 +1,14 @@
+[
+  { "name": "forward", "script": "label.toUpperCase(); declare const label: string; const after: string = label;", "expected": [] },
+  { "name": "chain", "script": "declare const first: string; declare const second: typeof first; const after: string = second;", "expected": [] },
+  { "name": "overloads", "script": "declare function label(value: string): string; declare function label(value: number): number; const a: string = label('ok'); const b: number = label(1);", "expected": [] },
+  { "name": "class", "script": "const before = 1; declare class Label { value: string; } const label = null! as Label; const after: string = label.value;", "expected": [] },
+  { "name": "multiline", "script": "const before = 1; declare const label: {\ntext: string;\n}; const after: string = label.text;", "expected": [] },
+  { "name": "assignment", "script": "const before = '\ud83d\ude00'; declare const label: string; const invalid: number = label;", "expected": ["src/App.vue(2,57): error TS2322: Type 'string' is not assignable to type 'number'."] },
+  { "name": "missing-type", "script": "const before = 1; declare const label: Missing; const after = 2;", "expected": ["src/App.vue(2,40): error TS2304: Cannot find name 'Missing'."] },
+  { "name": "const-write", "script": "const before = 1; declare const label: string; label = 'next';", "expected": ["src/App.vue(2,48): error TS2588: Cannot assign to 'label' because it is a constant."] },
+  { "name": "property", "script": "declare const label: string; label.toFixed();", "expected": ["src/App.vue(2,36): error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"] },
+  { "name": "implicit-any", "script": "declare const label; const after = label;", "expected": ["src/App.vue(2,15): error TS7005: Variable 'label' implicitly has an 'any' type."] },
+  { "name": "union", "script": "declare const label: string | number; label.toUpperCase();", "expected": ["src/App.vue(2,45): error TS2339: Property 'toUpperCase' does not exist on type 'string | number'.\nProperty 'toUpperCase' does not exist on type 'number'."] },
+  { "name": "template", "script": "const before = 1; declare const label: string; const after = 2;", "template": "<div>{{ label.toFixed() }}</div>", "expected": ["src/App.vue(4,25): error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"] }
+]
