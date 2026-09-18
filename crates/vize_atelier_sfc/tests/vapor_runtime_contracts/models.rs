@@ -190,7 +190,9 @@ fn nested_native_bind_and_on_arguments_follow_independent_selections() {
             {"click": "button"},
             {"patch": {"eventIndex": 1, "label": "inactive"}, "preserve": ["button"]},
             {"click": "button"},
+            {"dispatch": "mouseup", "selector": "button"},
             {"patch": {"eventIndex": 0, "label": "third"}, "preserve": ["button"]},
+            {"dispatch": "mouseup", "selector": "button"},
             {"click": "button"}
         ]});
         let dom = trace(&source, "vdom", extra.clone());
@@ -203,7 +205,9 @@ fn nested_native_bind_and_on_arguments_follow_independent_selections() {
                 "second|untouched",
                 "second|untouched",
                 "second|untouched",
-                "second|untouched",
+                "inactive|untouched",
+                "inactive|untouched",
+                "inactive|untouched",
                 "third|untouched"
             ]
         );
