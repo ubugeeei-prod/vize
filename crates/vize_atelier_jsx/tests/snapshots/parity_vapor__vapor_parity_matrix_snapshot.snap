@@ -288,7 +288,7 @@ export function render(_ctx) {
   const _component_Input = _resolveComponent("Input")
   const n0 = _createComponentWithFallback(_component_Input, {
     modelValue: () => (val),
-    "onUpdate:modelValue": () => _value => (_ctx.val = _value)
+    "onUpdate:modelValue": () => ($event => ((val) = $event))
   }, null, true)
   return n0
 }
