@@ -1,4 +1,4 @@
-use super::{Value, json, trace};
+use super::super::{Value, compile, json, trace};
 
 const CHILD: &str = r#"<script setup>
 const props = defineProps(['first', 'second', 'modelValue', 'fixed', 'firstModifiers', 'secondModifiers', 'modelModifiers', 'modelValueModifiers', 'fixedModifiers']);
@@ -66,7 +66,7 @@ fn dynamic_model_keys_values_listeners_and_modifiers_follow_argument_changes() {
                 "first|untouched"
             ],
             "{argument}: {}",
-            super::compile(&source, "vdom")
+            compile(&source, "vdom")
         );
         assert_eq!(
             child_props(&dom, 0),
