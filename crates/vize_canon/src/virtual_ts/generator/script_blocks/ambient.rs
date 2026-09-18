@@ -181,10 +181,9 @@ fn relocatable_line(script: &str, span: Span, comments: &[Span]) -> bool {
     // Setup emission masks exact spans, so neighboring statements stay put.
     // Shared-line comments and directives must not move with only one statement.
     let first_comment = comments.partition_point(|comment| comment.end as usize <= line_start);
-    if comments[first_comment..]
-        .iter()
-        .take_while(|comment| (comment.start as usize) < line_end)
-        .any(|comment| !(span.start <= comment.start && comment.end <= span.end))
+    if comments
+        .get(first_comment)
+        .is_some_and(|comment| (comment.start as usize) < line_end)
     {
         return false;
     }

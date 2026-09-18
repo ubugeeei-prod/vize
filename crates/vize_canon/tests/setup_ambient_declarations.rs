@@ -138,6 +138,7 @@ fn adjacent_local_captures_and_comment_scopes_stay_in_setup() {
         "// @ts-expect-error assignment\nconst invalid: number = 'bad'; declare const label: string;",
         "// @ts-ignore assignment\ndeclare const label: string; const invalid: number = 'bad';",
         "const before = 1; /** documented label */ declare const label: string;",
+        "const before = 1; declare const label: {\n// @ts-ignore assignment\ntext: string; }; const invalid: number = 'bad';",
     ] {
         let output = virtual_source(&setup(script));
         assert_eq!(authored_setup_body(&output), script.replace('\n', "\n  "));
