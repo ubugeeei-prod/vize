@@ -115,6 +115,7 @@ const outside = sharedLabel(999)
             .collect::<Vec<_>>();
 
         let state = ServerState::new();
+        state.apply_lsp_initialization_options(Some(&serde_json::json!({"crossFile": true})));
         state.set_workspace_root(project.path().to_path_buf());
         state.documents.open(
             probe_uri.clone(),

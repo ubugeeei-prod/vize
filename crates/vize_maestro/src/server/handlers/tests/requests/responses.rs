@@ -2,6 +2,64 @@ use super::*;
 use tower_lsp::lsp_types::CompletionList;
 
 #[test]
+fn references_preserve_structural_results_without_starting_a_disabled_checker() {
+    for cross_file in [false, true] {
+        let service =
+            service_with_options(options(&[("references", true), ("crossFile", cross_file)]));
+        let server = service.inner();
+        let uri = uri("References.vue");
+        open_vue(server, &uri, SAMPLE);
+        for include_declaration in [true, false] {
+            let mut params = references_params(&uri);
+            params.text_document_position.position = Position::new(1, 10);
+            params.context.include_declaration = include_declaration;
+            let mut expected = vec![Location::new(
+                uri.clone(),
+                Range::new(Position::new(1, 10), Position::new(1, 17)),
+            )];
+            if include_declaration {
+                expected.push(Location::new(
+                    uri.clone(),
+                    Range::new(Position::new(4, 6), Position::new(4, 13)),
+                ));
+            }
+            assert_eq!(
+                futures::executor::block_on(server.references(params)).unwrap(),
+                Some(expected)
+            );
+        }
+        #[cfg(feature = "native")]
+        {
+            // Unmask the bridge-presence accessor without initializing the bridge.
+            server
+                .state
+                .apply_lsp_initialization_options(Some(&serde_json::json!({"typecheck": true})));
+            assert!(!server.state.has_corsa_bridge());
+            assert_eq!(server.state.corsa_init_failure(), None);
+        }
+    }
+}
+
+#[cfg(feature = "native")]
+#[test]
+fn disabled_references_do_not_start_an_enabled_checker() {
+    let service = service_with_options(serde_json::json!({
+        "references": false, "typecheck": true, "crossFile": false
+    }));
+    let server = service.inner();
+    let uri = uri("DisabledReferences.vue");
+    open_vue(server, &uri, SAMPLE);
+    let mut params = references_params(&uri);
+    params.text_document_position.position = Position::new(1, 10);
+    assert_eq!(
+        futures::executor::block_on(server.references(params)).unwrap(),
+        None
+    );
+    assert!(!server.state.has_corsa_bridge());
+    assert_eq!(server.state.corsa_init_failure(), None);
+}
+
+#[test]
 fn root_completion_returns_block_snippet_labels() {
     let service = service_with_options(options(&[("completion", true)]));
     let server = service.inner();

@@ -93,10 +93,7 @@ impl ReferencesService {
         if crate::ide::template_scope::needs_patterned_navigation(ctx) {
             return canonical_locations;
         }
-        if canonical_locations
-            .as_ref()
-            .is_some_and(|locations| !locations.is_empty())
-        {
+        if canonical_locations.is_some() {
             return canonical_locations;
         }
         let Some(block_type) = ctx.block_type else {
@@ -140,6 +137,12 @@ impl ReferencesService {
             corsa_locations,
             Self::references(ctx, include_declaration),
         )
+        .map(|mut locations| {
+            if !ctx.state.lsp_features().cross_file {
+                locations.retain(|location| location.uri == *ctx.uri);
+            }
+            locations
+        })
     }
 
     #[cfg(feature = "native")]

@@ -8,8 +8,6 @@ mod v_slot;
 #[cfg(feature = "native")]
 pub(crate) use analysis::may_reference_style_binding;
 pub(crate) use analysis::{analyze, bindings_visible_at};
-#[cfg(feature = "native")]
-pub(crate) use patterned_navigation::is_patterned_local;
 pub(crate) use patterned_navigation::needs_patterned_navigation;
 
 #[cfg(test)]

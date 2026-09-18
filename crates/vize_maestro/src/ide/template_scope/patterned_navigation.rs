@@ -18,11 +18,6 @@ pub(crate) fn needs_patterned_navigation(ctx: &IdeContext<'_>) -> bool {
     classify(ctx) != Navigation::Ordinary
 }
 
-#[cfg(feature = "native")]
-pub(crate) fn is_patterned_local(ctx: &IdeContext<'_>) -> bool {
-    classify(ctx) == Navigation::Local
-}
-
 fn classify(ctx: &IdeContext<'_>) -> Navigation {
     if !ctx.state.patterned_template_enabled() || !ctx.uri.path().ends_with(".vue") {
         return Navigation::Ordinary;

@@ -41,6 +41,7 @@ void value
         let package_uri = Url::from_file_path(&package_path).unwrap();
         let host_uri = Url::from_file_path(&host_path).unwrap();
         let state = ServerState::new();
+        state.apply_lsp_initialization_options(Some(&serde_json::json!({"crossFile": true})));
         state.set_workspace_root(project.path().to_path_buf());
         state.documents.open(
             host_uri.clone(),

@@ -103,6 +103,7 @@ fn canonical_prop_references_reach_parent_template_usage() {
         let child_uri = Url::from_file_path(&child_path).expect("child URI");
 
         let state = ServerState::new();
+        state.apply_lsp_initialization_options(Some(&serde_json::json!({"crossFile": true})));
         state.set_workspace_root(project.path().to_path_buf());
         state
             .documents
@@ -214,6 +215,7 @@ fn canonical_prop_references_reject_other_components_with_the_same_prop_name() {
         let other_uri = Url::from_file_path(src.join("Other.vue")).expect("other URI");
 
         let state = ServerState::new();
+        state.apply_lsp_initialization_options(Some(&serde_json::json!({"crossFile": true})));
         state.set_workspace_root(project.path().to_path_buf());
         for (uri, source) in [
             (&app_uri, app_source.as_str()),

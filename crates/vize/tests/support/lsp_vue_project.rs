@@ -101,6 +101,12 @@ impl Fixture {
         self.diagnostics(1)
     }
 
+    pub fn write_file(&self, name: &str, source: &str) -> String {
+        let path = self._project.path().join(name);
+        std::fs::write(&path, source).unwrap();
+        file_uri(&path).to_string()
+    }
+
     pub fn change(&mut self, source: &str, version: i64) -> Value {
         self.lsp.send(
             json!({ "jsonrpc": "2.0", "method": "textDocument/didChange", "params": {

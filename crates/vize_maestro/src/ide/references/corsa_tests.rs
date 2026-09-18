@@ -136,6 +136,7 @@ function unrelated() { const shared = 0; return shared }
             .unwrap();
             state.load_workspace_config(project.path());
         }
+        state.apply_lsp_initialization_options(Some(&serde_json::json!({"crossFile": true})));
         state.documents.open(
             parent_uri.clone(),
             parent_source.to_string(),
