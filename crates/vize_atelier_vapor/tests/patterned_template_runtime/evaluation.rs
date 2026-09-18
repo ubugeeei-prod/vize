@@ -137,3 +137,21 @@ fn selection_skips_later_arms_and_guards_after_a_shape_failure() {
         json!([{"context": {"subject": "selected"}, "trees": [paragraph("selected")]}]),
     );
 }
+
+#[test]
+fn trailing_line_comments_do_not_consume_generated_selector_code() {
+    for (subject, arm) in [
+        ("subject // trailing subject", "const value"),
+        (
+            "subject // trailing subject",
+            "const value if (value === 'ok' /* trailing guard */)",
+        ),
+    ] {
+        check(
+            &format!(
+                r#"<template v-match="{subject}"><p v-when="{arm}">{{{{ value }}}}</p><p v-when="_">other</p></template>"#
+            ),
+            json!([{"context": {"subject": "ok"}, "trees": [paragraph("ok")]}]),
+        );
+    }
+}

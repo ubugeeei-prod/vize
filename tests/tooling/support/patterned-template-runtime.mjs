@@ -80,6 +80,7 @@ for (const fixture of cases) {
     }
     case "object-rest-copies": {
       const symbol = Symbol("own");
+      const protoValue = { marker: "ordinary value" };
       context.subject = Object.create({ inherited: "excluded" });
       Object.defineProperties(context.subject, {
         field: { enumerable: true, get: () => (++reads, 1) },
@@ -89,7 +90,7 @@ for (const fixture of cases) {
       });
       // Define an own data property instead of invoking the legacy setter.
       Object.defineProperty(context.subject, "__proto__", {
-        value: "ordinary value",
+        value: protoValue,
         enumerable: true,
       });
       installRestMemory(context);
@@ -99,7 +100,7 @@ for (const fixture of cases) {
         assert.deepEqual(Reflect.ownKeys(rest), ["extra", "__proto__", symbol]);
         for (const [key, value] of [
           ["extra", 2],
-          ["__proto__", "ordinary value"],
+          ["__proto__", protoValue],
           [symbol, 3],
         ]) {
           assert.deepEqual(Object.getOwnPropertyDescriptor(rest, key), {

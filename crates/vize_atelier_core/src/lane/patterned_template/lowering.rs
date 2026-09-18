@@ -102,6 +102,7 @@ pub(super) fn generate_selector(arms: &[MatchArm], subject: &str, prefix: &str) 
             "]; }} }})(); if ({result} !== null) return {result}; }} "
         ));
     }
-    code.push_str(&cstr!("return [-1]; }})(({subject}))"));
+    // The authored subject may end in a line comment.
+    code.push_str(&cstr!("return [-1]; }})(({subject}\n))"));
     code
 }
