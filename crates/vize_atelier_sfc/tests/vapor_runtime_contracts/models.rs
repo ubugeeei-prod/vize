@@ -32,27 +32,23 @@ fn child_props(trace: &Value, index: usize) -> Value {
 
 #[test]
 fn dynamic_model_keys_values_listeners_and_modifiers_follow_argument_changes() {
-    // Use the equivalent field oracle: VDOM currently omits the parentheses
-    // needed around ternary arguments when composing derived keys (#6216).
-    let reference = source("v-model:[state.field].trim=\"state.value\"");
-    for argument in [
-        "state.field",
-        "state.field.toString()",
-        "state.index?'second':'first'",
+    for (argument, first, second) in [
+        ("state.field", "first", "second"),
+        ("state.field.slice(1)", "_first", "_second"),
     ] {
         let source = source(&format!("v-model:[{argument}].trim=\"state.value\""));
         let extra = json!({"childSource": CHILD,
-        "context": {"field": "first", "index": 0, "value": "initial", "other": "untouched"},
+        "context": {"field": first, "value": "initial", "other": "untouched"},
         "steps": [
             {"click": ".first"},
-            {"patch": {"field": "second", "index": 1, "value": "external"}, "preserve": [".first", ".second"]},
+            {"patch": {"field": second, "value": "external"}, "preserve": [".first", ".second"]},
             {"click": ".first"},
             {"click": ".second"},
-            {"patch": {"field": "first", "index": 0}},
+            {"patch": {"field": first}},
             {"click": ".second"},
             {"click": ".first"}
         ]});
-        let dom = trace(&reference, "vdom", extra.clone());
+        let dom = trace(&source, "vdom", extra.clone());
         assert_eq!(
             outputs(&dom),
             [
@@ -78,6 +74,56 @@ fn dynamic_model_keys_values_listeners_and_modifiers_follow_argument_changes() {
         );
         assert_eq!(trace(&source, "vapor", extra), dom, "{argument}");
     }
+}
+
+#[test]
+fn conditional_model_arguments_track_their_own_inputs() {
+    // Parenthesize the same expression for VDOM's derived-key precedence bug (#6216).
+    let reference = source("v-model:[(state.index?'second':'first')].trim=\"state.value\"");
+    let source = source("v-model:[state.index?'second':'first'].trim=\"state.value\"");
+    let extra = json!({"childSource": CHILD,
+    "context": {"field": "second", "index": 0, "value": "initial", "other": "untouched"},
+    "steps": [
+        {"patch": {"field": "first"}},
+        {"click": ".first"},
+        {"patch": {"index": 1, "value": "external"}, "preserve": [".first", ".second"]},
+        {"click": ".first"},
+        {"click": ".second"},
+        {"patch": {"field": "second"}},
+        {"patch": {"index": 0, "value": "again"}, "preserve": [".first", ".second"]},
+        {"click": ".second"},
+        {"click": ".first"}
+    ]});
+    let actual = trace(&source, "vapor", extra.clone());
+    assert_eq!(
+        outputs(&actual),
+        [
+            "initial|untouched",
+            "initial|untouched",
+            "first|untouched",
+            "external|untouched",
+            "external|untouched",
+            "second|untouched",
+            "second|untouched",
+            "again|untouched",
+            "again|untouched",
+            "first|untouched"
+        ]
+    );
+    for (index, key, value) in [
+        (0, "first", "initial"),
+        (1, "first", "initial"),
+        (3, "second", "external"),
+        (6, "second", "second"),
+        (7, "first", "again"),
+    ] {
+        let modifiers = format!("{key}Modifiers");
+        assert_eq!(
+            child_props(&actual, index),
+            json!({key: value, modifiers: {"trim": true}})
+        );
+    }
+    assert_eq!(actual, trace(&reference, "vdom", extra));
 }
 
 #[test]
