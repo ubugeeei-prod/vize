@@ -134,13 +134,13 @@ fn nested_declarations_keep_their_authored_scope() {
 
 #[test]
 fn captures_do_not_erase_signature_local_type_parameters_or_directives() {
-    for script in [
+    for (index, script) in [
         "class Local<T> { value!: T; }\ndeclare function label<T>(value: Local<T>): T;\ndeclare const alias: typeof label;",
         "const local = 'fixed';\n// @ts-ignore pending scope support\ndeclare const label: typeof local;",
-    ] {
+    ].into_iter().enumerate() {
         let output = virtual_source(&setup(script));
         assert_eq!(authored_setup_body(&output), script.replace('\n', "\n  "));
-        assert!(!output.contains("__vize_ambient_"), "{output}");
+        insta::assert_snapshot!(format!("guarded_capture_{index}"), output);
     }
 }
 
@@ -260,9 +260,7 @@ fn overloads_capture_local_types_but_keep_runtime_merge_partners_in_setup() {
         authored_setup_body(&output),
         "const local = 1;\n  type __vize_ambient_0_type_0 = typeof local;"
     );
-    let module = &output[..output.find("// ========== Setup Scope ==========").unwrap()];
-    assert_eq!(module.matches("declare function label(").count(), 2);
-    assert!(module.contains("declare const alias: typeof label;"));
+    insta::assert_snapshot!("overload_capture", output);
 
     let script = "declare function label(value: string): string;\nfunction label(value: string) { return value; }";
     let output = virtual_source(&setup(script));
