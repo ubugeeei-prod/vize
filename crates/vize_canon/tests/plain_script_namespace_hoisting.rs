@@ -237,14 +237,15 @@ export default { name: "Namespaces" };
 "#,
     );
 
-    // The namespace body reads bindings that stay inside `__setup()`. They are
+    // Classes retain their original identity at module scope. Other bindings
+    // read by the namespace stay inside `__setup()`. They are
     // re-declared at module scope as ambient aliases of the setup return, which
     // keeps the authored type without duplicating the initializer. `shared` is
     // also a plain-script export, and the bridge's `export const shared = …`
     // lands *after* the namespace (TS2448), so the alias carries the `export`.
     assert_eq!(
         module,
-        "// Setup-scope bindings a hoisted namespace body reads\ndeclare const localBase: ReturnType<typeof __setup>[\"localBase\"];\ndeclare const Local: ReturnType<typeof __setup>[\"Local\"];\ntype Local = InstanceType<typeof Local>;\nexport declare const shared: ReturnType<typeof __setup>[\"shared\"];\n\nexport namespace Uses {\n  export const derived = localBase + shared;\n  export const made: Local = new Local();\n}\n\n// ========== Exported Types ==========\nexport type Props = {};\n\n"
+        "// Setup-scope bindings a hoisted namespace body reads\ndeclare const localBase: ReturnType<typeof __setup>[\"localBase\"];\nexport declare const shared: ReturnType<typeof __setup>[\"shared\"];\n\nclass Local {\n  id = 1;\n}\nexport namespace Uses {\n  export const derived = localBase + shared;\n  export const made: Local = new Local();\n}\n\n// ========== Exported Types ==========\nexport type Props = {};\n\n"
     );
     // `shared` keeps only its type-space obligations here; its value side is the
     // ambient alias above, so the bridge must not declare the name twice.

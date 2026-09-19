@@ -105,30 +105,24 @@ export function toPageCount(total: number) {
         .content
         .as_str();
 
-    // An `enum`/`class` declares a value *and* a type. Bridging only the value
-    // out of `__setup()` is what made consumers hit TS2749.
-    for (value, type_side) in [
-        (
-            "export const DiffDisplayMode = __vize_plain_script_exports.DiffDisplayMode;",
-            "export type DiffDisplayMode = (typeof DiffDisplayMode)[keyof typeof DiffDisplayMode];",
-        ),
-        (
-            "export const DiffMarker = __vize_plain_script_exports.DiffMarker;",
-            "export type DiffMarker = (typeof DiffMarker)[keyof typeof DiffMarker];",
-        ),
-        (
-            "export const DiffCursor = __vize_plain_script_exports.DiffCursor;",
-            "export type DiffCursor = InstanceType<typeof DiffCursor>;",
-        ),
+    // Preserve the original declarations at module scope: enums and classes
+    // carry both a value and their original nominal/generic type identity.
+    // The emitted-package consumer test verifies their public type behavior.
+    for declaration in [
+        "export enum DiffDisplayMode {",
+        "export const enum DiffMarker {",
+        "export class DiffCursor {",
     ] {
         assert!(
-            content.contains(value),
-            "value side must stay available: {value}\n{content}"
+            content.contains(declaration),
+            "missing declaration: {declaration}\n{content}"
         );
-        assert!(
-            content.contains(type_side),
-            "type side must stay available: {type_side}\n{content}"
-        );
+    }
+    for name in ["DiffDisplayMode", "DiffMarker", "DiffCursor"] {
+        assert!(!content.contains(&format!(
+            "export const {name} = __vize_plain_script_exports."
+        )));
+        assert!(!content.contains(&format!("export type {name} =")));
     }
 
     // A value-only declaration must not be handed a type meaning it never had.
