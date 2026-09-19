@@ -113,24 +113,33 @@ fn native_artifact_updates_adjacent_dynamic_children_independently() {
 
 #[test]
 fn inline_event_expressions_keep_their_implicit_parameter_scope() {
-    let observation = json!({
-        "tree": [{"tag": "button", "attributes": {}, "children": ["Click"], "disabled": false}],
-        "events": []
-    });
-    for handler in ["void $event", "void $event.target"] {
+    let observation = |events| {
+        json!({
+            "tree": [{"tag": "button", "attributes": {}, "children": ["Click"], "disabled": false}],
+            "events": events
+        })
+    };
+    for (handler, payload) in [
+        ("record(!!$event)", json!(true)),
+        ("record($event.target.tagName)", json!("BUTTON")),
+    ] {
         for backend in ["vdom", "vapor"] {
             let source = vize_carton::cstr!(r#"<button @click="{handler}">Click</button>"#);
             let actual = crate::mounted_trace(
                 backend,
                 &source,
-                json!({}),
+                json!({"$event": null}),
                 json!([{"activate": "button"}, {"activate": "button"}]),
             );
-            // Discarding the event object or its target is a no-op. Both
-            // clicks must complete without any runtime diagnostic.
+            // A context lookup would record false or throw on the null target.
+            // Each case must independently observe the actual event binding.
             assert_eq!(
                 actual,
-                json!([observation, observation, observation, {"tree": [], "events": []}]),
+                json!([
+                    observation(json!([])), observation(json!([payload])),
+                    observation(json!([payload, payload])),
+                    {"tree": [], "events": [payload, payload]}
+                ]),
                 "{backend}: {handler}"
             );
         }
