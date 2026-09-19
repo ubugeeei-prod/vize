@@ -1828,16 +1828,16 @@ linter	Linter	source	crates/vize/src/commands/lint/patterns.rs	22	s0	S0	stage	vi
 linter	Linter	test/dev	crates/vize/src/commands/lint/patterns.rs	113	s0	S0	stage	vize_s0	preferred	4
 linter	Linter	source	crates/vize/src/commands/lint/stdout.rs	4	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/benches/package_route.rs	40	s0	S0	stage	vize_s0	preferred	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	s0	S0	stage	vize_s0	preferred	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	old_ast	old AST/parser	old	vize_relief	legacy	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	old_ast	old AST/parser	old	vize_armature	legacy	2
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	24	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	24	old_ast	old AST/parser	old	vize_relief	legacy	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	24	old_ast	old AST/parser	old	vize_armature	legacy	2
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	24	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	24	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	24	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	24	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	24	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	24	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	24	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch.rs	64	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/error.rs	4	s0	S0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor.rs	20	s0	S0	stage	vize_carton	compat	1
