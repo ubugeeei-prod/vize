@@ -33,6 +33,7 @@ for (const [script, args, status] of [
       );
       const result = runMoonScript(script, [...args], {
         cwd: root,
+        denyWarn: true,
         env: {
           PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}`,
           CARGO_PROFILE_RELEASE_PANIC: "unwind",
