@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 import { testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
-import type { LspRange } from "./support/lsp/protocol.ts";
+import type { LspRange, ServerCapabilities } from "./support/lsp/protocol.ts";
 
 type Action = {
   title: string;
@@ -72,12 +72,13 @@ test("checker quick fixes apply to the current authored Vue buffer without lint"
       context: { diagnostics: [], only },
     }) as Promise<Action[] | null>;
   try {
-    await session.initialize(workspace, {
+    const initialized = (await session.initialize(workspace, {
       editor: true,
       lint: false,
       typecheck: true,
       codeActions: true,
-    });
+    })) as { capabilities: ServerCapabilities };
+    assert.deepEqual(initialized.capabilities.codeActionProvider?.codeActionKinds, ["quickfix"]);
     for (const [name, source] of Object.entries(cases)) {
       await t.test(name, async () => {
         session.notify("textDocument/didOpen", {

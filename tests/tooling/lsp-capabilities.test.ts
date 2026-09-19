@@ -330,14 +330,6 @@ test("vize lsp per-feature init flags toggle individual providers independently"
   );
 
   await withCapabilities(
-    "checker-quickfix",
-    { editor: true, lint: false, typecheck: true },
-    (capabilities) => {
-      assert.deepEqual(capabilities.codeActionProvider?.codeActionKinds, ["quickfix"]);
-    },
-  );
-
-  await withCapabilities(
     "granular-formatting-on",
     { editor: true, formatting: true },
     (capabilities) => {

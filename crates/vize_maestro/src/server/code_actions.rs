@@ -18,10 +18,10 @@ pub(super) async fn code_actions(
 
     let uri = &params.text_document.uri;
     let range = params.range;
-    let document = server.state.documents.get(uri)?;
-    let revision = document.revision();
-    let content = document.content.to_string();
-    drop(document);
+    let (revision, content) = {
+        let document = server.state.documents.get(uri)?;
+        (document.revision(), document.text())
+    };
 
     let actions = if !features.lint {
         vec![]

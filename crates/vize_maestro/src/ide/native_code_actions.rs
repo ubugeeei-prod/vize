@@ -44,14 +44,23 @@ impl CodeActionService {
         let Some(virtual_range) = request_range(ctx, &document, range) else {
             return vec![];
         };
-        let Ok(Some(response)) = bridge
+        let response = match bridge
             .code_actions(&document.request_uri, virtual_range)
             .await
-        else {
-            return vec![];
+        {
+            Ok(Some(response)) => response,
+            Ok(None) => return vec![],
+            Err(error) => {
+                tracing::warn!(%error, uri = %ctx.uri, "native code-action request failed");
+                return vec![];
+            }
         };
-        let Ok(actions) = serde_json::from_value::<Vec<CodeActionOrCommand>>(response) else {
-            return vec![];
+        let actions = match serde_json::from_value::<Vec<CodeActionOrCommand>>(response) {
+            Ok(actions) => actions,
+            Err(error) => {
+                tracing::warn!(%error, uri = %ctx.uri, "invalid native code-action response");
+                return vec![];
+            }
         };
         actions
             .into_iter()
