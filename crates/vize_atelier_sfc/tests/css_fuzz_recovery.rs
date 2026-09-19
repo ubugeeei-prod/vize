@@ -1,7 +1,7 @@
 #![cfg(feature = "native")]
 
-#[path = "support/css_fuzz_boundary.rs"]
-mod boundary;
+mod support;
+use support::css_fuzz_boundary as boundary;
 
 #[test]
 fn fuzz_boundary_distinguishes_recovered_engine_panics_from_escaping_panics() {

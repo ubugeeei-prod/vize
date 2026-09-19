@@ -7,7 +7,10 @@ async fn command_stdout(
   args : Array[String],
   cwd : String,
 ) -> String? {
-  let (exit_code, stdout) = @process.collect_stdout(command, args, cwd~)
+  let (exit_code, stdout) = match (try? @process.collect_stdout(command, args, cwd~)) {
+    Ok(output) => output
+    Err(_) => return None
+  }
   if exit_code != 0 {
     return None
   }

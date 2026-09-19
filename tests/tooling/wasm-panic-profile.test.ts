@@ -19,6 +19,9 @@ for (const [script, args, status] of [
       fs.mkdirSync(bin, { recursive: true });
       fs.mkdirSync(bindgen, { recursive: true });
       writeFakeCommand(bindgen, "wasm-bindgen", "console.log('wasm-bindgen 0.2.121');");
+      // Exercise hosts without Apple's SDK discovery command, including macOS
+      // installations where the command exists but cannot locate an SDK.
+      writeFakeCommand(bin, "xcrun", "process.exit(1);");
       writeFakeCommand(
         bin,
         "cargo",
