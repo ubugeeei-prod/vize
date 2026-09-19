@@ -1,0 +1,1 @@
+<main><section v-for="item in groups" :key="item.id"><button v-for="(item, position) in item.items" :key="item.id" :data-id="item.id" :title="position" @click="record(item.label)">{{ item.label }}</button><span>{{ item.label }}</span></section><p>{{ item }}</p></main>

@@ -1,6 +1,7 @@
 import Impeto
 import Impeto.BehaviorTests
 import Impeto.ControlTests
+import Impeto.LoopTests
 
 open Impeto
 
@@ -40,6 +41,24 @@ def fixtures : List Fixture := [
     trace := "fixtures/rust-lowered-control-slots.trace"
     vdomTrace := "fixtures/rust-lowered-control-slots.vdom.trace"
     vaporTrace := "fixtures/rust-lowered-control-slots.vapor.trace"
+  },
+  {
+    folio := "fixtures/rust-lowered-loop-keyed.s3.folio"
+    trace := "fixtures/rust-lowered-loop-keyed.trace"
+    vdomTrace := "fixtures/rust-lowered-loop-keyed.vdom.trace"
+    vaporTrace := "fixtures/rust-lowered-loop-keyed.vapor.trace"
+  },
+  {
+    folio := "fixtures/rust-lowered-loop-unkeyed.s3.folio"
+    trace := "fixtures/rust-lowered-loop-unkeyed.trace"
+    vdomTrace := "fixtures/rust-lowered-loop-unkeyed.vdom.trace"
+    vaporTrace := "fixtures/rust-lowered-loop-unkeyed.vapor.trace"
+  },
+  {
+    folio := "fixtures/rust-lowered-loop-nested.s3.folio"
+    trace := "fixtures/rust-lowered-loop-nested.trace"
+    vdomTrace := "fixtures/rust-lowered-loop-nested.vdom.trace"
+    vaporTrace := "fixtures/rust-lowered-loop-nested.vapor.trace"
   }
 ]
 
@@ -143,7 +162,9 @@ def main (args : List String) : IO UInt32 := do
         if code != 0 then return code
         let code <- Behavior.check "fixtures/rust-lowered-static-dynamic"
         if code != 0 then pure code
-        else Behavior.check "fixtures/rust-lowered-control-slots"
+        else
+          let code <- Behavior.check "fixtures/rust-lowered-control-slots"
+          if code != 0 then pure code else LoopTests.check
   | ["--check", folioPath, tracePath] => checkPair folioPath tracePath
   | ["--trace", folioPath] => printTrace folioPath
   | ["--trace-vdom", folioPath] => printBackendTrace .vdom folioPath

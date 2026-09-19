@@ -1,0 +1,10 @@
+vdom op#0 create-element
+vdom op#1 iterate effect#0
+vdom op#2 create-element effect#1
+vdom op#3 patch-prop effect#2
+vdom op#4 patch-prop effect#3
+vdom op#5 patch-prop effect#4
+vdom op#6 patch-event effect#5
+vdom op#7 set-text effect#6
+vdom op#8 create-element
+vdom op#9 set-text effect#7

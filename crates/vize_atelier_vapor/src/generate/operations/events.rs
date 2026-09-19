@@ -1,4 +1,5 @@
 use crate::ir::SetEventIRNode;
+use vize_atelier_core::steps::is_function_expression_node;
 use vize_carton::{String, ToCompactString, cstr};
 
 use super::super::context::GenerateContext;
@@ -23,8 +24,16 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
     } else {
         ctx.resolve_expression(&handler)
     };
-    // Determine handler format based on content
-    let invoker_body: String = if is_inline_statement_block(&handler) {
+    // The core transform may already have turned an inline scoped handler into
+    // an arrow. Preserve that function, just as component event props do;
+    // wrapping it again returns a function instead of delivering the event.
+    let invoker_body: String = if set_event
+        .value
+        .as_deref()
+        .is_some_and(is_function_expression_node)
+    {
+        resolved_handler
+    } else if is_inline_statement_block(&handler) {
         if handler.contains("$event") {
             cstr!("$event => {{ {} }}", resolved_handler)
         } else {

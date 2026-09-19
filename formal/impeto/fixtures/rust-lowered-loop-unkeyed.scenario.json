@@ -1,0 +1,116 @@
+{
+  "context": {
+    "items": [
+      {
+        "id": "a",
+        "label": "A"
+      },
+      {
+        "id": "b",
+        "label": "B"
+      }
+    ],
+    "item": "outer",
+    "position": "outer position"
+  },
+  "steps": [
+    {
+      "click": "a"
+    },
+    {
+      "patch": {
+        "items": [
+          {
+            "id": "b",
+            "label": "B2"
+          },
+          {
+            "id": "a",
+            "label": "A2"
+          }
+        ]
+      }
+    },
+    {
+      "click": "a"
+    },
+    {
+      "patch": {
+        "items": [
+          {
+            "id": "c",
+            "label": "C"
+          },
+          {
+            "id": "b",
+            "label": "B2"
+          },
+          {
+            "id": "a",
+            "label": "A2"
+          }
+        ]
+      }
+    },
+    {
+      "click": "a"
+    },
+    {
+      "click": "c"
+    },
+    {
+      "patch": {
+        "items": [
+          {
+            "id": "c",
+            "label": "C2"
+          },
+          {
+            "id": "a",
+            "label": "A3"
+          }
+        ]
+      }
+    },
+    {
+      "click": "a"
+    },
+    {
+      "patch": {
+        "items": [
+          {
+            "id": "c",
+            "label": "C3"
+          },
+          {
+            "id": "a",
+            "label": "A4"
+          }
+        ],
+        "item": "outer changed",
+        "position": "outer position changed"
+      }
+    },
+    {
+      "click": "a"
+    },
+    {
+      "patch": {
+        "items": []
+      }
+    },
+    {
+      "patch": {
+        "items": [
+          {
+            "id": "a",
+            "label": "A5"
+          }
+        ]
+      }
+    },
+    {
+      "click": "a"
+    }
+  ]
+}

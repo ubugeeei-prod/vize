@@ -6,8 +6,15 @@ import { build } from "vite-plus";
 import { evaluateCompiledRender } from "./davinci-runtime-trace.mjs";
 
 /** One process owns one DOM and one Vue module, including its scheduler and effects. */
-export async function traceMountedBackend({ backend, code, context = {}, steps = [] }) {
+export async function traceMountedBackend({
+  backend,
+  code,
+  context = {},
+  steps = [],
+  identities = false,
+}) {
   assert.ok(backend === "vdom" || backend === "vapor", `unknown backend: ${backend}`);
+  if (identities) validateLoopScenario(context, steps);
   const window = new Window();
   for (const key of [
     "window",
@@ -28,7 +35,12 @@ export async function traceMountedBackend({ backend, code, context = {}, steps =
   const vue = await loadRuntime();
   const render = await evaluateCompiledRender(code, vue);
   const events = [];
-  const state = vue.reactive({ $slots: {}, ...context, save: () => events.push("save") });
+  const state = vue.reactive({
+    $slots: {},
+    ...context,
+    save: () => events.push("save"),
+    record: (value) => events.push(value),
+  });
   const cache = [];
   const component =
     backend === "vapor"
@@ -41,10 +53,32 @@ export async function traceMountedBackend({ backend, code, context = {}, steps =
   const host = window.document.createElement("div");
   window.document.body.append(host);
   const snapshots = [];
+  const nodeIdentities = new WeakMap();
+  let nextIdentity = 0;
+  let previousNodes = [];
+
+  function observedIdentities() {
+    const nodes = [...host.querySelectorAll("*")];
+    for (const previous of previousNodes) {
+      if (!nodes.includes(previous))
+        assert.equal(previous.isConnected, false, "removed node is still connected");
+    }
+    previousNodes = nodes;
+    for (const node of nodes) {
+      if (!nodeIdentities.has(node)) nodeIdentities.set(node, nextIdentity++);
+    }
+    return nodes
+      .filter((node) => node.hasAttribute("data-id"))
+      .map((node) => [node.getAttribute("data-id"), nodeIdentities.get(node)]);
+  }
 
   function snapshot() {
     assert.deepEqual(diagnostics, [], "mounted runtime diagnostics");
-    snapshots.push({ tree: observeChildren(host), events: [...events] });
+    snapshots.push({
+      tree: observeChildren(host),
+      events: [...events],
+      ...(identities ? { identities: observedIdentities() } : {}),
+    });
   }
 
   try {
@@ -52,7 +86,17 @@ export async function traceMountedBackend({ backend, code, context = {}, steps =
     await vue.nextTick();
     snapshot();
     for (const step of steps) {
-      if (Object.hasOwn(step, "activate")) {
+      if (Object.hasOwn(step, "click")) {
+        assert.equal(identities, true, "loop clicks require identity observations");
+        assert.deepEqual(Object.keys(step), ["click"], "unexpected loop click fields");
+        assert.equal(typeof step.click, "string", "loop target must be a data-id string");
+        const targets = [...host.querySelectorAll("[data-id]")].filter(
+          (node) => node.getAttribute("data-id") === step.click,
+        );
+        assert.equal(targets.length, 1, "expected one live interaction target");
+        assert.ok(targets[0] instanceof window.HTMLButtonElement, "expected a native button");
+        targets[0].click();
+      } else if (Object.hasOwn(step, "activate")) {
         assert.deepEqual(Object.keys(step), ["activate"], "unexpected activation fields");
         assert.equal(step.activate, "button", "unsupported activation target");
         const targets = host.querySelectorAll("button");
@@ -86,6 +130,37 @@ export async function traceMountedBackend({ backend, code, context = {}, steps =
     if (host.childNodes.length) app.unmount();
     host.remove();
     await window.happyDOM.close();
+  }
+}
+
+export function validateLoopScenario(context, steps) {
+  const validateState = (state) => {
+    assert.ok(
+      state !== null && typeof state === "object" && !Array.isArray(state),
+      "expected loop state object",
+    );
+    for (const key of Object.keys(state)) {
+      assert.ok(
+        /^[A-Za-z_$][A-Za-z0-9_$]*$/u.test(key) &&
+          !["save", "record", "$slots", "__proto__", "constructor", "prototype"].includes(key),
+        "unsupported loop state key",
+      );
+    }
+  };
+  validateState(context);
+  assert.ok(Array.isArray(steps), "expected loop steps array");
+  for (const step of steps) {
+    assert.ok(
+      step !== null && typeof step === "object" && !Array.isArray(step),
+      "expected loop step object",
+    );
+    assert.equal(Object.keys(step).length, 1, "expected one loop step field");
+    if (Object.hasOwn(step, "click")) {
+      assert.equal(typeof step.click, "string", "loop target must be a data-id string");
+    } else {
+      assert.ok(Object.hasOwn(step, "patch"), "unsupported loop step");
+      validateState(step.patch);
+    }
   }
 }
 

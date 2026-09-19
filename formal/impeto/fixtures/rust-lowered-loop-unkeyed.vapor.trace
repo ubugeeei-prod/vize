@@ -1,0 +1,9 @@
+vapor op#0 create-node
+vapor op#1 list-effect effect#0
+vapor op#2 create-node effect#1
+vapor op#3 assign-prop effect#2
+vapor op#4 assign-prop effect#3
+vapor op#5 listen effect#4
+vapor op#6 text-effect effect#5
+vapor op#7 create-node
+vapor op#8 text-effect effect#6

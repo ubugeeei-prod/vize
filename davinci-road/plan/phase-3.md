@@ -162,6 +162,11 @@ placement alternatives and extraction pass remain open.
 reference for keyed/unkeyed `v-for`, conditional toggles, mixed non-linear
 expressions (TS-29). _Accept:_ suite green over matrix fixtures.
 
+_Array-loop slice 2026-09-20:_ the [P3-11 record](./phase-3-records/p3-11.md)
+adds independent scoped array execution and retained-identity reconciliation,
+with full mounted VDOM/Vapor observations. General iteration, mixed non-linear
+expressions and scheduling/linearity evidence remain open.
+
 **P3-12 Behavioral runner.** Sprout-style: mount compiled VDOM + Vapor
 against scripted prop/interaction traces in a headless DOM; **IME composition
 scripts pin `ui.model` realizations** (charter #40): compositionstart →
