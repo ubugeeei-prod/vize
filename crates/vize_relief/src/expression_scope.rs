@@ -148,12 +148,34 @@ pub trait ExpressionScope<'a>: Visit<'a> + Sized {
     }
 
     fn scoped_class(&mut self, class: &ast::Class<'a>) {
+        // Preserve OXC's child order and callbacks, entering the name scope
+        // after class decorators. Calling walk_class here would visit them twice.
+        let kind = oxc_ast::AstKind::Class(self.alloc(class));
+        self.enter_node(kind);
+        self.visit_span(&class.span);
+        self.visit_decorators(&class.decorators);
+        if let Some(id) = &class.id {
+            self.visit_binding_identifier(id);
+        }
         self.push_scope();
         if let Some(id) = &class.id {
             self.add_local(id.name.as_str());
         }
-        walk::walk_class(self, class);
+        self.enter_scope(ScopeFlags::StrictMode, &class.scope_id);
+        if let Some(parameters) = &class.type_parameters {
+            self.visit_ts_type_parameter_declaration(parameters);
+        }
+        if let Some(super_class) = &class.super_class {
+            self.visit_expression(super_class);
+        }
+        if let Some(arguments) = &class.super_type_arguments {
+            self.visit_ts_type_parameter_instantiation(arguments);
+        }
+        self.visit_ts_class_implements_list(&class.implements);
+        self.visit_class_body(&class.body);
+        self.leave_scope();
         self.pop_scope();
+        self.leave_node(kind);
     }
 
     fn scoped_static_block(&mut self, block: &ast::StaticBlock<'a>) {

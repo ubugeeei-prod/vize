@@ -1,5 +1,23 @@
 //! Handler scenarios shared by compiler and independent browser observations.
 
+/// Valid authored programs with deliberately wrong delivery or scope ownership.
+/// Compile these through the same entry point; mutations never depend on how
+/// generated JavaScript is printed.
+pub fn mutant_handler(name: &str) -> Option<&'static str> {
+    Some(match name {
+        "event-reference" => "event => void event",
+        "inline" => "() => save($event.type, $event.target.id)",
+        "capture" => "$event => save($event.type, $event.target.id)",
+        "forward-const" => {
+            "event => { const deliver = () => save($event.type, $event.target.id ?? 'missing'); deliver() }"
+        }
+        "loop-for" => {
+            "() => { for (var $event = 0; $event < 1; $event++) {} save($event.type, $event.target) }"
+        }
+        _ => return None,
+    })
+}
+
 pub const CASES: &[(&str, &str, &str, &str, bool)] = &[
     (
         "temporal-dead-zone",

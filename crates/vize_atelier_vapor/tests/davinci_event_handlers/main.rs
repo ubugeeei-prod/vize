@@ -13,8 +13,8 @@ use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
-#[path = "davinci_event_handlers/cases.rs"]
 mod cases;
+mod scope;
 
 #[test]
 #[ignore = "requires installed Chromium; enforced by the Davinci browser Actions lane"]
@@ -77,41 +77,7 @@ fn fixture(
         if mode == "cached" && matches!(setup, "missing" | "null" | "number") {
             continue;
         }
-        let allocator = Allocator::new();
-        let code = if backend == "vdom" {
-            let mut bindings = BindingMetadata::default();
-            bindings.is_script_setup = true;
-            for name in ["$event", "save", "actions", "count"] {
-                bindings.bindings.insert(name.into(), BindingType::SetupLet);
-            }
-            let (_, errors, output) = compile_template_with_options(
-                &allocator,
-                source,
-                DomCompilerOptions {
-                    prefix_identifiers: true,
-                    cache_handlers: mode == "cached",
-                    binding_metadata: (mode == "setup").then_some(bindings),
-                    ..Default::default()
-                },
-            );
-            assert!(errors.is_empty(), "{name}: {errors:?}");
-            format!("{}\n{}", output.preamble, output.code)
-        } else {
-            let output = compile_vapor(
-                &allocator,
-                source,
-                VaporCompilerOptions {
-                    prefix_identifiers: mode == "prefix",
-                    ..Default::default()
-                },
-            );
-            assert!(
-                output.error_messages.is_empty(),
-                "{name}: {:?}",
-                output.error_messages
-            );
-            output.code.to_string()
-        };
+        let code = compile(backend, mode, source);
         compiled.push(json!({"backend": backend, "mode": mode, "code": code}));
     }
     // Keep the observed upstream lexical-scope differences explicit. A
@@ -134,11 +100,54 @@ fn fixture(
     } else {
         handler.to_owned()
     };
+    let mutant_code = cases::mutant_handler(name).map(|handler| {
+        let source = format!(r#"<button id="target" @click="{handler}">{{{{ count }}}}</button>"#);
+        compile("vapor", "prefix", &source)
+    });
     json!({"name": name, "source": source, "setup": setup, "compiled": compiled,
         "nativeHandler": native_handler,
+        "mutantCode": mutant_code,
         "referenceExpected": reference_expected,
         "expected": {"vdom": expected(setup, calls, increment, sibling, false),
                      "vapor": expected(setup, calls, increment, sibling, true)}})
+}
+
+fn compile(backend: &str, mode: &str, source: &str) -> String {
+    let allocator = Allocator::new();
+    if backend == "vdom" {
+        let mut bindings = BindingMetadata::default();
+        bindings.is_script_setup = true;
+        for name in ["$event", "save", "actions", "count"] {
+            bindings.bindings.insert(name.into(), BindingType::SetupLet);
+        }
+        let (_, errors, output) = compile_template_with_options(
+            &allocator,
+            source,
+            DomCompilerOptions {
+                prefix_identifiers: true,
+                cache_handlers: mode == "cached",
+                binding_metadata: (mode == "setup").then_some(bindings),
+                ..Default::default()
+            },
+        );
+        assert!(errors.is_empty(), "{source}: {errors:?}");
+        format!("{}\n{}", output.preamble, output.code)
+    } else {
+        let output = compile_vapor(
+            &allocator,
+            source,
+            VaporCompilerOptions {
+                prefix_identifiers: mode == "prefix",
+                ..Default::default()
+            },
+        );
+        assert!(
+            output.error_messages.is_empty(),
+            "{source}: {:?}",
+            output.error_messages
+        );
+        output.code.to_string()
+    }
 }
 
 fn expected(setup: &str, calls: &str, increment: bool, sibling: bool, vapor: bool) -> Value {

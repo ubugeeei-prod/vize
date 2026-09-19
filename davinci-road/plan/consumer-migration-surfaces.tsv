@@ -1086,7 +1086,11 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_valueless_attr.rs	4
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/tests.rs	4	s0	S0	stage	vize_carton	compat	42
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/tests.rs	4	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/tests.rs	4	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_event_handlers.rs	14	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_event_handlers/main.rs	14	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_event_handlers/scope.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_event_handlers/scope.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_event_handlers/scope.rs	3	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_event_handlers/scope.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_expr_reparse_floor.rs	20	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_mounted_behavior.rs	12	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_mounted_behavior/artifact.rs	127	s0	S0	stage	vize_carton	compat	1

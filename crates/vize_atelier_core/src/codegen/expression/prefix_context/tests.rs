@@ -6,6 +6,17 @@ use crate::{ExpressionNode, JsExpression, SimpleExpressionNode, SourceLocation};
 use oxc_span::{GetSpan, SourceType};
 use vize_s0::{Allocator, Box};
 
+const DECORATOR_CASES: &[(&str, &str)] = &[
+    (
+        "[(@C class C { value = C }), C]",
+        "[(@_ctx.C class C { value = C }), _ctx.C]",
+    ),
+    (
+        "[(@decorate(C) class C { @decorate(C) value = C }), C]",
+        "[(@_ctx.decorate(_ctx.C) class C { @_ctx.decorate(C) value = C }), _ctx.C]",
+    ),
+];
+
 #[test]
 fn codegen_callback_parameters_keep_their_lexical_bindings() {
     let ctx = CodegenContext::new(CodegenOptions::default());
@@ -116,7 +127,10 @@ fn codegen_callback_parameters_keep_their_lexical_bindings() {
             "event => { try { throw event } catch ($event) { save($event) } save($event) }",
             "event => { try { throw event } catch ($event) { _ctx.save($event) } _ctx.save(_ctx.$event) }",
         ),
-    ] {
+    ]
+    .into_iter()
+    .chain(DECORATOR_CASES.iter().copied())
+    {
         for retained in [false, true] {
             let node = expression_node(source, &allocator, retained);
             assert_eq!(
@@ -124,6 +138,33 @@ fn codegen_callback_parameters_keep_their_lexical_bindings() {
                 expected,
                 "retained={retained}: {source}"
             );
+        }
+    }
+}
+
+#[test]
+fn transform_class_decorators_keep_the_outer_class_binding() {
+    let allocator = Allocator::new();
+    for &(source, expected) in DECORATOR_CASES {
+        for retained in [false, true] {
+            let node = ExpressionNode::Simple(Box::new_in(
+                expression_node(source, &allocator, retained),
+                &&allocator,
+            ));
+            let mut ctx = crate::lane::TransformContext::new(
+                &allocator,
+                source,
+                crate::options::TransformOptions {
+                    prefix_identifiers: true,
+                    ..Default::default()
+                },
+            );
+            let ExpressionNode::Simple(result) =
+                crate::steps::expression::process_expression(&mut ctx, &node, false)
+            else {
+                panic!("expected a simple expression");
+            };
+            assert_eq!(result.content, expected, "retained={retained}: {source}");
         }
     }
 }

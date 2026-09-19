@@ -102,19 +102,11 @@ try {
       });
       nativeJavaScriptOracles++;
     }
-    // These valid programs intentionally break delivery or binding ownership.
-    // Requiring their mounted traces to differ proves that a silent no-op or
-    // accidental capture cannot satisfy the independent expected observations.
-    const mutation = {
-      "event-reference": ["e => _ctx.$event(e)", "e => void e"],
-      inline: ["_ctx.save($event.type", "_ctx.save(_ctx.$event.type"],
-      capture: ["_ctx.$event.type", "$event.type"],
-      "forward-const": ["const $event = event", "const $event = _ctx.$event"],
-      "loop-for": ["_ctx.save(_ctx.$event.type", "_ctx.save($event.type"],
-    }[fixture.name];
-    if (mutation) {
+    // Rust owns and compiles the valid mutant programs. Their mounted traces
+    // must differ, regardless of generated whitespace or printer formatting.
+    if (fixture.mutantCode) {
       const base = engines.find((engine) => engine.name === "Vize vapor/prefix");
-      const code = base.code.replace(...mutation);
+      const code = fixture.mutantCode;
       assert.notEqual(code, base.code, "mutation must change the compiled artifact");
       engines.push({ ...base, name: `${base.name} mutation`, code, mutant: true });
     }
