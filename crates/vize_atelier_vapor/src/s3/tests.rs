@@ -52,8 +52,12 @@ fn accepted_payload_outlives_surface_storage_and_supplies_generation() {
 }
 
 fn lowered<'a>(allocator: &'a Allocator) -> vize_s2_to_s3::Lowered<'a> {
+    lowered_source(allocator, SOURCE)
+}
+
+fn lowered_source<'a>(allocator: &'a Allocator, source: &str) -> vize_s2_to_s3::Lowered<'a> {
     let scratch = Allocator::new();
-    let (tree, errors) = vize_s1::parse(&scratch, SOURCE);
+    let (tree, errors) = vize_s1::parse(&scratch, source);
     let s2 = vize_s1_to_s2::lower(&scratch, &tree, &errors);
     vize_s2_to_s3::lower(allocator, &s2.root)
 }
@@ -199,5 +203,27 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
             }
         ),
         VaporS3BridgeStatus::Legacy(LegacyReason::Options)
+    ));
+}
+
+#[test]
+fn empty_static_text_cannot_shift_materialized_child_addresses() {
+    let allocator = Allocator::new();
+    let mut s3 = lowered_source(&allocator, "<div>prefix<span>{{ label }}</span></div>");
+    let text = s3
+        .program
+        .operands
+        .iter_mut()
+        .find(|operand| {
+            operand.role == OperandRole::Text && operand.value.kind == ValueKind::Literal
+        })
+        .unwrap();
+    text.value.text = "";
+    assert!(vize_s3::verify::verify(&s3.program).is_empty());
+    // Empty HTML text produces no DOM node. Counting it as a child would make
+    // the following dynamic span address the wrong browser node.
+    assert!(matches!(
+        admit(s3),
+        VaporS3BridgeStatus::Legacy(LegacyReason::ExpressionOrEncoding)
     ));
 }

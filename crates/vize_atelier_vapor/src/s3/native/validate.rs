@@ -38,10 +38,12 @@ pub(super) fn admit<'a>(program: &Program<'a>) -> Result<NativeArtifact<'a>> {
                 }
                 let value = values[0].value;
                 match value.kind {
-                    ValueKind::Literal if !value.text.contains('&') => Content::Text {
-                        value: value.text,
-                        dynamic: false,
-                    },
+                    ValueKind::Literal if !value.text.is_empty() && !value.text.contains('&') => {
+                        Content::Text {
+                            value: value.text,
+                            dynamic: false,
+                        }
+                    }
                     ValueKind::Js if reference(value.text) => Content::Text {
                         value: value.text.trim(),
                         dynamic: true,
