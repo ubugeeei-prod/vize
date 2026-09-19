@@ -79,10 +79,13 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
 
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     const logLines = fs.readFileSync(cargoLogPath, "utf8").trim().split("\n");
-    assert.match(logLines[0] ?? "", /^publish --allow-dirty --no-verify -p vize_carton$/);
-    assert.match(logLines[1] ?? "", /^info --registry crates-io vize_carton@/);
-    assert.match(logLines.at(-2) ?? "", /^publish --allow-dirty --no-verify -p vize_fresco$/);
-    assert.match(logLines.at(-1) ?? "", /^info --registry crates-io vize_fresco@/);
+    assert.deepEqual(
+      logLines,
+      publishedCrates.flatMap((crateName) => [
+        `publish --allow-dirty --no-verify -p ${crateName}`,
+        `info --registry crates-io ${crateName}@${version}`,
+      ]),
+    );
 
     const runDryRun = (alreadyPublished: string[], extraEnv: Record<string, string> = {}) => {
       fs.writeFileSync(cargoLogPath, "");
@@ -170,7 +173,10 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       TEST_UNRESOLVED_CRATES: publishedCrates.at(-1) ?? "",
     });
     assert.notEqual(unresolvedAll.status, 0);
-    assert.match(unresolvedAll.stderr, /could not resolve .*vize_fresco/i);
+    assert.match(
+      unresolvedAll.stderr,
+      new RegExp(`could not resolve .*${publishedCrates.at(-1)}`, "i"),
+    );
     assert.doesNotMatch(unresolvedAll.stdout, /Every crate/);
     const unresolvedAllCargo = fs.readFileSync(cargoLogPath, "utf8");
     assert.equal(

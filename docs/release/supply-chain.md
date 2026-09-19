@@ -76,6 +76,10 @@ Configure each npm package's Trusted Publisher with:
 - Workflow filename: `release.yml`
 - Environment name: `npm`
 
+For an existing package with a broken or missing publisher, follow
+[Trusted Publishing Recovery](./trusted-publishing-recovery.md). Both npm and
+crates.io settings can be repaired from a CLI using authenticated owner access.
+
 ### First-publish bootstrap
 
 npm only allows Trusted Publishing to be configured after a package exists. Do

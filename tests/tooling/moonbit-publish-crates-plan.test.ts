@@ -54,15 +54,7 @@ test("publish_crates exactly partitions every publishable workspace crate", () =
   assert.deepEqual(releaseCrates.toSorted(), publishableCrates.toSorted());
 });
 
-test("publish_crates defers crates that still need manual crates.io handoff", () => {
-  assert.deepEqual(getManualPublishCrates(), [
-    "vize_croquis_cf",
-    "vize_atelier_jsx",
-    "vize_marquette",
-    "vize_doctor",
-  ]);
-});
-
-test("publish_crates only blocks crates that depend on manual-publish exclusions", () => {
-  assert.deepEqual(getBlockedByManualPublishCrates(), ["vize_canon", "vize_patina"]);
+test("the release plan no longer defers existing publishable crates", () => {
+  assert.deepEqual(getManualPublishCrates(), []);
+  assert.deepEqual(getBlockedByManualPublishCrates(), []);
 });

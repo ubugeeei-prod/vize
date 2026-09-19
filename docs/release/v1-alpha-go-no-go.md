@@ -80,11 +80,12 @@ npm view @vizejs/vite-plugin-musea dist-tags --json
 npm view @vizejs/wasm dist-tags --json
 ```
 
-- [ ] Rust owner verifies crates.io propagation without assuming `cargo install` support:
+- [ ] Rust owner verifies the exact version of every crate in `published_crates` in
+      `tools/moon/cmd/publish_crates/main.mbt`, including Canon and Patina. For example:
 
 ```bash
-cargo search vize --limit 5
-curl -sf https://crates.io/api/v1/crates/vize | jq '.crate.max_version'
+curl --fail-with-body https://crates.io/api/v1/crates/vize_canon/VERSION
+curl --fail-with-body https://crates.io/api/v1/crates/vize_patina/VERSION
 ```
 
 - [ ] Editor owner verifies the VS Code marketplace page shows the new pre-release.
@@ -141,6 +142,13 @@ cargo yank --vers <bad-version> vize
 - [ ] If docs are wrong, revert the docs commit or redeploy the previous known-good Pages artifact.
 - [ ] If the VS Code extension is broken, publish a fixed pre-release and update the marketplace
       description. Do not unpublish without editor owner and release captain approval.
+
+### Partial package publication recovery
+
+Repair and read back the exact npm or crates.io publisher identity using the
+[CLI recovery procedure](./trusted-publishing-recovery.md), then rerun the failed
+job in the original Release workflow. Verify every expected version and GitHub
+Release completion before closing the release issue or creating another tag.
 
 ### Partial editor publication recovery
 

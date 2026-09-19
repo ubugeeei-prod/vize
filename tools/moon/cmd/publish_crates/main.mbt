@@ -30,20 +30,22 @@ let published_crates : Array[String] = [
   "vize_atelier_sfc",
   "vize_musea",
   "vize_fresco",
-]
-
-/// Crates without a completed Trusted Publishing handoff.
-let manual_publish_crates : Array[String] = [
   "vize_croquis_cf",
   "vize_atelier_jsx",
   "vize_marquette",
   "vize_doctor",
+  "vize_canon",
+  "vize_patina",
+]
+
+/// Crates without a completed Trusted Publishing handoff.
+let manual_publish_crates : Array[String] = [
+  // Existing crate ownership and release.yml trust verified in #6086.
 ]
 
 /// Existing crates that depend on a crate still awaiting manual publication.
 let blocked_by_manual_publish_crates : Array[String] = [
-  "vize_canon",
-  "vize_patina",
+  // Existing crate ownership and release.yml trust verified in #6086.
 ]
 
 fn includes_string(items : Array[String], value : String) -> Bool {
