@@ -69,8 +69,10 @@ import { resolveComponent as _resolveComponent, createComponentWithFallback as _
 
 export function render(_ctx) {
   const _component_MyComponent = _resolveComponent("MyComponent")
-  const n0 = _createComponentWithFallback(_component_MyComponent, { onClick: () => ($event => { _ctx.hoge();
-_ctx.hoge(); }) }, null, true)
+  const n0 = _createComponentWithFallback(_component_MyComponent, { onClick: () => ($event => {
+_ctx.hoge();
+    _ctx.hoge();
+}) }, null, true)
   return n0
 }
 

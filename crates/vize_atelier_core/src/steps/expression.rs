@@ -16,7 +16,7 @@ mod typescript;
 
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_s0::{Allocator, Box, String};
+use vize_s0::{Allocator, Box, String, cstr};
 
 use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformContext};
 
@@ -54,7 +54,7 @@ fn with_whole_expression<T>(
     let allocator = crate::expr_parse_probe::parse_arena();
     // The bare parser accepts a prefix (`save; count++` as `save`). Require
     // one whole expression. The newline also terminates authored line comments.
-    let wrapped = vize_s0::cstr!("({content}\n)");
+    let wrapped = cstr!("({content}\n)");
     let expr = Parser::new(
         &allocator,
         &wrapped,

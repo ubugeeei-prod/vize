@@ -26,7 +26,7 @@ _delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker(() => (_ctx.count++))
+  n0.$evtclick = _createInvoker($event => (_ctx.count++))
   return n0
 }
 
@@ -44,8 +44,10 @@ _delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker(() => { _ctx.hoge();
-_ctx.fuga(); })
+  n0.$evtclick = _createInvoker($event => {
+_ctx.hoge();
+_ctx.fuga();
+})
   return n0
 }
 
@@ -61,7 +63,7 @@ _delegateEvents("click")
 
 export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = _createInvoker(() => (_ctx.handler()))
+  n0.$evtclick = _createInvoker($event => (_ctx.handler()))
   return n0
 }
 
