@@ -153,8 +153,9 @@ fn declarations_shadow_setup_and_reach_event_and_slot_scopes() {
 }
 
 #[test]
-fn disabled_mode_preserves_custom_directive_behavior() {
-    let source = r#"<div v-match="subject"><p v-when="value">{{ value }}</p></div>"#;
+fn disabled_mode_skips_reserved_pattern_expressions_but_keeps_custom_directives() {
+    let source =
+        r#"<div v-match="subject" v-custom="customValue"><p v-when="value">{{ value }}</p></div>"#;
     let result = analyze(source, "const subject = 1;", false);
     assert!(result.pattern_diagnostics.is_empty());
     assert!(
@@ -169,7 +170,15 @@ fn disabled_mode_preserves_custom_directive_behavior() {
             .iter()
             .filter(|r| r.name == "value")
             .count(),
-        2
+        1
+    );
+    assert_eq!(
+        result
+            .undefined_refs
+            .iter()
+            .filter(|r| r.name == "customValue")
+            .count(),
+        1
     );
 }
 
