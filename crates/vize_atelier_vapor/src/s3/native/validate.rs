@@ -309,11 +309,13 @@ fn check_order(
             .windows(2)
             .map(|pair| (pair[0].id, pair[1].id, EdgeKind::EffectOrder)),
     );
-    if program.edges.len() != expected.len()
-        || program
-            .edges
-            .iter()
-            .any(|edge| !expected.contains(&(edge.from, edge.to, edge.kind)))
+    // Consume each obligation once: repeating an edge cannot conceal a missing
+    // dependency, even when the total edge counts are identical.
+    if program
+        .edges
+        .iter()
+        .any(|edge| !expected.remove(&(edge.from, edge.to, edge.kind)))
+        || !expected.is_empty()
     {
         return Err(AdmissionFailure::Invalid(
             "native order differs from S3 ordering edges",

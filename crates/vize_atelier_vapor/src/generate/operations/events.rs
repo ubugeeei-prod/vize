@@ -29,7 +29,13 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
     // wrapping it again returns a function instead of delivering the event.
     // A direct reference is never a function expression. This fast shape check
     // also consumes S3's checked reference payload without reconstructing ASTs.
-    let invoker_body: String = if is_simple_path_expression(handler.trim()) {
+    let path = handler.trim();
+    let direct_reference = is_simple_path_expression(path);
+    let invoker_body: String = if direct_reference && path.split('.').next() == Some("$event") {
+        // The event parameter and its members are local expressions, not
+        // component method references. Preserve the callback's binding.
+        cstr!("$event => {path}")
+    } else if direct_reference {
         cstr!("e => {}(e)", resolved_handler)
     } else if set_event
         .value

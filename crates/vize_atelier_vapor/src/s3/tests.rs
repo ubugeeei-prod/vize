@@ -107,7 +107,10 @@ fn corrupt_graph_and_partition_are_rejected_instead_of_falling_back() {
 #[test]
 fn generic_graph_verification_does_not_imply_backend_admission() {
     let allocator = Allocator::new();
-    for mutation in 0..5 {
+    let mut reordered = lowered(&allocator);
+    reordered.program.edges.reverse();
+    assert!(matches!(admit(reordered), VaporS3BridgeStatus::Accepted(_)));
+    for mutation in 0..6 {
         let mut s3 = lowered(&allocator);
         match mutation {
             0 => {
@@ -130,7 +133,7 @@ fn generic_graph_verification_does_not_imply_backend_admission() {
             3 => {
                 s3.program.edges.pop();
             }
-            _ => {
+            4 => {
                 let value = s3
                     .program
                     .operands
@@ -139,10 +142,15 @@ fn generic_graph_verification_does_not_imply_backend_admission() {
                     .unwrap();
                 value.value.text = "unmodeled";
             }
+            _ => {
+                // Preserve the length and individually valid edges while
+                // replacing a required dependency with a duplicate.
+                s3.program.edges[1] = s3.program.edges[0];
+            }
         }
         assert!(vize_s3::verify::verify(&s3.program).is_empty());
         let status = admit(s3);
-        if matches!(mutation, 0 | 1 | 3) {
+        if matches!(mutation, 0 | 1 | 3 | 5) {
             assert!(
                 matches!(status, VaporS3BridgeStatus::Rejected(_)),
                 "mutation {mutation}: {status:?}"
@@ -176,6 +184,7 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<div :class=\"classes\" class=\"base\" />",
         "<div @click.stop=\"save\" />",
         "<div @click=\"save()\" />",
+        "<button @click=\"$event\" />",
         "<svg><circle /></svg>",
         "<table><tr><td>{{ value }}</td></tr></table>",
         "<div>&#10; text</div>",

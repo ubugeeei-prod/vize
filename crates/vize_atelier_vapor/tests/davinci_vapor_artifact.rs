@@ -104,6 +104,33 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
             "{source}"
         );
     }
+    for handler in ["$event", "$event.target"] {
+        for prefix_identifiers in [false, true] {
+            let allocator = Allocator::new();
+            let source = vize_carton::cstr!(r#"<button @click="{handler}">Click</button>"#);
+            let result = compile_vapor(
+                &allocator,
+                &source,
+                VaporCompilerOptions {
+                    prefix_identifiers,
+                    ..Default::default()
+                },
+            );
+            let expected = vize_carton::cstr!(
+                r#"import {{ createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template }} from 'vue';
+const t0 = _template("<button>Click</button>", true)
+_delegateEvents("click")
+
+export function render(_ctx) {{
+  const n0 = t0()
+  n0.$evtclick = _createInvoker($event => {handler})
+  return n0
+}}
+"#
+            );
+            assert_eq!(result.code, expected, "{handler}");
+        }
+    }
     for source in ["<div>", "<div v-if />"] {
         let allocator = Allocator::new();
         let (result, diagnostics) =
