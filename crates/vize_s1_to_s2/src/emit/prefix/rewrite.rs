@@ -278,3 +278,20 @@ pub(super) fn with_prefix_parse<T>(
         .ok()
         .map(|expr| decide(&expr))
 }
+
+/// Classify a complete handler expression, never a statement-list prefix.
+pub(super) fn with_whole_expression<T>(
+    content: &str,
+    decide: impl FnOnce(&Expression<'_>) -> T,
+) -> Option<T> {
+    use oxc_span::GetSpan;
+    if !vize_s0::expression_guard::expression_is_safe_to_parse(content) {
+        return None;
+    }
+    let allocator = Allocator::new();
+    let wrapped = vize_s0::cstr!("({content}\n)");
+    let expr = Parser::new(allocator.as_oxc(), &wrapped, js_module())
+        .parse_expression()
+        .ok()?;
+    (expr.span().end as usize == wrapped.len()).then(|| decide(expr.get_inner_expression()))
+}

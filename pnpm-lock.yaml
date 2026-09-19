@@ -349,6 +349,9 @@ catalogs:
     '@vue/runtime-core':
       specifier: 3.5.35
       version: 3.5.35
+    '@vue/runtime-dom':
+      specifier: 3.5.35
+      version: 3.5.35
     '@vue/test-utils':
       specifier: 2.4.10
       version: 2.4.10
@@ -1307,6 +1310,9 @@ importers:
       '@vue/compiler-sfc':
         specifier: catalog:vue-beta
         version: 3.6.0-beta.10
+      '@vue/runtime-dom':
+        specifier: catalog:vue-stable
+        version: 3.5.35
       '@vueuse/core':
         specifier: 14.3.0
         version: 14.3.0(vue@3.6.0-beta.10(typescript@6.0.3))

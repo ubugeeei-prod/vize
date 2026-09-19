@@ -5,33 +5,45 @@ on:
     branches: [main, davinci]
     paths:
       - "formal/impeto/**"
+      - "crates/vize_atelier_core/**"
+      - "crates/vize_croquis/**"
       - "crates/vize_atelier_dom/**"
       - "crates/vize_atelier_vapor/**"
       - "crates/vize_impeto/**"
+      - "crates/vize_relief/**"
+      - "crates/vize_s1_to_s2/**"
       - "crates/vize_s2_to_s3/**"
       - "davinci-road/plan/phase-3.md"
       - "davinci-road/plan/test-suites.md"
       - "tests/tooling/davinci-lean-reference.test.ts"
       - "tests/tooling/support/davinci-runtime-trace.mjs"
       - "tests/tooling/support/davinci-mounted-trace.mjs"
+      - "tests/tooling/support/davinci-event-*.mjs"
       - "tests/package.json"
       - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
       - ".github/workflows/davinci-lean.yml"
   pull_request:
     branches: [main, davinci]
     paths:
       - "formal/impeto/**"
+      - "crates/vize_atelier_core/**"
+      - "crates/vize_croquis/**"
       - "crates/vize_atelier_dom/**"
       - "crates/vize_atelier_vapor/**"
       - "crates/vize_impeto/**"
+      - "crates/vize_relief/**"
+      - "crates/vize_s1_to_s2/**"
       - "crates/vize_s2_to_s3/**"
       - "davinci-road/plan/phase-3.md"
       - "davinci-road/plan/test-suites.md"
       - "tests/tooling/davinci-lean-reference.test.ts"
       - "tests/tooling/support/davinci-runtime-trace.mjs"
       - "tests/tooling/support/davinci-mounted-trace.mjs"
+      - "tests/tooling/support/davinci-event-*.mjs"
       - "tests/package.json"
       - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
       - ".github/workflows/davinci-lean.yml"
   workflow_dispatch:
 
@@ -91,3 +103,9 @@ jobs:
         run: cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace
       - name: Run TS-30 mounted backend behavior
         run: cargo test -p vize_atelier_vapor --test davinci_mounted_behavior
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install Chromium for the event contract
+        working-directory: tests
+        run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
+      - name: Run TS-30 event scope and delivery in Chromium
+        run: cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture

@@ -1,14 +1,15 @@
 //! The codegen identifier-prefix visitor (split from `prefix_context.rs`
-//! under the source budget). Behavior is byte-identical to the pre-split
-//! `helpers.rs` visitor; only visibility changed for the cross-file
-//! construction.
+//! under the source budget). Callback binding ownership is shared by the
+//! retained and reparsed expression paths.
 
 use crate::options::BindingType;
+use crate::steps::expression::is_template_global;
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk::{
     walk_assignment_expression, walk_object_property, walk_update_expression,
 };
-use vize_croquis::builtins::is_global_allowed;
+use oxc_syntax::scope::ScopeFlags;
+use vize_relief::ExpressionScope;
 use vize_s0::FxHashSet;
 use vize_s0::String;
 use vize_s0::ToCompactString;
@@ -18,7 +19,7 @@ use super::super::context::CodegenContext;
 // Visitor to collect identifiers and rewrite them with appropriate prefixes / .value
 pub(super) struct IdentifierVisitor<'a, 'b> {
     pub(super) rewrites: &'a mut Vec<(usize, usize, String)>,
-    pub(super) local_vars: &'a mut FxHashSet<String>,
+    pub(super) local_scopes: Vec<FxHashSet<String>>,
     pub(super) assignment_targets: &'a mut FxHashSet<usize>,
     pub(super) ctx: &'b CodegenContext,
     pub(super) offset: u32,
@@ -29,12 +30,12 @@ impl<'a, 'b> Visit<'_> for IdentifierVisitor<'a, 'b> {
         let name = ident.name.as_str();
 
         // Skip if local variable
-        if self.local_vars.contains(name) {
+        if self.is_local(name) {
             return;
         }
 
         // Skip globals
-        if is_global_allowed(name) {
+        if is_template_global(name) {
             return;
         }
 
@@ -124,10 +125,7 @@ impl<'a, 'b> Visit<'_> for IdentifierVisitor<'a, 'b> {
             let name = ident.name.as_str();
 
             // Skip if local variable, global, or slot param
-            if self.local_vars.contains(name)
-                || is_global_allowed(name)
-                || self.ctx.is_slot_param(name)
-            {
+            if self.is_local(name) || is_template_global(name) || self.ctx.is_slot_param(name) {
                 return;
             }
 
@@ -191,122 +189,55 @@ impl<'a, 'b> Visit<'_> for IdentifierVisitor<'a, 'b> {
         walk_object_property(self, prop);
     }
 
-    fn visit_variable_declarator(&mut self, declarator: &oxc_ast::ast::VariableDeclarator<'_>) {
-        // Add local var names to skip list
-        if let oxc_ast::ast::BindingPattern::BindingIdentifier(ident) = &declarator.id {
-            self.local_vars.insert(ident.name.to_compact_string());
-        }
-        // Visit init expression
-        if let Some(init) = &declarator.init {
-            self.visit_expression(init);
-        }
+    fn visit_program(&mut self, node: &oxc_ast::ast::Program<'_>) {
+        self.scoped_program(node);
     }
 
     fn visit_arrow_function_expression(
         &mut self,
-        arrow: &oxc_ast::ast::ArrowFunctionExpression<'_>,
+        node: &oxc_ast::ast::ArrowFunctionExpression<'_>,
     ) {
-        // Add arrow function params to local vars
-        for param in &arrow.params.items {
-            if let oxc_ast::ast::BindingPattern::BindingIdentifier(ident) = &param.pattern {
-                self.local_vars.insert(ident.name.to_compact_string());
-            }
-        }
-        // Visit body
-        self.visit_function_body(&arrow.body);
-    }
-}
-
-impl<'a, 'b> IdentifierVisitor<'a, 'b> {
-    fn collect_assignment_targets(&mut self, target: &oxc_ast::ast::AssignmentTarget<'_>) {
-        use oxc_ast::ast::{AssignmentTarget, AssignmentTargetProperty};
-
-        match target {
-            AssignmentTarget::AssignmentTargetIdentifier(ident) => {
-                self.assignment_targets.insert(ident.span.start as usize);
-            }
-            AssignmentTarget::ObjectAssignmentTarget(obj) => {
-                for prop in &obj.properties {
-                    match prop {
-                        AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(
-                            prop_ident,
-                        ) => {
-                            self.assignment_targets
-                                .insert(prop_ident.binding.span.start as usize);
-                        }
-                        AssignmentTargetProperty::AssignmentTargetPropertyProperty(prop_prop) => {
-                            self.collect_assignment_targets_maybe_default(&prop_prop.binding);
-                        }
-                    }
-                }
-                if let Some(rest) = &obj.rest {
-                    self.collect_assignment_targets(&rest.target);
-                }
-            }
-            AssignmentTarget::ArrayAssignmentTarget(arr) => {
-                for elem in arr.elements.iter().flatten() {
-                    self.collect_assignment_targets_maybe_default(elem);
-                }
-                if let Some(rest) = &arr.rest {
-                    self.collect_assignment_targets(&rest.target);
-                }
-            }
-            _ => {}
-        }
+        self.scoped_arrow(node);
     }
 
-    fn collect_assignment_targets_maybe_default(
-        &mut self,
-        target: &oxc_ast::ast::AssignmentTargetMaybeDefault<'_>,
-    ) {
-        use oxc_ast::ast::{AssignmentTargetMaybeDefault, AssignmentTargetProperty};
-
-        match target {
-            AssignmentTargetMaybeDefault::AssignmentTargetWithDefault(def) => {
-                self.collect_assignment_targets(&def.binding);
-            }
-            AssignmentTargetMaybeDefault::AssignmentTargetIdentifier(ident) => {
-                self.assignment_targets.insert(ident.span.start as usize);
-            }
-            AssignmentTargetMaybeDefault::ObjectAssignmentTarget(obj) => {
-                for prop in &obj.properties {
-                    match prop {
-                        AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(
-                            prop_ident,
-                        ) => {
-                            self.assignment_targets
-                                .insert(prop_ident.binding.span.start as usize);
-                        }
-                        AssignmentTargetProperty::AssignmentTargetPropertyProperty(prop_prop) => {
-                            self.collect_assignment_targets_maybe_default(&prop_prop.binding);
-                        }
-                    }
-                }
-                if let Some(rest) = &obj.rest {
-                    self.collect_assignment_targets(&rest.target);
-                }
-            }
-            AssignmentTargetMaybeDefault::ArrayAssignmentTarget(arr) => {
-                for elem in arr.elements.iter().flatten() {
-                    self.collect_assignment_targets_maybe_default(elem);
-                }
-                if let Some(rest) = &arr.rest {
-                    self.collect_assignment_targets(&rest.target);
-                }
-            }
-            _ => {}
-        }
+    fn visit_function_body(&mut self, node: &oxc_ast::ast::FunctionBody<'_>) {
+        self.scoped_function_body(node);
     }
 
-    fn collect_simple_assignment_targets(
-        &mut self,
-        target: &oxc_ast::ast::SimpleAssignmentTarget<'_>,
-    ) {
-        use oxc_ast::ast::SimpleAssignmentTarget;
+    fn visit_block_statement(&mut self, node: &oxc_ast::ast::BlockStatement<'_>) {
+        self.scoped_block(node);
+    }
 
-        if let SimpleAssignmentTarget::AssignmentTargetIdentifier(ident) = target {
-            self.assignment_targets.insert(ident.span.start as usize);
-        }
+    fn visit_catch_clause(&mut self, node: &oxc_ast::ast::CatchClause<'_>) {
+        self.scoped_catch(node);
+    }
+
+    fn visit_for_statement(&mut self, node: &oxc_ast::ast::ForStatement<'_>) {
+        self.scoped_for(node);
+    }
+
+    fn visit_for_in_statement(&mut self, node: &oxc_ast::ast::ForInStatement<'_>) {
+        self.scoped_for_in(node);
+    }
+
+    fn visit_for_of_statement(&mut self, node: &oxc_ast::ast::ForOfStatement<'_>) {
+        self.scoped_for_of(node);
+    }
+
+    fn visit_switch_statement(&mut self, node: &oxc_ast::ast::SwitchStatement<'_>) {
+        self.scoped_switch(node);
+    }
+
+    fn visit_class(&mut self, node: &oxc_ast::ast::Class<'_>) {
+        self.scoped_class(node);
+    }
+
+    fn visit_static_block(&mut self, node: &oxc_ast::ast::StaticBlock<'_>) {
+        self.scoped_static_block(node);
+    }
+
+    fn visit_function(&mut self, function: &oxc_ast::ast::Function<'_>, flags: ScopeFlags) {
+        self.scoped_function(function, flags);
     }
 }
 

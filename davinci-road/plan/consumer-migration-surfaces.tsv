@@ -25,21 +25,27 @@ compiler	Compiler	source	crates/vize_atelier_core/src/codegen/element/helpers.rs
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/element/inline.rs	36	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/element/v_once.rs	17	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/emit.rs	10	s0	S0	stage	vize_s0	preferred	2
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression.rs	22	s0	S0	stage	vize_s0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression.rs	23	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/comment_rewrite.rs	16	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/generate.rs	14	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/expression/generate.rs	177	s0	S0	stage	vize_s0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/generate.rs	16	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/expression/generate.rs	187	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/helpers.rs	7	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_bindings.rs	4	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_bindings.rs	4	old_ast	old AST/parser	old	vize_relief	legacy	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_bindings.rs	4	raw_oxc	raw OXC	raw	oxc_ast	raw	6
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	s0	S0	stage	vize_s0	preferred	3
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/expression/prefix_context/tests.rs	7	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/expression/prefix_context/tests.rs	7	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs	7	s0	S0	stage	vize_s0	preferred	3
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	15
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs	7	old_ast	old AST/parser	old	vize_relief	legacy	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	17
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs	7	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	2
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs	7	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/scope_prefix.rs	4	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/expression/scope_prefix.rs	69	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/generate.rs	18	s0	S0	stage	vize_s0	preferred	6
@@ -139,22 +145,24 @@ compiler	Compiler	test/dev	crates/vize_atelier_core/src/retained/tests.rs	20	s0	
 compiler	Compiler	source	crates/vize_atelier_core/src/runtime_helpers.rs	4	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/element.rs	5	s0	S0	stage	vize_s0	preferred	3
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/steps/element.rs	307	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression.rs	16	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression.rs	16	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression.rs	17	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression.rs	17	old_ast	old AST/parser	old	vize_relief	legacy	1
+compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression.rs	17	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression.rs	17	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/collector_targets.rs	4	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/collector.rs	6	s0	S0	stage	vize_s0	preferred	2
-compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/collector.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/collector.rs	6	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/collector.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/collector.rs	6	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/collector.rs	6	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/inline_handler.rs	6	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/inline_handler.rs	6	old_ast	old AST/parser	old	vize_relief	legacy	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/src/steps/expression/inline_handler.rs	207	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/inline_handler.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/steps/expression/inline_handler.rs	212	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/nesting.rs	10	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/parse_checks.rs	4	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/parse_checks.rs	4	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/prefix.rs	6	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/prefix.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/prefix.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	13
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/prefix.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/steps/expression/prefix.rs	300	croquis	Croquis analysis	old	vize_croquis	legacy	1
@@ -171,6 +179,8 @@ compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/retained_
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/retained_rewrite.rs	21	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/rewrite.rs	15	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/rewrite.rs	15	old_ast	old AST/parser	old	vize_relief	legacy	1
+compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/scope.rs	9	croquis	Croquis analysis	old	vize_croquis	legacy	2
+compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/shape_checks.rs	7	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/shape_checks.rs	7	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/shape_checks.rs	7	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/expression/shape_checks.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -982,8 +992,7 @@ compiler	Compiler	manifest	crates/vize_atelier_vapor/Cargo.toml	12	raw_oxc	raw O
 compiler	Compiler	source	crates/vize_atelier_vapor/src/compile.rs	16	s0	S0	stage	vize_carton	compat	8
 compiler	Compiler	source	crates/vize_atelier_vapor/src/compile/entry.rs	7	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate.rs	14	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/context.rs	12	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/context.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/context.rs	13	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/context/component_resolution.rs	1	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/context/scopes.rs	3	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/destructure.rs	2	s0	S0	stage	vize_carton	compat	1
@@ -993,9 +1002,8 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/entry.rs	9	s0	S0
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression_retained.rs	17	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression_retained.rs	17	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression_retained.rs	17	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
-compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression_retained.rs	17	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression_retained.rs	17	raw_oxc	raw OXC	raw	oxc_parser	raw	2
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression.rs	1	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression.rs	1	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression.rs	1	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
@@ -1080,9 +1088,14 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_valueless_attr.rs	4
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/tests.rs	4	s0	S0	stage	vize_carton	compat	42
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/tests.rs	4	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/tests.rs	4	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_event_handlers/main.rs	14	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_event_handlers/scope.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_event_handlers/scope.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_event_handlers/scope.rs	3	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_event_handlers/scope.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_expr_reparse_floor.rs	20	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_mounted_behavior.rs	12	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_mounted_behavior/artifact.rs	121	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_mounted_behavior/artifact.rs	127	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_mounted_behavior/runtime.rs	9	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_s3_compiled_trace.rs	17	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_teardown_without_stack_guard.rs	68	s0	S0	stage	vize_carton	compat	1

@@ -8,7 +8,7 @@ use oxc_ast::ast::{ChainElement, Expression};
 #[cfg(any(test, feature = "davinci-differential"))]
 use oxc_parser::Parser;
 #[cfg(any(test, feature = "davinci-differential"))]
-use oxc_span::SourceType;
+use oxc_span::{GetSpan, SourceType};
 use vize_relief::SimpleExpressionNode;
 
 use super::{is_event_handler_reference_expression, is_function_expression};
@@ -16,7 +16,7 @@ use super::{is_event_handler_reference_expression, is_function_expression};
 /// The handler-reference shape decision, shared by the string and retained
 /// entries (and the P1-7 differential comparator).
 pub(super) fn is_handler_reference_shape(expr: &Expression<'_>) -> bool {
-    match expr {
+    match expr.get_inner_expression() {
         Expression::Identifier(_)
         | Expression::StaticMemberExpression(_)
         | Expression::ComputedMemberExpression(_)
@@ -32,17 +32,15 @@ pub(super) fn is_handler_reference_shape(expr: &Expression<'_>) -> bool {
 /// The function-expression shape decision, shared like the above.
 pub(super) fn is_function_shape(expr: &Expression<'_>) -> bool {
     matches!(
-        expr,
+        expr.get_inner_expression(),
         Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)
     )
 }
 
 /// Node-aware [`is_event_handler_reference_expression`] (P1-7): reads the
 /// retained AST when it still describes the node's bytes and the dialect
-/// gate holds; falls back to the legacy string parse otherwise. The legacy
-/// entry is a prefix parse (no completeness check), but a retained AST is
-/// complete by construction, so on gated nodes both parses see the whole
-/// text and the shape decision is the same decision.
+/// gate holds; falls back to the complete string expression parse otherwise.
+/// Both paths classify the whole handler, never just its leading expression.
 pub fn is_event_handler_reference_node(node: &SimpleExpressionNode<'_>) -> bool {
     match crate::retained::retained_whole_expression(node) {
         Some(js) if crate::retained::js_module_compatible(js) => {
@@ -74,11 +72,18 @@ pub fn is_function_expression_node(node: &SimpleExpressionNode<'_>) -> bool {
 #[cfg(any(test, feature = "davinci-differential"))]
 fn differential_shape_check(raw: &str, retained_result: bool, shape: fn(&Expression<'_>) -> bool) {
     let allocator = oxc_allocator::Allocator::default();
-    let legacy = Parser::new(&allocator, raw, SourceType::default().with_module(true))
-        .parse_expression()
-        .as_ref()
-        .map(shape)
-        .unwrap_or(false);
+    let wrapped = vize_s0::cstr!("({raw}\n)");
+    let legacy = Parser::new(
+        &allocator,
+        &wrapped,
+        SourceType::default().with_module(true),
+    )
+    .parse_expression()
+    .as_ref()
+    .ok()
+    .filter(|expr| expr.span().end as usize == wrapped.len())
+    .map(shape)
+    .unwrap_or(false);
     assert_eq!(
         retained_result, legacy,
         "davinci-differential (P1-7): retained shape check diverged from the legacy parse for expression {raw:?}"

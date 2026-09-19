@@ -8,7 +8,9 @@ use crate::{CompoundExpressionChild, ExpressionNode};
 use super::{
     super::context::CodegenContext,
     generate_simple_expression,
-    prefix_context::{prefix_identifiers_with_context, prefix_identifiers_with_context_node},
+    prefix_context::{
+        prefix_identifiers_in_scope, prefix_identifiers_with_context, prefix_node_in_scope,
+    },
     scope_prefix::{contains_slot_param_scope_prefix, strip_scope_prefixes_for_slot_params},
 };
 use vize_s0::String;
@@ -87,9 +89,17 @@ pub fn generate_event_handler(
                 // applies (P1-7); TS-stripped text that changed falls back.
                 if ctx.options.prefix_identifiers {
                     if ts_stripped.as_str() == simple.content {
-                        prefix_identifiers_with_context_node(simple, ctx)
+                        let implicit_event =
+                            !crate::steps::expression::is_function_expression_node(simple)
+                                && !crate::steps::expression::is_event_handler_reference_node(
+                                    simple,
+                                );
+                        prefix_node_in_scope(simple, ctx, implicit_event)
                     } else {
-                        prefix_identifiers_with_context(&ts_stripped, ctx)
+                        let implicit_event =
+                            !crate::steps::expression::is_function_expression(&ts_stripped)
+                                && !is_simple_member_expression(&ts_stripped);
+                        prefix_identifiers_in_scope(&ts_stripped, ctx, implicit_event)
                     }
                 } else {
                     ts_stripped

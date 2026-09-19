@@ -294,7 +294,7 @@ impl EmitCx<'_> {
 
     /// `process_inline_handler` + `generate_event_handler` over `expr`.
     pub(super) fn prefixed_handler(
-        &self,
+        &mut self,
         expr: &ExprRef<'_>,
         for_caching: bool,
     ) -> Result<String, EmitError> {
@@ -309,18 +309,18 @@ impl EmitCx<'_> {
             }
         };
         let content = prefix::node_content(self.source, source, expr.span());
-        prefix::prefix_handler(&self.scope, &content, js, for_caching)
+        prefix::prefix_handler(&mut self.scope, &content, js, for_caching)
             .map(|prefixed| self.record_unref(prefixed))
             .map_err(|_| EmitError::unsupported_at(Reason::PrefixExpressionRejected, expr.span()))
     }
 
     /// The handler text for synthesized handler source (`v-model` writes).
-    pub(super) fn prefixed_handler_text(&self, text: &str) -> Result<String, EmitError> {
+    pub(super) fn prefixed_handler_text(&mut self, text: &str) -> Result<String, EmitError> {
         let content = prefix::Content {
             text: RawJs::Borrowed(text),
             offset: None,
         };
-        prefix::prefix_handler(&self.scope, &content, None, false)
+        prefix::prefix_handler(&mut self.scope, &content, None, false)
             .map(|prefixed| self.record_unref(prefixed))
             .map_err(|_| EmitError::unsupported(Reason::PrefixExpressionRejected))
     }

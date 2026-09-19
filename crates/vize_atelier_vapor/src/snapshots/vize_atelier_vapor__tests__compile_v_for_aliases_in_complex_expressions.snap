@@ -13,7 +13,7 @@ _setInsertionState(n0, n1, true)
 const n2 = _createFor(() => (_ctx.items), (_for_item0) => {
 const n4 = t0()
 const x4 = _txt(n4)
-n4.$evtclick = _createInvoker(() => (_ctx.pick(_for_item0.value.id)))
+n4.$evtclick = _createInvoker($event => (_ctx.pick(_for_item0.value.id)))
 _renderEffect(() => {
 _setClass(n4, ['row', { active: _ctx.selected.has(_for_item0.value.id) }, `kind-${_for_item0.value.kind}`])
 _setText(x4, _toDisplayString(_for_item0.value.name))

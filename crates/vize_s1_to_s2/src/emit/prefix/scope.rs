@@ -168,6 +168,10 @@ impl<'b> PrefixScope<'b> {
         self.patterns.truncate(mark.patterns);
     }
 
+    pub(super) fn push_event(&mut self) {
+        self.transform.push(String::from("$event"));
+    }
+
     /// The default lane's record of a `v-for` alias or slot pattern.
     pub(in crate::emit) fn push_pattern(&mut self, pattern: &str) {
         let trimmed = pattern.trim();

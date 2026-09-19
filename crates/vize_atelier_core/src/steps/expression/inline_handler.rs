@@ -149,7 +149,12 @@ pub fn process_inline_handler<'a>(
 
     // Compound expression - rewrite and wrap in arrow function
     let rewritten: String = if ctx.options.prefix_identifiers {
+        // Only this branch introduces the implicit callback parameter. Method
+        // references and authored functions retain their ordinary lexical scope.
+        ctx.enter_scope(vize_croquis::ScopeKind::EventHandler);
+        ctx.add_identifier("$event");
         let result = rewrite_expression(content, ctx, false, retained);
+        ctx.exit_scope();
         if result.used_unref {
             ctx.helper(crate::RuntimeHelper::Unref);
         }

@@ -103,7 +103,7 @@ Which workspace crates consume the public analysis products of `crates/vize_croq
 | `ScopeId`                              | type  | `scope`             | `vize_canon`        |     6 |    15 |
 | `ScopeId`                              | type  | `scope`             | `vize_croquis_cf`   |    13 |    23 |
 | `ScopeId`                              | type  | `scope`             | `vize_maestro`      |     1 |     1 |
-| `ScopeKind`                            | type  | `scope`             | `vize_atelier_core` |     1 |     1 |
+| `ScopeKind`                            | type  | `scope`             | `vize_atelier_core` |     2 |     2 |
 | `ScopeKind`                            | type  | `scope`             | `vize_atelier_sfc`  |     1 |     2 |
 | `ScopeKind`                            | type  | `scope`             | `vize_canon`        |    15 |    49 |
 | `ScopeKind`                            | type  | `scope`             | `vize_croquis_cf`   |    10 |    21 |
@@ -221,147 +221,147 @@ Computed (or exported) by `vize_croquis`, referenced by no other workspace crate
 
 Items consumers import from `vize_croquis` that are outside the product set above (module-path items never re-exported at the crate root nor referenced by `croquis.rs`). Kept visible so nothing resolved is silently dropped.
 
-| item                                         | consuming crate      | files | sites |
-| -------------------------------------------- | -------------------- | ----: | ----: |
-| `BindingType`                                | `vize_atelier_core`  |     1 |    11 |
-| `BindingType`                                | `vize_atelier_sfc`   |    17 |   131 |
-| `BindingType`                                | `vize_canon`         |     9 |    22 |
-| `BlockLocation`                              | `vize`               |     1 |     1 |
-| `BlockLocation`                              | `vize_atelier_sfc`   |     4 |     5 |
-| `BlockLocation`                              | `vize_glyph`         |     1 |     3 |
-| `BlockLocation`                              | `vize_maestro`       |     2 |     2 |
-| `BlockLocation`                              | `vize_patina`        |     1 |     2 |
-| `DEFINE_EMITS`                               | `vize_atelier_sfc`   |     1 |     2 |
-| `DEFINE_EMITS`                               | `vize_canon`         |     1 |     1 |
-| `DEFINE_EXPOSE`                              | `vize_atelier_sfc`   |     1 |     2 |
-| `DEFINE_EXPOSE`                              | `vize_canon`         |     1 |     1 |
-| `DEFINE_MODEL`                               | `vize_atelier_sfc`   |     1 |     2 |
-| `DEFINE_MODEL`                               | `vize_canon`         |     1 |     1 |
-| `DEFINE_OPTIONS`                             | `vize_atelier_sfc`   |     1 |     2 |
-| `DEFINE_PROPS`                               | `vize_atelier_sfc`   |     1 |     2 |
-| `DEFINE_PROPS`                               | `vize_canon`         |     2 |     2 |
-| `DEFINE_SLOTS`                               | `vize_atelier_sfc`   |     1 |     2 |
-| `DEFINE_SLOTS`                               | `vize_canon`         |     1 |     1 |
-| `EmitDefinition`                             | `vize_atelier_sfc`   |     1 |     1 |
-| `EmitDefinition`                             | `vize_croquis_cf`    |     3 |     3 |
-| `EventHandlerExpression`                     | `vize_canon`         |     1 |     2 |
-| `InjectEntry`                                | `vize_croquis_cf`    |     4 |     8 |
-| `InjectPattern`                              | `vize_croquis_cf`    |     4 |    21 |
-| `InjectPattern`                              | `vize_vitrine`       |     1 |     8 |
-| `MacroCall`                                  | `vize_canon`         |     1 |     1 |
-| `MacroKind`                                  | `vize_canon`         |     3 |     4 |
-| `MacroKind`                                  | `vize_croquis_cf`    |     1 |     1 |
-| `MacroKind`                                  | `vize_patina`        |     3 |     3 |
-| `ModelDefinition`                            | `vize_atelier_sfc`   |     1 |     1 |
-| `ModelDefinition`                            | `vize_canon`         |     4 |     8 |
-| `PadOption`                                  | `vize_atelier_sfc`   |     1 |     1 |
-| `PatternDiagnostic`                          | `vize_canon`         |     1 |     2 |
-| `PropDefinition`                             | `vize_atelier_sfc`   |     2 |     4 |
-| `PropDefinition`                             | `vize_canon`         |     6 |    22 |
-| `PropDefinition`                             | `vize_croquis_cf`    |     3 |     3 |
-| `PropsDestructuredBindings`                  | `vize_canon`         |     1 |     1 |
-| `ProvideEntry`                               | `vize_croquis_cf`    |     2 |     7 |
-| `ProvideKey`                                 | `vize_croquis_cf`    |     7 |    34 |
-| `ProvideKey`                                 | `vize_vitrine`       |     1 |     4 |
-| `RaceConditionRisk`                          | `vize_croquis_cf`    |     2 |     4 |
-| `RaceConditionRiskKind`                      | `vize_croquis_cf`    |     2 |     3 |
-| `ReactiveKind`                               | `vize_atelier_core`  |     1 |     4 |
-| `ReactiveKind`                               | `vize_croquis_cf`    |     7 |    37 |
-| `ReactiveKind`                               | `vize_maestro`       |     5 |    41 |
-| `ReactiveKind`                               | `vize_patina`        |     1 |     1 |
-| `ReactiveSource`                             | `vize_croquis_cf`    |     1 |     1 |
-| `ReactivityLoss`                             | `vize_patina`        |     1 |     2 |
-| `ReactivityLossKind`                         | `vize_canon`         |     1 |    11 |
-| `ReactivityLossKind`                         | `vize_croquis_cf`    |     2 |    18 |
-| `ReactivityLossKind`                         | `vize_patina`        |     1 |    21 |
-| `ScriptParseResult`                          | `vize_atelier_sfc`   |     1 |     1 |
-| `ScriptParseResult`                          | `vize_patina`        |     2 |     2 |
-| `ScriptParserOptions`                        | `vize_atelier_sfc`   |     1 |     1 |
-| `ScriptParserOptions`                        | `vize_patina`        |     1 |     1 |
-| `SetupContextViolation`                      | `vize_croquis_cf`    |     1 |     1 |
-| `SetupContextViolationKind`                  | `vize_croquis_cf`    |     2 |    11 |
-| `SfcCustomBlock`                             | `vize_atelier_sfc`   |     2 |     2 |
-| `SfcCustomBlock`                             | `vize_patina`        |     1 |     2 |
-| `SfcDescriptor`                              | `vize`               |     1 |     2 |
-| `SfcDescriptor`                              | `vize_atelier_sfc`   |    15 |    38 |
-| `SfcDescriptor`                              | `vize_canon`         |     9 |    15 |
-| `SfcDescriptor`                              | `vize_maestro`       |     6 |    25 |
-| `SfcDescriptor`                              | `vize_patina`        |    10 |    14 |
-| `SfcDescriptor`                              | `vize_vitrine`       |     3 |     3 |
-| `SfcError`                                   | `vize_atelier_sfc`   |    20 |    57 |
-| `SfcError`                                   | `vize_canon`         |     2 |     2 |
-| `SfcError`                                   | `vize_patina`        |     1 |     2 |
-| `SfcParseOptions`                            | `vize`               |     9 |    12 |
-| `SfcParseOptions`                            | `vize_atelier_sfc`   |    14 |   105 |
-| `SfcParseOptions`                            | `vize_canon`         |    10 |    11 |
-| `SfcParseOptions`                            | `vize_curator`       |     3 |     3 |
-| `SfcParseOptions`                            | `vize_glyph`         |     1 |     1 |
-| `SfcParseOptions`                            | `vize_maestro`       |     2 |     2 |
-| `SfcParseOptions`                            | `vize_patina`        |     9 |    10 |
-| `SfcParseOptions`                            | `vize_vitrine`       |     9 |    14 |
-| `SfcScriptBlock`                             | `vize_atelier_sfc`   |     1 |     1 |
-| `SfcScriptBlock`                             | `vize_curator`       |     1 |     1 |
-| `SfcScriptBlock`                             | `vize_maestro`       |     3 |     6 |
-| `SfcStyleBlock`                              | `vize_atelier_sfc`   |     5 |     7 |
-| `SfcStyleBlock`                              | `vize_maestro`       |     2 |     8 |
-| `SfcTemplateBlock`                           | `vize_atelier_sfc`   |     5 |     6 |
-| `SfcTemplateBlock`                           | `vize_canon`         |     2 |     2 |
-| `ViolationSeverity`                          | `vize_canon`         |     1 |     3 |
-| `ViolationSeverity`                          | `vize_croquis_cf`    |     1 |     6 |
-| `VirtualTsConfig`                            | `vize_patina`        |     1 |     1 |
-| `VirtualTsOutput`                            | `vize_patina`        |     5 |    16 |
-| `WITH_DEFAULTS`                              | `vize_atelier_sfc`   |     1 |     2 |
-| `WITH_DEFAULTS`                              | `vize_canon`         |     1 |     1 |
-| `analyze_script_setup_program`               | `vize_atelier_sfc`   |     1 |     1 |
-| `artifact_macro_names`                       | `vize_atelier_sfc`   |     1 |     1 |
-| `classify_event_handler`                     | `vize_canon`         |     1 |     2 |
-| `collect_options_descriptor`                 | `vize_patina`        |     4 |     4 |
-| `collect_options_object`                     | `vize_patina`        |     1 |     1 |
-| `extract_and_transform_v_bind`               | `vize_atelier_sfc`   |     1 |     1 |
-| `extract_and_transform_v_bind_with_scope`    | `vize_atelier_sfc`   |     1 |     1 |
-| `extract_identifier_refs_oxc`                | `vize_canon`         |     2 |     3 |
-| `extract_identifier_refs_oxc`                | `vize_maestro`       |     1 |     1 |
-| `extract_identifiers_oxc`                    | `vize_canon`         |     5 |     5 |
-| `extract_identifiers_oxc`                    | `vize_maestro`       |     2 |     2 |
-| `extract_slot_props`                         | `vize_patina`        |     1 |     1 |
-| `find_matching_paren`                        | `vize_atelier_sfc`   |     2 |     2 |
-| `generate_declaration_ts`                    | `vize_vitrine`       |     1 |     2 |
-| `generate_declaration_ts_with_split_scripts` | `vize_vitrine`       |     1 |     1 |
-| `generate_virtual_ts_with_croquis`           | `vize_patina`        |     1 |     1 |
-| `is_builtin_component`                       | `vize_atelier_sfc`   |     1 |     1 |
-| `is_builtin_component`                       | `vize_patina`        |     3 |     7 |
-| `is_builtin_macro`                           | `vize_atelier_sfc`   |     2 |     2 |
-| `is_event_local`                             | `vize_canon`         |     1 |     1 |
-| `is_global_allowed`                          | `vize_atelier_core`  |     5 |    14 |
-| `is_global_allowed`                          | `vize_atelier_sfc`   |     1 |     1 |
-| `is_global_allowed`                          | `vize_atelier_vapor` |     2 |     3 |
-| `is_js_global`                               | `vize_canon`         |     2 |     2 |
-| `is_kebab_case`                              | `vize_maestro`       |     1 |     1 |
-| `is_kebab_case_loose`                        | `vize_patina`        |     1 |     1 |
-| `is_keyword`                                 | `vize_canon`         |     1 |     1 |
-| `is_pascal_case`                             | `vize_patina`        |     2 |     2 |
-| `is_render_local`                            | `vize_canon`         |     1 |     1 |
-| `is_runtime_erased_macro`                    | `vize_atelier_sfc`   |     1 |     1 |
-| `is_vue_builtin`                             | `vize_canon`         |     1 |     1 |
-| `macro_artifact_kind`                        | `vize_atelier_sfc`   |     1 |     3 |
-| `names_match`                                | `vize_patina`        |     3 |     3 |
-| `parse_script_setup`                         | `vize_atelier_sfc`   |     1 |     2 |
-| `parse_script_setup`                         | `vize_maestro`       |     2 |     4 |
-| `parse_script_setup`                         | `vize_musea`         |     2 |     2 |
-| `parse_script_setup`                         | `vize_patina`        |     3 |     3 |
-| `parse_script_setup_with_generic_and_jsx`    | `vize_patina`        |     1 |     1 |
-| `parse_script_with_options`                  | `vize_patina`        |     1 |     1 |
-| `parse_script_with_options_and_jsx`          | `vize_atelier_sfc`   |     1 |     1 |
-| `parse_sfc`                                  | `vize_atelier_sfc`   |     1 |     1 |
-| `parse_v_for_expression`                     | `vize_patina`        |     1 |     1 |
-| `prod_scoped_v_bind_name`                    | `vize_atelier_sfc`   |     1 |     1 |
-| `runtime_erased_macro_names`                 | `vize_atelier_sfc`   |     3 |     5 |
-| `scoped_v_bind_name`                         | `vize_atelier_sfc`   |     1 |     1 |
-| `strip_js_comments`                          | `vize_canon`         |     3 |     3 |
-| `to_pascal_case`                             | `vize`               |     1 |     1 |
-| `to_pascal_case`                             | `vize_canon`         |     2 |     2 |
-| `to_pascal_case`                             | `vize_patina`        |     2 |     3 |
-| `v_bind_expression_ranges`                   | `vize_maestro`       |     1 |     1 |
+| item                                         | consuming crate     | files | sites |
+| -------------------------------------------- | ------------------- | ----: | ----: |
+| `BindingType`                                | `vize_atelier_core` |     1 |    11 |
+| `BindingType`                                | `vize_atelier_sfc`  |    17 |   131 |
+| `BindingType`                                | `vize_canon`        |     9 |    22 |
+| `BlockLocation`                              | `vize`              |     1 |     1 |
+| `BlockLocation`                              | `vize_atelier_sfc`  |     4 |     5 |
+| `BlockLocation`                              | `vize_glyph`        |     1 |     3 |
+| `BlockLocation`                              | `vize_maestro`      |     2 |     2 |
+| `BlockLocation`                              | `vize_patina`       |     1 |     2 |
+| `DEFINE_EMITS`                               | `vize_atelier_sfc`  |     1 |     2 |
+| `DEFINE_EMITS`                               | `vize_canon`        |     1 |     1 |
+| `DEFINE_EXPOSE`                              | `vize_atelier_sfc`  |     1 |     2 |
+| `DEFINE_EXPOSE`                              | `vize_canon`        |     1 |     1 |
+| `DEFINE_MODEL`                               | `vize_atelier_sfc`  |     1 |     2 |
+| `DEFINE_MODEL`                               | `vize_canon`        |     1 |     1 |
+| `DEFINE_OPTIONS`                             | `vize_atelier_sfc`  |     1 |     2 |
+| `DEFINE_PROPS`                               | `vize_atelier_sfc`  |     1 |     2 |
+| `DEFINE_PROPS`                               | `vize_canon`        |     2 |     2 |
+| `DEFINE_SLOTS`                               | `vize_atelier_sfc`  |     1 |     2 |
+| `DEFINE_SLOTS`                               | `vize_canon`        |     1 |     1 |
+| `EmitDefinition`                             | `vize_atelier_sfc`  |     1 |     1 |
+| `EmitDefinition`                             | `vize_croquis_cf`   |     3 |     3 |
+| `EventHandlerExpression`                     | `vize_canon`        |     1 |     2 |
+| `InjectEntry`                                | `vize_croquis_cf`   |     4 |     8 |
+| `InjectPattern`                              | `vize_croquis_cf`   |     4 |    21 |
+| `InjectPattern`                              | `vize_vitrine`      |     1 |     8 |
+| `MacroCall`                                  | `vize_canon`        |     1 |     1 |
+| `MacroKind`                                  | `vize_canon`        |     3 |     4 |
+| `MacroKind`                                  | `vize_croquis_cf`   |     1 |     1 |
+| `MacroKind`                                  | `vize_patina`       |     3 |     3 |
+| `ModelDefinition`                            | `vize_atelier_sfc`  |     1 |     1 |
+| `ModelDefinition`                            | `vize_canon`        |     4 |     8 |
+| `PadOption`                                  | `vize_atelier_sfc`  |     1 |     1 |
+| `PatternDiagnostic`                          | `vize_canon`        |     1 |     2 |
+| `PropDefinition`                             | `vize_atelier_sfc`  |     2 |     4 |
+| `PropDefinition`                             | `vize_canon`        |     6 |    22 |
+| `PropDefinition`                             | `vize_croquis_cf`   |     3 |     3 |
+| `PropsDestructuredBindings`                  | `vize_canon`        |     1 |     1 |
+| `ProvideEntry`                               | `vize_croquis_cf`   |     2 |     7 |
+| `ProvideKey`                                 | `vize_croquis_cf`   |     7 |    34 |
+| `ProvideKey`                                 | `vize_vitrine`      |     1 |     4 |
+| `RaceConditionRisk`                          | `vize_croquis_cf`   |     2 |     4 |
+| `RaceConditionRiskKind`                      | `vize_croquis_cf`   |     2 |     3 |
+| `ReactiveKind`                               | `vize_atelier_core` |     1 |     4 |
+| `ReactiveKind`                               | `vize_croquis_cf`   |     7 |    37 |
+| `ReactiveKind`                               | `vize_maestro`      |     5 |    41 |
+| `ReactiveKind`                               | `vize_patina`       |     1 |     1 |
+| `ReactiveSource`                             | `vize_croquis_cf`   |     1 |     1 |
+| `ReactivityLoss`                             | `vize_patina`       |     1 |     2 |
+| `ReactivityLossKind`                         | `vize_canon`        |     1 |    11 |
+| `ReactivityLossKind`                         | `vize_croquis_cf`   |     2 |    18 |
+| `ReactivityLossKind`                         | `vize_patina`       |     1 |    21 |
+| `ScriptParseResult`                          | `vize_atelier_sfc`  |     1 |     1 |
+| `ScriptParseResult`                          | `vize_patina`       |     2 |     2 |
+| `ScriptParserOptions`                        | `vize_atelier_sfc`  |     1 |     1 |
+| `ScriptParserOptions`                        | `vize_patina`       |     1 |     1 |
+| `SetupContextViolation`                      | `vize_croquis_cf`   |     1 |     1 |
+| `SetupContextViolationKind`                  | `vize_croquis_cf`   |     2 |    11 |
+| `SfcCustomBlock`                             | `vize_atelier_sfc`  |     2 |     2 |
+| `SfcCustomBlock`                             | `vize_patina`       |     1 |     2 |
+| `SfcDescriptor`                              | `vize`              |     1 |     2 |
+| `SfcDescriptor`                              | `vize_atelier_sfc`  |    15 |    38 |
+| `SfcDescriptor`                              | `vize_canon`        |     9 |    15 |
+| `SfcDescriptor`                              | `vize_maestro`      |     6 |    25 |
+| `SfcDescriptor`                              | `vize_patina`       |    10 |    14 |
+| `SfcDescriptor`                              | `vize_vitrine`      |     3 |     3 |
+| `SfcError`                                   | `vize_atelier_sfc`  |    20 |    57 |
+| `SfcError`                                   | `vize_canon`        |     2 |     2 |
+| `SfcError`                                   | `vize_patina`       |     1 |     2 |
+| `SfcParseOptions`                            | `vize`              |     9 |    12 |
+| `SfcParseOptions`                            | `vize_atelier_sfc`  |    14 |   105 |
+| `SfcParseOptions`                            | `vize_canon`        |    10 |    11 |
+| `SfcParseOptions`                            | `vize_curator`      |     3 |     3 |
+| `SfcParseOptions`                            | `vize_glyph`        |     1 |     1 |
+| `SfcParseOptions`                            | `vize_maestro`      |     2 |     2 |
+| `SfcParseOptions`                            | `vize_patina`       |     9 |    10 |
+| `SfcParseOptions`                            | `vize_vitrine`      |     9 |    14 |
+| `SfcScriptBlock`                             | `vize_atelier_sfc`  |     1 |     1 |
+| `SfcScriptBlock`                             | `vize_curator`      |     1 |     1 |
+| `SfcScriptBlock`                             | `vize_maestro`      |     3 |     6 |
+| `SfcStyleBlock`                              | `vize_atelier_sfc`  |     5 |     7 |
+| `SfcStyleBlock`                              | `vize_maestro`      |     2 |     8 |
+| `SfcTemplateBlock`                           | `vize_atelier_sfc`  |     5 |     6 |
+| `SfcTemplateBlock`                           | `vize_canon`        |     2 |     2 |
+| `ViolationSeverity`                          | `vize_canon`        |     1 |     3 |
+| `ViolationSeverity`                          | `vize_croquis_cf`   |     1 |     6 |
+| `VirtualTsConfig`                            | `vize_patina`       |     1 |     1 |
+| `VirtualTsOutput`                            | `vize_patina`       |     5 |    16 |
+| `WITH_DEFAULTS`                              | `vize_atelier_sfc`  |     1 |     2 |
+| `WITH_DEFAULTS`                              | `vize_canon`        |     1 |     1 |
+| `analyze_script_setup_program`               | `vize_atelier_sfc`  |     1 |     1 |
+| `artifact_macro_names`                       | `vize_atelier_sfc`  |     1 |     1 |
+| `classify_event_handler`                     | `vize_canon`        |     1 |     2 |
+| `collect_options_descriptor`                 | `vize_patina`       |     4 |     4 |
+| `collect_options_object`                     | `vize_patina`       |     1 |     1 |
+| `extract_and_transform_v_bind`               | `vize_atelier_sfc`  |     1 |     1 |
+| `extract_and_transform_v_bind_with_scope`    | `vize_atelier_sfc`  |     1 |     1 |
+| `extract_identifier_refs_oxc`                | `vize_canon`        |     2 |     3 |
+| `extract_identifier_refs_oxc`                | `vize_maestro`      |     1 |     1 |
+| `extract_identifiers_oxc`                    | `vize_canon`        |     5 |     5 |
+| `extract_identifiers_oxc`                    | `vize_maestro`      |     2 |     2 |
+| `extract_slot_props`                         | `vize_patina`       |     1 |     1 |
+| `find_matching_paren`                        | `vize_atelier_sfc`  |     2 |     2 |
+| `generate_declaration_ts`                    | `vize_vitrine`      |     1 |     2 |
+| `generate_declaration_ts_with_split_scripts` | `vize_vitrine`      |     1 |     1 |
+| `generate_virtual_ts_with_croquis`           | `vize_patina`       |     1 |     1 |
+| `is_builtin_component`                       | `vize_atelier_sfc`  |     1 |     1 |
+| `is_builtin_component`                       | `vize_patina`       |     3 |     7 |
+| `is_builtin_macro`                           | `vize_atelier_sfc`  |     2 |     2 |
+| `is_event_local`                             | `vize_atelier_core` |     1 |     1 |
+| `is_event_local`                             | `vize_canon`        |     1 |     1 |
+| `is_global_allowed`                          | `vize_atelier_core` |     4 |    10 |
+| `is_global_allowed`                          | `vize_atelier_sfc`  |     1 |     1 |
+| `is_js_global`                               | `vize_canon`        |     2 |     2 |
+| `is_kebab_case`                              | `vize_maestro`      |     1 |     1 |
+| `is_kebab_case_loose`                        | `vize_patina`       |     1 |     1 |
+| `is_keyword`                                 | `vize_canon`        |     1 |     1 |
+| `is_pascal_case`                             | `vize_patina`       |     2 |     2 |
+| `is_render_local`                            | `vize_canon`        |     1 |     1 |
+| `is_runtime_erased_macro`                    | `vize_atelier_sfc`  |     1 |     1 |
+| `is_vue_builtin`                             | `vize_canon`        |     1 |     1 |
+| `macro_artifact_kind`                        | `vize_atelier_sfc`  |     1 |     3 |
+| `names_match`                                | `vize_patina`       |     3 |     3 |
+| `parse_script_setup`                         | `vize_atelier_sfc`  |     1 |     2 |
+| `parse_script_setup`                         | `vize_maestro`      |     2 |     4 |
+| `parse_script_setup`                         | `vize_musea`        |     2 |     2 |
+| `parse_script_setup`                         | `vize_patina`       |     3 |     3 |
+| `parse_script_setup_with_generic_and_jsx`    | `vize_patina`       |     1 |     1 |
+| `parse_script_with_options`                  | `vize_patina`       |     1 |     1 |
+| `parse_script_with_options_and_jsx`          | `vize_atelier_sfc`  |     1 |     1 |
+| `parse_sfc`                                  | `vize_atelier_sfc`  |     1 |     1 |
+| `parse_v_for_expression`                     | `vize_patina`       |     1 |     1 |
+| `prod_scoped_v_bind_name`                    | `vize_atelier_sfc`  |     1 |     1 |
+| `runtime_erased_macro_names`                 | `vize_atelier_sfc`  |     3 |     5 |
+| `scoped_v_bind_name`                         | `vize_atelier_sfc`  |     1 |     1 |
+| `strip_js_comments`                          | `vize_canon`        |     3 |     3 |
+| `to_pascal_case`                             | `vize`              |     1 |     1 |
+| `to_pascal_case`                             | `vize_canon`        |     2 |     2 |
+| `to_pascal_case`                             | `vize_patina`       |     2 |     3 |
+| `v_bind_expression_ranges`                   | `vize_maestro`      |     1 |     1 |
 
 ## Cross-check: symbol-resolved vs naive grep
 
@@ -375,7 +375,7 @@ The naive lane counts raw word-boundary text matches per product name (`\.field`
 | `COMPILER_MACRO_NAMES`                 |        1 |    3 | `vize_canon` (0/1), `vize_patina` (1/2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `ComponentShape`                       |        1 |    2 | `vize_maestro` (1/2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `ComponentUsage`                       |       81 |  146 | `vize_canon` (38/53), `vize_croquis_cf` (38/85), `vize_maestro` (5/8)                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `Croquis`                              |      371 |  590 | `vize` (1/2), `vize_atelier_core` (17/24), `vize_atelier_dom` (2/6), `vize_atelier_jsx` (24/43), `vize_atelier_sfc` (17/43), `vize_atelier_ssr` (1/4), `vize_canon` (177/263), `vize_carton` (0/1), `vize_croquis_cf` (101/127), `vize_davinci` (0/2), `vize_maestro` (7/23), `vize_patina` (22/47), `vize_vitrine` (2/5)                                                                                                                                                                                                   |
+| `Croquis`                              |      371 |  592 | `vize` (1/2), `vize_atelier_core` (17/25), `vize_atelier_dom` (2/6), `vize_atelier_jsx` (24/43), `vize_atelier_sfc` (17/43), `vize_atelier_ssr` (1/4), `vize_canon` (177/263), `vize_carton` (0/1), `vize_croquis_cf` (101/127), `vize_davinci` (0/2), `vize_maestro` (7/23), `vize_patina` (22/47), `vize_s1_to_s2` (0/1), `vize_vitrine` (2/5)                                                                                                                                                                            |
 | `CroquisSemanticSnapshot`              |        3 |    4 | `vize_curator` (3/4)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `CroquisSemanticSummary`               |        1 |    2 | `vize_curator` (1/2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `Drawer`                               |       32 |   54 | `vize_atelier_jsx` (1/2), `vize_atelier_sfc` (7/9), `vize_canon` (0/1), `vize_maestro` (23/40), `vize_patina` (1/2)                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -392,12 +392,12 @@ The naive lane counts raw word-boundary text matches per product name (`\.field`
 | `PassedProp`                           |       42 |   63 | `vize_canon` (21/31), `vize_croquis_cf` (17/25), `vize_maestro` (4/7)                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `ProvideInjectTracker`                 |        0 |    1 | `vize_croquis_cf` (0/1)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `ReactivityTracker`                    |        1 |    4 | `vize_atelier_core` (0/1), `vize_atelier_sfc` (0/1), `vize_vitrine` (1/2)                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `Scope`                                |       24 |   91 | `vize` (0/1), `vize_atelier_core` (0/3), `vize_atelier_dom` (0/1), `vize_atelier_jsx` (0/1), `vize_atelier_sfc` (0/5), `vize_atelier_ssr` (0/3), `vize_canon` (22/53), `vize_davinci` (0/1), `vize_maestro` (0/6), `vize_patina` (2/10), `vize_relief` (0/2), `vize_s1_to_s2` (0/2), `vize_s2` (0/1), `vize_vitrine` (0/2)                                                                                                                                                                                                  |
+| `Scope`                                |       24 |   93 | `vize` (0/1), `vize_atelier_core` (0/4), `vize_atelier_dom` (0/1), `vize_atelier_jsx` (0/1), `vize_atelier_sfc` (0/5), `vize_atelier_ssr` (0/3), `vize_canon` (22/53), `vize_davinci` (0/1), `vize_maestro` (0/6), `vize_patina` (2/10), `vize_relief` (0/3), `vize_s1_to_s2` (0/2), `vize_s2` (0/1), `vize_vitrine` (0/2)                                                                                                                                                                                                  |
 | `ScopeBinding`                         |        2 |   28 | `vize_atelier_core` (1/2), `vize_atelier_jsx` (0/4), `vize_maestro` (1/2), `vize_s1_to_s2` (0/11), `vize_s2` (0/9)                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `ScopeChain`                           |        9 |   13 | `vize_atelier_core` (2/3), `vize_canon` (7/9), `vize_s1_to_s2` (0/1)                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `ScopeData`                            |       48 |   68 | `vize_canon` (30/45), `vize_maestro` (8/11), `vize_patina` (2/4)                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `ScopeId`                              |       39 |   59 | `vize_canon` (15/21), `vize_croquis_cf` (23/33), `vize_maestro` (1/2), `vize_patina` (0/1), `vize_vitrine` (0/2)                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `ScopeKind`                            |      147 |  178 | `vize_atelier_core` (1/2), `vize_atelier_sfc` (2/3), `vize_canon` (49/64), `vize_croquis_cf` (21/25), `vize_maestro` (65/73), `vize_patina` (3/5)                                                                                                                                                                                                                                                                                                                                                                           |
+| `ScopeKind`                            |      148 |  179 | `vize_atelier_core` (2/3), `vize_atelier_sfc` (2/3), `vize_canon` (49/64), `vize_croquis_cf` (21/25), `vize_maestro` (65/73), `vize_patina` (3/5)                                                                                                                                                                                                                                                                                                                                                                           |
 | `SlotUsage`                            |        7 |   17 | `vize_canon` (1/3), `vize_croquis_cf` (3/8), `vize_maestro` (3/6)                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `Span`                                 |        0 |  766 | `vize_armature` (0/24), `vize_atelier_core` (0/2), `vize_atelier_jsx` (0/73), `vize_atelier_sfc` (0/6), `vize_atelier_ssr` (0/8), `vize_atelier_vapor` (0/1), `vize_canon` (0/63), `vize_carton` (0/89), `vize_davinci` (0/20), `vize_impeto` (0/36), `vize_maestro` (0/9), `vize_patina` (0/158), `vize_relief` (0/8), `vize_s1_to_s2` (0/131), `vize_s2` (0/117), `vize_s2_to_s3` (0/21)                                                                                                                                  |
 | `SpreadProp`                           |        6 |   10 | `vize_canon` (6/10)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |

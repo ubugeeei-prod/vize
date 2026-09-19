@@ -4,7 +4,7 @@ use vize_carton::{String, ToCompactString, cstr};
 
 use super::{
     super::{context::GenerateContext, escape_js_string_literal},
-    events::is_inline_statement_block,
+    events::resolve_inline_handler,
 };
 
 /// Generate props object string for a component
@@ -216,18 +216,13 @@ fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> 
         if first.is_static {
             return cstr!("\"{}\"", escape_js_string_literal(first.content));
         }
-        let resolved = ctx.resolve_expression_node(first);
         if prop.key.is_handler_key
             && !is_function_expression_node(first)
             && !is_event_handler_reference_node(first)
         {
-            if is_inline_statement_block(first.content) {
-                cstr!("$event => {{ {} }}", resolved)
-            } else {
-                cstr!("$event => ({})", resolved)
-            }
+            resolve_inline_handler(ctx, first)
         } else {
-            resolved
+            ctx.resolve_expression_node(first)
         }
     } else {
         cstr!("\"\"")

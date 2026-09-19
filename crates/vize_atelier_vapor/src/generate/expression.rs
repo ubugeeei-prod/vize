@@ -1,16 +1,11 @@
 use oxc_ast::ast as oxc_ast_types;
-use oxc_ast_visit::{
-    Visit,
-    walk::{
-        walk_arrow_function_expression, walk_function, walk_object_property,
-        walk_variable_declarator,
-    },
-};
+use oxc_ast_visit::{Visit, walk::walk_object_property};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_syntax::scope::ScopeFlags;
+use vize_atelier_core::steps::expression::ExpressionScope;
+use vize_atelier_core::steps::expression::is_template_global;
 use vize_carton::{FxHashSet, String, ToCompactString};
-use vize_croquis::builtins::is_global_allowed;
 
 use super::context::GenerateContext;
 
@@ -61,9 +56,7 @@ pub(super) fn resolve_with_oxc(ctx: &GenerateContext<'_>, expr: &str) -> Option<
     let parsed = parser.parse();
     if parsed.diagnostics.is_empty() {
         let mut collector = ExpressionRewriteCollector::new(ctx);
-        collector.push_scope();
         collector.visit_program(&parsed.program);
-        collector.pop_scope();
         return Some(apply_rewrites(expr, collector.rewrites, 0));
     }
 
@@ -153,12 +146,10 @@ impl<'a, 'ctx> ExpressionRewriteCollector<'a, 'ctx> {
         }
     }
 
-    fn push_scope(&mut self) {
-        self.local_scopes.push(FxHashSet::default());
-    }
-
-    fn pop_scope(&mut self) {
-        self.local_scopes.pop();
+    pub(super) fn add_event_parameter(&mut self) {
+        let mut scope = FxHashSet::default();
+        scope.insert(String::from("$event"));
+        self.local_scopes.push(scope);
     }
 
     fn is_local(&self, name: &str) -> bool {
@@ -168,38 +159,9 @@ impl<'a, 'ctx> ExpressionRewriteCollector<'a, 'ctx> {
             .any(|scope| scope.contains(name))
     }
 
-    fn add_binding_pattern(&mut self, pattern: &oxc_ast_types::BindingPattern<'_>) {
-        match pattern {
-            oxc_ast_types::BindingPattern::BindingIdentifier(ident) => {
-                if let Some(scope) = self.local_scopes.last_mut() {
-                    scope.insert(String::new(ident.name.as_str()));
-                }
-            }
-            oxc_ast_types::BindingPattern::ObjectPattern(object) => {
-                for property in &object.properties {
-                    self.add_binding_pattern(&property.value);
-                }
-                if let Some(rest) = &object.rest {
-                    self.add_binding_pattern(&rest.argument);
-                }
-            }
-            oxc_ast_types::BindingPattern::ArrayPattern(array) => {
-                for element in array.elements.iter().flatten() {
-                    self.add_binding_pattern(element);
-                }
-                if let Some(rest) = &array.rest {
-                    self.add_binding_pattern(&rest.argument);
-                }
-            }
-            oxc_ast_types::BindingPattern::AssignmentPattern(assign) => {
-                self.add_binding_pattern(&assign.left);
-            }
-        }
-    }
-
     fn replacement_for_identifier(&self, name: &str) -> Option<String> {
         if self.is_local(name)
-            || is_global_allowed(name)
+            || is_template_global(name)
             || matches!(name, "_ctx" | "$props" | "$slots" | "$attrs" | "$emit")
         {
             return None;
@@ -253,37 +215,55 @@ impl<'a, 'ctx> Visit<'_> for ExpressionRewriteCollector<'a, 'ctx> {
         }
     }
 
+    fn visit_program(&mut self, node: &oxc_ast_types::Program<'_>) {
+        self.scoped_program(node);
+    }
+
     fn visit_arrow_function_expression(
         &mut self,
-        arrow: &oxc_ast_types::ArrowFunctionExpression<'_>,
+        node: &oxc_ast_types::ArrowFunctionExpression<'_>,
     ) {
-        self.push_scope();
-        for param in &arrow.params.items {
-            self.add_binding_pattern(&param.pattern);
-        }
-        walk_arrow_function_expression(self, arrow);
-        self.pop_scope();
+        self.scoped_arrow(node);
     }
 
-    fn visit_function(&mut self, func: &oxc_ast_types::Function<'_>, flags: ScopeFlags) {
-        self.push_scope();
-        for param in &func.params.items {
-            self.add_binding_pattern(&param.pattern);
-        }
-        walk_function(self, func, flags);
-        self.pop_scope();
+    fn visit_function_body(&mut self, node: &oxc_ast_types::FunctionBody<'_>) {
+        self.scoped_function_body(node);
     }
 
-    fn visit_variable_declarator(&mut self, declarator: &oxc_ast_types::VariableDeclarator<'_>) {
-        walk_variable_declarator(self, declarator);
-        if let Some(scope) = self.local_scopes.last_mut() {
-            match &declarator.id {
-                oxc_ast_types::BindingPattern::BindingIdentifier(ident) => {
-                    scope.insert(String::new(ident.name.as_str()));
-                }
-                _ => self.add_binding_pattern(&declarator.id),
-            }
-        }
+    fn visit_block_statement(&mut self, node: &oxc_ast_types::BlockStatement<'_>) {
+        self.scoped_block(node);
+    }
+
+    fn visit_catch_clause(&mut self, node: &oxc_ast_types::CatchClause<'_>) {
+        self.scoped_catch(node);
+    }
+
+    fn visit_for_statement(&mut self, node: &oxc_ast_types::ForStatement<'_>) {
+        self.scoped_for(node);
+    }
+
+    fn visit_for_in_statement(&mut self, node: &oxc_ast_types::ForInStatement<'_>) {
+        self.scoped_for_in(node);
+    }
+
+    fn visit_for_of_statement(&mut self, node: &oxc_ast_types::ForOfStatement<'_>) {
+        self.scoped_for_of(node);
+    }
+
+    fn visit_switch_statement(&mut self, node: &oxc_ast_types::SwitchStatement<'_>) {
+        self.scoped_switch(node);
+    }
+
+    fn visit_class(&mut self, node: &oxc_ast_types::Class<'_>) {
+        self.scoped_class(node);
+    }
+
+    fn visit_static_block(&mut self, node: &oxc_ast_types::StaticBlock<'_>) {
+        self.scoped_static_block(node);
+    }
+
+    fn visit_function(&mut self, function: &oxc_ast_types::Function<'_>, flags: ScopeFlags) {
+        self.scoped_function(function, flags);
     }
 
     fn visit_object_property(&mut self, property: &oxc_ast_types::ObjectProperty<'_>) {
@@ -305,5 +285,21 @@ impl<'a, 'ctx> Visit<'_> for ExpressionRewriteCollector<'a, 'ctx> {
         }
 
         walk_object_property(self, property);
+    }
+}
+
+impl<'ast> ExpressionScope<'ast> for ExpressionRewriteCollector<'_, '_> {
+    fn push_scope(&mut self) {
+        self.local_scopes.push(FxHashSet::default());
+    }
+    fn pop_scope(&mut self) {
+        self.local_scopes.pop();
+    }
+    fn add_local(&mut self, name: &str) {
+        let scope = self
+            .local_scopes
+            .last_mut()
+            .expect("expression binding owns a scope");
+        scope.insert(String::new(name));
     }
 }

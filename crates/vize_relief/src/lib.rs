@@ -19,11 +19,15 @@
 //! - Serialization support with serde
 
 pub mod errors;
+mod expression_scope;
+mod function_vars;
 mod inline_style;
 pub mod options;
 mod relief;
 
 pub use errors::*;
+pub use expression_scope::ExpressionScope;
+pub use function_vars::for_each_function_var;
 pub use inline_style::parse_inline_style;
 pub use options::*;
 pub use relief::*;

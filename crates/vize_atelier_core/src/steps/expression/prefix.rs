@@ -7,7 +7,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_s0::{FxHashSet, String};
 
-use vize_croquis::builtins::is_global_allowed;
+use super::is_template_global;
 
 use crate::lane::TransformContext;
 
@@ -21,7 +21,7 @@ pub(crate) fn get_identifier_prefix(
     ctx: &TransformContext<'_>,
 ) -> Option<&'static str> {
     // Don't prefix globals
-    if is_global_allowed(name) {
+    if is_template_global(name) {
         return None;
     }
 
@@ -151,7 +151,7 @@ fn collect_identifiers_for_prefix(
         Expression::Identifier(id) => {
             let name = id.name.as_str();
             // Skip JS globals and local variables
-            if !is_global_allowed(name) && !local_vars.contains(name) {
+            if !is_template_global(name) && !local_vars.contains(name) {
                 // Adjust position: subtract 1 for the opening parenthesis we added
                 let start = id.span.start as usize - 1;
                 let end = id.span.end as usize - 1;

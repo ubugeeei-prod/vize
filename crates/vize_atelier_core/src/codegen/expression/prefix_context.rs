@@ -10,7 +10,7 @@
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_relief::SimpleExpressionNode;
+use vize_relief::{ExpressionScope, SimpleExpressionNode};
 use vize_s0::FxHashSet;
 use vize_s0::String;
 use vize_s0::ToCompactString;
@@ -27,18 +27,21 @@ fn prefix_via_expr(
     offset: u32,
     content: &str,
     ctx: &CodegenContext,
+    implicit_event: bool,
 ) -> String {
     let mut rewrites: Vec<(usize, usize, String)> = Vec::new();
-    let mut local_vars: FxHashSet<String> = FxHashSet::default();
     let mut assignment_targets: FxHashSet<usize> = FxHashSet::default();
 
     let mut visitor = IdentifierVisitor {
         rewrites: &mut rewrites,
-        local_vars: &mut local_vars,
+        local_scopes: vec![FxHashSet::default()],
         assignment_targets: &mut assignment_targets,
         ctx,
         offset,
     };
+    if implicit_event {
+        visitor.add_local("$event");
+    }
     visitor.visit_expression(expr);
 
     rewrite_props_aliases(apply_rewrites(content, rewrites), ctx)
@@ -47,6 +50,14 @@ fn prefix_via_expr(
 /// Prefix identifiers in expression with appropriate prefix based on binding metadata.
 /// This is a context-aware version that uses `$setup.` for setup bindings in function mode.
 pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContext) -> String {
+    prefix_identifiers_in_scope(content, ctx, false)
+}
+
+pub(super) fn prefix_identifiers_in_scope(
+    content: &str,
+    ctx: &CodegenContext,
+    implicit_event: bool,
+) -> String {
     let allocator = crate::expr_parse_probe::parse_arena();
     let source_type = SourceType::default().with_module(true);
 
@@ -59,7 +70,7 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
     let parse_result = parser.parse_expression();
 
     match parse_result {
-        Ok(expr) => prefix_via_expr(&expr, 1, content, ctx),
+        Ok(expr) => prefix_via_expr(&expr, 1, content, ctx, implicit_event),
         Err(_) => {
             // Expression parsing failed -- try parsing as a program
             let allocator2 = crate::expr_parse_probe::parse_arena();
@@ -67,16 +78,18 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
             let parse_result2 = parser2.parse();
             if parse_result2.diagnostics.is_empty() {
                 let mut rewrites: Vec<(usize, usize, String)> = Vec::new();
-                let mut local_vars: FxHashSet<String> = FxHashSet::default();
                 let mut assignment_targets: FxHashSet<usize> = FxHashSet::default();
 
                 let mut visitor = IdentifierVisitor {
                     rewrites: &mut rewrites,
-                    local_vars: &mut local_vars,
+                    local_scopes: vec![FxHashSet::default()],
                     assignment_targets: &mut assignment_targets,
                     ctx,
                     offset: 0,
                 };
+                if implicit_event {
+                    visitor.add_local("$event");
+                }
                 visitor.visit_program(&parse_result2.program);
 
                 rewrite_props_aliases(apply_rewrites(content, rewrites), ctx)
@@ -94,10 +107,18 @@ pub(crate) fn prefix_identifiers_with_context_node(
     node: &SimpleExpressionNode<'_>,
     ctx: &CodegenContext,
 ) -> String {
+    prefix_node_in_scope(node, ctx, false)
+}
+
+pub(super) fn prefix_node_in_scope(
+    node: &SimpleExpressionNode<'_>,
+    ctx: &CodegenContext,
+    implicit_event: bool,
+) -> String {
     if let Some(js) = crate::retained::retained_whole_expression(node)
         && crate::retained::js_module_compatible(js)
     {
-        let result = prefix_via_expr(js.ast, 0, js.raw, ctx);
+        let result = prefix_via_expr(js.ast, 0, js.raw, ctx, implicit_event);
         #[cfg(any(test, feature = "davinci-differential"))]
         {
             // Dual-run against the legacy wrapped parse in an uncounted
@@ -109,7 +130,7 @@ pub(crate) fn prefix_identifiers_with_context_node(
             wrapped.push(')');
             let legacy = Parser::new(&allocator, &wrapped, SourceType::default().with_module(true))
                 .parse_expression()
-                .map(|expr| prefix_via_expr(&expr, 1, js.raw, ctx))
+                .map(|expr| prefix_via_expr(&expr, 1, js.raw, ctx, implicit_event))
                 .unwrap_or_else(|_| {
                     panic!(
                         "davinci-differential (P1-7): js_module_compatible admitted an expression the legacy JS-module parse rejects: {:?}",
@@ -126,5 +147,8 @@ pub(crate) fn prefix_identifiers_with_context_node(
         }
         return result;
     }
-    prefix_identifiers_with_context(node.content, ctx)
+    prefix_identifiers_in_scope(node.content, ctx, implicit_event)
 }
+
+#[cfg(test)]
+mod tests;
