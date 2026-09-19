@@ -18,6 +18,9 @@ use crate::file_uri::path_to_file_uri;
 #[path = "vue_dependencies_walk.rs"]
 mod walk;
 
+mod source;
+pub(super) use source::{dependency_content, parent_dir, source_type_for_path};
+
 const VUE_DEPENDENCY_FALLBACK: &str =
     "const component: any = undefined;\nexport default component;\n";
 
@@ -72,7 +75,7 @@ pub(super) fn collect_script_dependency_documents(
     rewriter: &ImportRewriter,
     alias_context: &super::vue_dependencies_alias::AliasContext,
     overlays: &FxHashMap<PathBuf, &str>,
-) {
+) -> Vec<PathBuf> {
     let mut visited_vue = FxHashSet::<PathBuf>::default();
     let mut visited_ts = FxHashSet::<PathBuf>::default();
     visited_ts.insert(source_path.to_path_buf());
@@ -93,6 +96,15 @@ pub(super) fn collect_script_dependency_documents(
         &mut visited_ts,
         queue,
     );
+    visited_ts.remove(source_path);
+    visited_ts.remove(&normalize_path(source_path));
+    let mut paths = visited_vue
+        .into_iter()
+        .chain(visited_ts)
+        .collect::<Vec<_>>();
+    paths.sort();
+    paths.dedup();
+    paths
 }
 
 pub(super) struct ImportQueue<'a> {
@@ -326,25 +338,4 @@ pub(super) fn queue_script_dependency(
         source_type,
         content,
     });
-}
-
-pub(super) fn dependency_content(
-    path: &Path,
-    overlays: &FxHashMap<PathBuf, &str>,
-) -> Option<String> {
-    let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
-    overlays
-        .get(&key)
-        .map(|content| String::from(*content))
-        .or_else(|| std::fs::read_to_string(path).ok().map(Into::into))
-}
-
-pub(super) fn source_type_for_path(path: &Path) -> SourceType {
-    SourceType::from_path(path).unwrap_or_else(|_| SourceType::ts())
-}
-
-pub(super) fn parent_dir(path: &Path) -> PathBuf {
-    path.parent()
-        .map(Path::to_path_buf)
-        .unwrap_or_else(|| path.to_path_buf())
 }

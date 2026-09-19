@@ -8,6 +8,8 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 #[cfg(all(test, feature = "native"))]
+mod art_dependency_typecheck_tests;
+#[cfg(all(test, feature = "native"))]
 mod art_variant_typecheck_tests;
 mod builder;
 mod collectors;

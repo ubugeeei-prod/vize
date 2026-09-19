@@ -42,7 +42,7 @@ impl VirtualProject {
         self.preserve_unused_diagnostics = self.resolve_tsconfig_preserves_unused_diagnostics();
         self.source_policy = self.resolve_source_file_policy();
         self.alias_rewrite_policy = self.resolve_alias_rewrite_policy();
-        self.virtual_ts_check_options.check_unknown_props = self.resolve_check_unknown_props();
+        self.refresh_vue_compiler_options();
     }
 
     pub(crate) fn source_file_policy(&self) -> SourceFilePolicy {
@@ -57,7 +57,7 @@ impl VirtualProject {
         self.preserve_unused_diagnostics = self.resolve_tsconfig_preserves_unused_diagnostics();
         self.source_policy = self.resolve_source_file_policy();
         self.alias_rewrite_policy = self.resolve_alias_rewrite_policy();
-        self.virtual_ts_check_options.check_unknown_props = self.resolve_check_unknown_props();
+        self.refresh_vue_compiler_options();
         self.mark_incremental_config_file();
         self.mark_incremental_link_topology();
     }
@@ -109,6 +109,7 @@ impl VirtualProject {
 
     pub(crate) fn set_virtual_ts_check_options(&mut self, mut options: VirtualTsCheckOptions) {
         options.check_unknown_props = self.virtual_ts_check_options.check_unknown_props;
+        options.strict_css_modules = self.virtual_ts_check_options.strict_css_modules;
         self.virtual_ts_check_options = options;
     }
 

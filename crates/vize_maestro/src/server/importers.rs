@@ -105,7 +105,7 @@ impl OpenImportIndex {
         let dependency = comparable_path(dependency);
         let index = self.inner.read();
         let canonical = self.canonical.read();
-        [&*index, &*canonical]
+        let mut paths: Vec<_> = [&*index, &*canonical]
             .into_iter()
             .flat_map(|index| {
                 index
@@ -114,9 +114,10 @@ impl OpenImportIndex {
                     .take_while(|(path, _)| path.starts_with(&dependency))
                     .map(|(path, _)| path.clone())
             })
-            .collect::<FxHashSet<_>>()
-            .into_iter()
-            .collect()
+            .collect();
+        paths.sort();
+        paths.dedup();
+        paths
     }
 }
 

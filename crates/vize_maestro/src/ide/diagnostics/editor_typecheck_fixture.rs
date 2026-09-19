@@ -241,9 +241,10 @@ pub(super) fn write_vue_test_package(root: &Path) {
     std::fs::write(
         vue_dir.join("index.d.ts"),
         r#"export type DefineComponent<P = any, _B = any, _D = any> = { new(): { $props: P } };
+export type Slots = Readonly<Record<string, ((...args: any[]) => any[]) | undefined>>;
 export interface ComponentPublicInstance {
   $attrs: Record<string, unknown>;
-  $slots: Record<string, unknown>;
+  $slots: Slots;
   $refs: Record<string, unknown>;
   $emit: (...args: unknown[]) => void;
 }

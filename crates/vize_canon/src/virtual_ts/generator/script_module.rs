@@ -5,8 +5,7 @@ mod navigation;
 mod plain_exports;
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Declaration, Statement, TSEnumDeclaration};
-use oxc_ast_visit::Visit;
+use oxc_ast::ast::{Declaration, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet, String as VizeString};
@@ -146,31 +145,6 @@ pub(super) fn emit_import_meta_polyfill(ts: &mut VizeString, script: &str) -> bo
         ts.push_str("  const __import_meta: any = {};\n");
     }
     uses_import_meta
-}
-
-pub(super) fn collect_const_enum_names(script: &str) -> FxHashSet<CompactString> {
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
-    if parsed.panicked {
-        return FxHashSet::default();
-    }
-
-    let mut collector = ConstEnumNames::default();
-    collector.visit_program(&parsed.program);
-    collector.names
-}
-
-#[derive(Default)]
-struct ConstEnumNames {
-    names: FxHashSet<CompactString>,
-}
-
-impl<'a> Visit<'a> for ConstEnumNames {
-    fn visit_ts_enum_declaration(&mut self, decl: &TSEnumDeclaration<'a>) {
-        if decl.r#const {
-            self.names.insert(CompactString::new(decl.id.name.as_str()));
-        }
-    }
 }
 
 fn declaration_has_runtime_value(declaration: &Declaration<'_>) -> bool {

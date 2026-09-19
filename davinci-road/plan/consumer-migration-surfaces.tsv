@@ -1971,7 +1971,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project.rs	
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/art_usage.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/build.rs	7	s0	S0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/build/context.rs	4	s0	S0	stage	vize_carton	compat	2
-typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/build/css_modules.rs	6	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/build/css_modules.rs	6	s0	S0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/css_var_usage.rs	20	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/css_var_usage.rs	20	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/css_var_usage.rs	41	s0	S0	stage	vize_carton	compat	1
@@ -2090,9 +2090,10 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tsc
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/remap.rs	6	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_alias.rs	15	s0	S0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options.rs	11	s0	S0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options.rs	138	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options.rs	144	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_paths.rs	8	s0	S0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_codegen.rs	7	s0	S0	stage	vize_carton	compat	2
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_codegen/types.rs	6	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_compiler_comments.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_compiler_comments.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_specifier_message.rs	3	s0	S0	stage	vize_carton	compat	1
@@ -2110,7 +2111,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/bridge/languag
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/editor_session.rs	13	s0	S0	stage	vize_carton	compat	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/editor_session.rs	74	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/script_document.rs	6	s0	S0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/script_document.rs	133	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/script_document.rs	134	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/types.rs	13	s0	S0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context.rs	237	s0	S0	stage	vize_carton	compat	1
@@ -2123,6 +2124,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/vue_dependen
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/routes.rs	5	s0	S0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependencies_walk.rs	6	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependencies.rs	7	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependencies/source.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependency_specifiers.rs	1	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependency_specifiers.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependency_specifiers.rs	1	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -2326,6 +2328,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/css_mo
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/css_modules.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/css_modules.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/css_modules.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/css_modules.rs	5	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/emits.rs	1	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/emits.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/entry.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	3
@@ -2343,7 +2346,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/file_d
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/file_directives.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/generics.rs	4	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/generics.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/generics.rs	259	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/generics.rs	271	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/global_components.rs	1	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/global_components.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/imports.rs	3	s0	S0	stage	vize_carton	compat	3
@@ -2399,7 +2402,6 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module.rs	7	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module.rs	7	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module.rs	7	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module.rs	7	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module/namespace_hoist.rs	33	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module/namespace_hoist.rs	33	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
@@ -2986,21 +2988,21 @@ lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	8	s0	S
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	8	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/collect_virtual.rs	4	s0	S0	stage	vize_s0	preferred	2
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/collect.rs	16	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/collect.rs	13	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/log_preview.rs	10	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/mapping.rs	4	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/message.rs	79	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	149	s0	S0	stage	vize_s0	preferred	3
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	149	s0	S0	stage	vize_s0	preferred	4
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/template_directives.rs	7	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/tests.rs	1	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art_bindings.rs	5	s0	S0	stage	vize_s0	preferred	4
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art_bindings.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	12	s0	S0	stage	vize_s0	preferred	3
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	14	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	14	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	10	s0	S0	stage	vize_s0	preferred	3
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	10	old_ast	old AST/parser	old	vize_armature	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	10	croquis	Croquis analysis	old	vize_croquis	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	13	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	13	old_ast	old AST/parser	old	vize_armature	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	13	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_fixture.rs	212	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_tests.rs	10	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/line_index.rs	7	s0	S0	stage	vize_s0	preferred	1
@@ -3118,6 +3120,7 @@ lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/as
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/evidence.rs	3	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol.rs	10	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/executable.rs	7	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/identity.rs	4	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/readiness.rs	3	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_tests.rs	343	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/selection_range/markup.rs	112	s0	S0	stage	vize_s0	preferred	1
@@ -3147,7 +3150,7 @@ lsp	LSP	source	crates/vize_maestro/src/ide/type_service/type_context.rs	229	s0	S
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/workspace_symbols.rs	16	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/workspace_symbols.rs	16	croquis	Croquis analysis	old	vize_croquis	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/lib.rs	154	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/runtime.rs	25	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/runtime.rs	24	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/folding.rs	223	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/folding/script.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/folding/script.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1

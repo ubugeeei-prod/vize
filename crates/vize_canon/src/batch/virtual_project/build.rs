@@ -101,8 +101,6 @@ pub(super) fn build_vue_registered_file(
         .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))
     )?;
 
-    let effective_options =
-        virtual_ts_options_for_descriptor(context.virtual_ts_options, &descriptor);
     let use_tsx_virtual = descriptor_uses_jsx_script(&descriptor);
     let source_type = if use_tsx_virtual {
         SourceType::tsx()
@@ -115,7 +113,7 @@ pub(super) fn build_vue_registered_file(
             path,
             content,
             &descriptor,
-            &effective_options,
+            context.virtual_ts_options,
             VueCodegenOptions {
                 check_options: context.virtual_ts_check_options,
                 preserve_unused_diagnostics: context.preserve_unused_diagnostics,

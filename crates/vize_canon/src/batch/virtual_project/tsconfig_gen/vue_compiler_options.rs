@@ -26,15 +26,21 @@ struct ChainLoad {
 }
 
 impl VirtualProject {
-    pub(in super::super) fn resolve_check_unknown_props(&self) -> bool {
-        let Some(tsconfig_path) = self.resolved_tsconfig_path() else {
-            return true;
+    pub(in super::super) fn refresh_vue_compiler_options(&mut self) {
+        let path = self.resolved_tsconfig_path();
+        let options = self.load_vue_compiler_options(path.as_deref()).ok();
+        self.virtual_ts_check_options.check_unknown_props = if path.is_none() {
+            true
+        } else {
+            options
+                .as_ref()
+                .map(check_unknown_props_enabled)
+                .unwrap_or(true)
         };
-        self.load_vue_compiler_options(Some(tsconfig_path.as_path()))
-            .ok()
+        self.virtual_ts_check_options.strict_css_modules = options
             .as_ref()
-            .map(check_unknown_props_enabled)
-            .unwrap_or(true)
+            .and_then(|options| options.get("strictCssModules").and_then(Value::as_bool))
+            .unwrap_or(false);
     }
 
     #[cfg(test)]

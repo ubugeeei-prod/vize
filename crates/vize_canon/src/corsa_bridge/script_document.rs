@@ -33,6 +33,7 @@ pub struct CorsaScriptVirtualDocument {
     pub request_uri: String,
     pub code: String,
     pub import_source_map: crate::batch::ImportSourceMap,
+    pub resolved_dependencies: Vec<PathBuf>,
 }
 
 impl CorsaBridge {
@@ -137,7 +138,7 @@ fn build_script_virtual_project_with_package_routes(
         })?;
     let request_uri = crate::file_uri::path_to_file_uri(&path);
     let mut documents = vec![(request_uri.clone(), generated.code.clone())];
-    collect_script_dependency_documents(
+    let resolved_dependencies = collect_script_dependency_documents(
         &mut documents,
         request.source_path,
         request.code,
@@ -153,6 +154,7 @@ fn build_script_virtual_project_with_package_routes(
             request_uri,
             code: generated.code,
             import_source_map: generated.source_map,
+            resolved_dependencies,
         },
         documents,
         session_project_root,

@@ -11,9 +11,7 @@ use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::{ImportRewriter, ImportSourceMap};
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping, VizeSemanticLink};
 
-use super::build::{
-    descriptor_uses_jsx_script, prepend_vue_jsx_reference, virtual_ts_options_for_descriptor,
-};
+use super::build::{descriptor_uses_jsx_script, prepend_vue_jsx_reference};
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
 /// Rewritten virtual TypeScript for a single in-memory `.vue` document.
@@ -113,7 +111,6 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
     )
     .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))?;
 
-    let effective_options = virtual_ts_options_for_descriptor(options, &descriptor);
     let use_tsx_virtual = descriptor_uses_jsx_script(&descriptor);
     let source_type = if use_tsx_virtual {
         SourceType::tsx()
@@ -129,7 +126,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
         path,
         content,
         &descriptor,
-        &effective_options,
+        options,
         VueCodegenOptions {
             check_options: VirtualTsCheckOptions::default(),
             preserve_unused_diagnostics: false,

@@ -158,6 +158,7 @@ fn linked_offset(
             VizeSemanticLinkKind::VueSetupTemplateRefUnwrap
                 | VizeSemanticLinkKind::VuePlainScriptExport
                 | VizeSemanticLinkKind::VueOptionsApiBinding
+                | VizeSemanticLinkKind::VueSetupImportSpecialization
         ) {
             return None;
         }

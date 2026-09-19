@@ -9,6 +9,7 @@ fn protocol_v1_omits_internal_navigation_links() {
         VizeSemanticLinkKind::VueComponentPropNavigation,
         VizeSemanticLinkKind::VuePlainScriptExport,
         VizeSemanticLinkKind::VueOptionsApiBinding,
+        VizeSemanticLinkKind::VueSetupImportSpecialization,
     ]
     .into_iter()
     .map(|kind| VizeSemanticLink {

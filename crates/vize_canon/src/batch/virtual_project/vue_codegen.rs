@@ -5,7 +5,7 @@
 
 use std::path::Path;
 use vize_carton::config::VueVersion;
-use vize_carton::{Allocator, String as CompactString, cstr, profile};
+use vize_carton::{Allocator, cstr, profile};
 
 use vize_atelier_core::{
     ParserOptions, TemplateSyntaxMode, parser::parse_with_options_and_template_syntax,
@@ -19,12 +19,11 @@ use vize_atelier_sfc::{
     },
 };
 
+use crate::batch::SfcBlockType;
 use crate::batch::error::CorsaResult;
-use crate::batch::{Diagnostic, SfcBlockType};
 use crate::script_parse::collect_script_parse_diagnostics;
 use crate::virtual_ts::{
-    VirtualTsCheckOptions, VirtualTsGenerationOptions, VirtualTsOptions,
-    generate_virtual_ts_with_offsets_and_checks,
+    VirtualTsGenerationOptions, VirtualTsOptions, generate_virtual_ts_with_offsets_and_checks,
 };
 
 use super::diagnostics::{
@@ -36,37 +35,8 @@ use super::{
     setup_props::{RuntimePropResolveCache, augment_type_based_props_from_script_context},
 };
 
-pub(super) struct GeneratedVueFile {
-    pub(super) code: CompactString,
-    pub(super) mappings: Vec<crate::virtual_ts::VizeMapping>,
-    pub(super) semantic_links: Vec<crate::virtual_ts::VizeSemanticLink>,
-    pub(super) diagnostics: Vec<Diagnostic>,
-}
-
-#[derive(Clone, Copy)]
-pub(super) struct VueCodegenOptions<'a> {
-    pub(super) check_options: VirtualTsCheckOptions,
-    pub(super) preserve_unused_diagnostics: bool,
-    pub(super) options_api: bool,
-    pub(super) preserve_authored_component: bool,
-    pub(super) component_name: Option<&'a str>,
-    pub(super) preserve_event_navigation: bool,
-    pub(super) legacy_vue2: bool,
-    pub(super) dialect: VueVersion,
-    pub(super) template_syntax: TemplateSyntaxMode,
-    pub(super) experimental_in_tag_comments: bool,
-    pub(super) experimental_patterned_template: bool,
-    pub(super) experimental_strict_slot_children: bool,
-    /// Hoist shared helpers to the batch ambient `.d.ts`; socket sessions keep
-    /// them inline because they do not materialize that file.
-    pub(super) hoist_shared_preamble: bool,
-    /// Content-mapper transforms can run outside Vite projects.
-    pub(super) omit_vite_client_reference: bool,
-    /// Batch generation can share imported runtime prop/default resolution
-    /// across rayon workers. Document/content-mapper callers use a per-file
-    /// cache to avoid keeping stale source-derived state.
-    pub(super) runtime_prop_resolve_cache: Option<&'a RuntimePropResolveCache>,
-}
+mod types;
+pub(super) use types::{GeneratedVueFile, VueCodegenOptions};
 
 pub(super) fn generate_vue_virtual_ts(
     path: &Path,
@@ -77,6 +47,12 @@ pub(super) fn generate_vue_virtual_ts(
 ) -> CorsaResult<GeneratedVueFile> {
     codegen_options.check_options =
         super::vue_compiler_comments::apply(source, codegen_options.check_options);
+    // All consumers resolve per-SFC metadata after project and top-level options.
+    let options = &super::build::virtual_ts_options_for_descriptor(
+        options,
+        descriptor,
+        codegen_options.check_options.strict_css_modules,
+    );
     let allocator = Allocator::new();
     let mut diagnostics = Vec::new();
 

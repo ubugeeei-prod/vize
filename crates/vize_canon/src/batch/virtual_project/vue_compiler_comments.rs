@@ -6,7 +6,14 @@ use vize_carton::Allocator;
 use vize_relief::TemplateChildNode;
 
 pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> VirtualTsCheckOptions {
-    if !source.contains("@strictTemplates") && !source.contains("@checkUnknownProps") {
+    if ![
+        "@strictTemplates",
+        "@checkUnknownProps",
+        "@strictCssModules",
+    ]
+    .iter()
+    .any(|option| source.contains(option))
+    {
         return options;
     }
     let allocator = Allocator::new();
@@ -42,6 +49,7 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
         match key {
             "strictTemplates" => strict = Some(value),
             "checkUnknownProps" => unknown_props = Some(value),
+            "strictCssModules" => options.strict_css_modules = value,
             _ => {}
         }
     }

@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vscode = require("vscode");
 const { featureSettingKeys } = require("./extension-host-fixtures.cjs");
+const { waitFor } = require("./wait-for.cjs");
 
 function assertPackagedExtension(extension) {
   const extensionsPath = getRequiredPath(
@@ -111,22 +112,6 @@ async function waitForDiagnostics(uri, predicate, label, timeoutMs) {
   }
 
   assert.fail(`${label} did not happen. Last diagnostics: ${JSON.stringify(diagnostics)}`);
-}
-
-async function waitFor(produce, predicate, label, timeoutMs) {
-  const timeoutAt = Date.now() + timeoutMs;
-  let value;
-
-  while (Date.now() < timeoutAt) {
-    value = await produce();
-    if (predicate(value)) {
-      return value;
-    }
-
-    await sleep(100);
-  }
-
-  assert.fail(`${label} did not happen. Last value: ${JSON.stringify(value)}`);
 }
 
 function sleep(ms) {

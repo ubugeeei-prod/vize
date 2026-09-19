@@ -1,27 +1,16 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
 import { check, workspace } from "./support/upstream/vue-language-tools.ts";
+import { assertVueTsc } from "./support/vue-tsc-oracle.ts";
 
 const require = createRequire(import.meta.url);
 const vueRequire = createRequire(require.resolve("vue/package.json"));
 const { parseStringStyle } = vueRequire("@vue/shared") as {
   parseStringStyle: (source: string) => Record<string, string>;
 };
-
-function assertVueTsc(directory: string): void {
-  const cli = path.join(path.dirname(require.resolve("vue-tsc/package.json")), "bin/vue-tsc.js");
-  const result = spawnSync(process.execPath, [cli, "--noEmit", "--pretty", "false"], {
-    cwd: directory,
-    encoding: "utf8",
-    timeout: 60_000,
-  });
-  assert.equal(result.error, undefined);
-  assert.equal(result.status, 0, result.stdout + result.stderr);
-}
 
 function project(prefix: string): string {
   const directory = workspace(prefix);

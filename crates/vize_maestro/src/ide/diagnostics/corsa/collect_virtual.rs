@@ -12,31 +12,6 @@ use super::mapping::{
 use super::message::rewrite_corsa_message;
 use super::script_fallback::ScriptFallback;
 
-// Both collectors surface bridge failures to the caller instead of mapping
-// them to an empty diagnostic list: `collect_corsa_diagnostics` uses the
-// error to distinguish a dead backend process (retire + respawn + retry,
-// #3240) from an ordinary per-request failure.
-pub(super) async fn collect_virtual_result_diagnostics(
-    bridge: &std::sync::Arc<vize_canon::CorsaBridge>,
-    host_uri: &Url,
-    content: &str,
-    virtual_name: String,
-    virtual_result: VirtualTsResult,
-) -> Result<Vec<Diagnostic>, vize_canon::CorsaBridgeError> {
-    let virtual_uri = bridge
-        .open_or_update_virtual_document(&virtual_name, &virtual_result.code)
-        .await?;
-
-    collect_synced_virtual_result_diagnostics(
-        bridge,
-        host_uri,
-        content,
-        virtual_uri.to_string(),
-        virtual_result,
-    )
-    .await
-}
-
 pub(super) async fn collect_synced_virtual_result_diagnostics(
     bridge: &std::sync::Arc<vize_canon::CorsaBridge>,
     _host_uri: &Url,

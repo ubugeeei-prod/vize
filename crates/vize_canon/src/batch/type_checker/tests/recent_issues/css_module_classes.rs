@@ -2,12 +2,7 @@
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
-/// `vue-tsc 3.3.4 --noEmit` reports no diagnostics for this byte-identical SFC:
-/// its CSS-module surface remains `Record<string, string>` on both sides. Vize
-/// is intentionally stricter when it can prove a closed inline export shape.
-/// The shared compat ledger cannot encode this as an expected pair because its
-/// comparator deliberately rejects one-sided diagnostics, so the full oracle
-/// is pinned here instead: exact count, code, message, authored line and column.
+/// Strict CSS-module checking is opt-in, matching Vue Language Tools.
 #[test]
 fn static_default_and_named_modules_reject_only_misspelled_classes() {
     if resolve_test_tsgo_binary().is_none() {
@@ -17,7 +12,8 @@ fn static_default_and_named_modules_reject_only_misspelled_classes() {
         "css-module-authored-classes",
         &[(
             "src/App.vue",
-            r#"<script setup lang="ts">
+            r#"<!-- @strictCssModules true -->
+<script setup lang="ts">
 import { useCssModule as cssModule } from "vue";
 const styles = cssModule();
 const tokenStyles = cssModule("tokens");
@@ -55,22 +51,22 @@ void tokenStyles.missing;
             (
                 "src/App.vue".into(),
                 Some(2339),
-                "13:23:error Property 'typoed' does not exist on type '{ readonly root: string; readonly row: string; }'.".into(),
+                "14:23:error Property 'typoed' does not exist on type '{ root: string; row: string; }'.".into(),
             ),
             (
                 "src/App.vue".into(),
                 Some(2339),
-                "15:23:error Property 'missing' does not exist on type '{ readonly active: string; }'.".into(),
+                "16:23:error Property 'missing' does not exist on type '{ active: string; }'.".into(),
             ),
             (
                 "src/App.vue".into(),
                 Some(2339),
-                "6:13:error Property 'typoed' does not exist on type '{ readonly root: string; readonly row: string; }'.".into(),
+                "7:13:error Property 'typoed' does not exist on type '{ root: string; row: string; }'.".into(),
             ),
             (
                 "src/App.vue".into(),
                 Some(2339),
-                "8:18:error Property 'missing' does not exist on type '{ readonly active: string; }'.".into(),
+                "9:18:error Property 'missing' does not exist on type '{ active: string; }'.".into(),
             ),
         ],
         "correct classes stay clean while script and template typos keep exact authored ranges"

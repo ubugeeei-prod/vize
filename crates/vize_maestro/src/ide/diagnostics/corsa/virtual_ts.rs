@@ -4,7 +4,9 @@ use tower_lsp::lsp_types::Url;
 
 use super::super::{DiagnosticService, SourceMapping, VirtualTsResult};
 use super::log_preview::log_preview;
-use vize_canon::{CorsaVueVirtualDocument, ImportRewriter, ImportSourceMap};
+#[cfg(test)]
+use vize_canon::ImportRewriter;
+use vize_canon::{CorsaVueVirtualDocument, ImportSourceMap};
 
 struct VirtualTsMetadata {
     user_code_start_line: u32,
@@ -12,22 +14,6 @@ struct VirtualTsMetadata {
     template_scope_start_line: u32,
     line_mappings: Vec<Option<SourceMapping>>,
     skipped_import_lines: u32,
-}
-
-/// Apply `ImportRewriter` to the generated virtual TS so `.vue` imports
-/// resolve to the generated `.vue.ts` mirrors in the editor Corsa session.
-///
-/// The rewrite only changes bytes *inside* import specifier strings (single
-/// line), so line numbers are preserved — only column offsets within affected
-/// lines shift. Returns the rewritten code and a byte-offset source map that
-/// `map_diagnostic_with_source_mappings` uses to translate post-rewrite
-/// diagnostic offsets back into pre-rewrite virtual TS offsets (which are the
-/// coordinate system the byte-range source mappings operate in).
-pub(super) fn rewrite_vue_imports(code: &str) -> (std::string::String, ImportSourceMap) {
-    use oxc_span::SourceType;
-    let result = ImportRewriter::new().rewrite(code, SourceType::ts(), None);
-    #[allow(clippy::disallowed_methods)]
-    (result.code.to_string(), result.source_map)
 }
 
 impl DiagnosticService {

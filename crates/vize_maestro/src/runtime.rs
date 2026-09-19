@@ -21,38 +21,22 @@ use futures::SinkExt;
 use futures::channel::{mpsc, oneshot};
 use futures::io::{AsyncRead, AsyncWrite};
 use futures::stream::StreamExt;
-use futures::task::{ArcWake, waker};
 use vize_s0::{String, cstr};
 
 const IO_CHANNEL_BOUND: usize = 16;
+
+#[cfg(test)]
+mod executor_tests;
 
 /// Runs a future to completion on the current thread.
 pub fn block_on<F>(future: F) -> F::Output
 where
     F: Future,
 {
-    struct ThreadWaker {
-        thread: thread::Thread,
-    }
-
-    impl ArcWake for ThreadWaker {
-        fn wake_by_ref(arc_self: &Arc<Self>) {
-            arc_self.thread.unpark();
-        }
-    }
-
-    let waker = waker(Arc::new(ThreadWaker {
-        thread: thread::current(),
-    }));
-    let mut context = Context::from_waker(&waker);
-    let mut future = Box::pin(future);
-
-    loop {
-        match future.as_mut().poll(&mut context) {
-            Poll::Ready(output) => return output,
-            Poll::Pending => thread::park(),
-        }
-    }
+    // The executor tracks notifications independently from the thread's park
+    // token. Blocking code inside a poll can consume that token; a bare
+    // park/unpark loop then loses an already-delivered wake and stalls the LSP.
+    futures::executor::block_on(future)
 }
 
 /// Error returned when a timeout expires before a future completes.

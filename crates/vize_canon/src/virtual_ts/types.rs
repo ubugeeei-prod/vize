@@ -212,6 +212,7 @@ pub(crate) struct VirtualTsCheckOptions {
     pub(crate) check_template_bindings: bool,
     pub(crate) check_emits: bool,
     pub(crate) check_unknown_props: bool,
+    pub(crate) strict_css_modules: bool,
 }
 
 impl VirtualTsCheckOptions {
@@ -231,6 +232,7 @@ impl Default for VirtualTsCheckOptions {
             check_template_bindings: true,
             check_emits: true,
             check_unknown_props: true,
+            strict_css_modules: false,
         }
     }
 }

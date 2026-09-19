@@ -1,132 +1,141 @@
-//! Script-side CSS-module typing for `useCssModule()`.
+//! Specialize authored Vue CSS-module imports once in their setup scope.
 
-use std::collections::BTreeMap;
+use std::ops::Range;
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, Expression, ImportDeclarationSpecifier, Statement};
+use oxc_ast::ast::{ImportDeclarationSpecifier, ImportOrExportKind, Statement};
 use oxc_parser::Parser;
+use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String, cstr};
+use vize_carton::{String, append};
 
-use crate::virtual_ts::types::{CSS_MODULE_GLOBAL_MARKER, VirtualTsOptions};
+use crate::virtual_ts::{
+    VizeMapping, VizeSemanticLink, VizeSemanticLinkKind,
+    types::{CSS_MODULE_GLOBAL_MARKER, VirtualTsOptions},
+};
 
-/// Inserts a type assertion immediately after a top-level `useCssModule()`
-/// initializer. Vue's public return type is intentionally open-ended, while an
-/// SFC's authored inline module can be narrower. Calls with a dynamic name and
-/// modules that require the index-signature fallback are left untouched.
-pub(super) struct CssModuleAssertions {
-    insertions: Vec<(usize, String)>,
-    index: usize,
+#[derive(Default)]
+pub(super) struct CssModulePlan {
+    imports: Vec<(String, Range<usize>, bool)>,
 }
 
-impl CssModuleAssertions {
-    pub(super) fn new(script: &str, options: &VirtualTsOptions) -> Self {
-        let module_types: BTreeMap<&str, &str> = options
-            .template_globals
-            .iter()
-            .filter(|global| global.default_value == CSS_MODULE_GLOBAL_MARKER)
-            .map(|global| (global.name.as_str(), global.type_annotation.as_str()))
-            .collect();
-        if module_types.is_empty() {
-            return Self {
-                insertions: Vec::new(),
-                index: 0,
-            };
-        }
-
+impl CssModulePlan {
+    pub(super) fn new(script: Option<&str>) -> Self {
+        let mut plan = Self::default();
+        let Some(script) = script.filter(|source| source.contains("useCssModule")) else {
+            return plan;
+        };
         let allocator = Allocator::default();
         let parsed = Parser::new(&allocator, script, SourceType::tsx()).parse();
         if parsed.panicked {
-            return Self {
-                insertions: Vec::new(),
-                index: 0,
-            };
+            return plan;
         }
-
-        let mut local_names = FxHashSet::default();
-        for statement in parsed.program.body.iter() {
+        let built = SemanticBuilder::new().build(&parsed.program);
+        for statement in &parsed.program.body {
             let Statement::ImportDeclaration(import) = statement else {
                 continue;
             };
-            if import.source.value.as_str() != "vue" {
+            if import.source.value != "vue" || import.import_kind == ImportOrExportKind::Type {
                 continue;
             }
             for specifier in import.specifiers.iter().flatten() {
-                let ImportDeclarationSpecifier::ImportSpecifier(specifier) = specifier else {
-                    continue;
-                };
-                if specifier.imported.name().as_str() == "useCssModule" {
-                    local_names.insert(specifier.local.name.as_str());
-                }
-            }
-        }
-
-        let mut insertions = Vec::new();
-        if !local_names.is_empty() {
-            for statement in parsed.program.body.iter() {
-                let Statement::VariableDeclaration(declaration) = statement else {
-                    continue;
-                };
-                for declarator in declaration.declarations.iter() {
-                    let Some(Expression::CallExpression(call)) = declarator.init.as_ref() else {
-                        continue;
-                    };
-                    let Expression::Identifier(callee) = &call.callee else {
-                        continue;
-                    };
-                    if !local_names.contains(callee.name.as_str()) {
-                        continue;
+                let (local, namespace) = match specifier {
+                    ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                        if specifier.imported.name() == "useCssModule"
+                            && specifier.import_kind != ImportOrExportKind::Type =>
+                    {
+                        (&specifier.local, false)
                     }
-                    let module_name = match call.arguments.as_slice() {
-                        [] => "$style",
-                        [Argument::StringLiteral(name)] => name.value.as_str(),
-                        _ => continue,
-                    };
-                    let Some(type_annotation) = module_types.get(module_name) else {
-                        continue;
-                    };
-                    insertions.push((call.span.end as usize, cstr!(" as {type_annotation}")));
+                    ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                        (&specifier.local, true)
+                    }
+                    _ => continue,
+                };
+                let Some(symbol) = local.symbol_id.get() else {
+                    continue;
+                };
+                // An unused import must retain its authored unused diagnostic.
+                if built.semantic.symbol_references(symbol).next().is_none() {
+                    continue;
                 }
+                let span = local.span;
+                plan.imports.push((
+                    local.name.as_str().into(),
+                    span.start as usize..span.end as usize,
+                    namespace,
+                ));
             }
         }
-        insertions.sort_by_key(|(offset, _)| *offset);
-        Self {
-            insertions,
-            index: 0,
+        plan
+    }
+
+    pub(super) fn emit_import_anchors(&self, ts: &mut String) {
+        for (index, (name, _, _)) in self.imports.iter().enumerate() {
+            append!(*ts, "const __vize_css_module_{index} = {name};\n");
         }
     }
 
-    pub(super) fn splice_output_line<'a>(
-        &mut self,
-        output_line: &mut std::borrow::Cow<'a, str>,
-        line_start: usize,
+    pub(super) fn emit_setup(
+        &self,
+        ts: &mut String,
+        options: &VirtualTsOptions,
+        mappings: &mut Vec<VizeMapping>,
+        links: &mut Vec<VizeSemanticLink>,
+        source_offset: &dyn Fn(usize) -> usize,
     ) {
-        while self.index < self.insertions.len() && self.insertions[self.index].0 <= line_start {
-            self.index += 1;
-        }
-        let line_end = line_start + output_line.len();
-        if self.index >= self.insertions.len() || self.insertions[self.index].0 > line_end {
+        if self.imports.is_empty() {
             return;
         }
-
-        let mut rewritten = String::default();
-        let mut copied_until = 0usize;
-        while self.index < self.insertions.len() {
-            let (offset, assertion) = &self.insertions[self.index];
-            if *offset > line_end {
-                break;
-            }
-            let column = *offset - line_start;
-            if output_line.is_char_boundary(column) {
-                rewritten.push_str(&output_line[copied_until..column]);
-                rewritten.push_str(assertion);
-                copied_until = column;
-            }
-            self.index += 1;
+        ts.push_str("  type __VizeStyleModules = {\n");
+        let mut has_default = false;
+        for global in options
+            .template_globals
+            .iter()
+            .filter(|global| global.default_value == CSS_MODULE_GLOBAL_MARKER)
+        {
+            let name =
+                serde_json::to_string(global.name.as_str()).expect("CSS module name serializes");
+            append!(*ts, "    {name}: {};\n", global.type_annotation);
+            has_default |= global.name == "$style";
         }
-        if copied_until != 0 {
-            rewritten.push_str(&output_line[copied_until..]);
-            *output_line = std::borrow::Cow::Owned(rewritten.into());
+        for name in &options.css_modules {
+            let quoted = serde_json::to_string(name.as_str()).expect("CSS module name serializes");
+            append!(*ts, "    {quoted}: Record<string, string>;\n");
+            has_default |= name == "$style";
+        }
+        ts.push_str("  };\n  type __VizeUseCssModule = {\n");
+        if has_default {
+            ts.push_str("    (): __VizeStyleModules['$style'];\n");
+        }
+        ts.push_str("    <K extends Exclude<keyof __VizeStyleModules, '$style'>>(name: K): __VizeStyleModules[K];\n  };\n");
+        for (index, (name, span, namespace)) in self.imports.iter().enumerate() {
+            ts.push_str("  const ");
+            let start = ts.len();
+            ts.push_str(name);
+            let original = source_offset(span.start)..source_offset(span.end);
+            if let Some(source_range) =
+                super::script_module::mapped_binding_range(mappings, &original)
+            {
+                links.push(VizeSemanticLink {
+                    source_range,
+                    target_range: start..ts.len(),
+                    kind: VizeSemanticLinkKind::VueSetupImportSpecialization,
+                });
+            }
+            mappings.push(VizeMapping {
+                gen_range: start..ts.len(),
+                src_range: original,
+                sub_spans: Vec::new(),
+            });
+            append!(*ts, " = __vize_css_module_{index} as unknown as ");
+            if *namespace {
+                append!(
+                    *ts,
+                    "Omit<typeof __vize_css_module_{index}, 'useCssModule'> & {{ useCssModule: __VizeUseCssModule }};\n"
+                );
+            } else {
+                ts.push_str("__VizeUseCssModule;\n");
+            }
         }
     }
 }

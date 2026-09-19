@@ -22,6 +22,8 @@ pub enum VizeSemanticLinkKind {
     /// A generated component binding and one mapped prop access that TypeScript
     /// can use as a project-wide navigation entry point.
     VueComponentPropNavigation,
+    /// An authored Vue import and its SFC-specific setup signature.
+    VueSetupImportSpecialization,
 }
 
 impl VizeSemanticLink {

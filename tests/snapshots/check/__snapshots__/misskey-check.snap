@@ -94,19 +94,7 @@
     },
     {
       "file": "src/accounts.ts",
-      "diagnostics": [
-        "error:171:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:203:4 [TS2322] Type '(res: Misskey.entities.SigninFlowResponse & { finished: true; }) => Promise<void>' is not assignable to type 'undefined'.",
-        "error:207:4 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:263:7 [TS2322] Type '(res: Misskey.entities.SigninFlowResponse & { finished: true; }) => Promise<void>' is not assignable to type 'undefined'.",
-        "error:274:7 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:347:4 [TS2322] Type '(res: Misskey.entities.SigninFlowResponse & { finished: true; }) => Promise<void>' is not assignable to type 'undefined'.",
-        "error:352:4 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:355:4 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:365:4 [TS2322] Type '(res: Misskey.entities.SignupResponse) => Promise<void>' is not assignable to type 'undefined'.",
-        "error:371:4 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:374:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/aiscript/api.ts",
@@ -391,9 +379,7 @@
     },
     {
       "file": "src/components/MkEmojiPicker.vue",
-      "diagnostics": [
-        "error:428:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkEmojiPickerDialog.vue",
@@ -429,9 +415,7 @@
     },
     {
       "file": "src/components/MkFolder.vue",
-      "diagnostics": [
-        "error:178:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkFolderPage.vue",
@@ -567,9 +551,7 @@
     },
     {
       "file": "src/components/MkLink.vue",
-      "diagnostics": [
-        "error:49:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkMarqueeText.vue",
@@ -634,19 +616,11 @@
     },
     {
       "file": "src/components/MkNote.vue",
-      "diagnostics": [
-        "error:442:4 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:465:5 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:526:5 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkNoteDetailed.vue",
-      "diagnostics": [
-        "error:423:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:446:4 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:500:5 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkNoteDraftsDialog.vue",
@@ -766,24 +740,11 @@
     },
     {
       "file": "src/components/MkPostForm.vue",
-      "diagnostics": [
-        "error:539:3 [TS2322] Type '(v: any) => void' is not assignable to type 'undefined'.",
-        "error:539:21 [TS7006] Parameter 'v' implicitly has an 'any' type.",
-        "error:545:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:963:5 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:1260:4 [TS2322] Type '(draft: Misskey.entities.NoteDraft) => Promise<void>' is not assignable to type 'undefined'.",
-        "error:1304:4 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:1307:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkPostFormAttaches.vue",
-      "diagnostics": [
-        "error:139:3 [TS2322] Type '(caption: any) => void' is not assignable to type 'undefined'.",
-        "error:139:9 [TS7006] Parameter 'caption' implicitly has an 'any' type.",
-        "error:148:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:181:6 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkPostFormDialog.vue",
@@ -815,10 +776,7 @@
     },
     {
       "file": "src/components/MkRange.vue",
-      "diagnostics": [
-        "error:172:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:196:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkReactionEffect.vue",
@@ -826,9 +784,7 @@
     },
     {
       "file": "src/components/MkReactionIcon.vue",
-      "diagnostics": [
-        "error:33:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkReactionTooltip.vue",
@@ -840,11 +796,7 @@
     },
     {
       "file": "src/components/MkReactionsViewer.reaction.vue",
-      "diagnostics": [
-        "error:169:6 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:215:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:247:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkReactionsViewer.vue",
@@ -909,9 +861,7 @@
     },
     {
       "file": "src/components/MkSignin.password.vue",
-      "diagnostics": [
-        "error:100:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkSignin.totp.vue",
@@ -995,11 +945,7 @@
     },
     {
       "file": "src/components/MkSystemWebhookEditor.impl.ts",
-      "diagnostics": [
-        "error:33:5 [TS2322] Type '(ev: MkSystemWebhookResult) => void' is not assignable to type 'undefined'.",
-        "error:36:5 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:39:5 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkSystemWebhookEditor.vue",
@@ -1091,9 +1037,7 @@
     },
     {
       "file": "src/components/MkUrlPreview.vue",
-      "diagnostics": [
-        "error:199:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkUrlPreviewPopup.vue",
@@ -1168,10 +1112,7 @@
     },
     {
       "file": "src/components/MkVisitorDashboard.vue",
-      "diagnostics": [
-        "error:85:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:93:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkWaitingDialog.vue",
@@ -1262,10 +1203,7 @@
     },
     {
       "file": "src/components/global/MkCustomEmoji.vue",
-      "diagnostics": [
-        "error:146:7 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:191:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/global/MkEllipsis.vue",
@@ -1332,9 +1270,7 @@
     },
     {
       "file": "src/components/global/MkUrl.vue",
-      "diagnostics": [
-        "error:67:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/global/MkUserName.vue",
@@ -1388,9 +1324,7 @@
     },
     {
       "file": "src/components/grid/MkDataCell.vue",
-      "diagnostics": [
-        "error:306:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/grid/MkDataRow.vue",
@@ -1722,10 +1656,7 @@
     },
     {
       "file": "src/pages/admin-user.vue",
-      "diagnostics": [
-        "error:502:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:511:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin/RolesEditorFormula.vue",
@@ -1741,11 +1672,7 @@
     },
     {
       "file": "src/pages/admin/abuse-report/notification-recipient.vue",
-      "diagnostics": [
-        "error:122:5 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:125:5 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:128:5 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin/abuses.vue",
@@ -1781,13 +1708,7 @@
     },
     {
       "file": "src/pages/admin/custom-emojis-manager.local.list.vue",
-      "diagnostics": [
-        "error:538:4 [TS2322] Type '(query: EmojiSearchQuery) => void' is not assignable to type 'undefined'.",
-        "error:541:4 [TS2322] Type '(orders: SortOrder<GridSortOrderKey>[]) => void' is not assignable to type 'undefined'.",
-        "error:544:4 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:547:4 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:595:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin/custom-emojis-manager.logs.vue",
@@ -1799,10 +1720,7 @@
     },
     {
       "file": "src/pages/admin/custom-emojis-manager.remote.vue",
-      "diagnostics": [
-        "error:227:9 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:230:9 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin/custom-emojis-manager2.vue",
@@ -1964,9 +1882,7 @@
     },
     {
       "file": "src/pages/admin/settings.vue",
-      "diagnostics": [
-        "error:523:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin/system-webhook.item.vue",
@@ -2014,14 +1930,7 @@
     },
     {
       "file": "src/pages/avatar-decorations.vue",
-      "diagnostics": [
-        "error:51:3 [TS2322] Type '(result: any) => void' is not assignable to type 'undefined'.",
-        "error:51:9 [TS7006] Parameter 'result' implicitly has an 'any' type.",
-        "error:56:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:64:3 [TS2322] Type '(result: any) => void' is not assignable to type 'undefined'.",
-        "error:64:9 [TS7006] Parameter 'result' implicitly has an 'any' type.",
-        "error:75:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/channel-editor.vue",
@@ -2037,9 +1946,7 @@
     },
     {
       "file": "src/pages/chat/XMessage.vue",
-      "diagnostics": [
-        "error:190:6 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/chat/XRoom.vue",
@@ -2103,16 +2010,7 @@
     },
     {
       "file": "src/pages/custom-emojis-manager.vue",
-      "diagnostics": [
-        "error:133:3 [TS2322] Type '(result: any) => void' is not assignable to type 'undefined'.",
-        "error:133:9 [TS7006] Parameter 'result' implicitly has an 'any' type.",
-        "error:142:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:150:3 [TS2322] Type '(result: any) => void' is not assignable to type 'undefined'.",
-        "error:150:9 [TS7006] Parameter 'result' implicitly has an 'any' type.",
-        "error:160:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:174:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:177:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/debug.vue",
@@ -2192,10 +2090,7 @@
     },
     {
       "file": "src/pages/emojis.emoji.vue",
-      "diagnostics": [
-        "error:50:5 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:66:6 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/explore.featured.vue",
@@ -2227,9 +2122,7 @@
     },
     {
       "file": "src/pages/flash/flash.vue",
-      "diagnostics": [
-        "error:272:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/follow-requests.vue",
@@ -2251,9 +2144,7 @@
     },
     {
       "file": "src/pages/gallery/post.vue",
-      "diagnostics": [
-        "error:174:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/games.vue",
@@ -2367,9 +2258,7 @@
     },
     {
       "file": "src/pages/page.vue",
-      "diagnostics": [
-        "error:257:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/pages.vue",
@@ -2432,9 +2321,7 @@
     },
     {
       "file": "src/pages/reset-password.vue",
-      "diagnostics": [
-        "error:48:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/reversi/game.board.vue",
@@ -2493,9 +2380,7 @@
     },
     {
       "file": "src/pages/settings/2fa.vue",
-      "diagnostics": [
-        "error:124:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/settings/account-data.vue",
@@ -2519,22 +2404,11 @@
     },
     {
       "file": "src/pages/settings/avatar-decoration.vue",
-      "diagnostics": [
-        "error:86:3 [TS2322] Type '(payload: any) => Promise<void>' is not assignable to type 'undefined'.",
-        "error:86:20 [TS7006] Parameter 'payload' implicitly has an 'any' type.",
-        "error:101:3 [TS2322] Type '(payload: any) => Promise<void>' is not assignable to type 'undefined'.",
-        "error:101:20 [TS7006] Parameter 'payload' implicitly has an 'any' type.",
-        "error:117:3 [TS2322] Type '() => Promise<void>' is not assignable to type 'undefined'.",
-        "error:125:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/settings/connect.vue",
-      "diagnostics": [
-        "error:86:3 [TS2322] Type '(result: any) => Promise<void>' is not assignable to type 'undefined'.",
-        "error:86:15 [TS7006] Parameter 'result' implicitly has an 'any' type.",
-        "error:100:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/settings/custom-css.vue",
@@ -2550,30 +2424,15 @@
     },
     {
       "file": "src/pages/settings/drive.ImageFrameItem.vue",
-      "diagnostics": [
-        "error:48:3 [TS2322] Type '(preset: any) => void' is not assignable to type 'undefined'.",
-        "error:48:14 [TS7006] Parameter 'preset' implicitly has an 'any' type.",
-        "error:51:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/settings/drive.WatermarkItem.vue",
-      "diagnostics": [
-        "error:48:3 [TS2322] Type '(preset: any) => void' is not assignable to type 'undefined'.",
-        "error:48:14 [TS7006] Parameter 'preset' implicitly has an 'any' type.",
-        "error:51:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/settings/drive.vue",
-      "diagnostics": [
-        "error:319:3 [TS2322] Type '(preset: any) => void' is not assignable to type 'undefined'.",
-        "error:319:14 [TS7006] Parameter 'preset' implicitly has an 'any' type.",
-        "error:322:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:378:3 [TS2322] Type '(preset: any) => void' is not assignable to type 'undefined'.",
-        "error:378:14 [TS7006] Parameter 'preset' implicitly has an 'any' type.",
-        "error:381:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/settings/email.vue",
@@ -3023,9 +2882,7 @@
     },
     {
       "file": "src/ui/_common_/common.ts",
-      "diagnostics": [
-        "error:161:6 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/ui/_common_/common.vue",
@@ -3261,9 +3118,7 @@
     },
     {
       "file": "src/utility/autocomplete.ts",
-      "diagnostics": [
-        "error:234:12 [TS7006] Parameter 'res' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/utility/cache.ts",
@@ -3367,12 +3222,7 @@
     },
     {
       "file": "src/utility/emoji-picker.ts",
-      "diagnostics": [
-        "error:43:4 [TS2322] Type '(emoji: any) => void' is not assignable to type 'undefined'.",
-        "error:43:10 [TS7006] Parameter 'emoji' implicitly has an 'any' type.",
-        "error:46:4 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:49:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/utility/extract-mentions.ts",
@@ -3426,26 +3276,15 @@
     },
     {
       "file": "src/utility/get-drive-file-menu.ts",
-      "diagnostics": [
-        "error:36:3 [TS2322] Type '(caption: any) => void' is not assignable to type 'undefined'.",
-        "error:36:9 [TS7006] Parameter 'caption' implicitly has an 'any' type.",
-        "error:42:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/utility/get-embed-code.ts",
-      "diagnostics": [
-        "error:84:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/utility/get-note-menu.ts",
-      "diagnostics": [
-        "error:151:5 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:613:7 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:652:7 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:704:9 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/utility/get-note-summary.ts",
@@ -3457,9 +3296,7 @@
     },
     {
       "file": "src/utility/get-user-menu.ts",
-      "diagnostics": [
-        "error:101:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/utility/haptic.ts",
@@ -3642,10 +3479,7 @@
     },
     {
       "file": "src/utility/please-login.ts",
-      "diagnostics": [
-        "error:66:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:71:3 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/utility/popout.ts",
@@ -3665,12 +3499,7 @@
     },
     {
       "file": "src/utility/reaction-picker.ts",
-      "diagnostics": [
-        "error:39:4 [TS2322] Type '(reaction: any) => void' is not assignable to type 'undefined'.",
-        "error:39:10 [TS7006] Parameter 'reaction' implicitly has an 'any' type.",
-        "error:42:4 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:45:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/utility/reload-suggest.ts",
@@ -3722,10 +3551,7 @@
     },
     {
       "file": "src/utility/tour.ts",
-      "diagnostics": [
-        "error:36:4 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:44:4 [TS2322] Type '() => void' is not assignable to type 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/utility/unison-reload.ts",
@@ -4013,7 +3839,7 @@
       ]
     }
   ],
-  "errorCount": 679,
+  "errorCount": 552,
   "warningCount": 0,
   "fileCount": 794
 }

@@ -2,11 +2,23 @@
 //! hoisted type/interface declarations lifted to module scope.
 
 use vize_carton::{String, append, cstr};
-use vize_croquis::Croquis;
+use vize_croquis::{Croquis, ScopeData, ScopeKind};
 
 use crate::virtual_ts::props::{
     add_generic_defaults, extract_generic_names, strip_const_modifiers,
 };
+
+pub(super) fn setup_signature(summary: &Croquis) -> (Option<&str>, bool) {
+    summary
+        .scopes
+        .iter()
+        .find(|scope| matches!(scope.kind, ScopeKind::ScriptSetup))
+        .and_then(|scope| match scope.data() {
+            ScopeData::ScriptSetup(data) => Some((data.generic.as_deref(), data.is_async)),
+            _ => None,
+        })
+        .unwrap_or((None, false))
+}
 
 pub(super) struct HoistedGenericAliases {
     generic_decl: String,

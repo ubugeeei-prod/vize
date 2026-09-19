@@ -10,6 +10,7 @@ use crate::virtual_ts::{CSS_MODULE_GLOBAL_MARKER, TemplateGlobal, VirtualTsOptio
 pub(crate) fn virtual_ts_options_for_descriptor(
     base: &VirtualTsOptions,
     descriptor: &SfcDescriptor,
+    strict: bool,
 ) -> VirtualTsOptions {
     // Per-file generation never re-emits the global auto-import stubs inline:
     // they are written once to a shared ambient `.d.ts`.
@@ -22,7 +23,14 @@ pub(crate) fn virtual_ts_options_for_descriptor(
         if let Some(classes) = classes {
             template_globals.push(TemplateGlobal {
                 name: module_name,
-                type_annotation: css_module_type_annotation(&classes),
+                type_annotation: if strict {
+                    css_module_type_annotation(&classes)
+                } else {
+                    vize_carton::cstr!(
+                        "Record<string, string> & {}",
+                        css_module_type_annotation(&classes)
+                    )
+                },
                 default_value: CSS_MODULE_GLOBAL_MARKER.into(),
             });
         } else {
@@ -184,7 +192,6 @@ fn is_css_class_continue(byte: u8) -> bool {
 fn css_module_type_annotation(classes: &BTreeSet<CompactString>) -> CompactString {
     let mut annotation = CompactString::from("{ ");
     for class_name in classes {
-        annotation.push_str("readonly ");
         annotation.push_str(
             serde_json::to_string(class_name.as_str())
                 .expect("CSS class name should serialize")
@@ -224,7 +231,7 @@ mod tests {
         );
         assert_eq!(
             css_module_type_annotation(&classes).as_str(),
-            r#"{ readonly "nested-item": string; readonly "root": string; readonly "row": string; }"#
+            r#"{ "nested-item": string; "root": string; "row": string; }"#
         );
     }
 
