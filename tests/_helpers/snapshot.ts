@@ -4,19 +4,23 @@ import * as path from "node:path";
 /**
  * Simple CLI snapshot testing.
  * Compares actual output against a stored snapshot file.
- * If the snapshot doesn't exist, creates it (first run).
- * If UPDATE_SNAPSHOTS=1, overwrites existing snapshots.
+ * UPDATE_SNAPSHOTS=1 explicitly creates or updates a baseline.
+ * Missing baselines fail verification, including the first CI run.
  */
 export function assertSnapshot(snapshotDir: string, name: string, actual: string): void {
   fs.mkdirSync(snapshotDir, { recursive: true });
   const snapshotPath = path.join(snapshotDir, `${name}.snap`);
 
-  if (process.env.UPDATE_SNAPSHOTS || !fs.existsSync(snapshotPath)) {
+  if (process.env.UPDATE_SNAPSHOTS === "1") {
     fs.writeFileSync(snapshotPath, actual);
-    console.log(
-      `Snapshot ${process.env.UPDATE_SNAPSHOTS ? "updated" : "created"}: ${snapshotPath}`,
-    );
+    console.log(`Snapshot updated: ${snapshotPath}`);
     return;
+  }
+
+  if (!fs.existsSync(snapshotPath)) {
+    throw new Error(
+      `Missing snapshot baseline: ${snapshotPath}\nRun with UPDATE_SNAPSHOTS=1 to create it for review.`,
+    );
   }
 
   const expected = fs.readFileSync(snapshotPath, "utf-8");

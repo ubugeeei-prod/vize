@@ -28,7 +28,8 @@
 
 #![allow(clippy::disallowed_macros)]
 
-use memchr::memmem;
+use oxc_ast::ast::{ImportDeclarationSpecifier, Program, Statement};
+use oxc_span::GetSpan;
 
 use vize_croquis::COMPILER_MACRO_NAMES;
 
@@ -50,55 +51,41 @@ impl ScriptRule for NoImportCompilerMacros {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
-        // Fast bailout: check if there's any import from vue
-        if memmem::find(bytes, b"from 'vue'").is_none()
-            && memmem::find(bytes, b"from \"vue\"").is_none()
-        {
-            return;
-        }
-
-        // Find import statements
-        let import_finder = memmem::Finder::new(b"import ");
-        let mut search_start = 0;
-
-        while let Some(pos) = import_finder.find(&bytes[search_start..]) {
-            let abs_pos = search_start + pos;
-            search_start = abs_pos + 7;
-
-            // Find the end of this import statement
-            let rest = &source[abs_pos..];
-            let import_end = rest.find('\n').unwrap_or(rest.len());
-            let import_line = &rest[..import_end];
-
-            // Check if this is an import from 'vue'
-            if !import_line.contains("from 'vue'") && !import_line.contains("from \"vue\"") {
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        for statement in &program.body {
+            let Statement::ImportDeclaration(import) = statement else {
+                continue;
+            };
+            if import.source.value != "vue" {
                 continue;
             }
-
-            // Check for compiler macros in this import
-            for macro_name in COMPILER_MACRO_NAMES {
-                if import_line.contains(macro_name) {
-                    // Find the position of the macro name in the import
-                    if let Some(macro_pos) = import_line.find(macro_name) {
-                        result.add_diagnostic(
-                            LintDiagnostic::error(
-                                META.name,
-                                format!(
-                                    "Do not import '{}' - compiler macros are automatically available in <script setup>",
-                                    macro_name
-                                ),
-                                (offset + abs_pos + macro_pos) as u32,
-                                (offset + abs_pos + macro_pos + macro_name.len()) as u32,
-                            )
-                            .with_help(
-                                "Remove the macro from the import statement. Compiler macros are auto-imported.",
-                            ),
-                        );
-                    }
+            for specifier in import.specifiers.iter().flatten() {
+                let ImportDeclarationSpecifier::ImportSpecifier(specifier) = specifier else {
+                    continue;
+                };
+                let name = specifier.imported.name();
+                if !COMPILER_MACRO_NAMES.contains(&name.as_str()) {
+                    continue;
                 }
+                let span = specifier.imported.span();
+                result.add_diagnostic(
+                    LintDiagnostic::error(
+                        META.name,
+                        format!("Do not import '{}' - compiler macros are automatically available in <script setup>", name),
+                        offset as u32 + span.start,
+                        offset as u32 + span.end,
+                    ).with_help("Remove the macro from the import statement. Compiler macros are auto-imported."),
+                );
             }
         }
     }
@@ -156,5 +143,35 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint("import { defineProps } from 'other-package'", 0);
         assert_eq!(result.error_count, 0);
+    }
+    #[test]
+    fn imports_are_parsed_instead_of_matching_comments_strings_or_aliases() {
+        let linter = create_linter();
+        for source in [
+            "// import { defineProps } from 'vue'",
+            "const text = \"import { defineProps } from 'vue'\";",
+            "import { computed as defineProps } from 'vue';",
+            "import { definePropsHelper } from 'vue';",
+            "import { computed /* defineProps */ } from 'vue';",
+            "import { defineProps } from 'elsewhere'; import { computed } from 'vue';",
+        ] {
+            assert_eq!(linter.lint(source, 0).error_count, 0, "{source}");
+        }
+        let source = "const emoji = '😀';\r\nimport {\r\n  computed,\r\n  defineProps as props,\r\n  defineEmits\r\n} from 'vue';";
+        let result = linter.lint(source, 7);
+        assert_eq!(result.error_count, 2);
+        let spans: Vec<_> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.start, diagnostic.end))
+            .collect();
+        let expected: Vec<_> = ["defineProps", "defineEmits"]
+            .iter()
+            .map(|name| {
+                let start = source.find(name).unwrap() as u32 + 7;
+                (start, start + name.len() as u32)
+            })
+            .collect();
+        assert_eq!(spans, expected);
     }
 }

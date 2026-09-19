@@ -28,7 +28,8 @@ test("CI validates Zed with the pinned official extension CLI before the real-se
   const install = action.slice(installAt, validateAt);
   assert.match(install, /ZED_EXTENSION_CLI_SHA: [0-9a-f]{40}/);
   assert.match(install, /ZED_EXTENSION_CLI_SHA256: [0-9a-f]{64}/);
-  assert.match(install, /sha256sum --check --strict/);
+  assert.match(install, /bash \.github\/actions\/vscode-host-smoke\/download-artifact\.sh/);
+  assert.match(install, /"\$\{ZED_EXTENSION_CLI_SHA256\}"/);
   assert.match(install, /x86_64-unknown-linux-gnu\/zed-extension/);
 
   const validate = action.slice(validateAt, scenarioAt);

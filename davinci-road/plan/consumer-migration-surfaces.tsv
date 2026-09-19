@@ -1480,7 +1480,8 @@ linter	Linter	source	crates/vize_patina/src/rules/script/no_export_in_script_set
 linter	Linter	source	crates/vize_patina/src/rules/script/no_get_current_instance.rs	28	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_get_current_instance.rs	28	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_get_current_instance.rs	28	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/script/no_import_compiler_macros.rs	33	croquis	Croquis analysis	old	vize_croquis	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/script/no_import_compiler_macros.rs	31	croquis	Croquis analysis	old	vize_croquis	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/script/no_import_compiler_macros.rs	31	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_internal_imports.rs	26	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_multiple_slot_args.rs	54	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_multiple_slot_args.rs	54	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
@@ -1566,8 +1567,10 @@ linter	Linter	source	crates/vize_patina/src/rules/script/prefer_use_template_ref
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_use_template_ref/template_refs.rs	19	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/emits_source.rs	10	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/emits_source.rs	10	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs	14	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs	14	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs	16	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs	16	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs	3	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default/typed.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs	44	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs	44	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/props_emits/no_unused_emit_declarations.rs	55	s0	S0	stage	vize_s0	preferred	1

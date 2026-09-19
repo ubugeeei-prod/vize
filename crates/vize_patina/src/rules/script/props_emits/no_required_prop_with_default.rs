@@ -9,7 +9,9 @@
 //! Covers the Options API object form
 //! (`props: { x: { required: true, default: ... } }`), including
 //! `defineComponent({...})` and same-file identifier-bound options/props
-//! objects. `required: false` and a non-literal `required` value are ignored.
+//! objects, plus required fields in inline or locally declared `defineProps<T>`
+//! types with destructure defaults or `withDefaults`. Optional fields, imported
+//! types, `required: false`, and non-literal `required` values are ignored.
 
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
@@ -21,6 +23,8 @@ use vize_s0::{CompactString, FxHashMap};
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
+
+mod typed;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-required-prop-with-default",
@@ -48,6 +52,7 @@ impl ScriptRule for NoRequiredPropWithDefault {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
+        typed::check(program, offset, result);
         let object_bindings = collect_object_bindings(program);
         let Some(options) = resolve_options_object(program, &object_bindings) else {
             return;

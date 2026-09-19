@@ -192,8 +192,20 @@
   },
   {
     "file": "app/components/cta/VFSpCtaMobileButton.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-import-compiler-macros",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-import-compiler-macros] Do not import 'defineProps' - compiler macros are automatically available in <script setup>",
+        "line": 2,
+        "column": 20,
+        "endLine": 2,
+        "endColumn": 31,
+        "help": "Remove the macro from the import statement. Compiler macros are auto-imported."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -276,9 +288,21 @@
   },
   {
     "file": "app/components/menu/VFMenuItem.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "line": 18,
+        "column": 5,
+        "endLine": 18,
+        "endColumn": 20,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/menu/VFSpMenu.vue",
@@ -661,17 +685,6 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
-        "line": 115,
-        "column": 11,
-        "endLine": 115,
-        "endColumn": 74,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -802,21 +815,10 @@
         "endLine": 202,
         "endColumn": 30,
         "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
-      },
-      {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
-        "line": 214,
-        "column": 9,
-        "endLine": 214,
-        "endColumn": 79,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
       }
     ],
     "errorCount": 0,
-    "warningCount": 15
+    "warningCount": 13
   },
   {
     "file": "app/pages/speaker/_components/SpeakerCard.vue",
@@ -866,21 +868,10 @@
         "endLine": 136,
         "endColumn": 50,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
-        "line": 143,
-        "column": 13,
-        "endLine": 143,
-        "endColumn": 73,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/pages/sponsors/_components/SponsorTag.vue",
@@ -1024,17 +1015,6 @@
     "file": "app/pages/timetable/_components/TimetableCard.vue",
     "messages": [
       {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 62,
-        "column": 13,
-        "endLine": 66,
-        "endColumn": 15,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1069,22 +1049,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 3
   },
   {
     "file": "app/pages/timetable/_components/TimetableCell.vue",
     "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 66,
-        "column": 11,
-        "endLine": 70,
-        "endColumn": 13,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      },
       {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -1120,7 +1089,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 3
   },
   {
     "file": "app/pages/timetable/_components/TimetableHead.vue",

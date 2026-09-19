@@ -48,9 +48,9 @@ runs:
         ZED_EXTENSION_CLI_SHA256: a6fca5ef11ff23f0ef8b03bd2453270591c9fc6c03700c3c92017e5082ada757
       run: |
         set -euo pipefail
-        curl -fsSL -o "${RUNNER_TEMP}/zed-extension" \
-          "https://zed-extension-cli.nyc3.digitaloceanspaces.com/${ZED_EXTENSION_CLI_SHA}/x86_64-unknown-linux-gnu/zed-extension"
-        echo "${ZED_EXTENSION_CLI_SHA256}  ${RUNNER_TEMP}/zed-extension" | sha256sum --check --strict
+        bash .github/actions/vscode-host-smoke/download-artifact.sh \
+          "https://zed-extension-cli.nyc3.digitaloceanspaces.com/${ZED_EXTENSION_CLI_SHA}/x86_64-unknown-linux-gnu/zed-extension" \
+          "${RUNNER_TEMP}/zed-extension" "${ZED_EXTENSION_CLI_SHA256}"
         chmod +x "${RUNNER_TEMP}/zed-extension"
 
     - name: Validate the Zed extension
@@ -73,9 +73,9 @@ runs:
       run: |
         set -euo pipefail
         archive="${RUNNER_TEMP}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz"
-        curl -fsSL -o "${archive}" \
-          "https://github.com/helix-editor/helix/releases/download/${HELIX_VERSION}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz"
-        echo "${HELIX_SHA256}  ${archive}" | sha256sum --check --strict
+        bash .github/actions/vscode-host-smoke/download-artifact.sh \
+          "https://github.com/helix-editor/helix/releases/download/${HELIX_VERSION}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz" \
+          "${archive}" "${HELIX_SHA256}"
         mkdir -p "${RUNNER_TEMP}/helix"
         tar -xJf "${archive}" -C "${RUNNER_TEMP}/helix" --strip-components=1
         "${RUNNER_TEMP}/helix/hx" --version
@@ -114,10 +114,10 @@ runs:
         NVIM_VERSION: v0.11.4
       run: |
         set -euo pipefail
-        curl -fsSL -o /tmp/nvim.tar.gz \
-          "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz"
-        echo "${NVIM_SHA256}  /tmp/nvim.tar.gz" | sha256sum --check --strict
-        sudo tar -C /opt -xzf /tmp/nvim.tar.gz
+        bash .github/actions/vscode-host-smoke/download-artifact.sh \
+          "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
+          "${RUNNER_TEMP}/nvim.tar.gz" "${NVIM_SHA256}"
+        sudo tar -C /opt -xzf "${RUNNER_TEMP}/nvim.tar.gz"
         sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
         nvim --version | head -1
 
@@ -152,6 +152,12 @@ runs:
           vize-ci-apt-retry sudo apt-get update
           vize-ci-apt-retry sudo apt-get install -y emacs-nox
         fi
+
+    - name: Download pinned VS Code with a total time budget
+      shell: bash
+      env:
+        VIZE_TEST_VSCODE_VERSION: "1.107.1"
+      run: timeout --signal=TERM --kill-after=10s 300s vp run --workspace-root test:vscode-extension:download
 
     - name: Run VS Code host lifecycle and delayed-response regressions
       shell: bash

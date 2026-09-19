@@ -77,3 +77,50 @@ export default {
     assert_eq!(result.error_count, 1);
     insta::assert_debug_snapshot!(result.diagnostics);
 }
+
+#[test]
+fn typed_defaults_cover_destructuring_aliases_and_with_defaults() {
+    for source in [
+        "const { isOpened = false } = defineProps<{ isOpened: boolean }>();",
+        "const { label: renamed = 'x' } = defineProps<{ label: string }>();",
+        "type Props = { value: number; optional?: string }; const props = withDefaults(defineProps<Props>(), { value: 1, optional: 'ok' });",
+        "export type Props = { value: number }; const { value = 1 } = defineProps<Props>();",
+        "export interface Props { value: number }; const { value = 1 } = defineProps<Props>();",
+        "interface Props { value: number }; const { value = 1 } = defineProps<Props>();",
+        "type Base = { value: number }; type Props = Base & { extra?: string }; const { value = 1 } = defineProps<Props>();",
+    ] {
+        assert_eq!(errors(source), 1, "{source}");
+    }
+}
+
+#[test]
+fn optional_unknown_and_shadowed_typed_defaults_are_not_reported() {
+    for source in [
+        "const { value = 1 } = defineProps<{ value?: number }>();",
+        "const { value } = defineProps<{ value: number }>();",
+        "const props = withDefaults(defineProps<{ value?: number }>(), { value: 1 });",
+        "import type { Props } from './props'; const { value = 1 } = defineProps<Props>();",
+        "type Props = Props; const { value = 1 } = defineProps<Props>();",
+        "function defineProps<T>() { return {} as T; } const { value = 1 } = defineProps<{ value: number }>();",
+        "import { defineProps } from 'other'; const { value = 1 } = defineProps<{ value: number }>();",
+        "const { defineProps } = factory(); const { value = 1 } = defineProps<{ value: number }>();",
+        "export function defineProps<T>() { return {} as T; } const { value = 1 } = defineProps<{ value: number }>();",
+        "function inner(defineProps: any) { const { value = 1 } = defineProps<{ value: number }>(); }",
+    ] {
+        assert_eq!(errors(source), 0, "{source}");
+    }
+}
+
+#[test]
+fn typed_default_diagnostics_keep_utf8_offsets_across_crlf() {
+    let source = "const emoji = '😀';\r\nconst { café = 1 } = defineProps<{ café: number }>();";
+    let mut linter = ScriptLinter::new();
+    linter.add_rule(Box::new(NoRequiredPropWithDefault));
+    let result = linter.lint(source, 23);
+    assert_eq!(result.error_count, 1);
+    let start = source.find("café").unwrap() as u32 + 23;
+    assert_eq!(
+        (result.diagnostics[0].start, result.diagnostics[0].end),
+        (start, start + "café".len() as u32)
+    );
+}

@@ -26,15 +26,15 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 ## File accounting
 
-- `.rs` files under `crates/vize_patina/src/rules/**`: **380**
+- `.rs` files under `crates/vize_patina/src/rules/**`: **381**
 - rule-defining files (exactly one `static META` each): **248** → **248 rules**
-- non-rule files: **132** — 28 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 4 `*_tests.rs` companions, 100 helper/data files (rule submodules, shared tables, private utilities)
+- non-rule files: **133** — 28 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 4 `*_tests.rs` companions, 101 helper/data files (rule submodules, shared tables, private utilities)
 
 ## Summary
 
 - **total rules: 248**
 - by family: template-family 161, script 71, css 10, musea 6
-- by surface (a rule can have several): `css-text` 10, `markup-facade` 40, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 155, `type-aware-corsa` 5
+- by surface (a rule can have several): `css-text` 10, `markup-facade` 40, `musea-blocks` 6, `script-oxc` 66, `script-source` 5, `sfc-source` 9, `template-ast` 155, `type-aware-corsa` 5
 - path membership: SFC `lint_sfc` 242 · JSX `lint_jsx` 150 · **SFC∩JSX 150** · SFC-only 92 · JSX-only 0 · neither 6 (6 musea + 0 unregistered)
 - JSX lanes: `fallback` 110, `ir` 28, `ir-lowered` 12, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (40 = 40 `markup-facade` rules)
 - classification: neutral-core-candidate **92** · vue-dialect-bound **133** · container-bound **23** (0 overridden)
@@ -137,7 +137,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `script/no-duplicate-attr-inheritance`          | script          | `script/no_duplicate_attr_inheritance.rs`              | script-oxc, template-ast       | yes (script-blocks)              | no                          | —                                                                                                   | vue-dialect-bound      |
 | `script/no-export-in-script-setup`              | script          | `script/no_export_in_script_setup.rs`                  | script-oxc                     | yes (script-blocks)              | no                          | —                                                                                                   | vue-dialect-bound      |
 | `script/no-get-current-instance`                | script          | `script/no_get_current_instance.rs`                    | script-oxc                     | yes (script-blocks)              | no                          | —                                                                                                   | neutral-core-candidate |
-| `script/no-import-compiler-macros`              | script          | `script/no_import_compiler_macros.rs`                  | script-source                  | yes (script-blocks)              | no                          | direct 1: `COMPILER_MACRO_NAMES`                                                                    | vue-dialect-bound      |
+| `script/no-import-compiler-macros`              | script          | `script/no_import_compiler_macros.rs`                  | script-oxc                     | yes (script-blocks)              | no                          | direct 1: `COMPILER_MACRO_NAMES`                                                                    | vue-dialect-bound      |
 | `script/no-internal-imports`                    | script          | `script/no_internal_imports.rs`                        | script-oxc                     | yes (script-blocks)              | no                          | —                                                                                                   | neutral-core-candidate |
 | `script/no-multiple-slot-args`                  | script          | `script/no_multiple_slot_args.rs`                      | script-oxc                     | yes (script-blocks)              | no                          | —                                                                                                   | neutral-core-candidate |
 | `script/no-next-tick`                           | script          | `script/no_next_tick.rs`                               | script-oxc                     | yes (script-blocks)              | no                          | —                                                                                                   | vue-dialect-bound      |

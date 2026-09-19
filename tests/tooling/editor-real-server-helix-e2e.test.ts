@@ -28,7 +28,8 @@ test("CI checks the package with a pinned official Helix before the server scena
   const install = action.slice(installAt, healthAt);
   assert.match(install, /HELIX_VERSION: \d+\.\d+\.\d+/);
   assert.match(install, /HELIX_SHA256: [0-9a-f]{64}/);
-  assert.match(install, /sha256sum --check --strict/);
+  assert.match(install, /bash \.github\/actions\/vscode-host-smoke\/download-artifact\.sh/);
+  assert.match(install, /"\$\{HELIX_SHA256\}"/);
   assert.match(install, /helix-\$\{HELIX_VERSION\}-x86_64-linux\.tar\.xz/);
 
   const health = action.slice(healthAt, scenarioAt);

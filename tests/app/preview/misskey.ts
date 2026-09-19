@@ -1,9 +1,8 @@
 import { describe, it, before } from "node:test";
-import { execSync } from "node:child_process";
+import { runAppBuild } from "../../_helpers/app-build.ts";
 import { misskeyApp } from "../../_helpers/apps.ts";
 
 const app = misskeyApp;
-const VITE_PLUS_BIN = `${process.env.HOME ?? ""}/.vite-plus/bin`;
 
 describe(`${app.name} build`, () => {
   before(() => {
@@ -15,21 +14,7 @@ describe(`${app.name} build`, () => {
   });
 
   it("build succeeds", () => {
-    const build = app.build!;
-    const cmd = `${build.command} ${build.args.join(" ")}`;
-    console.log(`Running: ${cmd} (cwd: ${app.cwd})`);
-
-    execSync(cmd, {
-      cwd: app.cwd,
-      env: {
-        ...process.env,
-        PATH: `${VITE_PLUS_BIN}:${process.env.PATH}`,
-        NODE_ENV: "production",
-        ...app.env,
-      },
-      stdio: "inherit",
-      timeout: build.timeout,
-    });
+    runAppBuild(app);
 
     console.log("Build completed successfully");
   });

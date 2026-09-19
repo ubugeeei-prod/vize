@@ -258,3 +258,15 @@ fn test_no_refs_no_reports() {
         0
     );
 }
+
+#[test]
+fn real_app_loop_shadow_does_not_hide_a_true_ref_operand() {
+    let source = "const options = ref([]);\nfor (let i = 10; i < 36; i++) { const value = i.toString(36) + i; options.value.push({ label: `Long Label: ${value}`, value }); }\nconst value = ref(['a']);\nconst broken = `value: ${value}`;";
+    let result = lint(source);
+    assert_eq!(result.error_count, 1);
+    let start = source.rfind("value}").unwrap() as u32;
+    assert_eq!(
+        (result.diagnostics[0].start, result.diagnostics[0].end),
+        (start, start + 5)
+    );
+}

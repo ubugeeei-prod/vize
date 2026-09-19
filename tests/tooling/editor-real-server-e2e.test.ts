@@ -120,7 +120,8 @@ test("CI runs all real-server editor scenarios from one built server binary", ()
   // The scenario needs a Neovim with a Lua LSP client, pinned and checksummed.
   assert.match(action, /NVIM_VERSION: v\d+\.\d+\.\d+/);
   assert.match(action, /NVIM_SHA256: [0-9a-f]{64}/);
-  assert.match(action, /sha256sum --check --strict/);
+  assert.match(action, /bash \.github\/actions\/vscode-host-smoke\/download-artifact\.sh/);
+  assert.match(action, /"\$\{NVIM_SHA256\}"/);
 });
 
 test("CI hydrates the exact pinned create-vue revision before the packaged host", () => {

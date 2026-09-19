@@ -123,6 +123,9 @@ export const testAndBenchmarkTasks = defineTasks({
       "node test/run-extension-host-real.mjs",
     ),
   ),
+  "test:vscode-extension:download": noCacheTask(
+    runInVscodeExtension("node test/download-vscode.mjs"),
+  ),
   "test:zed-extension:package": noCacheTask("vp run --workspace-root package:zed-extension"),
   "test:zed-extension:unit": task("cargo test --manifest-path editors/zed/Cargo.toml", {
     input: ["editors/zed/**"],

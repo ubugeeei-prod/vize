@@ -5315,20 +5315,8 @@
   },
   {
     "file": "components/select/demo/responsive.vue",
-    "messages": [
-      {
-        "ruleId": "script/no-ref-as-operand",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
-        "severity": 2,
-        "message": "[vize:script/no-ref-as-operand] 'value' is a ref and must be unwrapped with `.value` here.",
-        "line": 74,
-        "column": 27,
-        "endLine": 74,
-        "endColumn": 32,
-        "help": "A ref holds its value behind .value. Read it as <name>.value in this position; passing the ref itself (e.g. to watch) does not need .value."
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -8666,6 +8654,17 @@
     "file": "site/src/layouts/Menu.vue",
     "messages": [
       {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+        "line": 27,
+        "column": 17,
+        "endLine": 27,
+        "endColumn": 35,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -8699,7 +8698,7 @@
         "help": "Rename the component to avoid using reserved names"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 2,
     "warningCount": 2
   },
   {
