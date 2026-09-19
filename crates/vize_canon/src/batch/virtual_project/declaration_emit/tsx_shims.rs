@@ -3,6 +3,7 @@
 
 use std::path::Path;
 
+use crate::batch::import_rewriter::{ImportSourceMap, OffsetAdjustment, RewriteResult};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     CallExpression, ExportAllDeclaration, ExportNamedDeclaration, Expression, ImportDeclaration,
@@ -24,7 +25,7 @@ pub(super) fn rewrite_tsx_vue_shim_specifiers(
     source: &str,
     source_type: SourceType,
     source_dir: &Path,
-) -> Option<String> {
+) -> Option<RewriteResult> {
     if !source.contains(".vue.ts") {
         return None;
     }
@@ -49,10 +50,19 @@ pub(super) fn rewrite_tsx_vue_shim_specifiers(
 
     rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
     let mut output = source.to_compact_string();
+    let mut adjustments = Vec::new();
     for (start, end, new_path) in rewrites {
         output.replace_range(start as usize..end as usize, new_path.as_str());
+        adjustments.push(OffsetAdjustment {
+            original_offset: end,
+            adjustment: new_path.len() as i32 - (end - start) as i32,
+        });
     }
-    Some(output)
+    adjustments.reverse();
+    Some(RewriteResult {
+        code: output,
+        source_map: ImportSourceMap::new(adjustments),
+    })
 }
 
 fn rewrite_tsx_vue_shim_specifier(path: &str, source_dir: &Path) -> Option<String> {

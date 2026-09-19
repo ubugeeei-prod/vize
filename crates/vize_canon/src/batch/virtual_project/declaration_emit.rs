@@ -7,6 +7,7 @@ use oxc_span::SourceType;
 use vize_carton::cstr;
 
 use crate::batch::CorsaResult;
+use crate::batch::import_rewriter::{ImportSourceMap, RewriteResult};
 
 use super::{VirtualFile, VirtualProject};
 use tsx_shims::{is_script_path, rewrite_tsx_vue_shim_specifiers};
@@ -18,17 +19,26 @@ impl VirtualProject {
             if !is_script_path(path) {
                 continue;
             }
-            let content = std::fs::read_to_string(path)?;
-            let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::ts());
-            let source_dir = path.parent().unwrap_or_else(|| Path::new("."));
-            let Some(rewritten) =
-                rewrite_tsx_vue_shim_specifiers(&content, source_type, source_dir)
-            else {
-                continue;
-            };
-            std::fs::write(path, rewritten.as_str())?;
+            let rewritten = Self::declaration_input(file);
+            if rewritten.code != file.content {
+                std::fs::write(path, rewritten.code.as_str())?;
+            }
         }
         Ok(())
+    }
+
+    /// Reproduce the final declaration input and its last offset adjustment.
+    /// The checker consumes TSX sources directly instead of their TS shims.
+    pub(crate) fn declaration_input(file: &VirtualFile) -> RewriteResult {
+        let path = file.virtual_path.as_path();
+        let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::ts());
+        let source_dir = path.parent().unwrap_or_else(|| Path::new("."));
+        rewrite_tsx_vue_shim_specifiers(&file.content, source_type, source_dir).unwrap_or_else(
+            || RewriteResult {
+                code: file.content.clone(),
+                source_map: ImportSourceMap::empty(),
+            },
+        )
     }
 
     pub(super) fn declaration_emit_include_paths(&self) -> Vec<&Path> {

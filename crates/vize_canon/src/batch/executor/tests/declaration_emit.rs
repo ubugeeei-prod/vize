@@ -1,4 +1,4 @@
-use super::super::strip_internal_vue_declaration_fields;
+use super::super::declaration_outputs::strip_internal_vue_declaration_fields;
 
 #[test]
 fn strips_internal_fallthrough_fields_from_vue_declarations() {

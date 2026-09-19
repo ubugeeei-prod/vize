@@ -28,6 +28,8 @@ const DECLARATION_HELPERS_FILE: &str = crate::virtual_ts::SHARED_PREAMBLE_FILE_N
 mod cli;
 mod declaration_helpers;
 mod declaration_maps;
+mod declaration_outputs;
+use declaration_outputs::rewrite_declaration_outputs;
 mod diagnostics;
 mod fallback;
 mod option_probe;
@@ -188,12 +190,12 @@ impl CorsaExecutor {
             return Err(CorsaError::CorsaExecution { exit_code, message });
         }
 
+        declaration_maps::rewrite_declaration_map_outputs(options.out_dir.as_path(), project)?;
         profile!(
             "canon.dts.rewrite_outputs",
             rewrite_declaration_outputs(options.out_dir.as_path())
         )?;
         project.finalize_declaration_outputs(options.out_dir.as_path(), &config_path)?;
-        declaration_maps::rewrite_declaration_map_outputs(options.out_dir.as_path(), project)?;
 
         Ok(DeclarationEmitResult {
             files: profile!(
@@ -232,91 +234,6 @@ fn collect_declaration_outputs(out_dir: &Path) -> CorsaResult<Vec<DeclarationOut
 
     files.sort_by(|left, right| left.path.cmp(&right.path));
     Ok(files)
-}
-
-fn rewrite_declaration_outputs(out_dir: &Path) -> CorsaResult<()> {
-    let rewriter = ImportRewriter::new();
-    if !out_dir.exists() {
-        return Ok(());
-    }
-
-    let mut wrote_vue_declaration = false;
-    for entry in walkdir::WalkDir::new(out_dir) {
-        let entry = entry?;
-        let path = entry.path();
-        if !path.is_file() {
-            continue;
-        }
-        let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
-            continue;
-        };
-        if !is_declaration_file(path) {
-            continue;
-        }
-
-        let content = std::fs::read_to_string(path)?;
-        let mut rewritten = rewriter
-            .rewrite_declaration_specifiers(&content, SourceType::ts())
-            .code;
-        // Generated `.vue.d.ts` outputs reference the hoisted helper type
-        // aliases (`__EmitFn`, `__RuntimePropShape`, ...). Wire each one to
-        // the helpers declaration shipped alongside the outputs so consumer
-        // programs resolve them without including the virtual mirror.
-        if name.ends_with(".vue.d.ts") {
-            wrote_vue_declaration = true;
-            if let Some(stripped) = strip_internal_vue_declaration_fields(rewritten.as_str()) {
-                rewritten = stripped;
-            }
-            let depth = path
-                .strip_prefix(out_dir)
-                .ok()
-                .and_then(|relative| relative.parent())
-                .map(|parent| parent.components().count())
-                .unwrap_or(0);
-            let mut reference = declaration_helpers::import_for(&rewritten, depth);
-            reference.push_str(&rewritten);
-            rewritten = reference.as_str().into();
-        }
-        if rewritten.as_str() != content {
-            std::fs::write(path, rewritten.as_str())?;
-        }
-    }
-
-    if wrote_vue_declaration {
-        std::fs::write(
-            out_dir.join(DECLARATION_HELPERS_FILE),
-            declaration_helpers::module(),
-        )?;
-    }
-
-    Ok(())
-}
-
-fn strip_internal_vue_declaration_fields(source: &str) -> Option<String> {
-    let mut stripped = String::default();
-    let mut changed = false;
-    let mut skipping_fallthrough_field = false;
-    for line in source.split_inclusive('\n') {
-        if skipping_fallthrough_field {
-            changed = true;
-            if line.contains(';') {
-                skipping_fallthrough_field = false;
-            }
-            continue;
-        }
-        if line.contains("__vizeFallthroughProps") {
-            changed = true;
-            skipping_fallthrough_field = !line.contains(';');
-            continue;
-        }
-        if line.contains("__vizeHasFallthroughProps") || line.contains("__vizeComponentMarker") {
-            changed = true;
-            continue;
-        }
-        stripped.push_str(line);
-    }
-
-    changed.then_some(stripped)
 }
 
 fn map_corsa_error(message: String) -> CorsaError {

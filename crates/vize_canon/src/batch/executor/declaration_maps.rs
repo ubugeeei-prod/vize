@@ -5,6 +5,9 @@ use std::{
 };
 
 use serde_json::Value;
+
+mod positions;
+pub(super) use positions::rewrite_generated_positions;
 use vize_carton::{String, path::canonicalize_non_verbatim};
 
 use crate::batch::{CorsaResult, VirtualProject};
@@ -57,6 +60,8 @@ fn rewrite_declaration_map(path: &Path, project: &VirtualProject) -> CorsaResult
         return Ok(());
     }
 
+    positions::rewrite_source_positions(&mut map, project, &rewrites)?;
+
     if let Some(sources) = map.get_mut("sources").and_then(Value::as_array_mut) {
         for (index, rewrite) in &rewrites {
             sources[*index] = Value::String(rewrite.source.as_str().into());
@@ -86,6 +91,7 @@ fn rewrite_declaration_map(path: &Path, project: &VirtualProject) -> CorsaResult
 struct MapSourceRewrite<'a> {
     source: String,
     source_content: Option<&'a str>,
+    virtual_path: &'a Path,
 }
 
 fn rewrite_map_source<'a>(
@@ -104,6 +110,7 @@ fn rewrite_map_source<'a>(
     Some(MapSourceRewrite {
         source: path_to_map_source(&relative_path_from(&map_dir, &original_path)),
         source_content: project.original_content_for_virtual(&file.virtual_path),
+        virtual_path: &file.virtual_path,
     })
 }
 

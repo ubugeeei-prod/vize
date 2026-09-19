@@ -10,7 +10,7 @@ metadata.vize.stability = "compatibility-preview"
 
 [features]
 default = ["native"]
-native = ["dep:walkdir", "dep:dirs", "dep:corsa", "dep:corsa_lsp", "dep:lsp-types", "dep:tempfile"]
+native = ["dep:oxc_sourcemap", "dep:walkdir", "dep:dirs", "dep:corsa", "dep:corsa_lsp", "dep:lsp-types", "dep:tempfile"]
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) type-checking surface. Not enabled by the
 # default Vue 3 build; turns on the parser-side legacy feature too.
 legacy = ["vize_armature/legacy", "vize_atelier_jsx/legacy"]
@@ -33,6 +33,7 @@ oxc_allocator.workspace = true
 oxc_diagnostics.workspace = true
 oxc_semantic.workspace = true
 oxc_syntax.workspace = true
+oxc_sourcemap = { workspace = true, optional = true }
 
 # File system walking (for batch type checking)
 walkdir = { workspace = true, optional = true }
