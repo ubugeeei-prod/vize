@@ -10,12 +10,12 @@ SfcTypeCheckResult {
     virtual_ts_helpers: None,
     virtual_ts_mappings: [
         VizeMapping {
-            gen_range: 11878..11904,
+            gen_range: 11878..11903,
             src_range: 25..50,
             sub_spans: [],
         },
         VizeMapping {
-            gen_range: 11904..11948,
+            gen_range: 11904..11947,
             src_range: 51..94,
             sub_spans: [],
         },
