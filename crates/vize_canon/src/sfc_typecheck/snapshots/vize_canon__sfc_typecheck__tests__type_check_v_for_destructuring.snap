@@ -68,6 +68,13 @@ SfcTypeCheckResult {
             sub_spans: [],
         },
     ],
+    virtual_ts_semantic_links: [
+        VizeSemanticLink {
+            source_range: 15865..15870,
+            target_range: 16409..16414,
+            kind: VueSetupTemplateRefUnwrap,
+        },
+    ],
     error_count: 0,
     warning_count: 0,
     analysis_time_ms: Some(
