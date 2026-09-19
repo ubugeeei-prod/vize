@@ -56,6 +56,15 @@ pub(in crate::ide) fn describe_server_frames_in(trace_dir: &std::path::Path) -> 
 }
 
 fn inspect_stream(bytes: &[u8]) -> Result<usize, StreamError> {
+    parse_stream(bytes).map(|frames| frames.len())
+}
+
+pub(super) fn client_messages(bytes: &[u8]) -> Result<Vec<serde_json::Value>, String> {
+    parse_stream(bytes).map_err(|error| format!("invalid client frames: {error}"))
+}
+
+fn parse_stream(bytes: &[u8]) -> Result<Vec<serde_json::Value>, StreamError> {
+    let mut frames = Vec::new();
     let mut offset = 0_usize;
     let mut frame = 0_usize;
     while offset < bytes.len() {
@@ -72,19 +81,19 @@ fn inspect_stream(bytes: &[u8]) -> Result<usize, StreamError> {
             });
         }
         let body = &bytes[body_start..body_end];
-        if let Err(error) = serde_json::from_slice::<serde_json::Value>(body) {
-            let preview = String::from_utf8_lossy(&body[..body.len().min(512)]).into_owned();
-            return Err(StreamError::InvalidJson {
+        let value = serde_json::from_slice::<serde_json::Value>(body).map_err(|error| {
+            StreamError::InvalidJson {
                 frame,
                 declared_length,
                 error,
-                body: preview,
-            });
-        }
+                body: String::from_utf8_lossy(&body[..body.len().min(512)]).into_owned(),
+            }
+        })?;
+        frames.push(value);
         offset = body_end;
         frame += 1;
     }
-    Ok(frame)
+    Ok(frames)
 }
 
 fn content_length(header: &[u8]) -> Result<usize, StreamError> {

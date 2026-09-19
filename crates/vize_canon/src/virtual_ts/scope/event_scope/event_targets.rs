@@ -8,7 +8,7 @@ use super::super::handler_shape::{inline_callback_event_argument, is_callable_ha
 
 pub(super) fn needs_typed_handler_assignment(data: &EventHandlerScopeData) -> bool {
     data.handler_expression.as_ref().is_some_and(|content| {
-        (data.has_implicit_event && is_callable_handler_reference(content.as_str()))
+        is_callable_handler_reference(content.as_str())
             || inline_callback_event_argument(content.as_str()).is_some()
     })
 }

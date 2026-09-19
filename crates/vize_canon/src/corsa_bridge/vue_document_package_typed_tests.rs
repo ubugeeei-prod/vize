@@ -41,8 +41,16 @@ void settings
         build_vue_virtual_project(&host, source, CorsaVueVirtualDocumentOptions::default())
             .unwrap();
 
-    assert!(project.session_project_root.is_none());
-    assert!(project.host.materialized_sources.is_empty());
+    assert!(project.session_project_root.is_some());
+    assert_eq!(
+        project
+            .host
+            .materialized_sources
+            .iter()
+            .map(|source| source.source_path.clone())
+            .collect::<Vec<_>>(),
+        vec![vize_carton::path::canonicalize_non_verbatim(&host)]
+    );
     assert!(project.host.code.contains("from '@scope/types'"));
 }
 

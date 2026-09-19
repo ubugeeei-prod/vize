@@ -1,12 +1,12 @@
 //! Data transferred from one Canon project snapshot to Corsa consumers.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
 use vize_carton::String;
 
 use crate::batch::{ImportSourceMap, VueDocumentVirtualTs};
-use crate::virtual_ts::{VizeMapping, VizeSemanticLink};
+use crate::virtual_ts::{VirtualTsOptions, VizeMapping, VizeSemanticLink};
 
 /// Options for opening a Vue SFC as a canonical Corsa virtual document.
 #[derive(Clone, Copy, Debug, Default)]
@@ -87,4 +87,13 @@ pub(in crate::corsa_bridge) struct GeneratedVueDocument {
     pub(in crate::corsa_bridge) source_path: PathBuf,
     pub(in crate::corsa_bridge) virtual_uri: String,
     pub(in crate::corsa_bridge) generated: VueDocumentVirtualTs,
+}
+
+#[derive(Clone, Copy)]
+pub(crate) struct CorsaProjectEnvironment<'a> {
+    pub(crate) virtual_ts_options: &'a VirtualTsOptions,
+    pub(crate) package_routes: &'a crate::PackageRouteResolver,
+    pub(crate) project_root: Option<&'a Path>,
+    pub(crate) tsconfig_path: Option<&'a Path>,
+    pub(crate) editor_session: &'a crate::corsa_bridge::EditorMirrorSession,
 }

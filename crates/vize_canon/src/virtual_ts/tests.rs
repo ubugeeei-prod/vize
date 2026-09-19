@@ -1326,7 +1326,7 @@ fn test_inline_arrow_event_handler_is_called_with_event() {
     assert!(
         output
             .code
-            .contains("((payload) => console.log(payload))($event);"),
+            .contains("((payload) => console.log(payload))(__vize_handler_event);"),
         "inline arrow handler should be invoked with the event:\n{}",
         output.code
     );
@@ -1340,16 +1340,12 @@ fn test_inline_arrow_event_handler_is_called_with_event() {
 }
 
 #[test]
-fn test_inline_arrow_event_handler_body_can_reference_dollar_event() {
+fn test_inline_arrow_event_handler_preserves_a_free_dollar_event_reference() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
-    // Repro for #2224: when a user writes an inline arrow handler whose body
-    // references `$event` (e.g. mixing the explicit callback parameter with the
-    // implicit Vue event alias), the generated TS must declare `$event` in the
-    // scope that wraps the inline-callback invocation. Without this inner wrap,
-    // the user's reference to `$event` inside the arrow body can be reported as
-    // `TS2552: Cannot find name '$event'` in nested-scope refactors of the
-    // virtual TS, so pin the binding immediately around the user's callback.
+    // A root callback owns its declared parameters. A free `$event` belongs
+    // to the authored lexical scope, so native TypeScript must diagnose it
+    // when the author did not declare it (the implicit alias is inline-only).
     let script = r#"function handleInput(_a: Event, _b: Event) { void _a; void _b; }
 "#;
     let template = r#"<input @input="(e) => handleInput($event, e)" />"#;
@@ -1366,10 +1362,9 @@ fn test_inline_arrow_event_handler_body_can_reference_dollar_event() {
 
     assert!(
         output.code.contains(
-            "(($event: InputEvent) => { ((e) => handleInput($event, e))($event); })($event);"
+            "((__vize_handler_event: InputEvent) => { ((e) => handleInput($event, e))(__vize_handler_event); })(__vize_event);"
         ),
-        "inline arrow handler invocation must be wrapped in a closure that \
-         re-declares `$event` (#2224):\n{}",
+        "the native callback parameter must not shadow the authored free `$event`:\n{}",
         output.code
     );
 }
@@ -2037,8 +2032,8 @@ fn test_native_event_handler_keeps_single_event_parameter() {
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output.code.contains("(($event: PointerEvent) => {"),
-        "native event handler must keep the single $event parameter:\n{}",
+        output.code.contains("((__vize_event: PointerEvent) => {"),
+        "native method reference must receive one privately named event parameter:\n{}",
         output.code
     );
     assert!(

@@ -145,6 +145,23 @@ async fn open_canonical_virtual_project_document_with_scope(
         .iter()
         .map(|(path, content)| (path.clone(), &**content))
         .collect::<Vec<_>>();
+    if include_workspace {
+        let sources =
+            same_typescript_project(ctx, ctx.state.discover_workspace_vue_sources().await)
+                .into_iter()
+                .filter(|(uri, _)| uri != ctx.uri && !uri.path().ends_with(".art.vue"))
+                .filter_map(|(uri, source)| Some((uri.to_file_path().ok()?, source)))
+                .collect::<Vec<_>>();
+        let requested = sources
+            .iter()
+            .map(|(path, content)| (path.clone(), content.as_str()))
+            .collect::<Vec<_>>();
+        return super::open::open_canonical_virtual_document_with_sources_strict(
+            ctx, bridge, &overlays, &requested,
+        )
+        .await
+        .map_err(CanonicalProjectOpenError::Primary);
+    }
     let Some(mut document) =
         super::open::open_canonical_virtual_document_with_overlays_strict(ctx, bridge, &overlays)
             .await
@@ -176,45 +193,39 @@ async fn open_canonical_virtual_project_document_with_scope(
         }
     }
 
-    if include_workspace {
-        let workspace_sources = ctx.state.discover_workspace_vue_sources().await;
-        for (uri, source) in same_typescript_project(ctx, workspace_sources) {
-            if !visited.insert(uri.clone()) || uri.path().ends_with(".art.vue") {
-                continue;
-            }
-            let importer_ctx = IdeContext::with_content(ctx.state, &uri, 0, source.clone());
-            if let Some(opened) = super::open::open_canonical_virtual_document_with_overlays_strict(
-                &importer_ctx,
-                bridge,
-                &overlays,
-            )
-            .await
-            .map_err(CanonicalProjectOpenError::Importer)?
-            {
-                document.include_opened_document(uri, source.into(), opened);
-            }
-        }
-    }
-
-    let materialized_documents = document
-        .materialized_sources
-        .iter()
-        .filter(|source| source.mapping_kind.is_mappable())
-        .filter(|source| {
-            !location_matches_uri(&source.request_uri, &document.request_uri)
-                && !document.dependencies.iter().any(|dependency| {
-                    location_matches_uri(&source.request_uri, &dependency.request_uri)
-                })
-        })
-        .map(|source| {
-            (
-                source.request_uri.clone(),
-                source.virtual_result.code.as_str().into(),
-            )
-        })
-        .collect::<Vec<_>>();
+    // Discovering another root may reload the native project handle. Reopen
+    // the complete final projection in one batch, including the primary host
+    // and importers, before querying any of their coordinates.
+    let mut project_documents = vec![(
+        document.request_uri.clone(),
+        document.virtual_result.code.as_str().into(),
+    )];
+    project_documents.extend(document.dependencies.iter().map(|dependency| {
+        (
+            dependency.request_uri.clone(),
+            dependency.virtual_result.code.as_str().into(),
+        )
+    }));
+    project_documents.extend(
+        document
+            .materialized_sources
+            .iter()
+            .filter(|source| source.mapping_kind.is_mappable())
+            .filter(|source| {
+                !location_matches_uri(&source.request_uri, &document.request_uri)
+                    && !document.dependencies.iter().any(|dependency| {
+                        location_matches_uri(&source.request_uri, &dependency.request_uri)
+                    })
+            })
+            .map(|source| {
+                (
+                    source.request_uri.clone(),
+                    source.virtual_result.code.as_str().into(),
+                )
+            }),
+    );
     bridge
-        .open_virtual_documents_batch(&materialized_documents)
+        .open_virtual_documents_batch(&project_documents)
         .await
         .map_err(CanonicalProjectOpenError::Importer)?;
     document.promote_materialized_query_identity();

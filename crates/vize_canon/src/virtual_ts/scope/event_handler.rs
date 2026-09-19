@@ -1,4 +1,4 @@
-//! Event-handler expression generation. The lightweight JS scanning that
+//! Event-handler expression generation. The shared AST classification that
 //! classifies a handler body (callable reference vs. inline callback) lives in
 //! [`super::handler_shape`].
 
@@ -22,11 +22,15 @@ pub(super) fn generate_event_handler_expressions(
         for expr in exprs {
             let content = expr.content.as_str();
             let is_callable_reference = is_callable_handler_reference(content);
-            let is_implicit_reference =
-                ctx.check_emits && ctx.data.has_implicit_event && is_callable_reference;
+            let is_reference = ctx.check_emits && is_callable_reference;
             let inline_callback_arg = (!ctx.data.has_implicit_event)
                 .then(|| inline_callback_event_argument(content))
                 .flatten();
+            let event_value = if ctx.data.has_implicit_event {
+                "$event"
+            } else {
+                "__vize_event"
+            };
             let src_start = (ctx.template_offset + expr.start) as usize;
             let src_end = (ctx.template_offset + expr.end) as usize;
             let guard = expr.vif_guard.as_ref().map(|guard| {
@@ -77,7 +81,7 @@ pub(super) fn generate_event_handler_expressions(
                 mapped_start..mapped_end
             } else if let (Some(handler_type), Some(listener_type)) =
                 (ctx.event_handler_type, ctx.event_listener_type)
-                && (is_implicit_reference || inline_callback_arg.is_some())
+                && (is_reference || inline_callback_arg.is_some())
             {
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
                 let stmt_start = ts.len();
@@ -98,7 +102,7 @@ pub(super) fn generate_event_handler_expressions(
                 );
                 mapped_start..mapped_end
             } else if let Some(listener_type) = ctx.event_listener_type
-                && (is_implicit_reference || inline_callback_arg.is_some())
+                && (is_reference || inline_callback_arg.is_some())
             {
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
                 let stmt_start = ts.len();
@@ -118,7 +122,7 @@ pub(super) fn generate_event_handler_expressions(
                     indent = handler_indent,
                 );
                 mapped_start..mapped_end
-            } else if is_implicit_reference {
+            } else if is_reference {
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
                 append!(
                     *ts,
@@ -132,27 +136,31 @@ pub(super) fn generate_event_handler_expressions(
                 ts.push_str("));\n");
                 append!(
                     *ts,
-                    "{indent}if ({handler_name}) {handler_name}($event);  // handler expression\n",
+                    "{indent}if ({handler_name}) {handler_name}({event_value});  // handler expression\n",
                     indent = handler_indent,
                 );
                 mapped_start..mapped_end
             } else if let Some(event_arg) = inline_callback_arg {
-                // Wrap the inline callback invocation in a closure that
-                // re-declares `$event` typed against the handler's event type.
-                // The outer EventHandler closure already binds `$event`, but
-                // this inner wrap pins the binding immediately around the
-                // user's callback so the inline arrow body can reference
-                // `$event` directly (#2224 — `Cannot find name '$event'`).
+                // The generated argument must not shadow an authored `$event`
+                // capture inside an arrow or function expression.
+                let event_arg = if event_arg.is_empty() {
+                    ""
+                } else {
+                    "__vize_handler_event"
+                };
                 append!(
                     *ts,
-                    "{indent}(($event: {event_type}) => {{ (",
+                    "{indent}((__vize_handler_event: {event_type}) => {{ (",
                     indent = handler_indent,
                     event_type = ctx.event_type,
                 );
                 let mapped_start = ts.len();
                 ts.push_str(content);
                 let mapped_end = ts.len();
-                append!(*ts, ")({event_arg}); }})($event);  // handler expression\n");
+                append!(
+                    *ts,
+                    ")({event_arg}); }})({event_value});  // handler expression\n"
+                );
                 mapped_start..mapped_end
             } else {
                 append!(*ts, "{indent}", indent = handler_indent);

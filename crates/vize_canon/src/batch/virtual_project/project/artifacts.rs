@@ -47,6 +47,10 @@ impl VirtualProject {
             registered.file.virtual_path.clone(),
             registered.original_content,
         );
+        if let Some(code) = registered.editor_pre_rewrite_code {
+            self.editor_pre_rewrite_code
+                .insert(registered.file.virtual_path.clone(), code);
+        }
         // Re-registration must refresh the classification, not accumulate it.
         self.unchecked_javascript_files
             .remove(&registered.file.virtual_path);
@@ -126,6 +130,7 @@ impl VirtualProject {
         for path in artifacts.virtual_paths {
             self.virtual_files.remove(&path);
             self.original_contents.remove(&path);
+            self.editor_pre_rewrite_code.remove(&path);
             self.unchecked_javascript_files.remove(&path);
             removed.push(path);
         }

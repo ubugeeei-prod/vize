@@ -25,7 +25,9 @@ pub(super) fn link_session_wrapper(path: &Path) -> Result<(), String> {
         )
         .into());
     }
-    std::os::unix::fs::symlink(&wrapper, path).map_err(|error| {
+    // The native resolver canonicalizes executables. A hard link retains the
+    // session path while sharing the immutable executable inode.
+    fs::hard_link(&wrapper, path).map_err(|error| {
         cstr!(
             "link immutable Corsa wrapper {} as {}: {error}",
             wrapper.display(),
@@ -68,20 +70,27 @@ mod tests {
         dynamic_file.write_all(b"open").expect("write session data");
 
         let metadata = fs::symlink_metadata(&wrapper).expect("wrapper metadata");
-        assert!(metadata.file_type().is_symlink());
+        use std::os::unix::fs::MetadataExt;
+        assert!(metadata.file_type().is_file());
         assert_eq!(
-            wrapper.canonicalize().expect("canonical session wrapper"),
-            immutable_wrapper().canonicalize().expect("canonical asset")
+            metadata.ino(),
+            fs::metadata(immutable_wrapper()).unwrap().ino()
         );
+        assert_eq!(
+            metadata.dev(),
+            fs::metadata(immutable_wrapper()).unwrap().dev()
+        );
+        let mirror = root.path().join("mirror");
+        fs::create_dir(&mirror).expect("native session working directory");
         let output = Command::new(&wrapper)
-            .current_dir(root.path())
+            .current_dir(&mirror)
             .output()
             .expect("execute wrapper");
         assert!(output.status.success(), "wrapper stderr: {output:?}");
         let trace_count = fs::read_dir(&traces).expect("trace files").count();
         let api = Command::new(&wrapper)
             .arg("--api")
-            .current_dir(root.path())
+            .current_dir(&mirror)
             .output()
             .expect("execute API bypass");
         assert!(api.status.success(), "API bypass stderr: {api:?}");

@@ -140,8 +140,6 @@ pub enum TemplateExpressionKind {
     VModel,
     /// Runtime property or slot argument: `:[name]` or `#[name]`.
     DynamicDirectiveArgument,
-    /// Runtime listener name: `@[name]`; null disables the listener.
-    DynamicEventArgument,
     /// Custom (non-builtin) directive value: `v-focus="expr"`.
     ///
     /// Collected so the value reaches the type checker at all. Until this
@@ -149,6 +147,8 @@ pub enum TemplateExpressionKind {
     /// undefined-identifier detection, so `v-focus="'nope'"` was silent where
     /// `vue-tsc` reports `TS2322` against `Directive<El, Value>`.
     CustomDirective,
+    /// Runtime listener name: `@[name]`; null disables the listener.
+    DynamicEventArgument,
 }
 
 impl TemplateExpressionKind {

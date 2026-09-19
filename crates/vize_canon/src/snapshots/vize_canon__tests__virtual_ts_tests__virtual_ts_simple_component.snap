@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/tests.rs
+assertion_line: 39
 expression: virtual_ts
 ---
 /// <reference lib="es2022" />
@@ -168,9 +169,9 @@ function __setup() {
   // @vize-map: expr -> 216:221
 
   // @click handler
-  void (($event: PointerEvent) => {
+  void ((__vize_event: PointerEvent) => {
     const __vize_handler_8_84 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((increment));
-    if (__vize_handler_8_84) __vize_handler_8_84($event);  // handler expression
+    if (__vize_handler_8_84) __vize_handler_8_84(__vize_event);  // handler expression
     // @vize-map: handler -> 249:258
   });
 

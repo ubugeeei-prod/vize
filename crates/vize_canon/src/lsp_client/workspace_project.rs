@@ -19,6 +19,7 @@ impl CorsaProjectClient {
     ) -> Result<(), String> {
         if changes.has_topology_changes() {
             self.reload_workspace_project(project_root)?;
+            self.refresh_materialized_files(&changes.changed, &changes.created, &changes.deleted)?;
         } else {
             self.activate_workspace_project(project_root)?;
             if !changes.is_empty() {
@@ -56,6 +57,7 @@ impl CorsaProjectClient {
         let project_root = project_root
             .canonicalize()
             .unwrap_or_else(|_| project_root.to_path_buf());
+        let root_changed = self.project_root != project_root;
         if !reload && self.project_root == project_root {
             return Ok(());
         }
@@ -85,7 +87,9 @@ impl CorsaProjectClient {
         self.session_document_uris.clear();
         self.external_document_uris.clear();
         self.diagnostics.clear();
-        let _ = self.retire_editor_lsp();
+        if root_changed {
+            self.retire_editor_lsp()?;
+        }
         Ok(())
     }
 

@@ -25,12 +25,12 @@ impl CorsaProjectClient {
         };
 
         self.clear_diagnostics_cache();
-        // The reusable editor session runs its own process against the mirror it
-        // read when it built its program, and a project-session refresh does not
-        // reach that copy. Retiring it keeps the next request, including the
-        // batch diagnostics that fall back to this transport, on the files the
-        // delta just wrote.
-        self.retire_editor_lsp()?;
+        // The editor transport owns a separate native project. Give it the
+        // same exact disk revision, then use its response-backed readiness
+        // barrier before queries. Content edits do not require a new process.
+        if let Some(editor) = self.editor_lsp.as_mut() {
+            editor.refresh_materialized_files(changed, created, deleted)?;
+        }
         if !self.has_project_session() {
             return Ok(());
         }

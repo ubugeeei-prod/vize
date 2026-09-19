@@ -53,12 +53,8 @@ fn virtual_positions_for_markers(
                 .map(|(offset, _)| offset)
                 .next()
                 .expect("marker present");
-            let position = source_offset_to_virtual_position(
-                &generated.code,
-                &generated.mappings,
-                source_offset,
-            )
-            .expect("marker maps into virtual TS");
+            let position = source_offset_to_virtual_position(&generated, source_offset)
+                .expect("marker maps into virtual TS");
 
             VirtualPosition {
                 marker: (*marker).to_string(),

@@ -18,21 +18,13 @@ pub(in crate::ide) async fn signature_help_traced(
     if !bridge.is_initialized() {
         return (None, stages);
     }
-    let Some(virtual_ts) = JsxService::virtual_ts(ctx) else {
+    let Some(mut virtual_ts) = JsxService::virtual_ts(ctx) else {
         stages.push(SignatureHelpStage::VirtualOpenFailed {
             message: "JSX virtual TypeScript generation returned no document".into(),
         });
         return (None, stages);
     };
-    let Some((line, character)) =
-        source_offset_to_virtual_position(&virtual_ts.code, &virtual_ts.mappings, ctx.offset)
-    else {
-        stages.push(SignatureHelpStage::VirtualOpenFailed {
-            message: "JSX cursor did not map into virtual TypeScript".into(),
-        });
-        return (None, stages);
-    };
-    let uri = match service_project::open_virtual_project(ctx, &bridge, &virtual_ts).await {
+    let uri = match service_project::open_virtual_project(ctx, &bridge, &mut virtual_ts).await {
         Some(uri) => {
             stages.push(SignatureHelpStage::VirtualOpened);
             uri
@@ -43,6 +35,12 @@ pub(in crate::ide) async fn signature_help_traced(
             });
             return (None, stages);
         }
+    };
+    let Some((line, character)) = source_offset_to_virtual_position(&virtual_ts, ctx.offset) else {
+        stages.push(SignatureHelpStage::VirtualOpenFailed {
+            message: "JSX cursor did not map into virtual TypeScript".into(),
+        });
+        return (None, stages);
     };
     let help = match bridge
         .signature_help_with_context(&uri, line, character, context)

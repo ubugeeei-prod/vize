@@ -52,8 +52,8 @@ const vnode = null as unknown;
         virtual_project
             .host
             .code
-            .contains(cstr!("\"{}\"", mirror.join("Child.vue").display()).as_str()),
-        "host import should target the stable Vue shim:\n{}",
+            .contains(cstr!("\"{}\"", mirror.join("Child.vue.tsx").display()).as_str()),
+        "host import should target the exact TSX projection:\n{}",
         virtual_project.host.code
     );
     assert!(
@@ -115,13 +115,15 @@ const vnode = null as unknown;
     let types_document = virtual_project
         .documents
         .iter()
-        .find(|(uri, _)| uri == path_to_file_uri(&types_path).as_str())
+        .find(|(uri, _)| {
+            uri == path_to_file_uri(&mirror.join(types_path.file_name().unwrap())).as_str()
+        })
         .map(|(_, content)| content.as_str())
         .expect("TS dependency document should be synced");
     assert!(
         types_document
-            .contains(cstr!("import(\"{}\")", mirror.join("Host.vue").display()).as_str()),
-        "TS dependencies must target the stable Vue shim:\n{types_document}",
+            .contains(cstr!("import(\"{}\")", mirror.join("Host.vue.tsx").display()).as_str()),
+        "TS dependencies must target the exact TSX projection:\n{types_document}",
     );
     let shim = virtual_project
         .documents

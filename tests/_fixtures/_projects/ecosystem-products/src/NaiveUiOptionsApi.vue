@@ -1,5 +1,5 @@
 <script lang="ts">
-import type {} from "./shims";
+import type {} from "./vue-global-components";
 import { defineComponent } from "vue";
 import { NButton, NCard, NSelect, NTag } from "naive-ui";
 import type { SelectOption } from "naive-ui";

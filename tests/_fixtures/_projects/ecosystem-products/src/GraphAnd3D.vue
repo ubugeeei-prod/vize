@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type {} from "./shims";
+import type {} from "./vue-global-components";
 import { computed, shallowRef } from "vue";
 import { Panel, VueFlow, addEdge, type Connection, type Edge, type Node } from "@vue-flow/core";
 import { TresCanvas } from "@tresjs/core";

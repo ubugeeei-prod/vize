@@ -21,6 +21,7 @@ type Ctx<Emits = {}, Slots = {}> = { emit: __EmitFn<Emits>; slots: Slots; attrs:
 pub(in crate::ide) struct JsxVirtualTs {
     pub(in crate::ide) code: String,
     pub(in crate::ide) mappings: Vec<VizeMapping>,
+    pub(in crate::ide) import_source_map: vize_canon::batch::ImportSourceMap,
 }
 
 /// Lower a `.jsx`/`.tsx` Vize component to plain virtual TypeScript.
@@ -38,7 +39,11 @@ pub(in crate::ide) fn generate_jsx_virtual_ts(source: &str, lang: JsxLang) -> Op
     roots.sort_by_key(|(start, _, _)| *start);
 
     let (code, mappings) = render_plain_ts(source, &roots);
-    Some(JsxVirtualTs { code, mappings })
+    Some(JsxVirtualTs {
+        code,
+        mappings,
+        import_source_map: Default::default(),
+    })
 }
 
 fn render_plain_ts(source: &str, roots: &[(u32, u32, Vec<JsxEmit>)]) -> (String, Vec<VizeMapping>) {

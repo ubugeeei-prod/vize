@@ -1,5 +1,5 @@
 #!/bin/sh
-wrapper_dir=$(pwd -P)
+wrapper_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 actual_tsgo=$(cat "$wrapper_dir/actual-tsgo.path")
 for argument in "$@"; do
   if [ "$argument" = "--api" ]; then

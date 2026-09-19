@@ -14,6 +14,7 @@ pub(super) fn build(
     source_path: &Path,
     content: &str,
     overlays: &FxHashMap<PathBuf, &str>,
+    requested_sources: &[(PathBuf, &str)],
     resolver: &mut crate::PackageRouteResolver,
     options: crate::corsa_bridge::vue_document::CorsaVueVirtualDocumentOptions,
     environment: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>,
@@ -55,7 +56,7 @@ pub(super) fn build(
     } else {
         project.use_effective_tsconfig_for_source(source_path);
     }
-    let namespace_identity = super::cache::editor_namespace_identity(
+    let namespace_identity = super::namespace::editor_namespace_identity(
         options,
         environment.virtual_ts_options,
         Some(&root),
@@ -63,6 +64,16 @@ pub(super) fn build(
     );
     project.scope_editor_namespace(environment.editor_session.root()?, namespace_identity);
     project.set_session_script_registration(true);
+    project.set_editor_document_options(
+        crate::batch::virtual_project::VueDocumentVirtualTsOptions {
+            options_api: options.options_api,
+            legacy_vue2: options.legacy_vue2,
+            experimental_patterned_template: options.experimental_patterned_template,
+            preserve_event_navigation: options.preserve_event_navigation,
+            dialect: options.dialect,
+            preserve_missing_vue_diagnostics: true,
+        },
+    );
     // The native editor queries this one importer. Reachable declarations must
     // be mirrored so user `paths` and relative declaration barrels resolve from
     // the session-private root, but they must stay inferred modules rather than
@@ -79,6 +90,16 @@ pub(super) fn build(
     project
         .register_path_with_content(source_path, content)
         .map_err(bridge_error)?;
+    for (path, source) in requested_sources {
+        let path = vize_carton::path::canonicalize_non_verbatim(path);
+        if path == source_path {
+            continue;
+        }
+        let source = overlays.get(&path).copied().unwrap_or(source);
+        project
+            .register_path_with_content(&path, source)
+            .map_err(bridge_error)?;
+    }
     let virtual_file = project.find_by_original(source_path).ok_or_else(|| {
         CorsaBridgeError::CommunicationError(vize_carton::cstr!(
             "Canon did not retain registered host {}",
@@ -173,12 +194,13 @@ pub(super) fn build(
         .register_package_route_targets()
         .map_err(bridge_error)?;
     project.finalize_package_routes().map_err(bridge_error)?;
+    project.finalize_editor_imports();
     route_inputs.sort();
     route_inputs.dedup();
-    // Relative dependencies also need materialized identities: native module
-    // resolution cannot discover an open overlay as a new dependency target.
-    let mirror = (!aliases.is_empty() || !package_routes.is_empty() || project.file_count() > 1)
-        .then_some(project);
+    // A host must retain one session-private identity as dependencies appear
+    // and disappear. Switching back to the authored path would leave live
+    // native overlays in the previous project after a rename or deletion.
+    let mirror = Some(project);
 
     Ok(AliasContext {
         project_root: root,

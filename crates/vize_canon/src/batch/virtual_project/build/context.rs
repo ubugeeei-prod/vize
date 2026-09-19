@@ -35,6 +35,8 @@ pub(in crate::batch::virtual_project) struct VirtualBuildContext<'a> {
     pub(in crate::batch::virtual_project) experimental_patterned_template: bool,
     pub(in crate::batch::virtual_project) experimental_strict_slot_children: bool,
     pub(in crate::batch::virtual_project) hoist_shared_preamble: bool,
+    pub(in crate::batch::virtual_project) editor_document_options:
+        Option<super::super::VueDocumentVirtualTsOptions>,
     pub(in crate::batch::virtual_project) preserve_relative_declarations: bool,
     pub(in crate::batch::virtual_project) preserve_declaration_spelling: bool,
     pub(in crate::batch::virtual_project) mirrorable_project_files: Option<&'a FxHashSet<PathBuf>>,

@@ -105,53 +105,6 @@ pub(super) fn skip_js_trivia(input: &str, mut index: usize) -> usize {
     }
 }
 
-pub(super) fn matching_paren_index(input: &str, open_index: usize) -> Option<usize> {
-    if input.as_bytes().get(open_index) != Some(&b'(') {
-        return None;
-    }
-
-    let mut depth = 0u32;
-    for (index, byte) in StructuralBytes::new(input, open_index) {
-        match byte {
-            b'(' => depth += 1,
-            b')' => {
-                depth = depth.checked_sub(1)?;
-                if depth == 0 {
-                    return Some(index);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
-}
-
-/// Finds only an arrow that forms the outer callable. Nested callbacks in
-/// parameter types, defaults, calls, arrays, and objects do not qualify.
-pub(super) fn top_level_arrow_index(input: &str) -> Option<usize> {
-    let bytes = input.as_bytes();
-    let (mut parens, mut brackets, mut braces) = (0u32, 0u32, 0u32);
-    for (index, byte) in StructuralBytes::new(input, 0) {
-        match byte {
-            b'(' => parens += 1,
-            b')' => parens = parens.checked_sub(1)?,
-            b'[' => brackets += 1,
-            b']' => brackets = brackets.checked_sub(1)?,
-            b'{' => braces += 1,
-            b'}' => braces = braces.checked_sub(1)?,
-            b'=' if bytes.get(index + 1) == Some(&b'>')
-                && parens == 0
-                && brackets == 0
-                && braces == 0 =>
-            {
-                return Some(index);
-            }
-            _ => {}
-        }
-    }
-    None
-}
-
 /// Cheaply recognizes a possible sequence-expression separator. If lexical
 /// ambiguity makes the delimiter balance invalid, prefer the exact parser
 /// fallback over rejecting a valid callback shape.

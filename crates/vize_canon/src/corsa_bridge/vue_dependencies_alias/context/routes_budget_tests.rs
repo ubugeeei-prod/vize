@@ -30,7 +30,14 @@ fn exhausted_editor_route_keeps_native_spelling_and_invalidation_inputs() {
 
     assert!(context.aliases.is_empty());
     assert!(context.package_routes.is_empty());
-    assert!(context.mirror.is_none());
+    assert_eq!(
+        context
+            .mirror
+            .as_ref()
+            .unwrap()
+            .registered_original_paths_sorted(),
+        vec![vize_carton::path::canonicalize_non_verbatim(&host)]
+    );
     assert!(
         context
             .route_inputs

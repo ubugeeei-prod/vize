@@ -142,20 +142,50 @@ defineSlots<{
                 )
                 .await
                 .ok()?;
-            let expected_virtual_uri =
-                Url::from_file_path(host_path.with_file_name("MfPageShell.vue.ts"))
-                    .expect("expected virtual URI")
-                    .to_string();
+            let host_mirror = opened
+                .materialized_sources
+                .iter()
+                .find(|source| {
+                    vize_s0::path::canonicalize_non_verbatim(&source.source_path)
+                        == vize_s0::path::canonicalize_non_verbatim(&host_path)
+                })
+                .expect("host must be materialized beside its sibling dependencies");
             assert_eq!(
-                opened.request_uri, expected_virtual_uri,
-                "Corsa must query the generated .vue.ts document"
+                opened.request_uri.as_str(),
+                Url::from_file_path(&host_mirror.materialized_path)
+                    .unwrap()
+                    .as_str()
             );
-            assert!(
-                opened.code.contains("../logo/MfMatesLogo.vue.ts")
-                    && opened.code.contains("../tag/MfTag.vue.ts"),
-                "Corsa-opened Vue document must keep rewritten sibling imports:\n{}",
-                opened.code,
-            );
+            assert_eq!(opened.code, host_mirror.code);
+            let expected_imports = [("MfMatesLogo", "MfMatesLogo.vue"), ("MfTag", "MfTag.vue")]
+                .map(|(name, file)| {
+                    let dependency = opened
+                        .dependencies
+                        .iter()
+                        .find(|dependency| {
+                            dependency
+                                .source_path
+                                .file_name()
+                                .is_some_and(|candidate| candidate == file)
+                        })
+                        .unwrap();
+                    let path = Url::parse(dependency.request_uri.as_str())
+                        .unwrap()
+                        .to_file_path()
+                        .unwrap();
+                    format!(
+                        "import {name} from \"{}\";",
+                        path.to_string_lossy().replace('\\', "/")
+                    )
+                });
+            let actual_imports = opened
+                .code
+                .lines()
+                .filter(|line| {
+                    line.starts_with("import MfMatesLogo ") || line.starts_with("import MfTag ")
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(actual_imports, expected_imports);
             let (virtual_uri, virtual_result) =
                 DiagnosticService::virtual_ts_result_from_corsa_vue_document(
                     &host_uri,

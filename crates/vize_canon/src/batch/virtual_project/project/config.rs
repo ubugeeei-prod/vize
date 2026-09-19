@@ -195,6 +195,9 @@ impl VirtualProject {
     }
 
     pub(crate) fn uses_shared_helpers(&self) -> bool {
+        if self.editor_document_options.is_some() {
+            return false;
+        }
         self.experimental_patterned_template
             || (!self.legacy_vue2
                 && !matches!(

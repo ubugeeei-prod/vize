@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type {} from "./shims";
+import type {} from "./vue-global-components";
 import { computed, ref, watch } from "vue";
 import { useDark, useDebounceFn, useToggle } from "@vueuse/core";
 import { useI18n } from "vue-i18n";

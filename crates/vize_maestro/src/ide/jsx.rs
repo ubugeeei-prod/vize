@@ -44,6 +44,8 @@ mod rename;
 #[cfg(feature = "native")]
 mod service;
 #[cfg(feature = "native")]
+mod service_diagnostics;
+#[cfg(feature = "native")]
 mod service_project;
 #[cfg(all(test, feature = "native"))]
 mod signature_help_trace;

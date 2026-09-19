@@ -69,7 +69,15 @@ defineProps<{ count: string }>()
         text: consumer,
       },
     });
-    await waitForCode(session, consumerUri, 1, 2307);
+    const missing = await waitForCode(session, consumerUri, 1, 2307);
+    assert.equal(
+      missing.diagnostics[0]?.message,
+      "Cannot find module './Counter.vue' or its corresponding type declarations.",
+    );
+    assert.deepEqual(missing.diagnostics[0]?.range, {
+      start: { line: 0, character: 20 },
+      end: { line: 0, character: 35 },
+    });
 
     fs.writeFileSync(counterPath, stringCounter, "utf8");
     session.notify("workspace/didCreateFiles", { files: [{ uri: counterUri }] });
@@ -128,14 +136,26 @@ async function waitForCode(
   version: number,
   code: number,
 ): Promise<PublishDiagnosticsParams> {
-  return (await session.waitForNotification(
-    "textDocument/publishDiagnostics",
-    (params) =>
-      isDiagnosticsForUri(params, uri) &&
-      params.version === version &&
-      params.diagnostics.some((diagnostic) => diagnostic.code === code),
-    10_000,
-  )) as PublishDiagnosticsParams;
+  let latest: PublishDiagnosticsParams | undefined;
+  try {
+    return (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => {
+        if (!isDiagnosticsForUri(params, uri)) return false;
+        latest = params;
+        return (
+          params.version === version &&
+          params.diagnostics.some((diagnostic) => diagnostic.code === code)
+        );
+      },
+      10_000,
+    )) as PublishDiagnosticsParams;
+  } catch (cause) {
+    throw new Error(
+      `Expected TS${code} at version ${version}; latest diagnostics: ${JSON.stringify(latest)}`,
+      { cause },
+    );
+  }
 }
 
 async function waitForClean(

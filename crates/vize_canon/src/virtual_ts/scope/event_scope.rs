@@ -40,10 +40,15 @@ pub(super) fn generate_event_handler_scope(
     inner_indent: &str,
 ) {
     let scope_id = scope.id.as_u32();
+    let event_value = if data.has_implicit_event {
+        "$event"
+    } else {
+        "__vize_event"
+    };
     append!(*ts, "\n{indent}// @{} handler\n", data.event_name);
 
     if !ctx.check_options.check_emits {
-        append!(*ts, "{indent}void (($event: any) => {{\n");
+        append!(*ts, "{indent}void (({event_value}: any) => {{\n");
         profile!(
             "canon.virtual_ts.event_handler_expressions",
             generate_event_handler_expressions(
@@ -88,7 +93,7 @@ pub(super) fn generate_event_handler_scope(
         );
         append!(
             *ts,
-            "{inner_indent}const $event = __vize_args[0] as {event_type}; void $event;\n",
+            "{inner_indent}const {event_value} = __vize_args[0] as {event_type}; void {event_value};\n",
         );
 
         profile!(
@@ -158,7 +163,7 @@ pub(super) fn generate_event_handler_scope(
         );
         append!(
             *ts,
-            "{inner_indent}const $event = __vize_args[0] as {event_type}; void $event;\n",
+            "{inner_indent}const {event_value} = __vize_args[0] as {event_type}; void {event_value};\n",
         );
 
         profile!(
@@ -213,7 +218,7 @@ pub(super) fn generate_event_handler_scope(
         );
         append!(
             *ts,
-            "{inner_indent}const $event = __vize_args[0] as {event_type}; void $event;\n",
+            "{inner_indent}const {event_value} = __vize_args[0] as {event_type}; void {event_value};\n",
         );
 
         profile!(
@@ -261,7 +266,7 @@ pub(super) fn generate_event_handler_scope(
         );
         append!(
             *ts,
-            "{inner_indent}const $event = __vize_args[0] as any; void $event;\n",
+            "{inner_indent}const {event_value} = __vize_args[0] as any; void {event_value};\n",
         );
 
         profile!(
@@ -293,7 +298,7 @@ pub(super) fn generate_event_handler_scope(
         append!(*ts, "{indent}}});\n");
     } else {
         let event_type = get_dom_event_type(data.event_name.as_str());
-        append!(*ts, "{indent}void (($event: {event_type}) => {{\n");
+        append!(*ts, "{indent}void (({event_value}: {event_type}) => {{\n");
 
         profile!(
             "canon.virtual_ts.event_handler_expressions",

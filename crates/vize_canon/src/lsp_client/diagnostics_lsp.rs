@@ -117,6 +117,31 @@ pub(super) fn request_lsp_document_diagnostic_ack(
     client: &LspClient,
     uri: &Uri,
 ) -> Result<(), String> {
+    block_on(request_lsp_document_diagnostic_ack_async(client, uri))
+}
+
+pub(super) fn request_lsp_document_diagnostic_acks(
+    client: &LspClient,
+    uris: &[Uri],
+) -> Result<(), String> {
+    use futures::{StreamExt, TryStreamExt};
+    // Bound in-flight requests below the transport queue capacity. Every
+    // changed document still needs an acknowledgement before native queries.
+    block_on(
+        futures::stream::iter(
+            uris.iter()
+                .map(|uri| request_lsp_document_diagnostic_ack_async(client, uri)),
+        )
+        .buffer_unordered(16)
+        .try_collect::<Vec<_>>(),
+    )
+    .map(|_| ())
+}
+
+async fn request_lsp_document_diagnostic_ack_async(
+    client: &LspClient,
+    uri: &Uri,
+) -> Result<(), String> {
     struct RawDocumentDiagnosticAckRequest;
 
     impl lsp_types::request::Request for RawDocumentDiagnosticAckRequest {
@@ -125,15 +150,15 @@ pub(super) fn request_lsp_document_diagnostic_ack(
         const METHOD: &'static str = "textDocument/diagnostic";
     }
 
-    block_on(
-        client.request::<RawDocumentDiagnosticAckRequest>(serde_json::json!({
+    client
+        .request::<RawDocumentDiagnosticAckRequest>(serde_json::json!({
             "textDocument": {
                 "uri": uri,
             }
-        })),
-    )
-    .map(|_| ())
-    .map_err(|error| cstr!("{error}"))
+        }))
+        .await
+        .map(|_| ())
+        .map_err(|error| cstr!("{error}"))
 }
 
 #[cfg(all(test, feature = "native", unix))]

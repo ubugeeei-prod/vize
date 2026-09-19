@@ -912,7 +912,8 @@
     {
       "file": "app/components/status/StatusReactedBy.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
+        "error:82:3 [TS2578] Unused '@vue-expect-error' directive."
       ]
     },
     {
@@ -1068,7 +1069,7 @@
       "file": "app/components/timeline/TimelineScheduledPostsPaginator.vue",
       "diagnostics": [
         "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:4:39 [TS2307] Cannot find module 'vue-component-type-helpers' or its corresponding type declarations."
+        "error:44:35 [TS2339] Property 'removeEntry' does not exist on type '{}'."
       ]
     },
     {
@@ -1473,7 +1474,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 285,
+  "errorCount": 286,
   "warningCount": 0,
   "fileCount": 262
 }

@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use oxc_span::SourceType;
 use vize_carton::{FxHashMap, String};
 
-use super::bridge::{CorsaBridge, normalize_document_uri};
+use super::bridge::CorsaBridge;
 use super::types::CorsaBridgeError;
 use super::vue_dependencies::collect_script_dependency_documents;
 use super::vue_document::CorsaVueVirtualDocumentOptions;
@@ -22,10 +22,17 @@ pub struct CorsaScriptVirtualDocumentRequest<'a> {
 }
 
 struct BuiltScriptVirtualProject {
-    request_uri: String,
+    host: CorsaScriptVirtualDocument,
     documents: Vec<(String, String)>,
     session_project_root: Option<PathBuf>,
     materialized_changes: crate::batch::virtual_project::MaterializedFileDelta,
+}
+
+/// The exact native script overlay and its import-coordinate transform.
+pub struct CorsaScriptVirtualDocument {
+    pub request_uri: String,
+    pub code: String,
+    pub import_source_map: crate::batch::ImportSourceMap,
 }
 
 impl CorsaBridge {
@@ -34,7 +41,7 @@ impl CorsaBridge {
     pub async fn open_script_virtual_document_with_vue_dependencies(
         &self,
         request: CorsaScriptVirtualDocumentRequest<'_>,
-    ) -> Result<String, CorsaBridgeError> {
+    ) -> Result<CorsaScriptVirtualDocument, CorsaBridgeError> {
         let virtual_ts_options = request.virtual_ts_options;
         let project = build_script_virtual_project_with_package_routes(
             request,
@@ -52,7 +59,7 @@ impl CorsaBridge {
             project.materialized_changes,
         )
         .await?;
-        Ok(project.request_uri)
+        Ok(project.host)
     }
 }
 
@@ -93,7 +100,7 @@ pub(super) fn build_script_virtual_project(
     )
     .expect("script virtual project");
     (
-        project.request_uri,
+        project.host.request_uri,
         project.documents,
         project.session_project_root,
         project.materialized_changes,
@@ -120,11 +127,16 @@ fn build_script_virtual_project_with_package_routes(
         request.options,
         environment,
     )?;
-    let request_uri = alias_context
-        .mirror_virtual_path(request.source_path)
-        .map(|path| crate::file_uri::path_to_file_uri(&path))
-        .unwrap_or_else(|| normalize_document_uri(request.request_path));
-    let mut documents = vec![(request_uri.clone(), request.code.into())];
+    let (path, generated) = alias_context
+        .editor_script_document(request.source_path)
+        .ok_or_else(|| {
+            CorsaBridgeError::CommunicationError(vize_carton::cstr!(
+                "Canon did not retain script projection for {}",
+                request.source_path.display()
+            ))
+        })?;
+    let request_uri = crate::file_uri::path_to_file_uri(&path);
+    let mut documents = vec![(request_uri.clone(), generated.code.clone())];
     collect_script_dependency_documents(
         &mut documents,
         request.source_path,
@@ -137,7 +149,11 @@ fn build_script_virtual_project_with_package_routes(
     );
     let session_project_root = alias_context.mirror_project_root_for_source(request.source_path);
     Ok(BuiltScriptVirtualProject {
-        request_uri,
+        host: CorsaScriptVirtualDocument {
+            request_uri,
+            code: generated.code,
+            import_source_map: generated.source_map,
+        },
         documents,
         session_project_root,
         materialized_changes: alias_context.materialized_changes.clone(),

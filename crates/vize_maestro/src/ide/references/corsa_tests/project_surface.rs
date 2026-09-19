@@ -135,6 +135,7 @@ const outside = sharedLabel(999)
             corsa_path: Some(tsgo_path),
             working_dir: Some(project.path().to_path_buf()),
             timeout_ms: 30_000,
+            enable_profiling: true,
             ..Default::default()
         }));
         bridge.spawn().await.expect("tsgo session");
@@ -148,6 +149,15 @@ const outside = sharedLabel(999)
             ReferencesService::references_with_corsa(&ctx, true, Some(Arc::clone(&bridge)))
                 .await
                 .expect("project references");
+        assert_eq!(
+            bridge
+                .profiler()
+                .get("corsa_project_synchronize")
+                .expect("project synchronization metric")
+                .count,
+            1,
+            "the complete workspace query must synchronize one native project revision"
+        );
         bridge.shutdown().await.expect("shutdown");
 
         let generated_references = components

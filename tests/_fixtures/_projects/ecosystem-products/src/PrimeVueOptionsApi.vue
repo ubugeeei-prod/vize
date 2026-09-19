@@ -1,5 +1,5 @@
 <script lang="ts">
-import type {} from "./shims";
+import type {} from "./vue-global-components";
 import { defineComponent } from "vue";
 import PrimeButton from "primevue/button";
 import InputText from "primevue/inputtext";

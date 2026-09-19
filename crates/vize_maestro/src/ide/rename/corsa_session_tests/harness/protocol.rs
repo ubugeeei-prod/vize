@@ -10,6 +10,7 @@ use std::{
 use vize_s0::cstr;
 
 mod executable;
+mod identity;
 mod proxy;
 mod readiness;
 
@@ -202,21 +203,7 @@ pub(super) fn assert_graceful_lsp_lifecycle(
         .into());
     }
     let (path, trace) = &lsp_traces[0];
-    if find_bytes(trace, canonical_root_uri.as_bytes()).is_none() {
-        return Err(cstr!(
-            "editor LSP trace {} did not use canonical root URI {canonical_root_uri}",
-            path.display()
-        )
-        .into());
-    }
-    if logical_root_uri != canonical_root_uri
-        && find_bytes(trace, logical_root_uri.as_bytes()).is_some()
-    {
-        return Err(cstr!(
-            "editor LSP trace {} mixed logical root URI {logical_root_uri} with canonical {canonical_root_uri}",
-            path.display()
-        ).into());
-    }
+    identity::assert_mirror_root(trace, canonical_root_uri, logical_root_uri)?;
     let did_open = find_bytes(trace, b"textDocument/didOpen")
         .ok_or_else(|| cstr!("missing didOpen in {}", path.display()))?;
     let shutdown = find_bytes(trace, b"\"shutdown\"").ok_or_else(|| {

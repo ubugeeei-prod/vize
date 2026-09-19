@@ -14,6 +14,10 @@ mod cache;
 pub(in crate::corsa_bridge) use cache::SessionCache;
 pub(in crate::corsa_bridge) use cache::recover_lock;
 use cache::{ContextFingerprint, ProjectMember};
+#[path = "context/namespace.rs"]
+mod namespace;
+#[path = "context/prepare.rs"]
+mod prepare;
 #[path = "context/routes.rs"]
 mod routes;
 
@@ -53,103 +57,6 @@ pub(in crate::corsa_bridge) struct AliasContext {
 }
 
 impl AliasContext {
-    /// Build or reuse a context while every route input remains unchanged.
-    #[allow(clippy::disallowed_types)]
-    pub(in crate::corsa_bridge) fn for_host_cached(
-        source_path: &Path,
-        content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
-        options: super::super::vue_document::CorsaVueVirtualDocumentOptions,
-        environment: super::super::vue_document::CorsaProjectEnvironment<'_>,
-    ) -> Result<PreparedAliasContext, super::super::types::CorsaBridgeError> {
-        let fingerprint = ContextFingerprint::capture(
-            source_path,
-            content,
-            overlays,
-            options,
-            environment.virtual_ts_options,
-            environment.project_root,
-            environment.tsconfig_path,
-        );
-        if let Some(context) = environment
-            .editor_session
-            .cache()
-            .get(source_path, &fingerprint)
-        {
-            return Ok(PreparedAliasContext {
-                context,
-                materialized_changes: Default::default(),
-            });
-        }
-        let mut resolver = environment.package_routes.clone();
-        let context = build::build(
-            source_path,
-            content,
-            overlays,
-            &mut resolver,
-            options,
-            environment,
-        )?;
-        let mut fingerprint = fingerprint;
-        fingerprint.stamp(&context);
-        let mut cache = environment.editor_session.cache();
-        if let Some(context) = cache.get(source_path, &fingerprint) {
-            return Ok(PreparedAliasContext {
-                context,
-                materialized_changes: Default::default(),
-            });
-        }
-        let mut materialized_changes = Default::default();
-        if let Some(mirror) = context.mirror.as_ref() {
-            let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
-            let expected_files = mirror.expected_materialized_files();
-            let package_links = mirror.desired_package_links();
-            let query_path = mirror.preferred_materialized_path_for_original(&source_path);
-            let (preserved_files, preserved_package_links, mut query_paths) = cache
-                .project_union_snapshot(
-                    mirror.virtual_root(),
-                    &source_path,
-                    fingerprint.overlay_identity(),
-                );
-            if let Some(query_path) = query_path.as_ref() {
-                query_paths.push(query_path.clone());
-            }
-            query_paths.sort();
-            query_paths.dedup();
-            let previous = cache.materialized_snapshot(mirror.virtual_root());
-            let current = mirror
-                .materialize_editor_union(&preserved_files, &preserved_package_links, &query_paths)
-                .map_err(|error| {
-                    super::super::types::CorsaBridgeError::CommunicationError(vize_carton::cstr!(
-                        "Failed to materialize Canon project union: {error}"
-                    ))
-                })?;
-            materialized_changes = current.diff(&previous);
-            cache.set_materialized_snapshot(mirror.virtual_root().to_path_buf(), current);
-            cache.record_project_member(
-                mirror.virtual_root().to_path_buf(),
-                source_path,
-                ProjectMember {
-                    expected_files,
-                    package_links,
-                    query_path,
-                    stamps: fingerprint.input_stamps(),
-                    overlay_identity: fingerprint.overlay_identity(),
-                },
-            );
-        }
-        let context = std::sync::Arc::new(context);
-        cache.insert(
-            source_path.to_path_buf(),
-            fingerprint,
-            std::sync::Arc::clone(&context),
-        );
-        Ok(PreparedAliasContext {
-            context,
-            materialized_changes,
-        })
-    }
-
     #[cfg(test)]
     pub(in crate::corsa_bridge) fn for_host(
         source_path: &Path,
@@ -160,6 +67,7 @@ impl AliasContext {
             source_path,
             content,
             overlays,
+            &[],
             &mut crate::PackageRouteResolver::default(),
             Default::default(),
             super::super::vue_document::CorsaProjectEnvironment {
@@ -245,6 +153,20 @@ impl AliasContext {
         self.mirror
             .as_ref()?
             .preferred_materialized_path_for_original(source)
+    }
+
+    pub(in crate::corsa_bridge) fn editor_vue_document(
+        &self,
+        source: &Path,
+    ) -> Option<(PathBuf, crate::batch::virtual_project::VueDocumentVirtualTs)> {
+        self.mirror.as_ref()?.editor_vue_document(source)
+    }
+
+    pub(in crate::corsa_bridge) fn editor_script_document(
+        &self,
+        source: &Path,
+    ) -> Option<(PathBuf, crate::batch::RewriteResult)> {
+        self.mirror.as_ref()?.editor_script_document(source)
     }
 
     pub(in crate::corsa_bridge) fn virtual_ts_options(

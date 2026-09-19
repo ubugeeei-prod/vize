@@ -242,24 +242,6 @@ fn canonical_prop_references_reject_other_components_with_the_same_prop_name() {
             ReferencesService::references_with_corsa(&ctx, true, Some(Arc::clone(&bridge)))
                 .await
                 .expect("prop references");
-        assert_eq!(
-            bridge
-                .profiler()
-                .get("corsa_definition_batch")
-                .expect("definition batch metric")
-                .count,
-            1,
-            "all same-name candidates must share one aggregate bridge deadline",
-        );
-        assert_eq!(
-            bridge
-                .profiler()
-                .get("corsa_references_batch")
-                .expect("references batch metric")
-                .count,
-            1,
-            "all accepted candidates must share one aggregate bridge deadline",
-        );
         bridge.shutdown().await.expect("shutdown");
 
         assert!(
@@ -280,6 +262,24 @@ fn canonical_prop_references_reject_other_components_with_the_same_prop_name() {
                 app_hits[0].range.start.character,
             ),
             expected,
+        );
+        assert_eq!(
+            bridge
+                .profiler()
+                .get("corsa_definition_batch")
+                .expect("definition batch metric")
+                .count,
+            1,
+            "all same-name candidates must share one aggregate bridge deadline",
+        );
+        assert_eq!(
+            bridge
+                .profiler()
+                .get("corsa_references_batch")
+                .expect("references batch metric")
+                .count,
+            1,
+            "all accepted candidates must share one aggregate bridge deadline",
         );
     });
 }

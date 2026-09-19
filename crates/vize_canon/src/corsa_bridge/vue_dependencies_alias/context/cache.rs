@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 
 use vize_carton::FxHashMap;
 
-use super::AliasContext;
+use super::{AliasContext, namespace::editor_namespace_identity};
 
 const CONTEXT_CACHE_CAPACITY: usize = 8;
 
@@ -21,7 +21,7 @@ pub(in crate::corsa_bridge) struct SessionCache {
 pub(super) struct ProjectMember {
     pub(super) expected_files: vize_carton::FxHashSet<PathBuf>,
     pub(super) package_links: vize_carton::FxHashMap<PathBuf, PathBuf>,
-    pub(super) query_path: Option<PathBuf>,
+    pub(super) query_paths: Vec<PathBuf>,
     pub(super) stamps: Vec<crate::package_route::stamp::InputStamp>,
     pub(super) overlay_identity: u64,
 }
@@ -71,7 +71,9 @@ impl SessionCache {
                 .min_by_key(|(_, cached)| cached.last_used)
                 .map(|(path, _)| path.clone());
             if let Some(lru) = lru {
-                self.evict_source(&lru);
+                // Compiled context eviction must not remove live project
+                // members while a references query opens the workspace.
+                self.slots.remove(&lru);
             }
         }
         self.clock = self.clock.wrapping_add(1);
@@ -83,6 +85,17 @@ impl SessionCache {
                 last_used: self.clock,
             },
         );
+        let active_sources = self
+            .slots
+            .keys()
+            .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
+            .collect::<vize_carton::FxHashSet<_>>();
+        self.project_members.retain(|_, members| {
+            members.keys().any(|path| {
+                active_sources.contains(&vize_carton::path::canonicalize_non_verbatim(path))
+            })
+        });
+        self.prune_project_state();
     }
 
     pub(super) fn project_union_snapshot(
@@ -124,9 +137,7 @@ impl SessionCache {
                         })
                         .or_insert_with(|| target.clone());
                 }
-                if let Some(query_path) = member.query_path.as_ref() {
-                    query_paths.push(query_path.clone());
-                }
+                query_paths.extend(member.query_paths.iter().cloned());
             }
         }
         query_paths.sort();
@@ -162,20 +173,6 @@ impl SessionCache {
         }
         self.project_members
             .retain(|_, members| !members.is_empty());
-    }
-
-    /// Capacity eviction is the only path that can forget the last disk
-    /// snapshot immediately. Invalidated or deleted members retain it until
-    /// the next union build so Corsa receives exact changed/deleted deltas.
-    fn evict_source(&mut self, source_path: &Path) {
-        let canonical = vize_carton::path::canonicalize_non_verbatim(source_path);
-        self.slots.remove(source_path);
-        self.slots.remove(&canonical);
-        for members in self.project_members.values_mut() {
-            members.remove(source_path);
-            members.remove(&canonical);
-        }
-        self.prune_project_state();
     }
 
     fn prune_project_state(&mut self) {
@@ -271,6 +268,7 @@ impl ContextFingerprint {
             // The materialized closure intentionally keeps content digests:
             // same-mtime, same-length edits must invalidate an editor session.
             paths.extend(mirror.registered_original_paths_sorted());
+            paths.extend(mirror.editor_resolution_inputs());
         }
         paths.extend(context.route_inputs.iter().cloned());
         paths.sort();
@@ -279,6 +277,22 @@ impl ContextFingerprint {
             .into_iter()
             .map(crate::package_route::stamp::InputStamp::capture)
             .collect();
+    }
+
+    pub(super) fn include_requested_sources(&mut self, sources: &[(PathBuf, &str)]) {
+        if sources.is_empty() {
+            return;
+        }
+        use std::hash::{Hash, Hasher};
+        let mut hash = std::hash::DefaultHasher::new();
+        self.host_content.hash(&mut hash);
+        let mut sources = sources.iter().collect::<Vec<_>>();
+        sources.sort_by(|left, right| left.0.cmp(&right.0));
+        for (path, source) in sources {
+            path.hash(&mut hash);
+            source.hash(&mut hash);
+        }
+        self.host_content = hash.finish();
     }
 
     fn stamps_still_valid(&self) -> bool {
@@ -297,43 +311,6 @@ impl ContextFingerprint {
 }
 
 #[allow(clippy::disallowed_methods)]
-pub(super) fn editor_namespace_identity(
-    options: crate::corsa_bridge::vue_document::CorsaVueVirtualDocumentOptions,
-    virtual_ts_options: &crate::virtual_ts::VirtualTsOptions,
-    project_root: Option<&Path>,
-    tsconfig_path: Option<&Path>,
-) -> u64 {
-    use std::hash::{Hash, Hasher};
-    let mut generation_options = std::hash::DefaultHasher::new();
-    options.options_api.hash(&mut generation_options);
-    options.legacy_vue2.hash(&mut generation_options);
-    options
-        .experimental_patterned_template
-        .hash(&mut generation_options);
-    options.dialect.hash(&mut generation_options);
-    options
-        .preserve_event_navigation
-        .hash(&mut generation_options);
-    for global in &virtual_ts_options.template_globals {
-        global.name.hash(&mut generation_options);
-        global.type_annotation.hash(&mut generation_options);
-        global.default_value.hash(&mut generation_options);
-    }
-    virtual_ts_options.css_modules.hash(&mut generation_options);
-    virtual_ts_options
-        .auto_import_stubs
-        .hash(&mut generation_options);
-    virtual_ts_options
-        .external_template_bindings
-        .hash(&mut generation_options);
-    virtual_ts_options
-        .reference_paths
-        .hash(&mut generation_options);
-    project_root.hash(&mut generation_options);
-    tsconfig_path.hash(&mut generation_options);
-    generation_options.finish()
-}
-
 #[cfg(test)]
 #[path = "cache/tests.rs"]
 mod tests;

@@ -124,12 +124,12 @@ pub use vize_s0::i18n::Locale;
 #[cfg(feature = "native")]
 pub use corsa_bridge::{
     CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaMaterializedMappingKind,
-    CorsaMaterializedSource, CorsaScriptVirtualDocumentRequest, CorsaVueVirtualDependency,
-    CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions, LspCompletionItem, LspCompletionList,
-    LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,
-    LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent,
-    LspParameterInformation, LspParameterLabel, LspPosition, LspRange, LspSignatureHelp,
-    LspSignatureInformation, VIRTUAL_URI_SCHEME,
+    CorsaMaterializedSource, CorsaScriptVirtualDocument, CorsaScriptVirtualDocumentRequest,
+    CorsaVueVirtualDependency, CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
+    LspCompletionItem, LspCompletionList, LspCompletionResponse, LspDefinitionResponse,
+    LspDiagnostic, LspDocumentation, LspHover, LspHoverContents, LspLocation, LspLocationLink,
+    LspMarkedString, LspMarkupContent, LspParameterInformation, LspParameterLabel, LspPosition,
+    LspRange, LspSignatureHelp, LspSignatureInformation, VIRTUAL_URI_SCHEME,
 };
 
 // Re-export batch type checker

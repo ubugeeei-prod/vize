@@ -1,20 +1,27 @@
-//! Callback ownership comes from the expression AST, including destructuring,
-//! generic signatures and defaults that contain nested arrows or comments.
+//! Event ownership comes from the complete expression AST, including generic
+//! callbacks, destructuring and comments. Inline statements alone bind `$event`.
 
 use super::slot_props::extract_slot_binding_names;
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Expression, Statement};
+use oxc_ast::ast::{ChainElement, Expression, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{CompactString, SmallVec, cstr};
 
-pub fn extract_inline_callback_params(source: &str) -> Option<SmallVec<[CompactString; 4]>> {
-    if !source.contains("=>") && !source.contains("function") {
-        return None;
-    }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EventHandlerExpression {
+    Inline,
+    Reference,
+    Callback {
+        params: SmallVec<[CompactString; 4]>,
+        accepts_event: bool,
+    },
+}
+
+pub fn classify_event_handler(source: &str) -> EventHandlerExpression {
     let allocator = Allocator::default();
-    // parse_expression accepts a valid prefix. A full wrapped program also
-    // rejects a following call/statement after a function declaration.
+    // Parsing the entire wrapped program rejects valid expression prefixes
+    // followed by statements, which must retain their implicit event scope.
     let wrapped = cstr!("({source}\n)");
     let parsed = Parser::new(&allocator, &wrapped, SourceType::ts()).parse();
     let parsed = if parsed.panicked || !parsed.diagnostics.is_empty() {
@@ -23,15 +30,29 @@ pub fn extract_inline_callback_params(source: &str) -> Option<SmallVec<[CompactS
         parsed
     };
     if parsed.panicked || !parsed.diagnostics.is_empty() || parsed.program.body.len() != 1 {
-        return None;
+        return EventHandlerExpression::Inline;
     }
     let Statement::ExpressionStatement(statement) = &parsed.program.body[0] else {
-        return None;
+        return EventHandlerExpression::Inline;
     };
     let parameters = match statement.expression.get_inner_expression() {
         Expression::ArrowFunctionExpression(function) => &function.params,
         Expression::FunctionExpression(function) => &function.params,
-        _ => return None,
+        Expression::Identifier(identifier) if identifier.name != "undefined" => {
+            return EventHandlerExpression::Reference;
+        }
+        Expression::StaticMemberExpression(_) | Expression::ComputedMemberExpression(_) => {
+            return EventHandlerExpression::Reference;
+        }
+        Expression::ChainExpression(chain)
+            if matches!(
+                chain.expression,
+                ChainElement::StaticMemberExpression(_) | ChainElement::ComputedMemberExpression(_)
+            ) =>
+        {
+            return EventHandlerExpression::Reference;
+        }
+        _ => return EventHandlerExpression::Inline,
     };
     let mut bindings = SmallVec::new();
     for parameter in &parameters.items {
@@ -40,7 +61,20 @@ pub fn extract_inline_callback_params(source: &str) -> Option<SmallVec<[CompactS
     if let Some(rest) = &parameters.rest {
         extract_slot_binding_names(&rest.rest.argument, 0, &mut bindings);
     }
-    Some(bindings.into_iter().map(|(name, _)| name).collect())
+    EventHandlerExpression::Callback {
+        params: bindings.into_iter().map(|(name, _)| name).collect(),
+        accepts_event: !parameters.items.is_empty() || parameters.rest.is_some(),
+    }
+}
+
+pub fn extract_inline_callback_params(source: &str) -> Option<SmallVec<[CompactString; 4]>> {
+    if !source.contains("=>") && !source.contains("function") {
+        return None;
+    }
+    match classify_event_handler(source) {
+        EventHandlerExpression::Callback { params, .. } => Some(params),
+        _ => None,
+    }
 }
 
 #[cfg(test)]

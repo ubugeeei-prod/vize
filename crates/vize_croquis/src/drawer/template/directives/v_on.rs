@@ -6,7 +6,7 @@
 //! - Simple handler reference tracking
 
 use crate::drawer::Drawer;
-use crate::drawer::helpers::extract_inline_callback_params;
+use crate::drawer::helpers::{EventHandlerExpression, classify_event_handler};
 use crate::scope::EventHandlerScopeData;
 use vize_carton::{CompactString, profile};
 use vize_relief::ExpressionNode;
@@ -58,11 +58,15 @@ impl Drawer {
             // Every named listener runs in a handler scope. Whether its body
             // contains parentheses, semicolons or nested callbacks cannot change
             // that ownership; statement bodies must never become `void (body)`.
-            let params = profile!(
-                "croquis.template.callback.extract_params",
-                extract_inline_callback_params(content)
+            let shape = profile!(
+                "croquis.template.event.classify",
+                classify_event_handler(content)
             );
-            let has_implicit_event = params.is_none();
+            let has_implicit_event = matches!(shape, EventHandlerExpression::Inline);
+            let params = match shape {
+                EventHandlerExpression::Callback { params, .. } => params,
+                _ => Default::default(),
+            };
             let event_name = match dir.arg.as_ref().expect("named event") {
                 ExpressionNode::Simple(argument) => CompactString::new(argument.content),
                 ExpressionNode::Compound(argument) => {
@@ -73,7 +77,7 @@ impl Drawer {
                 EventHandlerScopeData {
                     event_name,
                     has_implicit_event,
-                    param_names: params.unwrap_or_default().into_iter().collect(),
+                    param_names: params.into_iter().collect(),
                     handler_expression: Some(CompactString::new(content)),
                     target_component,
                 },

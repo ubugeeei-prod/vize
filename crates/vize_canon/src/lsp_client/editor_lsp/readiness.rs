@@ -36,18 +36,19 @@ impl EditorLspSession {
             query_document,
             &self.documents,
         );
-        for readiness_document in &readiness_documents {
-            let readiness_uri = Uri::from_str(readiness_document).map_err(|error| {
-                cstr!("Invalid LSP readiness document URI {readiness_document}: {error}")
-            })?;
-            super::super::diagnostics_lsp::request_lsp_document_diagnostic_ack(
-                &self.client,
-                &readiness_uri,
-            )
-            .map_err(|error| {
-                cstr!("Failed to establish editor LSP readiness for {readiness_document}: {error}")
-            })?;
-        }
+        let readiness_uris = readiness_documents
+            .iter()
+            .map(|readiness_document| {
+                Uri::from_str(readiness_document).map_err(|error| {
+                    cstr!("Invalid LSP readiness document URI {readiness_document}: {error}")
+                })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        super::super::diagnostics_lsp::request_lsp_document_diagnostic_acks(
+            &self.client,
+            &readiness_uris,
+        )
+        .map_err(|error| cstr!("Failed to establish editor LSP generation readiness: {error}"))?;
         self.dirty_documents.clear();
         self.query_barrier_required = false;
         self.unacknowledged_notifications = 0;

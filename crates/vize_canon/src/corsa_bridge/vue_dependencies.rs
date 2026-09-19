@@ -294,22 +294,32 @@ pub(super) fn queue_script_dependency(
         return;
     };
     let source_type = source_type_for_path(path);
-    let script_dir = parent_dir(path);
-    let rewritten = rewriter
-        .rewrite_with_alias_resolver(
-            &content,
-            source_type,
-            Some(&script_dir),
-            &|specifier, mode| {
-                alias_context
-                    .resolve_relative_vue_to_mirror_path(specifier, &script_dir)
-                    .or_else(|| {
-                        alias_context.resolve_specifier_to_mirror_path(specifier, &script_dir, mode)
-                    })
-            },
-        )
-        .code;
-    let uri = normalize_document_uri(path_to_file_uri(path).as_str());
+    let (uri, rewritten) =
+        if let Some((path, generated)) = alias_context.editor_script_document(&key) {
+            (path_to_file_uri(&path), generated.code)
+        } else {
+            let script_dir = parent_dir(path);
+            let rewritten = rewriter
+                .rewrite_with_alias_resolver(
+                    &content,
+                    source_type,
+                    Some(&script_dir),
+                    &|specifier, mode| {
+                        alias_context
+                            .resolve_relative_vue_to_mirror_path(specifier, &script_dir)
+                            .or_else(|| {
+                                alias_context.resolve_specifier_to_mirror_path(
+                                    specifier,
+                                    &script_dir,
+                                    mode,
+                                )
+                            })
+                    },
+                )
+                .code;
+            let uri = normalize_document_uri(path_to_file_uri(path).as_str());
+            (uri, rewritten)
+        };
     imports.documents.push((uri, rewritten));
     imports.queue.push_back(DependencyScan::Script {
         path: path.to_path_buf(),

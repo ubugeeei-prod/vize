@@ -1,215 +1,22 @@
-//! Lightweight JS scanning that classifies an `@event` handler body.
-//!
-//! A handler is either a callable reference (`handler`, `form?.submit`,
-//! `handlers[key]`), an inline callback (`(v) => take(v)`, `function () {}`),
-//! or a statement to run as-is. The three shapes are generated differently, so
-//! this scanning decides which; it deliberately stays a scanner rather than a
-//! parser, matching only the spellings a template attribute can hold.
+//! Canon consumes the same AST classifier as Croquis so callback ownership
+//! cannot depend on a second handwritten JavaScript scanner.
 
-use super::expression_scanner::{matching_paren_index, skip_js_trivia, top_level_arrow_index};
+use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
 
 pub(super) fn inline_callback_event_argument(content: &str) -> Option<&'static str> {
-    let trimmed = strip_outer_parentheses(content.trim());
-    if trimmed.is_empty() {
-        return None;
-    }
-
-    let function = strip_async_prefix(trimmed);
-    if let Some(rest) = function.strip_prefix("function")
-        && !rest.chars().next().is_some_and(is_identifier_continue)
-    {
-        let paren_start = function.len() - rest.len() + rest.find('(')?;
-        let paren_end = matching_paren_index(function, paren_start)?;
-        let inner = &function[paren_start + 1..paren_end];
-        return Some(if inner.trim().is_empty() {
-            ""
-        } else {
-            "$event"
-        });
-    }
-
-    if let Some(arrow_idx) = top_level_arrow_index(trimmed) {
-        let before_arrow = strip_async_prefix(trimmed[..arrow_idx].trim_end()).trim();
-        if before_arrow.is_empty() {
-            return None;
+    match classify_event_handler(content) {
+        EventHandlerExpression::Callback { accepts_event, .. } => {
+            Some(if accepts_event { "$event" } else { "" })
         }
-
-        if let Some(is_empty) = parenthesized_params_are_empty(before_arrow) {
-            return Some(if is_empty { "" } else { "$event" });
-        }
-
-        return is_identifier_segment(before_arrow).then_some("$event");
+        _ => None,
     }
-    None
-}
-
-fn strip_outer_parentheses(mut input: &str) -> &str {
-    while input.starts_with('(')
-        && matching_paren_index(input, 0).is_some_and(|close| close == input.len() - 1)
-    {
-        input = input[1..input.len() - 1].trim();
-    }
-    input
-}
-
-fn strip_async_prefix(input: &str) -> &str {
-    let Some(rest) = input.strip_prefix("async") else {
-        return input;
-    };
-    if rest.chars().next().is_some_and(is_identifier_continue) {
-        input
-    } else {
-        let content_start = skip_js_trivia(rest, 0);
-        if content_start == 0 {
-            input
-        } else {
-            &rest[content_start..]
-        }
-    }
-}
-
-fn parenthesized_params_are_empty(input: &str) -> Option<bool> {
-    if !input.starts_with('(') {
-        return None;
-    }
-    let close = matching_paren_index(input, 0)?;
-    let suffix = &input[close + 1..];
-    if skip_js_trivia(suffix, 0) != suffix.len() {
-        return None;
-    }
-    Some(input[1..close].trim().is_empty())
 }
 
 pub(super) fn is_callable_handler_reference(content: &str) -> bool {
-    let trimmed = content.trim();
-    if trimmed.is_empty() || trimmed == "undefined" {
-        return false;
-    }
-
-    let Some(mut idx) = parse_identifier_segment(trimmed, 0) else {
-        return false;
-    };
-
-    loop {
-        idx = skip_ascii_whitespace(trimmed, idx);
-        if idx == trimmed.len() {
-            return true;
-        }
-
-        let rest = &trimmed[idx..];
-        if rest.starts_with("?.[") {
-            idx += 2;
-            let Some(next_idx) = parse_bracket_member(trimmed, idx) else {
-                return false;
-            };
-            idx = next_idx;
-        } else if rest.starts_with("?.") {
-            let Some(next_idx) = parse_identifier_segment(trimmed, idx + 2) else {
-                return false;
-            };
-            idx = next_idx;
-        } else if rest.starts_with('.') {
-            let Some(next_idx) = parse_identifier_segment(trimmed, idx + 1) else {
-                return false;
-            };
-            idx = next_idx;
-        } else if rest.starts_with('[') {
-            let Some(next_idx) = parse_bracket_member(trimmed, idx) else {
-                return false;
-            };
-            idx = next_idx;
-        } else {
-            return false;
-        }
-    }
-}
-
-fn is_identifier_segment(segment: &str) -> bool {
-    let mut chars = segment.chars();
-    let Some(first) = chars.next() else {
-        return false;
-    };
-
-    if !(first == '_' || first == '$' || first.is_alphabetic()) {
-        return false;
-    }
-
-    chars.all(|ch| ch == '_' || ch == '$' || ch.is_alphanumeric())
-}
-
-fn parse_identifier_segment(input: &str, start: usize) -> Option<usize> {
-    let mut chars = input.get(start..)?.char_indices();
-    let (_, first) = chars.next()?;
-    if !is_identifier_start(first) {
-        return None;
-    }
-
-    let mut end = start + first.len_utf8();
-    for (offset, ch) in chars {
-        if !is_identifier_continue(ch) {
-            break;
-        }
-        end = start + offset + ch.len_utf8();
-    }
-    Some(end)
-}
-
-fn is_identifier_start(ch: char) -> bool {
-    ch == '_' || ch == '$' || ch.is_alphabetic()
-}
-
-fn is_identifier_continue(ch: char) -> bool {
-    ch == '_' || ch == '$' || ch.is_alphanumeric()
-}
-
-fn skip_ascii_whitespace(input: &str, mut idx: usize) -> usize {
-    while input
-        .as_bytes()
-        .get(idx)
-        .is_some_and(|byte| byte.is_ascii_whitespace())
-    {
-        idx += 1;
-    }
-    idx
-}
-
-fn parse_bracket_member(input: &str, open_index: usize) -> Option<usize> {
-    if input.as_bytes().get(open_index) != Some(&b'[') {
-        return None;
-    }
-
-    let mut depth = 0u32;
-    let mut quote = None;
-    let mut escaped = false;
-    for (idx, ch) in input
-        .char_indices()
-        .skip_while(|(idx, _)| *idx < open_index)
-    {
-        if let Some(quote_ch) = quote {
-            if escaped {
-                escaped = false;
-            } else if ch == '\\' {
-                escaped = true;
-            } else if ch == quote_ch {
-                quote = None;
-            }
-            continue;
-        }
-
-        match ch {
-            '\'' | '"' | '`' => quote = Some(ch),
-            '[' => depth += 1,
-            ']' => {
-                depth = depth.checked_sub(1)?;
-                if depth == 0 {
-                    return Some(idx + ch.len_utf8());
-                }
-            }
-            _ => {}
-        }
-    }
-
-    None
+    matches!(
+        classify_event_handler(content),
+        EventHandlerExpression::Reference
+    )
 }
 
 #[cfg(test)]

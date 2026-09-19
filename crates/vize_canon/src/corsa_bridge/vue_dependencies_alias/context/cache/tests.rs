@@ -28,7 +28,7 @@ fn cache_evicts_only_the_least_recently_used_context() {
             ProjectMember {
                 expected_files: FxHashSet::default(),
                 package_links: FxHashMap::default(),
-                query_path: None,
+                query_paths: Vec::new(),
                 stamps: Vec::new(),
                 overlay_identity: fingerprint.overlay_identity(),
             },
@@ -53,6 +53,64 @@ fn cache_evicts_only_the_least_recently_used_context() {
         !cache
             .project_members
             .contains_key(std::path::Path::new("/mirror/0"))
+    );
+}
+
+#[test]
+fn context_eviction_preserves_members_of_a_live_native_project() {
+    let mut cache = SessionCache::default();
+    let overlays = FxHashMap::default();
+    let root = tempfile::tempdir().unwrap();
+    let virtual_root = root.path().join("mirror");
+    for index in 0..12 {
+        let path = root.path().join(cstr!("Host{index}.vue"));
+        std::fs::write(&path, "<template />").unwrap();
+        let context = Arc::new(AliasContext::for_host(&path, "<template />", &overlays));
+        let mut fingerprint = ContextFingerprint::capture(
+            &path,
+            "<template />",
+            &overlays,
+            Default::default(),
+            &Default::default(),
+            None,
+            None,
+        );
+        fingerprint.stamp(&context);
+        cache.record_project_member(
+            virtual_root.clone(),
+            path.clone(),
+            ProjectMember {
+                expected_files: FxHashSet::from_iter([
+                    virtual_root.join(cstr!("Host{index}.vue.ts"))
+                ]),
+                package_links: FxHashMap::default(),
+                query_paths: Vec::new(),
+                stamps: Vec::new(),
+                overlay_identity: fingerprint.overlay_identity(),
+            },
+        );
+        cache.insert(path, fingerprint, context);
+    }
+    assert_eq!(cache.slots.len(), 8);
+    assert_eq!(cache.project_members[&virtual_root].len(), 12);
+    let (files, _, _) = cache.project_union_snapshot(
+        &virtual_root,
+        &root.path().join("Other.vue"),
+        ContextFingerprint::capture(
+            &root.path().join("Other.vue"),
+            "",
+            &overlays,
+            Default::default(),
+            &Default::default(),
+            None,
+            None,
+        )
+        .overlay_identity(),
+    );
+    assert_eq!(
+        files.len(),
+        12,
+        "native project membership is independent of the heavy context cache"
     );
 }
 
@@ -105,7 +163,7 @@ fn project_union_drops_members_with_stale_input_stamps() {
         ProjectMember {
             expected_files: FxHashSet::from_iter([expected]),
             package_links: [(link.clone(), target.clone())].into_iter().collect(),
-            query_path: None,
+            query_paths: Vec::new(),
             stamps: vec![crate::package_route::stamp::InputStamp::capture(
                 manifest.clone(),
             )],
@@ -138,7 +196,7 @@ fn project_union_drops_members_from_a_closed_or_changed_overlay_epoch() {
         ProjectMember {
             expected_files: FxHashSet::from_iter([expected.clone()]),
             package_links: FxHashMap::default(),
-            query_path: Some(expected.clone()),
+            query_paths: vec![expected.clone()],
             stamps: Vec::new(),
             overlay_identity: 41,
         },

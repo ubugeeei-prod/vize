@@ -1,5 +1,5 @@
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 #[test]
 fn out_of_root_declarations_enforce_imported_contracts_and_report_removal() {
@@ -34,7 +34,10 @@ fn out_of_root_declarations_enforce_imported_contracts_and_report_removal() {
     let diagnostics = checker.check_file(&path, source).unwrap();
     assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
     assert_eq!(diagnostics[0].code, Some(2307));
-    assert!(diagnostics[0].message.contains("'../shared'"));
+    assert_eq!(
+        diagnostics[0].message,
+        "Cannot find module '../shared' or its corresponding type declarations."
+    );
 }
 
 #[test]

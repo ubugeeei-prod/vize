@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type {} from "./shims";
+import type {} from "./vue-global-components";
 import { computed, reactive, ref } from "vue";
 import {
   DialogClose,

@@ -36,6 +36,7 @@ mod completion_resolve;
 mod declaration;
 mod file_rename;
 mod implementation;
+mod materialized;
 mod readiness;
 mod requests;
 mod responder;

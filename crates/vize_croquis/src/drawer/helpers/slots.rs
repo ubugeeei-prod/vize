@@ -8,5 +8,7 @@
 mod callbacks;
 mod slot_props;
 
-pub use callbacks::extract_inline_callback_params;
+pub use callbacks::{
+    EventHandlerExpression, classify_event_handler, extract_inline_callback_params,
+};
 pub use slot_props::{extract_slot_prop_bindings, extract_slot_props};

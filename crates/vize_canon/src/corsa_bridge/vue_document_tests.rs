@@ -113,39 +113,43 @@ export { default as ReexportedChild } from "./Child.vue";
         virtual_project
             .host
             .code
-            .contains(cstr!("\"{}\"", mirror.join("Child.vue").display()).as_str())
+            .contains(cstr!("\"{}\"", mirror.join("Child.vue.ts").display()).as_str())
     );
     assert!(uris.contains(&path_to_file_uri(&mirror.join("Host.vue.ts")).as_str()));
     assert!(uris.contains(&path_to_file_uri(&mirror.join("Child.vue.ts")).as_str()));
     assert!(uris.contains(&path_to_file_uri(&mirror.join("GrandChild.vue.ts")).as_str()));
     assert!(
-        uris.contains(&path_to_file_uri(&util_path).as_str()),
+        uris.contains(&path_to_file_uri(&mirror.join(util_path.file_name().unwrap())).as_str()),
         "uris: {uris:?}\n{}",
         virtual_project.host.pre_rewrite_code,
     );
     let types_document = virtual_project
         .documents
         .iter()
-        .find(|(uri, _)| uri == path_to_file_uri(&types_path).as_str())
+        .find(|(uri, _)| {
+            uri == path_to_file_uri(&mirror.join(types_path.file_name().unwrap())).as_str()
+        })
         .map(|(_, content)| content.as_str())
         .expect("TS dependency document should be synced");
     assert!(
         types_document
-            .contains(cstr!("import(\"{}\")", mirror.join("Child.vue").display()).as_str())
+            .contains(cstr!("import(\"{}\")", mirror.join("Child.vue.ts").display()).as_str())
             && types_document
-                .contains(cstr!("from \"{}\"", mirror.join("Child.vue").display()).as_str()),
+                .contains(cstr!("from \"{}\"", mirror.join("Child.vue.ts").display()).as_str()),
         "TS dependency Vue specifiers must target virtual Vue modules:\n{types_document}",
     );
     assert!(
-        uris.contains(&path_to_file_uri(&helper_path).as_str()),
+        uris.contains(&path_to_file_uri(&mirror.join(helper_path.file_name().unwrap())).as_str()),
         "TS import-type dependencies must be synced too: {uris:?}",
     );
     assert!(
-        uris.contains(&path_to_file_uri(&schema_path).as_str()),
+        uris.contains(&path_to_file_uri(&mirror.join(schema_path.file_name().unwrap())).as_str()),
         "extensionless TS import-type dependencies must resolve generated d.ts files too: {uris:?}",
     );
     assert!(
-        uris.contains(&path_to_file_uri(&child_util_path).as_str()),
+        uris.contains(
+            &path_to_file_uri(&mirror.join(child_util_path.file_name().unwrap())).as_str()
+        ),
         "nested dependency imports must be synced too: {uris:?}",
     );
     assert_eq!(
@@ -259,4 +263,63 @@ const _broken = Broken;
         !src.join("Broken.vue.ts").exists(),
         "fallback dependency must be synced in-memory, not written next to the source file"
     );
+}
+
+#[test]
+fn materialized_and_opened_vue_projections_share_code_and_coordinates() {
+    let project = tempfile::tempdir().unwrap();
+    let host = project.path().join("Host.vue");
+    let child = project.path().join("Child.vue");
+    let source = "<script setup lang=\"ts\">import Child from './Child.vue';</script><template><Child :title=\"'hello'\" @save=\"() => {}\" /></template>";
+    let child_source = "<script setup lang=\"ts\">defineProps<{ title: string }>(); defineEmits<{ save: [] }>();</script><template>{{ title }}</template>";
+    std::fs::write(&host, source).unwrap();
+    std::fs::write(&child, child_source).unwrap();
+    for preserve_event_navigation in [false, true] {
+        let options = CorsaVueVirtualDocumentOptions {
+            preserve_event_navigation,
+            ..Default::default()
+        };
+        for content in [
+            child_source.to_owned(),
+            child_source.replace("title: string", "title: number"),
+        ] {
+            let virtual_project = build_vue_virtual_project_with_overlays(
+                &host,
+                source,
+                options,
+                &[(child.clone(), content.as_str())],
+            )
+            .unwrap();
+            let opened = &virtual_project.host;
+            for (uri, code, mappings) in
+                std::iter::once((&opened.request_uri, &opened.code, &opened.mappings)).chain(
+                    opened.dependencies.iter().map(|dependency| {
+                        (
+                            &dependency.request_uri,
+                            &dependency.code,
+                            &dependency.mappings,
+                        )
+                    }),
+                )
+            {
+                let materialized = opened
+                    .materialized_sources
+                    .iter()
+                    .find(|file| path_to_file_uri(&file.materialized_path) == *uri)
+                    .unwrap();
+                assert_eq!(
+                    *code, materialized.code,
+                    "one URI must identify one generated program"
+                );
+                assert_eq!(
+                    *mappings, materialized.mappings,
+                    "overlays must query coordinates from that exact program"
+                );
+                assert_eq!(
+                    std::fs::read_to_string(&materialized.materialized_path).unwrap(),
+                    code.as_str()
+                );
+            }
+        }
+    }
 }

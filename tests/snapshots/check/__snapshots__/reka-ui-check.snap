@@ -756,7 +756,8 @@
     {
       "file": "packages/core/src/ColorArea/story/_ColorArea.vue",
       "diagnostics": [
-        "error:2:47 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations."
+        "error:2:47 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations.",
+        "error:8:8 [TS2307] Cannot find module '../' or its corresponding type declarations."
       ]
     },
     {
@@ -793,12 +794,15 @@
     },
     {
       "file": "packages/core/src/ColorField/story/ColorFieldDemo.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:49 [TS2307] Cannot find module '../' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/ColorField/story/_ColorField.vue",
       "diagnostics": [
-        "error:2:47 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations."
+        "error:2:47 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations.",
+        "error:7:8 [TS2307] Cannot find module '../' or its corresponding type declarations."
       ]
     },
     {
@@ -857,14 +861,17 @@
     },
     {
       "file": "packages/core/src/ColorSlider/story/_ColorSlider.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:7:8 [TS2307] Cannot find module '../' or its corresponding type declarations."
+      ]
     },
     {
       "file": "packages/core/src/ColorSlider/story/_ColorSliderCompound.vue",
       "diagnostics": [
         "error:2:28 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations.",
         "error:4:29 [TS2307] Cannot find module '@/ColorSwatch' or its corresponding type declarations.",
-        "error:5:47 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations."
+        "error:5:47 [TS2307] Cannot find module '@/shared/color' or its corresponding type declarations.",
+        "error:10:8 [TS2307] Cannot find module '../' or its corresponding type declarations."
       ]
     },
     {
@@ -4845,7 +4852,8 @@
     {
       "file": "packages/core/src/Rating/story/RatingDefault.story.vue",
       "diagnostics": [
-        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations."
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
+        "error:4:61 [TS2307] Cannot find module '../' or its corresponding type declarations."
       ]
     },
     {
@@ -5594,7 +5602,8 @@
     {
       "file": "packages/core/src/Splitter/story/SplitterDirection.story.vue",
       "diagnostics": [
-        "error:2:38 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations."
+        "error:2:38 [TS2307] Cannot find module '@/shared/types' or its corresponding type declarations.",
+        "error:4:68 [TS2307] Cannot find module '../' or its corresponding type declarations."
       ]
     },
     {
@@ -7530,12 +7539,11 @@
     {
       "file": "packages/core/src/shared/withDefault.ts",
       "diagnostics": [
-        "error:2:37 [TS2307] Cannot find module 'vue-component-type-helpers' or its corresponding type declarations.",
         "error:4:34 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './useForwardExpose.js'?"
       ]
     }
   ],
-  "errorCount": 3107,
+  "errorCount": 3113,
   "warningCount": 0,
   "fileCount": 913
 }

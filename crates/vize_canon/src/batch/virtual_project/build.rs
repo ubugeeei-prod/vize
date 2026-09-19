@@ -42,6 +42,7 @@ pub(super) struct RegisteredFile {
     /// mapping without a disk re-read. Stored on the project, not the public
     /// `VirtualFile`.
     pub(super) original_content: CompactString,
+    pub(super) editor_pre_rewrite_code: Option<CompactString>,
     pub(super) passthrough_files: Vec<(PathBuf, PathBuf)>,
     pub(super) diagnostics: Vec<Diagnostic>,
     /// SFC whose script block is JavaScript: TypeScript diagnostics on it are
@@ -122,9 +123,11 @@ pub(super) fn build_vue_registered_file(
                 // Batch check/declaration codegen must keep the authored
                 // default export so Options API instance members survive
                 // `InstanceType<typeof Component>` (#4010).
-                preserve_authored_component: true,
+                preserve_authored_component: context.editor_document_options.is_none(),
                 component_name: None,
-                preserve_event_navigation: false,
+                preserve_event_navigation: context
+                    .editor_document_options
+                    .is_some_and(|options| options.preserve_event_navigation),
                 legacy_vue2: context.legacy_vue2,
                 dialect: context.dialect,
                 template_syntax: context.template_syntax,
@@ -196,6 +199,7 @@ pub(super) fn build_vue_registered_file(
         },
         extra_virtual_files,
         original_content: content.to_compact_string(),
+        editor_pre_rewrite_code: context.editor_document_options.map(|_| code),
         passthrough_files: collect_passthrough_modules(
             path,
             content,
