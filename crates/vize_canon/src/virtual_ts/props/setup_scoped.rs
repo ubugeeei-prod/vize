@@ -1,9 +1,4 @@
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{TSTypeName, TSTypeReference};
-use oxc_ast_visit::{Visit, walk};
-use oxc_parser::Parser;
-use oxc_span::SourceType;
-use vize_carton::{CompactString, FxHashSet, String, append, cstr};
+use vize_carton::{String, append, cstr};
 use vize_croquis::Croquis;
 
 use super::{append_model_props_type_literal, extract_generic_names};
@@ -70,7 +65,7 @@ pub(super) fn unused_generic_comment(
         return "";
     };
     let names = extract_generic_names(generic);
-    let type_references = collect_type_reference_names(props_source);
+    let type_references = crate::virtual_ts::type_dependencies::free_names(props_source);
     let uses_every_generic = type_references.is_some_and(|type_references| {
         names
             .split(',')
@@ -86,41 +81,6 @@ pub(super) fn unused_generic_comment(
         ""
     } else {
         "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
-    }
-}
-
-#[derive(Default)]
-struct TypeReferenceNames {
-    names: FxHashSet<CompactString>,
-}
-
-impl<'a> Visit<'a> for TypeReferenceNames {
-    fn visit_ts_type_reference(&mut self, ty: &TSTypeReference<'a>) {
-        record_type_name_root(&ty.type_name, &mut self.names);
-        walk::walk_ts_type_reference(self, ty);
-    }
-}
-
-fn collect_type_reference_names(props_source: &str) -> Option<FxHashSet<CompactString>> {
-    let source = cstr!("type __VizeProps = {props_source};");
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, source.as_str(), SourceType::ts()).parse();
-    if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return None;
-    }
-
-    let mut references = TypeReferenceNames::default();
-    references.visit_program(&parsed.program);
-    Some(references.names)
-}
-
-fn record_type_name_root(name: &TSTypeName<'_>, names: &mut FxHashSet<CompactString>) {
-    match name {
-        TSTypeName::IdentifierReference(identifier) => {
-            names.insert(CompactString::new(identifier.name.as_str()));
-        }
-        TSTypeName::QualifiedName(qualified) => record_type_name_root(&qualified.left, names),
-        TSTypeName::ThisExpression(_) => {}
     }
 }
 

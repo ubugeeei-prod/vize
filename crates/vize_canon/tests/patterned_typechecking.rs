@@ -60,6 +60,32 @@ const result = {} as Result<number>;
 </template>"#;
 
 #[test]
+fn pattern_declarations_are_requested_once_and_only_when_used() {
+    let mut options = SfcTypeCheckOptions::new("App.vue").with_virtual_ts();
+    options.experimental_patterned_template = true;
+    for (source, used) in [("<template><p>plain</p></template>", false), (APP, true)] {
+        let result = type_check_sfc(source, &options);
+        assert_eq!(result.virtual_ts_helpers.is_some(), used);
+        if let Some(helpers) = result.virtual_ts_helpers {
+            assert_eq!(
+                helpers.matches("declare namespace __VizePatterns").count(),
+                1
+            );
+        }
+        // Standalone virtual files embed their declarations; project files use
+        // the program-wide helper instead. Neither path repeats them per arm.
+        assert_eq!(
+            result
+                .virtual_ts
+                .unwrap()
+                .matches("declare namespace __VizePatterns")
+                .count(),
+            usize::from(used)
+        );
+    }
+}
+
+#[test]
 fn root_pattern_generates_typed_scopes_and_authored_mappings() {
     let mut options = SfcTypeCheckOptions::new("App.vue").with_virtual_ts();
     let off = type_check_sfc(APP, &options);

@@ -86,6 +86,12 @@ fn event_item(label: &str, detail: &str) -> CompletionItem {
 /// Vue directive completions, extended with opt-in document-specific directives.
 pub(crate) fn contextual_directive_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
     let mut completions = directive_completions();
+    if ctx.state.patterned_template_enabled() {
+        completions.extend([
+            items::directive_item("v-match", "Pattern matching subject", "v-match=\"$1\""),
+            items::directive_item("v-when", "Pattern matching arm", "v-when=\"$1\""),
+        ]);
+    }
     if ctx.dialect().is_petite_vue() {
         completions.extend(petite_vue_directive_completions());
     }

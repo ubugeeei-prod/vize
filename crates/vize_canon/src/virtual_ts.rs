@@ -43,6 +43,7 @@ mod strict_template_globals_tests;
 mod strict_template_scope_tests;
 #[cfg(test)]
 mod tests;
+mod type_dependencies;
 mod types;
 #[cfg(test)]
 mod unknown_props_tests;

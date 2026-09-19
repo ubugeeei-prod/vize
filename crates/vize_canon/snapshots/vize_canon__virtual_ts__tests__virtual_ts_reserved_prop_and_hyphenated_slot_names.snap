@@ -95,7 +95,7 @@ declare function __vizeComponentGlobalHtmlAttrs(value: __VizeComponentGlobalHtml
 type __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ? V : unknown;
 declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;
 type __VForEntry<T> = T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number];
-declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
+declare function __vForList<const T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : any;
 type __VizeSlotsResolver<C> = C extends { __vizeResolveSlots?: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeStructuralSlots<C>) : C extends { readonly __vizeSlots?: any } ? (props: any) => __VizeStructuralSlots<C> : __VizeIsAny<C> extends true ? (props: any) => any : (props: any) => __VizeStructuralSlots<C>;
 type __VizeSlotPayload<__S, __K extends PropertyKey> = __K extends keyof __S ? (NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any;
@@ -139,7 +139,7 @@ function __setup() {
     class?: string
   }>()
   
-  // @vize-map: 16304:16349 -> 0:78
+  // @vize-map: 16310:16355 -> 0:78
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

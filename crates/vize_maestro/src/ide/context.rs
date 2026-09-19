@@ -87,14 +87,15 @@ impl<'a> IdeContext<'a> {
             };
             if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) {
                 if completion {
-                    find_block_at_completion_offset(&descriptor, offset).or_else(|| {
-                        (state.patterned_template_enabled()
-                            && root_match_subject_at(&descriptor, offset))
-                        .then_some(BlockType::Template)
-                    })
+                    find_block_at_completion_offset(&descriptor, offset)
                 } else {
                     find_block_at_offset(&descriptor, offset)
                 }
+                .or_else(|| {
+                    (state.patterned_template_enabled()
+                        && root_match_subject_at(&descriptor, offset, completion))
+                    .then_some(BlockType::Template)
+                })
             } else {
                 None
             }
@@ -159,7 +160,11 @@ impl<'a> IdeContext<'a> {
     }
 }
 
-fn root_match_subject_at(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>, offset: usize) -> bool {
+fn root_match_subject_at(
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    offset: usize,
+    completion: bool,
+) -> bool {
     use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
     let Some(template) = descriptor.template.as_ref() else {
         return false;
@@ -194,7 +199,9 @@ fn root_match_subject_at(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>, offse
             && dir.arg.is_none()
             && dir.modifiers.is_empty()
             && offset >= template.loc.tag_start + expression.loc.span.start as usize
-            && offset <= template.loc.tag_start + expression.loc.span.end as usize
+            && (offset < template.loc.tag_start + expression.loc.span.end as usize
+                || (completion
+                    && offset == template.loc.tag_start + expression.loc.span.end as usize))
     })
 }
 
