@@ -57,6 +57,8 @@ test("checker quick fixes apply to the current authored Vue buffer without lint"
         target: "ESNext",
         module: "ESNext",
         moduleResolution: "Bundler",
+        jsx: "preserve",
+        jsxImportSource: "vue",
       },
       include: ["**/*.vue"],
     }),
