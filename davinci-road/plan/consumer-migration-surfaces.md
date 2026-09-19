@@ -47,7 +47,7 @@ observational guard for planning only. It does not change rollout state.
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
 | Compiler                   |          1186 |                   823 |               363 |             163 |     386 |            1047 |      688 |           592 |           744 |
 | Linter                     |           375 |                   375 |                 0 |             299 |     303 |             731 |      246 |           390 |           573 |
-| Typechecker                |           982 |                   271 |               711 |             449 |     226 |             928 |      729 |           538 |           776 |
+| Typechecker                |           982 |                   271 |               711 |             449 |     225 |             927 |      729 |           539 |           777 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            21 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            71 |
 | LSP                        |           320 |                   320 |                 0 |             120 |      63 |             379 |      124 |           189 |           434 |
@@ -137,7 +137,7 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 | S0               |         982 |             555 |      427 |
 | old AST/parser   |         184 |              47 |      137 |
 | Croquis analysis |         265 |             136 |      129 |
-| raw OXC          |         226 |             190 |       36 |
+| raw OXC          |         225 |             189 |       36 |
 
 #### Top source and manifest files
 
@@ -149,7 +149,7 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 | `crates/vize_canon/src/virtual_ts/scope/context.rs:3`                          | source   | S0 4<br>old AST/parser 4<br>Croquis analysis 3              |    11 |
 | `crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs:7` | source   | S0 10                                                       |    10 |
 
-Additional source/manifest rows are in the TSV: 358 omitted.
+Additional source/manifest rows are in the TSV: 359 omitted.
 
 #### Top test/dev files
 
