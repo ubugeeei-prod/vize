@@ -29,6 +29,7 @@ pub(super) fn generate_scope_node(
             super::patterns::generate_expression_match(ts, mappings, ctx, scope, indent)
         }
         ScopeData::VFor(data) => {
+            let capture_slots = ctx.slot_outlets.captures_scope(ctx.summary, scope.id);
             // Re-emit parent `v-if` around v-for source so TypeScript keeps narrowing (#1511).
             let enclosing_guard: Option<String> = ctx
                 .expressions_by_scope
@@ -59,6 +60,7 @@ pub(super) fn generate_scope_node(
                 &loop_indent,
                 scope,
                 ctx.template_prop_names,
+                capture_slots,
             );
             // Recheck positive terms for callback-captured object-property narrowing.
             let callback_guard = enclosing_guard.and_then(callback_vif_guard);
@@ -108,6 +110,10 @@ pub(super) fn generate_scope_node(
                 "canon.virtual_ts.child_scopes",
                 generate_child_scopes(ts, mappings, ctx, scope_id, &callback_indent)
             );
+            if capture_slots {
+                ctx.slot_outlets
+                    .emit_result(ts, ctx.summary, Some(scope.id), &callback_indent);
+            }
 
             if callback_guard.is_some() {
                 append!(*ts, "{vfor_inner_indent}}}\n");

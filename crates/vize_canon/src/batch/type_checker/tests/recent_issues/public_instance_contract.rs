@@ -121,12 +121,14 @@ import Generic from './Generic.vue'
 const publicRef = useTemplateRef<InstanceType<typeof Public>>('public')
 const callableRef = useTemplateRef<InstanceType<typeof Callable>>('callable')
 const runtimeObjectRef = useTemplateRef<InstanceType<typeof RuntimeObject>>('runtime-object')
-const genericRef = useTemplateRef<InstanceType<typeof Generic>>('generic')
+type GenericExposed = Parameters<NonNullable<ReturnType<typeof Generic>['__ctx']>['expose']>[0]
+const genericRef = useTemplateRef<GenericExposed>('generic')
 
 publicRef.value?.$emit('select', 'ok')
 callableRef.value?.$emit('commit', 'ok')
 runtimeObjectRef.value?.$emit('save', 'ok')
-genericRef.value?.$emit('pick', 'ok')
+const current: string | undefined = genericRef.value?.current()
+void current
 publicRef.value?.close(true)
 
 // @ts-expect-error template-ref record emit payload stays exact
@@ -135,8 +137,8 @@ publicRef.value?.$emit('select', 1)
 callableRef.value?.$emit('commit', 1)
 // @ts-expect-error template-ref runtime payload stays exact
 runtimeObjectRef.value?.$emit('save', 1)
-// @ts-expect-error template-ref generic payload stays exact
-genericRef.value?.$emit('pick', 1)
+// @ts-expect-error generic exposes do not acquire a public-instance $emit
+genericRef.value?.$emit('pick', 'ok')
 // @ts-expect-error template-ref exposed member stays exact
 publicRef.value?.close('yes')
 </script>

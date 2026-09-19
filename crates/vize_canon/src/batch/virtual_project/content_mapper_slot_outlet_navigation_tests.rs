@@ -109,7 +109,7 @@ defineSlots<{
 }
 
 #[test]
-fn static_slot_outlet_names_without_payload_props_do_not_emit_checks() {
+fn static_slot_outlet_names_without_payload_props_retain_navigation() {
     let source = r#"<script setup lang="ts">
 defineSlots<{
   header(): any;
@@ -120,12 +120,15 @@ defineSlots<{
     let result = generate_vue_content_mapper_transform(Path::new("SlotProvider.vue"), source)
         .expect("transform");
 
-    assert!(
-        !result
-            .text
-            .contains("__VizeSlotOutletPayload<__VizeSlots, \"header\">"),
-        "{}",
-        result.text
+    let generated = static_slot_name_range(
+        &result.text,
+        "__VizeSlotOutletPayload<__VizeSlots, \"header\">",
+        "header",
+    );
+    assert_has_name_mapping(
+        &result.mappings,
+        generated,
+        authored_attr_value_range(source, "name=\"header\"", "header"),
     );
 }
 
@@ -138,7 +141,7 @@ const slotName = "header";
 "#;
     let result = generate_vue_content_mapper_transform(Path::new("SlotProvider.vue"), source)
         .expect("transform");
-    let generated = generated_text_range(&result.text, "__VizeAnySlotOutletPayload<__VizeSlots>");
+    let generated = generated_text_range(&result.text, "NonNullable<typeof __vize_slot_name_");
 
     assert!(
         !result
@@ -178,7 +181,7 @@ const slotName = "header";
 "#;
     let result = generate_vue_content_mapper_transform(Path::new("SlotProvider.vue"), source)
         .expect("transform");
-    let generated = generated_text_range(&result.text, "__VizeAnySlotOutletPayload<__VizeSlots>");
+    let generated = generated_text_range(&result.text, "NonNullable<typeof __vize_slot_name_");
 
     assert!(
         !result
@@ -197,7 +200,7 @@ const name = "header";
 "#;
     let result = generate_vue_content_mapper_transform(Path::new("SlotProvider.vue"), source)
         .expect("transform");
-    let generated = generated_text_range(&result.text, "__VizeAnySlotOutletPayload<__VizeSlots>");
+    let generated = generated_text_range(&result.text, "NonNullable<typeof __vize_slot_name_");
 
     assert!(
         !result

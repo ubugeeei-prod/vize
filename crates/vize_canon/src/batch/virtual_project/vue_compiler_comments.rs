@@ -10,6 +10,9 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
         "@strictTemplates",
         "@checkUnknownProps",
         "@strictCssModules",
+        "@inferComponentDollarEl",
+        "@inferTemplateDollarEl",
+        "@jsxSlots",
     ]
     .iter()
     .any(|option| source.contains(option))
@@ -50,6 +53,9 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
             "strictTemplates" => strict = Some(value),
             "checkUnknownProps" => unknown_props = Some(value),
             "strictCssModules" => options.strict_css_modules = value,
+            "inferComponentDollarEl" => options.infer_component_dollar_el = value,
+            "inferTemplateDollarEl" => options.infer_template_dollar_el = value,
+            "jsxSlots" => options.jsx_slots = value,
             _ => {}
         }
     }

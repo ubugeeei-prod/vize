@@ -219,25 +219,14 @@ type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKe
 
 type __VizeStaticEmitProps = __EmitProps<Emits>;
 
-// ========== Default Export ==========
-type __VizeComponentInstance = {
-  $props: Props<string> & __EmitProps<Emits>;
-  readonly __vizeRawProps?: Props<string>;
-  $emit: __VizePublicEmit<Emits>;
-  $slots: __VizePublicSlots<__VizeSlots>;
-} & __VizeComponentPublicBase;
-type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props<string>, __EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
-$props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props<string>, __EmitProps<Emits>> & __VizeComponentInputGuard<Props<string>, __EmitProps<Emits>, __VizeAuthoredProps>;
+type __VizeGenericContext<T extends string = 'a'> = {
+  props: Props<T> & __EmitProps<Emits<T>> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;
+  attrs: any;
+  emit: __VizePublicEmit<Emits<T>>;
+  slots: __VizeSlots<T>;
+  expose: (exposed: import('vue').ShallowUnwrapRef<{}>) => void;
 };
-type __VizeGenericComponentInstance<T extends string = 'a'> = {
-  $props: Props<T> & __EmitProps<Emits<T>>;
-  readonly __vizeRawProps?: Props<T>;
-  $emit: __VizePublicEmit<Emits<T>>;
-  $slots: __VizePublicSlots<__VizeSlots<T>>;
-} & __VizeComponentPublicBase;
-type __VizeGenericComponentConstructor = new <T extends string = 'a', __VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInputProps<Props<T>, __EmitProps<Emits<T>>> & __VizeComponentInputGuard<Props<T>, __EmitProps<Emits<T>>, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeGenericComponentInstance<T> : Omit<__VizeGenericComponentInstance<T>, '$props'> & {
-  $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props<T>, __EmitProps<Emits<T>>> & __VizeComponentInputGuard<Props<T>, __EmitProps<Emits<T>>, __VizeAuthoredProps>;
-};
+type __VizeGenericComponent = <T extends string = 'a'>(props: __VizeGenericContext<T>['props'], ctx?: Pick<__VizeGenericContext<T>, 'attrs' | 'emit' | 'slots'>, expose?: __VizeGenericContext<T>['expose']) => import('vue').VNode & { __ctx?: __VizeGenericContext<T> };
 type __VizeVueComponentOptions = {
   name?: string;
   __name?: string;
@@ -262,5 +251,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { __vizeCheck: <T extends string = 'a'>(props: Partial<Props<T>> & { [K in Props<T> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => void; __vizeResolveProps?: <T extends string = 'a'>(props: Partial<Props<T>> & { [K in Props<T> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => Props<T>; __vizeResolveSlots?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => __VizeSlots<T>; __vizeEmitProps?: __VizeStaticEmitProps; __vizeResolveEmitProps?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props<string>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"button">>; } & __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { __vizeCheck: <T extends string = 'a'>(props: Partial<Props<T>> & { [K in Props<T> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => void; __vizeResolveProps?: <T extends string = 'a'>(props: Partial<Props<T>> & { [K in Props<T> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => Props<T>; __vizeResolveSlots?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => __VizeSlots<T>; __vizeEmitProps?: __VizeStaticEmitProps; __vizeResolveEmitProps?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props<string>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"button">>; } & __VizeGenericComponent;
 export default __vize_component__;

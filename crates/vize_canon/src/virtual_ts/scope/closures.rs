@@ -224,4 +224,5 @@ pub(crate) fn generate_scope_closures(
             generate_component_props(ts, mappings, semantic_links, &props_ctx, usages)
         );
     }
+    slot_outlets.emit_result(ts, summary, None, "  ");
 }

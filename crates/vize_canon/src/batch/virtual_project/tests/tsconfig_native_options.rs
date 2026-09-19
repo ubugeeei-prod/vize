@@ -200,9 +200,8 @@ fn materialized_tsconfig_adds_vue_jsx_defaults_for_lowered_tsx() {
         serde_json::json!("preserve"),
         "{value:#}"
     );
-    assert_eq!(
-        compiler_options["jsxImportSource"],
-        serde_json::json!("vue"),
+    assert!(
+        !compiler_options.contains_key("jsxImportSource"),
         "{value:#}"
     );
     let helpers = fs::read_to_string(project.virtual_root().join(SHARED_HELPERS_FILE)).unwrap();

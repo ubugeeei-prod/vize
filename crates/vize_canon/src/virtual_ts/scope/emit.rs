@@ -101,12 +101,15 @@ pub(super) fn emit_slot_function_open(
     function_name: &str,
     props_pattern: &str,
     props_type: &String,
+    capture: bool,
 ) {
+    let declaration = if capture {
+        cstr!("var {function_name} = function")
+    } else {
+        cstr!("void function {function_name}")
+    };
     if let Some((pattern, annotation)) = split_slot_pattern_annotation(props_pattern) {
-        append!(
-            *ts,
-            "{indent}void function {function_name}({pattern}: {annotation}) {{\n"
-        );
+        append!(*ts, "{indent}{declaration}({pattern}: {annotation}) {{\n");
         append!(
             *ts,
             "{indent}  const __slot_annotation_check: {annotation} = undefined as unknown as ({props_type});\n{indent}  void __slot_annotation_check;\n"
@@ -114,7 +117,7 @@ pub(super) fn emit_slot_function_open(
     } else {
         append!(
             *ts,
-            "{indent}void function {function_name}({props_pattern}: {props_type}) {{\n"
+            "{indent}{declaration}({props_pattern}: {props_type}) {{\n"
         );
     }
 }
@@ -147,6 +150,7 @@ pub(super) fn append_v_for_comment(
 /// mis-typed objects and raised spurious TS2339/TS2537. The source expression is
 /// rewritten through the template-prop bridge so a source such as `messages`
 /// resolves to `__props.messages`; all other authored syntax stays verbatim.
+#[allow(clippy::too_many_arguments)]
 pub(super) fn emit_v_for_loop_open(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -155,12 +159,20 @@ pub(super) fn emit_v_for_loop_open(
     indent: &str,
     scope: &Scope,
     template_prop_names: &FxHashSet<String>,
+    capture: bool,
 ) {
     // The scope is authoritative for both the loop shape and the alias
     // declaration offsets, so the v-for data is read from it directly.
     let ScopeData::VFor(data) = scope.data() else {
         return;
     };
+    if capture {
+        append!(
+            *ts,
+            "{indent}var __vize_slot_scope_{} = ",
+            scope.id.as_u32()
+        );
+    }
     append!(*ts, "{indent}__vForList(");
     let source_gen_start = ts.len();
     let rewritten_source =
@@ -179,7 +191,7 @@ pub(super) fn emit_v_for_loop_open(
             sub_spans: Vec::new(),
         });
     }
-    append!(*ts, ").forEach(([");
+    ts.push_str(if capture { ").map(([" } else { ").forEach(([" });
     // The alias pattern is emitted verbatim, so each binding identifier sits at
     // the same relative offset in the generated pattern as in the authored one.
     // Mapping it to the binding's declaration offset makes hover, definition

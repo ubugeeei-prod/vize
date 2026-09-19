@@ -107,28 +107,10 @@ defineProps<{
     );
 }
 
-/// Extracts the `__VizeGenericComponentConstructor` declaration body.
-fn generic_constructor_of(virtual_ts: &str) -> &str {
-    let start = virtual_ts
-        .find("type __VizeGenericComponentConstructor")
-        .expect("generic component constructor present");
-    let rest = &virtual_ts[start..];
-    // Every field line ends in `;`, so the declaration ends at the first line
-    // that closes the object literal.
-    let mut end = 0;
-    for line in rest.split_inclusive('\n') {
-        end += line.len();
-        if line.starts_with('}') {
-            break;
-        }
-    }
-    &rest[..end]
-}
-
 #[test]
-fn generic_constructor_instantiates_generic_module_aliases() {
+fn generic_function_instantiates_generic_module_aliases() {
     // #3354: the SFC's type parameters are in scope inside the generic
-    // constructor, so an alias that re-declared them must be instantiated.
+    // function, so an alias that re-declared them must be instantiated.
     // Bare `Slots`/`Emits`/`Exposed` are legal TypeScript — they silently
     // resolve to the alias defaults — so this only surfaces as wrong inferred
     // types downstream, never as a compile error in the virtual module.
@@ -145,47 +127,23 @@ void emit;
 </template>"#;
 
     let virtual_ts = generate_virtual_ts_from_sfc(source);
-    let constructor = generic_constructor_of(&virtual_ts);
-    let generic_instance = virtual_ts
-        .split_once("type __VizeGenericComponentInstance")
-        .expect("generic instance present")
-        .1
-        .split_once("type __VizeGenericComponentConstructor")
-        .expect("generic constructor follows instance")
-        .0;
-
     for expected in [
-        "$slots: __VizePublicSlots<__VizeSlots<T>>",
-        "$emit: __VizePublicEmit<Emits<T>>",
-        "__VizeShallowUnwrapRef<Exposed<T>>",
+        "slots: __VizeSlots<T>",
+        "emit: __VizePublicEmit<Emits<T>>",
+        "ShallowUnwrapRef<Exposed<T>>",
+        "__EmitProps<Emits<T>>",
+        "type __VizeGenericComponent = <T extends string = 'fallback'>",
     ] {
         assert!(
-            generic_instance.contains(expected),
-            "generic instance must contain `{expected}`:\n{generic_instance}"
+            virtual_ts.contains(expected),
+            "missing {expected}:\n{virtual_ts}"
         );
     }
-    assert!(
-        constructor.contains("__EmitProps<Emits<T>>"),
-        "generic input constructor must instantiate emit props:\n{constructor}"
-    );
-
-    // The non-generic constructor has no parameters in scope, so it must keep
-    // the bare aliases and rely on their declared defaults.
-    let (before_generic, _) = virtual_ts
-        .split_once("type __VizeGenericComponentConstructor")
-        .expect("generic constructor present");
-    let instance = before_generic
-        .rsplit_once("type __VizeComponentInstance")
-        .expect("non-generic instance present")
-        .1;
-    assert!(
-        instance.contains("$slots: __VizePublicSlots<__VizeSlots>;"),
-        "the non-generic instance must keep the bare alias:\n{instance}"
-    );
+    assert!(!virtual_ts.contains("type __VizeComponentConstructor"));
 }
 
 #[test]
-fn generic_constructor_leaves_non_generic_aliases_bare() {
+fn generic_function_leaves_non_generic_aliases_bare() {
     // The counterpart: a generic SFC whose `defineSlots`/`defineExpose` types do
     // not reference the parameter produce non-generic aliases. Instantiating
     // those would emit `Slots<T>` for `type Slots = {...}`, which is a hard
@@ -201,29 +159,8 @@ defineExpose<{ ready: boolean }>();
 </template>"#;
 
     let virtual_ts = generate_virtual_ts_from_sfc(source);
-    let constructor = generic_constructor_of(&virtual_ts);
-    let generic_instance = virtual_ts
-        .split_once("type __VizeGenericComponentInstance")
-        .expect("generic instance present")
-        .1
-        .split_once("type __VizeGenericComponentConstructor")
-        .expect("generic constructor follows instance")
-        .0;
-
-    assert!(
-        virtual_ts.contains("type __VizeSlots = {"),
-        "slots alias should take no parameters here:\n{virtual_ts}"
-    );
-    assert!(
-        generic_instance.contains("$slots: __VizePublicSlots<__VizeSlots>;"),
-        "a non-generic alias must not be instantiated:\n{generic_instance}"
-    );
-    assert!(
-        !constructor.contains("Slots<"),
-        "a non-generic alias must not be instantiated:\n{constructor}"
-    );
-    assert!(
-        !generic_instance.contains("Exposed<T>") && !constructor.contains("Exposed<T>"),
-        "a non-generic Exposed alias must not be instantiated:\n{generic_instance}{constructor}"
-    );
+    assert!(virtual_ts.contains("type __VizeSlots = {"), "{virtual_ts}");
+    assert!(virtual_ts.contains("slots: __VizeSlots;"), "{virtual_ts}");
+    assert!(!virtual_ts.contains("__VizeSlots<T>"), "{virtual_ts}");
+    assert!(!virtual_ts.contains("Exposed<T>"), "{virtual_ts}");
 }

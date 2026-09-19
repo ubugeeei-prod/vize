@@ -186,7 +186,7 @@ fn default_start(param: &str) -> Option<usize> {
 pub(super) fn emit_default_export_declaration(
     ts: &mut String,
     emits_info: &EmitsInfo,
-    generic_component_params: Option<(&str, &str, bool)>,
+    generic_component_params: Option<(&str, &str, bool, &str)>,
     authored_default: AuthoredDefaultKind,
     static_raw_props_ref: Option<&str>,
     static_slots_ref: Option<&str>,
@@ -248,7 +248,14 @@ pub(super) fn emit_default_export_declaration(
         // constructor to that value would change its authored public type.
         ts.push_str("__VizeAuthoredComponent extends object ? ");
     }
-    if let Some((generic_decl, generic_names, slots_is_generic)) = generic_component_params {
+    if let Some(("", _, _, public_component_type)) = generic_component_params {
+        append!(
+            *ts,
+            "{{ {emit_props_static} {event_map_static} {component_contract_fields} }} & {authored_component}{public_component_type}"
+        );
+    } else if let Some((generic_decl, generic_names, slots_is_generic, public_component_type)) =
+        generic_component_params
+    {
         let emit_resolvers = emits_info.generic_emit_resolver_fields(generic_decl, generic_names);
         let event_map_separator = if emit_props_static.is_empty() || event_map_static.is_empty() {
             ""
@@ -260,7 +267,7 @@ pub(super) fn emit_default_export_declaration(
         let check_props_param = generic_check_props_param(generic_names, fallthrough_props_ref);
         append!(
             *ts,
-            "{{ __vizeCheck: <{generic_decl}>(props: {check_props_param}) => void; __vizeResolveProps?: <{generic_decl}>(props: {check_props_param}) => Props<{generic_names}>; {slot_resolver}{emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {component_contract_fields} }} & {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions",
+            "{{ __vizeCheck: <{generic_decl}>(props: {check_props_param}) => void; __vizeResolveProps?: <{generic_decl}>(props: {check_props_param}) => Props<{generic_names}>; {slot_resolver}{emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {component_contract_fields} }} & {authored_component}{public_component_type}",
         );
     } else if emits_info.has_emits_for_props {
         let event_map_separator = if event_map_static.is_empty() { "" } else { " " };

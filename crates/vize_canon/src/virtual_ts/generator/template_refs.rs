@@ -40,6 +40,7 @@ pub(super) fn collect_and_emit_scope_preamble(
     options: &VirtualTsOptions,
     generation_options: VirtualTsGenerationOptions<'_>,
     has_generic_param: bool,
+    capture_template: bool,
     semantic_links: &mut Vec<VizeSemanticLink>,
 ) -> TemplateRefUnwraps {
     let unwraps = TemplateRefUnwraps::collect(
@@ -55,7 +56,11 @@ pub(super) fn collect_and_emit_scope_preamble(
     emit_props_shadow_anchor(ts, summary, template_referenced_names);
     // Semicolon prevents ASI issues when user script doesn't end with `;`
     // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
-    ts.push_str("  ;(function __template() {\n");
+    ts.push_str(if capture_template {
+        "  const __vize_template = (function __template() {\n"
+    } else {
+        "  ;(function __template() {\n"
+    });
     unwraps.emit_template_variables(ts, has_generic_param, &captures, semantic_links);
     unwraps
 }

@@ -159,10 +159,7 @@ fn tsx_script_block_is_type_checked_not_collapsed_to_fallback_stub() {
         tsconfig["compilerOptions"]["jsx"],
         serde_json::json!("preserve")
     );
-    assert_eq!(
-        tsconfig["compilerOptions"]["jsxImportSource"],
-        serde_json::json!("vue")
-    );
+    assert!(tsconfig["compilerOptions"].get("jsxImportSource").is_none());
 
     let _ = fs::remove_dir_all(&case_dir);
 }

@@ -177,9 +177,9 @@ impl VirtualProject {
             compiler_options
                 .entry("jsx")
                 .or_insert_with(|| Value::String("preserve".into()));
-            compiler_options
-                .entry("jsxImportSource")
-                .or_insert_with(|| Value::String("vue".into()));
+            // The SFC projection references vue/jsx for the global namespace.
+            // Inventing jsxImportSource switches to a different JSX namespace
+            // and discards the project's ElementChildrenAttribute augmentation.
         }
 
         // Re-anchor tsconfig `paths` into the virtual mirror. Without this the

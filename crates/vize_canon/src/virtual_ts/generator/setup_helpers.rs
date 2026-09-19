@@ -87,7 +87,7 @@ pub(super) fn emit_setup_helpers(
             ""
         };
         let component_ref_helper = if registry.includes_component {
-            "  type __VizeTemplateComponentRef<_C> = _C extends abstract new (...args: any[]) => infer _I ? _I : any;\n"
+            "  type __VizeTemplateComponentRef<_C> = _C extends abstract new (...args: any[]) => infer _I ? _I : _C extends (props: any, ctx: any, expose: (exposed: infer _E) => any, ...args: any[]) => any ? NonNullable<_E> : any;\n"
         } else {
             ""
         };

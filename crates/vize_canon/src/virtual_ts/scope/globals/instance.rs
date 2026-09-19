@@ -206,6 +206,8 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         // report an *undeclared* global, and `$props` is always declared.
         let declared_type = if name == "$props" {
             self.resolve_instance_props_type()
+        } else if name == "$el" && self.scope_options.check_options.infer_template_dollar_el {
+            Some("__VizeRootEl".into())
         } else {
             None
         };

@@ -139,12 +139,19 @@ pub(super) fn generate_v_slot_scope(
         data,
     );
     let function_gen_start = ts.len();
+    let capture_slots = ctx.slot_outlets.captures_scope(ctx.summary, scope.id);
+    let function_name = if capture_slots {
+        cstr!("__vize_slot_scope_{scope_id}")
+    } else {
+        cstr!("_slot_{safe_slot_name}_{scope_id}")
+    };
     emit_slot_function_open(
         ts,
         indent,
-        cstr!("_slot_{safe_slot_name}_{scope_id}").as_str(),
+        function_name.as_str(),
         props_pattern.as_str(),
         &props_type,
+        capture_slots,
     );
     map_slot_props_pattern(
         mappings,
@@ -187,6 +194,10 @@ pub(super) fn generate_v_slot_scope(
         "canon.virtual_ts.child_scopes",
         generate_child_scopes(ts, mappings, ctx, scope_id, inner_indent)
     );
+    if capture_slots {
+        ctx.slot_outlets
+            .emit_result(ts, ctx.summary, Some(scope.id), inner_indent);
+    }
 
     ts.push_str(indent);
     ts.push_str("};\n");
@@ -231,6 +242,7 @@ pub(super) fn generate_v_slot_props_scope(
         cstr!("_slot_props_{safe_slot_name}_{scope_id}").as_str(),
         props_pattern.as_str(),
         &props_type,
+        false,
     );
     map_slot_props_pattern(
         mappings,

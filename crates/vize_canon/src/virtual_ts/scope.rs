@@ -28,6 +28,7 @@ mod native_prop_names;
 mod node;
 mod patterns;
 mod slot_outlet_props;
+pub(crate) use slot_outlet_props::has_inferred_slots;
 mod slot_scope;
 mod vif_guard;
 

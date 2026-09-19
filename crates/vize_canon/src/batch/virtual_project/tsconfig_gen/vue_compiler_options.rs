@@ -41,6 +41,26 @@ impl VirtualProject {
             .as_ref()
             .and_then(|options| options.get("strictCssModules").and_then(Value::as_bool))
             .unwrap_or(false);
+        self.virtual_ts_check_options.infer_component_dollar_el = options
+            .as_ref()
+            .and_then(|options| {
+                options
+                    .get("inferComponentDollarEl")
+                    .and_then(Value::as_bool)
+            })
+            .unwrap_or(false);
+        self.virtual_ts_check_options.infer_template_dollar_el = options
+            .as_ref()
+            .and_then(|options| {
+                options
+                    .get("inferTemplateDollarEl")
+                    .and_then(Value::as_bool)
+            })
+            .unwrap_or(false);
+        self.virtual_ts_check_options.jsx_slots = options
+            .as_ref()
+            .and_then(|options| options.get("jsxSlots").and_then(Value::as_bool))
+            .unwrap_or(false);
     }
 
     #[cfg(test)]

@@ -28,7 +28,7 @@ test("Vben owns the Tier-L batch incremental work budget", () => {
   assert.deepEqual(owners[0].batchIncrementalBudget, {
     coldMs: 15_000,
     warmMs: 10_000,
-    maxRequestedFiles: 500,
+    maxRequestedFiles: 681,
     maxChangedFiles: 1,
   });
 });

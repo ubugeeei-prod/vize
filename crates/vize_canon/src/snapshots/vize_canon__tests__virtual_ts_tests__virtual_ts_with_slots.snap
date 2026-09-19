@@ -136,7 +136,7 @@ function __setup() {
   // @vize-map: 15508:15544 -> 0:58
 
   // ========== Template Scope (inherits from setup) ==========
-  ;(function __template() {
+  const __vize_template = (function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
     // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
     type __Ctx = import('vue').ComponentPublicInstance;
@@ -151,20 +151,27 @@ function __setup() {
   type __VizeSlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, __VizeSlotOutletFn>;
   type __VizeSlotOutletArgs<__S, __K extends PropertyKey> = [__VizeSlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<__VizeSlotOutletTarget<__S, __K>>;
   type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = [__VizeSlotOutletArgs<__S, __K>] extends [[]] ? unknown : __VizeSlotOutletArgs<__S, __K>[0];
-  ((__vize_slot_props: __VizeSlotOutletPayload<__VizeSlots, "header">) => { void __vize_slot_props; })({
+  var __vize_slot_payload_63 = {
+  };
+  var __vize_slot_payload_81 = {
+  };
+  var __vize_slot_payload_13 = {
     "title": 'Header',
-  });
+  };
+  return {} as { "header"?: (props: typeof __vize_slot_payload_13) => any } & { "default"?: (props: typeof __vize_slot_payload_63) => any } & { "footer"?: (props: typeof __vize_slot_payload_81) => any };
 
   // Reference setup bindings (used in template/CSS v-bind)
   void slots; void useSlots;
   })();
+
+  return { __vize_template_slots: __vize_template };
 }
 
 // Invoke setup to verify types
 __setup();
 
 export type Emits = {};
-type __VizeSlots = {};
+type __VizeSlots = Awaited<ReturnType<typeof __setup>>['__vize_template_slots'];
 export type { __VizeSlots as Slots };
 
 // ========== Default Export ==========
@@ -202,5 +209,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"div">>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeSlots?: Partial<__VizeSlots>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"div">>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;

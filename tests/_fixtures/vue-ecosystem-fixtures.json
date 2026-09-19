@@ -132,7 +132,7 @@
       "batchIncrementalBudget": {
         "coldMs": 15000,
         "warmMs": 10000,
-        "maxRequestedFiles": 500,
+        "maxRequestedFiles": 681,
         "maxChangedFiles": 1
       }
     },

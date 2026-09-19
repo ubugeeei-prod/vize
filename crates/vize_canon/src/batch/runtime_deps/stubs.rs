@@ -81,6 +81,9 @@ pub(crate) const VUE_RUNTIME_DOM_STUB_TYPES: &str = r#"import type { ComponentCu
 
 export interface ComponentCustomProperties {}
 export type Slots = Readonly<Record<string, ((...args: any[]) => any) | undefined>>;
+export interface VNode { readonly __v_isVNode: true; }
+type DistributeRef<T> = T extends Ref<infer V> ? V : T;
+export type ShallowUnwrapRef<T> = { [K in keyof T]: DistributeRef<T[K]> };
 
 export interface ComponentPublicInstance<Props = {}> extends ComponentCustomProperties {
   $props: Props;

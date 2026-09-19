@@ -7,6 +7,9 @@
 
 mod collect;
 mod emit;
+mod inference;
+mod literal;
+pub(crate) use inference::has_inferred_slots;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, cstr};
 use vize_croquis::{
@@ -41,6 +44,7 @@ pub(super) struct SlotOutlet {
 pub(super) struct SlotOutletChecks {
     by_scope: FxHashMap<u32, Vec<SlotOutlet>>,
     slots_type: String,
+    infer: bool,
 }
 
 impl SlotOutletChecks {
@@ -48,6 +52,7 @@ impl SlotOutletChecks {
         Self {
             by_scope: collect::collect_slot_outlets_by_scope(summary, root),
             slots_type: slots_type_ref(summary),
+            infer: summary.macros.define_slots().is_none(),
         }
     }
 

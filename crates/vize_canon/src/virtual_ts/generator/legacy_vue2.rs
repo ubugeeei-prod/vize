@@ -1,4 +1,4 @@
-use vize_carton::{config::VueVersion, cstr};
+use vize_carton::config::VueVersion;
 use vize_croquis::Croquis;
 
 use super::super::helpers::VUE_TYPE_HELPERS;
@@ -175,52 +175,8 @@ pub(super) fn define_component_helper(legacy_vue2: bool, dialect: VueVersion) ->
     }
 }
 
-pub(super) fn instance_helper(legacy_vue2: bool, dialect: VueVersion) -> &'static str {
-    if needs_legacy_vue2_helpers(legacy_vue2, dialect) {
-        LEGACY_COMPONENT_INSTANCE_HELPER
-    } else {
-        ""
-    }
-}
-
-/// [`instance_suffix`] for the generic component constructor, where the SFC's
-/// type parameters are in scope and a generic `Exposed` alias must therefore be
-/// instantiated rather than left to its declared defaults (#3354).
-///
-/// `exposed_generic_args` is `None` when the alias takes no parameters, which
-/// keeps the output identical to [`instance_suffix`].
-pub(super) fn generic_instance_suffix(
-    legacy_vue2: bool,
-    dialect: VueVersion,
-    has_exposed_type: bool,
-    exposed_generic_args: Option<&str>,
-) -> vize_carton::String {
-    let Some(args) = exposed_generic_args.filter(|_| has_exposed_type) else {
-        return vize_carton::String::from(instance_suffix(legacy_vue2, dialect, has_exposed_type));
-    };
-
-    if needs_legacy_vue2_helpers(legacy_vue2, dialect) {
-        cstr!("}} & __VizeVue2ComponentInstance & __VizeShallowUnwrapRef<Exposed<{args}>>;\n")
-    } else {
-        cstr!("}} & __VizeComponentPublicBase & __VizeShallowUnwrapRef<Exposed<{args}>>;\n")
-    }
-}
-
-pub(super) fn instance_suffix(
-    legacy_vue2: bool,
-    dialect: VueVersion,
-    has_exposed_type: bool,
-) -> &'static str {
-    match (
-        needs_legacy_vue2_helpers(legacy_vue2, dialect),
-        has_exposed_type,
-    ) {
-        (true, true) => "} & __VizeVue2ComponentInstance & __VizeShallowUnwrapRef<Exposed>;\n",
-        (true, false) => "} & __VizeVue2ComponentInstance;\n",
-        (false, true) => "} & __VizeComponentPublicBase & __VizeShallowUnwrapRef<Exposed>;\n",
-        (false, false) => "} & __VizeComponentPublicBase;\n",
-    }
-}
+mod instance;
+pub(super) use instance::{generic_instance_suffix, instance_helper, instance_suffix};
 
 /// Generate virtual TypeScript with Vue 2.7 / Nuxt 2 compatibility enabled.
 pub fn generate_virtual_ts_with_offsets_legacy_vue2(

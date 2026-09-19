@@ -8,16 +8,30 @@ use crate::virtual_ts::props::{
     add_generic_defaults, extract_generic_names, strip_const_modifiers,
 };
 
-pub(super) fn setup_signature(summary: &Croquis) -> (Option<&str>, bool) {
+pub(super) fn setup_signature(summary: &Croquis) -> (Option<&str>, Option<&str>, bool) {
     summary
         .scopes
         .iter()
         .find(|scope| matches!(scope.kind, ScopeKind::ScriptSetup))
         .and_then(|scope| match scope.data() {
-            ScopeData::ScriptSetup(data) => Some((data.generic.as_deref(), data.is_async)),
+            ScopeData::ScriptSetup(data) => Some((
+                data.generic.as_deref(),
+                data.generic
+                    .as_deref()
+                    .filter(|value| !value.trim().is_empty()),
+                data.is_async,
+            )),
             _ => None,
         })
-        .unwrap_or((None, false))
+        .unwrap_or((None, None, false))
+}
+
+pub(super) fn generic_suffix(parameters: &str) -> String {
+    if parameters.trim().is_empty() {
+        String::default()
+    } else {
+        cstr!("<{parameters}>")
+    }
 }
 
 pub(super) struct HoistedGenericAliases {
@@ -263,6 +277,19 @@ pub(super) fn generic_injection_point(decl: &str, type_name: &str) -> Option<usi
         return None;
     }
     Some(name_end)
+}
+
+pub(super) fn generic_injection(generic_param: Option<&str>) -> Option<(String, Vec<String>)> {
+    generic_param.map(|g| {
+        // Type aliases/interfaces cannot retain function-only `const` modifiers (TS1277).
+        let defaults = strip_const_modifiers(&add_generic_defaults(g));
+        let names = extract_generic_names(g)
+            .split(',')
+            .map(|n| String::from(n.trim()))
+            .filter(|n| !n.is_empty())
+            .collect();
+        (defaults, names)
+    })
 }
 
 #[cfg(test)]

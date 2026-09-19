@@ -92,7 +92,7 @@ fn scoped_slot_object_binds_its_pattern_over_the_slot_body() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)));"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)));"
     );
 }
 
@@ -102,7 +102,7 @@ fn scoped_slot_render_prop_child_binds_its_pattern_over_the_slot_body() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)));"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)));"
     );
 }
 
@@ -112,7 +112,7 @@ fn scoped_slot_destructured_pattern_and_named_slots_each_get_their_own_scope() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", ({ item }) => __vize_jsx_expr__(item)), __vize_jsx_component_slot__(Widget, \"footer\", (b) => __vize_jsx_expr__(b.n)));"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", ({ item }) => __vize_jsx_expr__(item)), __vize_jsx_component_slot__(Widget, \"footer\", (b) => __vize_jsx_expr__(b.n)));"
     );
 }
 
@@ -125,7 +125,7 @@ fn component_inside_a_scoped_slot_body_keeps_its_props_call() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(__vize_jsx_component__(Counter, {\"count\": props.item}))));"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(__vize_jsx_component__(Counter)({\"count\": props.item}))));"
     );
 }
 
@@ -138,7 +138,7 @@ fn scoped_slot_inside_a_v_for_body_binds_both_scopes() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__((items).map((item) => __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": item}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)))));"
+        "export const view = __vize_jsx_expr__((items).map((item) => __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": item}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)))));"
     );
 }
 
@@ -150,7 +150,7 @@ fn nested_scoped_slots_each_resolve_their_own_host() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (outer) => __vize_jsx_expr__(__vize_jsx_component__(Panel, {\"title\": outer.item}), __vize_jsx_component_slot__(Panel, \"default\", (inner) => __vize_jsx_expr__(inner.row)))));"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (outer) => __vize_jsx_expr__(__vize_jsx_component__(Panel)({\"title\": outer.item}), __vize_jsx_component_slot__(Panel, \"default\", (inner) => __vize_jsx_expr__(inner.row)))));"
     );
 }
 
@@ -162,7 +162,7 @@ fn non_scoped_slot_body_stays_in_the_enclosing_scope() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), label);"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), label);"
     );
 }
 
@@ -212,7 +212,7 @@ fn component_helper_declares_the_slot_payload_contract() {
         declarations,
         vec![
             "declare function __vize_jsx_component_spread__<O>(value: O): __VizeJsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;",
-            "declare function __vize_jsx_component__<C>(component: C, props: __VizeJsxComponentProps<C>): any;",
+            "declare function __vize_jsx_component__<C>(component: C): __VizeJsxComponentCall<C>;",
             "declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: __VizeJsxSlotPayload<C, N>) => unknown): any;",
         ]
     );
@@ -227,11 +227,11 @@ fn semantic_component_tags_props_and_spreads_survive_plain_ts_lowering() {
     assert!(
         generated
             .code
-            .contains("__vize_jsx_component__(Counter, {\"count\": count, \"isOpened\": true})")
+            .contains("__vize_jsx_component__(Counter)({\"count\": count, \"isOpened\": true})")
     );
     assert!(
         generated.code.contains(
-            "__vize_jsx_component__(Library.Counter, {...__vize_jsx_component_spread__(bag), \"label\": \"hello\"})"
+            "__vize_jsx_component__(Library.Counter)({...__vize_jsx_component_spread__(bag), \"label\": \"hello\"})"
         )
     );
 

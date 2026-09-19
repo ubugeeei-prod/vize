@@ -101,13 +101,13 @@ runtimeArray.$emit("open");
 // @ts-expect-error emitted runtime array event names stay exact
 runtimeArray.$emit("other");
 
-declare const generic: InstanceType<typeof Generic>;
-const genericItem: string = generic.$props.item;
-// @ts-expect-error Vue strict emits/slots are not an unconstrained ComponentPublicInstance
-const genericPrimitive = usePrimitiveElement<GenericComponentInstance<typeof Generic>>();
-generic.$emit("pick", "ok");
+declare const generic: NonNullable<ReturnType<typeof Generic>["__ctx"]>;
+const genericItem: string = generic.props.item;
+// @ts-expect-error generic SFCs are callable and cannot be constructed
+const genericPrimitive = new Generic();
+generic.emit("pick", "ok");
 // @ts-expect-error emitted generic payload stays exact
-generic.$emit("pick", 1);
+generic.emit("pick", 1);
 
 const camel = <Public modelValue={1} someValue="ok" />;
 const kebab = <Public model-value={1} some-value="ok" />;

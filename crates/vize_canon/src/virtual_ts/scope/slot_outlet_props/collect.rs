@@ -163,6 +163,7 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Op
                         .map(|exp| CompactString::new(expression_content(exp, source)))
                         .or_else(|| Some(prop_name.clone()));
                     if prop_name == "name" && !prop_name_is_dynamic {
+                        name = value.unwrap_or(prop_name);
                         name_is_dynamic = true;
                         name_source_range = None;
                         record_expression_scope(summary, directive.exp.as_ref(), &mut scope);
@@ -220,9 +221,6 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Op
         }
     }
 
-    if props.is_empty() && spread_props.is_empty() {
-        return None;
-    }
     let (scope_id, vif_guard) = scope.unwrap_or((ScopeId::ROOT.as_u32(), None));
     Some(SlotOutlet {
         scope_id,

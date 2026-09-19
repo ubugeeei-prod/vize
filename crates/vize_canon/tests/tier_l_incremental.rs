@@ -1,6 +1,5 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
 use std::time::Instant;
 
 use serde::Deserialize;
@@ -8,13 +7,16 @@ use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, IncrementalCheckMetrics,
 };
 use vize_s0::{
-    String, ToCompactString,
+    String,
     corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable},
 };
 
 #[path = "support/tier_l_incremental_artifact.rs"]
 mod artifact;
+#[path = "support/tier_l_fixture.rs"]
+mod fixture;
 use artifact::{Artifact, BatchIncrementalBudget, FixtureEvidence, lane, write_artifact};
+use fixture::{env_path, git_revision};
 
 const FIXTURE_ID: &str = "vue-vben-admin";
 const BUDGET_SCALE_ENV: &str = "VIZE_TIER_L_BUDGET_SCALE";
@@ -123,10 +125,29 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
     checker
         .scan_paths(&vue_paths)
         .expect("Tier-L scan should succeed");
-    assert!(
-        checker.file_count() == TIER_L_VUE_FILES,
+    assert_eq!(
+        checker
+            .virtual_files()
+            .iter()
+            .filter(|file| file
+                .original_path
+                .extension()
+                .is_some_and(|extension| extension == "vue"))
+            .count(),
+        TIER_L_VUE_FILES,
         "fixture must remain Tier-L scale"
     );
+    // The 500 Vue roots import 181 TypeScript sources. They now participate in
+    // the canonical graph instead of being bypassed through filesystem reads.
+    assert_eq!(checker.file_count(), budget.max_requested_files);
+    for path in &vue_paths {
+        assert!(
+            checker
+                .virtual_files()
+                .iter()
+                .any(|file| &file.original_path == path)
+        );
+    }
     let cold = checker
         .check_incremental(std::slice::from_ref(&injected_path))
         .expect("cold incremental session should complete");
@@ -196,34 +217,6 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
         ],
     };
     write_artifact(&repo_root, &artifact);
-}
-
-fn env_path(name: &str, repo_root: &Path) -> Option<PathBuf> {
-    std::env::var_os(name).map(|value| {
-        let path = PathBuf::from(value);
-        if path.is_absolute() {
-            path
-        } else {
-            repo_root.join(path)
-        }
-    })
-}
-
-fn git_revision(root: &Path) -> String {
-    let output = Command::new("git")
-        .args([
-            "-C",
-            root.to_str().expect("UTF-8 fixture path"),
-            "rev-parse",
-            "HEAD",
-        ])
-        .output()
-        .expect("git should inspect the fixture");
-    assert!(output.status.success(), "fixture revision lookup failed");
-    std::str::from_utf8(&output.stdout)
-        .expect("revision should be UTF-8")
-        .trim()
-        .to_compact_string()
 }
 
 fn collect_vue_paths(fixture_root: &Path) -> Vec<PathBuf> {
@@ -328,7 +321,7 @@ fn assert_requested_budget(metrics: IncrementalCheckMetrics, budget: &BatchIncre
     assert!(metrics.last_requested_files > 0);
     assert_eq!(
         metrics.last_requested_files, budget.max_requested_files,
-        "the pinned Tier-L corpus must request every registered Vue file"
+        "the pinned Tier-L corpus must request every registered source, including dependencies"
     );
     assert!(
         metrics.last_requested_files <= budget.max_requested_files,

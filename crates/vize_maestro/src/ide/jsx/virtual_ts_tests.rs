@@ -134,7 +134,7 @@ fn component_tags_props_and_spreads_survive_editor_lowering() {
 
     assert!(generated.code.contains(component::HELPER));
     assert!(generated.code.contains(
-        "__vize_jsx_component__(Counter, {...__vize_jsx_component_spread__(props), \"isOpened\": true})"
+        "__vize_jsx_component__(Counter)({...__vize_jsx_component_spread__(props), \"isOpened\": true})"
     ));
     for authored in ["Counter", "props", "is-opened"] {
         assert!(generated.mappings.iter().any(|mapping| {
@@ -164,7 +164,7 @@ fn scoped_slot_lowering_matches_the_batch_generator() {
         .expect("the render root must be rewritten");
     assert_eq!(
         rendered,
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)));"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)));"
     );
 
     let mapped: Vec<&str> = generated

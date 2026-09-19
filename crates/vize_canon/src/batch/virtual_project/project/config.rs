@@ -107,10 +107,11 @@ impl VirtualProject {
         self.virtual_ts_options = options;
     }
 
-    pub(crate) fn set_virtual_ts_check_options(&mut self, mut options: VirtualTsCheckOptions) {
-        options.check_unknown_props = self.virtual_ts_check_options.check_unknown_props;
-        options.strict_css_modules = self.virtual_ts_check_options.strict_css_modules;
-        self.virtual_ts_check_options = options;
+    pub(crate) fn set_virtual_ts_check_options(&mut self, options: VirtualTsCheckOptions) {
+        // Execution switches must not reset options resolved from tsconfig.
+        self.virtual_ts_check_options.check_props = options.check_props;
+        self.virtual_ts_check_options.check_template_bindings = options.check_template_bindings;
+        self.virtual_ts_check_options.check_emits = options.check_emits;
     }
 
     pub(crate) fn set_package_routes(

@@ -105,7 +105,8 @@ pub(super) fn render(
 ) {
     out.push_str("__vize_jsx_component__(");
     push_mapped_expr(out, mappings, &component.tag);
-    out.push_str(", ");
+    // Preserve the function itself so generic props infer from this literal.
+    out.push_str(")(");
     let literal_start = out.len();
     out.push('{');
     for (index, prop) in component.props.iter().enumerate() {

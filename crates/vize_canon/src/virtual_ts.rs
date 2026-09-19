@@ -105,7 +105,8 @@ type __VizeJsxSfcComponentProps<I> = I extends { $props: infer P } ? I extends {
 type __VizeJsxComponentProps<C> = C extends abstract new (...args: any[]) => infer I ? __VizeJsxNormalizeProps<__VizeJsxSfcComponentProps<I>> : C extends (props: infer P, ...args: any[]) => any ? __VizeJsxNormalizeProps<__VizeJsxCanonicalRawProps<P> & __VizeJsxFallthroughAttrs<P>> : any;\n\
 type __VizeJsxSlotPayload<C, N extends string> = C extends abstract new (...args: any[]) => infer I ? I extends { $slots: infer S } ? N extends keyof S ? NonNullable<S[N]> extends (props: infer P, ...args: any[]) => any ? P : any : any : any : any;\n\
 declare function __vize_jsx_component_spread__<O>(value: O): __VizeJsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;\n\
-declare function __vize_jsx_component__<C>(component: C, props: __VizeJsxComponentProps<C>): any;\n\
+type __VizeJsxComponentCall<C> = C extends abstract new (...args: any[]) => any ? (props: __VizeJsxComponentProps<C>) => any : C extends (...args: any[]) => any ? C : (props: __VizeJsxComponentProps<C>) => any;\n\
+declare function __vize_jsx_component__<C>(component: C): __VizeJsxComponentCall<C>;\n\
 declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: __VizeJsxSlotPayload<C, N>) => unknown): any;\n";
 #[cfg(any(test, feature = "native"))]
 pub(crate) use types::VirtualTsCheckOptions;

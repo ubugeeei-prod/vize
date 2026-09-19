@@ -1,7 +1,6 @@
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 
-use super::generics::module_alias_generic_suffix;
 use super::setup_scope::macro_type_requires_setup_scope;
 use crate::virtual_ts::{
     helpers::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER, push_ts_string_literal},
@@ -14,75 +13,11 @@ mod authored_events;
 use authored_events::emit_authored_event_map;
 
 /// Inner type of a macro's `<...>` type-argument text.
-fn inner_type_of(type_args: &str) -> &str {
+pub(super) fn inner_type_of(type_args: &str) -> &str {
     type_args
         .strip_prefix('<')
         .and_then(|s| s.strip_suffix('>'))
         .unwrap_or(type_args)
-}
-
-/// Emit the private slot contract and preserve the public `Slots` export. When the slots type from
-/// `defineSlots` references an SFC generic parameter, the alias re-declares
-/// the parameters (with safe defaults) so declaration emit resolves them
-/// (#3065).
-/// Returns whether the alias re-declared the SFC's type parameters, so the
-/// generic component constructor can instantiate it instead of falling back to
-/// the declared defaults (#3354).
-pub(super) fn emit_slots_type(
-    ts: &mut String,
-    summary: &Croquis,
-    generic_injection: Option<&(String, Vec<String>)>,
-    export_slots: bool,
-) -> bool {
-    let slots_type_args = summary
-        .macros
-        .define_slots()
-        .and_then(|m| m.type_args.as_ref());
-    let is_generic = if let Some(type_args) = slots_type_args {
-        let inner_type = inner_type_of(type_args);
-        let suffix = module_alias_generic_suffix(generic_injection, inner_type);
-        append!(*ts, "type __VizeSlots{suffix} = {inner_type};\n");
-        !suffix.is_empty()
-    } else {
-        ts.push_str("type __VizeSlots = {};\n");
-        false
-    };
-    if export_slots {
-        ts.push_str("export type { __VizeSlots as Slots };\n");
-    }
-    is_generic
-}
-
-/// Emit the module-scope `export type Exposed` alias (for `InstanceType` and
-/// `useTemplateRef`); returns whether the component exposes anything. A typed
-/// `defineExpose` referencing an SFC generic parameter re-declares the
-/// parameters just like `Slots` (#3065).
-///
-/// The second flag reports whether the alias re-declared those parameters, so
-/// the generic component constructor can instantiate it (#3354).
-pub(super) fn emit_exposed_type(
-    ts: &mut String,
-    summary: &Croquis,
-    generic_injection: Option<&(String, Vec<String>)>,
-) -> (bool, bool) {
-    let Some(expose) = summary.macros.define_expose() else {
-        return (false, false);
-    };
-    if let Some(ref type_args) = expose.type_args {
-        let inner_type = inner_type_of(type_args);
-        let suffix = module_alias_generic_suffix(generic_injection, inner_type);
-        append!(*ts, "export type Exposed{suffix} = {inner_type};\n");
-        (true, !suffix.is_empty())
-    } else if expose.runtime_args.is_some() {
-        // Runtime args are returned from __setup() to keep them in scope.
-        // Use Awaited<ReturnType<...>> to handle both sync and async setup.
-        ts.push_str(
-            "export type Exposed = Awaited<ReturnType<typeof __setup>>[\"__vize_exposed\"];\n",
-        );
-        (true, false)
-    } else {
-        (false, false)
-    }
 }
 
 pub(super) struct EmitsInfo {
@@ -214,7 +149,7 @@ pub(super) fn emit_emits_type(
             if has_model_emits {
                 append!(
                     *ts,
-                    "export type Emits{emits_generic_suffix} = {inner_type} & {{\n"
+                    "export type Emits{emits_generic_suffix} = __EmitFn<{inner_type}> & __EmitFn<{{\n"
                 );
                 for model in models {
                     let name = model.name.as_str();
@@ -223,7 +158,7 @@ pub(super) fn emit_emits_type(
                     push_model_update_event_literal(ts, name);
                     append!(*ts, ": [value: {payload}];\n");
                 }
-                ts.push_str("};\n");
+                ts.push_str("}>;\n");
             } else {
                 append!(
                     *ts,

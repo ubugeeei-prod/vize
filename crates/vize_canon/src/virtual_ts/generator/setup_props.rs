@@ -171,10 +171,16 @@ impl SetupPropsPlan {
     pub(super) fn component_value_props_type_ref(
         &self,
         generic_component_params: Option<&(String, String)>,
-    ) -> String {
-        generic_component_params
-            .map(|(decl, _)| self.generic_fallback_component_props_type_ref(decl.as_str()))
-            .unwrap_or_else(|| self.component_props_type_ref().into())
+        legacy_vue2: bool,
+    ) -> Option<String> {
+        if legacy_vue2 {
+            return None;
+        }
+        Some(
+            generic_component_params
+                .map(|(decl, _)| self.generic_fallback_component_props_type_ref(decl.as_str()))
+                .unwrap_or_else(|| self.component_props_type_ref().into()),
+        )
     }
 
     pub(super) fn emit_component_props_field(
@@ -183,15 +189,20 @@ impl SetupPropsPlan {
         has_emits_for_props: bool,
         generic_decl: Option<&str>,
         legacy_input_aliases: bool,
+        jsx_slots: bool,
     ) {
         let props_type_ref = generic_decl
             .map(|decl| self.generic_fallback_component_props_type_ref(decl))
             .unwrap_or_else(|| self.component_props_type_ref().into());
-        let public_props_type_ref = if legacy_input_aliases {
+        let mut public_props_type_ref = if legacy_input_aliases {
             cstr!("__VizeComponentProps<{props_type_ref}>")
         } else {
             props_type_ref.clone()
         };
+        if jsx_slots {
+            public_props_type_ref =
+                cstr!("{public_props_type_ref} & __VizeJsxSlotProps<__VizeSlots>");
+        }
         if has_emits_for_props {
             append!(
                 ts,
