@@ -76,10 +76,7 @@ fn inline_exports_emit_usable_declarations_for_a_separate_consumer() {
         assert_eq!(checked.status.code(), Some(1));
         let json: serde_json::Value = serde_json::from_slice(&checked.stdout).unwrap();
         assert_eq!(json["errorCount"], 1, "{json}");
-        assert!(
-            String::from_utf8_lossy(&checked.stdout).contains("TS2322"),
-            "{json}"
-        );
+        assert_eq!(diagnostic_codes(&json), vec![("src/index.ts", "TS2322")]);
         std::fs::write(consumer.join("src/index.ts"), source).unwrap();
         assert!(check_consumer(&consumer, &corsa).status.success());
         successful_json(&run_check_json(&consumer, &corsa));
@@ -103,6 +100,10 @@ fn inline_exports_emit_usable_declarations_for_a_separate_consumer() {
         let checked = run_check_json(&consumer, &corsa);
         let json: serde_json::Value = serde_json::from_slice(&checked.stdout).unwrap();
         assert_eq!(json["errorCount"], 2, "{json}");
+        assert_eq!(
+            diagnostic_codes(&json),
+            vec![("src/index.ts", "TS2322"), ("src/index.ts", "TS2741")]
+        );
         std::fs::write(consumer.join("src/index.ts"), source).unwrap();
         let config_path = consumer.join("tsconfig.json");
         let mut config: serde_json::Value =
@@ -143,4 +144,34 @@ fn check_consumer(project: &Path, corsa: &str) -> std::process::Output {
         );
     }
     output
+}
+
+fn diagnostic_codes(json: &serde_json::Value) -> Vec<(&str, &str)> {
+    let mut diagnostics: Vec<_> = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| {
+            file["diagnostics"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|diagnostic| {
+                    (
+                        file["file"].as_str().unwrap(),
+                        diagnostic
+                            .as_str()
+                            .unwrap()
+                            .split_once("[")
+                            .unwrap()
+                            .1
+                            .split_once("]")
+                            .unwrap()
+                            .0,
+                    )
+                })
+        })
+        .collect();
+    diagnostics.sort_unstable();
+    diagnostics
 }
