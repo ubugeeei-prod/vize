@@ -1,19 +1,20 @@
-//! S3 bridge for the Vapor compile path.
+//! Production S3 admission and ownership for the native Vapor slice.
 //!
-//! P3-6 moves Vapor toward the canonical S2->S3 backend route. The first
-//! production slice keeps today's payload-rich Vapor IR generator in place, but
-//! every supported Vapor compile now builds and verifies the S3 program beside
-//! it. That makes the S3 contract observable in the real path before payload
-//! ownership moves out of the legacy lowering.
+//! Acceptance carries the complete checked backend payload. Unsupported inputs
+//! select the retained legacy lane explicitly; corrupt invariants never emit.
 
-use core::sync::atomic::{AtomicU64, Ordering};
+mod native;
+#[cfg(test)]
+mod tests;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{Allocator, String, cstr, profile, profiler::global_profiler};
 use vize_s1::SurfaceParseOptions;
+use vize_s2_to_s3::Lowered;
 use vize_s3::verify::verify;
 
-/// Option subset that decides whether the S3 bridge can mirror this compile.
+use native::NativeArtifact;
+
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct VaporS3BridgeOptions {
     pub(crate) ssr: bool,
@@ -22,188 +23,158 @@ pub(crate) struct VaporS3BridgeOptions {
     pub(crate) experimental_patterned_template: bool,
     pub(crate) template_syntax: TemplateSyntaxMode,
     pub(crate) has_custom_elements: bool,
+    pub(crate) has_binding_metadata: bool,
+    pub(crate) inline: bool,
 }
 
-/// Result of attempting the S3 bridge for one Vapor compile.
+/// A selected legacy route is distinct from a failed compiler invariant.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum LegacyReason {
+    Options,
+    SurfaceSemantics,
+    Operation,
+    Element,
+    Binding,
+    ExpressionOrEncoding,
+    Structure,
+}
+
+impl LegacyReason {
+    fn counter(self) -> &'static str {
+        match self {
+            Self::Options => "davinci.s3_vapor.legacy.options",
+            Self::SurfaceSemantics => "davinci.s3_vapor.legacy.surface_semantics",
+            Self::Operation => "davinci.s3_vapor.legacy.operation",
+            Self::Element => "davinci.s3_vapor.legacy.element",
+            Self::Binding => "davinci.s3_vapor.legacy.binding",
+            Self::ExpressionOrEncoding => "davinci.s3_vapor.legacy.expression_or_encoding",
+            Self::Structure => "davinci.s3_vapor.legacy.structure",
+        }
+    }
+}
+
 #[derive(Debug)]
-pub(crate) enum VaporS3BridgeStatus {
-    /// The input uses an option shape S3 does not model yet.
-    Skipped,
-    /// S1->S2->S3 built and verified.
-    Accepted,
-    /// S3 was selected but failed an invariant.
+pub(super) enum AdmissionFailure {
+    Unsupported(LegacyReason),
+    Invalid(&'static str),
+}
+
+impl From<LegacyReason> for AdmissionFailure {
+    fn from(reason: LegacyReason) -> Self {
+        Self::Unsupported(reason)
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum VaporS3BridgeStatus<'a> {
+    Legacy(LegacyReason),
+    Accepted(VaporS3Artifact<'a>),
     Rejected(std::vec::Vec<String>),
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-#[cfg(test)]
-pub(crate) struct VaporS3BridgeStats {
-    pub(crate) attempts: u64,
-    pub(crate) accepted: u64,
-    pub(crate) skipped: u64,
-    pub(crate) rejected: u64,
+/// Private fields prevent callers from confusing a verified generic graph with
+/// the narrower executable backend contract. There is no boolean acceptance.
+#[derive(Debug)]
+pub(crate) struct VaporS3Artifact<'a>(NativeArtifact<'a>);
+
+impl<'a> VaporS3Artifact<'a> {
+    pub(crate) fn into_ir(
+        self,
+        allocator: &'a Allocator,
+        source: &'a str,
+        scope_id: Option<&str>,
+    ) -> crate::ir::RootIRNode<'a> {
+        self.0.into_ir(allocator, source, scope_id)
+    }
 }
 
-static ATTEMPTS: AtomicU64 = AtomicU64::new(0);
-static ACCEPTED: AtomicU64 = AtomicU64::new(0);
-static SKIPPED: AtomicU64 = AtomicU64::new(0);
-static REJECTED: AtomicU64 = AtomicU64::new(0);
-
-/// Lower `source` through S1->S2->S3 for supported Vapor compiles.
-pub(crate) fn lower_source_for_vapor(
-    allocator: &Allocator,
+pub(crate) fn lower_source_for_vapor<'a>(
+    allocator: &'a Allocator,
     source: &str,
     options: VaporS3BridgeOptions,
-) -> VaporS3BridgeStatus {
-    ATTEMPTS.fetch_add(1, Ordering::Relaxed);
-
-    if !options.is_supported() {
-        SKIPPED.fetch_add(1, Ordering::Relaxed);
-        return VaporS3BridgeStatus::Skipped;
+) -> VaporS3BridgeStatus<'a> {
+    if options.ssr
+        || options.custom_renderer
+        || options.experimental_patterned_template
+        || options.template_syntax != TemplateSyntaxMode::Standard
+        || options.has_custom_elements
+        || options.has_binding_metadata
+        || options.inline
+    {
+        return VaporS3BridgeStatus::Legacy(LegacyReason::Options);
     }
-
-    let status = profile!("atelier.vapor.template.s3_bridge", {
-        let (tree, surface_errors) = vize_s1::parse_with_options(
-            allocator,
+    profile!("atelier.vapor.template.s3_bridge", {
+        // Earlier-stage storage cannot accidentally become an emitter input.
+        // S3 copies its payloads into the output arena before this scope ends.
+        let scratch = Allocator::new();
+        let (tree, errors) = vize_s1::parse_with_options(
+            &scratch,
             source,
             SurfaceParseOptions {
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
             },
         );
-        let s2 = vize_s1_to_s2::lower(allocator, &tree, &surface_errors);
-        let s3 = vize_s2_to_s3::lower(allocator, &s2.root);
-        let violations = verify(&s3.program);
-        if !violations.is_empty() {
-            let mut diagnostics = std::vec::Vec::new();
-            for violation in violations {
-                diagnostics.push(cstr!(
-                    "Davinci S3 verifier rejected Vapor bridge: {violation}"
-                ));
-            }
-            return_rejected(diagnostics)
-        } else if s3.partition.ops.len() != s3.program.ops.len() {
-            return_rejected(std::vec![cstr!(
-                "Davinci S3 verifier rejected Vapor bridge: partition facts {} did not match ops {}",
-                s3.partition.ops.len(),
-                s3.program.ops.len()
-            )])
-        } else {
-            let dynamic_ops = s3
-                .partition
-                .ops
-                .iter()
-                .filter(|fact| fact.kind.is_dynamic())
-                .count();
-            record_bridge_counters(
-                s3.program.ops.len() as u64,
-                dynamic_ops as u64,
-                s3.program.regions.len() as u64,
-                s3.program.effects.len() as u64,
-                s2.diagnostics.len() as u64,
-            );
-            VaporS3BridgeStatus::Accepted
+        let s2 = vize_s1_to_s2::lower(&scratch, &tree, &errors);
+        if !s2.diagnostics.is_empty()
+            || s2.provenance.iter().any(|record| {
+                !record.rule.starts_with("lower.")
+                    && !record.rule.starts_with("condense.")
+                    && record.rule != "drop.comment"
+            })
+        {
+            return VaporS3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
         }
-    });
+        let s3 = vize_s2_to_s3::lower(allocator, &s2.root);
+        admit(s3)
+    })
+}
 
-    if matches!(status, VaporS3BridgeStatus::Accepted) {
-        ACCEPTED.fetch_add(1, Ordering::Relaxed);
+fn admit(s3: Lowered<'_>) -> VaporS3BridgeStatus<'_> {
+    let violations = verify(&s3.program);
+    if !violations.is_empty() {
+        return VaporS3BridgeStatus::Rejected(
+            violations
+                .into_iter()
+                .map(|violation| cstr!("Davinci S3 verifier rejected Vapor artifact: {violation}"))
+                .collect(),
+        );
     }
-
-    status
-}
-
-#[cfg(test)]
-pub(crate) fn stats() -> VaporS3BridgeStats {
-    VaporS3BridgeStats {
-        attempts: ATTEMPTS.load(Ordering::Relaxed),
-        accepted: ACCEPTED.load(Ordering::Relaxed),
-        skipped: SKIPPED.load(Ordering::Relaxed),
-        rejected: REJECTED.load(Ordering::Relaxed),
+    // Count equality alone admits duplicate, reordered, stale, or incorrectly
+    // classified facts. The producing pass exports one aligned fact per op.
+    if s3.partition.ops.len() != s3.program.ops.len()
+        || s3
+            .partition
+            .ops
+            .iter()
+            .zip(&s3.program.ops)
+            .any(|(fact, op)| {
+                fact.op != op.id
+                    || fact.span != op.span
+                    || fact.kind.is_dynamic() != op.effect.is_some()
+            })
+    {
+        return VaporS3BridgeStatus::Rejected(std::vec![String::from(
+            "Davinci S3 verifier rejected Vapor artifact: partition identity/classification mismatch",
+        )]);
+    }
+    match NativeArtifact::admit(&s3) {
+        Ok(artifact) => VaporS3BridgeStatus::Accepted(VaporS3Artifact(artifact)),
+        Err(AdmissionFailure::Unsupported(reason)) => VaporS3BridgeStatus::Legacy(reason),
+        Err(AdmissionFailure::Invalid(message)) => VaporS3BridgeStatus::Rejected(std::vec![cstr!(
+            "Davinci S3 verifier rejected Vapor artifact: {message}"
+        )]),
     }
 }
 
-impl VaporS3BridgeOptions {
-    fn is_supported(self) -> bool {
-        !self.ssr
-            && !self.custom_renderer
-            && !self.experimental_patterned_template
-            && self.template_syntax == TemplateSyntaxMode::Standard
-            && !self.has_custom_elements
-    }
-}
-
-fn return_rejected(diagnostics: std::vec::Vec<String>) -> VaporS3BridgeStatus {
-    REJECTED.fetch_add(1, Ordering::Relaxed);
-    VaporS3BridgeStatus::Rejected(diagnostics)
-}
-
-fn record_bridge_counters(
-    ops: u64,
-    dynamic_ops: u64,
-    regions: u64,
-    effects: u64,
-    diagnostics: u64,
-) {
+pub(crate) fn record_selection(status: &VaporS3BridgeStatus<'_>) {
     let profiler = global_profiler();
     if !profiler.is_enabled() {
         return;
     }
-    profiler.record_counter_enabled("davinci.s3_vapor.files", 1);
-    profiler.record_counter_enabled("davinci.s3_vapor.ops", ops);
-    profiler.record_counter_enabled("davinci.s3_vapor.dynamic_ops", dynamic_ops);
-    profiler.record_counter_enabled("davinci.s3_vapor.regions", regions);
-    profiler.record_counter_enabled("davinci.s3_vapor.effects", effects);
-    profiler.record_counter_enabled("davinci.s3_vapor.s2_diagnostics", diagnostics);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{VaporS3BridgeOptions, VaporS3BridgeStatus, lower_source_for_vapor, stats};
-    use vize_atelier_core::TemplateSyntaxMode;
-    use vize_carton::Allocator;
-
-    fn supported_options() -> VaporS3BridgeOptions {
-        VaporS3BridgeOptions {
-            ssr: false,
-            custom_renderer: false,
-            experimental_in_tag_comments: false,
-            experimental_patterned_template: false,
-            template_syntax: TemplateSyntaxMode::Standard,
-            has_custom_elements: false,
-        }
-    }
-
-    #[test]
-    fn supported_templates_lower_to_verified_s3() {
-        let allocator = Allocator::new();
-        let before = stats();
-        let status = lower_source_for_vapor(
-            &allocator,
-            r#"<button :disabled="locked" @click="save">{{ label }}</button>"#,
-            supported_options(),
-        );
-        let after = stats();
-
-        assert!(matches!(status, VaporS3BridgeStatus::Accepted));
-        assert!(after.accepted > before.accepted);
-        assert_eq!(after.rejected, before.rejected);
-    }
-
-    #[test]
-    fn unsupported_vapor_options_skip_the_bridge() {
-        let allocator = Allocator::new();
-        let before = stats();
-        let status = lower_source_for_vapor(
-            &allocator,
-            r#"<x-thing />"#,
-            VaporS3BridgeOptions {
-                has_custom_elements: true,
-                ..supported_options()
-            },
-        );
-        let after = stats();
-
-        assert!(matches!(status, VaporS3BridgeStatus::Skipped));
-        assert!(after.skipped > before.skipped);
-    }
+    let counter = match status {
+        VaporS3BridgeStatus::Accepted(_) => "davinci.s3_vapor.accepted",
+        VaporS3BridgeStatus::Legacy(reason) => reason.counter(),
+        VaporS3BridgeStatus::Rejected(_) => "davinci.s3_vapor.rejected",
+    };
+    profiler.record_counter_enabled(counter, 1);
 }

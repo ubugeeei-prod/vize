@@ -44,7 +44,17 @@ fn vapor_walk_baseline_holds() {
             template_block(fixture.source).expect("every ladder fixture has a template block");
         let allocator = Allocator::new();
         let before = WalkCounts::snapshot();
-        let _compiled = compile_vapor(&allocator, template, VaporCompilerOptions::default());
+        // This remains the legacy plan's baseline. An empty metadata map
+        // deliberately selects that lane without changing these fixture values;
+        // davinci_vapor_artifact separately pins zero legacy walks on admission.
+        let _compiled = compile_vapor(
+            &allocator,
+            template,
+            VaporCompilerOptions {
+                binding_metadata: Some(Default::default()),
+                ..Default::default()
+            },
+        );
         let delta = WalkCounts::snapshot().since(before);
 
         let breakdown = WALK_STAGES

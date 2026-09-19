@@ -149,3 +149,13 @@ neither is in scope.
   same numbers pinned as ordinary integration tests, so they run in the
   default `cargo test --workspace` lane rather than a feature-gated one (the
   P1-5/P1-7 counter-law shape).
+
+## Native Vapor S3 selection (2026-09-20)
+
+The table above remains the legacy-plan baseline. `davinci_walk_baseline` now
+selects that route explicitly with empty binding metadata so its exact visit
+counts stay meaningful. `davinci_vapor_artifact` independently pins zero legacy
+core-transform/Vapor-lower walks and zero expression reparses for admitted S3
+native artifacts, and two legacy walks for unsupported shapes. This does not
+claim that the parser preflight or S1/S2/S3 conversion performs no traversal, or
+that the full Vapor lane has migrated. See the [P3-6 contract](./phase-3-records/p3-6.md).
