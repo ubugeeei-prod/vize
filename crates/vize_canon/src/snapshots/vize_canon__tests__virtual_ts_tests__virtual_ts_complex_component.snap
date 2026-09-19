@@ -95,7 +95,7 @@ declare function __vizeComponentGlobalHtmlAttrs(value: __VizeComponentGlobalHtml
 type __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ? V : unknown;
 declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;
 type __VForEntry<T> = T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number];
-declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
+declare function __vForList<const T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 import { ref, computed, watch } from 'vue'
 interface Props {
   initialCount?: number
@@ -158,7 +158,7 @@ function __setup() {
     console.log('Count changed:', newVal)
   })
   
-  // @vize-map: 15705:16091 -> 0:501
+  // @vize-map: 15711:16097 -> 0:501
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

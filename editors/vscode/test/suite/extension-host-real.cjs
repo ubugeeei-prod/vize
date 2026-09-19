@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const vscode = require("vscode");
 
 const { runRealServerScenario } = require("./real-scenario.cjs");
+const { runRealCodeActionSmoke } = require("./real-code-actions.cjs");
 const {
   assertPackagedExtension,
   assertStaysDiagnosticFree,
@@ -65,6 +66,8 @@ exports.run = async function run() {
 
   logProgress("scorecard scenario");
   await runRealServerScenario();
+  logProgress("checker quick fix");
+  await runRealCodeActionSmoke();
 
   await vscode.commands.executeCommand("vize.disable");
   assert.equal(vscode.workspace.getConfiguration("vize").get("enable"), false);

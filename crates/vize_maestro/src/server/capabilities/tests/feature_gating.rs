@@ -135,15 +135,19 @@ fn individual_feature_flags_gate_matching_providers() {
 }
 
 #[test]
-fn code_actions_require_both_lint_and_code_action_features() {
+fn code_actions_require_an_enabled_provider_and_the_code_action_feature() {
     let mut features = all_features();
     assert!(server_capabilities(features).code_action_provider.is_some());
 
     features.lint = false;
-    assert!(
-        server_capabilities(features).code_action_provider.is_none(),
-        "code actions are lint quick fixes and must disappear when lint is off"
+    assert_eq!(
+        server_capabilities(features).code_action_provider.is_some(),
+        cfg!(feature = "native"),
+        "native checker quick fixes remain available without lint"
     );
+
+    features.typecheck = false;
+    assert!(server_capabilities(features).code_action_provider.is_none());
 
     features = all_features();
     features.code_actions = false;

@@ -11,6 +11,8 @@ pub mod code_lens;
 pub mod completion;
 mod context;
 mod corsa_support;
+#[cfg(feature = "native")]
+mod native_code_actions;
 #[cfg(all(test, feature = "native"))]
 pub(crate) use corsa_support::{canonical_request_path, request_file_uri};
 pub mod cursor_context;

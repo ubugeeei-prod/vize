@@ -92,7 +92,7 @@ fn non_script_blocks_keep_their_existing_boundaries() {
 }
 
 #[test]
-fn root_pattern_completion_is_limited_to_enabled_subject_insertion_points() {
+fn root_pattern_requests_share_subject_classification_and_completion_insertion_points() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
         project.path().join("vize.config.json"),
@@ -118,7 +118,9 @@ fn root_pattern_completion_is_limited_to_enabled_subject_insertion_points() {
         );
         assert_eq!(
             IdeContext::with_content(&enabled, &uri, offset, source.into()).block_type,
-            None
+            (start..end)
+                .contains(&offset)
+                .then_some(BlockType::Template)
         );
         assert_eq!(
             IdeContext::with_content_for_completion(&disabled, &uri, offset, source.into())

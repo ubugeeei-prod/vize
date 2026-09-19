@@ -5,3 +5,6 @@ npm/fresco-native/index.d.ts linguist-generated=true text eol=lf
 
 # Embedded third-party repositories are fixtures, not part of the project source.
 tests/_fixtures/_git/** linguist-vendored=true
+
+# Preserve the pinned upstream source bytes, including existing trailing spaces.
+tests/_fixtures/pattern-reference/upstream/** linguist-vendored whitespace=-blank-at-eol

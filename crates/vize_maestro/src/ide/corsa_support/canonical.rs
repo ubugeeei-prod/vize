@@ -5,12 +5,14 @@ use vize_s0::{String, cstr};
 use crate::ide::IdeContext;
 use crate::ide::diagnostics::VirtualTsResult;
 
+mod exact_edits;
 mod mapping;
 mod open;
 mod project;
 pub(super) mod rename;
 mod semantic_links;
 
+pub(crate) use exact_edits::map_canonical_exact_edit_range;
 use mapping::source_offset_to_virtual_generated_offset;
 pub(crate) use mapping::{canonical_source_offset_to_position, map_canonical_lsp_range};
 pub(super) use mapping::{map_lsp_range_to_source, map_virtual_result_lsp_range_to_source};

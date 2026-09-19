@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "vuejs/core",
+      "revision": "53455195068f6916c9864a2490e017b584900874",
+      "files": [
+        {
+          "path": "packages/compiler-core/__tests__/patterns.spec.ts",
+          "sha256": "f70aae10acc014c9ebcbd41c765d17873503d4c5ee7ba984bed8ab9e7c1287b5"
+        },
+        {
+          "path": "packages/compiler-core/__tests__/transforms/cacheStatic.spec.ts",
+          "sha256": "52c170fa3553b4d5b294bd4058f5d3cfaa403b16132fe814da8bda8a9ad8845b"
+        },
+        {
+          "path": "packages/compiler-dom/__tests__/__snapshots__/vMatch.spec.ts.snap",
+          "sha256": "665ded53de6af16f648e8bb324dc0b64bf6fb6dda7893ba32cbdc87978a98cc7"
+        },
+        {
+          "path": "packages/compiler-dom/__tests__/vMatch.spec.ts",
+          "sha256": "11b57d6a1f2a8ede4fa360c301d2e7f9b17a3d53579ef4f6afe894eceff8ce51"
+        },
+        {
+          "path": "packages/compiler-sfc/__tests__/vMatch.spec.ts",
+          "sha256": "dfbb894ac5778da5816d9663f7d0ee4b2d7321ee5a93c2b68dc0a4af613c0162"
+        },
+        {
+          "path": "packages/runtime-vapor/__tests__/hydration/vMatch.spec.ts",
+          "sha256": "14ba44b5158f7d4f61f868aa386308390f47faa5381d03fa90609b6acaca17d9"
+        },
+        {
+          "path": "packages/runtime-vapor/__tests__/vMatch.spec.ts",
+          "sha256": "0122a8559cb0ec258341c79073248496f1742094b8fa655d88f419db0553fa5c"
+        },
+        {
+          "path": "packages/vue/__tests__/e2e/Transition.spec.ts",
+          "sha256": "3746dd1fad256669f05e677bf2ab7e02ee4effe84b636a1963d6fd7f97c9cade"
+        },
+        {
+          "path": "packages/vue/__tests__/vMatch.spec.ts",
+          "sha256": "b1c28bcbc9302d737e000b60a63aee2414797e7e753aa29928e69aa8301b8615"
+        }
+      ]
+    },
+    {
+      "repository": "vuejs/language-tools",
+      "revision": "e68d41bfef1770f8428f92097abe959b57de62d2",
+      "files": [
+        {
+          "path": "extensions/vscode/tests/__snapshots__/grammar.spec.ts.snap",
+          "sha256": "1fdd7dfb01f45ed711dfcc826a2efec870de432e7834ea9beb4f77359a665d05"
+        },
+        {
+          "path": "extensions/vscode/tests/embeddedGrammarFixtures/patterned-templates.vue",
+          "sha256": "406f7584b273be5d9b2946256b2b2963aacba820740795d62cfb7d20a4ce33aa"
+        },
+        {
+          "path": "extensions/vscode/tests/embeddedGrammarFixtures/root-patterned-template.vue",
+          "sha256": "fac3e3e7d84e00881681bc123289541a5a7017fe59de432c4cb1f8ca046b76fc"
+        },
+        {
+          "path": "extensions/vscode/tests/embeddedGrammars/_lock.json",
+          "sha256": "b54c1d8b9f1131d7976bd244e2917e5747bbb8a2a62babbb1055dd8343a55386"
+        },
+        {
+          "path": "extensions/vscode/tests/grammar.spec.ts",
+          "sha256": "829701c4db7d5da13d5d0db68821832fd74bbca97f1a8bac97d1b8de39031371"
+        },
+        {
+          "path": "packages/language-core/tests/fixtures/pattern-matching.ts",
+          "sha256": "b9c09dcc78071c0686c186b434be6eb992fbb7468966cf6e9bfaf2771dd0a6cf"
+        },
+        {
+          "path": "packages/language-core/tests/patternMatchingTypes.spec.ts",
+          "sha256": "b1ecf3392c1050534235b40b6d9a88aaadfe15131efedb3c23f66eb4de0a563e"
+        },
+        {
+          "path": "packages/language-server/tests/completions.spec.ts",
+          "sha256": "b0c75cb8db1b05610bf30968da2be0d48c8dbc6a9f9a34187cad601b6c955ef3"
+        },
+        {
+          "path": "packages/language-server/tests/patternedTemplates.spec.ts",
+          "sha256": "e1aeb39082d8e24eb9d2a3c66d59bfc25b2a077f523d4ad8712819d725829756"
+        },
+        {
+          "path": "packages/tsc/tests/patternedTemplates.spec.ts",
+          "sha256": "03099c8f7eb6e1554a815736f045244fb348f467c2b86fb4b8c7addf5f1c3d59"
+        },
+        {
+          "path": "packages/tsc/tests/patternedTemplatesCli.spec.ts",
+          "sha256": "a56807d9f4775e1ae110c985d10c9185115d15224c94b4503f2f837800f655cb"
+        }
+      ]
+    }
+  ]
+}

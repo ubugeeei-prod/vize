@@ -95,8 +95,11 @@ declare namespace __VizePatterns {
             ? [...{ [I in keyof A]: PatternType<A[I]> }, ...(R extends true ? unknown[] : [])]
             : never;
 
+  type Match<T, P extends Pattern> = MatchImpl<T, P>;
+  type Subtract<T, P extends Pattern> = SubtractImpl<T, P>;
+
   // Narrow one union member at a time. Object patterns constrain only their listed properties.
-  type Match<T, P> = P extends ["any"]
+  type MatchImpl<T, P> = P extends ["any"]
     ? T
     : IsAny<T> extends true
       ? PatternType<P>
@@ -108,7 +111,7 @@ declare namespace __VizePatterns {
             ? P extends ["literal" | "value", infer V]
               ? T & V
               : P extends ["or", infer A extends unknown[]]
-                ? Match<T, A[number]>
+                ? MatchImpl<T, A[number]>
                 : P extends ["object", infer A extends [PropertyKey, unknown][]]
                   ? T extends null | undefined
                     ? never
@@ -130,7 +133,7 @@ declare namespace __VizePatterns {
     ? H[0] extends keyof T
       ? H[1] extends ["any"]
         ? MatchObject<RequireProperty<T, H[0]>, R>
-        : MatchObject<ReplaceProperty<T, H[0], Match<T[H[0]], H[1]>>, R>
+        : MatchObject<ReplaceProperty<T, H[0], MatchImpl<T[H[0]], H[1]>>, R>
       : MatchObject<T & { [K in H[0]]: PatternType<H[1]> }, R>
     : T;
 
@@ -141,9 +144,9 @@ declare namespace __VizePatterns {
     ? T extends readonly []
       ? never
       : T extends readonly [infer V, ...infer Rest]
-        ? Prepend<Match<V, H>, MatchArray<Rest, Tail, R>>
+        ? Prepend<MatchImpl<V, H>, MatchArray<Rest, Tail, R>>
         : T extends readonly [(infer V)?, ...infer Rest]
-          ? Prepend<Match<T[0], H>, MatchArray<Rest, Tail, R>>
+          ? Prepend<MatchImpl<T[0], H>, MatchArray<Rest, Tail, R>>
           : never
     : R extends true
       ? T
@@ -158,7 +161,7 @@ declare namespace __VizePatterns {
       : never;
 
   // Only unguarded arms call this helper. Unknown and open primitive spaces stay uncovered.
-  type Subtract<T, P> = [T] extends [never]
+  type SubtractImpl<T, P> = [T] extends [never]
     ? never
     : P extends ["any"]
       ? never
@@ -197,7 +200,7 @@ declare namespace __VizePatterns {
                       : never;
 
   type SubtractAlternatives<T, A> = A extends [infer H, ...infer R]
-    ? SubtractAlternatives<Subtract<T, H>, R>
+    ? SubtractAlternatives<SubtractImpl<T, H>, R>
     : T;
 
   // The remaining object space has three cases: the key is absent, its pattern fails,
@@ -212,8 +215,8 @@ declare namespace __VizePatterns {
               | SubtractObject<RequireProperty<T, H[0]>, R>
           :
               | ({} extends Pick<T, H[0]> ? Omit<T, H[0]> & { [K in H[0]]?: never } : never)
-              | ReplaceProperty<T, H[0], Subtract<T[H[0]], H[1]>>
-              | SubtractObject<ReplaceProperty<T, H[0], Match<T[H[0]], H[1]>>, R>
+              | ReplaceProperty<T, H[0], SubtractImpl<T[H[0]], H[1]>>
+              | SubtractObject<ReplaceProperty<T, H[0], MatchImpl<T[H[0]], H[1]>>, R>
         : T
       : never;
 
@@ -225,12 +228,12 @@ declare namespace __VizePatterns {
     ? T extends readonly []
       ? T
       : T extends readonly [infer V, ...infer Rest]
-        ? Prepend<Subtract<V, H>, Rest> | Prepend<Match<V, H>, SubtractArray<Rest, Tail, R>>
+        ? Prepend<SubtractImpl<V, H>, Rest> | Prepend<MatchImpl<V, H>, SubtractArray<Rest, Tail, R>>
         : T extends readonly [(infer V)?, ...infer Rest]
           ?
               | []
-              | Prepend<Subtract<T[0], H>, Rest>
-              | Prepend<Match<T[0], H>, SubtractArray<Rest, Tail, R>>
+              | Prepend<SubtractImpl<T[0], H>, Rest>
+              | Prepend<MatchImpl<T[0], H>, SubtractArray<Rest, Tail, R>>
           : T
     : R extends true
       ? never

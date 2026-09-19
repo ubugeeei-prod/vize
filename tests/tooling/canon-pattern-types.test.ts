@@ -37,3 +37,55 @@ test("pattern declarations are checked and preserve structural coverage", () => 
     );
   }
 });
+
+test("every upstream helper assertion checks the Canon declaration with library checking enabled", () => {
+  const declarations = fileURLToPath(
+    new URL(
+      "../../crates/vize_canon/src/virtual_ts/helpers/pattern_matching.d.ts",
+      import.meta.url,
+    ),
+  );
+  const fixture = fileURLToPath(
+    new URL(
+      "../_fixtures/pattern-reference/upstream/language-tools/packages/language-core/tests/fixtures/pattern-matching.ts",
+      import.meta.url,
+    ),
+  );
+  // Adapt only the reference's helper namespace/import. Keep all positive and
+  // negative assertions, including invalid descriptor tags, unchanged.
+  const source = readFileSync(fixture, "utf8")
+    .replace("import '../../types/pattern-matching';", "")
+    .replaceAll("__VLS_MatchPattern", "__VizePatterns.Match")
+    .replaceAll("__VLS_SubtractPattern", "__VizePatterns.Subtract")
+    .replaceAll("__VLS_CheckMatchExhaustive", "__VizePatterns.Exhaustiveness");
+  for (const mutation of [false, true]) {
+    const options: ts.CompilerOptions = {
+      strict: true,
+      noEmit: true,
+      skipLibCheck: false,
+      types: [],
+      lib: ["lib.es2022.d.ts"],
+      target: ts.ScriptTarget.ESNext,
+    };
+    const host = ts.createCompilerHost(options);
+    const readFile = host.readFile.bind(host);
+    host.readFile = (file) =>
+      file === fixture
+        ? mutation
+          ? source.replaceAll("@ts-expect-error", "expect error removed")
+          : source
+        : readFile(file);
+    const program = ts.createProgram([declarations, fixture], options, host);
+    const diagnostics = ts.getPreEmitDiagnostics(program);
+    if (mutation)
+      assert.deepEqual(
+        diagnostics.map((d) => d.code).sort((a, b) => a - b),
+        [2322, 2344],
+      );
+    else
+      assert.deepEqual(
+        diagnostics.map((d) => ts.flattenDiagnosticMessageText(d.messageText, "\n")),
+        [],
+      );
+  }
+});
