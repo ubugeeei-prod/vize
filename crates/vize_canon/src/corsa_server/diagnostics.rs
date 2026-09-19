@@ -170,6 +170,7 @@ mod tests {
                 source_type: SourceType::ts(),
                 virtual_suffix: ".ts",
                 dependencies: Vec::new(),
+                resolved_dependencies: Vec::new(),
                 materialized_sources: Vec::new(),
                 session_project_root: None,
             },

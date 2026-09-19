@@ -1,7 +1,11 @@
 //! Reverse dependency index for open SFC and script documents.
 
+#[cfg(feature = "native")]
+mod canonical;
 mod dependents;
+mod resolution;
 mod specifiers;
+use resolution::resolve_import;
 
 use std::{
     collections::BTreeMap,
@@ -11,17 +15,16 @@ use std::{
 use oxc_span::SourceType;
 use parking_lot::{Mutex, RwLock};
 use tower_lsp::lsp_types::Url;
-use vize_canon::{PackageRouteResolver, PackageSourceOptions};
-use vize_s0::{FxHashMap, FxHashSet, cstr};
+use vize_canon::PackageRouteResolver;
+use vize_s0::{FxHashMap, FxHashSet};
 
 use super::ServerState;
 pub(super) use dependents::open_typecheck_dependents;
 
-const SCRIPT_EXTENSIONS: &[&str] = &["vue", "ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs"];
-
 #[derive(Default)]
 pub(super) struct OpenImportIndex {
     inner: RwLock<ImportIndexData>,
+    canonical: RwLock<ImportIndexData>,
     package_routes: Mutex<PackageRouteResolver>,
 }
 
@@ -35,6 +38,7 @@ impl OpenImportIndex {
     pub(super) fn with_package_routes(package_routes: PackageRouteResolver) -> Self {
         Self {
             inner: RwLock::default(),
+            canonical: RwLock::default(),
             package_routes: Mutex::new(package_routes),
         }
     }
@@ -47,6 +51,7 @@ impl OpenImportIndex {
                 collect_dependencies(&path, importer, source, &mut self.package_routes.lock())
             })
             .unwrap_or_default();
+        remove_importer(&mut self.canonical.write(), importer);
         let mut index = self.inner.write();
         remove_importer(&mut index, importer);
 
@@ -64,23 +69,30 @@ impl OpenImportIndex {
 
     pub(super) fn remove(&self, importer: &Url) {
         remove_importer(&mut self.inner.write(), importer);
+        remove_importer(&mut self.canonical.write(), importer);
     }
 
     pub(super) fn clear(&self) {
         let mut index = self.inner.write();
         index.by_dependency.clear();
         index.by_importer.clear();
+        *self.canonical.write() = ImportIndexData::default();
         self.package_routes.lock().clear();
     }
 
     fn importers(&self, dependency: &Path) -> Vec<Url> {
         let dependency = comparable_path(dependency);
         let index = self.inner.read();
-        let mut importers = index
-            .by_dependency
-            .range(dependency.clone()..)
-            .take_while(|(path, _)| path.starts_with(&dependency))
-            .flat_map(|(_, importers)| importers.iter().cloned())
+        let canonical = self.canonical.read();
+        let mut importers = [&*index, &*canonical]
+            .into_iter()
+            .flat_map(|index| {
+                index
+                    .by_dependency
+                    .range(dependency.clone()..)
+                    .take_while(|(path, _)| path.starts_with(&dependency))
+                    .flat_map(|(_, importers)| importers.iter().cloned())
+            })
             .collect::<FxHashSet<_>>()
             .into_iter()
             .collect::<Vec<_>>();
@@ -92,11 +104,18 @@ impl OpenImportIndex {
     fn dependency_paths(&self, dependency: &Path) -> Vec<PathBuf> {
         let dependency = comparable_path(dependency);
         let index = self.inner.read();
-        index
-            .by_dependency
-            .range(dependency.clone()..)
-            .take_while(|(path, _)| path.starts_with(&dependency))
-            .map(|(path, _)| path.clone())
+        let canonical = self.canonical.read();
+        [&*index, &*canonical]
+            .into_iter()
+            .flat_map(|index| {
+                index
+                    .by_dependency
+                    .range(dependency.clone()..)
+                    .take_while(|(path, _)| path.starts_with(&dependency))
+                    .map(|(path, _)| path.clone())
+            })
+            .collect::<FxHashSet<_>>()
+            .into_iter()
             .collect()
     }
 }
@@ -214,86 +233,6 @@ fn collect_script_dependencies(
             dependencies.insert(comparable_path(&dependency));
         }
     }
-}
-
-struct ImportResolution {
-    dependencies: Vec<PathBuf>,
-    target_found: bool,
-}
-
-fn resolve_import(
-    importer_dir: &Path,
-    specifier: &str,
-    package_routes: &mut PackageRouteResolver,
-) -> ImportResolution {
-    let specifier = if specifier.starts_with('#') {
-        specifier
-    } else {
-        specifier
-            .split_once(['?', '#'])
-            .map_or(specifier, |(path, _)| path)
-    };
-    if specifier == "."
-        || specifier == ".."
-        || specifier.starts_with("./")
-        || specifier.starts_with("../")
-    {
-        let dependencies: Vec<_> = resolve_relative_import(importer_dir, specifier)
-            .into_iter()
-            .collect();
-        return ImportResolution {
-            target_found: !dependencies.is_empty(),
-            dependencies,
-        };
-    }
-
-    let lookup = package_routes.lookup(
-        importer_dir,
-        specifier,
-        PackageSourceOptions::new(true, true),
-    );
-    let (route, dependencies) = lookup.into_parts();
-    ImportResolution {
-        dependencies,
-        target_found: route.is_some(),
-    }
-}
-
-fn resolve_relative_import(importer_dir: &Path, specifier: &str) -> Option<PathBuf> {
-    let joined = importer_dir.join(specifier);
-    if matches!(specifier, "." | "..") {
-        return SCRIPT_EXTENSIONS
-            .iter()
-            .map(|extension| joined.join("index").with_extension(extension))
-            .find(|candidate| candidate.exists())
-            .map(|candidate| comparable_path(&candidate));
-    }
-    if has_script_extension(Path::new(specifier)) {
-        return Some(comparable_path(&joined));
-    }
-    SCRIPT_EXTENSIONS
-        .iter()
-        .map(|extension| append_extension(&joined, extension))
-        .chain(
-            SCRIPT_EXTENSIONS
-                .iter()
-                .map(|extension| joined.join("index").with_extension(extension)),
-        )
-        .find(|candidate| candidate.exists())
-        .map(|candidate| comparable_path(&candidate))
-}
-
-fn has_script_extension(path: &Path) -> bool {
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| SCRIPT_EXTENSIONS.contains(&extension))
-}
-
-fn append_extension(path: &Path, extension: &str) -> PathBuf {
-    path.file_name().and_then(|name| name.to_str()).map_or_else(
-        || path.to_path_buf(),
-        |name| path.with_file_name(cstr!("{name}.{extension}")),
-    )
 }
 
 fn comparable_path(path: &Path) -> PathBuf {

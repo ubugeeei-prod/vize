@@ -29,7 +29,7 @@ pub(super) fn collect_dependency_documents(
     rewriter: &ImportRewriter,
     alias_context: &super::vue_dependencies_alias::AliasContext,
     overlays: &FxHashMap<PathBuf, &str>,
-) {
+) -> Vec<PathBuf> {
     let mut visited_vue = FxHashSet::<PathBuf>::default();
     visited_vue.insert(host.source_path.clone());
     let mut visited_ts = FxHashSet::<PathBuf>::default();
@@ -51,6 +51,15 @@ pub(super) fn collect_dependency_documents(
         &mut visited_ts,
         queue,
     );
+    visited_vue.remove(&host.source_path);
+    visited_vue.remove(&normalize_path(&host.source_path));
+    let mut paths = visited_vue
+        .into_iter()
+        .chain(visited_ts)
+        .collect::<Vec<_>>();
+    paths.sort();
+    paths.dedup();
+    paths
 }
 
 #[allow(clippy::too_many_arguments)]

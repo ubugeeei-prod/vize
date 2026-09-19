@@ -29,6 +29,9 @@ pub struct CorsaVueVirtualDocument {
     pub source_type: SourceType,
     pub virtual_suffix: &'static str,
     pub dependencies: Vec<CorsaVueVirtualDependency>,
+    /// Authored files reached from this host, including closed script barrels.
+    /// Unlike the shared materialized mirror, this excludes unrelated hosts.
+    pub resolved_dependencies: Vec<PathBuf>,
     pub materialized_sources: Vec<CorsaMaterializedSource>,
     /// Private Canon mirror root. Any native URI under this root that is not
     /// present in `materialized_sources` must be rejected by consumers.

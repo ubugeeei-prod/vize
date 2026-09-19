@@ -242,7 +242,7 @@ pub(crate) fn build_vue_virtual_project_with_overlays_and_options_and_package_ro
     if host.generated.virtual_suffix == ".tsx" {
         documents.push(tsx_vue_import_shim(&host.source_path, &host.virtual_uri));
     }
-    collect_dependency_documents(
+    let resolved_dependencies = collect_dependency_documents(
         &mut documents,
         &mut dependencies,
         &host,
@@ -266,6 +266,7 @@ pub(crate) fn build_vue_virtual_project_with_overlays_and_options_and_package_ro
             source_type: generated.source_type,
             virtual_suffix: generated.virtual_suffix,
             dependencies,
+            resolved_dependencies,
             materialized_sources,
             session_project_root: session_project_root.clone(),
         },

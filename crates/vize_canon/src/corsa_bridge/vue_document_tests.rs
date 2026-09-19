@@ -7,6 +7,32 @@ use crate::file_uri::path_to_file_uri;
 use vize_carton::cstr;
 
 #[test]
+fn resolved_dependencies_include_closed_barrels_but_exclude_unrelated_overlays() {
+    let project = tempfile::tempdir().unwrap();
+    let host_path = project.path().join("Host.vue");
+    let barrel = project.path().join("barrel.ts");
+    let leaf = project.path().join("leaf.ts");
+    let unrelated = project.path().join("Unrelated.vue");
+    let source = "<script setup lang=\"ts\">import { value } from './barrel';</script><template>{{ value }}</template>";
+    std::fs::write(&host_path, source).unwrap();
+    std::fs::write(&barrel, "export { value } from './leaf';").unwrap();
+    std::fs::write(&leaf, "export const value = 1;").unwrap();
+    let virtual_project = build_vue_virtual_project_with_overlays(
+        &host_path,
+        source,
+        CorsaVueVirtualDocumentOptions::default(),
+        &[(unrelated, "<template />")],
+    )
+    .unwrap();
+    let mut expected = vec![
+        vize_carton::path::canonicalize_non_verbatim(&barrel),
+        vize_carton::path::canonicalize_non_verbatim(&leaf),
+    ];
+    expected.sort();
+    assert_eq!(virtual_project.host.resolved_dependencies, expected);
+}
+
+#[test]
 fn vue_virtual_project_syncs_relative_vue_and_ts_dependencies() {
     let project = tempfile::TempDir::new().expect("temp project");
     let src = project.path().join("src");

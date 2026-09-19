@@ -47,10 +47,10 @@ observational guard for planning only. It does not change rollout state.
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
 | Compiler                   |          1201 |                   825 |               376 |             163 |     387 |            1054 |      697 |           598 |           751 |
 | Linter                     |           375 |                   375 |                 0 |             299 |     303 |             731 |      246 |           390 |           573 |
-| Typechecker                |           992 |                   271 |               721 |             457 |     227 |             943 |      733 |           550 |           795 |
+| Typechecker                |           994 |                   271 |               723 |             457 |     227 |             943 |      735 |           550 |           795 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            21 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            71 |
-| LSP                        |           321 |                   321 |                 0 |             120 |      63 |             380 |      124 |           190 |           435 |
+| LSP                        |           323 |                   323 |                 0 |             120 |      63 |             382 |      124 |           192 |           437 |
 
 ## Consumer details
 
@@ -134,7 +134,7 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |         992 |             561 |      431 |
+| S0               |         994 |             561 |      433 |
 | old AST/parser   |         187 |              50 |      137 |
 | Croquis analysis |         270 |             141 |      129 |
 | raw OXC          |         227 |             191 |       36 |
@@ -226,7 +226,7 @@ Scope: lsp/ide commands plus Maestro editor/server crate. This is a lexical inve
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |         321 |             227 |       94 |
+| S0               |         323 |             229 |       94 |
 | old AST/parser   |          61 |              48 |       13 |
 | Croquis analysis |          59 |              43 |       16 |
 | raw OXC          |          63 |              62 |        1 |
@@ -241,7 +241,7 @@ Scope: lsp/ide commands plus Maestro editor/server crate. This is a lexical inve
 | `crates/vize_maestro/Cargo.toml:44`                             | manifest | S0 1<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 6 |    10 |
 | `crates/vize_maestro/src/ide/corsa_support/html_attribute.rs:2` | source   | S0 10                                                       |    10 |
 
-Additional source/manifest rows are in the TSV: 130 omitted.
+Additional source/manifest rows are in the TSV: 132 omitted.
 
 #### Top test/dev files
 

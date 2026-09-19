@@ -99,7 +99,11 @@ impl DiagnosticService {
         // hand the single executor thread to another queued handler, and a live
         // `documents.get` shard guard would deadlock the server against that
         // handler's `didOpen`/`didChange`/`didClose` write (#3315).
-        let Some(content) = state.documents.text(uri) else {
+        let Some((revision, content)) = state
+            .documents
+            .get(uri)
+            .map(|document| (document.revision(), document.text()))
+        else {
             tracing::warn!("document not found: {}", uri);
             return Ok(vec![]);
         };
@@ -190,6 +194,7 @@ impl DiagnosticService {
                 )
                 .await
                 .map_err(|error| classify(&bridge, error))?;
+            state.record_typecheck_dependencies(uri, revision, &opened.resolved_dependencies);
             let Some((virtual_uri, virtual_result)) =
                 Self::virtual_ts_result_from_corsa_vue_document(uri, &content, opened)
             else {
