@@ -1,3 +1,7 @@
+mod non_native_structural {
+    mod lexical;
+}
+
 use tower_lsp::lsp_types::{Position, Range, SemanticTokensResult, Url};
 use vize_maestro::ide::{
     JsxCodeActionService, JsxDocumentSymbolsService, JsxScopedStyleService,

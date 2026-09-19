@@ -3,47 +3,14 @@
 //! Finds references in script blocks (both setup and regular),
 //! style v-bind() expressions, and definition locations.
 
+#[cfg(feature = "native")]
 use tower_lsp::lsp_types::{Location, Position, Range};
 
+#[cfg(feature = "native")]
 use super::{IdeContext, ReferencesService};
-use vize_s0::cstr;
 
+#[cfg(feature = "native")]
 impl ReferencesService {
-    /// Find the definition location of a symbol.
-    pub(super) fn find_definition_location(ctx: &IdeContext, word: &str) -> Option<Location> {
-        let options = vize_atelier_sfc::SfcParseOptions::default();
-        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
-
-        if ctx.state.options_api_enabled()
-            && let Some(location) =
-                crate::ide::definition::script::find_analyzed_binding_location(ctx, word)
-        {
-            return Some(location);
-        }
-
-        if let Some(ref script_setup) = descriptor.script_setup
-            && let Some(loc) = Self::find_binding_in_script(&script_setup.content, word)
-        {
-            return Some(Self::location_from_sfc_offset(
-                ctx,
-                script_setup.loc.start + loc,
-                word,
-            ));
-        }
-
-        if let Some(ref script) = descriptor.script
-            && let Some(loc) = Self::find_binding_in_script(&script.content, word)
-        {
-            return Some(Self::location_from_sfc_offset(
-                ctx,
-                script.loc.start + loc,
-                word,
-            ));
-        }
-
-        None
-    }
-
     pub(super) fn location_from_sfc_offset(
         ctx: &IdeContext,
         offset: usize,
@@ -61,35 +28,6 @@ impl ReferencesService {
                 },
             },
         }
-    }
-
-    /// Find references to a symbol in the script block.
-    ///
-    /// Occurrences are collected as byte offsets inside the block content and
-    /// rebased onto the authored SFC through `loc.start`, the mapping `rename`
-    /// already uses. Deriving a position from block-relative *line numbers*
-    /// instead placed every script hit one line below the authored one and
-    /// could overrun the end of the line it landed on (#3325).
-    pub(super) fn find_references_in_script(ctx: &IdeContext, word: &str) -> Vec<Location> {
-        let mut locations = Vec::new();
-
-        let options = vize_atelier_sfc::SfcParseOptions::default();
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
-            return locations;
-        };
-
-        let blocks = [descriptor.script_setup.as_ref(), descriptor.script.as_ref()];
-        for block in blocks.into_iter().flatten() {
-            for offset in Self::find_identifier_references_in_script(&block.content, word) {
-                locations.push(Self::location_from_sfc_offset(
-                    ctx,
-                    block.loc.start + offset,
-                    word,
-                ));
-            }
-        }
-
-        locations
     }
 
     /// Find references to a symbol in style blocks (v-bind).
@@ -112,12 +50,6 @@ impl ReferencesService {
         }
 
         locations
-    }
-
-    /// Byte offsets, relative to the block content, of every standalone
-    /// occurrence of `word` in script code.
-    pub(super) fn find_identifier_references_in_script(content: &str, word: &str) -> Vec<usize> {
-        Self::find_word_occurrences(content, word)
     }
 
     /// Byte offsets, relative to the block content, of every `v-bind()`
@@ -145,107 +77,6 @@ impl ReferencesService {
         }
 
         refs
-    }
-
-    /// Find a binding definition in script content.
-    pub(super) fn find_binding_in_script(content: &str, name: &str) -> Option<usize> {
-        if let Some(offset) = Self::find_import_binding(content, name) {
-            return Some(offset);
-        }
-        let content_start = Self::skip_virtual_header(content);
-        let search_content = &content[content_start..];
-
-        let patterns = [
-            cstr!("const {name} "),
-            cstr!("const {name}="),
-            cstr!("let {name} "),
-            cstr!("let {name}="),
-            cstr!("var {name} "),
-            cstr!("var {name}="),
-            cstr!("function {name}("),
-            cstr!("function {name} ("),
-        ];
-
-        for pattern in &patterns {
-            if let Some(pos) = search_content.find(pattern.as_str()) {
-                let name_offset = pattern.find(name).unwrap_or(0);
-                return Some(content_start + pos + name_offset);
-            }
-        }
-
-        // Check destructuring
-        let destructure_patterns = [
-            cstr!("{{ {name}"),
-            cstr!("{{ {name}, "),
-            cstr!("{{ {name} }}"),
-            cstr!(", {name} }}"),
-            cstr!(", {name}, "),
-        ];
-
-        for pattern in &destructure_patterns {
-            if let Some(pos) = search_content.find(pattern.as_str()) {
-                let name_offset = pattern.find(name).unwrap_or(0);
-                return Some(content_start + pos + name_offset);
-            }
-        }
-
-        None
-    }
-
-    fn find_import_binding(content: &str, name: &str) -> Option<usize> {
-        use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
-
-        let allocator = oxc_allocator::Allocator::default();
-        let parsed = oxc_parser::Parser::new(
-            &allocator,
-            content,
-            oxc_span::SourceType::ts().with_module(true),
-        )
-        .parse();
-        let parsed = if parsed.panicked {
-            oxc_parser::Parser::new(
-                &allocator,
-                content,
-                oxc_span::SourceType::tsx().with_module(true),
-            )
-            .parse()
-        } else {
-            parsed
-        };
-        if parsed.panicked {
-            return None;
-        }
-
-        parsed.program.body.iter().find_map(|statement| {
-            let Statement::ImportDeclaration(import) = statement else {
-                return None;
-            };
-            import.specifiers.as_ref()?.iter().find_map(|specifier| {
-                let local = match specifier {
-                    ImportDeclarationSpecifier::ImportSpecifier(specifier) => &specifier.local,
-                    ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
-                        &specifier.local
-                    }
-                    ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
-                        &specifier.local
-                    }
-                };
-                (local.name == name).then_some(local.span.start as usize)
-            })
-        })
-    }
-
-    /// Skip virtual code header.
-    fn skip_virtual_header(content: &str) -> usize {
-        let mut offset = 0;
-        for line in content.lines() {
-            if line.starts_with("//") || line.trim().is_empty() {
-                offset += line.len() + 1;
-            } else {
-                break;
-            }
-        }
-        offset
     }
 }
 

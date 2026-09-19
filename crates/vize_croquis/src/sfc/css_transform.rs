@@ -81,6 +81,28 @@ pub fn extract_and_transform_v_bind_with_scope<'a>(
     (result_str, vars)
 }
 
+/// Authored JavaScript expression ranges, excluding CSS whitespace and quotes.
+/// Shares the compiler scanner, including its comment/string and nesting rules.
+#[doc(hidden)]
+pub fn v_bind_expression_ranges(css: &str) -> Vec<std::ops::Range<usize>> {
+    let mut ranges = Vec::new();
+    let mut pos = 0;
+    while let Some(open) = find_next_v_bind(css, pos) {
+        let start = open + 7;
+        let Some(end) = find_matching_paren(&css[start..]) else {
+            break;
+        };
+        let raw = &css[start..start + end];
+        let trimmed = raw.trim();
+        let expression = trim_outer_quotes(trimmed);
+        let quote = usize::from(expression.len() != trimmed.len());
+        let start = start + raw.len() - raw.trim_start().len() + quote;
+        ranges.push(start..start + expression.len());
+        pos = open + 7 + end + 1;
+    }
+    ranges
+}
+
 pub(crate) fn trim_outer_quotes(expr: &str) -> &str {
     let bytes = expr.as_bytes();
     if bytes.len() >= 2

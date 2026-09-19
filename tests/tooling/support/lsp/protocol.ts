@@ -13,6 +13,7 @@ export type LspInitializationOptions = {
   codeActions?: boolean;
   codeLens?: boolean;
   completion?: boolean;
+  crossFile?: boolean;
   definition?: boolean;
   documentLinks?: boolean;
   documentSymbols?: boolean;

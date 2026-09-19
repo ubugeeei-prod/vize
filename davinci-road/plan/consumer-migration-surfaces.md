@@ -50,7 +50,7 @@ observational guard for planning only. It does not change rollout state.
 | Typechecker                |           977 |                   270 |               707 |             449 |     223 |             920 |      729 |           534 |           771 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            21 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            71 |
-| LSP                        |           311 |                   311 |                 0 |             123 |      51 |             363 |      122 |           183 |           423 |
+| LSP                        |           319 |                   319 |                 0 |             120 |      60 |             376 |      123 |           187 |           429 |
 
 ## Consumer details
 
@@ -226,10 +226,10 @@ Scope: lsp/ide commands plus Maestro editor/server crate. This is a lexical inve
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |         311 |             218 |       93 |
-| old AST/parser   |          65 |              52 |       13 |
-| Croquis analysis |          58 |              42 |       16 |
-| raw OXC          |          51 |              51 |        0 |
+| S0               |         319 |             226 |       93 |
+| old AST/parser   |          61 |              48 |       13 |
+| Croquis analysis |          59 |              43 |       16 |
+| raw OXC          |          60 |              59 |        1 |
 
 #### Top source and manifest files
 
@@ -241,7 +241,7 @@ Scope: lsp/ide commands plus Maestro editor/server crate. This is a lexical inve
 | `crates/vize_maestro/Cargo.toml:44`                             | manifest | S0 1<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 6 |    10 |
 | `crates/vize_maestro/src/ide/corsa_support/html_attribute.rs:2` | source   | S0 10                                                       |    10 |
 
-Additional source/manifest rows are in the TSV: 125 omitted.
+Additional source/manifest rows are in the TSV: 128 omitted.
 
 #### Top test/dev files
 
@@ -253,7 +253,7 @@ Additional source/manifest rows are in the TSV: 125 omitted.
 | `crates/vize_maestro/src/server/state.rs:37`                     | test/dev | S0 7                       |     7 |
 | `crates/vize_maestro/src/ide/code_action.rs:602`                 | test/dev | Croquis analysis 5         |     5 |
 
-Additional test/dev rows are in the TSV: 58 omitted.
+Additional test/dev rows are in the TSV: 59 omitted.
 
 ## Independently mergeable no-rollout slices
 

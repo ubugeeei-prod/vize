@@ -11,6 +11,7 @@ mod canonical;
 #[cfg(all(test, feature = "native"))]
 mod corsa_tests;
 mod script;
+pub(in crate::ide) mod structural;
 mod template;
 
 #[cfg(feature = "native")]
@@ -31,54 +32,19 @@ use crate::virtual_code::{ArtCursorPosition, BlockType};
 pub struct ReferencesService;
 
 impl ReferencesService {
+    #[cfg(feature = "native")]
+    fn get_word_at_offset(content: &str, offset: usize) -> Option<String> {
+        crate::ide::token_at_offset(content, offset, |c| {
+            c.is_ascii_alphanumeric() || c == b'_' || c == b'$'
+        })
+    }
+
     /// Find all references to the symbol at the current position.
     pub fn references(ctx: &IdeContext, include_declaration: bool) -> Option<Vec<Location>> {
         if crate::ide::template_scope::needs_patterned_navigation(ctx) {
             return None;
         }
-        let word = Self::get_word_at_offset(&ctx.content, ctx.offset)?;
-
-        if word.is_empty() {
-            return None;
-        }
-
-        let mut locations = Vec::new();
-        let declaration = Self::find_definition_location(ctx, &word);
-
-        // Find definition location if requested
-        if include_declaration && let Some(ref def_loc) = declaration {
-            locations.push(def_loc.clone());
-        }
-
-        // Find references in template
-        locations.extend(Self::find_references_in_template(ctx, &word));
-
-        // Find references in script
-        locations.extend(Self::find_references_in_script(ctx, &word));
-
-        // Find references in style
-        locations.extend(Self::find_references_in_style(ctx, &word));
-
-        // The block scans report every occurrence of the word, the declaration
-        // included, so `includeDeclaration: false` has to drop it explicitly.
-        if !include_declaration && let Some(ref def_loc) = declaration {
-            locations.retain(|location| location.range != def_loc.range);
-        }
-
-        if locations.is_empty() {
-            None
-        } else {
-            // Remove duplicates
-            locations.sort_by(|a, b| {
-                a.range
-                    .start
-                    .line
-                    .cmp(&b.range.start.line)
-                    .then(a.range.start.character.cmp(&b.range.start.character))
-            });
-            locations.dedup_by(|a, b| a.range.start == b.range.start && a.range.end == b.range.end);
-            Some(locations)
-        }
+        structural::references(ctx, include_declaration)
     }
 
     /// Find all references using Corsa when available, with synchronous fallback.
@@ -241,109 +207,5 @@ impl ReferencesService {
         } else {
             Some(locations)
         }
-    }
-
-    /// Get the word at an offset.
-    fn get_word_at_offset(content: &str, offset: usize) -> Option<String> {
-        crate::ide::token_at_offset(content, offset, Self::is_identifier_char)
-    }
-
-    /// Check if a byte is an identifier character.
-    #[inline]
-    fn is_identifier_char(c: u8) -> bool {
-        c.is_ascii_alphanumeric() || c == b'_' || c == b'$'
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::ReferencesService;
-
-    #[test]
-    fn test_find_word_occurrences() {
-        let text = "message + message2 + getMessage()";
-
-        let positions = ReferencesService::find_word_occurrences(text, "message");
-        assert_eq!(positions.len(), 1);
-        assert_eq!(positions[0], 0);
-
-        let positions = ReferencesService::find_word_occurrences(text, "message2");
-        assert_eq!(positions.len(), 1);
-    }
-
-    #[test]
-    fn test_find_identifier_references_in_script() {
-        let content = r#"
-const message = ref('hello')
-console.log(message)
-const other = message.value
-"#;
-
-        let refs = ReferencesService::find_identifier_references_in_script(content, "message");
-        assert_eq!(refs.len(), 3);
-    }
-
-    #[test]
-    fn test_find_vbind_references_in_style() {
-        let content = r#"
-.container {
-  color: v-bind(textColor);
-  background: v-bind(bgColor);
-}
-"#;
-
-        let refs = ReferencesService::find_vbind_references_in_style(content, "textColor");
-        assert_eq!(refs.len(), 1);
-
-        let refs = ReferencesService::find_vbind_references_in_style(content, "bgColor");
-        assert_eq!(refs.len(), 1);
-    }
-
-    #[test]
-    fn test_is_in_binding_context() {
-        // Inside interpolation
-        assert!(ReferencesService::is_in_binding_context("{{ message }}", 3));
-
-        // Inside directive
-        assert!(ReferencesService::is_in_binding_context("v-if=\"show\"", 7));
-
-        // Not in binding
-        assert!(!ReferencesService::is_in_binding_context(
-            "<div>text</div>",
-            5
-        ));
-    }
-
-    #[test]
-    fn test_get_word_at_offset() {
-        let content = "const message = ref('hello')";
-
-        let word = ReferencesService::get_word_at_offset(content, 6);
-        assert_eq!(word, Some("message".to_string()));
-
-        let word = ReferencesService::get_word_at_offset(content, 5);
-        assert_eq!(word, Some("const".to_string()));
-
-        let word = ReferencesService::get_word_at_offset(content, 14);
-        assert_eq!(word, None);
-    }
-
-    #[test]
-    fn test_find_binding_in_script() {
-        let content = r#"// Virtual TypeScript
-// Generated
-
-const message = ref('hello')
-function handleClick() {}
-"#;
-
-        let loc = ReferencesService::find_binding_in_script(content, "message");
-        assert!(loc.is_some());
-
-        let loc = ReferencesService::find_binding_in_script(content, "handleClick");
-        assert!(loc.is_some());
-
-        let loc = ReferencesService::find_binding_in_script(content, "notFound");
-        assert!(loc.is_none());
     }
 }

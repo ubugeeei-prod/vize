@@ -62,6 +62,9 @@ pub struct SfcTypeCheckResult {
     /// Byte mappings retained for adapters; their coordinate system is adapter-specific.
     #[serde(skip)]
     pub virtual_ts_mappings: Vec<crate::virtual_ts::VizeMapping>,
+    /// Generator-proven identities between authored bindings and their aliases.
+    #[serde(skip)]
+    pub virtual_ts_semantic_links: Vec<crate::virtual_ts::VizeSemanticLink>,
     /// Error count
     pub error_count: usize,
     /// Warning count
@@ -79,6 +82,7 @@ impl SfcTypeCheckResult {
             virtual_ts: None,
             virtual_ts_helpers: None,
             virtual_ts_mappings: Vec::new(),
+            virtual_ts_semantic_links: Vec::new(),
             error_count: 0,
             warning_count: 0,
             analysis_time_ms: None,

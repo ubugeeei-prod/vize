@@ -20,7 +20,9 @@ mod corsa_tests;
 use std::collections::HashMap;
 #[cfg(feature = "native")]
 use std::sync::Arc;
-use tower_lsp::lsp_types::{Position, PrepareRenameResponse, Range, TextEdit, WorkspaceEdit};
+#[cfg(test)]
+use tower_lsp::lsp_types::{Position, Range};
+use tower_lsp::lsp_types::{PrepareRenameResponse, WorkspaceEdit};
 
 #[cfg(feature = "native")]
 use vize_canon::CorsaBridge;
@@ -37,22 +39,7 @@ pub struct RenameService;
 impl RenameService {
     /// Check if rename is valid at the given position.
     pub fn prepare_rename(ctx: &IdeContext) -> Option<PrepareRenameResponse> {
-        let word = Self::get_word_at_offset(&ctx.content, ctx.offset)?;
-
-        if word.is_empty() {
-            return None;
-        }
-
-        // Check if it's a renameable identifier
-        if !Self::is_renameable(&word, ctx) {
-            return None;
-        }
-
-        // Get the range of the word
-        let (start, end) = Self::get_word_range(&ctx.content, ctx.offset)?;
-        let range = Self::offset_range_to_lsp(&ctx.content, start, end);
-
-        Some(PrepareRenameResponse::Range(range))
+        crate::ide::references::structural::prepare_rename(ctx).map(PrepareRenameResponse::Range)
     }
 
     /// Perform rename operation.
@@ -64,21 +51,10 @@ impl RenameService {
     /// call sites, while references classified the same spans correctly by
     /// searching template *expressions* only (#3892).
     pub fn rename(ctx: &IdeContext, new_name: &str) -> Option<WorkspaceEdit> {
-        let word = Self::get_word_at_offset(&ctx.content, ctx.offset)?;
-
-        if word.is_empty() || !Self::is_valid_identifier(new_name) {
+        if !Self::is_valid_identifier(new_name) || Self::is_keyword(new_name) {
             return None;
         }
-
-        let locations = crate::ide::references::ReferencesService::references(ctx, true)?;
-        let text_edits: Vec<TextEdit> = locations
-            .into_iter()
-            .filter(|location| location.uri == *ctx.uri)
-            .map(|location| TextEdit {
-                range: location.range,
-                new_text: new_name.to_string(),
-            })
-            .collect();
+        let text_edits = crate::ide::references::structural::rename(ctx, new_name)?;
         if text_edits.is_empty() {
             return None;
         }
@@ -310,62 +286,14 @@ impl RenameService {
         corsa::map_corsa_workspace_edit(ctx, edit)
     }
 
-    fn is_renameable(word: &str, ctx: &IdeContext) -> bool {
-        // Don't rename Vue directives
-        if word.starts_with("v-") {
-            return false;
-        }
-
-        // Don't rename keywords
-        if Self::is_keyword(word) {
-            return false;
-        }
-
-        // Don't rename $ globals
-        if word.starts_with('$') && Self::is_vue_global(word) {
-            return false;
-        }
-
-        // Check if it's defined in the script
-        if let Some(ref virtual_docs) = ctx.virtual_docs {
-            if let Some(ref script_setup) = virtual_docs.script_setup {
-                let bindings =
-                    crate::virtual_code::extract_simple_bindings(&script_setup.content, true);
-                if bindings.iter().any(|b| b == word) {
-                    return true;
-                }
-            }
-            if let Some(ref script) = virtual_docs.script {
-                let bindings = crate::virtual_code::extract_simple_bindings(&script.content, false);
-                if bindings.iter().any(|b| b == word) {
-                    return true;
-                }
-            }
-        }
-
-        // Allow renaming any valid identifier in template context
-        Self::is_valid_identifier(word)
-    }
-
     /// Get the word at the given offset.
+    #[cfg(test)]
     fn get_word_at_offset(content: &str, offset: usize) -> Option<String> {
         crate::ide::token_at_offset(content, offset, |c| Self::is_ident_char(c as char))
     }
 
-    /// Get the range of the word at offset.
-    fn get_word_range(content: &str, offset: usize) -> Option<(usize, usize)> {
-        let (start, end) =
-            crate::ide::token_span_at_offset(content, offset, |c| Self::is_ident_char(c as char))?;
-
-        // Verify it's a valid identifier start
-        if !Self::is_ident_start(content.as_bytes()[start] as char) {
-            return None;
-        }
-
-        Some((start, end))
-    }
-
     /// Convert byte offset range to LSP Range.
+    #[cfg(test)]
     fn offset_range_to_lsp(content: &str, start: usize, end: usize) -> Range {
         let start_pos = Self::offset_to_position(content, start);
         let end_pos = Self::offset_to_position(content, end);
@@ -376,36 +304,20 @@ impl RenameService {
     }
 
     /// Convert byte offset to LSP Position.
+    #[cfg(test)]
     fn offset_to_position(content: &str, offset: usize) -> Position {
         crate::utils::offset_to_position_str(content, offset)
     }
 
-    /// Check if character can start an identifier.
-    fn is_ident_start(c: char) -> bool {
-        c.is_ascii_alphabetic() || c == '_' || c == '$'
-    }
-
-    /// Check if character can be part of an identifier.
+    /// Check if character can be part of the native ASCII word probe.
+    #[cfg(test)]
     fn is_ident_char(c: char) -> bool {
         c.is_ascii_alphanumeric() || c == '_' || c == '$'
     }
 
-    /// Check if string is a valid identifier.
+    /// Check JavaScript identifier syntax, including Unicode identifiers.
     fn is_valid_identifier(s: &str) -> bool {
-        if s.is_empty() {
-            return false;
-        }
-
-        let mut chars = s.chars();
-        let Some(first) = chars.next() else {
-            return false;
-        };
-
-        if !Self::is_ident_start(first) {
-            return false;
-        }
-
-        chars.all(Self::is_ident_char)
+        oxc_syntax::identifier::is_identifier_name(s)
     }
 
     /// Check if word is a JavaScript keyword.
@@ -461,27 +373,6 @@ impl RenameService {
                 | "async"
                 | "await"
                 | "of"
-        )
-    }
-
-    /// Check if word is a Vue global.
-    fn is_vue_global(word: &str) -> bool {
-        matches!(
-            word,
-            "$el"
-                | "$data"
-                | "$props"
-                | "$attrs"
-                | "$refs"
-                | "$slots"
-                | "$root"
-                | "$parent"
-                | "$emit"
-                | "$forceUpdate"
-                | "$nextTick"
-                | "$watch"
-                | "$options"
-                | "$event"
         )
     }
 }
