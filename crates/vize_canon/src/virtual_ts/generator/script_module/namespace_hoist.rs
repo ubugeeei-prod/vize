@@ -1,4 +1,9 @@
-//! Lifting plain-`<script>` `namespace` declarations out of `__setup()`.
+//! Preserve nominal types and namespaces at plain-script module scope.
+//!
+//! Enums and classes must keep their declaration identity for declaration emit:
+//! a value bridge cannot name a function-local enum or preserve generic/private
+//! class identity. They use the same relocation and dependency handling as
+//! namespace merge partners.
 //!
 //! The plain-`<script>` body is moved inside `__setup()` so its diagnostics stay
 //! anchored to user code (see [`super::plain_exports`]). A `namespace` cannot
@@ -79,16 +84,23 @@ impl NamespaceHoistPlan {
             let Some((declaration, span)) = top_level_declaration(statement) else {
                 continue;
             };
-            let Declaration::TSModuleDeclaration(module) = declaration else {
-                continue;
-            };
-            // `declare module "pkg"` is an augmentation, not a mergeable name.
-            if let TSModuleDeclarationName::Identifier(id) = &module.id {
-                namespace_names.insert(CompactString::new(id.name.as_str()));
+            match declaration {
+                Declaration::TSModuleDeclaration(module) => {
+                    // String module names are augmentations, not merge partners.
+                    if let TSModuleDeclarationName::Identifier(id) = &module.id {
+                        namespace_names.insert(CompactString::new(id.name.as_str()));
+                    }
+                    spans.push((span.start, span.end));
+                }
+                Declaration::TSEnumDeclaration(_) | Declaration::ClassDeclaration(_) => {
+                    if let Some(name) = merge_partner_name(declaration) {
+                        namespace_names.insert(name);
+                    }
+                }
+                _ => {}
             }
-            spans.push((span.start, span.end));
         }
-        if spans.is_empty() {
+        if spans.is_empty() && namespace_names.is_empty() {
             return Self::default();
         }
 

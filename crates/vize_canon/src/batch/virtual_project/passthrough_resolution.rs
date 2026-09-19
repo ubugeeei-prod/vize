@@ -10,6 +10,9 @@ const PACKAGE_ENTRY_FIELDS: &[&str] = &["types", "typings", "main"];
 
 pub(super) fn resolve_relative_passthrough_module(dir: &Path, specifier: &str) -> Option<PathBuf> {
     let base = dir.join(specifier);
+    if specifier.ends_with(".vue") && !base.is_file() {
+        return first_existing_with_extensions(&base, &["d.ts"]);
+    }
     if let Some((stripped, extensions)) = explicit_typescript_substitution(&base, specifier) {
         if let Some(path) = first_existing_with_extensions(&stripped, extensions) {
             return Some(path);

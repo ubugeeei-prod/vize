@@ -26,6 +26,7 @@ use vize_carton::{
 const DECLARATION_HELPERS_FILE: &str = crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME;
 
 mod cli;
+mod declaration_helpers;
 mod declaration_maps;
 mod diagnostics;
 mod fallback;
@@ -272,12 +273,7 @@ fn rewrite_declaration_outputs(out_dir: &Path) -> CorsaResult<()> {
                 .and_then(|relative| relative.parent())
                 .map(|parent| parent.components().count())
                 .unwrap_or(0);
-            let mut reference = String::from("/// <reference path=\"");
-            for _ in 0..depth {
-                reference.push_str("../");
-            }
-            reference.push_str(DECLARATION_HELPERS_FILE);
-            reference.push_str("\" />\n");
+            let mut reference = declaration_helpers::import_for(&rewritten, depth);
             reference.push_str(&rewritten);
             rewritten = reference.as_str().into();
         }
@@ -289,7 +285,7 @@ fn rewrite_declaration_outputs(out_dir: &Path) -> CorsaResult<()> {
     if wrote_vue_declaration {
         std::fs::write(
             out_dir.join(DECLARATION_HELPERS_FILE),
-            crate::virtual_ts::DECLARATION_HELPERS_DTS,
+            declaration_helpers::module(),
         )?;
     }
 

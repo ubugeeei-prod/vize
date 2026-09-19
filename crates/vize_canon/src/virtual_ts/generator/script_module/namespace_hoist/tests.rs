@@ -40,10 +40,13 @@ fn every_namespace_form_is_hoisted_with_its_export_keyword() {
 }
 
 #[test]
-fn a_script_without_namespaces_hoists_nothing() {
+fn nominal_declarations_keep_module_identity_without_a_namespace() {
     let script = "export const a = 1;\nexport class C {}\nexport enum E { A }\n";
 
-    assert_eq!(hoisted_text(script), Vec::<&str>::new());
+    assert_eq!(
+        hoisted_text(script),
+        vec!["export class C {}", "export enum E { A }"]
+    );
 }
 
 #[test]
@@ -101,18 +104,13 @@ fn captured_setup_bindings_become_ambient_aliases_of_the_setup_return() {
         ts.as_str(),
         "// Setup-scope bindings a hoisted namespace body reads\n\
          declare const localBase: ReturnType<typeof __setup>[\"localBase\"];\n\
-         declare const Local: ReturnType<typeof __setup>[\"Local\"];\n\
-         type Local = InstanceType<typeof Local>;\n\
          export declare const shared: ReturnType<typeof __setup>[\"shared\"];\n\
          \n"
     );
 
     let mut fields = Vec::new();
     plan.push_captured_return_fields(&exports, &mut fields);
-    assert_eq!(
-        fields,
-        vec![CompactString::new("localBase"), CompactString::new("Local")]
-    );
+    assert_eq!(fields, vec![CompactString::new("localBase")]);
 }
 
 #[test]

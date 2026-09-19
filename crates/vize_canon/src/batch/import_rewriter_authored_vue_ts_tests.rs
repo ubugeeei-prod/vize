@@ -135,3 +135,28 @@ fn missing_vue_specifiers_keep_ts2307_reachable() {
         "import './Present.vue.ts';\nimport './Missing.vue.ts';\n"
     );
 }
+
+#[test]
+fn emitted_vue_declarations_resolve_without_poisoning_a_missing_sfc() {
+    let project = TempDir::new().unwrap();
+    let source = "import { value } from './Library.vue';";
+    let rewriter = ImportRewriter::new();
+    std::fs::write(
+        project.path().join("Library.vue.d.ts"),
+        "export const value: number;",
+    )
+    .unwrap();
+    assert_eq!(
+        rewriter
+            .rewrite(source, SourceType::ts(), Some(project.path()))
+            .code,
+        "import { value } from './Library.vue.ts';"
+    );
+    std::fs::remove_file(project.path().join("Library.vue.d.ts")).unwrap();
+    assert_eq!(
+        rewriter
+            .rewrite(source, SourceType::ts(), Some(project.path()))
+            .code,
+        format!("import {{ value }} from './Library.vue.ts{MISSING_VUE_IMPORT_SENTINEL}';")
+    );
+}

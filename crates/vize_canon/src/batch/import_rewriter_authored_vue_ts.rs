@@ -112,6 +112,7 @@ fn missing_vue_import_is_proven_absent(
     };
 
     path_is_proven_absent(&candidate)
+        && path_is_proven_absent(&append_extension(&candidate, ".d.ts"))
 }
 
 fn path_is_proven_absent(path: &Path) -> bool {

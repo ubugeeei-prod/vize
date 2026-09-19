@@ -1932,7 +1932,7 @@ export { answer } from '@/helper'
     paths.sort();
 
     // `__vize_helpers.d.ts` carries the shared helper type aliases referenced
-    // by the emitted `.vue.d.ts` files (via `/// <reference path>`).
+    // by the emitted `.vue.d.ts` files (via module-local type imports).
     assert_eq!(
         paths,
         vec![

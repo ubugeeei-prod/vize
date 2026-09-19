@@ -1,4 +1,5 @@
 import "vue";
+import type { __VizeIsUnknown, __VizeUsePublicInstance } from "../types/__vize_helpers.js";
 import Public from "../types/Public.vue";
 import Callable from "../types/Callable.vue";
 import RuntimeObject from "../types/RuntimeObject.vue";
