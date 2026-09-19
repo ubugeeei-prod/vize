@@ -4,8 +4,6 @@
 //! select the retained legacy lane explicitly; corrupt invariants never emit.
 
 mod native;
-#[cfg(test)]
-mod tests;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{Allocator, String, cstr, profile, profiler::global_profiler};
@@ -178,3 +176,6 @@ pub(crate) fn record_selection(status: &VaporS3BridgeStatus<'_>) {
     };
     profiler.record_counter_enabled(counter, 1);
 }
+
+#[cfg(test)]
+mod tests;
