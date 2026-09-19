@@ -32,11 +32,12 @@ struct Occurrence {
 }
 
 fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrence>> {
-    if crate::ide::template_scope::needs_patterned_navigation(ctx) {
+    if crate::ide::template_scope::needs_structural_pattern_navigation(ctx) {
         return None;
     }
     let options = SfcTypeCheckOptions {
         include_virtual_ts: true,
+        experimental_patterned_template: ctx.state.patterned_template_enabled(),
         check_props: false,
         check_emits: false,
         check_template_bindings: false,
@@ -97,7 +98,7 @@ fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrenc
         .filter(|entry| {
             entry
                 .authored
-                .is_some_and(|(start, end)| start <= ctx.offset && ctx.offset < end)
+                .is_some_and(|(start, end)| start <= ctx.offset && ctx.offset <= end)
         })
         .map(|entry| entry.symbol)
         .collect();
@@ -193,7 +194,7 @@ pub(in crate::ide) fn prepare_rename(ctx: &IdeContext<'_>) -> Option<Range> {
     resolve(ctx, None)?
         .iter()
         .filter_map(|entry| entry.authored)
-        .find(|&(start, end)| start <= ctx.offset && ctx.offset < end)
+        .find(|&(start, end)| start <= ctx.offset && ctx.offset <= end)
         .map(|span| location(ctx, span).range)
 }
 

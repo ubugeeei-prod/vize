@@ -9,6 +9,7 @@ mod v_slot;
 pub(crate) use analysis::may_reference_style_binding;
 pub(crate) use analysis::{analyze, bindings_visible_at};
 pub(crate) use patterned_navigation::needs_patterned_navigation;
+pub(crate) use patterned_navigation::needs_structural_pattern_navigation;
 
 #[cfg(test)]
 mod tests;

@@ -9,6 +9,13 @@ use vize_croquis::{Croquis, ScopeBinding, ScopeData, ScopeKind};
 use crate::ide::IdeContext;
 
 pub(crate) fn analyze(ctx: &IdeContext<'_>) -> Option<(Croquis, usize)> {
+    analyze_with_patterns(ctx, ctx.state.patterned_template_enabled())
+}
+
+pub(super) fn analyze_with_patterns(
+    ctx: &IdeContext<'_>,
+    patterned: bool,
+) -> Option<(Croquis, usize)> {
     let descriptor = vize_atelier_sfc::parse_sfc(
         &ctx.content,
         vize_atelier_sfc::SfcParseOptions {
@@ -17,7 +24,6 @@ pub(crate) fn analyze(ctx: &IdeContext<'_>) -> Option<(Croquis, usize)> {
         },
     )
     .ok()?;
-    let patterned = ctx.state.patterned_template_enabled();
     let descriptor = vize_atelier_sfc::prepare_root_patterned_template(
         &descriptor,
         patterned,

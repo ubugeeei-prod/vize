@@ -46,9 +46,10 @@ impl Drawer {
                 let PropNode::Directive(dir) = prop else {
                     continue;
                 };
-                if self.options.experimental_patterned_template
-                    && matches!(dir.name, "match" | "when")
-                {
+                // Pattern directives use their own grammar. When disabled,
+                // Canon reports that policy error; never emit their pattern
+                // text as a JavaScript custom-directive expression.
+                if matches!(dir.name, "match" | "when") {
                     continue;
                 }
 
@@ -123,8 +124,7 @@ impl Drawer {
                     && dir.name != "slot"
                     && dir.name != "on"
                     && dir.name != "bind"
-                    && !(self.options.experimental_patterned_template
-                        && matches!(dir.name, "match" | "when"))
+                    && !matches!(dir.name, "match" | "when")
                 {
                     self.check_expression_refs(exp, scope_vars);
                 }

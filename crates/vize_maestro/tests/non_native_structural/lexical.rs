@@ -2,6 +2,7 @@ use tower_lsp::lsp_types::Url;
 use vize_maestro::ide::IdeContext;
 use vize_maestro::ide::references::ReferencesService;
 use vize_maestro::server::ServerState;
+use vize_s0::String;
 
 fn references(source: &str, query: usize, declaration: bool) -> Option<Vec<(usize, usize)>> {
     let state = ServerState::new();
@@ -42,11 +43,11 @@ fn nested_script_bindings_and_template_reads_keep_separate_identities() {
             .collect();
         let outer = vec![occurrences[0], *occurrences.last().unwrap()];
         let inner = vec![occurrences[1], occurrences[2]];
-        for query in outer.iter().map(|span| span.0) {
+        for query in outer.iter().flat_map(|span| [span.0, span.1]) {
             assert_eq!(references(&source, query, true), Some(outer.clone()));
             assert_eq!(references(&source, query, false), Some(vec![outer[1]]));
         }
-        for query in inner.iter().map(|span| span.0) {
+        for query in inner.iter().flat_map(|span| [span.0, span.1]) {
             assert_eq!(references(&source, query, true), Some(inner.clone()));
             assert_eq!(references(&source, query, false), Some(vec![inner[1]]));
         }
@@ -133,7 +134,7 @@ fn renamed(source: &str, query: &str, new: &str) -> Option<String> {
         .unwrap();
         output.replace_range(start..end, &edit.new_text);
     }
-    Some(output)
+    Some(output.into())
 }
 
 #[test]
@@ -144,7 +145,10 @@ fn rename_preserves_shorthand_keys_imports_and_destructure_defaults() {
             .replace("{ café } from", "{ café as label } from")
             .replace("object = { café }", "object = { café: label }")
             .replace("{{ café }}", "{{ label }}");
-        assert_eq!(renamed(&source, "café } from", "label"), Some(expected));
+        assert_eq!(
+            renamed(&source, "café } from", "label"),
+            Some(expected.into())
+        );
         assert_eq!(renamed(&source, "café } from", "const"), None);
     }
     let source = "<script setup>const { value = 1 } = state; const object = { value };</script><template>{{ value }}</template>";
@@ -173,10 +177,23 @@ fn rename_rejects_binding_collisions_and_capture_but_allows_disjoint_scopes() {
     let source = "<script setup>const value = 1; function inner(count) { return count; }</script><template>{{ value }}</template>";
     assert_eq!(
         renamed(source, "value =", "count"),
-        Some(source.replace("value", "count"))
+        Some(source.replace("value", "count").into())
     );
     assert_eq!(
         renamed(source, "value =", "数"),
-        Some(source.replace("value", "数"))
+        Some(source.replace("value", "数").into())
     );
+}
+
+#[test]
+fn disabled_patterns_keep_ordinary_edits_and_reject_affected_symbols() {
+    let source = "<script setup>const ordinary = 1; const rows = 'outer'; const result = { rows: [1] };</script><template><section v-match=\"result\"><p v-when=\"{ const rows }\">{{ rows.length }}</p><p v-when=\"_\"/></section><p>{{ ordinary }}</p></template>";
+    assert_eq!(
+        renamed(source, "ordinary =", "changed"),
+        Some(source.replace("ordinary", "changed").into())
+    );
+    for query in ["rows =", "rows }", "rows.length", "result =", "result\">"] {
+        assert_eq!(references(source, source.find(query).unwrap(), true), None);
+        assert_eq!(renamed(source, query, "changed"), None);
+    }
 }

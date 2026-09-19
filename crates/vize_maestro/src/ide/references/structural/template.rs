@@ -15,7 +15,7 @@ pub(super) fn shorthands(ctx: &IdeContext<'_>) -> Option<Spans> {
     };
     let allocator = vize_s0::Allocator::new();
     let (root, errors) = vize_armature::parse(&allocator, &template.content);
-    if !errors.is_empty() {
+    if errors.iter().any(|error| !error.is_recoverable()) {
         return None;
     }
     collect(&root.children, template.loc.start, &mut spans);

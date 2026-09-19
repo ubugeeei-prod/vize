@@ -18,11 +18,23 @@ pub(crate) fn needs_patterned_navigation(ctx: &IdeContext<'_>) -> bool {
     classify(ctx) != Navigation::Ordinary
 }
 
+/// Structural edits must not merge disabled pattern bindings into outer names.
+pub(crate) fn needs_structural_pattern_navigation(ctx: &IdeContext<'_>) -> bool {
+    if !ctx.content.contains("v-match") && !ctx.content.contains("v-when") {
+        return false;
+    }
+    classify_with_patterns(ctx, true) != Navigation::Ordinary
+}
+
 fn classify(ctx: &IdeContext<'_>) -> Navigation {
-    if !ctx.state.patterned_template_enabled() || !ctx.uri.path().ends_with(".vue") {
+    classify_with_patterns(ctx, ctx.state.patterned_template_enabled())
+}
+
+fn classify_with_patterns(ctx: &IdeContext<'_>, patterned: bool) -> Navigation {
+    if !patterned || !ctx.uri.path().ends_with(".vue") {
         return Navigation::Ordinary;
     }
-    let Some((croquis, start)) = super::analyze(ctx) else {
+    let Some((croquis, start)) = super::analysis::analyze_with_patterns(ctx, patterned) else {
         return Navigation::Shared;
     };
     if croquis
