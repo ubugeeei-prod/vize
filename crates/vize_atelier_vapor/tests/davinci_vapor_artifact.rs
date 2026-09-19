@@ -129,11 +129,18 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
         let source = vize_carton::cstr!("<button :disabled=\"{expression}\"></button>");
         let allocator = Allocator::new();
         let tolerant = compile_vapor(&allocator, &source, VaporCompilerOptions::default());
-        assert!(
-            tolerant.code.contains(expression),
-            "{expression}: {}",
-            tolerant.code
+        let expected = vize_carton::cstr!(
+            r#"import {{ setProp as _setProp, renderEffect as _renderEffect, template as _template }} from 'vue';
+const t0 = _template("<button></button>", true)
+
+export function render(_ctx) {{
+  const n0 = t0()
+  _renderEffect(() => _setProp(n0, "disabled", {expression}))
+  return n0
+}}
+"#
         );
+        assert_eq!(tolerant.code, expected, "{expression}");
         let (strict, diagnostics) = compile_vapor_with_diagnostics(
             &allocator,
             &source,
