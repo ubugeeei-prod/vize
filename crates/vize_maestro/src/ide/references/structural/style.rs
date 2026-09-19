@@ -3,7 +3,10 @@
 use oxc_semantic::Semantic;
 use vize_s0::cstr;
 
-use super::*;
+use super::{
+    Allocator, AstKind, FxHashSet, IdeContext, Occurrence, Parser, SemanticBuilder, SourceType,
+    Span, edits,
+};
 
 #[derive(Default)]
 pub(super) struct Analysis {
