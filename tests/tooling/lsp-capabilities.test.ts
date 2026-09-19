@@ -317,13 +317,25 @@ test("vize lsp per-feature init flags toggle individual providers independently"
     },
   );
 
-  await withCapabilities("granular-lint-off", { editor: true, lint: false }, (capabilities) => {
-    // Code actions are gated on lint, so disabling lint removes only them.
-    assert.equal(capabilities.codeActionProvider, undefined);
-    assert.equal(capabilities.hoverProvider, true);
-    assert.equal(capabilities.codeLensProvider?.resolveProvider, false);
-    assert.ok(capabilities.semanticTokensProvider, "semanticTokensProvider should remain");
-  });
+  await withCapabilities(
+    "granular-lint-off",
+    { editor: true, lint: false, typecheck: false },
+    (capabilities) => {
+      // Without either diagnostic provider there are no quick fixes.
+      assert.equal(capabilities.codeActionProvider, undefined);
+      assert.equal(capabilities.hoverProvider, true);
+      assert.equal(capabilities.codeLensProvider?.resolveProvider, false);
+      assert.ok(capabilities.semanticTokensProvider, "semanticTokensProvider should remain");
+    },
+  );
+
+  await withCapabilities(
+    "checker-quickfix",
+    { editor: true, lint: false, typecheck: true },
+    (capabilities) => {
+      assert.deepEqual(capabilities.codeActionProvider?.codeActionKinds, ["quickfix"]);
+    },
+  );
 
   await withCapabilities(
     "granular-formatting-on",

@@ -7,28 +7,53 @@ use tower_lsp::lsp_types::{
 use super::MaestroServer;
 use crate::ide::{CodeActionService, IdeContext, position_to_offset};
 
-pub(super) fn code_actions(
+pub(super) async fn code_actions(
     server: &MaestroServer,
     params: &CodeActionParams,
 ) -> Option<CodeActionResponse> {
     let features = server.state.lsp_features();
-    if !features.lint || !features.code_actions {
+    if !features.code_actions {
         return None;
     }
 
     let uri = &params.text_document.uri;
     let range = params.range;
-    let content = server.state.documents.text(uri)?;
+    let document = server.state.documents.get(uri)?;
+    let revision = document.revision();
+    let content = document.content.to_string();
+    drop(document);
 
-    let actions = if crate::utils::is_jsx_path(uri.path()) {
+    let actions = if !features.lint {
+        vec![]
+    } else if crate::utils::is_jsx_path(uri.path()) {
         // `.jsx`/`.tsx`: surface the fixable Patina/JSX-compiler diagnostics.
         // Lint-based (parse-only), so not gated on `typeChecker.jsxTypecheck`.
         crate::ide::JsxCodeActionService::code_actions(&content, uri, range)
     } else {
         let offset = position_to_offset(&content, range.start.line, range.start.character)?;
-        let ctx = IdeContext::new(&server.state, uri, offset)?;
+        let ctx = IdeContext::with_content(&server.state, uri, offset, content.clone());
         CodeActionService::code_actions(&ctx, range)
     };
+
+    #[cfg(feature = "native")]
+    let actions =
+        {
+            let mut actions = actions;
+            if features.typecheck
+                && params.context.only.as_deref().is_none_or(|only| {
+                    code_action_kind_is_requested(&CodeActionKind::QUICKFIX, only)
+                })
+            {
+                let offset = position_to_offset(&content, range.start.line, range.start.character)?;
+                let ctx = IdeContext::with_content(&server.state, uri, offset, content);
+                actions.extend(CodeActionService::native_actions(&ctx, range).await);
+            }
+            actions
+        };
+
+    if server.state.documents.get(uri)?.revision() != revision {
+        return None;
+    }
 
     filter_requested_code_actions(actions, params.context.only.as_deref())
 }

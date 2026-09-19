@@ -65,13 +65,13 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
         workspace_symbol_provider: features.workspace_symbols.then_some(OneOf::Left(true)),
 
         // Code actions (quick fixes, refactoring)
-        code_action_provider: (features.lint && features.code_actions).then_some(
-            CodeActionProviderCapability::Options(CodeActionOptions {
+        code_action_provider: (features.code_actions
+            && (features.lint || (cfg!(feature = "native") && features.typecheck)))
+            .then_some(CodeActionProviderCapability::Options(CodeActionOptions {
                 code_action_kinds: Some(vec![CodeActionKind::QUICKFIX]),
                 work_done_progress_options: WorkDoneProgressOptions::default(),
                 resolve_provider: Some(false),
-            }),
-        ),
+            })),
 
         // Rename support
         rename_provider: features.rename.then_some(OneOf::Right(RenameOptions {
