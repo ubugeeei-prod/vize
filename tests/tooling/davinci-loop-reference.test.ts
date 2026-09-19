@@ -66,7 +66,7 @@ test("every loop scenario has full observations and terminal cleanup", () => {
 });
 
 test("mounted loop scripts reject fields the reference does not execute", () => {
-  for (const context of [null, [], { record: null }, { constructor: "bad" }]) {
+  for (const context of [null, [], { record: null }, { $event: {} }, { constructor: "bad" }]) {
     assert.throws(() => validateLoopScenario(context, []), assert.AssertionError);
   }
   for (const step of [

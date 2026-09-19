@@ -9,7 +9,7 @@ def keys (value : Json) : Except String (List String) := do
 def validateState (context : Json) : Except String Unit := do
   for name in (<- keys context) do
     if !Observation.identifier name ||
-        ["save", "record", "$slots", "__proto__", "constructor", "prototype"].contains name then
+        ["save", "record", "$event", "$slots", "__proto__", "constructor", "prototype"].contains name then
       throw "unsupported state key"
 
 def snapshot (tree : Json) (events : List String) : Json :=

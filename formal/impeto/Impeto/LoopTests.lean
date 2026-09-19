@@ -24,6 +24,7 @@ def negativeTests (program : Program) (rows : List Operand) (script : Json) : Ex
     ("same aliases", change loopOp.id "for-key" (fun row => { row with text := value.text })),
     ("destructured alias", change loopOp.id "for-value" (fun row => { row with text := "{id}" })),
     ("reserved alias", change loopOp.id "for-value" (fun row => { row with text := "record" })),
+    ("event alias", change loopOp.id "for-value" (fun row => { row with text := "$event" })),
     ("missing index slot", rows.filter (fun row => row != index)),
     ("third array alias", change loopOp.id "for-index" (fun row => { row with kind := "js", text := "third" })),
     ("compound source", change loopOp.id "for-source" (fun row => { row with text := "items || []" })),
@@ -51,7 +52,7 @@ def negativeTests (program : Program) (rows : List Operand) (script : Json) : Ex
       |>.setObjVal! "context" (context.setObjVal! "items" source)
       |>.setObjVal! "steps" (.arr #[])))
   for step in ["{}", "{\"click\":\"missing\"}", "{\"click\":1}",
-    "{\"click\":\"a\",\"patch\":{}}", "{\"patch\":{\"record\":null}}"] do
+    "{\"click\":\"a\",\"patch\":{}}", "{\"patch\":{\"record\":null}}", "{\"patch\":{\"$event\":{}}}"] do
     expectError "invalid interaction" (LoopBehavior.run program rows
       (script.setObjVal! "steps" (.arr #[<- Json.parse step])))
   let some body := program.regions.find? (fun r => r.owner == some loopOp.id)

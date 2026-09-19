@@ -46,7 +46,7 @@ def event (context : Json) (row : Operand) : Except String Json := do
 def alias (row : Operand) : Except String String := do
   if !(row.kind == "js" || (row.kind == "opaque" && row.qualifier == "for-value")) ||
       !identifier row.text ||
-      ["save", "record", "$slots", "__proto__", "constructor", "prototype"].contains row.text then
+      ["save", "record", "$event", "$slots", "__proto__", "constructor", "prototype"].contains row.text then
     throw "unsupported loop alias"
   pure row.text
 

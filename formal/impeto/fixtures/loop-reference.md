@@ -42,5 +42,6 @@ The fixtures verify index bindings and shadowing of the outer `item` binding,
 including restoration after a nested loop. Duplicate/unsupported keys,
 malformed operands, ambiguous interaction targets and unsupported expressions
 fail closed. Arbitrary JavaScript, destructuring, object/range iteration,
-multi-root template loops and scheduling/linearity proofs remain outside this
+event-object payloads (`$event` is reserved), multi-root template loops and
+scheduling/linearity proofs remain outside this
 subset. This reference update algorithm makes no production complexity claim.

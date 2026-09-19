@@ -142,7 +142,9 @@ export function validateLoopScenario(context, steps) {
     for (const key of Object.keys(state)) {
       assert.ok(
         /^[A-Za-z_$][A-Za-z0-9_$]*$/u.test(key) &&
-          !["save", "record", "$slots", "__proto__", "constructor", "prototype"].includes(key),
+          !["save", "record", "$event", "$slots", "__proto__", "constructor", "prototype"].includes(
+            key,
+          ),
         "unsupported loop state key",
       );
     }
