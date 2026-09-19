@@ -24,12 +24,24 @@ pub(super) struct SetupHelperComponentContext<'a> {
     pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
 }
 
+pub(super) fn define_emits_runtime_args(summary: &Croquis) -> Option<&String> {
+    let emits = summary.macros.define_emits()?;
+    emits
+        .type_args
+        .is_none()
+        .then_some(emits.runtime_args.as_ref())
+        .flatten()
+}
+
 pub(super) fn emit_return_artifacts(
     ts: &mut String,
     summary: &Croquis,
-    define_emits_runtime_args: Option<&String>,
     fields: &mut Vec<String>,
+    preserve_authored_component: bool,
 ) {
+    if preserve_authored_component && !fields.iter().any(|field| field == "__default__") {
+        fields.push("__default__".into());
+    }
     if let Some(expose) = summary.macros.define_expose()
         && expose.type_args.is_none()
         && let Some(runtime_args) = expose.runtime_args.as_ref()
@@ -37,7 +49,7 @@ pub(super) fn emit_return_artifacts(
         append!(*ts, "\n  const __vize_exposed = ({runtime_args});\n");
         fields.push("__vize_exposed".into());
     }
-    if let Some(runtime_args) = define_emits_runtime_args {
+    if let Some(runtime_args) = define_emits_runtime_args(summary) {
         append!(
             *ts,
             "\n  const __vize_emit_options = ({runtime_args});\n  const __vize_emits = defineEmits(__vize_emit_options);\n"

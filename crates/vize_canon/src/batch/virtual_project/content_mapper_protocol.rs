@@ -99,7 +99,9 @@ pub(super) fn protocol_semantic_links(
             }
             // This edge drives Vize's canonical workspace queries. Protocol v1
             // has no corresponding kind, so it must not reach upstream.
-            crate::virtual_ts::VizeSemanticLinkKind::VueComponentPropNavigation => None,
+            crate::virtual_ts::VizeSemanticLinkKind::VueComponentPropNavigation
+            | crate::virtual_ts::VizeSemanticLinkKind::VuePlainScriptExport
+            | crate::virtual_ts::VizeSemanticLinkKind::VueOptionsApiBinding => None,
         })
         .collect()
 }

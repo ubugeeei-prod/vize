@@ -38,8 +38,12 @@ the matrix.
 
 ## PR policy
 
-- One P0 invariant per PR.
-- No umbrella implementation PRs.
+- Batch related invariants with a shared subsystem and validation matrix per PR.
+- Keep each fix attributable to an Issue and an external behavior oracle.
+- Use the v1 alpha tracker [#6239](https://github.com/ubugeeei-prod/vize/issues/6239)
+  for current priorities, release scope, and remaining quality gates.
+- Prefer Actions for broad validation; run focused local reproductions before pushing.
+- Record terminal CI results and merge state before closing delivery work.
 - Conventional titles.
 - PR descriptions must be created from body files and raw-checked for literal
   newline escape corruption.

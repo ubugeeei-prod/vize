@@ -21,7 +21,7 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet, String as VizeString, append};
 
-use crate::virtual_ts::VizeMapping;
+use crate::virtual_ts::{VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
 
 /// Which declaration spaces a plain-`<script>` export has to reach.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -116,7 +116,8 @@ pub(crate) fn emit_setup_invocation_and_exports_with_mappings(
     mappings: &mut Vec<VizeMapping>,
     exports: &[PlainScriptExport],
     script_offset: u32,
-) {
+) -> Vec<VizeSemanticLink> {
+    let mut links = Vec::new();
     if exports.iter().any(|export| export.bridged_value) {
         ts.push_str("const __vize_plain_script_exports = __setup();\n");
     } else {
@@ -125,16 +126,25 @@ pub(crate) fn emit_setup_invocation_and_exports_with_mappings(
     for export in exports {
         let name = &export.name;
         if export.bridged_value {
+            let source_base = script_offset as usize;
+            let source_range = source_base.saturating_add(export.source_range.start)
+                ..source_base.saturating_add(export.source_range.end);
+            let binding = super::mapped_binding_range(mappings, &source_range);
             ts.push_str("export const ");
             let generated_start = ts.len();
             ts.push_str(name);
             let generated_end = ts.len();
             append!(*ts, " = __vize_plain_script_exports.{name};\n");
-            let source_base = script_offset as usize;
+            if let Some(source_range) = binding {
+                links.push(VizeSemanticLink {
+                    source_range,
+                    target_range: generated_start..generated_end,
+                    kind: VizeSemanticLinkKind::VuePlainScriptExport,
+                });
+            }
             mappings.push(VizeMapping {
                 gen_range: generated_start..generated_end,
-                src_range: source_base.saturating_add(export.source_range.start)
-                    ..source_base.saturating_add(export.source_range.end),
+                src_range: source_range,
                 sub_spans: Vec::new(),
             });
         }
@@ -143,6 +153,7 @@ pub(crate) fn emit_setup_invocation_and_exports_with_mappings(
         }
     }
     ts.push('\n');
+    links
 }
 
 fn collect_named_value_exports(script: &str) -> Vec<PlainScriptExport> {

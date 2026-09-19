@@ -461,7 +461,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
                 let line_start = src_byte_offset;
                 let line_end = line_start + raw_line.len(); // use raw length for span check
-                let Some(setup_line) = setup_lines::setup_line(
+                let Some(mut setup_line) = setup_lines::setup_line(
                     line,
                     line_start,
                     &module_spans,
@@ -469,8 +469,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 ) else {
                     continue;
                 };
+                script_module::strip_named_value_exports(
+                    &mut setup_line,
+                    line_start,
+                    &named_value_export_starts,
+                );
                 let line = setup_line.as_ref();
-                let source_token_start = line_start + line.len() - line.trim_start().len();
                 ts.push_str("  "); // indentation (not in source)
                 let gen_content_start = ts.len();
 
@@ -595,19 +599,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             cstr!("{leading_ws}const __default__ ={}", default_expr).into(),
                         );
                     }
-                } else if named_value_export_starts.contains(&(source_token_start as u32))
-                    && trimmed_line.starts_with("export ")
-                    && !trimmed_line.starts_with("export type ")
-                    && !trimmed_line.starts_with("export interface ")
-                {
-                    let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
-                    if let Some(rest) = trimmed_line.strip_prefix("export ") {
-                        #[allow(clippy::disallowed_types)]
-                        {
-                            output_line =
-                                std::borrow::Cow::Owned(cstr!("{leading_ws}{rest}").into());
-                        }
-                    }
                 }
                 // Replace import.meta with polyfill variable to avoid TS1343
                 if uses_import_meta && output_line.contains("import.meta") {
@@ -704,7 +695,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             if options_api {
                 profile!(
                     "canon.virtual_ts.generate_options_api_variables",
-                    generate_options_api_variables(&mut ts, summary, options, script_content)
+                    semantic_links.extend(generate_options_api_variables(
+                        &mut ts,
+                        summary,
+                        options,
+                        script_content,
+                        &mut mappings,
+                        &script_source_offset
+                    ))
                 );
             }
             let template_prop_names = profile!(
@@ -783,14 +781,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         preserve_unused_diagnostics,
     );
 
-    let define_emits_runtime_args = summary.macros.define_emits().and_then(|call| {
-        if call.type_args.is_none() {
-            call.runtime_args.as_ref()
-        } else {
-            None
-        }
-    });
-
+    let define_emits_runtime_args = setup_helpers::define_emits_runtime_args(summary);
     let mut setup_return_fields: Vec<String> = Vec::new();
     self::script_module::push_setup_return_fields(&named_value_exports, &mut setup_return_fields);
     namespace_hoist.push_captured_return_fields(&named_value_exports, &mut setup_return_fields);
@@ -800,18 +791,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     setup_return_fields.extend(setup_artifact_return_fields.into_iter().map(String::from));
     let preserve_authored_component =
         generation_options.preserves_authored_component(declared_default_alias, has_script_setup);
-    if preserve_authored_component
-        && !setup_return_fields
-            .iter()
-            .any(|field| field == "__default__")
-    {
-        setup_return_fields.push("__default__".into());
-    }
     setup_helpers::emit_return_artifacts(
         &mut ts,
         summary,
-        define_emits_runtime_args,
         &mut setup_return_fields,
+        preserve_authored_component,
     );
     setup_props_plan.emit_options_api_artifact(&mut ts, options_api_props.as_ref());
     ambient.emit_return(&mut ts, &setup_return_fields, &mut mappings);
@@ -820,7 +804,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
     // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
-    script_module::emit_exports(&mut ts, &mut mappings, &named_value_exports, script_offset);
+    semantic_links.extend(script_module::emit_exports(
+        &mut ts,
+        &mut mappings,
+        &named_value_exports,
+        script_offset,
+    ));
     setup_type_exports.emit_module_exports(&mut ts);
     setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref());
     emit_authored_component_aliases(&mut ts, preserve_authored_component);

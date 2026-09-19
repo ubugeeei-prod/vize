@@ -1,6 +1,7 @@
 //! Module-scope facts collected from normal Vue `<script>` blocks.
 
 mod namespace_hoist;
+mod navigation;
 mod plain_exports;
 
 use oxc_allocator::Allocator;
@@ -11,6 +12,7 @@ use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet, String as VizeString};
 
 pub(super) use namespace_hoist::NamespaceHoistPlan;
+pub(super) use navigation::mapped_binding_range;
 pub(super) use plain_exports::{
     collect_normal_script_named_value_exports,
     emit_setup_invocation_and_exports_with_mappings as emit_exports, push_setup_return_fields,
@@ -47,15 +49,9 @@ pub(super) fn collect_line_module_spans(script: &str) -> Vec<(u32, u32)> {
     include_leading_ts_directive_comments(script, spans)
 }
 
-pub(super) fn collect_named_value_export_starts(script: &str) -> FxHashSet<u32> {
-    if !script.lines().any(|line| {
-        let line = line.trim_start();
-        line.starts_with("export ")
-            && !line.starts_with("export default")
-            && !line.starts_with("export type ")
-            && !line.starts_with("export interface ")
-    }) {
-        return FxHashSet::default();
+pub(super) fn collect_named_value_export_starts(script: &str) -> Vec<u32> {
+    if !script.contains("export") {
+        return Vec::new();
     }
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, script, SourceType::ts().with_module(true)).parse();
@@ -65,7 +61,7 @@ pub(super) fn collect_named_value_export_starts(script: &str) -> FxHashSet<u32> 
         parsed
     };
     if parsed.panicked {
-        return FxHashSet::default();
+        return Vec::new();
     }
 
     parsed
@@ -83,6 +79,25 @@ pub(super) fn collect_named_value_export_starts(script: &str) -> FxHashSet<u32> 
                 .then_some(export.span.start)
         })
         .collect()
+}
+
+/// Erase only AST-proven value-export keywords. Spaces preserve every authored
+/// byte/UTF-16 coordinate, including multiple statements or exports on one line.
+pub(super) fn strip_named_value_exports(
+    line: &mut std::borrow::Cow<'_, str>,
+    line_start: usize,
+    starts: &[u32],
+) {
+    let first = starts.partition_point(|&start| (start as usize) < line_start);
+    for &start in &starts[first..] {
+        let column = start as usize - line_start;
+        if column >= line.len() {
+            break;
+        }
+        if line.get(column..column + 6) == Some("export") {
+            line.to_mut().replace_range(column..column + 6, "      ");
+        }
+    }
 }
 
 /// Emit the setup-scoped polyfill that avoids TS1343 under older module targets.
@@ -179,7 +194,9 @@ fn contains_ts_suppression_directive(comment: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{collect_line_module_spans, collect_named_value_export_starts};
+    use super::{
+        collect_line_module_spans, collect_named_value_export_starts, strip_named_value_exports,
+    };
 
     #[test]
     fn collect_import_span_includes_adjacent_ts_ignore_comment_group() {
@@ -214,5 +231,24 @@ mod tests {
         assert_eq!(starts.len(), 1);
         assert!(starts.contains(&(script.find("export const").unwrap() as u32)));
         assert!(!starts.contains(&(script.find("export =").unwrap() as u32)));
+    }
+    #[test]
+    fn inline_exports_preserve_every_other_byte() {
+        let script = "const text = 'export const x'; /* export */ export/*keep*/const café = 1; export const next = café;\nexport\nconst last = next;";
+        let starts = collect_named_value_export_starts(script);
+        assert_eq!(starts.len(), 3);
+        let mut offset = 0;
+        let mut lines = Vec::new();
+        for line in script.split('\n') {
+            let mut output = std::borrow::Cow::Borrowed(line);
+            strip_named_value_exports(&mut output, offset, &starts);
+            assert_eq!(output.len(), line.len());
+            lines.push(output.into_owned());
+            offset += line.len() + 1;
+        }
+        assert_eq!(
+            lines.join("\n"),
+            "const text = 'export const x'; /* export */       /*keep*/const café = 1;        const next = café;\n      \nconst last = next;"
+        );
     }
 }

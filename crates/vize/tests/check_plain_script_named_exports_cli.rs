@@ -1,6 +1,9 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 
+#[path = "check_plain_script_named_exports_cli/inline_declarations.rs"]
+mod inline_declarations;
+
 use std::{path::Path, process::Command};
 
 fn workspace_root() -> &'static Path {

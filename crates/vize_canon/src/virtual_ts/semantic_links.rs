@@ -15,6 +15,10 @@ pub struct VizeSemanticLink {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VizeSemanticLinkKind {
     VueSetupTemplateRefUnwrap,
+    /// A plain-script export alias and the authored setup declaration it exposes.
+    VuePlainScriptExport,
+    /// An Options API member and its generated template-scope binding.
+    VueOptionsApiBinding,
     /// A generated component binding and one mapped prop access that TypeScript
     /// can use as a project-wide navigation entry point.
     VueComponentPropNavigation,

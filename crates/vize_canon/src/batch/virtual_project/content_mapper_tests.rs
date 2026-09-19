@@ -345,3 +345,6 @@ export default { data() { return { count: 1 } } }
 
     assert!(result.text.contains("__VizeOptionsBinding"));
 }
+
+#[path = "content_mapper_semantic_link_tests.rs"]
+mod semantic_links;

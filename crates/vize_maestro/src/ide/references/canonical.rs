@@ -87,7 +87,7 @@ pub(super) async fn references(
         line,
         character,
     });
-    if linked.is_empty() && !include_declaration {
+    if !include_declaration {
         let discovery = bridge
             .references(&document.request_uri, line, character, true)
             .await

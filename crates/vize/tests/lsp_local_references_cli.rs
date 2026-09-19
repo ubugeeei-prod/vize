@@ -35,8 +35,7 @@ fn document_references_preserve_shadowed_identity_and_unsaved_edits() {
 
 #[test]
 fn document_references_exclude_importers_but_cross_file_mode_keeps_them() {
-    let source =
-        "<script lang=\"ts\">\nexport const shared = 1;\n</script>\n<template><div /></template>\n";
+    let source = "<script lang=\"ts\">\nexport const shared = 1;\nconst copy = shared;\n</script>\n<template><div /></template>\n";
     let importer = "<script setup lang=\"ts\">\nimport { shared } from './App.vue';\nconst copy = shared;\n</script>\n<template>{{ shared }}</template>\n";
     for cross_file in [false, true] {
         let mut fixture = if cross_file {
@@ -47,7 +46,7 @@ fn document_references_exclude_importers_but_cross_file_mode_keeps_them() {
         let importer_uri = fixture.write_file("Consumer.vue", importer);
         assert_eq!(fixture.open(source), json!([]));
         for include_declaration in [true, false] {
-            let mut expected: Vec<_> = ["shared ="]
+            let mut expected: Vec<_> = ["shared =", "shared;"]
                 .into_iter()
                 .skip(usize::from(!include_declaration))
                 .map(|needle| json!({ "uri": fixture.uri, "range": token_range(source, needle, "shared") }))
@@ -71,6 +70,70 @@ fn document_references_exclude_importers_but_cross_file_mode_keeps_them() {
                 "crossFile={cross_file}, includeDeclaration={include_declaration}"
             );
         }
+        fixture.shutdown();
+    }
+}
+
+#[test]
+fn plain_exports_keep_local_references_and_rename_identity() {
+    for newline in ["\n", "\r\n"] {
+        let source = "<script lang=\"ts\">\nexport const shared = 1;\nconst prefix = '\u{1f600}'; const copy = shared;\nfunction inner(shared: string) { return shared.toUpperCase(); }\nexport class Counter { value = 1; }\nconst counter: Counter = new Counter();\nexport enum Mode { One, Two }\nconst mode: Mode = Mode.One;\n</script>\n<template><div /></template>\n".replace('\n', newline);
+        let mut fixture = Fixture::new_with_vue(&source);
+        assert_eq!(fixture.open(&source), json!([]));
+        assert_identity(&mut fixture, &source, &["shared =", "shared;"]);
+        assert_identity(
+            &mut fixture,
+            &source,
+            &["shared: string", "shared.toUpperCase"],
+        );
+        assert_identity(
+            &mut fixture,
+            &source,
+            &["Counter {", "Counter =", "Counter()"],
+        );
+        assert_identity(&mut fixture, &source, &["Mode {", "Mode =", "Mode.One"]);
+        let edited = source.replace("const copy = shared;", "const copy = shared + shared * 2;");
+        assert_eq!(fixture.change(&edited, 2), json!([]));
+        assert_identity(&mut fixture, &edited, &["shared =", "shared +", "shared *"]);
+        assert_eq!(fixture.change(&source, 3), json!([]));
+        assert_identity(&mut fixture, &source, &["shared =", "shared;"]);
+        fixture.shutdown();
+    }
+}
+
+#[test]
+fn inline_exports_preserve_authored_identity_and_non_code_text() {
+    for newline in ["\n", "\r\n"] {
+        let source = "<script lang=\"ts\">\nconst prefix = '😀 export const fake = 0'; export /* keep */ const café = 1; export const second = café;\nconst literal = `export const untouched = 1`; /* export const hidden = 2 */\nexport\nconst third = second;\nconst copy = café;\n</script>\n<template><div /></template>\n".replace('\n', newline);
+        let mut fixture = Fixture::new_with_vue(&source);
+        assert_eq!(fixture.open(&source), json!([]));
+        assert_identity(
+            &mut fixture,
+            &source,
+            &[
+                "café =",
+                "café;",
+                "café;\n</script>".replace('\n', newline).as_str(),
+            ],
+        );
+        assert_identity(&mut fixture, &source, &["second =", "second;"]);
+        assert_identity(&mut fixture, &source, &["third ="]);
+        fixture.shutdown();
+    }
+}
+
+#[test]
+fn options_api_references_keep_data_declarations_without_parameter_shadows() {
+    for newline in ["\n", "\r\n"] {
+        let source = "<script lang=\"ts\">\nexport default {\n  data: () => ({\n    selected: null,\n  }),\n  methods: { echo(selected: string) { return selected.toUpperCase(); } },\n};\n</script>\n<template>{{ selected }}</template>\n".replace('\n', newline);
+        let mut fixture = Fixture::new_with_vue_options_api(&source);
+        assert_eq!(fixture.open(&source), json!([]));
+        assert_identity(&mut fixture, &source, &["selected: null", "selected }}"]);
+        assert_identity(
+            &mut fixture,
+            &source,
+            &["selected: string", "selected.toUpperCase"],
+        );
         fixture.shutdown();
     }
 }

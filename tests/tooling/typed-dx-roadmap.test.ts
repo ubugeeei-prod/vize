@@ -29,11 +29,12 @@ test("typed DX roadmap keeps every P0 child issue in the execution matrix", () =
   }
 });
 
-test("typed DX roadmap forbids umbrella implementation delivery", () => {
+test("typed DX roadmap keeps batched delivery accountable", () => {
   const roadmap = fs.readFileSync(roadmapPath, "utf8");
 
-  assert.match(roadmap, /One P0 invariant per PR\./);
-  assert.match(roadmap, /No umbrella implementation PRs\./);
+  assert.match(roadmap, /Batch related invariants with a shared subsystem and validation matrix/);
+  assert.match(roadmap, /each fix attributable to an Issue/);
+  assert.match(roadmap, /terminal CI results and merge state/);
   assert.match(roadmap, /external behavior oracle/);
   assert.match(roadmap, /body files and raw-checked/);
 });

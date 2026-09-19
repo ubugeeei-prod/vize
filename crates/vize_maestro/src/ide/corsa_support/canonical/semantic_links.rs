@@ -1,4 +1,5 @@
 use tower_lsp::lsp_types::{Location, Url};
+use vize_canon::virtual_ts::VizeSemanticLinkKind;
 use vize_canon::{LspPosition, LspRange};
 use vize_s0::{FxHashMap, FxHashSet, String};
 
@@ -152,7 +153,12 @@ fn linked_offset(
     end: usize,
 ) -> Option<usize> {
     links.iter().find_map(|link| {
-        if link.kind != vize_canon::virtual_ts::VizeSemanticLinkKind::VueSetupTemplateRefUnwrap {
+        if !matches!(
+            link.kind,
+            VizeSemanticLinkKind::VueSetupTemplateRefUnwrap
+                | VizeSemanticLinkKind::VuePlainScriptExport
+                | VizeSemanticLinkKind::VueOptionsApiBinding
+        ) {
             return None;
         }
         if link.source_range.start == start && link.source_range.end == end {

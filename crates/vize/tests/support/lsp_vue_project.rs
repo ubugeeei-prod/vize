@@ -19,22 +19,32 @@ impl Fixture {
     }
 
     pub fn new_with_cross_file(source: &str, enabled: bool, cross_file: bool) -> Self {
-        Self::new_with_options(source, enabled, cross_file, false)
+        Self::new_with_options(source, enabled, cross_file, false, false)
     }
 
     pub fn new_with_vue(source: &str) -> Self {
-        Self::new_with_options(source, false, false, true)
+        Self::new_with_options(source, false, false, true, false)
     }
 
     pub fn new_with_vue_and_cross_file(source: &str) -> Self {
-        Self::new_with_options(source, false, true, true)
+        Self::new_with_options(source, false, true, true, false)
     }
 
     pub fn new_with_vue_and_patterns(source: &str) -> Self {
-        Self::new_with_options(source, true, false, true)
+        Self::new_with_options(source, true, false, true, false)
     }
 
-    fn new_with_options(source: &str, enabled: bool, cross_file: bool, real_vue: bool) -> Self {
+    pub fn new_with_vue_options_api(source: &str) -> Self {
+        Self::new_with_options(source, false, false, true, true)
+    }
+
+    fn new_with_options(
+        source: &str,
+        enabled: bool,
+        cross_file: bool,
+        real_vue: bool,
+        options_api: bool,
+    ) -> Self {
         let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
             .unwrap()
@@ -68,7 +78,7 @@ impl Fixture {
             project.path().join("vize.config.json"),
             serde_json::to_vec(&json!({
                 "experimentals": { "patternedTemplate": enabled },
-                "typeChecker": { "corsaPath": runtime, "checkFallthroughAttrs": false },
+                "typeChecker": { "corsaPath": runtime, "checkFallthroughAttrs": false, "optionsApi": options_api },
                 "lsp": { "lint": false, "typecheck": true, "hover": true, "crossFile": cross_file }
             }))
             .unwrap(),
