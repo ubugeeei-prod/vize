@@ -1,12 +1,13 @@
-
+///|
 let wasm_bindgen_version = "0.2.121"
 
+///|
 async fn command_stdout(
   command : String,
   args : Array[String],
   cwd : String,
 ) -> String? {
-  let (exit_code, stdout) = @process.collect_stdout(command, args, cwd=cwd)
+  let (exit_code, stdout) = @process.collect_stdout(command, args, cwd~)
   if exit_code != 0 {
     return None
   }
@@ -17,10 +18,12 @@ async fn command_stdout(
   Some(body.to_owned())
 }
 
+///|
 fn workspace_root() -> String {
   @tool.resolve_path(@env.current_dir().unwrap_or("."))
 }
 
+///|
 fn wasm_pack_cache(root : String) -> String {
   match @env.get_env_var("WASM_PACK_CACHE") {
     Some(value) => @tool.resolve_path(value)
@@ -28,38 +31,44 @@ fn wasm_pack_cache(root : String) -> String {
   }
 }
 
+///|
 fn wasm_bindgen_root(root : String) -> String {
-  @tool.join_path(wasm_pack_cache(root), ".wasm-bindgen-cargo-install-\{wasm_bindgen_version}")
+  @tool.join_path(
+    wasm_pack_cache(root),
+    ".wasm-bindgen-cargo-install-\{wasm_bindgen_version}",
+  )
 }
 
+///|
 fn wasm_bindgen_binary(root : String) -> String {
   @tool.join_path(wasm_bindgen_root(root), "bin/wasm-bindgen")
 }
 
+///|
 fn wasm_artifact(root : String) -> String {
-  @tool.join_path(root, "target/wasm32-unknown-unknown/release/vize_vitrine.wasm")
+  @tool.join_path(
+    root, "target/wasm32-unknown-unknown/release/vize_vitrine.wasm",
+  )
 }
 
+///|
 async fn resolve_macos_sdk_root(root : String) -> String? {
   match @env.get_env_var("SDKROOT") {
     Some(value) if value.trim() != "" => return Some(@tool.resolve_path(value))
     _ => ()
   }
 
-  for args in [
-    ["--sdk", "macosx", "--show-sdk-path"],
-    ["--show-sdk-path"],
-  ] {
+  for args in [["--sdk", "macosx", "--show-sdk-path"], ["--show-sdk-path"]] {
     match command_stdout("xcrun", args, root) {
       Some(value) => return Some(value)
       None => ()
     }
   }
 
-  for candidate in [
-    "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
-    "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
-  ] {
+  for
+    candidate in [
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+    ] {
     if @tool.path_exists(candidate) {
       return Some(candidate)
     }
@@ -68,6 +77,7 @@ async fn resolve_macos_sdk_root(root : String) -> String? {
   None
 }
 
+///|
 fn macos_library_path(sdk_root : String) -> String {
   let sdk_library_path = @tool.join_path(sdk_root, "usr/lib")
   match @env.get_env_var("LIBRARY_PATH") {
@@ -76,6 +86,7 @@ fn macos_library_path(sdk_root : String) -> String {
   }
 }
 
+///|
 fn wasm_rustflags() -> String {
   let flag = "--cfg getrandom_backend=\"wasm_js\""
   match @env.get_env_var("RUSTFLAGS") {
@@ -84,6 +95,7 @@ fn wasm_rustflags() -> String {
   }
 }
 
+///|
 fn args_include_wasm_target(args : Array[String]) -> Bool {
   for arg in args {
     if arg == "wasm32-unknown-unknown" {
@@ -93,10 +105,14 @@ fn args_include_wasm_target(args : Array[String]) -> Bool {
   false
 }
 
+///|
 async fn run_cargo(root : String, args : Array[String]) -> Int {
-  let extra_env : Map[String, String] = Map([])
+  // Replace inherited values explicitly; async/process appends extra_env on
+  // Unix, where duplicate environment keys can preserve the first value.
+  let extra_env = @env.get_env_vars()
   if args_include_wasm_target(args) {
     extra_env["RUSTFLAGS"] = wasm_rustflags()
+    extra_env["CARGO_PROFILE_RELEASE_PANIC"] = "abort"
   }
   match resolve_macos_sdk_root(root) {
     Some(sdk_root) => {
@@ -107,9 +123,10 @@ async fn run_cargo(root : String, args : Array[String]) -> Int {
     }
     None => ()
   }
-  @process.run("cargo", args, cwd=root, extra_env=extra_env)
+  @process.run("cargo", args, cwd=root, extra_env~, inherit_env=false)
 }
 
+///|
 async fn ensure_directory(path : String) -> Unit {
   if @tool.path_exists(path) {
     return
@@ -117,6 +134,7 @@ async fn ensure_directory(path : String) -> Unit {
   @afs.mkdir(path, recursive=true, permission=0o755)
 }
 
+///|
 async fn ensure_wasm_bindgen(root : String) -> Int {
   let binary = wasm_bindgen_binary(root)
   if @tool.path_exists(binary) {
@@ -124,20 +142,18 @@ async fn ensure_wasm_bindgen(root : String) -> Int {
   }
 
   ensure_directory(wasm_pack_cache(root))
-  run_cargo(
-    root,
-    [
-      "install",
-      "--force",
-      "wasm-bindgen-cli",
-      "--version",
-      wasm_bindgen_version,
-      "--root",
-      wasm_bindgen_root(root),
-    ],
-  )
+  run_cargo(root, [
+    "install",
+    "--force",
+    "wasm-bindgen-cli",
+    "--version",
+    wasm_bindgen_version,
+    "--root",
+    wasm_bindgen_root(root),
+  ])
 }
 
+///|
 async fn run_app() -> Int {
   let args = @tool.cli_args()
   if args.length() != 2 {
@@ -158,39 +174,31 @@ async fn run_app() -> Int {
     return bindgen_exit
   }
 
-  let cargo_exit = run_cargo(
-    root,
-    [
-      "build",
-      "--manifest-path",
-      @tool.join_path(root, "Cargo.toml"),
-      "--release",
-      "-p",
-      "vize_vitrine",
-      "--no-default-features",
-      "--features",
-      "wasm",
-      "--target",
-      "wasm32-unknown-unknown",
-    ],
-  )
+  let cargo_exit = run_cargo(root, [
+    "build",
+    "--manifest-path",
+    @tool.join_path(root, "Cargo.toml"),
+    "--release",
+    "-p",
+    "vize_vitrine",
+    "--no-default-features",
+    "--features",
+    "wasm",
+    "--target",
+    "wasm32-unknown-unknown",
+  ])
   if cargo_exit != 0 {
     return cargo_exit
   }
 
   @process.run(
     wasm_bindgen_binary(root),
-    [
-      wasm_artifact(root),
-      "--out-dir",
-      out_dir,
-      "--target",
-      target,
-    ],
+    [wasm_artifact(root), "--out-dir", out_dir, "--target", target],
     cwd=root,
   )
 }
 
+///|
 async fn main {
   @sys.exit(run_app())
 }

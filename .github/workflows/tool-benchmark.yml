@@ -163,6 +163,9 @@ jobs:
       - name: Build Vize CLI
         run: cargo build --release -p vize
 
+      - name: Verify CSS recovery in the shipped release profile
+        run: cargo run --release -p vize_atelier_sfc --example css_engine_recovery
+
       - name: Build native package
         run: vp run --workspace-root build:native
 

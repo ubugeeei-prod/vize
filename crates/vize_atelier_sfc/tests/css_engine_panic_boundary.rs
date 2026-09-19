@@ -7,8 +7,8 @@
 //!
 //! - `Percentage::parse` hits `unreachable!()` for math functions in
 //!   percentage-typed slots whose calc tree does not fold to a plain
-//!   percentage. This fires in every profile, and the release profile builds
-//!   with `panic = "abort"`, so it used to crash the shipped CLI and LSP on
+//!   percentage. This fires in every profile, and previously shipped release artifacts
+//!   used `panic = "abort"`, which crashed the CLI and LSP on
 //!   inputs as small as `lch(sign(-50%)`. The same `unreachable!()` also
 //!   fires with no `%` at all when the tree folds to a bare number
 //!   (`Calc::Number`) in a percentage-only slot — `text-size-adjust:asin(5)`,
@@ -37,8 +37,7 @@ const COMPILE_GUARD_ERROR: &str = "CSS parse error: unsupported math function in
 /// Math-function shapes in guarded contexts (color functions, opacity-family
 /// declarations): every row panics inside `Percentage::parse` without the
 /// guard, in every build profile, so the pre-parse guard must reject them
-/// before the engine sees them — that is what keeps the `panic = "abort"`
-/// release binaries alive.
+/// before the engine sees them; other engine defects rely on unwinding.
 #[test]
 fn parse_css_ast_rejects_the_percentage_math_panic_matrix() {
     for source in [
@@ -100,8 +99,7 @@ fn parse_css_ast_documents_the_guard_over_rejections() {
 
 /// Percentage-typed slots outside the guarded contexts still reach the
 /// engine; in unwinding profiles (this test binary) the `catch_unwind`
-/// boundary must convert the upstream panic into an error result. Release
-/// binaries still abort on these — #3295 tracks the upstream fix.
+/// boundary must convert the upstream panic into an error result. Native releases also unwind; #3295 tracks removal of the upstream defect.
 #[test]
 fn parse_css_ast_reports_under_guarded_engine_panics_as_errors() {
     let source = "a{border-image-slice:abs(-50%)}";
@@ -117,8 +115,7 @@ fn parse_css_ast_reports_under_guarded_engine_panics_as_errors() {
 /// no `%` involved. The percentage-only routes are the `text-size-adjust`
 /// and `font-stretch` longhands and `@property` `<percentage>` initial-value
 /// parsing; in unwinding profiles (this test binary) the `catch_unwind`
-/// boundary must convert the panic into an error result. Release binaries
-/// still abort on these — #3295 tracks the upstream fix.
+/// boundary must convert the panic into an error result. Native releases also unwind; #3295 tracks removal of the upstream defect.
 #[test]
 fn parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors() {
     const NUMBER_FOLD_ARTIFACT: &str = "losrasinable-p {\n t>px`5;  text-size-adjust:asin(5\u{c})\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}UUUrath";

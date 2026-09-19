@@ -1,10 +1,10 @@
+///|
 /// Builds the WebAssembly package used for npm publication.
 /// The release workflow treats `npm/wasm` as a generated artifact. This
 /// script encapsulates the exact build steps needed to produce that artifact:
 /// build the Rust crate for `wasm32-unknown-unknown`, run `wasm-bindgen`, and
 /// then restore the checked-in `package.json` from `HEAD` so build tools do not
 /// accidentally overwrite package metadata that should remain version-controlled.
-
 fn wasm_rustflags() -> String {
   let flag = "--cfg getrandom_backend=\"wasm_js\""
   match @env.get_env_var("RUSTFLAGS") {
@@ -13,47 +13,38 @@ fn wasm_rustflags() -> String {
   }
 }
 
+///|
 /// Main entry point for generating the publishable WASM package directory.
 async fn run_app() -> Int {
+  let cargo_env = @env.get_env_vars()
+  cargo_env["RUSTFLAGS"] = wasm_rustflags()
+  cargo_env["CARGO_PROFILE_RELEASE_PANIC"] = "abort"
   let cargo_exit = @process.run(
     "cargo",
     [
-      "build",
-      "--release",
-      "-p",
-      "vize_vitrine",
-      "--no-default-features",
-      "--features",
-      "wasm",
-      "--target",
-      "wasm32-unknown-unknown",
+      "build", "--release", "-p", "vize_vitrine", "--no-default-features", "--features",
+      "wasm", "--target", "wasm32-unknown-unknown",
     ],
-    extra_env={"RUSTFLAGS": wasm_rustflags()},
+    extra_env=cargo_env,
+    inherit_env=false,
   )
   if cargo_exit != 0 {
     println("Failed to build the WASM crate")
     return 1
   }
 
-  let bindgen_exit = @process.run(
-    "wasm-bindgen",
-    [
-      "target/wasm32-unknown-unknown/release/vize_vitrine.wasm",
-      "--out-dir",
-      "npm/wasm",
-      "--target",
-      "web",
-    ],
-  )
+  let bindgen_exit = @process.run("wasm-bindgen", [
+    "target/wasm32-unknown-unknown/release/vize_vitrine.wasm", "--out-dir", "npm/wasm",
+    "--target", "web",
+  ])
   if bindgen_exit != 0 {
     println("Failed to run wasm-bindgen")
     return 1
   }
 
-  let (restore_exit, restore_output) = @process.collect_stdout(
-    "git",
-    ["show", "HEAD:npm/wasm/package.json"],
-  )
+  let (restore_exit, restore_output) = @process.collect_stdout("git", [
+    "show", "HEAD:npm/wasm/package.json",
+  ])
   if restore_exit != 0 {
     println("Failed to restore npm/wasm/package.json from HEAD")
     return 1
@@ -62,6 +53,7 @@ async fn run_app() -> Int {
   0
 }
 
+///|
 async fn main {
   @sys.exit(run_app())
 }

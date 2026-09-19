@@ -14,19 +14,12 @@
 //!    `hsl(1e40 0 0)` or `hsl(calc(1e20 * 1e20) 0 0)` trips it in builds with
 //!    debug assertions (tests, fuzzing).
 //!
-//! The defense has two layers because the release profile builds with
-//! `panic = "abort"`, where `catch_unwind` cannot help:
-//!
-//! - `value_guard` rejects the empirically crashing math-function shapes in
-//!   color-function and opacity contexts before parsing, in every profile;
-//! - the `catch_unwind` boundary here converts any remaining engine panic
-//!   into an explicit error result in unwinding profiles (dev, test, ci),
-//!   covering percentage-typed slots the guard does not model.
-//!
-//! An exact pre-parse guard is impossible byte-wise — the panic surface is
-//! LightningCSS's calc type algebra — so the guard prefers the realistic
-//! authoring surface and the boundary plus the fuzz-target skip-list cover
-//! the rest; the caller-facing messages link the tracking issue.
+//! Native release artifacts unwind so this boundary also protects CLI, LSP
+//! and Node consumers from engine defects outside the known value guard.
+//! The pre-parse guard avoids known expensive/panicking inputs; it is not a
+//! complete model of upstream calc type algebra. Consumers overriding the
+//! panic strategy to `abort` lose the recovery guarantee. Browser WASM builds
+//! do not include the native LightningCSS engine and keep their abort profile.
 
 use std::panic::{AssertUnwindSafe, catch_unwind};
 

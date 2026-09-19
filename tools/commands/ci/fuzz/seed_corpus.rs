@@ -69,6 +69,16 @@ fn run() -> Result<(), String> {
     let mut template_count = 0usize;
     let mut expression_count = 0usize;
     let mut style_count = 0usize;
+    for file in glob_files(
+        &root,
+        &["crates/vize_atelier_sfc/tests/fixtures/css-engine/*.css"],
+    )? {
+        write_seed(
+            &css_dir,
+            &fs::read(&file).map_err(|error| format!("cannot read {}: {error}", file.display()))?,
+        )?;
+        style_count += 1;
+    }
 
     for file in &vue_files {
         let content = fs::read_to_string(file)

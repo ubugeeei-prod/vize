@@ -2,10 +2,9 @@
 //!
 //! `Percentage::parse` hits `unreachable!()` when a math function in a
 //! percentage-typed slot does not constant-fold to a plain percentage
-//! (#3276, #3280; retirement tracked in #3295). The release profile builds
-//! with `panic = "abort"`, so the `engine_boundary` catch cannot save shipped
-//! binaries — the crashing shapes must be rejected before they reach the
-//! engine.
+//! (#3276, #3280; retirement tracked in #3295). This guard avoids known
+//! panicking shapes before they reach the engine. Native release artifacts
+//! unwind so the boundary can recover from shapes outside this finite guard.
 //!
 //! The exact panic surface is LightningCSS's calc type algebra, which a
 //! byte scanner cannot reproduce. This guard covers the realistic authoring
