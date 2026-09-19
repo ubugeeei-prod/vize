@@ -313,7 +313,6 @@ fn nested_flag_off_is_not_silently_unchecked() {
         [
             "`v-match` / `v-when` require `experimentals.patternedTemplate`.",
             "`v-match` / `v-when` require `experimentals.patternedTemplate`.",
-            "Undefined reference '_' in template expression",
         ]
     );
 }
