@@ -4,9 +4,9 @@ use crate::virtual_ts::{
 use vize_carton::{String, config::VueVersion};
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
-const EMIT_ANCHOR_COMMENT: &str = "// Reference defineEmits result used through template $emit";
+const EMIT_ANCHOR_COMMENT: &str = "// Compiler-macro results contribute to the component signature";
 const EMIT_ANCHOR: &str =
-    "\n  // Reference defineEmits result used through template $emit\n  void emit;\n";
+    "\n  // Compiler-macro results contribute to the component signature\n  void emit;\n";
 
 #[test]
 fn template_dollar_emit_references_define_emits_result_for_vue2_and_vue3() {
@@ -37,19 +37,19 @@ fn template_dollar_emit_references_renamed_define_emits_result() {
     );
 
     assert!(code.contains(
-        "\n  // Reference defineEmits result used through template $emit\n  void dispatch;\n"
+        "\n  // Compiler-macro results contribute to the component signature\n  void dispatch;\n"
     ));
     assert!(!code.contains("void emit;"));
 }
 
 #[test]
-fn direct_emit_usage_does_not_need_the_dollar_emit_anchor() {
+fn direct_emit_usage_preserves_the_component_signature_anchor() {
     let template_usage = generate_setup(
         "const emit = defineEmits<{ click: [] }>()",
         r#"<button @click="emit('click')" />"#,
         VueVersion::V3,
     );
-    assert!(!template_usage.contains(EMIT_ANCHOR_COMMENT));
+    assert!(template_usage.contains(EMIT_ANCHOR_COMMENT));
     assert!(template_usage.contains("void emit;"));
 
     let script_usage = generate_setup(
@@ -59,20 +59,20 @@ emit('click')
         "<button />",
         VueVersion::V3,
     );
-    assert!(!script_usage.contains(EMIT_ANCHOR_COMMENT));
-    assert!(!script_usage.contains("void emit;"));
+    assert!(script_usage.contains(EMIT_ANCHOR_COMMENT));
+    assert!(script_usage.contains("void emit;"));
 }
 
 #[test]
-fn unused_define_emits_result_stays_unanchored() {
+fn component_signature_consumes_the_emit_result_without_a_template_read() {
     let code = generate_setup(
         "const emit = defineEmits<{ click: [] }>()",
         "<button />",
         VueVersion::V3,
     );
 
-    assert!(!code.contains(EMIT_ANCHOR_COMMENT));
-    assert!(!code.contains("void emit;"));
+    assert!(code.contains(EMIT_ANCHOR_COMMENT));
+    assert!(code.contains("void emit;"));
 }
 
 #[test]

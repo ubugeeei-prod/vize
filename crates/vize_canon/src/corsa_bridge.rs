@@ -40,6 +40,8 @@ mod vue_document_pattern_tests;
 #[cfg(test)]
 mod vue_document_tests;
 #[cfg(test)]
+mod vue_document_tsx_tests;
+#[cfg(test)]
 mod vue_project_mapping_tests;
 mod worker;
 

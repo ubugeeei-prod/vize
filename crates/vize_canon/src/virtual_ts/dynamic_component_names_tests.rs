@@ -59,14 +59,14 @@ fn dynamic_prop_names_do_not_become_static_component_contract_keys() {
     assert!(
         output
             .code
-            .contains("void (propName); // DynamicDirectiveArgument"),
+            .contains("void ({ [propName]: undefined }); // DynamicDirectiveArgument"),
         "dynamic prop names must be checked as expressions:\n{}",
         output.code
     );
     assert!(
         output
             .code
-            .contains("void (eventName); // DynamicDirectiveArgument"),
+            .contains("void (eventName); // DynamicEventArgument"),
         "dynamic event names must be checked as expressions:\n{}",
         output.code
     );

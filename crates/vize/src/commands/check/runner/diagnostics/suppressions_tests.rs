@@ -68,7 +68,7 @@ fn keeps_unrelated_declaration_conflicts_visible() {
 }
 
 #[test]
-fn suppresses_vue_expect_error_on_next_template_node() {
+fn vue_directives_are_owned_by_the_shared_canon_policy() {
     let temp = tempfile::tempdir().unwrap();
     let component = temp.path().join("App.vue");
     std::fs::write(
@@ -80,7 +80,7 @@ fn suppresses_vue_expect_error_on_next_template_node() {
     let mut diagnostic = diagnostic(component, 2322, "Type 'bad' is not assignable.");
     diagnostic.line = 2;
 
-    assert!(is_suppressed_false_positive(&diagnostic));
+    assert!(!is_suppressed_false_positive(&diagnostic));
 }
 
 #[test]

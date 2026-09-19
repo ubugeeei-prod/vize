@@ -11,7 +11,6 @@ mod dedup;
 mod keyof_indexed_assignment;
 mod line_index;
 mod lsp;
-mod module_resolution;
 mod module_specifier;
 mod patterns;
 mod skip_rules;
@@ -19,7 +18,6 @@ mod virtual_path_message;
 
 pub(super) use dedup::dedup_diagnostics;
 use line_index::LineIndex;
-pub(super) use module_resolution::relative_module_resolves_on_disk;
 pub(super) use skip_rules::{should_skip_diagnostic, should_skip_original_diagnostic};
 use virtual_path_message::restore_authored_paths;
 pub(super) use virtual_path_message::restore_authored_paths_in_messages;
@@ -118,7 +116,17 @@ impl<'a> DiagnosticMapper<'a> {
 
     fn original_source(&mut self, path: &Path) -> Option<&CachedSource> {
         if !self.original_sources.contains_key(path) {
-            let content: String = std::fs::read_to_string(path).ok()?.into();
+            let registered = self.project.find_by_original(path).and_then(|file| {
+                self.project
+                    .original_content_for_virtual(&file.virtual_path)
+            });
+            // Source maps belong to the registered snapshot. Reading the disk
+            // here loses errors after an unsaved edit, or moves them onto stale
+            // lines; a new in-memory document need not exist on disk at all.
+            let content: String = match registered {
+                Some(source) => source.into(),
+                None => std::fs::read_to_string(path).ok()?.into(),
+            };
             let line_index = LineIndex::for_backend(&content, self.virtual_line_breaks);
             self.original_sources.insert(
                 path.to_path_buf(),
@@ -173,16 +181,8 @@ mod tests {
     use tempfile::TempDir;
     use vize_carton::cstr;
 
-    /// Regression for the #1389 double-emission. An undefined name used in a
-    /// template interpolation (`{{ missingThing }}`) is referenced twice in the
-    /// generated virtual TS — once by the normal template-expression statement
-    /// (`void (missingThing); // Interpolation`) and once by the dedicated
-    /// "Undefined references from template" check (`void (missingThing);`).
-    /// Both spans map back to the identical interpolation in the source, so
-    /// Corsa reports the same `TS2304` at two virtual positions and the error
-    /// surfaced for the user exactly twice. The collection point must collapse
-    /// those exact duplicates to one diagnostic. (Verified empirically against
-    /// the native TypeScript 7 CLI.)
+    /// Interpolations now have one authored read. The collection boundary still
+    /// collapses duplicate backend findings at the same authored location.
     #[test]
     fn duplicated_template_diagnostic_is_reported_once() {
         let temp_dir = TempDir::new().unwrap();
@@ -202,11 +202,10 @@ mod tests {
         let virtual_file = project.find_by_original(&app_path).unwrap();
         let virtual_source = virtual_file.content.as_str();
 
-        // `missingThing` is emitted at two distinct virtual positions that both
-        // map to the same source interpolation. Build one LSP diagnostic per
-        // occurrence, mirroring what Corsa returns.
+        // Each authored interpolation is emitted once. A backend can still
+        // report the same diagnostic twice; mapping must deduplicate it.
         let message = "Cannot find name 'missingThing'.";
-        let diagnostics: Vec<_> = virtual_source
+        let mut diagnostics: Vec<_> = virtual_source
             .match_indices("void (missingThing)")
             .map(|(at, _)| at + "void (".len())
             .map(|offset| {
@@ -231,9 +230,10 @@ mod tests {
 
         assert_eq!(
             diagnostics.len(),
-            2,
-            "expected `missingThing` to be generated at two virtual positions"
+            1,
+            "an interpolation should not create duplicate unresolved reads"
         );
+        diagnostics.push(diagnostics[0].clone());
 
         let mapped = map_batch_diagnostics(
             vec![(file_uri_for(&virtual_file.virtual_path), diagnostics)],
@@ -338,7 +338,7 @@ mod tests {
     }
 
     #[test]
-    fn suppresses_vue_ts2307_when_vue_sibling_exists_on_disk() {
+    fn preserves_ts2307_even_when_a_source_sibling_exists_on_disk() {
         let temp_dir = TempDir::new().unwrap();
         let project_root = temp_dir.path().canonicalize().unwrap();
         let src_dir = project_root.join("src");
@@ -377,10 +377,9 @@ import ExistingPanel from './ExistingPanel.vue'
             &project,
         );
 
-        assert!(
-            diagnostics.is_empty(),
-            "existing Vue sibling false positive should stay suppressed: {diagnostics:#?}"
-        );
+        assert_eq!(diagnostics.len(), 1, "{diagnostics:#?}");
+        assert_eq!(diagnostics[0].code, Some(2307));
+        assert!(diagnostics[0].message.contains("'./ExistingPanel.vue'"));
     }
 
     #[test]

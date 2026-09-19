@@ -24,7 +24,9 @@ pub(super) fn generate_event_handler_expressions(
             let is_callable_reference = is_callable_handler_reference(content);
             let is_implicit_reference =
                 ctx.check_emits && ctx.data.has_implicit_event && is_callable_reference;
-            let inline_callback_arg = inline_callback_event_argument(content);
+            let inline_callback_arg = (!ctx.data.has_implicit_event)
+                .then(|| inline_callback_event_argument(content))
+                .flatten();
             let src_start = (ctx.template_offset + expr.start) as usize;
             let src_end = (ctx.template_offset + expr.end) as usize;
             let guard = expr.vif_guard.as_ref().map(|guard| {

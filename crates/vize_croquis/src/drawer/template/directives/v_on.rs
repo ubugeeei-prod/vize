@@ -8,10 +8,7 @@
 use crate::drawer::Drawer;
 use crate::drawer::helpers::extract_inline_callback_params;
 use crate::scope::EventHandlerScopeData;
-use oxc_ast::ast::Statement;
-use oxc_parser::{ParseOptions, Parser};
-use oxc_span::SourceType;
-use vize_carton::{CompactString, profile, smallvec};
+use vize_carton::{CompactString, profile};
 use vize_relief::ExpressionNode;
 
 impl Drawer {
@@ -58,233 +55,63 @@ impl Drawer {
                 return;
             }
 
-            // Check for inline arrow/function
-            if let Some(params) = profile!(
+            // Every named listener runs in a handler scope. Whether its body
+            // contains parentheses, semicolons or nested callbacks cannot change
+            // that ownership; statement bodies must never become `void (body)`.
+            let params = profile!(
                 "croquis.template.callback.extract_params",
                 extract_inline_callback_params(content)
-            ) {
-                let event_name = dir
-                    .arg
-                    .as_ref()
-                    .map(|arg| match arg {
-                        ExpressionNode::Simple(s) => CompactString::new(s.content),
-                        ExpressionNode::Compound(c) => {
-                            CompactString::new(c.loc.span.slice(&self.template_source))
-                        }
-                    })
-                    .unwrap_or_else(|| CompactString::const_new("unknown"));
-
-                self.croquis.scopes.enter_event_handler_scope(
-                    EventHandlerScopeData {
-                        event_name,
-                        has_implicit_event: false,
-                        param_names: params.into_iter().collect(),
-                        handler_expression: Some(CompactString::new(content)),
-                        target_component: target_component.clone(),
-                    },
-                    dir.loc.span.start,
-                    dir.loc.span.end,
-                );
-
-                if self.options.collect_template_expressions {
-                    let scope_id = self.croquis.scopes.current_scope().id;
-                    let exp_loc = exp.loc();
-                    self.croquis
-                        .template_expressions
-                        .push(crate::croquis::TemplateExpression {
-                            content: CompactString::new(content),
-                            kind: crate::croquis::TemplateExpressionKind::VOn,
-                            start: exp_loc.span.start,
-                            end: exp_loc.span.end,
-                            scope_id,
-                            vif_guard: self.current_vif_guard(),
-                        });
+            );
+            let has_implicit_event = params.is_none();
+            let event_name = match dir.arg.as_ref().expect("named event") {
+                ExpressionNode::Simple(argument) => CompactString::new(argument.content),
+                ExpressionNode::Compound(argument) => {
+                    CompactString::new(argument.loc.span.slice(&self.template_source))
                 }
-
-                let params_added: Vec<CompactString> = self
-                    .croquis
+            };
+            self.croquis.scopes.enter_event_handler_scope(
+                EventHandlerScopeData {
+                    event_name,
+                    has_implicit_event,
+                    param_names: params.unwrap_or_default().into_iter().collect(),
+                    handler_expression: Some(CompactString::new(content)),
+                    target_component,
+                },
+                dir.loc.span.start,
+                dir.loc.span.end,
+            );
+            if self.options.collect_template_expressions {
+                let location = exp.loc();
+                self.croquis
+                    .template_expressions
+                    .push(crate::croquis::TemplateExpression {
+                        content: CompactString::new(content),
+                        kind: crate::croquis::TemplateExpressionKind::VOn,
+                        start: location.span.start,
+                        end: location.span.end,
+                        scope_id: self.croquis.scopes.current_id(),
+                        vif_guard: self.current_vif_guard(),
+                    });
+            }
+            let previous_count = scope_vars.len();
+            scope_vars.extend(
+                self.croquis
                     .scopes
                     .current_scope()
                     .bindings()
-                    .filter(|(name, _)| *name != "$event")
-                    .map(|(name, _)| CompactString::new(name))
-                    .collect();
-
-                for param in &params_added {
-                    scope_vars.push(param.clone());
-                }
-
-                if self.options.detect_undefined {
-                    profile!(
-                        "croquis.template.v_on.refs",
-                        self.check_expression_refs(exp, scope_vars)
-                    );
-                }
-
-                for _ in &params_added {
-                    scope_vars.pop();
-                }
-
-                self.croquis.scopes.exit_scope();
-            } else {
-                // Simple handler reference, or inline statement-list handler.
-                let has_implicit_event = content.contains("$event") || !content.contains('(');
-                let is_statement_list = profile!(
-                    "croquis.template.v_on.statement_list",
-                    is_inline_statement_list(content)
+                    .map(|(name, _)| CompactString::new(name)),
+            );
+            if self.options.detect_undefined {
+                profile!(
+                    "croquis.template.v_on.refs",
+                    self.check_expression_refs(exp, scope_vars)
                 );
-
-                if has_implicit_event || (is_statement_list && !content.contains("=>")) {
-                    self.croquis.scopes.enter_event_handler_scope(
-                        EventHandlerScopeData {
-                            event_name: dir
-                                .arg
-                                .as_ref()
-                                .map(|arg| match arg {
-                                    ExpressionNode::Simple(s) => CompactString::new(s.content),
-                                    ExpressionNode::Compound(c) => {
-                                        CompactString::new(c.loc.span.slice(&self.template_source))
-                                    }
-                                })
-                                .unwrap_or_else(|| CompactString::const_new("unknown")),
-                            has_implicit_event,
-                            param_names: smallvec![],
-                            handler_expression: Some(CompactString::new(content)),
-                            target_component,
-                        },
-                        dir.loc.span.start,
-                        dir.loc.span.end,
-                    );
-
-                    if self.options.collect_template_expressions {
-                        let scope_id = self.croquis.scopes.current_scope().id;
-                        let exp_loc = exp.loc();
-                        self.croquis.template_expressions.push(
-                            crate::croquis::TemplateExpression {
-                                content: CompactString::new(content),
-                                kind: crate::croquis::TemplateExpressionKind::VOn,
-                                start: exp_loc.span.start,
-                                end: exp_loc.span.end,
-                                scope_id,
-                                vif_guard: self.current_vif_guard(),
-                            },
-                        );
-                    }
-
-                    scope_vars.push(CompactString::const_new("$event"));
-
-                    if self.options.detect_undefined {
-                        profile!(
-                            "croquis.template.v_on.refs",
-                            self.check_expression_refs(exp, scope_vars)
-                        );
-                    }
-
-                    scope_vars.pop();
-                    self.croquis.scopes.exit_scope();
-                } else {
-                    if self.options.collect_template_expressions {
-                        let scope_id = self.croquis.scopes.current_scope().id;
-                        let exp_loc = exp.loc();
-                        self.croquis.template_expressions.push(
-                            crate::croquis::TemplateExpression {
-                                content: CompactString::new(content),
-                                kind: crate::croquis::TemplateExpressionKind::VOn,
-                                start: exp_loc.span.start,
-                                end: exp_loc.span.end,
-                                scope_id,
-                                vif_guard: self.current_vif_guard(),
-                            },
-                        );
-                    }
-
-                    if self.options.detect_undefined {
-                        profile!(
-                            "croquis.template.v_on.refs",
-                            self.check_expression_refs(exp, scope_vars)
-                        );
-                    }
-                }
             }
+            scope_vars.truncate(previous_count);
+            self.croquis.scopes.exit_scope();
         }
     }
-}
-
-fn is_inline_statement_list(content: &str) -> bool {
-    let trimmed = content.trim_end();
-    if trimmed.ends_with(';')
-        || content
-            .split(';')
-            .take(2)
-            .filter(|part| !part.trim().is_empty())
-            .count()
-            > 1
-    {
-        return true;
-    }
-
-    if !content.contains(['\n', '\r']) {
-        return false;
-    }
-
-    let allocator = oxc_allocator::Allocator::default();
-    let parsed = Parser::new(&allocator, content, SourceType::ts())
-        .with_options(ParseOptions {
-            allow_return_outside_function: true,
-            ..Default::default()
-        })
-        .parse();
-    if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return false;
-    }
-
-    let mut statements = parsed
-        .program
-        .body
-        .iter()
-        .filter(|statement| !matches!(statement, Statement::EmptyStatement(_)));
-    let Some(first) = statements.next() else {
-        return false;
-    };
-    !matches!(first, Statement::ExpressionStatement(_)) || statements.next().is_some()
 }
 
 #[cfg(test)]
-mod tests {
-    use super::is_inline_statement_list;
-
-    #[test]
-    fn classifies_asi_and_semicolon_statement_lists() {
-        for content in [
-            "emit('create')\nemit('close')",
-            "emit('create')\r\nemit('close')",
-            "emit('create'); emit('close')",
-            "emit('create');",
-            "\nif (ready) run()\n",
-            "\nconst value = getValue()\n",
-            "\nreturn run()\n",
-        ] {
-            assert!(
-                is_inline_statement_list(content),
-                "expected statement-list handler: {content:?}"
-            );
-        }
-    }
-
-    #[test]
-    fn keeps_multiline_single_expressions_out_of_statement_scopes() {
-        for content in [
-            "handler\n  .call(null)",
-            "ready\n  ? onReady()\n  : onPending()",
-            "items\n  .map(item => item.id)\n  .join(',')",
-            "({\n  key: value\n})",
-            "emit('create')\n+",
-            "emit('create')",
-        ] {
-            assert!(
-                !is_inline_statement_list(content),
-                "expected single-expression handler: {content:?}"
-            );
-        }
-    }
-}
+mod tests;

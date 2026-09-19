@@ -86,10 +86,10 @@ pub(super) fn emit_component_constructors(
     );
     if legacy_component {
         ts.push_str("  $emit: __EmitFn<Emits>;\n");
-        ts.push_str("  $slots: Slots;\n");
+        ts.push_str("  $slots: __VizeSlots;\n");
     } else {
         ts.push_str("  $emit: __VizePublicEmit<Emits>;\n");
-        ts.push_str("  $slots: __VizePublicSlots<Slots>;\n");
+        ts.push_str("  $slots: __VizePublicSlots<__VizeSlots>;\n");
     }
     ts.push_str(instance_suffix(
         legacy_vue2,
@@ -134,7 +134,7 @@ pub(super) fn emit_component_constructors(
     let Some((generic_decl, generic_names)) = aliases.generic_params else {
         return;
     };
-    let slots_ref = alias_ref("Slots", aliases.slots_is_generic, generic_names);
+    let slots_ref = alias_ref("__VizeSlots", aliases.slots_is_generic, generic_names);
     let emits_ref = alias_ref("Emits", aliases.emits_is_generic, generic_names);
     let emit_props_field = if aliases.has_emits_for_props {
         cstr!(" & __EmitProps<{emits_ref}>")

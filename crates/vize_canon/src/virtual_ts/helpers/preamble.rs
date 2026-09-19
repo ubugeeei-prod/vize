@@ -93,43 +93,6 @@ pub const VUE_TYPE_HELPERS: &str = vue_type_helpers_text!();
 pub(crate) const EMIT_OVERLOAD_HELPERS: &str = emit_overload_helpers_text!();
 pub(crate) const EMIT_PROPS_HELPER: &str = "type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K>]?: __EmitOptions<T>[K] };\n";
 
-pub const VUE_SETUP_HELPERS: &str = r#"  // Compiler macros (only valid in setup scope, not global)
-  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeBooleanKey<_T>, keyof __LooseRequired<_T>>>;
-  function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
-  function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
-  function defineProps(_props?: any) { void _props; return undefined as any; }
-  function defineEmits<_T = unknown>(): __EmitFn<_T>;
-  function defineEmits<const _T extends readonly string[]>(_events: _T): (event: _T[number], ...args: any[]) => void;
-  function defineEmits<const _T extends Record<string, any>>(_events: _T): __EmitFn<_T>;
-  function defineEmits(_events?: any) { void _events; return (() => {}) as any; }
-  function defineExpose<_T = unknown>(_exposed?: _T): void { void _exposed; }
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
-  function defineModel<_T, _M extends PropertyKey = string, _G = _T, _S = _T>(_options: __VizeDefineModelOptions<_T, _G, _S> & ({ default: any } | { required: true })): __VizeModelRef<_T, _M, _G, _S>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_options?: __VizeDefineModelOptions<_T, _G, _S>): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _O extends Record<string, any> = Record<string, any>, _V = __VizeModelOptionValue<_T, _O>>(_options: _O): __VizeModelRef<_V, _M, __VizeModelOptionGetValue<_V, _O>, __VizeModelOptionSetValue<_V, _O>>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_options: any): __VizeModelRef<_T, _M, _G, _S>;
-  function defineModel<_T, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options: __VizeDefineModelOptions<_T, _G, _S> & ({ default: any } | { required: true })): __VizeModelRef<_T, _M, _G, _S>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options?: __VizeDefineModelOptions<_T, _G, _S>): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _O extends Record<string, any> = Record<string, any>, _V = __VizeModelOptionValue<_T, _O>>(_name: string, _options: _O): __VizeModelRef<_V, _M, __VizeModelOptionGetValue<_V, _O>, __VizeModelOptionSetValue<_V, _O>>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options?: any): __VizeModelRef<_T, _M, _G, _S>;
-  function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
-  function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
-  function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
-  function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
-  // Mark compiler macros as used
-  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"#;
-
-pub(crate) const VUE_SETUP_HELPERS_HOISTED: &str = r#"  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)
-  const defineProps = __vize_defineProps;
-  const defineEmits = __vize_defineEmits;
-  const defineExpose = __vize_defineExpose;
-  const defineModel = __vize_defineModel;
-  const defineSlots = __vize_defineSlots;
-  const withDefaults = __vize_withDefaults;
-  const useTemplateRef = __vize_useTemplateRef;
-  // Mark compiler macros as used
-  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"#;
-
 pub const SHARED_PREAMBLE_FILE_NAME: &str = "__vize_helpers.d.ts";
 
 pub const SHARED_PREAMBLE_DTS: &str = concat!(

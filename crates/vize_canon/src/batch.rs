@@ -10,6 +10,7 @@ mod declaration_path;
 mod error;
 mod executor;
 mod import_rewriter;
+pub(crate) use import_rewriter::declaration_module_path;
 pub(crate) mod import_rewriter_alias;
 #[cfg(test)]
 mod import_rewriter_authored_vue_ts_tests;

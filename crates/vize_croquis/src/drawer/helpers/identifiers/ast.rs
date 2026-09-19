@@ -3,6 +3,7 @@ mod walk;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression;
 use oxc_parser::Parser;
+use oxc_semantic::SemanticBuilder;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, profile};
 
@@ -90,10 +91,26 @@ fn extract_identifier_refs_oxc_program(
         return None;
     }
 
-    let mut identifiers = Vec::with_capacity(4);
-    profile!(
-        "croquis.helpers.identifiers.walk_program",
-        walk::walk_program(&ret.program, &mut identifiers)
-    );
+    // A statement body owns lexical bindings (loops, catches, functions,
+    // classes, enums). Only unresolved value references reach template scope.
+    let built = SemanticBuilder::new()
+        .with_build_nodes(true)
+        .build(&ret.program);
+    let semantic = &built.semantic;
+    let scoping = semantic.scoping();
+    let mut identifiers: Vec<_> = scoping
+        .root_unresolved_references_ids()
+        .flatten()
+        .filter_map(|id| {
+            let reference = scoping.get_reference(id);
+            (reference.flags().is_value() || reference.flags().is_value_as_type()).then(|| {
+                IdentifierRef::new(
+                    semantic.reference_name(reference),
+                    semantic.reference_span(reference).start,
+                )
+            })
+        })
+        .collect();
+    identifiers.sort_unstable_by_key(|reference| reference.offset);
     Some(identifiers)
 }

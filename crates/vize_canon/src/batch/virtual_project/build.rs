@@ -155,8 +155,11 @@ pub(super) fn build_vue_registered_file(
                 source_type,
                 (context.project_root, context.virtual_root),
                 path.parent(),
-                context.mirrorable_project_files,
-                context.alias_rewrite_policy,
+                crate::batch::import_rewriter::VirtualProjectRewriteOptions {
+                    preserve_relative_declarations: context.preserve_relative_declarations,
+                    mirrorable_project_files: context.mirrorable_project_files,
+                    alias_rewrite_policy: context.alias_rewrite_policy,
+                },
             )
     );
     let source_map = CompositeSourceMap::new_vue(
@@ -235,11 +238,12 @@ pub(super) fn mirrored_virtual_path(
     virtual_root: &Path,
     path: &Path,
 ) -> CorsaResult<PathBuf> {
-    if let Ok(relative) = path.strip_prefix(project_root) {
+    let canonical = vize_carton::path::canonicalize_non_verbatim(path);
+    if let Ok(relative) = canonical.strip_prefix(project_root) {
         return Ok(virtual_root.join(relative));
     }
     // Out-of-root files land in the external escape subtree (#3887).
-    super::external_mirror::external_mirror_path(virtual_root, path)
+    super::external_mirror::external_mirror_path(virtual_root, &canonical)
 }
 
 fn build_tsx_vue_import_shim(

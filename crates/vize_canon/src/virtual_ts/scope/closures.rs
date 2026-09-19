@@ -29,6 +29,14 @@ pub(crate) fn generate_scope_closures(
     let check_tables = TemplateValueCheckTables::collect(summary, &options);
     let checks = check_tables.as_checks();
 
+    if check_options.check_props
+        && check_options.check_unknown_props
+        && !options.legacy_vue2
+        && let Some(root) = options.template_ast
+    {
+        super::native_prop_names::emit(ts, mappings, root, template_offset);
+    }
+
     let expressions_by_scope: FxHashMap<u32, Vec<_>> =
         profile!("canon.virtual_ts.group_template_expressions", {
             let mut expressions_by_scope: FxHashMap<u32, Vec<_>> = FxHashMap::default();

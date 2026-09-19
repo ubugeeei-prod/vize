@@ -168,11 +168,13 @@ function __setup<T extends string = 'a'>() {
   const props: __DefineProps<Props<T>> = {} as __DefineProps<Props<T>>;
   void props; // Mark as used to avoid TS6133
 
+  const __vize_native_key_11: unknown extends __VizeNativeElement<"button"> ? unknown : "type" extends keyof __VizeNativeElement<"button"> ? unknown : __VizeComponentAttrCamel<"type"> extends keyof __VizeNativeElement<"button"> ? unknown : never = "type";
+  void __vize_native_key_11;
   type __VizeSlotOutletFn = (...args: any[]) => any;
   type __VizeSlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, __VizeSlotOutletFn>;
   type __VizeSlotOutletArgs<__S, __K extends PropertyKey> = [__VizeSlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<__VizeSlotOutletTarget<__S, __K>>;
   type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = [__VizeSlotOutletArgs<__S, __K>] extends [[]] ? unknown : __VizeSlotOutletArgs<__S, __K>[0];
-  ((__vize_slot_props: __VizeSlotOutletPayload<Slots<T>, "default">) => { void __vize_slot_props; })({
+  ((__vize_slot_props: __VizeSlotOutletPayload<__VizeSlots<T>, "default">) => { void __vize_slot_props; })({
     "value": value,
   });
 
@@ -187,6 +189,9 @@ function __setup<T extends string = 'a'>() {
   void emit; void onClick; void value;
   })();
 
+  // Compiler-macro results contribute to the component signature
+  void emit;
+
   // Reference destructured props (prevent TS6133)
   void value;
 }
@@ -197,9 +202,10 @@ __setup();
 export type Emits<T extends string = 'a'> = {
   "update:value": [value: T];
 };
-export type Slots<T extends string = 'a'> = {
+type __VizeSlots<T extends string = 'a'> = {
   default: (props: { value: T | undefined }) => unknown;
 };
+export type { __VizeSlots as Slots };
 
 type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
 type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = []> = TDepth['length'] extends 32 ? never : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>, [...TDepth, unknown]> | ((...args: TArgs) => TReturn) : never;
@@ -219,7 +225,7 @@ type __VizeComponentInstance = {
   $props: Props<string> & __EmitProps<Emits>;
   readonly __vizeRawProps?: Props<string>;
   $emit: __VizePublicEmit<Emits>;
-  $slots: __VizePublicSlots<Slots>;
+  $slots: __VizePublicSlots<__VizeSlots>;
 } & __VizeComponentPublicBase;
 type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props<string>, __EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
 $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props<string>, __EmitProps<Emits>> & __VizeComponentInputGuard<Props<string>, __EmitProps<Emits>, __VizeAuthoredProps>;
@@ -228,7 +234,7 @@ type __VizeGenericComponentInstance<T extends string = 'a'> = {
   $props: Props<T> & __EmitProps<Emits<T>>;
   readonly __vizeRawProps?: Props<T>;
   $emit: __VizePublicEmit<Emits<T>>;
-  $slots: __VizePublicSlots<Slots<T>>;
+  $slots: __VizePublicSlots<__VizeSlots<T>>;
 } & __VizeComponentPublicBase;
 type __VizeGenericComponentConstructor = new <T extends string = 'a', __VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInputProps<Props<T>, __EmitProps<Emits<T>>> & __VizeComponentInputGuard<Props<T>, __EmitProps<Emits<T>>, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeGenericComponentInstance<T> : Omit<__VizeGenericComponentInstance<T>, '$props'> & {
   $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props<T>, __EmitProps<Emits<T>>> & __VizeComponentInputGuard<Props<T>, __EmitProps<Emits<T>>, __VizeAuthoredProps>;
@@ -257,5 +263,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { __vizeCheck: <T extends string = 'a'>(props: Partial<Props<T>> & { [K in Props<T> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => void; __vizeResolveProps?: <T extends string = 'a'>(props: Partial<Props<T>> & { [K in Props<T> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => Props<T>; __vizeResolveSlots?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => Slots<T>; __vizeEmitProps?: __VizeStaticEmitProps; __vizeResolveEmitProps?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props<string>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"button">>; } & __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { __vizeCheck: <T extends string = 'a'>(props: Partial<Props<T>> & { [K in Props<T> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => void; __vizeResolveProps?: <T extends string = 'a'>(props: Partial<Props<T>> & { [K in Props<T> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => Props<T>; __vizeResolveSlots?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => __VizeSlots<T>; __vizeEmitProps?: __VizeStaticEmitProps; __vizeResolveEmitProps?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props<string>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"button">>; } & __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;

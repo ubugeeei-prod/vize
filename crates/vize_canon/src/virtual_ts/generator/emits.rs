@@ -21,7 +21,7 @@ fn inner_type_of(type_args: &str) -> &str {
         .unwrap_or(type_args)
 }
 
-/// Emit the module-scope `export type Slots` alias. When the slots type from
+/// Emit the private slot contract and preserve the public `Slots` export. When the slots type from
 /// `defineSlots` references an SFC generic parameter, the alias re-declares
 /// the parameters (with safe defaults) so declaration emit resolves them
 /// (#3065).
@@ -32,20 +32,25 @@ pub(super) fn emit_slots_type(
     ts: &mut String,
     summary: &Croquis,
     generic_injection: Option<&(String, Vec<String>)>,
+    export_slots: bool,
 ) -> bool {
     let slots_type_args = summary
         .macros
         .define_slots()
         .and_then(|m| m.type_args.as_ref());
-    if let Some(type_args) = slots_type_args {
+    let is_generic = if let Some(type_args) = slots_type_args {
         let inner_type = inner_type_of(type_args);
         let suffix = module_alias_generic_suffix(generic_injection, inner_type);
-        append!(*ts, "export type Slots{suffix} = {inner_type};\n");
+        append!(*ts, "type __VizeSlots{suffix} = {inner_type};\n");
         !suffix.is_empty()
     } else {
-        ts.push_str("export type Slots = {};\n");
+        ts.push_str("type __VizeSlots = {};\n");
         false
+    };
+    if export_slots {
+        ts.push_str("export type { __VizeSlots as Slots };\n");
     }
+    is_generic
 }
 
 /// Emit the module-scope `export type Exposed` alias (for `InstanceType` and

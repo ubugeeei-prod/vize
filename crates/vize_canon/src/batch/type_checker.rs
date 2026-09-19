@@ -14,6 +14,7 @@ mod incremental;
 mod metrics;
 mod paths;
 mod result;
+mod template_directives;
 pub use declarations::{DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput};
 pub use metrics::IncrementalCheckMetrics;
 use paths::{IncrementalPaths, collect_project_paths};
@@ -283,12 +284,10 @@ impl TypeChecker for BatchTypeChecker {
         let project_root = path.parent().unwrap_or(Path::new("."));
         let mut temp_project = VirtualProject::new(project_root)?;
         temp_project.register_path_with_content(path, content)?;
+        temp_project.register_reachable_dependencies()?;
 
-        let mut result = self.executor.check(&temp_project)?;
-        result
-            .diagnostics
-            .extend(temp_project.diagnostics().iter().cloned());
-        Ok(result.diagnostics)
+        let result = self.executor.check(&temp_project)?;
+        Ok(Self::finish_registered_result(result, &temp_project)?.diagnostics)
     }
 
     fn check_incremental(&mut self, changed: &[PathBuf]) -> CorsaResult<TypeCheckResult> {
@@ -325,9 +324,14 @@ impl BatchTypeChecker {
         result
             .diagnostics
             .extend(project.diagnostics().iter().cloned());
+        let had_errors = result.has_errors();
+        template_directives::apply(&mut result.diagnostics, project);
         if result.has_errors() {
             result.success = false;
             result.exit_code = result.exit_code.max(1);
+        } else if had_errors {
+            result.success = true;
+            result.exit_code = 0;
         }
         Ok(result)
     }

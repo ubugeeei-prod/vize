@@ -23,6 +23,7 @@ memchr.workspace = true
 
 # OXC for high-performance AST parsing
 oxc_parser.workspace = true
+oxc_semantic.workspace = true
 oxc_ast.workspace = true
 oxc_ast_visit.workspace = true
 oxc_syntax.workspace = true

@@ -96,6 +96,7 @@ pub use tsconfig_gen::{
 };
 mod tsconfig_paths;
 mod vue_codegen;
+mod vue_compiler_comments;
 
 #[cfg(test)]
 mod tests;

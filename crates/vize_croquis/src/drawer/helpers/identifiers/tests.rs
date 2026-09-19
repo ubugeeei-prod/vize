@@ -287,3 +287,42 @@ fn test_extract_identifier_refs_preserve_root_offsets() {
         )]
     );
 }
+
+#[test]
+fn statement_references_respect_lexical_binding_ownership() {
+    for (source, expected) in [
+        (
+            "for (const it of items) { consume(it); }",
+            vec!["items", "consume"],
+        ),
+        (
+            "function helper(value: string) { external(value); } helper(input);",
+            vec!["external", "input"],
+        ),
+        (
+            "try { run(); } catch (error) { report(error); }",
+            vec!["run", "report"],
+        ),
+        (
+            "class C { method() { external(); } } new C();",
+            vec!["external"],
+        ),
+        (
+            "enum E { A = external } consume(E.A);",
+            vec!["external", "consume"],
+        ),
+        (
+            "{ const local = input; consume(local); } consume(local);",
+            vec!["input", "consume", "consume", "local"],
+        ),
+    ] {
+        assert_eq!(extract_identifiers_oxc(source), expected, "{source}");
+        for reference in extract_identifier_refs_oxc(source) {
+            let offset = reference.offset as usize;
+            assert_eq!(
+                &source[offset..offset + reference.name.len()],
+                reference.name.as_str()
+            );
+        }
+    }
+}

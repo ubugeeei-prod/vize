@@ -138,8 +138,10 @@ pub enum TemplateExpressionKind {
     VShow,
     /// v-model: v-model="value"
     VModel,
-    /// Runtime directive argument: `:[name]`, `@[name]`, or `#[name]`.
+    /// Runtime property or slot argument: `:[name]` or `#[name]`.
     DynamicDirectiveArgument,
+    /// Runtime listener name: `@[name]`; null disables the listener.
+    DynamicEventArgument,
     /// Custom (non-builtin) directive value: `v-focus="expr"`.
     ///
     /// Collected so the value reaches the type checker at all. Until this
@@ -161,6 +163,7 @@ impl TemplateExpressionKind {
             Self::VShow => "VShow",
             Self::VModel => "VModel",
             Self::DynamicDirectiveArgument => "DynamicDirectiveArgument",
+            Self::DynamicEventArgument => "DynamicEventArgument",
             Self::CustomDirective => "CustomDirective",
         }
     }

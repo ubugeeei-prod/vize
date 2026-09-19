@@ -1,191 +1,84 @@
-use vize_carton::{CompactString, SmallVec};
+//! Callback ownership comes from the expression AST, including destructuring,
+//! generic signatures and defaults that contain nested arrows or comments.
 
-use crate::drawer::helpers::is_valid_identifier_fast;
+use super::slot_props::extract_slot_binding_names;
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{Expression, Statement};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
+use vize_carton::{CompactString, SmallVec, cstr};
 
-/// Extract parameters from inline arrow function or function expression
-#[inline]
-pub fn extract_inline_callback_params(expr: &str) -> Option<SmallVec<[CompactString; 4]>> {
-    let bytes = expr.as_bytes();
-    let len = bytes.len();
-    if len == 0 {
+pub fn extract_inline_callback_params(source: &str) -> Option<SmallVec<[CompactString; 4]>> {
+    if !source.contains("=>") && !source.contains("function") {
         return None;
     }
-
-    // Skip leading whitespace
-    let mut i = 0;
-    while i < len && bytes[i].is_ascii_whitespace() {
-        i += 1;
-    }
-    if i >= len {
+    let allocator = Allocator::default();
+    // parse_expression accepts a valid prefix. A full wrapped program also
+    // rejects a following call/statement after a function declaration.
+    let wrapped = cstr!("({source}\n)");
+    let parsed = Parser::new(&allocator, &wrapped, SourceType::ts()).parse();
+    let parsed = if parsed.panicked || !parsed.diagnostics.is_empty() {
+        Parser::new(&allocator, &wrapped, SourceType::tsx()).parse()
+    } else {
+        parsed
+    };
+    if parsed.panicked || !parsed.diagnostics.is_empty() || parsed.program.body.len() != 1 {
         return None;
     }
-
-    // Fast path: check for arrow "=>"
-    let arrow_pos = find_arrow(bytes, i);
-
-    if let Some(arrow_idx) = arrow_pos {
-        let mut end = arrow_idx;
-        while end > i && bytes[end - 1].is_ascii_whitespace() {
-            end -= 1;
-        }
-        if end <= i {
-            return None;
-        }
-
-        let before_bytes = &bytes[i..end];
-
-        // Check for async prefix
-        let (param_start, param_end) = if before_bytes.starts_with(b"async")
-            && before_bytes.len() > 5
-            && before_bytes[5].is_ascii_whitespace()
-        {
-            let mut s = 5;
-            while s < before_bytes.len() && before_bytes[s].is_ascii_whitespace() {
-                s += 1;
-            }
-            (i + s, end)
-        } else {
-            (i, end)
-        };
-
-        let param_bytes = &bytes[param_start..param_end];
-
-        // (params) => pattern
-        if param_bytes.first() == Some(&b'(') && param_bytes.last() == Some(&b')') {
-            let inner = &expr[param_start + 1..param_end - 1];
-            let inner_trimmed = inner.trim();
-            if inner_trimmed.is_empty() {
-                return Some(SmallVec::new());
-            }
-            return Some(extract_param_list_fast(inner_trimmed));
-        }
-
-        // Single param: e =>
-        let param = &expr[param_start..param_end];
-        if is_valid_identifier_fast(param.as_bytes()) {
-            let mut result = SmallVec::new();
-            result.push(CompactString::new(param));
-            return Some(result);
-        }
+    let Statement::ExpressionStatement(statement) = &parsed.program.body[0] else {
+        return None;
+    };
+    let parameters = match statement.expression.get_inner_expression() {
+        Expression::ArrowFunctionExpression(function) => &function.params,
+        Expression::FunctionExpression(function) => &function.params,
+        _ => return None,
+    };
+    let mut bindings = SmallVec::new();
+    for parameter in &parameters.items {
+        extract_slot_binding_names(&parameter.pattern, 0, &mut bindings);
     }
-
-    // Check for function expression
-    if bytes[i..].starts_with(b"function") {
-        let fn_end = i + 8;
-        let mut paren_start = fn_end;
-        while paren_start < len && bytes[paren_start] != b'(' {
-            paren_start += 1;
-        }
-        if paren_start >= len {
-            return None;
-        }
-        let mut paren_end = paren_start + 1;
-        let mut depth = 1;
-        while paren_end < len && depth > 0 {
-            match bytes[paren_end] {
-                b'(' => depth += 1,
-                b')' => depth -= 1,
-                _ => {}
-            }
-            paren_end += 1;
-        }
-        if depth == 0 {
-            let inner = &expr[paren_start + 1..paren_end - 1];
-            let inner_trimmed = inner.trim();
-            if inner_trimmed.is_empty() {
-                return Some(SmallVec::new());
-            }
-            return Some(extract_param_list_fast(inner_trimmed));
-        }
+    if let Some(rest) = &parameters.rest {
+        extract_slot_binding_names(&rest.rest.argument, 0, &mut bindings);
     }
-
-    None
+    Some(bindings.into_iter().map(|(name, _)| name).collect())
 }
 
-/// Find arrow "=>" position in bytes
-#[inline]
-fn find_arrow(bytes: &[u8], start: usize) -> Option<usize> {
-    let len = bytes.len();
-    if len < start + 2 {
-        return None;
-    }
-    let mut i = start;
-    while i < len - 1 {
-        if bytes[i] == b'=' && bytes[i + 1] == b'>' {
-            return Some(i);
-        }
-        i += 1;
-    }
-    None
-}
+#[cfg(test)]
+mod tests {
+    use super::extract_inline_callback_params;
 
-/// Extract parameter list from comma-separated string
-#[inline]
-fn extract_param_list_fast(params: &str) -> SmallVec<[CompactString; 4]> {
-    let bytes = params.as_bytes();
-    let len = bytes.len();
-    let mut result = SmallVec::new();
-    let mut i = 0;
-
-    while i < len {
-        // Skip whitespace
-        while i < len && bytes[i].is_ascii_whitespace() {
-            i += 1;
+    #[test]
+    fn parameters_belong_only_to_the_outer_callback() {
+        for (source, expected) in [
+            (
+                "({ key: local = (() => 1)(), ...rest }, [first, , last]) => local",
+                vec!["local", "rest", "first", "last"],
+            ),
+            (
+                "async <T>(value: T, next = () => value) => next()",
+                vec!["value", "next"],
+            ),
+            (
+                "(function (value /* ) => */) { return value; })",
+                vec!["value"],
+            ),
+            ("() => () => nested", vec![]),
+        ] {
+            let actual = extract_inline_callback_params(source).expect(source);
+            assert_eq!(
+                actual.iter().map(|name| name.as_str()).collect::<Vec<_>>(),
+                expected,
+                "{source}"
+            );
         }
-        if i >= len {
-            break;
-        }
-
-        // Skip rest parameter prefix (...)
-        if i + 2 < len && bytes[i] == b'.' && bytes[i + 1] == b'.' && bytes[i + 2] == b'.' {
-            i += 3;
-            while i < len && bytes[i].is_ascii_whitespace() {
-                i += 1;
-            }
-        }
-
-        // Skip destructuring patterns
-        if i < len && (bytes[i] == b'{' || bytes[i] == b'[') {
-            let open = bytes[i];
-            let close = if open == b'{' { b'}' } else { b']' };
-            let mut depth = 1;
-            i += 1;
-            while i < len && depth > 0 {
-                if bytes[i] == open {
-                    depth += 1;
-                } else if bytes[i] == close {
-                    depth -= 1;
-                }
-                i += 1;
-            }
-            while i < len && bytes[i] != b',' {
-                i += 1;
-            }
-            if i < len {
-                i += 1;
-            }
-            continue;
-        }
-
-        // Extract identifier
-        let ident_start = i;
-        while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_' || bytes[i] == b'$')
-        {
-            i += 1;
-        }
-
-        if i > ident_start {
-            result.push(CompactString::new(&params[ident_start..i]));
-        }
-
-        // Skip to next comma
-        while i < len && bytes[i] != b',' {
-            i += 1;
-        }
-        if i < len {
-            i += 1;
+        for source in [
+            "function f<T>(value: T) { return value; } f(1)",
+            "const callback = () => 1; callback()",
+            "items.map(item => item)",
+            "run('function () => punctuation')",
+            "if (ready) run(() => value)",
+        ] {
+            assert!(extract_inline_callback_params(source).is_none(), "{source}");
         }
     }
-
-    result
 }

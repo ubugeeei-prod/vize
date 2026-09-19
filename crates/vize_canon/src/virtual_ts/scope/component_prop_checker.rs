@@ -173,7 +173,7 @@ pub(super) fn append_prop_check_helpers(
             "  type __VizeAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<__VizeAttrCamel<__T>>}` : S;\n",
             "  type __VizeNativeAttrNames = { [K in keyof __VizeNativeElements & string]: keyof __VizeNativeElements[K] }[keyof __VizeNativeElements & string] & string;\n",
             "  type __VizeGlobalHtmlAttrs = __VizeIsAny<__VizeNativeElements> extends true ? {} : { [K in __VizeNativeAttrNames as K | __VizeAttrCamel<K>]?: unknown } & { [K in `data${string}`]?: unknown };\n",
-            "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : Record<string, unknown>;\n",
+            "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & __VizeGlobalHtmlAttrs;\n",
         ));
     } else {
         ts.push_str(
@@ -184,7 +184,7 @@ pub(super) fn append_prop_check_helpers(
         "  type __VizeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;\n",
     );
     ts.push_str(
-        "  type __VizePublicProps<C> = C extends { new (): { $props: infer __P } } ? __P : C extends (props: infer __P) => any ? __P : {};\n",
+        "  type __VizePublicProps<C> = C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {};\n",
     );
     ts.push_str(
         "  type __VizeInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;\n",
@@ -220,7 +220,7 @@ pub(super) fn append_prop_check_helpers(
             "  type __VizeKebabEventAliases<E> = { [K in keyof E & string as __VizeKebabCase<K> extends K ? never : __VizeKebabCase<K>]: E[K] };\n",
         );
         ts.push_str(
-            "  type __VizeComponentEvents<C> = C extends { __vizeRawEmits?: infer __R; __vizeEventMap?: infer __E } ? [keyof NonNullable<__R>] extends [never] ? NonNullable<__E> : NonNullable<__R> & __VizeKebabEventAliases<NonNullable<__R>> : { [K in keyof (C extends { new (): { $props: infer __P } } ? __P : C extends (props: infer __P) => any ? __P : {}) & string as __VizeEventName<K>]: (C extends { new (): { $props: infer __P } } ? __P : C extends (props: infer __P) => any ? __P : {})[K] };\n",
+            "  type __VizeComponentEvents<C> = C extends { __vizeRawEmits?: infer __R; __vizeEventMap?: infer __E } ? [keyof NonNullable<__R>] extends [never] ? NonNullable<__E> : NonNullable<__R> & __VizeKebabEventAliases<NonNullable<__R>> : { [K in keyof (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {}) & string as __VizeEventName<K>]: (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {})[K] };\n",
         );
     }
     ts.push_str(

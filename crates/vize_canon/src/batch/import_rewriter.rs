@@ -31,6 +31,8 @@ mod dts_rewrite;
 
 #[path = "import_rewriter_project_mirror.rs"]
 mod project_mirror;
+pub(crate) use dts_rewrite::declaration_module_path;
+pub(in crate::batch) use project_mirror::VirtualProjectRewriteOptions;
 
 #[path = "import_rewriter_source_map.rs"]
 mod source_map;

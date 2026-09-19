@@ -187,21 +187,9 @@ impl VirtualProject {
                 if is_declaration_file(&key) && !package_local && !self.session_scripts {
                     continue;
                 }
-                // Only `.vue` files gain anything from registration — their
-                // generated companion is what consumers resolve. A script
-                // registers only when it lives *outside* the project root (a
-                // workspace barrel whose `.vue` re-export must be rewritten in
-                // mirror space); in-root scripts are the scan collector's job,
-                // and force-registering them would change the scanned set that
-                // incremental sessions and Tier-L pin (#3898).
-                let is_vue = key.extension().is_some_and(|extension| extension == "vue");
-                if !is_vue
-                    && !self.session_scripts
-                    && key.starts_with(&self.project_root)
-                    && !package_local
-                {
-                    continue;
-                }
+                // A requested subset still owns its complete import graph.
+                // In-root scripts excluded by the scan are dependencies just
+                // like out-of-root barrels; omitting them loses their types.
                 dependency_targets.insert(key.clone());
                 if !visited.insert(key.clone()) {
                     continue;

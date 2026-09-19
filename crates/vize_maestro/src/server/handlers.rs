@@ -118,14 +118,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
-        let uri = params.text_document.uri;
-        self.state.close_document(&uri);
-
-        // Clean up virtual documents cache
-        self.state.remove_virtual_docs(&uri);
-
-        // Clear diagnostics
-        self.client.publish_diagnostics(uri, vec![], None).await;
+        self.close_document(params).await;
     }
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {

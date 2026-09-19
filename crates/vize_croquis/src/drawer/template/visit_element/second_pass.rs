@@ -177,7 +177,11 @@ impl Drawer {
             let loc = arg.loc();
             self.croquis.template_expressions.push(TemplateExpression {
                 content: CompactString::new(expression_content(arg, &self.template_source)),
-                kind: TemplateExpressionKind::DynamicDirectiveArgument,
+                kind: if dir.name == "on" {
+                    TemplateExpressionKind::DynamicEventArgument
+                } else {
+                    TemplateExpressionKind::DynamicDirectiveArgument
+                },
                 start: loc.span.start,
                 end: loc.span.end,
                 scope_id: self.croquis.scopes.current_id(),

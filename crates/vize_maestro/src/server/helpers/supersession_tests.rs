@@ -77,7 +77,7 @@ fn refresh(fixture: &Fixture, version: i32) -> Vec<Url> {
         fixture
             .service
             .inner()
-            .publish_importer_diagnostics(&fixture.leaf, version),
+            .publish_importer_diagnostics(&fixture.leaf, Some(version)),
     )
 }
 

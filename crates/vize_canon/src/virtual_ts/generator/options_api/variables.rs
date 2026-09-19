@@ -17,18 +17,9 @@ pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
     offset: &dyn Fn(usize) -> usize,
 ) -> Vec<VizeSemanticLink> {
     let mut links = Vec::new();
-    // The Options API bridge only runs for non-`<script setup>` components.
-    // `<script setup>` already exposes its bindings (refs, props, setup
-    // returns) in template scope via the normal generator, and a
-    // `defineProps<Props>()` whose argument is a type reference (not an inline
-    // `TSTypeLiteral`) still registers destructured names as
-    // `BindingType::Props` without populating `summary.macros.props()`, which
-    // would otherwise let those names slip through the filter below and
-    // produce spurious `__VizeOptionsBinding` declarations.
-    if summary.bindings.is_script_setup {
-        return Vec::new();
-    }
-
+    // Options from a normal script remain visible with a second setup block.
+    // Setup macro props already have their own projection, including referenced
+    // types whose individual names are absent from macros.props().
     let macro_prop_names: FxHashSet<&str> = summary
         .macros
         .props()
@@ -49,7 +40,11 @@ pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
             match binding_type {
                 BindingType::Data => Some((name, true)),
                 BindingType::Options | BindingType::VueGlobal => Some((name, false)),
-                BindingType::Props if !macro_prop_names.contains(name) => Some((name, false)),
+                BindingType::Props
+                    if !summary.bindings.is_script_setup && !macro_prop_names.contains(name) =>
+                {
+                    Some((name, false))
+                }
                 _ => None,
             }
         })

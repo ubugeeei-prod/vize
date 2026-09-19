@@ -12,6 +12,7 @@ use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 use super::context::ScopeGenerationOptions;
 
+mod authored_ranges;
 mod instance;
 pub(super) use instance::generate_instance_global_refs;
 mod member_root;
@@ -85,6 +86,8 @@ pub(super) fn generate_undefined_refs(
     let mut seen_strict_occurrences: FxHashSet<(String, usize)> = FxHashSet::default();
     let mut emitted_header = false;
     let mut emitted_instance = false;
+    let authored_ranges = authored_ranges::collect(mappings);
+    let interpolations = authored_ranges::interpolations(summary, template_offset);
     for undef in &summary.undefined_refs {
         let name = undef.name.as_str();
         if !is_strict_template_context_candidate(name) {
@@ -123,6 +126,18 @@ pub(super) fn generate_undefined_refs(
             && !script_declared
             && !context_declared
             && strict_ref_shape;
+
+        // Interpolations are checked as authored expressions in their lexical
+        // scope. A duplicate read would escape their authored TS directives.
+        // Control-flow guards still need the fallback: some generated guard
+        // copies exist only for narrowing and deliberately suppress diagnostics.
+        if !on_instance
+            && !on_strict_template_context
+            && authored_ranges::contains(&interpolations, src_start)
+            && authored_ranges::contains(&authored_ranges, src_start)
+        {
+            continue;
+        }
 
         if on_strict_template_context {
             if !seen_strict_occurrences.insert((undef.name.clone(), src_start)) {

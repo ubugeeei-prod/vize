@@ -51,10 +51,17 @@ use vize_relief::{
 pub(crate) type NativePropBindings = FxHashMap<(u32, u32), NativePropBinding>;
 
 pub(crate) struct NativePropBinding {
-    tag: CompactString,
-    name: CompactString,
+    target: NativePropTarget,
     name_start: u32,
     name_end: u32,
+}
+
+enum NativePropTarget {
+    Property {
+        tag: CompactString,
+        name: CompactString,
+    },
+    Spread,
 }
 
 pub(crate) fn collect_native_prop_bindings(
@@ -103,7 +110,9 @@ fn collect_element_bindings(element: &ElementNode<'_>, bindings: &mut NativeProp
                 continue;
             };
             if let Some((range, binding)) = native_prop_binding(element, directive) {
-                if renders_as_fragment && binding.name.as_str() != "key" {
+                if renders_as_fragment
+                    && !matches!(&binding.target, NativePropTarget::Property { name, .. } if name == "key")
+                {
                     continue;
                 }
                 bindings.insert(range, binding);
@@ -146,7 +155,7 @@ fn renders_as_fragment(element: &ElementNode<'_>) -> bool {
 /// unchecked attributes stay unchecked without a name list to maintain.
 ///
 /// A dynamic name (`:[key]="x"`) has no statically known prop to check against
-/// and is skipped, as is `v-bind="object"`, which carries no argument at all.
+/// and is skipped. Argument-less bindings check the spread operand instead.
 fn native_prop_binding(
     element: &ElementNode<'_>,
     directive: &DirectiveNode<'_>,
@@ -154,19 +163,31 @@ fn native_prop_binding(
     if directive.name != "bind" {
         return None;
     }
+    let expression = directive.exp.as_ref()?;
+    let expression_location = expression.loc();
+    if directive.arg.is_none() {
+        return Some((
+            (expression_location.span.start, expression_location.span.end),
+            NativePropBinding {
+                target: NativePropTarget::Spread,
+                name_start: expression_location.span.start,
+                name_end: expression_location.span.end,
+            },
+        ));
+    }
     let ExpressionNode::Simple(argument) = directive.arg.as_ref()? else {
         return None;
     };
     if !argument.is_static {
         return None;
     }
-    let expression = directive.exp.as_ref()?;
-    let expression_location = expression.loc();
     Some((
         (expression_location.span.start, expression_location.span.end),
         NativePropBinding {
-            tag: element.tag.into(),
-            name: argument.content.into(),
+            target: NativePropTarget::Property {
+                tag: element.tag.into(),
+                name: argument.content.into(),
+            },
             name_start: argument.loc.span.start,
             name_end: argument.loc.span.end,
         },
@@ -192,11 +213,16 @@ pub(super) fn generate_native_prop_statement(
     let check_name_start = ts.len();
     append!(*ts, "__vize_native_prop_check_{}", expr.start);
     let check_name_end = ts.len();
-    ts.push_str(": __VizeNativeElementProp<__VizeNativeElement<");
-    push_ts_string_literal(ts, native_prop.tag.as_str());
-    ts.push_str(">, ");
-    push_ts_string_literal(ts, native_prop.name.as_str());
-    ts.push_str("> = ");
+    match &native_prop.target {
+        NativePropTarget::Property { tag, name } => {
+            ts.push_str(": __VizeNativeElementProp<__VizeNativeElement<");
+            push_ts_string_literal(ts, tag.as_str());
+            ts.push_str(">, ");
+            push_ts_string_literal(ts, name.as_str());
+            ts.push_str("> = ");
+        }
+        NativePropTarget::Spread => ts.push_str(": object | null | undefined = "),
+    }
     let check_anchor_start = ts.len();
     ts.push('(');
     let check_anchor_end = ts.len();

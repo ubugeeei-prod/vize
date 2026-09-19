@@ -176,7 +176,7 @@ function __setup<Mode extends 'row' | 'cell', TEvent extends Mode>() {
   type __VizeSlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, __VizeSlotOutletFn>;
   type __VizeSlotOutletArgs<__S, __K extends PropertyKey> = [__VizeSlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<__VizeSlotOutletTarget<__S, __K>>;
   type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = [__VizeSlotOutletArgs<__S, __K>] extends [[]] ? unknown : __VizeSlotOutletArgs<__S, __K>[0];
-  ((__vize_slot_props: __VizeSlotOutletPayload<Slots<Mode, TEvent>, "default">) => { void __vize_slot_props; })({
+  ((__vize_slot_props: __VizeSlotOutletPayload<__VizeSlots<Mode, TEvent>, "default">) => { void __vize_slot_props; })({
     "mode": props.mode,
     "event": props.event,
   });
@@ -184,15 +184,19 @@ function __setup<Mode extends 'row' | 'cell', TEvent extends Mode>() {
   // Reference setup bindings (used in template/CSS v-bind)
   void event; void mode; void props;
   })();
+
+  // Compiler-macro results contribute to the component signature
+  void props;
 }
 
 // Invoke setup to verify types
 __setup();
 
 export type Emits = {};
-export type Slots<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any> = {
+type __VizeSlots<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any> = {
   default: (props: { mode: Mode; event: TEvent | undefined }) => unknown;
 };
+export type { __VizeSlots as Slots };
 export type Exposed<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any> = {
   current: () => Mode;
 };
@@ -203,7 +207,7 @@ type __VizeComponentInstance = {
   $props: Props<'row' | 'cell', any>;
   readonly __vizeRawProps?: Props<'row' | 'cell', any>;
   $emit: __VizePublicEmit<Emits>;
-  $slots: __VizePublicSlots<Slots>;
+  $slots: __VizePublicSlots<__VizeSlots>;
 } & __VizeComponentPublicBase & __VizeShallowUnwrapRef<Exposed>;
 type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props<'row' | 'cell', any>, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
 $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props<'row' | 'cell', any>, {}> & __VizeComponentInputGuard<Props<'row' | 'cell', any>, {}, __VizeAuthoredProps>;
@@ -212,7 +216,7 @@ type __VizeGenericComponentInstance<Mode extends 'row' | 'cell' = any, TEvent ex
   $props: Props<Mode, TEvent>;
   readonly __vizeRawProps?: Props<Mode, TEvent>;
   $emit: __VizePublicEmit<Emits>;
-  $slots: __VizePublicSlots<Slots<Mode, TEvent>>;
+  $slots: __VizePublicSlots<__VizeSlots<Mode, TEvent>>;
 } & __VizeComponentPublicBase & __VizeShallowUnwrapRef<Exposed<Mode, TEvent>>;
 type __VizeGenericComponentConstructor = new <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any, __VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInputProps<Props<Mode, TEvent>, {}> & __VizeComponentInputGuard<Props<Mode, TEvent>, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeGenericComponentInstance<Mode, TEvent> : Omit<__VizeGenericComponentInstance<Mode, TEvent>, '$props'> & {
   $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props<Mode, TEvent>, {}> & __VizeComponentInputGuard<Props<Mode, TEvent>, {}, __VizeAuthoredProps>;
@@ -241,5 +245,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { __vizeCheck: <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(props: Partial<Props<Mode, TEvent>> & { [K in Props<Mode, TEvent> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => void; __vizeResolveProps?: <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(props: Partial<Props<Mode, TEvent>> & { [K in Props<Mode, TEvent> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => Props<Mode, TEvent>; __vizeResolveSlots?: <Mode extends 'row' | 'cell', TEvent extends Mode>(props: Partial<Props<Mode, TEvent>> & Record<string, unknown>) => Slots<Mode, TEvent>;  readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props<'row' | 'cell', any>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Record<string, unknown>; } & __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { __vizeCheck: <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(props: Partial<Props<Mode, TEvent>> & { [K in Props<Mode, TEvent> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => void; __vizeResolveProps?: <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(props: Partial<Props<Mode, TEvent>> & { [K in Props<Mode, TEvent> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => Props<Mode, TEvent>; __vizeResolveSlots?: <Mode extends 'row' | 'cell', TEvent extends Mode>(props: Partial<Props<Mode, TEvent>> & Record<string, unknown>) => __VizeSlots<Mode, TEvent>;  readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props<'row' | 'cell', any>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Record<string, unknown>; } & __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;

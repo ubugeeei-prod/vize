@@ -2,6 +2,16 @@
 mod project;
 
 #[test]
+fn global_values_and_computed_keys_keep_their_authored_types() {
+    let source = "<script setup lang=\"ts\">\ndeclare const list: string | number | { [Symbol.iterator](): Iterator<number> };\ndeclare const doc: typeof document;\ndeclare const settings: typeof Application.settings;\nconst title: string = settings.title;\nconst body: HTMLElement = doc.body;\n</script>\n<template><p v-for=\"item in list\">{{ item }}</p>{{ title }}{{ body }}</template>";
+    let globals = "declare namespace Application { const settings: { title: string }; }";
+    assert_eq!(
+        project::check(&[("src/globals.d.ts", globals), ("src/App.vue", source)]),
+        [] as [String; 0]
+    );
+}
+
+#[test]
 fn standard_library_types_remain_available_to_ambient_setup_declarations() {
     let source = "<script setup lang=\"ts\">\nnode.focus();\ndeclare const node: HTMLElement;\ndeclare function load<T extends HTMLElement>(value: T): Promise<T>;\nconst result: Promise<HTMLElement> = load(node);\n</script>\n<template><div>{{ node.tagName }}{{ result }}</div></template>\n";
     assert_eq!(

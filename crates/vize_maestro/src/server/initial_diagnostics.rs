@@ -155,7 +155,15 @@ fn run_worker(
             let Some((uri, job)) = pending.lock().take_ready(Instant::now()) else {
                 continue;
             };
-            crate::runtime::block_on(worker.publish_diagnostics_if_version(&uri, job.version));
+            crate::runtime::block_on(async {
+                worker
+                    .publish_diagnostics_if_version(&uri, job.version)
+                    .await;
+                // Opening an unsaved dependency changes its importers too.
+                worker
+                    .publish_importer_diagnostics(&uri, Some(job.version))
+                    .await;
+            });
         }
     }
 }

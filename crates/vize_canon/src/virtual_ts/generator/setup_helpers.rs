@@ -10,15 +10,17 @@ use vize_carton::{CompactString, FxHashSet, String, append};
 use vize_croquis::Croquis;
 use vize_relief::RootNode;
 
-use crate::virtual_ts::helpers::{VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED};
-
 mod boolean_keys;
+mod declarations;
+mod macro_results;
+pub(super) use declarations::SetupHelperPlan;
 mod template_ref_registry;
 
 use boolean_keys::{DefinePropsBooleanKeys, collect_define_props_boolean_keys};
 use template_ref_registry::template_ref_registry;
 
 pub(super) struct SetupHelperComponentContext<'a> {
+    pub(super) helpers: &'a SetupHelperPlan,
     pub(super) summary: &'a Croquis,
     pub(super) options: &'a crate::virtual_ts::types::VirtualTsOptions,
     pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
@@ -108,55 +110,18 @@ pub(super) fn emit_setup_helpers(
             "{dom_ref_helper}{component_ref_helper}  type __VizeTemplateRefs = {{{registry_body}}};\n  type __VizeUseTemplateRef = {{ <_K extends string>(_key: _K): Readonly<import('vue').ShallowRef<(_K extends keyof __VizeTemplateRefs ? __VizeTemplateRefs[_K] : any) | null>>; <_T>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; }};\n"
         );
     }
-    let shims_start = ts.len();
-    if generic_param.is_none() {
-        ts.push_str(if hoist_shared_preamble {
-            VUE_SETUP_HELPERS_HOISTED
-        } else {
-            VUE_SETUP_HELPERS
-        });
-        retype_use_template_ref(ts, shims_start, template_refs);
-        return;
+    let boolean_keys =
+        generic_param.and_then(|_| script_content.and_then(collect_define_props_boolean_keys));
+    if let Some(keys) = boolean_keys.as_ref() {
+        emit_define_props_boolean_keys_type(ts, keys);
     }
-
-    let Some(boolean_keys) = script_content.and_then(collect_define_props_boolean_keys) else {
-        ts.push_str(if hoist_shared_preamble {
-            VUE_SETUP_HELPERS_HOISTED
-        } else {
-            VUE_SETUP_HELPERS
-        });
-        retype_use_template_ref(ts, shims_start, template_refs);
-        return;
-    };
-    emit_define_props_boolean_keys_type(ts, &boolean_keys);
-    let shims_start = ts.len();
-    if hoist_shared_preamble {
-        emit_hoisted_setup_helpers(ts);
-    } else {
-        emit_embedded_setup_helpers(ts);
-    }
-    retype_use_template_ref(ts, shims_start, template_refs);
-}
-
-/// Swap the untyped `useTemplateRef` shim for one keyed by the template's
-/// static ref registry (#3896). A keyed call resolves the registered element
-/// (making `.value` `| null`-checked exactly like vue-tsc); an unregistered
-/// key stays `any`, and an explicit type argument keeps the second call
-/// signature. When no registry exists, the shims are left untouched.
-fn retype_use_template_ref(ts: &mut String, shims_start: usize, template_refs: Option<&str>) {
-    if template_refs.is_none() {
-        return;
-    }
-    const ALIAS_SHIM: &str = "  const useTemplateRef = __vize_useTemplateRef;";
-    const ALIAS_TYPED: &str =
-        "  const useTemplateRef = __vize_useTemplateRef as unknown as __VizeUseTemplateRef;";
-    const EMBEDDED_SHIM: &str = "  function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }";
-    const EMBEDDED_TYPED: &str = "  const useTemplateRef = (undefined as unknown as __VizeUseTemplateRef); void ((_key: string) => useTemplateRef(_key));";
-    let tail = ts[shims_start..]
-        .replace(ALIAS_SHIM, ALIAS_TYPED)
-        .replace(EMBEDDED_SHIM, EMBEDDED_TYPED);
-    ts.truncate(shims_start);
-    ts.push_str(&tail);
+    declarations::emit(
+        ts,
+        component_context.helpers,
+        hoist_shared_preamble,
+        boolean_keys.is_some(),
+        template_refs.is_some(),
+    );
 }
 
 fn emit_define_props_boolean_keys_type(ts: &mut String, collection: &DefinePropsBooleanKeys) {
@@ -183,55 +148,6 @@ fn emit_define_props_boolean_keys_type(ts: &mut String, collection: &DefineProps
         );
     }
     ts.push_str("  ;\n");
-}
-
-fn emit_hoisted_setup_helpers(ts: &mut String) {
-    ts.push_str(
-        r#"  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)
-  const defineProps = __vize_defineProps as {
-    <_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeDefinePropsBooleanKeys<_T>, keyof __LooseRequired<_T>>>;
-    <const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
-    <const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
-  };
-  const defineEmits = __vize_defineEmits;
-  const defineExpose = __vize_defineExpose;
-  const defineModel = __vize_defineModel;
-  const defineSlots = __vize_defineSlots;
-  const withDefaults = __vize_withDefaults;
-  const useTemplateRef = __vize_useTemplateRef;
-  // Mark compiler macros as used
-  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"#,
-    );
-}
-
-fn emit_embedded_setup_helpers(ts: &mut String) {
-    ts.push_str(
-        r#"  // Compiler macros (only valid in setup scope, not global)
-  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeDefinePropsBooleanKeys<_T>, keyof __LooseRequired<_T>>>;
-  function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
-  function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
-  function defineProps(_props?: any) { void _props; return undefined as any; }
-  function defineEmits<_T = unknown>(): __EmitFn<_T>;
-  function defineEmits<const _T extends readonly string[]>(_events: _T): (event: _T[number], ...args: any[]) => void;
-  function defineEmits<const _T extends Record<string, any>>(_events: _T): __EmitFn<_T>;
-  function defineEmits(_events?: any) { void _events; return (() => {}) as any; }
-  function defineExpose<_T = unknown>(_exposed?: _T): void { void _exposed; }
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
-  function defineModel<_T, _M extends PropertyKey = string, _G = _T, _S = _T>(_options: __VizeDefineModelOptions<_T, _G, _S> & ({ default: any } | { required: true })): __VizeModelRef<_T, _M, _G, _S>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_options?: __VizeDefineModelOptions<_T, _G, _S>): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _O extends Record<string, any> = Record<string, any>, _V = __VizeModelOptionValue<_T, _O>>(_options: _O): __VizeModelRef<_V, _M, __VizeModelOptionGetValue<_V, _O>, __VizeModelOptionSetValue<_V, _O>>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_options: any): __VizeModelRef<_T, _M, _G, _S>;
-  function defineModel<_T, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options: __VizeDefineModelOptions<_T, _G, _S> & ({ default: any } | { required: true })): __VizeModelRef<_T, _M, _G, _S>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options?: __VizeDefineModelOptions<_T, _G, _S>): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _O extends Record<string, any> = Record<string, any>, _V = __VizeModelOptionValue<_T, _O>>(_name: string, _options: _O): __VizeModelRef<_V, _M, __VizeModelOptionGetValue<_V, _O>, __VizeModelOptionSetValue<_V, _O>>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options?: any): __VizeModelRef<_T, _M, _G, _S>;
-  function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
-  function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
-  function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
-  function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
-  // Mark compiler macros as used
-  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"#,
-    );
 }
 
 fn push_ts_string_literal(out: &mut String, value: &str) {

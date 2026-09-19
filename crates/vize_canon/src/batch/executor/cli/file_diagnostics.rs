@@ -1,6 +1,5 @@
 use super::super::diagnostics::{
-    DiagnosticMapper, relative_module_resolves_on_disk, should_skip_diagnostic,
-    should_skip_original_diagnostic,
+    DiagnosticMapper, should_skip_diagnostic, should_skip_original_diagnostic,
 };
 use super::{normalize_cli_path, project_diagnostics};
 use crate::batch::{Diagnostic, VirtualProject};
@@ -47,11 +46,6 @@ pub(super) fn parse_cli_diagnostic_line(
     }
     let original = mapper.map_to_original(&virtual_path, line, column)?;
     if should_skip_original_diagnostic(code, &original) {
-        return None;
-    }
-
-    // Suppress false `TS2307` for existing siblings outside an explicit subset.
-    if code == Some(2307) && relative_module_resolves_on_disk(message, &original.path) {
         return None;
     }
 

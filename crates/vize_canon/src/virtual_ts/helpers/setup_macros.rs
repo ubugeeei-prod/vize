@@ -1,0 +1,90 @@
+//! One catalog for embedded and program-shared setup helper declarations.
+
+pub(crate) struct SetupMacroHelper {
+    pub name: &'static str,
+    pub embedded: &'static str,
+    pub hoisted: &'static str,
+}
+
+macro_rules! setup_helpers {
+    ($(($name:literal, $embedded:literal, $hoisted:literal)),+ $(,)?) => {
+        pub const VUE_SETUP_HELPERS: &str = concat!(
+"  // Compiler macros (only valid in setup scope, not global)\n",
+            $($embedded,)+
+"  // Mark compiler macros as used\n  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"        );
+        pub(crate) const VUE_SETUP_HELPERS_HOISTED: &str = concat!(
+"  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)\n",
+            $($hoisted,)+
+"  // Mark compiler macros as used\n  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"        );
+        pub(crate) const SETUP_MACRO_HELPERS: &[SetupMacroHelper] = &[
+            $(SetupMacroHelper { name: $name, embedded: $embedded, hoisted: $hoisted },)+
+        ];
+    };
+}
+
+setup_helpers!(
+    (
+        "defineProps",
+        r#"  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeBooleanKey<_T>, keyof __LooseRequired<_T>>>;
+  function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
+  function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
+  function defineProps(_props?: any) { void _props; return undefined as any; }
+"#,
+        r#"  const defineProps = __vize_defineProps;
+"#
+    ),
+    (
+        "defineEmits",
+        r#"  function defineEmits<_T = unknown>(): __EmitFn<_T>;
+  function defineEmits<const _T extends readonly string[]>(_events: _T): (event: _T[number], ...args: any[]) => void;
+  function defineEmits<const _T extends Record<string, any>>(_events: _T): __EmitFn<_T>;
+  function defineEmits(_events?: any) { void _events; return (() => {}) as any; }
+"#,
+        r#"  const defineEmits = __vize_defineEmits;
+"#
+    ),
+    (
+        "defineExpose",
+        r#"  function defineExpose<_T = unknown>(_exposed?: _T): void { void _exposed; }
+"#,
+        r#"  const defineExpose = __vize_defineExpose;
+"#
+    ),
+    (
+        "defineModel",
+        r#"  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
+  function defineModel<_T, _M extends PropertyKey = string, _G = _T, _S = _T>(_options: __VizeDefineModelOptions<_T, _G, _S> & ({ default: any } | { required: true })): __VizeModelRef<_T, _M, _G, _S>;
+  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_options?: __VizeDefineModelOptions<_T, _G, _S>): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
+  function defineModel<_T = unknown, _M extends PropertyKey = string, _O extends Record<string, any> = Record<string, any>, _V = __VizeModelOptionValue<_T, _O>>(_options: _O): __VizeModelRef<_V, _M, __VizeModelOptionGetValue<_V, _O>, __VizeModelOptionSetValue<_V, _O>>;
+  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_options: any): __VizeModelRef<_T, _M, _G, _S>;
+  function defineModel<_T, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options: __VizeDefineModelOptions<_T, _G, _S> & ({ default: any } | { required: true })): __VizeModelRef<_T, _M, _G, _S>;
+  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options?: __VizeDefineModelOptions<_T, _G, _S>): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
+  function defineModel<_T = unknown, _M extends PropertyKey = string, _O extends Record<string, any> = Record<string, any>, _V = __VizeModelOptionValue<_T, _O>>(_name: string, _options: _O): __VizeModelRef<_V, _M, __VizeModelOptionGetValue<_V, _O>, __VizeModelOptionSetValue<_V, _O>>;
+  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options?: any): __VizeModelRef<_T, _M, _G, _S>;
+  function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
+"#,
+        r#"  const defineModel = __vize_defineModel;
+"#
+    ),
+    (
+        "defineSlots",
+        r#"  function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
+"#,
+        r#"  const defineSlots = __vize_defineSlots;
+"#
+    ),
+    (
+        "withDefaults",
+        r#"  function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
+"#,
+        r#"  const withDefaults = __vize_withDefaults;
+"#
+    ),
+    (
+        "useTemplateRef",
+        r#"  function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
+"#,
+        r#"  const useTemplateRef = __vize_useTemplateRef;
+"#
+    ),
+);

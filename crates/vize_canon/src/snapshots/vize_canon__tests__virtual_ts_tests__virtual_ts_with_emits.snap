@@ -155,8 +155,6 @@ function __setup() {
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  void (emit('close')); // VOn
-  // @vize-map: expr -> 274:287
 
   // @click handler
   void (($event: PointerEvent) => {
@@ -165,15 +163,25 @@ function __setup() {
     // @vize-map: handler -> 227:238
   });
 
+  // @click handler
+  void (($event: PointerEvent) => {
+    emit('close');  // handler expression
+    // @vize-map: handler -> 274:287
+  });
+
   // Reference setup bindings (used in template/CSS v-bind)
   void emit; void handleClick;
   })();
+
+  // Compiler-macro results contribute to the component signature
+  void emit;
 }
 
 // Invoke setup to verify types
 __setup();
 
-export type Slots = {};
+type __VizeSlots = {};
+export type { __VizeSlots as Slots };
 
 type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
 type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = []> = TDepth['length'] extends 32 ? never : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>, [...TDepth, unknown]> | ((...args: TArgs) => TReturn) : never;
@@ -193,7 +201,7 @@ type __VizeComponentInstance = {
   $props: Props & __EmitProps<Emits>;
   readonly __vizeRawProps?: Props;
   $emit: __VizePublicEmit<Emits>;
-  $slots: __VizePublicSlots<Slots>;
+  $slots: __VizePublicSlots<__VizeSlots>;
 } & __VizeComponentPublicBase;
 type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, __EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
 $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, __EmitProps<Emits>> & __VizeComponentInputGuard<Props, __EmitProps<Emits>, __VizeAuthoredProps>;

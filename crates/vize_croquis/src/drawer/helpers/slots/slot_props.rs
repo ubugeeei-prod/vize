@@ -63,7 +63,7 @@ fn parse_slot_pattern_bindings(pattern: &str) -> SmallVec<[(CompactString, u32);
 }
 
 /// Extract binding names from slot pattern
-fn extract_slot_binding_names(
+pub(super) fn extract_slot_binding_names(
     pattern: &BindingPattern<'_>,
     pattern_offset: u32,
     bindings: &mut SmallVec<[(CompactString, u32); 4]>,

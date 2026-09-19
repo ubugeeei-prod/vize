@@ -151,7 +151,8 @@ function __setup() {
 __setup();
 
 export type Emits = {};
-export type Slots = {};
+type __VizeSlots = {};
+export type { __VizeSlots as Slots };
 
 // ========== Default Export ==========
 type __VizeVue2ComponentInstance = {
@@ -183,7 +184,7 @@ type __VizeComponentInstance = {
   $props: __VizeComponentProps<Props>;
   readonly __vizeRawProps?: Props;
   $emit: __EmitFn<Emits>;
-  $slots: Slots;
+  $slots: __VizeSlots;
 } & __VizeVue2ComponentInstance;
 type __VizeVue2ComponentConstructorStatics = {
   extend: (...args: any[]) => any;

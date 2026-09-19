@@ -7,16 +7,14 @@ use std::ops::Range;
 
 mod dom_events;
 mod preamble;
+pub(crate) mod setup_macros;
 mod vue2_members;
 
 pub(crate) use dom_events::{get_dom_event_type, is_known_dom_event_name};
 pub use preamble::{
-    DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_SETUP_HELPERS,
-    VUE_TYPE_HELPERS,
+    DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_TYPE_HELPERS,
 };
-pub(crate) use preamble::{
-    EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER, SETUP_SCOPE_HELPER_NAMES, VUE_SETUP_HELPERS_HOISTED,
-};
+pub(crate) use preamble::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER, SETUP_SCOPE_HELPER_NAMES};
 use vue2_members::VUE2_INSTANCE_MEMBERS;
 pub(crate) use vue2_members::is_vue2_instance_member;
 
@@ -302,3 +300,5 @@ pub(crate) fn is_reserved_identifier(s: &str) -> bool {
             | "of"
     )
 }
+
+pub use setup_macros::VUE_SETUP_HELPERS;

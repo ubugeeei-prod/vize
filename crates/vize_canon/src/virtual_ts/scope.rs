@@ -24,6 +24,7 @@ mod expression_scanner;
 mod globals;
 mod handler_shape;
 mod inline_callback_classifier;
+mod native_prop_names;
 mod node;
 mod patterns;
 mod slot_outlet_props;

@@ -161,6 +161,8 @@ function __setup() {
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
+  const __vize_native_key_190: unknown extends __VizeNativeElement<"p"> ? unknown : "key" extends keyof __VizeNativeElement<"p"> ? unknown : __VizeComponentAttrCamel<"key"> extends keyof __VizeNativeElement<"p"> ? unknown : never = "key";
+  void __vize_native_key_190;
   if (status === 'loading') {
     // @vize-map: expr -> 215:235
   } else if (status === 'error') {
@@ -190,14 +192,15 @@ function __setup() {
 __setup();
 
 export type Emits = {};
-export type Slots = {};
+type __VizeSlots = {};
+export type { __VizeSlots as Slots };
 
 // ========== Default Export ==========
 type __VizeComponentInstance = {
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: __VizePublicEmit<Emits>;
-  $slots: __VizePublicSlots<Slots>;
+  $slots: __VizePublicSlots<__VizeSlots>;
 } & __VizeComponentPublicBase;
 type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
 $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>;

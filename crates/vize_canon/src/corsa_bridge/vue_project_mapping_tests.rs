@@ -119,7 +119,13 @@ fn retains_tsx_dependency_identity_but_not_its_ts_import_shim() {
     );
     assert_eq!(
         dependencies[0].request_uri,
-        path_to_file_uri(&child_path.with_extension("vue.tsx"))
+        path_to_file_uri(
+            &virtual_project
+                .session_project_root
+                .as_ref()
+                .unwrap()
+                .join("Child.vue.tsx")
+        )
     );
     assert_eq!(dependencies[0].virtual_suffix, ".tsx");
     assert!(dependencies[0].source_type.is_typescript());

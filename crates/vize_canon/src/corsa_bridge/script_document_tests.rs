@@ -17,7 +17,7 @@ fn script_virtual_project_syncs_vue_dependencies_without_opening_the_sfc() {
     )
     .expect("child");
 
-    let (request_uri, documents, _, _) = build_script_virtual_project(
+    let (request_uri, documents, session_root, _) = build_script_virtual_project(
         &host_path,
         host_path.with_extension("tsx.jsx.ts").to_str().unwrap(),
         source,
@@ -30,13 +30,11 @@ fn script_virtual_project_syncs_vue_dependencies_without_opening_the_sfc() {
         .map(|(uri, _)| uri.as_str())
         .collect::<Vec<_>>();
 
-    assert_eq!(
-        request_uri,
-        path_to_file_uri(&host_path.with_extension("tsx.jsx.ts"))
-    );
+    let mirror = session_root.expect("relative imports must own a materialized project");
+    assert_eq!(request_uri, path_to_file_uri(&mirror.join("Consumer.tsx")));
     assert!(uris.contains(&request_uri.as_str()), "{uris:?}");
     assert!(
-        uris.contains(&path_to_file_uri(&child_path.with_extension("vue.ts")).as_str()),
+        uris.contains(&path_to_file_uri(&mirror.join("Counter.vue.ts")).as_str()),
         "script hosts must materialize unopened Vue dependencies: {uris:?}",
     );
 }

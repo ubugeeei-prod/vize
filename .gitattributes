@@ -8,3 +8,4 @@ tests/_fixtures/_git/** linguist-vendored=true
 
 # Preserve the pinned upstream source bytes, including existing trailing spaces.
 tests/_fixtures/pattern-reference/upstream/** linguist-vendored whitespace=-blank-at-eol
+tests/_fixtures/vue-language-tools/upstream/** linguist-vendored whitespace=-blank-at-eol

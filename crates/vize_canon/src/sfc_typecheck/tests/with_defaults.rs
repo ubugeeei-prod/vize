@@ -83,7 +83,7 @@ void props;
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains(r#"void (emit('increment', count + 1));"#),
+        virtual_ts.contains(r#"emit('increment', count + 1);  // handler expression"#),
         "{virtual_ts}"
     );
 }

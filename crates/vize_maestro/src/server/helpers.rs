@@ -54,7 +54,7 @@ impl MaestroServer {
         if !self.state.is_lsp_typecheck_enabled() {
             return;
         }
-        self.publish_importer_diagnostics(uri, version).await;
+        self.publish_importer_diagnostics(uri, Some(version)).await;
     }
 
     /// Refresh open typed documents that import `uri`, abandoning the fan-out
@@ -73,12 +73,16 @@ impl MaestroServer {
     /// definition not superseded, so it always runs the fan-out to completion.
     /// Abandoning an older pass also cannot leave stale diagnostics on screen,
     /// because it stops *before* publishing rather than after computing.
-    async fn publish_importer_diagnostics(&self, uri: &Url, version: i32) -> Vec<Url> {
+    pub(super) async fn publish_importer_diagnostics(
+        &self,
+        uri: &Url,
+        version: Option<i32>,
+    ) -> Vec<Url> {
         let mut refreshed = Vec::new();
         for importer in super::importers::open_typecheck_dependents(&self.state, uri) {
-            if self.state.documents.version(uri) != Some(version) {
+            if self.state.documents.version(uri) != version {
                 tracing::debug!(
-                    "abandoning superseded importer refresh for {}: pass version {}, current {:?}",
+                    "abandoning superseded importer refresh for {}: pass version {:?}, current {:?}",
                     uri,
                     version,
                     self.state.documents.version(uri)

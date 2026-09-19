@@ -2,41 +2,10 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::cstr;
-
 pub(super) fn resolve_relative_script_import(dir: &Path, specifier: &str) -> Option<PathBuf> {
-    let base = dir.join(specifier);
-    if has_known_script_extension(&base) {
-        return known_script_path(&base).then(|| normalize_path(&base));
-    }
-
-    for ext in [
-        "ts", "tsx", "mts", "cts", "d.ts", "d.mts", "d.cts", "js", "jsx", "mjs", "cjs",
-    ] {
-        let candidate = append_extension(&base, ext);
-        if candidate.exists() {
-            return Some(normalize_path(&candidate));
-        }
-    }
-    for name in [
-        "index.ts",
-        "index.tsx",
-        "index.mts",
-        "index.cts",
-        "index.js",
-        "index.jsx",
-        "index.mjs",
-        "index.cjs",
-        "index.d.ts",
-        "index.d.mts",
-        "index.d.cts",
-    ] {
-        let candidate = base.join(name);
-        if candidate.exists() {
-            return Some(normalize_path(&candidate));
-        }
-    }
-    None
+    crate::batch::virtual_project::dependency_scan::resolve_dependency(specifier, dir, dir, &[])
+        .filter(|path| has_known_script_extension(path))
+        .map(|path| normalize_path(&path))
 }
 
 fn has_known_script_extension(path: &Path) -> bool {
@@ -48,28 +17,6 @@ fn has_known_script_extension(path: &Path) -> bool {
                 "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs"
             )
         })
-}
-
-fn known_script_path(path: &Path) -> bool {
-    let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
-        return false;
-    };
-    path.exists()
-        && (name.ends_with(".ts")
-            || name.ends_with(".tsx")
-            || name.ends_with(".mts")
-            || name.ends_with(".cts")
-            || name.ends_with(".js")
-            || name.ends_with(".jsx")
-            || name.ends_with(".mjs")
-            || name.ends_with(".cjs"))
-}
-
-fn append_extension(path: &Path, extension: &str) -> PathBuf {
-    path.file_name().and_then(|name| name.to_str()).map_or_else(
-        || path.to_path_buf(),
-        |name| path.with_file_name(cstr!("{name}.{extension}")),
-    )
 }
 
 pub(super) fn normalize_path(path: &Path) -> PathBuf {

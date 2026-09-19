@@ -76,7 +76,7 @@ pub(super) fn generate_component_event_types(
 
     append!(
         *ts,
-        "{indent}type {prop_args} = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }}\n",
+        "{indent}type {prop_args} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }}\n",
     );
     append!(
         *ts,
@@ -84,7 +84,7 @@ pub(super) fn generate_component_event_types(
     );
     append!(
         *ts,
-        "{indent}  : typeof {component_ref} extends (props: infer __P) => any\n",
+        "{indent}  : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any\n",
     );
     append!(
         *ts,

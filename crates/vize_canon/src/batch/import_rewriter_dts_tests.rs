@@ -84,3 +84,45 @@ fn ignores_relative_dts_text_outside_module_specifiers_for_virtual_project() {
 
     let _ = fs::remove_dir_all(&raw_root);
 }
+
+#[test]
+fn declaration_redirects_respect_source_precedence_and_external_roots() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    write(&root, "shared.d.ts", "export declare const value: string;");
+    write(&root, "app/owned.ts", "export const value = 1;");
+    write(
+        &root,
+        "app/owned.d.ts",
+        "export declare const value: string;",
+    );
+    let app = root.join("app");
+    let virtual_root = crate::batch::project_virtual_root(&app);
+    let rewriter = ImportRewriter::new();
+    for source in [
+        "export { value } from '../shared';",
+        "export { value } from '../shared.js';",
+    ] {
+        let result = rewriter.rewrite_for_virtual_project(
+            source,
+            SourceType::ts(),
+            (&app, &virtual_root),
+            Some(&app),
+        );
+        assert_eq!(
+            result.code,
+            cstr!(
+                "export {{ value }} from '{}';",
+                root.join("shared").display()
+            )
+        );
+    }
+    let source = "export { value } from './owned';";
+    let result = rewriter.rewrite_for_virtual_project(
+        source,
+        SourceType::ts(),
+        (&app, &virtual_root),
+        Some(&app),
+    );
+    assert_eq!(result.code, source);
+}

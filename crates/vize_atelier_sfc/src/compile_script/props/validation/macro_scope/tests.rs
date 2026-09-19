@@ -110,6 +110,14 @@ fn rejects_setup_local_values_in_every_hoisted_runtime_macro() {
 fn allows_values_that_remain_valid_after_macro_hoisting() {
     let cases = [
         (
+            "macro callee is not a hoisted argument",
+            "const defineProps = () => ({ value: 1 }); const result = defineProps();",
+        ),
+        (
+            "nested macro callee is not a withDefaults default",
+            "const defineProps = () => ({}); const result = withDefaults(defineProps<{ value?: number }>(), { value: 1 });",
+        ),
+        (
             "imported binding",
             "import { fallback } from './defaults'\nwithDefaults(defineProps<{ value?: string }>(), { value: fallback })",
         ),

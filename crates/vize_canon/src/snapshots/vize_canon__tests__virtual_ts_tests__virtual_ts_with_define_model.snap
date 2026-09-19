@@ -171,10 +171,14 @@ function __setup() {
 
   void (model); // VModel
   // @vize-map: expr -> 178:183
-  void ($emit('update:count', count + 1)); // VOn
-  // @vize-map: expr -> 206:238
   void (count); // Interpolation
   // @vize-map: expr -> 243:248
+
+  // @click handler
+  void (($event: PointerEvent) => {
+    $emit('update:count', count + 1);  // handler expression
+    // @vize-map: handler -> 206:238
+  });
 
   // Reference setup bindings (used in template/CSS v-bind)
   void count; void model;
@@ -188,7 +192,8 @@ export type Emits = {
   "update:modelValue": [value: string];
   "update:count": [value: number];
 };
-export type Slots = {};
+type __VizeSlots = {};
+export type { __VizeSlots as Slots };
 
 type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
 type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = []> = TDepth['length'] extends 32 ? never : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>, [...TDepth, unknown]> | ((...args: TArgs) => TReturn) : never;
@@ -208,7 +213,7 @@ type __VizeComponentInstance = {
   $props: Props & __EmitProps<Emits>;
   readonly __vizeRawProps?: Props;
   $emit: __VizePublicEmit<Emits>;
-  $slots: __VizePublicSlots<Slots>;
+  $slots: __VizePublicSlots<__VizeSlots>;
 } & __VizeComponentPublicBase;
 type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, __EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
 $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, __EmitProps<Emits>> & __VizeComponentInputGuard<Props, __EmitProps<Emits>, __VizeAuthoredProps>;

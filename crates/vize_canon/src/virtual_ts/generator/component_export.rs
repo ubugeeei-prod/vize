@@ -102,7 +102,7 @@ fn slot_resolver_field(generic_decl: &str, generic_names: &str, slots_is_generic
     }
     let resolver_decl = strip_synthetic_any_defaults(generic_decl);
     cstr!(
-        "__vizeResolveSlots?: <{resolver_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Slots<{generic_names}>; "
+        "__vizeResolveSlots?: <{resolver_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => __VizeSlots<{generic_names}>; "
     )
 }
 

@@ -161,6 +161,12 @@ function __setup() {
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
+  const __vize_native_key_49: unknown extends __VizeNativeElement<"input"> ? unknown : "type" extends keyof __VizeNativeElement<"input"> ? unknown : __VizeComponentAttrCamel<"type"> extends keyof __VizeNativeElement<"input"> ? unknown : never = "type";
+  void __vize_native_key_49;
+  const __vize_native_key_132: unknown extends __VizeNativeElement<"option"> ? unknown : "value" extends keyof __VizeNativeElement<"option"> ? unknown : __VizeComponentAttrCamel<"value"> extends keyof __VizeNativeElement<"option"> ? unknown : never = "value";
+  void __vize_native_key_132;
+  const __vize_native_key_180: unknown extends __VizeNativeElement<"option"> ? unknown : "value" extends keyof __VizeNativeElement<"option"> ? unknown : __VizeComponentAttrCamel<"value"> extends keyof __VizeNativeElement<"option"> ? unknown : never = "value";
+  void __vize_native_key_180;
   void (text); // VModel
   // @vize-map: expr -> 182:186
   void (checked); // VModel
@@ -177,14 +183,15 @@ function __setup() {
 __setup();
 
 export type Emits = {};
-export type Slots = {};
+type __VizeSlots = {};
+export type { __VizeSlots as Slots };
 
 // ========== Default Export ==========
 type __VizeComponentInstance = {
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: __VizePublicEmit<Emits>;
-  $slots: __VizePublicSlots<Slots>;
+  $slots: __VizePublicSlots<__VizeSlots>;
 } & __VizeComponentPublicBase;
 type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
 $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>;

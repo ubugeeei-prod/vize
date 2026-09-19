@@ -15,6 +15,9 @@ use super::collect_virtual::{
 use vize_canon::{CorsaBridgeError, CorsaVueVirtualDocumentOptions};
 use vize_s0::cstr;
 
+#[path = "template_directives.rs"]
+mod template_directives;
+
 /// One attempt either yields diagnostics (possibly empty for non-Corsa
 /// reasons such as unsupported documents) or fails on a bridge call.
 enum CollectFailure {
@@ -229,6 +232,7 @@ impl DiagnosticService {
         // One authored problem inside the shared script context is reported by
         // every variant document that includes it, so the per-document dedup
         // has to be repeated across the whole set.
+        template_directives::apply(&content, &mut diagnostics);
         Ok(deduplicate_diagnostics(diagnostics))
     }
 }

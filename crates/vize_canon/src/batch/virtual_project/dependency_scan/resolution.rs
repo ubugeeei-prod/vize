@@ -128,25 +128,33 @@ pub(super) fn probe_candidates(base: &Path) -> Option<PathBuf> {
 
 fn probe_candidates_with_inputs(base: &Path) -> (Option<PathBuf>, Vec<PathBuf>) {
     let mut inputs = vec![base.to_path_buf()];
-    if base.is_file() {
-        return (Some(base.to_path_buf()), inputs);
-    }
     let extension = base.extension().and_then(|extension| extension.to_str());
-    let probe_base = match extension {
-        Some("js" | "jsx" | "mjs" | "cjs") => base.with_extension(""),
-        Some(_) => return (None, inputs),
-        None => base.to_path_buf(),
+    // TypeScript substitutes type-bearing extensions before consulting the
+    // JavaScript runtime file, even when that runtime file exists.
+    let extensions: &[&str] = match extension {
+        Some("js" | "jsx") => &["ts", "tsx", "d.ts", "js", "jsx"],
+        Some("mjs") => &["mts", "d.mts", "mjs"],
+        Some("cjs") => &["cts", "d.cts", "cjs"],
+        _ if base.is_file() => return (Some(base.to_path_buf()), inputs),
+        Some("vue" | "ts" | "tsx" | "mts" | "cts" | "json") => return (None, inputs),
+        _ => &[
+            "ts", "tsx", "d.ts", "mts", "d.mts", "cts", "d.cts", "vue", "js", "jsx", "mjs", "cjs",
+        ],
     };
-    for extension in [
-        "ts", "tsx", "d.ts", "mts", "d.mts", "cts", "d.cts", "vue", "js", "jsx", "mjs", "cjs",
-    ] {
+    let runtime_extension = matches!(extension, Some("js" | "jsx" | "mjs" | "cjs"));
+    let probe_base = if runtime_extension {
+        base.with_extension("")
+    } else {
+        base.to_path_buf()
+    };
+    for extension in extensions {
         let candidate = PathBuf::from(cstr!("{}.{extension}", probe_base.display()).as_str());
         inputs.push(candidate.clone());
         if candidate.is_file() {
             return (Some(candidate), inputs);
         }
     }
-    if extension.is_some() {
+    if runtime_extension {
         return (None, inputs);
     }
     for index in [

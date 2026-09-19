@@ -97,7 +97,7 @@ declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): vo
 type __VForEntry<T> = T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number];
 declare function __vForList<const T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 import { ref, useTemplateRef } from 'vue'
-// Prevent TS6133 for imports shadowed by setup-scope compiler macros
+// Keep the authored Vue helper import used by its specialized setup signature
 void useTemplateRef;
 
 // ========== Exported Types ==========
@@ -140,7 +140,7 @@ function __setup() {
   const inputRef = ref<HTMLInputElement | null>(null)
   const buttonEl = useTemplateRef('btn')
   
-  // @vize-map: 16299:16403 -> 0:135
+  // @vize-map: 16308:16412 -> 0:135
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -154,6 +154,10 @@ function __setup() {
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
+  const __vize_native_key_20: unknown extends __VizeNativeElement<"input"> ? unknown : "ref" extends keyof __VizeNativeElement<"input"> ? unknown : __VizeComponentAttrCamel<"ref"> extends keyof __VizeNativeElement<"input"> ? unknown : never = "ref";
+  void __vize_native_key_20;
+  const __vize_native_key_50: unknown extends __VizeNativeElement<"button"> ? unknown : "ref" extends keyof __VizeNativeElement<"button"> ? unknown : __VizeComponentAttrCamel<"ref"> extends keyof __VizeNativeElement<"button"> ? unknown : never = "ref";
+  void __vize_native_key_50;
 
   // Reference setup bindings (used in template/CSS v-bind)
   void buttonEl; void inputRef; void ref; void useTemplateRef;
@@ -164,14 +168,15 @@ function __setup() {
 __setup();
 
 export type Emits = {};
-export type Slots = {};
+type __VizeSlots = {};
+export type { __VizeSlots as Slots };
 
 // ========== Default Export ==========
 type __VizeComponentInstance = {
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: __VizePublicEmit<Emits>;
-  $slots: __VizePublicSlots<Slots>;
+  $slots: __VizePublicSlots<__VizeSlots>;
 } & __VizeComponentPublicBase;
 type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
 $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>;

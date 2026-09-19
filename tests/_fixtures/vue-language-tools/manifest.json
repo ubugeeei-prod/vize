@@ -1,0 +1,2871 @@
+{
+  "repository": "vuejs/language-tools",
+  "revision": "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",
+  "license": "MIT",
+  "projects": [
+    "#1855",
+    "#1886",
+    "#2048",
+    "#2157",
+    "#2166",
+    "#2206",
+    "#2225",
+    "#2250",
+    "#2308",
+    "#2370",
+    "#2399",
+    "#2431",
+    "#2468",
+    "#2472",
+    "#2514",
+    "#2554",
+    "#2586",
+    "#2588",
+    "#2590",
+    "#2617",
+    "#2629",
+    "#2638",
+    "#2639",
+    "#2640",
+    "#2646",
+    "#2647",
+    "#2678",
+    "#2683",
+    "#2691",
+    "#2700",
+    "#2709",
+    "#2712",
+    "#2720",
+    "#2725",
+    "#2726",
+    "#2730",
+    "#2744",
+    "#2754",
+    "#2758",
+    "#3100",
+    "#3102",
+    "#3109",
+    "#3117",
+    "#3121",
+    "#3122",
+    "#3123",
+    "#3129",
+    "#3138",
+    "#3140",
+    "#3152",
+    "#3164",
+    "#3171",
+    "#3204",
+    "#3255",
+    "#3257",
+    "#3258",
+    "#3289",
+    "#329",
+    "#3295",
+    "#3311",
+    "#3318",
+    "#3327",
+    "#3340",
+    "#3353",
+    "#3371",
+    "#3373",
+    "#3374",
+    "#3379",
+    "#3405",
+    "#3414",
+    "#3433",
+    "#3440",
+    "#3476",
+    "#3488",
+    "#3518",
+    "#3539",
+    "#3561",
+    "#3574",
+    "#3592",
+    "#3612",
+    "#3615",
+    "#3629",
+    "#3637",
+    "#3643",
+    "#3656",
+    "#3671",
+    "#3672",
+    "#3688",
+    "#3718",
+    "#3732",
+    "#3748",
+    "#3756",
+    "#3779",
+    "#3782",
+    "#3819",
+    "#3820",
+    "#3845",
+    "#3997",
+    "#4050",
+    "#4209",
+    "#4263",
+    "#4326",
+    "#4327",
+    "#4333",
+    "#4353",
+    "#4361",
+    "#4369",
+    "#4386",
+    "#4387",
+    "#4391",
+    "#4433",
+    "#4503",
+    "#4512",
+    "#4537",
+    "#4539",
+    "#4540",
+    "#4600",
+    "#4604",
+    "#4646",
+    "#4649",
+    "#4668",
+    "#4682",
+    "#4699",
+    "#4785",
+    "#4799",
+    "#4812",
+    "#4820",
+    "#4822",
+    "#4826",
+    "#4827",
+    "#4828",
+    "#4862",
+    "#4878",
+    "#4890",
+    "#4899",
+    "#4972",
+    "#4978",
+    "#4979",
+    "#5027",
+    "#5067",
+    "#5097",
+    "#5106",
+    "#5111",
+    "#5120",
+    "#5136",
+    "#5157",
+    "#5159",
+    "#5207",
+    "#5228",
+    "#5262",
+    "#5267",
+    "#5338",
+    "#5428",
+    "#5474",
+    "#5492",
+    "#5592",
+    "#5604",
+    "#5617",
+    "#5680",
+    "#5729",
+    "#5751",
+    "#5776",
+    "#5780",
+    "#5810",
+    "#5819",
+    "#5840",
+    "#5843",
+    "#5895",
+    "#5899",
+    "#5927",
+    "#5934",
+    "#5986",
+    "#6040",
+    "#6084",
+    "#6094",
+    "#625",
+    "_failed_#3632",
+    "_failed_#4569",
+    "_failed_#5071",
+    "_failed_#5823",
+    "_failed_cssModuleDuplicate",
+    "_failed_directives",
+    "_failed_fragment_props",
+    "attrs",
+    "components",
+    "core#9923",
+    "cssModule",
+    "dataAttributes",
+    "defineEmits",
+    "defineExpose",
+    "defineModel",
+    "defineModelModifiers",
+    "defineOptions",
+    "directiveComments",
+    "directives",
+    "dynamic-component",
+    "events",
+    "fallthroughAttributes",
+    "fallthroughAttributes_checkRequired",
+    "fallthroughAttributes_duplicateNameEvent",
+    "fallthroughAttributes_duplicateNameProp",
+    "fallthroughAttributes_generic",
+    "fallthroughAttributes_unknownTag",
+    "input-radio",
+    "intrinsicProps",
+    "macros-alias",
+    "namespace-component",
+    "no-script-block",
+    "noPropertyAccessFromIndexSignature",
+    "pug",
+    "reference-type-in-template",
+    "rootEl",
+    "script-setup-scope",
+    "script_src",
+    "slots",
+    "templateRef",
+    "type-helpers",
+    "unknownComponent",
+    "unknownProp",
+    "unknownTag",
+    "unwrapBindingAccess",
+    "useTemplateRef-dynamic-arg",
+    "useTemplateRef-nullable",
+    "v-bind-require-object",
+    "v-bind-shorthand",
+    "v-for",
+    "v-generic",
+    "v-if",
+    "withDefaults",
+    "withDotValue"
+  ],
+  "expectedDiagnostics": [
+    {
+      "file": "_failed_#3632/both.vue",
+      "line": 3,
+      "column": 1,
+      "code": 1109
+    },
+    {
+      "file": "_failed_#3632/both.vue",
+      "line": 7,
+      "column": 1,
+      "code": 1109
+    },
+    {
+      "file": "_failed_#3632/script.vue",
+      "line": 3,
+      "column": 1,
+      "code": 1109
+    },
+    {
+      "file": "_failed_#3632/scriptSetup.vue",
+      "line": 3,
+      "column": 1,
+      "code": 1109
+    },
+    {
+      "file": "_failed_#4569/main.vue",
+      "line": 1,
+      "column": 33,
+      "code": 4025
+    },
+    {
+      "file": "_failed_#5071/withScript.vue",
+      "line": 1,
+      "column": 19,
+      "code": 1005
+    },
+    {
+      "file": "_failed_#5071/withoutScript.vue",
+      "line": 2,
+      "column": 26,
+      "code": 1005
+    },
+    {
+      "file": "_failed_#5823/main.vue",
+      "line": 6,
+      "column": 13,
+      "code": 1109
+    },
+    {
+      "file": "_failed_cssModuleDuplicate/bare.vue",
+      "line": 1,
+      "column": 8,
+      "code": 2300
+    },
+    {
+      "file": "_failed_cssModuleDuplicate/bare.vue",
+      "line": 5,
+      "column": 8,
+      "code": 2300
+    },
+    {
+      "file": "_failed_cssModuleDuplicate/bare.vue",
+      "line": 5,
+      "column": 8,
+      "code": 2717
+    },
+    {
+      "file": "_failed_cssModuleDuplicate/empty.vue",
+      "line": 1,
+      "column": 8,
+      "code": 2300
+    },
+    {
+      "file": "_failed_cssModuleDuplicate/empty.vue",
+      "line": 5,
+      "column": 8,
+      "code": 2300
+    },
+    {
+      "file": "_failed_cssModuleDuplicate/empty.vue",
+      "line": 5,
+      "column": 8,
+      "code": 2717
+    },
+    {
+      "file": "_failed_cssModuleDuplicate/kebab.vue",
+      "line": 1,
+      "column": 16,
+      "code": 2300
+    },
+    {
+      "file": "_failed_cssModuleDuplicate/kebab.vue",
+      "line": 5,
+      "column": 16,
+      "code": 2300
+    },
+    {
+      "file": "_failed_cssModuleDuplicate/kebab.vue",
+      "line": 5,
+      "column": 16,
+      "code": 2717
+    },
+    {
+      "file": "_failed_cssModuleDuplicate/named.vue",
+      "line": 1,
+      "column": 16,
+      "code": 2300
+    },
+    {
+      "file": "_failed_cssModuleDuplicate/named.vue",
+      "line": 5,
+      "column": 16,
+      "code": 2300
+    },
+    {
+      "file": "_failed_directives/main.vue",
+      "line": 14,
+      "column": 6,
+      "code": 2339
+    },
+    {
+      "file": "_failed_directives/main.vue",
+      "line": 17,
+      "column": 2,
+      "code": 2578
+    },
+    {
+      "file": "_failed_directives/main.vue",
+      "line": 20,
+      "column": 2,
+      "code": 2578
+    },
+    {
+      "file": "_failed_directives/main.vue",
+      "line": 9,
+      "column": 6,
+      "code": 2339
+    },
+    {
+      "file": "_failed_fragment_props/main.vue",
+      "line": 12,
+      "column": 46,
+      "code": 2339
+    },
+    {
+      "file": "_failed_fragment_props/main.vue",
+      "line": 12,
+      "column": 54,
+      "code": 2339
+    },
+    {
+      "file": "_failed_fragment_props/main.vue",
+      "line": 6,
+      "column": 31,
+      "code": 2322
+    },
+    {
+      "file": "_failed_fragment_props/main.vue",
+      "line": 9,
+      "column": 32,
+      "code": 2353
+    },
+    {
+      "file": "useTemplateRef-dynamic-arg/main.vue",
+      "line": 3,
+      "column": 7,
+      "code": 2464
+    },
+    {
+      "file": "useTemplateRef-nullable/main.vue",
+      "line": 3,
+      "column": 5,
+      "code": 18047
+    },
+    {
+      "file": "useTemplateRef-nullable/main.vue",
+      "line": 3,
+      "column": 9,
+      "code": 2339
+    },
+    {
+      "file": "withDotValue/main.vue",
+      "line": 10,
+      "column": 19,
+      "code": 2740
+    },
+    {
+      "file": "withDotValue/main.vue",
+      "line": 2,
+      "column": 25,
+      "code": 2345
+    },
+    {
+      "file": "withDotValue/main.vue",
+      "line": 3,
+      "column": 17,
+      "code": 2345
+    },
+    {
+      "file": "withDotValue/main.vue",
+      "line": 4,
+      "column": 28,
+      "code": 2345
+    },
+    {
+      "file": "withDotValue/main.vue",
+      "line": 5,
+      "column": 28,
+      "code": 2345
+    },
+    {
+      "file": "withDotValue/main.vue",
+      "line": 6,
+      "column": 20,
+      "code": 2345
+    },
+    {
+      "file": "withDotValue/main.vue",
+      "line": 7,
+      "column": 24,
+      "code": 2740
+    },
+    {
+      "file": "withDotValue/main.vue",
+      "line": 8,
+      "column": 16,
+      "code": 2740
+    },
+    {
+      "file": "withDotValue/main.vue",
+      "line": 9,
+      "column": 27,
+      "code": 2740
+    }
+  ],
+  "files": [
+    {
+      "path": "test-workspace/tsc/#1855/child.vue",
+      "sha256": "c52a71f4f7ca63de85f9a20133e40b73c8c2b333372bc551798dc81bb9dbd042"
+    },
+    {
+      "path": "test-workspace/tsc/#1855/main.vue",
+      "sha256": "bf90a49d0aaa0cb0652dc4d2a0675083e3ce94d5df93171327a6e597088ba77b"
+    },
+    {
+      "path": "test-workspace/tsc/#1855/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#1886/main.vue",
+      "sha256": "850f64ad8a1d8ffe3f64dcb2e1c713a75f1d80f840f9083e967fa774c425d5a5"
+    },
+    {
+      "path": "test-workspace/tsc/#1886/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2048/components.ts",
+      "sha256": "15eba5f20907f845560dbe061ec5d3324bb02376a4c13236535a7dfc76f857b8"
+    },
+    {
+      "path": "test-workspace/tsc/#2048/main.vue",
+      "sha256": "3840d87b3d952bf0017fd4b8c7064ba12993b0977d9da5ca658fe8ce2e6aabc8"
+    },
+    {
+      "path": "test-workspace/tsc/#2048/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2157/main.vue",
+      "sha256": "44c04612480bb242a44bd09c177d30e4193f3a0214200e40c0adec4e7719284f"
+    },
+    {
+      "path": "test-workspace/tsc/#2157/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2166/main.vue",
+      "sha256": "f9a0f79e3b8ebe59b0c8c18402e310cbc70b0dba9293c15d7373d292b51b2315"
+    },
+    {
+      "path": "test-workspace/tsc/#2166/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2206/main.vue",
+      "sha256": "ed2fde3dfd9af069f74660313ff15324d70a70b93ac93a9df234de105c410244"
+    },
+    {
+      "path": "test-workspace/tsc/#2206/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2225/main.vue",
+      "sha256": "31110c4dedd23dc783de0553fbd81bde5d83bf6fd36828dcabc7d2727053df0b"
+    },
+    {
+      "path": "test-workspace/tsc/#2225/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2250/main.vue",
+      "sha256": "b14b1f45bf7488635c79f40c9aaeec7b80462b0e29dfb37f2626ab680a033722"
+    },
+    {
+      "path": "test-workspace/tsc/#2250/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2308/main.vue",
+      "sha256": "ccc2490ce80b609b2bad1db84d529c411cfca503115b2e1b9af214b151afac3a"
+    },
+    {
+      "path": "test-workspace/tsc/#2308/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2370/main.vue",
+      "sha256": "56ce4c9c9e05699d39269d2ebaaed78086cc14c8da8ae91020f15f00181b6373"
+    },
+    {
+      "path": "test-workspace/tsc/#2370/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2399/main.vue",
+      "sha256": "a398bddee2ff1e1b05c076c1798724da1033557832e3c6bdd06d9283cea0e93a"
+    },
+    {
+      "path": "test-workspace/tsc/#2399/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2431/main.vue",
+      "sha256": "c115dd669e7837856e6afb12fdd4598f06b4ad1a66fb09f9b9164ab7682b0c88"
+    },
+    {
+      "path": "test-workspace/tsc/#2431/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2468/main.vue",
+      "sha256": "a7f70684413300ee1cda044e33d9865db9e2e8733c9233789d973de7f71bc00b"
+    },
+    {
+      "path": "test-workspace/tsc/#2468/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2472/child.vue",
+      "sha256": "ae051ddd31234d2d0dca2b6d05e62e9b2c8fb0ca4ccb5b00261c11840fe61524"
+    },
+    {
+      "path": "test-workspace/tsc/#2472/env.d.ts",
+      "sha256": "b841e4e40771b5c674123414fa0a6821431dd3317ef1654efde19254f1fdaf1e"
+    },
+    {
+      "path": "test-workspace/tsc/#2472/generic.vue",
+      "sha256": "5010b366f199e9bbd5f2f75d82d808a6d881d91b09a46d24a1f9cebed2f92684"
+    },
+    {
+      "path": "test-workspace/tsc/#2472/main.vue",
+      "sha256": "91ff2c555f7f1a70e923fe6815579ccc96dfbedc6b00a5c319a70c939d94f7a9"
+    },
+    {
+      "path": "test-workspace/tsc/#2472/tsconfig.json",
+      "sha256": "7df57224dc58f7d5cb1259a17a60ab145436d1ff7741e16cb4282e7554dfe5ca"
+    },
+    {
+      "path": "test-workspace/tsc/#2514/main.vue",
+      "sha256": "b37f89c61fd29afc59b32f4c69c23ba3c0dec7b969db67d2594dc52302df2734"
+    },
+    {
+      "path": "test-workspace/tsc/#2514/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2554/main.vue",
+      "sha256": "cdd187a9f9f96e3e51ddeba7818aecb565621487b315a767fcbade737e5d2575"
+    },
+    {
+      "path": "test-workspace/tsc/#2554/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2586/main.vue",
+      "sha256": "7c972f1cbfb08dbdc26dabb201f684d1a59779e84f24fa8bf2e834671a75160b"
+    },
+    {
+      "path": "test-workspace/tsc/#2586/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2588/main.vue",
+      "sha256": "113353aa655529403e595e14b87f1331d331cd7b7f40a4d49977de010e4c19a6"
+    },
+    {
+      "path": "test-workspace/tsc/#2588/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2590/foo.vue",
+      "sha256": "eb49e402fcd8de691effceb9b04710ab36907521ce382327db4136ad14acc577"
+    },
+    {
+      "path": "test-workspace/tsc/#2590/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2617/main.vue",
+      "sha256": "1fe0fffc00ba2ce2f2f731937fc1b78be6cfa9ff9839907eda59805a4e006822"
+    },
+    {
+      "path": "test-workspace/tsc/#2617/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2629/main.vue",
+      "sha256": "dee53fa55b774b6eb586e0c1f9df56ce7663e18cacd9ce3317aa44b1a26ddaa0"
+    },
+    {
+      "path": "test-workspace/tsc/#2629/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2638/main.vue",
+      "sha256": "915975db256295058c1427f5773954fff8f716c6770f4edc3ea880e0013eb34f"
+    },
+    {
+      "path": "test-workspace/tsc/#2638/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2639/child.vue",
+      "sha256": "4e5902f7d2565aee83d9be38d31426854f854beb79127473ee15261c3f8e3365"
+    },
+    {
+      "path": "test-workspace/tsc/#2639/main.vue",
+      "sha256": "92913d91bad9944c1a3f2ae787dc0edea3e39901a3905f5e647a1dfbf22619ce"
+    },
+    {
+      "path": "test-workspace/tsc/#2639/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2640/main.vue",
+      "sha256": "eb47ee86eeeb892c850b3be0aa717567b6203aaa0645279160fb65d191e86e50"
+    },
+    {
+      "path": "test-workspace/tsc/#2640/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2646/main.vue",
+      "sha256": "fe5edac30ffb336edec1ec486a007f39c183ee816407ce546609f15674fe4dcf"
+    },
+    {
+      "path": "test-workspace/tsc/#2646/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2647/main.vue",
+      "sha256": "7a0e4e3b779d585ba8e8fbeee9c2d300e1165ec65e74a7e0b545f53acbf80cba"
+    },
+    {
+      "path": "test-workspace/tsc/#2647/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2678/main.vue",
+      "sha256": "83a3f90703d9848b820a31ec94610ae5f6ce8a9f9f8f99684e709f4a708ee972"
+    },
+    {
+      "path": "test-workspace/tsc/#2678/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2683/main.vue",
+      "sha256": "f10d9f8342bf55d10cdf4e12080a50c4803ceed0fb2a0d6ef6321c352db348d2"
+    },
+    {
+      "path": "test-workspace/tsc/#2683/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2691/main.vue",
+      "sha256": "597564d95ce18fb391e0fe267fac2a815aebe22a0e321ec19ef1e18e518a509e"
+    },
+    {
+      "path": "test-workspace/tsc/#2691/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2700/main.vue",
+      "sha256": "980b864a0d2c64aa2a3ffe8d960f8fd80c66a323ce141b41a5e79e4fd1e3591a"
+    },
+    {
+      "path": "test-workspace/tsc/#2700/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2709/child.vue",
+      "sha256": "8409d8310b1be0c565b3149168737a643f757dbe7c814bc8124c11364114198b"
+    },
+    {
+      "path": "test-workspace/tsc/#2709/main.vue",
+      "sha256": "f2394881d124232aa285c5080c393bb6a9a3dd18b0a85c1e68d75f065c4b04ca"
+    },
+    {
+      "path": "test-workspace/tsc/#2709/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2712/main.vue",
+      "sha256": "d2135f40661c3447bcc8c8c0169c8ef17a6f7c998a06d750dff2b9425fefed18"
+    },
+    {
+      "path": "test-workspace/tsc/#2712/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2720/main.vue",
+      "sha256": "4b567aa51f0ab9f3e556efabc3e2187a3ac05838c4b5f87e17fa4be5c0458cce"
+    },
+    {
+      "path": "test-workspace/tsc/#2720/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2725/main.vue",
+      "sha256": "a0d737f6d2a19c1586826db309bad992b1a39f2e8f578f263b1148eec4bab9ab"
+    },
+    {
+      "path": "test-workspace/tsc/#2725/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2726/main.vue",
+      "sha256": "44032574c80ed038c622165568c8080f3d63b75e86dc44d83a51d0178b93f445"
+    },
+    {
+      "path": "test-workspace/tsc/#2726/tsconfig.json",
+      "sha256": "36b782434fc2372fabc4c5db56884114e4057abbb265a1914f5b5807531d9321"
+    },
+    {
+      "path": "test-workspace/tsc/#2730/main.vue",
+      "sha256": "3c38786cc8bebd7dbc7f4aad399ada9af9009817e826390627aeef8754038e1c"
+    },
+    {
+      "path": "test-workspace/tsc/#2730/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2744/child.vue",
+      "sha256": "d30aec2d64d069a9650c69f1f05417e103280cf3855e8d42cfec9c2d43330465"
+    },
+    {
+      "path": "test-workspace/tsc/#2744/main.vue",
+      "sha256": "e25834bbf250cd813c97789292907ddc9d8074133f0717a5d8396db6acc094a7"
+    },
+    {
+      "path": "test-workspace/tsc/#2744/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2754/child.vue",
+      "sha256": "afb515f62e8b6b19c025e8a3216d8359971fd5d2f05dd10b4f6e1a8de0f67372"
+    },
+    {
+      "path": "test-workspace/tsc/#2754/main.vue",
+      "sha256": "38b528fdaa38be5784e60ca241d8c03886f6353204ff5c317b9208062e06aa35"
+    },
+    {
+      "path": "test-workspace/tsc/#2754/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#2758/child.vue",
+      "sha256": "4d4da86f089714e89e56efc4a5385bb8804969f6ed8bef35344b35cb168cdcee"
+    },
+    {
+      "path": "test-workspace/tsc/#2758/main.vue",
+      "sha256": "14f414ad04f4641545cf57f1beab08df856a056b7a5e4724d9b1c45fe4da823a"
+    },
+    {
+      "path": "test-workspace/tsc/#2758/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3100/child.vue",
+      "sha256": "df0a9e0332fce6da7fc7dd44e01d0168a534eb7808b0e5538934e4d05d84e8cd"
+    },
+    {
+      "path": "test-workspace/tsc/#3100/main.vue",
+      "sha256": "33b1c9d5edc4207c01ab666f049a7a8afe0a48523f1e3d301d03ea419aaacfe9"
+    },
+    {
+      "path": "test-workspace/tsc/#3100/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3102/main.vue",
+      "sha256": "5b1d8b1646de3d8755e677d862543e74d8226e5f9fe7d20344c3e7d08fb4adb8"
+    },
+    {
+      "path": "test-workspace/tsc/#3102/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3109/main.vue",
+      "sha256": "3586ba71f0e01ac7959262a3dc7b67151dddf24bba26c0788770ebb365a24f57"
+    },
+    {
+      "path": "test-workspace/tsc/#3109/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3117/main.vue",
+      "sha256": "c81c441687b36c1333db034d89f7c63fe61fdb7d78c8af3f55dbaf3768f31fbf"
+    },
+    {
+      "path": "test-workspace/tsc/#3117/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3121/main.vue",
+      "sha256": "9774e4e226f4efb45c47a972e3d9b9b1a9c6e191f1d68b728ea9ea9900f75e2d"
+    },
+    {
+      "path": "test-workspace/tsc/#3121/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3122/child.vue",
+      "sha256": "9a2824486a1e7631680197dc91476042519032cb6f28143b56ed8e05283a9cd0"
+    },
+    {
+      "path": "test-workspace/tsc/#3122/main.vue",
+      "sha256": "9bfe4c32b0cf1fb367d5d8f32b91dcf04ec05c46ae47b30be9f2e7db7507ead8"
+    },
+    {
+      "path": "test-workspace/tsc/#3122/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3123/main.vue",
+      "sha256": "889438845c27b2f5d3d13ea04cd49619c5fb1039a6df7cc575df89ae971b5605"
+    },
+    {
+      "path": "test-workspace/tsc/#3123/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3129/main.vue",
+      "sha256": "7acedd5a09de4b4ffb853725911cae660d7bfcb1fe25b0d28f77b18b79659ea8"
+    },
+    {
+      "path": "test-workspace/tsc/#3129/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3138/main.vue",
+      "sha256": "43c4b61a663a03561ed70ea8942f5a92cd48fc578ffe6210bd8f5622e09705e5"
+    },
+    {
+      "path": "test-workspace/tsc/#3138/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3140/Focus.ts",
+      "sha256": "f83f3c495e89c8592b64798c7cab18d1e6bf2bb38e776ad8102b14a4ea11d879"
+    },
+    {
+      "path": "test-workspace/tsc/#3140/main.vue",
+      "sha256": "3ea5eb7f07cb620a0ddab864ebcd5c4f68ff3cc56ccc07276f10518aca73deed"
+    },
+    {
+      "path": "test-workspace/tsc/#3140/tsconfig.json",
+      "sha256": "36b782434fc2372fabc4c5db56884114e4057abbb265a1914f5b5807531d9321"
+    },
+    {
+      "path": "test-workspace/tsc/#3152/MyInput.vue",
+      "sha256": "a8a2c3a8be8b5d673d8ca6d72c2fe31f912cf7667fba24fb26b39feb62622fe1"
+    },
+    {
+      "path": "test-workspace/tsc/#3152/main.vue",
+      "sha256": "dd13f72a4fcb773b65e5393021b277048d99671790f5d935dd441a2a438a15e8"
+    },
+    {
+      "path": "test-workspace/tsc/#3152/tsconfig.json",
+      "sha256": "36b782434fc2372fabc4c5db56884114e4057abbb265a1914f5b5807531d9321"
+    },
+    {
+      "path": "test-workspace/tsc/#3164/main.vue",
+      "sha256": "295a951d3db4e60f5f677b6aec907be376750bd2180a04ad2a4f9069c86c0848"
+    },
+    {
+      "path": "test-workspace/tsc/#3164/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3171/main.vue",
+      "sha256": "fc01ed26b1e67df8d7ecd97ba38378a06f9ece9fba460444d0d80a42227833e8"
+    },
+    {
+      "path": "test-workspace/tsc/#3171/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3204/main.vue",
+      "sha256": "d556ba7c426ca73d84b00e1f244e92ca8db82bcfc8558c35ce1be6ac3fc13471"
+    },
+    {
+      "path": "test-workspace/tsc/#3204/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3255/main.vue",
+      "sha256": "83c1f9de92e3113ee9fa3119d8f3e6270b3e276f2c24a1fb1ac514e1f601d4a5"
+    },
+    {
+      "path": "test-workspace/tsc/#3255/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3257/child.vue",
+      "sha256": "28a9750d6214af884356377d3caaa58e5bd443d3a95b12c1fe4aabe7fa8c31df"
+    },
+    {
+      "path": "test-workspace/tsc/#3257/main.vue",
+      "sha256": "85137036c89096a066ec3e913f2a54ea495c5856be1e964abeb9156b48b56b40"
+    },
+    {
+      "path": "test-workspace/tsc/#3257/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3258/main.vue",
+      "sha256": "d37f6a9bd223190c4a10ddf125d3652ea392f7bcffdd601ad22f8641bec14d15"
+    },
+    {
+      "path": "test-workspace/tsc/#3258/main2.vue",
+      "sha256": "e1d59f4158399a0f4a76288e1101bc9e94cb1ba951d6b52181f56f167fb0e199"
+    },
+    {
+      "path": "test-workspace/tsc/#3258/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3289/child.vue",
+      "sha256": "c71bba60856f42d8e9f285842de52959ccb1d1ab7c9ddcd44e8a972682ddf420"
+    },
+    {
+      "path": "test-workspace/tsc/#3289/main.vue",
+      "sha256": "04060a3f41e787316d38a4d1ad1373d5029eecb79d5f4f82777e7e60ca189c19"
+    },
+    {
+      "path": "test-workspace/tsc/#3289/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#329/main.vue",
+      "sha256": "552f16e4d196d47f43a937fb8d3752cf360e728a495269b9e1b9ed9372319505"
+    },
+    {
+      "path": "test-workspace/tsc/#329/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3295/main.vue",
+      "sha256": "e0228161309dbcab1d1f7039f6c1e6fdfcf599ef904edeae19cf0445b59426c7"
+    },
+    {
+      "path": "test-workspace/tsc/#3295/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3311/component.vue",
+      "sha256": "82513962bd176c94ed57a4f1d4e958311e7bdd5dce77a6cf2057778e2ec4d3a9"
+    },
+    {
+      "path": "test-workspace/tsc/#3311/main.vue",
+      "sha256": "58faad6f8e994a1ea165792794974803cfc1b12eef211bc0320a6bb4004d179d"
+    },
+    {
+      "path": "test-workspace/tsc/#3311/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3318/child.vue",
+      "sha256": "3c816021b287accc5c84962a63d0dbf340bbc55187f573d7740bd355690d996c"
+    },
+    {
+      "path": "test-workspace/tsc/#3318/main.vue",
+      "sha256": "1edc4c46364ed888c0ba4f395827c7b30724186078b955d10d890b923ddf421e"
+    },
+    {
+      "path": "test-workspace/tsc/#3318/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3327/main.vue",
+      "sha256": "128528ad6a23f58a807b0723fd08ff850a55320f5e2ef96a08f5d6a8f547a609"
+    },
+    {
+      "path": "test-workspace/tsc/#3327/main2.vue",
+      "sha256": "a6cbb812a9107cffffe119a609b33c65d68c4273278757150645058da7ec5d9d"
+    },
+    {
+      "path": "test-workspace/tsc/#3327/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3340/FooBar.ts",
+      "sha256": "be0572cfc4cdbf196da012170bc2ced0e8095f63037765342e6aecefa56d0707"
+    },
+    {
+      "path": "test-workspace/tsc/#3340/main.vue",
+      "sha256": "a9dddd8db39e23def73b43b47b6b5670e1c07ad51c83b7ad757eb99c8fdfabe4"
+    },
+    {
+      "path": "test-workspace/tsc/#3340/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3353/main.vue",
+      "sha256": "8fe694ca048ad8d7a59677bd424dc6095c0df8e521849f18051678df348ea3a6"
+    },
+    {
+      "path": "test-workspace/tsc/#3353/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3371/main.vue",
+      "sha256": "8bed9fbcaa0b5ba9d2b68eb2d01f67f218dfad4146bc0fca0353ac50c5eb7f0a"
+    },
+    {
+      "path": "test-workspace/tsc/#3371/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3373/NavBar.vue",
+      "sha256": "89fe10d7e7a570c109b881b30eb434caded95a87d559248740e73fa9fa1a6517"
+    },
+    {
+      "path": "test-workspace/tsc/#3373/main.vue",
+      "sha256": "940e0b277a76c2c09f246aed6aecac4a06a7603665c2e7aaeec7213fdca569a5"
+    },
+    {
+      "path": "test-workspace/tsc/#3373/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3374/component.vue",
+      "sha256": "b01adf766ee8f8350c416f58bb0870015a1413314715a8c5bd7538d781b80325"
+    },
+    {
+      "path": "test-workspace/tsc/#3374/main.vue",
+      "sha256": "5a1203e05bd58e3da628a0df53d574d183937460b3ea38693b1b1bd4adc4850a"
+    },
+    {
+      "path": "test-workspace/tsc/#3374/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3379/child.vue",
+      "sha256": "760d555e0cc60216726035f521c30959017702073921297612506df4e276240c"
+    },
+    {
+      "path": "test-workspace/tsc/#3379/main.vue",
+      "sha256": "26d9f7781f237c227a1e8395810d26e5bccd639d2180aaf980a5e1d2144d3567"
+    },
+    {
+      "path": "test-workspace/tsc/#3379/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3405/main.vue",
+      "sha256": "b1196f5fa247eb459cbf8239c91ab53e72397058abb5d3250406e043fa798990"
+    },
+    {
+      "path": "test-workspace/tsc/#3405/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3414/main.vue",
+      "sha256": "b1e57903671b403f1e655ed7583355301b803f5ff64dd3ba00bb767c2ec26f89"
+    },
+    {
+      "path": "test-workspace/tsc/#3414/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3433/main.vue",
+      "sha256": "8278c5d14e68e08d3a59225503ab656ab1205289d4f27077f2c4eefbfd605a90"
+    },
+    {
+      "path": "test-workspace/tsc/#3433/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3440/main.vue",
+      "sha256": "34407432bbeff079df17d284d7b3e87f5daffe633ef849e482ac57ac67842c26"
+    },
+    {
+      "path": "test-workspace/tsc/#3440/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3476/child.vue",
+      "sha256": "e0babc633806d35d4a98f90a67eaf9b1ba0bcd0903b34a727ba2db0bbab8f462"
+    },
+    {
+      "path": "test-workspace/tsc/#3476/main.vue",
+      "sha256": "87b297abbc433de2ac08a3f7907a127df9c41d87923f914465836b61fae21c53"
+    },
+    {
+      "path": "test-workspace/tsc/#3476/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3488/main.vue",
+      "sha256": "3459508328f318ba27310e2f219d184fd160b26c41d847dcd47ba5e3f984f3aa"
+    },
+    {
+      "path": "test-workspace/tsc/#3488/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3518/main.vue",
+      "sha256": "993ae84567234111d2fd64a2ae04e83ea174c65dfc6d5255f150f121d6360239"
+    },
+    {
+      "path": "test-workspace/tsc/#3518/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3539/main.vue",
+      "sha256": "0140e36b0b7a822f7709d855ae5d2ee30e9c0baf158bfc44574ae10882a3f262"
+    },
+    {
+      "path": "test-workspace/tsc/#3539/tsconfig.json",
+      "sha256": "36b782434fc2372fabc4c5db56884114e4057abbb265a1914f5b5807531d9321"
+    },
+    {
+      "path": "test-workspace/tsc/#3561/child.vue",
+      "sha256": "014aeb5fb1eda484bba95f5fce7ca1d3dce97787199056fe63695c5817d33392"
+    },
+    {
+      "path": "test-workspace/tsc/#3561/main.vue",
+      "sha256": "1430f9c7eef8c6c44bada8c1cb5cff26ed5b365d94e6eed1fd1baf81cec1cf74"
+    },
+    {
+      "path": "test-workspace/tsc/#3561/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3574/child.vue",
+      "sha256": "87ce1a31621ca4ce3db2f0c12e626846cc237eddfda8e38ba34925d6bea2d415"
+    },
+    {
+      "path": "test-workspace/tsc/#3574/main.vue",
+      "sha256": "72db2941ba5046ad23cc922e099be965eb401a2f55dce2984790d517912d1f3d"
+    },
+    {
+      "path": "test-workspace/tsc/#3574/tsconfig.json",
+      "sha256": "bc72c7052d98fb0cb52f46a227bfb0edfa43f615f3b89bdad8ff927c4c74869a"
+    },
+    {
+      "path": "test-workspace/tsc/#3592/main.vue",
+      "sha256": "a48243bb48224106b00bcd5bbdac0195d3af8854af1f21d7d1eb0bd823c90f7f"
+    },
+    {
+      "path": "test-workspace/tsc/#3592/tsconfig.json",
+      "sha256": "5f7f9e95bbf8caa3997f56ad240d75d32e03c08cc90ce7d8ce1c94bf8a16a25a"
+    },
+    {
+      "path": "test-workspace/tsc/#3612/main.vue",
+      "sha256": "2d9fa85f28f4d1076de71236907628ee4b79c62df5a50693040bf6b39b7bd02b"
+    },
+    {
+      "path": "test-workspace/tsc/#3612/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3615/child.vue",
+      "sha256": "34481eacbebb671c29907578586e985dbb7b5df1b9126bc4dd09ab45cfd88806"
+    },
+    {
+      "path": "test-workspace/tsc/#3615/main.vue",
+      "sha256": "119feec2bdbaaaac2c5a0948ba4225b92b52e8e3cf8d3d16acd63a1e864e1aaf"
+    },
+    {
+      "path": "test-workspace/tsc/#3615/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3629/main.vue",
+      "sha256": "d129937fca561eb2983cf575436793cd40876d086618b901ec9832eea1e62a45"
+    },
+    {
+      "path": "test-workspace/tsc/#3629/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3637/main.vue",
+      "sha256": "09ca28daa2439593c33b4f8ab8ab6d4c7413e359897f56b4a37fab26a9938674"
+    },
+    {
+      "path": "test-workspace/tsc/#3637/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3643/main.vue",
+      "sha256": "8ed97aa1af9498f98d9409527141029ef09683c6676c8281baecf6fe0fbcd684"
+    },
+    {
+      "path": "test-workspace/tsc/#3643/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3656/child.vue",
+      "sha256": "aaf3ab285c0a2b8cf37827571c9326e56cd7a34ab92667e496e6a84988f0a490"
+    },
+    {
+      "path": "test-workspace/tsc/#3656/main.vue",
+      "sha256": "438159831785732520e86741b35595d9f7a0f37d0e8661af5ff1d8d9e5028330"
+    },
+    {
+      "path": "test-workspace/tsc/#3656/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3671/main.vue",
+      "sha256": "a8cd33146110250cadecd3625940d38093d19368c39836b62b400f1b9a373567"
+    },
+    {
+      "path": "test-workspace/tsc/#3671/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3672/child.vue",
+      "sha256": "cb2165aaa36d9779666a65fcc99d0d4065c052b53e6f2d905f10eaf533878249"
+    },
+    {
+      "path": "test-workspace/tsc/#3672/main.vue",
+      "sha256": "1fa233e0f6d4fe820aaad07f30934f9944e5f159b5bc48461c3f72a3ad4fb619"
+    },
+    {
+      "path": "test-workspace/tsc/#3672/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3688/main.vue",
+      "sha256": "911ca36a0eb1d65d99cbdb17764b875b87d3942098a7739775219474d28ab135"
+    },
+    {
+      "path": "test-workspace/tsc/#3688/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3718/main.vue",
+      "sha256": "05719000fc5b53a6ba3f532cbdf8949e66479e21b4860d9ed05fbfa7c333d951"
+    },
+    {
+      "path": "test-workspace/tsc/#3718/strict.vue",
+      "sha256": "b60080c9b0e07b9ad2d6083e2026cb71fa3818ba55fbfde212cbc40b09dc6444"
+    },
+    {
+      "path": "test-workspace/tsc/#3718/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3732/child.vue",
+      "sha256": "73aa7aedbea809637d9ae27f1edb580ab85be0f7f3480fc5e8311e74598bca53"
+    },
+    {
+      "path": "test-workspace/tsc/#3732/child2.vue",
+      "sha256": "669f567814de2ba7cd66d07485470d9154a61e3a69091799ba5108c15c3fb81e"
+    },
+    {
+      "path": "test-workspace/tsc/#3732/child2_nosetup.vue",
+      "sha256": "87c605000508e20ce49a2b526678daf620ea98f9202da8b97175107b26264c10"
+    },
+    {
+      "path": "test-workspace/tsc/#3732/child_nosetup.vue",
+      "sha256": "4c4b05316c06e6c9ed937ca82bb25fa5abc18c976248ab993d5a901279d28669"
+    },
+    {
+      "path": "test-workspace/tsc/#3732/main.ts",
+      "sha256": "c08d4f35d415b5a043fd79ccdebf6e10472caeb48e475790c5320687098b4c9a"
+    },
+    {
+      "path": "test-workspace/tsc/#3732/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3748/main.vue",
+      "sha256": "df6b68a9d8135331a05f96f878eb0e445565a3d4a53117ee8130d730a4a7861c"
+    },
+    {
+      "path": "test-workspace/tsc/#3748/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3756/main.vue",
+      "sha256": "8811911a0ca40c2f02ccadd2bc3caca38d60a70b1773c43433695b6f215b02ad"
+    },
+    {
+      "path": "test-workspace/tsc/#3756/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3779/main.vue",
+      "sha256": "683977c18dfed24b9fcd64b055923ff140aba218092df3426c17b0021fa9789e"
+    },
+    {
+      "path": "test-workspace/tsc/#3779/named.vue",
+      "sha256": "683977c18dfed24b9fcd64b055923ff140aba218092df3426c17b0021fa9789e"
+    },
+    {
+      "path": "test-workspace/tsc/#3779/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3782/main.vue",
+      "sha256": "bad6ee1faf94e7a597d17d413f7835901808e666b8857175bc14d6e6a26424ad"
+    },
+    {
+      "path": "test-workspace/tsc/#3782/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3819/component.vue",
+      "sha256": "c22fe1de9a897da123b3d826b06ec9c8ae0fe1948d799a0286356e1e3b95eff8"
+    },
+    {
+      "path": "test-workspace/tsc/#3819/main.vue",
+      "sha256": "ecc1c1c7ba1f21a8212c0639f617f2211987ab916ac657ac922e1b6ae8fdcace"
+    },
+    {
+      "path": "test-workspace/tsc/#3819/tsconfig.json",
+      "sha256": "6abf0dbac47df4f1a0470d70f18a4f916696e3cac2504bfe8bbbf3272930dbcd"
+    },
+    {
+      "path": "test-workspace/tsc/#3820/main.vue",
+      "sha256": "cc638b487a990594e4a93bbe23ac69d57b109b4159742e636834612bb78e3b76"
+    },
+    {
+      "path": "test-workspace/tsc/#3820/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3845/main.vue",
+      "sha256": "eaa9bb19f4b229e2202f0d226f57001ed090a26019414a1109eac1486a2fbcbe"
+    },
+    {
+      "path": "test-workspace/tsc/#3845/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#3997/main.vue",
+      "sha256": "a6d40ac17ea6606ddd7a0f816ae46fd915c6ad97efb35af6e112355d5801c362"
+    },
+    {
+      "path": "test-workspace/tsc/#3997/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4050/main.vue",
+      "sha256": "de8de6ad0638d8edd2ca36b1a04478d77144625a19cfa4019d510d27375c6736"
+    },
+    {
+      "path": "test-workspace/tsc/#4050/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4209/main.vue",
+      "sha256": "ecfa7d1aea73a4f78a9e32f76ca3706460eada47113bf93daf2e3285f38c0159"
+    },
+    {
+      "path": "test-workspace/tsc/#4209/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4263/main.vue",
+      "sha256": "5f35a0f56870b5e608dee2ccf4043de57955d2c25eff490cef0c24043515b022"
+    },
+    {
+      "path": "test-workspace/tsc/#4263/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4326/main.vue",
+      "sha256": "8a230a50fde568fb3aa5a8ea8aebb808dcf3091710ea8e0f796eedbe797a4537"
+    },
+    {
+      "path": "test-workspace/tsc/#4326/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4327/main.vue",
+      "sha256": "2307b3470b298fc01b2443dee03dd1987ba0b0fa3f6ced18e2636b22da1fd5fa"
+    },
+    {
+      "path": "test-workspace/tsc/#4327/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4333/main.vue",
+      "sha256": "44d717635669742af882ba7489780e74ac8bb688ea1ff596204ec9d2e1afd739"
+    },
+    {
+      "path": "test-workspace/tsc/#4333/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4353/main.vue",
+      "sha256": "b832fd47409d9921e66499b4d7b339b7136e56cbee5f5e927012a9392b45b378"
+    },
+    {
+      "path": "test-workspace/tsc/#4353/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4361/main.vue",
+      "sha256": "b1c519da50b06dfff615c88806cf5996afeff4a5a057e3a080268e7da7994d9e"
+    },
+    {
+      "path": "test-workspace/tsc/#4361/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4369/main.vue",
+      "sha256": "c55e32417d9ad629391a0fef332313308ffd92be371af398a37ab567998be669"
+    },
+    {
+      "path": "test-workspace/tsc/#4369/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4386/component.vue",
+      "sha256": "e0f6f9dc4080bfaa3e5b960445bc28680cdf97c1cb994e8d46fb3864b4d74041"
+    },
+    {
+      "path": "test-workspace/tsc/#4386/main.vue",
+      "sha256": "cbe998f7381ae58d62bd088a312c64edd4c43c3800ec967a806a435b77a1c017"
+    },
+    {
+      "path": "test-workspace/tsc/#4386/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4387/comment-2113645943.vue",
+      "sha256": "27b7965783f10ecc222afea3149c63428f5f0f4aeef753f6a87b0fccc3a73bc5"
+    },
+    {
+      "path": "test-workspace/tsc/#4387/component.vue",
+      "sha256": "fb013b8bd1e370cb85e52d9b5d9db4713306a9e2e4ca2f5d457385d32f32c1fe"
+    },
+    {
+      "path": "test-workspace/tsc/#4387/main.vue",
+      "sha256": "552aff2d0a1df70c8a1abe6cfc7f7c44691c944fb98593f0438a56b983e775ff"
+    },
+    {
+      "path": "test-workspace/tsc/#4387/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4391/comp.vue",
+      "sha256": "a3a04e67e8e06801940ca8fd7edae7e1927ef721c322333eeeb20a56d6fe9d83"
+    },
+    {
+      "path": "test-workspace/tsc/#4391/main.vue",
+      "sha256": "6493165129dbc4f20e8c734986ea064bc11c7154d20a74d1f38b885e4e582195"
+    },
+    {
+      "path": "test-workspace/tsc/#4391/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4433/main.vue",
+      "sha256": "5f68293db7161df87588776f636d971a87e0b29ee6eb825b097dfdb05bf1a9a1"
+    },
+    {
+      "path": "test-workspace/tsc/#4433/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4503/globalcomp.vue",
+      "sha256": "b591630eca0a9cdaf6219650d07ed8289c9edcaaf1fb58867e63101d0ffabc83"
+    },
+    {
+      "path": "test-workspace/tsc/#4503/globals.d.ts",
+      "sha256": "4c44471c01b5bcc4aae7be3c688e79906a8acbbf2f6e5d30c3187d54e51816a4"
+    },
+    {
+      "path": "test-workspace/tsc/#4503/main.vue",
+      "sha256": "a2b5c07e12d2ac0b7ae3836f3d3c3af91c14241d17338ccacaffca71dab4da48"
+    },
+    {
+      "path": "test-workspace/tsc/#4503/tsconfig.json",
+      "sha256": "5f7f9e95bbf8caa3997f56ad240d75d32e03c08cc90ce7d8ce1c94bf8a16a25a"
+    },
+    {
+      "path": "test-workspace/tsc/#4512/main.vue",
+      "sha256": "e5f213f07c48913f274b79728cc60194305c5cd36df5a194cd82915cbc762540"
+    },
+    {
+      "path": "test-workspace/tsc/#4512/test1.vue",
+      "sha256": "79d20ed782aa34d3d7b2910fcea59d5071e27f5bd5c0fd9752f8bee1a28361fe"
+    },
+    {
+      "path": "test-workspace/tsc/#4512/test2.vue",
+      "sha256": "0b01710f12ab7bfbabfa0ad37a5f2cce4039f69d336398f994c57cfb41f00742"
+    },
+    {
+      "path": "test-workspace/tsc/#4512/test3.vue",
+      "sha256": "debe44afa1228f87e3555a5adc09fb00cefe569cd18da6d12c69852a94a5dc8a"
+    },
+    {
+      "path": "test-workspace/tsc/#4512/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4537/main.vue",
+      "sha256": "040009bcb4259b5335ab4dfb991150fcff1118fa41af66a673ac429d9f70b318"
+    },
+    {
+      "path": "test-workspace/tsc/#4537/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4539/main.vue",
+      "sha256": "5e7fff8886c4b7e08220889a1df97b1cef2a08a395b45494fef46e1a5cac1820"
+    },
+    {
+      "path": "test-workspace/tsc/#4539/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4540/component.vue",
+      "sha256": "b79209dcf01a86209cfd7b184c9814d5d7b7ca2ad16564729dd9e20d090bac08"
+    },
+    {
+      "path": "test-workspace/tsc/#4540/main.vue",
+      "sha256": "9ca08a38bd724a78f636b8c585601ce48b6b06ac3de51e16c767406c31dddc08"
+    },
+    {
+      "path": "test-workspace/tsc/#4540/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4600/main.vue",
+      "sha256": "4ca2e007746d99daf81fcb737c3336895aeb42162bd38fccbbc5c0b1ada82ef8"
+    },
+    {
+      "path": "test-workspace/tsc/#4600/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4604/main.vue",
+      "sha256": "6f5ac4a0a1c9bd6cdec55ca32a78f0ef9ad57e7534ef95601c78308258c71efb"
+    },
+    {
+      "path": "test-workspace/tsc/#4604/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4646/child.vue",
+      "sha256": "5d54d3648b37304ec8f9d995ef7895a5fdd3605f12ca03073557424c98b7440c"
+    },
+    {
+      "path": "test-workspace/tsc/#4646/child2.vue",
+      "sha256": "8204e777fe8cf2953058449525c1757a47e904ef71daeec8d46297c3082145eb"
+    },
+    {
+      "path": "test-workspace/tsc/#4646/parent.vue",
+      "sha256": "0b8ee7a416cfb3be4473bd7cccba453686ee078a8799e3009444a026fc0efb68"
+    },
+    {
+      "path": "test-workspace/tsc/#4646/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4649/comp.vue",
+      "sha256": "6c406e2617cc7ce6601bbf47f82cd63e707fa8039f9b9930a34288b21caa5a46"
+    },
+    {
+      "path": "test-workspace/tsc/#4649/main.vue",
+      "sha256": "d197a9723c8031ef19b4ea65be5fb85a86332014f22134461fca18d5e56f1661"
+    },
+    {
+      "path": "test-workspace/tsc/#4649/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4668/child.vue",
+      "sha256": "d15b89dc4140a66b509b7cdae3a388e002b403b0e2b4c99ce93f61bfb331d2f7"
+    },
+    {
+      "path": "test-workspace/tsc/#4668/main.vue",
+      "sha256": "53c24c0c749dbdd47da76ab3d4b11589844f2a18f831a7cf8b04b9c1c028bf87"
+    },
+    {
+      "path": "test-workspace/tsc/#4668/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4682/main.vue",
+      "sha256": "abbe6df8c3efaa16e42b6e85f4600a164e2207fab5d6d588bcdaa752d225a904"
+    },
+    {
+      "path": "test-workspace/tsc/#4682/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4699/HelloWorld.vue",
+      "sha256": "f92a4d1df2e2a44a883916952f180c29c404e2a4f85a308ada81512a8ffe5b73"
+    },
+    {
+      "path": "test-workspace/tsc/#4699/main.vue",
+      "sha256": "bd40a33e3cda448a518e98baa13d701de0b835e82e04fd0f4ba7b5e08ad809d4"
+    },
+    {
+      "path": "test-workspace/tsc/#4699/tsconfig.json",
+      "sha256": "038377f62be6b3b1c9ab178038d1ae10fd948f3376bc664b13214371e5336686"
+    },
+    {
+      "path": "test-workspace/tsc/#4785/generic.vue",
+      "sha256": "291248155239c2b5d8c396a9e62e45f5726b2c66eb6aef5a3379b4185aeb26c3"
+    },
+    {
+      "path": "test-workspace/tsc/#4785/main.vue",
+      "sha256": "803b82ff44bf1533620fabb485f737c556f7d27ed611a897c2f65ed42df09099"
+    },
+    {
+      "path": "test-workspace/tsc/#4785/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4799/main.vue",
+      "sha256": "1a3337c78b698ab6c8160d09dbace174555f0d9ce9fe53700c692a96bbe275e5"
+    },
+    {
+      "path": "test-workspace/tsc/#4799/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4812/main.vue",
+      "sha256": "f08113eb30b214d96b045aa1a80b4703d098d2e2fb8ca6f56065fc84bf67273e"
+    },
+    {
+      "path": "test-workspace/tsc/#4812/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4820/main.vue",
+      "sha256": "45c82a64172c335dc904528b4b56d7f545b68b176b0d5b51e2f325518d003c06"
+    },
+    {
+      "path": "test-workspace/tsc/#4820/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4822/comp.vue",
+      "sha256": "3bbf5be84e2252c80a17e0a4a852c96a21014278bc1b47606cc160601f16c28f"
+    },
+    {
+      "path": "test-workspace/tsc/#4822/main.vue",
+      "sha256": "f6d9c7df9bbd8eaf5161b94f1d33e4118564f3a82883567b34c0f76be969a8c4"
+    },
+    {
+      "path": "test-workspace/tsc/#4822/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4826/child.vue",
+      "sha256": "c387fc777a61e27a173cdfbff8fb32547ebea16950706274f4775238b3b139c4"
+    },
+    {
+      "path": "test-workspace/tsc/#4826/main.vue",
+      "sha256": "d5dc13d8995121d8b8cbc617d40bc00ef19d346e35c03e711ba5ae3832e8736b"
+    },
+    {
+      "path": "test-workspace/tsc/#4826/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4827/child.vue",
+      "sha256": "b831945920a9d81ef9ac762fab0b94d7c0ebaf490aec3bd2fcb03c00b471aea6"
+    },
+    {
+      "path": "test-workspace/tsc/#4827/main.vue",
+      "sha256": "2d0a1cbd52866057b146912b1bd916c4ab3b62c14f858743b2a3e776fb2e9784"
+    },
+    {
+      "path": "test-workspace/tsc/#4827/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4828/main.vue",
+      "sha256": "ed5c6d6298fd23c560d2274a8190c5394ee22def87157787b2a23a4368c7838a"
+    },
+    {
+      "path": "test-workspace/tsc/#4828/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4862/main.vue",
+      "sha256": "7196d184a5c4fbd53482b4939e93407dbf64621d6054d36a8b13802d97c6a263"
+    },
+    {
+      "path": "test-workspace/tsc/#4862/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4878/main.vue",
+      "sha256": "33b70f2bf6afbbb61ff616fa28507a175bf97be829f82d07cd3c2ad2271674ee"
+    },
+    {
+      "path": "test-workspace/tsc/#4878/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4890/main.vue",
+      "sha256": "d948f463396f0593c423a3ce1176dc0ce65f4aa6cd13aa5d9fb2cae56d69e036"
+    },
+    {
+      "path": "test-workspace/tsc/#4890/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4899/main.vue",
+      "sha256": "92999a6bf6c7192c2fd3b82e6f6adffc09574e0df3e8e234ffbbb2e0efa05e13"
+    },
+    {
+      "path": "test-workspace/tsc/#4899/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4972/GenericComp.vue",
+      "sha256": "96cabcb3a5857d190870f26916a60768323276e3a45ccf26e388e1b1c904c8fd"
+    },
+    {
+      "path": "test-workspace/tsc/#4972/main.vue",
+      "sha256": "20109bf4d9cd050c10279506d0e05aa76a863af87b1180655cadcba8043d207a"
+    },
+    {
+      "path": "test-workspace/tsc/#4972/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4978/comp.vue",
+      "sha256": "48d14ab8a207738a7292f2724ef9aab4fe1eb2a60545d3fe8fecb007ed5fe41b"
+    },
+    {
+      "path": "test-workspace/tsc/#4978/main.vue",
+      "sha256": "96af711ff4a0dd37c52007aa2137b8b2e9f7818d681b7a0ac2183251a119d546"
+    },
+    {
+      "path": "test-workspace/tsc/#4978/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#4979/main.vue",
+      "sha256": "abf4f4dc351e2350e6c6c63219d0b03c21cf0fc2031cab0728cbe70f231de4ac"
+    },
+    {
+      "path": "test-workspace/tsc/#4979/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5027/main.vue",
+      "sha256": "d0ab2efef344e8110ce10424ee53015a0b81ac8b0b4e00f22b48bd1556faf3b8"
+    },
+    {
+      "path": "test-workspace/tsc/#5027/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5067/comp.vue",
+      "sha256": "308815130a85a861c1e407efcc5a4d736ef8caccde6fcb030614354cf9c79ce9"
+    },
+    {
+      "path": "test-workspace/tsc/#5067/main.vue",
+      "sha256": "73d5fe0dc785c1eec3e2c5c96493c77f080e3defb429ab1ef847cc6983380096"
+    },
+    {
+      "path": "test-workspace/tsc/#5067/tsconfig.json",
+      "sha256": "36b782434fc2372fabc4c5db56884114e4057abbb265a1914f5b5807531d9321"
+    },
+    {
+      "path": "test-workspace/tsc/#5097/child.ts",
+      "sha256": "35ba1fb163cfaa576b04537a4c3c461107435a42037e66e23937169a15e7e26f"
+    },
+    {
+      "path": "test-workspace/tsc/#5097/child.vue",
+      "sha256": "7bdddfa7fbcb5e844e206791f22b3dd9cd6bc26fafc150d505efd716841f818e"
+    },
+    {
+      "path": "test-workspace/tsc/#5097/main.vue",
+      "sha256": "481613807826ec2b1deee36a04eba46d5a19c6725526f10ba781e33162ab7b39"
+    },
+    {
+      "path": "test-workspace/tsc/#5097/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5106/main.vue",
+      "sha256": "a3b8092a963248ab045a0ee29282afd052f0013aae283191fdeebf5b588f733f"
+    },
+    {
+      "path": "test-workspace/tsc/#5106/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5111/main.vue",
+      "sha256": "d0515dc5a9dc3d964b03cb4b4127797d1427f30b77e6cc4e45eca3cd44e1ad97"
+    },
+    {
+      "path": "test-workspace/tsc/#5111/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5120/comp.vue",
+      "sha256": "8bf5fdc4de497245f016b9c0dcf47de6d76662cd08af9ea3eff05fef13b1845f"
+    },
+    {
+      "path": "test-workspace/tsc/#5120/main.vue",
+      "sha256": "3ae5e2c366bbdfdb6f08e2823c51999f8861e8e1318a854ed07ae3b843aeb37c"
+    },
+    {
+      "path": "test-workspace/tsc/#5120/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5136/env.d.ts",
+      "sha256": "62c61845fb9e09eebbb902bfd6c105f78bfd8f3a3369251a674d76ec5aed8f6d"
+    },
+    {
+      "path": "test-workspace/tsc/#5136/src.vue",
+      "sha256": "d5d1f0a087b7124761e6966bf0b1ba1bb2d3c6555355fe02e21a185ebcd5446a"
+    },
+    {
+      "path": "test-workspace/tsc/#5136/tsconfig.json",
+      "sha256": "78c4efa3869ceb1d224852118f14d38bf95480512afdcc29c771ed216c06d718"
+    },
+    {
+      "path": "test-workspace/tsc/#5157/main.vue",
+      "sha256": "784cb70c5d2325bbe52824a736aeef9c9c437482b5eaeffca320cdec9843f8ed"
+    },
+    {
+      "path": "test-workspace/tsc/#5157/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5159/child.vue",
+      "sha256": "645f40728d328b892dcfb7f68de2da92b383d6a2d3fa383a25f4cbd180bd5bb4"
+    },
+    {
+      "path": "test-workspace/tsc/#5159/main.vue",
+      "sha256": "43a2e7335183002f3bee7fe09c24806ada46a7f96c5bd65bbd80a9590f208301"
+    },
+    {
+      "path": "test-workspace/tsc/#5159/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5207/main.vue",
+      "sha256": "71872356cb3b0a01e25a67dc8246df9e6e554e6c0552cc0a93cb4b4cd5707103"
+    },
+    {
+      "path": "test-workspace/tsc/#5207/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5228/main.vue",
+      "sha256": "303e72dcddb95e87ed9f29841fcce8463ac7f563b55682d16af75ec6958ef778"
+    },
+    {
+      "path": "test-workspace/tsc/#5228/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5262/comp.vue",
+      "sha256": "a8f145048d5adad994e6b2ec50141f5750e1ac1ac1fe0ec723eeb9d20db55275"
+    },
+    {
+      "path": "test-workspace/tsc/#5262/main.vue",
+      "sha256": "4b4334970a0abe43f744773b9d25861626fba3fa5ed62c9481ac378acf198703"
+    },
+    {
+      "path": "test-workspace/tsc/#5262/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5267/main.vue",
+      "sha256": "47a963f777c00816415555e9e7eee05b5b01734bc41d5804d555334b6242476d"
+    },
+    {
+      "path": "test-workspace/tsc/#5267/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5338/main.vue",
+      "sha256": "ccb76b8751bd8ccb6deab33272ce0c2249ba75ec5768420757458857dafb9814"
+    },
+    {
+      "path": "test-workspace/tsc/#5338/tsconfig.json",
+      "sha256": "2a089091593eaa3d8d641ca3642a95523c04eebe709273ec83a94a10fba1bc2e"
+    },
+    {
+      "path": "test-workspace/tsc/#5428/main.vue",
+      "sha256": "c84a029df298f14ad513d595cb352bee845aa69ef03a0be99b084b4df78bd119"
+    },
+    {
+      "path": "test-workspace/tsc/#5428/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5474/main.vue",
+      "sha256": "0392f37be008267b494c476dab85579178e84889a69272ef809675c691037b3c"
+    },
+    {
+      "path": "test-workspace/tsc/#5474/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5492/main.vue",
+      "sha256": "e2be4b4f008089784055e3dc5aa054f75c98d81325e3117b53c63487e3c08cf0"
+    },
+    {
+      "path": "test-workspace/tsc/#5492/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5592/child.vue",
+      "sha256": "a9ec929dfac30fc783f4f2c13cffcf16cad4c0bbcbee545cf101fc1f61e34dcb"
+    },
+    {
+      "path": "test-workspace/tsc/#5592/main.vue",
+      "sha256": "a5f44606fc6ac8dcd2d48b7db2810dbda7fbcf24b096632b77e636d93f5d017f"
+    },
+    {
+      "path": "test-workspace/tsc/#5592/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5604/main.vue",
+      "sha256": "950034b0df2055d5ba1e73675534216dfc4bea3acadb48125750f66f941c7044"
+    },
+    {
+      "path": "test-workspace/tsc/#5604/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5617/main.vue",
+      "sha256": "a36a5c32c0c5f6387170ce9d753076d58d338be4538529b24f885befbf41dbf4"
+    },
+    {
+      "path": "test-workspace/tsc/#5617/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5680/child.vue",
+      "sha256": "082ebb45f674ee27e5db8ec57c8b1d41fffd2e77dfa234cf22faaddb5c4a2839"
+    },
+    {
+      "path": "test-workspace/tsc/#5680/main.vue",
+      "sha256": "8d9596cf2848546c57b36f22253734d964d0e72c8cfb1614f113a9ba187a09e6"
+    },
+    {
+      "path": "test-workspace/tsc/#5680/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5729/main.vue",
+      "sha256": "8a8da99cf99ca52bb6543846cbf827081125b7ce78aaf46b45fa355e0e71f567"
+    },
+    {
+      "path": "test-workspace/tsc/#5729/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5751/main.vue",
+      "sha256": "4a6b0420521796869b7a89e062b016aa02a7588b1fd15a5504045e6cbbcf9a4a"
+    },
+    {
+      "path": "test-workspace/tsc/#5751/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5776/main.vue",
+      "sha256": "c9bd661cf208f5dad3e7436d55bd92943d42a907e05617a1d5a75ec260476d90"
+    },
+    {
+      "path": "test-workspace/tsc/#5776/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5780/main.vue",
+      "sha256": "32765cb7f5e23ef950651b0be292165db4ab42b9f65153c54cf8a21c0da56f1d"
+    },
+    {
+      "path": "test-workspace/tsc/#5780/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5810/main.vue",
+      "sha256": "107693783d94017be651329e36d5c7222e5e8e463069edba0f006b4662ee335a"
+    },
+    {
+      "path": "test-workspace/tsc/#5810/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5819/foo.ts",
+      "sha256": "e6e1dc87909603546c492ce82881e40f812ab8896eeec0d65827b58f0d92fcba"
+    },
+    {
+      "path": "test-workspace/tsc/#5819/main.vue",
+      "sha256": "8db526439377489a18eeb004821783306a875674e3092897e2f8a2ee92fc253d"
+    },
+    {
+      "path": "test-workspace/tsc/#5819/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5840/main.vue",
+      "sha256": "223ce0393cc47018d5b54c454db25f21ebe57fa7ee8f69eb70ec6751e915a4f0"
+    },
+    {
+      "path": "test-workspace/tsc/#5840/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5843/main.vue",
+      "sha256": "975564bbe4102087d851418243dd132724ee79feb181c3ee53f4836a121ccb84"
+    },
+    {
+      "path": "test-workspace/tsc/#5843/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5895/main.vue",
+      "sha256": "ce295c61aced7ad343068975f16d27cff842771122bf041a937065f18d135e13"
+    },
+    {
+      "path": "test-workspace/tsc/#5895/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5899/main.vue",
+      "sha256": "943b3adff9fd116a854cd0453dfcdc08da0c3857e2db58145f578fd76c929612"
+    },
+    {
+      "path": "test-workspace/tsc/#5899/tsconfig.json",
+      "sha256": "5cd080533e7b8e2076e4b88a2bed82cd03ad98d8d1a705c1f60db555b5033b70"
+    },
+    {
+      "path": "test-workspace/tsc/#5927/main.vue",
+      "sha256": "afa8aa0d7654a2736b2b94aae739f20b0f949e0e3b8d967e39acc87bb004630d"
+    },
+    {
+      "path": "test-workspace/tsc/#5927/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5934/main.vue",
+      "sha256": "4cb9dfdc110b9e7bfabc9dea033e60f2a4d1f775968a6dcf1fe471bac772f43b"
+    },
+    {
+      "path": "test-workspace/tsc/#5934/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#5986/main.vue",
+      "sha256": "b23adf55f591308c1222c48834b6ea68bdef7092b2da3622b041e76514c5f288"
+    },
+    {
+      "path": "test-workspace/tsc/#5986/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#6040/main.vue",
+      "sha256": "254fd7f8c3aaa92fdde65f56c437fcea9a0f22f95233ed29ac113dbeab3395c1"
+    },
+    {
+      "path": "test-workspace/tsc/#6040/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#6084/main.vue",
+      "sha256": "718520f0cd8ed09f47f5941b2c5d834e9a642bbe4f6c1b929d7797418104cc47"
+    },
+    {
+      "path": "test-workspace/tsc/#6084/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#6094/main.vue",
+      "sha256": "6d87bba67a714d6e664d76037370e7a7a9cc90eeb5dbf27d6ff1b14d049a02a7"
+    },
+    {
+      "path": "test-workspace/tsc/#6094/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/#625/main.vue",
+      "sha256": "bd58903aa267b3cf938fcbc5cf277187f593bfe6d6b46bc995878134eafa9bc4"
+    },
+    {
+      "path": "test-workspace/tsc/#625/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_#3632/both.vue",
+      "sha256": "9803277e31e3d8b4bddc60e67da9b3b20d5f5300898d184552e8704ac19b7a88"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_#3632/script.vue",
+      "sha256": "8a1a68c7ea528b126796e2f6856d0ce3f1d0b8d9aa680022b59419854dbfa32d"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_#3632/scriptSetup.vue",
+      "sha256": "4dce5cf53345f0687fb4f72c0c4820431036abd9c80de01861272de840106b7a"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_#3632/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_#4569/main.vue",
+      "sha256": "f7802f41384df5d78f8c125ba729f58a9db93a7b31ab982e5685cbacbc2984eb"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_#4569/tsconfig.json",
+      "sha256": "1585337b954203c5dc6eb4fd4233cfef0b1a13b541077e5f2ee9489556839383"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_#5071/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_#5071/withScript.vue",
+      "sha256": "f961ce9efe34f6ae7c7c1720ebe80dc0de75fff119aa48af685b004d6600f45c"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_#5071/withoutScript.vue",
+      "sha256": "d8b5dc17be7dc80c403c74044c452826dc45704c0e2d4e837a7350122dfe1a1d"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_#5823/main.vue",
+      "sha256": "dda9f44c81f62b9877962884853d5565fcf7bb9e4a8b725bed513d45dac98daa"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_#5823/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_cssModuleDuplicate/bare.vue",
+      "sha256": "7ff3b44237fd3e4a313d577ac993bb182d2b46711457f8a2d65a3648f60ccfff"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_cssModuleDuplicate/empty.vue",
+      "sha256": "c025ad979921ec7fff010003401f1e7280986134a5e3f5b74ee8c5bc3d1f21a8"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_cssModuleDuplicate/kebab.vue",
+      "sha256": "3c7bdca91c3dea20dbf9f544f0a82ca949137e932ac5fb38d5ac3a5c8ee9f394"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_cssModuleDuplicate/named.vue",
+      "sha256": "79704ed6959a04a04edfcf06be208a8e199eaffd6dfb8346a40015c507c6cdf2"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_cssModuleDuplicate/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_directives/main.vue",
+      "sha256": "e41cc35d1a00c08d1cd8debdc3bb95ad1acc4971a0d9647e1aaf63578bb8ffda"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_directives/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_fragment_props/main.vue",
+      "sha256": "570ecb7b840ffb9ac9ee19dd71b0eecf09fe39846bf6ddd908e4fa7e32753279"
+    },
+    {
+      "path": "test-workspace/tsc/_failed_fragment_props/tsconfig.json",
+      "sha256": "36b782434fc2372fabc4c5db56884114e4057abbb265a1914f5b5807531d9321"
+    },
+    {
+      "path": "test-workspace/tsc/attrs/main.vue",
+      "sha256": "2deac5a8e4a52be993ac42212618116eb3f59c80832a9cc3f2b5d22de9411de8"
+    },
+    {
+      "path": "test-workspace/tsc/attrs/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/components/main.vue",
+      "sha256": "bd9064ff2dee618c22ce24cb3feb0e1c83a9350e28c1187663fc51c7b85121f8"
+    },
+    {
+      "path": "test-workspace/tsc/components/script-setup-default-props.vue",
+      "sha256": "f6c035c3f60134ffe68b95a85e665295df99370aa90eaa5e272e1476f913f9ba"
+    },
+    {
+      "path": "test-workspace/tsc/components/script-setup-expose.vue",
+      "sha256": "1b05377d6297caff522488b6c0f7d86f7160f924087ed36fb14c39027667b90d"
+    },
+    {
+      "path": "test-workspace/tsc/components/script-setup-generic.vue",
+      "sha256": "66eb6e0cb86c26c251a3d80bb457d1fab6b82f3c98196ad8542e07b7fd814d0a"
+    },
+    {
+      "path": "test-workspace/tsc/components/script-setup-type-only.vue",
+      "sha256": "05dd707ca1960497a5feb6cca933a5383ea73d6c523ad63804c66e78fb19903f"
+    },
+    {
+      "path": "test-workspace/tsc/components/script-setup.vue",
+      "sha256": "d782b224bddfd0c61fe34e89da90e87487ab102a79009b7e94fd45b875862dab"
+    },
+    {
+      "path": "test-workspace/tsc/components/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/core#9923/comp.vue",
+      "sha256": "52c5e894b464dba2d3c6b3ee069532c6371089c7e2c68fd733f6038cdbefaf0d"
+    },
+    {
+      "path": "test-workspace/tsc/core#9923/main.vue",
+      "sha256": "fad7a5b57a10bedd8cf89a2bf88277f122dc218aa39356854d158e9d0187dc3c"
+    },
+    {
+      "path": "test-workspace/tsc/core#9923/tsconfig.json",
+      "sha256": "e85245f92e48e12accdc10751edef609d649b206e69ee406e171845e04a4900e"
+    },
+    {
+      "path": "test-workspace/tsc/cssModule/empty.vue",
+      "sha256": "20582d50944f4299c8a8220658c4bc351d4aa9f3625261f5bc10852780abfb3e"
+    },
+    {
+      "path": "test-workspace/tsc/cssModule/emptyName.vue",
+      "sha256": "2d3b7dae34a61dfe3b2521ea630528a67bf99da757c6cb3c940e7a7a97099a53"
+    },
+    {
+      "path": "test-workspace/tsc/cssModule/main.vue",
+      "sha256": "0f7aa1c5f2f321b259c9788dbf4a022657f9b079b5bd4cbae62e3c22f2adedc9"
+    },
+    {
+      "path": "test-workspace/tsc/cssModule/strict.vue",
+      "sha256": "e8ac7a0216edfb8352d04766f6656d5f15588f79fed3074f5dd6b9e4f76a24d8"
+    },
+    {
+      "path": "test-workspace/tsc/cssModule/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/dataAttributes/main.vue",
+      "sha256": "75647cdd404b517e92a19a63a848371e2178f7fd95426c3131e4658c9cc24f46"
+    },
+    {
+      "path": "test-workspace/tsc/dataAttributes/tsconfig.json",
+      "sha256": "36b782434fc2372fabc4c5db56884114e4057abbb265a1914f5b5807531d9321"
+    },
+    {
+      "path": "test-workspace/tsc/defineEmits/child.vue",
+      "sha256": "4d20d997833eaaa01808978eafdebdf57784818ebd7d1d89eb48415f52fb57a8"
+    },
+    {
+      "path": "test-workspace/tsc/defineEmits/main.vue",
+      "sha256": "90bf52ed9f583efd986f884c239da4bec451f1342f0381c43575d0445efa09c6"
+    },
+    {
+      "path": "test-workspace/tsc/defineEmits/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/defineExpose/child.vue",
+      "sha256": "2162d8cd32f9b531cb85ffd95caf861f979b988a2b0b482cace49e54836a91ed"
+    },
+    {
+      "path": "test-workspace/tsc/defineExpose/main.vue",
+      "sha256": "d7496434f23f578a625f14711f6d20d7690ecb7af5ff789a2c58b2db73e89d32"
+    },
+    {
+      "path": "test-workspace/tsc/defineExpose/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/defineModel/comp.vue",
+      "sha256": "e66d44788a6d266ae75280e6674f8113279eb9c545357f25f9dca6a332e660bd"
+    },
+    {
+      "path": "test-workspace/tsc/defineModel/main.vue",
+      "sha256": "329b054f7743c16f7a0b45ee83459200b0316a16217b3b29dfc424490710b448"
+    },
+    {
+      "path": "test-workspace/tsc/defineModel/script-setup.vue",
+      "sha256": "843fbe34af15c0cb14f300a4f17123c99ca4f5316ceff3972b629db09b4cf213"
+    },
+    {
+      "path": "test-workspace/tsc/defineModel/strict.vue",
+      "sha256": "436c0e28dfcb258cc8f6811e57fb36a6e94bff7f0bc82f08dee2c5a96d322f3e"
+    },
+    {
+      "path": "test-workspace/tsc/defineModel/tsconfig.json",
+      "sha256": "36b782434fc2372fabc4c5db56884114e4057abbb265a1914f5b5807531d9321"
+    },
+    {
+      "path": "test-workspace/tsc/defineModelModifiers/comp.vue",
+      "sha256": "61f08380b150497e4a4574ed77a51f2f8dfa0ea69655da61b6b313052806efd8"
+    },
+    {
+      "path": "test-workspace/tsc/defineModelModifiers/main.vue",
+      "sha256": "7368734422c665ad732d904eabe488a52d06af0880ab8cd7216dd48367ece2a2"
+    },
+    {
+      "path": "test-workspace/tsc/defineModelModifiers/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/defineOptions/child.vue",
+      "sha256": "873bfed9633a395566e05fc8e212313b443345d7cb31085225671f47ca5f626d"
+    },
+    {
+      "path": "test-workspace/tsc/defineOptions/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/directiveComments/main.vue",
+      "sha256": "2d9d8ea7639dbea1f5fad18c466967d7a64f2acd52315513a0d5aede30d2da98"
+    },
+    {
+      "path": "test-workspace/tsc/directiveComments/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/directives/arg-modifiers.vue",
+      "sha256": "2899005b9fa72a1f3e99308d1c06c87589d8075abb9b114fca0c4371bcb9fa15"
+    },
+    {
+      "path": "test-workspace/tsc/directives/main.vue",
+      "sha256": "e434e6dfc46d172036fda747c4750a2059ae31959918483feb8ba6d500fdc753"
+    },
+    {
+      "path": "test-workspace/tsc/directives/option.vue",
+      "sha256": "7eac08caa99a38abebf93a720088ac75fd074551f237e08b2a265d6148c59379"
+    },
+    {
+      "path": "test-workspace/tsc/directives/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/directives/vapor.vue",
+      "sha256": "1fc5d8e7b016ca961e91e34407938c4f00615323d56a7b89e6312b01d1c8df11"
+    },
+    {
+      "path": "test-workspace/tsc/dynamic-component/main.vue",
+      "sha256": "6ac8e052c33db2e8499dbb8f115c9651e24e1b7737ec33ffb3850e2bd2230f7d"
+    },
+    {
+      "path": "test-workspace/tsc/dynamic-component/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/events/expression.vue",
+      "sha256": "2681fb87f8ff91a300ace6f5f6f28412085bd2a1956761ba4f7825ba2f9446d5"
+    },
+    {
+      "path": "test-workspace/tsc/events/main.vue",
+      "sha256": "e1db23109e4c5992bbd2400013d7538349c41ea5881db7cf2cbe013efb03568d"
+    },
+    {
+      "path": "test-workspace/tsc/events/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/events/union_type.vue",
+      "sha256": "52ca59df077e0ebf2659581caa00f0cce5dfc9253d6d35c5fe7439e2976c4cc6"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes/basic.vue",
+      "sha256": "be672a0a1f0a7f5746250923a17d425d74d53acb1c89b1eecfffbda580170132"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes/child.vue",
+      "sha256": "5e1eaad4ee550bb96fca72f1dfc1d5a05142c2d20f8c36144f1902e992cbc687"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes/inherit-attrs-false-define-options.vue",
+      "sha256": "983c7209953945ec54b99c0ca9128f4011c87a29f2351f62e24e9a2720308c4d"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes/inherit-attrs-false-v-bind.vue",
+      "sha256": "ba1d915024be077884ca091927486265fce1a12ed96d5e638c7eb79b7082d204"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes/inherit-attrs-false.vue",
+      "sha256": "dcb2d8d686afaa795b3a0de177eb4086c01d75ea4caf15601b24f1275a6f3c4e"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes/main.vue",
+      "sha256": "637b0aab733f8844dce5dbc0c0e8764229d941e2c27aea01f977ed249e162d32"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes/tsconfig.json",
+      "sha256": "038377f62be6b3b1c9ab178038d1ae10fd948f3376bc664b13214371e5336686"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_checkRequired/basic.vue",
+      "sha256": "3a4347983be8291e8b8a85dc9c4958b642db4d27a9c2901c8f528fff54ea6b25"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_checkRequired/child.vue",
+      "sha256": "73168616b46573705505ea7ba2597f6be0a8bf06f4a1fd5d66cd4a1af2598b94"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_checkRequired/main.vue",
+      "sha256": "5ae2f1708f033cbefdc9dd2ead095b8c843dcbc029bd7a59e562ff3e261d39d8"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_checkRequired/tsconfig.json",
+      "sha256": "038377f62be6b3b1c9ab178038d1ae10fd948f3376bc664b13214371e5336686"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_duplicateNameEvent/basic.vue",
+      "sha256": "74990ad302d9e8bed739b85bc82b25e282a52f07a47f84ec840a1ffd0db0ba7a"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_duplicateNameEvent/child.vue",
+      "sha256": "3b94fa7723f6bbfad708eeba197641e3f1d91c8e1f35ec178cd6fc25c5ed0c8c"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_duplicateNameEvent/main.vue",
+      "sha256": "828d8147bb14b392104424754a99241a9da65ef6f66477d066dd494f4f35b706"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_duplicateNameEvent/tsconfig.json",
+      "sha256": "038377f62be6b3b1c9ab178038d1ae10fd948f3376bc664b13214371e5336686"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_duplicateNameProp/basic.vue",
+      "sha256": "991583a77f1b246075228eda1dac0a29c6dca571b93ff140ff64b5b3ad3f10b2"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_duplicateNameProp/child.vue",
+      "sha256": "324e2cc6ec2e34648a53ac220b976be2ccc970efda34a68e5c7117db24d5fe21"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_duplicateNameProp/main.vue",
+      "sha256": "5120c7cf33c6f63d58b2c21a4b0ed67de2717d2795ab1c334b870fa84863be05"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_duplicateNameProp/tsconfig.json",
+      "sha256": "038377f62be6b3b1c9ab178038d1ae10fd948f3376bc664b13214371e5336686"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_generic/basic.vue",
+      "sha256": "15abb901d64f10315dd378d66efecaec426358f57a51871405bca5952571e9ff"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_generic/child.vue",
+      "sha256": "4b6d5de631e5e426630cf34e7810867e096ff8ac73afa26271b334fcb4bb1ef9"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_generic/main.vue",
+      "sha256": "fa3e08850f22103c1f4689801ee0c7938106cb37edf2c6c4c3cbe4f20c00a66a"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_generic/tsconfig.json",
+      "sha256": "038377f62be6b3b1c9ab178038d1ae10fd948f3376bc664b13214371e5336686"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_unknownTag/basic.vue",
+      "sha256": "ea6e5c6e25170ce02aa565c63293c3344bfe3dcd03dad8911279dec88f1d03ee"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_unknownTag/main.vue",
+      "sha256": "5e1eaad4ee550bb96fca72f1dfc1d5a05142c2d20f8c36144f1902e992cbc687"
+    },
+    {
+      "path": "test-workspace/tsc/fallthroughAttributes_unknownTag/tsconfig.json",
+      "sha256": "038377f62be6b3b1c9ab178038d1ae10fd948f3376bc664b13214371e5336686"
+    },
+    {
+      "path": "test-workspace/tsc/input-radio/main.vue",
+      "sha256": "6b3ac294f9944844c82f39506a58224998e63e6016c6cacd69df8ef5e256122e"
+    },
+    {
+      "path": "test-workspace/tsc/input-radio/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/intrinsicProps/main.vue",
+      "sha256": "5f88a62cac7acb02f03da25a18f3061be7cb864ae66cfb855462d4ee76139e48"
+    },
+    {
+      "path": "test-workspace/tsc/intrinsicProps/tsconfig.json",
+      "sha256": "36b782434fc2372fabc4c5db56884114e4057abbb265a1914f5b5807531d9321"
+    },
+    {
+      "path": "test-workspace/tsc/macros-alias/main.vue",
+      "sha256": "6b4a36a7045022922b0f955bdbe72507d724c90bf6d592975cef743554bc54e8"
+    },
+    {
+      "path": "test-workspace/tsc/macros-alias/tsconfig.json",
+      "sha256": "6b5a3034fbcc55cfd81656d113abe73be510d651a06504447f9327539d6f9e98"
+    },
+    {
+      "path": "test-workspace/tsc/namespace-component/main.vue",
+      "sha256": "c841c4f8bacefcff29b595b026ef4743e183e49611acdc922555926de9239835"
+    },
+    {
+      "path": "test-workspace/tsc/namespace-component/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/no-script-block/main.vue",
+      "sha256": "fcc9593a78958a628ed3c964bd50357c205d750066564bddd3952a2479ee2f3b"
+    },
+    {
+      "path": "test-workspace/tsc/no-script-block/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/noPropertyAccessFromIndexSignature/#2236/main.vue",
+      "sha256": "ef33b093919d9d783461916ca69720c2c5018c69122977994d466e39e6f6505c"
+    },
+    {
+      "path": "test-workspace/tsc/noPropertyAccessFromIndexSignature/#3106/main.vue",
+      "sha256": "ba10a630193d10c959f77af96f81b1f29b3a1dbd1ed47c5a7fd9db39a64f34f8"
+    },
+    {
+      "path": "test-workspace/tsc/noPropertyAccessFromIndexSignature/tsconfig.json",
+      "sha256": "3e29c40d41f46e1f0bda04feff04a555c99005c30ca42210a4fe1ffe788cceb7"
+    },
+    {
+      "path": "test-workspace/tsc/petite-vue/main.html",
+      "sha256": "2f8e01b4f40ea7e3d0dc2fe96743befc2afcc2f1e5cba6b7bc16179927d3256c"
+    },
+    {
+      "path": "test-workspace/tsc/pug/#4774.vue",
+      "sha256": "9663fa2914704e5336d7ed03ae6daeceb64e48f7fa12d7999b88284695fd1954"
+    },
+    {
+      "path": "test-workspace/tsc/pug/#5099.vue",
+      "sha256": "19e0ad44c8d9f2f7ed57c63c9a4d63af7bab7af3040b9384f8abddb8f80cc25c"
+    },
+    {
+      "path": "test-workspace/tsc/pug/main.vue",
+      "sha256": "ebc17cc14f3b9fc510d17512577054126262f5c730b66a7fe026197ccf2fc11d"
+    },
+    {
+      "path": "test-workspace/tsc/pug/shorthand.vue",
+      "sha256": "60adf973f27fc9a9a24da44c6eba21dca50594e71d8e7e297fe5645611cfde6e"
+    },
+    {
+      "path": "test-workspace/tsc/pug/tsconfig.json",
+      "sha256": "5cd080533e7b8e2076e4b88a2bed82cd03ad98d8d1a705c1f60db555b5033b70"
+    },
+    {
+      "path": "test-workspace/tsc/reference-type-in-template/main.vue",
+      "sha256": "c507dee2b538b58f49e6a70abae7227990b22056727faf2411028da800df9618"
+    },
+    {
+      "path": "test-workspace/tsc/reference-type-in-template/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/rootEl/base.vue",
+      "sha256": "502c030fcdb1b58e63bec13a0a2e2876d27bd3d6258768230b8b32def12e70b4"
+    },
+    {
+      "path": "test-workspace/tsc/rootEl/child.vue",
+      "sha256": "56efbb3c85dfe93ddbb6cf173d60e036ed2e41d0a9a1c2ae36d8185627434e75"
+    },
+    {
+      "path": "test-workspace/tsc/rootEl/main.vue",
+      "sha256": "2d4ff191a3e59885bac26806612c75b0f866c339997492c1cdbd52a1badf407e"
+    },
+    {
+      "path": "test-workspace/tsc/rootEl/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/script-setup-scope/export-order.vue",
+      "sha256": "16bf003f5adcc6ce0fc28d5f73150592871db290c916a672114a57283c1eb6a6"
+    },
+    {
+      "path": "test-workspace/tsc/script-setup-scope/main.vue",
+      "sha256": "57b2992b04efbdb0e9f51ec94b56cfee4c28dffd7d3f75085ffe20aad0813154"
+    },
+    {
+      "path": "test-workspace/tsc/script-setup-scope/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/script_src/javascript.js",
+      "sha256": "e9b2cd64a5b8bc248a2328eab0880b20e689cc3a3ef67aed1baa2fd7867a022b"
+    },
+    {
+      "path": "test-workspace/tsc/script_src/javascript.vue",
+      "sha256": "e6ac404ad7e0fb36d26076c3850e621cac54d7d0307909a7e3f64dc314c9eafe"
+    },
+    {
+      "path": "test-workspace/tsc/script_src/javascriptreact.jsx",
+      "sha256": "e9b2cd64a5b8bc248a2328eab0880b20e689cc3a3ef67aed1baa2fd7867a022b"
+    },
+    {
+      "path": "test-workspace/tsc/script_src/javascriptreact.vue",
+      "sha256": "22e1b9547a100c5c5033512da15e079bd37bf08a0b3d6d6145fd47a0709f0ebc"
+    },
+    {
+      "path": "test-workspace/tsc/script_src/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/script_src/typescript.ts",
+      "sha256": "e9b2cd64a5b8bc248a2328eab0880b20e689cc3a3ef67aed1baa2fd7867a022b"
+    },
+    {
+      "path": "test-workspace/tsc/script_src/typescript.vue",
+      "sha256": "649554e32790edb7616158bcaef64eca04b191fda7d959d0e5eff541e6830267"
+    },
+    {
+      "path": "test-workspace/tsc/script_src/typescriptreact.tsx",
+      "sha256": "e9b2cd64a5b8bc248a2328eab0880b20e689cc3a3ef67aed1baa2fd7867a022b"
+    },
+    {
+      "path": "test-workspace/tsc/script_src/typescriptreact.vue",
+      "sha256": "7923f37f04871a411dbee087ea851c4be4cc0a6cb023f10de4ecc12db2493241"
+    },
+    {
+      "path": "test-workspace/tsc/shared.d.ts",
+      "sha256": "5b8cbdae26322ab5457de518192bac8db3e010362f4997c1a60ce6b128ef017e"
+    },
+    {
+      "path": "test-workspace/tsc/slots/main.vue",
+      "sha256": "4a5e8fea331d0f85c3d95d2597a856886b03db387eed9336abd82839f2a1938b"
+    },
+    {
+      "path": "test-workspace/tsc/slots/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/templateRef/generic.vue",
+      "sha256": "4eccefe1205ce2b48ed95a172a4410565c0ea8e8b6bd36b109080f8bfaa6fc08"
+    },
+    {
+      "path": "test-workspace/tsc/templateRef/main.vue",
+      "sha256": "8699763db467aeb432d78c3e59353a1e7990e918f8557c651277ecfd5bc055a2"
+    },
+    {
+      "path": "test-workspace/tsc/templateRef/missing-import.vue",
+      "sha256": "e06b281f42f564eba7de8e10e0f85336d70b5b6ce0bf50e3adf1b9bf65e336f6"
+    },
+    {
+      "path": "test-workspace/tsc/templateRef/template-refs.vue",
+      "sha256": "eac13c4ef9d3f913e3e05e3b2c87aac2a989ca05dda29a7b558ac43b4d7310b7"
+    },
+    {
+      "path": "test-workspace/tsc/templateRef/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/tsconfig.json",
+      "sha256": "b24b1870c58d76fc080fb5f7c7223b7876efff7e26bafb24088ec224cd44c035"
+    },
+    {
+      "path": "test-workspace/tsc/type-helpers/main.vue",
+      "sha256": "7e7f9111081a41773c962b8491d164059310f17403ced9fad4c6565ec3891423"
+    },
+    {
+      "path": "test-workspace/tsc/type-helpers/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/unknownComponent/main.vue",
+      "sha256": "7fd4928c11de7e019678fe835b36a02d2a6fc66c03e6962ad5e68a97ed8fa371"
+    },
+    {
+      "path": "test-workspace/tsc/unknownComponent/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/unknownProp/main.vue",
+      "sha256": "c2f2d3690cdccc6ccc70a3560ea728642143b8a2bb8bbdd9056cd83b2001864e"
+    },
+    {
+      "path": "test-workspace/tsc/unknownProp/strict.vue",
+      "sha256": "0aa11d609225a6b5321158cd83b42d64dfd2f5dfd065bb42708a56249c24252e"
+    },
+    {
+      "path": "test-workspace/tsc/unknownProp/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/unknownTag/basic.vue",
+      "sha256": "5c98c1238032571ae66a54fa26e6299e7cd7405cf22b01eddade8bc051c6fc12"
+    },
+    {
+      "path": "test-workspace/tsc/unknownTag/main.vue",
+      "sha256": "3254b7a7db6a0663dfa2934ec814aeb990397892a8961b25e926ec4b37a490db"
+    },
+    {
+      "path": "test-workspace/tsc/unknownTag/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/unwrapBindingAccess/child.vue",
+      "sha256": "c46d5ac351230f1ab54043d826bbe97b54d6935444efa411b5a8cc37ba64cf1e"
+    },
+    {
+      "path": "test-workspace/tsc/unwrapBindingAccess/main.vue",
+      "sha256": "9ccd19a15f898d31ad4ce9a8fcd98685cf8faef9090aa05772e3ef024c95b979"
+    },
+    {
+      "path": "test-workspace/tsc/unwrapBindingAccess/pinned.ts",
+      "sha256": "647f3c0c1a704a7574a0bd32655c5ae9aa3e6b263a17c876a048783bfa23cd91"
+    },
+    {
+      "path": "test-workspace/tsc/unwrapBindingAccess/tsconfig.json",
+      "sha256": "f14adf58889184a3fa3fe902238e1eca6fc05af310865f722f5f1770c850dcfd"
+    },
+    {
+      "path": "test-workspace/tsc/useTemplateRef-dynamic-arg/main.vue",
+      "sha256": "9104ebe29a4deed364acf4590af57998c2a571d33fa0f4d4e6e23d546ada2fb6"
+    },
+    {
+      "path": "test-workspace/tsc/useTemplateRef-dynamic-arg/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/useTemplateRef-nullable/main.vue",
+      "sha256": "26bd138cd92518ea1eab1b06871474ff9d2b7576e9bbe6f3eae90fdd96073f45"
+    },
+    {
+      "path": "test-workspace/tsc/useTemplateRef-nullable/tsconfig.json",
+      "sha256": "e129862eb0f80cc67a2481f6a5ec5881910b6beeb026bc200d69fe2af814c526"
+    },
+    {
+      "path": "test-workspace/tsc/v-bind-require-object/main.vue",
+      "sha256": "d12d5b768d6c0fe9a9f8b280a9ea1364ec6529bbe70d5cc529e2861f856d2b95"
+    },
+    {
+      "path": "test-workspace/tsc/v-bind-require-object/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/v-bind-shorthand/child.vue",
+      "sha256": "f37498faa08852deacc992c0a6c5c28a0c6396a16c4842011804bc33ab333f89"
+    },
+    {
+      "path": "test-workspace/tsc/v-bind-shorthand/entry.vue",
+      "sha256": "2f5787b0ab7fb072fa5d265d41eaf4ece7d9d8d66c8a3846495ce793f89b4437"
+    },
+    {
+      "path": "test-workspace/tsc/v-bind-shorthand/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/v-for/generic.vue",
+      "sha256": "a7b2d1f6269fff6cfcb6e48cc51102eca7696c3f1b489f092e9eeba0cc43515b"
+    },
+    {
+      "path": "test-workspace/tsc/v-for/main.vue",
+      "sha256": "e24a325153519d5fbc6248992d14d1dd752cb6ce78ab454eac018903dfec95ef"
+    },
+    {
+      "path": "test-workspace/tsc/v-for/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/v-generic/comp.vue",
+      "sha256": "79609b47a3a94768e2161a03e7c7a6e413758e1371194f048b9061c66a06d27b"
+    },
+    {
+      "path": "test-workspace/tsc/v-generic/main.vue",
+      "sha256": "dcd4e7f6010477ee1faaa2f032ff1eeee72cd7224fe5cd0456a82ff754a17f3e"
+    },
+    {
+      "path": "test-workspace/tsc/v-generic/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/v-if/main.vue",
+      "sha256": "2974750a7ead6213601fb57de83f0331de8f62d049133ca5cfb39887fcf7dc12"
+    },
+    {
+      "path": "test-workspace/tsc/v-if/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/withDefaults/main.vue",
+      "sha256": "d37bb4430087f43587a8a473ab89704b5b02f4ce517635554797ec6241a3eab8"
+    },
+    {
+      "path": "test-workspace/tsc/withDefaults/tsconfig.json",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9"
+    },
+    {
+      "path": "test-workspace/tsc/withDotValue/helper.ts",
+      "sha256": "d224dbd9f73cfa554e3c4d69c3222c667aad9781b44f573b693d4efb4ba75736"
+    },
+    {
+      "path": "test-workspace/tsc/withDotValue/main.vue",
+      "sha256": "7eb77e236e93ff03c5402d1ea2d51b9f05d955bff9a28bd5bc8c2bbee3aa4c0e"
+    },
+    {
+      "path": "test-workspace/tsc/withDotValue/refHelper.ts",
+      "sha256": "e4e40141122e23bfea82f7ad5b7204977bb71a6e60c3a0f54ddc2b738e4547c4"
+    },
+    {
+      "path": "test-workspace/tsc/withDotValue/tsconfig.json",
+      "sha256": "f14adf58889184a3fa3fe902238e1eca6fc05af310865f722f5f1770c850dcfd"
+    },
+    {
+      "path": "test-workspace/tsconfig.base.json",
+      "sha256": "03699de82ec7ef479fa4258ea729a800fd8c7e02af7525d659cc5dd4d04f1c12"
+    },
+    {
+      "path": "typecheck.spec.ts",
+      "sha256": "4071fbe2cdfb9d66675d04736e15271574051890f6afb69e9692553e4b08c166"
+    }
+  ]
+}

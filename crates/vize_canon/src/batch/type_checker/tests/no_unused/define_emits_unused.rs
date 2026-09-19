@@ -87,6 +87,7 @@ export default {
         ("src/RenamedEmit.vue", "dispatch"),
         ("src/DirectTemplateEmit.vue", "emit"),
         ("src/DirectScriptEmit.vue", "emit"),
+        ("src/UnusedEmit.vue", "emit"),
     ] {
         assert!(
             !has_unused_binding(&snapshot, file, binding),
@@ -95,7 +96,6 @@ export default {
     }
     for (file, binding) in [
         ("src/DollarEmit.vue", "unusedLocal"),
-        ("src/UnusedEmit.vue", "emit"),
         ("src/OptionsApi.vue", "emit"),
     ] {
         assert!(

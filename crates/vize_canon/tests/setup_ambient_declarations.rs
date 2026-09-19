@@ -184,7 +184,6 @@ fn duplicate_bindings_and_unresolved_setup_helpers_fail_closed() {
         "declare const label: string;\nconst label = 1;",
         "declare const label: typeof defineProps;",
         "declare const label: defineProps;",
-        "declare const label: typeof document;",
     ] {
         let declaration = script.lines().next().unwrap();
         assert_module_declaration(&setup(script), declaration, false);

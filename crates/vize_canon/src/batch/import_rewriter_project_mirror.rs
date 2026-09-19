@@ -16,10 +16,10 @@ use super::{
 };
 
 #[derive(Clone, Copy)]
-struct VirtualProjectRewriteOptions<'a> {
-    preserve_relative_declarations: bool,
-    mirrorable_project_files: Option<&'a FxHashSet<PathBuf>>,
-    alias_rewrite_policy: Option<&'a VirtualAliasRewritePolicy>,
+pub(in crate::batch) struct VirtualProjectRewriteOptions<'a> {
+    pub(in crate::batch) preserve_relative_declarations: bool,
+    pub(in crate::batch) mirrorable_project_files: Option<&'a FxHashSet<PathBuf>>,
+    pub(in crate::batch) alias_rewrite_policy: Option<&'a VirtualAliasRewritePolicy>,
 }
 
 impl ImportRewriter {
@@ -29,9 +29,13 @@ impl ImportRewriter {
         source_type: SourceType,
         roots: (&Path, &Path),
         source_dir: Option<&Path>,
-        mirrorable_project_files: Option<&FxHashSet<PathBuf>>,
-        alias_rewrite_policy: Option<&VirtualAliasRewritePolicy>,
+        options: VirtualProjectRewriteOptions<'_>,
     ) -> RewriteResult {
+        let VirtualProjectRewriteOptions {
+            preserve_relative_declarations,
+            mirrorable_project_files,
+            alias_rewrite_policy,
+        } = options;
         let project_root = roots.0.to_string_lossy();
         let relative_candidate =
             source_dir.is_some() && source_may_contain_relative_specifier(source);
@@ -56,6 +60,14 @@ impl ImportRewriter {
                 true,
                 alias_rewrite_policy,
             )
+            .or_else(|| {
+                (!preserve_relative_declarations)
+                    .then(|| {
+                        source_dir
+                            .and_then(|dir| rewrite_relative_dts_specifier(path, dir, roots.0))
+                    })
+                    .flatten()
+            })
             .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
             .or_else(|| {
                 alias_rewrite_policy

@@ -7,6 +7,7 @@ use vize_carton::cstr;
 mod css_v_bind;
 mod define_emits_unused;
 mod define_props_template_object;
+mod macro_hygiene;
 mod template_props_read;
 
 #[test]
@@ -203,7 +204,7 @@ const unusedLocal = 1
 }
 
 #[test]
-fn define_props_result_binding_still_reports_unused_without_template_prop_reads() {
+fn component_signature_consumes_props_without_template_prop_reads() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
@@ -233,10 +234,10 @@ const used = 1
     };
 
     assert!(
-        snapshot.iter().any(|(file, code, message)| {
+        !snapshot.iter().any(|(file, code, message)| {
             file == "src/App.vue" && *code == Some(6133) && message.contains("props")
         }),
-        "defineProps result should still report TS6133 when template does not read props, got: {snapshot:#?}"
+        "the component signature consumes defineProps even without a template read, got: {snapshot:#?}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

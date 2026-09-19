@@ -6,6 +6,7 @@ mod css_modules;
 mod emits;
 mod entry;
 mod fallthrough;
+mod file_directives;
 pub(super) mod generics;
 mod global_components;
 mod imports;
@@ -58,7 +59,7 @@ use self::type_only_imports::{
 };
 use self::unresolved_components::emit_unresolved_components;
 use super::{
-    helpers::{SETUP_SCOPE_HELPER_NAMES, generate_template_context},
+    helpers::generate_template_context,
     import_meta::emit_import_meta_augmentation,
     macro_type_mappings::MacroTypeMappings,
     props::{
@@ -95,6 +96,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let options_api = generation_options.options_api || legacy_vue2;
     let hoist_shared_preamble = generation_options.hoist_shared_preamble;
     let mut ts = String::default();
+    file_directives::emit(
+        &mut ts,
+        script_content,
+        generation_options
+            .split_script_setup_offsets
+            .map(|(start, _)| start),
+    );
     let mut mappings: Vec<VizeMapping> = Vec::new();
     let mut semantic_links = Vec::new();
     let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
@@ -194,15 +202,16 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     if default_export_object.is_some() {
         ts.push_str(legacy_vue2::define_component_helper(legacy_vue2, dialect));
     }
+    let module_plan = script_content
+        .map(script_module::collect_script_module_plan)
+        .unwrap_or_default();
     // Collect sorted module spans once for linear script-body emission.
     let mut module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
         let mut module_spans = Vec::new();
         for imp in &summary.import_statements {
             module_spans.push((imp.start, imp.end));
         }
-        if let Some(script) = script_content {
-            module_spans.extend(self::script_module::collect_line_module_spans(script));
-        }
+        module_spans.extend(module_plan.spans.iter().copied());
         module_spans.extend(namespace_hoist.spans().iter().copied());
         for re in &summary.re_exports {
             module_spans.push((re.start, re.end));
@@ -233,6 +242,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // Whether a default-export rewrite declared `__default__`, tracked as
     // state: grepping the generated text would match helper type positions
     // and user code that merely mentions the name (#3888).
+    let setup_helpers = setup_helpers::SetupHelperPlan::collect(summary, script_content);
     let mut declared_default_alias = false;
     if let Some(script) = script_content {
         profile!("canon.virtual_ts.emit_module_statements", {
@@ -328,20 +338,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 });
             }
 
-            // Void-reference imported names that match setup-scope helper names.
-            // These get shadowed by __setup() declarations, causing TS6133 at module level.
-            let shadowed_imports: Vec<&&str> = SETUP_SCOPE_HELPER_NAMES
-                .iter()
-                .filter(|&&name| summary.bindings.bindings.contains_key(name))
-                .collect();
-            if !shadowed_imports.is_empty() {
-                ts.push_str(
-                    "// Prevent TS6133 for imports shadowed by setup-scope compiler macros\n",
-                );
-                for name in &shadowed_imports {
-                    append!(ts, "void {name};\n");
-                }
-            }
+            setup_helpers.emit_import_anchors(&mut ts);
         });
     }
     let hoisted_generic_aliases =
@@ -422,6 +419,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     emit_setup_helpers(
         &mut ts,
         SetupHelperComponentContext {
+            helpers: &setup_helpers,
             summary,
             options,
             syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
@@ -773,13 +771,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         );
     }
 
-    emit_setup_scope_macro_anchors(
-        &mut ts,
-        summary,
-        script_content,
-        template_referenced_names,
-        preserve_unused_diagnostics,
-    );
+    emit_setup_scope_macro_anchors(&mut ts, summary, &setup_helpers);
 
     let define_emits_runtime_args = setup_helpers::define_emits_runtime_args(summary);
     let mut setup_return_fields: Vec<String> = Vec::new();
@@ -821,7 +813,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         generic_param,
         define_emits_runtime_args.is_some(),
     );
-    let slots_is_generic = emit_slots_type(&mut ts, summary, generic_injection.as_ref());
+    let slots_is_generic = emit_slots_type(
+        &mut ts,
+        summary,
+        generic_injection.as_ref(),
+        !module_plan.exported_types.contains("Slots"),
+    );
     let (has_exposed_type, exposed_is_generic) =
         emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
     ts.push('\n');
@@ -855,7 +852,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .map(|(decl, names)| (decl.as_str(), names.as_str(), slots_is_generic)),
         preserve_authored_component,
         static_raw_props_ref.as_deref(),
-        (summary.macros.define_slots().is_some() && !slots_is_generic).then_some("Slots"),
+        (summary.macros.define_slots().is_some() && !slots_is_generic).then_some("__VizeSlots"),
         self::fallthrough::fallthrough_props_type_ref(summary, template_ast, legacy_vue2)
             .as_deref(),
     );

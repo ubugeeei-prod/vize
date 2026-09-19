@@ -95,8 +95,8 @@ const stringHandler = (_value: string) => {}
     // was optional, and all four were silent.
     let flattened =
         "{ readonly count: number; readonly onSave?: ((value: string) => void) | undefined; }";
-    let props_parameter = "__VizeComponentCheckProps<Props, Record<string, unknown>>";
-    let inline_parameter = "__VizeComponentCheckProps<{ count: number; onSave?: ((value: string) => void) | undefined; }, Record<string, unknown>>";
+    let props_parameter = "__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${string}`]: unknown; }>";
+    let inline_parameter = "__VizeComponentCheckProps<{ count: number; onSave?: ((value: string) => void) | undefined; }, __VizePublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${string}`]: unknown; }>";
     assert_eq!(
         snapshot,
         vec![

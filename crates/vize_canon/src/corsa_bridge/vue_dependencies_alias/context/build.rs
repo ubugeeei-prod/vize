@@ -175,7 +175,10 @@ pub(super) fn build(
     project.finalize_package_routes().map_err(bridge_error)?;
     route_inputs.sort();
     route_inputs.dedup();
-    let mirror = (!aliases.is_empty() || !package_routes.is_empty()).then_some(project);
+    // Relative dependencies also need materialized identities: native module
+    // resolution cannot discover an open overlay as a new dependency target.
+    let mirror = (!aliases.is_empty() || !package_routes.is_empty() || project.file_count() > 1)
+        .then_some(project);
 
     Ok(AliasContext {
         project_root: root,

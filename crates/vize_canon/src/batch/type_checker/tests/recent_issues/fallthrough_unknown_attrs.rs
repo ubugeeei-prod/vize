@@ -19,7 +19,7 @@ const NATIVE_BUTTON_TYPES: &str = r#"export interface NativeElements {
 "#;
 
 const NATIVE_INPUT_TYPES: &str = r#"export interface NativeElements {
-  input: { id?: string; 'aria-label'?: string; 'aria-activedescendant'?: string };
+  input: { value?: string; id?: string; 'aria-label'?: string; 'aria-activedescendant'?: string };
 }
 "#;
 

@@ -58,6 +58,7 @@ mod script_parse;
 mod sfc_diagnostics;
 pub mod sfc_typecheck;
 pub mod source_map;
+pub mod template_diagnostic_directives;
 mod types;
 pub mod virtual_ts;
 

@@ -1,10 +1,11 @@
 //! Scope validation for runtime arguments of hoisted script-setup macros.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::Program;
+use oxc_ast::ast::{CallExpression, Program};
+use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
-use oxc_span::SourceType;
+use oxc_span::{GetSpan, SourceType};
 use oxc_syntax::symbol::SymbolFlags;
 use vize_carton::cstr;
 
@@ -85,6 +86,52 @@ fn hoisted_macro_spans(ctx: &ScriptCompileContext) -> Vec<HoistedMacroSpan> {
             })
     }));
     spans
+}
+
+/// Only runtime arguments are hoisted. The macro callee remains a compiler
+/// token, and withDefaults' first argument is the nested defineProps call.
+fn runtime_argument_spans(
+    program: &Program<'_>,
+    candidates: &[HoistedMacroSpan],
+) -> Vec<HoistedMacroSpan> {
+    struct Arguments<'a> {
+        candidates: &'a [HoistedMacroSpan],
+        spans: Vec<HoistedMacroSpan>,
+    }
+    impl<'a> Visit<'a> for Arguments<'_> {
+        fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+            for candidate in self.candidates {
+                if candidate.start != call.span.start as usize
+                    || candidate.end != call.span.end as usize
+                {
+                    continue;
+                }
+                for argument in call
+                    .arguments
+                    .iter()
+                    .skip(usize::from(candidate.name == "withDefaults"))
+                {
+                    let span = argument.span();
+                    self.spans.push(HoistedMacroSpan {
+                        name: candidate.name,
+                        start: span.start as usize,
+                        end: span.end as usize,
+                    });
+                }
+            }
+            walk_call_expression(self, call);
+        }
+    }
+    let mut visitor = Arguments {
+        candidates,
+        spans: candidates
+            .iter()
+            .copied()
+            .filter(|span| span.name == "defineModel")
+            .collect(),
+    };
+    visitor.visit_program(program);
+    visitor.spans
 }
 
 fn is_identifier_byte(byte: u8) -> bool {
@@ -175,6 +222,10 @@ pub(crate) fn validate_macro_scope_references_in_program(
 ) -> Result<(), SfcError> {
     let spans = hoisted_macro_spans(ctx);
     if !has_possible_local_macro_reference(ctx, &spans) {
+        return Ok(());
+    }
+    let spans = runtime_argument_spans(program, &spans);
+    if spans.is_empty() {
         return Ok(());
     }
     // `Semantic::reference_span` reads `Semantic::nodes`, and OXC 0.142 made the

@@ -78,13 +78,13 @@ impl SlotOutletChecks {
 /// (#3065); instantiate it with the SFC's own parameters instead.
 fn slots_type_ref(summary: &Croquis) -> String {
     let Some(define_slots) = summary.macros.define_slots() else {
-        return String::from("Slots");
+        return String::from("__VizeSlots");
     };
     if summary.bindings.bindings.contains_key("slots") {
         return String::from("typeof slots");
     }
     let Some(generic_decl) = sfc_generic_param(summary) else {
-        return String::from("Slots");
+        return String::from("__VizeSlots");
     };
     let generic_names = extract_generic_names(generic_decl);
     let names: Vec<String> = generic_names
@@ -95,9 +95,9 @@ fn slots_type_ref(summary: &Croquis) -> String {
         .collect();
     let slots_type = define_slots.type_args.as_deref().unwrap_or_default();
     if references_any_identifier(slots_type, &names) {
-        cstr!("Slots<{generic_names}>")
+        cstr!("__VizeSlots<{generic_names}>")
     } else {
-        String::from("Slots")
+        String::from("__VizeSlots")
     }
 }
 

@@ -131,7 +131,7 @@ impl VirtualProject {
                 experimental_patterned_template: self.experimental_patterned_template,
                 experimental_strict_slot_children: self.experimental_strict_slot_children,
                 hoist_shared_preamble: true,
-                preserve_relative_declarations: package_route_path,
+                preserve_relative_declarations: package_route_path || self.session_scripts,
                 preserve_declaration_spelling: self.session_scripts,
                 mirrorable_project_files: None,
                 rewriter: &self.rewriter,
@@ -193,7 +193,7 @@ impl VirtualProject {
             experimental_patterned_template: self.experimental_patterned_template,
             experimental_strict_slot_children: self.experimental_strict_slot_children,
             hoist_shared_preamble: true,
-            preserve_relative_declarations: false,
+            preserve_relative_declarations: self.session_scripts,
             preserve_declaration_spelling: self.session_scripts,
             mirrorable_project_files: Some(&mirrorable_project_files),
             rewriter: &self.rewriter,
@@ -212,7 +212,8 @@ impl VirtualProject {
             .map(|&path| {
                 let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
                 let mut context = build_context;
-                context.preserve_relative_declarations = package_paths.contains(path);
+                context.preserve_relative_declarations =
+                    package_paths.contains(path) || self.session_scripts;
                 build_registered_file(path, &content, context)
             })
             .collect();
@@ -244,7 +245,8 @@ impl VirtualProject {
                 experimental_patterned_template: self.experimental_patterned_template,
                 experimental_strict_slot_children: self.experimental_strict_slot_children,
                 hoist_shared_preamble: true,
-                preserve_relative_declarations: self.is_package_route_path(path),
+                preserve_relative_declarations: self.is_package_route_path(path)
+                    || self.session_scripts,
                 preserve_declaration_spelling: self.session_scripts,
                 mirrorable_project_files: None,
                 rewriter: &self.rewriter,
@@ -284,7 +286,8 @@ impl VirtualProject {
             ScriptBuildContext {
                 roots: (&self.project_root, &self.virtual_root),
                 rewriter: &self.rewriter,
-                preserve_relative_declarations: self.is_package_route_path(path),
+                preserve_relative_declarations: self.is_package_route_path(path)
+                    || self.session_scripts,
                 preserve_declaration_spelling: self.session_scripts,
                 mirrorable_project_files: None,
                 alias_rewrite_policy: Some(self.alias_rewrite_policy()),

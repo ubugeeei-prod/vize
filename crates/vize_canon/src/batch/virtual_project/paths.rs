@@ -23,10 +23,7 @@ pub(super) fn script_virtual_path(
     let (project_root, virtual_root) = roots;
     // Out-of-root scripts (a workspace barrel reached by the reachability
     // pass, #3887) mirror into the external escape subtree.
-    let mut virtual_path = match path.strip_prefix(project_root) {
-        Ok(relative) => virtual_root.join(relative),
-        Err(_) => super::external_mirror::external_mirror_path(virtual_root, path)?,
-    };
+    let mut virtual_path = super::build::mirrored_virtual_path(project_root, virtual_root, path)?;
     let Some(file_name) = virtual_path.file_name().and_then(|name| name.to_str()) else {
         return Err(CorsaError::PathError {
             path: path.to_path_buf(),

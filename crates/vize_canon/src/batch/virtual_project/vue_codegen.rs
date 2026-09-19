@@ -73,8 +73,10 @@ pub(super) fn generate_vue_virtual_ts(
     source: &str,
     descriptor: &SfcDescriptor,
     options: &VirtualTsOptions,
-    codegen_options: VueCodegenOptions<'_>,
+    mut codegen_options: VueCodegenOptions<'_>,
 ) -> CorsaResult<GeneratedVueFile> {
+    codegen_options.check_options =
+        super::vue_compiler_comments::apply(source, codegen_options.check_options);
     let allocator = Allocator::new();
     let mut diagnostics = Vec::new();
 

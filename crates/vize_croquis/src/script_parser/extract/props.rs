@@ -9,7 +9,7 @@ use vize_carton::{CompactString, String};
 use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
-use super::props_type::runtime_prop_type_from_ts_type;
+use super::props_type::{runtime_ctor_type, runtime_prop_type_from_ts_type};
 
 pub fn extract_props_from_type(
     result: &mut ScriptParseResult,
@@ -33,7 +33,7 @@ pub fn extract_props_from_type(
             } else {
                 result.macros.add_prop(definition);
             }
-            result.bindings.add(prop.name.as_str(), BindingType::Props);
+            record_prop_binding(result, prop.name.as_str());
         }
     }
 }
@@ -105,7 +105,7 @@ fn extract_props_from_array(result: &mut ScriptParseResult, arr: &ArrayExpressio
                 s.span.start,
                 s.span.end,
             );
-            result.bindings.add(name, BindingType::Props);
+            record_prop_binding(result, name);
         }
     }
 }
@@ -169,7 +169,7 @@ fn type_prop_declaration(type_param: &TSType<'_>, name: &str) -> Option<(u32, u3
 }
 
 fn add_runtime_prop(result: &mut ScriptParseResult, prop: PropDefinition) {
-    result.bindings.add(prop.name.as_str(), BindingType::Props);
+    record_prop_binding(result, prop.name.as_str());
     result.macros.add_prop(prop);
 }
 
@@ -179,7 +179,7 @@ fn add_runtime_prop_with_declaration(
     start: u32,
     end: u32,
 ) {
-    result.bindings.add(prop.name.as_str(), BindingType::Props);
+    record_prop_binding(result, prop.name.as_str());
     result.macros.add_prop_with_declaration(prop, start, end);
 }
 
@@ -188,6 +188,15 @@ pub(super) fn runtime_object_property_name<'a>(key: &'a PropertyKey<'a>) -> Opti
         PropertyKey::StaticIdentifier(id) => Some(id.name.as_str()),
         PropertyKey::StringLiteral(s) => Some(s.value.as_str()),
         _ => None,
+    }
+}
+
+fn record_prop_binding(result: &mut ScriptParseResult, name: &str) {
+    // Props are implicit template bindings. An authored setup declaration of
+    // the same name owns the lexical binding regardless of declaration order.
+    // Explicit props destructuring records its local aliases separately.
+    if !result.bindings.contains(name) {
+        result.bindings.add(name, BindingType::Props);
     }
 }
 
@@ -312,22 +321,6 @@ pub(in crate::script_parser) fn extract_runtime_prop_default(
             .get(prop.value.span().start as usize..prop.value.span().end as usize)
             .map(CompactString::new)
     })
-}
-
-fn runtime_ctor_type(name: &str) -> Option<&'static str> {
-    match name {
-        "String" => Some("string"),
-        "Number" => Some("number"),
-        "Boolean" => Some("boolean"),
-        "Array" => Some("unknown[]"),
-        // Vue's own `InferPropType` maps `ObjectConstructor` to
-        // `Record<string, any>`; `unknown` here made every `v-for` over an
-        // `Object` prop report TS18046 that vue-tsc does not (#4426 follow-up).
-        "Object" => Some("Record<string, any>"),
-        "Date" => Some("Date"),
-        "Function" => Some("(...args: any[]) => any"),
-        _ => None,
-    }
 }
 
 /// Detect if a prop has required: true

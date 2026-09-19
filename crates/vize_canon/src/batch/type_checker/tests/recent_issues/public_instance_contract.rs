@@ -292,7 +292,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
         public_dts.contains(
             "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, __EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[])"
         ) && public_dts.contains(
-            "declare const __vize_component__: {\n    __vizeEmitProps?: __VizeStaticEmitProps;\n    readonly __vizeRawProps?: Props;\n    readonly __vizeSlots?: Partial<Slots>;\n} & __VizeComponentConstructor & __VizeVueComponentOptions;"
+            "declare const __vize_component__: {\n    __vizeEmitProps?: __VizeStaticEmitProps;\n    readonly __vizeRawProps?: Props;\n    readonly __vizeSlots?: Partial<__VizeSlots>;\n} & __VizeComponentConstructor & __VizeVueComponentOptions;"
         )
             && !public_dts.contains("__VizeComponentInputConstructor")
             && !public_dts.contains("__VizeComponentPublicConstructor"),
@@ -301,7 +301,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
     assert!(
         public_dts.contains("$props: Props & __EmitProps<Emits>;")
             && public_dts.contains("$emit: __VizePublicEmit<Emits>;")
-            && public_dts.contains("$slots: __VizePublicSlots<Slots>;")
+            && public_dts.contains("$slots: __VizePublicSlots<__VizeSlots>;")
             && public_dts.contains("} & __VizeComponentPublicBase &"),
         "emitted public instance must own props/emits and adapt the Vue base:\n{public_dts}"
     );

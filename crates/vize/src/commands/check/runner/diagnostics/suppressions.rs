@@ -6,7 +6,6 @@ pub(in crate::commands::check::runner) fn is_suppressed_false_positive(
     is_nitro_import_meta_conflict(diagnostic)
         || is_vue_wildcard_component_duplicate(diagnostic)
         || is_nuxt_bridge_injected_property_duplicate(diagnostic)
-        || is_vue_expect_error_suppressed(diagnostic)
         || is_native_truthiness_false_positive(diagnostic)
         || is_corsa_recursive_discriminant_array_false_positive(diagnostic)
 }
@@ -61,31 +60,6 @@ fn declaration_source_contains(path: &Path, needles: &[&str]) -> bool {
         return false;
     };
     needles.iter().any(|needle| source.contains(needle))
-}
-
-fn is_vue_expect_error_suppressed(diagnostic: &vize_canon::BatchDiagnostic) -> bool {
-    if diagnostic
-        .file
-        .extension()
-        .and_then(|extension| extension.to_str())
-        .is_none_or(|extension| extension != "vue")
-    {
-        return false;
-    }
-    let Ok(source) = fs::read_to_string(&diagnostic.file) else {
-        return false;
-    };
-    let lines = source.lines().collect::<Vec<_>>();
-    let mut line = diagnostic.line as usize;
-    while line > 0 {
-        line -= 1;
-        let trimmed = lines.get(line).map_or("", |line| line.trim());
-        if trimmed.is_empty() {
-            continue;
-        }
-        return trimmed.contains("@vue-expect-error");
-    }
-    false
 }
 
 fn is_native_truthiness_false_positive(diagnostic: &vize_canon::BatchDiagnostic) -> bool {

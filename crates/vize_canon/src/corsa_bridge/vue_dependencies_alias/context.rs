@@ -185,7 +185,7 @@ impl AliasContext {
             resolve_dependency(specifier, importer_dir, &self.project_root, &self.aliases)
         {
             let key = std::fs::canonicalize(&path).unwrap_or(path);
-            if super::inside_node_modules(&key) || super::is_declaration(&key) {
+            if super::inside_node_modules(&key) {
                 return None;
             }
             return self.mirror_specifier_for_source(&key);
@@ -225,6 +225,13 @@ impl AliasContext {
             .virtual_path
             .clone();
         let spelled = target.to_string_lossy().replace('\\', "/");
+        if super::is_declaration(&target) {
+            return Some(
+                crate::batch::declaration_module_path(&target)
+                    .to_string_lossy()
+                    .replace('\\', "/"),
+            );
+        }
         Some(
             spelled
                 .strip_suffix(".tsx")

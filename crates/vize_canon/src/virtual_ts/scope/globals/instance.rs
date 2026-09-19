@@ -23,7 +23,7 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 
-use vize_croquis::{BindingMetadata, Croquis, analyzer::extract_identifier_refs_oxc};
+use vize_croquis::{BindingMetadata, Croquis, ScopeData, analyzer::extract_identifier_refs_oxc};
 
 use crate::virtual_ts::helpers::is_vue2_instance_member;
 use crate::virtual_ts::props::TemplatePropsModel;
@@ -44,10 +44,6 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
     template_offset: u32,
     scope_options: &ScopeGenerationOptions<'_, '_>,
 ) {
-    if summary.undefined_refs.is_empty() && summary.template_expressions.is_empty() {
-        return;
-    }
-
     let mut emitter = InstanceGlobalRefsEmitter::new(
         ts,
         mappings,
@@ -78,6 +74,23 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
             let src_start = (template_offset + expr.start + ident.offset) as usize;
             let src_end = src_start + name.len();
             emitter.emit(name, src_start, src_end);
+        }
+    }
+    // Loop sources live in scope metadata rather than template_expressions.
+    // Their instance globals need the same declaration and authored mapping.
+    for scope in summary.scopes.iter() {
+        let ScopeData::VFor(data) = scope.data() else {
+            continue;
+        };
+        let Some(offset) = summary.scopes.v_for_source_offset(scope.id) else {
+            continue;
+        };
+        if !data.source.contains('$') {
+            continue;
+        }
+        for reference in extract_identifier_refs_oxc(data.source.as_str()) {
+            let start = (template_offset + offset + reference.offset) as usize;
+            emitter.emit(reference.name.as_str(), start, start + reference.name.len());
         }
     }
 }

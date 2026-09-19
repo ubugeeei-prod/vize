@@ -15,6 +15,7 @@ mod component_slot_contract_tests;
 mod directive_values;
 #[cfg(test)]
 mod directive_values_tests;
+mod dynamic_arguments;
 mod generic_props_call;
 mod native_props;
 #[cfg(test)]
@@ -27,6 +28,7 @@ mod reserved_props;
 #[cfg(test)]
 mod sequence_prop_tests;
 mod spread_reserved_props;
+mod statement_guard;
 mod statements;
 mod ts_suppression_comments;
 mod value_checks;

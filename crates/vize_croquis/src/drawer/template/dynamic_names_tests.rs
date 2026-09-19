@@ -228,7 +228,13 @@ fn runtime_directive_arguments_are_checked_as_expressions() {
     let arguments = croquis
         .template_expressions
         .iter()
-        .filter(|expression| expression.kind == TemplateExpressionKind::DynamicDirectiveArgument)
+        .filter(|expression| {
+            matches!(
+                expression.kind,
+                TemplateExpressionKind::DynamicDirectiveArgument
+                    | TemplateExpressionKind::DynamicEventArgument
+            )
+        })
         .map(|expression| {
             (
                 expression.content.as_str(),
