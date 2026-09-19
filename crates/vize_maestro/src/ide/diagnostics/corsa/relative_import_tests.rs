@@ -173,7 +173,7 @@ defineSlots<{
                         .unwrap()
                         .to_file_path()
                         .unwrap();
-                    format!(
+                    vize_s0::cstr!(
                         "import {name} from \"{}\";",
                         path.to_string_lossy().replace('\\', "/")
                     )

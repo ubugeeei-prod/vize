@@ -1,4 +1,11 @@
-use super::*;
+use std::path::Path;
+
+use vize_carton::cstr;
+
+use super::{
+    CorsaBridgeError, CorsaVueVirtualDocumentOptions, GeneratedVueDocument, ImportRewriter,
+    VirtualTsOptions, VueDocumentVirtualTsOptions, path_to_file_uri,
+};
 
 pub(super) fn generate_vue_document_with_options(
     source_path: &Path,

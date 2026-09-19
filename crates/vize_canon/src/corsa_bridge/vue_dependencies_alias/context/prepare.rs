@@ -1,6 +1,10 @@
 //! Prepare and materialize one cached native project revision.
 
-use super::*;
+use std::path::{Path, PathBuf};
+
+use vize_carton::FxHashMap;
+
+use super::{AliasContext, ContextFingerprint, PreparedAliasContext, ProjectMember, build};
 
 impl AliasContext {
     pub(in crate::corsa_bridge) fn for_host_cached(
@@ -53,7 +57,6 @@ impl AliasContext {
             options,
             environment,
         )?;
-        let mut fingerprint = fingerprint;
         fingerprint.stamp(&context);
         let mut cache = environment.editor_session.cache();
         if let Some(context) = cache.get(source_path, &fingerprint) {

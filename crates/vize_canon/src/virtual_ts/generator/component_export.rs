@@ -1,3 +1,4 @@
+use crate::virtual_ts::types::AuthoredDefaultKind;
 use vize_carton::{String, append, cstr};
 
 use super::emits::EmitsInfo;
@@ -71,16 +72,18 @@ fn emit_vue_component_options_type(ts: &mut String, has_generic_params: bool) {
 
 /// Alias the authored default export and its instance type so the generated
 /// component keeps the declarations the SFC itself wrote.
-pub(super) fn emit_authored_component_aliases(ts: &mut String, preserve_authored_component: bool) {
-    if !preserve_authored_component {
+pub(super) fn emit_authored_component_aliases(ts: &mut String, authored: AuthoredDefaultKind) {
+    if authored == AuthoredDefaultKind::None {
         return;
     }
     ts.push_str(
         "type __VizeAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];\n",
     );
-    ts.push_str(
-        "type __VizeAuthoredInstance = __VizeAuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};\n\n",
-    );
+    if authored == AuthoredDefaultKind::Component {
+        ts.push_str(
+            "type __VizeAuthoredInstance = __VizeAuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};\n\n",
+        );
+    }
 }
 
 /// The child-side slot resolver a parent's `v-slot` scope calls to instantiate
@@ -184,7 +187,7 @@ pub(super) fn emit_default_export_declaration(
     ts: &mut String,
     emits_info: &EmitsInfo,
     generic_component_params: Option<(&str, &str, bool)>,
-    has_authored_default: bool,
+    authored_default: AuthoredDefaultKind,
     static_raw_props_ref: Option<&str>,
     static_slots_ref: Option<&str>,
     fallthrough_props_ref: Option<&str>,
@@ -192,7 +195,7 @@ pub(super) fn emit_default_export_declaration(
     emit_vue_component_options_type(ts, generic_component_params.is_some());
     let emit_props_static = emits_info.static_emit_props_field();
     let event_map_static = emits_info.static_event_map_field();
-    let authored_component = if has_authored_default {
+    let authored_component = if authored_default == AuthoredDefaultKind::Component {
         "__VizeAuthoredComponent & "
     } else {
         ""
@@ -239,6 +242,12 @@ pub(super) fn emit_default_export_declaration(
             " readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {fallthrough_ref};"
         );
     }
+    ts.push_str("declare const __vize_component__: ");
+    if authored_default != AuthoredDefaultKind::None {
+        // A normal script may export a primitive. Adding the generated Vue
+        // constructor to that value would change its authored public type.
+        ts.push_str("__VizeAuthoredComponent extends object ? ");
+    }
     if let Some((generic_decl, generic_names, slots_is_generic)) = generic_component_params {
         let emit_resolvers = emits_info.generic_emit_resolver_fields(generic_decl, generic_names);
         let event_map_separator = if emit_props_static.is_empty() || event_map_static.is_empty() {
@@ -251,25 +260,29 @@ pub(super) fn emit_default_export_declaration(
         let check_props_param = generic_check_props_param(generic_names, fallthrough_props_ref);
         append!(
             *ts,
-            "declare const __vize_component__: {{ __vizeCheck: <{generic_decl}>(props: {check_props_param}) => void; __vizeResolveProps?: <{generic_decl}>(props: {check_props_param}) => Props<{generic_names}>; {slot_resolver}{emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {component_contract_fields} }} & {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;\n",
+            "{{ __vizeCheck: <{generic_decl}>(props: {check_props_param}) => void; __vizeResolveProps?: <{generic_decl}>(props: {check_props_param}) => Props<{generic_names}>; {slot_resolver}{emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {component_contract_fields} }} & {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions",
         );
     } else if emits_info.has_emits_for_props {
         let event_map_separator = if event_map_static.is_empty() { "" } else { " " };
         append!(
             *ts,
-            "declare const __vize_component__: {{ {emit_props_static}{event_map_separator}{event_map_static} {component_contract_fields} }} & {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions;\n",
+            "{{ {emit_props_static}{event_map_separator}{event_map_static} {component_contract_fields} }} & {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions",
         );
     } else if !component_contract_fields.trim().is_empty() {
         append!(
             *ts,
-            "declare const __vize_component__: {{ {component_contract_fields} }} & {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions;\n",
+            "{{ {component_contract_fields} }} & {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions",
         );
     } else {
         append!(
             *ts,
-            "declare const __vize_component__: {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions;\n",
+            "{authored_component}__VizeComponentConstructor & __VizeVueComponentOptions",
         );
     }
+    if authored_default != AuthoredDefaultKind::None {
+        ts.push_str(" : __VizeAuthoredComponent");
+    }
+    ts.push_str(";\n");
 }
 
 pub(super) fn emit_component_default_export(ts: &mut String, component_name: Option<&str>) {
@@ -316,35 +329,5 @@ fn contains_identifier(source: &str, name: &str) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::strip_synthetic_any_defaults;
-
-    #[test]
-    fn synthetic_any_defaults_are_stripped_without_touching_constraints() {
-        assert_eq!(
-            strip_synthetic_any_defaults("T extends { id: string; } = any").as_str(),
-            "T extends { id: string; }"
-        );
-        assert_eq!(strip_synthetic_any_defaults("T = any").as_str(), "T");
-        assert_eq!(
-            strip_synthetic_any_defaults("T extends (value: string) => void = any").as_str(),
-            "T extends (value: string) => void"
-        );
-        assert_eq!(
-            strip_synthetic_any_defaults("A extends Record<string, any> = any, B = A").as_str(),
-            "A extends Record<string, any>, B = A"
-        );
-        assert_eq!(
-            strip_synthetic_any_defaults("A = any, B extends A = any").as_str(),
-            "A, B extends A"
-        );
-        assert_eq!(
-            strip_synthetic_any_defaults("const T extends Tab").as_str(),
-            "const T extends Tab"
-        );
-        assert_eq!(
-            strip_synthetic_any_defaults("T = string").as_str(),
-            "T = string"
-        );
-    }
-}
+#[path = "component_export_tests.rs"]
+mod tests;

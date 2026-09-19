@@ -26,14 +26,15 @@ function resolveTsgoBinary(): string | undefined {
 }
 
 /**
- * PIDs of live descendants of `rootPid` whose command mentions tsgo/corsa.
+ * PIDs of live descendants of `rootPid` running the configured checker.
  *
  * The backend may be reached through wrapper layers (`sh` shim, `node`
  * launcher, native binary), so the whole descendant tree is scanned rather
  * than only direct children. `ps -axo` output is BSD/procps compatible and
  * works on both macOS and Linux CI runners.
  */
-function findCorsaDescendants(rootPid: number): number[] {
+function findCorsaDescendants(rootPid: number, executable: string): number[] {
+  const executables = [executable, fs.realpathSync(executable)];
   const table = execFileSync("ps", ["-axo", "pid=,ppid=,command="], { encoding: "utf8" })
     .split("\n")
     .map((line) => line.trim().match(/^(\d+)\s+(\d+)\s+(.*)$/))
@@ -53,7 +54,7 @@ function findCorsaDescendants(rootPid: number): number[] {
     const pid = queue.shift() as number;
     for (const child of childrenByParent.get(pid) ?? []) {
       queue.push(child.pid);
-      if (/tsgo|corsa/i.test(child.command)) {
+      if (executables.some((candidate) => child.command.includes(candidate))) {
         matches.push(child.pid);
       }
     }
@@ -61,10 +62,14 @@ function findCorsaDescendants(rootPid: number): number[] {
   return matches;
 }
 
-async function waitForCorsaDescendants(rootPid: number, timeoutMs: number): Promise<number[]> {
+async function waitForCorsaDescendants(
+  rootPid: number,
+  executable: string,
+  timeoutMs: number,
+): Promise<number[]> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const pids = findCorsaDescendants(rootPid);
+    const pids = findCorsaDescendants(rootPid, executable);
     if (pids.length > 0) {
       return pids;
     }
@@ -230,7 +235,7 @@ test("vize lsp recovers typecheck diagnostics after the Corsa backend is killed"
       [2, "missingTwo"],
       [3, "missingThree"],
     ] as const) {
-      const backendPids = await waitForCorsaDescendants(session.processId, 15000);
+      const backendPids = await waitForCorsaDescendants(session.processId, corsaPath, 15000);
       assert.ok(
         backendPids.length > 0,
         `cycle ${cycle}: expected a live tsgo/corsa descendant of the vize lsp process`,

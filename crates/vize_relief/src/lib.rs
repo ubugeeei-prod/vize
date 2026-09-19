@@ -19,10 +19,12 @@
 //! - Serialization support with serde
 
 pub mod errors;
+mod inline_style;
 pub mod options;
 mod relief;
 
 pub use errors::*;
+pub use inline_style::parse_inline_style;
 pub use options::*;
 pub use relief::*;
 

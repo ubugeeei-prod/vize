@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::{FxHashMap, String, cstr};
+use vize_carton::{FxHashMap, String};
 
 use super::bridge::CorsaBridge;
 use super::types::CorsaBridgeError;

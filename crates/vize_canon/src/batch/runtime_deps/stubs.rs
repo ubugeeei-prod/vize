@@ -80,11 +80,12 @@ pub(crate) const VUE_RUNTIME_CORE_STUB_TYPES: &str = r#"export interface Compone
 pub(crate) const VUE_RUNTIME_DOM_STUB_TYPES: &str = r#"import type { ComponentCustomProps as RuntimeCoreComponentCustomProps } from "@vue/runtime-core";
 
 export interface ComponentCustomProperties {}
+export type Slots = Readonly<Record<string, ((...args: any[]) => any) | undefined>>;
 
 export interface ComponentPublicInstance<Props = {}> extends ComponentCustomProperties {
   $props: Props;
   $attrs: { [key: string]: unknown };
-  $slots: { [key: string]: unknown };
+  $slots: Slots;
   $refs: { [key: string]: unknown };
   $emit: (...args: any[]) => void;
 }

@@ -781,13 +781,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let mut setup_artifact_return_fields = Vec::new();
     setup_props_plan.push_return_field(&mut setup_artifact_return_fields);
     setup_return_fields.extend(setup_artifact_return_fields.into_iter().map(String::from));
-    let preserve_authored_component =
-        generation_options.preserves_authored_component(declared_default_alias, has_script_setup);
+    let authored_default =
+        generation_options.authored_default(declared_default_alias, has_script_setup);
+    let preserve_authored_value = authored_default != super::types::AuthoredDefaultKind::None;
     setup_helpers::emit_return_artifacts(
         &mut ts,
         summary,
         &mut setup_return_fields,
-        preserve_authored_component,
+        preserve_authored_value,
     );
     setup_props_plan.emit_options_api_artifact(&mut ts, options_api_props.as_ref());
     ambient.emit_return(&mut ts, &setup_return_fields, &mut mappings);
@@ -804,7 +805,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ));
     setup_type_exports.emit_module_exports(&mut ts);
     setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref());
-    emit_authored_component_aliases(&mut ts, preserve_authored_component);
+    emit_authored_component_aliases(&mut ts, authored_default);
     let emits_info = emit_emits_type(
         &mut ts,
         summary,
@@ -835,7 +836,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             exposed_is_generic,
             has_emits_for_props: emits_info.has_emits_for_props,
             has_exposed_type,
-            has_authored_default: preserve_authored_component,
+            has_authored_default: authored_default == super::types::AuthoredDefaultKind::Component,
         },
         legacy_vue2,
         dialect,
@@ -850,7 +851,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         generic_component_params
             .as_ref()
             .map(|(decl, names)| (decl.as_str(), names.as_str(), slots_is_generic)),
-        preserve_authored_component,
+        authored_default,
         static_raw_props_ref.as_deref(),
         (summary.macros.define_slots().is_some() && !slots_is_generic).then_some("__VizeSlots"),
         self::fallthrough::fallthrough_props_type_ref(summary, template_ast, legacy_vue2)

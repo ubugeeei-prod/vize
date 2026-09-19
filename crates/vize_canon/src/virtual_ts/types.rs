@@ -294,24 +294,30 @@ impl VirtualTsGenerationOptions<'_> {
         (script_offset as usize).saturating_add(offset)
     }
 
-    /// Whether the authored default export survives into the emitted component.
-    ///
-    /// It does only when a plain `<script>` actually declared `__default__` and
-    /// no `<script setup>` sits beside it. A default export paired with
-    /// `<script setup>` carries just the options `<script setup>` cannot express
-    /// (`inheritAttrs`, `name`, helper re-exports, ...), so it is an options
-    /// fragment rather than the component. Intersecting that fragment into
-    /// `__vize_component__` costs the export its usable construct-signature
-    /// inference, and consumers reading the component's emits off it lose every
-    /// listener's contextual type (`TS7006` on
-    /// `popup(MkAutocomplete, props, { done: res => ... })` in Misskey).
-    pub(crate) fn preserves_authored_component(
+    /// A normal-script component contributes its public instance; beside
+    /// setup, an object default contributes options only. Both still retain
+    /// the authored value so a non-object default keeps its exact type.
+    pub(crate) fn authored_default(
         self,
         declared_default_alias: bool,
         has_script_setup: bool,
-    ) -> bool {
-        self.preserve_authored_component && declared_default_alias && !has_script_setup
+    ) -> AuthoredDefaultKind {
+        match (
+            self.preserve_authored_component && declared_default_alias,
+            has_script_setup,
+        ) {
+            (false, _) => AuthoredDefaultKind::None,
+            (true, true) => AuthoredDefaultKind::Options,
+            (true, false) => AuthoredDefaultKind::Component,
+        }
     }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum AuthoredDefaultKind {
+    None,
+    Options,
+    Component,
 }
 
 /// Default plugin globals.
@@ -322,21 +328,8 @@ fn default_plugin_globals() -> Vec<TemplateGlobal> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::emit_lib_reference_directives;
-    use vize_carton::String;
-
-    #[test]
-    fn virtual_ts_lib_references_are_pluggable() {
-        let mut output = String::default();
-        emit_lib_reference_directives(&mut output, &["es2021", "webworker", "bad\" />"]);
-
-        assert_eq!(
-            output.as_str(),
-            "/// <reference lib=\"es2021\" />\n/// <reference lib=\"webworker\" />\n"
-        );
-    }
-}
+#[path = "types_tests.rs"]
+mod tests;
 
 /// Output of virtual TypeScript generation.
 #[derive(Debug)]

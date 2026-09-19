@@ -226,7 +226,7 @@ impl JsxService {
         range: Range,
     ) -> Option<Range> {
         let (start_line, end_line, start_char, end_char) = virtual_range_to_source(
-            &virtual_ts,
+            virtual_ts,
             source,
             range.start.line,
             range.start.character,

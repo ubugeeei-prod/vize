@@ -60,7 +60,7 @@ fn inspect_stream(bytes: &[u8]) -> Result<usize, StreamError> {
 }
 
 pub(super) fn client_messages(bytes: &[u8]) -> Result<Vec<serde_json::Value>, String> {
-    parse_stream(bytes).map_err(|error| format!("invalid client frames: {error}"))
+    parse_stream(bytes).map_err(|error| cstr!("invalid client frames: {error}").into())
 }
 
 fn parse_stream(bytes: &[u8]) -> Result<Vec<serde_json::Value>, StreamError> {

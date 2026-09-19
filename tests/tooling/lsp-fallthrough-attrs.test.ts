@@ -150,6 +150,7 @@ test("vize lsp publishes and clears fallthrough attribute diagnostics", async (t
           strict: true,
           target: "ES2022",
         },
+        vueCompilerOptions: { checkUnknownProps: true },
         include: ["src/**/*"],
       }),
       "utf8",

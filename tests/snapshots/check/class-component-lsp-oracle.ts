@@ -133,10 +133,7 @@ const missingRequiredTypeDiagnostic = {
   source: "vize/types",
   message:
     "Argument of type '{ nme: string; }' is not assignable to parameter of type " +
-    "'__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; " +
-    'about?: unknown; "accent-height"?: unknown; accentHeight?: unknown; accept?: unknown; ' +
-    "acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; " +
-    "... 673 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\n" +
+    "'__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\n" +
     "  Property '\"name\"' is missing in type '{ nme: string; }' but required in type " +
     "'{ readonly name: string; }'.",
 };

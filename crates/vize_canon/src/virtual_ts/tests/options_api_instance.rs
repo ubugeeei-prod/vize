@@ -255,7 +255,7 @@ fn test_options_api_script_setup_next_to_plain_script_disables_the_instance_form
 /// construct-signature inference: Misskey's `popup(MkAutocomplete, props, {
 /// done: res => ... })` lost every listener's contextual type (`TS7006`).
 #[test]
-fn test_script_setup_next_to_plain_script_drops_the_authored_component() {
+fn test_script_setup_keeps_options_separate_from_the_component_instance() {
     let setup = r#"const props = defineProps<{ toaster: boolean }>()
 "#;
     let script = r#"export default {
@@ -285,8 +285,9 @@ fn test_script_setup_next_to_plain_script_drops_the_authored_component() {
     );
 
     assert!(
-        !output.code.contains("__VizeAuthoredComponent"),
-        "a `<script setup>` block must keep the authored component aliases off:\n{}",
+        !output.code.contains("__VizeAuthoredComponent &")
+            && !output.code.contains("__VizeAuthoredInstance"),
+        "a `<script setup>` block must not intersect options into the component:\n{}",
         output.code
     );
     assert!(

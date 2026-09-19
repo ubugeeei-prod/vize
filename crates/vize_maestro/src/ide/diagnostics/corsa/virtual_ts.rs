@@ -81,7 +81,7 @@ impl DiagnosticService {
             VueDocumentVirtualTsOptions {
                 options_api,
                 legacy_vue2,
-                preserve_event_navigation: false,
+                preserve_event_navigation: true,
                 dialect: Default::default(),
                 preserve_missing_vue_diagnostics: false,
                 experimental_patterned_template: false,

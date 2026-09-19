@@ -55,7 +55,18 @@ fn generated_prop_value_with_comment_policy(
     if !prop.is_dynamic {
         let mut value = String::default();
         if let Some(static_value) = prop.value.as_ref() {
-            push_ts_string_literal(&mut value, static_value.as_str());
+            if prop.name == "style" {
+                value.push('{');
+                for (key, entry) in vize_relief::parse_inline_style(static_value) {
+                    push_ts_string_literal(&mut value, key.as_str());
+                    value.push(':');
+                    push_ts_string_literal(&mut value, entry.as_str());
+                    value.push(',');
+                }
+                value.push('}');
+            } else {
+                push_ts_string_literal(&mut value, static_value.as_str());
+            }
         } else {
             value.push_str("true");
         }

@@ -143,7 +143,7 @@ impl DiagnosticService {
                     options_api,
                     legacy_vue2,
                     experimental_patterned_template: state.patterned_template_enabled(),
-                    preserve_event_navigation: false,
+                    preserve_event_navigation: true,
                     dialect: state.type_checker_vue_version(),
                 },
             )
@@ -186,7 +186,7 @@ impl DiagnosticService {
                         options_api,
                         legacy_vue2,
                         experimental_patterned_template: state.patterned_template_enabled(),
-                        preserve_event_navigation: false,
+                        preserve_event_navigation: true,
                         dialect: state.type_checker_vue_version(),
                     },
                     &overlays,

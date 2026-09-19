@@ -1,6 +1,7 @@
 use std::collections::BTreeSet;
 
 use tower_lsp::lsp_types::Url;
+use vize_s0::cstr;
 
 pub(super) fn assert_mirror_root(
     trace: &[u8],
@@ -13,10 +14,7 @@ pub(super) fn assert_mirror_root(
         .filter(|message| message["method"] == "initialize")
         .collect::<Vec<_>>();
     if initialize.len() != 1 {
-        return Err(format!(
-            "expected one initialization, found {}",
-            initialize.len()
-        ));
+        return Err(cstr!("expected one initialization, found {}", initialize.len()).into());
     }
     let root_uri = initialize[0]["params"]["rootUri"]
         .as_str()
@@ -29,17 +27,15 @@ pub(super) fn assert_mirror_root(
         .canonicalize()
         .map_err(|error| error.to_string())?
         .join("vize-canon/editor/sessions");
-    let relative = root.strip_prefix(&private_sessions).map_err(|_| {
-        format!("editor root is outside the physical session namespace: {root_uri}")
-    })?;
+    let relative = root
+        .strip_prefix(&private_sessions)
+        .map_err(|_| cstr!("editor root is outside the physical session namespace: {root_uri}"))?;
     if !relative
         .components()
         .next()
         .is_some_and(|part| part.as_os_str().to_string_lossy().starts_with("session-"))
     {
-        return Err(format!(
-            "editor root has no private session owner: {root_uri}"
-        ));
+        return Err(cstr!("editor root has no private session owner: {root_uri}").into());
     }
     let mut opened = BTreeSet::new();
     for message in messages
@@ -50,9 +46,7 @@ pub(super) fn assert_mirror_root(
             .as_str()
             .ok_or("missing didOpen URI")?;
         if uri.starts_with(canonical_source_root) || uri.starts_with(logical_source_root) {
-            return Err(format!(
-                "editor mixed authored and materialized identities: {uri}"
-            ));
+            return Err(cstr!("editor mixed authored and materialized identities: {uri}").into());
         }
         let path = Url::parse(uri)
             .map_err(|error| error.to_string())?
@@ -60,7 +54,7 @@ pub(super) fn assert_mirror_root(
             .map_err(|()| "document is not a file URI")?;
         let relative = path
             .strip_prefix(&root)
-            .map_err(|_| format!("opened document escaped this native project: {uri}"))?;
+            .map_err(|_| cstr!("opened document escaped this native project: {uri}"))?;
         opened.insert(relative.to_string_lossy().replace('\\', "/"));
     }
     let expected = BTreeSet::from([
@@ -68,7 +62,7 @@ pub(super) fn assert_mirror_root(
         "src/Child.vue.ts".to_owned(),
     ]);
     if opened != expected {
-        return Err(format!("unexpected editor project members: {opened:?}"));
+        return Err(cstr!("unexpected editor project members: {opened:?}").into());
     }
     Ok(())
 }

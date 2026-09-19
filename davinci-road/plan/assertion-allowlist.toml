@@ -167,7 +167,6 @@ paths = [
   "crates/vize_canon/src/batch/virtual_project/external_mirror.rs",
   "crates/vize_canon/src/batch/virtual_project/identity.rs",
   "crates/vize_canon/src/batch/virtual_project/passthrough_resolution.rs",
-  "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/routes.rs",
   "crates/vize_canon/src/lsp_client/materialized_refresh.rs",
   "crates/vize_canon/src/source_map.rs",
   "crates/vize_canon/src/tests.rs",

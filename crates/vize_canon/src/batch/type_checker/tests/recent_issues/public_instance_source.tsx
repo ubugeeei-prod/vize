@@ -21,6 +21,7 @@ const anyInstanceInferenceUsesPublicInstance: true =
   null as unknown as __VizeUsePublicInstance<any>;
 type PublicInstance = InstanceType<typeof Public>;
 declare const instance: PublicInstance;
+// @ts-expect-error Vue strict emits/slots are not an unconstrained ComponentPublicInstance
 const publicPrimitive = usePrimitiveElement<GenericComponentInstance<typeof Public>>();
 
 const instanceIsAny: false = null as unknown as IsAny<PublicInstance>;
@@ -72,18 +73,15 @@ noEmits.ping();
 type NoEmitsParameters = Parameters<NoEmitsInstance["$emit"]>;
 type NoEmitsWithoutThis = OmitThisParameter<NoEmitsInstance["$emit"]>;
 declare const noEmitsWithoutThis: NoEmitsWithoutThis;
-// @ts-expect-error an SFC without emits has no public event names
+// Like Vue, a component with no emits declaration accepts any event.
 noEmits.$emit("other", 1);
-// @ts-expect-error an empty event surface cannot broaden through Parameters
 const noEmitsBroadParameters: NoEmitsParameters = ["other", 1];
-// @ts-expect-error an empty event surface cannot broaden through OmitThisParameter
 noEmitsWithoutThis("other", 1);
-// @ts-expect-error an empty event surface cannot broaden through Function.call
 noEmits.$emit.call(noEmits, "other", 1);
-// @ts-expect-error an empty event surface cannot broaden through Function.bind
 noEmits.$emit.bind(noEmits)("other", 1);
 
 type CallableInstance = InstanceType<typeof Callable>;
+
 declare const callable: CallableInstance;
 callable.$emit("commit", "ok");
 callable.$emit("cancel");
@@ -111,6 +109,7 @@ runtimeArray.$emit("other");
 type GenericInstance = InstanceType<typeof Generic>;
 declare const generic: GenericInstance;
 const genericItem: string = generic.$props.item;
+// @ts-expect-error Vue strict emits/slots are not an unconstrained ComponentPublicInstance
 const genericPrimitive = usePrimitiveElement<GenericComponentInstance<typeof Generic>>();
 generic.$emit("pick", "ok");
 // @ts-expect-error generic fallback payload stays exact

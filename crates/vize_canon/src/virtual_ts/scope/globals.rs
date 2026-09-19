@@ -301,10 +301,10 @@ pub(super) fn is_template_instance_global_name(name: &str) -> bool {
     let Some(rest) = name.strip_prefix('$') else {
         return false;
     };
-    !rest.is_empty()
-        && rest
-            .chars()
-            .all(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric())
+    // Vue 3 exposes the internal instance as `$` itself, in addition to
+    // named public-instance members such as `$attrs` and `$refs`.
+    rest.chars()
+        .all(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric())
 }
 
 pub(super) fn is_declared_template_context_name(name: &str, options: &VirtualTsOptions) -> bool {
