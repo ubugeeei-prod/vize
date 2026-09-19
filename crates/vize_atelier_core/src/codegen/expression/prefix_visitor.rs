@@ -1,7 +1,6 @@
 //! The codegen identifier-prefix visitor (split from `prefix_context.rs`
-//! under the source budget). Behavior is byte-identical to the pre-split
-//! `helpers.rs` visitor; only visibility changed for the cross-file
-//! construction.
+//! under the source budget). Callback binding ownership is shared by the
+//! retained and reparsed expression paths.
 
 use crate::options::BindingType;
 use crate::steps::expression::is_template_global;
@@ -18,7 +17,7 @@ use super::super::context::CodegenContext;
 // Visitor to collect identifiers and rewrite them with appropriate prefixes / .value
 pub(super) struct IdentifierVisitor<'a, 'b> {
     pub(super) rewrites: &'a mut Vec<(usize, usize, String)>,
-    pub(super) local_vars: &'a mut FxHashSet<String>,
+    pub(super) local_scopes: Vec<FxHashSet<String>>,
     pub(super) assignment_targets: &'a mut FxHashSet<usize>,
     pub(super) ctx: &'b CodegenContext,
     pub(super) offset: u32,
@@ -29,7 +28,7 @@ impl<'a, 'b> Visit<'_> for IdentifierVisitor<'a, 'b> {
         let name = ident.name.as_str();
 
         // Skip if local variable
-        if self.local_vars.contains(name) {
+        if self.is_local(name) {
             return;
         }
 
@@ -124,10 +123,7 @@ impl<'a, 'b> Visit<'_> for IdentifierVisitor<'a, 'b> {
             let name = ident.name.as_str();
 
             // Skip if local variable, global, or slot param
-            if self.local_vars.contains(name)
-                || is_template_global(name)
-                || self.ctx.is_slot_param(name)
-            {
+            if self.is_local(name) || is_template_global(name) || self.ctx.is_slot_param(name) {
                 return;
             }
 
@@ -192,28 +188,34 @@ impl<'a, 'b> Visit<'_> for IdentifierVisitor<'a, 'b> {
     }
 
     fn visit_variable_declarator(&mut self, declarator: &oxc_ast::ast::VariableDeclarator<'_>) {
-        // Add local var names to skip list
-        if let oxc_ast::ast::BindingPattern::BindingIdentifier(ident) = &declarator.id {
-            self.local_vars.insert(ident.name.to_compact_string());
-        }
-        // Visit init expression
-        if let Some(init) = &declarator.init {
-            self.visit_expression(init);
-        }
+        self.visit_declarator_with_scope(declarator);
     }
 
     fn visit_arrow_function_expression(
         &mut self,
         arrow: &oxc_ast::ast::ArrowFunctionExpression<'_>,
     ) {
-        // Add arrow function params to local vars
-        for param in &arrow.params.items {
-            if let oxc_ast::ast::BindingPattern::BindingIdentifier(ident) = &param.pattern {
-                self.local_vars.insert(ident.name.to_compact_string());
-            }
-        }
-        // Visit body
-        self.visit_function_body(&arrow.body);
+        self.visit_arrow_with_scope(arrow);
+    }
+
+    fn visit_function(
+        &mut self,
+        function: &oxc_ast::ast::Function<'_>,
+        flags: oxc_syntax::scope::ScopeFlags,
+    ) {
+        self.visit_function_with_scope(function, flags);
+    }
+
+    fn visit_function_body(&mut self, body: &oxc_ast::ast::FunctionBody<'_>) {
+        self.visit_body_with_scope(body);
+    }
+
+    fn visit_block_statement(&mut self, block: &oxc_ast::ast::BlockStatement<'_>) {
+        self.visit_block_with_scope(block);
+    }
+
+    fn visit_catch_clause(&mut self, clause: &oxc_ast::ast::CatchClause<'_>) {
+        self.visit_catch_with_scope(clause);
     }
 }
 

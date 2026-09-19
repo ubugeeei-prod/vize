@@ -7,6 +7,7 @@
 mod comment_rewrite;
 mod generate;
 pub(crate) mod helpers;
+mod prefix_bindings;
 pub(crate) mod prefix_context;
 mod prefix_visitor;
 pub(crate) mod scope_prefix;
