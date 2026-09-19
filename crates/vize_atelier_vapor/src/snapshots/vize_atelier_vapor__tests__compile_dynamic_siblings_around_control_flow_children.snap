@@ -12,15 +12,15 @@ const n0 = _child(n1)
 const n2 = _child(n0)
 const n4 = _next(_child(n0), 1)
 const n3 = _nthChild(n0, 2)
-n2.$evtclick = _createInvoker(() => (_ctx.activeTab = 'code'))
+n2.$evtclick = _createInvoker($event => (_ctx.activeTab = 'code'))
 _setInsertionState(n0, n4, true)
 const n5 = _createIf(() => (_ctx.inputMode === 'sfc'), () => {
 const n7 = t0()
-n7.$evtclick = _createInvoker(() => (_ctx.activeTab = 'bindings'))
+n7.$evtclick = _createInvoker($event => (_ctx.activeTab = 'bindings'))
 _renderEffect(() => _setClass(n7, ['tab', { active: _ctx.activeTab === 'bindings' }]))
 return n7
 })
-n3.$evtclick = _createInvoker(() => (_ctx.activeTab = 'helpers'))
+n3.$evtclick = _createInvoker($event => (_ctx.activeTab = 'helpers'))
 _renderEffect(() => {
 _setClass(n2, ['tab', { active: _ctx.activeTab === 'code' }])
 _setClass(n3, ['tab', { active: _ctx.activeTab === 'helpers' }])

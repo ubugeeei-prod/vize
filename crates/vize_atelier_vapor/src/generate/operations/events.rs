@@ -1,7 +1,8 @@
 use crate::ir::SetEventIRNode;
-use vize_atelier_core::steps::is_function_expression_node;
-use vize_carton::{String, ToCompactString, cstr};
+use vize_atelier_core::steps::{is_event_handler_reference_node, is_function_expression_node};
+use vize_carton::{String, cstr};
 
+pub(super) use super::super::expression_retained::resolve_inline_handler_node as resolve_inline_handler;
 use super::super::{context::GenerateContext, expression::is_simple_path_expression};
 
 /// Generate SetEvent
@@ -11,52 +12,20 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
     let element = cstr!("n{}", set_event.element);
     let event_name = &set_event.key.content;
 
-    let handler = if let Some(ref value) = set_event.value {
-        value.content.to_compact_string()
+    let invoker_body = if let Some(value) = set_event.value.as_deref() {
+        // Keep S3's checked direct-reference path free of expression reparses.
+        if is_simple_path_expression(value.content.trim()) || is_event_handler_reference_node(value)
+        {
+            let resolved = ctx.resolve_expression_node(value);
+            cstr!("e => {resolved}(e)")
+        } else if is_function_expression_node(value) {
+            // Authored and transformed callbacks already own their parameters.
+            ctx.resolve_expression_node(value)
+        } else {
+            resolve_inline_handler(ctx, value)
+        }
     } else {
         String::from("() => {}")
-    };
-
-    // Node-aware resolve (P1-7): `handler` is a verbatim copy of the value
-    // node's content, so the retained AST applies through the node entry.
-    let resolved_handler = if let Some(ref value) = set_event.value {
-        ctx.resolve_expression_node(value)
-    } else {
-        ctx.resolve_expression(&handler)
-    };
-    // The core transform may already have turned an inline scoped handler into
-    // an arrow. Preserve that function, just as component event props do;
-    // wrapping it again returns a function instead of delivering the event.
-    // A direct reference is never a function expression. This fast shape check
-    // also consumes S3's checked reference payload without reconstructing ASTs.
-    let path = handler.trim();
-    let direct_reference = is_simple_path_expression(path);
-    let invoker_body: String = if direct_reference && path.split('.').next() == Some("$event") {
-        // The event parameter and its members are local expressions, not
-        // component method references. Preserve the callback's binding.
-        cstr!("$event => {path}")
-    } else if direct_reference {
-        cstr!("e => {}(e)", resolved_handler)
-    } else if set_event
-        .value
-        .as_deref()
-        .is_some_and(is_function_expression_node)
-    {
-        resolved_handler
-    } else if is_inline_statement_block(&handler) {
-        if handler.contains("$event") {
-            cstr!("$event => {{ {} }}", resolved_handler)
-        } else {
-            cstr!("() => {{ {} }}", resolved_handler)
-        }
-    } else if handler.contains("$event") {
-        cstr!("$event => ({})", resolved_handler)
-    } else if handler.contains("?.") {
-        cstr!("(...args) => ({})", resolved_handler)
-    } else if is_inline_statement(&handler) || handler.contains('(') {
-        cstr!("() => ({})", resolved_handler)
-    } else {
-        cstr!("e => {}(e)", resolved_handler)
     };
 
     // Wrap with withModifiers if there are DOM modifiers (stop, prevent, etc.)
@@ -144,21 +113,4 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             ));
         }
     }
-}
-
-/// Check if handler is an inline statement (not a function reference)
-pub(super) fn is_inline_statement(handler: &str) -> bool {
-    // Assignment or increment/decrement operators
-    handler.contains("++")
-        || handler.contains("--")
-        || handler.contains("+=")
-        || handler.contains("-=")
-        || (handler.contains('=') && !handler.contains("==") && !handler.contains("=>"))
-}
-
-pub(super) fn is_inline_statement_block(handler: &str) -> bool {
-    let trimmed = handler.trim();
-    !trimmed.contains("=>")
-        && !trimmed.starts_with("function")
-        && (trimmed.contains(';') || trimmed.contains('\n'))
 }

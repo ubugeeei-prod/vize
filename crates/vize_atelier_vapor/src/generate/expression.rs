@@ -2,15 +2,15 @@ use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{
     Visit,
     walk::{
-        walk_arrow_function_expression, walk_function, walk_object_property,
-        walk_variable_declarator,
+        walk_arrow_function_expression, walk_block_statement, walk_catch_clause, walk_function,
+        walk_object_property, walk_variable_declarator,
     },
 };
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_syntax::scope::ScopeFlags;
+use vize_atelier_core::steps::expression::is_template_global;
 use vize_carton::{FxHashSet, String, ToCompactString};
-use vize_croquis::builtins::is_global_allowed;
 
 use super::context::GenerateContext;
 
@@ -153,6 +153,12 @@ impl<'a, 'ctx> ExpressionRewriteCollector<'a, 'ctx> {
         }
     }
 
+    pub(super) fn add_event_parameter(&mut self) {
+        let mut scope = FxHashSet::default();
+        scope.insert(String::from("$event"));
+        self.local_scopes.push(scope);
+    }
+
     fn push_scope(&mut self) {
         self.local_scopes.push(FxHashSet::default());
     }
@@ -199,7 +205,7 @@ impl<'a, 'ctx> ExpressionRewriteCollector<'a, 'ctx> {
 
     fn replacement_for_identifier(&self, name: &str) -> Option<String> {
         if self.is_local(name)
-            || is_global_allowed(name)
+            || is_template_global(name)
             || matches!(name, "_ctx" | "$props" | "$slots" | "$attrs" | "$emit")
         {
             return None;
@@ -261,16 +267,50 @@ impl<'a, 'ctx> Visit<'_> for ExpressionRewriteCollector<'a, 'ctx> {
         for param in &arrow.params.items {
             self.add_binding_pattern(&param.pattern);
         }
+        if let Some(rest) = &arrow.params.rest {
+            self.add_binding_pattern(&rest.rest.argument);
+        }
         walk_arrow_function_expression(self, arrow);
         self.pop_scope();
     }
 
     fn visit_function(&mut self, func: &oxc_ast_types::Function<'_>, flags: ScopeFlags) {
         self.push_scope();
+        if let Some(id) = &func.id {
+            self.local_scopes
+                .last_mut()
+                .unwrap()
+                .insert(String::new(id.name.as_str()));
+        }
         for param in &func.params.items {
             self.add_binding_pattern(&param.pattern);
         }
+        if let Some(rest) = &func.params.rest {
+            self.add_binding_pattern(&rest.rest.argument);
+        }
         walk_function(self, func, flags);
+        self.pop_scope();
+    }
+
+    fn visit_block_statement(&mut self, block: &oxc_ast_types::BlockStatement<'_>) {
+        self.push_scope();
+        walk_block_statement(self, block);
+        self.pop_scope();
+    }
+
+    fn visit_function_body(&mut self, body: &oxc_ast_types::FunctionBody<'_>) {
+        vize_atelier_core::steps::expression::for_each_function_var(body, |pattern| {
+            self.add_binding_pattern(pattern)
+        });
+        oxc_ast_visit::walk::walk_function_body(self, body);
+    }
+
+    fn visit_catch_clause(&mut self, clause: &oxc_ast_types::CatchClause<'_>) {
+        self.push_scope();
+        if let Some(param) = &clause.param {
+            self.add_binding_pattern(&param.pattern);
+        }
+        walk_catch_clause(self, clause);
         self.pop_scope();
     }
 

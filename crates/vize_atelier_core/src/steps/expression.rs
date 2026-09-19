@@ -9,12 +9,13 @@ pub(crate) mod prefix;
 mod reparse;
 mod retained_rewrite;
 mod rewrite;
+mod scope;
 mod shape_checks;
 mod splice;
 mod typescript;
 
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_span::{GetSpan, SourceType};
 use vize_s0::{Allocator, Box, String};
 
 use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformContext};
@@ -26,35 +27,42 @@ pub use nesting::{
 };
 pub use prefix::{is_simple_identifier, prefix_identifiers_in_expression};
 use rewrite::rewrite_expression;
+pub use scope::is_template_global;
 pub use shape_checks::{is_event_handler_reference_node, is_function_expression_node};
 use shape_checks::{is_function_shape, is_handler_reference_shape};
 pub use typescript::strip_typescript_from_expression;
+pub use vize_relief::for_each_function_var;
 
 /// Returns true if an expression is a callable reference that should be passed
 /// through directly as an event handler, not wrapped as `$event => (...)`.
 pub fn is_event_handler_reference_expression(content: &str) -> bool {
-    if !expression_is_safe_to_parse(content) {
-        return false;
-    }
-    let allocator = crate::expr_parse_probe::parse_arena();
-    let parser = Parser::new(&allocator, content, SourceType::default().with_module(true));
-    let Ok(expr) = parser.parse_expression() else {
-        return false;
-    };
-    is_handler_reference_shape(&expr)
+    with_whole_expression(content, is_handler_reference_shape).unwrap_or(false)
 }
 
 /// Returns true if the whole expression is a function / arrow function expression.
 pub fn is_function_expression(content: &str) -> bool {
+    with_whole_expression(content, is_function_shape).unwrap_or(false)
+}
+
+fn with_whole_expression<T>(
+    content: &str,
+    decide: impl FnOnce(&oxc_ast::ast::Expression<'_>) -> T,
+) -> Option<T> {
     if !expression_is_safe_to_parse(content) {
-        return false;
+        return None;
     }
     let allocator = crate::expr_parse_probe::parse_arena();
-    let parser = Parser::new(&allocator, content, SourceType::default().with_module(true));
-    let Ok(expr) = parser.parse_expression() else {
-        return false;
-    };
-    is_function_shape(&expr)
+    // The bare parser accepts a prefix (`save; count++` as `save`). Require
+    // one whole expression. The newline also terminates authored line comments.
+    let wrapped = vize_s0::cstr!("({content}\n)");
+    let expr = Parser::new(
+        &allocator,
+        &wrapped,
+        SourceType::default().with_module(true),
+    )
+    .parse_expression()
+    .ok()?;
+    (expr.span().end as usize == wrapped.len()).then(|| decide(expr.get_inner_expression()))
 }
 
 /// Rewrite Vue 2 pipe filters in `exp` in place, mirroring

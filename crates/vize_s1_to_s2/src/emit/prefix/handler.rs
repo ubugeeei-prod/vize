@@ -21,7 +21,7 @@ use super::strip_typescript_from_expression;
 pub(super) fn process_inline_handler(
     content: &str,
     retained: Option<Retained<'_, '_>>,
-    scope: &PrefixScope<'_>,
+    scope: &mut PrefixScope<'_>,
 ) -> RewriteResult {
     // The function/reference shape is read off the TS-stripped text; the
     // retained AST still applies only while that text is the node's own
@@ -59,7 +59,10 @@ pub(super) fn process_inline_handler(
         }
         return process(content, retained, scope);
     }
+    let mark = scope.mark();
+    scope.push_event();
     let rewritten = process(content, retained, scope);
+    scope.pop(mark);
     let mut code = String::with_capacity(rewritten.code.len() + 13);
     if rewritten.code.contains(';') {
         code.push_str("$event => {");

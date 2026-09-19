@@ -42,8 +42,7 @@ pub(in crate::emit) fn strip_typescript_from_expression(content: &str) -> String
     String::from(content)
 }
 
-/// `is_event_handler_reference_expression`: the shipped codegen's prefix
-/// parse of a handler text, which reads `a; b` as the reference `a`.
+/// Whether the whole handler is a reference, rather than a statement body.
 pub(super) fn handler_source_is_reference(source: &str) -> bool {
     shape::is_event_handler_reference_expression(source)
 }
@@ -211,7 +210,7 @@ pub(super) fn consume(scope: &PrefixScope<'_>, code: String, site: Site) -> Stri
 
 /// `process_inline_handler` + `generate_event_handler`.
 pub(super) fn prefix_handler(
-    scope: &PrefixScope<'_>,
+    scope: &mut PrefixScope<'_>,
     content: &Content<'_>,
     js: Option<&JsExpr<'_>>,
     for_caching: bool,

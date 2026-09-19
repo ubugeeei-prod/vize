@@ -6,6 +6,31 @@ use oxc_ast::ast as oxc_ast_types;
 use super::collector::IdentifierCollector;
 
 impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
+    pub(super) fn collect_assignment_targets(
+        &mut self,
+        target: &oxc_ast_types::AssignmentTarget<'_>,
+    ) {
+        use oxc_ast_types::AssignmentTarget;
+
+        match target {
+            AssignmentTarget::AssignmentTargetIdentifier(ident) => {
+                self.assignment_targets.insert(ident.span.start as usize);
+            }
+            AssignmentTarget::ObjectAssignmentTarget(obj) => {
+                self.collect_object_assignment_target(obj);
+            }
+            AssignmentTarget::ArrayAssignmentTarget(arr) => {
+                for elem in arr.elements.iter().flatten() {
+                    self.collect_assignment_targets_maybe_default(elem);
+                }
+                if let Some(rest) = &arr.rest {
+                    self.collect_assignment_targets(&rest.target);
+                }
+            }
+            _ => {}
+        }
+    }
+
     pub(super) fn collect_object_assignment_target(
         &mut self,
         obj: &oxc_ast_types::ObjectAssignmentTarget<'_>,

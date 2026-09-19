@@ -55,6 +55,7 @@
     "@vue/apollo-composable": "4.2.2",
     "@vue/compiler-dom": "catalog:vue-stable",
     "@vue/compiler-sfc": "catalog:vue-beta",
+    "@vue/runtime-dom": "catalog:vue-stable",
     "@vueuse/core": "14.3.0",
     "ant-design-vue": "4.2.6",
     "chart.js": "4.5.1",

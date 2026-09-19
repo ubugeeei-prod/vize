@@ -16,7 +16,7 @@
 
 use oxc_ast_visit::Visit;
 use vize_atelier_core::SimpleExpressionNode;
-use vize_carton::{String, ToCompactString};
+use vize_carton::{String, ToCompactString, cstr};
 
 use super::context::GenerateContext;
 use super::expression::{
@@ -56,7 +56,7 @@ pub(super) fn resolve_expression_node(
         collector.visit_expression(js.ast);
         let resolved = apply_rewrites(trimmed, collector.rewrites, lead);
         #[cfg(any(test, feature = "davinci-differential"))]
-        assert_resolve_agrees(ctx, trimmed, &resolved);
+        assert_resolve_agrees(ctx, trimmed, &resolved, false);
         return resolved;
     }
 
@@ -69,13 +69,52 @@ pub(super) fn resolve_expression_node(
     trimmed.to_compact_string()
 }
 
+/// Resolve an inline body with its implicit parameter already bound. Retained
+/// expressions keep the parse-once path; authored callbacks never enter here.
+pub(super) fn resolve_inline_handler_node(
+    ctx: &GenerateContext<'_>,
+    node: &SimpleExpressionNode<'_>,
+) -> String {
+    let handler = node.content.trim();
+    if let Some(js) = vize_atelier_core::retained::retained_whole_expression(node)
+        && vize_atelier_core::retained::js_module_compatible(js)
+    {
+        let lead = node.content.len() - node.content.trim_start().len();
+        let mut collector = ExpressionRewriteCollector::new(ctx);
+        collector.add_event_parameter();
+        collector.visit_expression(js.ast);
+        let resolved = apply_rewrites(handler, collector.rewrites, lead);
+        #[cfg(any(test, feature = "davinci-differential"))]
+        assert_resolve_agrees(ctx, handler, &resolved, true);
+        return cstr!("$event => ({resolved})");
+    }
+    // For a statement body or unsupported retained dialect, bind before the
+    // fallback resolver walks the synthesized callback. Parsing, rather than
+    // punctuation scanning, decides whether the body returns an expression.
+    let allocator = vize_atelier_core::expr_parse_probe::parse_arena();
+    let expression = cstr!("({handler}\n)");
+    let is_expression = oxc_parser::Parser::new(
+        &allocator,
+        &expression,
+        oxc_span::SourceType::ts().with_module(true),
+    )
+    .parse_expression()
+    .is_ok();
+    let callback = if is_expression {
+        cstr!("$event => ({handler}\n)")
+    } else {
+        cstr!("$event => {{\n{handler}\n}}")
+    };
+    ctx.resolve_expression(&callback)
+}
+
 /// Davinci P1-7 differential lane: the retained walk must reproduce the
 /// legacy `resolve_with_oxc` expression branch byte-for-byte. That branch
 /// counts through the P0-3 probe, so the dual-run replicates it in an
 /// uncounted arena instead — lane-only work stays off the production
 /// re-parse floor. Divergence panics, never averages.
 #[cfg(any(test, feature = "davinci-differential"))]
-fn assert_resolve_agrees(ctx: &GenerateContext<'_>, expr: &str, retained: &str) {
+fn assert_resolve_agrees(ctx: &GenerateContext<'_>, expr: &str, retained: &str, event_local: bool) {
     use oxc_parser::Parser;
     use oxc_span::SourceType;
 
@@ -96,6 +135,9 @@ fn assert_resolve_agrees(ctx: &GenerateContext<'_>, expr: &str, retained: &str) 
             )
         });
     let mut collector = ExpressionRewriteCollector::new(ctx);
+    if event_local {
+        collector.add_event_parameter();
+    }
     collector.visit_expression(&parsed);
     let legacy = apply_rewrites(expr, collector.rewrites, 1);
     assert_eq!(

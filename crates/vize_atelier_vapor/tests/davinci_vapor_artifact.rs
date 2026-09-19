@@ -123,7 +123,7 @@ _delegateEvents("click")
 
 export function render(_ctx) {{
   const n0 = t0()
-  n0.$evtclick = _createInvoker($event => {handler})
+  n0.$evtclick = _createInvoker(e => _ctx.{handler}(e))
   return n0
 }}
 "#

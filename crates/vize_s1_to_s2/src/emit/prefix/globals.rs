@@ -1,10 +1,10 @@
 //! The identifier allowlist the shipped prefixer never prefixes: JS
-//! globals, render-function locals, `$event`, and the `_toNumber` helper
-//! (`vize_croquis::builtins::GLOBAL_ALLOWLIST_SET`), copied because this
-//! crate cannot depend on `vize_croquis`; byte-identical output is the
-//! P2-11 bar, so the two lists must stay identical.
+//! globals, render-function locals, and the `_toNumber` helper. Conditional
+//! event locals are introduced by the handler scope, never globally allowed.
+//! This stage cannot depend on Croquis; its policy matches the legacy
+//! emitter's `is_template_global` boundary.
 
-/// `vize_croquis::builtins::is_global_allowed`.
+/// Names available independently of a lexical binding.
 pub(crate) fn is_global_allowed(name: &str) -> bool {
     matches!(
         name,
@@ -53,7 +53,6 @@ pub(crate) fn is_global_allowed(name: &str) -> bool {
             | "_cache"
             | "_push"
             | "_parent"
-            | "$event"
             | "_toNumber"
     )
 }
@@ -83,7 +82,7 @@ mod tests {
     #[test]
     fn globals_match_the_shipped_allowlist() {
         assert!(is_global_allowed("Array"));
-        assert!(is_global_allowed("$event"));
+        assert!(!is_global_allowed("$event"));
         assert!(is_global_allowed("_toNumber"));
         assert!(!is_global_allowed("myVar"));
         assert!(!is_global_allowed("$slots"));
@@ -160,7 +159,7 @@ mod scope_chain_tests {
         assert!(!is_global_allowed("Intl"));
         // Everything the allowlist admits is seeded too.
         assert!(is_scope_chain_global("Math"));
-        assert!(is_scope_chain_global("$event"));
+        assert!(!is_scope_chain_global("$event"));
         assert!(!is_scope_chain_global("Zork"));
     }
 }

@@ -19,10 +19,12 @@
 //! - Serialization support with serde
 
 pub mod errors;
+mod function_vars;
 pub mod options;
 mod relief;
 
 pub use errors::*;
+pub use function_vars::for_each_function_var;
 pub use options::*;
 pub use relief::*;
 

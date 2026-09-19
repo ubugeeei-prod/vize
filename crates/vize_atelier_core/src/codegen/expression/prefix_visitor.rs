@@ -4,11 +4,11 @@
 //! construction.
 
 use crate::options::BindingType;
+use crate::steps::expression::is_template_global;
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk::{
     walk_assignment_expression, walk_object_property, walk_update_expression,
 };
-use vize_croquis::builtins::is_global_allowed;
 use vize_s0::FxHashSet;
 use vize_s0::String;
 use vize_s0::ToCompactString;
@@ -34,7 +34,7 @@ impl<'a, 'b> Visit<'_> for IdentifierVisitor<'a, 'b> {
         }
 
         // Skip globals
-        if is_global_allowed(name) {
+        if is_template_global(name) {
             return;
         }
 
@@ -125,7 +125,7 @@ impl<'a, 'b> Visit<'_> for IdentifierVisitor<'a, 'b> {
 
             // Skip if local variable, global, or slot param
             if self.local_vars.contains(name)
-                || is_global_allowed(name)
+                || is_template_global(name)
                 || self.ctx.is_slot_param(name)
             {
                 return;

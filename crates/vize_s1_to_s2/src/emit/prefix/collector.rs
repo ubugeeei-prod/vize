@@ -252,6 +252,11 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
         self.pop_scope();
     }
 
+    fn visit_function_body(&mut self, body: &oxc_ast_types::FunctionBody<'_>) {
+        vize_relief::for_each_function_var(body, |pattern| self.collect_binding_pattern(pattern));
+        oxc_ast_visit::walk::walk_function_body(self, body);
+    }
+
     fn visit_catch_clause(&mut self, catch_clause: &oxc_ast_types::CatchClause<'_>) {
         self.push_scope();
         if let Some(param) = &catch_clause.param {

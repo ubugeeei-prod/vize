@@ -9,8 +9,8 @@ mod component_resolution;
 mod scopes;
 pub(crate) use scopes::{ForScope, SlotScope};
 use vize_atelier_core::options::BindingMetadata;
+use vize_atelier_core::steps::expression::is_template_global;
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, cstr};
-use vize_croquis::builtins::is_global_allowed;
 
 /// Generate context
 pub(crate) struct GenerateContext<'a> {
@@ -166,7 +166,7 @@ impl<'a> GenerateContext<'a> {
                 return resolved;
             }
 
-            if is_global_allowed(head)
+            if is_template_global(head)
                 || matches!(head, "_ctx" | "$props" | "$slots" | "$attrs" | "$emit")
             {
                 return expr.to_compact_string();
@@ -187,7 +187,7 @@ impl<'a> GenerateContext<'a> {
             return replacement;
         }
 
-        if is_global_allowed(expr)
+        if is_template_global(expr)
             || matches!(expr, "_ctx" | "$props" | "$slots" | "$attrs" | "$emit")
         {
             return expr.to_compact_string();

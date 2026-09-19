@@ -56,12 +56,18 @@ function assertLeanWorkflow(workflow: Workflow): void {
       [".", "cargo test -p vize_s2_to_s3 --test lean_reference_fixture"],
       [".", "cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace"],
       [".", "cargo test -p vize_atelier_vapor --test davinci_mounted_behavior"],
+      ["tests", "vize-ci-apt-retry vp exec playwright install --with-deps chromium"],
+      [
+        ".",
+        "cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture",
+      ],
     ],
   );
   for (const event of ["push", "pull_request"] as const) {
     for (const file of ["davinci-runtime-trace.mjs", "davinci-mounted-trace.mjs"]) {
       assert.ok(workflow.on[event].paths.includes(`tests/tooling/support/${file}`));
     }
+    assert.ok(workflow.on[event].paths.includes("tests/tooling/support/davinci-event-*.mjs"));
   }
 }
 
@@ -91,6 +97,14 @@ test("TS-28 rejects commented, moved and disabled workflow commands", () => {
       field !== "if";
     assert.throws(() => assertLeanWorkflow(disabled), assert.AssertionError);
   }
+});
+
+test("TS-30 Chromium contract cannot silently skip its ignored Rust test", () => {
+  const source = readRepoFile(".github", "workflows", "davinci-lean.yml");
+  const command =
+    "cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture";
+  const skipped = source.replace(command, command.replace(" -- --ignored --nocapture", ""));
+  assert.throws(() => assertLeanWorkflow(parseYaml(skipped)), assert.AssertionError);
 });
 
 test("TS-28 rejects failure-ignore settings at job and step scopes", () => {

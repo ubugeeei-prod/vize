@@ -16,7 +16,7 @@ use oxc_syntax::scope::ScopeFlags;
 use vize_s0::FxHashSet;
 use vize_s0::String;
 
-use vize_croquis::builtins::is_global_allowed;
+use super::is_template_global;
 
 use crate::lane::TransformContext;
 
@@ -168,31 +168,6 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
             }
         }
     }
-
-    pub(super) fn collect_assignment_targets(
-        &mut self,
-        target: &oxc_ast_types::AssignmentTarget<'_>,
-    ) {
-        use oxc_ast_types::AssignmentTarget;
-
-        match target {
-            AssignmentTarget::AssignmentTargetIdentifier(ident) => {
-                self.assignment_targets.insert(ident.span.start as usize);
-            }
-            AssignmentTarget::ObjectAssignmentTarget(obj) => {
-                self.collect_object_assignment_target(obj);
-            }
-            AssignmentTarget::ArrayAssignmentTarget(arr) => {
-                for elem in arr.elements.iter().flatten() {
-                    self.collect_assignment_targets_maybe_default(elem);
-                }
-                if let Some(rest) = &arr.rest {
-                    self.collect_assignment_targets(&rest.target);
-                }
-            }
-            _ => {}
-        }
-    }
 }
 
 impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
@@ -330,6 +305,11 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
         self.pop_scope();
     }
 
+    fn visit_function_body(&mut self, body: &oxc_ast_types::FunctionBody<'_>) {
+        vize_relief::for_each_function_var(body, |pattern| self.collect_binding_pattern(pattern));
+        oxc_ast_visit::walk::walk_function_body(self, body);
+    }
+
     fn visit_catch_clause(&mut self, catch_clause: &oxc_ast_types::CatchClause<'_>) {
         self.push_scope();
         if let Some(param) = &catch_clause.param {
@@ -359,7 +339,7 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
             && let oxc_ast_types::PropertyKey::StaticIdentifier(ident) = &prop.key
         {
             let name = ident.name.as_str();
-            if self.is_local(name) || is_global_allowed(name) {
+            if self.is_local(name) || is_template_global(name) {
                 return;
             }
             if self.ctx.is_in_scope(name) {
