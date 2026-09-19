@@ -32,7 +32,10 @@ pub(super) fn resolve_expression(ctx: &GenerateContext<'_>, expr: &str) -> Strin
         return resolved;
     }
 
-    ctx.resolve_complex_expression_fallback(trimmed)
+    // Failed parses are opaque. Preserve their bytes for the caller's
+    // diagnostic/tolerant mode; recursively scanning the same rejected token
+    // (for example `(`) can never make progress or establish JS semantics.
+    trimmed.to_compact_string()
 }
 
 pub(super) fn resolve_with_oxc(ctx: &GenerateContext<'_>, expr: &str) -> Option<String> {

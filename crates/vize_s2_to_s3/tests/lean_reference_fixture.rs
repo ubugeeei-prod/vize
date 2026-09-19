@@ -8,6 +8,10 @@ use vize_s3::trace::{TraceBackend, backend_trace_text, reference_trace_text};
 use vize_s3::values_folio::S3ValuesFolio;
 use vize_s3::verify::verify;
 
+mod lean_reference_fixture {
+    mod loops;
+}
+
 const STATIC_DYNAMIC_SOURCE: &str =
     r#"<main class="shell"><button :disabled="locked" @click="save">{{ label }}</button></main>"#;
 const CONTROL_SLOTS_SOURCE: &str =

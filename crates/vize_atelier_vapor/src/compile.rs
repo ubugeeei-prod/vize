@@ -159,20 +159,48 @@ fn compile_vapor_inner_with_stack<'a>(
         );
     }
 
-    let s3_bridge_status = s3::lower_source_for_vapor(
-        allocator,
-        source,
-        VaporS3BridgeOptions {
-            ssr: options.ssr,
-            custom_renderer: options.custom_renderer,
-            experimental_in_tag_comments: options.experimental_in_tag_comments,
-            experimental_patterned_template: options.experimental_patterned_template,
-            template_syntax,
-            has_custom_elements: !custom_elements.is_empty(),
-        },
-    );
+    let s3_bridge_status = if parser_diagnostics.is_empty() {
+        s3::lower_source_for_vapor(
+            allocator,
+            source,
+            VaporS3BridgeOptions {
+                ssr: options.ssr,
+                custom_renderer: options.custom_renderer,
+                experimental_in_tag_comments: options.experimental_in_tag_comments,
+                experimental_patterned_template: options.experimental_patterned_template,
+                template_syntax,
+                has_custom_elements: !custom_elements.is_empty(),
+                has_binding_metadata: options.binding_metadata.is_some(),
+                inline: options.inline,
+            },
+        )
+    } else {
+        VaporS3BridgeStatus::Legacy(s3::LegacyReason::SurfaceSemantics)
+    };
+    s3::record_selection(&s3_bridge_status);
+    match s3_bridge_status {
+        VaporS3BridgeStatus::Accepted(artifact) => {
+            let ir = artifact.into_ir(allocator, source, scope_id);
+            return (
+                generate(&ir, &options, &experimental_options, Vec::new()),
+                parser_diagnostics,
+            );
+        }
+        VaporS3BridgeStatus::Rejected(error_messages) => {
+            return (
+                VaporCompileResult {
+                    code: String::default(),
+                    templates: Vec::new(),
+                    map: None,
+                    error_messages,
+                },
+                parser_diagnostics,
+            );
+        }
+        VaporS3BridgeStatus::Legacy(_) => {}
+    }
 
-    // Transform to Vapor IR
+    // The explicitly selected legacy route retains its complete transforms.
     let binding_metadata = options.binding_metadata.clone();
     let transform_opts = TransformOptions {
         prefix_identifiers: options.prefix_identifiers,
@@ -213,16 +241,23 @@ fn compile_vapor_inner_with_stack<'a>(
     }
 
     // Lower to Vapor IR
-    let (ir, mut transform_diagnostics) =
+    let (ir, transform_diagnostics) =
         vapor_lower::transform_to_ir_with_scope_id(allocator, &root, source, scope_id);
-    if let VaporS3BridgeStatus::Rejected(diagnostics) = s3_bridge_status {
-        transform_diagnostics.extend(diagnostics);
-    }
+    (
+        generate(&ir, &options, &experimental_options, transform_diagnostics),
+        parser_diagnostics,
+    )
+}
 
-    // Generate Vapor code
+fn generate(
+    ir: &crate::ir::RootIRNode<'_>,
+    options: &VaporCompilerOptions,
+    experimental_options: &VaporCompilerExperimentalOptions,
+    error_messages: Vec<String>,
+) -> VaporCompileResult {
     let result = crate::generate::generate_vapor_with_options_and_experimentals(
-        &ir,
-        binding_metadata.as_ref(),
+        ir,
+        options.binding_metadata.as_ref(),
         crate::generate::VaporGenerateOptions::default(),
         crate::generate::VaporGenerateExperimentalOptions {
             component_name: experimental_options.component_name.as_deref(),
@@ -232,15 +267,12 @@ fn compile_vapor_inner_with_stack<'a>(
         },
     );
 
-    (
-        VaporCompileResult {
-            code: result.code,
-            templates: result.templates,
-            map: result.map,
-            error_messages: transform_diagnostics,
-        },
-        parser_diagnostics,
-    )
+    VaporCompileResult {
+        code: result.code,
+        templates: result.templates,
+        map: result.map,
+        error_messages,
+    }
 }
 
 fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {

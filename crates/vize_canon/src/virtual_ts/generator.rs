@@ -287,13 +287,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
                     let gen_start = ts.len();
                     ts.push_str(suffix);
-                    ts.push('\n');
                     mappings.push(VizeMapping {
                         gen_range: gen_start..ts.len(),
                         src_range: (src_base + prefix.len())
                             ..(src_base + prefix.len() + suffix.len()),
                         sub_spans: Vec::new(),
                     });
+                    ts.push('\n');
                     continue;
                 }
 
@@ -328,8 +328,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 } else {
                     ts.push_str(text);
                 }
-                ts.push('\n');
                 let gen_end = ts.len();
+                ts.push('\n');
                 mappings.push(VizeMapping {
                     gen_range: gen_start..gen_end,
                     src_range: script_source_offset(start as usize)

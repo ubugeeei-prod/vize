@@ -9,7 +9,7 @@ def keys (value : Json) : Except String (List String) := do
 def validateState (context : Json) : Except String Unit := do
   for name in (<- keys context) do
     if !Observation.identifier name ||
-        ["save", "$slots", "__proto__", "constructor", "prototype"].contains name then
+        ["save", "record", "$event", "$slots", "__proto__", "constructor", "prototype"].contains name then
       throw "unsupported state key"
 
 def snapshot (tree : Json) (events : List String) : Json :=
@@ -21,6 +21,9 @@ def buttonState (program : Program) (rows : List Operand) (context : Json) : Exc
   pure button
 
 def run (program : Program) (rows : List Operand) (script : Json) : Except String Json := do
+  if rows.any (fun row => row.role == "value" && row.text.startsWith "record(" &&
+      program.ops.any (fun op => op.id == row.op && op.kind == .setEvent)) then
+    throw "record events require the loop behavior runner"
   if (<- keys script) != ["context", "steps"] then throw "unsupported scenario fields"
   let mut context <- script.getObjVal? "context"
   validateState context

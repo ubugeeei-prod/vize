@@ -1,21 +1,12 @@
-import Impeto.Values
+import Impeto.Iteration
+import Impeto.View
 
 namespace Impeto.Observation
 open Lean
 
-def identifier (text : String) : Bool :=
-  let start := fun c => c.isAlpha && c.toNat < 128 || c == '_' || c == '$'
-  match text.toList with
-  | [] => false
-  | first :: rest => start first && rest.all (fun c => start c || c.isDigit)
-
-def validateExpression (row : Operand) : Except String Unit := do
-  if row.kind != "literal" && !(row.kind == "js" && identifier row.text) then
-    throw s!"unsupported expression {row.kind}: {row.text}"
-
-def evaluate (context : Json) (row : Operand) : Except String Json := do
-  validateExpression row
-  if row.kind == "literal" then pure (.str row.text) else context.getObjVal? row.text
+abbrev identifier := Iteration.identifier
+abbrev validateExpression := Iteration.validateExpression
+abbrev evaluate := Iteration.evaluate
 
 def display (value : Json) : Except String String :=
   match value with
@@ -54,9 +45,10 @@ def staticElement (rows : List Operand) (id : Nat) : Except String (String × Li
 def validateElementBindings (program : Program) (rows : List Operand) (op : Op)
     (tag : String) : Except String Unit := do
   let bindings := attached program rows op.id
-  for kind in [OpKind.setProp, .setEvent, .setText] do
+  for kind in [OpKind.setEvent, .setText] do
     if (bindings.filter (fun binding => binding.kind == kind)).length > 1 then
       throw "unsupported multiple bindings of the same kind"
+  let mut names := (<- staticElement rows op.id).2.map (·.1)
   for binding in bindings do
     if textBinding rows binding then
       if program.regions.any (fun r => r.owner == some op.id &&
@@ -65,12 +57,19 @@ def validateElementBindings (program : Program) (rows : List Operand) (op : Op)
     else
       let name <- Values.literal (<- Values.one rows binding.id "name")
       if binding.kind == .setProp then
-        if tag != "button" || name != "disabled" then throw "unsupported property"
+        if (name == "disabled" && tag != "button") ||
+            !["disabled", "title", "data-id", "key"].contains name then throw "unsupported property"
+        if names.contains name then throw "duplicate property binding"
+        names := name :: names
+        if name == "key" && !program.regions.any (fun region => region.id == op.region &&
+            program.ops.any (fun owner => some owner.id == region.owner && owner.kind == .loop)) then
+          throw "key binding requires a loop root"
         if (<- Values.one rows binding.id "value").kind != "js" then
           throw "unsupported property expression"
       else if binding.kind == .setEvent then
         let value <- Values.one rows binding.id "value"
-        if tag != "button" || name != "click" || value.kind != "js" || value.text != "save" then
+        if tag != "button" || name != "click" || value.kind != "js" ||
+            (value.text != "save" && (Iteration.recordArgument value.text).isNone) then
           throw "unsupported event binding"
 
 def validate (program : Program) (rows : List Operand) : Except String Unit := do
@@ -86,7 +85,7 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
     | some parent, some owner =>
         if parent >= region.id || !program.regions.any (fun r => r.id == parent) ||
             !program.ops.any (fun op => op.id == owner && op.region == parent &&
-              [.insertNode, .branch, .slotOutlet].contains op.kind) then
+              [.insertNode, .branch, .slotOutlet, .loop].contains op.kind) then
           throw "unsupported region ownership"
     | _, _ => throw "malformed region ownership"
   for row in rows do
@@ -106,6 +105,7 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
       | .setText => pure (if isTextBinding then ["value", "binding-kind"] else ["text"])
       | .branch => pure ["condition"]
       | .slotOutlet => pure ["name"]
+      | .loop => pure ["for-source", "for-value", "for-key", "for-index"]
       | _ => throw s!"unsupported stateful op#{op.id}"
     if operands.any (fun row => !allowed.contains row.role) then throw "unsupported operand role"
     if op.kind == .insertNode then
@@ -117,7 +117,7 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
       if operands.length != (if isTextBinding then 2 else 3) then
         throw "unexpected binding operand count"
       let value <- Values.one rows op.id "value"
-      validateExpression value
+      if op.kind != .setEvent then validateExpression value
       let kind <- Values.one rows op.id "binding-kind"
       if value.target != kind.target ||
           !program.ops.any (fun target => some target.id == value.target &&
@@ -141,12 +141,7 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
       if children.length != 1 || operands.length != 1 then throw "unsupported slot shape"
       if (<- Values.literal (<- Values.one rows op.id "name")).isEmpty then
         throw "unsupported slot name"
-
-def appendNode (nodes : List Json) (node : Json) : List Json :=
-  match nodes, node with
-  | _, .str "" => nodes
-  | .str previous :: rest, .str text => .str (previous ++ text) :: rest
-  | _, _ => node :: nodes
+    if op.kind == .loop then Iteration.validate program rows op
 
 def selectedBranch (rows : List Operand) (context : Json) (id : Nat) : Except String (Option Nat) := do
   for row in Values.forOp rows id do
@@ -157,11 +152,11 @@ def selectedBranch (rows : List Operand) (context : Json) (id : Nat) : Except St
   pure none
 
 structure Rendered where
-  nodes : List Json := []
+  nodes : List View := []
   buttons : List (Bool × Bool) := []
 
 def renderRegion (program : Program) (rows : List Operand) (context : Json)
-    (fuel : Nat) (regionId : Nat) : Except String Rendered := do
+    (fuel : Nat) (regionId : Nat) (scope : List Json := []) : Except String Rendered := do
   match fuel with
   | 0 => throw "cyclic S3 region graph"
   | fuel + 1 =>
@@ -175,37 +170,52 @@ def renderRegion (program : Program) (rows : List Operand) (context : Json)
             let mut disabled := false
             let bindings := attached program rows op.id
             for binding in bindings.filter (fun binding => binding.kind == .setProp) do
-              disabled <- (<- evaluate context (<- Values.one rows binding.id "value")).getBool?
+              let name <- Values.literal (<- Values.one rows binding.id "name")
+              if name == "disabled" then
+                disabled <- (<- evaluate context (<- Values.one rows binding.id "value")).getBool?
+              else if name != "key" then
+                let value <- evaluate context (<- Values.one rows binding.id "value")
+                if value != .null then attrs := attrs ++ [(name, .str (<- display value))]
             if disabled then attrs := attrs ++ [("disabled", .str "")]
             let child := program.regions.find? (fun r => r.owner == some op.id)
             let rendered <- match bindings.filter (textBinding rows) with
               | [] => match child with
                 | none => pure ({} : Rendered)
-                | some child => renderRegion program rows context fuel child.id
+                | some child => renderRegion program rows context fuel child.id scope
               | [binding] => do
                 if child.any (fun r => program.ops.any (fun op => op.region == r.id)) then
                   throw "unsupported v-text with authored children"
                 let text <- display (<- evaluate context (<- Values.one rows binding.id "value"))
-                pure { nodes := appendNode [] (.str text) }
+                pure { nodes := View.append [] (.text text) }
               | _ => throw "duplicate v-text binding"
-            let fields := [("tag", .str tag), ("attributes", Json.mkObj attrs),
-              ("children", .arr rendered.nodes.toArray)]
-            let fields := if tag == "button" then fields ++ [("disabled", .bool disabled)] else fields
-            nodes := appendNode nodes (Json.mkObj fields)
+            let event <- match bindings.filter (fun binding => binding.kind == .setEvent) with
+              | [] => pure none
+              | [binding] => some <$> Iteration.event context (<- Values.one rows binding.id "value")
+              | _ => throw "duplicate event binding"
+            let address := (Json.arr (scope ++ [toJson op.id]).toArray).compress
+            nodes := View.append nodes (.element address tag attrs disabled event rendered.nodes)
             if tag == "button" then
               buttons := buttons ++ [(disabled, bindings.any (fun binding => binding.kind == .setEvent))]
             buttons := buttons ++ rendered.buttons
         | .setText =>
             if !textBinding rows op then
               let text <- display (<- evaluate context (<- Values.one rows op.id "text"))
-              nodes := appendNode nodes (.str text)
+              nodes := View.append nodes (.text text)
         | .branch | .slotOutlet =>
             let region <- if op.kind == .branch then selectedBranch rows context op.id
               else pure ((program.regions.find? (fun r => r.owner == some op.id)).map (·.id))
             if let some region := region then
-              let rendered <- renderRegion program rows context fuel region
+              let rendered <- renderRegion program rows context fuel region scope
               for node in rendered.nodes do
-                nodes := appendNode nodes node
+                nodes := View.append nodes node
+              buttons := buttons ++ rendered.buttons
+        | .loop =>
+            let some region := program.regions.find? (fun r => r.owner == some op.id)
+              | throw "missing loop body"
+            for (identity, context) in (<- Iteration.contexts program rows op context) do
+              let rendered <- renderRegion program rows context fuel region.id (scope ++ [identity])
+              for node in rendered.nodes do
+                nodes := View.append nodes node
               buttons := buttons ++ rendered.buttons
         | .setProp | .setEvent => pure ()
         | _ => throw "unsupported stateful op"
@@ -216,6 +226,6 @@ def observe (program : Program) (rows : List Operand) (context : Json) : Except 
   renderRegion program rows context (program.regions.length + 1) 0
 
 def render (program : Program) (rows : List Operand) (context : Json) : Except String Json := do
-  pure (.arr (<- observe program rows context).nodes.toArray)
+  pure (View.tree (<- observe program rows context).nodes)
 
 end Impeto.Observation

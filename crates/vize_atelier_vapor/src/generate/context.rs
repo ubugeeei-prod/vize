@@ -5,7 +5,6 @@ use super::{
     expression,
 };
 
-mod complex_expression;
 mod component_resolution;
 mod scopes;
 pub(crate) use scopes::{ForScope, SlotScope};
@@ -117,11 +116,7 @@ impl<'a> GenerateContext<'a> {
         super::expression_retained::resolve_expression_node(self, node)
     }
 
-    /// Resolve complex expressions (object/array literals) by prefixing identifiers inside
-    pub(super) fn resolve_complex_expression_fallback(&self, expr: &str) -> String {
-        complex_expression::resolve_complex_expression_fallback(self, expr)
-    }
-
+    /// Resolve a name through active loop/slot scopes and prop metadata.
     pub(super) fn resolve_scope_binding(&self, name: &str) -> Option<String> {
         for scope in self.for_scopes.iter().rev() {
             if let Some(ref value_alias) = scope.value_alias {

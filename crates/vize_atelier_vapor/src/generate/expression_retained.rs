@@ -64,7 +64,9 @@ pub(super) fn resolve_expression_node(
         return resolved;
     }
 
-    ctx.resolve_complex_expression_fallback(trimmed)
+    // Match the string entry: parse failure is a terminal opaque passthrough,
+    // never another attempt to infer JavaScript from token-shaped substrings.
+    trimmed.to_compact_string()
 }
 
 /// Davinci P1-7 differential lane: the retained walk must reproduce the

@@ -304,7 +304,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
-        Ok(super::code_actions::code_actions(self, &params))
+        Ok(super::code_actions::code_actions(self, &params).await)
     }
 
     async fn prepare_rename(

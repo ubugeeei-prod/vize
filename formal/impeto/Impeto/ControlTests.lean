@@ -120,7 +120,7 @@ def inactiveValueTests (program : Program) (rows : List Operand) : Except String
   let eventRows := [{ name with text := "click" }, { value with text := "save" },
     { kind with text := "on" }]
   for (label, ops, operands) in [
-    ("inactive unsupported property", [binding], [{ name with text := "title" }, value, kind]),
+    ("inactive unsupported property", [binding], [{ name with text := "style" }, value, kind]),
     ("inactive unsupported prop expression", [binding], [name, { value with text := "missing()" }, kind]),
     ("inactive literal property", [binding], [name, { value with kind := "literal" }, kind]),
     ("inactive duplicate properties", [binding, { binding with id := 100 }],

@@ -34,7 +34,7 @@ pub(crate) use canonical::{
     canonical_source_offset_to_position, component_prop_location_matches,
     component_prop_navigation_identity_matches, linked_semantic_position,
     map_canonical_corsa_location, map_canonical_corsa_locations,
-    map_canonical_corsa_workspace_edit, map_canonical_lsp_range,
+    map_canonical_corsa_workspace_edit, map_canonical_exact_edit_range, map_canonical_lsp_range,
     map_canonical_materialized_module_location, map_canonical_prepare_rename,
     matching_component_prop_navigation_positions, materialized_semantic_positions,
     merge_canonical_workspace_edits, open_canonical_virtual_document,

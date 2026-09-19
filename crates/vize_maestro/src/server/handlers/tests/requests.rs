@@ -252,8 +252,8 @@ disabled_open_doc_request_returns_none!(
     |server, uri| server.document_symbol(document_symbol_params(&uri))
 );
 disabled_open_doc_request_returns_none!(
-    code_action_disabled_when_lint_is_off,
-    &[("lint", false), ("codeActions", true)],
+    code_action_disabled_when_both_providers_are_off,
+    &[("lint", false), ("typecheck", false), ("codeActions", true)],
     |server, uri| server.code_action(code_action_params(&uri))
 );
 disabled_open_doc_request_returns_none!(

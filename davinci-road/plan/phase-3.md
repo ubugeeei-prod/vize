@@ -98,8 +98,12 @@ for fallback. _Accept:_ TS-33 behavioral parity; TS-30 traces; vapor bench
 improvement (the P0-3 double-transform number is the floor to beat).
 _First slice 2026-09-12:_ see
 [P3-6 record](./phase-3-records/p3-6.md) for the production-path S3 bridge,
-verified artifact guard, and profiler counters. The legacy Vapor IR payload
-lowering remains until S3 owns typed generation payloads.
+verified artifact guard, and profiler counters. _Native generation slice
+2026-09-20:_ a private checked S3 payload now reaches the shared emitter for
+ordinary native HTML with direct-reference prop/text/click bindings, bypassing
+legacy transform/lowering. Unsupported surfaces explicitly retain the legacy
+lane. Graph-payload mutations, zero legacy-walk probes, and mounted identity/event
+traces enforce that boundary; full parity and benchmark promotion remain open.
 
 **P3-7 VDOM patch flags from facts.** `patch_flag.rs` inference replaced by
 lattice-fact consumption; flags become explicit S3 decisions (or S2→S4
@@ -161,6 +165,11 @@ placement alternatives and extraction pass remain open.
 **P3-11 IVM oracle.** Incremental-update ≡ from-scratch render on the Lean
 reference for keyed/unkeyed `v-for`, conditional toggles, mixed non-linear
 expressions (TS-29). _Accept:_ suite green over matrix fixtures.
+
+_Array-loop slice 2026-09-20:_ the [P3-11 record](./phase-3-records/p3-11.md)
+adds independent scoped array execution and retained-identity reconciliation,
+with full mounted VDOM/Vapor observations. General iteration, mixed non-linear
+expressions and scheduling/linearity evidence remain open.
 
 **P3-12 Behavioral runner.** Sprout-style: mount compiled VDOM + Vapor
 against scripted prop/interaction traces in a headless DOM; **IME composition

@@ -1,0 +1,661 @@
+[
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "a",
+                  "title": "0"
+                },
+                "children": ["A"],
+                "disabled": false
+              },
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "b",
+                  "title": "1"
+                },
+                "children": ["B"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["G"]
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": [],
+    "identities": [
+      ["a", 2],
+      ["b", 3]
+    ]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "a",
+                  "title": "0"
+                },
+                "children": ["A"],
+                "disabled": false
+              },
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "b",
+                  "title": "1"
+                },
+                "children": ["B"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["G"]
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": ["A"],
+    "identities": [
+      ["a", 2],
+      ["b", 3]
+    ]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "b",
+                  "title": "0"
+                },
+                "children": ["B2"],
+                "disabled": false
+              },
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "a",
+                  "title": "1"
+                },
+                "children": ["A2"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["G2"]
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": ["A"],
+    "identities": [
+      ["b", 3],
+      ["a", 2]
+    ]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "b",
+                  "title": "0"
+                },
+                "children": ["B2"],
+                "disabled": false
+              },
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "a",
+                  "title": "1"
+                },
+                "children": ["A2"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["G2"]
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": ["A", "A2"],
+    "identities": [
+      ["b", 3],
+      ["a", 2]
+    ]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "c",
+                  "title": "0"
+                },
+                "children": ["C"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["H"]
+              }
+            ]
+          },
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "b",
+                  "title": "0"
+                },
+                "children": ["B2"],
+                "disabled": false
+              },
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "a",
+                  "title": "1"
+                },
+                "children": ["A2"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["G2"]
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": ["A", "A2"],
+    "identities": [
+      ["c", 7],
+      ["b", 3],
+      ["a", 2]
+    ]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "a",
+                  "title": "0"
+                },
+                "children": ["A3"],
+                "disabled": false
+              },
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "c",
+                  "title": "1"
+                },
+                "children": ["C2"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["H2"]
+              }
+            ]
+          },
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "b",
+                  "title": "0"
+                },
+                "children": ["B3"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["G3"]
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": ["A", "A2"],
+    "identities": [
+      ["a", 9],
+      ["c", 7],
+      ["b", 3]
+    ]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "a",
+                  "title": "0"
+                },
+                "children": ["A3"],
+                "disabled": false
+              },
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "c",
+                  "title": "1"
+                },
+                "children": ["C2"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["H2"]
+              }
+            ]
+          },
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "b",
+                  "title": "0"
+                },
+                "children": ["B3"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["G3"]
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": ["A", "A2", "A3"],
+    "identities": [
+      ["a", 9],
+      ["c", 7],
+      ["b", 3]
+    ]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "b",
+                  "title": "0"
+                },
+                "children": ["B3"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["G3"]
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": ["A", "A2", "A3"],
+    "identities": [["b", 3]]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "b",
+                  "title": "0"
+                },
+                "children": ["B4"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["G4"]
+              }
+            ]
+          },
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "a",
+                  "title": "0"
+                },
+                "children": ["A4"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["H3"]
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": ["A", "A2", "A3"],
+    "identities": [
+      ["b", 3],
+      ["a", 11]
+    ]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "b",
+                  "title": "0"
+                },
+                "children": ["B4"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["G4"]
+              }
+            ]
+          },
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "a",
+                  "title": "0"
+                },
+                "children": ["A4"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["H3"]
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": ["A", "A2", "A3", "A4"],
+    "identities": [
+      ["b", 3],
+      ["a", 11]
+    ]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": ["A", "A2", "A3", "A4"],
+    "identities": []
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "a",
+                  "title": "0"
+                },
+                "children": ["A5"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["G5"]
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": ["A", "A2", "A3", "A4"],
+    "identities": [["a", 14]]
+  },
+  {
+    "tree": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "section",
+            "attributes": {},
+            "children": [
+              {
+                "tag": "button",
+                "attributes": {
+                  "data-id": "a",
+                  "title": "0"
+                },
+                "children": ["A5"],
+                "disabled": false
+              },
+              {
+                "tag": "span",
+                "attributes": {},
+                "children": ["G5"]
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": ["outer"]
+          }
+        ]
+      }
+    ],
+    "events": ["A", "A2", "A3", "A4", "A5"],
+    "identities": [["a", 14]]
+  },
+  {
+    "tree": [],
+    "events": ["A", "A2", "A3", "A4", "A5"],
+    "identities": []
+  }
+]

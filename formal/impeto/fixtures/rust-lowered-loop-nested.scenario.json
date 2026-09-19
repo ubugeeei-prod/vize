@@ -1,0 +1,181 @@
+{
+  "context": {
+    "groups": [
+      {
+        "id": "g",
+        "label": "G",
+        "items": [
+          {
+            "id": "a",
+            "label": "A"
+          },
+          {
+            "id": "b",
+            "label": "B"
+          }
+        ]
+      }
+    ],
+    "item": "outer"
+  },
+  "steps": [
+    {
+      "click": "a"
+    },
+    {
+      "patch": {
+        "groups": [
+          {
+            "id": "g",
+            "label": "G2",
+            "items": [
+              {
+                "id": "b",
+                "label": "B2"
+              },
+              {
+                "id": "a",
+                "label": "A2"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "click": "a"
+    },
+    {
+      "patch": {
+        "groups": [
+          {
+            "id": "h",
+            "label": "H",
+            "items": [
+              {
+                "id": "c",
+                "label": "C"
+              }
+            ]
+          },
+          {
+            "id": "g",
+            "label": "G2",
+            "items": [
+              {
+                "id": "b",
+                "label": "B2"
+              },
+              {
+                "id": "a",
+                "label": "A2"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "patch": {
+        "groups": [
+          {
+            "id": "h",
+            "label": "H2",
+            "items": [
+              {
+                "id": "a",
+                "label": "A3"
+              },
+              {
+                "id": "c",
+                "label": "C2"
+              }
+            ]
+          },
+          {
+            "id": "g",
+            "label": "G3",
+            "items": [
+              {
+                "id": "b",
+                "label": "B3"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "click": "a"
+    },
+    {
+      "patch": {
+        "groups": [
+          {
+            "id": "g",
+            "label": "G3",
+            "items": [
+              {
+                "id": "b",
+                "label": "B3"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "patch": {
+        "groups": [
+          {
+            "id": "g",
+            "label": "G4",
+            "items": [
+              {
+                "id": "b",
+                "label": "B4"
+              }
+            ]
+          },
+          {
+            "id": "h",
+            "label": "H3",
+            "items": [
+              {
+                "id": "a",
+                "label": "A4"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "click": "a"
+    },
+    {
+      "patch": {
+        "groups": []
+      }
+    },
+    {
+      "patch": {
+        "groups": [
+          {
+            "id": "g",
+            "label": "G5",
+            "items": [
+              {
+                "id": "a",
+                "label": "A5"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "click": "a"
+    }
+  ]
+}

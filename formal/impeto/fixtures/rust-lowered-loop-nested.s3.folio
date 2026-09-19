@@ -1,0 +1,63 @@
+[s3-folio]
+phase=built
+
+[s3-folio.regions]
+id=0 parent=- owner=- span=0:268
+id=1 parent=0 owner=0 span=6:261
+id=2 parent=1 owner=1 span=6:244
+id=3 parent=2 owner=2 span=53:234
+id=4 parent=3 owner=4 span=53:205
+id=5 parent=4 owner=5 span=180:196
+id=6 parent=3 owner=11 span=211:227
+id=7 parent=1 owner=13 span=247:257
+
+[s3-folio.ops]
+id=0 kind=impeto.insert-node region=0 effect=- span=0:268
+id=1 kind=impeto.for region=1 effect=0 span=6:244
+id=2 kind=impeto.insert-node region=2 effect=1 span=6:244
+id=3 kind=impeto.set-prop region=2 effect=2 span=38:52
+id=4 kind=impeto.for region=3 effect=3 span=53:205
+id=5 kind=impeto.insert-node region=4 effect=4 span=53:205
+id=6 kind=impeto.set-prop region=4 effect=5 span=100:114
+id=7 kind=impeto.set-prop region=4 effect=6 span=115:133
+id=8 kind=impeto.set-prop region=4 effect=7 span=134:151
+id=9 kind=impeto.set-event region=4 effect=8 span=152:179
+id=10 kind=impeto.set-text region=5 effect=9 span=180:196
+id=11 kind=impeto.insert-node region=3 effect=10 span=205:234
+id=12 kind=impeto.set-text region=6 effect=11 span=211:227
+id=13 kind=impeto.insert-node region=1 effect=- span=244:261
+id=14 kind=impeto.set-text region=7 effect=12 span=247:257
+
+[s3-folio.edges]
+from=1 to=2 kind=effect-order effect=-
+from=2 to=3 kind=effect-order effect=-
+from=3 to=4 kind=effect-order effect=-
+from=4 to=5 kind=effect-order effect=-
+from=5 to=6 kind=effect-order effect=-
+from=6 to=7 kind=effect-order effect=-
+from=6 to=7 kind=dom-order effect=-
+from=7 to=8 kind=effect-order effect=-
+from=7 to=8 kind=dom-order effect=-
+from=8 to=9 kind=effect-order effect=-
+from=8 to=9 kind=dom-order effect=-
+from=9 to=10 kind=effect-order effect=-
+from=10 to=11 kind=effect-order effect=-
+from=11 to=12 kind=effect-order effect=-
+from=4 to=11 kind=dom-order effect=-
+from=12 to=14 kind=effect-order effect=-
+from=1 to=13 kind=dom-order effect=-
+
+[s3-folio.effects]
+id=0 owner=1 region=1 span=6:244
+id=1 owner=2 region=2 span=6:244
+id=2 owner=3 region=2 span=38:52
+id=3 owner=4 region=3 span=53:205
+id=4 owner=5 region=4 span=53:205
+id=5 owner=6 region=4 span=100:114
+id=6 owner=7 region=4 span=115:133
+id=7 owner=8 region=4 span=134:151
+id=8 owner=9 region=4 span=152:179
+id=9 owner=10 region=5 span=180:196
+id=10 owner=11 region=3 span=205:234
+id=11 owner=12 region=6 span=211:227
+id=12 owner=14 region=7 span=247:257
