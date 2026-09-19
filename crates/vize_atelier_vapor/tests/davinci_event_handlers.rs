@@ -13,154 +13,24 @@ use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
+#[path = "davinci_event_handlers/cases.rs"]
+mod cases;
+
 #[test]
 #[ignore = "requires installed Chromium; enforced by the Davinci browser Actions lane"]
 fn mounted_event_handlers_match_vue_reference_and_independent_traces() {
     let mut fixtures = Vec::new();
-    for (name, handler, setup, calls, increment) in [
-        ("method", "save", "value", "event", false),
-        (
-            "var-function-scope",
-            "event => { const deliver = () => save($event.type, $event.target.id ?? 'missing'); { var $event = event } deliver() }",
-            "value",
-            "event",
-            false,
-        ),
-        (
-            "nested-function-var",
-            "event => { (() => { var $event = event })(); save($event.type, $event.target) }",
-            "value",
-            "binding",
-            false,
-        ),
-        (
-            "rest-arrow",
-            "(...$event) => save($event[0].type, $event[0].target.id)",
-            "value",
-            "event",
-            false,
-        ),
-        (
-            "rest-function",
-            "function (...$event) { save($event[0].type, $event[0].target.id) }",
-            "value",
-            "event",
-            false,
-        ),
-        (
-            "destructure",
-            "({ type: $event, target }) => save($event, target.id)",
-            "value",
-            "event",
-            false,
-        ),
-        (
-            "named-function",
-            "function $event(event) { if (typeof $event === 'function') save(event.type, event.target.id) }",
-            "value",
-            "event",
-            false,
-        ),
-        (
-            "block-capture",
-            "() => { { const $event = 42; } save($event.type, $event.target) }",
-            "value",
-            "binding",
-            false,
-        ),
-        (
-            "catch-capture",
-            "() => { try { throw 42 } catch ($event) {} save($event.type, $event.target) }",
-            "value",
-            "binding",
-            false,
-        ),
-        ("member", "actions.save", "value", "event", false),
-        ("parenthesized", "(actions.save)", "value", "event", false),
-        (
-            "reference-statement",
-            "save; count++",
-            "value",
-            "none",
-            true,
-        ),
-        ("event-reference", "$event", "function", "event", false),
-        ("event-member", "$event.target", "member", "event", false),
-        (
-            "event-computed",
-            "$event['target']",
-            "member",
-            "event",
-            false,
-        ),
-        ("event-optional", "$event?.target", "member", "event", false),
-        (
-            "inline",
-            "save($event.type, $event.target.id)",
-            "value",
-            "event",
-            false,
-        ),
-        (
-            "statements",
-            "count++; save($event.type, $event.target.id)",
-            "value",
-            "event",
-            true,
-        ),
-        (
-            "arrow",
-            "event => save(event.type, event.target.id)",
-            "value",
-            "event",
-            false,
-        ),
-        (
-            "shadow",
-            "$event => save($event.type, $event.target.id)",
-            "value",
-            "event",
-            false,
-        ),
-        (
-            "function",
-            "function ($event) { save($event.type, $event.target.id) }",
-            "value",
-            "event",
-            false,
-        ),
-        (
-            "capture",
-            "() => save($event.type, $event.target)",
-            "value",
-            "binding",
-            false,
-        ),
-        (
-            "shorthand",
-            "() => save(({ $event }).$event.type, $event.target)",
-            "value",
-            "binding",
-            false,
-        ),
-        (
-            "nested-inline",
-            "count++; (() => save($event.type, $event.target.id))()",
-            "value",
-            "event",
-            true,
-        ),
-        ("missing-reference", "$event", "missing", "none", false),
-        ("null-reference", "$event", "null", "none", false),
-        ("value-reference", "$event", "number", "none", false),
-    ] {
+    for &(name, handler, setup, calls, increment) in cases::CASES {
         let source = format!(r#"<button id="target" @click="{handler}">{{{{ count }}}}</button>"#);
-        fixtures.push(fixture(name, &source, setup, calls, increment, false));
+        fixtures.push(fixture(
+            name, &source, handler, setup, calls, increment, false,
+        ));
     }
     // The implicit handler binding must be popped before the sibling read.
     fixtures.push(fixture(
         "sibling-scope",
         r#"<div><button id="target" @click="save($event.type, $event.target.id)">{{ count }}</button><span>{{ $event.type }}</span></div>"#,
+        "save($event.type, $event.target.id)",
         "value", "event", false, true,
     ));
     let runner = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -190,6 +60,7 @@ fn mounted_event_handlers_match_vue_reference_and_independent_traces() {
 fn fixture(
     name: &str,
     source: &str,
+    handler: &str,
     setup: &str,
     calls: &str,
     increment: bool,
@@ -243,11 +114,13 @@ fn fixture(
         };
         compiled.push(json!({"backend": backend, "mode": mode, "code": code}));
     }
-    // Keep incorrect upstream self-name / hoisted-var rewrites explicit. A
+    // Keep the observed upstream lexical-scope differences explicit. A
     // future upstream fix must fail these observations until they are retired.
     let reference_calls = match name {
-        "named-function" => Some("none"),
+        "named-function" | "class-self" => Some("none"),
         "var-function-scope" => Some("var-binding"),
+        "inline-program-var" => Some("error:TypeError"),
+        "switch-scope" => Some("error:ReferenceError"),
         _ => None,
     };
     let reference_expected = reference_calls.map(|calls| {
@@ -256,7 +129,13 @@ fn fixture(
             "vapor": expected(setup, calls, false, sibling, true),
         })
     });
+    let native_handler = if name == "inline-program-var" {
+        format!("$event => {{ {handler} }}")
+    } else {
+        handler.to_owned()
+    };
     json!({"name": name, "source": source, "setup": setup, "compiled": compiled,
+        "nativeHandler": native_handler,
         "referenceExpected": reference_expected,
         "expected": {"vdom": expected(setup, calls, increment, sibling, false),
                      "vapor": expected(setup, calls, increment, sibling, true)}})
@@ -274,7 +153,9 @@ fn expected(setup: &str, calls: &str, increment: bool, sibling: bool, vapor: boo
     for phase in ["mount", "click-a", "replace", "click-b", "unmount"] {
         let second = matches!(phase, "replace" | "click-b" | "unmount");
         if phase.starts_with("click-") {
-            if invalid && vapor {
+            if let Some(error) = calls.strip_prefix("error:") {
+                diagnostics.push(json!([phase, error]));
+            } else if invalid && vapor {
                 diagnostics.push(json!([phase, "TypeError"]));
             } else if !invalid {
                 if increment {

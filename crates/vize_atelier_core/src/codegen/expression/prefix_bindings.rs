@@ -1,88 +1,125 @@
-//! Lexical binding ownership for the context-aware codegen prefix visitor.
-
-use oxc_ast::ast;
-use oxc_ast_visit::walk;
-use oxc_syntax::scope::ScopeFlags;
-use vize_s0::{FxHashSet, String};
+//! Scope storage and assignment binding facts for codegen prefixing.
 
 use super::prefix_visitor::IdentifierVisitor;
+use vize_relief::ExpressionScope;
+use vize_s0::{FxHashSet, String};
 
-impl IdentifierVisitor<'_, '_> {
-    pub(super) fn add_local(&mut self, name: &str) {
+impl<'ast> ExpressionScope<'ast> for IdentifierVisitor<'_, '_> {
+    fn push_scope(&mut self) {
+        self.local_scopes.push(FxHashSet::default());
+    }
+    fn pop_scope(&mut self) {
+        self.local_scopes.pop();
+    }
+    fn add_local(&mut self, name: &str) {
         self.local_scopes
             .last_mut()
-            .unwrap()
+            .expect("expression binding owns a scope")
             .insert(String::new(name));
     }
+}
 
+impl IdentifierVisitor<'_, '_> {
     pub(super) fn is_local(&self, name: &str) -> bool {
         self.local_scopes
             .iter()
             .rev()
             .any(|scope| scope.contains(name))
     }
+}
 
-    fn collect_binding_pattern(&mut self, pattern: &ast::BindingPattern<'_>) {
-        // OXC visits nested object/array/default/rest bindings without allocating
-        // another identifier list. Always continue through the entire pattern.
-        pattern.all_binding_identifiers(&mut |identifier| {
-            self.add_local(identifier.name.as_str());
-            true
-        });
-    }
-
-    pub(super) fn visit_arrow_with_scope(&mut self, arrow: &ast::ArrowFunctionExpression<'_>) {
-        self.local_scopes.push(FxHashSet::default());
-        for pattern in arrow.params.iter_bindings() {
-            self.collect_binding_pattern(pattern);
-        }
-        walk::walk_arrow_function_expression(self, arrow);
-        self.local_scopes.pop();
-    }
-
-    pub(super) fn visit_function_with_scope(
+impl<'a, 'b> IdentifierVisitor<'a, 'b> {
+    pub(super) fn collect_assignment_targets(
         &mut self,
-        function: &ast::Function<'_>,
-        flags: ScopeFlags,
+        target: &oxc_ast::ast::AssignmentTarget<'_>,
     ) {
-        if function.r#type == ast::FunctionType::FunctionDeclaration
-            && let Some(id) = &function.id
-        {
-            self.add_local(id.name.as_str());
+        use oxc_ast::ast::{AssignmentTarget, AssignmentTargetProperty};
+
+        match target {
+            AssignmentTarget::AssignmentTargetIdentifier(ident) => {
+                self.assignment_targets.insert(ident.span.start as usize);
+            }
+            AssignmentTarget::ObjectAssignmentTarget(obj) => {
+                for prop in &obj.properties {
+                    match prop {
+                        AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(
+                            prop_ident,
+                        ) => {
+                            self.assignment_targets
+                                .insert(prop_ident.binding.span.start as usize);
+                        }
+                        AssignmentTargetProperty::AssignmentTargetPropertyProperty(prop_prop) => {
+                            self.collect_assignment_targets_maybe_default(&prop_prop.binding);
+                        }
+                    }
+                }
+                if let Some(rest) = &obj.rest {
+                    self.collect_assignment_targets(&rest.target);
+                }
+            }
+            AssignmentTarget::ArrayAssignmentTarget(arr) => {
+                for elem in arr.elements.iter().flatten() {
+                    self.collect_assignment_targets_maybe_default(elem);
+                }
+                if let Some(rest) = &arr.rest {
+                    self.collect_assignment_targets(&rest.target);
+                }
+            }
+            _ => {}
         }
-        self.local_scopes.push(FxHashSet::default());
-        if let Some(id) = &function.id {
-            self.add_local(id.name.as_str());
-        }
-        for pattern in function.params.iter_bindings() {
-            self.collect_binding_pattern(pattern);
-        }
-        walk::walk_function(self, function, flags);
-        self.local_scopes.pop();
     }
 
-    pub(super) fn visit_body_with_scope(&mut self, body: &ast::FunctionBody<'_>) {
-        vize_relief::for_each_function_var(body, |pattern| self.collect_binding_pattern(pattern));
-        walk::walk_function_body(self, body);
-    }
+    fn collect_assignment_targets_maybe_default(
+        &mut self,
+        target: &oxc_ast::ast::AssignmentTargetMaybeDefault<'_>,
+    ) {
+        use oxc_ast::ast::{AssignmentTargetMaybeDefault, AssignmentTargetProperty};
 
-    pub(super) fn visit_block_with_scope(&mut self, block: &ast::BlockStatement<'_>) {
-        self.local_scopes.push(FxHashSet::default());
-        walk::walk_block_statement(self, block);
-        self.local_scopes.pop();
-    }
-
-    pub(super) fn visit_catch_with_scope(&mut self, clause: &ast::CatchClause<'_>) {
-        self.local_scopes.push(FxHashSet::default());
-        if let Some(parameter) = &clause.param {
-            self.collect_binding_pattern(&parameter.pattern);
+        match target {
+            AssignmentTargetMaybeDefault::AssignmentTargetWithDefault(def) => {
+                self.collect_assignment_targets(&def.binding);
+            }
+            AssignmentTargetMaybeDefault::AssignmentTargetIdentifier(ident) => {
+                self.assignment_targets.insert(ident.span.start as usize);
+            }
+            AssignmentTargetMaybeDefault::ObjectAssignmentTarget(obj) => {
+                for prop in &obj.properties {
+                    match prop {
+                        AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(
+                            prop_ident,
+                        ) => {
+                            self.assignment_targets
+                                .insert(prop_ident.binding.span.start as usize);
+                        }
+                        AssignmentTargetProperty::AssignmentTargetPropertyProperty(prop_prop) => {
+                            self.collect_assignment_targets_maybe_default(&prop_prop.binding);
+                        }
+                    }
+                }
+                if let Some(rest) = &obj.rest {
+                    self.collect_assignment_targets(&rest.target);
+                }
+            }
+            AssignmentTargetMaybeDefault::ArrayAssignmentTarget(arr) => {
+                for elem in arr.elements.iter().flatten() {
+                    self.collect_assignment_targets_maybe_default(elem);
+                }
+                if let Some(rest) = &arr.rest {
+                    self.collect_assignment_targets(&rest.target);
+                }
+            }
+            _ => {}
         }
-        walk::walk_catch_clause(self, clause);
-        self.local_scopes.pop();
     }
 
-    pub(super) fn visit_declarator_with_scope(&mut self, declarator: &ast::VariableDeclarator<'_>) {
-        self.collect_binding_pattern(&declarator.id);
-        walk::walk_variable_declarator(self, declarator);
+    pub(super) fn collect_simple_assignment_targets(
+        &mut self,
+        target: &oxc_ast::ast::SimpleAssignmentTarget<'_>,
+    ) {
+        use oxc_ast::ast::SimpleAssignmentTarget;
+
+        if let SimpleAssignmentTarget::AssignmentTargetIdentifier(ident) = target {
+            self.assignment_targets.insert(ident.span.start as usize);
+        }
     }
 }

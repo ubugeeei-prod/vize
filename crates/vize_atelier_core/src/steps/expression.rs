@@ -31,7 +31,7 @@ pub use scope::is_template_global;
 pub use shape_checks::{is_event_handler_reference_node, is_function_expression_node};
 use shape_checks::{is_function_shape, is_handler_reference_shape};
 pub use typescript::strip_typescript_from_expression;
-pub use vize_relief::for_each_function_var;
+pub use vize_relief::{ExpressionScope, for_each_function_var};
 
 /// Returns true if an expression is a callable reference that should be passed
 /// through directly as an event handler, not wrapped as `$event => (...)`.

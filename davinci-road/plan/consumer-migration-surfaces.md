@@ -45,7 +45,7 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |          1205 |                   828 |               377 |             164 |     397 |            1066 |      700 |           602 |           755 |
+| Compiler                   |          1205 |                   828 |               377 |             165 |     398 |            1068 |      700 |           602 |           756 |
 | Linter                     |           375 |                   375 |                 0 |             299 |     303 |             731 |      246 |           390 |           573 |
 | Typechecker                |           982 |                   271 |               711 |             449 |     225 |             927 |      729 |           539 |           777 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            21 |
@@ -65,16 +65,16 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | S1               |          13 |               6 |        7 |
 | S2               |          45 |              25 |       20 |
 | S1->S2           |         117 |              16 |      101 |
-| old AST/parser   |          93 |              73 |       20 |
+| old AST/parser   |          94 |              74 |       20 |
 | Croquis analysis |          71 |              55 |       16 |
-| raw OXC          |         397 |             359 |       38 |
+| raw OXC          |         398 |             360 |       38 |
 
 #### Top source and manifest files
 
 | file                                                                         | class    | surfaces                                                                                             | sites |
 | ---------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------- | ----: |
 | `crates/vize_atelier_sfc/src/rewrite_default.rs:6`                           | source   | S0 1<br>raw OXC 27                                                                                   |    28 |
-| `crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs:7`        | source   | S0 3<br>raw OXC 20                                                                                   |    23 |
+| `crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs:7`        | source   | S0 3<br>old AST/parser 1<br>raw OXC 20                                                               |    24 |
 | `crates/vize_atelier_core/Cargo.toml:17`                                     | manifest | Davinci 1<br>S0 1<br>S1 1<br>S2 1<br>S1->S2 1<br>old AST/parser 4<br>Croquis analysis 1<br>raw OXC 7 |    17 |
 | `crates/vize_atelier_sfc/src/script/define_props_destructure/collector.rs:6` | source   | S0 2<br>raw OXC 15                                                                                   |    17 |
 | `crates/vize_atelier_core/src/steps/expression/prefix.rs:6`                  | source   | S0 1<br>raw OXC 14                                                                                   |    15 |

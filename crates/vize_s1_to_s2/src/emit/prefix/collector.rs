@@ -12,13 +12,10 @@ use alloc::vec::Vec as StdVec;
 use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{
     Visit,
-    walk::{
-        walk_arrow_function_expression, walk_assignment_expression, walk_block_statement,
-        walk_catch_clause, walk_function, walk_object_property, walk_update_expression,
-        walk_variable_declarator,
-    },
+    walk::{walk_assignment_expression, walk_object_property, walk_update_expression},
 };
 use oxc_syntax::scope::ScopeFlags;
+use vize_relief::ExpressionScope;
 use vize_s0::String;
 
 use super::globals::{is_generated_filter_helper, is_global_allowed};
@@ -72,20 +69,6 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
         }
     }
 
-    fn push_scope(&mut self) {
-        self.local_scopes.push(StdVec::new());
-    }
-
-    fn pop_scope(&mut self) {
-        self.local_scopes.pop();
-    }
-
-    fn add_local(&mut self, name: &str) {
-        if let Some(scope) = self.local_scopes.last_mut() {
-            scope.push(String::from(name));
-        }
-    }
-
     fn is_local(&self, name: &str) -> bool {
         self.local_scopes
             .iter()
@@ -124,33 +107,6 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
         let position = self.at(position);
         if !self.assignment_targets.contains(&position) {
             self.assignment_targets.push(position);
-        }
-    }
-
-    pub(super) fn collect_binding_pattern(&mut self, pattern: &oxc_ast_types::BindingPattern<'_>) {
-        match pattern {
-            oxc_ast_types::BindingPattern::BindingIdentifier(id) => {
-                self.add_local(id.name.as_str());
-            }
-            oxc_ast_types::BindingPattern::ObjectPattern(obj) => {
-                for prop in &obj.properties {
-                    self.collect_binding_pattern(&prop.value);
-                }
-                if let Some(rest) = &obj.rest {
-                    self.collect_binding_pattern(&rest.argument);
-                }
-            }
-            oxc_ast_types::BindingPattern::ArrayPattern(arr) => {
-                for elem in arr.elements.iter().flatten() {
-                    self.collect_binding_pattern(elem);
-                }
-                if let Some(rest) = &arr.rest {
-                    self.collect_binding_pattern(&rest.argument);
-                }
-            }
-            oxc_ast_types::BindingPattern::AssignmentPattern(assign) => {
-                self.collect_binding_pattern(&assign.left);
-            }
         }
     }
 }
@@ -211,64 +167,55 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
         }
     }
 
+    fn visit_program(&mut self, node: &oxc_ast_types::Program<'_>) {
+        self.scoped_program(node);
+    }
+
     fn visit_arrow_function_expression(
         &mut self,
-        arrow: &oxc_ast_types::ArrowFunctionExpression<'_>,
+        node: &oxc_ast_types::ArrowFunctionExpression<'_>,
     ) {
-        self.push_scope();
-        for param in &arrow.params.items {
-            self.collect_binding_pattern(&param.pattern);
-        }
-        if let Some(rest) = &arrow.params.rest {
-            self.collect_binding_pattern(&rest.rest.argument);
-        }
-        walk_arrow_function_expression(self, arrow);
-        self.pop_scope();
+        self.scoped_arrow(node);
     }
 
-    fn visit_function(&mut self, func: &oxc_ast_types::Function<'_>, flags: ScopeFlags) {
-        if func.r#type == oxc_ast_types::FunctionType::FunctionDeclaration
-            && let Some(id) = &func.id
-        {
-            self.add_local(id.name.as_str());
-        }
-        self.push_scope();
-        if let Some(id) = &func.id {
-            self.add_local(id.name.as_str());
-        }
-        for param in &func.params.items {
-            self.collect_binding_pattern(&param.pattern);
-        }
-        if let Some(rest) = &func.params.rest {
-            self.collect_binding_pattern(&rest.rest.argument);
-        }
-        walk_function(self, func, flags);
-        self.pop_scope();
+    fn visit_function_body(&mut self, node: &oxc_ast_types::FunctionBody<'_>) {
+        self.scoped_function_body(node);
     }
 
-    fn visit_block_statement(&mut self, block: &oxc_ast_types::BlockStatement<'_>) {
-        self.push_scope();
-        walk_block_statement(self, block);
-        self.pop_scope();
+    fn visit_block_statement(&mut self, node: &oxc_ast_types::BlockStatement<'_>) {
+        self.scoped_block(node);
     }
 
-    fn visit_function_body(&mut self, body: &oxc_ast_types::FunctionBody<'_>) {
-        vize_relief::for_each_function_var(body, |pattern| self.collect_binding_pattern(pattern));
-        oxc_ast_visit::walk::walk_function_body(self, body);
+    fn visit_catch_clause(&mut self, node: &oxc_ast_types::CatchClause<'_>) {
+        self.scoped_catch(node);
     }
 
-    fn visit_catch_clause(&mut self, catch_clause: &oxc_ast_types::CatchClause<'_>) {
-        self.push_scope();
-        if let Some(param) = &catch_clause.param {
-            self.collect_binding_pattern(&param.pattern);
-        }
-        walk_catch_clause(self, catch_clause);
-        self.pop_scope();
+    fn visit_for_statement(&mut self, node: &oxc_ast_types::ForStatement<'_>) {
+        self.scoped_for(node);
     }
 
-    fn visit_variable_declarator(&mut self, declarator: &oxc_ast_types::VariableDeclarator<'_>) {
-        walk_variable_declarator(self, declarator);
-        self.collect_binding_pattern(&declarator.id);
+    fn visit_for_in_statement(&mut self, node: &oxc_ast_types::ForInStatement<'_>) {
+        self.scoped_for_in(node);
+    }
+
+    fn visit_for_of_statement(&mut self, node: &oxc_ast_types::ForOfStatement<'_>) {
+        self.scoped_for_of(node);
+    }
+
+    fn visit_switch_statement(&mut self, node: &oxc_ast_types::SwitchStatement<'_>) {
+        self.scoped_switch(node);
+    }
+
+    fn visit_class(&mut self, node: &oxc_ast_types::Class<'_>) {
+        self.scoped_class(node);
+    }
+
+    fn visit_static_block(&mut self, node: &oxc_ast_types::StaticBlock<'_>) {
+        self.scoped_static_block(node);
+    }
+
+    fn visit_function(&mut self, function: &oxc_ast_types::Function<'_>, flags: ScopeFlags) {
+        self.scoped_function(function, flags);
     }
 
     fn visit_assignment_expression(&mut self, expr: &oxc_ast_types::AssignmentExpression<'_>) {
@@ -325,5 +272,21 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
             }
         }
         walk_object_property(self, prop);
+    }
+}
+
+impl<'ast> ExpressionScope<'ast> for IdentifierCollector<'_, '_> {
+    fn push_scope(&mut self) {
+        self.local_scopes.push(StdVec::new());
+    }
+    fn pop_scope(&mut self) {
+        self.local_scopes.pop();
+    }
+    fn add_local(&mut self, name: &str) {
+        let scope = self
+            .local_scopes
+            .last_mut()
+            .expect("expression binding owns a scope");
+        scope.push(String::from(name));
     }
 }

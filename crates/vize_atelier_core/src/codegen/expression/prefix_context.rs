@@ -10,7 +10,7 @@
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_relief::SimpleExpressionNode;
+use vize_relief::{ExpressionScope, SimpleExpressionNode};
 use vize_s0::FxHashSet;
 use vize_s0::String;
 use vize_s0::ToCompactString;

@@ -46,6 +46,7 @@ const failures = [];
 let runs = 0;
 let detectedMutations = 0;
 const knownReferenceDifferences = [];
+let nativeJavaScriptOracles = 0;
 try {
   for (const fixture of fixtures) {
     const options = { mode: "module", prefixIdentifiers: true };
@@ -85,6 +86,22 @@ try {
         runtime: "beta",
       })),
     ];
+    if (fixture.referenceExpected) {
+      // Execute authored JavaScript without any compiler rewrite for every
+      // claimed upstream difference. The fixture explicitly owns body wrapping.
+      const body = `with (_ctx) { return (${fixture.nativeHandler}) }`;
+      engines.push({
+        name: "Native JavaScript",
+        backend: "vdom",
+        runtime: "beta",
+        code: `import { h } from 'vue';
+          const handler = Function('_ctx', ${JSON.stringify(body)});
+          export function render(_ctx) {
+            return h('button', { id: 'target', onClick: handler(_ctx) }, String(_ctx.count));
+          }`,
+      });
+      nativeJavaScriptOracles++;
+    }
     // These valid programs intentionally break delivery or binding ownership.
     // Requiring their mounted traces to differ proves that a silent no-op or
     // accidental capture cannot satisfy the independent expected observations.
@@ -92,6 +109,8 @@ try {
       "event-reference": ["e => _ctx.$event(e)", "e => void e"],
       inline: ["_ctx.save($event.type", "_ctx.save(_ctx.$event.type"],
       capture: ["_ctx.$event.type", "$event.type"],
+      "forward-const": ["const $event = event", "const $event = _ctx.$event"],
+      "loop-for": ["_ctx.save(_ctx.$event.type", "_ctx.save($event.type"],
     }[fixture.name];
     if (mutation) {
       const base = engines.find((engine) => engine.name === "Vize vapor/prefix");
@@ -169,11 +188,12 @@ if (failures.length) {
   console.error(JSON.stringify(failures, null, 2));
   process.exitCode = 1;
 } else {
-  assert.equal(detectedMutations, 3, "all event contract mutations must execute");
+  assert.equal(detectedMutations, 5, "all event contract mutations must execute");
+  assert.equal(nativeJavaScriptOracles, 5, "each known difference has a native JavaScript oracle");
   assert.equal(
     knownReferenceDifferences.length,
-    6,
-    "track self-name and hoisted-var differences in all three pinned compilers",
+    15,
+    "track the five explicit scope differences in all three pinned compilers",
   );
   console.log(
     JSON.stringify({
@@ -181,6 +201,7 @@ if (failures.length) {
       scenarios: fixtures.length,
       mountedRuns: runs,
       detectedMutations,
+      nativeJavaScriptOracles,
       knownReferenceDifferences,
     }),
   );

@@ -26,6 +26,8 @@ _legacy = []
 vize_s0 = { workspace = true }
 
 oxc_ast = { workspace = true }
+oxc_ast_visit = { workspace = true }
+oxc_syntax = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
 

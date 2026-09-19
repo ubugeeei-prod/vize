@@ -11,6 +11,62 @@ fn codegen_callback_parameters_keep_their_lexical_bindings() {
     let ctx = CodegenContext::new(CodegenOptions::default());
     let allocator = Allocator::new();
     for (source, expected) in [
+        (
+            "() => { read(); function read() { return $event } }",
+            "() => { read(); function read() { return _ctx.$event } }",
+        ),
+        (
+            "() => { const read = () => value; const value = 1; return read() }",
+            "() => { const read = () => value; const value = 1; return read() }",
+        ),
+        (
+            "() => { const read = () => C; class C {} return read() }",
+            "() => { const read = () => C; class C {} return read() }",
+        ),
+        (
+            "() => { for (let value = 0; value < 1; value++) {} return value }",
+            "() => { for (let value = 0; value < 1; value++) {} return _ctx.value }",
+        ),
+        (
+            "() => { for (const value in source) {} return value }",
+            "() => { for (const value in _ctx.source) {} return _ctx.value }",
+        ),
+        (
+            "() => { for (const value of source) {} return value }",
+            "() => { for (const value of _ctx.source) {} return _ctx.value }",
+        ),
+        (
+            "() => { for (var value of source) {} return value }",
+            "() => { for (var value of _ctx.source) {} return value }",
+        ),
+        (
+            "const read = () => value; { var value = $event } read()",
+            "const read = () => value; { var value = _ctx.$event } read()",
+        ),
+        (
+            "const read = () => value; { const value = 42 } read()",
+            "const read = () => _ctx.value; { const value = 42 } read()",
+        ),
+        (
+            "(value = helper) => { function helper() {} return value }",
+            "(value = _ctx.helper) => { function helper() {} return value }",
+        ),
+        (
+            "() => { switch (value) { case 0: const value = 1; break } return value }",
+            "() => { switch (_ctx.value) { case 0: const value = 1; break } return _ctx.value }",
+        ),
+        (
+            "[class $event { read() { return $event } }, $event]",
+            "[class $event { read() { return $event } }, _ctx.$event]",
+        ),
+        (
+            "() => { class C { static { var value = 1 } } return value }",
+            "() => { class C { static { var value = 1 } } return _ctx.value }",
+        ),
+        (
+            "() => { save(value); let value = 1 }",
+            "() => { _ctx.save(value); let value = 1 }",
+        ),
         ("(...$event) => $event[0]", "(...$event) => $event[0]"),
         (
             "({ type: $event }) => $event",

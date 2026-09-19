@@ -11,11 +11,15 @@ use oxc_ast::ast::{
 /// bodies do. Walk only statement containers, without entering expressions or
 /// nested declaration bodies. Parameter defaults are outside this body's scope.
 /// This consumes the retained AST and does not create another parse or AST.
-pub fn for_each_function_var<'a>(
-    body: &FunctionBody<'a>,
+pub fn for_each_function_var<'a>(body: &FunctionBody<'a>, visit: impl FnMut(&BindingPattern<'a>)) {
+    for_each_var_in_statements(&body.statements, visit);
+}
+
+pub(crate) fn for_each_var_in_statements<'a>(
+    statements: &[Statement<'a>],
     mut visit: impl FnMut(&BindingPattern<'a>),
 ) {
-    let mut pending: vize_s0::SmallVec<[_; 8]> = body.statements.iter().collect();
+    let mut pending: vize_s0::SmallVec<[_; 8]> = statements.iter().collect();
     while let Some(statement) = pending.pop() {
         match statement {
             Statement::VariableDeclaration(declaration) => {

@@ -4046,6 +4046,8 @@ name = "vize_relief"
 version = "0.424.11"
 dependencies = [
  "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_syntax",
  "serde",
  "serde_json",
  "thiserror 2.0.20",
