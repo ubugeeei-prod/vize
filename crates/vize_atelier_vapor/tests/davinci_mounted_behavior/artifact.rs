@@ -86,3 +86,27 @@ fn native_artifact_handles_text_offsets_and_literal_escaping() {
         json!([observation("A"), observation("雪"), {"tree": [], "events": []}])
     );
 }
+
+#[test]
+fn native_artifact_updates_adjacent_dynamic_children_independently() {
+    let actual = crate::assert_backends(
+        "<div><span>{{ a }}</span><span>{{ b }}</span></div>",
+        json!({"a": "first", "b": "second"}),
+        json!([{"patch": {"a": "changed"}}, {"patch": {"b": "雪"}}]),
+    );
+    let observation = |a, b| {
+        json!({
+            "tree": [{"tag": "div", "attributes": {}, "children": [
+                {"tag": "span", "attributes": {}, "children": [a]},
+                {"tag": "span", "attributes": {}, "children": [b]}
+            ]}], "events": []
+        })
+    };
+    assert_eq!(
+        actual,
+        json!([
+            observation("first", "second"), observation("changed", "second"),
+            observation("changed", "雪"), {"tree": [], "events": []}
+        ])
+    );
+}
