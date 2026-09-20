@@ -3,12 +3,16 @@
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 mod generic_inference;
 mod handler_context;
+mod inference_helpers;
+pub(crate) use inference_helpers::emit_event_inference_helpers;
 
 use vize_carton::{CompactString, FxHashSet, String, append, cstr};
 use vize_croquis::{Croquis, EventHandlerScopeData, Scope, naming::to_pascal_case};
 
 use crate::virtual_ts::component_reference::component_binding_reference;
-use crate::virtual_ts::helpers::{to_safe_identifier, to_safe_identifier_fragment};
+use crate::virtual_ts::helpers::{
+    push_ts_string_literal, to_safe_identifier, to_safe_identifier_fragment,
+};
 use crate::virtual_ts::types::VirtualTsOptions;
 use generic_inference::{
     EmitInferenceContext, find_component_usage_for_event, generate_inferred_emit_args,
@@ -68,6 +72,22 @@ pub(super) fn generate_component_event_types(
         on_handler
     };
     let prop_args = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_prop_args");
+    // Vue's published EmitsToProps retains authored hyphens (onFoo-bar),
+    // while generated SFC contracts expose the camelized listener (onFooBar).
+    // Only the spelling actually written by the user admits the raw alias.
+    let missing_prop_args = if data.event_name.contains('-') {
+        let mut raw_handler = String::from("on");
+        let mut chars = data.event_name.chars();
+        if let Some(first) = chars.next() {
+            raw_handler.extend(first.to_uppercase());
+        }
+        raw_handler.push_str(chars.as_str());
+        let mut raw_key = String::default();
+        push_ts_string_literal(&mut raw_key, &raw_handler);
+        cstr!("__P extends {{ {raw_key}?: (...args: infer __A) => any }} ? __A : unknown[]")
+    } else {
+        String::from("unknown[]")
+    };
     let static_emit_args =
         cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_static_emit_args");
     let emit_args = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_emit_args");
@@ -81,7 +101,7 @@ pub(super) fn generate_component_event_types(
     );
     append!(
         *ts,
-        "{indent}  ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
+        "{indent}  ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : {missing_prop_args}\n",
     );
     append!(
         *ts,
@@ -89,7 +109,7 @@ pub(super) fn generate_component_event_types(
     );
     append!(
         *ts,
-        "{indent}    ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
+        "{indent}    ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : {missing_prop_args}\n",
     );
     append!(*ts, "{indent}    : unknown[];\n");
 

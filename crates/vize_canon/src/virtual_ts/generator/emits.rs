@@ -241,8 +241,9 @@ pub(super) fn emit_emit_props_helper(
     ts: &mut String,
     info: &EmitsInfo,
     hoist_shared_preamble: bool,
+    event_inference: bool,
 ) {
-    if !info.has_emits_for_props {
+    if !info.has_emits_for_props && !event_inference {
         return;
     }
     if !hoist_shared_preamble {
@@ -250,6 +251,9 @@ pub(super) fn emit_emit_props_helper(
     }
     ts.push_str(EMIT_PROPS_HELPER);
     ts.push('\n');
+    if !info.has_emits_for_props {
+        return;
+    }
     if info.has_runtime_emits {
         if info.preserve_event_navigation {
             ts.push_str("type __VizeStaticEventMap = __EmitOptions<Awaited<ReturnType<typeof __setup>>[\"__vize_emit_options\"]>;\n");

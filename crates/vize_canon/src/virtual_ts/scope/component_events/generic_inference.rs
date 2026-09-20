@@ -59,9 +59,8 @@ pub(super) fn generate_inferred_emit_args(
     );
     append!(
         *ts,
-        "{}type {resolver_type} = typeof {} extends {{ __vizeResolveEmitProps?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {{}}) : typeof {} extends {{ __vizeResolveProps?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {{}}) : (props: any) => {{}};\n",
+        "{}type {resolver_type} = __VizeEmitPropsFactory<typeof {}>;\n",
         ctx.indent,
-        ctx.component_ref,
         ctx.component_ref,
     );
     let guard = usage.vif_guard.as_ref().map(|guard| {
@@ -78,14 +77,16 @@ pub(super) fn generate_inferred_emit_args(
         );
         append!(
             *ts,
-            "{call_indent}if ({}) return (undefined as unknown as {resolver_type})({{\n",
-            guard.as_deref().unwrap()
+            "{call_indent}if ({}) return (undefined as unknown as {resolver_type})({})({{\n",
+            guard.as_deref().unwrap(),
+            ctx.component_ref,
         );
     } else {
         append!(
             *ts,
-            "{}const {emit_props} = (undefined as unknown as {resolver_type})({{\n",
+            "{}const {emit_props} = (undefined as unknown as {resolver_type})({})({{\n",
             ctx.indent,
+            ctx.component_ref,
         );
     }
     for prop in &usage.props {

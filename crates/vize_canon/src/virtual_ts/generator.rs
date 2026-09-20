@@ -809,7 +809,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let (has_exposed_type, exposed_is_generic) =
         emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
     ts.push('\n');
-    emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble);
+    let event_inference = super::scope::emit_event_inference_helpers(&mut ts, summary);
+    emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble, event_inference);
 
     let generic_component_params = setup_props_plan.generic_component_params(authored_generic);
     let public_component_type = emit_component_constructors(

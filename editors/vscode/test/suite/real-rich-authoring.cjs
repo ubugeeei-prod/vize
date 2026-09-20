@@ -141,6 +141,22 @@ exports.runRichAuthoring = async function runRichAuthoring() {
       "invoiceTotal: number",
     ],
   ]);
+  await assertMemberDocumentation("EventAuthoring.vue", [
+    [
+      "$event.invoiceTotal.toFixed()",
+      "$event.",
+      "invoiceTotal",
+      "**Invoice total**",
+      "invoiceTotal: number",
+    ],
+    [
+      "$event.refundTotal.toFixed()",
+      "$event.",
+      "refundTotal",
+      "**Refund total**",
+      "refundTotal: number",
+    ],
+  ]);
 };
 
 async function assertComponentDocumentation(document, editor) {

@@ -2548,11 +2548,13 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/closures.r
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/closures.rs	2	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_event_navigation.rs	4	s0	S0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_event_navigation.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	2
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_events.rs	7	s0	S0	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_events.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_events.rs	9	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_events.rs	9	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs	2	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs	2	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_events/handler_context.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_events/inference_helpers.rs	1	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_events/inference_helpers.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_events/reference.rs	1	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_navigation.rs	3	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_prop_checker.rs	1	s0	S0	stage	vize_carton	compat	1

@@ -33,6 +33,7 @@ mod slot_scope;
 mod vif_guard;
 
 pub(crate) use closures::generate_scope_closures;
+pub(crate) use component_events::emit_event_inference_helpers;
 pub(crate) use component_prop_checker::is_inline_callback_prop;
 pub(crate) use component_ref_props::is_inline_ref_callback_prop;
 pub(crate) use context::{ComponentBindingCheck, GlobalComponentCheck, ScopeGenerationOptions};
