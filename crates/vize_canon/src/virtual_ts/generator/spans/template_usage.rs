@@ -67,6 +67,7 @@ fn collect_template_referenced_names(
     for scope in summary.scopes.iter() {
         match scope.data() {
             ScopeData::VFor(data) => {
+                collect_pattern_default_identifiers(&mut names, data.value_alias.as_str());
                 collect_expression_identifiers(&mut names, &mut expressions, data.source.as_str());
                 if let Some(key_expression) = data.key_expression.as_ref() {
                     collect_expression_identifiers(
@@ -74,6 +75,11 @@ fn collect_template_referenced_names(
                         &mut expressions,
                         key_expression.as_str(),
                     );
+                }
+            }
+            ScopeData::VSlot(data) => {
+                if let Some(pattern) = data.props_pattern.as_ref() {
+                    collect_pattern_default_identifiers(&mut names, pattern.as_str());
                 }
             }
             ScopeData::EventHandler(data) => {
@@ -86,6 +92,22 @@ fn collect_template_referenced_names(
     }
 
     names
+}
+
+/// A destructuring default (`{ val = fallback }`) is a template read of the
+/// binding it names: without it the default keeps the setup binding's raw
+/// `Ref` type instead of the unwrapped value every other template read sees.
+/// A pattern without `=` reads nothing.
+fn collect_pattern_default_identifiers(names: &mut FxHashSet<String>, pattern: &str) {
+    if !pattern.contains('=') {
+        return;
+    }
+    // The assignment form of the pattern: the identifier walk reads a
+    // destructuring target's defaults, not an arrow parameter's.
+    let assignment = vize_carton::cstr!("({pattern} = 0)");
+    for identifier in vize_croquis::drawer::extract_identifiers_oxc(assignment.as_str()) {
+        names.insert(identifier.as_str().into());
+    }
 }
 
 fn collect_expression_identifiers<'a>(

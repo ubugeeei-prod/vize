@@ -2,6 +2,7 @@ use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{FxHashMap, FxHashSet, String, profile};
 use vize_croquis::{Croquis, ScopeId, ScopeKind};
 
+use crate::virtual_ts::component_reference::component_binding_reference;
 use crate::virtual_ts::expressions::{
     ExpressionListEmitContext, TemplateValueCheckTables, generate_expressions,
 };
@@ -11,6 +12,7 @@ use super::component_event_navigation::emit_event_references;
 use super::component_prop_expressions::collect_component_prop_expression_ranges;
 use super::component_props::{collect_checkable_usages, generate_component_props};
 use super::context::{ComponentPropsContext, ScopeGenContext, ScopeGenerationOptions};
+use super::explicit_generics::ExplicitGenerics;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
 pub(super) use super::node::generate_scope_node;
 use super::slot_outlet_props::{SlotOutletChecks, generate_scope_slot_outlet_checks};
@@ -38,6 +40,23 @@ pub(crate) fn generate_scope_closures(
         super::native_prop_names::emit(ts, mappings, root, template_offset);
     }
     super::dynamic_component::emit_dynamic_component_aliases(ts, summary, options.template_ast);
+    let template_source = options.template_ast.map(|root| root.source);
+    let explicit_generics = ExplicitGenerics::collect(summary, template_source);
+    explicit_generics.emit(
+        ts,
+        mappings,
+        summary,
+        template_source,
+        template_offset,
+        |name| {
+            component_binding_reference(
+                summary,
+                virtual_ts_options,
+                options.syntactic_type_only_imported_names,
+                name,
+            )
+        },
+    );
 
     let expressions_by_scope: FxHashMap<u32, Vec<_>> =
         profile!("canon.virtual_ts.group_template_expressions", {
@@ -164,6 +183,7 @@ pub(crate) fn generate_scope_closures(
         check_unknown_props: check_options.check_unknown_props,
         experimental_strict_slot_children: options.experimental_strict_slot_children,
         relaxed_required_usage_starts: &relaxed_required_usage_starts,
+        explicit_generics: &explicit_generics,
     };
     let usages = check_options
         .check_props
@@ -188,6 +208,7 @@ pub(crate) fn generate_scope_closures(
             template_offset,
             check_options,
             legacy_vue2: options.legacy_vue2,
+            explicit_generics: &explicit_generics,
         };
 
         if nested_scope_ids.contains(&scope.id) {

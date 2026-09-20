@@ -24,5 +24,5 @@ c:emit,handleClick
 ~2 mod @0:185 < ~0
 ~3 setup @0:185 < ~2
 ~4 closure @101:184 < ~3
-~5 event @11:31 [$event] < ~3, ~1
+~5 event @11:31 < ~3, ~1
 

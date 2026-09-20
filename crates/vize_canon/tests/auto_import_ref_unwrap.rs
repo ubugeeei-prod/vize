@@ -57,7 +57,7 @@ fn template_referenced_auto_import_gets_the_unwrap_shadow() {
         "auto-imported refs need a pre-template type capture:\n{code}"
     );
     assert!(
-        code.contains("    var currentUser: __U<__R_currentUser> = undefined as any;\n"),
+        code.contains("    var currentUser: __UN<__R_currentUser> = undefined as any;\n"),
         "auto-imported refs need an unwrapped template shadow:\n{code}"
     );
     // The capture must be emitted *outside* `__template()`, otherwise `typeof`
@@ -97,7 +97,7 @@ fn batch_path_binding_names_produce_the_same_shadow() {
         },
     );
     assert!(
-        names_only.contains("    var currentUser: __U<__R_currentUser> = undefined as any;\n"),
+        names_only.contains("    var currentUser: __UN<__R_currentUser> = undefined as any;\n"),
         "names-only options must still shadow the binding:\n{names_only}"
     );
     assert!(
@@ -141,7 +141,7 @@ fn script_declared_and_imported_names_are_never_double_shadowed() {
         "an authored import already owns the shadow:\n{code}"
     );
     assert_eq!(
-        code.matches("var currentUser: __U<__R_currentUser> = undefined as any;")
+        code.matches("var currentUser: __UN<__R_currentUser> = undefined as any;")
             .count(),
         1,
         "an authored import must not gain a second shadow:\n{code}"
@@ -283,7 +283,7 @@ fn vue3_dialect_uses_the_nominal_ref_helper_for_auto_imports() {
         "the Vue 3 dialect must keep the nominal `Ref` test:\n{code}"
     );
     assert!(
-        code.contains("    var OPTION: __U<__R_OPTION> = undefined as any;\n"),
+        code.contains("    var OPTION: __UN<__R_OPTION> = undefined as any;\n"),
         "the nominal helper is safe for every auto-import:\n{code}"
     );
 }

@@ -26,7 +26,7 @@ st?:computed,ref
 ~4 extern @1:37 [computed,ref] < ~3
 ~5 closure @321:370 < ~3
 ~6 closure @345:362 [r] < ~5
-~7 event @49:67 [$event] < ~3, ~1
+~7 event @49:67 < ~3, ~1
 
 [errors]
 rows=Const@197:237

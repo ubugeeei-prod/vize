@@ -27,6 +27,7 @@ use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 use super::children::generate_child_scopes;
 use super::context::{ScopeGenContext, VForPropsContext};
+use super::explicit_generics::ExplicitGenerics;
 use crate::virtual_ts::component_reference::component_binding_reference;
 
 use super::emit::emit_slot_function_open;
@@ -48,6 +49,7 @@ struct SlotPayloadContext<'a> {
     /// scope, so each needs its own or the second would redeclare the first.
     binding_prefix: &'a str,
     indent: &'a str,
+    explicit_generics: &'a ExplicitGenerics,
 }
 
 /// Emit the host binding when the slot sits on a resolvable child, and return
@@ -63,14 +65,19 @@ fn slot_payload_type(
     let Some(component) = data.component.as_deref() else {
         return "any".into();
     };
-    let component_ref = component_binding_reference(
+    let host = find_slot_host(summary, scope, component);
+    let resolved = component_binding_reference(
         summary,
         ctx.options,
         ctx.syntactic_type_only_imported_names,
         component,
     );
+    let component_ref = match host {
+        Some(usage) => ctx.explicit_generics.usage_reference(usage.start, resolved),
+        None => resolved,
+    };
     let binding = cstr!("{}{}", ctx.binding_prefix, scope.id.as_u32());
-    if let Some(usage) = find_slot_host(summary, scope, component) {
+    if let Some(usage) = host {
         generate_slot_host_binding(
             ts,
             usage,
@@ -138,6 +145,7 @@ pub(super) fn generate_v_slot_scope(
             ),
             binding_prefix: "__vize_slot_host_",
             indent,
+            explicit_generics: ctx.explicit_generics,
         },
         scope,
         data,
@@ -236,6 +244,7 @@ pub(super) fn generate_v_slot_props_scope(
             source_context: ctx.source_context,
             binding_prefix: "__vize_slot_props_host_",
             indent,
+            explicit_generics: ctx.explicit_generics,
         },
         scope,
         data,

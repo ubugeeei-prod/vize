@@ -65,11 +65,14 @@ pub(super) fn generate_component_props(
     append_component_slot_check_helpers(ts, ctx.experimental_strict_slot_children);
 
     for &(idx, usage) in checkable_usages {
-        let component_ref = component_binding_reference(
-            summary,
-            ctx.options,
-            ctx.syntactic_type_only_imported_names,
-            usage.name.as_str(),
+        let component_ref = ctx.explicit_generics.usage_reference(
+            usage.start,
+            component_binding_reference(
+                summary,
+                ctx.options,
+                ctx.syntactic_type_only_imported_names,
+                usage.name.as_str(),
+            ),
         );
         let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
 
@@ -166,11 +169,14 @@ pub(super) fn generate_component_props(
         if is_empty_props_usage(usage) {
             continue;
         }
-        let component_ref = component_binding_reference(
-            summary,
-            ctx.options,
-            ctx.syntactic_type_only_imported_names,
-            usage.name.as_str(),
+        let component_ref = ctx.explicit_generics.usage_reference(
+            usage.start,
+            component_binding_reference(
+                summary,
+                ctx.options,
+                ctx.syntactic_type_only_imported_names,
+                usage.name.as_str(),
+            ),
         );
         profile!("canon.virtual_ts.component_prop_checks", {
             let mut check_context = ComponentPropCheckContext::new(
@@ -220,6 +226,7 @@ pub(super) fn generate_component_props(
             preserve_event_navigation: ctx.preserve_event_navigation,
             check_unknown_events: ctx.check_unknown_events,
             experimental_strict_slot_children: ctx.experimental_strict_slot_children,
+            explicit_generics: ctx.explicit_generics,
         };
         profile!(
             "canon.virtual_ts.closure_component_props",

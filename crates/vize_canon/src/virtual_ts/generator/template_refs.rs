@@ -1,5 +1,6 @@
 mod auto_imports;
 mod deferred_bindings;
+mod narrowed_bindings;
 
 use std::ops::Range;
 
@@ -12,6 +13,14 @@ use super::anchors::emit_props_shadow_anchor;
 use super::legacy_vue2::{needs_legacy_vue2_helpers, ref_unwrap_helper_for_template};
 use crate::virtual_ts::{VizeSemanticLink, VizeSemanticLinkKind};
 
+/// `__U` for a binding the template narrows: `vue-tsc` asserts it as
+/// `NonNullable<T> & Ref & { value: Unwrapped<T> }` and reads `.value`, so a
+/// ref's own `value` absorbs the nullish members of a `Ref | undefined` union.
+/// A wholly-ref type and a type without any ref member resolve exactly as
+/// `__U` does; the latter keeps a plain `{ value }` object free of the
+/// assertion's intersection.
+const NARROWED_REF_UNWRAP_HELPER: &str = "    type __UN<T> = [T] extends [import('vue').Ref] ? __U<T> : [Extract<T, import('vue').Ref>] extends [never] ? __U<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: __U<T> })['value'];\n";
+
 pub(super) struct TemplateRefUnwraps {
     setup_bindings: Vec<String>,
     options_api_setup_bindings: Vec<String>,
@@ -19,6 +28,9 @@ pub(super) struct TemplateRefUnwraps {
     /// Setup bindings whose assignment is deferred past their declaration. See
     /// `deferred_bindings` for why they need the same shadowing treatment.
     deferred_bindings: Vec<String>,
+    /// Maybe-ref setup bindings the template narrows somewhere, which
+    /// `vue-tsc` reads through `.value` everywhere. See `narrowed_bindings`.
+    narrowed_bindings: FxHashSet<String>,
     /// Dialect and preamble decisions resolved once at collection time; they
     /// also select the `__U` helper this shadow set is emitted against.
     legacy_helpers: bool,
@@ -115,6 +127,20 @@ impl TemplateRefUnwraps {
             })
             .unwrap_or_default();
 
+        // Authored and auto-imported bindings unwrap identically, so both
+        // provenances are narrowing candidates.
+        let maybe_ref_bindings: Vec<&str> = if legacy_helpers {
+            Vec::new()
+        } else {
+            setup_bindings
+                .iter()
+                .chain(&auto_import_bindings)
+                .map(String::as_str)
+                .filter(|name| !summary.reactivity.needs_value_access(name))
+                .collect()
+        };
+        let narrowed_bindings = narrowed_bindings::collect(summary, &maybe_ref_bindings);
+
         // Shadowing a name twice would redeclare it with a conflicting type,
         // so the deferred set excludes everything already shadowed above.
         let deferred_bindings = deferred_bindings::collect_deferred_setup_bindings(
@@ -133,6 +159,7 @@ impl TemplateRefUnwraps {
             options_api_setup_bindings,
             auto_import_bindings,
             deferred_bindings,
+            narrowed_bindings,
             legacy_helpers,
             dialect: generation_options.dialect,
             hoist_shared_preamble: generation_options.hoist_shared_preamble,
@@ -213,14 +240,27 @@ impl TemplateRefUnwraps {
             has_generic_param,
             self.hoist_shared_preamble,
         ));
+        if !self.narrowed_bindings.is_empty() {
+            ts.push_str(NARROWED_REF_UNWRAP_HELPER);
+        }
         for name in &self.setup_bindings {
-            record_template_shadow(ts, name, "__U<__R_", ">", captures, semantic_links);
+            let unwrap = self.unwrap_prefix(name);
+            record_template_shadow(ts, name, unwrap, ">", captures, semantic_links);
         }
         for name in &self.options_api_setup_bindings {
             append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
         }
         for name in &self.auto_import_bindings {
-            record_template_shadow(ts, name, "__U<__R_", ">", captures, semantic_links);
+            let unwrap = self.unwrap_prefix(name);
+            record_template_shadow(ts, name, unwrap, ">", captures, semantic_links);
+        }
+    }
+
+    fn unwrap_prefix(&self, name: &str) -> &'static str {
+        if self.narrowed_bindings.contains(name) {
+            "__UN<__R_"
+        } else {
+            "__U<__R_"
         }
     }
 }

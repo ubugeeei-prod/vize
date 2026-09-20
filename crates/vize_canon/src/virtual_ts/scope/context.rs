@@ -11,6 +11,7 @@ use vize_croquis::{Croquis, EventHandlerScopeData, ScopeId, analysis::ComponentU
 use crate::virtual_ts::expressions::{ComponentPropSource, TemplateValueChecks};
 use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions};
 
+use super::explicit_generics::ExplicitGenerics;
 use super::slot_outlet_props::SlotOutletChecks;
 
 #[derive(Clone, Copy)]
@@ -72,6 +73,7 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     pub(crate) template_offset: u32,
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) legacy_vue2: bool,
+    pub(crate) explicit_generics: &'a ExplicitGenerics,
 }
 
 pub(crate) struct ScopeGenerationOptions<'a, 'template> {
@@ -115,6 +117,7 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) preserve_event_navigation: bool,
     pub(crate) check_unknown_events: bool,
     pub(crate) experimental_strict_slot_children: bool,
+    pub(crate) explicit_generics: &'a ExplicitGenerics,
 }
 
 pub(super) struct EventHandlerExprContext<'a> {
@@ -167,6 +170,8 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     /// become the parent's to supply, so the usage itself stops reporting them
     /// as missing.
     pub(super) relaxed_required_usage_starts: &'a FxHashSet<u32>,
+    /// `@vue-generic` usages and the instantiated binding each resolves through.
+    pub(super) explicit_generics: &'a ExplicitGenerics,
 }
 
 impl<'a> ComponentPropsContext<'a, '_> {

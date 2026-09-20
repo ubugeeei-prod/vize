@@ -39,6 +39,8 @@ pub(super) struct ComponentEventTypeContext<'a> {
     /// `fallthroughAttributes`: a listener the child neither declares nor
     /// emits may still be typed from its root's forwarded props.
     pub(super) fallthrough_listeners: bool,
+    /// The `@vue-generic` binding this listener's component resolves through.
+    pub(super) explicit_generic: Option<&'a str>,
     pub(super) indent: &'a str,
 }
 
@@ -56,16 +58,22 @@ pub(super) fn generate_component_event_types(
         legacy_vue2,
         needs_typed_handler_assignment,
         fallthrough_listeners,
+        explicit_generic,
         indent,
     } = ctx;
     let component_name = data.target_component.as_ref()?;
     let scope_id = scope.id.as_u32();
     let safe_event_name = to_safe_identifier(data.event_name.as_str());
-    let component_ref = component_binding_reference(
-        summary,
-        virtual_ts_options,
-        syntactic_type_only_imported_names,
-        component_name.as_str(),
+    let component_ref = explicit_generic.map_or_else(
+        || {
+            component_binding_reference(
+                summary,
+                virtual_ts_options,
+                syntactic_type_only_imported_names,
+                component_name.as_str(),
+            )
+        },
+        String::from,
     );
     let component_type_name = to_safe_identifier_fragment(component_name.as_str());
     let pascal_event = to_pascal_case(data.event_name.as_str());

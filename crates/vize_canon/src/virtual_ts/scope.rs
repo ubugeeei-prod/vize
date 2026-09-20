@@ -21,6 +21,7 @@ mod emit;
 mod empty_component_props;
 mod event_handler;
 mod event_scope;
+mod explicit_generics;
 mod expression_scanner;
 mod globals;
 mod handler_shape;

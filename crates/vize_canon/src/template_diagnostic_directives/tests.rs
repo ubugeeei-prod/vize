@@ -77,3 +77,25 @@ fn empty_expectations_retain_the_authored_comment_range() {
     );
     assert_eq!(plan.unused_expectations().count(), 1);
 }
+
+#[test]
+fn a_node_directive_owns_its_generic_argument_comment_in_either_order() {
+    for source in [
+        "<template><!-- @vue-expect-error --><!-- @vue-generic {boolean} --><Comp />{{ sibling }}</template>",
+        "<template><!-- @vue-generic {boolean} --><!-- @vue-expect-error --><Comp />{{ sibling }}</template>",
+    ] {
+        let mut plan = TemplateDiagnosticDirectives::for_sfc(source);
+        assert_eq!(plan.directives().len(), 1, "{source}");
+        assert!(plan.suppresses(source.find("boolean").unwrap()), "{source}");
+        assert!(
+            !plan.suppresses(source.find("sibling").unwrap()),
+            "{source}"
+        );
+        assert_eq!(plan.unused_expectations().count(), 0, "{source}");
+    }
+    // Without a directive the generic comment's diagnostics stay reportable.
+    let source = "<template><!-- @vue-generic {boolean} --><Comp /></template>";
+    let mut plan = TemplateDiagnosticDirectives::for_sfc(source);
+    assert_eq!(plan.directives().len(), 0);
+    assert!(!plan.suppresses(source.find("boolean").unwrap()));
+}

@@ -96,9 +96,19 @@ impl TemplateDiagnosticDirectives {
 
     fn visit(&mut self, nodes: &[TemplateChildNode<'_>], base: usize) {
         let mut pending = Vec::new();
+        // `@vue-generic` arguments are checked as part of the node they
+        // instantiate, so the node's directive owns their diagnostics too.
+        let mut generic_comments = Vec::new();
         for node in nodes {
             if let TemplateChildNode::Comment(comment) = node {
                 let trimmed = comment.content.trim_start();
+                if trimmed.starts_with("@vue-generic") {
+                    generic_comments.push(
+                        base + comment.loc.span.start as usize
+                            ..base + comment.loc.span.end as usize,
+                    );
+                    continue;
+                }
                 let Some((token, policy)) = [
                     ("@vue-expect-error", DirectivePolicy::Expect),
                     ("@vue-ignore", DirectivePolicy::Ignore),
@@ -162,9 +172,11 @@ impl TemplateDiagnosticDirectives {
                     // element's descendants, whose locations are also shallow.
                     directive.targets.push(start..end);
                 }
+                directive.targets.append(&mut generic_comments);
                 self.directives.push(directive);
             }
             pending.clear();
+            generic_comments.clear();
             if !skip && let Some(children) = children {
                 self.visit(children, base);
             }

@@ -40,6 +40,10 @@ pub(super) fn generate_component_handler_scope(
             legacy_vue2: ctx.legacy_vue2,
             needs_typed_handler_assignment,
             fallthrough_listeners: ctx.check_options.fallthrough_attributes,
+            explicit_generic: data.target_component.as_ref().and_then(|component| {
+                ctx.explicit_generics
+                    .alias_at(ctx.summary, component.as_str(), scope.span.start)
+            }),
             indent,
         },
     )
