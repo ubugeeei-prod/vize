@@ -39,6 +39,7 @@ pub(super) fn generate_component_handler_scope(
             template_binding_access: ctx.template_binding_access,
             legacy_vue2: ctx.legacy_vue2,
             needs_typed_handler_assignment,
+            fallthrough_listeners: ctx.check_options.fallthrough_attributes,
             indent,
         },
     )

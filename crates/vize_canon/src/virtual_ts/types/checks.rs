@@ -3,6 +3,7 @@
 /// `resolveStyleClassNames`: which `<style>` blocks contribute class names to
 /// the `__VLS_StyleScopedClasses` type a template may reference. Vue Language
 /// Tools defaults to the scoped blocks; `true` takes every block.
+#[cfg(feature = "native")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum ResolveStyleClassNames {
     None,
@@ -27,6 +28,7 @@ pub(crate) struct VirtualTsCheckOptions {
     /// component does not bind itself become required props of the component,
     /// and the root usage stops reporting them as missing.
     pub(crate) check_required_fallthrough_attributes: bool,
+    #[cfg(feature = "native")]
     pub(crate) resolve_style_class_names: ResolveStyleClassNames,
     pub(crate) jsx_slots: bool,
     #[cfg(feature = "native")]
@@ -58,6 +60,7 @@ impl Default for VirtualTsCheckOptions {
             infer_template_dollar_attrs: false,
             fallthrough_attributes: false,
             check_required_fallthrough_attributes: false,
+            #[cfg(feature = "native")]
             resolve_style_class_names: ResolveStyleClassNames::Scoped,
             jsx_slots: false,
             #[cfg(feature = "native")]

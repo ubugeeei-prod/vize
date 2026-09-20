@@ -51,7 +51,8 @@ type __VizeRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never :
 type __VizeDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (event: GlobalEventHandlersEventMap[K]) => void };
 type __VizeFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown } & Omit<__VizeDomListenerProps, keyof Owned>;
 type __VizeReservedComponentInputProps = { key?: unknown; ref?: unknown };
-type __VizeComponentFallthroughProps<C> = __VizeIsAny<C> extends true ? Record<string, unknown> : (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : Record<string, unknown>) & (C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {});
+type __VizeComponentFallthroughSurface<C> = (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : Record<string, unknown>) & (C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {});
+type __VizeComponentFallthroughProps<C> = { [K in keyof __VizeComponentFallthroughSurface<C>]: __VizeComponentFallthroughSurface<C>[K] };
 type __VizeComponentInputProps<T, Declared = {}> = T extends unknown ? Partial<T> & Partial<__VizeKebabProps<T>> & Declared & __VizeFallthroughAttrs<T & Declared> & __VizeReservedComponentInputProps : never;
 type __VizeMissingRequiredInputKeys<T, Authored, K extends __VizeRequiredKeys<T> & string = __VizeRequiredKeys<T> & string> = K extends unknown ? K extends keyof Authored ? never : __VizeKebabCase<K> extends keyof Authored ? never : K : never;
 type __VizeIsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
@@ -113,7 +114,7 @@ function __setup() {
   // User setup code
   const elems = { a: [1], b: ["a"] } as const;
   const key = "a" as "a" | "b";
-  // @vize-map: 13125:13204 -> 0:105
+  // @vize-map: 13209:13288 -> 0:105
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

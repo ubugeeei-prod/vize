@@ -5,9 +5,11 @@
 //! processes v-bind, v-if, v-show, v-model, v-on in the correct scope.
 
 pub(super) mod bounds;
+mod dynamic_component_alias;
 mod first_pass;
 mod scopes;
 mod second_pass;
+pub use dynamic_component_alias::{dynamic_component_alias, is_dynamic_component_alias};
 mod v_for_scope;
 
 use crate::croquis::ComponentUsage;

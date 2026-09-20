@@ -847,6 +847,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 summary,
                 options,
                 syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
+                resolve_component_roots: check_options.fallthrough_attributes,
                 check_required: check_options.fallthrough_attributes
                     && check_options.check_required_fallthrough_attributes,
             },

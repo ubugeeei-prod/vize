@@ -32,8 +32,10 @@ pub(super) fn emit_unresolved_components(
     let mut has_unresolved = false;
     for component in &summary.used_components {
         let name = component.as_str();
-        if (summary.bindings.bindings.contains_key(name)
-            && !contains_compact_name(syntactic_type_only_imported_names, name))
+        // A dynamic `:is` alias is declared by the template scope itself.
+        if vize_croquis::drawer::is_dynamic_component_alias(name)
+            || (summary.bindings.bindings.contains_key(name)
+                && !contains_compact_name(syntactic_type_only_imported_names, name))
             || component_name_matches_external_template_binding(name, &external_template_bindings)
             || global_components.keeps_unresolved_binding(name)
         {
@@ -53,6 +55,9 @@ pub(super) fn emit_unresolved_components(
 
     ts.push_str("\n  // Mark used components as referenced\n");
     for component in &summary.used_components {
+        if vize_croquis::drawer::is_dynamic_component_alias(component.as_str()) {
+            continue;
+        }
         let safe = component_binding_reference(
             summary,
             options,

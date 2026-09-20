@@ -36,6 +36,9 @@ pub(super) struct ComponentEventTypeContext<'a> {
     pub(super) template_binding_access: &'a TemplateBindingAccess,
     pub(super) legacy_vue2: bool,
     pub(super) needs_typed_handler_assignment: bool,
+    /// `fallthroughAttributes`: a listener the child neither declares nor
+    /// emits may still be typed from its root's forwarded props.
+    pub(super) fallthrough_listeners: bool,
     pub(super) indent: &'a str,
 }
 
@@ -52,6 +55,7 @@ pub(super) fn generate_component_event_types(
         template_binding_access,
         legacy_vue2,
         needs_typed_handler_assignment,
+        fallthrough_listeners,
         indent,
     } = ctx;
     let component_name = data.target_component.as_ref()?;
@@ -115,22 +119,32 @@ pub(super) fn generate_component_event_types(
         "{indent}    ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : {missing_prop_args}\n",
     );
     append!(*ts, "{indent}    : unknown[];\n");
-    // A listener the child neither declares nor emits can still be a
-    // fallthrough attribute of its root (`fallthroughAttributes`): `<child
+    // Under `fallthroughAttributes`, a listener the child neither declares
+    // nor emits can still be a fallthrough attribute of its root: `<child
     // @input>` over a `<input />` root receives the `InputEvent` that
     // `NativeElements['input']` declares for `onInput`, and a component root
     // contributes the listener props of the component it renders. The open
     // `Record<string, unknown>` surface resolves to `unknown[]`, so an
-    // unresolved root keeps the untyped listener it has today.
-    append!(
-        *ts,
-        "{indent}type {fallthrough_args} = typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }}\n",
-    );
-    append!(
-        *ts,
-        "{indent}  ? __VizeIsAny<__F> extends true ? unknown[] : NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
-    );
-    append!(*ts, "{indent}  : unknown[];\n");
+    // unresolved root keeps the untyped listener it has today. Without the
+    // option the listener stays untyped, as it does under `vue-tsc`.
+    let unresolved_args: &str = if fallthrough_listeners {
+        append!(
+            *ts,
+            "{indent}type {fallthrough_args} = typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }}\n",
+        );
+        // A forwarded listener with no parameters is left untyped rather than
+        // imposed: the root's own declaration may be looser than the child's
+        // documented payload, and a zero-parameter contextual type would make
+        // an authored `(event) => ...` callback implicitly `any` (TS7006).
+        append!(
+            *ts,
+            "{indent}  ? __VizeIsAny<__F> extends true ? unknown[] : NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[]\n",
+        );
+        append!(*ts, "{indent}  : unknown[];\n");
+        fallthrough_args.as_str()
+    } else {
+        "unknown[]"
+    };
 
     let inferred_emit_args = generate_inferred_emit_args(
         ts,
@@ -164,7 +178,7 @@ pub(super) fn generate_component_event_types(
         );
         append!(
             *ts,
-            "{indent}type {args_type} = unknown[] extends {inferred} ? (unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {fallthrough_args} : {emit_args}) : {prop_args}) : {inferred};\n",
+            "{indent}type {args_type} = unknown[] extends {inferred} ? (unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {unresolved_args} : {emit_args}) : {prop_args}) : {inferred};\n",
         );
     } else {
         append!(
@@ -177,7 +191,7 @@ pub(super) fn generate_component_event_types(
         );
         append!(
             *ts,
-            "{indent}  : unknown[];\n{indent}type {args_type} = unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {fallthrough_args} : {emit_args}) : {prop_args};\n",
+            "{indent}  : unknown[];\n{indent}type {args_type} = unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {unresolved_args} : {emit_args}) : {prop_args};\n",
         );
     }
 

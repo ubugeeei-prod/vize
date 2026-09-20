@@ -10,6 +10,7 @@ mod helpers;
 mod options;
 mod script;
 mod template;
+pub use template::{dynamic_component_alias, is_dynamic_component_alias};
 
 #[cfg(test)]
 mod tests;

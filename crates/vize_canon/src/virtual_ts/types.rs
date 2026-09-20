@@ -1,7 +1,9 @@
 //! Type definitions for virtual TypeScript generation.
 
 mod checks;
-pub(crate) use checks::{ResolveStyleClassNames, VirtualTsCheckOptions};
+#[cfg(feature = "native")]
+pub(crate) use checks::ResolveStyleClassNames;
+pub(crate) use checks::VirtualTsCheckOptions;
 
 use std::ops::Range;
 use vize_carton::{FxHashSet, String, config::VueVersion, cstr};

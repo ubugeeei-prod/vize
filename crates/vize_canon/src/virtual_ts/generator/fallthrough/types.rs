@@ -20,6 +20,11 @@ pub(in crate::virtual_ts::generator) struct FallthroughComponentScope<'a> {
     pub(in crate::virtual_ts::generator) options: &'a VirtualTsOptions,
     pub(in crate::virtual_ts::generator) syntactic_type_only_imported_names:
         &'a FxHashSet<CompactString>,
+    /// `fallthroughAttributes`: resolve a component root to the rendered
+    /// component's props. Off, a component root keeps the open surface it
+    /// always had, so a project that never asked for fallthrough inference
+    /// sees no new listener or prop types (`vue-tsc` infers nothing either).
+    pub(in crate::virtual_ts::generator) resolve_component_roots: bool,
     /// `checkRequiredFallthroughAttributes`: forward the root's props as they
     /// are declared, minus the ones the root binds itself, instead of making
     /// every forwarded prop optional.
@@ -104,17 +109,31 @@ fn targets_type_ref(
                 // accepts: its public props and the listener props of its
                 // emits, plus whatever it forwards itself. Only a resolved
                 // setup binding has that surface; anything else stays open.
-                let Some(reference) = scope.and_then(|scope| {
-                    resolved_component_binding_reference(
-                        scope.summary,
-                        scope.options,
-                        scope.syntactic_type_only_imported_names,
-                        root.tag.as_str(),
-                    )
-                }) else {
+                // The optional surface is a non-homomorphic mapped type over
+                // the resolved one, so a root whose module does not resolve
+                // (`typeof X` is TypeScript's error type, which every
+                // conditional and homomorphic mapped type passes through as
+                // `any`) degrades to an index signature instead of poisoning
+                // the consumer's whole check with `any`. The required surface
+                // keeps the root's own modifiers, which that mapping drops.
+                let Some(reference) = scope
+                    .filter(|scope| scope.resolve_component_roots)
+                    .and_then(|scope| {
+                        resolved_component_binding_reference(
+                            scope.summary,
+                            scope.options,
+                            scope.syntactic_type_only_imported_names,
+                            root.tag.as_str(),
+                        )
+                    })
+                else {
                     return String::from("Record<string, unknown>");
                 };
-                let mut surface = String::from("__VizeComponentFallthroughProps<typeof ");
+                let mut surface = String::from(if check_required {
+                    "__VizeComponentFallthroughSurface<typeof "
+                } else {
+                    "__VizeComponentFallthroughProps<typeof "
+                });
                 surface.push_str(reference.as_str());
                 surface.push('>');
                 (root, surface)

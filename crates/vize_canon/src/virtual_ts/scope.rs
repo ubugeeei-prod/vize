@@ -16,6 +16,7 @@ mod component_props;
 mod component_ref_props;
 mod component_slots;
 mod context;
+mod dynamic_component;
 mod emit;
 mod empty_component_props;
 mod event_handler;

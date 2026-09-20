@@ -27,9 +27,35 @@ fn fallthrough_type_with(
         summary: &summary,
         options: &VirtualTsOptions::default(),
         syntactic_type_only_imported_names: &Default::default(),
+        resolve_component_roots: true,
         check_required,
     };
     fallthrough_props_type_ref(&scope, Some(&root), false)
+}
+
+// Without `fallthroughAttributes` a component root stays the open surface it
+// always was: no project gets new listener or prop types it never asked for.
+#[test]
+fn component_roots_stay_open_without_fallthrough_attributes() {
+    let allocator = Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, "<Basic>{{ title }}</Basic>");
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer
+        .analyze_script_setup("import Basic from './basic.vue'\ndefineProps<{ title: string }>()");
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let scope = FallthroughComponentScope {
+        summary: &summary,
+        options: &VirtualTsOptions::default(),
+        syntactic_type_only_imported_names: &Default::default(),
+        resolve_component_roots: false,
+        check_required: false,
+    };
+
+    assert_eq!(
+        fallthrough_props_type_ref(&scope, Some(&root), false).as_deref(),
+        Some("Record<string, unknown>")
+    );
 }
 
 fn raw_branch<'a>(
@@ -111,7 +137,7 @@ fn check_required_forwards_declared_props_minus_the_roots_own_bindings() {
 
     assert_eq!(
         ty,
-        "Omit<__VizeComponentFallthroughProps<typeof Basic>, \"foo\" | \"barBaz\" | \"onSave\" | \"modelValue\">"
+        "Omit<__VizeComponentFallthroughSurface<typeof Basic>, \"foo\" | \"barBaz\" | \"onSave\" | \"modelValue\">"
     );
 
     let native = fallthrough_type_with("defineProps<{ title: string }>()", "<input />", true)

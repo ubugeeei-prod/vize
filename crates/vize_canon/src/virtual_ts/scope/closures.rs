@@ -28,7 +28,7 @@ pub(crate) fn generate_scope_closures(
     let check_options = options.check_options;
     let virtual_ts_options = options.virtual_ts_options;
     let check_tables = TemplateValueCheckTables::collect(summary, &options);
-    let checks = check_tables.as_checks();
+    let checks = check_tables.as_checks(options.template_ast.map(|root| root.source));
 
     if check_options.check_props
         && check_options.check_unknown_props
@@ -37,6 +37,7 @@ pub(crate) fn generate_scope_closures(
     {
         super::native_prop_names::emit(ts, mappings, root, template_offset);
     }
+    super::dynamic_component::emit_dynamic_component_aliases(ts, summary, options.template_ast);
 
     let expressions_by_scope: FxHashMap<u32, Vec<_>> =
         profile!("canon.virtual_ts.group_template_expressions", {

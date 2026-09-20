@@ -110,9 +110,11 @@ declare function __vize_jsx_component_spread__<O>(value: O): __VizeJsxCanonicalR
 type __VizeJsxComponentCall<C> = C extends abstract new (...args: any[]) => any ? (props: __VizeJsxComponentProps<C>) => any : C extends (...args: any[]) => any ? C : (props: __VizeJsxComponentProps<C>) => any;\n\
 declare function __vize_jsx_component__<C>(component: C): __VizeJsxComponentCall<C>;\n\
 declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: __VizeJsxSlotPayload<C, N>) => unknown): any;\n";
-pub(crate) use types::VirtualTsGenerationOptions;
+#[cfg(feature = "native")]
+pub(crate) use types::ResolveStyleClassNames;
 #[cfg(any(test, feature = "native"))]
-pub(crate) use types::{ResolveStyleClassNames, VirtualTsCheckOptions};
+pub(crate) use types::VirtualTsCheckOptions;
+pub(crate) use types::VirtualTsGenerationOptions;
 
 pub fn generate_virtual_ts_with_offsets_and_lib_references(
     summary: &vize_croquis::Croquis,

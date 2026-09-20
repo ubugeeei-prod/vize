@@ -19,6 +19,7 @@ mod slot_names;
 #[cfg(test)]
 mod slot_scope_tests;
 mod visit_element;
+pub use visit_element::{dynamic_component_alias, is_dynamic_component_alias};
 
 #[cfg(test)]
 mod tests;
