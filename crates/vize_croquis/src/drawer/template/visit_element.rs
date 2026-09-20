@@ -39,11 +39,12 @@ impl Drawer {
         let is_component = is_component_tag(tag);
         let mut subtree_end = None;
 
-        let component_usage_name = if is_component {
-            Some(CompactString::new(tag))
-        } else {
-            self.dynamic_component_target(el, tag)
-        };
+        let component_usage_name =
+            if is_component || crate::builtins::is_runtime_builtin_component(tag) {
+                Some(CompactString::new(tag))
+            } else {
+                self.dynamic_component_target(el, tag)
+            };
 
         if self.options.track_usage {
             if let Some(component_name) = component_usage_name.as_ref() {

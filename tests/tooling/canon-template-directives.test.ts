@@ -105,6 +105,27 @@ const Comp = defineComponent({ props: { title: String } });
         ),
         [],
       );
+      const event = `<!-- @strictTemplates true -->
+<script setup lang="ts"></script>
+<template><Teleport to="body" @unknown="() => {}" /></template>`;
+      assert.deepEqual(await errors(event), [expected(event, "unknown", 2353)]);
+      const looseEvent = event.replace("@strictTemplates true", "@strictTemplates false");
+      assert.deepEqual(await errors(looseEvent), []);
+      assert.deepEqual(
+        await errors(event.replace("<template>", "<!-- @checkUnknownEvents false --><template>")),
+        [],
+      );
+      const strictEvent = looseEvent.replace(
+        "<template>",
+        "<!-- @checkUnknownEvents true --><template>",
+      );
+      assert.deepEqual(await errors(strictEvent), [expected(strictEvent, "unknown", 2353)]);
+      assert.deepEqual(
+        await errors(
+          looseEvent.replace("<template>", "<template><!-- @checkUnknownEvents true -->"),
+        ),
+        [],
+      );
     } finally {
       await editor.close();
     }

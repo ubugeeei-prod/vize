@@ -105,7 +105,7 @@ impl Drawer {
                     .bindings()
                     .map(|(name, _)| CompactString::new(name)),
             );
-            if self.options.detect_undefined {
+            if self.options.detect_undefined || self.options.analyze_template_scopes {
                 profile!(
                     "croquis.template.v_on.refs",
                     self.check_expression_refs(exp, scope_vars)

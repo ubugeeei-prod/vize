@@ -177,13 +177,13 @@ function __setup<T extends string | number>() {
   void __vize_native_key_47;
 
   // v-for scope: item in props.items
-  __vForList(props.items).forEach(([item]) => {
+  for (const [item] of __vForList(props.items)) {
     void item;
     const __vize_native_prop_check_52: __VizeNativeElementProp<__VizeNativeElement<"div">, "key"> = (String(item));
     void __vize_native_prop_check_52; // VBind
     void (item); // Interpolation
     // @vize-map: expr -> 350:354
-  });
+  }
 
   // Reference setup bindings (used in template/CSS v-bind)
   void activeItem; void emit; void items; void props; void ref; void selected;

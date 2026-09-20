@@ -48,7 +48,7 @@ pub(super) fn append_props_literal(
     // witnesses first so they cannot erase any authored prop value checks.
     for event in &usage.events {
         if !event.name_is_dynamic && !event.name.is_empty() {
-            let handler = vize_croquis::naming::to_pascal_case(event.name.as_str());
+            let handler = vize_carton::capitalize(&vize_carton::camelize(event.name.as_str()));
             append!(*ts, "{expr_indent}  ...{{}} as {{ ");
             super::super::helpers::push_ts_string_literal(ts, &vize_carton::cstr!("on{handler}"));
             ts.push_str(": never },\n");

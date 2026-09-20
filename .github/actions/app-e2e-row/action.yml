@@ -172,6 +172,7 @@ runs:
           tests/app/screenshots/
           tests/app/playwright-report/
           tests/playwright-report/
+          tests/snapshots/**/__snapshots__/*.snap.actual
           .vize/artifacts/
         if-no-files-found: ignore
         retention-days: 7

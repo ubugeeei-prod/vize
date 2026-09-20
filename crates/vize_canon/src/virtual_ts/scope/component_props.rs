@@ -214,6 +214,7 @@ pub(super) fn generate_component_props(
             syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
             source_context: ctx.source_context(),
             preserve_event_navigation: ctx.preserve_event_navigation,
+            check_unknown_events: ctx.check_unknown_events,
             experimental_strict_slot_children: ctx.experimental_strict_slot_children,
         };
         profile!(

@@ -140,7 +140,7 @@ import Child from "./Child.vue";
     .pre_rewrite_code;
 
     assert!(virtual_ts.contains("type __vize_events_resolver_0 = typeof Child"));
-    assert!(virtual_ts.contains("const __vize_kebab_events_nav_0 = __vize_events_resolved_0;"));
+    assert!(virtual_ts.contains("const __vize_kebab_events_nav_0: typeof __vize_events_resolved_0 & Record<string, unknown> = __vize_events_resolved_0;"));
     assert!(virtual_ts.contains("void __vize_kebab_events_nav_0.saveItem;"));
 
     let _ = fs::remove_dir_all(&case_dir);

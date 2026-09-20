@@ -11,7 +11,10 @@ import { renderChild } from "./jsx-consumer";
 type IsAny<T> = 0 extends 1 & T ? true : false;
 type CallSignatureChildInstance = InstanceType<typeof CallSignatureChild>;
 type DefaultModelChildInstance = InstanceType<typeof DefaultModelChild>;
-type GenericChildInstance = InstanceType<typeof GenericChild>;
+// Generic SFCs are callable; their events live in the setup context.
+type GenericChildEmit = NonNullable<Parameters<typeof GenericChild>[1]>["emit"];
+// @ts-expect-error generic SFCs must not acquire a synthetic construct signature
+export type GenericChildInstance = InstanceType<typeof GenericChild>;
 type ModelChildInstance = InstanceType<typeof ModelChild>;
 type OptionsInstance = InstanceType<typeof Options>;
 type RuntimeChildInstance = InstanceType<typeof RuntimeChild>;
@@ -32,7 +35,7 @@ const optionsMethodMustBeTyped: IsAny<OptionsInstance["increment"]> = false;
 declare const options: OptionsInstance;
 declare const callSignatureChild: CallSignatureChildInstance;
 declare const defaultModelChild: DefaultModelChildInstance;
-declare const genericChild: GenericChildInstance;
+declare const genericChildEmit: GenericChildEmit;
 declare const modelChild: ModelChildInstance;
 declare const runtimeChild: RuntimeChildInstance;
 callSignatureChild.$emit("submit", true);
@@ -41,9 +44,9 @@ callSignatureChild.$emit("submit", "yes");
 defaultModelChild.$emit("update:modelValue", 1);
 // @ts-expect-error default model update payload must remain number through declaration emit
 defaultModelChild.$emit("update:modelValue", "1");
-genericChild.$emit("pick", "value");
+genericChildEmit("pick", "value");
 // @ts-expect-error generic event constraint must remain string through declaration emit
-genericChild.$emit("pick", 1);
+genericChildEmit("pick", 1);
 modelChild.$emit("update:title", "value");
 // @ts-expect-error model update payload must remain string through declaration emit
 modelChild.$emit("update:title", 1);

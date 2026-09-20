@@ -141,3 +141,11 @@ fn test_is_used_in_template() {
     assert_eq!(is_used_in_template("msg", &root), true);
     assert_eq!(is_used_in_template("other", &root), false);
 }
+
+#[test]
+fn slot_pattern_defaults_and_computed_keys_are_template_reads() {
+    let source = r#"<Comp #default="{ value = fallback, [field]: renamed = compute(seed) }" />"#;
+    let expected = vec!["Comp", "compute", "fallback", "field", "seed"];
+    assert_eq!(sorted_read_identifiers(&read_identifiers(source)), expected);
+    assert_eq!(snapshot_identifiers(&analyze_template(source)).0, expected);
+}

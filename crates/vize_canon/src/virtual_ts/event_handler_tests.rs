@@ -67,7 +67,7 @@ fn asi_separated_statement_event_handler_uses_handler_scope() {
         "ASI-separated statements must not be parenthesized as one expression:\n{code}"
     );
     assert!(
-        code.contains("($event: any)") && !code.contains("_listener"),
+        code.contains("void (() => {") && !code.contains("_listener"),
         "disabled emit checks should keep the handler without checking its payload:\n{code}"
     );
     assert_parseable(&code);

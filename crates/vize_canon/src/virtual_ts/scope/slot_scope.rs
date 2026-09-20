@@ -156,6 +156,7 @@ pub(super) fn generate_v_slot_scope(
     map_slot_props_pattern(
         mappings,
         scope,
+        ctx.summary.scopes.v_slot_pattern_offset(scope.id),
         ctx.template_offset,
         props_pattern.as_str(),
         function_gen_start,
@@ -247,6 +248,7 @@ pub(super) fn generate_v_slot_props_scope(
     map_slot_props_pattern(
         mappings,
         scope,
+        ctx.summary.scopes.v_slot_pattern_offset(scope.id),
         ctx.source_context.offset,
         props_pattern.as_str(),
         function_gen_start,
@@ -277,12 +279,26 @@ fn slot_props_pattern(data: &VSlotScopeData, scope_id: u32) -> String {
 fn map_slot_props_pattern(
     mappings: &mut Vec<VizeMapping>,
     scope: &Scope,
+    pattern_offset: Option<u32>,
     template_offset: u32,
     props_pattern: &str,
     function_gen_start: usize,
     ts: &str,
 ) {
     let function_text = &ts[function_gen_start..];
+    // TypeScript anchors missing destructured properties on the property key,
+    // not the renamed local binding. Preserve the complete authored pattern.
+    if let Some(source_start) = pattern_offset
+        && let Some(relative) = function_text.find(props_pattern)
+    {
+        let start = function_gen_start + relative;
+        let source_start = (template_offset + source_start) as usize;
+        mappings.push(VizeMapping {
+            gen_range: start..start + props_pattern.len(),
+            src_range: source_start..source_start + props_pattern.len(),
+            sub_spans: Vec::new(),
+        });
+    }
     for (prop_name, binding) in scope.bindings() {
         if super::emit::pattern_identifier_offset(props_pattern, prop_name).is_none() {
             continue;

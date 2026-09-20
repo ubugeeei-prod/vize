@@ -179,7 +179,7 @@ defineProps<{ count: number }>()
 /// callback directly because TypeScript's TS2563 threshold for a `v-for` body
 /// is reached by the surrounding loop before empty-call isolation differs.
 #[test]
-fn v_for_empty_usages_are_isolated_inside_the_callback() {
+fn v_for_empty_usages_are_isolated_inside_the_loop() {
     let parent = r#"<script setup lang="ts">
 import Required from './Required.vue'
 </script>
@@ -219,8 +219,8 @@ defineProps<{ count: number }>()
         .split_once("// Component props in v-for scope:")
         .expect("component props v-for section")
         .1
-        .split_once("__vForList([1]).forEach(([item]) => {")
-        .expect("v-for callback")
+        .split_once("for (const [item] of __vForList([1])) {")
+        .expect("v-for loop")
         .1;
 
     assert!(callback.contains("    void [\n"), "{callback}");

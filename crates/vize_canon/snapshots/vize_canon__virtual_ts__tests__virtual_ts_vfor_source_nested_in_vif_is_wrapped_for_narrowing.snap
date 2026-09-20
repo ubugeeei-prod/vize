@@ -152,16 +152,13 @@ function __setup() {
   if ((key === 'b')) {
 
     // v-for scope: value in elems[key]
-    __vForList(elems[key]).forEach(([value]) => {
-      // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
-      if ((key === 'b')) {
-        void value;
-        const __vize_native_prop_check_69: __VizeNativeElementProp<__VizeNativeElement<"button">, "key"> = (value);
-        void __vize_native_prop_check_69; // VBind
-        void (value); // Interpolation
-        // @vize-map: expr -> 79:84
-      }
-    });
+    for (const [value] of __vForList(elems[key])) {
+      void value;
+      const __vize_native_prop_check_69: __VizeNativeElementProp<__VizeNativeElement<"button">, "key"> = (value);
+      void __vize_native_prop_check_69; // VBind
+      void (value); // Interpolation
+      // @vize-map: expr -> 79:84
+    }
   }
 
   // Reference setup bindings (used in template/CSS v-bind)

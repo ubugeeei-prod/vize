@@ -47,8 +47,19 @@ pub(super) fn generate_event_handler_scope(
     };
     append!(*ts, "\n{indent}// @{} handler\n", data.event_name);
 
-    if !ctx.check_options.check_emits {
-        append!(*ts, "{indent}void (({event_value}: any) => {{\n");
+    // An inline body that never reads its implicit argument needs only a
+    // function boundary. Keep assignments out of render control flow without
+    // instantiating unused DOM or component event types.
+    let unused_event = data.has_implicit_event
+        && scope
+            .get_binding("$event")
+            .is_some_and(|binding| !binding.is_used());
+    if !ctx.check_options.check_emits || unused_event {
+        if unused_event {
+            append!(*ts, "{indent}void (() => {{\n");
+        } else {
+            append!(*ts, "{indent}void (({event_value}: any) => {{\n");
+        }
         profile!(
             "canon.virtual_ts.event_handler_expressions",
             generate_event_handler_expressions(
@@ -58,7 +69,7 @@ pub(super) fn generate_event_handler_scope(
                 &EventHandlerExprContext {
                     expressions_by_scope: ctx.expressions_by_scope,
                     data,
-                    check_emits: false,
+                    check_emits: ctx.check_options.check_emits,
                     event_type: "any",
                     event_handler_type: None,
                     event_listener_type: None,

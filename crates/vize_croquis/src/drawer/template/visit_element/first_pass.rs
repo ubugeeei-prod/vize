@@ -100,14 +100,15 @@ impl Drawer {
                         (smallvec![], None, SmallVec::new())
                     };
 
-                    state.slot_scope = Some((
+                    state.slot_scope = Some(super::scopes::SlotScopeInfo {
                         slot_name,
-                        slot_name_is_static,
+                        name_is_static: slot_name_is_static,
                         prop_names,
                         props_pattern,
                         prop_offsets,
-                        dir.loc.span.start,
-                    ));
+                        pattern_offset: dir.exp.as_ref().map(|exp| exp.loc().span.start),
+                        offset: dir.loc.span.start,
+                    });
                 } else if dir.name == "scope" && self.options.analyze_template_scopes {
                     // petite-vue `v-scope="{ ... }"`: the object's top-level
                     // keys become in-scope names for this element's subtree.
@@ -169,14 +170,15 @@ fn legacy_slot_scope(el: &ElementNode<'_>) -> Option<super::scopes::SlotScopeInf
         })
         .unwrap_or_else(|| CompactString::const_new("default"));
 
-    Some((
+    Some(super::scopes::SlotScopeInfo {
         slot_name,
-        true,
+        name_is_static: true,
         prop_names,
-        Some(CompactString::new(pattern)),
+        props_pattern: Some(CompactString::new(pattern)),
         prop_offsets,
-        value.loc.span.start,
-    ))
+        pattern_offset: Some(value.loc.span.start),
+        offset: value.loc.span.start,
+    })
 }
 
 fn slot_prop_declaration_offsets(

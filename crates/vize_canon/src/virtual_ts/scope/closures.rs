@@ -140,6 +140,7 @@ pub(crate) fn generate_scope_closures(
         template_offset,
         options: virtual_ts_options,
         preserve_event_navigation: options.preserve_event_navigation,
+        check_unknown_events: check_options.check_unknown_events && check_options.check_emits,
         check_unresolved_global_components: options.check_unresolved_global_components,
         legacy_vue2: options.legacy_vue2,
         check_unknown_props: check_options.check_unknown_props,

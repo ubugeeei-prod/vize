@@ -155,7 +155,7 @@ function __setup() {
   void __vize_native_key_42;
 
   // v-for scope: { id, name } in items
-  __vForList(items).forEach(([{ id, name }]) => {
+  for (const [{ id, name }] of __vForList(items)) {
     void id;
     void name;
     const __vize_native_prop_check_47: __VizeNativeElementProp<__VizeNativeElement<"li">, "key"> = (id);
@@ -164,7 +164,7 @@ function __setup() {
     // @vize-map: expr -> 59:61
     void (name); // Interpolation
     // @vize-map: expr -> 69:73
-  });
+  }
 
   // Reference setup bindings (used in template/CSS v-bind)
   void items; void ref;

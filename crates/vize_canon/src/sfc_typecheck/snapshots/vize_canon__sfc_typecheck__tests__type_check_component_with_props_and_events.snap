@@ -171,7 +171,7 @@ function __setup() {
   void __vize_native_prop_check_63; // VBind
 
   // @click handler
-  void (($event: PointerEvent) => {
+  void (() => {
     emit('submit');  // handler expression
     // @vize-map: handler -> 343:357
   });

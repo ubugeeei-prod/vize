@@ -7,14 +7,15 @@ use vize_relief::ElementNode;
 use super::bounds::element_subtree_end;
 use super::v_for_scope::v_for_scope_bindings;
 
-pub(super) type SlotScopeInfo = (
-    CompactString,
-    bool,
-    SmallVec<[CompactString; 4]>,
-    Option<CompactString>,
-    SmallVec<[(CompactString, u32); 4]>,
-    u32,
-);
+pub(super) struct SlotScopeInfo {
+    pub(super) slot_name: CompactString,
+    pub(super) name_is_static: bool,
+    pub(super) prop_names: SmallVec<[CompactString; 4]>,
+    pub(super) props_pattern: Option<CompactString>,
+    pub(super) prop_offsets: SmallVec<[(CompactString, u32); 4]>,
+    pub(super) pattern_offset: Option<u32>,
+    pub(super) offset: u32,
+}
 
 pub(super) type ForScopeInfo = (
     VForScopeAliases,
@@ -47,8 +48,15 @@ impl Drawer {
         subtree_end: &mut Option<u32>,
         scope_vars: &mut Vec<CompactString>,
     ) -> Option<usize> {
-        let (slot_name, name_is_static, prop_names, props_pattern, prop_offsets, offset) =
-            slot_scope?;
+        let SlotScopeInfo {
+            slot_name,
+            name_is_static,
+            prop_names,
+            props_pattern,
+            prop_offsets,
+            pattern_offset,
+            offset,
+        } = slot_scope?;
 
         let count = prop_names.len();
         if count == 0 && !self.options.analyze_template_scopes {
@@ -63,7 +71,7 @@ impl Drawer {
             None
         };
 
-        self.croquis.scopes.enter_v_slot_scope_with_name_kind(
+        let scope_id = self.croquis.scopes.enter_v_slot_scope_with_name_kind(
             VSlotScopeData {
                 name: slot_name,
                 props_pattern,
@@ -75,6 +83,11 @@ impl Drawer {
             *subtree_end.get_or_insert_with(|| element_subtree_end(el)),
         );
 
+        if let Some(pattern_offset) = pattern_offset {
+            self.croquis
+                .scopes
+                .set_v_slot_pattern_offset(scope_id, pattern_offset);
+        }
         let scope = self.croquis.scopes.current_scope_mut();
         for (name, offset) in &prop_offsets {
             if let Some(binding) = scope.get_binding_mut(name.as_str()) {

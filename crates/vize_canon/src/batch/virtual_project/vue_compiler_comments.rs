@@ -10,6 +10,7 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
         "@strictTemplates",
         "@checkUnknownProps",
         "@checkUnknownComponents",
+        "@checkUnknownEvents",
         "@strictCssModules",
         "@inferComponentDollarEl",
         "@inferTemplateDollarEl",
@@ -35,6 +36,7 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
     let mut strict = None;
     let mut unknown_props = None;
     let mut unknown_components = None;
+    let mut unknown_events = None;
     for child in &root.children {
         let TemplateChildNode::Comment(comment) = child else {
             continue;
@@ -55,6 +57,7 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
             "strictTemplates" => strict = Some(value),
             "checkUnknownProps" => unknown_props = Some(value),
             "checkUnknownComponents" => unknown_components = Some(value),
+            "checkUnknownEvents" => unknown_events = Some(value),
             "strictCssModules" => options.strict_css_modules = value,
             "inferComponentDollarEl" => options.infer_component_dollar_el = value,
             "inferTemplateDollarEl" => options.infer_template_dollar_el = value,
@@ -67,6 +70,9 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
     }
     if let Some(value) = unknown_components.or(strict) {
         options.check_unknown_components = value;
+    }
+    if let Some(value) = unknown_events.or(strict) {
+        options.check_unknown_events = value;
     }
     options
 }

@@ -153,16 +153,13 @@ function __setup() {
   if ((key === 'b')) {
 
     // v-for scope: value in elems[key]
-    __vForList(elems[key]).forEach(([value]) => {
-      // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
-      if ((key === 'b')) {
-        void value;
-        const __vize_native_prop_check_69: __VizeNativeElementProp<__VizeNativeElement<"button">, "key"> = (value);
-        void __vize_native_prop_check_69; // VBind
-        void (value); // VBind
-        // @vize-map: expr -> 96:101
-      }
-    });
+    for (const [value] of __vForList(elems[key])) {
+      void value;
+      const __vize_native_prop_check_69: __VizeNativeElementProp<__VizeNativeElement<"button">, "key"> = (value);
+      void __vize_native_prop_check_69; // VBind
+      void (value); // VBind
+      // @vize-map: expr -> 96:101
+    }
   }
 
   // Component props type declarations
@@ -214,7 +211,7 @@ function __setup() {
   if ((key === 'b')) {
 
     // Component props in v-for scope: value in elems[key]
-    __vForList(elems[key]).forEach(([value]) => {
+    for (const [value] of __vForList(elems[key])) {
       void value;
       // @vize-map: prop -> 87:102
       // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.
@@ -234,7 +231,7 @@ function __setup() {
         const __vize_required_slots_0: __VizeRequiredSlots<__VizeSlotContract_0, {}> = {};
         void __vize_required_slots_0;
       }
-    });
+    }
   }
 
   // Mark used components as referenced

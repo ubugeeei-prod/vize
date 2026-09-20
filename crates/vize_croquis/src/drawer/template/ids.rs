@@ -213,7 +213,9 @@ impl Drawer {
 
             let is_defined = in_scope_vars || in_bindings || in_scope_chain || is_builtin;
 
-            if is_defined && !is_builtin {
+            // Builtin spellings can resolve to a lexical binding, including
+            // the handler's implicit `$event`; those reads still count.
+            if is_defined && (!is_builtin || in_scope_chain) {
                 self.croquis.scopes.mark_used(ident_str);
             } else if !is_defined && report_undefined {
                 let ident_offset_in_content = find_identifier_offset(content, ident_str, 0)

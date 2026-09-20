@@ -25,10 +25,13 @@ impl GlobalComponentCheck {
             Self::None => false,
             Self::All => true,
             // Authored PascalCase tags are already safe TypeScript references.
-            Self::PascalCase => name
-                .as_bytes()
-                .first()
-                .is_some_and(|first| first.is_ascii_uppercase()),
+            Self::PascalCase => {
+                vize_croquis::builtins::is_runtime_builtin_component(name)
+                    || name
+                        .as_bytes()
+                        .first()
+                        .is_some_and(|first| first.is_ascii_uppercase())
+            }
         }
     }
 }
@@ -90,6 +93,7 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(crate) source_context: ComponentPropSource<'a>,
     pub(crate) preserve_event_navigation: bool,
+    pub(crate) check_unknown_events: bool,
     pub(crate) experimental_strict_slot_children: bool,
 }
 
@@ -128,6 +132,7 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) template_offset: u32,
     pub(super) options: &'a VirtualTsOptions,
     pub(super) preserve_event_navigation: bool,
+    pub(super) check_unknown_events: bool,
     pub(super) check_unresolved_global_components: GlobalComponentCheck,
     pub(super) legacy_vue2: bool,
     pub(super) check_unknown_props: bool,

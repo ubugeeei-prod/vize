@@ -68,7 +68,7 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
             recurse_child_closure_scopes(ts, mappings, ctx, scope_id, &vfor_inner_indent);
 
             ts.push_str(&loop_indent);
-            ts.push_str("});\n");
+            ts.push_str("}\n");
             if enclosing_guard.is_some() {
                 append!(*ts, "{indent}}}\n");
             }

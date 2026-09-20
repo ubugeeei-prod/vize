@@ -141,9 +141,9 @@ pub(super) fn append_v_for_comment(
 }
 
 /// Emit the opening of a v-for scope as
-/// `__vForList(source).forEach(([value, key, index]) => {`.
+/// `for (const [value, key, index] of __vForList(source)) {`.
 ///
-/// The overloaded `__vForList` helper types the destructured tuple from the
+/// The `__vForList` helper types the destructured tuple from the
 /// source kind: arrays/iterables/numbers/strings keep a numeric `key`, while an
 /// object source yields `value: T[keyof T]` and `key: keyof T` (matching
 /// vue-tsc) instead of the old array-only `(source).forEach` assumption that
@@ -169,29 +169,11 @@ pub(super) fn emit_v_for_loop_open(
     if capture {
         append!(
             *ts,
-            "{indent}var __vize_slot_scope_{} = ",
+            "{indent}var __vize_slot_scope_{} = (() => {{\n",
             scope.id.as_u32()
         );
     }
-    append!(*ts, "{indent}__vForList(");
-    let source_gen_start = ts.len();
-    let rewritten_source =
-        rewrite_reserved_template_prop(data.source.as_str(), template_prop_names);
-    ts.push_str(
-        rewritten_source
-            .as_ref()
-            .map_or(data.source.as_str(), |source| source.as_str()),
-    );
-    let source_gen_end = ts.len();
-    if let Some(source_offset) = source_offset {
-        let source_start = (template_offset + source_offset) as usize;
-        mappings.push(VizeMapping {
-            gen_range: source_gen_start..source_gen_end,
-            src_range: source_start..(source_start + data.source.len()),
-            sub_spans: Vec::new(),
-        });
-    }
-    ts.push_str(if capture { ").map(([" } else { ").forEach(([" });
+    append!(*ts, "{indent}for (const [");
     // The alias pattern is emitted verbatim, so each binding identifier sits at
     // the same relative offset in the generated pattern as in the authored one.
     // Mapping it to the binding's declaration offset makes hover, definition
@@ -223,7 +205,25 @@ pub(super) fn emit_v_for_loop_open(
         map_alias(mappings, scope, template_offset, index, ts.len());
         ts.push_str(index);
     }
-    ts.push_str("]) => {\n");
+    ts.push_str("] of __vForList(");
+    let source_gen_start = ts.len();
+    let rewritten_source =
+        rewrite_reserved_template_prop(data.source.as_str(), template_prop_names);
+    ts.push_str(
+        rewritten_source
+            .as_ref()
+            .map_or(data.source.as_str(), |source| source.as_str()),
+    );
+    let source_gen_end = ts.len();
+    if let Some(source_offset) = source_offset {
+        let source_start = (template_offset + source_offset) as usize;
+        mappings.push(VizeMapping {
+            gen_range: source_gen_start..source_gen_end,
+            src_range: source_start..(source_start + data.source.len()),
+            sub_spans: Vec::new(),
+        });
+    }
+    ts.push_str(")) {\n");
 }
 
 /// The byte offset at which `name` is declared inside the authored alias

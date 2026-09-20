@@ -21,7 +21,9 @@ pub fn install_vue_jsx_type_stub(project_root: &Path) {
     .unwrap();
     std::fs::write(
         vue_dir.join("index.d.ts"),
-        r#"export interface ComponentCustomProperties {}
+        r#"export type Slot = (...args: any[]) => unknown[];
+export type Slots = Readonly<Record<string, Slot | undefined>>;
+export interface ComponentCustomProperties {}
 
 export interface ComponentPublicInstance<Props = {}> extends ComponentCustomProperties {
   $props: Props;

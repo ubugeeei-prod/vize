@@ -25,6 +25,7 @@ pub(super) fn emit_event_references(
         template_offset: ctx.template_offset,
         template_prop_names: ctx.template_prop_names,
         preserve_event_navigation: ctx.preserve_event_navigation,
+        check_unknown_events: ctx.check_unknown_events,
     };
     for &(idx, usage) in checkable_usages {
         if is_closure_scoped(ctx.summary, usage) {
@@ -60,6 +61,7 @@ pub(super) fn emit_scoped_event_references(
         template_offset: ctx.source_context.offset,
         template_prop_names: ctx.template_prop_names,
         preserve_event_navigation: ctx.preserve_event_navigation,
+        check_unknown_events: ctx.check_unknown_events,
     };
     for &(idx, usage) in usages {
         let component_ref = component_binding_reference(
@@ -85,6 +87,7 @@ struct EventNavigationContext<'a> {
     template_offset: u32,
     template_prop_names: &'a FxHashSet<String>,
     preserve_event_navigation: bool,
+    check_unknown_events: bool,
 }
 
 fn is_closure_scoped(summary: &Croquis, usage: &ComponentUsage) -> bool {
@@ -103,6 +106,9 @@ fn emit_usage_event_references(
     component_ref: &str,
     indent: &str,
 ) {
+    if ctx.check_unknown_events {
+        emit_event_name_checks(ts, mappings, ctx, idx, usage, component_ref, indent);
+    }
     let resolved_events = cstr!("__vize_events_resolved_{idx}");
     let direct_events_ref = cstr!("__vize_events_nav_{idx}");
     let kebab_events_ref = cstr!("__vize_kebab_events_nav_{idx}");
@@ -152,7 +158,7 @@ fn emit_usage_event_references(
             if !emitted_model_completion_ref {
                 append!(
                     *ts,
-                    "{event_indent}const {model_completion_ref} = {resolved_events};\n"
+                    "{event_indent}const {model_completion_ref}: typeof {resolved_events} & Record<string, unknown> = {resolved_events};\n"
                 );
                 emitted_model_completion_ref = true;
             }
@@ -176,7 +182,7 @@ fn emit_usage_event_references(
             if ctx.preserve_event_navigation {
                 append!(
                     *ts,
-                    "{event_indent}const {events_ref} = {resolved_events};\n"
+                    "{event_indent}const {events_ref}: typeof {resolved_events} & Record<string, unknown> = {resolved_events};\n"
                 );
             } else {
                 append!(
@@ -221,6 +227,50 @@ fn emit_usage_event_references(
     if emitted_guard && guard.is_some() {
         append!(*ts, "{indent}}}\n");
     }
+}
+
+fn emit_event_name_checks(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    ctx: &EventNavigationContext<'_>,
+    idx: usize,
+    usage: &ComponentUsage,
+    component_ref: &str,
+    indent: &str,
+) {
+    if !usage.events.iter().any(|event| !event.name_is_dynamic) {
+        return;
+    }
+    // Handler values are checked separately. Use the canonical event map so
+    // raw emits, listener props and kebab aliases all share the same names.
+    append!(
+        *ts,
+        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof __VizeComponentEvents<typeof {component_ref}> & string as `on${{Capitalize<__VizeComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
+    );
+    let mut emitted_names = FxHashSet::default();
+    for event in &usage.events {
+        let Some(source_range) = event_navigation_source_range(ctx, event) else {
+            continue;
+        };
+        let name = cstr!(
+            "on{}",
+            vize_carton::capitalize(&vize_carton::camelize(event.name.as_str()))
+        );
+        if !emitted_names.insert(name.clone()) {
+            continue;
+        }
+        append!(*ts, "{indent}  ");
+        let start = ts.len();
+        crate::virtual_ts::helpers::push_ts_string_literal(ts, name.as_str());
+        let end = ts.len();
+        ts.push_str(": undefined as never,\n");
+        mappings.push(VizeMapping {
+            gen_range: start..end,
+            src_range: source_range,
+            sub_spans: Vec::new(),
+        });
+    }
+    append!(*ts, "{indent}}};\n{indent}void __vize_event_keys_{idx};\n");
 }
 
 fn emit_resolved_events(

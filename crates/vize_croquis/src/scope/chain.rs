@@ -9,7 +9,7 @@
 
 mod builder;
 mod resolution;
-mod v_for_offsets;
+mod template_offsets;
 mod visibility;
 use core::fmt;
 
@@ -221,7 +221,7 @@ pub struct ScopeChain {
     pub(crate) current: ScopeId,
     /// v-slot scopes whose directive argument was dynamic (`v-slot:[name]`).
     dynamic_v_slot_scopes: FxHashSet<ScopeId>,
-    v_for_source_offsets: FxHashMap<ScopeId, u32>,
+    directive_expression_offsets: FxHashMap<ScopeId, u32>,
 }
 
 impl fmt::Debug for ScopeChain {
@@ -325,7 +325,7 @@ impl ScopeChain {
             scopes: vec![root],
             current: ScopeId::ROOT,
             dynamic_v_slot_scopes: FxHashSet::default(),
-            v_for_source_offsets: FxHashMap::default(),
+            directive_expression_offsets: FxHashMap::default(),
         }
     }
 
@@ -345,7 +345,7 @@ impl ScopeChain {
             scopes,
             current: ScopeId::ROOT,
             dynamic_v_slot_scopes: FxHashSet::default(),
-            v_for_source_offsets: FxHashMap::default(),
+            directive_expression_offsets: FxHashMap::default(),
         }
     }
 

@@ -173,7 +173,7 @@ function __setup() {
   // @vize-map: expr -> 243:248
 
   // @click handler
-  void (($event: PointerEvent) => {
+  void (() => {
     $emit('update:count', count + 1);  // handler expression
     // @vize-map: handler -> 206:238
   });

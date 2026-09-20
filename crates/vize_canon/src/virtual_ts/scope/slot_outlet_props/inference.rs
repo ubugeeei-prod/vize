@@ -117,6 +117,15 @@ impl SlotOutletChecks {
         } else {
             types.join(" & ").into()
         };
-        append!(*ts, "{indent}return {{}} as {ty};\n");
+        if scope_id.is_some_and(|id| {
+            summary
+                .scopes
+                .get_scope(id)
+                .is_some_and(|scope| scope.kind == ScopeKind::VFor)
+        }) {
+            append!(*ts, "{indent}return [{{}} as {ty}];\n");
+        } else {
+            append!(*ts, "{indent}return {{}} as {ty};\n");
+        }
     }
 }

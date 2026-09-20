@@ -221,6 +221,15 @@ runs:
           fi
         done
 
+    - name: Upload complete snapshot differences
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: vue-parity-snapshot-differences
+        path: tests/snapshots/**/__snapshots__/*.snap.actual
+        if-no-files-found: ignore
+        retention-days: 7
+
     # `if-no-files-found: error` rather than `warn`: the runner baseline is
     # written by the first step of this action, so an empty artifact means the
     # evidence was lost, which is the failure mode #4126 exists to close.

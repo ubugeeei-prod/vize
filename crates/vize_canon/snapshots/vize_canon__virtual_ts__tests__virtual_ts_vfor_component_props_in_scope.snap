@@ -155,13 +155,13 @@ function __setup() {
 
 
   // v-for scope: todo in todos
-  __vForList(todos).forEach(([todo]) => {
+  for (const [todo] of __vForList(todos)) {
     void todo;
     void (todo.id); // VBind
     // @vize-map: expr -> 46:53
     void (todo); // VBind
     // @vize-map: expr -> 62:66
-  });
+  }
 
   // Component props type declarations
   type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
@@ -211,7 +211,7 @@ function __setup() {
   // Component props value checks (template scope)
 
   // Component props in v-for scope: todo in todos
-  __vForList(todos).forEach(([todo]) => {
+  for (const [todo] of __vForList(todos)) {
     void todo;
     // @vize-map: prop -> 55:67
     const __vize_prop_check_0_item: __TodoItem_0_prop_item = todo;
@@ -222,7 +222,7 @@ function __setup() {
     type __VizeSlotContract_0 = __VizeStructuralSlots<typeof TodoItem>;
     const __vize_required_slots_0: __VizeRequiredSlots<__VizeSlotContract_0, {}> = {};
     void __vize_required_slots_0;
-  });
+  }
 
   // Mark used components as referenced
   void TodoItem;

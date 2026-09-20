@@ -20,6 +20,10 @@ fn v_slot_object_pattern_declaration_offsets_use_local_bindings() {
         .find(|scope| matches!(scope.data(), ScopeData::VSlot(_)))
         .expect("v-slot scope should be recorded");
     let pattern_offset = template.find(pattern).unwrap() as u32;
+    assert_eq!(
+        summary.scopes.v_slot_pattern_offset(scope.id),
+        Some(pattern_offset)
+    );
 
     assert_eq!(
         scope.get_binding("name").unwrap().declaration_offset,

@@ -181,6 +181,11 @@ pub fn is_builtin_component(name: &str) -> bool {
     BUILTIN_COMPONENTS_SET.contains(name)
 }
 
+/// Built-in runtime components with Vue prop types, excluding template syntax.
+pub fn is_runtime_builtin_component(name: &str) -> bool {
+    is_builtin_component(name) && !matches!(name, "component" | "slot" | "template")
+}
+
 /// Check if a name should NOT be prefixed with _ctx.
 /// Returns true for: JS globals, render locals, event locals.
 #[inline]

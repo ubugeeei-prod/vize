@@ -63,7 +63,9 @@ pub(super) fn generate_scope_node(
                 capture_slots,
             );
             // Recheck positive terms for callback-captured object-property narrowing.
-            let callback_guard = enclosing_guard.and_then(callback_vif_guard);
+            let callback_guard = enclosing_guard
+                .filter(|_| capture_slots)
+                .and_then(callback_vif_guard);
             let callback_indent = if let Some(guard) = callback_guard.as_deref() {
                 append_ignored_vif_guard_open(
                     ts,
@@ -120,7 +122,10 @@ pub(super) fn generate_scope_node(
             }
 
             ts.push_str(&loop_indent);
-            ts.push_str("});\n");
+            ts.push_str("}\n");
+            if capture_slots {
+                append!(*ts, "{loop_indent}return [];\n{loop_indent}}})();\n");
+            }
 
             if enclosing_guard.is_some() {
                 append!(*ts, "{indent}}}\n");

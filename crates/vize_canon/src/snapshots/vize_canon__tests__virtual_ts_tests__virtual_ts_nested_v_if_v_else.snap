@@ -172,13 +172,13 @@ function __setup() {
   if (!(status === 'loading') && !(status === 'error')) {
 
     // v-for scope: item in data
-    __vForList(data).forEach(([item]) => {
+    for (const [item] of __vForList(data)) {
       void item;
       const __vize_native_prop_check_195: __VizeNativeElementProp<__VizeNativeElement<"p">, "key"> = (item);
       void __vize_native_prop_check_195; // VBind
       void (item); // Interpolation
       // @vize-map: expr -> 395:399
-    });
+    }
   }
 
   // Reference setup bindings (used in template/CSS v-bind)

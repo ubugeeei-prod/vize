@@ -45,9 +45,9 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |          1205 |                   828 |               377 |             166 |     403 |            1070 |      704 |           603 |           757 |
+| Compiler                   |          1206 |                   828 |               378 |             167 |     403 |            1072 |      704 |           604 |           758 |
 | Linter                     |           375 |                   375 |                 0 |             299 |     303 |             731 |      246 |           390 |           573 |
-| Typechecker                |          1023 |                   274 |               749 |             467 |     227 |             974 |      743 |           568 |           815 |
+| Typechecker                |          1027 |                   274 |               753 |             467 |     227 |             978 |      743 |           568 |           815 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            21 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            71 |
 | LSP                        |           328 |                   328 |                 0 |             120 |      63 |             384 |      127 |           193 |           441 |
@@ -61,12 +61,12 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
 | Davinci          |          30 |              10 |       20 |
-| S0               |        1000 |             522 |      478 |
+| S0               |        1001 |             523 |      478 |
 | S1               |          13 |               6 |        7 |
 | S2               |          45 |              25 |       20 |
 | S1->S2           |         117 |              16 |      101 |
 | old AST/parser   |          95 |              75 |       20 |
-| Croquis analysis |          71 |              55 |       16 |
+| Croquis analysis |          72 |              56 |       16 |
 | raw OXC          |         403 |             361 |       42 |
 
 #### Top source and manifest files
@@ -79,7 +79,7 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | `crates/vize_atelier_sfc/src/script/define_props_destructure/collector.rs:6` | source   | S0 2<br>raw OXC 15                                                                                   |    17 |
 | `crates/vize_atelier_core/src/steps/expression/prefix.rs:6`                  | source   | S0 1<br>raw OXC 14                                                                                   |    15 |
 
-Additional source/manifest rows are in the TSV: 350 omitted.
+Additional source/manifest rows are in the TSV: 351 omitted.
 
 #### Top test/dev files
 
@@ -134,7 +134,7 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |        1023 |             582 |      441 |
+| S0               |        1027 |             586 |      441 |
 | old AST/parser   |         191 |              54 |      137 |
 | Croquis analysis |         276 |             147 |      129 |
 | raw OXC          |         227 |             191 |       36 |
@@ -145,9 +145,9 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 | ------------------------------------------------------------------------------ | -------- | ----------------------------------------------------------- | ----: |
 | `crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs:7` | source   | S0 12                                                       |    12 |
 | `crates/vize_canon/src/sfc_typecheck/checks.rs:4`                              | source   | S0 1<br>Croquis analysis 11                                 |    12 |
+| `crates/vize_canon/src/virtual_ts/scope/context.rs:3`                          | source   | S0 4<br>old AST/parser 4<br>Croquis analysis 4              |    12 |
 | `crates/vize/src/commands/check/nuxt/parsing.rs:5`                             | source   | S0 1<br>raw OXC 11                                          |    12 |
 | `crates/vize_canon/Cargo.toml:25`                                              | manifest | S0 1<br>old AST/parser 3<br>Croquis analysis 1<br>raw OXC 6 |    11 |
-| `crates/vize_canon/src/virtual_ts/scope/context.rs:3`                          | source   | S0 4<br>old AST/parser 4<br>Croquis analysis 3              |    11 |
 
 Additional source/manifest rows are in the TSV: 382 omitted.
 

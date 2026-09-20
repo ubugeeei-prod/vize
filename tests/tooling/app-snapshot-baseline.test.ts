@@ -18,16 +18,20 @@ test("app snapshot verification never creates or rewrites an unapproved baseline
         /Missing snapshot baseline/,
       );
       assert.equal(fs.existsSync(baseline), false);
+      assert.equal(fs.readFileSync(`${baseline}.actual`, "utf8"), "unexpected");
     }
     process.env.UPDATE_SNAPSHOTS = "1";
     assertSnapshot(directory, "app", "reviewed");
     assert.equal(fs.readFileSync(baseline, "utf8"), "reviewed");
+    assert.equal(fs.existsSync(`${baseline}.actual`), false);
     for (const value of [undefined, "0", "false"]) {
       if (value === undefined) delete process.env.UPDATE_SNAPSHOTS;
       else process.env.UPDATE_SNAPSHOTS = value;
       assertSnapshot(directory, "app", "reviewed");
+      assert.equal(fs.existsSync(`${baseline}.actual`), false);
       assert.throws(() => assertSnapshot(directory, "app", "regression"), /Snapshot mismatch/);
       assert.equal(fs.readFileSync(baseline, "utf8"), "reviewed");
+      assert.equal(fs.readFileSync(`${baseline}.actual`, "utf8"), "regression");
     }
     process.env.UPDATE_SNAPSHOTS = "1";
     assertSnapshot(directory, "app", "new reviewed baseline");

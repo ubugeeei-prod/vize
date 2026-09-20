@@ -13,6 +13,33 @@ import { assertVueTsc, vueTscDiagnostics } from "./support/vue-tsc-oracle.ts";
 const assertions = `type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
 type Assert<T extends true> = T;`;
 
+test("runtime builtins and unknown event names match vue-tsc", async () => {
+  const directory = project("builtin-event-contracts-", {
+    "App.vue": `<script setup lang="ts">
+import { defineComponent } from 'vue';
+const Child = defineComponent({ emits: { valid: (n: number) => true, 'foo-bar': () => true, foo_bar: () => true, Click: () => true } });
+</script><template>
+<Teleport to="/contact" @nonexistent="() => {}" />
+<Child @absent="() => {}" />
+<Child @valid="n => n.toFixed()" @valid.once="n => n.toFixed()" @foo-bar="() => {}" @foo_bar="() => {}" />
+<Transition :on-after-leave="el => el.tagName" />
+<transition :on-after-leave="el => el.missing" />
+<KeepAlive :max="{}" />
+<Child @Click="() => {}" />
+</template>`,
+  });
+  try {
+    const expected = vueTscDiagnostics(directory).sort(compareIdentity);
+    assert.equal(expected.length, 4);
+    assert.deepEqual(
+      (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
+      expected,
+    );
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("loop tuple shapes and forbidden callbacks match vue-tsc diagnostic locations", async () => {
   const directory = project("loop-and-callback-diagnostics-", {
     "Child.vue": `<script setup lang="ts" generic="T">defineProps<{ value: T; pick: never }>();</script>`,
@@ -20,11 +47,14 @@ test("loop tuple shapes and forbidden callbacks match vue-tsc diagnostic locatio
 import Child from './Child.vue';
 const anything: any = null;
 const records: Record<string, number> = {};
+const tuples: any[] = [];
 function takesNumber(value: number) { return value; }
 </script><template>
 <Child :value="1" :pick="() => 1" />
 <div v-for="(item, key, index) in anything">{{ item }}{{ key < 1 }}{{ takesNumber(index) }}</div>
 <div v-for="(item, key, index) in records">{{ item.toFixed() }}{{ key.toUpperCase() }}{{ takesNumber(index) }}</div>
+<div v-for="({ field }, index) in anything">{{ field }}{{ index }}</div>
+<div v-for="([angle, i], index) in tuples">{{ angle }}{{ i }}{{ index }}</div>
 </template>`,
   });
   try {
@@ -61,6 +91,30 @@ function project(prefix: string, files: Record<string, string>): string {
     fs.writeFileSync(path.join(directory, name), source);
   return directory;
 }
+
+test("renamed slot property errors retain their authored key locations", async () => {
+  const directory = project("slot-pattern-diagnostics-", {
+    "App.vue": `<script setup lang="ts">
+import { ref } from 'vue';
+const fallback = ref(0);
+declare const Child: new () => { $slots: { item: (props: { value: number }) => unknown } };
+</script><template>
+<Child #item="{ value: local = fallback + 1 }">{{ local.toFixed() }}</Child>
+<Child #item="{ absent: local }">{{ local }}</Child>
+<Child><template #item="{ absent: local }">{{ local }}</template></Child>
+</template>`,
+  });
+  try {
+    const expected = vueTscDiagnostics(directory).sort(compareIdentity);
+    assert.equal(expected.length, 2);
+    assert.deepEqual(
+      (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
+      expected,
+    );
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 test("listeners satisfy required props without erasing authored handler errors", async () => {
   const directory = project("required-listener-props-", {

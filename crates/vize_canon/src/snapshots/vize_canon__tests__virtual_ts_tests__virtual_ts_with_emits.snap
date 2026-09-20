@@ -162,7 +162,7 @@ function __setup() {
   });
 
   // @click handler
-  void (($event: PointerEvent) => {
+  void (() => {
     emit('close');  // handler expression
     // @vize-map: handler -> 274:287
   });
