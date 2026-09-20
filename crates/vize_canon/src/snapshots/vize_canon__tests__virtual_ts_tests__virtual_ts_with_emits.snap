@@ -51,6 +51,7 @@ type __VizeRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never :
 type __VizeDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (event: GlobalEventHandlersEventMap[K]) => void };
 type __VizeFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown } & Omit<__VizeDomListenerProps, keyof Owned>;
 type __VizeReservedComponentInputProps = { key?: unknown; ref?: unknown };
+type __VizePrettify<T> = (T extends any ? { [K in keyof T]: T[K] } : { [K in keyof T as K]: T[K] }) & {};
 type __VizeComponentFallthroughSurface<C> = (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : Record<string, unknown>) & (C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {});
 type __VizeComponentFallthroughProps<C> = { [K in keyof __VizeComponentFallthroughSurface<C>]: __VizeComponentFallthroughSurface<C>[K] };
 type __VizeComponentInputProps<T, Declared = {}> = T extends unknown ? Partial<T> & Partial<__VizeKebabProps<T>> & Declared & __VizeFallthroughAttrs<T & Declared> & __VizeReservedComponentInputProps : never;
@@ -123,7 +124,7 @@ function __setup() {
     emit('update', 42)
   }
   
-  // @vize-map: 13256:13358 -> 0:163
+  // @vize-map: 13362:13464 -> 0:163
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

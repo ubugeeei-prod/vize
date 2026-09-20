@@ -35,6 +35,7 @@ use super::{
     setup_props::{RuntimePropResolveCache, augment_type_based_props_from_script_context},
 };
 
+mod style_modules;
 mod types;
 pub(super) use types::{GeneratedVueFile, VueCodegenOptions};
 
@@ -52,6 +53,7 @@ pub(super) fn generate_vue_virtual_ts(
         options,
         descriptor,
         codegen_options.check_options.strict_css_modules,
+        codegen_options.check_options.resolve_style_imports,
     );
     let allocator = Allocator::new();
     let mut diagnostics = Vec::new();
@@ -282,11 +284,19 @@ pub(super) fn generate_vue_virtual_ts(
     }
 
     let mut code = output.code;
+    let mut mappings = output.mappings;
     append_style_scoped_classes(&mut code, source, descriptor, codegen_options.check_options);
+    style_modules::append_duplicate_style_modules(
+        &mut code,
+        &mut mappings,
+        source,
+        descriptor,
+        codegen_options.check_options.strict_css_modules,
+    );
 
     Ok(GeneratedVueFile {
         code,
-        mappings: output.mappings,
+        mappings,
         semantic_links: output.semantic_links,
         diagnostics,
     })

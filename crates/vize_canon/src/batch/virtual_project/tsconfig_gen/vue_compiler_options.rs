@@ -121,6 +121,10 @@ impl VirtualProject {
             Some(Value::Bool(false)) => ResolveStyleClassNames::None,
             _ => ResolveStyleClassNames::Scoped,
         };
+        self.virtual_ts_check_options.resolve_style_imports = options
+            .as_ref()
+            .and_then(|options| options.get("resolveStyleImports").and_then(Value::as_bool))
+            .unwrap_or(false);
     }
 
     #[cfg(test)]

@@ -19,13 +19,14 @@ const invalid = 1;
     );
 }
 
+/// TS2464 is anchored at the directive (`:`), where `vue-tsc` reports it.
 #[test]
 fn dynamic_directive_arguments_require_property_keys() {
     let source = "<script setup lang=\"ts\">const name = {};</script>\n<template>\n  <div :[name]=\"123\"></div>\n</template>";
     assert_eq!(
         project::check(&[("src/App.vue", source)]),
         [
-            "src/App.vue(3,9): error TS2464: A computed property name must be of type 'string', 'number', 'symbol', or 'any'."
+            "src/App.vue(3,8): error TS2464: A computed property name must be of type 'string', 'number', 'symbol', or 'any'."
         ]
     );
 }

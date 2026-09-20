@@ -30,6 +30,10 @@ pub(crate) struct VirtualTsCheckOptions {
     pub(crate) check_required_fallthrough_attributes: bool,
     #[cfg(feature = "native")]
     pub(crate) resolve_style_class_names: ResolveStyleClassNames,
+    /// `resolveStyleImports`: a CSS module's `src` and `@import` targets
+    /// contribute their default export's class names to the module type.
+    #[cfg(feature = "native")]
+    pub(crate) resolve_style_imports: bool,
     pub(crate) jsx_slots: bool,
     #[cfg(feature = "native")]
     pub(crate) strict_css_modules: bool,
@@ -62,6 +66,8 @@ impl Default for VirtualTsCheckOptions {
             check_required_fallthrough_attributes: false,
             #[cfg(feature = "native")]
             resolve_style_class_names: ResolveStyleClassNames::Scoped,
+            #[cfg(feature = "native")]
+            resolve_style_imports: false,
             jsx_slots: false,
             #[cfg(feature = "native")]
             strict_css_modules: false,

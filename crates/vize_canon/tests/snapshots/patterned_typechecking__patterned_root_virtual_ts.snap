@@ -51,6 +51,9 @@ type __VizeRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never :
 type __VizeDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (event: GlobalEventHandlersEventMap[K]) => void };
 type __VizeFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown } & Omit<__VizeDomListenerProps, keyof Owned>;
 type __VizeReservedComponentInputProps = { key?: unknown; ref?: unknown };
+type __VizePrettify<T> = (T extends any ? { [K in keyof T]: T[K] } : { [K in keyof T as K]: T[K] }) & {};
+type __VizeComponentFallthroughSurface<C> = (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : Record<string, unknown>) & (C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {});
+type __VizeComponentFallthroughProps<C> = { [K in keyof __VizeComponentFallthroughSurface<C>]: __VizeComponentFallthroughSurface<C>[K] };
 type __VizeComponentInputProps<T, Declared = {}> = T extends unknown ? Partial<T> & Partial<__VizeKebabProps<T>> & Declared & __VizeFallthroughAttrs<T & Declared> & __VizeReservedComponentInputProps : never;
 type __VizeMissingRequiredInputKeys<T, Authored, K extends __VizeRequiredKeys<T> & string = __VizeRequiredKeys<T> & string> = K extends unknown ? K extends keyof Authored ? never : __VizeKebabCase<K> extends keyof Authored ? never : K : never;
 type __VizeIsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
@@ -419,7 +422,7 @@ function __setup() {
   
   const result = {} as Result<number>;
   
-  // @vize-map: 24694:24739 -> 0:110
+  // @vize-map: 25258:25303 -> 0:110
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -485,6 +488,7 @@ function __setup() {
   type __VizeIsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;
   type __VizeHasFallthroughProps<C> = __VizeIsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;
   type __VizeFallthroughProps<C> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
+  type __VizeRequiredFallthroughProps<C, __F = __VizeFallthroughProps<C>, __K = __VizeRequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
   type __VizeVueVNodeProps = import('vue').VNodeProps;
   type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;
   type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;
@@ -512,7 +516,7 @@ function __setup() {
   // @vize-map: component -> 337:381
   type __Child_Props_0 = typeof Child extends { __vizeCheck: infer __F } ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof Child> : Record<string, unknown>) : __VizeComponentRawProps<typeof Child>;
   type __Child_Component_0 = typeof Child;
-  type __Child_CheckProps_0 = __Child_Props_0 & __VizeEmitListeners<__Child_Component_0>;
+  type __Child_CheckProps_0 = __Child_Props_0 & __VizeEmitListeners<__Child_Component_0> & __VizeRequiredFallthroughProps<__Child_Component_0>;
   type __Child_CheckTail_0 = __VizeComponentCheckTail<__Child_Component_0>;
   type __Child_ValueProps_0 = __Child_Props_0 & __VizeEmitListeners<__Child_Component_0> & __VizePublicComponentAttrs;
   type __Child_FallthroughValue_0<K extends PropertyKey> = __VizeFallthroughValue<__Child_Component_0, K>;

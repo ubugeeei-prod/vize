@@ -137,8 +137,16 @@ fn undefined_unknown_event_handler_stays_optional() {
         &SfcTypeCheckOptions::new("UndefinedEvent.vue").with_virtual_ts(),
     );
     let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
-    assert!(virtual_ts.contains("undefined;  // handler expression"));
-    assert!(!virtual_ts.contains("=> handler)((undefined))"));
+    // The listener body is the authored expression itself: it is returned as
+    // the handler's value, never invoked as a callback.
+    let handler_lines: Vec<&str> = virtual_ts
+        .lines()
+        .filter(|line| line.ends_with("// handler expression"))
+        .collect();
+    assert_eq!(
+        handler_lines,
+        ["    return (undefined);  // handler expression"]
+    );
 
     let project = create_project(&[("src/UndefinedEvent.vue", UNDEFINED_EVENT_SFC)]);
     let Some(snapshot) = snapshot_project_diagnostics(project.path()) else {

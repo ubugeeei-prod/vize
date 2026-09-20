@@ -19,6 +19,7 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
         "@fallthroughAttributes",
         "@checkRequiredFallthroughAttributes",
         "@resolveStyleClassNames",
+        "@resolveStyleImports",
         "@jsxSlots",
     ]
     .iter()
@@ -79,6 +80,7 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
                     ResolveStyleClassNames::None
                 };
             }
+            "resolveStyleImports" => options.resolve_style_imports = value,
             "jsxSlots" => options.jsx_slots = value,
             _ => {}
         }

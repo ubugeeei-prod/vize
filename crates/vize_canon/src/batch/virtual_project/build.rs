@@ -20,7 +20,9 @@ mod css_modules;
 mod script_build;
 pub(super) use super::paths::source_type_for_path;
 pub(super) use context::{ScriptBuildContext, VirtualBuildContext};
-pub(super) use css_modules::{style_scoped_class_names, virtual_ts_options_for_descriptor};
+pub(super) use css_modules::{
+    css_module_block_type, style_scoped_class_names, virtual_ts_options_for_descriptor,
+};
 pub(super) use script_build::build_script_registered_file;
 
 use super::VirtualFile;

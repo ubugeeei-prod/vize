@@ -13,26 +13,20 @@ pub(crate) fn virtual_ts_options_for_descriptor(
     base: &VirtualTsOptions,
     descriptor: &SfcDescriptor,
     strict: bool,
+    resolve_style_imports: bool,
 ) -> VirtualTsOptions {
     // Per-file generation never re-emits the global auto-import stubs inline:
     // they are written once to a shared ambient `.d.ts`.
-    let module_types = css_module_types(descriptor);
+    let module_types = css_module_types(descriptor, resolve_style_imports);
     let has_css_modules = !module_types.is_empty();
     let mut template_globals = base.template_globals.clone();
     let mut css_modules = Vec::new();
-    for (module_name, classes) in module_types {
+    for (module_name, shape) in module_types {
         template_globals.retain(|global| global.name != module_name);
-        if let Some(classes) = classes {
+        if let Some(shape) = shape {
             template_globals.push(TemplateGlobal {
                 name: module_name,
-                type_annotation: if strict {
-                    css_module_type_annotation(&classes)
-                } else {
-                    vize_carton::cstr!(
-                        "Record<string, string> & {}",
-                        css_module_type_annotation(&classes)
-                    )
-                },
+                type_annotation: css_module_type(&shape, strict),
                 default_value: CSS_MODULE_GLOBAL_MARKER.into(),
             });
         } else {
@@ -86,6 +80,15 @@ pub(crate) fn style_scoped_class_names(
     names
 }
 
+/// The statically known shape of one CSS module: its authored class names
+/// and, under `resolveStyleImports`, the stylesheets whose default export it
+/// also carries (`src` first, then `@import` targets in source order).
+#[derive(Default)]
+pub(crate) struct CssModuleShape {
+    classes: BTreeSet<CompactString>,
+    imports: Vec<CompactString>,
+}
+
 /// Collect the classes that are statically exported by each CSS module.
 ///
 /// A module falls back to `Record<string, string>` when another file or CSS
@@ -93,42 +96,139 @@ pub(crate) fn style_scoped_class_names(
 /// detection for soundness rather than inventing a closed shape.
 fn css_module_types(
     descriptor: &SfcDescriptor<'_>,
-) -> BTreeMap<CompactString, Option<BTreeSet<CompactString>>> {
+    resolve_style_imports: bool,
+) -> BTreeMap<CompactString, Option<CssModuleShape>> {
     let mut modules = BTreeMap::new();
     for style in descriptor.styles.iter() {
         let Some(module_name) = style.module.as_ref() else {
             continue;
         };
         let module_name = module_name.to_compact_string();
-        let is_plain_css = style
-            .lang
-            .as_deref()
-            .is_none_or(|language| language.eq_ignore_ascii_case("css"));
-        let authored_classes = (style.src.is_none()
-            && is_plain_css
-            && !contains_dynamic_css_module_exports(&style.content))
-        .then(|| extract_authored_css_classes(&style.content))
-        .flatten();
+        let shape = css_module_block_shape(style, resolve_style_imports);
 
         let entry = modules
             .entry(module_name)
-            .or_insert_with(|| Some(BTreeSet::new()));
-        let Some(authored_classes) = authored_classes else {
+            .or_insert_with(|| Some(CssModuleShape::default()));
+        let Some(shape) = shape else {
             *entry = None;
             continue;
         };
         if let Some(existing) = entry.as_mut() {
-            existing.extend(authored_classes);
+            existing.classes.extend(shape.classes);
+            existing.imports.extend(shape.imports);
         }
     }
     modules
 }
 
+/// One `<style module>` block's shape, or `None` when its names cannot be
+/// known statically (a preprocessor, CSS Modules composition, or an imported
+/// stylesheet the project has not asked to resolve).
+fn css_module_block_shape(
+    style: &vize_atelier_sfc::SfcStyleBlock<'_>,
+    resolve_style_imports: bool,
+) -> Option<CssModuleShape> {
+    let is_plain_css = style
+        .lang
+        .as_deref()
+        .is_none_or(|language| language.eq_ignore_ascii_case("css"));
+    if !is_plain_css || contains_dynamic_css_module_exports(&style.content) {
+        return None;
+    }
+    let mut imports = Vec::new();
+    if let Some(src) = style.src.as_deref() {
+        if !resolve_style_imports {
+            return None;
+        }
+        imports.push(src.to_compact_string());
+    }
+    let css_imports = css_import_targets(&style.content);
+    if !css_imports.is_empty() {
+        if !resolve_style_imports {
+            return None;
+        }
+        imports.extend(css_imports);
+    }
+    Some(CssModuleShape {
+        classes: extract_authored_css_classes(&style.content)?,
+        imports,
+    })
+}
+
+/// The type one `<style module>` block declares on its own, for the
+/// duplicate-name literal: the same text for the same classes, so a repeated
+/// name with equal classes is only a duplicate identifier while different
+/// classes also change the declared type, as `vue-tsc` reports.
+pub(crate) fn css_module_block_type(
+    style: &vize_atelier_sfc::SfcStyleBlock<'_>,
+    strict: bool,
+) -> CompactString {
+    match css_module_block_shape(style, false) {
+        Some(shape) => css_module_type(&shape, strict),
+        None => CompactString::from("Record<string, string>"),
+    }
+}
+
+fn css_module_type(shape: &CssModuleShape, strict: bool) -> CompactString {
+    let classes = css_module_type_annotation(&shape.classes);
+    // Imported stylesheets contribute their default export; the whole
+    // intersection is flattened the way `vue-tsc` flattens it, so the type
+    // is one object literal a caller can compare exactly.
+    let own = if shape.imports.is_empty() {
+        classes
+    } else {
+        let mut merged = CompactString::from("__VizePrettify<{}");
+        for import in &shape.imports {
+            merged.push_str(" & typeof import(");
+            merged.push_str(
+                serde_json::to_string(import.as_str())
+                    .expect("import specifier should serialize")
+                    .as_str(),
+            );
+            merged.push_str(").default");
+        }
+        if !shape.classes.is_empty() {
+            merged.push_str(" & ");
+            merged.push_str(classes.as_str());
+        }
+        merged.push('>');
+        merged
+    };
+    if strict {
+        own
+    } else {
+        vize_carton::cstr!("Record<string, string> & {own}")
+    }
+}
+
 fn contains_dynamic_css_module_exports(css: &str) -> bool {
     let lower = css.to_ascii_lowercase();
-    ["@import", "@value", "composes", ":export", ":global", "#{"]
+    ["@value", "composes", ":export", ":global", "#{"]
         .iter()
         .any(|marker| lower.contains(marker))
+}
+
+/// The specifiers of the block's `@import` rules, in source order: plain
+/// `@import "x"` and `@import url("x")`, the forms Vue Language Tools reads.
+fn css_import_targets(css: &str) -> Vec<CompactString> {
+    let mut targets = Vec::new();
+    let mut rest = css;
+    while let Some(index) = rest.find("@import") {
+        rest = rest[index + "@import".len()..].trim_start();
+        let inner = rest
+            .strip_prefix("url(")
+            .map(|after| after.trim_start())
+            .unwrap_or(rest);
+        let Some(quote) = inner.chars().next().filter(|c| matches!(c, '"' | '\'')) else {
+            continue;
+        };
+        let Some(end) = inner[1..].find(quote) else {
+            break;
+        };
+        targets.push(inner[1..1 + end].to_compact_string());
+        rest = &inner[1 + end + 1..];
+    }
+    targets
 }
 
 /// Extract simple authored class selectors from selector preludes. Declarations
@@ -233,48 +333,4 @@ fn css_module_type_annotation(classes: &BTreeSet<CompactString>) -> CompactStrin
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{
-        contains_dynamic_css_module_exports, css_module_type_annotation,
-        extract_authored_css_classes,
-    };
-
-    #[test]
-    fn extracts_only_classes_from_selector_preludes() {
-        let classes = extract_authored_css_classes(
-            r#"
-/* .commented-out {} */
-.root, .row:hover {
-  background: url(./asset.png);
-  content: ".not-a-class";
-}
-@media (width > 20rem) {
-  .nested-item { color: green; }
-}
-"#,
-        )
-        .expect("plain CSS selectors should resolve");
-        assert_eq!(
-            classes.iter().map(|name| name.as_str()).collect::<Vec<_>>(),
-            ["nested-item", "root", "row"]
-        );
-        assert_eq!(
-            css_module_type_annotation(&classes).as_str(),
-            r#"{ "nested-item": string; "root": string; "row": string; }"#
-        );
-    }
-
-    #[test]
-    fn rejects_selectors_that_cannot_form_a_closed_export_shape() {
-        for source in [
-            r#"@import "./base.css"; .root {}"#,
-            r#".root { composes : shared from "./base.css"; }"#,
-            r#":global(.external) .root {}"#,
-            r#".#{dynamic} {}"#,
-        ] {
-            assert!(contains_dynamic_css_module_exports(source), "{source}");
-        }
-        assert!(extract_authored_css_classes(r#".café {}"#).is_none());
-        assert!(extract_authored_css_classes(r#".escaped\:name {}"#).is_none());
-    }
-}
+mod tests;
