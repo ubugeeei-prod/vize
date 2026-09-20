@@ -1,4 +1,5 @@
-use vize_carton::{FxHashMap, FxHashSet, String, append};
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
+use vize_carton::{FxHashMap, String, append};
 
 use crate::virtual_ts::{expressions::ComponentPropSource, types::VizeMapping};
 
@@ -9,7 +10,7 @@ use super::literal::append_slot_outlet_literal;
 
 struct SlotOutletCheckContext<'a> {
     slot_outlets_by_scope: &'a FxHashMap<u32, Vec<SlotOutlet>>,
-    template_prop_names: &'a FxHashSet<String>,
+    template_binding_access: &'a TemplateBindingAccess,
     source_context: ComponentPropSource<'a>,
     slots_type_ref: &'a str,
     indent: &'a str,
@@ -96,7 +97,7 @@ pub(in crate::virtual_ts::scope) fn generate_scope_slot_outlet_checks(
         scope_id,
         SlotOutletCheckContext {
             slot_outlets_by_scope: &ctx.slot_outlets.by_scope,
-            template_prop_names: ctx.template_prop_names,
+            template_binding_access: ctx.template_binding_access,
             source_context: ComponentPropSource::new(
                 ctx.template_source,
                 ctx.template_offset,
@@ -117,7 +118,7 @@ fn generate_slot_outlet_checks(
 ) {
     let SlotOutletCheckContext {
         slot_outlets_by_scope,
-        template_prop_names,
+        template_binding_access,
         source_context,
         slots_type_ref,
         indent,
@@ -149,7 +150,7 @@ fn generate_slot_outlet_checks(
                 mappings,
                 outlet,
                 "unknown",
-                template_prop_names,
+                template_binding_access,
                 source_context,
                 expr_indent.as_str(),
             );
@@ -195,7 +196,7 @@ fn generate_slot_outlet_checks(
             mappings,
             outlet,
             payload_type.text.as_str(),
-            template_prop_names,
+            template_binding_access,
             source_context,
             expr_indent.as_str(),
         );

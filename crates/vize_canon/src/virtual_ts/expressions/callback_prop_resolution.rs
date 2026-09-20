@@ -8,7 +8,8 @@ use super::prop_sources::{append_prop_value, generated_prop_value};
 use super::spread_reserved_props::rewrite_reserved_spread_references;
 use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::scope::is_inline_callback_prop;
-use vize_carton::{FxHashSet, String, append, cstr};
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
+use vize_carton::{String, append, cstr};
 use vize_croquis::croquis::ComponentUsage;
 
 pub(super) struct CallbackPropsResolution {
@@ -30,7 +31,7 @@ pub(super) fn generate_callback_props_resolution(
     usage: &ComponentUsage,
     idx: usize,
     component_ref: &str,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     indent: &str,
 ) -> Option<CallbackPropsResolution> {
@@ -51,7 +52,7 @@ pub(super) fn generate_callback_props_resolution(
     append_props_object(
         ts,
         usage,
-        template_prop_names,
+        template_binding_access,
         source_context,
         expr_indent.as_str(),
         false,
@@ -64,7 +65,7 @@ pub(super) fn generate_callback_props_resolution(
     append_props_object(
         ts,
         usage,
-        template_prop_names,
+        template_binding_access,
         source_context,
         expr_indent.as_str(),
         true,
@@ -79,12 +80,12 @@ pub(super) fn generate_callback_props_resolution(
 fn append_props_object(
     ts: &mut String,
     usage: &ComponentUsage,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
     erase_callbacks: bool,
 ) {
-    let class_bindings = collect_generated_class_bindings(usage, template_prop_names);
+    let class_bindings = collect_generated_class_bindings(usage, template_binding_access);
     let merge_class_bindings = class_bindings.len() > 1;
     let mut emitted_merged_class = false;
     let mut spreads = usage.spread_props.iter().peekable();
@@ -98,7 +99,7 @@ fn append_props_object(
                 ts,
                 usage,
                 spread.expression.as_str(),
-                template_prop_names,
+                template_binding_access,
                 source_context,
             );
             ts.push_str(",\n");
@@ -110,7 +111,7 @@ fn append_props_object(
             emitted_merged_class = true;
             merged_class_binding_value(&class_bindings)
         } else {
-            generated_prop_value(prop, template_prop_names)
+            generated_prop_value(prop, template_binding_access)
         };
         let Some(mut value) = value else { continue };
         let inline_callback = is_inline_callback_prop(prop);
@@ -133,7 +134,7 @@ fn append_props_object(
             ts,
             usage,
             spread.expression.as_str(),
-            template_prop_names,
+            template_binding_access,
             source_context,
         );
         ts.push_str(",\n");
@@ -144,12 +145,12 @@ fn append_spread_value(
     ts: &mut String,
     usage: &ComponentUsage,
     expression: &str,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
 ) {
     if let Some(rewritten) = rewrite_reserved_spread_references(
         expression,
-        template_prop_names,
+        template_binding_access,
         source_context.scopes,
         usage.scope_id,
     ) {

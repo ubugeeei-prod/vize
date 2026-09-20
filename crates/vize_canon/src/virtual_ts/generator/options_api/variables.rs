@@ -1,6 +1,7 @@
 //! Authored mappings for generated Options API template bindings.
 
 use super::{is_safe_value_identifier, unresolved_extends_template_names};
+use crate::virtual_ts::helpers::is_reserved_identifier;
 use crate::virtual_ts::{VirtualTsOptions, VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{BindingType, Croquis};
@@ -67,18 +68,26 @@ pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
     ts.push_str(
         "  type __VizeOptionsBinding<T, K extends string> = K extends keyof __VizeOptionsInstance<T> ? __VizeOptionsInstance<T>[K] : any;\n",
     );
-    for (name, mutable) in &names {
-        let generated_start = ts.len()
-            + if *mutable {
-                "  var ".len()
-            } else {
-                "  const ".len()
-            };
-        append!(
-            ts,
-            "  {} {name}: __VizeOptionsBinding<typeof __default__, \"{name}\"> = undefined as any;\n",
-            if *mutable { "var" } else { "const" }
+    if names.iter().any(|(name, _)| is_reserved_identifier(name)) {
+        ts.push_str(
+            "  const __vize_options_instance = {} as __VizeOptionsInstance<typeof __default__>;\n",
         );
+    }
+    for (name, mutable) in &names {
+        let generated_start = if is_reserved_identifier(name) {
+            ts.push_str("  void __vize_options_instance[\"");
+            let start = ts.len();
+            append!(ts, "{name}\"];\n");
+            start
+        } else {
+            let declaration = if *mutable { "var" } else { "const" };
+            let start = ts.len() + 3 + declaration.len();
+            append!(
+                ts,
+                "  {declaration} {name}: __VizeOptionsBinding<typeof __default__, \"{name}\"> = undefined as any;\n"
+            );
+            start
+        };
         let Some(&(start, end)) = summary.binding_spans.get(*name) else {
             continue;
         };
@@ -110,7 +119,9 @@ pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
     }
     ts.push_str("  ");
     for (name, _) in &names {
-        append!(ts, "void {name};");
+        if !is_reserved_identifier(name) {
+            append!(ts, "void {name};");
+        }
     }
     for name in &inherited_unknown_names {
         append!(ts, "void {name};");

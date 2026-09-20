@@ -41,6 +41,7 @@ mod strict_template_global_fallback_tests;
 mod strict_template_globals_tests;
 #[cfg(test)]
 mod strict_template_scope_tests;
+mod template_binding_access;
 #[cfg(test)]
 mod tests;
 mod type_dependencies;

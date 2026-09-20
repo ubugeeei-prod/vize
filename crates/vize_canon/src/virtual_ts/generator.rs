@@ -65,8 +65,8 @@ use super::{
     helpers::generate_template_context,
     import_meta::emit_import_meta_augmentation,
     macro_type_mappings::MacroTypeMappings,
-    props::collect_template_prop_names,
     scope::{ScopeGenerationOptions, emit_slot_payload_helpers, generate_scope_closures},
+    template_binding_access::TemplateBindingAccess,
     types::{
         DEFAULT_LIB_REFERENCES, VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput,
         VizeMapping, emit_lib_reference_directives,
@@ -703,9 +703,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     ))
                 );
             }
-            let template_prop_names = profile!(
+            let template_binding_access = profile!(
                 "canon.virtual_ts.collect_template_prop_names",
-                collect_template_prop_names(summary)
+                TemplateBindingAccess::collect(summary, options_api)
             );
             if check_options.any_enabled() {
                 profile!(
@@ -715,7 +715,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         &mut mappings,
                         &mut semantic_links,
                         summary,
-                        &template_prop_names,
+                        &template_binding_access,
                         template_offset,
                         ScopeGenerationOptions {
                             check_options,

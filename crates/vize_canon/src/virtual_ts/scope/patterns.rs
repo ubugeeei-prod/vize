@@ -1,5 +1,6 @@
 //! Typed RFC 823 scopes shared by expression and component-prop generation.
 
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 mod descriptor;
 mod source;
 
@@ -23,7 +24,7 @@ pub(super) fn generate_expression_match(
         children: ctx.children_map,
         template_source: ctx.template_source,
         template_offset: ctx.template_offset,
-        template_prop_names: ctx.template_prop_names,
+        template_binding_access: ctx.template_binding_access,
         verification: ctx.check_options.check_template_bindings,
     };
     emit_match(
@@ -54,7 +55,7 @@ pub(super) fn generate_props_match(
         children: ctx.children_map,
         template_source: ctx.source_context.template,
         template_offset: ctx.source_context.offset,
-        template_prop_names: ctx.template_prop_names,
+        template_binding_access: ctx.template_binding_access,
         verification: false,
     };
     emit_match(
@@ -86,7 +87,7 @@ pub(super) struct PatternContext<'a> {
     pub children: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub template_source: Option<&'a str>,
     pub template_offset: u32,
-    pub template_prop_names: &'a FxHashSet<String>,
+    pub template_binding_access: &'a TemplateBindingAccess,
     pub verification: bool,
 }
 

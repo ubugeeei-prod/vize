@@ -3,7 +3,9 @@ use vize_armature::patterns::attribute_source_offset;
 use vize_carton::{String, cstr};
 
 use super::PatternContext;
-use crate::virtual_ts::expressions::rewrite_reserved_template_prop;
+use crate::virtual_ts::expressions::{
+    map_rewritten_template_binding, rewrite_reserved_template_binding,
+};
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
 pub(super) struct PatternEmitter<'a, 'b> {
@@ -37,7 +39,7 @@ impl<'a, 'b> PatternEmitter<'a, 'b> {
         start: u32,
         end: u32,
     ) -> String {
-        let expression = rewrite_reserved_template_prop(text, self.ctx.template_prop_names)
+        let expression = rewrite_reserved_template_binding(text, self.ctx.template_binding_access)
             .unwrap_or_else(|| String::from(text));
         let gen_start = ts.len();
         ts.push_str(&expression);
@@ -79,6 +81,14 @@ impl<'a, 'b> PatternEmitter<'a, 'b> {
                 }
             }
             mappings.push(mapping);
+            map_rewritten_template_binding(
+                ts,
+                mappings,
+                gen_start,
+                source_start,
+                text,
+                self.ctx.template_binding_access,
+            );
         }
         expression
     }

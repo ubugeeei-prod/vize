@@ -7,13 +7,13 @@
 //! bound expression.
 
 use super::component_props::ComponentPropSource;
-use super::reserved_props::rewrite_reserved_template_prop;
+use super::reserved_props::rewrite_reserved_template_binding;
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use std::ops::Range;
-use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_croquis::croquis::PassedProp;
 use vize_croquis::drawer::strip_js_comments;
@@ -35,21 +35,21 @@ fn push_ts_string_literal(out: &mut String, value: &str) {
 
 pub(crate) fn generated_prop_value(
     prop: &PassedProp,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
 ) -> Option<String> {
-    generated_prop_value_with_comment_policy(prop, template_prop_names, false)
+    generated_prop_value_with_comment_policy(prop, template_binding_access, false)
 }
 
 pub(crate) fn generated_prop_value_preserving_comments(
     prop: &PassedProp,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
 ) -> Option<String> {
-    generated_prop_value_with_comment_policy(prop, template_prop_names, true)
+    generated_prop_value_with_comment_policy(prop, template_binding_access, true)
 }
 
 fn generated_prop_value_with_comment_policy(
     prop: &PassedProp,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     preserve_comments: bool,
 ) -> Option<String> {
     if !prop.is_dynamic {
@@ -80,7 +80,7 @@ fn generated_prop_value_with_comment_policy(
         strip_js_comments(raw_value)
     };
     let trimmed_value = value.as_ref().trim();
-    let rewritten_value = rewrite_reserved_template_prop(trimmed_value, template_prop_names);
+    let rewritten_value = rewrite_reserved_template_binding(trimmed_value, template_binding_access);
     Some(rewritten_value.as_ref().map_or_else(
         || String::from(value.as_ref()),
         |s| String::from(s.as_str()),

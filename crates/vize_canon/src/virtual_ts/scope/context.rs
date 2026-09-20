@@ -1,5 +1,6 @@
 //! Shared parameter-bundling contexts for recursive scope generation.
 
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::CompactString;
 use vize_carton::FxHashMap;
 use vize_carton::FxHashSet;
@@ -44,7 +45,7 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     pub(crate) skipped_expression_ranges: &'a FxHashSet<(u32, u32)>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(crate) slot_outlets: &'a SlotOutletChecks,
-    pub(crate) template_prop_names: &'a FxHashSet<String>,
+    pub(crate) template_binding_access: &'a TemplateBindingAccess,
     pub(crate) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(crate) checks: TemplateValueChecks<'a>,
     pub(crate) template_ast: Option<&'a vize_relief::RootNode<'template>>,
@@ -89,7 +90,7 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) components_by_scope: &'a FxHashMap<u32, Vec<(usize, &'a ComponentUsage)>>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(crate) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
-    pub(crate) template_prop_names: &'a FxHashSet<String>,
+    pub(crate) template_binding_access: &'a TemplateBindingAccess,
     pub(crate) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(crate) source_context: ComponentPropSource<'a>,
     pub(crate) preserve_event_navigation: bool,
@@ -116,7 +117,7 @@ pub(super) struct EventHandlerExprContext<'a> {
     /// vue-tsc anchors a wrongly-shaped handler (#3462). `None` when the
     /// directive text cannot be read back from the template.
     pub(super) event_name_src_range: Option<std::ops::Range<usize>>,
-    pub(super) template_prop_names: &'a FxHashSet<String>,
+    pub(super) template_binding_access: &'a TemplateBindingAccess,
     pub(super) template_offset: u32,
     pub(super) indent: &'a str,
 }
@@ -127,7 +128,7 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) template_source: Option<&'a str>,
     pub(super) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(super) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
-    pub(super) template_prop_names: &'a FxHashSet<String>,
+    pub(super) template_binding_access: &'a TemplateBindingAccess,
     pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(super) template_offset: u32,
     pub(super) options: &'a VirtualTsOptions,

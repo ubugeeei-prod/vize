@@ -10,6 +10,7 @@
 //! equivalent call — see [`crate::virtual_ts::expressions::generate_slot_host_binding`]
 //! — and annotates the slot function from its result.
 
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
@@ -41,7 +42,7 @@ struct SlotPayloadContext<'a> {
     summary: &'a Croquis,
     options: &'a VirtualTsOptions,
     syntactic_type_only_imported_names: &'a FxHashSet<vize_carton::CompactString>,
-    template_prop_names: &'a FxHashSet<String>,
+    template_binding_access: &'a TemplateBindingAccess,
     source_context: ComponentPropSource<'a>,
     /// Name prefix of the emitted host binding. The two emitters share a block
     /// scope, so each needs its own or the second would redeclare the first.
@@ -91,7 +92,7 @@ fn slot_payload_type(
         usage,
         binding.as_str(),
         component_ref.as_str(),
-        ctx.template_prop_names,
+        ctx.template_binding_access,
         ctx.source_context,
         ctx.indent,
     );
@@ -126,7 +127,7 @@ pub(super) fn generate_v_slot_scope(
             summary: ctx.summary,
             options: ctx.virtual_ts_options,
             syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
-            template_prop_names: ctx.template_prop_names,
+            template_binding_access: ctx.template_binding_access,
             source_context: ComponentPropSource::new(
                 ctx.template_source,
                 ctx.template_offset,
@@ -179,7 +180,7 @@ pub(super) fn generate_v_slot_scope(
             ts,
             mappings,
             exprs,
-            ctx.template_prop_names,
+            ctx.template_binding_access,
             &ExpressionListEmitContext::new(
                 ctx.skipped_expression_ranges,
                 ctx.template_offset,
@@ -228,7 +229,7 @@ pub(super) fn generate_v_slot_props_scope(
             summary: ctx.summary,
             options: ctx.options,
             syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
-            template_prop_names: ctx.template_prop_names,
+            template_binding_access: ctx.template_binding_access,
             source_context: ctx.source_context,
             binding_prefix: "__vize_slot_props_host_",
             indent,

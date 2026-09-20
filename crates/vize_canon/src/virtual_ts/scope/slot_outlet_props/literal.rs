@@ -1,6 +1,7 @@
 //! Source-mapped slot payload literals shared by checking and inference.
 
 use super::SlotOutlet;
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::{
     expressions::{
         ComponentPropSource, append_prop_value, generated_prop_value, prop_name_source_range,
@@ -10,7 +11,7 @@ use crate::virtual_ts::{
     types::{VizeMapping, VizeSubSpan},
 };
 use std::ops::Range;
-use vize_carton::{FxHashSet, String, append};
+use vize_carton::{String, append};
 use vize_croquis::croquis::{PassedProp, SpreadProp};
 
 enum SlotOutletLiteralEntry<'a> {
@@ -32,7 +33,7 @@ pub(super) fn append_slot_outlet_literal(
     mappings: &mut Vec<VizeMapping>,
     outlet: &SlotOutlet,
     payload_type: &str,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
 ) -> Range<usize> {
@@ -52,7 +53,8 @@ pub(super) fn append_slot_outlet_literal(
     for entry in entries {
         match entry {
             SlotOutletLiteralEntry::Prop(prop) => {
-                let Some(generated_value) = generated_prop_value(prop, template_prop_names) else {
+                let Some(generated_value) = generated_prop_value(prop, template_binding_access)
+                else {
                     continue;
                 };
                 let prop_src_start = (source_context.offset + prop.start) as usize;

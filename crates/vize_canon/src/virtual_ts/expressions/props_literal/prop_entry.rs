@@ -2,12 +2,14 @@ use super::close_named_group;
 use crate::virtual_ts::expressions::component_props::{
     ComponentPropSource, merged_class_binding_value,
 };
+use crate::virtual_ts::expressions::map_rewritten_template_binding;
 use crate::virtual_ts::expressions::prop_sources::{
     append_prop_value, generated_prop_value, prop_name_source_range, prop_value_source_range,
 };
 use crate::virtual_ts::helpers::to_camel_case;
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
-use vize_carton::{FxHashSet, String, append};
+use vize_carton::{String, append};
 use vize_croquis::croquis::PassedProp;
 
 #[allow(clippy::too_many_arguments)]
@@ -15,7 +17,7 @@ pub(super) fn append_prop_entry(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     prop: &PassedProp,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
     merge_class_bindings: bool,
@@ -32,7 +34,7 @@ pub(super) fn append_prop_entry(
         *emitted_merged_class = true;
         merged_class_binding_value(class_bindings)
     } else {
-        generated_prop_value(prop, template_prop_names)
+        generated_prop_value(prop, template_binding_access)
     };
     let Some(mut generated_value) = generated_value else {
         return;
@@ -104,7 +106,7 @@ pub(super) fn append_prop_entry(
             source_context,
             prop,
             entry_gen_start..key_gen_end,
-            value_gen_range,
+            value_gen_range.clone(),
         ),
     };
     mappings.push(VizeMapping {
@@ -112,6 +114,22 @@ pub(super) fn append_prop_entry(
         src_range: prop_src_start..prop_src_end,
         sub_spans,
     });
+    if !template_binding_access.is_empty()
+        && prop.is_dynamic
+        && !inline_callback
+        && !merge_class_bindings
+        && let Some(value) = prop.value.as_ref()
+        && let Some(source) = prop_value_source_range(source_context, prop)
+    {
+        map_rewritten_template_binding(
+            ts,
+            mappings,
+            value_gen_range.start,
+            source.start,
+            value.as_str(),
+            template_binding_access,
+        );
+    }
 }
 
 fn entry_sub_spans(

@@ -12,8 +12,8 @@ use super::prop_sources::{
     append_prop_value, generated_prop_value, generated_prop_value_preserving_comments,
     prop_name_source_range, prop_value_source_range,
 };
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::FxHashMap;
-use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
@@ -51,7 +51,7 @@ impl<'a> ComponentPropSource<'a> {
 pub(crate) struct ComponentPropCheckContext<'a, 'b> {
     pub(crate) ts: &'b mut String,
     pub(crate) mappings: &'b mut Vec<VizeMapping>,
-    pub(crate) template_prop_names: &'a FxHashSet<String>,
+    pub(crate) template_binding_access: &'a TemplateBindingAccess,
     pub(crate) source_context: ComponentPropSource<'a>,
     pub(crate) indent: &'b str,
 }
@@ -60,14 +60,14 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
     pub(crate) fn new(
         ts: &'b mut String,
         mappings: &'b mut Vec<VizeMapping>,
-        template_prop_names: &'a FxHashSet<String>,
+        template_binding_access: &'a TemplateBindingAccess,
         source_context: ComponentPropSource<'a>,
         indent: &'b str,
     ) -> Self {
         Self {
             ts,
             mappings,
-            template_prop_names,
+            template_binding_access,
             source_context,
             indent,
         }
@@ -76,14 +76,14 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
 
 pub(super) fn collect_generated_class_bindings<'a>(
     usage: &'a ComponentUsage,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
 ) -> Vec<(&'a PassedProp, String)> {
     usage
         .props
         .iter()
         .filter(|prop| is_checkable_prop(prop) && prop.name.as_str() == "class")
         .filter_map(|prop| {
-            generated_prop_value(prop, template_prop_names).map(|value| (prop, value))
+            generated_prop_value(prop, template_binding_access).map(|value| (prop, value))
         })
         .collect()
 }
@@ -116,7 +116,7 @@ pub(crate) fn generate_component_prop_checks(
 ) {
     let ts = &mut *ctx.ts;
     let mappings = &mut *ctx.mappings;
-    let template_prop_names = ctx.template_prop_names;
+    let template_binding_access = ctx.template_binding_access;
     let source_context = ctx.source_context;
     let indent = ctx.indent;
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
@@ -143,7 +143,7 @@ pub(crate) fn generate_component_prop_checks(
         usage,
         idx,
         component_ref,
-        template_prop_names,
+        template_binding_access,
         source_context,
         callback_indent.as_str(),
     );
@@ -163,9 +163,9 @@ pub(crate) fn generate_component_prop_checks(
             let generated_value = profile!(
                 "canon.virtual_ts.prop_check.value",
                 if crate::virtual_ts::scope::is_inline_ref_callback_prop(prop) {
-                    generated_prop_value_preserving_comments(prop, template_prop_names)
+                    generated_prop_value_preserving_comments(prop, template_binding_access)
                 } else {
-                    generated_prop_value(prop, template_prop_names)
+                    generated_prop_value(prop, template_binding_access)
                 }
                 .unwrap_or_default()
             );
@@ -261,7 +261,7 @@ pub(crate) fn generate_component_prop_checks(
         mappings,
         usage,
         idx,
-        template_prop_names,
+        template_binding_access,
         source_context,
         indent,
     );

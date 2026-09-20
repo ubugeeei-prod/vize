@@ -50,7 +50,7 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
                 ctx.summary.scopes.v_for_source_offset(scope.id),
                 &loop_indent,
                 scope,
-                ctx.template_prop_names,
+                ctx.template_binding_access,
                 false,
             );
 

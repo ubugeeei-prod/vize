@@ -1,3 +1,4 @@
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{FxHashMap, FxHashSet, String, profile};
 use vize_croquis::{Croquis, ScopeId, ScopeKind};
 
@@ -20,7 +21,7 @@ pub(crate) fn generate_scope_closures(
     mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     summary: &Croquis,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     template_offset: u32,
     options: ScopeGenerationOptions<'_, '_>,
 ) {
@@ -135,7 +136,7 @@ pub(crate) fn generate_scope_closures(
         template_source: options.template_ast.map(|root| root.source),
         children_map: &children_map,
         vfor_enclosing_guards: &vfor_enclosing_guards,
-        template_prop_names,
+        template_binding_access,
         syntactic_type_only_imported_names: options.syntactic_type_only_imported_names,
         template_offset,
         options: virtual_ts_options,
@@ -161,7 +162,7 @@ pub(crate) fn generate_scope_closures(
             skipped_expression_ranges: &skipped_expression_ranges,
             children_map: &children_map,
             slot_outlets: &slot_outlets,
-            template_prop_names,
+            template_binding_access,
             syntactic_type_only_imported_names: options.syntactic_type_only_imported_names,
             checks,
             template_ast: options.template_ast,
@@ -189,7 +190,7 @@ pub(crate) fn generate_scope_closures(
                     ts,
                     mappings,
                     exprs,
-                    template_prop_names,
+                    template_binding_access,
                     &ExpressionListEmitContext::new(
                         &skipped_expression_ranges,
                         template_offset,
@@ -213,7 +214,7 @@ pub(crate) fn generate_scope_closures(
                 ts,
                 mappings,
                 summary,
-                template_prop_names,
+                template_binding_access,
                 template_offset,
                 &options,
             )

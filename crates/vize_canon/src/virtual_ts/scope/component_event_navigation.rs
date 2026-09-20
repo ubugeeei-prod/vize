@@ -1,3 +1,4 @@
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use std::ops::Range;
 
 use vize_carton::{FxHashSet, String, append, cstr};
@@ -5,8 +6,8 @@ use vize_croquis::croquis::{ComponentUsage, EventListener};
 use vize_croquis::{Croquis, ScopeKind};
 
 use crate::virtual_ts::{
-    component_reference::component_binding_reference, expressions::rewrite_reserved_template_prop,
-    helpers::to_camel_case, types::VizeMapping,
+    component_reference::component_binding_reference,
+    expressions::rewrite_reserved_template_binding, helpers::to_camel_case, types::VizeMapping,
 };
 
 use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_literal};
@@ -23,7 +24,7 @@ pub(super) fn emit_event_references(
     let navigation_ctx = EventNavigationContext {
         template_source: ctx.template_source,
         template_offset: ctx.template_offset,
-        template_prop_names: ctx.template_prop_names,
+        template_binding_access: ctx.template_binding_access,
         preserve_event_navigation: ctx.preserve_event_navigation,
         check_unknown_events: ctx.check_unknown_events,
     };
@@ -59,7 +60,7 @@ pub(super) fn emit_scoped_event_references(
     let navigation_ctx = EventNavigationContext {
         template_source: ctx.source_context.template,
         template_offset: ctx.source_context.offset,
-        template_prop_names: ctx.template_prop_names,
+        template_binding_access: ctx.template_binding_access,
         preserve_event_navigation: ctx.preserve_event_navigation,
         check_unknown_events: ctx.check_unknown_events,
     };
@@ -85,7 +86,7 @@ pub(super) fn emit_scoped_event_references(
 struct EventNavigationContext<'a> {
     template_source: Option<&'a str>,
     template_offset: u32,
-    template_prop_names: &'a FxHashSet<String>,
+    template_binding_access: &'a TemplateBindingAccess,
     preserve_event_navigation: bool,
     check_unknown_events: bool,
 }
@@ -120,7 +121,7 @@ fn emit_usage_event_references(
     let mut emitted_model_completion_ref = false;
     let mut emitted_resolved_events = false;
     let guard = usage.vif_guard.as_ref().map(|guard| {
-        rewrite_reserved_template_prop(guard.as_str(), ctx.template_prop_names)
+        rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)
             .unwrap_or_else(|| guard.clone())
     });
     let guarded_indent = guard.as_ref().map(|_| cstr!("{indent}  "));
@@ -290,7 +291,7 @@ fn emit_resolved_events(
         if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
             continue;
         }
-        let Some(value) = generated_prop_value(prop, ctx.template_prop_names) else {
+        let Some(value) = generated_prop_value(prop, ctx.template_binding_access) else {
             continue;
         };
         let name = to_camel_case(prop.name.as_str());

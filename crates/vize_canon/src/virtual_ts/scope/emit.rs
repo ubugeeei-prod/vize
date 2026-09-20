@@ -1,5 +1,6 @@
 //! Shared text-emission helpers for v-for loops and v-slot prop types.
 
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use oxc_syntax::identifier::is_identifier_part;
 use vize_carton::append;
 use vize_carton::cstr;
@@ -7,7 +8,9 @@ use vize_carton::{FxHashSet, String};
 use vize_croquis::{Croquis, Scope, ScopeData};
 
 use crate::virtual_ts::component_reference::component_binding_reference;
-use crate::virtual_ts::expressions::rewrite_reserved_template_prop;
+use crate::virtual_ts::expressions::{
+    map_rewritten_template_binding, rewrite_reserved_template_binding,
+};
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 /// Type annotation for a `v-slot` scope's props. When the slot is on a child
@@ -158,7 +161,7 @@ pub(super) fn emit_v_for_loop_open(
     source_offset: Option<u32>,
     indent: &str,
     scope: &Scope,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     capture: bool,
 ) {
     // The scope is authoritative for both the loop shape and the alias
@@ -181,7 +184,7 @@ pub(super) fn emit_v_for_loop_open(
     append!(*ts, "{indent}const {source_name} = __vForList(");
     let source_gen_start = ts.len();
     let rewritten_source =
-        rewrite_reserved_template_prop(data.source.as_str(), template_prop_names);
+        rewrite_reserved_template_binding(data.source.as_str(), template_binding_access);
     ts.push_str(
         rewritten_source
             .as_ref()
@@ -195,6 +198,14 @@ pub(super) fn emit_v_for_loop_open(
             src_range: source_start..(source_start + data.source.len()),
             sub_spans: Vec::new(),
         });
+        map_rewritten_template_binding(
+            ts,
+            mappings,
+            source_gen_start,
+            source_start,
+            data.source.as_str(),
+            template_binding_access,
+        );
     }
     ts.push_str(");\n");
     append!(*ts, "{indent}for (const [");

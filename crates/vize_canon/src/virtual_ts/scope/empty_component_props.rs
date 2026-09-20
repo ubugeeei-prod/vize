@@ -1,5 +1,6 @@
 //! Required-prop checks for component usages without authored named values.
 
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::CompactString;
 use vize_carton::FxHashSet;
 use vize_carton::String;
@@ -52,7 +53,7 @@ pub(super) fn generate_empty_root_checks(
         options: ctx.options,
         template_ast: ctx.template_ast,
         syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
-        template_prop_names: ctx.template_prop_names,
+        template_binding_access: ctx.template_binding_access,
         source_context: ctx.source_context(),
         indent: "  ",
         experimental_strict_slot_children: ctx.experimental_strict_slot_children,
@@ -67,7 +68,7 @@ struct EmptyChecksContext<'a, 'template, 'b> {
     options: &'a VirtualTsOptions,
     template_ast: Option<&'a vize_relief::RootNode<'template>>,
     syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
-    template_prop_names: &'a FxHashSet<String>,
+    template_binding_access: &'a TemplateBindingAccess,
     source_context: ComponentPropSource<'a>,
     indent: &'b str,
     experimental_strict_slot_children: bool,
@@ -94,7 +95,7 @@ fn generate_empty_checks(
         let mut check_context = ComponentPropCheckContext::new(
             ts,
             mappings,
-            ctx.template_prop_names,
+            ctx.template_binding_access,
             ctx.source_context,
             body_indent.as_str(),
         );
@@ -150,7 +151,7 @@ pub(super) fn generate_scope_checks(
             let mut check_context = ComponentPropCheckContext::new(
                 ts,
                 mappings,
-                ctx.template_prop_names,
+                ctx.template_binding_access,
                 ctx.source_context,
                 indent,
             );
@@ -183,7 +184,7 @@ pub(super) fn generate_scope_checks(
             options: ctx.options,
             template_ast: ctx.template_ast,
             syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
-            template_prop_names: ctx.template_prop_names,
+            template_binding_access: ctx.template_binding_access,
             source_context: ctx.source_context,
             indent,
             experimental_strict_slot_children: ctx.experimental_strict_slot_children,

@@ -64,14 +64,9 @@ fn mapping_for_source_offset(
                 .sub_spans
                 .iter()
                 .filter(|span| offset >= span.src_range.start && offset <= span.src_range.end)
-                .map(|span| span.src_range.end.saturating_sub(span.src_range.start))
+                .map(|span| (span.src_range.len(), span.gen_range.len()))
                 .min()
-                .unwrap_or_else(|| {
-                    mapping
-                        .src_range
-                        .end
-                        .saturating_sub(mapping.src_range.start)
-                })
+                .unwrap_or_else(|| (mapping.src_range.len(), mapping.gen_range.len()))
         })
 }
 
@@ -227,5 +222,28 @@ mod tests {
         }];
         let mapping = mapping_for_source_offset(&mappings, 32).expect("value sub-span mapping");
         assert_eq!(map_source_offset_to_generated(mapping, 32), 126);
+    }
+
+    #[test]
+    fn exact_property_key_beats_a_receiver_rewrite_of_the_same_source() {
+        // Both map the authored `class`, but only the second points at the
+        // property key. The broad initializer begins with a synthetic receiver.
+        let broad = VizeMapping {
+            gen_range: 100..180,
+            src_range: 10..15,
+            sub_spans: vec![VizeSubSpan {
+                gen_range: 124..156,
+                src_range: 30..35,
+            }],
+        };
+        let key = VizeMapping {
+            gen_range: 149..154,
+            src_range: 30..35,
+            sub_spans: vec![],
+        };
+        for mappings in [[broad.clone(), key.clone()], [key.clone(), broad.clone()]] {
+            let mapping = mapping_for_source_offset(&mappings, 32).expect("property key");
+            assert_eq!(map_source_offset_to_generated(mapping, 32), 151);
+        }
     }
 }

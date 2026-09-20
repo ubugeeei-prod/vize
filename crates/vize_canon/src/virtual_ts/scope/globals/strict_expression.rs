@@ -1,5 +1,6 @@
 //! Strict template-context refs discovered from template expression AST scans.
 
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{FxHashSet, String};
 use vize_croquis::{Croquis, analyzer::extract_identifier_refs_oxc};
 
@@ -20,7 +21,7 @@ pub(super) fn generate_strict_expression_refs(
     summary: &Croquis,
     template_offset: u32,
     options: &VirtualTsOptions,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     type_export_names: &FxHashSet<&str>,
     seen_names: &mut FxHashSet<String>,
     seen_strict_occurrences: &mut FxHashSet<(String, usize)>,
@@ -39,7 +40,7 @@ pub(super) fn generate_strict_expression_refs(
                 || !is_strict_template_context_candidate(name)
                 || (!member_root && !call_root && !scoped_bare_ref)
                 || is_declared_template_context_name(name, options)
-                || template_prop_names.contains(name)
+                || template_binding_access.contains(name)
                 || type_export_names.contains(name)
                 || is_visible_template_binding(summary, name, local_start)
                 || head.ends_with('.')

@@ -1,11 +1,12 @@
 //! Authored condition emission for a nested v-if guard.
 
 use super::{
-    reserved_props::rewrite_reserved_template_prop,
+    reserved_props::{map_rewritten_template_binding, rewrite_reserved_template_binding},
     ts_suppression_comments::expression_source_for_typecheck,
 };
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::{VizeMapping, helpers::generated_text_range};
-use vize_carton::{FxHashSet, String, append, profile};
+use vize_carton::{String, append, profile};
 use vize_croquis::TemplateExpression;
 
 pub(super) fn generate_vif_guard_expression(
@@ -13,7 +14,7 @@ pub(super) fn generate_vif_guard_expression(
     mappings: &mut Vec<VizeMapping>,
     expr: &TemplateExpression,
     guard: &str,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     template_offset: u32,
     indent: &str,
 ) {
@@ -25,12 +26,12 @@ pub(super) fn generate_vif_guard_expression(
     );
     let trimmed_expression = expression.as_ref().trim();
     let rewritten_expression =
-        rewrite_reserved_template_prop(trimmed_expression, template_prop_names);
+        rewrite_reserved_template_binding(trimmed_expression, template_binding_access);
     let generated_expression = rewritten_expression
         .as_ref()
         .map_or_else(|| expression.as_ref(), |s| s.as_str());
     let trimmed_guard = guard.trim();
-    let rewritten_guard = rewrite_reserved_template_prop(trimmed_guard, template_prop_names);
+    let rewritten_guard = rewrite_reserved_template_binding(trimmed_guard, template_binding_access);
     let generated_guard = rewritten_guard
         .as_ref()
         .map_or_else(|| guard, |s| s.as_str());
@@ -52,6 +53,14 @@ pub(super) fn generate_vif_guard_expression(
         src_range: src_start..src_end,
         sub_spans: Vec::new(),
     });
+    map_rewritten_template_binding(
+        ts,
+        mappings,
+        gen_stmt_start,
+        src_start + expression.len() - expression.trim_start().len(),
+        trimmed_expression,
+        template_binding_access,
+    );
     append!(
         *ts,
         "{indent}  // @vize-map: expr -> {src_start}:{src_end}\n",

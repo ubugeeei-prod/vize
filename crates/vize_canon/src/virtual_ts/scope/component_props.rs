@@ -172,7 +172,7 @@ pub(super) fn generate_component_props(
             let mut check_context = ComponentPropCheckContext::new(
                 ts,
                 mappings,
-                ctx.template_prop_names,
+                ctx.template_binding_access,
                 ctx.source_context(),
                 "  ",
             );
@@ -182,7 +182,7 @@ pub(super) fn generate_component_props(
             let mut check_context = ComponentPropCheckContext::new(
                 ts,
                 mappings,
-                ctx.template_prop_names,
+                ctx.template_binding_access,
                 ctx.source_context(),
                 "  ",
             );
@@ -210,7 +210,7 @@ pub(super) fn generate_component_props(
             components_by_scope: &components_by_scope,
             children_map: ctx.children_map,
             vfor_enclosing_guards: &vfor_enclosing_guards,
-            template_prop_names: ctx.template_prop_names,
+            template_binding_access: ctx.template_binding_access,
             syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
             source_context: ctx.source_context(),
             preserve_event_navigation: ctx.preserve_event_navigation,

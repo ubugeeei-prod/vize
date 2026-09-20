@@ -6,6 +6,7 @@
 //! asks OXC for actual unresolved value-reference spans instead of guessing
 //! from token adjacency.
 
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use std::ops::Range;
 
 use oxc_ast::ast::{IdentifierReference, ObjectProperty};
@@ -13,7 +14,7 @@ use oxc_ast_visit::{Visit, walk::walk_object_property};
 use oxc_parser::Parser;
 use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String, append};
+use vize_carton::{String, append};
 use vize_croquis::{ScopeChain, ScopeId, ScopeKind};
 
 const PARSE_PREFIX: &str = "const __vize_spread = (";
@@ -41,28 +42,35 @@ struct Replacement {
 /// expression contains no reserved template-prop spelling at all.
 pub(super) fn rewrite_reserved_spread_references(
     expression: &str,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     template_scopes: &ScopeChain,
     usage_scope_id: ScopeId,
 ) -> Option<SpreadRewrite> {
-    if !has_reserved_name_candidate(expression, template_prop_names) {
+    if !has_reserved_name_candidate(expression, template_binding_access) {
         return None;
     }
 
     let replacements = collect_replacements(
         expression,
-        template_prop_names,
+        template_binding_access,
         template_scopes,
         usage_scope_id,
     );
     if replacements.is_empty() {
         return None;
     }
-    Some(apply_replacements(expression, &replacements))
+    Some(apply_replacements(
+        expression,
+        &replacements,
+        template_binding_access,
+    ))
 }
 
-fn has_reserved_name_candidate(expression: &str, template_prop_names: &FxHashSet<String>) -> bool {
-    if template_prop_names.is_empty() {
+fn has_reserved_name_candidate(
+    expression: &str,
+    template_binding_access: &TemplateBindingAccess,
+) -> bool {
+    if template_binding_access.is_empty() {
         return false;
     }
     let bytes = expression.as_bytes();
@@ -77,7 +85,7 @@ fn has_reserved_name_candidate(expression: &str, template_prop_names: &FxHashSet
         while cursor < bytes.len() && is_identifier_continue(bytes[cursor]) {
             cursor += 1;
         }
-        if template_prop_names.contains(&expression[start..cursor]) {
+        if template_binding_access.contains(&expression[start..cursor]) {
             return true;
         }
     }
@@ -86,7 +94,7 @@ fn has_reserved_name_candidate(expression: &str, template_prop_names: &FxHashSet
 
 fn collect_replacements(
     expression: &str,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     template_scopes: &ScopeChain,
     usage_scope_id: ScopeId,
 ) -> Vec<Replacement> {
@@ -115,7 +123,7 @@ fn collect_replacements(
         offset: PARSE_PREFIX.len() as u32,
         replacements: Vec::new(),
         scoping: semantic.semantic.scoping(),
-        template_prop_names,
+        template_binding_access,
         template_scopes,
         usage_scope_id,
     };
@@ -134,14 +142,14 @@ struct ReferenceCollector<'a> {
     offset: u32,
     replacements: Vec<Replacement>,
     scoping: &'a Scoping,
-    template_prop_names: &'a FxHashSet<String>,
+    template_binding_access: &'a TemplateBindingAccess,
     template_scopes: &'a ScopeChain,
     usage_scope_id: ScopeId,
 }
 
 impl ReferenceCollector<'_> {
     fn replacement(&self, ident: &IdentifierReference<'_>, shorthand: bool) -> Option<Replacement> {
-        if !self.template_prop_names.contains(ident.name.as_str()) {
+        if !self.template_binding_access.contains(ident.name.as_str()) {
             return None;
         }
         if is_visible_template_binding(
@@ -202,7 +210,11 @@ impl<'a> Visit<'a> for ReferenceCollector<'_> {
     }
 }
 
-fn apply_replacements(expression: &str, replacements: &[Replacement]) -> SpreadRewrite {
+fn apply_replacements(
+    expression: &str,
+    replacements: &[Replacement],
+    bindings: &TemplateBindingAccess,
+) -> SpreadRewrite {
     let extra_capacity = replacements.len().saturating_mul(16);
     let mut code = String::with_capacity(expression.len().saturating_add(extra_capacity));
     let mut segments = Vec::with_capacity(replacements.len().saturating_mul(2) + 1);
@@ -217,10 +229,11 @@ fn apply_replacements(expression: &str, replacements: &[Replacement]) -> SpreadR
         );
         let generated_start = code.len();
         let name = &expression[replacement.source.clone()];
+        let receiver = bindings.receiver(name).expect("collected binding access");
         if replacement.shorthand {
-            append!(code, "{name}: props[\"{name}\"]");
+            append!(code, "{name}: {receiver}[\"{name}\"]");
         } else {
-            append!(code, "props[\"{name}\"]");
+            append!(code, "{receiver}[\"{name}\"]");
         }
         segments.push(SpreadRewriteSegment {
             generated: generated_start..code.len(),
@@ -266,11 +279,11 @@ const fn is_identifier_continue(byte: u8) -> bool {
 mod tests {
     use super::*;
 
-    fn props(names: &[&str]) -> FxHashSet<String> {
-        names.iter().copied().map(Into::into).collect()
+    fn props(names: &[&str]) -> TemplateBindingAccess {
+        TemplateBindingAccess::from_props(names.iter().copied().map(Into::into).collect())
     }
 
-    fn rewrite(expression: &str, names: &FxHashSet<String>) -> Option<SpreadRewrite> {
+    fn rewrite(expression: &str, names: &TemplateBindingAccess) -> Option<SpreadRewrite> {
         rewrite_reserved_spread_references(expression, names, &ScopeChain::new(), ScopeId::ROOT)
     }
 

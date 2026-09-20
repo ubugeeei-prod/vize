@@ -10,7 +10,7 @@ use super::super::scope::append_ignored_vif_guard_open;
 use super::super::types::VizeMapping;
 use super::component_props::ComponentPropSource;
 use super::props_literal::append_props_literal;
-use vize_carton::FxHashSet;
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
@@ -34,7 +34,7 @@ pub(super) fn generate_generic_props_call(
     mappings: &mut Vec<VizeMapping>,
     usage: &ComponentUsage,
     idx: usize,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     indent: &str,
 ) {
@@ -68,7 +68,7 @@ pub(super) fn generate_generic_props_call(
         ts,
         mappings,
         usage,
-        template_prop_names,
+        template_binding_access,
         source_context,
         expr_indent.as_str(),
     );
@@ -114,7 +114,7 @@ pub(crate) fn generate_slot_host_binding(
     usage: &ComponentUsage,
     binding_name: &str,
     component_ref: &str,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     indent: &str,
 ) {
@@ -136,7 +136,7 @@ pub(crate) fn generate_slot_host_binding(
         ts,
         &mut discarded,
         usage,
-        template_prop_names,
+        template_binding_access,
         source_context,
         indent,
     );

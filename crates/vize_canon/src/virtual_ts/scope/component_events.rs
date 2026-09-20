@@ -1,5 +1,6 @@
 //! Component event listener type generation.
 
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 mod generic_inference;
 mod handler_context;
 
@@ -28,7 +29,7 @@ pub(super) struct ComponentEventTypeContext<'a> {
     pub(super) data: &'a EventHandlerScopeData,
     pub(super) scope: &'a Scope,
     pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
-    pub(super) template_prop_names: &'a FxHashSet<String>,
+    pub(super) template_binding_access: &'a TemplateBindingAccess,
     pub(super) legacy_vue2: bool,
     pub(super) needs_typed_handler_assignment: bool,
     pub(super) indent: &'a str,
@@ -44,7 +45,7 @@ pub(super) fn generate_component_event_types(
         data,
         scope,
         syntactic_type_only_imported_names,
-        template_prop_names,
+        template_binding_access,
         legacy_vue2,
         needs_typed_handler_assignment,
         indent,
@@ -103,7 +104,7 @@ pub(super) fn generate_component_event_types(
             component_type_name: &component_type_name,
             safe_event_name: &safe_event_name,
             prop_key: &prop_key,
-            template_prop_names,
+            template_binding_access,
             indent,
         },
     );

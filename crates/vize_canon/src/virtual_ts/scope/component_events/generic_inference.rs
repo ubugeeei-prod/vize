@@ -1,8 +1,9 @@
-use vize_carton::{FxHashSet, String, append, cstr};
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
+use vize_carton::{String, append, cstr};
 use vize_croquis::{Croquis, EventHandlerScopeData, Scope, analysis::ComponentUsage};
 
 use crate::virtual_ts::{
-    expressions::rewrite_reserved_template_prop, helpers::to_camel_case,
+    expressions::rewrite_reserved_template_binding, helpers::to_camel_case,
     scope::is_inline_callback_prop,
 };
 
@@ -17,7 +18,7 @@ pub(super) struct EmitInferenceContext<'a> {
     pub(super) component_type_name: &'a str,
     pub(super) safe_event_name: &'a str,
     pub(super) prop_key: &'a str,
-    pub(super) template_prop_names: &'a FxHashSet<String>,
+    pub(super) template_binding_access: &'a TemplateBindingAccess,
     pub(super) indent: &'a str,
 }
 
@@ -64,7 +65,7 @@ pub(super) fn generate_inferred_emit_args(
         ctx.component_ref,
     );
     let guard = usage.vif_guard.as_ref().map(|guard| {
-        rewrite_reserved_template_prop(guard.as_str(), ctx.template_prop_names)
+        rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)
             .unwrap_or_else(|| guard.clone())
     });
     let guarded_call_indent = guard.as_ref().map(|_| cstr!("{}  ", ctx.indent));
@@ -91,7 +92,7 @@ pub(super) fn generate_inferred_emit_args(
         if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
             continue;
         }
-        let Some(generated_value) = generated_prop_value(prop, ctx.template_prop_names) else {
+        let Some(generated_value) = generated_prop_value(prop, ctx.template_binding_access) else {
             continue;
         };
         let camel_prop_name = to_camel_case(prop.name.as_str());

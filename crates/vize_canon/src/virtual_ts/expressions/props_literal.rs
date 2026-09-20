@@ -14,8 +14,8 @@ use super::component_props::{
 };
 use super::prop_sources::append_prop_value;
 use super::spread_reserved_props::rewrite_reserved_spread_references;
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use prop_entry::append_prop_entry;
-use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_croquis::{
@@ -35,7 +35,7 @@ pub(super) fn append_props_literal(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     usage: &ComponentUsage,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
 ) -> std::ops::Range<usize> {
@@ -55,7 +55,7 @@ pub(super) fn append_props_literal(
         }
     }
 
-    let class_bindings = collect_generated_class_bindings(usage, template_prop_names);
+    let class_bindings = collect_generated_class_bindings(usage, template_binding_access);
     let merge_class_bindings = class_bindings.len() > 1;
     let mut emitted_merged_class = false;
     let mut spreads = usage.spread_props.iter().peekable();
@@ -73,7 +73,7 @@ pub(super) fn append_props_literal(
                 ts,
                 mappings,
                 spreads.next().expect("pending spread exists"),
-                template_prop_names,
+                template_binding_access,
                 usage.scope_id,
                 source_context,
                 expr_indent,
@@ -84,7 +84,7 @@ pub(super) fn append_props_literal(
             ts,
             mappings,
             prop,
-            template_prop_names,
+            template_binding_access,
             source_context,
             expr_indent,
             merge_class_bindings,
@@ -100,7 +100,7 @@ pub(super) fn append_props_literal(
             ts,
             mappings,
             spreads.next().expect("pending spread exists"),
-            template_prop_names,
+            template_binding_access,
             usage.scope_id,
             source_context,
             expr_indent,
@@ -125,7 +125,7 @@ fn append_spread_entry(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     spread: &SpreadProp,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     usage_scope_id: ScopeId,
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
@@ -135,7 +135,7 @@ fn append_spread_entry(
     let source_expression = spread_expression_source_range(source_context, spread);
     let (gen_range, sub_spans) = if let Some(rewritten) = rewrite_reserved_spread_references(
         expression,
-        template_prop_names,
+        template_binding_access,
         source_context.scopes,
         usage_scope_id,
     ) {

@@ -59,7 +59,7 @@ pub(super) fn generate_scope_node(
                 ctx.summary.scopes.v_for_source_offset(scope.id),
                 &loop_indent,
                 scope,
-                ctx.template_prop_names,
+                ctx.template_binding_access,
                 capture_slots,
             );
             // Recheck positive terms for callback-captured object-property narrowing.
@@ -96,7 +96,7 @@ pub(super) fn generate_scope_node(
                     ts,
                     mappings,
                     exprs,
-                    ctx.template_prop_names,
+                    ctx.template_binding_access,
                     &ExpressionListEmitContext::new(
                         ctx.skipped_expression_ranges,
                         ctx.template_offset,
@@ -166,7 +166,7 @@ pub(super) fn generate_scope_contents(
             ts,
             mappings,
             exprs,
-            ctx.template_prop_names,
+            ctx.template_binding_access,
             &ExpressionListEmitContext::new(
                 ctx.skipped_expression_ranges,
                 ctx.template_offset,

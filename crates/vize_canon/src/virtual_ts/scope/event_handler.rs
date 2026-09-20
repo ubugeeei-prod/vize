@@ -5,7 +5,7 @@
 use vize_carton::{String, append, cstr};
 use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
 
-use crate::virtual_ts::expressions::rewrite_reserved_template_prop;
+use crate::virtual_ts::expressions::rewrite_reserved_template_binding;
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
 use super::context::EventHandlerExprContext;
@@ -45,7 +45,7 @@ pub(super) fn generate_event_handler_expressions(
             let src_end = (ctx.template_offset + expr.end) as usize;
             let guard = expr.vif_guard.as_ref().map(|guard| {
                 let trimmed_guard = guard.as_str().trim();
-                rewrite_reserved_template_prop(trimmed_guard, ctx.template_prop_names)
+                rewrite_reserved_template_binding(trimmed_guard, ctx.template_binding_access)
                     .unwrap_or_else(|| String::from(guard.as_str()))
             });
             if let Some(ref guard) = guard {

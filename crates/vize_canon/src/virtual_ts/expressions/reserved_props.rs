@@ -1,21 +1,56 @@
-//! Rewriting of reserved-name template props into `props["name"]` accesses.
+//! Rewriting of reserved template bindings through their typed property owners.
 //!
-//! Vue allows template props whose names collide with TypeScript reserved
+//! Vue allows template bindings whose names collide with TypeScript reserved
 //! identifiers (`static`, `default`, `class`, ...). This module scans an
-//! expression and rewrites bare references to such props into bracketed
-//! `props[...]` accesses, while leaving string/regex literals, member
+//! expression and rewrites bare references to bracketed property accesses,
+//! while leaving string/regex literals, member
 //! accesses, object property keys, and TypeScript `as` assertions untouched.
 
 use super::super::helpers::is_reserved_identifier;
-use vize_carton::FxHashSet;
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
+use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 use vize_carton::String;
 use vize_carton::append;
 
-pub(crate) fn rewrite_reserved_template_prop(
+pub(crate) fn rewrite_reserved_template_binding(
     expression: &str,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
 ) -> Option<String> {
-    if template_prop_names.is_empty() {
+    rewrite_binding(expression, template_binding_access, &mut None)
+}
+
+/// Compose the same rewrite with authored offsets. Synthetic receivers have no
+/// source identity; their property keys and the unchanged expression suffix do.
+pub(crate) fn map_rewritten_template_binding(
+    ts: &str,
+    mappings: &mut Vec<VizeMapping>,
+    generated_start: usize,
+    source_start: usize,
+    expression: &str,
+    bindings: &TemplateBindingAccess,
+) {
+    let mut spans = Some(Vec::new());
+    let Some(rewritten) = rewrite_binding(expression, bindings, &mut spans) else {
+        return;
+    };
+    for (relative, _) in ts[generated_start..].match_indices(rewritten.as_str()) {
+        let base = generated_start + relative;
+        for span in spans.as_deref().unwrap_or_default() {
+            mappings.push(VizeMapping {
+                gen_range: base + span.gen_range.start..base + span.gen_range.end,
+                src_range: source_start + span.src_range.start..source_start + span.src_range.end,
+                sub_spans: Vec::new(),
+            });
+        }
+    }
+}
+
+fn rewrite_binding(
+    expression: &str,
+    template_binding_access: &TemplateBindingAccess,
+    spans: &mut Option<Vec<VizeSubSpan>>,
+) -> Option<String> {
+    if template_binding_access.is_empty() {
         return None;
     }
 
@@ -24,6 +59,8 @@ pub(crate) fn rewrite_reserved_template_prop(
     let mut i = 0;
     let mut output = String::with_capacity(expression.len());
     let mut changed = false;
+    let mut copied_source = 0;
+    let mut copied_generated = 0;
 
     while i < len {
         let current = bytes[i];
@@ -55,17 +92,37 @@ pub(crate) fn rewrite_reserved_template_prop(
             }
             let ident = &expression[start..i];
             if is_reserved_identifier(ident)
-                && template_prop_names.contains(ident)
+                && let Some(receiver) = template_binding_access.receiver(ident)
                 && !is_property_access(bytes, start)
                 && !is_object_property_key(bytes, i)
                 && !is_typescript_as_assertion_operator(bytes, start, i, ident)
             {
+                if let Some(spans) = spans.as_mut() {
+                    if copied_source < start {
+                        spans.push(VizeSubSpan {
+                            gen_range: copied_generated..output.len(),
+                            src_range: copied_source..start,
+                        });
+                    }
+                    let shorthand_prefix = if is_object_shorthand(bytes, start, i) {
+                        ident.len() + 2
+                    } else {
+                        0
+                    };
+                    let key = output.len() + shorthand_prefix + receiver.len() + 2;
+                    spans.push(VizeSubSpan {
+                        gen_range: key..key + ident.len(),
+                        src_range: start..i,
+                    });
+                }
                 if is_object_shorthand(bytes, start, i) {
-                    append!(output, "{ident}: props[\"{ident}\"]");
+                    append!(output, "{ident}: {receiver}[\"{ident}\"]");
                 } else {
-                    append!(output, "props[\"{ident}\"]");
+                    append!(output, "{receiver}[\"{ident}\"]");
                 }
                 changed = true;
+                copied_source = i;
+                copied_generated = output.len();
             } else {
                 output.push_str(ident);
             }
@@ -78,6 +135,16 @@ pub(crate) fn rewrite_reserved_template_prop(
             .expect("valid UTF-8 boundary");
         output.push(ch);
         i += ch.len_utf8();
+    }
+
+    if let Some(spans) = spans.as_mut()
+        && changed
+        && copied_source < len
+    {
+        spans.push(VizeSubSpan {
+            gen_range: copied_generated..output.len(),
+            src_range: copied_source..len,
+        });
     }
 
     changed.then_some(output)

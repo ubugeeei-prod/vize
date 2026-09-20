@@ -9,19 +9,15 @@ use super::super::types::VizeMapping;
 use super::component_ref_callbacks::generate_component_ref_callback_statement;
 use super::directive_values::generate_directive_value_statement;
 use super::native_props::generate_native_prop_statement;
-use super::reserved_props::rewrite_reserved_template_prop;
+use super::reserved_props::{map_rewritten_template_binding, rewrite_reserved_template_binding};
 use super::statement_guard::generate_vif_guard_expression;
 use super::ts_suppression_comments::expression_source_for_typecheck;
 use super::value_checks::TemplateValueChecks;
 use super::vif_chain::{VifControlFlowChain, emit_vif_control_flow_chain};
 use crate::virtual_ts::scope::{append_ignored_vif_guard_open, remove_enclosing_vif_guard_prefix};
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use std::borrow::Cow;
-use vize_carton::CompactString;
-use vize_carton::FxHashSet;
-use vize_carton::String;
-use vize_carton::append;
-use vize_carton::cstr;
-use vize_carton::profile;
+use vize_carton::{CompactString, FxHashSet, String, append, cstr, profile};
 use vize_croquis::croquis::{TemplateExpression, TemplateExpressionKind};
 
 /// Generate template expressions, compacting recognized v-if chains into
@@ -30,7 +26,7 @@ pub(crate) fn generate_expressions(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     exprs: &[&TemplateExpression],
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     context: &ExpressionListEmitContext<'_>,
 ) {
     let mut index = 0;
@@ -43,7 +39,14 @@ pub(crate) fn generate_expressions(
             continue;
         }
         if let Some(chain) = VifControlFlowChain::collect(exprs, index) {
-            emit_vif_control_flow_chain(ts, mappings, exprs, &chain, template_prop_names, context);
+            emit_vif_control_flow_chain(
+                ts,
+                mappings,
+                exprs,
+                &chain,
+                template_binding_access,
+                context,
+            );
             index = chain.end;
             continue;
         }
@@ -54,7 +57,7 @@ pub(crate) fn generate_expressions(
                 ts,
                 mappings,
                 exprs[index],
-                template_prop_names,
+                template_binding_access,
                 context.template_offset,
                 context.indent,
                 context.checks,
@@ -70,12 +73,12 @@ pub(crate) fn generate_expressions_in_enclosing_guard(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     exprs: &[&TemplateExpression],
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     context: &ExpressionListEmitContext<'_>,
     enclosing_guard: Option<&str>,
 ) {
     let Some(enclosing_guard) = enclosing_guard else {
-        generate_expressions(ts, mappings, exprs, template_prop_names, context);
+        generate_expressions(ts, mappings, exprs, template_binding_access, context);
         return;
     };
 
@@ -95,7 +98,7 @@ pub(crate) fn generate_expressions_in_enclosing_guard(
         ts,
         mappings,
         &adjusted_expression_refs,
-        template_prop_names,
+        template_binding_access,
         context,
     );
 }
@@ -129,7 +132,7 @@ pub(crate) fn generate_expression(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     expr: &vize_croquis::TemplateExpression,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     template_offset: u32,
     indent: &str,
     checks: TemplateValueChecks<'_>,
@@ -141,7 +144,7 @@ pub(crate) fn generate_expression(
                 mappings,
                 expr,
                 guard.as_str(),
-                template_prop_names,
+                template_binding_access,
                 template_offset,
                 indent,
             );
@@ -149,29 +152,20 @@ pub(crate) fn generate_expression(
         }
 
         let trimmed_guard = guard.as_str().trim();
-        let rewritten_guard = rewrite_reserved_template_prop(trimmed_guard, template_prop_names);
+        let rewritten_guard =
+            rewrite_reserved_template_binding(trimmed_guard, template_binding_access);
         let generated_guard = rewritten_guard
             .as_ref()
             .map_or_else(|| guard.as_str(), |s| s.as_str());
-        // Wrap in if block for type narrowing
-        let gen_guard_start = ts.len();
+        // The authored condition has its own projection. This duplicate guard
+        // only carries narrowing; mapping it onto the body would rename body
+        // tokens when the condition's symbol is renamed.
         append_ignored_vif_guard_open(ts, indent, generated_guard, "Narrowing-only guard");
-        let gen_guard_end = ts.len();
-        mappings.push(VizeMapping {
-            gen_range: generated_text_range(
-                &ts[gen_guard_start..gen_guard_end],
-                generated_guard,
-                gen_guard_start,
-            ),
-            src_range: (template_offset + expr.start) as usize
-                ..(template_offset + expr.end) as usize,
-            sub_spans: Vec::new(),
-        });
         generate_expression_statement(
             ts,
             mappings,
             expr,
-            template_prop_names,
+            template_binding_access,
             template_offset,
             &cstr!("{indent}  "),
             checks,
@@ -182,7 +176,7 @@ pub(crate) fn generate_expression(
             ts,
             mappings,
             expr,
-            template_prop_names,
+            template_binding_access,
             template_offset,
             indent,
             checks,
@@ -194,7 +188,41 @@ pub(super) fn generate_expression_statement(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     expr: &TemplateExpression,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
+    template_offset: u32,
+    indent: &str,
+    checks: TemplateValueChecks<'_>,
+) {
+    let generated_start = ts.len();
+    emit_expression_statement(
+        ts,
+        mappings,
+        expr,
+        template_binding_access,
+        template_offset,
+        indent,
+        checks,
+    );
+    if !template_binding_access.is_empty() {
+        let expression = expression_source_for_typecheck(expr.content.as_str());
+        let trimmed = expression.trim();
+        let leading = expression.len() - expression.trim_start().len();
+        map_rewritten_template_binding(
+            ts,
+            mappings,
+            generated_start,
+            (template_offset + expr.start) as usize + leading,
+            trimmed,
+            template_binding_access,
+        );
+    }
+}
+
+fn emit_expression_statement(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    expr: &TemplateExpression,
+    template_binding_access: &TemplateBindingAccess,
     template_offset: u32,
     indent: &str,
     checks: TemplateValueChecks<'_>,
@@ -227,7 +255,7 @@ pub(super) fn generate_expression_statement(
         return;
     }
     let rewritten_expression =
-        rewrite_reserved_template_prop(statement_expression.trim(), template_prop_names);
+        rewrite_reserved_template_binding(statement_expression.trim(), template_binding_access);
     let generated_expression = rewritten_expression
         .as_ref()
         .map_or_else(|| statement_expression, |s| s.as_str());

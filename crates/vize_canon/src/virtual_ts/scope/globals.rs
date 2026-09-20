@@ -1,5 +1,6 @@
 //! Generation of undefined-reference checks and instance-global declarations.
 
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
@@ -43,7 +44,7 @@ pub(super) fn generate_undefined_refs(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
-    template_prop_names: &FxHashSet<String>,
+    template_binding_access: &TemplateBindingAccess,
     template_offset: u32,
     options: &ScopeGenerationOptions<'_, '_>,
 ) {
@@ -96,7 +97,7 @@ pub(super) fn generate_undefined_refs(
         if is_template_instance_global_name(undef.name.as_str()) {
             continue;
         }
-        if template_prop_names.contains(name)
+        if template_binding_access.contains(name)
             || is_visible_template_binding(summary, name, undef.offset)
         {
             continue;
@@ -212,7 +213,7 @@ pub(super) fn generate_undefined_refs(
             summary,
             template_offset,
             options.virtual_ts_options,
-            template_prop_names,
+            template_binding_access,
             &type_export_names,
             &mut seen_names,
             &mut seen_strict_occurrences,

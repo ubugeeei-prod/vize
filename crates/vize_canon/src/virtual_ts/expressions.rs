@@ -44,7 +44,9 @@ pub(crate) use generic_props_call::generate_slot_host_binding;
 pub(crate) use prop_sources::{
     append_prop_value, generated_prop_value, prop_name_source_range, prop_value_source_range,
 };
-pub(crate) use reserved_props::rewrite_reserved_template_prop;
+pub(crate) use reserved_props::{
+    map_rewritten_template_binding, rewrite_reserved_template_binding,
+};
 pub(crate) use statements::{
     ExpressionListEmitContext, generate_expressions, generate_expressions_in_enclosing_guard,
 };
