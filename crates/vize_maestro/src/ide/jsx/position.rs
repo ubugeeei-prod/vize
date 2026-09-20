@@ -39,6 +39,27 @@ pub(super) fn source_offset_to_virtual_position(
     ))
 }
 
+/// A completion cursor follows the token being typed, including its end.
+/// Hover positions remain right-affine so adjacent authored tokens keep their
+/// own mappings.
+pub(super) fn source_cursor_to_virtual_position(
+    projection: &JsxVirtualTs,
+    offset: usize,
+) -> Option<(u32, u32)> {
+    let mapping = projection
+        .mappings
+        .iter()
+        .filter(|mapping| offset > mapping.src_range.start && offset <= mapping.src_range.end)
+        .min_by_key(|mapping| mapping.src_range.len())?;
+    let generated = source_offset_to_generated(mapping, offset);
+    Some(byte_offset_to_position(
+        &projection.code,
+        projection
+            .import_source_map
+            .get_virtual_offset(generated as u32) as usize,
+    ))
+}
+
 /// Map a virtual-TS LSP range back to a source LSP range.
 ///
 /// Used to translate a Corsa hover/definition range (in virtual-TS

@@ -33,7 +33,7 @@ impl CompletionService {
         Some(items)
     }
 
-    pub(super) async fn request_resolvable(
+    pub(in crate::ide) async fn request_resolvable(
         ctx: &IdeContext<'_>,
         bridge: &CorsaBridge,
         uri: &str,

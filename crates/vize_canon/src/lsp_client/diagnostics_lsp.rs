@@ -2,10 +2,12 @@ use crate::file_uri::path_to_file_uri;
 use corsa::runtime::block_on;
 use corsa_lsp::LspClient;
 use lsp_types::{
-    ClientCapabilities, DiagnosticClientCapabilities, DiagnosticWorkspaceClientCapabilities,
-    DidChangeWatchedFilesClientCapabilities, DocumentDiagnosticReportResult, InitializeParams,
-    InitializedParams, TextDocumentClientCapabilities, Uri, WorkDoneProgressParams,
-    WorkspaceClientCapabilities, WorkspaceFolder,
+    ClientCapabilities, CompletionClientCapabilities, CompletionItemCapability,
+    DiagnosticClientCapabilities, DiagnosticWorkspaceClientCapabilities,
+    DidChangeWatchedFilesClientCapabilities, DocumentDiagnosticReportResult,
+    HoverClientCapabilities, InitializeParams, InitializedParams, MarkupKind,
+    SignatureHelpClientCapabilities, SignatureInformationSettings, TextDocumentClientCapabilities,
+    Uri, WorkDoneProgressParams, WorkspaceClientCapabilities, WorkspaceFolder,
 };
 use serde_json::Value;
 use std::{path::Path, str::FromStr};
@@ -53,6 +55,24 @@ fn initialize_lsp_params(
         .map_err(|error| cstr!("Failed to build Corsa LSP root URI: {error}"))?;
     let capabilities = ClientCapabilities {
         text_document: Some(TextDocumentClientCapabilities {
+            hover: Some(HoverClientCapabilities {
+                content_format: Some(vec![MarkupKind::Markdown, MarkupKind::PlainText]),
+                ..Default::default()
+            }),
+            completion: Some(CompletionClientCapabilities {
+                completion_item: Some(CompletionItemCapability {
+                    documentation_format: Some(vec![MarkupKind::Markdown, MarkupKind::PlainText]),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            signature_help: Some(SignatureHelpClientCapabilities {
+                signature_information: Some(SignatureInformationSettings {
+                    documentation_format: Some(vec![MarkupKind::Markdown, MarkupKind::PlainText]),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
             diagnostic: Some(DiagnosticClientCapabilities {
                 dynamic_registration: Some(false),
                 related_document_support: Some(true),

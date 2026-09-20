@@ -5,6 +5,7 @@ const vscode = require("vscode");
 
 const { runRealServerScenario } = require("./real-scenario.cjs");
 const { runRealCodeActionSmoke } = require("./real-code-actions.cjs");
+const { runRichAuthoring } = require("./real-rich-authoring.cjs");
 const {
   assertPackagedExtension,
   assertStaysDiagnosticFree,
@@ -59,6 +60,8 @@ exports.run = async function run() {
   await runRealReferencesSmoke(mismatchDocument);
   logProgress("hover");
   await runRealHoverSmoke(mismatchDocument);
+  logProgress("rich hover and completion documentation");
+  await runRichAuthoring();
   logProgress("didChange repair");
   await runRealDidChangeRepairSmoke(mismatchDocument, extension);
   logProgress("pinned create-vue oracle");

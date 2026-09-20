@@ -6,14 +6,12 @@
 #[cfg(feature = "native")]
 use std::sync::Arc;
 
-use tower_lsp::lsp_types::CompletionResponse;
 #[cfg(feature = "native")]
-use tower_lsp::lsp_types::{
-    CompletionItem, CompletionItemKind, Documentation, InsertTextFormat, MarkupContent, MarkupKind,
-};
+use tower_lsp::lsp_types::CompletionItem;
+use tower_lsp::lsp_types::CompletionResponse;
 
 #[cfg(feature = "native")]
-use vize_canon::{CorsaBridge, LspCompletionItem, LspDocumentation};
+use vize_canon::CorsaBridge;
 
 #[cfg(feature = "native")]
 use super::service_corsa_template;
@@ -281,71 +279,6 @@ impl super::CompletionService {
         }
 
         vec![]
-    }
-
-    /// Convert a Corsa completion item to tower-lsp CompletionItem.
-    #[cfg(feature = "native")]
-    pub(in crate::ide) fn convert_lsp_completion(item: LspCompletionItem) -> CompletionItem {
-        CompletionItem {
-            label: item.label,
-            kind: item.kind.map(Self::convert_completion_kind),
-            detail: item.detail,
-            documentation: item.documentation.map(|doc| match doc {
-                LspDocumentation::String(s) => Documentation::String(s),
-                LspDocumentation::Markup(m) => Documentation::MarkupContent(MarkupContent {
-                    kind: if m.kind == "markdown" {
-                        MarkupKind::Markdown
-                    } else {
-                        MarkupKind::PlainText
-                    },
-                    value: m.value,
-                }),
-            }),
-            insert_text: item.insert_text,
-            insert_text_format: item.insert_text_format.map(|f| {
-                if f == 2 {
-                    InsertTextFormat::SNIPPET
-                } else {
-                    InsertTextFormat::PLAIN_TEXT
-                }
-            }),
-            filter_text: item.filter_text,
-            sort_text: item.sort_text,
-            ..Default::default()
-        }
-    }
-
-    /// Convert LSP completion item kind number to CompletionItemKind.
-    #[cfg(feature = "native")]
-    fn convert_completion_kind(kind: u32) -> CompletionItemKind {
-        match kind {
-            1 => CompletionItemKind::TEXT,
-            2 => CompletionItemKind::METHOD,
-            3 => CompletionItemKind::FUNCTION,
-            4 => CompletionItemKind::CONSTRUCTOR,
-            5 => CompletionItemKind::FIELD,
-            6 => CompletionItemKind::VARIABLE,
-            7 => CompletionItemKind::CLASS,
-            8 => CompletionItemKind::INTERFACE,
-            9 => CompletionItemKind::MODULE,
-            10 => CompletionItemKind::PROPERTY,
-            11 => CompletionItemKind::UNIT,
-            12 => CompletionItemKind::VALUE,
-            13 => CompletionItemKind::ENUM,
-            14 => CompletionItemKind::KEYWORD,
-            15 => CompletionItemKind::SNIPPET,
-            16 => CompletionItemKind::COLOR,
-            17 => CompletionItemKind::FILE,
-            18 => CompletionItemKind::REFERENCE,
-            19 => CompletionItemKind::FOLDER,
-            20 => CompletionItemKind::ENUM_MEMBER,
-            21 => CompletionItemKind::CONSTANT,
-            22 => CompletionItemKind::STRUCT,
-            23 => CompletionItemKind::EVENT,
-            24 => CompletionItemKind::OPERATOR,
-            25 => CompletionItemKind::TYPE_PARAMETER,
-            _ => CompletionItemKind::TEXT,
-        }
     }
 }
 

@@ -452,11 +452,11 @@ compiler	Compiler	source	crates/vize_atelier_jsx/src/finder.rs	17	raw_oxc	raw OX
 compiler	Compiler	source	crates/vize_atelier_jsx/src/finder/signature.rs	10	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/finder/signature.rs	10	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/forwarded_slots.rs	11	old_ast	old AST/parser	old	vize_relief	legacy	1
-compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	56	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	56	old_ast	old AST/parser	old	vize_relief	legacy	1
-compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	56	croquis	Croquis analysis	old	vize_croquis	legacy	2
-compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	56	raw_oxc	raw OXC	raw	oxc_allocator	raw	2
-compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	56	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
+compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	58	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	58	old_ast	old AST/parser	old	vize_relief	legacy	1
+compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	58	croquis	Croquis analysis	old	vize_croquis	legacy	2
+compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	58	raw_oxc	raw OXC	raw	oxc_allocator	raw	2
+compiler	Compiler	source	crates/vize_atelier_jsx/src/lib.rs	58	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lower.rs	26	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lower.rs	26	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/lower.rs	26	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -545,6 +545,10 @@ compiler	Compiler	source	crates/vize_atelier_jsx/src/scoped.rs	19	s0	S0	stage	vi
 compiler	Compiler	source	crates/vize_atelier_jsx/src/span.rs	12	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/ssr.rs	10	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/ssr.rs	10	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	source	crates/vize_atelier_jsx/src/tooling_recovery.rs	7	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_jsx/src/tooling_recovery.rs	7	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+compiler	Compiler	source	crates/vize_atelier_jsx/src/tooling_recovery.rs	7	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_jsx/src/tooling_recovery/tests.rs	2	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/vapor.rs	18	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/vapor.rs	18	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_jsx/src/vdom.rs	25	s0	S0	stage	vize_s0	preferred	1
@@ -2173,7 +2177,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/lib.rs	45	s0	S0	stage	vize_
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client.rs	13	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/bootstrap.rs	13	s0	S0	stage	vize_s0	preferred	2
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/diagnostics_api.rs	6	s0	S0	stage	vize_s0	preferred	1
-typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/diagnostics_lsp.rs	12	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/diagnostics_lsp.rs	14	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/diagnostics.rs	11	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/diagnostics/lsp_report.rs	6	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp.rs	30	s0	S0	stage	vize_s0	preferred	1

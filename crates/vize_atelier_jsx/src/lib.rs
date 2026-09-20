@@ -50,6 +50,8 @@ pub mod vdom;
 mod analyze;
 mod finder;
 mod forwarded_slots;
+mod tooling_recovery;
+pub use tooling_recovery::lower_source_for_typecheck;
 
 pub use analyze::analyze_program as analyze_jsx_program;
 

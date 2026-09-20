@@ -1,7 +1,7 @@
 //! Generating virtual TypeScript for `.vue` SFCs: parsing the template, running
 //! Croquis analysis, augmenting type-based props, and emitting the `.vue.ts`
-//! source consumed by Corsa. Parse/compile errors are surfaced as diagnostics
-//! and replaced with a typed fallback module.
+//! source consumed by Corsa. Incomplete scripts retain their authored code and
+//! mappings; unrecoverable SFC/template structure uses a typed fallback module.
 
 use std::path::Path;
 use vize_carton::config::VueVersion;
@@ -123,10 +123,9 @@ pub(super) fn generate_vue_virtual_ts(
         .as_ref()
         .map(|template| template.loc.start as u32)
         .unwrap_or(0);
-    // Script parse errors leave no AST, so they always abort to the fallback
-    // stub. Template diagnostics do not: they are counted separately below and
-    // only *hard* ones abort.
-    let script_hard_error = !diagnostics.is_empty();
+    // Keep authored scripts even when OXC cannot recover their analysis AST.
+    // The native TypeScript parser recovers incomplete expressions and can
+    // still answer editor requests against their exact source mappings.
     // Track whether the template produced any *hard* parse error. Only hard
     // errors abort codegen and collapse the file to the fallback stub.
     // Recovery-level diagnostics keep the real virtual TS:
@@ -183,7 +182,7 @@ pub(super) fn generate_vue_virtual_ts(
     // recovery-level template diagnostics must not suppress real codegen: the
     // parse diagnostic is still reported, alongside the script's own type
     // diagnostics, which is what `vize check` and the linter now agree on.
-    if script_hard_error || template_hard_error {
+    if template_hard_error {
         return Ok(GeneratedVueFile {
             code: invalid_sfc_fallback_virtual_ts(),
             mappings: Vec::new(),

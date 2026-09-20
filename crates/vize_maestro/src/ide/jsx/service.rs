@@ -30,7 +30,9 @@ use tower_lsp::lsp_types::{
 use vize_canon::{CorsaBridge, LspLocation};
 use vize_s0::cstr;
 
-use super::position::{source_offset_to_virtual_position, virtual_range_to_source};
+use super::position::{
+    source_cursor_to_virtual_position, source_offset_to_virtual_position, virtual_range_to_source,
+};
 use super::virtual_ts::JsxVirtualTs;
 use crate::ide::IdeContext;
 use crate::ide::completion::CompletionService;
@@ -96,16 +98,13 @@ impl JsxService {
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<CompletionResponse> {
         let bridge = corsa_bridge?;
-        let (_virtual_ts, uri, line, character) = Self::prepare_request(ctx, &bridge).await?;
-
-        let items = bridge.completion(&uri, line, character).await.ok()?;
+        let (projection, uri) = super::service_project::open_virtual_project(ctx, &bridge).await?;
+        let (line, character) = source_cursor_to_virtual_position(&projection, ctx.offset)?;
+        let items =
+            CompletionService::request_resolvable(ctx, &bridge, &uri, line, character).await;
         if items.is_empty() {
             return None;
         }
-        let items = items
-            .into_iter()
-            .map(CompletionService::convert_lsp_completion)
-            .collect();
         Some(CompletionResponse::Array(items))
     }
 

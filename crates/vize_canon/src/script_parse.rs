@@ -52,8 +52,8 @@ pub(crate) fn collect_script_parse_diagnostics(
 /// `<script lang="tsx">` / `<script lang="jsx">` must parse with JSX enabled so
 /// embedded JSX (a Vue JSX/TSX render function in a `.vue` script block) is
 /// accepted rather than reported as a spurious parse error — which would
-/// otherwise collapse the whole SFC to the typed fallback stub and silently drop
-/// type-checking of the script body (#1498). Every other `lang` (the absent /
+/// otherwise report false syntax errors on the script body (#1498).
+/// Every other `lang` (the absent /
 /// empty / `ts` / `js` / unknown case) keeps the prior plain-TypeScript dialect
 /// unchanged, so an accidental `<` in a non-JSX script still surfaces as an
 /// error and existing SFCs parse byte-identically.
