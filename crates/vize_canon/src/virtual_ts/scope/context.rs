@@ -37,6 +37,25 @@ impl GlobalComponentCheck {
     }
 }
 
+/// Components with a generated value binding, including the implicit SFC self.
+#[derive(Clone, Copy)]
+pub(crate) struct ComponentBindingCheck<'a> {
+    pub(crate) globals: GlobalComponentCheck,
+    /// Normalized PascalCase filename stem.
+    pub(crate) self_component_name: Option<&'a str>,
+}
+
+impl ComponentBindingCheck<'_> {
+    pub(crate) fn is_self(self, name: &str) -> bool {
+        self.self_component_name
+            .is_some_and(|own| own == vize_carton::capitalize(&vize_carton::camelize(name)))
+    }
+
+    pub(crate) fn allows(self, name: &str) -> bool {
+        self.globals.allows(name) || self.is_self(name)
+    }
+}
+
 /// Context for recursive scope generation, bundling shared parameters.
 pub(crate) struct ScopeGenContext<'a, 'template> {
     pub(crate) summary: &'a Croquis,
@@ -63,7 +82,7 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     pub(crate) setup_spread_bindings: &'a [String],
     pub(crate) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(crate) template_ast: Option<&'a vize_relief::RootNode<'template>>,
-    pub(crate) check_unresolved_global_components: GlobalComponentCheck,
+    pub(crate) component_binding_check: ComponentBindingCheck<'a>,
     pub(crate) legacy_vue2: bool,
     /// Options API generation declares `__default__`; template names outside
     /// the known bindings then resolve on the public instance (#3888).
@@ -134,7 +153,7 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) options: &'a VirtualTsOptions,
     pub(super) preserve_event_navigation: bool,
     pub(super) check_unknown_events: bool,
-    pub(super) check_unresolved_global_components: GlobalComponentCheck,
+    pub(super) component_binding_check: ComponentBindingCheck<'a>,
     pub(super) legacy_vue2: bool,
     pub(super) check_unknown_props: bool,
     pub(super) experimental_strict_slot_children: bool,

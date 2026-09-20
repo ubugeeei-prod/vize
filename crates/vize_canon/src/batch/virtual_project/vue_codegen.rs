@@ -288,6 +288,7 @@ pub(super) fn generate_vue_virtual_ts(
                 options_api: codegen_options.options_api || vue2_compat,
                 preserve_authored_component: codegen_options.preserve_authored_component,
                 component_name: codegen_options.component_name,
+                self_component_name: path.file_stem().and_then(|name| name.to_str()),
                 preserve_event_navigation: codegen_options.preserve_event_navigation,
                 legacy_vue2: vue2_compat,
                 template_syntax_quirks: matches!(

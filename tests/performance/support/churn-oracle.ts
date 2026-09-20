@@ -139,11 +139,7 @@ export function assertCancellationWindow(
   assert.equal(last.version, finalVersion, "the supersession window must end on the final version");
 }
 
-/** Exact hint fingerprint of the upstream dependency's own baseline publish. */
+/** The dependency's macro result contributes to its public component type. */
 export function assertDependencyBaseline(diagnostics: LspDiagnostic[], label: string): void {
-  assert.equal(diagnostics.length, 1, `${label}: ${JSON.stringify(diagnostics)}`);
-  const [hint] = diagnostics;
-  assert.equal(String(hint.code).replace(/^TS/, ""), "6133", label);
-  assert.equal(hint.severity, 4, label);
-  assert.equal(hint.source, "vize/types", label);
+  assert.deepEqual(diagnostics, [], `${label}: ${JSON.stringify(diagnostics)}`);
 }

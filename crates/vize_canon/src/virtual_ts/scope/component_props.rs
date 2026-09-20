@@ -21,7 +21,7 @@ use super::component_prop_navigation;
 use super::component_slots::{
     ComponentSlotCheckMeta, append_component_slot_check_helpers, generate_component_slot_checks,
 };
-use super::context::{ComponentPropsContext, GlobalComponentCheck, VForPropsContext};
+use super::context::{ComponentBindingCheck, ComponentPropsContext, VForPropsContext};
 use super::empty_component_props::{generate_empty_root_checks, is_empty_props_usage};
 use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 
@@ -242,7 +242,7 @@ pub(super) fn collect_checkable_usages<'a>(
                 ctx.summary,
                 usage,
                 &external_template_bindings,
-                ctx.check_unresolved_global_components,
+                ctx.component_binding_check,
                 ctx.legacy_vue2,
             )
         })
@@ -253,14 +253,14 @@ pub(super) fn component_usage_has_checkable_binding(
     summary: &Croquis,
     usage: &ComponentUsage,
     external_template_bindings: &FxHashSet<&str>,
-    check_unresolved_global_components: GlobalComponentCheck,
+    component_binding_check: ComponentBindingCheck<'_>,
     legacy_vue2: bool,
 ) -> bool {
     let name = usage.name.as_str();
     summary.bindings.bindings.contains_key(name)
         || (!legacy_vue2
             && (component_name_matches_external_template_binding(name, external_template_bindings)
-                || check_unresolved_global_components.allows(name)))
+                || component_binding_check.allows(name)))
 }
 
 fn component_name_matches_external_template_binding(

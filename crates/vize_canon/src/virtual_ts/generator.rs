@@ -326,6 +326,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         summary,
         legacy_vue2,
         has_script_reference_types || check_options.check_unknown_components,
+        generation_options.self_component_name,
     );
     // Derive a real cross-file `Props` type from macro or Options API input.
     let options_api_props = (options_api && summary.macros.props().is_empty())
@@ -715,7 +716,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
                             syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
                             template_ast,
-                            check_unresolved_global_components: global_components.component_check(),
+                            component_binding_check: global_components.component_check(),
                             legacy_vue2,
                             options_api,
                             preserve_event_navigation: generation_options.preserve_event_navigation,

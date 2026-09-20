@@ -6,6 +6,7 @@ import { performance } from "node:perf_hooks";
 
 import { repoRoot } from "../../_helpers/realworld-patch.ts";
 import { writeChurnArtifacts } from "./churn-report.ts";
+import type { PublishRecord } from "./churn-oracle.ts";
 import {
   budgetRegistryPath,
   budgetScaleVariable,
@@ -86,6 +87,7 @@ type ChurnContext = {
   vueFiles: number;
   sourceFiles: number;
   publishes: number;
+  publishStream?: PublishRecord[];
 };
 
 export class ChurnMetrics {
@@ -225,6 +227,7 @@ export class ChurnMetrics {
       },
       budget: { scale: this.scale, ...this.budget },
       publishes: context.publishes,
+      publishStream: context.publishStream,
       cycleStats:
         cycles.length === 0
           ? null

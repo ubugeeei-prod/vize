@@ -1136,7 +1136,6 @@
         "error:437:43 [TS7006] Parameter 'facet' implicitly has an 'any' type.",
         "error:441:57 [TS7006] Parameter 'facet' implicitly has an 'any' type.",
         "error:447:48 [TS7006] Parameter 'p' implicitly has an 'any' type.",
-        "error:460:47 [TS7006] Parameter 'p' implicitly has an 'any' type.",
         "error:461:46 [TS7006] Parameter 'p' implicitly has an 'any' type.",
         "error:474:56 [TS7006] Parameter 'p' implicitly has an 'any' type."
       ]
@@ -1382,7 +1381,7 @@
       ]
     }
   ],
-  "errorCount": 388,
+  "errorCount": 387,
   "warningCount": 0,
   "fileCount": 222
 }

@@ -94,14 +94,10 @@ pub(super) fn append_prop_entry(
 
     let sub_spans = match merge_class_bindings && prop.name.as_str() == "class" {
         true => Vec::new(),
-        false if inline_callback => {
-            prop_name_source_range(source_context, prop).map_or_else(Vec::new, |src_range| {
-                vec![VizeSubSpan {
-                    gen_range: entry_gen_start..key_gen_end,
-                    src_range,
-                }]
-            })
-        }
+        false if inline_callback => prop_name_source_range(source_context, prop)
+            .map_or_else(Vec::new, |src_range| {
+                key_sub_spans(entry_gen_start..key_gen_end, src_range)
+            }),
         false => entry_sub_spans(
             source_context,
             prop,
@@ -144,14 +140,28 @@ fn entry_sub_spans(
     let Some(value_src_range) = prop_value_source_range(source_context, prop) else {
         return Vec::new();
     };
+    let mut spans = key_sub_spans(key_gen_range, name_src_range);
+    spans.push(VizeSubSpan {
+        gen_range: value_gen_range,
+        src_range: value_src_range,
+    });
+    spans
+}
+
+fn key_sub_spans(
+    generated: std::ops::Range<usize>,
+    source: std::ops::Range<usize>,
+) -> Vec<VizeSubSpan> {
     vec![
+        // TypeScript rename targets the literal contents, whereas diagnostics
+        // can cover its quotes too. Both ranges own the same authored prop.
         VizeSubSpan {
-            gen_range: key_gen_range,
-            src_range: name_src_range,
+            gen_range: generated.start + 1..generated.end - 1,
+            src_range: source.clone(),
         },
         VizeSubSpan {
-            gen_range: value_gen_range,
-            src_range: value_src_range,
+            gen_range: generated,
+            src_range: source,
         },
     ]
 }

@@ -272,6 +272,7 @@ test(
             vueFiles,
             sourceFiles,
             publishes: publishes.length,
+            publishStream: publishes,
           },
           failure,
         );

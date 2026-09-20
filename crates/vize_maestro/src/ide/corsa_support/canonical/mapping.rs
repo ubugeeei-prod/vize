@@ -184,6 +184,9 @@ fn map_generated_offset_to_source(
     if let Some(span) = mapping.sub_spans.iter().find(|span| {
         generated_offset >= span.gen_range.start && generated_offset <= span.gen_range.end
     }) {
+        if prefer_end && generated_offset == span.gen_range.end {
+            return span.src_range.end;
+        }
         let relative = generated_offset.saturating_sub(span.gen_range.start);
         let source_len = span.src_range.end.saturating_sub(span.src_range.start);
         return span

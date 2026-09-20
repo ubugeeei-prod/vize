@@ -226,6 +226,8 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     /// Public-facing component symbol used by Content Mapper hover responses.
     /// `None` preserves the internal default export used by batch projections.
     pub(crate) component_name: Option<&'a str>,
+    /// Authored file stem used for implicit recursive component resolution.
+    pub(crate) self_component_name: Option<&'a str>,
     /// Preserve symbol links from component listeners to authored emit keys.
     pub(crate) preserve_event_navigation: bool,
     /// Legacy Vue 2.7 / Nuxt 2 (implies `options_api` plus Nuxt 2 globals).

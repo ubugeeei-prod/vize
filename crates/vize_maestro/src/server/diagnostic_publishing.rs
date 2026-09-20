@@ -110,6 +110,14 @@ impl MaestroServer {
             return;
         }
 
+        // An importer refresh, save, or edit may satisfy a queued initial pass.
+        // Retire that job only after collecting the complete current result;
+        // parser-only initial feedback deliberately bypasses this method.
+        #[cfg(feature = "native")]
+        if let Some(scheduler) = &self.initial_diagnostics {
+            scheduler.complete(uri, version);
+        }
+
         self.client
             .publish_diagnostics(uri.clone(), diagnostics, Some(version))
             .await;
