@@ -33,6 +33,31 @@ async function compare(editor: PatternSession, source: string, errors: number): 
   );
 }
 
+test("defineOptions names preserve recursive props and slots in CLI and live LSP", async () => {
+  const editor = new PatternSession();
+  const source = `<script setup lang="tsx">
+defineOptions({ name: 'ChosenName' });
+defineProps<{ count?: number }>();
+defineSlots<{ default(props: { value: number }): unknown }>();
+</script><template>
+<ChosenName :count="1" v-slot="{ value }">{{ value.toFixed() }}</ChosenName>
+</template>`;
+  try {
+    await editor.initialize();
+    for (const spelling of ["ChosenName", "chosen-name"]) {
+      const valid = source
+        .replaceAll("<ChosenName", `<${spelling}`)
+        .replaceAll("</ChosenName", `</${spelling}`);
+      await compare(editor, valid, 0);
+      await compare(editor, valid.replace("value.toFixed()", "value.toUpperCase()"), 1);
+      await compare(editor, valid.replace(':count="1"', 'count="bad"'), 1);
+      await compare(editor, valid, 0);
+    }
+  } finally {
+    await editor.close();
+  }
+});
+
 test("recursive SFC props and inferred slots stay typed in CLI and live LSP", async () => {
   const valid = `<script setup lang="ts">
 defineProps<{ count?: number }>();

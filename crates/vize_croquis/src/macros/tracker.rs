@@ -30,6 +30,22 @@ impl std::fmt::Debug for MacroTracker {
 }
 
 impl MacroTracker {
+    /// The statically declared name of the current SFC.
+    pub fn define_options_name(&self) -> Option<&str> {
+        self.define_options_name.as_deref()
+    }
+
+    /// Record the name directly from the recognized macro's object AST.
+    pub fn set_define_options_name(&mut self, name: Option<CompactString>) {
+        self.define_options_name = name;
+    }
+
+    /// Get defineArt metadata.
+    #[inline]
+    pub fn define_art(&self) -> Option<&super::ArtDefinition> {
+        self.art.as_ref()
+    }
+
     /// Add a prop definition.
     #[inline]
     pub fn add_prop(&mut self, prop: PropDefinition) {

@@ -55,7 +55,11 @@ impl<'a> GlobalComponentPlan<'a> {
         };
         Self {
             slot_component_names,
-            self_component_name: self_component_name.map(|name| capitalize(&camelize(name))),
+            self_component_name: summary
+                .macros
+                .define_options_name()
+                .or(self_component_name)
+                .map(|name| capitalize(&camelize(name))),
             // Vue 3 projects can contribute component types through ambient
             // `GlobalComponents` augmentation without an SFC-local
             // reference-types directive. Vue 2 retains the explicit-reference

@@ -374,6 +374,7 @@ pub struct MacroTracker {
     slots: Vec<SlotsDefinition>,
     /// Art metadata from defineArt
     art: Option<ArtDefinition>,
+    define_options_name: Option<CompactString>,
     props_destructure: Option<PropsDestructuredBindings>,
     top_level_awaits: Vec<TopLevelAwait>,
     next_id: u32,
@@ -471,12 +472,6 @@ impl MacroTracker {
     #[inline]
     pub fn set_define_art(&mut self, art: ArtDefinition) {
         self.art = Some(art);
-    }
-
-    /// Get defineArt metadata.
-    #[inline]
-    pub fn define_art(&self) -> Option<&ArtDefinition> {
-        self.art.as_ref()
     }
 
     /// Add an emit definition
