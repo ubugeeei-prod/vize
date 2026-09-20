@@ -205,20 +205,16 @@ fn append_global_component_stub(
     name: &str,
     pascal_name: &str,
 ) {
-    // An unregistered tag resolves to an error type rather than a declared
-    // `any`: both leave the usage unchecked, but only the error type keeps
-    // TypeScript silent about values derived from it (a slot payload passed to
-    // a `never` parameter), which is how `vue-tsc` treats an unknown tag.
     append!(
         *ts,
-        "// @ts-ignore Unregistered component: an error type, never reported.\ndeclare const {component_ref}: import(\"vue\").GlobalComponents extends {{ \"{name}\": infer __C }} ? __C"
+        "declare const {component_ref}: import(\"vue\").GlobalComponents extends {{ \"{name}\": infer __C }} ? __C"
     );
     if pascal_name == name {
-        append!(*ts, " : {{}}[\"{name}\"];\n");
+        ts.push_str(" : any;\n");
     } else {
         append!(
             *ts,
-            " : import(\"vue\").GlobalComponents extends {{ \"{pascal_name}\": infer __C }} ? __C : {{}}[\"{name}\"];\n"
+            " : import(\"vue\").GlobalComponents extends {{ \"{pascal_name}\": infer __C }} ? __C : any;\n"
         );
     }
 }

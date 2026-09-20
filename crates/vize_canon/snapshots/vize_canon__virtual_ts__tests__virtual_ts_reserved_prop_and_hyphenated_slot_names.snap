@@ -93,7 +93,9 @@ declare function __vizeConstructorSlots<P, S>(component: new (props: P, ...args:
 declare function __vizeFunctionalSlots<P, C, R>(component: (props: P, context: C, ...args: any[]) => R): (props: P) => "__ctx" extends keyof R ? NonNullable<R["__ctx"]> extends { slots: infer S } ? S : any : NonNullable<C> extends { slots: infer S } ? S : any;
 type __VizeNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? typeof __vizeConstructorSlots : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => __VizeSlotHostSlots<C>;
 type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeSlotsFactory<C> : __VizeNativeSlotsFactory<C>;
-type __VizeSlotPayload<__S, __N> = __VizeIsAny<__S> extends true ? any : { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
+// @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
+type __VizeSilentAny = {}["__vizeSilentAny"];
+type __VizeSlotPayload<__S, __N> = __VizeIsAny<__S> extends true ? __VizeSilentAny : { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
 import TrendChart from './TrendChart.vue'
 
 // ========== Exported Types ==========
@@ -125,7 +127,7 @@ function __setup() {
     class?: string
   }>()
   
-  // @vize-map: 14780:14825 -> 0:78
+  // @vize-map: 14925:14970 -> 0:78
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

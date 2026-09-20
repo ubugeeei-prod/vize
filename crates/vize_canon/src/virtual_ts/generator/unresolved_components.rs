@@ -50,15 +50,7 @@ pub(super) fn emit_unresolved_components(
         } else {
             to_safe_identifier(name)
         };
-        // An unresolved name is an error type, not a declared `any`: both are
-        // unchecked, but TypeScript stays silent about values derived from an
-        // error type where a declared `any` still fails a `never` parameter.
-        // `vue-tsc` resolves the tag through a missing registry key, so its
-        // slot payloads and listener arguments are silent in the same way.
-        append!(
-            *ts,
-            "  // @ts-ignore Unresolved component: an error type, never reported.\n  const {safe}: {{}}[\"{name}\"] = undefined as any;\n"
-        );
+        append!(*ts, "  const {safe}: any = undefined as any;\n");
     }
 
     ts.push_str("\n  // Mark used components as referenced\n");

@@ -163,7 +163,7 @@ type BadgeInstance = typeof ElBadge
 
     assert!(
         output.code.contains(
-            "// @ts-ignore Unregistered component: an error type, never reported.\ndeclare const __VizeComponent_el_badge: import(\"vue\").GlobalComponents extends { \"el-badge\": infer __C } ? __C : import(\"vue\").GlobalComponents extends { \"ElBadge\": infer __C } ? __C : {}[\"el-badge\"];\n"
+            "declare const __VizeComponent_el_badge: import(\"vue\").GlobalComponents extends { \"el-badge\": infer __C } ? __C : import(\"vue\").GlobalComponents extends { \"ElBadge\": infer __C } ? __C : any;"
         ),
         "{}",
         output.code,
@@ -204,7 +204,7 @@ fn unresolved_slot_host_uses_vue_global_components_fallback() {
 
     assert!(
         output.code.contains(
-            "// @ts-ignore Unregistered component: an error type, never reported.\ndeclare const el_badge: import(\"vue\").GlobalComponents extends { \"el-badge\": infer __C } ? __C : import(\"vue\").GlobalComponents extends { \"ElBadge\": infer __C } ? __C : {}[\"el-badge\"];\n"
+            "declare const el_badge: import(\"vue\").GlobalComponents extends { \"el-badge\": infer __C } ? __C : import(\"vue\").GlobalComponents extends { \"ElBadge\": infer __C } ? __C : any;"
         ),
         "{}",
         output.code,

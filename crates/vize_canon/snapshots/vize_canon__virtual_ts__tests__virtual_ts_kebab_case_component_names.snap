@@ -159,8 +159,7 @@ function __setup() {
   });
 
   // Auto-imported/built-in components (not in script bindings)
-  // @ts-ignore Unresolved component: an error type, never reported.
-  const my_widget: {}["my-widget"] = undefined as any;
+  const my_widget: any = undefined as any;
 
   // Mark used components as referenced
   void my_widget;
