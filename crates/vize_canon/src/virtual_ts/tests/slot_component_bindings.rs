@@ -23,10 +23,9 @@ fn generate(template: &str) -> vize_carton::String {
 fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
     let slot_free = generate(r#"<div v-for="item in items">{{ item }}</div>"#);
     for alias in [
-        "type __VizeStructuralSlots<",
-        "type __VizeSlotsResolver<",
+        "type __VizeSlotHostSlots<",
+        "type __VizeSlotsFactory<",
         "type __VizeSlotPayload<",
-        "type __VizeAnySlotPayload<",
     ] {
         assert!(
             !slot_free.contains(alias),
@@ -36,36 +35,28 @@ fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
 
     let static_name = generate(TEMPLATE);
     assert!(
-        static_name.contains("type __VizeSlotsResolver<"),
+        static_name.contains("type __VizeSlotsFactory<"),
         "{static_name}"
     );
     assert!(
         static_name.contains("type __VizeSlotPayload<"),
         "{static_name}"
     );
-    assert!(
-        !static_name.contains("type __VizeAnySlotPayload<"),
-        "a statically named slot must not declare the dynamic-name alias:\n{static_name}"
-    );
 
     let dynamic_name = generate(
         r#"<el-badge><template #[slotName]="{ value }">{{ value }}</template></el-badge>"#,
     );
     assert!(
-        dynamic_name.contains("type __VizeSlotsResolver<"),
+        dynamic_name.contains("type __VizeSlotsFactory<"),
         "{dynamic_name}"
     );
     assert!(
-        dynamic_name.contains("type __VizeAnySlotPayload<"),
+        dynamic_name.contains("type __VizeSlotPayload<"),
         "{dynamic_name}"
     );
     assert!(
-        dynamic_name.contains("[__K in keyof __S]-?:"),
-        "dynamic payload extraction must not preserve optional slot markers:\n{dynamic_name}"
-    );
-    assert!(
-        !dynamic_name.contains("type __VizeSlotPayload<"),
-        "a dynamically named slot must not declare the static-name alias:\n{dynamic_name}"
+        dynamic_name.contains("[__K in keyof __S & __N]-?:"),
+        "payload extraction must select authored names and strip optional provisioning:\n{dynamic_name}"
     );
 }
 
@@ -91,14 +82,14 @@ fn kebab_case_slot_host_uses_pascal_case_setup_binding() {
     assert_eq!(
         output
             .code
-            .matches("__VizeSlotsResolver<typeof ElBadge>")
+            .matches("__VizeSlotsFactory<typeof ElBadge>")
             .count(),
         1,
         "{}",
         output.code,
     );
     assert!(
-        !output.code.contains("__VizeSlotsResolver<typeof el_badge>"),
+        !output.code.contains("__VizeSlotsFactory<typeof el_badge>"),
         "{}",
         output.code,
     );
@@ -126,7 +117,7 @@ fn kebab_case_slot_host_uses_ambient_pascal_global_component() {
     assert_eq!(
         output
             .code
-            .matches("__VizeSlotsResolver<typeof ElBadge>")
+            .matches("__VizeSlotsFactory<typeof ElBadge>")
             .count(),
         2,
         "{}",
@@ -185,7 +176,7 @@ type BadgeInstance = typeof ElBadge
     assert_eq!(
         output
             .code
-            .matches("__VizeSlotsResolver<typeof __VizeComponent_el_badge>")
+            .matches("__VizeSlotsFactory<typeof __VizeComponent_el_badge>")
             .count(),
         2,
         "{}",
@@ -221,7 +212,7 @@ fn unresolved_slot_host_uses_vue_global_components_fallback() {
     assert_eq!(
         output
             .code
-            .matches("__VizeSlotsResolver<typeof el_badge>")
+            .matches("__VizeSlotsFactory<typeof el_badge>")
             .count(),
         1,
         "{}",

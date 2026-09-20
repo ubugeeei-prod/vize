@@ -91,14 +91,17 @@ pub(super) fn generate_generic_props_call(
 }
 
 /// Emit the inference-only binding a `v-slot` scope reads its payload type
-/// from: `const <name> = (undefined as unknown as __VizeSlotsResolver<typeof
-/// C>)(<the authored props>);`.
+/// from: `const <name> = factory(C)(<the authored props>);`.
 ///
 /// The child's slot map is a function of its generic parameters, and the only
 /// construct that instantiates those the way `vue-tsc` does is a *call* with
 /// the authored props — a type-level probe against the construct signature
-/// erases every parameter to its constraint even when the props determine it
-/// (verified against `vue-tsc` 3.3.4 / TypeScript 6.0.3).
+/// erases every parameter to its constraint even when the props determine it.
+/// Higher-order inference preserves native functional/constructor generics;
+/// Vize components retain their authored resolver signature directly.
+/// Select one factory signature before inference: overloading the factory
+/// erases generics in library declarations whose parameters reference their
+/// own setup context (for example vue-virtual-scroller).
 ///
 /// Every mapping this literal would produce is discarded: the identical literal
 /// is already emitted, mapped, against the child's prop checker, so an authored
@@ -127,7 +130,7 @@ pub(crate) fn generate_slot_host_binding(
     }
     append!(
         *ts,
-        "{indent}const {binding_name} = (undefined as unknown as __VizeSlotsResolver<typeof {component_ref}>)(",
+        "{indent}const {binding_name} = (undefined as unknown as __VizeSlotsFactory<typeof {component_ref}>)({component_ref})(",
     );
     if let Some(ref guard) = usage.vif_guard {
         append!(*ts, "({guard}) ? ");

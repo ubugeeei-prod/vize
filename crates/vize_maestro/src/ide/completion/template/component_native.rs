@@ -13,6 +13,7 @@ pub(in crate::ide::completion) async fn complete_with_corsa(
 ) -> Option<Vec<CompletionItem>> {
     let tag = tag_context::opening_tag_context_at_offset(&ctx.content, ctx.offset)?;
     if tag.inside_attribute_value
+        || crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
         || !is_component_tag(&tag.tag_name)
         || !tag_context::is_prop_completion_prefix(&tag.current_token)
         || component_meta::component_surface_completions(ctx).is_empty()

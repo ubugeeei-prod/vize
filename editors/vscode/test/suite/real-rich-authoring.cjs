@@ -113,6 +113,7 @@ exports.runRichAuthoring = async function runRichAuthoring() {
     30_000,
   );
   await assertComponentDocumentation(document, editor);
+  await assertSlotDocumentation();
 };
 
 async function assertComponentDocumentation(document, editor) {
@@ -171,4 +172,93 @@ async function assertComponentDocumentation(document, editor) {
     "component prop repair",
     30_000,
   );
+}
+
+async function assertSlotDocumentation() {
+  const document = await openWorkspaceDocument("src", "SlotAuthoring.vue");
+  const editor = await vscode.window.showTextDocument(document);
+  await waitForDiagnostics(
+    document.uri,
+    (items) => items.length === 0,
+    "slot initial document",
+    30_000,
+  );
+  for (const [expression, incomplete, label, description, declaration] of [
+    ["names.current", "names.", "current", "**Primary** invoice slot", "current:"],
+    ["invoice.total", "invoice.to", "total", "**Invoice** total", "total: number"],
+  ]) {
+    const source = document.getText();
+    const start = source.lastIndexOf(expression);
+    assert.ok(start >= 0);
+    const position = document.positionAt(start + expression.indexOf(".") + 2);
+    const hovers = await vscode.commands.executeCommand(
+      "vscode.executeHoverProvider",
+      document.uri,
+      position,
+    );
+    const hover = hovers?.find((entry) =>
+      entry.contents.some((content) => content.value?.includes(description)),
+    );
+    assert.ok(hover, `${expression} must expose authored Markdown`);
+    assert.match(hover.contents.map((content) => content.value).join("\n"), /```typescript\n/);
+    const definitions = await vscode.commands.executeCommand(
+      "vscode.executeDefinitionProvider",
+      document.uri,
+      position,
+    );
+    const target = definitions?.[0];
+    assert.ok(target);
+    assert.equal((target.uri ?? target.targetUri).toString(), document.uri.toString());
+    const declarationStart = source.indexOf(declaration);
+    assert.deepEqual(
+      target.range ?? target.targetSelectionRange,
+      new vscode.Range(
+        document.positionAt(declarationStart),
+        document.positionAt(declarationStart + label.length),
+      ),
+    );
+    assert.equal(
+      await editor.edit((edit) =>
+        edit.replace(
+          new vscode.Range(
+            document.positionAt(start),
+            document.positionAt(start + expression.length),
+          ),
+          incomplete,
+        ),
+      ),
+      true,
+    );
+    const completions = await vscode.commands.executeCommand(
+      "vscode.executeCompletionItemProvider",
+      document.uri,
+      document.positionAt(start + incomplete.length),
+      undefined,
+      1,
+    );
+    const candidate = completions?.items.find(
+      (item) => (typeof item.label === "string" ? item.label : item.label.label) === label,
+    );
+    assert.ok(candidate?.documentation instanceof vscode.MarkdownString);
+    assert.match(candidate.documentation.value, /```typescript\n/);
+    assert.ok(candidate.documentation.value.includes(description));
+    assert.equal(
+      await editor.edit((edit) =>
+        edit.replace(
+          new vscode.Range(
+            document.positionAt(start),
+            document.positionAt(start + incomplete.length),
+          ),
+          expression,
+        ),
+      ),
+      true,
+    );
+    await waitForDiagnostics(
+      document.uri,
+      (items) => items.length === 0,
+      `slot repair ${expression}`,
+      30_000,
+    );
+  }
 }

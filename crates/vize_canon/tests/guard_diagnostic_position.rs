@@ -1,7 +1,7 @@
 use vize_canon::{SfcBlockType, VirtualProject};
 
 #[test]
-fn generated_guard_positions_map_inside_a_short_sfc() {
+fn authored_condition_owns_diagnostics_and_inference_guards_are_unmapped() {
     let temp_dir = tempfile::tempdir().expect("temp project should be created");
     let project_root = temp_dir.path().canonicalize().unwrap();
     let source_path = project_root.join("App.vue");
@@ -16,27 +16,39 @@ const value = { kind: 'x' as 'x' | 'y' }
     project.register_path(&source_path).unwrap();
     let virtual_file = project.find_by_original(&source_path).unwrap();
     let guard = "value.kind === 'x'";
-    let virtual_offset = virtual_file
+    let virtual_offsets: Vec<_> = virtual_file
         .content
         .match_indices(guard)
-        .last()
-        .expect("guarded interpolation should repeat the generated guard")
-        .0;
+        .map(|(offset, _)| offset)
+        .collect();
+    assert!(virtual_offsets.len() > 1, "inference must repeat the guard");
     assert!(
-        virtual_offset > source.len(),
+        virtual_offsets.iter().all(|offset| *offset > source.len()),
         "the regression requires a generated offset past the source EOF"
     );
-    let prefix = &virtual_file.content[..virtual_offset];
-    let line = prefix.bytes().filter(|byte| *byte == b'\n').count() as u32;
-    let column = prefix
-        .rsplit_once('\n')
-        .map_or(prefix.len(), |(_, tail)| tail.len()) as u32;
-
-    let original = project
-        .map_to_original(&virtual_file.virtual_path, line, column)
-        .expect("generated guard diagnostics must not be dropped");
+    let mapped: Vec<_> = virtual_offsets
+        .into_iter()
+        .filter_map(|offset| {
+            let prefix = &virtual_file.content[..offset];
+            let line = prefix.bytes().filter(|byte| *byte == b'\n').count() as u32;
+            let column = prefix
+                .rsplit_once('\n')
+                .map_or(prefix.len(), |(_, tail)| tail.len()) as u32;
+            project.map_to_original(&virtual_file.virtual_path, line, column)
+        })
+        .collect();
+    assert_eq!(
+        mapped.len(),
+        1,
+        "only the authored condition owns diagnostics"
+    );
+    let original = &mapped[0];
 
     assert_eq!(original.path, source_path);
     assert_eq!(original.block_type, Some(SfcBlockType::Template));
-    assert!(original.line < source.lines().count() as u32);
+    assert_eq!(original.line, 3);
+    assert_eq!(
+        original.column as usize,
+        source.lines().nth(3).unwrap().find(guard).unwrap()
+    );
 }

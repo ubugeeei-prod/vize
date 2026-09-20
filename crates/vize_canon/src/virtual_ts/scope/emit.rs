@@ -2,57 +2,15 @@
 
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use oxc_syntax::identifier::is_identifier_part;
+use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
-use vize_carton::{FxHashSet, String};
-use vize_croquis::{Croquis, Scope, ScopeData};
+use vize_croquis::{Scope, ScopeData};
 
-use crate::virtual_ts::component_reference::component_binding_reference;
 use crate::virtual_ts::expressions::{
     map_rewritten_template_binding, rewrite_reserved_template_binding,
 };
-use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
-
-/// Type annotation for a `v-slot` scope's props. When the slot is on a child
-/// component (`component` is `Some`), the props are inferred from that child's
-/// `$slots[name]` parameter (its `defineSlots`), so misuse raises a real
-/// diagnostic (#764). Dynamic slot names are matched against the union of all
-/// declared slot function props, matching Vue's runtime lookup without
-/// treating the expression text as a static slot key. Otherwise — and whenever
-/// the child has no typed slot — it falls back to `any` so untyped or built-in
-/// slot hosts never produce a false positive.
-pub(super) fn slot_props_type(
-    summary: &Croquis,
-    options: &VirtualTsOptions,
-    syntactic_type_only_imported_names: &FxHashSet<vize_carton::CompactString>,
-    component: Option<&str>,
-    slot_name: &str,
-    slot_name_is_static: bool,
-) -> String {
-    match component {
-        Some(component) => {
-            let component_ref = component_binding_reference(
-                summary,
-                options,
-                syntactic_type_only_imported_names,
-                component,
-            );
-            if slot_name_is_static {
-                cstr!(
-                    "typeof {component_ref} extends {{ readonly __vizeSlots?: infer __S }} ? (\"{slot_name}\" extends keyof NonNullable<__S> ? (NonNullable<NonNullable<__S>[\"{slot_name}\"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : (typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? (\"{slot_name}\" extends keyof __S ? (NonNullable<__S[\"{slot_name}\"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any)"
-                )
-            } else {
-                // The Vize marker is `Partial<Slots>` because parents may omit
-                // slots. Strip that mapped optionality before unioning payloads
-                // so a provided dynamic slot never acquires `undefined` props.
-                cstr!(
-                    "typeof {component_ref} extends {{ readonly __vizeSlots?: infer __S }} ? ({{ [__K in keyof NonNullable<__S>]-?: NonNullable<NonNullable<__S>[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }}[keyof NonNullable<__S>] extends infer __P ? ([__P] extends [never] ? any : __P) : any) : (typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? ({{ [__K in keyof __S]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }}[keyof __S] extends infer __P ? ([__P] extends [never] ? any : __P) : any) : any)"
-                )
-            }
-        }
-        None => "any".into(),
-    }
-}
+use crate::virtual_ts::types::VizeMapping;
 
 /// Split a `v-slot` props expression that carries its own TypeScript
 /// annotation (`#item="{ element }: { element: Tag }"`) into the binding
