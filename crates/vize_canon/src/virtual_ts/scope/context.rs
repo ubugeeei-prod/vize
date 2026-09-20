@@ -136,6 +136,11 @@ pub(super) struct EventHandlerExprContext<'a> {
     /// vue-tsc anchors a wrongly-shaped handler (#3462). `None` when the
     /// directive text cannot be read back from the template.
     pub(super) event_name_src_range: Option<std::ops::Range<usize>>,
+    /// The closure's value is checked against the listener type, so a lone
+    /// expression statement is returned from it: `@click="count++"` yields
+    /// the expression's type where `@click="(() => 1);"` yields `void`,
+    /// exactly as an authored inline handler does under `vue-tsc`.
+    pub(super) return_single_expression: bool,
     pub(super) template_binding_access: &'a TemplateBindingAccess,
     pub(super) template_offset: u32,
     pub(super) indent: &'a str,
@@ -157,6 +162,11 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) legacy_vue2: bool,
     pub(super) check_unknown_props: bool,
     pub(super) experimental_strict_slot_children: bool,
+    /// Starts of the component usages that are this component's fallthrough
+    /// roots under `checkRequiredFallthroughAttributes`: their required props
+    /// become the parent's to supply, so the usage itself stops reporting them
+    /// as missing.
+    pub(super) relaxed_required_usage_starts: &'a FxHashSet<u32>,
 }
 
 impl<'a> ComponentPropsContext<'a, '_> {

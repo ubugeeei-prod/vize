@@ -51,6 +51,7 @@ type __VizeRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never :
 type __VizeDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (event: GlobalEventHandlersEventMap[K]) => void };
 type __VizeFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown } & Omit<__VizeDomListenerProps, keyof Owned>;
 type __VizeReservedComponentInputProps = { key?: unknown; ref?: unknown };
+type __VizeComponentFallthroughProps<C> = __VizeIsAny<C> extends true ? Record<string, unknown> : (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : Record<string, unknown>) & (C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {});
 type __VizeComponentInputProps<T, Declared = {}> = T extends unknown ? Partial<T> & Partial<__VizeKebabProps<T>> & Declared & __VizeFallthroughAttrs<T & Declared> & __VizeReservedComponentInputProps : never;
 type __VizeMissingRequiredInputKeys<T, Authored, K extends __VizeRequiredKeys<T> & string = __VizeRequiredKeys<T> & string> = K extends unknown ? K extends keyof Authored ? never : __VizeKebabCase<K> extends keyof Authored ? never : K : never;
 type __VizeIsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
@@ -114,7 +115,7 @@ function __setup() {
     void value
   }
   
-  // @vize-map: 12720:12807 -> 0:76
+  // @vize-map: 13094:13181 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -137,12 +138,20 @@ function __setup() {
     : typeof my_widget extends (props: infer __P, ...args: any[]) => any
       ? __P extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[]
       : unknown[];
+  type __my_widget_7_update_model_value_fallthrough_args = typeof my_widget extends { readonly __vizeFallthroughProps?: infer __F }
+    ? __VizeIsAny<__F> extends true ? unknown[] : NonNullable<__F> extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[]
+    : unknown[];
   type __my_widget_7_update_model_value_emit_args = typeof my_widget extends { __vizeEmitProps?: infer __EP }
     ? __EP extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[]
     : unknown[];
-  type __my_widget_7_update_model_value_args = unknown[] extends __my_widget_7_update_model_value_prop_args ? __my_widget_7_update_model_value_emit_args : __my_widget_7_update_model_value_prop_args;
+  type __my_widget_7_update_model_value_args = unknown[] extends __my_widget_7_update_model_value_prop_args ? (unknown[] extends __my_widget_7_update_model_value_emit_args ? __my_widget_7_update_model_value_fallthrough_args : __my_widget_7_update_model_value_emit_args) : __my_widget_7_update_model_value_prop_args;
   type __my_widget_7_update_model_value_event = __my_widget_7_update_model_value_args extends [] ? any : unknown[] extends __my_widget_7_update_model_value_args ? any : __my_widget_7_update_model_value_args[0];
-  type __my_widget_7_update_model_value_listener = unknown[] extends __my_widget_7_update_model_value_args ? ((...args: any[]) => any) : ((...args: __my_widget_7_update_model_value_args) => any);
+  type __my_widget_7_update_model_value_return = unknown[] extends __my_widget_7_update_model_value_prop_args ? any : typeof my_widget extends { new (...args: any[]): { $props: infer __P } }
+    ? (__P extends { "onUpdate:modelValue"?: (...args: any[]) => infer __R } ? __R : any)
+    : typeof my_widget extends (props: infer __P, ...args: any[]) => any
+      ? (__P extends { "onUpdate:modelValue"?: (...args: any[]) => infer __R } ? __R : any)
+      : any;
+  type __my_widget_7_update_model_value_listener = unknown[] extends __my_widget_7_update_model_value_args ? ((...args: any[]) => any) : ((...args: __my_widget_7_update_model_value_args) => __my_widget_7_update_model_value_return);
   void ((...__vize_args: Parameters<__my_widget_7_update_model_value_listener>) => {
     const __vize_event = __vize_args[0] as __my_widget_7_update_model_value_event; void __vize_event;
     const __vize_handler_7_47: __my_widget_7_update_model_value_listener | null | undefined = (handleUpdate);

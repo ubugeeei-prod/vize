@@ -1,6 +1,10 @@
 //! Canon consumes the same AST classifier as Croquis so callback ownership
 //! cannot depend on a second handwritten JavaScript scanner.
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast::Statement;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
 
 pub(super) fn inline_callback_event_argument(content: &str) -> Option<&'static str> {
@@ -10,6 +14,29 @@ pub(super) fn inline_callback_event_argument(content: &str) -> Option<&'static s
         }
         _ => None,
     }
+}
+
+/// Whether an inline handler body is one expression statement without a
+/// terminating `;`. That body's value is the handler's return value (`vue-tsc`
+/// returns it from the synthesized arrow), whereas `(() => 1);` or two
+/// statements run as a block and return nothing.
+pub(super) fn is_single_expression_statement(content: &str) -> bool {
+    let trimmed = content.trim();
+    if trimmed.is_empty() || trimmed.ends_with(';') {
+        return false;
+    }
+    let allocator = Allocator::default();
+    let mut parsed = Parser::new(&allocator, trimmed, SourceType::ts()).parse();
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
+        parsed = Parser::new(&allocator, trimmed, SourceType::tsx()).parse();
+    }
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
+        return false;
+    }
+    matches!(
+        parsed.program.body.as_slice(),
+        [Statement::ExpressionStatement(_)]
+    )
 }
 
 pub(super) fn is_callable_handler_reference(content: &str) -> bool {
@@ -58,6 +85,35 @@ mod tests {
                 inline_callback_event_argument(content),
                 expected,
                 "unexpected inline-callback classification for {content:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn single_expression_statements_return_their_value() {
+        for content in [
+            "count++",
+            "(() => 1)()",
+            "a, b",
+            "x = $event",
+            "foo(\n  1\n)",
+        ] {
+            assert!(
+                super::is_single_expression_statement(content),
+                "{content:?}"
+            );
+        }
+        for content in [
+            "(() => 1);",
+            "a(); b()",
+            "if (ok) run()",
+            "count++;",
+            "",
+            "const x = 1",
+        ] {
+            assert!(
+                !super::is_single_expression_statement(content),
+                "{content:?}"
             );
         }
     }

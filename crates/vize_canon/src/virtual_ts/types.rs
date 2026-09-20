@@ -1,7 +1,7 @@
 //! Type definitions for virtual TypeScript generation.
 
 mod checks;
-pub(crate) use checks::VirtualTsCheckOptions;
+pub(crate) use checks::{ResolveStyleClassNames, VirtualTsCheckOptions};
 
 use std::ops::Range;
 use vize_carton::{FxHashSet, String, config::VueVersion, cstr};

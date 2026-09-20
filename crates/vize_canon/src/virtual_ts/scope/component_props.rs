@@ -5,13 +5,13 @@ mod closure_scopes;
 
 pub(super) use closure_scopes::generate_closure_component_props_recursive;
 pub(super) use closure_scopes::recurse_child_closure_scopes;
-use vize_carton::{FxHashMap, FxHashSet, String, append, camelize, capitalize, profile};
+use vize_carton::{FxHashMap, FxHashSet, String, append, camelize, capitalize, cstr, profile};
 use vize_croquis::{Croquis, ScopeData, ScopeKind, analysis::ComponentUsage};
 
 use crate::virtual_ts::VizeSemanticLink;
 use crate::virtual_ts::component_reference::component_binding_reference;
 use crate::virtual_ts::expressions::{ComponentPropCheckContext, generate_component_prop_checks};
-use crate::virtual_ts::helpers::to_safe_identifier_fragment;
+use crate::virtual_ts::helpers::{push_ts_string_literal, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
 use super::component_prop_checker::{
@@ -23,6 +23,7 @@ use super::component_slots::{
 };
 use super::context::{ComponentBindingCheck, ComponentPropsContext, VForPropsContext};
 use super::empty_component_props::{generate_empty_root_checks, is_empty_props_usage};
+use super::event_handler::event_name_source_range;
 use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 
 /// Generate component props type checks (scope-aware).
@@ -88,9 +89,11 @@ pub(super) fn generate_component_props(
             component_type_name.as_str(),
             component_ref.as_str(),
             idx,
+            ctx.relaxed_required_usage_starts.contains(&usage.start),
         );
 
         append_per_prop_aliases(ts, usage, component_type_name.as_str(), idx);
+        append_duplicate_listener_checks(ts, mappings, ctx, usage);
     }
 
     component_prop_navigation::emit_references(ts, mappings, semantic_links, ctx, checkable_usages);
@@ -272,4 +275,60 @@ fn component_name_matches_external_template_binding(
     [name, camel_name.as_str(), pascal_name.as_str()]
         .iter()
         .any(|candidate| external_template_bindings.contains(candidate))
+}
+
+/// `@foo-bar` and `@fooBar` compile to the same `onFooBar` listener prop, so
+/// binding both on one usage is a collision Vue resolves silently (the last
+/// one wins) and `vue-tsc` reports as a duplicate object key. Listeners are
+/// grouped by that prop name plus their modifiers: `@foo-bar.up` next to
+/// `@fooBar.down` is two distinct listeners and stays legal. Each key of a
+/// colliding group maps to its own authored event name so the duplicate-key
+/// error lands on the binding that repeats it.
+fn append_duplicate_listener_checks(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    ctx: &ComponentPropsContext<'_, '_>,
+    usage: &ComponentUsage,
+) {
+    let mut groups: Vec<(String, Vec<&vize_croquis::croquis::EventListener>)> = Vec::new();
+    for event in &usage.events {
+        if event.name_is_dynamic || event.name.is_empty() {
+            continue;
+        }
+        let mut key = cstr!("on{}", capitalize(&camelize(event.name.as_str())));
+        for modifier in &event.modifiers {
+            key.push('+');
+            key.push_str(modifier.as_str());
+        }
+        match groups.iter_mut().find(|(existing, _)| *existing == key) {
+            Some((_, events)) => events.push(event),
+            None => groups.push((key, vec![event])),
+        }
+    }
+    for (key, events) in groups {
+        if events.len() < 2 {
+            continue;
+        }
+        let prop_name = key.split('+').next().unwrap_or(key.as_str());
+        ts.push_str("  void { ");
+        for event in events {
+            let key_start = ts.len();
+            push_ts_string_literal(ts, prop_name);
+            let key_end = ts.len();
+            ts.push_str(": 0, ");
+            if let Some(src_range) = event_name_source_range(
+                ctx.template_source,
+                ctx.template_offset,
+                event.start..event.end,
+                event.name.as_str(),
+            ) {
+                mappings.push(VizeMapping {
+                    gen_range: key_start..key_end,
+                    src_range,
+                    sub_spans: Vec::new(),
+                });
+            }
+        }
+        ts.push_str("};  // listeners that compile to one prop\n");
+    }
 }

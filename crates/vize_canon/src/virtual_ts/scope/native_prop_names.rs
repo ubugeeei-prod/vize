@@ -29,6 +29,13 @@ fn visit(
             PropNode::Directive(d) if matches!(d.name, "for" | "if" | "else-if" | "else" | "slot")
         )
     });
+    let slot_template = element
+        .props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(d) if d.name == "slot"));
+    if fragment && !slot_template {
+        emit_fragment_prop_names(ts, mappings, element, offset);
+    }
     if is_native_tag(element.tag) && !fragment {
         for prop in &element.props {
             let (name, location) = match prop {
@@ -68,5 +75,56 @@ fn visit(
     }
     for child in &element.children {
         visit(ts, mappings, child, offset);
+    }
+}
+
+/// A `<template v-if>` / `<template v-for>` renders no element, so a prop
+/// bound on it (other than the reserved `key`) is dropped at runtime.
+/// `vue-tsc` checks that props object against the `<template>` element's own
+/// attributes, so an unknown name is an excess property (TS2353) on the
+/// authored attribute name; a real `<template>` attribute passes.
+fn emit_fragment_prop_names(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    element: &vize_relief::ElementNode<'_>,
+    offset: u32,
+) {
+    for prop in &element.props {
+        let (name, location) = match prop {
+            PropNode::Attribute(attribute) => (attribute.name, &attribute.name_loc),
+            PropNode::Directive(directive) if directive.name == "bind" => {
+                let Some(ExpressionNode::Simple(argument)) = &directive.arg else {
+                    continue;
+                };
+                if !argument.is_static {
+                    continue;
+                }
+                (argument.content, &argument.loc)
+            }
+            _ => continue,
+        };
+        if matches!(name, "key" | "ref") || name.starts_with("data-") {
+            continue;
+        }
+        let key = serde_json::to_string(name).expect("string serialization");
+        append!(
+            *ts,
+            "  const __vize_fragment_prop_{}: Partial<__VizeNativeElement<\"template\">> = {{ ",
+            location.span.start
+        );
+        let key_start = ts.len();
+        ts.push_str(key.as_str());
+        let key_end = ts.len();
+        append!(
+            *ts,
+            ": undefined as never }};\n  void __vize_fragment_prop_{};\n",
+            location.span.start
+        );
+        mappings.push(VizeMapping {
+            gen_range: key_start..key_end,
+            src_range: (offset + location.span.start) as usize
+                ..(offset + location.span.end) as usize,
+            sub_spans: Vec::new(),
+        });
     }
 }

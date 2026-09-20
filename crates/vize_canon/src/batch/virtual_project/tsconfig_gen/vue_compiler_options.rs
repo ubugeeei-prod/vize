@@ -11,6 +11,7 @@ use serde_json::{Map, Value};
 use vize_carton::{FxHashMap, FxHashSet};
 
 use crate::batch::error::CorsaResult;
+use crate::virtual_ts::ResolveStyleClassNames;
 
 use super::super::VirtualProject;
 use super::super::tsconfig_paths::{
@@ -103,6 +104,23 @@ impl VirtualProject {
                     .and_then(Value::as_bool)
             })
             .unwrap_or(false);
+        self.virtual_ts_check_options
+            .check_required_fallthrough_attributes = options
+            .as_ref()
+            .and_then(|options| {
+                options
+                    .get("checkRequiredFallthroughAttributes")
+                    .and_then(Value::as_bool)
+            })
+            .unwrap_or(false);
+        self.virtual_ts_check_options.resolve_style_class_names = match options
+            .as_ref()
+            .and_then(|options| options.get("resolveStyleClassNames"))
+        {
+            Some(Value::Bool(true)) => ResolveStyleClassNames::All,
+            Some(Value::Bool(false)) => ResolveStyleClassNames::None,
+            _ => ResolveStyleClassNames::Scoped,
+        };
     }
 
     #[cfg(test)]

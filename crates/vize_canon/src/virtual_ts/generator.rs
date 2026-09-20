@@ -40,6 +40,7 @@ pub use self::entry::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_options_api,
 };
+pub(crate) use self::fallthrough::fallthrough_component_root_starts;
 use self::generics::{HoistedGenericAliases, generic_injection_point, references_any_identifier};
 use self::global_components::{GlobalComponentDiagnostics, GlobalComponentPlan};
 use self::imports::{
@@ -841,8 +842,18 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .as_deref(),
         ((summary.macros.define_slots().is_some() || inferred_slots) && !slots_is_generic)
             .then_some("__VizeSlots"),
-        self::fallthrough::fallthrough_props_type_ref(summary, template_ast, legacy_vue2)
-            .as_deref(),
+        self::fallthrough::fallthrough_props_type_ref(
+            &self::fallthrough::FallthroughComponentScope {
+                summary,
+                options,
+                syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
+                check_required: check_options.fallthrough_attributes
+                    && check_options.check_required_fallthrough_attributes,
+            },
+            template_ast,
+            legacy_vue2,
+        )
+        .as_deref(),
     );
     component_export::emit_component_default_export(&mut ts, generation_options.component_name);
 

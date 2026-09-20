@@ -5,16 +5,31 @@ use vize_relief::{
     TemplateChildNode,
 };
 
-use super::{fallthrough_props_type_ref, possible_raw_if_chain_tags};
+use super::{FallthroughComponentScope, fallthrough_props_type_ref, possible_raw_if_chain_tags};
+use crate::virtual_ts::types::VirtualTsOptions;
 
 fn fallthrough_type(script: &str, template: &str) -> Option<vize_carton::String> {
+    fallthrough_type_with(script, template, false)
+}
+
+fn fallthrough_type_with(
+    script: &str,
+    template: &str,
+    check_required: bool,
+) -> Option<vize_carton::String> {
     let allocator = Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
-    fallthrough_props_type_ref(&summary, Some(&root), false)
+    let scope = FallthroughComponentScope {
+        summary: &summary,
+        options: &VirtualTsOptions::default(),
+        syntactic_type_only_imported_names: &Default::default(),
+        check_required,
+    };
+    fallthrough_props_type_ref(&scope, Some(&root), false)
 }
 
 fn raw_branch<'a>(
@@ -57,6 +72,52 @@ fn emits_open_fallthrough_props_for_single_component_root() {
     .expect("single component root should keep fallthrough props open");
 
     assert_eq!(ty, "Record<string, unknown>");
+}
+
+// `<child>` over an imported `<basic />` root forwards what `basic` accepts:
+// its props and the listener props of its emits, not an open record.
+#[test]
+fn resolves_fallthrough_props_of_an_imported_single_component_root() {
+    let ty = fallthrough_type(
+        "import Basic from './basic.vue'\ndefineProps<{ title: string }>()",
+        "<Basic>{{ title }}</Basic>",
+    )
+    .expect("single imported component root should forward that component's props");
+
+    assert_eq!(ty, "Partial<__VizeComponentFallthroughProps<typeof Basic>>");
+
+    let kebab = fallthrough_type(
+        "import BaseInput from './base-input.vue'\ndefineProps<{ title: string }>()",
+        "<base-input>{{ title }}</base-input>",
+    )
+    .expect("kebab-case usage resolves the PascalCase import");
+
+    assert_eq!(
+        kebab,
+        "Partial<__VizeComponentFallthroughProps<typeof BaseInput>>"
+    );
+}
+
+// `checkRequiredFallthroughAttributes`: the parent must supply the root's
+// required props, except the ones the root binds itself.
+#[test]
+fn check_required_forwards_declared_props_minus_the_roots_own_bindings() {
+    let ty = fallthrough_type_with(
+        "import Basic from './basic.vue'\ndefineProps<{ title: string }>()",
+        r#"<Basic foo="..." :bar-baz="title" @save="() => {}" v-model="title" />"#,
+        true,
+    )
+    .expect("single imported component root should forward that component's props");
+
+    assert_eq!(
+        ty,
+        "Omit<__VizeComponentFallthroughProps<typeof Basic>, \"foo\" | \"barBaz\" | \"onSave\" | \"modelValue\">"
+    );
+
+    let native = fallthrough_type_with("defineProps<{ title: string }>()", "<input />", true)
+        .expect("single native root should forward its attributes");
+
+    assert_eq!(native, "__VizeNativeElement<\"input\">");
 }
 
 #[test]

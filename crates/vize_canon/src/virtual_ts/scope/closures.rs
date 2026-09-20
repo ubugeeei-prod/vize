@@ -130,6 +130,22 @@ pub(crate) fn generate_scope_closures(
             generate_instance_global_refs(ts, mappings, summary, template_offset, &options)
         );
     }
+    // Under `checkRequiredFallthroughAttributes` the fallthrough root's
+    // required props are forwarded to this component's parent, so the root
+    // usage must not also demand them here.
+    let relaxed_required_usage_starts: FxHashSet<u32> = if check_options.fallthrough_attributes
+        && check_options.check_required_fallthrough_attributes
+        && !options.legacy_vue2
+    {
+        crate::virtual_ts::generator::fallthrough_component_root_starts(
+            summary,
+            options.template_ast,
+        )
+        .into_iter()
+        .collect()
+    } else {
+        FxHashSet::default()
+    };
     let props_ctx = ComponentPropsContext {
         summary,
         template_ast: options.template_ast,
@@ -146,6 +162,7 @@ pub(crate) fn generate_scope_closures(
         legacy_vue2: options.legacy_vue2,
         check_unknown_props: check_options.check_unknown_props,
         experimental_strict_slot_children: options.experimental_strict_slot_children,
+        relaxed_required_usage_starts: &relaxed_required_usage_starts,
     };
     let usages = check_options
         .check_props

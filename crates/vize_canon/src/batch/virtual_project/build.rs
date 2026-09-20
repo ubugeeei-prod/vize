@@ -20,13 +20,13 @@ mod css_modules;
 mod script_build;
 pub(super) use super::paths::source_type_for_path;
 pub(super) use context::{ScriptBuildContext, VirtualBuildContext};
-pub(super) use css_modules::virtual_ts_options_for_descriptor;
+pub(super) use css_modules::{style_scoped_class_names, virtual_ts_options_for_descriptor};
 pub(super) use script_build::build_script_registered_file;
 
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
 use super::javascript_sfc::descriptor_is_unchecked_javascript;
-pub(super) use super::javascript_sfc::descriptor_uses_jsx_script;
+pub(super) use super::javascript_sfc::{descriptor_uses_jsx_script, prepare_script_blocks};
 use super::jsx_build::build_jsx_registered_file;
 use super::passthrough::collect_passthrough_modules;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
@@ -100,6 +100,7 @@ pub(super) fn build_vue_registered_file(
         )
         .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))
     )?;
+    let descriptor = prepare_script_blocks(descriptor);
 
     let use_tsx_virtual = descriptor_uses_jsx_script(&descriptor);
     let source_type = if use_tsx_virtual {

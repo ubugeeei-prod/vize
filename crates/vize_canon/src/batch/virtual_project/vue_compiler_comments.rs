@@ -1,6 +1,6 @@
 //! Per-file Vue compiler options belong only to top-level SFC comments.
 
-use crate::virtual_ts::VirtualTsCheckOptions;
+use crate::virtual_ts::{ResolveStyleClassNames, VirtualTsCheckOptions};
 use vize_atelier_core::{ParseMode, ParserOptions, parser::parse_with_options};
 use vize_carton::Allocator;
 use vize_relief::TemplateChildNode;
@@ -17,6 +17,8 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
         "@inferTemplateDollarSlots",
         "@inferTemplateDollarAttrs",
         "@fallthroughAttributes",
+        "@checkRequiredFallthroughAttributes",
+        "@resolveStyleClassNames",
         "@jsxSlots",
     ]
     .iter()
@@ -67,6 +69,16 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
             "inferTemplateDollarSlots" => options.infer_template_dollar_slots = value,
             "inferTemplateDollarAttrs" => options.infer_template_dollar_attrs = value,
             "fallthroughAttributes" => options.fallthrough_attributes = value,
+            "checkRequiredFallthroughAttributes" => {
+                options.check_required_fallthrough_attributes = value;
+            }
+            "resolveStyleClassNames" => {
+                options.resolve_style_class_names = if value {
+                    ResolveStyleClassNames::All
+                } else {
+                    ResolveStyleClassNames::None
+                };
+            }
             "jsxSlots" => options.jsx_slots = value,
             _ => {}
         }
@@ -87,6 +99,24 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
 mod tests {
     use super::apply;
     use crate::virtual_ts::VirtualTsCheckOptions;
+
+    #[test]
+    fn check_required_fallthrough_attributes_is_a_per_file_option() {
+        let defaults = VirtualTsCheckOptions::default();
+        assert!(!defaults.check_required_fallthrough_attributes);
+        let options = apply(
+            "<!-- @checkRequiredFallthroughAttributes true -->\n<template><div /></template>",
+            defaults,
+        );
+        assert!(options.check_required_fallthrough_attributes);
+        assert!(
+            !apply(
+                "<template><!-- @checkRequiredFallthroughAttributes true --><div /></template>",
+                defaults,
+            )
+            .check_required_fallthrough_attributes
+        );
+    }
 
     #[test]
     fn only_top_level_options_override_the_project_setting() {

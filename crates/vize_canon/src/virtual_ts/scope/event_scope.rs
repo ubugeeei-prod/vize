@@ -20,9 +20,9 @@ use vize_croquis::{EventHandlerScopeData, Scope};
 use crate::virtual_ts::helpers::get_dom_event_type;
 use crate::virtual_ts::types::VizeMapping;
 
+mod component_scope;
 mod event_targets;
 
-use super::component_events::{ComponentEventTypeContext, generate_component_event_types};
 use super::context::{EventHandlerExprContext, ScopeGenContext};
 use super::event_handler::{event_name_source_range, generate_event_handler_expressions};
 use event_targets::{
@@ -49,12 +49,15 @@ pub(super) fn generate_event_handler_scope(
 
     // An inline body that never reads its implicit argument needs only a
     // function boundary. Keep assignments out of render control flow without
-    // instantiating unused DOM or component event types.
+    // instantiating unused DOM event types. A component listener is the
+    // exception: its body is still the handler the child's listener prop
+    // receives, so it is declared against that prop's type below even when
+    // `$event` goes unread.
     let unused_event = data.has_implicit_event
         && scope
             .get_binding("$event")
             .is_some_and(|binding| !binding.is_used());
-    if !ctx.check_options.check_emits || unused_event {
+    if !ctx.check_options.check_emits || (unused_event && data.target_component.is_none()) {
         if unused_event {
             append!(*ts, "{indent}void (() => {{\n");
         } else {
@@ -74,6 +77,7 @@ pub(super) fn generate_event_handler_scope(
                     event_handler_type: None,
                     event_listener_type: None,
                     event_name_src_range: None,
+                    return_single_expression: false,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
@@ -127,6 +131,7 @@ pub(super) fn generate_event_handler_scope(
                         scope.span.start..scope.span.end,
                         data.event_name.as_str(),
                     ),
+                    return_single_expression: false,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
@@ -136,74 +141,15 @@ pub(super) fn generate_event_handler_scope(
 
         append!(*ts, "{indent}}});\n");
     } else if data.target_component.is_some() {
-        let needs_typed_handler_assignment = needs_typed_handler_assignment(data);
-        let event_types = generate_component_event_types(
+        component_scope::generate_component_handler_scope(
             ts,
-            ComponentEventTypeContext {
-                summary: ctx.summary,
-                virtual_ts_options: ctx.virtual_ts_options,
-                data,
-                scope,
-                syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
-                template_binding_access: ctx.template_binding_access,
-                legacy_vue2: ctx.legacy_vue2,
-                needs_typed_handler_assignment,
-                indent,
-            },
-        )
-        .expect("component event handler should have a target component");
-        let event_type = event_types.event_type;
-        let handler_type = event_types.handler_type;
-        let handler_type_expr = event_types.handler_type_expr;
-        let listener_type = event_types.listener_type;
-        let listener_type_expr = event_types.listener_type_expr;
-        // Type the listener against the FULL emit tuple so multi-arg emits
-        // keep every parameter (#1512); unresolved sigs stay variadic.
-        append!(
-            *ts,
-            "{indent}type {listener_type} = {listener_type_expr};\n",
+            mappings,
+            ctx,
+            scope,
+            data,
+            indent,
+            inner_indent,
         );
-        if let (Some(handler_type), Some(handler_type_expr)) = (&handler_type, &handler_type_expr) {
-            append!(*ts, "{indent}type {handler_type} = {handler_type_expr};\n",);
-        }
-        // Keep the handler body in a function scope so assignments do not
-        // narrow the surrounding render scope; `$event` is element 0.
-        append!(
-            *ts,
-            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n",
-        );
-        append!(
-            *ts,
-            "{inner_indent}const {event_value} = __vize_args[0] as {event_type}; void {event_value};\n",
-        );
-
-        profile!(
-            "canon.virtual_ts.event_handler_expressions",
-            generate_event_handler_expressions(
-                ts,
-                mappings,
-                scope_id,
-                &EventHandlerExprContext {
-                    expressions_by_scope: ctx.expressions_by_scope,
-                    data,
-                    check_emits: true,
-                    event_type: event_type.as_str(),
-                    event_handler_type: handler_type.as_deref(),
-                    event_listener_type: Some(listener_type.as_str()),
-                    event_name_src_range: event_name_source_range(
-                        ctx.template_source,
-                        ctx.template_offset,
-                        scope.span.start..scope.span.end,
-                        data.event_name.as_str(),
-                    ),
-                    template_binding_access: ctx.template_binding_access,
-                    template_offset: ctx.template_offset,
-                    indent: inner_indent,
-                },
-            )
-        );
-
-        append!(*ts, "{indent}}});\n");
     } else if let Some((event_type, listener_args)) = transition_hook_signature(
         ctx.template_source,
         ctx.template_ast,
@@ -252,6 +198,7 @@ pub(super) fn generate_event_handler_scope(
                         scope.span.start..scope.span.end,
                         data.event_name.as_str(),
                     ),
+                    return_single_expression: false,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
@@ -299,6 +246,7 @@ pub(super) fn generate_event_handler_scope(
                         scope.span.start..scope.span.end,
                         data.event_name.as_str(),
                     ),
+                    return_single_expression: false,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
@@ -327,6 +275,7 @@ pub(super) fn generate_event_handler_scope(
                     // so there is no declared name to anchor at.
                     event_listener_type: None,
                     event_name_src_range: None,
+                    return_single_expression: false,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,

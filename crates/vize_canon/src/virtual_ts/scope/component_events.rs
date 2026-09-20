@@ -91,7 +91,10 @@ pub(super) fn generate_component_event_types(
     let static_emit_args =
         cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_static_emit_args");
     let emit_args = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_emit_args");
+    let fallthrough_args =
+        cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_fallthrough_args");
     let args_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_args");
+    let return_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_return");
     let event_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
     let listener_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_listener");
 
@@ -112,6 +115,22 @@ pub(super) fn generate_component_event_types(
         "{indent}    ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : {missing_prop_args}\n",
     );
     append!(*ts, "{indent}    : unknown[];\n");
+    // A listener the child neither declares nor emits can still be a
+    // fallthrough attribute of its root (`fallthroughAttributes`): `<child
+    // @input>` over a `<input />` root receives the `InputEvent` that
+    // `NativeElements['input']` declares for `onInput`, and a component root
+    // contributes the listener props of the component it renders. The open
+    // `Record<string, unknown>` surface resolves to `unknown[]`, so an
+    // unresolved root keeps the untyped listener it has today.
+    append!(
+        *ts,
+        "{indent}type {fallthrough_args} = typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }}\n",
+    );
+    append!(
+        *ts,
+        "{indent}  ? __VizeIsAny<__F> extends true ? unknown[] : NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
+    );
+    append!(*ts, "{indent}  : unknown[];\n");
 
     let inferred_emit_args = generate_inferred_emit_args(
         ts,
@@ -145,7 +164,7 @@ pub(super) fn generate_component_event_types(
         );
         append!(
             *ts,
-            "{indent}type {args_type} = unknown[] extends {inferred} ? (unknown[] extends {prop_args} ? {emit_args} : {prop_args}) : {inferred};\n",
+            "{indent}type {args_type} = unknown[] extends {inferred} ? (unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {fallthrough_args} : {emit_args}) : {prop_args}) : {inferred};\n",
         );
     } else {
         append!(
@@ -158,7 +177,7 @@ pub(super) fn generate_component_event_types(
         );
         append!(
             *ts,
-            "{indent}  : unknown[];\n{indent}type {args_type} = unknown[] extends {prop_args} ? {emit_args} : {prop_args};\n",
+            "{indent}  : unknown[];\n{indent}type {args_type} = unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {fallthrough_args} : {emit_args}) : {prop_args};\n",
         );
     }
 
@@ -184,16 +203,34 @@ pub(super) fn generate_component_event_types(
         );
         args_type.clone()
     };
-    // The modern listener returns `any`, matching the handler props Vue's own
-    // `EmitFn`/Volar synthesis produce (`(user: User) => any`); an emit-payload
-    // mismatch then elaborates with the same expected type `vue-tsc` prints.
-    // `unknown` behaves identically in the expected-return position, so this is
-    // display parity only (#3889).
+    // The modern listener returns what the child's declared listener prop
+    // returns: `any` for the handler props Vue's own `EmitFn`/Volar synthesis
+    // produce (`(user: User) => any`), so an emit-payload mismatch elaborates
+    // with the same expected type `vue-tsc` prints (#3889), and the authored
+    // return type of a prop such as `onClick?: () => number`, so a handler
+    // that returns nothing is rejected as it is under `vue-tsc`.
     let listener_type_expr = if legacy_vue2 {
         cstr!("(...args: {listener_args_type}) => unknown")
     } else {
+        append!(
+            *ts,
+            "{indent}type {return_type} = unknown[] extends {prop_args} ? any : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }}\n",
+        );
+        append!(
+            *ts,
+            "{indent}  ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any)\n",
+        );
+        append!(
+            *ts,
+            "{indent}  : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any\n",
+        );
+        append!(
+            *ts,
+            "{indent}    ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any)\n",
+        );
+        append!(*ts, "{indent}    : any;\n");
         cstr!(
-            "unknown[] extends {args_type} ? ((...args: any[]) => any) : ((...args: {listener_args_type}) => any)"
+            "unknown[] extends {args_type} ? ((...args: any[]) => any) : ((...args: {listener_args_type}) => {return_type})"
         )
     };
     let has_script_component_binding = summary.binding_spans.contains_key(component_name.as_str());

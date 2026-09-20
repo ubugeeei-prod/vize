@@ -55,12 +55,12 @@ pub use generator::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_legacy_vue2, generate_virtual_ts_with_offsets_options_api,
 };
-#[cfg(feature = "native")]
-pub(crate) use helpers::to_safe_identifier;
 pub use helpers::{
     DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_SETUP_HELPERS,
     VUE_TYPE_HELPERS,
 };
+#[cfg(feature = "native")]
+pub(crate) use helpers::{push_ts_string_literal, to_safe_identifier};
 pub use pattern_diagnostics::is_unreachable_pattern_diagnostic;
 pub use semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
 #[cfg(feature = "native")]
@@ -110,9 +110,9 @@ declare function __vize_jsx_component_spread__<O>(value: O): __VizeJsxCanonicalR
 type __VizeJsxComponentCall<C> = C extends abstract new (...args: any[]) => any ? (props: __VizeJsxComponentProps<C>) => any : C extends (...args: any[]) => any ? C : (props: __VizeJsxComponentProps<C>) => any;\n\
 declare function __vize_jsx_component__<C>(component: C): __VizeJsxComponentCall<C>;\n\
 declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: __VizeJsxSlotPayload<C, N>) => unknown): any;\n";
-#[cfg(any(test, feature = "native"))]
-pub(crate) use types::VirtualTsCheckOptions;
 pub(crate) use types::VirtualTsGenerationOptions;
+#[cfg(any(test, feature = "native"))]
+pub(crate) use types::{ResolveStyleClassNames, VirtualTsCheckOptions};
 
 pub fn generate_virtual_ts_with_offsets_and_lib_references(
     summary: &vize_croquis::Croquis,

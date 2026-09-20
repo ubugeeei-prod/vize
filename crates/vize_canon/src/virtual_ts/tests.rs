@@ -1945,11 +1945,11 @@ function handleTest(value1: string, value2: number) {
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-    // The listener type expands to the full emit argument tuple (and falls back
-    // to variadic arguments when the emit stays unresolved).
+    // The listener type expands to the full emit argument tuple (variadic when
+    // unresolved) and returns what the child's declared listener prop returns.
     assert!(
         output.code.contains(
-            "type __Test_8_test_listener = unknown[] extends __Test_8_test_args ? ((...args: any[]) => any) : ((...args: __Test_8_test_args) => any);"
+            "type __Test_8_test_listener = unknown[] extends __Test_8_test_args ? ((...args: any[]) => any) : ((...args: __Test_8_test_args) => __Test_8_test_return);"
         ),
         "component event listener must expand to the full emit argument tuple:\n{}",
         output.code

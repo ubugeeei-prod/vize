@@ -9,6 +9,7 @@ use crate::virtual_ts::expressions::rewrite_reserved_template_binding;
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
 use super::context::EventHandlerExprContext;
+use super::handler_shape::is_single_expression_statement;
 use super::vif_guard::append_ignored_vif_guard_open;
 
 /// Generate event handler expressions inside a closure.
@@ -48,10 +49,23 @@ pub(super) fn generate_event_handler_expressions(
                 rewrite_reserved_template_binding(trimmed_guard, ctx.template_binding_access)
                     .unwrap_or_else(|| String::from(guard.as_str()))
             });
+            // A handler declared against the listener type returns its lone
+            // expression, so its guard is an early exit (`vue-tsc`'s own
+            // `if (!cond) throw 0`) rather than a block: a block would add
+            // `undefined` to the return type when the guard is false.
+            let early_exit_guard = ctx.return_single_expression;
             if let Some(ref guard) = guard {
-                append_ignored_vif_guard_open(ts, ctx.indent, guard, "Inference-only guard");
+                if early_exit_guard {
+                    append!(
+                        *ts,
+                        "{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n{indent}if (!({guard})) throw 0;\n",
+                        indent = ctx.indent,
+                    );
+                } else {
+                    append_ignored_vif_guard_open(ts, ctx.indent, guard, "Inference-only guard");
+                }
             }
-            let handler_indent = if guard.is_some() {
+            let handler_indent = if guard.is_some() && !early_exit_guard {
                 cstr!("{}  ", ctx.indent)
             } else {
                 String::from(ctx.indent)
@@ -172,6 +186,16 @@ pub(super) fn generate_event_handler_expressions(
                     ")({event_arg}); }})({event_value});  // handler expression\n"
                 );
                 mapped_start..mapped_end
+            } else if ctx.return_single_expression
+                && exprs.len() == 1
+                && is_single_expression_statement(content)
+            {
+                append!(*ts, "{indent}return (", indent = handler_indent);
+                let mapped_start = ts.len();
+                ts.push_str(content);
+                let mapped_end = ts.len();
+                ts.push_str(");  // handler expression\n");
+                mapped_start..mapped_end
             } else {
                 append!(*ts, "{indent}", indent = handler_indent);
                 let mapped_start = ts.len();
@@ -220,7 +244,7 @@ pub(super) fn generate_event_handler_expressions(
                 "{indent}// @vize-map: handler -> {src_start}:{src_end}\n",
                 indent = handler_indent,
             );
-            if guard.is_some() {
+            if guard.is_some() && !early_exit_guard {
                 append!(*ts, "{indent}}}\n", indent = ctx.indent);
             }
         }

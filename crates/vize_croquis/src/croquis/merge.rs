@@ -20,6 +20,11 @@ impl Croquis {
             self.bindings.props_aliases.entry(local).or_insert(prop);
         }
 
+        // `export default defineComponent({ inheritAttrs: false })` in the
+        // regular script disables fallthrough for the whole component, not just
+        // for its own block; the setup block cannot re-enable it.
+        self.template_info.inherit_attrs_disabled |= plain.template_info.inherit_attrs_disabled;
+
         self.reactivity.extend(plain.reactivity);
         self.race_conditions.extend(plain.race_conditions);
         self.provide_inject.extend(plain.provide_inject);
@@ -70,5 +75,29 @@ impl Croquis {
             }
             self.scopes.exit_scope();
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Croquis;
+
+    // `<script>` + `<script setup>` analyse as two croquis; the regular
+    // script's `inheritAttrs: false` must survive the merge into the setup one.
+    #[test]
+    fn plain_script_inherit_attrs_false_survives_the_merge() {
+        let mut plain = Croquis::new();
+        plain.template_info.inherit_attrs_disabled = true;
+        let mut setup = Croquis::new();
+        assert!(!setup.template_info.inherit_attrs_disabled);
+
+        setup.merge_plain_script(plain);
+
+        assert!(setup.template_info.inherit_attrs_disabled);
+
+        let mut setup = Croquis::new();
+        setup.template_info.inherit_attrs_disabled = true;
+        setup.merge_plain_script(Croquis::new());
+        assert!(setup.template_info.inherit_attrs_disabled);
     }
 }

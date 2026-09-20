@@ -57,6 +57,7 @@ function __setup() {
   type __VizeIsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;
   type __VizeHasFallthroughProps<C> = __VizeIsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;
   type __VizeFallthroughProps<C> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
+  type __VizeRequiredFallthroughProps<C, __F = __VizeFallthroughProps<C>, __K = __VizeRequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
   type __VizeVueVNodeProps = import('vue').VNodeProps;
   type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;
   type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;
@@ -84,7 +85,7 @@ function __setup() {
   // @vize-map: component -> 97:121
   type __Child_Props_0 = typeof Child extends { __vizeCheck: infer __F } ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof Child> : Record<string, unknown>) : __VizeComponentRawProps<typeof Child>;
   type __Child_Component_0 = typeof Child;
-  type __Child_CheckProps_0 = __Child_Props_0 & __VizeEmitListeners<__Child_Component_0>;
+  type __Child_CheckProps_0 = __Child_Props_0 & __VizeEmitListeners<__Child_Component_0> & __VizeRequiredFallthroughProps<__Child_Component_0>;
   type __Child_CheckTail_0 = __VizeComponentCheckTail<__Child_Component_0>;
   type __Child_ValueProps_0 = __Child_Props_0 & __VizeEmitListeners<__Child_Component_0> & __VizePublicComponentAttrs;
   type __Child_FallthroughValue_0<K extends PropertyKey> = __VizeFallthroughValue<__Child_Component_0, K>;
@@ -158,5 +159,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Record<string, unknown>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<__VizeComponentFallthroughProps<typeof Child>>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;

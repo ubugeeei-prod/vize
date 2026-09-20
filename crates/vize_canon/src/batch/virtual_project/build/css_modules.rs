@@ -5,7 +5,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::{String as CompactString, ToCompactString};
 
-use crate::virtual_ts::{CSS_MODULE_GLOBAL_MARKER, TemplateGlobal, VirtualTsOptions};
+use crate::virtual_ts::{
+    CSS_MODULE_GLOBAL_MARKER, ResolveStyleClassNames, TemplateGlobal, VirtualTsOptions,
+};
 
 pub(crate) fn virtual_ts_options_for_descriptor(
     base: &VirtualTsOptions,
@@ -55,6 +57,33 @@ pub(crate) fn virtual_ts_options_for_descriptor(
         reference_paths: base.reference_paths.clone(),
         strict_instance_globals: base.strict_instance_globals,
     }
+}
+
+/// Class names the SFC's `<style>` blocks declare, deduplicated in source
+/// order, for the `__VLS_StyleScopedClasses` type: every block under
+/// `resolveStyleClassNames: true`, the scoped ones by default. A block whose
+/// selectors cannot be read statically contributes nothing.
+pub(crate) fn style_scoped_class_names(
+    descriptor: &SfcDescriptor<'_>,
+    mode: ResolveStyleClassNames,
+) -> Vec<CompactString> {
+    let mut names = Vec::new();
+    for style in descriptor.styles.iter() {
+        let included = match mode {
+            ResolveStyleClassNames::None => false,
+            ResolveStyleClassNames::Scoped => style.scoped,
+            ResolveStyleClassNames::All => true,
+        };
+        if !included || style.src.is_some() {
+            continue;
+        }
+        for class_name in extract_authored_css_classes(&style.content).unwrap_or_default() {
+            if !names.contains(&class_name) {
+                names.push(class_name);
+            }
+        }
+    }
+    names
 }
 
 /// Collect the classes that are statically exported by each CSS module.
