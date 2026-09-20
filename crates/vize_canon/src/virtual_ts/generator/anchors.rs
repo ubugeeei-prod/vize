@@ -1,6 +1,6 @@
 //! Setup binding anchor emission for template-used names.
 
-use super::imports::collect_setup_binding_anchor_names;
+use super::imports::{IdentifierUsage, collect_setup_binding_anchor_names};
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{BindingType, Croquis};
 
@@ -39,9 +39,7 @@ pub(super) fn emit_props_shadow_anchor(
         .bindings
         .get("props")
         .is_some_and(is_setup_variable)
-        && template_referenced_names
-            .iter()
-            .any(|name| name.as_str() == "props")
+        && template_referenced_names.contains("props")
     {
         ts.push_str("  // Anchor before the template scope shadows `props`\n");
         ts.push_str("  void props;\n");
@@ -66,6 +64,7 @@ pub(super) fn emit_setup_binding_anchors(
     ts: &mut String,
     summary: &Croquis,
     script_content: Option<&str>,
+    usage: &IdentifierUsage,
     template_referenced_names: Option<&FxHashSet<String>>,
     comment: &str,
 ) {
@@ -73,8 +72,12 @@ pub(super) fn emit_setup_binding_anchors(
         return;
     }
 
-    let binding_names =
-        collect_setup_binding_anchor_names(summary, script_content, template_referenced_names);
+    let binding_names = collect_setup_binding_anchor_names(
+        summary,
+        script_content,
+        usage,
+        template_referenced_names,
+    );
     let mut first = true;
     for name in binding_names {
         if is_reserved_anchor_name(name) {

@@ -198,15 +198,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         .unwrap_or_default();
     // Collect sorted module spans once for linear script-body emission.
     let mut module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
-        let mut module_spans = Vec::new();
-        for imp in &summary.import_statements {
-            module_spans.push((imp.start, imp.end));
-        }
-        module_spans.extend(module_plan.spans.iter().copied());
-        module_spans.extend(namespace_hoist.spans().iter().copied());
-        for re in &summary.re_exports {
-            module_spans.push((re.start, re.end));
-        }
+        let module_spans = module_plan.module_spans(summary, &namespace_hoist);
         script_blocks.module_spans(summary, script_content, module_spans)
     });
     let mut ambient =
@@ -749,6 +741,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     &mut ts,
                     summary,
                     script_content,
+                    &module_plan.identifier_usage,
                     template_referenced_names,
                     reference_setup_bindings_comment,
                 )
@@ -765,6 +758,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 &mut ts,
                 summary,
                 script_content,
+                &module_plan.identifier_usage,
                 template_referenced_names,
                 reference_setup_bindings_comment,
             )

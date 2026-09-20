@@ -2,7 +2,7 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    IdentifierReference, ImportDeclarationSpecifier, ImportOrExportKind, Statement,
+    IdentifierReference, ImportDeclarationSpecifier, ImportOrExportKind, Program, Statement,
     TSEnumDeclaration, TSTypeName, TSTypeQueryExprName, TSTypeReference,
 };
 use oxc_ast_visit::{Visit, walk};
@@ -115,16 +115,10 @@ fn collect_type_only_imported_names(
 pub(super) fn collect_setup_binding_anchor_names<'a>(
     summary: &'a Croquis,
     script_content: Option<&str>,
+    usage: &IdentifierUsage,
     template_referenced_names: Option<&FxHashSet<String>>,
 ) -> Vec<&'a str> {
-    // Both import usage and erased const-enum bindings come from one script
-    // parse. Re-parsing every setup script for each anchor fact dominated this
-    // pass in large projects.
-    let usage = script_content
-        .map(collect_identifier_usage)
-        .unwrap_or_default();
-    let type_only_imported_names =
-        collect_type_only_imported_names(summary, script_content, &usage);
+    let type_only_imported_names = collect_type_only_imported_names(summary, script_content, usage);
     let mut template_value_names: FxHashSet<&str> = summary
         .used_components
         .iter()
@@ -140,11 +134,7 @@ pub(super) fn collect_setup_binding_anchor_names<'a>(
             .bindings
             .keys()
             .map(|name| name.as_str())
-            .filter(|name| {
-                names
-                    .iter()
-                    .any(|template_name| template_name.as_str() == *name)
-            })
+            .filter(|name| names.contains(*name))
             .collect()
     } else {
         summary
@@ -155,9 +145,8 @@ pub(super) fn collect_setup_binding_anchor_names<'a>(
             .collect()
     };
     binding_names.retain(|name| {
-        !contains_compact_name(&usage.const_enums, name)
-            && (!contains_compact_name(&type_only_imported_names, name)
-                || template_value_names.contains(name))
+        !usage.const_enums.contains(*name)
+            && (!type_only_imported_names.contains(*name) || template_value_names.contains(name))
     });
     binding_names.sort_unstable();
     binding_names
@@ -180,12 +169,8 @@ fn collect_value_import_binding_names(summary: &Croquis, script: &str) -> FxHash
         .collect()
 }
 
-fn contains_compact_name(names: &FxHashSet<CompactString>, name: &str) -> bool {
-    names.iter().any(|candidate| candidate.as_str() == name)
-}
-
 #[derive(Default)]
-struct IdentifierUsage {
+pub(super) struct IdentifierUsage {
     type_refs: FxHashSet<CompactString>,
     value_refs: FxHashSet<CompactString>,
     const_enums: FxHashSet<CompactString>,
@@ -221,11 +206,9 @@ impl<'a> Visit<'a> for IdentifierUsage {
     }
 }
 
-fn collect_identifier_usage(script: &str) -> IdentifierUsage {
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+pub(super) fn collect_identifier_usage(program: &Program<'_>) -> IdentifierUsage {
     let mut usage = IdentifierUsage::default();
-    usage.visit_program(&parsed.program);
+    usage.visit_program(program);
     usage
 }
 

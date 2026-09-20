@@ -4,6 +4,7 @@ mod namespace_hoist;
 mod navigation;
 mod plain_exports;
 
+use super::imports::{IdentifierUsage, collect_identifier_usage};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Declaration, Statement};
 use oxc_parser::Parser;
@@ -21,6 +22,29 @@ pub(super) use plain_exports::{
 pub(super) struct ScriptModulePlan {
     pub(super) spans: Vec<(u32, u32)>,
     pub(super) exported_types: FxHashSet<CompactString>,
+    pub(super) identifier_usage: IdentifierUsage,
+}
+
+impl ScriptModulePlan {
+    pub(super) fn module_spans(
+        &self,
+        summary: &vize_croquis::Croquis,
+        namespace_hoist: &NamespaceHoistPlan,
+    ) -> Vec<(u32, u32)> {
+        summary
+            .import_statements
+            .iter()
+            .map(|import| (import.start, import.end))
+            .chain(self.spans.iter().copied())
+            .chain(namespace_hoist.spans().iter().copied())
+            .chain(
+                summary
+                    .re_exports
+                    .iter()
+                    .map(|export| (export.start, export.end)),
+            )
+            .collect()
+    }
 }
 
 pub(super) fn collect_script_module_plan(script: &str) -> ScriptModulePlan {
@@ -84,6 +108,7 @@ pub(super) fn collect_script_module_plan(script: &str) -> ScriptModulePlan {
     ScriptModulePlan {
         spans: include_leading_ts_directive_comments(script, spans),
         exported_types,
+        identifier_usage: collect_identifier_usage(&parsed.program),
     }
 }
 

@@ -18,8 +18,16 @@ pub(in crate::commands::check::runner) fn collect_workspace_global_component_dec
     project_root: &Path,
     files: &[PathBuf],
 ) -> Vec<PathBuf> {
+    let mut declarations = collect_workspace_global_component_declarations(project_root);
+    // Most projects have no ambient component declarations. Discover candidates
+    // first so those projects do not parse and analyze every SFC a second time.
+    if declarations.is_empty() {
+        return declarations;
+    }
     let component_names = collect_explicit_template_component_names(files);
-    collect_workspace_global_component_declarations_inner(project_root, Some(&component_names))
+    declarations
+        .retain(|path| declaration_may_augment_global_components(path, Some(&component_names)));
+    declarations
 }
 
 fn collect_workspace_global_component_declarations_inner(
