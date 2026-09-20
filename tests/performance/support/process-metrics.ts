@@ -2,6 +2,8 @@ import { spawnSync } from "node:child_process";
 
 import { repoRoot } from "../../_helpers/realworld-patch.ts";
 
+export type ProcessRss = { pid: number; parentPid: number; rssKiB: number; executable: string };
+
 export function processRssKiB(processId: number): number | null {
   if (process.platform === "win32") return null;
   const result = spawnSync("ps", ["-o", "rss=", "-p", String(processId)], { encoding: "utf8" });
@@ -16,16 +18,22 @@ export function processRssKiB(processId: number): number | null {
  * remains within its own RSS budget. Unavailable on Windows, where CI relies on
  * the Linux vue-parity lane for process-tree enforcement.
  */
-export function processTreeRss(rootPid: number): { totalKiB: number; processes: number } | null {
+export function processTreeRss(rootPid: number): {
+  totalKiB: number;
+  processes: number;
+  members: ProcessRss[];
+} | null {
   if (process.platform === "win32") return null;
-  const result = spawnSync("ps", ["-Ao", "pid=,ppid=,rss="], { encoding: "utf8" });
+  const result = spawnSync("ps", ["-Ao", "pid=,ppid=,rss=,comm="], { encoding: "utf8" });
   if (result.status !== 0) return null;
   const children = new Map<number, number[]>();
-  const rssByPid = new Map<number, number>();
+  const processByPid = new Map<number, ProcessRss>();
   for (const line of result.stdout.trim().split("\n")) {
-    const [pid, ppid, rss] = line.trim().split(/\s+/).map(Number);
+    const match = /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(.*)$/.exec(line);
+    if (!match) continue;
+    const [pid, ppid, rss] = match.slice(1, 4).map(Number);
     if (!Number.isSafeInteger(pid) || !Number.isSafeInteger(ppid)) continue;
-    rssByPid.set(pid, Number.isFinite(rss) ? rss : 0);
+    processByPid.set(pid, { pid, parentPid: ppid, rssKiB: rss, executable: match[4] });
     const siblings = children.get(ppid);
     if (siblings == null) {
       children.set(ppid, [pid]);
@@ -33,19 +41,22 @@ export function processTreeRss(rootPid: number): { totalKiB: number; processes: 
       siblings.push(pid);
     }
   }
-  if (!rssByPid.has(rootPid)) return null;
+  if (!processByPid.has(rootPid)) return null;
   let totalKiB = 0;
   let processes = 0;
+  const members: ProcessRss[] = [];
   const stack = [rootPid];
   while (stack.length > 0) {
     const pid = stack.pop()!;
-    if (rssByPid.has(pid)) {
-      totalKiB += rssByPid.get(pid)!;
+    const member = processByPid.get(pid);
+    if (member) {
+      totalKiB += member.rssKiB;
       processes += 1;
+      members.push(member);
     }
     stack.push(...(children.get(pid) ?? []));
   }
-  return { totalKiB, processes };
+  return { totalKiB, processes, members };
 }
 
 export function gitHead(): string {

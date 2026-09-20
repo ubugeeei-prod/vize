@@ -2150,8 +2150,8 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/vue_document
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/vue_document_tests.rs	7	s0	S0	stage	vize_carton	compat	4
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/vue_document_tsx_tests.rs	3	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_document.rs	5	s0	S0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/vue_document.rs	293	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_document/generate.rs	3	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_document/materialized_documents.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_document/types.rs	6	s0	S0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_server.rs	29	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_server/diagnostics.rs	5	s0	S0	stage	vize_carton	compat	1
@@ -2567,7 +2567,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_slots/strict_children.rs	3	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_slots/strict_children.rs	3	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/component_slots/strict_children.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/context.rs	4	s0	S0	stage	vize_carton	compat	4
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/context.rs	4	s0	S0	stage	vize_carton	compat	6
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/context.rs	4	old_ast	old AST/parser	old	vize_relief	legacy	4
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/context.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	4
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/emit.rs	4	s0	S0	stage	vize_carton	compat	4

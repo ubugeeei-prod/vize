@@ -19,6 +19,9 @@ pub(in crate::corsa_bridge) struct SessionCache {
 }
 
 pub(super) struct ProjectMember {
+    /// Authored identities survive generated-context invalidation so their
+    /// current open buffers can be rebuilt before the old revision is pruned.
+    pub(super) source_paths: Vec<PathBuf>,
     pub(super) expected_files: vize_carton::FxHashSet<PathBuf>,
     pub(super) package_links: vize_carton::FxHashMap<PathBuf, PathBuf>,
     pub(super) query_paths: Vec<PathBuf>,
@@ -33,6 +36,19 @@ struct CachedContext {
 }
 
 impl SessionCache {
+    pub(super) fn project_source_paths(&self, virtual_root: &Path) -> Vec<PathBuf> {
+        let mut paths = self
+            .project_members
+            .get(virtual_root)
+            .into_iter()
+            .flat_map(|members| members.values())
+            .flat_map(|member| member.source_paths.iter().cloned())
+            .collect::<Vec<_>>();
+        paths.sort();
+        paths.dedup();
+        paths
+    }
+
     pub(in crate::corsa_bridge) fn clear(&mut self) {
         self.slots.clear();
         self.project_snapshots.clear();

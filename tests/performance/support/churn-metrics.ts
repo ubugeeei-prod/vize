@@ -13,7 +13,7 @@ import {
   incrementalMetricsDir,
   resolveBudgetScale,
 } from "./incremental-metrics.ts";
-import { gitHead, processRssKiB, processTreeRss } from "./process-metrics.ts";
+import { gitHead, processRssKiB, processTreeRss, type ProcessRss } from "./process-metrics.ts";
 
 /** `id` is the metrics directory under `target/vize-tests/metrics/`; `title` heads the summary. */
 export type ChurnSuite = { id: string; title: string };
@@ -79,7 +79,13 @@ export function loadLspChurnBudget(suiteId: string): {
   return { fixtureId: owners[0].id, budget };
 }
 
-type RssSample = { label: string; serverKiB: number; treeKiB: number; treeProcesses: number };
+type RssSample = {
+  label: string;
+  serverKiB: number;
+  treeKiB: number;
+  treeProcesses: number;
+  members: ProcessRss[];
+};
 
 type ChurnContext = {
   fixture: string;
@@ -147,6 +153,7 @@ export class ChurnMetrics {
       serverKiB: processRssKiB(this.processId) ?? 0,
       treeKiB: tree?.totalKiB ?? 0,
       treeProcesses: tree?.processes ?? 0,
+      members: tree?.members ?? [],
     });
   }
 

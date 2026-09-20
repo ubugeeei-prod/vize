@@ -81,6 +81,14 @@ fn initialize_lsp_params(
             name: workspace_name.to_owned(),
         }]),
         capabilities,
+        // Canon already resolves the authored workspace's installed types.
+        // Its private mirror must not launch npm to acquire unrelated ambient
+        // packages and make diagnostics depend on background downloads.
+        initialization_options: Some(serde_json::json!({
+            "userPreferences": {
+                "tsserver": { "automaticTypeAcquisition": { "enabled": false } }
+            }
+        })),
         work_done_progress_params: WorkDoneProgressParams::default(),
         ..Default::default()
     })

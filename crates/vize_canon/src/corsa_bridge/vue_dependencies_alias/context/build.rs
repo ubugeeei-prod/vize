@@ -90,6 +90,23 @@ pub(super) fn build(
     project
         .register_path_with_content(source_path, content)
         .map_err(bridge_error)?;
+    // An overlay edit invalidates generated contexts, not live membership.
+    // Rebuild previously registered open sources in the same project revision
+    // before stale contexts are pruned. Otherwise querying a dependency would
+    // delete its still-open importer and recreate it on the next query.
+    let live_sources = environment
+        .editor_session
+        .cache()
+        .project_source_paths(project.virtual_root());
+    for path in live_sources {
+        if path != source_path
+            && let Some(source) = overlays.get(&path)
+        {
+            project
+                .register_path_with_content(&path, source)
+                .map_err(bridge_error)?;
+        }
+    }
     for (path, source) in requested_sources {
         let path = vize_carton::path::canonicalize_non_verbatim(path);
         if path == source_path {

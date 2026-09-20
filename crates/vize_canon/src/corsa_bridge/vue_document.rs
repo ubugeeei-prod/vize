@@ -11,6 +11,7 @@ use crate::batch::{ImportRewriter, VueDocumentVirtualTsOptions};
 use crate::file_uri::path_to_file_uri;
 use crate::virtual_ts::VirtualTsOptions;
 
+mod materialized_documents;
 #[path = "vue_document/types.rs"]
 mod model;
 pub(crate) use model::CorsaVueVirtualProject;
@@ -97,8 +98,8 @@ impl CorsaBridge {
 
     /// Generate and sync a Vue document without copying unchanged overlay text.
     ///
-    /// Only dependency entries reachable from the host's imports are read, so
-    /// callers with shared buffer snapshots can lend their text for this call.
+    /// Reachable dependencies and previously registered live sources share one
+    /// revision. Callers with shared buffer snapshots can lend their text.
     pub async fn open_vue_virtual_document_with_borrowed_overlays_and_options(
         &self,
         source_path: &Path,
@@ -286,20 +287,13 @@ fn build_vue_virtual_workspace_project(
     );
     let generated = host.generated;
     let materialized_sources = alias_context.materialized_sources();
-    if !requested_sources.is_empty() {
-        let mut opened = documents
-            .iter()
-            .map(|(uri, _)| uri.clone())
-            .collect::<vize_carton::FxHashSet<_>>();
-        for source in &materialized_sources {
-            if matches!(source.mapping_kind, CorsaMaterializedMappingKind::Synthetic) {
-                continue;
-            }
-            let uri = path_to_file_uri(&source.materialized_path);
-            if opened.insert(uri.clone()) {
-                documents.push((uri, source.code.clone()));
-            }
-        }
+    if !requested_sources.is_empty() || !overlays.is_empty() {
+        materialized_documents::append_materialized_documents(
+            &mut documents,
+            &materialized_sources,
+            &overlays,
+            !requested_sources.is_empty(),
+        );
     }
     let session_project_root = alias_context.mirror_project_root_for_source(source_path);
     let materialized_changes = alias_context.materialized_changes.clone();

@@ -4,6 +4,91 @@ use super::{
 };
 
 #[test]
+fn edited_overlays_keep_live_project_roots_and_replace_their_exact_code() {
+    use crate::corsa_bridge::vue_document::build_vue_virtual_project_with_overlays;
+
+    let root = tempfile::tempdir().unwrap();
+    std::fs::write(root.path().join("tsconfig.json"), TSCONFIG).unwrap();
+    let paths = ["Alpha.vue", "Bravo.vue", "Charlie.vue"].map(|name| root.path().join(name));
+    let clean = "<script setup lang=\"ts\">const value = 'initial';</script><template>{{ value }}</template>";
+    for path in &paths {
+        std::fs::write(path, clean).unwrap();
+    }
+    let overlays = paths
+        .iter()
+        .map(|path| (path.clone(), clean))
+        .collect::<Vec<_>>();
+    let mut queries = Vec::new();
+    for path in &paths {
+        let project =
+            build_vue_virtual_project_with_overlays(path, clean, Default::default(), &overlays)
+                .unwrap();
+        queries.push(request_path(&project));
+    }
+
+    // Query only Bravo while another live buffer changes repeatedly. All
+    // three roots must survive each epoch, even after stale cache entries go.
+    for revision in 0..4 {
+        let changed = clean.replace("initial", &format!("edited-{revision}"));
+        let overlays = vec![
+            (paths[0].clone(), changed.as_str()),
+            (paths[1].clone(), clean),
+            (paths[2].clone(), clean),
+        ];
+        let project = build_vue_virtual_project_with_overlays(
+            &paths[1],
+            clean,
+            Default::default(),
+            &overlays,
+        )
+        .unwrap();
+        assert!(
+            project.materialized_changes.created.is_empty(),
+            "{:?}",
+            project.materialized_changes
+        );
+        assert!(
+            project.materialized_changes.deleted.is_empty(),
+            "{:?}",
+            project.materialized_changes
+        );
+        for query in &queries {
+            assert!(
+                query.is_file(),
+                "live query was removed: {}",
+                query.display()
+            );
+        }
+        let mirrored = std::fs::read_to_string(&queries[0]).unwrap();
+        assert!(mirrored.contains(&format!("edited-{revision}")));
+        let uri = crate::file_uri::path_to_file_uri(&queries[0]);
+        let overlay = project
+            .documents
+            .iter()
+            .find(|(path, _)| path == &uri)
+            .unwrap();
+        assert_eq!(
+            overlay.1, mirrored,
+            "native overlays and disk must share one revision"
+        );
+    }
+
+    // Closing an unrelated root must still remove it; retaining live roots
+    // must not preserve obsolete unsaved code after the buffer disappears.
+    let project = build_vue_virtual_project_with_overlays(
+        &paths[1],
+        clean,
+        Default::default(),
+        &[(paths[1].clone(), clean)],
+    )
+    .unwrap();
+    assert!(!queries[0].exists());
+    assert!(!queries[2].exists());
+    assert!(queries[1].exists());
+    assert!(project.materialized_changes.deleted.contains(&queries[0]));
+}
+
+#[test]
 fn same_project_hosts_keep_one_union_snapshot_across_sequential_opens() {
     let root = tempfile::tempdir().unwrap();
     let app = root.path().join("workspace");

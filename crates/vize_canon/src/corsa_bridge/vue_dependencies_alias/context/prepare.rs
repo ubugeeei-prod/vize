@@ -94,6 +94,7 @@ impl AliasContext {
                 mirror.virtual_root().to_path_buf(),
                 source_path,
                 ProjectMember {
+                    source_paths: mirror.registered_original_paths_sorted(),
                     expected_files,
                     package_links,
                     query_paths: member_query_paths,
