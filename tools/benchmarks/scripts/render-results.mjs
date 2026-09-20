@@ -19,6 +19,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
+import { buildFairnessNotes } from "./benchmark-notes.mjs";
 import { createSurface, ENGINE_CLASSES_BY_SURFACE } from "./compare-tools-report.mjs";
 import { renderDocument, renderMarkdown } from "./compare-tools.mjs";
 
@@ -42,6 +43,10 @@ function parseArgs(argv) {
 export function rerenderData(data) {
   return {
     ...data,
+    // The fairness notes explain what the published ratios mean, so they are a
+    // rendering decision too: leaving the recorded copy in place would let the
+    // artifact describe a comparison the re-derived surfaces no longer make.
+    fairness: buildFairnessNotes(data.input.fileCount),
     surfaces: data.surfaces.map((surface) => {
       const engineClasses = ENGINE_CLASSES_BY_SURFACE[surface.id] ?? surface.engineClasses;
       // Drop the fields createSurface derives so a stale value from an older

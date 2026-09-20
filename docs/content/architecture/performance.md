@@ -267,10 +267,10 @@ Versions: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0
 
 | Surface              | Files | Existing tool | Existing median | Vize 1T | Vize max | Speedup  |
 | -------------------- | ----- | ------------- | --------------- | ------- | -------- | -------- |
-| Type check           | 500   | verter-tsc    | 2.08s           | 2.03s   | 1.37s    | **1.5x** |
-| Large SFC type check | 1     | verter-tsc    | 1.58s           | 186.4ms | 190.1ms  | **8.3x** |
+| Type check           | 500   | vue-tsc       | 6.75s           | 2.03s   | 1.37s    | **4.9x** |
+| Large SFC type check | 1     | vue-tsc       | 1.34s           | 186.4ms | 190.1ms  | **7.0x** |
 
-Type-check ratios compare Vize with verter-tsc using the same pinned native tsgo backend. Each timed invocation passes diagnostic-work validation. Diagnostic coverage differs between tools; these ratios do not prove accuracy parity or a performance improvement over an earlier Vize version. Rejected comparators have no published timing or rank.
+Type-check ratios compare Vize with vue-tsc, the type checker Vue projects run today. vue-tsc drives the JavaScript TypeScript compiler while Vize drives native tsgo, so the ratio covers the whole toolchain rather than the Vue layer alone; the per-engine-class tables in the full snapshot rank same-engine tools against each other to isolate that layer. Each timed invocation passes diagnostic-work validation. Diagnostic coverage differs between tools; these ratios do not prove accuracy parity or a performance improvement over an earlier Vize version. Rejected comparators have no published timing or rank.
 
 [Full methodology and evidence](./performance-blacksmith)
 

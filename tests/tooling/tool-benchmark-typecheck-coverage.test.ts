@@ -75,10 +75,10 @@ test("generated type-check benchmark surfaces require every engine-class row", (
   }
 });
 
-test("complete type-check benchmark surfaces still publish the in-class ratio", () => {
+test("complete type-check benchmark surfaces publish the vue-tsc ratio", () => {
   const surface = createSurface(checkSurface());
 
-  assert.equal(surface.speedupStatus, "in-class");
-  assert.equal(surface.speedupBaselineId, "verter-tsc");
-  assert.equal(surface.primarySpeedup, 2);
+  assert.equal(surface.speedupStatus, "cross-engine");
+  assert.equal(surface.speedupBaselineId, "vue-tsc");
+  assert.equal(surface.primarySpeedup, 16);
 });

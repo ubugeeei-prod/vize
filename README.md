@@ -144,11 +144,11 @@ Versions: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0
 | SFC compile | 3,000 | @vue/compiler-sfc  | 3.57s    | 65.0ms  | **54.8×**  |
 | Lint        | 3,000 | eslint-plugin-vue  | 20.75s   | 114.0ms | **182.0×** |
 | Format      | 3,000 | Prettier           | 29.72s   | 351.4ms | **84.6×**  |
-| Type check  | 500   | verter-tsc         | 2.08s    | 1.37s   | **1.5×**   |
+| Type check  | 500   | vue-tsc            | 6.75s    | 1.37s   | **4.9×**   |
 | Vite build  | 1,000 | @vitejs/plugin-vue | 1.66s    | 889.2ms | **1.9×**   |
 | Nuxt build  | 250   | Nuxt compiler      | 3.07s    | 3.21s   | **0.95×**  |
 
-Type-check ratios compare Vize with verter-tsc using the same pinned native tsgo backend. Each timed invocation passes diagnostic-work validation. Diagnostic coverage differs between tools; these ratios do not prove accuracy parity or a performance improvement over an earlier Vize version. Rejected comparators have no published timing or rank.
+Type-check ratios compare Vize with vue-tsc, the type checker Vue projects run today. vue-tsc drives the JavaScript TypeScript compiler while Vize drives native tsgo, so the ratio covers the whole toolchain rather than the Vue layer alone; the per-engine-class tables in the full snapshot rank same-engine tools against each other to isolate that layer. Each timed invocation passes diagnostic-work validation. Diagnostic coverage differs between tools; these ratios do not prove accuracy parity or a performance improvement over an earlier Vize version. Rejected comparators have no published timing or rank.
 
 Nuxt measures the entire build pipeline, not isolated SFC compilation. Most build work is shared by both variants. Its ratio is 0.95x; a ratio below 1 means Vize was slower in this run.
 

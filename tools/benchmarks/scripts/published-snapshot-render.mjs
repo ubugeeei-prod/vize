@@ -62,7 +62,7 @@ export function readmeSection(data) {
     compile: "@vue/compiler-sfc",
     lint: "eslint-plugin-vue",
     fmt: "Prettier",
-    check: "verter-tsc",
+    check: "vue-tsc",
     vite: "@vitejs/plugin-vue",
     nuxt: "Nuxt compiler",
   };

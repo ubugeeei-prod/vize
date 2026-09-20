@@ -30,7 +30,7 @@ export const SNAPSHOT_LOCALES = {
     diagnostics: "Diagnostic Work Validation",
     rejected: "Rejected measurements",
     full: "Full methodology and evidence",
-    note: "Type-check ratios compare Vize with verter-tsc using the same pinned native tsgo backend. Each timed invocation passes diagnostic-work validation. Diagnostic coverage differs between tools; these ratios do not prove accuracy parity or a performance improvement over an earlier Vize version. Rejected comparators have no published timing or rank.",
+    note: "Type-check ratios compare Vize with vue-tsc, the type checker Vue projects run today. vue-tsc drives the JavaScript TypeScript compiler while Vize drives native tsgo, so the ratio covers the whole toolchain rather than the Vue layer alone; the per-engine-class tables in the full snapshot rank same-engine tools against each other to isolate that layer. Each timed invocation passes diagnostic-work validation. Diagnostic coverage differs between tools; these ratios do not prove accuracy parity or a performance improvement over an earlier Vize version. Rejected comparators have no published timing or rank.",
     history:
       "The local linter, formatter and implementation profiles below are historical measurements, not results from this snapshot. Their recorded workstation is a MacBook Pro M2 Max (12 cores, 96 GB RAM), macOS 15.3.2, Node v24.14.0, Vite v8.0.0 and Vue v3.6.0-beta.10.",
     source:
@@ -69,7 +69,7 @@ export const SNAPSHOT_LOCALES = {
     diagnostics: "診断処理の検証",
     rejected: "採用しなかった計測",
     full: "詳しい計測方法と検証結果",
-    note: "型検査の速度比は、同じバージョンに固定したネイティブ tsgo を使う Vize と verter-tsc の比較です。各計測で診断処理の検証を通過していますが、ツール間で診断の対応範囲は異なります。精度の同等性や、過去の Vize からの性能改善を示す倍率ではありません。検証を通過しなかった比較ツールには、時間や順位を掲載しません。",
+    note: "型検査の速度比は、Vue プロジェクトが実際に使っている型チェッカー vue-tsc との比較です。vue-tsc は JavaScript 版 TypeScript コンパイラを、Vize はネイティブ tsgo を動かすため、この倍率にはツールチェーン全体の差が含まれ、Vue レイヤ単体の差ではありません。Vue レイヤだけを見たい場合は、詳細スナップショットのエンジンクラス別の表で同一エンジン同士の順位を比較してください。各計測で診断処理の検証を通過していますが、ツール間で診断の対応範囲は異なります。精度の同等性や、過去の Vize からの性能改善を示す倍率ではありません。検証を通過しなかった比較ツールには、時間や順位を掲載しません。",
     history:
       "以下のローカル環境での Linter・Formatter・実装プロファイルは過去の計測で、このスナップショットの結果ではありません。記録された環境は MacBook Pro M2 Max (12 コア、96 GB RAM)、macOS 15.3.2、Node v24.14.0、Vite v8.0.0、Vue v3.6.0-beta.10 です。",
     source:
@@ -99,7 +99,7 @@ export const SNAPSHOT_LOCALES = {
     diagnostics: "诊断工作验证",
     rejected: "未采用的测量",
     full: "完整方法与验证结果",
-    note: "类型检查速度比比较使用同一固定版本原生 tsgo 的 Vize 和 verter-tsc。每次计时都通过诊断工作验证，但不同工具的诊断覆盖范围并不相同。这些比值不代表准确性相同，也不代表相对于旧版 Vize 的性能提升。未通过验证的比较工具不发布耗时或排名。",
+    note: "类型检查速度比比较 Vize 与 vue-tsc，即 Vue 项目当前实际使用的类型检查器。vue-tsc 运行 JavaScript 版 TypeScript 编译器，而 Vize 运行原生 tsgo，因此该比值涵盖整条工具链，而非仅 Vue 层；完整快照中按引擎类别分组的表格会在同一引擎内部排名，用于单独衡量 Vue 层。每次计时都通过诊断工作验证，但不同工具的诊断覆盖范围并不相同。这些比值不代表准确性相同，也不代表相对于旧版 Vize 的性能提升。未通过验证的比较工具不发布耗时或排名。",
     history:
       "下方本地 Linter、Formatter 和实现分析属于历史测量，并非此快照的结果。记录的环境为 MacBook Pro M2 Max（12 核、96 GB RAM）、macOS 15.3.2、Node v24.14.0、Vite v8.0.0 和 Vue v3.6.0-beta.10。",
     source: "README 与所有语言页面均由同一个已提交的产物生成。文件数量按行标明。",
@@ -136,7 +136,7 @@ export const SNAPSHOT_LOCALES = {
     diagnostics: "Validation du travail de diagnostic",
     rejected: "Mesures rejetées",
     full: "Méthodologie et résultats complets",
-    note: "Les rapports de vérification des types comparent Vize et verter-tsc avec le même moteur tsgo natif épinglé. Chaque exécution chronométrée valide le travail de diagnostic, mais la couverture varie selon les outils. Ces rapports ne prouvent ni une précision équivalente ni un gain par rapport à une ancienne version de Vize. Aucun temps ni classement n'est publié pour les comparateurs rejetés.",
+    note: "Les rapports de vérification des types comparent Vize et vue-tsc, le vérificateur qu'utilisent aujourd'hui les projets Vue. vue-tsc s'appuie sur le compilateur TypeScript en JavaScript tandis que Vize s'appuie sur tsgo natif : le rapport porte donc sur toute la chaîne d'outils et non sur la seule couche Vue ; les tableaux par classe de moteur de l'instantané complet classent les outils d'un même moteur entre eux pour isoler cette couche. Chaque exécution chronométrée valide le travail de diagnostic, mais la couverture varie selon les outils. Ces rapports ne prouvent ni une précision équivalente ni un gain par rapport à une ancienne version de Vize. Aucun temps ni classement n'est publié pour les comparateurs rejetés.",
     history:
       "Les mesures locales du linter, du formateur et les profils ci-dessous sont historiques et distincts de cet instantané. Machine enregistrée : MacBook Pro M2 Max (12 cœurs, 96 Go RAM), macOS 15.3.2, Node v24.14.0, Vite v8.0.0 et Vue v3.6.0-beta.10.",
     source:
@@ -175,7 +175,7 @@ export const SNAPSHOT_LOCALES = {
     diagnostics: "Validação do trabalho de diagnóstico",
     rejected: "Medições rejeitadas",
     full: "Metodologia e resultados completos",
-    note: "As razões da verificação de tipos comparam Vize e verter-tsc usando a mesma versão fixa do tsgo nativo. Cada execução cronometrada valida o trabalho de diagnóstico, mas a cobertura varia entre ferramentas. Essas razões não demonstram precisão equivalente nem uma melhoria sobre uma versão anterior do Vize. Comparadores rejeitados não recebem tempo publicado nem classificação.",
+    note: "As razões da verificação de tipos comparam Vize e vue-tsc, o verificador que os projetos Vue usam hoje. O vue-tsc executa o compilador TypeScript em JavaScript enquanto o Vize executa o tsgo nativo, portanto a razão cobre toda a cadeia de ferramentas e não apenas a camada Vue; as tabelas por classe de motor do instantâneo completo classificam ferramentas do mesmo motor entre si para isolar essa camada. Cada execução cronometrada valida o trabalho de diagnóstico, mas a cobertura varia entre ferramentas. Essas razões não demonstram precisão equivalente nem uma melhoria sobre uma versão anterior do Vize. Comparadores rejeitados não recebem tempo publicado nem classificação.",
     history:
       "As medições locais de linter, formatador e os perfis abaixo são históricos e não pertencem a este snapshot. Ambiente registrado: MacBook Pro M2 Max (12 núcleos, 96 GB RAM), macOS 15.3.2, Node v24.14.0, Vite v8.0.0 e Vue v3.6.0-beta.10.",
     source:
