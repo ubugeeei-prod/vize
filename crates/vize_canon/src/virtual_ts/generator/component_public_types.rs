@@ -96,6 +96,69 @@ pub(super) fn infers_slots(
         && crate::virtual_ts::scope::has_inferred_slots(summary, root)
 }
 
+/// The component's own slot map in the setup/template lexical scope. Referring
+/// to the captured template value preserves SFC generics without passing back
+/// through the module-level public component alias.
+pub(super) struct TemplateSlotsType {
+    pub(super) expression: String,
+    pub(super) authored_range: Option<std::ops::Range<usize>>,
+}
+
+impl TemplateSlotsType {
+    /// Emit the authored type at each context use. An extra generated alias
+    /// would hide the useful slot signatures behind its private name in hover.
+    pub(super) fn emit(
+        &self,
+        ts: &mut String,
+        mappings: &mut Vec<crate::virtual_ts::VizeMapping>,
+        source_offset: &dyn Fn(usize) -> usize,
+    ) {
+        let start = ts.len();
+        ts.push_str(&self.expression);
+        if let Some(range) = &self.authored_range {
+            mappings.push(crate::virtual_ts::VizeMapping {
+                gen_range: start..ts.len(),
+                src_range: source_offset(range.start)..source_offset(range.end),
+                sub_spans: Vec::new(),
+            });
+        }
+    }
+}
+
+pub(super) fn template_slots_type(
+    summary: &Croquis,
+    inferred_slots: bool,
+    script: Option<&str>,
+) -> TemplateSlotsType {
+    if let Some(call) = summary.macros.define_slots()
+        && let Some(type_args) = call.type_args.as_ref()
+    {
+        let inner = inner_type_of(type_args);
+        let authored_range = script
+            .and_then(|script| script.get(call.start as usize..call.end as usize))
+            .and_then(|source| source.find(type_args.as_str()))
+            .and_then(|start| type_args.find(inner).map(|offset| start + offset))
+            .map(|offset| {
+                let start = call.start as usize + offset;
+                start..start + inner.len()
+            });
+        TemplateSlotsType {
+            expression: inner.into(),
+            authored_range,
+        }
+    } else if inferred_slots {
+        TemplateSlotsType {
+            expression: "typeof __vize_template".into(),
+            authored_range: None,
+        }
+    } else {
+        TemplateSlotsType {
+            expression: "{}".into(),
+            authored_range: None,
+        }
+    }
+}
+
 pub(super) fn push_template_return(
     fields: &mut Vec<String>,
     inferred_slots: bool,

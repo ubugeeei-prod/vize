@@ -1,4 +1,17 @@
+<!-- @inferTemplateDollarSlots true -->
 <script setup lang="ts">
+import { useSlots } from "vue";
+
+defineSlots<{
+  /** **Header** shown above the invoice.
+   * @param props Customer-visible heading.
+   * @example header({ title: 'Summary' })
+   */
+  header(props: { title: string }): any;
+}>();
+const ownSlots = useSlots();
+ownSlots.header({ title: "Summary" });
+
 declare const Invoice: (
   props: {},
   context: {
@@ -19,6 +32,8 @@ const names = {
 </script>
 
 <template>
+  <slot name="header" title="Summary" />
+  {{ $slots.header({ title: "Summary" }) }}
   <Invoice>
     <template #[names.current]="invoice">
       {{ invoice.total.toFixed(2) }}

@@ -186,6 +186,14 @@ async function assertSlotDocumentation() {
   for (const [expression, incomplete, label, description, declaration] of [
     ["names.current", "names.", "current", "**Primary** invoice slot", "current:"],
     ["invoice.total", "invoice.to", "total", "**Invoice** total", "total: number"],
+    [
+      "ownSlots.header",
+      "ownSlots.",
+      "header",
+      "**Header** shown above the invoice",
+      "header(props:",
+    ],
+    ["$slots.header", "$slots.he", "header", "**Header** shown above the invoice", "header(props:"],
   ]) {
     const source = document.getText();
     const start = source.lastIndexOf(expression);

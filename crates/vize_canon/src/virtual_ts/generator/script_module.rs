@@ -7,9 +7,9 @@ mod plain_exports;
 use super::imports::{IdentifierUsage, collect_identifier_usage};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Declaration, Statement};
-use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet, String as VizeString};
+use vize_croquis::script_parser::parse_program_for_analysis;
 
 pub(super) use namespace_hoist::NamespaceHoistPlan;
 pub(super) use navigation::mapped_binding_range;
@@ -51,9 +51,9 @@ pub(super) fn collect_script_module_plan(script: &str) -> ScriptModulePlan {
     let mut spans = Vec::new();
     let mut exported_types = FxHashSet::default();
     let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::ts().with_module(true)).parse();
+    let parsed = parse_program_for_analysis(&allocator, script, SourceType::ts().with_module(true));
     let parsed = if parsed.panicked {
-        Parser::new(&allocator, script, SourceType::tsx().with_module(true)).parse()
+        parse_program_for_analysis(&allocator, script, SourceType::tsx().with_module(true))
     } else {
         parsed
     };
@@ -117,9 +117,9 @@ pub(super) fn collect_named_value_export_starts(script: &str) -> Vec<u32> {
         return Vec::new();
     }
     let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::ts().with_module(true)).parse();
+    let parsed = parse_program_for_analysis(&allocator, script, SourceType::ts().with_module(true));
     let parsed = if parsed.panicked || !parsed.diagnostics.is_empty() {
-        Parser::new(&allocator, script, SourceType::tsx().with_module(true)).parse()
+        parse_program_for_analysis(&allocator, script, SourceType::tsx().with_module(true))
     } else {
         parsed
     };

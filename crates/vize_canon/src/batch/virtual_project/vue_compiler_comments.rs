@@ -14,6 +14,7 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
         "@strictCssModules",
         "@inferComponentDollarEl",
         "@inferTemplateDollarEl",
+        "@inferTemplateDollarSlots",
         "@jsxSlots",
     ]
     .iter()
@@ -61,6 +62,7 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
             "strictCssModules" => options.strict_css_modules = value,
             "inferComponentDollarEl" => options.infer_component_dollar_el = value,
             "inferTemplateDollarEl" => options.infer_template_dollar_el = value,
+            "inferTemplateDollarSlots" => options.infer_template_dollar_slots = value,
             "jsxSlots" => options.jsx_slots = value,
             _ => {}
         }

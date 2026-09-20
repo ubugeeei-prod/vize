@@ -10,6 +10,7 @@ pub(crate) struct VirtualTsCheckOptions {
     pub(crate) check_unknown_events: bool,
     pub(crate) infer_component_dollar_el: bool,
     pub(crate) infer_template_dollar_el: bool,
+    pub(crate) infer_template_dollar_slots: bool,
     pub(crate) jsx_slots: bool,
     #[cfg(feature = "native")]
     pub(crate) strict_css_modules: bool,
@@ -36,6 +37,7 @@ impl Default for VirtualTsCheckOptions {
             check_unknown_events: false,
             infer_component_dollar_el: false,
             infer_template_dollar_el: false,
+            infer_template_dollar_slots: false,
             jsx_slots: false,
             #[cfg(feature = "native")]
             strict_css_modules: false,

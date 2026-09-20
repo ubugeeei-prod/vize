@@ -30,6 +30,7 @@ pub(crate) fn generate_template_context(
     options: &VirtualTsOptions,
     dialect: VueVersion,
     legacy_vue2: bool,
+    has_own_slots: bool,
 ) -> String {
     let mut ctx = String::default();
 
@@ -55,7 +56,9 @@ pub(crate) fn generate_template_context(
 
     // Core Vue globals (always present on ComponentPublicInstance)
     ctx.push_str("    const $attrs = __ctx.$attrs;\n");
-    ctx.push_str("    const $slots = __ctx.$slots;\n");
+    if !has_own_slots {
+        ctx.push_str("    const $slots = __ctx.$slots;\n");
+    }
     ctx.push_str("    const $refs = __ctx.$refs;\n");
     ctx.push_str("    const $emit = __ctx.$emit;\n");
 

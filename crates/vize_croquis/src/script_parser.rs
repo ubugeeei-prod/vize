@@ -21,6 +21,7 @@ mod extract;
 mod globals;
 mod parse;
 mod process;
+mod recovery;
 mod result;
 mod typeof_refs;
 mod walk;
@@ -31,6 +32,7 @@ pub use parse::{
     parse_script_with_options, parse_script_with_options_and_jsx,
 };
 pub use process::{collect_options_descriptor, collect_options_object, process_statement};
+pub use recovery::parse_program_for_analysis;
 pub(crate) use result::{ReactiveGetterContext, ReactiveValueOrigin, RuntimeObjectLiteral};
 pub use result::{ScriptParseResult, ScriptParserOptions};
 

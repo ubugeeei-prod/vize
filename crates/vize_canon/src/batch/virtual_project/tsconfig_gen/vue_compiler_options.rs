@@ -79,6 +79,14 @@ impl VirtualProject {
             .as_ref()
             .and_then(|options| options.get("jsxSlots").and_then(Value::as_bool))
             .unwrap_or(false);
+        self.virtual_ts_check_options.infer_template_dollar_slots = options
+            .as_ref()
+            .and_then(|options| {
+                options
+                    .get("inferTemplateDollarSlots")
+                    .and_then(Value::as_bool)
+            })
+            .unwrap_or(false);
     }
 
     #[cfg(test)]

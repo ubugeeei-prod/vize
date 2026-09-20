@@ -16,7 +16,8 @@ fn component_public_base_degrades_when_vue_alias_omits_public_instance() {
         assert_guarded_public_base(name, text);
     }
 
-    let context = generate_template_context(&VirtualTsOptions::default(), VueVersion::V3, false);
+    let context =
+        generate_template_context(&VirtualTsOptions::default(), VueVersion::V3, false, false);
     let lines = context.lines().collect::<Vec<_>>();
     let alias_line = lines
         .iter()

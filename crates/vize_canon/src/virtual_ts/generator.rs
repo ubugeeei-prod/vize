@@ -3,7 +3,6 @@ mod auto_import_stubs;
 mod component_constructors;
 mod component_export;
 mod component_public_types;
-mod css_modules;
 mod emits;
 mod entry;
 mod fallthrough;
@@ -22,6 +21,7 @@ mod root_element;
 mod script_blocks;
 mod script_module;
 mod setup_helpers;
+mod setup_imports;
 mod setup_lines;
 mod setup_props;
 pub(super) mod setup_scope;
@@ -35,7 +35,6 @@ use self::auto_import_stubs::emit_auto_import_stubs;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
 use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
 use self::component_public_types::{emit_exposed_type, emit_slots_type, push_template_return};
-use self::css_modules::CssModulePlan;
 use self::emits::{emit_emit_props_helper, emit_emits_type};
 pub use self::entry::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
@@ -54,6 +53,7 @@ use self::options_api_props_identifiers::PropsConstAssertions;
 use self::options_api_support::find_options_api_props;
 use self::script_blocks::ScriptBlockScopes;
 use self::setup_helpers::{SetupHelperComponentContext, emit_setup_helpers};
+use self::setup_imports::SetupImportPlan;
 use self::setup_props::{generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
 use self::spans::{DEFINE_COMPONENT_REF, rewrite_export_default_for_module_scope, template_usage};
@@ -63,9 +63,8 @@ use self::type_only_imports::{
 use self::unresolved_components::emit_unresolved_components;
 use super::{
     helpers::generate_template_context,
-    import_meta::emit_import_meta_augmentation,
     macro_type_mappings::MacroTypeMappings,
-    scope::{ScopeGenerationOptions, emit_slot_payload_helpers, generate_scope_closures},
+    scope::{ScopeGenerationOptions, generate_scope_closures},
     template_binding_access::TemplateBindingAccess,
     types::{
         DEFAULT_LIB_REFERENCES, VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput,
@@ -84,7 +83,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     options: &VirtualTsOptions,
     generation_options: VirtualTsGenerationOptions<'_>,
 ) -> VirtualTsOutput {
-    let css_module_plan = CssModulePlan::new(script_content);
     let check_options = generation_options.check_options;
     let check_props = check_options.check_props;
     let script_source_offset =
@@ -111,6 +109,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         template_usage(summary, template_ast, generation_options);
     let template_referenced_names = preserve_unused_diagnostics.then_some(&template_usage_names);
     let inferred_slots = component_public_types::infers_slots(summary, template_ast, check_options);
+    let setup_imports = SetupImportPlan::new(
+        script_content,
+        check_options.infer_template_dollar_slots.then(|| {
+            component_public_types::template_slots_type(summary, inferred_slots, script_content)
+        }),
+    );
     let reference_setup_bindings_comment =
         self::anchors::setup_binding_anchor_comment(preserve_unused_diagnostics);
     let lib_references = generation_options
@@ -124,23 +128,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // Check for generic type parameter from <script setup generic="T">
     let (authored_generic, generic_param, is_async) = generics::setup_signature(summary);
 
-    if hoist_shared_preamble {
-        // ImportMeta augmentation and shared type helpers live once per
-        // program in the ambient helpers file (SHARED_PREAMBLE_DTS); the
-        // module no longer augments global scope itself.
-        ts.push_str("// Shared preamble hoisted to the program-wide __vize_helpers.d.ts\n");
-    } else {
-        // ImportMeta augmentation (must be at top level, before any code)
-        emit_import_meta_augmentation(&mut ts, !generation_options.omit_vite_client_reference);
-        ts.push('\n');
-    }
-
-    // Module-level declarations stay accessible to exported props outside __setup().
-    ts.push_str("// ========== Module Scope (imports) ==========\n");
-    if !hoist_shared_preamble {
-        preamble::emit_embedded_helpers(&mut ts, summary, legacy_vue2, dialect);
-    }
-    emit_slot_payload_helpers(&mut ts, summary, !hoist_shared_preamble);
+    preamble::emit_module_preamble(&mut ts, summary, generation_options, legacy_vue2);
 
     let has_script_setup = summary
         .scopes
@@ -313,7 +301,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             }
 
             setup_helpers.emit_import_anchors(&mut ts);
-            css_module_plan.emit_import_anchors(&mut ts);
+            setup_imports.emit_import_anchors(&mut ts);
         });
     }
     let hoisted_generic_aliases =
@@ -396,7 +384,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         aliases.emit_setup_aliases(&mut ts);
     }
 
-    css_module_plan.emit_setup(
+    setup_imports.emit_setup(
         &mut ts,
         options,
         &mut mappings,
@@ -672,9 +660,15 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             );
 
             // Vue template context (available in template expressions)
+            setup_imports.emit_template_slots(&mut ts, &mut mappings, source_offset);
             let template_context = profile!(
                 "canon.virtual_ts.generate_template_context",
-                generate_template_context(options, dialect, legacy_vue2)
+                generate_template_context(
+                    options,
+                    dialect,
+                    legacy_vue2,
+                    setup_imports.has_own_slots()
+                )
             );
             ts.push_str(&template_context);
             ts.push('\n');

@@ -18,23 +18,25 @@ const resume = (_force: boolean) => {}
 "#;
 
 #[test]
-fn v_on_asi_prefix_is_not_parenthesized_as_an_expression() {
+fn v_on_asi_prefix_keeps_the_complete_authored_handler() {
     let virtual_ts = generate_virtual_ts(SOURCE);
 
     assert!(
         !virtual_ts.contains("void (;"),
         "a leading empty statement is invalid inside a parenthesized expression:\n{virtual_ts}"
     );
-    assert!(
-        virtual_ts.contains(
-            "void ((currentFocus = { on: 'area', area }), (currentArea = area), pause()); // VOn"
-        ),
-        "removing the ASI prefix must preserve the complete focus handler:\n{virtual_ts}"
-    );
-    assert!(
-        virtual_ts.contains("void ((currentFocus = null), resume(true)); // VOn"),
-        "removing the ASI prefix must preserve the complete blur handler:\n{virtual_ts}"
-    );
+    // Handlers have deferred execution scope, matching Vue's runtime. The
+    // leading empty statement is valid there and must not truncate the body.
+    for handler in [
+        ";(currentFocus = { on: 'area', area }), (currentArea = area), pause()",
+        ";(currentFocus = null), resume(true)",
+    ] {
+        assert_eq!(
+            virtual_ts.matches(handler).count(),
+            1,
+            "emit the complete authored handler exactly once: {handler}\n{virtual_ts}"
+        );
+    }
 }
 
 #[test]

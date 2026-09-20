@@ -4,12 +4,12 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::Program;
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk::{walk_arrow_function_expression, walk_for_of_statement, walk_function};
-use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_syntax::scope::ScopeFlags;
 
 use super::globals::setup_global_scopes;
 use super::process;
+use super::recovery::parse_program_for_analysis;
 use super::result::{ScriptParseResult, ScriptParserOptions};
 use crate::croquis::BindingMetadata;
 use crate::scope::{NonScriptSetupScopeData, ScopeChain, ScriptSetupScopeData};
@@ -37,7 +37,7 @@ pub fn parse_script_setup_with_generic_and_jsx(
 
     let ret = profile!(
         "croquis.script_setup.oxc_parse",
-        Parser::new(&allocator, source, source_type).parse()
+        parse_program_for_analysis(&allocator, source, source_type)
     );
 
     if ret.panicked {
@@ -194,7 +194,7 @@ pub(crate) fn parse_script_with_options_source_type(
 
     let ret = profile!(
         "croquis.script_plain.oxc_parse",
-        Parser::new(&allocator, source, source_type).parse()
+        parse_program_for_analysis(&allocator, source, source_type)
     );
 
     if ret.panicked {
