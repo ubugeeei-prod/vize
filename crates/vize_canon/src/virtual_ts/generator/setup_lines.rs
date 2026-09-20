@@ -1,4 +1,65 @@
+use crate::virtual_ts::VizeMapping;
 use std::borrow::Cow;
+use vize_carton::{String, append};
+
+pub(super) struct ScriptBoundaries<'a>(&'a [usize]);
+
+impl<'a> ScriptBoundaries<'a> {
+    pub(super) fn new(boundaries: &'a [usize]) -> Self {
+        Self(boundaries)
+    }
+
+    pub(super) fn emit_through(
+        &mut self,
+        offset: usize,
+        ts: &mut String,
+        mappings: &mut Vec<VizeMapping>,
+        source_offset: &dyn Fn(usize) -> usize,
+    ) {
+        while let Some((&end, rest)) = self.0.split_first()
+            && end <= offset
+        {
+            // An authored EOF is a real syntax boundary. Without this token,
+            // `const x =` consumes generated code and its error is unmappable.
+            ts.push_str("  ");
+            let start = ts.len();
+            ts.push(';');
+            let source = source_offset(end);
+            mappings.push(VizeMapping {
+                gen_range: start..ts.len(),
+                src_range: source..source,
+                sub_spans: Vec::new(),
+            });
+            ts.push('\n');
+            self.0 = rest;
+        }
+    }
+}
+
+pub(super) fn finish_script(
+    ts: &mut String,
+    class_alias: Option<&str>,
+    close_wrapper: bool,
+    emitted_default_alias: bool,
+    script_gen_start: usize,
+    script_len: usize,
+) {
+    // Finish deferred wrappers even when an authored class/object did not close.
+    if let Some(name) = class_alias {
+        append!(*ts, "  const __default__ = {name};\n");
+    }
+    if close_wrapper {
+        ts.push_str("  )\n");
+    }
+    if emitted_default_alias {
+        ts.push_str("  void __default__;\n");
+    }
+    let script_gen_end = ts.len();
+    append!(
+        *ts,
+        "  // @vize-map: {script_gen_start}:{script_gen_end} -> 0:{script_len}\n\n"
+    );
+}
 
 /// Hoisted statements can share a line with setup declarations. Mask their
 /// exact AST spans, keeping bytes and CRLF stable for subsequent source maps.

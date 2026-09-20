@@ -3,6 +3,21 @@ use oxc_parser::Parser as OxcParser;
 use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString, profile};
 
+pub(crate) fn is_typescript_lang(lang: &str) -> bool {
+    matches!(lang, "ts" | "tsx" | "mts" | "cts")
+}
+
+/// Whether every authored script has native TypeScript syntax diagnostics,
+/// independently of the JavaScript `checkJs` mapping gate.
+pub fn supports_native_script_syntax(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) -> bool {
+    let blocks = [descriptor.script.as_ref(), descriptor.script_setup.as_ref()];
+    blocks.iter().any(Option::is_some)
+        && blocks
+            .into_iter()
+            .flatten()
+            .all(|block| block.lang.as_deref().is_some_and(is_typescript_lang))
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ScriptParseDiagnostic {
     pub message: String,

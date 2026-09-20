@@ -318,10 +318,9 @@ const count =
     project.register_vue_file(&vue_path, vue_content).unwrap();
 
     let diagnostics = project.diagnostics();
-    assert_eq!(diagnostics.len(), 1);
-    insta::assert_debug_snapshot!(
-        "script_parse_error_diagnostics",
-        diagnostic_snapshot(diagnostics)
+    assert!(
+        diagnostics.is_empty(),
+        "the native checker owns retained script syntax"
     );
 
     let virtual_file = project.find_by_original(&vue_path).unwrap();

@@ -271,81 +271,6 @@ impl DiagnosticService {
         diagnostics
     }
 
-    /// Collect diagnostics asynchronously (includes Corsa diagnostics when available).
-    #[cfg(feature = "native")]
-    pub async fn collect_async(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
-        tracing::info!("collect_async: {}", uri);
-
-        // Start with sync diagnostics (patina, etc.)
-        let mut diagnostics = Self::collect(state, uri);
-        tracing::info!("sync diagnostics count: {}", diagnostics.len());
-        if has_blocking_parser_error(&diagnostics) {
-            tracing::info!("collect_async: Corsa diagnostics skipped after parser error");
-            return diagnostics;
-        }
-        if is_standalone_html_path(uri.path()) {
-            tracing::info!("collect_async: Corsa diagnostics skipped for standalone HTML");
-            return diagnostics;
-        }
-
-        // JSX/TSX type diagnostics. The sync `collect` above already added the
-        // JSX compiler diagnostics; here we add TypeScript type errors derived
-        // from the JSX virtual TS, surfaced alongside them. Gated on the opt-in
-        // `typeChecker.jsxTypecheck` so React `.tsx` is never Vue-JSX-checked.
-        if is_jsx_path(uri.path()) {
-            if state.jsx_typecheck_enabled()
-                && let Some(ctx) = crate::ide::IdeContext::new(state, uri, 0)
-            {
-                let corsa_bridge = state.get_corsa_bridge().await;
-                let jsx_future = crate::ide::JsxService::diagnostics(&ctx, corsa_bridge);
-                match crate::runtime::timeout(std::time::Duration::from_secs(10), jsx_future).await
-                {
-                    Ok(jsx_type_diags) => {
-                        tracing::info!("jsx type diagnostics count: {}", jsx_type_diags.len());
-                        diagnostics.extend(jsx_type_diags);
-                    }
-                    Err(_) => tracing::warn!("jsx type diagnostics timed out for {}", uri),
-                }
-            } else {
-                tracing::info!("collect_async: jsx type diagnostics skipped (disabled by config)");
-            }
-            return diagnostics;
-        }
-
-        if state.is_lsp_typecheck_enabled() {
-            // Try to get Corsa diagnostics (with timeout, skip on failure).
-            // Use 10s timeout - polling for diagnostics internally uses 5s
-            let corsa_future = Self::collect_corsa_diagnostics(state, uri);
-            match crate::runtime::timeout(std::time::Duration::from_secs(10), corsa_future).await {
-                Ok(corsa_diags) => {
-                    tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
-                    diagnostics.extend(corsa_diags);
-                }
-                Err(_) => {
-                    tracing::warn!("corsa diagnostics timed out for {}", uri);
-                }
-            }
-
-            // When the user opted into typecheck but Corsa never came up
-            // (init failed, timed out, or simply not yet attempted while we
-            // already produced zero corsa diagnostics for an SFC), surface a
-            // hint diagnostic so the Problems panel reflects what is
-            // happening. Without this, the editor goes silent and users
-            // assume their project is clean. See #681.
-            if !state.has_corsa_bridge()
-                && !diagnostics
-                    .iter()
-                    .any(|d| d.source.as_deref() == Some(super::sources::TYPE_CHECKER))
-            {
-                diagnostics.push(typecheck_unavailable_hint());
-            }
-        } else {
-            tracing::info!("collect_async: Corsa diagnostics skipped (disabled by config)");
-        }
-
-        diagnostics
-    }
-
     /// Create a diagnostic from a custom error.
     pub fn create_diagnostic(
         range: Range,
@@ -393,22 +318,4 @@ pub(super) fn typecheck_unavailable_hint() -> Diagnostic {
         message: super::TYPECHECK_UNAVAILABLE_HINT_MESSAGE.to_string(),
         ..Default::default()
     }
-}
-
-#[cfg(feature = "native")]
-fn has_blocking_parser_error(diagnostics: &[Diagnostic]) -> bool {
-    diagnostics.iter().any(|diagnostic| {
-        matches!(
-            diagnostic.source.as_deref(),
-            // Parser-level errors plus SFC compile-time validation errors
-            // both leave the script body in a state where Corsa would just
-            // cascade — the user already has the actionable diagnostic.
-            Some(
-                super::sources::SFC_PARSER
-                    | super::sources::SCRIPT_PARSER
-                    | super::sources::TEMPLATE_PARSER
-                    | super::sources::SFC_COMPILER
-            )
-        ) && diagnostic.severity == Some(DiagnosticSeverity::ERROR)
-    })
 }

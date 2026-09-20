@@ -18,7 +18,7 @@ use crate::batch::{Diagnostic, SfcBlockType};
 /// avoid `compile_sfc` here — it would do template codegen and script transform
 /// work that doubles the wall time of `vize check` (see the regression on PR
 /// #675). The validator covers the diagnostics TypeScript cannot derive on its
-/// own; parse-level errors are already collected above.
+/// own; retained TypeScript scripts are parsed by the native checker.
 pub(super) fn collect_sfc_compile_diagnostic(
     path: &Path,
     source: &str,
@@ -92,6 +92,66 @@ fn default_diagnostic_offset(descriptor: &SfcDescriptor) -> (u32, SfcBlockType) 
 
 pub(super) fn invalid_sfc_fallback_virtual_ts() -> CompactString {
     "declare const __vize_component: any;\nexport default __vize_component;\n".into()
+}
+
+/// A retained TypeScript block has exactly one syntax diagnostic owner: the
+/// native checker. OXC still analyzes it, but its recovery messages must not
+/// duplicate native diagnostics or replace their authored positions/codes.
+///
+/// When hard template errors prevent projection, retain the parser fallback.
+/// JavaScript also retains it because the existing `checkJs` mapping gate can
+/// discard native diagnostics; syntax errors must survive that gate.
+pub(super) struct ScriptDiagnosticPlan {
+    pub(super) diagnostics: Vec<Diagnostic>,
+    pub(super) boundaries: Vec<usize>,
+}
+
+pub(super) fn collect_script_parse_fallbacks(
+    path: &Path,
+    source: &str,
+    descriptor: &SfcDescriptor,
+    has_script_projection: bool,
+) -> ScriptDiagnosticPlan {
+    let mut diagnostics = Vec::new();
+    let mut boundaries = Vec::new();
+    let mut offset = 0;
+    for (block, block_type) in [
+        (descriptor.script.as_ref(), SfcBlockType::Script),
+        (descriptor.script_setup.as_ref(), SfcBlockType::ScriptSetup),
+    ] {
+        let Some(block) = block else { continue };
+        let errors = crate::script_parse::collect_script_parse_diagnostics(
+            &block.content,
+            block.loc.start as u32,
+            block.lang.as_deref(),
+        );
+        let end = offset + block.content.len();
+        offset = end + 1; // Croquis joins the two script blocks with one newline.
+        if has_script_projection && !errors.is_empty() {
+            boundaries.push(end);
+        }
+        if has_script_projection
+            && block
+                .lang
+                .as_deref()
+                .is_some_and(crate::script_parse::is_typescript_lang)
+        {
+            continue;
+        }
+        diagnostics.extend(errors.into_iter().map(|diagnostic| {
+            diagnostic_for_offset(
+                path,
+                source,
+                diagnostic.start,
+                cstr!("Script parse error: {}", diagnostic.message),
+                block_type,
+            )
+        }));
+    }
+    ScriptDiagnosticPlan {
+        diagnostics,
+        boundaries,
+    }
 }
 
 pub(super) fn diagnostic_for_offset(

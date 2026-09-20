@@ -14,8 +14,8 @@ declare module "vue" {
   }
 }
 
-const attrs = useAttrs();
-attrs.invoiceTotal;
+const ownAttrs = useAttrs();
+ownAttrs.invoiceTotal;
 </script>
 
 <template>{{ $attrs.invoiceTotal }}</template>

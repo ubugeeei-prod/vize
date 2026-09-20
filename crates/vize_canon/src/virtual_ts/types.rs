@@ -257,6 +257,9 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     /// `<script setup>`. Split-script analysis joins the two blocks with one
     /// newline, while the authored closing/opening tags occupy more bytes.
     pub(crate) split_script_setup_offsets: Option<(usize, usize)>,
+    /// End offsets of script blocks with parse errors. Prevent the next block
+    /// or generated helpers from becoming part of an unfinished expression.
+    pub(crate) script_syntax_boundaries: &'a [usize],
     pub(crate) experimental_strict_slot_children: bool,
 }
 

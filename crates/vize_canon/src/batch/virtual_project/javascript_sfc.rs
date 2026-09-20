@@ -16,13 +16,8 @@
 //! parse diagnostics are unaffected because they never pass through the
 //! TypeScript diagnostic mapper.
 
+use crate::script_parse::is_typescript_lang;
 use vize_atelier_sfc::SfcDescriptor;
-
-/// TypeScript-flavoured `<script lang>` values. Everything else (`js`, `jsx`,
-/// or an absent `lang`) is JavaScript.
-fn is_typescript_lang(lang: &str) -> bool {
-    matches!(lang, "ts" | "tsx" | "mts" | "cts")
-}
 
 fn is_jsx_like_lang(lang: &str) -> bool {
     matches!(lang, "jsx" | "tsx")

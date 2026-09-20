@@ -174,7 +174,7 @@ async function stepComponentContractHoverSurfaces() {
     new vscode.Position(7, 5),
   );
   const childUri = vscode.Uri.file(
-    path.join(getWorkspaceFolderPath(), "src", "ContractChild.vue"),
+    fs.realpathSync(path.join(getWorkspaceFolderPath(), "src", "ContractChild.vue")),
   ).toString();
   assert.deepEqual(
     definitions.map(describeDefinition),

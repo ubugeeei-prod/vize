@@ -21,23 +21,6 @@ const TSCONFIG: &str = r#"{
   "include": ["src/**/*"]
 }"#;
 
-const VUE_STUB: &str = r#"export interface Ref<T = any> {
-  value: T;
-}
-export interface ShallowRef<T = any> {
-  value: T;
-}
-export declare function ref<T>(value: T): Ref<T>;
-export declare function computed<T>(getter: () => T): Ref<T>;
-export declare function defineComponent(options: any): any;
-export interface ComponentPublicInstance {
-  $attrs: Record<string, unknown>;
-  $slots: Record<string, unknown>;
-  $refs: Record<string, unknown>;
-  $emit: (...args: unknown[]) => void;
-}
-"#;
-
 /// Type-check `files` as one project and return every diagnostic formatted as
 /// `path(line,column): error TSxxxx: message`, sorted, with authored 1-based
 /// positions — the exact shape `vue-tsc` prints.
@@ -45,12 +28,19 @@ pub fn check(files: &[(&str, &str)]) -> Vec<String> {
     let project = tempfile::tempdir().expect("temporary project should be created");
     let root = project.path();
     write_file(root, "tsconfig.json", TSCONFIG);
-    write_file(
-        root,
-        "node_modules/vue/package.json",
-        r#"{ "name": "vue", "types": "index.d.ts" }"#,
-    );
-    write_file(root, "node_modules/vue/index.d.ts", VUE_STUB);
+    // These are Vue parity tests: use the pinned dependency's real overloads,
+    // including defineModel, instead of an incomplete handwritten Vue module.
+    let vue = std::fs::canonicalize(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/node_modules/vue"),
+    )
+    .expect("install the workspace dependencies before running Vue parity tests");
+    std::fs::create_dir(root.join("node_modules")).expect("node_modules should be created");
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(vue, root.join("node_modules/vue"))
+        .expect("the pinned Vue dependency should be linked");
+    #[cfg(windows)]
+    std::os::windows::fs::symlink_dir(vue, root.join("node_modules/vue"))
+        .expect("the pinned Vue dependency should be linked");
     for (path, source) in files {
         write_file(root, path, source);
     }

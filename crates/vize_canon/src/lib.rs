@@ -55,6 +55,7 @@ pub mod intelligence;
 mod options_api_setup_spread;
 pub mod package_route;
 mod script_parse;
+pub use script_parse::supports_native_script_syntax;
 mod sfc_diagnostics;
 pub mod sfc_typecheck;
 pub mod source_map;

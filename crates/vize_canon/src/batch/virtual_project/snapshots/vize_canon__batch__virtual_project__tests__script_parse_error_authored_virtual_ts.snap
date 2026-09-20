@@ -1,6 +1,6 @@
 ---
 source: crates/vize_canon/src/batch/virtual_project/tests.rs
-assertion_line: 328
+assertion_line: 327
 expression: snapshot_text(virtual_file.content.as_str())
 ---
 /// <reference lib="es2022" />
@@ -33,8 +33,9 @@ function __setup() {
   // User setup code
 
   const count =
+  ;
 
-  // @vize-map: 1081:1103 -> 0:15
+  // @vize-map: 1081:1107 -> 0:15
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

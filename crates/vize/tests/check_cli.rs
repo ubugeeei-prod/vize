@@ -2134,22 +2134,11 @@ const count =
 
     let stdout = std::string::String::from_utf8(output.stdout).unwrap();
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
-    let diagnostics = json["files"][0]["diagnostics"].as_array().unwrap();
-
     assert_eq!(output.status.code(), Some(1));
     assert_eq!(json["errorCount"], 1);
-    assert_eq!(diagnostics.len(), 1);
-    assert!(
-        diagnostics[0]
-            .as_str()
-            .unwrap()
-            .contains("Script parse error")
-    );
-    assert!(
-        !diagnostics[0]
-            .as_str()
-            .unwrap()
-            .contains("Cannot find name")
+    assert_eq!(
+        json["files"][0]["diagnostics"],
+        serde_json::json!(["error:3:1 [TS1109] Expression expected."])
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

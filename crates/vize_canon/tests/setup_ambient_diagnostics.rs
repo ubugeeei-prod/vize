@@ -63,15 +63,13 @@ fn overloads_and_suppression_directives_remain_effective() {
 }
 
 #[test]
-fn invalid_ambient_initializers_keep_the_existing_parse_diagnostic() {
+fn invalid_ambient_initializers_keep_the_authored_native_diagnostic() {
     let source = "<script setup lang=\"ts\">\ndeclare let label = 1;\n</script>\n<template><div /></template>\n";
-    // OXC rejects this before virtual generation; vue-tsc reports TS1039 at
-    // the same authored position. The relocation must not erase the error.
+    // Retaining the authored declaration must preserve vue-tsc's TS1039,
+    // without an extra OXC report or a synthetic function-scope TS1184.
     assert_eq!(
         project::check(&[("src/App.vue", source)]),
-        [
-            "src/App.vue(2,21): error TS0: Script parse error: Initializers are not allowed in ambient contexts."
-        ]
+        ["src/App.vue(2,21): error TS1039: Initializers are not allowed in ambient contexts."]
     );
 }
 

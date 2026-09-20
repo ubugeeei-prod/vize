@@ -34,7 +34,10 @@ pub(super) fn extend_module_spans(
 
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
-    if parsed.panicked || !parsed.diagnostics.is_empty() {
+    // Recoverable parser errors still leave an authored declaration AST. Keep
+    // its lexical ownership so an invalid ambient initializer gets TS1039,
+    // without also inventing TS1184 by placing `declare` inside setup().
+    if parsed.panicked {
         return AmbientProjection::default();
     }
     let comments: Vec<Span> = parsed

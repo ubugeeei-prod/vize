@@ -411,8 +411,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         profile!("canon.virtual_ts.emit_script_body", {
             ts.push_str("  // User setup code\n");
             let script_gen_start = ts.len();
-            // `split('\n')` preserves byte offsets for CRLF; `lines()` strips `\r`.
             let mut module_span_index = 0usize;
+            let mut boundaries =
+                setup_lines::ScriptBoundaries::new(generation_options.script_syntax_boundaries);
             let named_value_export_starts =
                 self::script_module::collect_named_value_export_starts(script);
             let mut props_const_assertions = PropsConstAssertions::new(script, options_api);
@@ -423,6 +424,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             let uses_import_meta = self::script_module::emit_import_meta_polyfill(&mut ts, script);
 
             for (src_byte_offset, raw_line) in ambient.script_lines(script) {
+                boundaries.emit_through(src_byte_offset, &mut ts, &mut mappings, source_offset);
                 ambient.emit_setup_captures(
                     src_byte_offset,
                     script,
@@ -604,23 +606,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     pending_class_alias = None;
                 }
             }
-            if let Some((_, name)) = pending_class_alias.take() {
-                // Defensive: the class body's closing brace was never seen.
-                append!(ts, "  const __default__ = {name};\n");
-            }
-            if pending_wrap_close.take().is_some() {
-                // Defensive: if the object close was never emitted, close the `defineComponent(`
-                // so the generated module stays parseable.
-                ts.push_str("  )\n");
-            }
-            if emitted_default_alias {
-                ts.push_str("  void __default__;\n");
-            }
-            let script_gen_end = ts.len();
-            append!(
-                ts,
-                "  // @vize-map: {script_gen_start}:{script_gen_end} -> 0:{}\n\n",
-                script.len()
+            boundaries.emit_through(script.len(), &mut ts, &mut mappings, source_offset);
+            setup_lines::finish_script(
+                &mut ts,
+                pending_class_alias.map(|(_, name)| name),
+                pending_wrap_close.is_some(),
+                emitted_default_alias,
+                script_gen_start,
+                script.len(),
             );
 
             // Vue 2 only; see the bridge module doc for why Vue 3 skips it.

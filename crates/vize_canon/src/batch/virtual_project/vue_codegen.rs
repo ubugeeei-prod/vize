@@ -21,13 +21,13 @@ use vize_atelier_sfc::{
 
 use crate::batch::SfcBlockType;
 use crate::batch::error::CorsaResult;
-use crate::script_parse::collect_script_parse_diagnostics;
 use crate::virtual_ts::{
     VirtualTsGenerationOptions, VirtualTsOptions, generate_virtual_ts_with_offsets_and_checks,
 };
 
 use super::diagnostics::{
-    collect_sfc_compile_diagnostic, diagnostic_for_offset, invalid_sfc_fallback_virtual_ts,
+    collect_script_parse_fallbacks, collect_sfc_compile_diagnostic, diagnostic_for_offset,
+    invalid_sfc_fallback_virtual_ts,
 };
 use super::{
     art_usage::collect_art_template_referenced_names,
@@ -79,44 +79,6 @@ pub(super) fn generate_vue_virtual_ts(
         }
     };
     let descriptor = &*view;
-
-    if let Some(ref script) = descriptor.script {
-        let script_diagnostics = collect_script_parse_diagnostics(
-            &script.content,
-            script.loc.start as u32,
-            script.lang.as_deref(),
-        );
-        if !script_diagnostics.is_empty() {
-            diagnostics.extend(script_diagnostics.into_iter().map(|diagnostic| {
-                diagnostic_for_offset(
-                    path,
-                    source,
-                    diagnostic.start,
-                    cstr!("Script parse error: {}", diagnostic.message),
-                    SfcBlockType::Script,
-                )
-            }));
-        }
-    }
-
-    if let Some(ref script_setup) = descriptor.script_setup {
-        let script_diagnostics = collect_script_parse_diagnostics(
-            &script_setup.content,
-            script_setup.loc.start as u32,
-            script_setup.lang.as_deref(),
-        );
-        if !script_diagnostics.is_empty() {
-            diagnostics.extend(script_diagnostics.into_iter().map(|diagnostic| {
-                diagnostic_for_offset(
-                    path,
-                    source,
-                    diagnostic.start,
-                    cstr!("Script parse error: {}", diagnostic.message),
-                    SfcBlockType::ScriptSetup,
-                )
-            }));
-        }
-    }
 
     let template_offset = descriptor
         .template
@@ -178,7 +140,11 @@ pub(super) fn generate_vue_virtual_ts(
         })
     });
 
-    // Abort to the fallback stub only on hard errors — from any block. Pure
+    let script_diagnostics =
+        collect_script_parse_fallbacks(path, source, descriptor, !template_hard_error);
+    diagnostics.extend(script_diagnostics.diagnostics);
+
+    // Abort to the fallback stub only on hard template errors. Pure
     // recovery-level template diagnostics must not suppress real codegen: the
     // parse diagnostic is still reported, alongside the script's own type
     // diagnostics, which is what `vize check` and the linter now agree on.
@@ -298,6 +264,7 @@ pub(super) fn generate_vue_virtual_ts(
                 lib_references: None,
                 omit_vite_client_reference: codegen_options.omit_vite_client_reference,
                 split_script_setup_offsets,
+                script_syntax_boundaries: &script_diagnostics.boundaries,
                 experimental_strict_slot_children: codegen_options
                     .experimental_strict_slot_children,
             },

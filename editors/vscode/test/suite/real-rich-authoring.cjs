@@ -126,7 +126,13 @@ exports.runRichAuthoring = async function runRichAuthoring() {
     ["$slots.header", "$slots.he", "header", "**Header** shown above the invoice", "header(props:"],
   ]);
   await assertMemberDocumentation("AttrAuthoring.vue", [
-    ["attrs.invoiceTotal", "attrs.", "invoiceTotal", "**Invoice total**", "invoiceTotal: number"],
+    [
+      "ownAttrs.invoiceTotal",
+      "ownAttrs.",
+      "invoiceTotal",
+      "**Invoice total**",
+      "invoiceTotal: number",
+    ],
     [
       "$attrs.invoiceTotal",
       "$attrs.in",
@@ -252,12 +258,21 @@ async function assertMemberDocumentation(file, cases) {
       document.uri,
       document.positionAt(start + incomplete.length),
       undefined,
-      1,
+      // The attributes fixture includes Vue's own class/style candidates.
+      // Resolve this small list so selecting a later item exercises its docs.
+      16,
     );
     const candidate = completions?.items.find(
       (item) => (typeof item.label === "string" ? item.label : item.label.label) === label,
     );
-    assert.ok(candidate?.documentation instanceof vscode.MarkdownString);
+    assert.ok(
+      candidate,
+      `${expression}: ${JSON.stringify(completions?.items.map((item) => item.label))}`,
+    );
+    assert.ok(
+      candidate.documentation instanceof vscode.MarkdownString,
+      `${expression} documentation must resolve as Markdown`,
+    );
     assert.match(candidate.documentation.value, /```typescript\n/);
     assert.ok(candidate.documentation.value.includes(description));
     assert.equal(
@@ -275,7 +290,7 @@ async function assertMemberDocumentation(file, cases) {
     await waitForDiagnostics(
       document.uri,
       (items) => items.length === 0,
-      `slot repair ${expression}`,
+      `member repair ${expression}`,
       30_000,
     );
   }

@@ -18,12 +18,18 @@ mod template_directives;
 /// One attempt either yields diagnostics (possibly empty for non-Corsa
 /// reasons such as unsupported documents) or fails on a bridge call.
 enum CollectFailure {
+    Unavailable,
     /// The backend session answered but the request failed; not retried.
     Request(CorsaBridgeError),
     /// The backend process/transport is gone or unusable (crashed,
     /// OOM-killed, disconnected, or timed out). The carried bridge must be
     /// retired so a fresh session can be spawned (#3240, #3975).
     DeadBridge(Arc<vize_canon::CorsaBridge>, CorsaBridgeError),
+}
+
+pub(in crate::ide::diagnostics) enum CorsaDiagnostics {
+    Complete(Vec<Diagnostic>),
+    Unavailable(Vec<Diagnostic>),
 }
 
 fn classify(bridge: &Arc<vize_canon::CorsaBridge>, error: CorsaBridgeError) -> CollectFailure {
@@ -47,10 +53,11 @@ impl DiagnosticService {
     pub(in crate::ide::diagnostics) async fn collect_corsa_diagnostics(
         state: &ServerState,
         uri: &Url,
-    ) -> Vec<Diagnostic> {
+    ) -> CorsaDiagnostics {
         for attempt in 0..2 {
             match Self::try_collect_corsa_diagnostics(state, uri).await {
-                Ok(diagnostics) => return diagnostics,
+                Ok(diagnostics) => return CorsaDiagnostics::Complete(diagnostics),
+                Err(CollectFailure::Unavailable) => return CorsaDiagnostics::Unavailable(vec![]),
                 Err(CollectFailure::DeadBridge(bridge, error)) if attempt == 0 => {
                     tracing::warn!(
                         "corsa backend unreachable for {uri} ({error}); respawning and retrying"
@@ -59,24 +66,24 @@ impl DiagnosticService {
                 }
                 Err(CollectFailure::DeadBridge(_, error)) => {
                     tracing::warn!("corsa retry failed for {uri}: {error}");
-                    return match error {
+                    return CorsaDiagnostics::Unavailable(match error {
                         CorsaBridgeError::Timeout => vec![typecheck_timed_out_hint()],
                         _ => vec![],
-                    };
+                    });
                 }
                 Err(CollectFailure::Request(error)) => {
                     tracing::warn!("corsa request failed for {uri}: {error}");
                     // A bound that fires has to be visible. Returning an empty
                     // list would make a timed-out pass indistinguishable from a
                     // clean file, which is the silence #3376 is about.
-                    return match error {
+                    return CorsaDiagnostics::Unavailable(match error {
                         CorsaBridgeError::Timeout => vec![typecheck_timed_out_hint()],
                         _ => vec![],
-                    };
+                    });
                 }
             }
         }
-        vec![]
+        CorsaDiagnostics::Unavailable(vec![])
     }
 
     async fn try_collect_corsa_diagnostics(
@@ -109,7 +116,7 @@ impl DiagnosticService {
         tracing::info!("getting corsa bridge...");
         let Some(bridge) = state.get_corsa_bridge().await else {
             tracing::warn!("corsa bridge not available");
-            return Ok(vec![]);
+            return Err(CollectFailure::Unavailable);
         };
         tracing::info!("corsa bridge acquired");
 
