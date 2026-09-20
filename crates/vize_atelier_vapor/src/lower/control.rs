@@ -249,6 +249,7 @@ fn transform_for_node_with_options<'a>(
         only_child: for_node.children.len() == 1,
         parent,
         anchor,
+        match_scope: for_node.parse_result.match_scope,
     };
 
     block

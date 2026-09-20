@@ -1,5 +1,8 @@
 //! Vapor Intermediate Representation (IR) types.
 mod constructors;
+mod control_flow;
+
+pub use control_flow::{ForIRNode, IfIRNode, NegativeBranch};
 
 use serde::{Deserialize, Serialize};
 use vize_atelier_core::{Namespace, RootNode, SimpleExpressionNode, TemplateChildNode};
@@ -224,42 +227,6 @@ pub struct DirectiveIRNode<'a> {
     pub tag: &'a str,
     /// Input type attribute (for v-model checkbox/radio detection)
     pub input_type: &'a str,
-}
-
-/// If operation
-#[derive(Debug)]
-pub struct IfIRNode<'a> {
-    pub id: usize,
-    pub condition: Box<'a, SimpleExpressionNode<'a>>,
-    pub positive: BlockIRNode<'a>,
-    pub negative: Option<NegativeBranch<'a>>,
-    pub once: bool,
-    pub parent: Option<usize>,
-    pub anchor: Option<usize>,
-}
-
-/// Negative branch of if
-#[derive(Debug)]
-pub enum NegativeBranch<'a> {
-    Block(BlockIRNode<'a>),
-    If(Box<'a, IfIRNode<'a>>),
-}
-
-/// For operation
-#[derive(Debug)]
-pub struct ForIRNode<'a> {
-    pub id: usize,
-    pub source: Box<'a, SimpleExpressionNode<'a>>,
-    pub value: Option<Box<'a, SimpleExpressionNode<'a>>>,
-    pub key: Option<Box<'a, SimpleExpressionNode<'a>>>,
-    pub index: Option<Box<'a, SimpleExpressionNode<'a>>>,
-    pub key_prop: Option<Box<'a, SimpleExpressionNode<'a>>>,
-    pub render: BlockIRNode<'a>,
-    pub once: bool,
-    pub component: bool,
-    pub only_child: bool,
-    pub parent: Option<usize>,
-    pub anchor: Option<usize>,
 }
 
 /// Component kind for code generation

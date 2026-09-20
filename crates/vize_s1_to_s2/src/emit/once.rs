@@ -1,7 +1,7 @@
 //! `vue.once` realization.
 
 use vize_davinci::id::NodeId;
-use vize_s2::op::{BindingOp, ComponentOp, ElementOp, Op};
+use vize_s2::op::{BindingOp, ComponentOp, ElementOp, IfOp, Op};
 
 use super::buf::Buf;
 use super::builtin;
@@ -16,6 +16,26 @@ pub(super) fn has(bindings: &[BindingOp<'_>]) -> bool {
 
 pub(super) fn is_once(binding: &BindingOp<'_>) -> bool {
     matches!(binding, BindingOp::VueOnce(_))
+}
+
+/// Whether `v-once` sits on the chain's own `v-if` carrier, an element or an
+/// unwrapped `<template>`. The whole chain is cached then, so a later change
+/// of the condition is ignored as well. Content inside a `<template v-if>` is
+/// not the chain's carrier: its condition stays live.
+pub(super) fn chain_is_once(cx: &EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> bool {
+    let wrapper = id.and_then(|id| cx.wrappers.get(id));
+    if wrapper.is_some_and(|keys| keys.from_template.first() == Some(&true)) {
+        return wrapper.is_some_and(|keys| keys.once);
+    }
+    match if_op
+        .branches
+        .first()
+        .map(|branch| branch.region.ops.as_slice())
+    {
+        Some([Op::Element(element)]) => has(&element.bindings),
+        Some([Op::Component(component)]) => has(&component.bindings),
+        _ => false,
+    }
 }
 
 pub(super) fn emit_element(
@@ -118,7 +138,7 @@ fn skip_or_hoist_once_element_children(cx: &mut EmitCx<'_>, element: &ElementOp<
     }
 }
 
-fn emit_cached(
+pub(super) fn emit_cached(
     cx: &mut EmitCx<'_>,
     emit: impl FnOnce(&mut EmitCx<'_>) -> Result<(), EmitError>,
 ) -> Result<(), EmitError> {

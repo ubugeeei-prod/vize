@@ -41,6 +41,7 @@ pub fn transform_v_for<'a>(
         only_child: false,
         parent: None,
         anchor: None,
+        match_scope: false,
     };
 
     OperationNode::For(Box::new_in(for_node, &allocator))
@@ -82,6 +83,7 @@ pub fn transform_for_node<'a>(
         only_child: for_node.children.len() == 1,
         parent: None,
         anchor: None,
+        match_scope: for_node.parse_result.match_scope,
     };
 
     OperationNode::For(Box::new_in(for_ir, &allocator))

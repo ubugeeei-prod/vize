@@ -1,5 +1,4 @@
 import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, withKeys as _withKeys, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, mergeProps as _mergeProps, camelize as _camelize, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue";
-const _hoisted_1 = /*#__PURE__*/ _createElementVNode("span", null, "Empty");
 import { ref } from "vue";
 const panelLabel = "Rows";
 export default {
@@ -65,13 +64,7 @@ export default {
         _toDisplayString(rows.length),
         1
         /* TEXT */
-      )) : (_openBlock(), _createElementBlock(
-        _Fragment,
-        { key: 1 },
-        [_hoisted_1],
-        64
-        /* STABLE_FRAGMENT */
-      ))], 46, ["aria-label", ".value"])), [[_directive_track, isReady.value]]);
+      )) : (_openBlock(), _createElementBlock("span", { key: 1 }, "Empty"))], 46, ["aria-label", ".value"])), [[_directive_track, isReady.value]]);
     };
   }
 };

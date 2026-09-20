@@ -8,9 +8,8 @@
 
 mod fragment;
 
-use vize_davinci::id::NodeId;
 use vize_s0::String;
-use vize_s2::op::{Attribute, BindingOp, IfBranch, Op};
+use vize_s2::op::{IfBranch, Op};
 
 pub(super) use fragment::emit_inline;
 use fragment::{ChildMode, emit_inner_fragment};
@@ -18,10 +17,8 @@ use fragment::{ChildMode, emit_inner_fragment};
 use super::EmitCx;
 use super::EmitError;
 use super::UnsupportedReason as Reason;
-use super::hoist::is_hoistable;
 use super::js::escape_js_string;
 use super::prefix::Site;
-use super::props_static::PropHoistPosition;
 use crate::lower::{WrapperAttr, WrapperClass, WrapperKey};
 
 pub(super) fn wrapper_key_js(cx: &EmitCx<'_>, key: &WrapperKey) -> Result<String, EmitError> {
@@ -50,7 +47,7 @@ pub(super) fn emit_if_template_branch(
     branch: &IfBranch<'_>,
     key: &str,
 ) -> Result<(), EmitError> {
-    if should_unwrap_if(&branch.region.ops, cx.is_ts, cx.hoist_static) {
+    if should_unwrap_if(&branch.region.ops) {
         return unwrap_if(cx, branch, key);
     }
     emit_inner_fragment(
@@ -63,22 +60,38 @@ pub(super) fn emit_if_template_branch(
     )
 }
 
-fn should_unwrap_if(ops: &[Op<'_>], is_ts: bool, hoist_static: bool) -> bool {
-    match ops {
-        [Op::Element(element)] => !hoist_static || !is_hoistable(element, is_ts),
-        [Op::Component(_)] | [Op::Slot(_)] | [Op::For(_)] => true,
-        _ => false,
-    }
+/// A single child is the branch block itself, static or not: a branch has to
+/// be a block, so Vue never hoists it out from under the branch key.
+fn should_unwrap_if(ops: &[Op<'_>]) -> bool {
+    matches!(
+        ops,
+        [Op::Element(_)] | [Op::Component(_)] | [Op::Slot(_)] | [Op::For(_)]
+    )
 }
 
+/// `v-once` on the single child caches that child only: the condition stays
+/// live and the cached block is reused whenever the branch renders again.
 fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<(), EmitError> {
+    let once = match branch.region.ops.as_slice() {
+        [Op::Element(element)] => super::once::has(&element.bindings),
+        [Op::Component(component)] => super::once::has(&component.bindings),
+        _ => false,
+    };
+    if once {
+        return super::once::emit_cached(cx, |cx| emit_unwrapped_if(cx, branch, key));
+    }
+    emit_unwrapped_if(cx, branch, key)
+}
+
+fn emit_unwrapped_if(
+    cx: &mut EmitCx<'_>,
+    branch: &IfBranch<'_>,
+    key: &str,
+) -> Result<(), EmitError> {
     match branch.region.ops.as_slice() {
         [Op::Element(element)] => {
             let id = cx.walk.mint();
-            let attributes = &element.attributes;
-            let bindings = &element.bindings;
-            cx.walk.skip(bindings.len());
-            register_unwrapped_if_child_props_hoist(cx, attributes, bindings, id)?;
+            cx.walk.skip(element.bindings.len());
             let previous = cx.template_if_branch_root;
             cx.template_if_branch_root = true;
             let result = super::emit_if_branch_call(cx, element, key, id);
@@ -112,23 +125,6 @@ fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<()
             branch.span,
         )),
     }
-}
-
-fn register_unwrapped_if_child_props_hoist(
-    cx: &mut EmitCx<'_>,
-    attributes: &[Attribute<'_>],
-    bindings: &[BindingOp<'_>],
-    id: Option<NodeId>,
-) -> Result<(), EmitError> {
-    if !super::props_static::should_hoist(cx, id, PropHoistPosition::Nested) {
-        return Ok(());
-    }
-    if let Some(props) =
-        super::props_static::root_hoist_props(attributes, bindings, cx.is_ts, cx.scope_id)?
-    {
-        let _ = cx.buf.push_hoist(props);
-    }
-    Ok(())
 }
 
 pub(super) fn should_unwrap_for(ops: &[Op<'_>]) -> bool {

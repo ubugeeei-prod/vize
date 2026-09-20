@@ -25,7 +25,6 @@ use super::{EmitCx, EmitError};
 use checks::{
     direct_static_children_hoisted, has_cloak, has_dynamic_key_binding,
     has_interpolation_descendant, has_prop_bindings,
-    template_if_branch_root_has_direct_interpolation,
 };
 
 pub(super) fn emit_unique_element(
@@ -217,8 +216,7 @@ pub(super) fn emit_call(
         && !force_array_children
         && !for_item
         && !cx.in_v_for
-        && cx.slot_param_depth == 0
-        && !template_if_branch_root_has_direct_interpolation(cx, element, if_key);
+        && cx.slot_param_depth == 0;
     let has_binds = has_prop_bindings(&element.bindings);
     let conditional_v_for_dynamic_text = cx.conditional_v_for_item
         && matches!(prop_hoist, PropHoistPosition::Nested)

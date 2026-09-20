@@ -25,11 +25,8 @@ impl<'a> SsrCodegenContext<'a> {
             self.process_teleport(el);
             return;
         }
-        if matches!(
-            el.tag,
-            "Transition" | "transition" | "BaseTransition" | "base-transition"
-        ) {
-            self.process_transition(el);
+        if super::transparent_builtin::is_server_transparent_builtin(el.tag) {
+            self.process_transparent_builtin(el, inherit_attrs);
             return;
         }
 
@@ -711,15 +708,6 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         None
-    }
-
-    /// Process Vue's built-in <Transition> component.
-    ///
-    /// Transition is a client-side concern. In SSR it should not be resolved as a
-    /// user component; rendering its default children directly matches Vue's
-    /// no-op server behavior and avoids spurious missing-template warnings.
-    fn process_transition(&mut self, el: &ElementNode<'a>) {
-        self.process_children(&el.children, false, false, false);
     }
 }
 

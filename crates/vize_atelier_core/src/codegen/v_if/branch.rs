@@ -42,9 +42,20 @@ pub(super) fn generate_if_branch(
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
+    super::once::generate_if_branch_content(ctx, &branch.children, branch, branch_index);
+}
+
+/// A branch's nodes: the branch's own children, or the children of the
+/// patterned-template scope that is the branch (see `generate_if_branch_for`).
+pub(super) fn generate_if_branch_nodes(
+    ctx: &mut CodegenContext,
+    children: &[TemplateChildNode<'_>],
+    branch: &IfBranchNode<'_>,
+    branch_index: usize,
+) {
     // Single child optimization
-    if branch.children.len() == 1 {
-        match &branch.children[0] {
+    if children.len() == 1 {
+        match &children[0] {
             TemplateChildNode::Element(el) => {
                 // Check if it's a template element - treat as fragment
                 if el.tag_type == ElementType::Template {
@@ -83,16 +94,16 @@ pub(super) fn generate_if_branch(
             }
             _ => {
                 // Other node types - wrap in fragment
-                if let TemplateChildNode::For(for_node) = &branch.children[0] {
+                if let TemplateChildNode::For(for_node) = &children[0] {
                     generate_if_branch_for(ctx, for_node, branch, branch_index);
                 } else {
-                    generate_if_branch_fragment(ctx, branch, branch_index);
+                    generate_if_branch_template_fragment(ctx, children, branch, branch_index);
                 }
             }
         }
     } else {
         // Multiple children - wrap in fragment
-        generate_if_branch_fragment(ctx, branch, branch_index);
+        generate_if_branch_template_fragment(ctx, children, branch, branch_index);
     }
 }
 
@@ -102,6 +113,10 @@ fn generate_if_branch_for(
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
+    if for_node.parse_result.match_scope {
+        super::once::generate_scope_branch(ctx, for_node, branch, branch_index);
+        return;
+    }
     super::super::v_for::generate_for_with_fragment_key(ctx, for_node, &|ctx| {
         super::generate_if_branch_key(ctx, branch, branch_index);
     });
@@ -404,7 +419,7 @@ fn generate_if_branch_element(
     }
 }
 
-/// Generate template fragment for if branch (multiple children from template).
+/// Generate a keyed fragment for an if branch with several children.
 fn generate_if_branch_template_fragment(
     ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
@@ -423,27 +438,6 @@ fn generate_if_branch_template_fragment(
     generate_if_branch_key(ctx, branch, branch_index);
     ctx.push(" }, ");
     generate_children_force_array(ctx, children);
-    ctx.push(", 64 /* STABLE_FRAGMENT */))");
-}
-
-/// Generate fragment wrapper for if branch with multiple children.
-fn generate_if_branch_fragment(
-    ctx: &mut CodegenContext,
-    branch: &IfBranchNode<'_>,
-    branch_index: usize,
-) {
-    ctx.use_helper(RuntimeHelper::CreateElementBlock);
-    ctx.use_helper(RuntimeHelper::Fragment);
-    ctx.push("(");
-    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-    ctx.push("(), ");
-    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
-    ctx.push("(");
-    ctx.push(ctx.helper(RuntimeHelper::Fragment));
-    ctx.push(", { key: ");
-    generate_if_branch_key(ctx, branch, branch_index);
-    ctx.push(" }, ");
-    generate_children_force_array(ctx, &branch.children);
     ctx.push(", 64 /* STABLE_FRAGMENT */))");
 }
 

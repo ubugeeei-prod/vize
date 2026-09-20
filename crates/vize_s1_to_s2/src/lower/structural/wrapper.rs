@@ -8,12 +8,13 @@
 
 use alloc::vec::Vec as StdVec;
 
+use vize_davinci::id::NodeId;
 use vize_s0::{Span, String, cstr};
 use vize_s1::Element;
 
 use super::super::cx::{Cx, attr_slice, attr_span};
 use super::super::directive::{Arg, AttrForm, Head};
-use super::super::element::{Analyzed, attr_value_text};
+use super::super::element::{Analyzed, BranchKind, attr_value_text};
 
 /// One captured `<template v-if>` wrapper key (P2-9 series 5): the
 /// branch key the legacy transform lifts off the wrapper element
@@ -53,6 +54,9 @@ pub struct WrapperKeys {
     /// of `<template v-if>` is a fragment, while the same element as a
     /// `v-if` branch root is a block.
     pub from_template: StdVec<bool>,
+    /// The chain's `v-if` carrier was an unwrapped `<template v-once>`: the
+    /// whole chain is cached, exactly as `v-once` on a `v-if` element does.
+    pub once: bool,
 }
 
 /// A `<template v-for>` the lowering unwraps: presence of this fact on
@@ -105,7 +109,7 @@ const _: () = {
 #[cfg(target_pointer_width = "64")]
 const _: () = {
     assert!(core::mem::size_of::<WrapperKey>() == 40);
-    assert!(core::mem::size_of::<WrapperKeys>() == 48);
+    assert!(core::mem::size_of::<WrapperKeys>() == 56);
     assert!(core::mem::size_of::<ForWrapper>() == 120);
 };
 
@@ -222,22 +226,50 @@ pub(crate) fn capture_wrapper_attrs<'a>(
     (indexes, attributes, class)
 }
 
+/// The `v-once` on the `<template v-if>` that carries a chain. It caches the
+/// whole chain, so it is a wrapper fact and not a dropped attribute. Vue
+/// ignores it on a `v-else-if` / `v-else` carrier, where it stays a drop.
+pub(crate) fn chain_once_attr(element: &Element<'_>, analyzed: &Analyzed<'_>) -> Option<usize> {
+    if matches!(
+        analyzed.branch,
+        Some((_, BranchKind::ElseIf | BranchKind::Else))
+    ) {
+        return None;
+    }
+    element
+        .open
+        .attrs
+        .iter()
+        .position(|attr| attr.name.text == "v-once")
+}
+
+/// Record one captured wrapper key under provenance.
+pub(crate) fn record_wrapper_key(
+    cx: &mut Cx<'_>,
+    node: Option<NodeId>,
+    key: &WrapperKey,
+    branch: usize,
+) {
+    let (WrapperKey::Static { span, .. } | WrapperKey::Dynamic { span, .. }) = key;
+    let spelling = cx
+        .source
+        .get(span.start as usize..span.end as usize)
+        .unwrap_or("key");
+    cx.record(
+        "lower.branch-wrapper-key",
+        node,
+        spelling,
+        cstr!("wrapper key branch={branch}"),
+        *span,
+    );
+}
+
 /// A `<template>` wrapper the lowering unwraps has no op to carry its
 /// remaining attributes; each is dropped under an `Info` diagnostic and
 /// a record — dropping is never silent. `captured` names the wrapper-key
 /// attribute the caller lifted into the wrapper-key channel (P2-9
-/// series 5), which is therefore not a drop.
-pub(crate) fn record_template_drops<'a>(
-    cx: &mut Cx<'a>,
-    element: &Element<'a>,
-    analyzed: &Analyzed<'a>,
-    captured: Option<usize>,
-) {
-    record_template_drops_except(cx, element, analyzed, captured, &[]);
-}
-
-/// Same as [`record_template_drops`], with additional attr indexes
-/// captured by a wrapper fact rather than dropped.
+/// series 5), and `extra_captured` the attributes another wrapper fact
+/// carries; neither is a drop.
 pub(crate) fn record_template_drops_except<'a>(
     cx: &mut Cx<'a>,
     element: &Element<'a>,

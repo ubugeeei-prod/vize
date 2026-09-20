@@ -118,7 +118,24 @@ impl<'a> GenerateContext<'a> {
 
     /// Resolve a name through active loop/slot scopes and prop metadata.
     pub(super) fn resolve_scope_binding(&self, name: &str) -> Option<String> {
-        for scope in self.for_scopes.iter().rev() {
+        // Innermost scope first. Loop and slot scopes interleave, so a slot
+        // parameter declared inside a loop shadows the loop's alias.
+        let (mut loops, mut slots) = (self.for_scopes.len(), self.slot_scopes.len());
+        while loops > 0 || slots > 0 {
+            if slots > 0 && self.slot_scopes[slots - 1].for_depth >= loops {
+                slots -= 1;
+                let scope = &self.slot_scopes[slots];
+                if scope
+                    .names
+                    .iter()
+                    .any(|slot_name| name == slot_name.as_str())
+                {
+                    return Some(cstr!("{}.{}", scope.slot_props_var, name));
+                }
+                continue;
+            }
+            loops -= 1;
+            let scope = &self.for_scopes[loops];
             if let Some(ref value_alias) = scope.value_alias {
                 let for_var = cstr!("_for_item{}", scope.depth);
 
@@ -143,14 +160,6 @@ impl<'a> GenerateContext<'a> {
                 && name == index_alias.as_str()
             {
                 return Some(cstr!("_for_index{}.value", scope.depth));
-            }
-        }
-
-        for scope in self.slot_scopes.iter().rev() {
-            for slot_name in &scope.names {
-                if name == slot_name.as_str() {
-                    return Some(cstr!("{}.{}", scope.slot_props_var, slot_name));
-                }
             }
         }
 
@@ -296,6 +305,7 @@ impl<'a> GenerateContext<'a> {
         self.slot_scopes.push(SlotScope {
             names,
             slot_props_var: slot_props_var.clone(),
+            for_depth: self.for_scopes.len(),
         });
         slot_props_var
     }

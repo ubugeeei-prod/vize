@@ -26,6 +26,23 @@ fixtures are read from the pinned spec's AST. Rename checks additionally apply
 the edits and check the result: expanding `{ const value }` to
 `{ value: const renamed }` preserves the original property key.
 
-The remaining compiler, runtime/hydration, and TextMate reference cases are tracked
-by [#6176](https://github.com/ubugeeei-prod/vize/issues/6176). Preserving those source
-files is an inventory check, not evidence that those suites have all executed.
+`pattern-selection-reference.test.ts` runs the selection-semantics half of
+`compiler-core/__tests__/patterns.spec.ts`, its match table and all nine scenarios,
+through a render function compiled by the real CLI: every arm reports its index and
+bindings from a rendered interpolation. The grammar half of that spec is covered by
+the shared parser's unit tests in `crates/vize_armature/src/patterns/tests.rs`.
+
+`pattern-runtime-reference.test.ts` runs every case of `vue/__tests__/vMatch.spec.ts`
+against Vize's client and server output with the installed Vue runtime: attribute
+fallthrough through `Transition` and `KeepAlive`, keyed arms, client and server
+parity, and hydration across reactive arm changes.
+
+`pattern-vapor-parity-reference.test.ts` runs every case of
+`runtime-vapor/__tests__/vMatch.spec.ts` on both renderers from one reactive source.
+One scenario, remounting an explicitly keyed `<template>` arm, runs on the VDOM
+renderer only: Vapor has no keyed fragment yet.
+
+The remaining compiler snapshot, SFC, Vapor hydration, `Transition` e2e, and TextMate
+reference cases are tracked by [#6176](https://github.com/ubugeeei-prod/vize/issues/6176).
+Preserving those source files is an inventory check, not evidence that those suites
+have all executed.

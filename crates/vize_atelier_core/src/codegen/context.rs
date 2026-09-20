@@ -56,6 +56,9 @@ pub struct CodegenContext {
     pub(super) skip_normalize: bool,
     /// When true, we are inside a v-for loop (affects slot stability flags)
     pub(super) in_v_for: bool,
+    /// When true, we are inside a patterned-template scope: its bindings
+    /// change between renders like loop aliases, but refs stay single.
+    pub(super) in_match_scope: bool,
     /// When true, skip v-memo wrapping (already handled by v-for + v-memo)
     pub(super) skip_v_memo: bool,
     /// When true, the props currently being generated belong to a plain

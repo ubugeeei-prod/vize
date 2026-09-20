@@ -94,6 +94,29 @@ pub struct ForParseResult<'a> {
     pub key: Option<ExpressionNode<'a>>,
     pub index: Option<ExpressionNode<'a>>,
     pub finalized: bool,
+    /// Internal lexical scope introduced by patterned-template lowering (RFC
+    /// 823): the single-item source binds its aliases once. Code generation
+    /// emits a scope, never a list, so no fragment or list marker is rendered.
+    pub match_scope: bool,
+}
+
+impl<'a> ForParseResult<'a> {
+    /// The parse result of an authored `v-for` expression.
+    pub fn new(
+        source: ExpressionNode<'a>,
+        value: Option<ExpressionNode<'a>>,
+        key: Option<ExpressionNode<'a>>,
+        index: Option<ExpressionNode<'a>>,
+    ) -> Self {
+        Self {
+            source,
+            value,
+            key,
+            index,
+            finalized: false,
+            match_scope: false,
+        }
+    }
 }
 
 /// Text call node

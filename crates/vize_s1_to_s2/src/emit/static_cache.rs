@@ -74,25 +74,9 @@ fn op_has_legacy_hoist(
             let fact = id.and_then(|id| facts.static_facts.get(id)).copied();
             component_has_legacy_hoist(walk, component, fact, facts, wrappers)
         }
-        Op::If(if_op) => {
-            let wrapper_keys = id.and_then(|id| wrappers.get(id));
-            for (index, branch) in if_op.branches.iter().enumerate() {
-                let from_template = wrapper_keys
-                    .and_then(|keys| keys.from_template.get(index))
-                    .copied()
-                    .unwrap_or(false);
-                if branch_roots_have_legacy_hoist(
-                    walk,
-                    &branch.region.ops,
-                    facts,
-                    wrappers,
-                    from_template,
-                ) {
-                    return true;
-                }
-            }
-            false
-        }
+        Op::If(if_op) => if_op.branches.iter().any(|branch| {
+            branch_roots_have_legacy_hoist(walk, &branch.region.ops, facts, wrappers)
+        }),
         Op::For(for_op) => {
             for_children_have_legacy_hoist(walk, &for_op.region.ops, facts, wrappers)
         }
@@ -171,15 +155,16 @@ fn branch_roots_have_legacy_hoist(
     ops: &[Op<'_>],
     facts: &S2Facts,
     wrappers: &SideTable<WrapperKeys>,
-    from_template: bool,
 ) -> bool {
+    // A single child is the branch block itself, under `<template v-if>` too;
+    // only the children of a fragment branch are hoisted whole.
     let fragment_branch = ops.len() != 1;
     for op in ops {
         let id = walk.mint();
         match op {
             Op::Element(element) => {
                 walk.skip(element.bindings.len());
-                if (fragment_branch || from_template)
+                if fragment_branch
                     && id
                         .and_then(|id| facts.static_facts.get(id))
                         .is_some_and(|fact| fact.level == StaticLevel::FullyStatic)

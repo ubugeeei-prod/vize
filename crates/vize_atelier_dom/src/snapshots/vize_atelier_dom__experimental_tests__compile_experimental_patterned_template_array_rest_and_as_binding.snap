@@ -2,17 +2,10 @@
 source: crates/vize_atelier_dom/src/experimental_tests.rs
 expression: full
 ---
-const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, renderList: _renderList } = Vue
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([((__vize_match_0_select_0) => { { const __vize_match_0_select_3 = (() => { if (!Array.isArray(__vize_match_0_select_0) || !(__vize_match_0_select_0.length >= 1)) return null; const __vize_match_0_select_1 = __vize_match_0_select_0[0]; const __vize_match_0_select_2 = Array.from({ length: __vize_match_0_select_0.length - 1 }, (_, i) => __vize_match_0_select_0[i + 1]); { const first = __vize_match_0_select_1; const rest = __vize_match_0_select_2; const tuple = __vize_match_0_select_0; return [0, first, rest, tuple]; } })(); if (__vize_match_0_select_3 !== null) return __vize_match_0_select_3; } return [-1]; })((items
-))], (__vize_match_0) => {
-    return (_openBlock(), _createElementBlock(_Fragment, null, [
-      (__vize_match_0[0] === 0)
-        ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList([__vize_match_0], ([, first, rest, tuple]) => {
-          return (_openBlock(), _createElementBlock("p", null, _toDisplayString(tuple.length) + ":" + _toDisplayString(first) + ":" + _toDisplayString(rest.length), 1 /* TEXT */))
-        }), 256 /* UNKEYED_FRAGMENT */))
-        : _createCommentVNode("v-if", true)
-    ], 64 /* STABLE_FRAGMENT */))
-  }), 256 /* UNKEYED_FRAGMENT */))
+  return (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (!Array.isArray(__vize_match_0_0) || __vize_match_0_0.length < 1) break a0; const __vize_match_0_1 = __vize_match_0_0[0]; const __vize_match_0_2 = Array.from({ length: __vize_match_0_0.length - 1 }, (_, i) => __vize_match_0_0[i + 1]); { const first = __vize_match_0_1; const rest = __vize_match_0_2; const tuple = __vize_match_0_0; return [0, first, rest, tuple]; } } return [-1]; })(items); return (__vize_match_0[0] === 0)
+    ? (() => { const [, first, rest, tuple] = __vize_match_0; return (_openBlock(), _createElementBlock("p", { key: 0 }, _toDisplayString(tuple.length) + ":" + _toDisplayString(first) + ":" + _toDisplayString(rest.length), 1 /* TEXT */)) })()
+    : _createCommentVNode("v-if", true) })()
 }

@@ -1,6 +1,8 @@
 //! HTML escaping utilities and child/control-flow processing for SSR codegen.
 
 mod destructure;
+mod escape;
+mod match_scope;
 
 use vize_atelier_core::{
     CommentNode, ElementType, ForNode, IfNode, InterpolationNode, PropNode, RuntimeHelper,
@@ -9,6 +11,7 @@ use vize_atelier_core::{
 
 use super::SsrCodegenContext;
 pub(crate) use destructure::{collect_for_scoped_params, extract_destructure_params};
+pub(crate) use escape::{escape_html, escape_html_attr};
 use vize_s0::{String, ToCompactString, cstr};
 
 impl<'a> SsrCodegenContext<'a> {
@@ -47,7 +50,7 @@ impl<'a> SsrCodegenContext<'a> {
         );
     }
 
-    fn process_children_with_fallthrough_attrs(
+    pub(crate) fn process_children_with_fallthrough_attrs(
         &mut self,
         children: &[TemplateChildNode<'a>],
         as_fragment: bool,
@@ -113,6 +116,9 @@ impl<'a> SsrCodegenContext<'a> {
                     disable_comment,
                     inherit_attrs,
                 );
+            }
+            TemplateChildNode::For(for_node) if for_node.parse_result.match_scope => {
+                self.process_match_scope(for_node, disable_comment, inherit_attrs);
             }
             TemplateChildNode::For(for_node) => {
                 self.process_for(for_node, disable_nested_fragments);
@@ -309,35 +315,6 @@ impl<'a> SsrCodegenContext<'a> {
     }
 }
 
-/// Escape HTML special characters
-pub(crate) fn escape_html(s: &str) -> String {
-    let mut result = String::with_capacity(s.len());
-    for c in s.chars() {
-        match c {
-            '&' => result.push_str("&amp;"),
-            '<' => result.push_str("&lt;"),
-            '>' => result.push_str("&gt;"),
-            '"' => result.push_str("&quot;"),
-            '\'' => result.push_str("&#39;"),
-            _ => result.push(c),
-        }
-    }
-    result
-}
-
-/// Escape HTML attribute value
-pub(crate) fn escape_html_attr(s: &str) -> String {
-    let mut result = String::with_capacity(s.len());
-    for c in s.chars() {
-        match c {
-            '&' => result.push_str("&amp;"),
-            '"' => result.push_str("&quot;"),
-            _ => result.push(c),
-        }
-    }
-    result
-}
-
 fn single_fallthrough_child_index(children: &[TemplateChildNode]) -> Option<usize> {
     let mut index = None;
 
@@ -356,13 +333,15 @@ fn single_fallthrough_child_index(children: &[TemplateChildNode]) -> Option<usiz
 }
 
 fn is_fallthrough_root_candidate(child: &TemplateChildNode) -> bool {
-    matches!(
-        child,
-        TemplateChildNode::Element(_) | TemplateChildNode::If(_)
-    )
+    match child {
+        TemplateChildNode::Element(_) | TemplateChildNode::If(_) => true,
+        // A patterned-template scope renders its content in place.
+        TemplateChildNode::For(for_node) => for_node.parse_result.match_scope,
+        _ => false,
+    }
 }
 
-fn rendered_child_count(children: &[TemplateChildNode]) -> usize {
+pub(crate) fn rendered_child_count(children: &[TemplateChildNode]) -> usize {
     children
         .iter()
         .map(|child| match child {

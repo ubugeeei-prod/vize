@@ -5,7 +5,7 @@ expression: vapor_output(CONTROL_FLOW)
 errors=[]
 templates=["<aside>Aside</aside>", "<li> </li>", "<li>Empty</li>", "<div><!----><ul><!----></ul><p>Last</p></div>"]
 code=
-import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
+import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, computed as _computed, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
 const t0 = _template("<aside>Aside</aside>", true)
 const t1 = _template("<li> </li>")
 const t2 = _template("<li>Empty</li>")
@@ -22,8 +22,7 @@ export function render(_ctx) {
     return n5
   })
   _setInsertionState(n0, n6, true)
-  const n7 = _createFor(() => ([((__vize_match_0_select_0) => { { const __vize_match_0_select_1 = (() => { if (!(__vize_match_0_select_0 === 'ready')) return null;  {  return [0]; } })(); if (__vize_match_0_select_1 !== null) return __vize_match_0_select_1; } { const __vize_match_0_select_2 = (() => {   {  return [1]; } })(); if (__vize_match_0_select_2 !== null) return __vize_match_0_select_2; } return [-1]; })((_ctx.status
-))]), (_for_item0) => {
+  const n7 = ((_for_item0) => {
     _setInsertionState(n0, n6, true)
     const n9 = _createIf(() => (_for_item0.value[0] === 0), () => {
       const n11 = _createFor(() => (_ctx.items), (_for_item1) => {
@@ -34,13 +33,13 @@ export function render(_ctx) {
           _setText(x13, _toDisplayString(_for_item1.value.label))
         })
         return n13
-      }, (item) => (item.id), 1)
+      })
       return n11
 }, () => _createIf(() => (_for_item0.value[0] === 1), () => {
       const n15 = t2()
       return n15
     }))
     return n9
-  })
+  })(_computed(() => (((__vize_match_0_0) => { a0: { if (__vize_match_0_0 !== 'ready') break a0; return [0]; } return [1]; })(_ctx.status))))
   return n1
 }

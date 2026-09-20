@@ -57,6 +57,7 @@ impl CodegenContext {
             skip_scope_id: false,
             skip_normalize: false,
             in_v_for: false,
+            in_match_scope: false,
             skip_v_memo: false,
             props_is_plain_element: false,
             parent_ns: Namespace::Html,

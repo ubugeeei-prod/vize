@@ -6,6 +6,7 @@
 mod generate;
 pub(crate) mod helpers;
 mod item_props;
+pub(crate) mod match_scope;
 mod slot_outlet;
 
 use crate::steps::v_memo::{get_memo_exp, has_v_memo};
@@ -43,6 +44,10 @@ fn generate_for_inner(
     for_node: &ForNode<'_>,
     generate_fragment_key: Option<&dyn Fn(&mut CodegenContext)>,
 ) {
+    if for_node.parse_result.match_scope {
+        match_scope::generate_match_scope(ctx, for_node, &match_scope::generate_scope_body);
+        return;
+    }
     ctx.use_helper(RuntimeHelper::OpenBlock);
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
     ctx.use_helper(RuntimeHelper::Fragment);

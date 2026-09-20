@@ -5,7 +5,7 @@ expression: vapor_output(SEPARATED_TEXT_RUNS)
 errors=[]
 templates=["<li>Ready</li>", "Before ", " ", "<em>mid</em>", "After ", " ", "<div><ul><!----></ul></div>"]
 code=
-import { child as _child, toDisplayString as _toDisplayString, setText as _setText, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
+import { child as _child, toDisplayString as _toDisplayString, setText as _setText, computed as _computed, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<li>Ready</li>")
 const t1 = _template("Before ")
 const t2 = _template(" ")
@@ -19,8 +19,7 @@ export function render(_ctx) {
   const n0 = _child(n1)
   const n2 = _child(n0)
   _setInsertionState(n0, n2, true)
-  const n3 = _createFor(() => ([((__vize_match_0_select_0) => { { const __vize_match_0_select_1 = (() => { if (!(__vize_match_0_select_0 === 'ready')) return null;  {  return [0]; } })(); if (__vize_match_0_select_1 !== null) return __vize_match_0_select_1; } return [-1]; })((_ctx.status
-))]), (_for_item0) => {
+  const n3 = ((_for_item0) => {
     _setInsertionState(n0, n2, true)
     const n8 = t1()
     const n9 = t2()
@@ -36,6 +35,6 @@ export function render(_ctx) {
       _setText(n12, _toDisplayString(_ctx.b))
     })
     return [n5, n8, n9, n10, n11, n12]
-  })
+  })(_computed(() => (((__vize_match_0_0) => { a0: { if (__vize_match_0_0 !== 'ready') break a0; return [0]; } return [-1]; })(_ctx.status))))
   return n1
 }

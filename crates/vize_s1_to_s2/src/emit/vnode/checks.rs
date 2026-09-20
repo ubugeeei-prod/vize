@@ -22,25 +22,6 @@ pub(super) fn has_cloak(bindings: &[BindingOp<'_>]) -> bool {
         .any(|binding| matches!(binding, BindingOp::VueCloak(_)))
 }
 
-pub(super) fn template_if_branch_root_has_direct_interpolation(
-    cx: &EmitCx<'_>,
-    element: &ElementOp<'_>,
-    if_key: Option<&str>,
-) -> bool {
-    if if_key.is_none() || !cx.template_if_branch_root {
-        return false;
-    }
-    has_direct_interpolation_child(element)
-}
-
-pub(super) fn has_direct_interpolation_child(element: &ElementOp<'_>) -> bool {
-    element
-        .children
-        .ops
-        .iter()
-        .any(|op| matches!(op, Op::Interpolation(_)))
-}
-
 pub(super) fn has_interpolation_descendant(element: &ElementOp<'_>) -> bool {
     region_has_interpolation_descendant(&element.children.ops)
 }

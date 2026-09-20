@@ -23,4 +23,6 @@ pub use helpers::{
 };
 pub use inline::generate_element;
 #[allow(unused_imports)]
-pub use v_once::{generate_v_once_child, generate_v_once_element, generate_v_once_props};
+pub use v_once::{
+    generate_v_once_cached, generate_v_once_child, generate_v_once_element, generate_v_once_props,
+};

@@ -61,7 +61,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let collected_slots = collect_slots(el, &ctx.source);
     let has_forwarded_slots = has_forwarded_slot_outlet(el);
     let forwarded_slots_are_dynamic = has_forwarded_slots && ctx.has_slot_params();
-    let has_dynamic_slots = ctx.in_v_for
+    let has_dynamic_slots = (ctx.in_v_for || ctx.in_match_scope)
         || root_slot.is_some_and(is_dynamic_slot)
         || collected_slots.iter().any(|s| s.is_dynamic)
         || forwarded_slots_are_dynamic;

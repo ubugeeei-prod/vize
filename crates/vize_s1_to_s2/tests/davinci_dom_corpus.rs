@@ -35,6 +35,43 @@ const BATTERY: &[(&str, &str)] = &[
         "self_closing_non_void_html",
         r#"<template><div /><span class="x" /></template>"#,
     ),
+    // A single element under `<template v-if>` is the branch block on both
+    // lanes, static or not; it is never hoisted out from under the branch key.
+    (
+        "template_branch_single_static_element",
+        r#"<template><section><template v-if="ok"><p>one</p></template><template v-else><p class="b">two</p></template></section></template>"#,
+    ),
+    // `v-once` on the `v-if` element caches the whole chain on both lanes.
+    (
+        "once_on_conditional_chain",
+        r#"<template><section><input v-if="ok" v-once :value="v" /><b v-else>x</b></section></template>"#,
+    ),
+    (
+        "once_on_conditional_component",
+        r#"<template><section><Comp v-if="ok" v-once :a="a" /></section></template>"#,
+    ),
+    (
+        "once_on_template_chain_carrier",
+        r#"<template><section><template v-if="ok" v-once><p>{{ a }}</p><i>x</i></template><b v-else>y</b></section></template>"#,
+    ),
+    (
+        "once_inside_template_branch",
+        r#"<template><section><template v-if="ok"><p v-once>{{ a }}</p></template></section></template>"#,
+    ),
+    // The root under `<template v-if>` hoists exactly what a `v-if` element
+    // does: its static descendants, and never an unused copy of its own props.
+    (
+        "template_branch_root_static_descendant",
+        r#"<template><div><template v-if="ok"><span>{{ v }}<a href="x">more</a></span></template></div></template>"#,
+    ),
+    (
+        "template_branch_root_static_props",
+        r#"<template><div><template v-if="ok"><div flex gap-1><i class="x" /><span>{{ v }}</span></div></template></div></template>"#,
+    ),
+    (
+        "template_branch_component_root_static_props",
+        r#"<template><Foo><template v-if="ok"><i18n-t keypath="a.b">{{ v }}</i18n-t></template><i18n-t v-else keypath="a.c">{{ v }}</i18n-t></Foo></template>"#,
+    ),
 ];
 
 #[test]

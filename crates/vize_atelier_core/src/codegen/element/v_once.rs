@@ -35,6 +35,12 @@ fn generate_static_prop_key(ctx: &mut CodegenContext, name: &str) {
 
 /// Generate v-once element with cache wrapper
 pub fn generate_v_once_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    generate_v_once_cached(ctx, |ctx| generate_v_once_vnode(ctx, el));
+}
+
+/// Wrap `body` in the `v-once` cache expression: it renders on the first pass
+/// only, with block tracking paused so the cached tree is never patched.
+pub fn generate_v_once_cached(ctx: &mut CodegenContext, body: impl FnOnce(&mut CodegenContext)) {
     let cache_index = ctx.next_cache_index();
 
     ctx.use_helper(RuntimeHelper::SetBlockTracking);
@@ -51,11 +57,33 @@ pub fn generate_v_once_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     ctx.push("(-1, true),");
     ctx.newline();
 
-    // (_cache[0] = _createElementVNode(...)).cacheIndex = 0,
+    // (_cache[0] = <body>).cacheIndex = 0,
     ctx.push("(_cache[");
     ctx.push(&cache_index.to_compact_string());
     ctx.push("] = ");
+    body(ctx);
+    ctx.push(").cacheIndex = ");
+    ctx.push(&cache_index.to_compact_string());
+    ctx.push(",");
+    ctx.newline();
 
+    // _setBlockTracking(1),
+    ctx.push(ctx.helper(RuntimeHelper::SetBlockTracking));
+    ctx.push("(1),");
+    ctx.newline();
+
+    // _cache[0]
+    ctx.push("_cache[");
+    ctx.push(&cache_index.to_compact_string());
+    ctx.push("]");
+
+    ctx.deindent();
+    ctx.newline();
+    ctx.push(")");
+}
+
+/// The vnode a `v-once` element caches.
+fn generate_v_once_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Generate the element content
     if el.tag_type == ElementType::Component {
         ctx.use_helper(RuntimeHelper::CreateVNode);
@@ -125,25 +153,6 @@ pub fn generate_v_once_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         }
         ctx.push(")");
     }
-
-    ctx.push(").cacheIndex = ");
-    ctx.push(&cache_index.to_compact_string());
-    ctx.push(",");
-    ctx.newline();
-
-    // _setBlockTracking(1),
-    ctx.push(ctx.helper(RuntimeHelper::SetBlockTracking));
-    ctx.push("(1),");
-    ctx.newline();
-
-    // _cache[0]
-    ctx.push("_cache[");
-    ctx.push(&cache_index.to_compact_string());
-    ctx.push("]");
-
-    ctx.deindent();
-    ctx.newline();
-    ctx.push(")");
 }
 
 /// Generate props for v-once element (excludes v-once directive)

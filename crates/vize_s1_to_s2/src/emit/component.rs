@@ -145,16 +145,7 @@ pub(super) fn emit_call(
     } else {
         None
     };
-    let branch_unused_hoist = !has_component_root_slot
-        && !has_custom
-        && !for_item
-        && if_key.is_some()
-        && cx.template_if_branch_root
-        && hoistable_static_props.is_some()
-        && (static_nested
-            || call_props::children_are_direct_static_vnode_hoists(&component.children, cx.is_ts));
-    let unused_hoist = hoisted_static_props.is_none()
-        && ((can_hoist_static_props && static_nested) || branch_unused_hoist);
+    let unused_hoist = hoisted_static_props.is_none() && can_hoist_static_props && static_nested;
     if unused_hoist {
         cx.buf.push_hoist(
             hoistable_static_props
