@@ -254,7 +254,7 @@ let text = " hello ";
     assert_eq!(
         diagnostics_for(&broken, "src/Broken.vue"),
         [
-            "error:4:15 [TS2339] Property 'nope' does not exist on type '__VizeModelModifiers<\"capitalize\" | \"trim\">'."
+            "error:4:15 [TS2339] Property 'nope' does not exist on type 'Record<\"capitalize\" | \"trim\", true | undefined>'."
         ],
         "{broken}"
     );

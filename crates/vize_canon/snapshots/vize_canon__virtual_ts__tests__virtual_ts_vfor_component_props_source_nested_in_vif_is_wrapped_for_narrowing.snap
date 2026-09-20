@@ -189,6 +189,7 @@ function __setup() {
 
   // Component template navigation references
   void Test;
+  const { } = undefined as unknown as __Test_Props_0;
   const __vize_props_nav_0 = undefined as unknown as __Test_Props_0 & Record<string, unknown>;
   void __vize_props_nav_0.value1;
 

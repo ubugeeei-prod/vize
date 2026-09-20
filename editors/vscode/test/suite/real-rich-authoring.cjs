@@ -19,6 +19,7 @@ exports.runRichAuthoring = async function runRichAuthoring() {
     document.uri,
     (items) => items.length === 0,
     "rich authoring initial document",
+    30_000,
   );
   const original = document.getText();
   const authoredCall = "invoice.formatTotal(1200)";
@@ -72,6 +73,7 @@ exports.runRichAuthoring = async function runRichAuthoring() {
     document.uri,
     (items) => items.some((item) => Number(item.code) === 2339),
     "incomplete member diagnostic",
+    30_000,
   );
   const completions = await vscode.commands.executeCommand(
     "vscode.executeCompletionItemProvider",
@@ -104,5 +106,69 @@ exports.runRichAuthoring = async function runRichAuthoring() {
     ),
     true,
   );
-  await waitForDiagnostics(document.uri, (items) => items.length === 0, "rich authoring repair");
+  await waitForDiagnostics(
+    document.uri,
+    (items) => items.length === 0,
+    "rich authoring repair",
+    30_000,
+  );
+  await assertComponentDocumentation(document, editor);
 };
+
+async function assertComponentDocumentation(document, editor) {
+  const source = document.getText();
+  const heading = source.indexOf('heading="April"');
+  const hovers = await vscode.commands.executeCommand(
+    "vscode.executeHoverProvider",
+    document.uri,
+    document.positionAt(heading + 2),
+  );
+  const hover = hovers?.find((item) =>
+    item.contents.some((content) =>
+      content.value?.includes("Heading displayed above the invoice total"),
+    ),
+  );
+  assert.ok(hover, "component prop hover must expose the child's authored documentation");
+  assert.match(hover.contents.map((content) => content.value).join("\n"), /```typescript\n/);
+  assert.deepEqual(
+    hover.range,
+    new vscode.Range(document.positionAt(heading), document.positionAt(heading + 7)),
+  );
+
+  const attribute = 'tone="muted"';
+  const start = source.indexOf(attribute);
+  const range = new vscode.Range(
+    document.positionAt(start),
+    document.positionAt(start + attribute.length),
+  );
+  assert.equal(await editor.edit((edit) => edit.replace(range, "to")), true);
+  const completions = await vscode.commands.executeCommand(
+    "vscode.executeCompletionItemProvider",
+    document.uri,
+    document.positionAt(start + 2),
+    undefined,
+    1,
+  );
+  const tone = completions?.items.find(
+    (item) => (typeof item.label === "string" ? item.label : item.label.label) === "tone",
+  );
+  assert.ok(tone?.documentation instanceof vscode.MarkdownString);
+  assert.match(tone.documentation.value, /```typescript\n/);
+  assert.match(tone.documentation.value, /\*\*Visual emphasis\*\* for overdue invoices/);
+  assert.match(tone.documentation.value, /muted.*strong|strong.*muted/);
+  assert.equal(
+    await editor.edit((edit) =>
+      edit.replace(
+        new vscode.Range(document.positionAt(start), document.positionAt(start + 2)),
+        attribute,
+      ),
+    ),
+    true,
+  );
+  await waitForDiagnostics(
+    document.uri,
+    (items) => items.length === 0,
+    "component prop repair",
+    30_000,
+  );
+}

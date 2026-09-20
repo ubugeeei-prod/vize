@@ -7,26 +7,11 @@ pub(super) fn emit_authored_event_map(
     ts: &mut String,
     summary: &Croquis,
     mappings: &mut MacroTypeMappings<'_>,
-    can_replace_emits: bool,
     generic_decl: Option<&str>,
     generic_names: &str,
 ) {
     let events = summary.macros.emits();
     let models = summary.macros.models();
-    let all_events_authored = can_replace_emits
-        && (!events.is_empty() || !models.is_empty())
-        && events.iter().all(|emit| {
-            summary
-                .macros
-                .emit_declaration(emit.name.as_str())
-                .is_some()
-        })
-        && models.iter().all(|model| {
-            summary
-                .macros
-                .model_declaration(model.name.as_str())
-                .is_some()
-        });
     let authored_map = generic_decl.map_or_else(
         || String::from("__VizeAuthoredEventMap"),
         |decl| cstr!("__VizeAuthoredEventMap<{decl}>"),
@@ -34,12 +19,12 @@ pub(super) fn emit_authored_event_map(
     let generic_suffix = generic_decl
         .map(|_| cstr!("<{generic_names}>"))
         .unwrap_or_default();
-    append!(*ts, "type {authored_map} = ");
-    if all_events_authored {
-        ts.push_str("{\n");
-    } else {
-        append!(*ts, "Emits{generic_suffix} & {{\n");
-    }
+    // Preserve the original property symbols (and their JSDoc) alongside the
+    // mapped navigation endpoints. Reconstructing a fresh object loses docs.
+    append!(
+        *ts,
+        "type {authored_map} = __VizeStaticEventMap{generic_suffix} & {{\n"
+    );
     let mut emitted_names = FxHashSet::default();
     for emit in events {
         if !emitted_names.insert(emit.name.as_str()) {

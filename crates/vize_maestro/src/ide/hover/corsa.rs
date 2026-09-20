@@ -17,6 +17,7 @@ use super::HoverService;
 use crate::ide::IdeContext;
 use crate::virtual_code::ArtVariantInfo;
 
+mod canonical;
 mod markdown;
 mod range;
 use range::authored_hover_token_range;
@@ -127,15 +128,16 @@ impl HoverService {
     ) -> Option<Hover> {
         let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
 
-        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
-            && let Some(mut hover) = Self::hover_component_tag(ctx)
-                .or_else(|| super::component_prop::hover_attribute(ctx))
-                .or_else(|| super::component_prop::hover_event(ctx))
-        {
-            if hover.range.is_none() {
-                hover.range = authored_hover_token_range(ctx);
+        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
+            if let Some(mut hover) = Self::hover_component_tag(ctx) {
+                if hover.range.is_none() {
+                    hover.range = authored_hover_token_range(ctx);
+                }
+                return Some(hover);
             }
-            return Some(hover);
+            if let Some(hover) = canonical::component_hover(ctx, corsa_bridge.as_ref()).await {
+                return Some(hover);
+            }
         }
 
         if !word.is_empty()
@@ -172,21 +174,9 @@ impl HoverService {
             return Some(hover);
         }
 
-        if let Some(bridge) = corsa_bridge.as_ref()
-            && bridge.is_initialized()
-            && let Some(doc) =
-                crate::ide::corsa_support::open_canonical_virtual_document(ctx, bridge).await
-            && let Some((line, character)) =
-                crate::ide::corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)
-            && let Ok(Some(hover)) = bridge.hover(&doc.request_uri, line, character).await
-        {
-            let mapped_range = hover.range.as_ref().and_then(|range| {
-                crate::ide::corsa_support::map_canonical_lsp_range(ctx, &doc, range)
-            });
-            let mut converted = Self::convert_lsp_hover(hover);
-            converted.range = mapped_range.or_else(|| authored_hover_token_range(ctx));
-            super::declaration_keyword::align_hover(ctx, &word, &mut converted);
-            return Some(converted);
+        if let Some(mut hover) = canonical::hover(ctx, corsa_bridge.as_ref(), false).await {
+            super::declaration_keyword::align_hover(ctx, &word, &mut hover);
+            return Some(hover);
         }
 
         if word.is_empty() {

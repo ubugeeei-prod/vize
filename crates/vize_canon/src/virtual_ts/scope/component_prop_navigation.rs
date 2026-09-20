@@ -64,6 +64,19 @@ fn emit_prop_references(
     component_gen_range: &Range<usize>,
 ) {
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
+    // A complete TypeScript binding pattern provides a stable completion point
+    // even while the Vue attribute name is empty or only `:` has been typed.
+    ts.push_str("  const { ");
+    let completion_offset = ts.len();
+    append!(
+        *ts,
+        "}} = undefined as unknown as __{component_type_name}_Props_{idx};\n"
+    );
+    semantic_links.push(VizeSemanticLink {
+        source_range: component_gen_range.clone(),
+        target_range: completion_offset..completion_offset,
+        kind: VizeSemanticLinkKind::VueComponentPropCompletion,
+    });
     let props_ref = cstr!("__vize_props_nav_{idx}");
     let mut emitted_props_ref = false;
     for prop in &usage.props {

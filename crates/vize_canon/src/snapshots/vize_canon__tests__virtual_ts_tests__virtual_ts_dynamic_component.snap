@@ -190,6 +190,7 @@ function __setup() {
 
   // Component template navigation references
   void currentComponent;
+  const { } = undefined as unknown as __currentComponent_Props_0;
 
   // Component props value checks (template scope)
   void [

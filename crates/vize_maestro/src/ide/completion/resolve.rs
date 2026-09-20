@@ -18,6 +18,19 @@ mod tests;
 mod visibility;
 
 impl CompletionService {
+    /// Keep authored Vue labels and snippets while deferring native JSDoc.
+    pub(super) fn attach_native_documentation(item: &mut CompletionItem, native: &CompletionItem) {
+        if let Some(mut data) = native.data.clone()
+            && let Some(payload) = data.get_mut(RESOLVE_DATA)
+        {
+            payload["label"] = json!(item.label);
+            item.data = Some(data);
+        }
+        if native.documentation.is_some() {
+            item.documentation = native.documentation.clone();
+        }
+    }
+
     pub(super) async fn request_canonical(
         ctx: &IdeContext<'_>,
         bridge: &CorsaBridge,
@@ -85,6 +98,7 @@ impl CompletionService {
         if !can_resolve(state, &uri, revision) {
             return item;
         }
+        let native_label = raw.get("label").and_then(Value::as_str).map(str::to_owned);
         let Ok(Some(resolved)) = bridge.completion_resolve(&request_uri, raw).await else {
             return item;
         };
@@ -92,7 +106,7 @@ impl CompletionService {
             return item;
         }
         if let Ok(resolved) = serde_json::from_value::<LspCompletionItem>(resolved)
-            && resolved.label == item.label
+            && Some(resolved.label.as_str()) == native_label.as_deref()
         {
             let resolved = Self::convert_lsp_completion(resolved);
             item.detail = resolved.detail.or(item.detail);
@@ -142,5 +156,6 @@ fn resolve_data(data: &Value, label: &str) -> Option<(Url, u64, String, Value)> 
     let revision = data.get("revision")?.as_u64()?;
     let raw = data.get("item")?;
     let request_uri = data.get("requestUri")?.as_str()?.to_owned();
-    (raw.get("label")?.as_str()? == label).then(|| (uri, revision, request_uri, raw.clone()))
+    let presented_label = data.get("label").unwrap_or(raw.get("label")?).as_str()?;
+    (presented_label == label).then(|| (uri, revision, request_uri, raw.clone()))
 }

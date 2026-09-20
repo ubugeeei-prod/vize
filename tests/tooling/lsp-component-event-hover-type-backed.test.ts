@@ -31,7 +31,10 @@ function save(value: string) {
 `;
 
 const childSource = `<script setup lang="ts">
-defineEmits<{ save: [value: string] }>()
+defineEmits<{
+  /** Persist the **edited value** after validation. */
+  save: [value: string]
+}>()
 </script>
 
 <template><button /></template>
@@ -88,6 +91,7 @@ test("component event hovers and definitions use child emit contracts", async (t
     assert.match(hoverText, /Component event/);
     assert.match(hoverText, /@save/);
     assert.match(hoverText, /\[value: string\]/);
+    assert.match(hoverText, /Persist the \*\*edited value\*\* after validation/);
     assert.doesNotMatch(hoverText, /_Script binding_|_Template binding|MaybeRef<unknown>/);
     await assertDefinition(session, appUri, saveEvent.start, childUri, childSaveEvent);
   } finally {

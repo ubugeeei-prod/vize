@@ -161,6 +161,11 @@ impl super::CompletionService {
 
         // Try Corsa completion first.
         if let Some(bridge) = corsa_bridge {
+            if matches!(block_type, BlockType::Template)
+                && let Some(items) = template::complete_component_with_corsa(ctx, &bridge).await
+            {
+                return Some(CompletionResponse::Array(items));
+            }
             let corsa_items = match block_type {
                 BlockType::Template => service_corsa_template::complete(ctx, &bridge).await,
                 BlockType::Script => Self::complete_script_with_corsa(ctx, false, &bridge).await,

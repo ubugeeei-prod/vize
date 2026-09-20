@@ -1,10 +1,17 @@
-use tower_lsp::lsp_types::Hover;
+use tower_lsp::lsp_types::{Hover, HoverContents, MarkupKind};
 
 use super::HoverBuilder;
 use crate::ide::IdeContext;
 use crate::ide::completion::template::component_metadata;
 
 pub(super) fn hover_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
+    hover_attribute_documented(ctx, None)
+}
+
+pub(super) fn hover_attribute_documented(
+    ctx: &IdeContext<'_>,
+    native: Option<&Hover>,
+) -> Option<Hover> {
     let (attr_name, component_name) =
         crate::ide::definition::helpers::get_attribute_and_component_at_offset(ctx)?;
     if !crate::ide::is_component_tag(&component_name) {
@@ -23,10 +30,8 @@ pub(super) fn hover_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
         } else {
             "Optional"
         };
-        let mut builder = HoverBuilder::new()
-            .title(&prop.name)
-            .meta("Component prop")
-            .code("typescript", &signature)
+        let builder = HoverBuilder::new().title(&prop.name).meta("Component prop");
+        let mut builder = documented_signature(builder, &signature, native)
             .section("Requirement", requirement)
             .example(
                 "vue",
@@ -81,22 +86,49 @@ pub(super) fn hover_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
 }
 
 pub(super) fn hover_event(ctx: &IdeContext<'_>) -> Option<Hover> {
+    hover_event_documented(ctx, None)
+}
+
+pub(super) fn hover_event_documented(
+    ctx: &IdeContext<'_>,
+    native: Option<&Hover>,
+) -> Option<Hover> {
     let contract = crate::ide::definition::component_event::contract(ctx)?;
     let signature = format!("{}: {}", contract.name, contract.payload_type);
 
     Some(
-        HoverBuilder::new()
-            .title(&format!("@{}", contract.name))
-            .meta("Component event")
-            .code("typescript", &signature)
-            .section("Payload", &format!("`{}`", contract.payload_type))
-            .example("vue", &format!("@{}=\"handler\"", contract.name))
-            .docs(
-                "Vue Component Events",
-                "https://vuejs.org/guide/components/events.html",
-            )
-            .build_with_range(contract.authored_range),
+        documented_signature(
+            HoverBuilder::new()
+                .title(&format!("@{}", contract.name))
+                .meta("Component event"),
+            &signature,
+            native,
+        )
+        .section("Payload", &format!("`{}`", contract.payload_type))
+        .example("vue", &format!("@{}=\"handler\"", contract.name))
+        .docs(
+            "Vue Component Events",
+            "https://vuejs.org/guide/components/events.html",
+        )
+        .build_with_range(contract.authored_range),
     )
+}
+
+fn documented_signature(
+    builder: HoverBuilder,
+    signature: &str,
+    native: Option<&Hover>,
+) -> HoverBuilder {
+    if let Some(Hover {
+        contents: HoverContents::Markup(content),
+        ..
+    }) = native
+        && content.kind == MarkupKind::Markdown
+    {
+        builder.description(&content.value)
+    } else {
+        builder.code("typescript", signature)
+    }
 }
 
 fn prop_signature_at(script: &str, offset: usize, prop_name: &str) -> String {

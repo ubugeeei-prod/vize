@@ -15,6 +15,8 @@ mod bindings;
 mod component_cache;
 mod component_docs;
 mod component_meta;
+#[cfg(feature = "native")]
+mod component_native;
 mod components;
 mod directives;
 mod native;
@@ -35,6 +37,8 @@ use components::builtin_component_completions;
 pub(crate) use art::{complete_art, complete_inline_art};
 pub(crate) use component_cache::CachedComponentMetadata;
 pub(crate) use component_meta::component_metadata;
+#[cfg(feature = "native")]
+pub(super) use component_native::complete_with_corsa as complete_component_with_corsa;
 pub(crate) use directives::{contextual_directive_completions, vize_directive_completions};
 // Consumed via `template::*` by unit tests in the parent completion module; the
 // `allow` keeps non-test builds warning-free while preserving the public path.

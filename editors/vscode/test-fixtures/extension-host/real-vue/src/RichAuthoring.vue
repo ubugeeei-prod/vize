@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import InvoiceCard from "./InvoiceCard.vue";
+
 const invoice = {
   /**
    * Format the total shown on an invoice.
@@ -17,5 +19,6 @@ const invoice = {
 </script>
 
 <template>
+  <InvoiceCard heading="April" tone="muted" />
   <p>{{ invoice.formatTotal(1200) }}</p>
 </template>

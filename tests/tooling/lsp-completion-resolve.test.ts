@@ -100,7 +100,7 @@ test("completion resolves authored documentation through the real server", async
     const value = typeof doc === "string" ? doc : (doc as { value: string } | undefined)?.value;
     assert.equal(
       value,
-      `\`\`\`typescript\n${resolved.detail}\n\`\`\`${expected ? `\n\n${expected}` : ""}`,
+      `\`\`\`typescript\n${String(resolved.detail)}\n\`\`\`${expected ? `\n\n${expected}` : ""}`,
     );
     assert.ok(
       String(resolved.detail).includes(`${declarationName}(name: string): string`),

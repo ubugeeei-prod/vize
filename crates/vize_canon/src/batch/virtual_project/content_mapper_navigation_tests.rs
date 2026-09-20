@@ -100,7 +100,11 @@ defineEmits<{ save: [value: number] }>();
     let result =
         generate_vue_content_mapper_transform(Path::new("Child.vue"), source).expect("transform");
 
-    assert!(result.text.contains("type __VizeAuthoredEventMap = {"));
+    assert!(
+        result
+            .text
+            .contains("type __VizeAuthoredEventMap = __VizeStaticEventMap & {")
+    );
     assert!(
         result
             .text

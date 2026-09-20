@@ -5,6 +5,7 @@ use vize_s0::{String, cstr};
 use crate::ide::IdeContext;
 use crate::ide::diagnostics::VirtualTsResult;
 
+mod component_completion;
 mod exact_edits;
 mod mapping;
 mod open;
@@ -12,6 +13,7 @@ mod project;
 pub(super) mod rename;
 mod semantic_links;
 
+pub(crate) use component_completion::canonical_component_prop_position;
 pub(crate) use exact_edits::map_canonical_exact_edit_range;
 use mapping::source_offset_to_virtual_generated_offset;
 pub(crate) use mapping::{canonical_source_offset_to_position, map_canonical_lsp_range};

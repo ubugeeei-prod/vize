@@ -30,7 +30,7 @@ mod workspace_edit;
 pub(crate) use canonical::canonical_request_path;
 pub(crate) use canonical::{
     CanonicalProjectOpenError, CanonicalSemanticPosition, CanonicalVirtualDocument,
-    ComponentPropNavigationIdentities, ComponentPropSourceCache,
+    ComponentPropNavigationIdentities, ComponentPropSourceCache, canonical_component_prop_position,
     canonical_source_offset_to_position, component_prop_location_matches,
     component_prop_navigation_identity_matches, linked_semantic_position,
     map_canonical_corsa_location, map_canonical_corsa_locations,
