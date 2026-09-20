@@ -93,14 +93,9 @@ declare function __vizeComponentGlobalHtmlAttrs(value: __VizeComponentGlobalHtml
 // @ts-ignore TS2694/TS2307: a `vue` without `Directive` must degrade custom directive value checks to unchecked, never error. See virtual_ts/expressions/directive_values.rs.
 type __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ? V : unknown;
 declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;
-type __VForEntry<T> = T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number];
-declare function __vForList<const T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
+declare function __vForList<const T>(source: T): T extends number ? [item: number, key: number][] : T extends string ? [item: string, key: number][] : T extends readonly any[] ? (T extends readonly (infer U)[] ? [item: U, key: number] : never)[] : T extends Iterable<any> ? (T extends Iterable<infer U> ? [item: U, key: number] : never)[] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number][];
 
 // ========== Exported Types ==========
-export type Props<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any> = {
-  mode: Mode;
-  event?: TEvent;
-};
 
 // ========== Setup Scope ==========
 function __setup<Mode extends 'row' | 'cell', TEvent extends Mode>() {
@@ -146,8 +141,15 @@ function __setup<Mode extends 'row' | 'cell', TEvent extends Mode>() {
     current: () => Mode;
   }>();
   
-  // @vize-map: 15683:15919 -> 0:207
+  // @vize-map: 15506:15742 -> 0:207
 
+
+  // Setup-scoped props type artifact
+  type __VizeSetupProps = {
+  mode: Mode;
+  event?: TEvent;
+};
+  const __vize_setup_props = undefined as unknown as __VizeSetupProps;
   // ========== Template Scope (inherits from setup) ==========
   // Anchor before the template scope shadows `props`
   void props;
@@ -164,18 +166,19 @@ function __setup<Mode extends 'row' | 'cell', TEvent extends Mode>() {
 
   // Props are available in template as variables
   // Access via `propName` or `props.propName`
-  const props: __DefineProps<Props<Mode, TEvent>> = {} as __DefineProps<Props<Mode, TEvent>>;
+  const props: __DefineProps<__VizeSetupProps> = {} as __DefineProps<__VizeSetupProps>;
   void props; // Mark as used to avoid TS6133
   const mode = props["mode"];
   void mode;
   const event = props["event"];
   void event;
 
+  function __vizeSlotOutlet<S>(slot: S): S extends () => infer R ? (props: {}) => R : NonNullable<S> { return slot as any; }
   type __VizeSlotOutletFn = (...args: any[]) => any;
   type __VizeSlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, __VizeSlotOutletFn>;
   type __VizeSlotOutletArgs<__S, __K extends PropertyKey> = [__VizeSlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<__VizeSlotOutletTarget<__S, __K>>;
   type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = [__VizeSlotOutletArgs<__S, __K>] extends [[]] ? unknown : __VizeSlotOutletArgs<__S, __K>[0];
-  ((__vize_slot_props: __VizeSlotOutletPayload<__VizeSlots<Mode, TEvent>, "default">) => { void __vize_slot_props; })({
+  __vizeSlotOutlet((undefined as unknown as __VizeSlots<Mode, TEvent>)["default"])({
     "mode": props.mode,
     "event": props.event,
   });
@@ -186,10 +189,14 @@ function __setup<Mode extends 'row' | 'cell', TEvent extends Mode>() {
 
   // Compiler-macro results contribute to the component signature
   void props;
+
+  return { __vize_setup_props };
 }
 
 // Invoke setup to verify types
 __setup();
+
+export type Props<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any> = Awaited<ReturnType<typeof __setup<Mode, TEvent>>>["__vize_setup_props"];
 
 export type Emits = {};
 type __VizeSlots<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any> = {
@@ -232,5 +239,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { __vizeCheck: <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(props: Partial<Props<Mode, TEvent>> & { [K in Props<Mode, TEvent> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => void; __vizeResolveProps?: <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(props: Partial<Props<Mode, TEvent>> & { [K in Props<Mode, TEvent> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown } & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => Props<Mode, TEvent>; __vizeResolveSlots?: <Mode extends 'row' | 'cell', TEvent extends Mode>(props: Partial<Props<Mode, TEvent>> & Record<string, unknown>) => __VizeSlots<Mode, TEvent>;  readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props<'row' | 'cell', any>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Record<string, unknown>; } & __VizeGenericComponent;
+declare const __vize_component__: { __vizeCheck: <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(props: Props<Mode, TEvent> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => void; __vizeResolveProps?: <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(props: Props<Mode, TEvent> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs & Record<string, unknown>) => Props<Mode, TEvent>; __vizeResolveSlots?: <Mode extends 'row' | 'cell', TEvent extends Mode>(props: Partial<Props<Mode, TEvent>> & Record<string, unknown>) => __VizeSlots<Mode, TEvent>;  readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props<'row' | 'cell', any>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Record<string, unknown>; } & __VizeGenericComponent;
 export default __vize_component__;

@@ -34,7 +34,7 @@ use self::anchors::emit_setup_binding_anchors;
 use self::auto_import_stubs::emit_auto_import_stubs;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
 use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
-use self::component_public_types::{emit_exposed_type, emit_slots_type};
+use self::component_public_types::{emit_exposed_type, emit_slots_type, push_template_return};
 use self::css_modules::CssModulePlan;
 use self::emits::{emit_emit_props_helper, emit_emits_type};
 pub use self::entry::{
@@ -42,7 +42,7 @@ pub use self::entry::{
     generate_virtual_ts_with_offsets_options_api,
 };
 use self::generics::{HoistedGenericAliases, generic_injection_point, references_any_identifier};
-use self::global_components::GlobalComponentPlan;
+use self::global_components::{GlobalComponentDiagnostics, GlobalComponentPlan};
 use self::imports::{
     collect_imported_names, emit_reference_path_directives, emit_reference_type_directives,
 };
@@ -330,8 +330,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         aliases.emit_module_aliases(&mut ts);
     }
 
-    let global_components =
-        GlobalComponentPlan::new(summary, legacy_vue2, has_script_reference_types);
+    let global_components = GlobalComponentPlan::new(
+        summary,
+        legacy_vue2,
+        has_script_reference_types || check_options.check_unknown_components,
+    );
     // Derive a real cross-file `Props` type from macro or Options API input.
     let options_api_props = (options_api && summary.macros.props().is_empty())
         .then(|| script_content.and_then(find_options_api_props))
@@ -379,6 +382,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         options,
         &imported_names,
         &syntactic_type_only_imported_names,
+        GlobalComponentDiagnostics::new(check_options, &mut mappings, template_offset),
     );
     ts.push('\n');
 
@@ -771,10 +775,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
     let define_emits_runtime_args = setup_helpers::define_emits_runtime_args(summary);
     let mut setup_return_fields: Vec<String> = Vec::new();
-    if has_root_el {
-        setup_return_fields.push("__vize_root_el".into());
-    }
-    component_public_types::push_template_return(&mut setup_return_fields, inferred_slots);
+    push_template_return(&mut setup_return_fields, inferred_slots, has_root_el);
     self::script_module::push_setup_return_fields(&named_value_exports, &mut setup_return_fields);
     namespace_hoist.push_captured_return_fields(&named_value_exports, &mut setup_return_fields);
     setup_type_exports.emit_setup_artifacts(&mut ts, &mut setup_return_fields);
@@ -804,7 +805,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         script_offset,
     ));
     setup_type_exports.emit_module_exports(&mut ts);
-    setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref());
+    setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref(), generic_param);
     emit_authored_component_aliases(&mut ts, authored_default);
     let emits_info = emit_emits_type(
         &mut ts,

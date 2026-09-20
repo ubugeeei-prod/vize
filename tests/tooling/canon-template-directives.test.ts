@@ -76,6 +76,35 @@ const Comp = defineComponent({ props: { title: String } });
         await errors(strict.replace("<template>", "<!-- @checkUnknownProps false --><template>")),
         [],
       );
+      const unknown = `<!-- @strictTemplates true -->
+<script setup lang="ts"></script>
+<template><MissingComponent /><missing-component /></template>`;
+      assert.deepEqual(await errors(unknown), [
+        expected(unknown, "MissingComponent", 2339),
+        expected(unknown, "missing-component", 2339),
+      ]);
+      const unchecked = unknown.replace("@strictTemplates true", "@strictTemplates false");
+      assert.deepEqual(await errors(unchecked), []);
+      assert.deepEqual(
+        await errors(
+          unknown.replace("<template>", "<!-- @checkUnknownComponents false --><template>"),
+        ),
+        [],
+      );
+      assert.equal(
+        (
+          await errors(
+            unchecked.replace("<template>", "<!-- @checkUnknownComponents true --><template>"),
+          )
+        ).length,
+        2,
+      );
+      assert.deepEqual(
+        await errors(
+          unchecked.replace("<template>", "<template><!-- @checkUnknownComponents true -->"),
+        ),
+        [],
+      );
     } finally {
       await editor.close();
     }

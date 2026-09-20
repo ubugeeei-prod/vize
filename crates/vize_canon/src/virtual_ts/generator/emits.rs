@@ -56,12 +56,13 @@ impl EmitsInfo {
         &self,
         generic_decl: &str,
         generic_names: &str,
+        props_type: &str,
     ) -> String {
         let mut field = String::default();
         if self.has_emits_for_props && self.has_generic_emits {
             append!(
                 field,
-                "__vizeResolveEmitProps?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => __EmitProps<Emits<{generic_names}>>;"
+                "__vizeResolveEmitProps?: <{generic_decl}>(props: Partial<{props_type}<{generic_names}>> & Record<string, unknown>) => __EmitProps<Emits<{generic_names}>>;"
             );
         }
         if !self.generic_event_map_decl.is_empty() {
@@ -70,7 +71,7 @@ impl EmitsInfo {
             }
             append!(
                 field,
-                "__vizeResolveEvents?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => __VizeAuthoredEventMap<{generic_names}>;"
+                "__vizeResolveEvents?: <{generic_decl}>(props: Partial<{props_type}<{generic_names}>> & Record<string, unknown>) => __VizeAuthoredEventMap<{generic_names}>;"
             );
         }
         field

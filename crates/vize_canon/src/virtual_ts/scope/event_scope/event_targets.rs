@@ -4,13 +4,10 @@ use vize_relief::{ElementNode, PropNode, RootNode, TemplateChildNode};
 
 use crate::virtual_ts::helpers::is_known_dom_event_name;
 
-use super::super::handler_shape::{inline_callback_event_argument, is_callable_handler_reference};
-
 pub(super) fn needs_typed_handler_assignment(data: &EventHandlerScopeData) -> bool {
-    data.handler_expression.as_ref().is_some_and(|content| {
-        is_callable_handler_reference(content.as_str())
-            || inline_callback_event_argument(content.as_str()).is_some()
-    })
+    // Croquis derives this flag from the complete handler AST. A reference or
+    // callback owns its parameters; only inline statements bind implicit $event.
+    !data.has_implicit_event && data.handler_expression.is_some()
 }
 
 pub(super) fn transition_hook_signature(

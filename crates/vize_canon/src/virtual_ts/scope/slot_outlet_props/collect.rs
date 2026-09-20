@@ -35,6 +35,9 @@ pub(super) fn slot_outlet_expression_ranges(
     summary: &Croquis,
     by_scope: &FxHashMap<u32, Vec<SlotOutlet>>,
 ) -> FxHashSet<(u32, u32)> {
+    if by_scope.is_empty() {
+        return FxHashSet::default();
+    }
     let mut expressions: Vec<&TemplateExpression> = summary
         .template_expressions
         .iter()

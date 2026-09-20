@@ -39,7 +39,10 @@ pub(super) fn append_prop_entry(
     };
     let inline_callback = crate::virtual_ts::scope::is_inline_callback_prop(prop);
     if inline_callback {
-        generated_value = String::from("undefined as any");
+        // The authored callback is checked against its resolved type separately.
+        // `never` also satisfies a declared `never` prop; `any` would produce a
+        // second diagnostic about this synthetic value at the same attribute.
+        generated_value = String::from("undefined as never");
     }
 
     let (prop_src_start, prop_src_end) = if merge_class_bindings && prop.name.as_str() == "class" {

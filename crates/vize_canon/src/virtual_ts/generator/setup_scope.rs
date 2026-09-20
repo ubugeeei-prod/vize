@@ -18,7 +18,10 @@ pub(in crate::virtual_ts) fn define_props_type_requires_setup_scope(summary: &Cr
         .macros
         .define_props()
         .and_then(|call| call.type_args.as_ref())
-        .is_some_and(|args| macro_type_requires_setup_scope(summary, args))
+        .is_some_and(|args| {
+            super::generics::setup_signature(summary).1.is_some()
+                || macro_type_requires_setup_scope(summary, args)
+        })
 }
 
 /// Imports and hoisted declarations are visible to module-level aliases.

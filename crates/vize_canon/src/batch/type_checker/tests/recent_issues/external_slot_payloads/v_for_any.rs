@@ -50,18 +50,27 @@ function takesNumber(value: number) {
     };
     let _ = std::fs::remove_dir_all(&project_root);
 
-    // vue-tsc treats an `any` source as the object fallback: the second binding
-    // is `string | number`, while the third binding remains `number`. This is
-    // the exact shape that reports Vuestic Admin's
+    // vue-tsc 3.3.11 considers both iterable and object shapes for `any`:
+    // the second binding is `string | number`, and the third can be absent.
+    // The key shape reports Vuestic Admin's
     // `EditProjectForm.vue:106:35` template-comparison diagnostic.
     assert_eq!(
         snapshot,
-        vec![(
-            String::from("src/App.vue"),
-            Some(2365),
-            String::from(
-                "14:18:error Operator '<' cannot be applied to types 'string | number' and 'number'."
+        vec![
+            (
+                String::from("src/App.vue"),
+                Some(2345),
+                String::from(
+                    "23:31:error Argument of type 'number | undefined' is not assignable to parameter of type 'number'.\nType 'undefined' is not assignable to type 'number'."
+                ),
             ),
-        )]
+            (
+                String::from("src/App.vue"),
+                Some(2365),
+                String::from(
+                    "14:18:error Operator '<' cannot be applied to types 'string | number' and 'number'."
+                ),
+            )
+        ]
     );
 }

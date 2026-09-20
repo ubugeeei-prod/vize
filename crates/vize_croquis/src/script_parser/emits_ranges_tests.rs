@@ -101,6 +101,24 @@ fn define_model_runtime_constructor_type_is_recorded() {
 }
 
 #[test]
+fn define_model_preserves_runtime_prop_type_assertions() {
+    for (expression, expected) in [
+        ("String as PropType<string | null>", "string | null"),
+        ("String as Vue.PropType<'a' | 'b'>", "'a' | 'b'"),
+        ("String satisfies PropType<string | null>", "string"),
+    ] {
+        let source = vize_carton::cstr!(
+            "const model = defineModel({{ type: {expression}, required: true }})"
+        );
+        let result = parse_script_setup(source.as_str());
+        assert_eq!(
+            result.macros.models()[0].model_type.as_deref(),
+            Some(expected)
+        );
+    }
+}
+
+#[test]
 fn define_model_runtime_constructor_array_type_is_recorded() {
     let result = parse_script_setup("const model = defineModel({ type: [String, Number] })");
     let models = result.macros.models();

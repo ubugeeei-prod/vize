@@ -96,7 +96,14 @@ pub(super) fn infers_slots(
         && crate::virtual_ts::scope::has_inferred_slots(summary, root)
 }
 
-pub(super) fn push_template_return(fields: &mut Vec<String>, inferred_slots: bool) {
+pub(super) fn push_template_return(
+    fields: &mut Vec<String>,
+    inferred_slots: bool,
+    has_root_el: bool,
+) {
+    if has_root_el {
+        fields.push("__vize_root_el".into());
+    }
     if inferred_slots {
         fields.push("__vize_template_slots: __vize_template".into());
     }

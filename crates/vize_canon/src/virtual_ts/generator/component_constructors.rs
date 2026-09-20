@@ -10,6 +10,7 @@ mod generic_function;
 use vize_carton::config::VueVersion;
 use vize_carton::{String, append, cstr};
 
+use super::component_export::GenericComponentContract;
 use super::legacy_vue2::{
     exposed_unwrap_helper, generic_instance_suffix, instance_helper, instance_suffix,
     needs_legacy_vue2_helpers,
@@ -67,7 +68,7 @@ pub(super) fn emit_component_constructors<'a>(
     authored_generic: Option<&str>,
     legacy_vue2: bool,
     dialect: VueVersion,
-) -> Option<(&'a str, &'a str, bool, &'static str)> {
+) -> Option<GenericComponentContract<'a>> {
     let legacy_component = needs_legacy_vue2_helpers(legacy_vue2, dialect);
     if aliases.jsx_slots {
         ts.push_str("declare global { namespace JSX { interface ElementChildrenAttribute {} } }\ntype __VizeJsxSlotProps<S> = { [K in keyof JSX.ElementChildrenAttribute]?: S };\n");
@@ -79,13 +80,15 @@ pub(super) fn emit_component_constructors<'a>(
             authored_generic.expect("generic SFC has authored parameters"),
             declaration,
             names,
+            setup_props_plan.component_props_type_ref(),
         );
-        return Some((
+        return Some(GenericComponentContract {
             declaration,
             names,
-            aliases.slots_is_generic,
-            "__VizeGenericComponent",
-        ));
+            slots_is_generic: aliases.slots_is_generic,
+            public_type: "__VizeGenericComponent",
+            props_type: setup_props_plan.component_props_type_ref(),
+        });
     }
     ts.push_str("// ========== Default Export ==========\n");
     ts.push_str(instance_helper(legacy_vue2, dialect));
@@ -185,10 +188,11 @@ pub(super) fn emit_component_constructors<'a>(
         aliases.exposed_is_generic.then_some(generic_names.as_str()),
     ));
     ts.push_str("} & __VizeVue2ComponentConstructorStatics;\n");
-    Some((
-        generic_decl,
-        generic_names,
-        aliases.slots_is_generic,
-        "__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions",
-    ))
+    Some(GenericComponentContract {
+        declaration: generic_decl,
+        names: generic_names,
+        slots_is_generic: aliases.slots_is_generic,
+        public_type: "__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions",
+        props_type: setup_props_plan.component_props_type_ref(),
+    })
 }

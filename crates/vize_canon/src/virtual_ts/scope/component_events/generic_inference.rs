@@ -25,7 +25,7 @@ pub(super) fn generate_inferred_emit_args(
     ts: &mut String,
     ctx: &EmitInferenceContext<'_>,
 ) -> Option<String> {
-    ctx.summary.binding_spans.get(ctx.component_name)?;
+    ctx.summary.binding_spans.get(ctx.component_ref)?;
     let (usage_idx, usage) =
         find_component_usage_for_event(ctx.summary, ctx.component_name, ctx.data, ctx.scope)?;
     if !usage.props.iter().any(|prop| {
@@ -33,7 +33,6 @@ pub(super) fn generate_inferred_emit_args(
             && prop.name.as_str() != "key"
             && prop.name.as_str() != "ref"
             && prop.value.is_some()
-            && prop.is_dynamic
     }) {
         return None;
     }

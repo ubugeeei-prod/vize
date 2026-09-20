@@ -31,7 +31,7 @@
 //! `check-server` clients as an unmapped hint on a clean SFC. `@ts-ignore` does
 //! not help here: it filters errors, not the suggestion channel these arrive on.
 //! An ambient `declare function` is exempt from unused reporting itself, which is
-//! why `__vForList` can keep `__VForEntry` alive the same way. It is never called.
+//! why `__vForList` can remain in the template helper surface. It is never called.
 //!
 //! Declaring the conditional types once per program also lets TypeScript reuse
 //! its instantiation cache across every generated module instead of

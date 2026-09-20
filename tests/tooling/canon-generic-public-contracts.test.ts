@@ -72,3 +72,96 @@ void rendered;
     }
   },
 );
+
+test(
+  "generic props retain setup aliases and static attributes infer emitted payloads",
+  { timeout: 60_000 },
+  async () => {
+    const directory = workspace("generic-alias-contract-");
+    try {
+      fs.writeFileSync(
+        path.join(directory, "tsconfig.json"),
+        JSON.stringify({
+          compilerOptions: {
+            strict: true,
+            module: "ESNext",
+            target: "ESNext",
+            moduleResolution: "Bundler",
+            noEmit: true,
+            skipLibCheck: true,
+          },
+          include: ["*.vue", "*.ts"],
+        }),
+      );
+      fs.writeFileSync(
+        path.join(directory, "Child.vue"),
+        `<script setup lang="ts" generic="T extends string | number">
+type InputProps = { type?: 'input'; value: (value: T) => void; typeDefinition: T };
+type SelectProps = { type: 'select'; value: (value: T[]) => void; typeDefinition: T };
+defineProps<InputProps | SelectProps>();
+</script>`,
+      );
+      fs.writeFileSync(
+        path.join(directory, "Emitter.vue"),
+        `<script setup lang="ts" generic="T">
+defineProps<{ modelValue: T }>();
+defineEmits<{ (event: 'update:model-value', value: T): void }>();
+</script>`,
+      );
+      fs.writeFileSync(
+        path.join(directory, "Rows.vue"),
+        `<script setup lang="ts" generic="T">
+type Props = { rows: T[] };
+defineProps<Props>();
+</script><template><div v-for="row in rows"><slot name="row" :item="row" /></div></template>`,
+      );
+      fs.writeFileSync(
+        path.join(directory, "Dynamic.vue"),
+        `<script setup lang="ts" generic="T extends { key: string }, U">
+type Props = { columns: T[]; rows: U[] };
+defineProps<Props>();
+</script><template>
+<div v-for="column in columns"><slot :name="\`col(\${column.key})\`" v-bind="column" /></div>
+<div v-for="(row, index) in rows"><slot :name="\`row(\${index})\`" v-bind="row" /></div>
+</template>`,
+      );
+      fs.writeFileSync(
+        path.join(directory, "App.vue"),
+        `<script setup lang="ts">
+import Child from './Child.vue';
+import Emitter from './Emitter.vue';
+import Rows from './Rows.vue';
+import Dynamic from './Dynamic.vue';
+import { exactType } from './exact';
+const str: string = '';
+const num: number = 1;
+const rows: { id: number }[] = [];
+const columns: { key: string; title: string }[] = [];
+</script><template>
+<Child type="select" :type-definition="str" :value="value => exactType(value, {} as string[])" />
+<Child type="input" :type-definition="num" :value="value => exactType(value, {} as number)" />
+<Emitter model-value="text" @update:model-value="value => exactType(value, {} as string)" />
+<Dynamic :columns="columns" :rows="rows">
+<template #col(count)="column">{{ exactType(column, {} as { key: string; title: string }) }}</template>
+<template #row(0)="row">{{ exactType(row, {} as { id: number }) }}</template>
+</Dynamic>
+<Rows :rows="rows" v-slot:row="{ item }">{{ exactType(item, {} as { id: number }) }}
+<!-- @vue-expect-error -->
+{{ item.missing }}
+</Rows>
+<!-- @vue-expect-error -->
+<Child type="select" :type-definition="str" :value="(value: number[]) => {}" />
+</template>`,
+      );
+      fs.writeFileSync(
+        path.join(directory, "exact.ts"),
+        `type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+export declare function exactType<A, B>(actual: A, expected: B & (Equal<A, B> extends true ? unknown : never)): void;`,
+      );
+      assertVueTsc(directory);
+      assert.deepEqual(await check(directory), []);
+    } finally {
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);

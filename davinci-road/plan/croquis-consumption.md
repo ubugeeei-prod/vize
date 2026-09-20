@@ -244,7 +244,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `DEFINE_SLOTS`                               | `vize_canon`        |     1 |     1 |
 | `EmitDefinition`                             | `vize_atelier_sfc`  |     1 |     1 |
 | `EmitDefinition`                             | `vize_croquis_cf`   |     3 |     3 |
-| `EventHandlerExpression`                     | `vize_canon`        |     1 |     2 |
+| `EventHandlerExpression`                     | `vize_canon`        |     2 |     5 |
 | `InjectEntry`                                | `vize_croquis_cf`   |     4 |     8 |
 | `InjectPattern`                              | `vize_croquis_cf`   |     4 |    21 |
 | `InjectPattern`                              | `vize_vitrine`      |     1 |     8 |
@@ -314,7 +314,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `WITH_DEFAULTS`                              | `vize_canon`        |     1 |     1 |
 | `analyze_script_setup_program`               | `vize_atelier_sfc`  |     1 |     1 |
 | `artifact_macro_names`                       | `vize_atelier_sfc`  |     1 |     1 |
-| `classify_event_handler`                     | `vize_canon`        |     1 |     2 |
+| `classify_event_handler`                     | `vize_canon`        |     2 |     3 |
 | `collect_options_descriptor`                 | `vize_patina`       |     4 |     4 |
 | `collect_options_object`                     | `vize_patina`       |     1 |     1 |
 | `extract_and_transform_v_bind`               | `vize_atelier_sfc`  |     1 |     1 |
@@ -359,7 +359,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `scoped_v_bind_name`                         | `vize_atelier_sfc`  |     1 |     1 |
 | `strip_js_comments`                          | `vize_canon`        |     3 |     3 |
 | `to_pascal_case`                             | `vize`              |     1 |     1 |
-| `to_pascal_case`                             | `vize_canon`        |     2 |     2 |
+| `to_pascal_case`                             | `vize_canon`        |     3 |     3 |
 | `to_pascal_case`                             | `vize_patina`       |     2 |     3 |
 | `v_bind_expression_ranges`                   | `vize_maestro`      |     1 |     1 |
 
@@ -375,7 +375,7 @@ The naive lane counts raw word-boundary text matches per product name (`\.field`
 | `COMPILER_MACRO_NAMES`                 |        1 |    3 | `vize_canon` (0/1), `vize_patina` (1/2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `ComponentShape`                       |        1 |    2 | `vize_maestro` (1/2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `ComponentUsage`                       |       81 |  146 | `vize_canon` (38/53), `vize_croquis_cf` (38/85), `vize_maestro` (5/8)                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `Croquis`                              |      377 |  601 | `vize` (1/2), `vize_atelier_core` (17/25), `vize_atelier_dom` (2/6), `vize_atelier_jsx` (24/43), `vize_atelier_sfc` (17/43), `vize_atelier_ssr` (1/4), `vize_canon` (183/272), `vize_carton` (0/1), `vize_croquis_cf` (101/127), `vize_davinci` (0/2), `vize_maestro` (7/23), `vize_patina` (22/47), `vize_s1_to_s2` (0/1), `vize_vitrine` (2/5)                                                                                                                                                                            |
+| `Croquis`                              |      377 |  603 | `vize` (1/2), `vize_atelier_core` (17/25), `vize_atelier_dom` (2/6), `vize_atelier_jsx` (24/43), `vize_atelier_sfc` (17/43), `vize_atelier_ssr` (1/4), `vize_canon` (183/274), `vize_carton` (0/1), `vize_croquis_cf` (101/127), `vize_davinci` (0/2), `vize_maestro` (7/23), `vize_patina` (22/47), `vize_s1_to_s2` (0/1), `vize_vitrine` (2/5)                                                                                                                                                                            |
 | `CroquisSemanticSnapshot`              |        3 |    4 | `vize_curator` (3/4)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `CroquisSemanticSummary`               |        1 |    2 | `vize_curator` (1/2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `Drawer`                               |       32 |   54 | `vize_atelier_jsx` (1/2), `vize_atelier_sfc` (7/9), `vize_canon` (0/1), `vize_maestro` (23/40), `vize_patina` (1/2)                                                                                                                                                                                                                                                                                                                                                                                                         |

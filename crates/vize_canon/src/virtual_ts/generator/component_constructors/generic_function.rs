@@ -11,6 +11,7 @@ pub(super) fn emit(
     authored_parameters: &str,
     alias_parameters: &str,
     names: &str,
+    props_type: &str,
 ) {
     let alias_parameters = generic_suffix(&strip_const_modifiers(alias_parameters));
     let authored_parameters = generic_suffix(authored_parameters);
@@ -44,7 +45,7 @@ pub(super) fn emit(
     };
     append!(
         *ts,
-        "type __VizeGenericContext{alias_parameters} = {{\n  props: Props{arguments}{listeners} & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;\n  attrs: any;\n  emit: {emit};\n  slots: {slots};\n  expose: (exposed: {expose}) => void;\n}};\n"
+        "type __VizeGenericContext{alias_parameters} = {{\n  props: {props_type}{arguments}{listeners} & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;\n  attrs: any;\n  emit: {emit};\n  slots: {slots};\n  expose: (exposed: {expose}) => void;\n}};\n"
     );
     // Use the authored parameter declaration: erasing a generated `= any`
     // default by spelling cannot distinguish it from an authored default.

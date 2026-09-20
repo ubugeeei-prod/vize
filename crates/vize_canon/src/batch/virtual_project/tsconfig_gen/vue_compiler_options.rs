@@ -41,6 +41,15 @@ impl VirtualProject {
             .as_ref()
             .and_then(|options| options.get("strictCssModules").and_then(Value::as_bool))
             .unwrap_or(false);
+        self.virtual_ts_check_options.check_unknown_components = options
+            .as_ref()
+            .and_then(|options| {
+                options
+                    .get("checkUnknownComponents")
+                    .or_else(|| options.get("strictTemplates"))
+                    .and_then(Value::as_bool)
+            })
+            .unwrap_or(false);
         self.virtual_ts_check_options.infer_component_dollar_el = options
             .as_ref()
             .and_then(|options| {

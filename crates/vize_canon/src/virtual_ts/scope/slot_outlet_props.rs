@@ -58,6 +58,15 @@ impl SlotOutletChecks {
 
     pub(super) fn emit_helpers(&self, ts: &mut String) {
         emit::emit_slot_outlet_helpers(ts, &self.by_scope);
+        if self.infer
+            && self
+                .by_scope
+                .values()
+                .flatten()
+                .any(|outlet| outlet.name_is_dynamic)
+        {
+            ts.push_str("  function __vizeSlotName<const N extends PropertyKey>(name: N): N { return name; }\n");
+        }
     }
 
     /// Authored ranges of the outlet bindings, which the generated outlet

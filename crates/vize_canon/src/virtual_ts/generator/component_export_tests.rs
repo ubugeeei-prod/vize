@@ -1,4 +1,4 @@
-use super::strip_synthetic_any_defaults;
+use super::generic::strip_synthetic_any_defaults;
 
 #[test]
 fn synthetic_any_defaults_are_stripped_without_touching_constraints() {

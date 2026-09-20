@@ -3,12 +3,12 @@
 //! [`super::handler_shape`].
 
 use vize_carton::{String, append, cstr};
+use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
 
 use crate::virtual_ts::expressions::rewrite_reserved_template_prop;
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
 use super::context::EventHandlerExprContext;
-use super::handler_shape::{inline_callback_event_argument, is_callable_handler_reference};
 use super::vif_guard::append_ignored_vif_guard_open;
 
 /// Generate event handler expressions inside a closure.
@@ -21,11 +21,21 @@ pub(super) fn generate_event_handler_expressions(
     if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
         for expr in exprs {
             let content = expr.content.as_str();
-            let is_callable_reference = is_callable_handler_reference(content);
+            // Croquis already established that an inline body owns `$event`.
+            // Classify only the remaining reference/callback shapes, once.
+            let shape = if ctx.data.has_implicit_event {
+                EventHandlerExpression::Inline
+            } else {
+                classify_event_handler(content)
+            };
+            let is_callable_reference = matches!(shape, EventHandlerExpression::Reference);
             let is_reference = ctx.check_emits && is_callable_reference;
-            let inline_callback_arg = (!ctx.data.has_implicit_event)
-                .then(|| inline_callback_event_argument(content))
-                .flatten();
+            let inline_callback_arg = match shape {
+                EventHandlerExpression::Callback { accepts_event, .. } => {
+                    Some(if accepts_event { "$event" } else { "" })
+                }
+                _ => None,
+            };
             let event_value = if ctx.data.has_implicit_event {
                 "$event"
             } else {

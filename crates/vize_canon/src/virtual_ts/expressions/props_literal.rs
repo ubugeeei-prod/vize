@@ -42,6 +42,19 @@ pub(super) fn append_props_literal(
     let literal_gen_start = ts.len();
     ts.push_str("{\n");
 
+    // Listeners are props at runtime. Their separately checked handlers must
+    // satisfy required `onFoo` keys without treating unknown listeners as
+    // unknown props (that is controlled by checkUnknownEvents). Emit these
+    // witnesses first so they cannot erase any authored prop value checks.
+    for event in &usage.events {
+        if !event.name_is_dynamic && !event.name.is_empty() {
+            let handler = vize_croquis::naming::to_pascal_case(event.name.as_str());
+            append!(*ts, "{expr_indent}  ...{{}} as {{ ");
+            super::super::helpers::push_ts_string_literal(ts, &vize_carton::cstr!("on{handler}"));
+            ts.push_str(": never },\n");
+        }
+    }
+
     let class_bindings = collect_generated_class_bindings(usage, template_prop_names);
     let merge_class_bindings = class_bindings.len() > 1;
     let mut emitted_merged_class = false;

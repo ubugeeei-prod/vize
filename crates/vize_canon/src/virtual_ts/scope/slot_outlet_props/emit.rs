@@ -1,5 +1,3 @@
-use std::ops::Range;
-
 use vize_carton::{FxHashMap, FxHashSet, String, append};
 
 use crate::virtual_ts::{expressions::ComponentPropSource, types::VizeMapping};
@@ -20,7 +18,6 @@ struct SlotOutletCheckContext<'a> {
 
 struct PayloadType {
     text: String,
-    name_gen_range: Option<Range<usize>>,
 }
 
 pub(super) fn emit_slot_outlet_helpers(
@@ -47,7 +44,9 @@ pub(super) fn emit_slot_outlet_helpers(
         return;
     }
 
-    // Indexed access keeps generic slot payloads concrete with permissive fallbacks.
+    // Match Vue's functional-slot normalization without erasing overloaded call signatures.
+    ts.push_str("  function __vizeSlotOutlet<S>(slot: S): S extends () => infer R ? (props: {}) => R : NonNullable<S> { return slot as any; }\n");
+    // Payload aliases provide contextual typing for v-bind spreads.
     ts.push_str("  type __VizeSlotOutletFn = (...args: any[]) => any;\n");
     if needs_static {
         ts.push_str(
@@ -158,7 +157,7 @@ fn generate_slot_outlet_checks(
             if outlet.name_is_dynamic {
                 append!(
                     *ts,
-                    "{expr_indent}var __vize_slot_name_{} = ({});\n",
+                    "{expr_indent}var __vize_slot_name_{} = __vizeSlotName({});\n",
                     outlet.start,
                     outlet.name
                 );
@@ -168,18 +167,24 @@ fn generate_slot_outlet_checks(
             }
             continue;
         }
-        append!(*ts, "{expr_indent}((__vize_slot_props: ",);
+        append!(
+            *ts,
+            "{expr_indent}__vizeSlotOutlet((undefined as unknown as {slots_type_ref})["
+        );
         let payload_type = outlet_payload_type(outlet, slots_type_ref);
         let payload_type_gen_start = ts.len();
-        ts.push_str(payload_type.text.as_str());
-        ts.push_str(") => { void __vize_slot_props; })(");
-        if let (Some(gen_range), Some(src_range)) = (
-            payload_type.name_gen_range,
-            outlet.name_source_range.clone(),
-        ) {
+        if outlet.name_is_dynamic {
+            ts.push_str(outlet.name.as_str());
+        } else {
+            crate::virtual_ts::helpers::push_ts_string_literal(ts, outlet.name.as_str());
+        }
+        let name_gen_end = ts.len();
+        ts.push_str("])(");
+        if !outlet.name_is_dynamic
+            && let Some(src_range) = outlet.name_source_range.clone()
+        {
             mappings.push(VizeMapping {
-                gen_range: payload_type_gen_start + gen_range.start
-                    ..payload_type_gen_start + gen_range.end,
+                gen_range: payload_type_gen_start + 1..name_gen_end - 1,
                 src_range: (source_context.offset + src_range.start) as usize
                     ..(source_context.offset + src_range.end) as usize,
                 sub_spans: Vec::new(),
@@ -212,35 +217,13 @@ fn outlet_payload_type(outlet: &SlotOutlet, slots_type_ref: &str) -> PayloadType
     if outlet.name_is_dynamic {
         return PayloadType {
             text: vize_carton::cstr!("__VizeAnySlotOutletPayload<{slots_type_ref}>"),
-            name_gen_range: None,
         };
     }
 
     let mut text = String::from("__VizeSlotOutletPayload<");
     text.push_str(slots_type_ref);
     text.push_str(", ");
-    let name_gen_range = append_ts_string_literal(&mut text, outlet.name.as_str());
+    crate::virtual_ts::helpers::push_ts_string_literal(&mut text, outlet.name.as_str());
     text.push('>');
-    PayloadType {
-        text,
-        name_gen_range: Some(name_gen_range),
-    }
-}
-
-fn append_ts_string_literal(out: &mut String, value: &str) -> Range<usize> {
-    out.push('"');
-    let start = out.len();
-    for ch in value.chars() {
-        match ch {
-            '\\' => out.push_str("\\\\"),
-            '"' => out.push_str("\\\""),
-            '\n' => out.push_str("\\n"),
-            '\r' => out.push_str("\\r"),
-            '\t' => out.push_str("\\t"),
-            _ => out.push(ch),
-        }
-    }
-    let end = out.len();
-    out.push('"');
-    start..end
+    PayloadType { text }
 }

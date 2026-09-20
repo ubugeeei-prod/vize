@@ -2,11 +2,42 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { check, workspace } from "./support/upstream/vue-language-tools.ts";
-import { assertVueTsc } from "./support/vue-tsc-oracle.ts";
+import {
+  check,
+  workspace,
+  compareIdentity,
+  diagnosticIdentity,
+} from "./support/upstream/vue-language-tools.ts";
+import { assertVueTsc, vueTscDiagnostics } from "./support/vue-tsc-oracle.ts";
 
 const assertions = `type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
 type Assert<T extends true> = T;`;
+
+test("loop tuple shapes and forbidden callbacks match vue-tsc diagnostic locations", async () => {
+  const directory = project("loop-and-callback-diagnostics-", {
+    "Child.vue": `<script setup lang="ts" generic="T">defineProps<{ value: T; pick: never }>();</script>`,
+    "App.vue": `<script setup lang="ts">
+import Child from './Child.vue';
+const anything: any = null;
+const records: Record<string, number> = {};
+function takesNumber(value: number) { return value; }
+</script><template>
+<Child :value="1" :pick="() => 1" />
+<div v-for="(item, key, index) in anything">{{ item }}{{ key < 1 }}{{ takesNumber(index) }}</div>
+<div v-for="(item, key, index) in records">{{ item.toFixed() }}{{ key.toUpperCase() }}{{ takesNumber(index) }}</div>
+</template>`,
+  });
+  try {
+    const expected = vueTscDiagnostics(directory).sort(compareIdentity);
+    assert.equal(expected.length, 3);
+    assert.deepEqual(
+      (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
+      expected,
+    );
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 function project(prefix: string, files: Record<string, string>): string {
   const directory = workspace(prefix);
@@ -22,7 +53,7 @@ function project(prefix: string, files: Record<string, string>): string {
         noEmit: true,
         skipLibCheck: true,
       },
-      vueCompilerOptions: { jsxSlots: true },
+      vueCompilerOptions: { jsxSlots: true, strictTemplates: true },
       include: ["*.vue", "*.ts", "*.tsx"],
     }),
   );
@@ -30,6 +61,32 @@ function project(prefix: string, files: Record<string, string>): string {
     fs.writeFileSync(path.join(directory, name), source);
   return directory;
 }
+
+test("listeners satisfy required props without erasing authored handler errors", async () => {
+  const directory = project("required-listener-props-", {
+    "Generic.vue": `<script setup lang="ts" generic="T">defineProps<{ value: T; onFoo: (value: T) => void }>();</script>`,
+    "App.vue": `<script setup lang="ts">
+import Generic from './Generic.vue';
+declare const External: new () => { $props: { onFoo: () => void } };
+</script><template>
+<External @foo="() => {}" />
+<Generic :value="1" @foo="value => value.toFixed()" />
+<Generic :value="1" />
+<Generic :value="1" @foo="(value: string) => {}" />
+<Generic :value="1" :on-foo="123" @foo="() => {}" />
+</template>`,
+  });
+  try {
+    const expected = vueTscDiagnostics(directory).sort(compareIdentity);
+    assert.equal(expected.length, 3);
+    assert.deepEqual(
+      (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
+      expected,
+    );
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 test("inferred slot contracts retain loop, scoped slot and generic payload types", async () => {
   const directory = project("inferred-slot-contract-", {
@@ -94,6 +151,40 @@ generic.value?.missing;
 // @ts-expect-error
 child.value?.$el.notAnElementProperty;
 </script><template><Child ref="child" /><Generic ref="generic" /></template>`,
+  });
+  try {
+    assertVueTsc(directory);
+    assert.deepEqual(await check(directory), []);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("typed slot outlets retain overloaded signatures and check empty required payloads", async () => {
+  const directory = project("overloaded-slot-outlet-", {
+    "Slots.vue": `<script setup lang="ts" generic="T extends object, F">
+import type { VNode } from 'vue';
+type DynamicFieldSlots<T, F> = Record<\`\${keyof T extends string ? keyof T : never}-field\` | (string & {}), (props: { field: F; state: T }) => VNode[]>;
+type DynamicFormFieldSlots<T> = Record<\`\${keyof T extends string ? keyof T : never}-label\` | (string & {}), (props?: {}) => VNode[]>;
+type Slots = { header?(props?: {}): VNode[] } & DynamicFieldSlots<T, F> & DynamicFormFieldSlots<T>;
+const slots = defineSlots<Slots>();
+</script><template><slot name="header" /></template>`,
+    "Required.vue": `<script setup lang="ts" generic>
+defineSlots<{ required(props: { item: number }): unknown; empty(): unknown; 'last-columns'(props: {}): unknown }>();
+</script><template>
+<slot name="empty" />
+<slot name="required" :item="1" />
+<!-- @vue-expect-error -->
+<slot name="required" />
+<!-- @vue-expect-error -->
+<slot name="required" :item="'wrong'" />
+</template>`,
+    "App.vue": `<script setup lang="ts">import Required from './Required.vue';</script><template>
+<Required><template #last-columns />
+<!-- @vue-expect-error -->
+<template #last-columns-absent />
+</Required>
+</template>`,
   });
   try {
     assertVueTsc(directory);

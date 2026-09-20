@@ -52,8 +52,13 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     );
     assert_eq!(
         output.code.matches(r#""pick": undefined as any"#).count(),
-        2,
-        "the selector and whole-props checker must erase the callback"
+        1,
+        "the selector must erase the callback"
+    );
+    assert_eq!(
+        output.code.matches(r#""pick": undefined as never"#).count(),
+        1,
+        "the whole-props checker must not diagnose the erased callback"
     );
     assert!(
         output

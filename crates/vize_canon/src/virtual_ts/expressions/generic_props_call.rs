@@ -27,7 +27,7 @@ use vize_croquis::croquis::ComponentUsage;
 ///
 /// Direct inline callbacks are the exception: their authored expression is
 /// checked separately against the resolver's instantiated prop type. This call
-/// receives `any` for that one entry so it keeps whole-object/required-prop
+/// receives `never` for that one entry so it keeps whole-object/required-prop
 /// validation without also reporting a coarse property-key error.
 pub(super) fn generate_generic_props_call(
     ts: &mut String,

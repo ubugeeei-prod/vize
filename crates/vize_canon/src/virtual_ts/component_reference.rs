@@ -36,11 +36,12 @@ pub(crate) fn resolved_component_binding_reference(
 ) -> Option<String> {
     let camel_name = camelize(template_name);
     let pascal_name = capitalize(camel_name.as_str());
+    // Vue Language Tools resolves PascalCase, camelCase, then the authored tag.
     // Value bindings win over a type-only PascalCase collision
     // (`chartComponent` vs `import type { ChartComponent }`).
     // Ambient `external_template_bindings` must not beat a type-only import of
     // the same name: `import type { ElBadge }` still uses `__VizeComponent_*`.
-    for candidate in [template_name, camel_name.as_str(), pascal_name.as_str()] {
+    for candidate in [pascal_name.as_str(), camel_name.as_str(), template_name] {
         if let Some(binding_type) = summary.bindings.get(candidate)
             && !contains_compact_name(syntactic_type_only_imported_names, candidate)
         {
@@ -54,7 +55,7 @@ pub(crate) fn resolved_component_binding_reference(
     if has_type_only_component_candidate(syntactic_type_only_imported_names, template_name) {
         return Some(component_reference_alias(template_name));
     }
-    for candidate in [template_name, camel_name.as_str(), pascal_name.as_str()] {
+    for candidate in [pascal_name.as_str(), camel_name.as_str(), template_name] {
         if options
             .external_template_bindings
             .iter()

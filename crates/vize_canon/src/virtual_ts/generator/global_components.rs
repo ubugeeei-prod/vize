@@ -6,9 +6,27 @@ use crate::virtual_ts::component_reference::{
 };
 use crate::virtual_ts::helpers::to_safe_identifier;
 use crate::virtual_ts::scope::GlobalComponentCheck;
-use crate::virtual_ts::types::VirtualTsOptions;
+use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 
 use super::imports::extract_declared_name;
+
+pub(super) struct GlobalComponentDiagnostics<'a> {
+    pub(super) mappings: &'a mut Vec<VizeMapping>,
+    pub(super) template_offset: u32,
+}
+
+impl<'a> GlobalComponentDiagnostics<'a> {
+    pub(super) fn new(
+        options: VirtualTsCheckOptions,
+        mappings: &'a mut Vec<VizeMapping>,
+        template_offset: u32,
+    ) -> Option<Self> {
+        (options.check_unknown_components && options.check_template_bindings).then_some(Self {
+            mappings,
+            template_offset,
+        })
+    }
+}
 
 pub(super) struct GlobalComponentPlan<'a> {
     slot_component_names: FxHashSet<&'a str>,
@@ -65,6 +83,7 @@ impl<'a> GlobalComponentPlan<'a> {
         options: &VirtualTsOptions,
         imported_names: &FxHashSet<&str>,
         syntactic_type_only_imported_names: &FxHashSet<CompactString>,
+        mut diagnostics: Option<GlobalComponentDiagnostics<'_>>,
     ) {
         if !self.enabled() || summary.component_usages.is_empty() {
             return;
@@ -83,7 +102,7 @@ impl<'a> GlobalComponentPlan<'a> {
 
         let mut emitted_refs = FxHashSet::default();
         let mut has_header = false;
-        for usage in &summary.component_usages {
+        for (index, usage) in summary.component_usages.iter().enumerate() {
             let name = usage.name.as_str();
             if !self.component_check.allows(name) && !self.slot_component_names.contains(name) {
                 continue;
@@ -109,6 +128,26 @@ impl<'a> GlobalComponentPlan<'a> {
                 } else {
                     to_safe_identifier(name)
                 };
+            if let Some(diagnostics) = diagnostics.as_mut() {
+                append!(*ts, "const {{ ");
+                let start = ts.len();
+                crate::virtual_ts::helpers::push_ts_string_literal(ts, name);
+                let end = ts.len();
+                append!(*ts, ": __vize_global_component_{index} }} = {{}} as (");
+                for candidate in [pascal_name.as_str(), camel_name.as_str(), name] {
+                    crate::virtual_ts::helpers::push_ts_string_literal(ts, candidate);
+                    ts.push_str(" extends keyof import('vue').GlobalComponents ? { ");
+                    crate::virtual_ts::helpers::push_ts_string_literal(ts, name);
+                    ts.push_str(": unknown } : ");
+                }
+                append!(*ts, "{{}});\nvoid __vize_global_component_{index};\n");
+                let source_start = (diagnostics.template_offset + usage.start + 1) as usize;
+                diagnostics.mappings.push(VizeMapping {
+                    gen_range: start..end,
+                    src_range: source_start..source_start + name.len(),
+                    sub_spans: Vec::new(),
+                });
+            }
             if !emitted_refs.insert(component_ref.clone()) {
                 continue;
             }

@@ -6,7 +6,7 @@ use vize_croquis::croquis::{ComponentUsage, PassedProp, SlotUsage};
 use crate::virtual_ts::component_reference::component_binding_reference;
 use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier_fragment};
 use crate::virtual_ts::semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
-use crate::virtual_ts::types::VizeMapping;
+use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
 use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_literal};
 use super::context::ComponentPropsContext;
@@ -148,7 +148,7 @@ fn emit_slot_references(
 ) {
     let slots_ref = cstr!("__vize_slots_nav_{idx}");
     let mut emitted_slots_ref = false;
-    for slot in &usage.slots {
+    for (slot_index, slot) in usage.slots.iter().enumerate() {
         if slot.name_is_dynamic {
             continue;
         }
@@ -170,24 +170,29 @@ fn emit_slot_references(
             emitted_slots_ref = true;
         }
 
-        append!(*ts, "  void {slots_ref}");
+        ts.push_str("  const { ");
+        let access_start = ts.len();
         let slot_gen_range = if is_ts_identifier(slot.name.as_str()) {
-            ts.push('.');
             let slot_gen_start = ts.len();
             ts.push_str(slot.name.as_str());
             slot_gen_start..ts.len()
         } else {
-            ts.push('[');
-            let range = push_ts_single_quoted_literal(ts, slot.name.as_str());
-            ts.push(']');
-            range
+            push_ts_single_quoted_literal(ts, slot.name.as_str())
         };
-        ts.push_str(";\n");
+        let access_end = ts.len();
+        append!(
+            *ts,
+            ": __vize_slot_nav_{idx}_{slot_index} }} = {slots_ref};\n  void __vize_slot_nav_{idx}_{slot_index};\n"
+        );
+        let src_range = (ctx.template_offset as usize + source_range.start)
+            ..(ctx.template_offset as usize + source_range.end);
         mappings.push(VizeMapping {
-            gen_range: slot_gen_range,
-            src_range: (ctx.template_offset as usize + source_range.start)
-                ..(ctx.template_offset as usize + source_range.end),
-            sub_spans: Vec::new(),
+            gen_range: access_start..access_end,
+            src_range: src_range.clone(),
+            sub_spans: vec![VizeSubSpan {
+                gen_range: slot_gen_range,
+                src_range,
+            }],
         });
     }
 }
