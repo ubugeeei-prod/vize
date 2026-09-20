@@ -87,6 +87,22 @@ impl VirtualProject {
                     .and_then(Value::as_bool)
             })
             .unwrap_or(false);
+        self.virtual_ts_check_options.infer_template_dollar_attrs = options
+            .as_ref()
+            .and_then(|options| {
+                options
+                    .get("inferTemplateDollarAttrs")
+                    .and_then(Value::as_bool)
+            })
+            .unwrap_or(false);
+        self.virtual_ts_check_options.fallthrough_attributes = options
+            .as_ref()
+            .and_then(|options| {
+                options
+                    .get("fallthroughAttributes")
+                    .and_then(Value::as_bool)
+            })
+            .unwrap_or(false);
     }
 
     #[cfg(test)]

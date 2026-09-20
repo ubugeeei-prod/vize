@@ -117,7 +117,14 @@ mod tests {
             let result = parse_script_setup(&source);
             assert_eq!(result.import_statements.len(), 1, "{expression}");
             assert!(result.macros.define_slots().is_some(), "{expression}");
-            assert!(result.bindings.contains("slots"), "{expression}");
+            let mut bindings: Vec<_> = result
+                .bindings
+                .bindings
+                .keys()
+                .map(|name| name.as_str())
+                .collect();
+            bindings.sort_unstable();
+            assert_eq!(bindings, ["slots", "useSlots", "雪"], "{expression}");
             let import = &result.import_statements[0];
             assert_eq!(
                 &source[import.start as usize..import.end as usize],

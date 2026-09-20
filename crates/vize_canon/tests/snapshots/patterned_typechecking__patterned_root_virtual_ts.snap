@@ -34,14 +34,6 @@ type __RuntimePropHasBoolean<T> = T extends BooleanConstructor ? true : T extend
 type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : __RuntimePropHasBoolean<T>;
 type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
 type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
-type __VizeModelIsUnknown<T> = __VizeIsAny<T> extends true ? false : unknown extends T ? ([keyof T] extends [never] ? true : false) : false;
-type __VizeModelRuntimeValue<T> = __RuntimePropShape<{ modelValue: T }>["modelValue"];
-type __VizeModelOptionValue<T, O extends Record<string, any>> = __VizeModelIsUnknown<T> extends true ? __VizeModelRuntimeValue<O> : T;
-type __VizeModelOptionGetValue<T, O extends Record<string, any>> = O extends { get?: infer __F } ? NonNullable<__F> extends (value: any) => infer __G ? __G : T : T;
-type __VizeModelOptionSetValue<T, O extends Record<string, any>> = O extends { set?: infer __F } ? NonNullable<__F> extends (value: infer __S) => any ? __S : T : T;
-type __VizePropConstructor<T = any> = { new (...args: any[]): T & {} } | { (): T };
-type __VizePropType<T> = __VizePropConstructor<T> | readonly (__VizePropConstructor<T> | null)[] | null;
-type __VizeDefineModelOptions<T, G = T, S = T> = { type?: __VizePropType<T>; required?: boolean; default?: any; get?: (value: T) => G; set?: (value: S) => any } & Record<string, any>;
 type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
 type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never; type __DefineProps<T, __BKeys extends keyof T = __VizeBooleanKey<T>> = Readonly<T> & { readonly [K in __BKeys]-?: boolean };
 type __VizeIfAny<T, Y, N> = 0 extends (1 & T) ? Y : N;
@@ -52,9 +44,6 @@ type __VizeInferDefault<P, T> = ((props: P) => T & {}) | (T extends __VizeDefaul
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __VizeInferDefault<T, T[K]> };
 type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown ? Readonly<__VizeMappedOmit<T, keyof D>> & { readonly [K in keyof D as K extends keyof T ? K : never]-?: K extends keyof T ? D[K] extends undefined ? __VizeIfAny<D[K], __VizeNotUndefined<T[K]>, T[K]> : __VizeNotUndefined<T[K]> : never } & { readonly [K in __BKeys]-?: K extends keyof D ? D[K] extends undefined ? boolean | undefined : boolean : boolean } : never;
 type __Ref<T> = import('vue').Ref<T>;
-type __VizeModelModifiers<M extends PropertyKey> = Record<M, true | undefined>;
-type __VizeWritableRef<G, S> = Omit<__Ref<G>, 'value'> & { get value(): G; set value(value: S); };
-type __VizeModelRef<T, M extends PropertyKey = string, G = T, S = T> = __VizeWritableRef<G, S> & [__VizeModelRef<T, M, G, S>, __VizeModelModifiers<M>];
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
 type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
 type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
@@ -76,9 +65,8 @@ type __VizeComponentInput<T, Declared, Authored> = __VizeUsePublicInstance<Autho
 type __VizeAuthoredKeyWitness<T> = { [K in keyof T]: unknown };
 type __VizeIsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
 type __VizeUsePublicInstance<T> = __VizeIsAny<T> extends true ? true : __VizeIsUnknown<T>;
-type __VizeStrictPublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? never : __EmitFn<T>;
-type __VizePublicEmit<T> = ((this: never, event: string, ...args: any[]) => void) & __VizeStrictPublicEmit<T>;
-type __VizePublicSlots<T> = Readonly<Record<string, (this: never, ...args: any[]) => any>> & T;
+type __VizePublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? (event: string, ...args: any[]) => void : __EmitFn<T>;
+type __VizePublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;
 // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
 type __VizeComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;
 // @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.
@@ -91,11 +79,12 @@ type __VizeComponentNativeAttrNames = { [K in keyof __VizeNativeElements & strin
 type __VizeComponentDataAttrs = { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };
 type __VizeComponentGlobalHtmlAttrs = __VizeIsAny<__VizeNativeElements> extends true ? {} : { [K in __VizeComponentNativeAttrNames as K | __VizeComponentAttrCamel<K>]?: unknown } & __VizeComponentDataAttrs;
 declare function __vizeComponentGlobalHtmlAttrs(value: __VizeComponentGlobalHtmlAttrs): void;
-// @ts-ignore TS2694/TS2307: a `vue` without `Directive` must degrade custom directive value checks to unchecked, never error. See virtual_ts/expressions/directive_values.rs.
-type __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ? V : unknown;
-declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;
-type __VForEntry<T> = T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number];
-declare function __vForList<const T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];// Adapted from vuejs/language-tools e68d41bfef1770f8428f92097abe959b57de62d2.
+declare function __vForList<const T>(source: T): T extends number ? [item: number, key: number][] : T extends string ? [item: string, key: number][] : T extends readonly any[] ? (T extends readonly (infer U)[] ? [item: U, key: number] : never)[] : T extends Iterable<any> ? (T extends Iterable<infer U> ? [item: U, key: number] : never)[] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number][];type __VizeDirectiveHook<D, H = Extract<D[keyof D & ('created' | 'beforeMount' | 'mounted' | 'beforeUpdate' | 'updated' | 'beforeUnmount' | 'unmounted')], (...args: any[]) => any>> = D extends (...args: any[]) => any ? D : [H] extends [never] ? (el: unknown, binding: { value?: unknown }, ...args: any[]) => void : H;
+type __VizeDirectiveCall<H> = H extends (...args: any[]) => any ? Parameters<H>['length'] extends 0 | 1 ? (el: unknown, binding: { value?: unknown }) => void : H : never;
+declare function __vizeDirective<D>(directive: D): __VizeDirectiveCall<__VizeDirectiveHook<D>>;
+declare const __vizeDirectiveBindingRest: { instance: null; oldValue: null; modifiers: any; dir: any };
+declare function __vizeDirectiveTail<F extends (...args: any[]) => any>(hook: F): 4 extends Parameters<F>['length'] ? [never, never] : 3 extends Parameters<F>['length'] ? [never] : [];
+// Adapted from vuejs/language-tools e68d41bfef1770f8428f92097abe959b57de62d2.
 // MIT license; see pattern_matching.LICENSE.
 // Kept as a checked declaration file, shared once per TypeScript program.
 /*
@@ -419,16 +408,7 @@ function __setup() {
   function defineEmits<const _T extends Record<string, any>>(_events: _T): __EmitFn<_T>;
   function defineEmits(_events?: any) { void _events; return (() => {}) as any; }
   function defineExpose<_T = unknown>(_exposed?: _T): void { void _exposed; }
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
-  function defineModel<_T, _M extends PropertyKey = string, _G = _T, _S = _T>(_options: __VizeDefineModelOptions<_T, _G, _S> & ({ default: any } | { required: true })): __VizeModelRef<_T, _M, _G, _S>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_options?: __VizeDefineModelOptions<_T, _G, _S>): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _O extends Record<string, any> = Record<string, any>, _V = __VizeModelOptionValue<_T, _O>>(_options: _O): __VizeModelRef<_V, _M, __VizeModelOptionGetValue<_V, _O>, __VizeModelOptionSetValue<_V, _O>>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_options: any): __VizeModelRef<_T, _M, _G, _S>;
-  function defineModel<_T, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options: __VizeDefineModelOptions<_T, _G, _S> & ({ default: any } | { required: true })): __VizeModelRef<_T, _M, _G, _S>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options?: __VizeDefineModelOptions<_T, _G, _S>): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _O extends Record<string, any> = Record<string, any>, _V = __VizeModelOptionValue<_T, _O>>(_name: string, _options: _O): __VizeModelRef<_V, _M, __VizeModelOptionGetValue<_V, _O>, __VizeModelOptionSetValue<_V, _O>>;
-  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options?: any): __VizeModelRef<_T, _M, _G, _S>;
-  function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
+  const defineModel = undefined as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
   function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
   function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
@@ -439,7 +419,7 @@ function __setup() {
   
   const result = {} as Result<number>;
   
-  // @vize-map: 27549:27594 -> 0:110
+  // @vize-map: 24694:24739 -> 0:110
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -477,11 +457,14 @@ function __setup() {
         // @vize-map: expr -> 325:329
 
         // v-for scope: rows in rows
-        __vForList(rows).forEach(([rows]) => {
+        {
+        const __vize_v_for_source_10 = __vForList(rows);
+        for (const [rows] of __vize_v_for_source_10) {
           void rows;
           void (rows); // VBind
           // @vize-map: expr -> 373:377
-        });
+        }
+        }
       }
     }
     type __vize_match_8_6 = ['any'];
@@ -510,9 +493,9 @@ function __setup() {
   type __VizeAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<__VizeAttrCamel<__T>>}` : S;
   type __VizeNativeAttrNames = { [K in keyof __VizeNativeElements & string]: keyof __VizeNativeElements[K] }[keyof __VizeNativeElements & string] & string;
   type __VizeGlobalHtmlAttrs = __VizeIsAny<__VizeNativeElements> extends true ? {} : { [K in __VizeNativeAttrNames as K | __VizeAttrCamel<K>]?: unknown } & { [K in `data${string}`]?: unknown };
-  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : Record<string, unknown>;
+  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & __VizeGlobalHtmlAttrs;
   type __VizeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
-  type __VizePublicProps<C> = C extends { new (): { $props: infer __P } } ? __P : C extends (props: infer __P) => any ? __P : {};
+  type __VizePublicProps<C> = C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {};
   type __VizeInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;
   type __VizeStaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;
   type __VizeHasInstanceRawProps<C> = __VizeIsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? __VizeIsAny<__P> extends true ? false : true : false : false;
@@ -538,6 +521,7 @@ function __setup() {
 
   // Component template navigation references
   void Child;
+  const { } = undefined as unknown as __Child_Props_0;
   const __vize_props_nav_0 = undefined as unknown as __Child_Props_0 & Record<string, unknown>;
   void __vize_props_nav_0.count;
 
@@ -558,7 +542,9 @@ function __setup() {
       if (rows.length > 0) {
 
         // Component props in v-for scope: rows in rows
-        __vForList(rows).forEach(([rows]) => {
+        {
+        const __vize_v_for_source_10 = __vForList(rows);
+        for (const [rows] of __vize_v_for_source_10) {
           void rows;
           // @vize-map: prop -> 365:378
           const __vize_prop_check_0_count: __Child_0_prop_count = rows;
@@ -569,7 +555,8 @@ function __setup() {
           type __VizeSlotContract_0 = __VizeStructuralSlots<typeof Child>;
           const __vize_required_slots_0: __VizeRequiredSlots<__VizeSlotContract_0, {}> = {};
           void __vize_required_slots_0;
-        });
+        }
+        }
       }
     }
     type __vize_match_8__5 = ['any'];
@@ -592,14 +579,15 @@ function __setup() {
 __setup();
 
 export type Emits = {};
-export type Slots = {};
+type __VizeSlots = {};
+export type { __VizeSlots as Slots };
 
 // ========== Default Export ==========
 type __VizeComponentInstance = {
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: __VizePublicEmit<Emits>;
-  $slots: __VizePublicSlots<Slots>;
+  $slots: __VizePublicSlots<__VizeSlots>;
 } & __VizeComponentPublicBase;
 type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
 $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>;

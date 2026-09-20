@@ -31,6 +31,7 @@ pub(crate) fn generate_template_context(
     dialect: VueVersion,
     legacy_vue2: bool,
     has_own_slots: bool,
+    attrs_type: Option<&str>,
 ) -> String {
     let mut ctx = String::default();
 
@@ -55,7 +56,14 @@ pub(crate) fn generate_template_context(
     }
 
     // Core Vue globals (always present on ComponentPublicInstance)
-    ctx.push_str("    const $attrs = __ctx.$attrs;\n");
+    if let Some(attrs_type) = attrs_type {
+        append!(
+            ctx,
+            "    const $attrs = undefined as unknown as {attrs_type};\n"
+        );
+    } else {
+        ctx.push_str("    const $attrs = __ctx.$attrs;\n");
+    }
     if !has_own_slots {
         ctx.push_str("    const $slots = __ctx.$slots;\n");
     }

@@ -15,6 +15,8 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
         "@inferComponentDollarEl",
         "@inferTemplateDollarEl",
         "@inferTemplateDollarSlots",
+        "@inferTemplateDollarAttrs",
+        "@fallthroughAttributes",
         "@jsxSlots",
     ]
     .iter()
@@ -63,6 +65,8 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
             "inferComponentDollarEl" => options.infer_component_dollar_el = value,
             "inferTemplateDollarEl" => options.infer_template_dollar_el = value,
             "inferTemplateDollarSlots" => options.infer_template_dollar_slots = value,
+            "inferTemplateDollarAttrs" => options.infer_template_dollar_attrs = value,
+            "fallthroughAttributes" => options.fallthrough_attributes = value,
             "jsxSlots" => options.jsx_slots = value,
             _ => {}
         }

@@ -1,5 +1,4 @@
 use vize_carton::{String, is_native_tag};
-use vize_croquis::Croquis;
 use vize_relief::{ElementNode, ExpressionNode, IfNode, PropNode, RootNode, TemplateChildNode};
 
 enum FallthroughRootTarget {
@@ -7,48 +6,8 @@ enum FallthroughRootTarget {
     Component,
 }
 
-pub(super) fn fallthrough_props_type_ref(
-    summary: &Croquis,
-    template_ast: Option<&RootNode<'_>>,
-    legacy_vue2: bool,
-) -> Option<String> {
-    if legacy_vue2 {
-        return None;
-    }
-    let Some(template_ast) = template_ast else {
-        return Some(String::from("Record<string, unknown>"));
-    };
-    if summary.template_info.inherit_attrs_disabled {
-        return explicit_attrs_targets(template_ast).map(|targets| targets_type_ref(&targets));
-    }
-
-    let targets = explicit_attrs_targets(template_ast)
-        .or_else(|| possible_single_root_targets(template_ast))?;
-    Some(targets_type_ref(&targets))
-}
-
-fn targets_type_ref(targets: &[FallthroughRootTarget]) -> String {
-    if targets
-        .iter()
-        .any(|target| matches!(target, FallthroughRootTarget::Component))
-    {
-        return String::from("Record<string, unknown>");
-    }
-
-    let mut ty = String::default();
-    for (index, target) in targets.iter().enumerate() {
-        let FallthroughRootTarget::Native(tag) = target else {
-            unreachable!("component roots returned open fallthrough props above");
-        };
-        if index > 0 {
-            ty.push_str(" & ");
-        }
-        ty.push_str("Partial<__VizeNativeElement<");
-        push_ts_string_literal(&mut ty, tag.as_str());
-        ty.push_str(">>");
-    }
-    ty
-}
+mod types;
+pub(super) use types::{fallthrough_attrs_type_ref, fallthrough_props_type_ref};
 
 fn explicit_attrs_targets(root: &RootNode<'_>) -> Option<Vec<FallthroughRootTarget>> {
     let mut targets = Vec::new();

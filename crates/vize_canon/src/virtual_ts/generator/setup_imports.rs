@@ -20,6 +20,7 @@ use crate::virtual_ts::{
 pub(super) struct SetupImportPlan {
     imports: Vec<ImportSpec>,
     slots_type: Option<TemplateSlotsType>,
+    attrs_type: Option<String>,
 }
 
 struct ImportSpec {
@@ -28,12 +29,33 @@ struct ImportSpec {
     namespace: bool,
     css: bool,
     slots: bool,
+    attrs: bool,
 }
 
 impl SetupImportPlan {
-    pub(super) fn new(script: Option<&str>, slots_type: Option<TemplateSlotsType>) -> Self {
+    pub(super) fn new(
+        script: Option<&str>,
+        summary: &vize_croquis::Croquis,
+        template: Option<&vize_relief::RootNode<'_>>,
+        inferred_slots: bool,
+        checks: crate::virtual_ts::types::VirtualTsCheckOptions,
+    ) -> Self {
+        let slots_type = checks.infer_template_dollar_slots.then(|| {
+            super::component_public_types::template_slots_type(summary, inferred_slots, script)
+        });
+        let attrs_type = checks.infer_template_dollar_attrs.then(|| {
+            let mut ty = String::from("import('vue').ComponentPublicInstance['$attrs']");
+            if checks.fallthrough_attributes
+                && let Some(inherited) =
+                    super::fallthrough::fallthrough_attrs_type_ref(summary, template)
+            {
+                append!(ty, " & {inherited}");
+            }
+            ty
+        });
         let mut plan = Self {
             slots_type,
+            attrs_type,
             ..Self::default()
         };
         let Some(script) = script else {
@@ -41,7 +63,8 @@ impl SetupImportPlan {
         };
         let css = script.contains("useCssModule");
         let slots = plan.slots_type.is_some() && script.contains("useSlots");
-        if !css && !slots {
+        let attrs = plan.attrs_type.is_some() && script.contains("useAttrs");
+        if !css && !slots && !attrs {
             return plan;
         }
         let allocator = Allocator::default();
@@ -58,22 +81,29 @@ impl SetupImportPlan {
                 continue;
             }
             for specifier in import.specifiers.iter().flatten() {
-                let (local, namespace, css, slots) = match specifier {
+                let (local, namespace, css, slots, attrs) = match specifier {
                     ImportDeclarationSpecifier::ImportSpecifier(specifier)
                         if specifier.imported.name() == "useCssModule"
                             && specifier.import_kind != ImportOrExportKind::Type =>
                     {
-                        (&specifier.local, false, true, false)
+                        (&specifier.local, false, true, false, false)
                     }
                     ImportDeclarationSpecifier::ImportSpecifier(specifier)
                         if slots
                             && specifier.imported.name() == "useSlots"
                             && specifier.import_kind != ImportOrExportKind::Type =>
                     {
-                        (&specifier.local, false, false, true)
+                        (&specifier.local, false, false, true, false)
+                    }
+                    ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                        if attrs
+                            && specifier.imported.name() == "useAttrs"
+                            && specifier.import_kind != ImportOrExportKind::Type =>
+                    {
+                        (&specifier.local, false, false, false, true)
                     }
                     ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
-                        (&specifier.local, true, css, slots)
+                        (&specifier.local, true, css, slots, attrs)
                     }
                     _ => continue,
                 };
@@ -91,6 +121,7 @@ impl SetupImportPlan {
                     namespace,
                     css,
                     slots,
+                    attrs,
                 });
             }
         }
@@ -109,6 +140,10 @@ impl SetupImportPlan {
 
     pub(super) fn has_own_slots(&self) -> bool {
         self.slots_type.is_some()
+    }
+
+    pub(super) fn attrs_type(&self) -> Option<&str> {
+        self.attrs_type.as_deref()
     }
 
     pub(super) fn emit_template_slots(
@@ -145,6 +180,11 @@ impl SetupImportPlan {
             slots.emit(ts, mappings, source_offset);
             ts.push_str(";\n");
         }
+        if self.imports.iter().any(|import| import.attrs)
+            && let Some(attrs) = &self.attrs_type
+        {
+            append!(*ts, "  type __VizeUseAttrs = () => {attrs};\n");
+        }
         for (index, import) in self.imports.iter().enumerate() {
             let ImportSpec {
                 name,
@@ -152,6 +192,7 @@ impl SetupImportPlan {
                 namespace,
                 css,
                 slots,
+                attrs,
             } = import;
             ts.push_str("  const ");
             let start = ts.len();
@@ -183,6 +224,10 @@ impl SetupImportPlan {
                     keys.push("'useSlots'");
                     fields.push("useSlots: __VizeUseSlots");
                 }
+                if *attrs {
+                    keys.push("'useAttrs'");
+                    fields.push("useAttrs: __VizeUseAttrs");
+                }
                 append!(
                     *ts,
                     "Omit<typeof __vize_setup_import_{index}, {}> & {{ {} }};\n",
@@ -191,6 +236,8 @@ impl SetupImportPlan {
                 );
             } else if *css {
                 ts.push_str("__VizeUseCssModule;\n");
+            } else if *attrs {
+                ts.push_str("__VizeUseAttrs;\n");
             } else {
                 ts.push_str("__VizeUseSlots;\n");
             }

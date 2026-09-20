@@ -111,9 +111,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let inferred_slots = component_public_types::infers_slots(summary, template_ast, check_options);
     let setup_imports = SetupImportPlan::new(
         script_content,
-        check_options.infer_template_dollar_slots.then(|| {
-            component_public_types::template_slots_type(summary, inferred_slots, script_content)
-        }),
+        summary,
+        template_ast,
+        inferred_slots,
+        check_options,
     );
     let reference_setup_bindings_comment =
         self::anchors::setup_binding_anchor_comment(preserve_unused_diagnostics);
@@ -667,7 +668,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     options,
                     dialect,
                     legacy_vue2,
-                    setup_imports.has_own_slots()
+                    setup_imports.has_own_slots(),
+                    setup_imports.attrs_type(),
                 )
             );
             ts.push_str(&template_context);

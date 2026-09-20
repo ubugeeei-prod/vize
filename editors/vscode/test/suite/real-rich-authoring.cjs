@@ -113,7 +113,28 @@ exports.runRichAuthoring = async function runRichAuthoring() {
     30_000,
   );
   await assertComponentDocumentation(document, editor);
-  await assertSlotDocumentation();
+  await assertMemberDocumentation("SlotAuthoring.vue", [
+    ["names.current", "names.", "current", "**Primary** invoice slot", "current:"],
+    ["invoice.total", "invoice.to", "total", "**Invoice** total", "total: number"],
+    [
+      "ownSlots.header",
+      "ownSlots.",
+      "header",
+      "**Header** shown above the invoice",
+      "header(props:",
+    ],
+    ["$slots.header", "$slots.he", "header", "**Header** shown above the invoice", "header(props:"],
+  ]);
+  await assertMemberDocumentation("AttrAuthoring.vue", [
+    ["attrs.invoiceTotal", "attrs.", "invoiceTotal", "**Invoice total**", "invoiceTotal: number"],
+    [
+      "$attrs.invoiceTotal",
+      "$attrs.in",
+      "invoiceTotal",
+      "**Invoice total**",
+      "invoiceTotal: number",
+    ],
+  ]);
 };
 
 async function assertComponentDocumentation(document, editor) {
@@ -174,27 +195,16 @@ async function assertComponentDocumentation(document, editor) {
   );
 }
 
-async function assertSlotDocumentation() {
-  const document = await openWorkspaceDocument("src", "SlotAuthoring.vue");
+async function assertMemberDocumentation(file, cases) {
+  const document = await openWorkspaceDocument("src", file);
   const editor = await vscode.window.showTextDocument(document);
   await waitForDiagnostics(
     document.uri,
     (items) => items.length === 0,
-    "slot initial document",
+    `${file} initial document`,
     30_000,
   );
-  for (const [expression, incomplete, label, description, declaration] of [
-    ["names.current", "names.", "current", "**Primary** invoice slot", "current:"],
-    ["invoice.total", "invoice.to", "total", "**Invoice** total", "total: number"],
-    [
-      "ownSlots.header",
-      "ownSlots.",
-      "header",
-      "**Header** shown above the invoice",
-      "header(props:",
-    ],
-    ["$slots.header", "$slots.he", "header", "**Header** shown above the invoice", "header(props:"],
-  ]) {
+  for (const [expression, incomplete, label, description, declaration] of cases) {
     const source = document.getText();
     const start = source.lastIndexOf(expression);
     assert.ok(start >= 0);
