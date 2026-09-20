@@ -2,19 +2,10 @@
 //! `NativeElements` and `Directive` (Vue 2.7, an older Vue 3 minor, a trimmed or
 //! shimmed package).
 //!
-//! The shared helpers file names `import('vue').NativeElements` once so native
-//! element `v-bind` values can be checked against the element's own prop type,
-//! and `import('vue').Directive` once so a custom directive's value can be
-//! checked against its declared value type. When the installed `vue` does not
-//! export them the aliases must degrade to unchecked. The diagnostics path drops
-//! the resulting `TS2694` because the helpers text carries no mapping back to
-//! authored source, but declaration emit treats any non-zero Corsa exit as
-//! fatal, so the same unmapped diagnostic aborted the whole emit:
-//!
-//! ```text
-//! Error: corsa error (exit code 1): __vize_helpers.d.ts(44,43): error TS2694:
-//!   Namespace '".../node_modules/vue/index"' has no exported member 'NativeElements'.
-//! ```
+//! Native prop checking uses Vue's `NativeElements` when it is available. A
+//! missing export must not prevent declaration emit. Custom directives retain
+//! their own declared hook signatures without depending on Vue's `Directive`
+//! alias, and public slots use the existing instance surface.
 //!
 //! This project writes its own `node_modules` instead of linking the
 //! workspace's, so the floor is pinned regardless of which `vue` the developer
@@ -68,7 +59,7 @@ const vFocus = (_el: HTMLElement, _binding: { value: number }) => {}
 </script>
 
 <template>
-  <a :href="props.count" v-focus="'nope'">{{ props.count }}</a>
+  <a :href="props.count" v-focus="props.count">{{ props.count }}</a>
 </template>
 "#;
 
@@ -206,11 +197,8 @@ fn declaration_emit_survives_a_vue_without_native_elements_or_directive() {
     );
 
     let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
-    // The `:href="props.count"` binding is a `number` against `string`, and
-    // `v-focus="'nope'"` is a `string` against the directive's `number` value.
-    // With a `vue` that declares `NativeElements` and `Directive` both are
-    // `TS2322`; without them each alias is an error type, so the checks accept
-    // any value. Absent means unchecked, never an error.
+    // NativeElements is absent, so the numeric href remains unchecked. The
+    // directive's own numeric value signature is still valid and enforceable.
     assert_eq!(json["errorCount"], serde_json::json!(0));
     let diagnostics = json["files"]
         .as_array()
@@ -229,9 +217,7 @@ fn declaration_emit_survives_a_vue_without_native_elements_or_directive() {
         ])
     );
 
-    // Emitted declarations must not push vize's Vue floor onto consumers: the
-    // aliases that name `NativeElements` and `Directive` stay out of the shipped
-    // helper file and out of every emitted `.d.ts`.
+    // Template-only helpers must not raise the Vue floor of emitted declarations.
     let emitted_helpers =
         std::fs::read_to_string(project_root.join("types/__vize_helpers.d.ts")).unwrap();
     let app_declaration = std::fs::read_to_string(project_root.join("types/App.vue.d.ts")).unwrap();
@@ -243,12 +229,38 @@ fn declaration_emit_survives_a_vue_without_native_elements_or_directive() {
             contents
                 .lines()
                 .filter(|line| line.contains("__VizeNativeElement")
-                    || line.contains("__VizeDirectiveValue"))
+                    || line.contains("__VizeDirectiveHook")
+                    || line.contains("__vizeDirective"))
                 .collect::<Vec<_>>(),
             Vec::<&str>::new(),
             "{name} must not ship the helpers that name Vue's own types"
         );
     }
+
+    write_file(
+        &project_root.join("src/App.vue"),
+        &APP_VUE.replace("v-focus=\"props.count\"", "v-focus=\"'wrong'\""),
+    );
+    let invalid = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path.as_str())
+        .args(["check", ".", "--format", "json"])
+        .output()
+        .unwrap();
+    assert_eq!(invalid.status.code(), Some(1));
+    let invalid: serde_json::Value = serde_json::from_slice(&invalid.stdout).unwrap();
+    assert_eq!(invalid["errorCount"], serde_json::json!(1), "{invalid}");
+    let diagnostics = invalid["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| file["diagnostics"].as_array().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(diagnostics.len(), 1, "{invalid}");
+    assert!(
+        diagnostics[0].as_str().unwrap().contains("[TS2322]"),
+        "{invalid}"
+    );
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

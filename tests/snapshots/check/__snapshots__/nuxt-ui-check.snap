@@ -38,9 +38,11 @@
         "error:118:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:119:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:248:10 [TS2345] Argument of type '{ as?: any; label?: string | undefined; icon?: any; avatar?: AvatarProps | undefined; color?: string | number | symbol | undefined; size?: string | number | symbol | undefined; ... 6 more ...; decorative: _SeparatorProps; } | { ...; }' is not assignable to parameter of type '__VizeComponentCheckProps<SeparatorProps, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{ label: string | undefined; dataSlot: string; class: any; }' is not assignable to type '__VizeComponentCheckProps<SeparatorProps, __VizePublicComponentAttrs & Record<string, unknown>>'.\nProperty 'decorative' is missing in type '{ label: string | undefined; dataSlot: string; class: any; }' but required in type '{ readonly as?: any; readonly label?: string | undefined; readonly icon?: any; readonly avatar?: AvatarProps | undefined; readonly color?: string | number | symbol | undefined; ... 6 more ...; readonly decorative: _SeparatorProps; }'.",
-        "error:283:14 [TS2345] Argument of type '{ form?: string | undefined; formaction?: string | undefined; formenctype?: string | undefined; formmethod?: string | undefined; formnovalidate?: Booleanish | undefined; formtarget?: string | undefined; ... 58 more ...; resetSearchTermOnSelect: ComboboxRootProps<...>; }' is not assignable to parameter of type 'Partial<Props<any[] | any[][], undefined, false, Omit<ModelModifiers, \"lazy\">, Partial<Omit<ButtonProps, LinkPropsKeys>>>> & ... 6 more ... & Record<...>'.\nType '{ form?: string | undefined; formaction?: string | undefined; formenctype?: string | undefined; formmethod?: string | undefined; formnovalidate?: Booleanish | undefined; formtarget?: string | undefined; ... 58 more ...; resetSearchTermOnSelect: ComboboxRootProps<...>; }' is not assignable to type 'Partial<Props<any[] | any[][], undefined, false, Omit<ModelModifiers, \"lazy\">, Partial<Omit<ButtonProps, LinkPropsKeys>>>>'.\nTypes of property 'clear' are incompatible.\nType 'false | (false & Partial<Omit<ButtonProps, LinkPropsKeys>>) | undefined' is not assignable to type 'Partial<Omit<ButtonProps, LinkPropsKeys>> | (Partial<Omit<ButtonProps, LinkPropsKeys>> & boolean) | undefined'.\nType 'false' is not assignable to type 'Partial<Omit<ButtonProps, LinkPropsKeys>> | (Partial<Omit<ButtonProps, LinkPropsKeys>> & boolean) | undefined'.",
+        "error:276:14 [TS2345] Argument of type '{ \"onUpdate:modelValue\": never; modelValue: any; dataSlot: string; class: any; } & Omit<F, \"type\" | keyof F>' is not assignable to parameter of type '__VizeSetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { abbr?: unknown; about?: unknown; ... 680 more ...; zoomAndPan?: unknown; } & __VizeComponentDataAttrs'.\nType '{ \"onUpdate:modelValue\": never; modelValue: any; dataSlot: string; class: any; } & Omit<F, \"type\" | keyof F>' is not assignable to type '__VizeSetupProps'.\nType '{ \"onUpdate:modelValue\": never; modelValue: any; dataSlot: string; class: any; } & Omit<F, \"type\" | keyof F>' is missing the following properties from type 'CheckboxProps<boolean>': defaultValue, disabled, falseValue, id, and 4 more.",
+        "error:283:14 [TS2345] Argument of type '{ form?: string | undefined; formaction?: string | undefined; formenctype?: string | undefined; formmethod?: string | undefined; formnovalidate?: Booleanish | undefined; formtarget?: string | undefined; ... 59 more ...; resetSearchTermOnSelect: ComboboxRootProps<...>; }' is not assignable to parameter of type 'SelectMenuProps<any[] | any[][], undefined, false, Omit<ModelModifiers, \"lazy\">, Partial<Omit<ButtonProps, LinkPropsKeys>>> & ... 6 more ... & Record<...>'.\nType '{ form?: string | undefined; formaction?: string | undefined; formenctype?: string | undefined; formmethod?: string | undefined; formnovalidate?: Booleanish | undefined; formtarget?: string | undefined; ... 59 more ...; resetSearchTermOnSelect: ComboboxRootProps<...>; }' is not assignable to type 'SelectMenuProps<any[] | any[][], undefined, false, Omit<ModelModifiers, \"lazy\">, Partial<Omit<ButtonProps, LinkPropsKeys>>>'.\nTypes of property 'clear' are incompatible.\nType 'false | (false & Partial<Omit<ButtonProps, LinkPropsKeys>>) | undefined' is not assignable to type 'Partial<Omit<ButtonProps, LinkPropsKeys>> | (Partial<Omit<ButtonProps, LinkPropsKeys>> & boolean) | undefined'.\nType 'false' is not assignable to type 'Partial<Omit<ButtonProps, LinkPropsKeys>> | (Partial<Omit<ButtonProps, LinkPropsKeys>> & boolean) | undefined'.",
         "error:313:72 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"authForm\"> | Record<string, never>) & { authForm?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"authForm\"> & { authForm?: any; }'.",
-        "error:313:100 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"authForm\"> | Record<string, never>) & { authForm?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"authForm\"> & { authForm?: any; }'."
+        "error:313:100 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"authForm\"> | Record<string, never>) & { authForm?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"authForm\"> & { authForm?: any; }'.",
+        "error:349:30 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -110,10 +112,7 @@
         "error:69:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:70:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:93:97 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"breadcrumb\"> | Record<string, never>) & { breadcrumb?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"breadcrumb\"> & { breadcrumb?: any; }'.",
-        "error:93:130 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"breadcrumb\"> | Record<string, never>) & { breadcrumb?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"breadcrumb\"> & { breadcrumb?: any; }'.",
-        "error:108:16 [TS2345] Argument of type '{ item: Extract<T, { slot: string; }>; active: any; index: number; ui: any; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<BreadcrumbSlots<T>>'.",
-        "error:109:18 [TS2345] Argument of type '{ item: Extract<T, { slot: string; }>; active: any; index: number; ui: any; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<BreadcrumbSlots<T>>'.",
-        "error:127:12 [TS2345] Argument of type '{ ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<BreadcrumbSlots<T>, \"separator\">'."
+        "error:93:130 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"breadcrumb\"> | Record<string, never>) & { breadcrumb?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"breadcrumb\"> & { breadcrumb?: any; }'."
       ]
     },
     {
@@ -386,8 +385,7 @@
         "error:602:79 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
         "error:612:53 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
         "error:629:54 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
-        "error:649:26 [TS7006] Parameter 'item' implicitly has an 'any' type.",
-        "error:658:117 [TS2353] Object literal may only specify known properties, and '\"group\"' does not exist in type '{ item: T; index: number; ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; }'."
+        "error:649:26 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
@@ -549,8 +547,7 @@
         "error:148:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:149:74 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:150:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
-        "error:151:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:190:8 [TS2345] Argument of type '{ open: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuSlots<T, NestedItem<T>>, \"default\">'."
+        "error:151:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -563,13 +560,7 @@
         "error:63:30 [TS2307] Cannot find module 'reka-ui/namespaced' or its corresponding type declarations.",
         "error:64:38 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:65:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
-        "error:66:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:130:6 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; index: any; ui: { [x: string]: (props?: Record<string, any>) => string; }; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
-        "error:139:12 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; active: any; index: any; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
-        "error:147:12 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; active: any; index: any; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
-        "error:183:10 [TS2345] Argument of type '{ sub: boolean; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>, \"content-top\">'.",
-        "error:259:12 [TS2345] Argument of type '{ searchTerm: string; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>, \"empty\">'.",
-        "error:266:10 [TS2345] Argument of type '{ sub: boolean; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>, \"content-bottom\">'."
+        "error:66:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1169,9 +1160,7 @@
         "error:106:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:107:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:234:85 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pricingTable\"> | Record<string, never>) & { pricingTable?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pricingTable\"> & { pricingTable?: any; }'.",
-        "error:240:39 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pricingTable\"> | Record<string, never>) & { pricingTable?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pricingTable\"> & { pricingTable?: any; }'.",
-        "error:292:20 [TS2345] Argument of type '{ feature: PricingTableSectionFeature<T>; section: PricingTableSection<T>; }' is not assignable to parameter of type '__VizeSlotOutletPayload<PricingTableSlots<T>, \"feature-title\">'.",
-        "error:334:18 [TS2345] Argument of type '{ feature: PricingTableSectionFeature<T>; section: PricingTableSection<T>; }' is not assignable to parameter of type '__VizeSlotOutletPayload<PricingTableSlots<T>, \"feature-title\">'."
+        "error:240:39 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pricingTable\"> | Record<string, never>) & { pricingTable?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pricingTable\"> & { pricingTable?: any; }'."
       ]
     },
     {
@@ -1345,10 +1334,7 @@
         "error:6:19 [TS2307] Cannot find module '#build/ui/tabs' or its corresponding type declarations.",
         "error:101:77 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:103:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
-        "error:104:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:173:10 [TS2345] Argument of type '{ item: T; index: number; ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<TabsSlots<T>, \"leading\">'.",
-        "error:179:12 [TS2345] Argument of type '{ item: T; index: number; }' is not assignable to parameter of type '__VizeSlotOutletPayload<TabsSlots<T>, \"default\">'.",
-        "error:182:10 [TS2345] Argument of type '{ item: T; index: number; ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<TabsSlots<T>, \"trailing\">'."
+        "error:104:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1398,7 +1384,7 @@
         "error:51:59 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:52:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:53:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:128:6 [TS2345] Argument of type '{ progress: boolean; close: boolean; dataExpanded: boolean; dataFront: boolean; dataPulsing: string | undefined; style: { '--index': any; '--before': number; '--offset': number; '--scale': string; '--translate': string; '--transform': string; }; dataSlot: string; class: any; }' is not assignable to parameter of type '__VizeComponentCheckProps<__UToast_CheckProps_0, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{ progress: boolean; close: boolean; dataExpanded: boolean; dataFront: boolean; dataPulsing: string | undefined; style: { '--index': any; '--before': number; '--offset': number; '--scale': string; '--translate': string; '--transform': string; }; dataSlot: string; class: any; }' is missing the following properties from type '{ readonly as?: any; readonly title?: StringOrVNode | undefined; readonly description?: StringOrVNode | undefined; readonly icon?: any; readonly avatar?: AvatarProps | undefined; ... 11 more ...; readonly type: ToastRootProps; }': defaultOpen, open, type",
+        "error:128:6 [TS2345] Argument of type '{ \"onUpdate:open\": never; onClick: never; progress: boolean; close: boolean; dataExpanded: boolean; dataFront: boolean; dataPulsing: string | undefined; style: { '--index': any; '--before': number; '--offset': number; '--scale': string; '--translate': string; '--transform': string; }; dataSlot: string; class: any; }' is not assignable to parameter of type '__VizeComponentCheckProps<__UToast_CheckProps_0, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{ \"onUpdate:open\": never; onClick: never; progress: boolean; close: boolean; dataExpanded: boolean; dataFront: boolean; dataPulsing: string | undefined; style: { '--index': any; '--before': number; '--offset': number; '--scale': string; '--translate': string; '--transform': string; }; dataSlot: string; class: any; }' is missing the following properties from type '{ readonly as?: any; readonly title?: StringOrVNode | undefined; readonly description?: StringOrVNode | undefined; readonly icon?: any; readonly avatar?: AvatarProps | undefined; ... 11 more ...; readonly type: ToastRootProps; }': defaultOpen, open, type",
         "error:159:49 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'.",
         "error:160:36 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'."
       ]
@@ -1569,7 +1555,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/accordion' or its corresponding type declarations.",
-        "error:23:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:23:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:72:4 [TS2345] Argument of type '{ type: \"multiple\" | \"single\"; items: { index: number; label: string; icon: string; component: any; }[]; unmountOnHide: boolean; class: any; ui: any; }' is not assignable to parameter of type '__VizeSetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { abbr?: unknown; about?: unknown; ... 680 more ...; zoomAndPan?: unknown; } & __VizeComponentDataAttrs & Record<...>'.\nType '{ type: \"multiple\" | \"single\"; items: { index: number; label: string; icon: string; component: any; }[]; unmountOnHide: boolean; class: any; ui: any; }' is not assignable to type '__VizeSetupProps'.\nType '{ type: \"multiple\" | \"single\"; items: { index: number; label: string; icon: string; component: any; }[]; unmountOnHide: boolean; class: any; ui: any; }' is missing the following properties from type 'AccordionProps<{ index: number; label: string; icon: string; component: any; }>': collapsible, defaultValue, disabled, modelValue"
       ]
     },
     {
@@ -1864,7 +1851,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/tabs' or its corresponding type declarations.",
-        "error:35:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:35:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:115:4 [TS2345] Argument of type '{ \"onUpdate:modelValue\": never; modelValue: string | undefined; color: string; variant: string; items: { index: number; label: string; icon: string; component: any; }[]; class: any; unmountOnHide: boolean; ui: any; }' is not assignable to parameter of type '__VizeSetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { abbr?: unknown; about?: unknown; ... 680 more ...; zoomAndPan?: unknown; } & __VizeComponentDataAttrs & Record<...>'.\nType '{ \"onUpdate:modelValue\": never; modelValue: string | undefined; color: string; variant: string; items: { index: number; label: string; icon: string; component: any; }[]; class: any; unmountOnHide: boolean; ui: any; }' is not assignable to type '__VizeSetupProps'.\nType '{ \"onUpdate:modelValue\": never; modelValue: string | undefined; color: string; variant: string; items: { index: number; label: string; icon: string; component: any; }[]; class: any; unmountOnHide: boolean; ui: any; }' is missing the following properties from type 'TabsProps<any>': activationMode, defaultValue"
       ]
     },
     {
@@ -2832,7 +2820,7 @@
       ]
     }
   ],
-  "errorCount": 1689,
+  "errorCount": 1677,
   "warningCount": 0,
   "fileCount": 231
 }

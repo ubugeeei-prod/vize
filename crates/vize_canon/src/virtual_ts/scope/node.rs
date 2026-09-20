@@ -127,6 +127,7 @@ pub(super) fn generate_scope_node(
                 append!(*ts, "{loop_indent}return [];\n{loop_indent}}})();\n");
             }
 
+            append!(*ts, "{loop_indent}}}\n");
             if enclosing_guard.is_some() {
                 append!(*ts, "{indent}}}\n");
             }

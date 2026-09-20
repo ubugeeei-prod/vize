@@ -68,9 +68,23 @@ macro_rules! v_for_list_decls_text {
     };
 }
 
+// Preserve the original generic hook instead of extracting its value parameter.
+// Vue supplies up to four hook arguments; the tail follows the hook's arity so
+// shorter hooks still receive contextual value checking without TS2554/TS2556.
+macro_rules! directive_helpers_text {
+    () => {
+        r#"type __VizeDirectiveHook<D, H = Extract<D[keyof D & ('created' | 'beforeMount' | 'mounted' | 'beforeUpdate' | 'updated' | 'beforeUnmount' | 'unmounted')], (...args: any[]) => any>> = D extends (...args: any[]) => any ? D : [H] extends [never] ? (el: unknown, binding: { value?: unknown }, ...args: any[]) => void : H;
+type __VizeDirectiveCall<H> = H extends (...args: any[]) => any ? Parameters<H>['length'] extends 0 | 1 ? (el: unknown, binding: { value?: unknown }) => void : H : never;
+declare function __vizeDirective<D>(directive: D): __VizeDirectiveCall<__VizeDirectiveHook<D>>;
+declare const __vizeDirectiveBindingRest: { instance: null; oldValue: null; modifiers: any; dir: any };
+declare function __vizeDirectiveTail<F extends (...args: any[]) => any>(hook: F): 4 extends Parameters<F>['length'] ? [never, never] : 3 extends Parameters<F>['length'] ? [never] : [];
+"#
+    };
+}
+
 macro_rules! vue_type_helpers_text {
     () => {
-        concat!(vue_type_aliases_text!(), "// @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.\ntype __VizeNativeElements = import('vue').NativeElements;\ntype __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;\ntype __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;\ndeclare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: __VizeNativeElementProp<__VizeNativeElement<__Tag>, __Prop>): void;\ntype __VizeComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<__VizeComponentAttrCamel<__T>>}` : S;\ntype __VizeComponentNativeAttrNames = { [K in keyof __VizeNativeElements & string]: keyof __VizeNativeElements[K] }[keyof __VizeNativeElements & string] & string;\ntype __VizeComponentDataAttrs = { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };\ntype __VizeComponentGlobalHtmlAttrs = __VizeIsAny<__VizeNativeElements> extends true ? {} : { [K in __VizeComponentNativeAttrNames as K | __VizeComponentAttrCamel<K>]?: unknown } & __VizeComponentDataAttrs;\ndeclare function __vizeComponentGlobalHtmlAttrs(value: __VizeComponentGlobalHtmlAttrs): void;\n// @ts-ignore TS2694/TS2307: a `vue` without `Directive` must degrade custom directive value checks to unchecked, never error. See virtual_ts/expressions/directive_values.rs.\ntype __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ? V : unknown;\ndeclare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;\n", v_for_list_decls_text!())
+        concat!(vue_type_aliases_text!(), "// @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.\ntype __VizeNativeElements = import('vue').NativeElements;\ntype __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;\ntype __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;\ndeclare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: __VizeNativeElementProp<__VizeNativeElement<__Tag>, __Prop>): void;\ntype __VizeComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<__VizeComponentAttrCamel<__T>>}` : S;\ntype __VizeComponentNativeAttrNames = { [K in keyof __VizeNativeElements & string]: keyof __VizeNativeElements[K] }[keyof __VizeNativeElements & string] & string;\ntype __VizeComponentDataAttrs = { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };\ntype __VizeComponentGlobalHtmlAttrs = __VizeIsAny<__VizeNativeElements> extends true ? {} : { [K in __VizeComponentNativeAttrNames as K | __VizeComponentAttrCamel<K>]?: unknown } & __VizeComponentDataAttrs;\ndeclare function __vizeComponentGlobalHtmlAttrs(value: __VizeComponentGlobalHtmlAttrs): void;\n", v_for_list_decls_text!(), directive_helpers_text!())
     };
 }
 

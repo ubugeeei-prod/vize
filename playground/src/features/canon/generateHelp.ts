@@ -185,8 +185,8 @@ export function generateHelp(code: number, message: string): string | undefined 
       return `**Syntax error:** Declaration or statement expected.\n\n**Common causes:**\n- Code outside of function/class body\n- Missing closing brace \`}\`\n- Invalid top-level code`;
     case 2365: // Operator cannot be applied
       return `**Invalid operator usage.**\n\n**Why:** This operator doesn't work with these types.\n\n**Fix:**\n\`\`\`ts\n// Wrong: comparing incompatible types\n'hello' > 5 // Error\n\n// Fix: convert to same type\nNumber('5') > 5 // OK\n'5'.localeCompare('10') // For string comparison\n\n// Wrong: arithmetic on non-numbers\n'a' + 1 // Results in 'a1' (concatenation)\n\n// Fix: ensure numeric operations\nNumber('5') + 1 // 6\n\`\`\``;
-    case 2448: // Block-scoped variable already declared
-      return `**Duplicate variable declaration.**\n\n**Why:** A variable with this name already exists in this scope.\n\n**Fix:**\n\`\`\`ts\n// Wrong: duplicate declaration\nconst value = 1\nconst value = 2 // Error!\n\n// Fix: use different names\nconst value = 1\nconst value2 = 2\n\n// Or reassign (with let)\nlet value = 1\nvalue = 2 // OK\n\`\`\``;
+    case 2448: // Block-scoped variable used before its declaration
+      return `**Variable used before its declaration.**\n\n**Why:** A \`let\` or \`const\` binding cannot be read before it is initialized. A binding in an inner scope can also hide an outer binding with the same name.\n\n**Fix:** Initialize the variable before reading it, or rename an unintended shadowing binding.\n\n\`\`\`ts\nconst value = 1\nconsole.log(value)\n\`\`\``;
     case 2451: // Cannot redeclare block-scoped variable
       return `**Cannot redeclare variable.**\n\n**Why:** \`let\` and \`const\` create block-scoped variables that can't be redeclared.\n\n**Fix:**\n\`\`\`ts\n// Wrong\nlet value = 1\nlet value = 2 // Error!\n\n// Fix 1: Reassign instead\nlet value = 1\nvalue = 2 // OK with let\n\n// Fix 2: Use different scope\n{\n  const value = 1\n}\n{\n  const value = 2 // OK, different block\n}\n\n// Fix 3: Different variable name\nconst value1 = 1\nconst value2 = 2\n\`\`\``;
   }

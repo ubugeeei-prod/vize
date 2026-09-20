@@ -38,7 +38,7 @@
         "error:5:63 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:71:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:72:42 [TS2307] Cannot find module '@/shared/useSingleOrMultipleValue' or its corresponding type declarations.",
-        "error:114:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<Props<T, ExplicitType>, \"collapsible\" | \"disabled\" | \"orientation\" | \"unmountOnHide\">> & { ...; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<Props<T, ExplicitType>, \"collapsible\" | \"disabled\" | \"orientation\" | \"unmountOnHide\">> & { ...; } & {}'."
+        "error:114:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"collapsible\" | \"disabled\" | \"orientation\" | \"unmountOnHide\">> & { readonly collapsible: boolean; readonly disabled: boolean; readonly orientation: any; readonly unmountOnHide: boolean; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"collapsible\" | \"disabled\" | \"orientation\" | \"unmountOnHide\">> & { readonly collapsible: boolean; readonly disabled: boolean; readonly orientation: any; readonly unmountOnHide: boolean; } & {}'."
       ]
     },
     {
@@ -606,8 +606,8 @@
         "error:52:33 [TS2307] Cannot find module '@/RovingFocus' or its corresponding type declarations.",
         "error:53:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
         "error:54:43 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:154:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<Props<T>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: any; readonly trueValue: T | undefined extends undefined ? T | undefined : __VizeNotUndefined<...>; readonly falseValue: ...; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<Props<T>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: any; readonly trueValue: T | undefined extends undefined ? T | undefined : __VizeNotUndefined<...>; readonly falseValue: ...; } & {}'.",
-        "error:155:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<Props<T>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: any; readonly trueValue: T | undefined extends undefined ? T | undefined : __VizeNotUndefined<...>; readonly falseValue: ...; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<Props<T>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: any; readonly trueValue: T | undefined extends undefined ? T | undefined : __VizeNotUndefined<...>; readonly falseValue: ...; } & {}'."
+        "error:154:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: any; readonly trueValue: ...; readonly falseValue: ...; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: any; readonly trueValue: ...; readonly falseValue: ...; } & {}'.",
+        "error:155:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: any; readonly trueValue: ...; readonly falseValue: ...; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: any; readonly trueValue: ...; readonly falseValue: ...; } & {}'."
       ]
     },
     {
@@ -1044,7 +1044,7 @@
         "error:24:29 [TS2307] Cannot find module '@/Listbox' or its corresponding type declarations.",
         "error:35:11 [TS2339] Property 'value' does not exist on type '__DefineProps<__LooseRequired<ComboboxItemProps<T>>, never>'.",
         "error:85:15 [TS7006] Parameter 'event' implicitly has an 'any' type.",
-        "error:93:46 [TS2339] Property 'value' does not exist on type '__DefineProps<Props<T>, never>'."
+        "error:93:46 [TS2339] Property 'value' does not exist on type '__DefineProps<__VizeSetupProps, never>'."
       ]
     },
     {
@@ -2956,7 +2956,7 @@
         "error:33:27 [TS2307] Cannot find module '..' or its corresponding type declarations.",
         "error:35:33 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:38:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<__LooseRequired<ListboxItemProps<T>>>'.",
-        "error:83:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<Props<T>, \"as\">> & {} & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<Props<T>, \"as\">> & {} & {}'."
+        "error:83:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\">> & {} & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\">> & {} & {}'."
       ]
     },
     {
@@ -2990,7 +2990,7 @@
         "error:327:53 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:349:34 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:389:3 [TS2578] Unused '@ts-expect-error' directive.",
-        "error:421:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<Props<T>, \"orientation\" | \"selectionBehavior\">> & { readonly orientation: any; readonly selectionBehavior: \"replace\" | \"toggle\"; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<Props<T>, \"orientation\" | \"selectionBehavior\">> & { readonly orientation: any; readonly selectionBehavior: \"replace\" | \"toggle\"; } & {}'."
+        "error:421:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"orientation\" | \"selectionBehavior\">> & { readonly orientation: any; readonly selectionBehavior: \"replace\" | \"toggle\"; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"orientation\" | \"selectionBehavior\">> & { readonly orientation: any; readonly selectionBehavior: \"replace\" | \"toggle\"; } & {}'."
       ]
     },
     {
@@ -5169,7 +5169,7 @@
         "error:50:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:53:49 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
         "error:149:22 [TS7006] Parameter 'node' implicitly has an 'any' type.",
-        "error:167:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type '__DefineProps<Props<T>, \"disabled\" | \"value\">'.\nProperty 'as' does not exist on type '__DefineProps<Props<T>, \"disabled\" | \"value\">'."
+        "error:167:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type '__DefineProps<__VizeSetupProps, \"disabled\" | \"value\">'.\nProperty 'as' does not exist on type '__DefineProps<__VizeSetupProps, \"disabled\" | \"value\">'."
       ]
     },
     {
@@ -5880,8 +5880,8 @@
         "error:5:84 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:45:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:46:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
-        "error:105:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<Props<T>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: string; readonly trueValue: T | undefined extends undefined ? T | undefined : __VizeNotUndefined<...>; readonly falseValue: ...; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<Props<T>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: string; readonly trueValue: T | undefined extends undefined ? T | undefined : __VizeNotUndefined<...>; readonly falseValue: ...; } & {}'.",
-        "error:113:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<Props<T>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: string; readonly trueValue: T | undefined extends undefined ? T | undefined : __VizeNotUndefined<...>; readonly falseValue: ...; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<Props<T>, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: string; readonly trueValue: T | undefined extends undefined ? T | undefined : __VizeNotUndefined<...>; readonly falseValue: ...; } & {}'."
+        "error:105:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: string; readonly trueValue: ...; readonly falseValue: ...; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: string; readonly trueValue: ...; readonly falseValue: ...; } & {}'.",
+        "error:113:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: string; readonly trueValue: ...; readonly falseValue: ...; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\" | \"falseValue\" | \"trueValue\" | \"value\">> & { readonly value: string; readonly trueValue: ...; readonly falseValue: ...; } & {}'."
       ]
     },
     {
@@ -5938,7 +5938,7 @@
         "error:4:37 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
         "error:6:70 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:62:27 [TS2307] Cannot find module '@/Primitive' or its corresponding type declarations.",
-        "error:118:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<Props<T>, \"activationMode\" | \"orientation\" | \"unmountOnHide\">> & { readonly orientation: any; readonly activationMode: \"automatic\" | \"manual\"; readonly unmountOnHide: boolean; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<Props<T>, \"activationMode\" | \"orientation\" | \"unmountOnHide\">> & { readonly orientation: any; readonly activationMode: \"automatic\" | \"manual\"; readonly unmountOnHide: boolean; } & {}'."
+        "error:118:10 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"activationMode\" | \"orientation\" | \"unmountOnHide\">> & { readonly orientation: any; readonly activationMode: \"automatic\" | \"manual\"; readonly unmountOnHide: boolean; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"activationMode\" | \"orientation\" | \"unmountOnHide\">> & { readonly orientation: any; readonly activationMode: \"automatic\" | \"manual\"; readonly unmountOnHide: boolean; } & {}'."
       ]
     },
     {
@@ -6046,7 +6046,7 @@
         "error:164:58 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:175:46 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:176:48 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:250:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<Props<T>, \"defaultValue\" | \"delimiter\" | \"displayValue\" | \"max\">> & { readonly defaultValue: T[]; readonly delimiter: string | RegExp; readonly max: number; readonly displayValue: (value: T) => string; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<Props<T>, \"defaultValue\" | \"delimiter\" | \"displayValue\" | \"max\">> & { readonly defaultValue: T[]; readonly delimiter: string | RegExp; readonly max: number; readonly displayValue: (value: T) => string; } & {}'."
+        "error:250:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"defaultValue\" | \"delimiter\" | \"displayValue\" | \"max\">> & { readonly defaultValue: T[]; readonly delimiter: string | RegExp; readonly max: number; readonly displayValue: (value: T) => string; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"defaultValue\" | \"delimiter\" | \"displayValue\" | \"max\">> & { readonly defaultValue: T[]; readonly delimiter: string | RegExp; readonly max: number; readonly displayValue: (value: T) => string; } & {}'."
       ]
     },
     {
@@ -6677,7 +6677,7 @@
         "error:80:28 [TS7006] Parameter 'child' implicitly has an 'any' type.",
         "error:97:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:121:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:187:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<Props<T>, \"as\">> & {} & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<Props<T>, \"as\">> & {} & {}'."
+        "error:187:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\">> & {} & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\">> & {} & {}'."
       ]
     },
     {
@@ -6693,7 +6693,7 @@
         "error:219:14 [TS7006] Parameter 'val' implicitly has an 'any' type.",
         "error:239:39 [TS7006] Parameter 'child' implicitly has an 'any' type.",
         "error:248:12 [TS7006] Parameter 'val' implicitly has an 'any' type.",
-        "error:284:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<Props<T, U, M>, \"as\" | \"getChildren\" | \"selectionBehavior\">> & { readonly getChildren: (val: T) => T[] | undefined; readonly selectionBehavior: \"replace\" | \"toggle\"; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<Props<T, U, M>, \"as\" | \"getChildren\" | \"selectionBehavior\">> & { readonly getChildren: (val: T) => T[] | undefined; readonly selectionBehavior: \"replace\" | \"toggle\"; } & {}'."
+        "error:284:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\" | \"getChildren\" | \"selectionBehavior\">> & { readonly getChildren: (val: T) => T[] | undefined; readonly selectionBehavior: \"replace\" | \"toggle\"; } & {}'.\nProperty 'as' does not exist on type 'Readonly<__VizeMappedOmit<__VizeSetupProps, \"as\" | \"getChildren\" | \"selectionBehavior\">> & { readonly getChildren: (val: T) => T[] | undefined; readonly selectionBehavior: \"replace\" | \"toggle\"; } & {}'."
       ]
     },
     {

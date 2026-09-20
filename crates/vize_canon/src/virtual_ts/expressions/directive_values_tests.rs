@@ -2,11 +2,10 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 
 use crate::virtual_ts::generate_virtual_ts;
 
-/// A custom directive's value is assigned to the `Value` parameter of the
-/// directive's declared `Directive<El, Value>`, which is what makes
+/// A custom directive is checked through its original hook, which makes
 /// `v-focus="'nope'"` a `TS2322` instead of silence (#3445).
 #[test]
-fn custom_directive_value_is_assigned_to_the_declared_value_type() {
+fn custom_directive_value_calls_the_declared_hook() {
     let script = r#"import type { Directive } from 'vue'
 const vFocus: Directive<HTMLElement, number> = () => {}"#;
     let template = r#"<div v-focus="'nope'" />"#;
@@ -15,21 +14,16 @@ const vFocus: Directive<HTMLElement, number> = () => {}"#;
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output
-            .code
-            .contains("__VizeDirectiveValue<typeof vFocus> = ('nope');"),
+        output.code.contains("= __vizeDirective(vFocus);"),
         "the authored value should be checked against the directive's value type:\n{}",
         output.code
     );
 }
 
-/// TypeScript anchors `TS2322` on an annotated `const` at the *declaration
-/// name*, so the check identifier's sub-span has to map to the authored value
-/// rather than to the directive name. The oracle in #3445 reports at the start
-/// of `'nope'`; anchoring on `v-focus` like the native prop check does would
-/// put the diagnostic in the wrong place.
+/// TypeScript anchors incompatible binding values on the `value` key. Keep
+/// that key and the expression mapped, without mapping synthetic call arguments.
 #[test]
-fn custom_directive_check_identifier_anchors_at_the_authored_value() {
+fn custom_directive_value_key_anchors_at_the_authored_value() {
     let script = r#"import type { Directive } from 'vue'
 const vFocus: Directive<HTMLElement, number> = () => {}"#;
     let template = r#"<div v-focus="'nope'" />"#;
@@ -42,22 +36,21 @@ const vFocus: Directive<HTMLElement, number> = () => {}"#;
     let spans: Vec<_> = output
         .mappings
         .iter()
-        .flat_map(|mapping| &mapping.sub_spans)
         .filter(|span| span.src_range == value_range)
         .collect();
 
     assert!(
         spans
             .iter()
-            .any(|span| output.code[span.gen_range.clone()].starts_with("__vize_directive_check_")),
-        "the synthetic check identifier must carry the diagnostic to the authored value:\n{}",
+            .any(|span| &output.code[span.gen_range.clone()] == "value"),
+        "the synthetic binding key must carry the diagnostic to the authored value:\n{}",
         output.code
     );
     assert!(
         spans
             .iter()
             .any(|span| &output.code[span.gen_range.clone()] == "'nope'"),
-        "the initializer must retain its authored expression range:\n{}",
+        "the argument must retain its authored expression range:\n{}",
         output.code
     );
 }
@@ -100,9 +93,7 @@ const vMyDirective: Directive<HTMLElement, number> = () => {}"#;
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output
-            .code
-            .contains("__VizeDirectiveValue<typeof vMyDirective> = ('nope');"),
+        output.code.contains("= __vizeDirective(vMyDirective);"),
         "kebab-case directive names resolve to their camel-case binding:\n{}",
         output.code
     );
@@ -140,9 +131,7 @@ const vFocus: Directive<HTMLElement, number> = () => {}"#;
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output
-            .code
-            .contains("__VizeDirectiveValue<typeof vFocus> = ('nope');"),
+        output.code.contains("= __vizeDirective(vFocus);"),
         "an argument and modifiers must not change the value check:\n{}",
         output.code
     );
@@ -166,44 +155,19 @@ const vFocus: Directive<HTMLElement, number> = () => {}"#;
     );
 }
 
-/// The `Directive` alias is declared once, guarded against a `vue` that does not
-/// export it, and kept referenced so it cannot be reported unused.
-///
-/// Both halves are load-bearing, and neither substitutes for the other — see the
-/// `NativeElements` precedent in [`super::native_props`]. `@ts-ignore` covers the
-/// `TS2694`/`TS2307` resolution error that a Vue 2.7 or shimmed `vue` produces;
-/// it does *not* cover `TS6196` "declared but never used", which arrives on the
-/// suggestion channel and reached `check-server` clients as an unmapped hint on
-/// clean SFCs. The ambient `declare function` covers that one.
+/// Structural hook resolution preserves generic signatures and also works
+/// without importing a Vue 3-only `Directive` alias into every document.
 #[test]
-fn directive_value_alias_is_guarded_and_kept_referenced() {
-    const GUARD: &str = "// @ts-ignore TS2694/TS2307: a `vue` without `Directive` must degrade custom directive value checks to unchecked, never error. See virtual_ts/expressions/directive_values.rs.";
-    const ALIAS: &str = "type __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ? V : unknown;";
-    const REFERENCE: &str =
-        "declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;";
-
-    for (name, text) in [
-        (
-            "SHARED_PREAMBLE_DTS",
-            crate::virtual_ts::SHARED_PREAMBLE_DTS,
-        ),
-        (
-            "VUE_TYPE_HELPERS",
-            crate::virtual_ts::helpers::VUE_TYPE_HELPERS,
-        ),
+fn directive_helpers_preserve_hooks_without_a_vue_type_dependency() {
+    for text in [
+        crate::virtual_ts::SHARED_PREAMBLE_DTS,
+        crate::virtual_ts::helpers::VUE_TYPE_HELPERS,
     ] {
-        assert!(text.contains(GUARD), "{name} must carry the degrade guard");
-        assert!(text.contains(ALIAS), "{name} must declare the alias");
-        assert_eq!(
-            text.matches("import('vue').Directive<").count(),
-            1,
-            "{name} must name `Directive` exactly once, so a `vue` without it \
-             degrades one alias rather than erroring per binding"
-        );
-        assert!(
-            text.contains(REFERENCE),
-            "{name} must keep the alias referenced against TS6196"
-        );
+        assert!(!text.contains("__VizeDirectiveValue"));
+        assert!(!text.contains("import('vue').Directive<"));
+        assert!(text.contains("declare function __vizeDirective<D>"));
+        assert!(text.contains("__VizeDirectiveHook<D>"));
+        assert!(text.contains("declare function __vizeDirectiveTail<"));
     }
 }
 

@@ -13,6 +13,67 @@ import { assertVueTsc, vueTscDiagnostics } from "./support/vue-tsc-oracle.ts";
 const assertions = `type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
 type Assert<T extends true> = T;`;
 
+test("inherited generic optional props and explicit proxy return types match vue-tsc", async () => {
+  const directory = project("inherited-generic-props-", {
+    "base.ts": `export interface Base<T> { modelValue?: T; defaultValue?: T; disabled?: boolean; }`,
+    "Generic.vue": `<script lang="ts">
+import type { Base } from './base';
+export interface Props<T> extends Pick<Base<T>, 'modelValue' | 'defaultValue' | 'disabled'> {}
+</script><script setup lang="ts" generic="T = boolean">
+const props = withDefaults(defineProps<Props<T>>(), { disabled: false });
+</script><template>{{ props.disabled.valueOf() }}</template>`,
+    "App.vue": `<script setup lang="ts">import Generic from './Generic.vue';</script><template>
+<Generic /><Generic :model-value="123" /><Generic :disabled="123" />
+</template>`,
+    "Proxy.vue": `<script setup lang="ts">
+interface Props { loading?: boolean; }
+const defaults = withDefaults(defineProps<Props>(), { loading: false });
+function proxy<T extends object>(props: T): T { return props; }
+const props = proxy<Props>(defaults);
+defineSlots<{ submit(props: { loading: boolean }): unknown }>();
+</script><template><slot name="submit" :loading="props.loading" /></template>`,
+    "consumer.ts": `import Generic from './Generic.vue';
+type Props = Parameters<typeof Generic<number>>[0];
+const optional: Props = {};
+const valid: Props = { modelValue: 123 };
+// @ts-expect-error
+const invalid: Props = { modelValue: 'wrong' };`,
+  });
+  try {
+    const expected = vueTscDiagnostics(directory).sort(compareIdentity);
+    assert.equal(expected.length, 2);
+    assert.deepEqual(
+      (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
+      expected,
+    );
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("missing imported utility-prop types retain vue-tsc's diagnostic contract", async () => {
+  const directory = project("missing-utility-props-", {
+    "Child.vue": `<script lang="ts">
+import type { Base } from 'missing-props';
+export interface Props<T> extends Pick<Base<T>, 'value' | 'disabled'> {}
+</script><script setup lang="ts" generic="T = boolean">defineProps<Props<T>>();</script>`,
+    "App.vue": `<script setup lang="ts">import Child from './Child.vue';</script><template><Child /></template>`,
+  });
+  try {
+    const expected = vueTscDiagnostics(directory).sort(compareIdentity);
+    assert.deepEqual(
+      expected.map((d) => d.code).sort((a, b) => a - b),
+      [2307, 2345],
+    );
+    assert.deepEqual(
+      (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
+      expected,
+    );
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("runtime builtins and unknown event names match vue-tsc", async () => {
   const directory = project("builtin-event-contracts-", {
     "App.vue": `<script setup lang="ts">

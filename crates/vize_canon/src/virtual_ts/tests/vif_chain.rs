@@ -77,7 +77,7 @@ const aimAtReports: AimAtReport[] = []
     assert!(
         output
             .code
-            .contains("for (const [aimAtReport] of __vForList(aimAtReports)) {"),
+            .contains("for (const [aimAtReport] of __vize_v_for_source_"),
         "expected parent v-for to declare aimAtReport before branch guards:\n{}",
         output.code
     );
@@ -117,7 +117,7 @@ fn same_element_v_if_does_not_see_v_for_alias() {
     assert!(
         output
             .code
-            .contains("for (const [attribute, index] of __vForList(foods.attributes)) {"),
+            .contains("for (const [attribute, index] of __vize_v_for_source_"),
         "the v-for body should still bind aliases for descendants:\n{}",
         output.code
     );
