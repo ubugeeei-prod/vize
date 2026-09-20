@@ -7,7 +7,7 @@ use vize_carton::{FxHashMap, FxHashSet, String};
 use super::{CorsaMaterializedMappingKind, CorsaMaterializedSource};
 use crate::file_uri::path_to_file_uri;
 
-pub(super) fn append_materialized_documents(
+pub(in crate::corsa_bridge) fn append_materialized_documents(
     documents: &mut Vec<(String, String)>,
     sources: &[CorsaMaterializedSource],
     overlays: &FxHashMap<PathBuf, &str>,

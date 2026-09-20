@@ -14,6 +14,7 @@ use crate::batch::ImportRewriter;
 pub struct CorsaScriptVirtualDocumentRequest<'a> {
     pub source_path: &'a Path,
     pub request_path: &'a str,
+    /// Input source; Canon owns JSX lowering when `options.jsx_typecheck` is enabled.
     pub code: &'a str,
     pub source_type: SourceType,
     pub options: CorsaVueVirtualDocumentOptions,
@@ -32,6 +33,8 @@ struct BuiltScriptVirtualProject {
 pub struct CorsaScriptVirtualDocument {
     pub request_uri: String,
     pub code: String,
+    /// Authored JSX/TSX coordinates when Canon lowered this document.
+    pub mappings: Vec<crate::virtual_ts::VizeMapping>,
     pub import_source_map: crate::batch::ImportSourceMap,
     pub resolved_dependencies: Vec<PathBuf>,
 }
@@ -137,6 +140,12 @@ fn build_script_virtual_project_with_package_routes(
             ))
         })?;
     let request_uri = crate::file_uri::path_to_file_uri(&path);
+    let materialized_sources = alias_context.materialized_sources();
+    let mappings = materialized_sources
+        .iter()
+        .find(|source| source.materialized_path == path)
+        .map(|source| source.mappings.clone())
+        .unwrap_or_default();
     let mut documents = vec![(request_uri.clone(), generated.code.clone())];
     let resolved_dependencies = collect_script_dependency_documents(
         &mut documents,
@@ -149,10 +158,17 @@ fn build_script_virtual_project_with_package_routes(
         &overlays,
     );
     let session_project_root = alias_context.mirror_project_root_for_source(request.source_path);
+    super::vue_document::materialized_documents::append_materialized_documents(
+        &mut documents,
+        &materialized_sources,
+        &overlays,
+        false,
+    );
     Ok(BuiltScriptVirtualProject {
         host: CorsaScriptVirtualDocument {
             request_uri,
             code: generated.code,
+            mappings,
             import_source_map: generated.source_map,
             resolved_dependencies,
         },

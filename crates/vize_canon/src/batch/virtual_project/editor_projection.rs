@@ -33,7 +33,7 @@ impl VirtualProject {
         let mut inputs = Vec::new();
         for file in self.virtual_files_sorted() {
             let Some(source) = self
-                .editor_pre_rewrite_code
+                .pre_rewrite_code
                 .get(&file.virtual_path)
                 .or_else(|| self.original_contents.get(&file.virtual_path))
             else {
@@ -71,7 +71,11 @@ impl VirtualProject {
     ) -> Option<(PathBuf, crate::batch::RewriteResult)> {
         let source = vize_carton::path::canonicalize_non_verbatim(source);
         let file = self.find_by_original(&source)?;
-        if file.source_map.sfc_map.is_some() {
+        if file
+            .original_path
+            .extension()
+            .is_some_and(|extension| extension == "vue")
+        {
             return None;
         }
         Some((
@@ -99,16 +103,7 @@ impl VirtualProject {
             .virtual_files_sorted()
             .into_iter()
             .filter_map(|file| {
-                let source = self
-                    .editor_pre_rewrite_code
-                    .get(&file.virtual_path)
-                    .or_else(|| {
-                        file.source_map
-                            .sfc_map
-                            .is_none()
-                            .then(|| self.original_contents.get(&file.virtual_path))
-                            .flatten()
-                    })?;
+                let source = self.module_source(file)?;
                 let resolver = |specifier: &str, _| {
                     let path = super::dependency_scan::resolve_dependency(
                         specifier,
@@ -154,10 +149,7 @@ impl VirtualProject {
     ) -> Option<(PathBuf, VueDocumentVirtualTs)> {
         let source = vize_carton::path::canonicalize_non_verbatim(source);
         let file = self.find_by_original(&source)?;
-        let pre_rewrite_code = self
-            .editor_pre_rewrite_code
-            .get(&file.virtual_path)?
-            .clone();
+        let pre_rewrite_code = self.pre_rewrite_code.get(&file.virtual_path)?.clone();
         let path = self.preferred_materialized_path_for_original(&source)?;
         self.find_by_diagnostic_virtual(&path)?;
         let map = file.source_map.sfc_map.as_ref()?;

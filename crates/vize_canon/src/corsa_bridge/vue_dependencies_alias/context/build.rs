@@ -49,6 +49,7 @@ pub(super) fn build(
     project.set_virtual_ts_options(environment.virtual_ts_options.clone());
     project.set_options_api(options.options_api);
     project.set_legacy_vue2(options.legacy_vue2);
+    project.set_jsx_typecheck(options.jsx_typecheck);
     project.set_experimental_patterned_template(options.experimental_patterned_template);
     project.set_dialect(options.dialect);
     if let Some(tsconfig) = configured_tsconfig {
@@ -211,7 +212,6 @@ pub(super) fn build(
         .register_package_route_targets()
         .map_err(bridge_error)?;
     project.finalize_package_routes().map_err(bridge_error)?;
-    project.finalize_editor_imports();
     route_inputs.sort();
     route_inputs.dedup();
     // A host must retain one session-private identity as dependencies appear

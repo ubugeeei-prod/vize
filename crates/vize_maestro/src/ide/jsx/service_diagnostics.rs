@@ -19,12 +19,8 @@ impl JsxService {
         if !bridge.is_initialized() {
             return vec![];
         }
-        let Some(mut virtual_ts) = Self::virtual_ts(ctx) else {
-            return vec![];
-        };
-
-        let Some(uri) =
-            super::service_project::open_virtual_project(ctx, &bridge, &mut virtual_ts).await
+        let Some((virtual_ts, uri)) =
+            super::service_project::open_virtual_project(ctx, &bridge).await
         else {
             return vec![];
         };

@@ -42,6 +42,7 @@ pub(crate) mod dependency_scan;
 mod document;
 mod editor_projection;
 mod incremental_graph;
+mod module_projection;
 pub use document::{
     VueDocumentVirtualTs, VueDocumentVirtualTsOptions, generate_vue_document_virtual_ts,
     generate_vue_document_virtual_ts_with_options,
@@ -58,6 +59,10 @@ pub use identity::{project_virtual_lock_paths, project_virtual_root};
 mod javascript_sfc;
 mod jsx_build;
 mod jsx_codegen;
+pub use jsx_codegen::{
+    GeneratedJsxFile as JsxDocumentVirtualTs,
+    generate_jsx_virtual_ts as generate_jsx_document_virtual_ts,
+};
 mod mapping;
 pub(crate) use mapping::MaterializedSourceMappingKind;
 mod materialize;
@@ -260,7 +265,7 @@ pub struct VirtualProject {
     session_scripts: bool,
     /// Editor projections are generated once and reused by disk and overlays.
     editor_document_options: Option<VueDocumentVirtualTsOptions>,
-    editor_pre_rewrite_code: FxHashMap<PathBuf, vize_carton::String>,
+    pre_rewrite_code: FxHashMap<PathBuf, vize_carton::String>,
     legacy_vue2: bool,
 
     /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). Default-off:

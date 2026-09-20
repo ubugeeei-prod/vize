@@ -336,6 +336,8 @@ impl VirtualProject {
     }
 
     pub(crate) fn finalize_package_routes(&mut self) -> CorsaResult<()> {
-        self.rebuild_package_shadows()
+        self.rebuild_package_shadows()?;
+        self.finalize_module_imports();
+        Ok(())
     }
 }

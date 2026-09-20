@@ -137,6 +137,7 @@ impl DiagnosticService {
         let document_options = CorsaVueVirtualDocumentOptions {
             options_api,
             legacy_vue2,
+            jsx_typecheck: state.jsx_typecheck_enabled(),
             experimental_patterned_template: state.patterned_template_enabled(),
             preserve_event_navigation: true,
             dialect: state.type_checker_vue_version(),

@@ -81,7 +81,10 @@ pub(crate) fn resolve_dependency_with_inputs(
     let specifier = specifier
         .strip_suffix(".vue.ts")
         .map_or_else(|| specifier.to_owned(), |stem| cstr!("{stem}.vue").into());
-    if specifier.starts_with("./") || specifier.starts_with("../") {
+    if specifier.starts_with("./")
+        || specifier.starts_with("../")
+        || Path::new(&specifier).is_absolute()
+    {
         return probe_candidates_with_inputs(&importer_dir.join(&specifier));
     }
 

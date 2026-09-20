@@ -132,7 +132,11 @@ fn component_tags_props_and_spreads_survive_editor_lowering() {
     let source = "import Counter from './Counter.vue';\nconst props = { count: 'wrong' };\nexport const view = <Counter {...props} is-opened />;\n";
     let generated = generate(source);
 
-    assert!(generated.code.contains(component::HELPER));
+    assert!(
+        generated
+            .code
+            .contains(vize_canon::virtual_ts::JSX_COMPONENT_HELPER)
+    );
     assert!(generated.code.contains(
         "__vize_jsx_component__(Counter)({...__vize_jsx_component_spread__(props), \"isOpened\": true})"
     ));

@@ -13,6 +13,7 @@ use crate::virtual_ts::{VirtualTsOptions, VizeMapping, VizeSemanticLink};
 pub struct CorsaVueVirtualDocumentOptions {
     pub options_api: bool,
     pub legacy_vue2: bool,
+    pub jsx_typecheck: bool,
     pub experimental_patterned_template: bool,
     pub preserve_event_navigation: bool,
     pub dialect: vize_carton::config::VueVersion,

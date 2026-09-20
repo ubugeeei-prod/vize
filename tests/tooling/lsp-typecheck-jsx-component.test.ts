@@ -97,7 +97,7 @@ export const view = <Counter {...props} />;
 
     const invalid = (await session.waitForNotification(
       "textDocument/publishDiagnostics",
-      (params) => isDiagnosticsForUri(params, consumerUri),
+      (params) => isDiagnosticsForUri(params, consumerUri) && params.version === 1,
     )) as PublishDiagnosticsParams;
     const propOffset = broken.indexOf("count=");
     assert.notEqual(propOffset, -1);
@@ -203,7 +203,7 @@ export const view = <Counter count="wrong" />;
     });
     const invalidJsx = (await session.waitForNotification(
       "textDocument/publishDiagnostics",
-      (params) => isDiagnosticsForUri(params, jsxUri),
+      (params) => isDiagnosticsForUri(params, jsxUri) && params.version === 1,
     )) as PublishDiagnosticsParams;
     assertNoIntrinsicElementDiagnostic(invalidJsx);
     const jsxPropOffset = jsxBroken.indexOf("count=");

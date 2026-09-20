@@ -87,10 +87,10 @@ mod slot;
 use collect::{collect_root_expressions, collect_style_expressions, expr_of};
 
 /// The generated plain-`.ts` virtual file for one `.jsx`/`.tsx` source.
-pub(super) struct GeneratedJsxFile {
-    pub(super) code: CompactString,
-    pub(super) mappings: Vec<VizeMapping>,
-    pub(super) diagnostics: Vec<Diagnostic>,
+pub struct GeneratedJsxFile {
+    pub code: CompactString,
+    pub mappings: Vec<VizeMapping>,
+    pub diagnostics: Vec<Diagnostic>,
 }
 
 /// Name of the synthesized helper that swallows every re-emitted JSX
@@ -168,7 +168,7 @@ enum JsxEmit {
 }
 
 /// Lower a `.jsx`/`.tsx` Vize component to plain virtual TypeScript.
-pub(super) fn generate_jsx_virtual_ts(
+pub fn generate_jsx_virtual_ts(
     path: &Path,
     source: &str,
     lang: JsxLang,

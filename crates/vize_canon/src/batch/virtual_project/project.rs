@@ -78,7 +78,7 @@ impl VirtualProject {
             options_api: false,
             session_scripts: false,
             editor_document_options: None,
-            editor_pre_rewrite_code: FxHashMap::default(),
+            pre_rewrite_code: FxHashMap::default(),
             legacy_vue2: false,
             jsx_typecheck: false,
             dialect: vize_carton::config::VueVersion::default(),

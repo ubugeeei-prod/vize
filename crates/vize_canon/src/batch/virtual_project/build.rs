@@ -42,7 +42,7 @@ pub(super) struct RegisteredFile {
     /// mapping without a disk re-read. Stored on the project, not the public
     /// `VirtualFile`.
     pub(super) original_content: CompactString,
-    pub(super) editor_pre_rewrite_code: Option<CompactString>,
+    pub(super) pre_rewrite_code: Option<CompactString>,
     pub(super) passthrough_files: Vec<(PathBuf, PathBuf)>,
     pub(super) diagnostics: Vec<Diagnostic>,
     /// SFC whose script block is JavaScript: TypeScript diagnostics on it are
@@ -160,6 +160,7 @@ pub(super) fn build_vue_registered_file(
                     preserve_relative_declarations: context.preserve_relative_declarations,
                     mirrorable_project_files: context.mirrorable_project_files,
                     alias_rewrite_policy: context.alias_rewrite_policy,
+                    module_resolver: None,
                 },
             )
     );
@@ -197,7 +198,8 @@ pub(super) fn build_vue_registered_file(
         },
         extra_virtual_files,
         original_content: content.to_compact_string(),
-        editor_pre_rewrite_code: context.editor_document_options.map(|_| code),
+        pre_rewrite_code: (context.editor_document_options.is_some() || context.jsx_typecheck)
+            .then_some(code),
         passthrough_files: collect_passthrough_modules(
             path,
             content,

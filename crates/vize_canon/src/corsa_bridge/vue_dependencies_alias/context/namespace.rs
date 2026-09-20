@@ -12,6 +12,7 @@ pub(super) fn editor_namespace_identity(
     let mut generation_options = std::hash::DefaultHasher::new();
     options.options_api.hash(&mut generation_options);
     options.legacy_vue2.hash(&mut generation_options);
+    options.jsx_typecheck.hash(&mut generation_options);
     options
         .experimental_patterned_template
         .hash(&mut generation_options);

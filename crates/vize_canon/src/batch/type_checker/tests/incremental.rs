@@ -7,6 +7,8 @@ mod config_hmr;
 mod file_lifecycle;
 #[path = "incremental/javascript.rs"]
 mod javascript;
+#[path = "incremental/jsx_modules.rs"]
+mod jsx_modules;
 #[path = "incremental/package_negative.rs"]
 mod package_negative;
 #[path = "incremental/workspace_packages.rs"]

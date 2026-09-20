@@ -11,7 +11,7 @@ use crate::batch::{ImportRewriter, VueDocumentVirtualTsOptions};
 use crate::file_uri::path_to_file_uri;
 use crate::virtual_ts::VirtualTsOptions;
 
-mod materialized_documents;
+pub(super) mod materialized_documents;
 #[path = "vue_document/types.rs"]
 mod model;
 pub(crate) use model::CorsaVueVirtualProject;

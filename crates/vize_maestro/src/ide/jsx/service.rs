@@ -27,12 +27,11 @@ use tower_lsp::lsp_types::{
     CompletionResponse, GotoDefinitionResponse, Hover, Location, Position, Range, SignatureHelp,
     Url,
 };
-use vize_atelier_jsx::JsxLang;
 use vize_canon::{CorsaBridge, LspLocation};
 use vize_s0::cstr;
 
 use super::position::{source_offset_to_virtual_position, virtual_range_to_source};
-use super::virtual_ts::{JsxVirtualTs, generate_jsx_virtual_ts};
+use super::virtual_ts::JsxVirtualTs;
 use crate::ide::IdeContext;
 use crate::ide::completion::CompletionService;
 use crate::ide::hover::HoverService;
@@ -52,12 +51,6 @@ impl JsxService {
         cstr!("{}.jsx.ts", uri.path())
     }
 
-    /// Lower the current document to its plain virtual TypeScript.
-    pub(super) fn virtual_ts(ctx: &IdeContext<'_>) -> Option<JsxVirtualTs> {
-        let lang = JsxLang::from_path(ctx.uri.path());
-        generate_jsx_virtual_ts(&ctx.content, lang)
-    }
-
     /// Generate the virtual TS, forward-map the editor cursor into it, and open
     /// the (shared) virtual document on the bridge. Returns everything a
     /// position-based request needs: the virtual TS, the opened virtual-doc URI,
@@ -73,9 +66,7 @@ impl JsxService {
         if !bridge.is_initialized() {
             return None;
         }
-        let mut virtual_ts = Self::virtual_ts(ctx)?;
-        let uri =
-            super::service_project::open_virtual_project(ctx, bridge, &mut virtual_ts).await?;
+        let (virtual_ts, uri) = super::service_project::open_virtual_project(ctx, bridge).await?;
         let (line, character) = source_offset_to_virtual_position(&virtual_ts, ctx.offset)?;
         Some((virtual_ts, uri, line, character))
     }

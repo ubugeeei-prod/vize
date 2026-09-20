@@ -1,7 +1,4 @@
-//! Walking the lowered JSX tree for the editor document.
-//!
-//! Mirrors `vize_canon`'s batch `jsx_codegen::collect` so the editor's virtual
-//! TypeScript matches the type-checker's byte-for-byte.
+//! Structural JSX expression ranges for semantic tokens and hover.
 
 use vize_atelier_jsx::StyleExprSpan;
 use vize_relief::{
@@ -10,15 +7,11 @@ use vize_relief::{
     expressions::{CompoundExpressionChild, CompoundExpressionNode},
 };
 
-use super::{JsxEmit, JsxExpr, component, slot};
+use super::{JsxEmit, JsxExpr};
 
-pub(super) fn collect_root_expressions(
-    root: &RootNode<'_>,
-    out: &mut Vec<JsxEmit>,
-    preserve_components: bool,
-) {
+pub(super) fn collect_root_expressions(root: &RootNode<'_>, out: &mut Vec<JsxEmit>) {
     for child in &root.children {
-        collect_child(child, out, preserve_components, None);
+        collect_child(child, out);
     }
 }
 
@@ -30,43 +23,14 @@ pub(super) fn collect_style_expressions(style_exprs: &[StyleExprSpan], out: &mut
     }
 }
 
-/// Collect one child. `host` is the enclosing component's tag expression, so a
-/// scoped slot can type its parameter from that component's declared `$slots`
-/// (#4042). It is set for a component's children and *forwarded* through the
-/// structural `v-if`/`v-for` arms, because JSX control flow inside a component's
-/// children lowers into those nodes, so a synthesized `<template v-slot>` can sit
-/// under them and still belong to the same component.
-pub(super) fn collect_child(
-    child: &TemplateChildNode<'_>,
-    out: &mut Vec<JsxEmit>,
-    preserve_components: bool,
-    host: Option<&JsxExpr>,
-) {
+pub(super) fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxEmit>) {
     match child {
         TemplateChildNode::Element(element) => {
-            if let Some(host) = host
-                && let Some(scope) = slot::collect(element, host, preserve_components)
-            {
-                out.push(JsxEmit::SlotScope(scope));
-                return;
-            }
-            let semantic_component = preserve_components
-                .then(|| component::collect(element))
-                .flatten();
-            let has_semantic_component = semantic_component.is_some();
-            let slot_host = semantic_component
-                .as_ref()
-                .map(|component| component.tag().clone());
-            if let Some(component) = semantic_component {
-                out.push(JsxEmit::Component(component));
-            }
             for prop in &element.props {
-                if !has_semantic_component || !component::captures_prop(element, prop) {
-                    collect_prop(prop, out, preserve_components);
-                }
+                collect_prop(prop, out);
             }
             for child in &element.children {
-                collect_child(child, out, preserve_components, slot_host.as_ref());
+                collect_child(child, out);
             }
         }
         TemplateChildNode::Interpolation(interpolation) => {
@@ -81,7 +45,7 @@ pub(super) fn collect_child(
                     collect_expression(condition, out);
                 }
                 for child in &branch.children {
-                    collect_child(child, out, preserve_components, host);
+                    collect_child(child, out);
                 }
             }
         }
@@ -90,19 +54,19 @@ pub(super) fn collect_child(
                 collect_expression(condition, out);
             }
             for child in &branch.children {
-                collect_child(child, out, preserve_components, host);
+                collect_child(child, out);
             }
         }
         TemplateChildNode::For(node) => {
             let Some(source) = expr_of(&node.source) else {
                 for child in &node.children {
-                    collect_child(child, out, preserve_components, host);
+                    collect_child(child, out);
                 }
                 return;
             };
             let mut body = Vec::new();
             for child in &node.children {
-                collect_child(child, &mut body, preserve_components, host);
+                collect_child(child, &mut body);
             }
             out.push(JsxEmit::ForScope {
                 source,
@@ -131,14 +95,7 @@ fn collect_text_call(content: &vize_relief::TextCallContent<'_>, out: &mut Vec<J
     }
 }
 
-/// Collect one prop.
-///
-/// `preserve_components` distinguishes the two callers: the generated
-/// type-check document (`true`), which must stay byte-for-byte identical to the
-/// batch generator, and the structural walk behind semantic tokens and hover
-/// (`false`), which wants every authored expression range including binding
-/// patterns.
-fn collect_prop(prop: &PropNode<'_>, out: &mut Vec<JsxEmit>, preserve_components: bool) {
+fn collect_prop(prop: &PropNode<'_>, out: &mut Vec<JsxEmit>) {
     match prop {
         // Static `class="a"` style attributes carry only literal text.
         PropNode::Attribute(_) => {}
@@ -151,14 +108,6 @@ fn collect_prop(prop: &PropNode<'_>, out: &mut Vec<JsxEmit>, preserve_components
                         out.push(JsxEmit::ModelTarget(target));
                     }
                 }
-                // A `v-slot` expression is a binding *pattern*, not a readable
-                // value. A scoped slot whose host is known is re-emitted as its
-                // own scope by [`slot::collect`], so reaching here in a generated
-                // document means no host was available (a native-mode dashed tag
-                // carrying `v-slots`, which is not a semantic component), where
-                // re-emitting the pattern as a read would fabricate `TS2304`
-                // (#4042). The structural walk still reports the pattern's range.
-                "slot" if preserve_components => {}
                 _ => {
                     if let Some(exp) = &directive.exp {
                         collect_expression(exp, out);
@@ -231,14 +180,6 @@ pub(super) fn alias_expr(alias: &ExpressionNode<'_>) -> Option<JsxExpr> {
             })
         }
         ExpressionNode::Compound(_) => None,
-    }
-}
-
-/// The static text of a static simple [`ExpressionNode`] (e.g. a `v-slot` name).
-pub(super) fn static_text(expression: &ExpressionNode<'_>) -> Option<String> {
-    match expression {
-        ExpressionNode::Simple(simple) if simple.is_static => Some(simple.content.to_string()),
-        _ => None,
     }
 }
 

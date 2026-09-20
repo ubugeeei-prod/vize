@@ -9,7 +9,7 @@ const MUSEA_DEFINE_ART_STUB: &str =
     "declare function defineArt(source: string, options?: Record<string, any>): void;";
 
 impl VirtualProject {
-    pub(super) fn is_package_route_path(&self, path: &Path) -> bool {
+    pub(in crate::batch::virtual_project) fn is_package_route_path(&self, path: &Path) -> bool {
         self.package_routes
             .values()
             .filter_map(|binding| binding.route.as_ref())
@@ -47,8 +47,8 @@ impl VirtualProject {
             registered.file.virtual_path.clone(),
             registered.original_content,
         );
-        if let Some(code) = registered.editor_pre_rewrite_code {
-            self.editor_pre_rewrite_code
+        if let Some(code) = registered.pre_rewrite_code {
+            self.pre_rewrite_code
                 .insert(registered.file.virtual_path.clone(), code);
         }
         // Re-registration must refresh the classification, not accumulate it.
@@ -130,7 +130,7 @@ impl VirtualProject {
         for path in artifacts.virtual_paths {
             self.virtual_files.remove(&path);
             self.original_contents.remove(&path);
-            self.editor_pre_rewrite_code.remove(&path);
+            self.pre_rewrite_code.remove(&path);
             self.unchecked_javascript_files.remove(&path);
             removed.push(path);
         }

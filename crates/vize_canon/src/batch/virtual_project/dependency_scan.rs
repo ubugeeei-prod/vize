@@ -123,9 +123,13 @@ impl VirtualProject {
             .collect();
 
         while let Some(importer) = queue.pop() {
-            let Some((virtual_content, virtual_path)) = self
-                .find_by_original(&importer)
-                .map(|file| (file.content.clone(), file.virtual_path.clone()))
+            let Some((virtual_content, virtual_path)) =
+                self.find_by_original(&importer).map(|file| {
+                    (
+                        self.module_source(file).unwrap_or(&file.content).clone(),
+                        file.virtual_path.clone(),
+                    )
+                })
             else {
                 continue;
             };
