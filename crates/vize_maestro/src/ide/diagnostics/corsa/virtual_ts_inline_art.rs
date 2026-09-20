@@ -87,12 +87,6 @@ impl DiagnosticService {
 
                 let script_content = analysis.script_content.unwrap_or_default();
                 let script_offset = analysis.script_offset;
-                let sfc_script_start_line = if script_content.is_empty() {
-                    1
-                } else {
-                    crate::ide::offset_to_position(content, script_offset as usize).0 + 1
-                };
-
                 let mut virtual_ts_options = base_options.clone();
                 add_inline_self_component_binding(&mut virtual_ts_options, &analysis.croquis);
 
@@ -113,7 +107,6 @@ impl DiagnosticService {
                 );
                 let code = output.code;
                 let semantic_links = output.semantic_links;
-                let line_mappings = Self::parse_vize_map_comments(&code);
 
                 results.push((
                     current_variant_index,
@@ -122,21 +115,6 @@ impl DiagnosticService {
                         source_mappings: output.mappings,
                         semantic_links,
                         import_source_map: Default::default(),
-                        user_code_start_line: code
-                            .lines()
-                            .enumerate()
-                            .find(|(_, line)| line.contains("// User setup code"))
-                            .map(|(i, _)| i as u32 + 1)
-                            .unwrap_or(0),
-                        sfc_script_start_line,
-                        template_scope_start_line: code
-                            .lines()
-                            .enumerate()
-                            .find(|(_, line)| line.contains("Template Scope"))
-                            .map(|(i, _)| i as u32)
-                            .unwrap_or(u32::MAX),
-                        line_mappings,
-                        skipped_import_lines: Self::count_import_lines(script_content.as_str()),
                     },
                 ));
             }

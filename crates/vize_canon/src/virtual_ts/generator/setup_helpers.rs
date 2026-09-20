@@ -41,6 +41,7 @@ pub(super) fn emit_return_artifacts(
     fields: &mut Vec<String>,
     preserve_authored_component: bool,
 ) {
+    crate::virtual_ts::model_types::emit_defaults_artifact(ts, summary, fields);
     if preserve_authored_component && !fields.iter().any(|field| field == "__default__") {
         fields.push("__default__".into());
     }

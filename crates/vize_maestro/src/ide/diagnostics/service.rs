@@ -8,13 +8,6 @@ use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range
 use super::{LineIndex, Severity};
 
 #[cfg(feature = "native")]
-#[derive(Debug, Clone)]
-pub(in crate::ide) struct SourceMapping {
-    pub(in crate::ide) start: u32,
-    pub(in crate::ide) end: u32,
-}
-
-#[cfg(feature = "native")]
 pub(in crate::ide) struct VirtualTsResult {
     pub(in crate::ide) code: String,
     pub(in crate::ide) source_mappings: Vec<vize_canon::virtual_ts::VizeMapping>,
@@ -22,11 +15,6 @@ pub(in crate::ide) struct VirtualTsResult {
     /// Byte-offset mapping from post-rewrite to pre-rewrite virtual TS.
     /// Empty when no `.vue` import specifiers were rewritten.
     pub(in crate::ide) import_source_map: vize_canon::ImportSourceMap,
-    pub(in crate::ide) user_code_start_line: u32,
-    pub(in crate::ide) sfc_script_start_line: u32,
-    pub(in crate::ide) template_scope_start_line: u32,
-    pub(in crate::ide) line_mappings: Vec<Option<SourceMapping>>,
-    pub(in crate::ide) skipped_import_lines: u32,
 }
 
 /// Diagnostic service for collecting and aggregating diagnostics.

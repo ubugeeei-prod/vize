@@ -51,9 +51,7 @@ function defineEmits<T>(): __BatchEmitFn<T> { return (() => {}) as any; }
 function defineEmits<const T extends readonly string[]>(_events: T): (event: T[number], ...args: any[]) => void { void _events; return (() => {}) as any; }
 function defineEmits<const T extends Record<string, any>>(_events: T): __BatchEmitFn<T> { void _events; return (() => {}) as any; }
 function defineExpose<T>(_exposed?: T): void { void _exposed; }
-function defineModel<T>(): $Vue['Ref']<T | undefined> { return undefined as unknown as $Vue['Ref']<T | undefined>; }
-function defineModel<T>(_options: any): $Vue['Ref']<T> { void _options; return undefined as unknown as $Vue['Ref']<T>; }
-function defineModel<T>(_name: string, _options?: any): $Vue['Ref']<T> { void _name; void _options; return undefined as unknown as $Vue['Ref']<T>; }
+const defineModel = undefined as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
 function defineSlots<T>(): T { return undefined as unknown as T; }
 function withDefaults<T, D extends __WithDefaultsArgs<T>>(_props: T, _defaults: D): __WithDefaultsResult<T, D>; function withDefaults<T, D extends Record<string, any>>(_props: T, _defaults: D): __WithDefaultsResult<T, D>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
 function useTemplateRef<T = any>(_key: string): $Vue['ShallowRef']<T | null> { void _key; return undefined as unknown as $Vue['ShallowRef']<T | null>; }

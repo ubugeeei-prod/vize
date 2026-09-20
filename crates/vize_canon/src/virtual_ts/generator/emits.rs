@@ -87,10 +87,13 @@ impl EmitsInfo {
 /// model with a default, and an untyped model keep the bare payload. The base
 /// is parenthesized so a function-typed model does not absorb the union into
 /// its return type.
-fn model_update_payload(model: &vize_croquis::macros::ModelDefinition) -> String {
-    let base = model.model_type.as_deref().unwrap_or("unknown");
+fn model_update_payload(
+    summary: &Croquis,
+    model: &vize_croquis::macros::ModelDefinition,
+) -> String {
+    let base = crate::virtual_ts::model_types::model_value_type(summary, model);
     if model.required || model.default_value.is_some() || base == "unknown" || base == "any" {
-        String::from(base)
+        base
     } else {
         cstr!("({base}) | undefined")
     }
@@ -154,7 +157,7 @@ pub(super) fn emit_emits_type(
                 );
                 for model in models {
                     let name = model.name.as_str();
-                    let payload = model_update_payload(model);
+                    let payload = model_update_payload(summary, model);
                     ts.push_str("  ");
                     push_model_update_event_literal(ts, name);
                     append!(*ts, ": [value: {payload}];\n");
@@ -173,7 +176,7 @@ pub(super) fn emit_emits_type(
             );
             for model in models {
                 let name = model.name.as_str();
-                let payload = model_update_payload(model);
+                let payload = model_update_payload(summary, model);
                 ts.push_str(" & ((event: ");
                 push_model_update_event_literal(ts, name);
                 append!(*ts, ", value: {payload}) => void)");
@@ -194,7 +197,7 @@ pub(super) fn emit_emits_type(
                 if emitted_names.contains(event_name.as_str()) {
                     continue;
                 }
-                let payload = model_update_payload(model);
+                let payload = model_update_payload(summary, model);
                 ts.push_str("  ");
                 push_ts_string_literal(ts, event_name.as_str());
                 append!(*ts, ": [value: {payload}];\n");

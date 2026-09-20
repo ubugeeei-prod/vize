@@ -188,12 +188,8 @@ impl DiagnosticService {
                 .await
                 .map_err(|error| classify(&bridge, error))?;
             resolved_dependencies.extend(opened.resolved_dependencies.iter().cloned());
-            let Some((virtual_uri, virtual_result)) =
-                Self::virtual_ts_result_from_corsa_vue_document(uri, &content, opened)
-            else {
-                tracing::warn!("failed to map virtual ts metadata for {}", uri);
-                return Ok(vec![]);
-            };
+            let (virtual_uri, virtual_result) =
+                Self::virtual_ts_result_from_corsa_vue_document(opened);
             collect_synced_virtual_result_diagnostics(
                 &bridge,
                 uri,

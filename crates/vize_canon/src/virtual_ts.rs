@@ -27,6 +27,7 @@ mod interface_extends_tests;
 mod legacy_vue2_vuetify_tests;
 mod macro_type_mappings;
 pub mod mapping;
+mod model_types;
 mod pattern_diagnostics;
 mod props;
 #[cfg(test)]

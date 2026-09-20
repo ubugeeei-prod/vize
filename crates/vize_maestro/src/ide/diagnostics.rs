@@ -48,7 +48,7 @@ pub(in crate::ide) use line_index::LineIndex;
 #[cfg(test)]
 pub(in crate::ide) use line_index::offset_to_line_col;
 #[cfg(feature = "native")]
-pub(in crate::ide) use service::{SourceMapping, VirtualTsResult};
+pub(in crate::ide) use service::VirtualTsResult;
 
 #[cfg(feature = "native")]
 pub(crate) const TYPECHECK_UNAVAILABLE_HINT_MESSAGE: &str = "Type checking is unavailable in this workspace. Make sure `tsconfig.json` exists. \

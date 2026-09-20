@@ -161,7 +161,10 @@ fn check_tsx_intrinsic_elements_with_experimental_jsx_vapor() {
         vize_canon::project_virtual_root(&project_root).join("tsconfig.json"),
     )
     .unwrap();
-    assert!(generated_tsconfig.contains(r#""jsxImportSource": "vue""#));
+    let generated_tsconfig: serde_json::Value = serde_json::from_str(&generated_tsconfig).unwrap();
+    let options = &generated_tsconfig["compilerOptions"];
+    assert_eq!(options["jsx"], "preserve");
+    assert!(options.get("jsxImportSource").is_none(), "{options}");
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

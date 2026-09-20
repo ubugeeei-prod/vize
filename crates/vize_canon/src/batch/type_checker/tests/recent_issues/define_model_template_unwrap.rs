@@ -1,8 +1,9 @@
 //! Misskey's `MkForm.vue` indexes a required `defineModel<Record<string, any>>`
-//! from a template `v-for` key. The model helper is Vize-owned, so the template
-//! ref unwrap must recognize that helper before it falls back to Vue's `Ref`.
+//! from a template `v-for` key. Vue's actual ModelRef must use the same template
+//! unwrap as other refs, without a Vize-specific model helper.
 
-use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
+use super::super::{resolve_test_tsgo_binary, snapshot_project_diagnostics};
+use super::real_vue::create_project_case;
 
 #[test]
 fn define_model_record_indexes_with_template_v_for_keys() {

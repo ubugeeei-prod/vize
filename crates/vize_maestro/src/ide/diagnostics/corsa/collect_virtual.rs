@@ -6,11 +6,8 @@ use vize_s0::line_index::LineBreaks;
 
 use super::super::{VirtualTsResult, sources};
 use super::log_preview::log_preview;
-use super::mapping::{
-    line_character_to_byte_offset, map_diagnostic_with_source_mappings, source_offset_to_position,
-};
+use super::mapping::{line_character_to_byte_offset, map_diagnostic_with_source_mappings};
 use super::message::rewrite_corsa_message;
-use super::script_fallback::ScriptFallback;
 
 pub(super) async fn collect_synced_virtual_result_diagnostics(
     bridge: &std::sync::Arc<vize_canon::CorsaBridge>,
@@ -20,27 +17,11 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
     virtual_result: VirtualTsResult,
 ) -> Result<Vec<Diagnostic>, vize_canon::CorsaBridgeError> {
     let virtual_ts = &virtual_result.code;
-    let user_code_start_line = virtual_result.user_code_start_line;
-    let sfc_script_start_line = virtual_result.sfc_script_start_line;
-    let template_scope_start_line = virtual_result.template_scope_start_line;
-    let line_mappings = &virtual_result.line_mappings;
     let source_mappings = &virtual_result.source_mappings;
-    // Positions the source map cannot place are guessed by line arithmetic and
-    // must stay inside the authored document (#3299). A trailing newline does
-    // not open a line an editor can render a range on, so it is not counted.
-    let script_fallback = ScriptFallback {
-        user_code_start_line,
-        sfc_script_start_line,
-        skipped_import_lines: virtual_result.skipped_import_lines,
-        authored_line_count: content.lines().count() as u32,
-    };
     tracing::info!(
-        "generated virtual ts ({} bytes), user_code_start={}, sfc_script_start={}, template_scope_start={}, mappings_count={}",
+        "generated virtual ts ({} bytes), mappings_count={}",
         virtual_ts.len(),
-        user_code_start_line,
-        sfc_script_start_line,
-        template_scope_start_line,
-        line_mappings.iter().filter(|m| m.is_some()).count()
+        source_mappings.len()
     );
 
     tracing::info!(
@@ -94,7 +75,10 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
                 return None;
             }
 
-            let mapped_range = map_diagnostic_with_source_mappings(
+            // Only an explicit source range owns an authored diagnostic.
+            // Inference/navigation probes intentionally have no diagnostic
+            // mapping; guessing a nearby line makes their errors duplicates.
+            let (start_line, end_line, start_char, end_char) = map_diagnostic_with_source_mappings(
                 virtual_ts,
                 content,
                 source_mappings,
@@ -103,49 +87,7 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
                 diag.range.start.character,
                 diag.range.end.line,
                 diag.range.end.character,
-            );
-
-            let is_template_error = diag.range.start.line >= template_scope_start_line;
-
-            let (start_line, end_line, start_char, end_char) =
-                if let Some(mapped_range) = mapped_range {
-                    mapped_range
-                } else if is_template_error {
-                    let virtual_line = diag.range.start.line as usize;
-                    let mapping = (0..=10)
-                        .find_map(|offset| line_mappings.get(virtual_line + offset)?.as_ref());
-
-                    if let Some(src_mapping) = mapping {
-                        let (start_line, start_col) =
-                            source_offset_to_position(content, src_mapping.start as usize);
-                        let (end_line, end_col) =
-                            source_offset_to_position(content, src_mapping.end as usize);
-                        (start_line, end_line, start_col, end_col)
-                    } else {
-                        tracing::debug!(
-                            "skipping unmapped template error at line {}: {}",
-                            diag.range.start.line,
-                            log_preview(&diag.message, 50)
-                        );
-                        return None;
-                    }
-                } else if let Some((start, end)) =
-                    script_fallback.guess_range(diag.range.start.line, diag.range.end.line)
-                {
-                    (
-                        start,
-                        end,
-                        diag.range.start.character.saturating_sub(2),
-                        diag.range.end.character.saturating_sub(2),
-                    )
-                } else {
-                    tracing::debug!(
-                        "skipping unplaceable script diagnostic at virtual line {}: {}",
-                        diag.range.start.line,
-                        log_preview(&diag.message, 50)
-                    );
-                    return None;
-                };
+            )?;
 
             if is_authored_vue_import_extension_diagnostic(
                 content, &diag, start_line, start_char, end_line, end_char,

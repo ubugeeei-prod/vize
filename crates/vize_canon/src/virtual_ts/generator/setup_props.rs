@@ -61,6 +61,7 @@ pub(super) struct SetupPropsPlan {
     capture_options_api_default: bool,
     module_scope_declares_props: bool,
     uses_resolved_props: bool,
+    has_inferred_model_defaults: bool,
 }
 
 impl SetupPropsPlan {
@@ -94,6 +95,9 @@ impl SetupPropsPlan {
             || imported_props_would_collide;
         let defer = define_props_type_requires_setup_scope(summary);
         Self {
+            has_inferred_model_defaults: crate::virtual_ts::model_types::has_inferred_defaults(
+                summary,
+            ),
             defer,
             defer_options_api_props: options_api_props_are_deferred
                 && (!module_scope_declares_props || imported_props_would_collide),

@@ -129,7 +129,7 @@ fn argument_less_v_model_anchors_at_the_directive() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
-    let project_root = create_project_case(
+    let project_root = super::real_vue::create_project_case(
         "v-model-directive-anchor",
         &[
             (

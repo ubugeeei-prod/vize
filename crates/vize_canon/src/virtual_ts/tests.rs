@@ -29,7 +29,7 @@ fn assert_virtual_ts_snapshot(name: &str, value: &str) {
     });
 }
 #[test]
-fn test_vue_setup_helpers_are_actual_functions() {
+fn test_vue_setup_helpers_use_runtime_macro_types() {
     assert_virtual_ts_snapshot("virtual_ts_vue_setup_helpers", VUE_SETUP_HELPERS);
 }
 #[test]

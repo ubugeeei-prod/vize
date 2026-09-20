@@ -187,11 +187,7 @@ defineSlots<{
                 .collect::<Vec<_>>();
             assert_eq!(actual_imports, expected_imports);
             let (virtual_uri, virtual_result) =
-                DiagnosticService::virtual_ts_result_from_corsa_vue_document(
-                    &host_uri,
-                    host_content,
-                    opened,
-                )?;
+                DiagnosticService::virtual_ts_result_from_corsa_vue_document(opened);
             let diagnostics = collect_synced_virtual_result_diagnostics(
                 &bridge,
                 &host_uri,

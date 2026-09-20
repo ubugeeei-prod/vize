@@ -8,7 +8,7 @@ fn runtime_constructor_define_model_infers_defaulted_string_value() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
-    let project_root = create_project_case(
+    let project_root = super::real_vue::create_project_case(
         "define-model-runtime-string",
         &[(
             "src/App.vue",
@@ -36,7 +36,7 @@ fn runtime_constructor_define_model_keeps_undefined_when_not_resolved() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
-    let project_root = create_project_case(
+    let project_root = super::real_vue::create_project_case(
         "define-model-runtime-optional-string",
         &[(
             "src/App.vue",
@@ -64,7 +64,7 @@ fn define_model_option_getter_and_setter_keep_distinct_ref_types() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
-    let project_root = create_project_case(
+    let project_root = super::real_vue::create_project_case(
         "define-model-option-get-set-ref-types",
         &[(
             "src/App.vue",
@@ -102,7 +102,7 @@ fn define_model_option_callbacks_are_contextually_typed() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
-    let project_root = create_project_case(
+    let project_root = super::real_vue::create_project_case(
         "define-model-option-contextual-callbacks",
         &[(
             "src/App.vue",

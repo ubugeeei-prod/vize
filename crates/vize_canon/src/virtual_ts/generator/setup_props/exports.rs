@@ -8,6 +8,9 @@ impl SetupPropsPlan {
         options_api_props: Option<&OptionsApiPropsSource>,
         generic_param: Option<&str>,
     ) {
+        if self.has_inferred_model_defaults {
+            crate::virtual_ts::model_types::emit_defaults_type(ts, generic_param);
+        }
         if self.defer {
             let (declaration, arguments) = super::super::generics::generic_injection(generic_param)
                 .map(|(declaration, names)| {

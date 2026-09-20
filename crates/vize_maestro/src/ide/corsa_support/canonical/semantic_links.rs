@@ -223,11 +223,6 @@ mod semantic_position_tests {
             source_mappings: Vec::new(),
             semantic_links: Vec::new(),
             import_source_map: ImportSourceMap::empty(),
-            user_code_start_line: 0,
-            sfc_script_start_line: 0,
-            template_scope_start_line: 0,
-            line_mappings: Vec::new(),
-            skipped_import_lines: 0,
         }
     }
 
@@ -309,11 +304,6 @@ mod tests {
                 source_mappings: Vec::new(),
                 semantic_links: vec![link],
                 import_source_map: ImportSourceMap::empty(),
-                user_code_start_line: 0,
-                sfc_script_start_line: 0,
-                template_scope_start_line: 0,
-                line_mappings: Vec::new(),
-                skipped_import_lines: 0,
             },
             dependencies: Vec::new(),
             materialized_sources: Vec::new(),

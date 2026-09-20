@@ -49,7 +49,6 @@ pub(in crate::ide::diagnostics) fn art_variant_virtual_name(
 struct ArtScriptContext {
     script: String,
     script_offset: u32,
-    sfc_script_start_line: u32,
 }
 
 impl DiagnosticService {
@@ -149,7 +148,6 @@ impl DiagnosticService {
         );
         let code = output.code;
         let semantic_links = output.semantic_links;
-        let line_mappings = Self::parse_vize_map_comments(&code);
 
         ArtVariantGeneration {
             virtual_result: VirtualTsResult {
@@ -157,21 +155,6 @@ impl DiagnosticService {
                 source_mappings: output.mappings,
                 semantic_links,
                 import_source_map: Default::default(),
-                user_code_start_line: code
-                    .lines()
-                    .enumerate()
-                    .find(|(_, line)| line.contains("// User setup code"))
-                    .map(|(i, _)| i as u32 + 1)
-                    .unwrap_or(0),
-                sfc_script_start_line: script.sfc_script_start_line,
-                template_scope_start_line: code
-                    .lines()
-                    .enumerate()
-                    .find(|(_, line)| line.contains("Template Scope"))
-                    .map(|(i, _)| i as u32)
-                    .unwrap_or(u32::MAX),
-                line_mappings,
-                skipped_import_lines: Self::count_import_lines(script_content),
             },
         }
     }
@@ -184,48 +167,44 @@ struct ArtVariantGeneration {
 /// Project the authored `<script setup>` (or classic `<script>`) into the
 /// module-level context every variant document is generated against.
 fn art_script_context(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) -> ArtScriptContext {
-    let (script, script_offset, sfc_script_start_line) =
-        if let Some(script_setup) = descriptor.script_setup.as_ref() {
-            let isolate = !script_setup
-                .attrs
-                .get("isolate")
-                .is_some_and(|value| value.as_ref().eq_ignore_ascii_case("false"));
-            let parts = crate::virtual_code::analyze_art_script_setup(
-                script_setup.content.as_ref(),
-                script_setup.loc.start,
-                isolate,
-            );
-            let kept = parts
-                .shared_imports
-                .iter()
-                .chain(parts.isolated_body.iter())
-                .map(|chunk| {
-                    (
-                        chunk.source_start - script_setup.loc.start,
-                        chunk.source_end - script_setup.loc.start,
-                    )
-                })
-                .collect::<Vec<_>>();
+    let (script, script_offset) = if let Some(script_setup) = descriptor.script_setup.as_ref() {
+        let isolate = !script_setup
+            .attrs
+            .get("isolate")
+            .is_some_and(|value| value.as_ref().eq_ignore_ascii_case("false"));
+        let parts = crate::virtual_code::analyze_art_script_setup(
+            script_setup.content.as_ref(),
+            script_setup.loc.start,
+            isolate,
+        );
+        let kept = parts
+            .shared_imports
+            .iter()
+            .chain(parts.isolated_body.iter())
+            .map(|chunk| {
+                (
+                    chunk.source_start - script_setup.loc.start,
+                    chunk.source_end - script_setup.loc.start,
+                )
+            })
+            .collect::<Vec<_>>();
 
-            (
-                blank_dropped_statements(script_setup.content.as_ref(), &kept),
-                script_setup.loc.start as u32,
-                script_setup.loc.start_line as u32,
-            )
-        } else if let Some(classic) = descriptor.script.as_ref() {
-            (
-                classic.content.as_ref().to_owned(),
-                classic.loc.start as u32,
-                classic.loc.start_line as u32,
-            )
-        } else {
-            (String::new(), 0, 1)
-        };
+        (
+            blank_dropped_statements(script_setup.content.as_ref(), &kept),
+            script_setup.loc.start as u32,
+        )
+    } else if let Some(classic) = descriptor.script.as_ref() {
+        (
+            classic.content.as_ref().to_owned(),
+            classic.loc.start as u32,
+        )
+    } else {
+        (String::new(), 0)
+    };
 
     ArtScriptContext {
         script,
         script_offset,
-        sfc_script_start_line,
     }
 }
 

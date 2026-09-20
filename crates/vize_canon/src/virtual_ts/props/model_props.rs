@@ -1,13 +1,9 @@
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::{Croquis, macros::ModelDefinition};
 
-use crate::virtual_ts::helpers::push_ts_string_literal;
+use crate::virtual_ts::{helpers::push_ts_string_literal, model_types::model_value_type};
 
 use super::template_model_modifiers::{model_modifier_prop_name, model_modifier_type};
-
-fn model_prop_type(model: &ModelDefinition) -> &str {
-    model.model_type.as_deref().unwrap_or("unknown")
-}
 
 fn emit_type_member(ts: &mut String, name: &str, optional: &str, ty: &str) {
     ts.push_str("  ");
@@ -23,9 +19,9 @@ fn emit_model_prop_members(
 ) {
     let optional = if model.required { "" } else { "?" };
     let name = model.name.as_str();
-    let prop_type = model_prop_type(model);
+    let prop_type = model_value_type(summary, model);
     if emitted_names.insert(name.into()) {
-        emit_type_member(ts, name, optional, prop_type);
+        emit_type_member(ts, name, optional, prop_type.as_str());
     }
 
     let modifiers_name = model_modifier_prop_name(name);

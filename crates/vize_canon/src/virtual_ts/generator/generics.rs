@@ -279,7 +279,9 @@ pub(super) fn generic_injection_point(decl: &str, type_name: &str) -> Option<usi
     Some(name_end)
 }
 
-pub(super) fn generic_injection(generic_param: Option<&str>) -> Option<(String, Vec<String>)> {
+pub(in crate::virtual_ts) fn generic_injection(
+    generic_param: Option<&str>,
+) -> Option<(String, Vec<String>)> {
     generic_param.map(|g| {
         // Type aliases/interfaces cannot retain function-only `const` modifiers (TS1277).
         let defaults = strip_const_modifiers(&add_generic_defaults(g));

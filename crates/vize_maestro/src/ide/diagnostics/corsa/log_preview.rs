@@ -32,23 +32,4 @@ mod tests {
             }
         }
     }
-
-    #[test]
-    fn debug_source_map_logging_handles_multibyte_previews() {
-        let line = cstr!("// @vize-map: {} -> 7:9", "x\u{3042}".repeat(25));
-        assert!(!line.is_char_boundary(80));
-        let subscriber = tracing_subscriber::fmt()
-            .with_max_level(tracing::Level::DEBUG)
-            .with_writer(std::io::sink)
-            .finish();
-        tracing::subscriber::with_default(subscriber, || {
-            let mappings =
-                crate::ide::DiagnosticService::parse_vize_map_comments(&cstr!("label;\n{line}\n"));
-            let ranges = mappings
-                .iter()
-                .map(|mapping| mapping.as_ref().map(|m| (m.start, m.end)))
-                .collect::<Vec<_>>();
-            assert_eq!(ranges, [Some((7, 9)), None]);
-        });
-    }
 }
