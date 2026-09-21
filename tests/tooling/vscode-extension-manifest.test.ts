@@ -61,6 +61,13 @@ test("multiline Vue script grammar is contributed", () => {
   assert.equal(grammar?.path, "./syntaxes/vue-script.tmLanguage.json");
 });
 
+test("patterned template grammar is contributed", () => {
+  const grammar = readManifest().contributes?.grammars?.find(
+    (entry) => entry.scopeName === "source.vue.pattern",
+  );
+  assert.equal(grammar?.path, "./syntaxes/vue-pattern.tmLanguage.json");
+});
+
 test("multiline Vue script grammar preserves each declared dialect", () => {
   type Rule = { contentName?: string; patterns?: Array<{ include?: string }> };
   const grammar = JSON.parse(

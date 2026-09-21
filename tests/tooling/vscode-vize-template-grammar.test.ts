@@ -67,12 +67,15 @@ test("vscode-vize template grammar recurses through template content", () => {
       "#html-entities",
     ],
   );
-  const tagPatterns = repository["vue-template-tag"]?.patterns ?? [];
+  // The template tag and every element tag share one attribute list; the
+  // pattern grammar runs first so `v-when` is not read as an expression.
+  assert.deepEqual(repository["vue-template-tag"]?.patterns, [{ include: "#vue-tag-content" }]);
+  const tagPatterns = repository["vue-tag-content"]?.patterns ?? [];
   assert.equal(tagPatterns[0]?.match, "(?<!\\S)//.*$");
   assert.equal(tagPatterns[0]?.name, "comment.line.double-slash.vue");
   assert.deepEqual(
     tagPatterns.slice(1).map((pattern) => pattern.include),
-    ["#vue-directive-attributes", "#vue-directives", "#vue-tag-attributes"],
+    ["source.vue.pattern", "#vue-directive-attributes", "#vue-directives", "#vue-tag-attributes"],
   );
   assert.equal(
     repository["vue-generic-attribute"]?.patterns?.[0]?.patterns?.[0]?.include,

@@ -26,6 +26,12 @@ fixtures are read from the pinned spec's AST. Rename checks additionally apply
 the edits and check the result: expanding `{ const value }` to
 `{ value: const renamed }` preserves the original property key.
 
+`pattern-sfc-reference.test.ts` runs `compiler-sfc/__tests__/vMatch.spec.ts` through the
+real CLI: a `v-match` on the SFC's own `<template>` compiles to the same output as the
+match nested in an inner block on DOM, SSR and Vapor, its header keeps a TypeScript
+import alive, and each invalid header is one error at the directive. The reference's
+source-map case needs a compile API the CLI does not expose and stays inventory-only.
+
 `pattern-selection-reference.test.ts` runs the selection-semantics half of
 `compiler-core/__tests__/patterns.spec.ts`, its match table and all nine scenarios,
 through a render function compiled by the real CLI: every arm reports its index and
@@ -42,7 +48,13 @@ parity, and hydration across reactive arm changes.
 One scenario, remounting an explicitly keyed `<template>` arm, runs on the VDOM
 renderer only: Vapor has no keyed fragment yet.
 
-The remaining compiler snapshot, SFC, Vapor hydration, `Transition` e2e, and TextMate
+`pattern-grammar-reference.test.ts` reads the reference's TextMate snapshot for both
+patterned fixtures and compares every character of every `v-match` / `v-when`
+attribute with the grammar the VS Code extension ships. The two grammars name the
+attribute shell and the embedded guard expression differently, so those are compared
+by role; the scopes inside a pattern must be identical.
+
+The remaining compiler snapshot, SFC, Vapor hydration, and `Transition` e2e
 reference cases are tracked by [#6176](https://github.com/ubugeeei-prod/vize/issues/6176).
 Preserving those source files is an inventory check, not evidence that those suites
 have all executed.

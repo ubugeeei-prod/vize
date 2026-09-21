@@ -1,0 +1,196 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Vue patterned template",
+  "scopeName": "source.vue.pattern",
+  "patterns": [
+    {
+      "include": "#vue-match-arm"
+    }
+  ],
+  "repository": {
+    "vue-match-arm": {
+      "patterns": [
+        {
+          "begin": "(?<!\\S)(v-when)\\s*(=)\\s*(\")",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.directive.vue"
+            },
+            "2": {
+              "name": "punctuation.separator.key-value.html"
+            },
+            "3": {
+              "name": "punctuation.definition.string.begin.html"
+            }
+          },
+          "end": "\"",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.html"
+            }
+          },
+          "contentName": "meta.pattern.vue",
+          "patterns": [
+            {
+              "include": "#vue-match-guard-double"
+            },
+            {
+              "include": "#vue-match-pattern"
+            }
+          ]
+        },
+        {
+          "begin": "(?<!\\S)(v-when)\\s*(=)\\s*(')",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.directive.vue"
+            },
+            "2": {
+              "name": "punctuation.separator.key-value.html"
+            },
+            "3": {
+              "name": "punctuation.definition.string.begin.html"
+            }
+          },
+          "end": "'",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.html"
+            }
+          },
+          "contentName": "meta.pattern.vue",
+          "patterns": [
+            {
+              "include": "#vue-match-guard-single"
+            },
+            {
+              "include": "#vue-match-pattern"
+            }
+          ]
+        }
+      ]
+    },
+    "vue-match-guard-double": {
+      "begin": "\\b(if)\\s*(\\()",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.conditional.vue"
+        },
+        "2": {
+          "name": "punctuation.definition.parameters.begin.ts"
+        }
+      },
+      "end": "(\\))(?=\\s*\")|(?=\")",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.parameters.end.ts"
+        }
+      },
+      "contentName": "meta.embedded.expression.vue",
+      "patterns": [
+        {
+          "include": "#vue-match-guard-expression"
+        }
+      ]
+    },
+    "vue-match-guard-single": {
+      "begin": "\\b(if)\\s*(\\()",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.conditional.vue"
+        },
+        "2": {
+          "name": "punctuation.definition.parameters.begin.ts"
+        }
+      },
+      "end": "(\\))(?=\\s*')|(?=')",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.parameters.end.ts"
+        }
+      },
+      "contentName": "meta.embedded.expression.vue",
+      "patterns": [
+        {
+          "include": "#vue-match-guard-expression"
+        }
+      ]
+    },
+    "vue-match-guard-expression": {
+      "patterns": [
+        {
+          "include": "source.vue#vue-ts-comments"
+        },
+        {
+          "match": "[{}(\\[\\].,?:+\\-*/%&|!~=<>]+",
+          "name": "keyword.operator.ts"
+        },
+        {
+          "match": "\\)",
+          "name": "keyword.operator.ts"
+        },
+        {
+          "include": "source.vue#vue-ts-expression"
+        }
+      ]
+    },
+    "vue-match-pattern": {
+      "patterns": [
+        {
+          "include": "source.vue#html-entities"
+        },
+        {
+          "match": "'(?:\\\\.|[^'\\\\])*'|\"(?:\\\\.|[^\"\\\\])*\"",
+          "name": "string.quoted.vue"
+        },
+        {
+          "match": "\\b(const|as)\\b\\s*([\\w$]+)?",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.pattern.vue"
+            },
+            "2": {
+              "name": "variable.other.constant.ts"
+            }
+          }
+        },
+        {
+          "match": "\\b(let|var)\\b",
+          "name": "invalid.illegal.pattern.vue"
+        },
+        {
+          "match": "(?<![\\w$])_(?![\\w$])",
+          "name": "constant.language.wildcard.vue"
+        },
+        {
+          "match": "\\b(true|false|null|undefined|NaN)\\b",
+          "name": "constant.language.ts"
+        },
+        {
+          "match": "(?<![\\w$])[-+]?(?:0[xX][\\da-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][-+]?\\d+)?)n?",
+          "name": "constant.numeric.ts"
+        },
+        {
+          "match": "\\.\\.\\.",
+          "name": "keyword.operator.rest.vue"
+        },
+        {
+          "match": "\\|",
+          "name": "keyword.operator.pattern.vue"
+        },
+        {
+          "match": "[{}\\[\\]()]",
+          "name": "punctuation.definition.pattern.vue"
+        },
+        {
+          "match": "[,:.]",
+          "name": "punctuation.separator.pattern.vue"
+        },
+        {
+          "match": "[\\w$]+",
+          "name": "variable.other.readwrite.ts"
+        }
+      ]
+    }
+  }
+}
