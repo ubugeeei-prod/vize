@@ -48,6 +48,7 @@ const requiredFiles = [
   "extension/package.json",
   "extension/readme.md",
   "extension/syntaxes/art-vue.tmLanguage.json",
+  "extension/syntaxes/vue-pattern.tmLanguage.json",
   "extension/syntaxes/vue-script.tmLanguage.json",
   "extension/syntaxes/vue.tmLanguage.json",
 ];

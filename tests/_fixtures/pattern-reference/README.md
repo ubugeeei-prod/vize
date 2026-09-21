@@ -42,7 +42,13 @@ parity, and hydration across reactive arm changes.
 One scenario, remounting an explicitly keyed `<template>` arm, runs on the VDOM
 renderer only: Vapor has no keyed fragment yet.
 
-The remaining compiler snapshot, SFC, Vapor hydration, `Transition` e2e, and TextMate
+`pattern-grammar-reference.test.ts` reads the reference's TextMate snapshot for both
+patterned fixtures and compares every character of every `v-match` / `v-when`
+attribute with the grammar the VS Code extension ships. The two grammars name the
+attribute shell and the embedded guard expression differently, so those are compared
+by role; the scopes inside a pattern must be identical.
+
+The remaining compiler snapshot, SFC, Vapor hydration, and `Transition` e2e
 reference cases are tracked by [#6176](https://github.com/ubugeeei-prod/vize/issues/6176).
 Preserving those source files is an inventory check, not evidence that those suites
 have all executed.

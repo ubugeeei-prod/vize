@@ -97,6 +97,10 @@ export async function loadVueTextMateGrammar(scopeName = "source.vue") {
   );
   grammars.set("source.sassdoc", readJson("tests/tooling/fixtures/sassdoc.tmLanguage.json"));
   grammars.set("source.vue", readJson("editors/vscode/syntaxes/vue.tmLanguage.json"));
+  grammars.set(
+    "source.vue.pattern",
+    readJson("editors/vscode/syntaxes/vue-pattern.tmLanguage.json"),
+  );
   grammars.set("source.vue.script", readJson("editors/vscode/syntaxes/vue-script.tmLanguage.json"));
   grammars.set("source.art-vue", readJson("editors/vscode/syntaxes/art-vue.tmLanguage.json"));
   const configuredGrammarSha256 = createHash("sha256")

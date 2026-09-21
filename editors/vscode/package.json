@@ -87,6 +87,10 @@
     ],
     "grammars": [
       {
+        "scopeName": "source.vue.pattern",
+        "path": "./syntaxes/vue-pattern.tmLanguage.json"
+      },
+      {
         "scopeName": "source.vue.script",
         "path": "./syntaxes/vue-script.tmLanguage.json"
       },

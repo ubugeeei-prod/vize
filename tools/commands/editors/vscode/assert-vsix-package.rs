@@ -56,6 +56,7 @@ fn run() -> Result<(), String> {
         "extension/package.json",
         "extension/readme.md",
         "extension/syntaxes/art-vue.tmLanguage.json",
+        "extension/syntaxes/vue-pattern.tmLanguage.json",
         "extension/syntaxes/vue-script.tmLanguage.json",
         "extension/syntaxes/vue.tmLanguage.json",
     ];
@@ -228,6 +229,7 @@ fn assert_allowed_entries(entries: &[String]) -> Result<(), String> {
         "extension/package.json",
         "extension/readme.md",
         "extension/syntaxes/art-vue.tmLanguage.json",
+        "extension/syntaxes/vue-pattern.tmLanguage.json",
         "extension/syntaxes/vue-script.tmLanguage.json",
         "extension/syntaxes/vue.tmLanguage.json",
     ]

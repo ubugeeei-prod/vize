@@ -175,7 +175,7 @@
     "vue-directives": {
       "patterns": [
         {
-          "match": "\\b(v-if|v-else-if|v-else|v-for|v-show|v-bind|v-on|v-model|v-slot|v-pre|v-once|v-memo|v-cloak|v-text|v-html)\\b",
+          "match": "\\b(v-if|v-else-if|v-else|v-for|v-show|v-bind|v-on|v-model|v-slot|v-pre|v-once|v-memo|v-cloak|v-text|v-html|v-match|v-when)\\b",
           "name": "keyword.control.directive.vue"
         },
         {

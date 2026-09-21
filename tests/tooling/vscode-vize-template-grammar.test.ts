@@ -67,12 +67,15 @@ test("vscode-vize template grammar recurses through template content", () => {
       "#html-entities",
     ],
   );
-  const tagPatterns = repository["vue-template-tag"]?.patterns ?? [];
+  // The template tag and every element tag share one attribute list; the
+  // pattern grammar runs first so `v-when` is not read as an expression.
+  assert.deepEqual(repository["vue-template-tag"]?.patterns, [{ include: "#vue-tag-content" }]);
+  const tagPatterns = repository["vue-tag-content"]?.patterns ?? [];
   assert.equal(tagPatterns[0]?.match, "(?<!\\S)//.*$");
   assert.equal(tagPatterns[0]?.name, "comment.line.double-slash.vue");
   assert.deepEqual(
     tagPatterns.slice(1).map((pattern) => pattern.include),
-    ["#vue-directive-attributes", "#vue-directives", "#vue-tag-attributes"],
+    ["source.vue.pattern", "#vue-directive-attributes", "#vue-directives", "#vue-tag-attributes"],
   );
   assert.equal(
     repository["vue-generic-attribute"]?.patterns?.[0]?.patterns?.[0]?.include,
@@ -174,6 +177,66 @@ test("vscode-vize grammar keeps TS generics and assertions inside attribute valu
     assertTextDoesNotHaveScope(tokens, "data-single", "meta.embedded.expression.vue");
     assertTextDoesNotHaveScope(tokens, "span", "meta.embedded.expression.vue");
     assertTextDoesNotHaveScope(tokens, "after", "meta.embedded.type.typescript");
+  } finally {
+    registry.dispose();
+  }
+});
+
+test("vscode-vize grammar reads a less-than comparison as an operator, not as type arguments", async () => {
+  const { grammar, registry } = await loadVueTextMateGrammar();
+
+  try {
+    const line =
+      '  <li v-if="count < limit && ok(count)" :class="cls<Row>(row)" data-x="ok">x</li>';
+    assert.deepEqual(
+      tokenizeLines(grammar, ["<template>", line, "</template>"])
+        .filter((token) => token.line === line && token.text.trim() !== "")
+        .map((token) => [token.text, token.scopes.slice(1).join(" ")]),
+      [
+        ["<", "punctuation.definition.tag.begin.html"],
+        ["li", "entity.name.tag.html"],
+        ["v-if", "keyword.control.directive.vue"],
+        ["=", "punctuation.separator.key-value.html"],
+        ['"', "punctuation.definition.string.begin.html"],
+        ["count", "meta.embedded.expression.vue variable.other.readwrite.ts"],
+        ["<", "meta.embedded.expression.vue keyword.operator.ts"],
+        ["limit", "meta.embedded.expression.vue variable.other.readwrite.ts"],
+        ["&&", "meta.embedded.expression.vue keyword.operator.ts"],
+        ["ok", "meta.embedded.expression.vue entity.name.function.ts"],
+        ["(", "meta.embedded.expression.vue keyword.operator.ts"],
+        ["count", "meta.embedded.expression.vue variable.other.readwrite.ts"],
+        [")", "meta.embedded.expression.vue keyword.operator.ts"],
+        ['"', "punctuation.definition.string.end.html"],
+        [":", "punctuation.definition.directive.vue"],
+        ["class", "entity.other.attribute-name.binding.vue"],
+        ["=", "punctuation.separator.key-value.html"],
+        ['"', "punctuation.definition.string.begin.html"],
+        ["cls", "meta.embedded.expression.vue meta.type.parameters.ts entity.name.function.ts"],
+        [
+          "<",
+          "meta.embedded.expression.vue meta.type.parameters.ts punctuation.definition.typeparameters.begin.ts",
+        ],
+        ["Row", "meta.embedded.expression.vue meta.type.parameters.ts entity.name.type.ts"],
+        [
+          ">",
+          "meta.embedded.expression.vue meta.type.parameters.ts punctuation.definition.typeparameters.end.ts",
+        ],
+        ["(", "meta.embedded.expression.vue keyword.operator.ts"],
+        ["row", "meta.embedded.expression.vue variable.other.readwrite.ts"],
+        [")", "meta.embedded.expression.vue keyword.operator.ts"],
+        ['"', "punctuation.definition.string.end.html"],
+        ["data-x", "entity.other.attribute-name.html"],
+        ["=", "punctuation.separator.key-value.html"],
+        ['"', "string.quoted.double.html punctuation.definition.string.begin.html"],
+        ["ok", "string.quoted.double.html"],
+        ['"', "string.quoted.double.html punctuation.definition.string.end.html"],
+        [">", "punctuation.definition.tag.end.html"],
+        ["x", ""],
+        ["</", "punctuation.definition.tag.begin.html"],
+        ["li", "entity.name.tag.html"],
+        [">", "punctuation.definition.tag.end.html"],
+      ],
+    );
   } finally {
     registry.dispose();
   }

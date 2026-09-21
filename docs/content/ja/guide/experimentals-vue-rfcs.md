@@ -69,6 +69,7 @@ Croquis は `analyzeSfc(source, { experimentalPatternedTemplate: true })` と Pl
 外側を参照する value pattern、guard、構文診断を記録し、HTML entity を含む元の位置を維持します。
 DOM・Vapor・SSR もこの parser に統一し、`pattern as name` を使います。旧 `as const name` は拒否します。
 Canon も同じ parser を使い、`typeCheck(source, { experimentalPatternedTemplate: true, includeVirtualTs: true })`、Playground Canon のチェックボックス、`experimentals.patternedTemplate` を有効にした `vize check` で型検査できます。Native Maestro も同じ workspace 設定を読み、構文・未網羅エラーと到達不能 branch の警告を報告し、未保存の編集を再検査します。Root pattern binding の hover は絞り込んだ型を、definition は元の宣言位置を返します。workspace flag を変更したら language server を再起動してください。Content Mapper への設定伝達、guard・nested closure・or-pattern binding を含む rename/completion の全組合せの検証は未完了です。
+VS Code の grammar は `v-when` の値を expression ではなく pattern として読みます。`const` / `as` の宣言、`_` wildcard、rest、alternative、guard には reference grammar と同じ scope 名が付くため、flag の有無にかかわらず theme がそのまま色分けします。
 残作業は [#6176](https://github.com/ubugeeei-prod/vize/issues/6176) で追跡します。
 
 pattern の property は各 arm の試行内で一度だけ読み、guard と描画側は rest copy を含めて同じ値を使います。rest copy は shape 全体の一致後に作り、shape が不一致の arm や後続の未試行 arm の guard は評価しません。`v-when` は `v-if`、`v-else-if`、`v-else`、`v-for`、`v-match` と同じ要素には指定できません。match は list ではなく lexical scope に lowering されるため、DOM・SSR・Vapor のいずれも fragment や list marker を描画しません。単一 root の match は attribute fallthrough を保ち、`Transition` や `KeepAlive` の子としても動作し、hydration でも node が一致します。arm の `:key` はその arm の binding の内側で評価されます。
