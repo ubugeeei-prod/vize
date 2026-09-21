@@ -237,7 +237,7 @@ jobs:
             tests/tooling/sfc-equivalence.test.ts \
             tests/tooling/glyph-corpus-idempotence.test.ts \
             tests/tooling/glyph-corpus-parse-preservation.test.ts \
-            tests/tooling/glyph-pug-oracle.test.ts \
+            tests/tooling/glyph-pug-oracle.test.ts tests/tooling/davinci-pug-corpus-oracle.test.ts \
             tests/tooling/glyph-corpus-lint-agreement.test.ts || glyph_exit_code=$?
           for property in idempotence parse-preservation lint-agreement; do
             if [[ ! -s "$FIXTURE_REPORT_DIR/glyph-$property.json" ]]; then
@@ -331,8 +331,8 @@ jobs:
         id: davinci_dom_corpus
         continue-on-error: true
         run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run
-      - name: Run S4 SSR differential corpus
-        run: VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture
+      - name: Run S4 SSR and pug S1 differential corpora
+        run: VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture && VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_pug_corpus -- --nocapture
       - name: Measure Davinci production reach on the hydrated corpus
         run: VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_sfc --features davinci-dom-differential --test davinci_production_reach -- --nocapture
       - name: Finalize S2 DOM corpus evidence

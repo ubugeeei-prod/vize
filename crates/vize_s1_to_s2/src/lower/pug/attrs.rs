@@ -95,6 +95,11 @@ impl Emitter<'_> {
                         };
                         let key = attr.key();
                         let span = self.span(&attr.name);
+                        // Synthesized bytes map to the whole `name=value`.
+                        let whole = attr
+                            .value
+                            .as_ref()
+                            .map_or(span, |value| Span::new(span.start, self.span(value).end));
                         if key != "class" {
                             if names.contains(&key) {
                                 let message =
@@ -121,7 +126,7 @@ impl Emitter<'_> {
                         };
                         let escaped = !attr.unescaped();
                         if key == "class" {
-                            classes.push((value, escaped, span));
+                            classes.push((value, escaped, whole));
                             continue;
                         }
                         // A bare attribute takes pug's runtime path,
@@ -149,7 +154,7 @@ impl Emitter<'_> {
                             value,
                             body,
                             escaped,
-                            span,
+                            span: whole,
                         });
                     }
                 }
@@ -211,7 +216,7 @@ impl Emitter<'_> {
         match entry.key_span {
             Some(span) => {
                 self.html.push_str(&entry.key);
-                self.map.push(entry.key.len(), span.start, span.end);
+                self.map.push_verbatim(entry.key.len(), span.start);
             }
             None => self.synth(&entry.key, entry.span),
         }
@@ -221,7 +226,7 @@ impl Emitter<'_> {
             match entry.body {
                 Some((body, span)) if body == text.as_str() => {
                     self.html.push_str(body);
-                    self.map.push(body.len(), span.start, span.end);
+                    self.map.push_verbatim(body.len(), span.start);
                 }
                 _ => self.synth(&text, entry.span),
             }

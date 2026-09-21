@@ -63,6 +63,20 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
     assert.match(helperSource, pattern);
   }
 
+  // P4-12c: the pug corpus compile oracle rides the hydrated corpus, before
+  // the finalize step dehydrates it, and fails the job on any divergence.
+  const pug = findStep(steps, "Run pug S1 corpus compile oracle");
+  assert.equal(pug["continue-on-error"], undefined);
+  assert.deepEqual(pug.env, { VIZE_DAVINCI_DIFFERENTIAL_CORPUS: "tests/_fixtures/_git" });
+  assert.equal(
+    pug.run,
+    "cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_pug_corpus -- --nocapture",
+  );
+  assert.ok(
+    steps.indexOf(pug) < steps.indexOf(findStep(steps, "Finalize S2 DOM corpus evidence")),
+    "the pug corpus oracle must run before the corpus is dehydrated",
+  );
+
   const corpus = findStep(steps, "Run S2 DOM differential corpus");
   assert.equal(corpus.id, "davinci_dom_corpus");
   assert.equal(corpus["continue-on-error"], true);

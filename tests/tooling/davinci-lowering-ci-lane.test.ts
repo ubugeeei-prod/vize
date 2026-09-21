@@ -9,6 +9,8 @@ const s1ToS2DomCorpusCommand =
   "cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_dom_corpus -- --nocapture";
 const ssrS4CorpusCommand =
   'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture';
+const s1ToS2PugCorpusCommand =
+  "cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_pug_corpus -- --nocapture";
 const jsxS2VdomParityCommand =
   "cargo test -p vize_atelier_jsx --features davinci-differential --lib vdom::s2_differential::s2_vdom_admitted_cases_match_relief_codegen -- --exact";
 
@@ -24,7 +26,7 @@ test("feature-gated S1-to-S2 corpus lanes ride the required clippy-and-test job"
     /\| TS-20 \| Lowering totality fuzz\s+\| `cargo test -p vize_s1_to_s2` \/ `cargo test -p vize_s2_to_s3`/u,
   );
   assert.match(suites, /`s2_to_s3_lowering`/u);
-  for (const name of ["davinci_lowering_corpus", "davinci_dom_corpus"]) {
+  for (const name of ["davinci_lowering_corpus", "davinci_dom_corpus", "davinci_pug_corpus"]) {
     assert.match(
       manifest,
       new RegExp(
@@ -48,6 +50,10 @@ test("feature-gated S1-to-S2 corpus lanes ride the required clippy-and-test job"
   assert.ok(
     clippyJob.includes(s1ToS2DomCorpusCommand),
     "the feature-gated DOM corpus entry must run explicitly after cargo test --workspace",
+  );
+  assert.ok(
+    clippyJob.includes(s1ToS2PugCorpusCommand),
+    "the feature-gated pug corpus entry (P4-12c baseline scope) must run on pull requests",
   );
   assert.match(
     readRepoFile("crates", "vize_atelier_ssr", "Cargo.toml"),

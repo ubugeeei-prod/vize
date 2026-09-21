@@ -132,7 +132,7 @@
 
 - [x] Parser with `render(parse(src)) == src` fidelity over the corpus pug templates and a malformed set
 - [x] Lowering total over the battery and every truncation (the P2-8 shape)
-- [ ] Compile oracle: compiling a pug SFC equals compiling the same SFC with its template replaced by the pinned `pug` package's HTML rendering, byte for byte
+- [x] Compile oracle: compiling a pug SFC equals compiling the same SFC with its template replaced by the pinned `pug` package's HTML rendering, byte for byte
 
 **Acceptance:** TS-19 and TS-20 extended to pug and green; the compile oracle exact over the corpus pug SFCs with scope proof; TS-5's pug property green.
 
@@ -140,7 +140,7 @@
 
 **Non-goals:** pug-specific lint rules; pug mixins beyond Vue's documented support.
 
-_Slice 1 2026-09-22 (surface, lowering, compile lanes):_ see [P4-12c record](./phase-4-records/p4-12c.md)
+_Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle):_ see [P4-12c record](./phase-4-records/p4-12c.md)
 
 ## P4-13 — Musea onto S0 and S1
 
