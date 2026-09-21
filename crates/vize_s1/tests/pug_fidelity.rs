@@ -282,8 +282,9 @@ fn the_tree_follows_pug_structure() {
         panic!("a tag");
     };
     let name = second.name.expect("named");
-    assert!(
-        name.leading.contains("//- trivia"),
+    assert_eq!(
+        (name.leading, name.text),
+        ("\n  //- trivia\n  ", "li"),
         "trivia rides in leading"
     );
 }
