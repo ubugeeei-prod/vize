@@ -13,6 +13,7 @@ mod lean_reference_fixture {
     mod matrix;
     mod models;
     mod schedule;
+    mod slots;
 }
 
 const STATIC_DYNAMIC_SOURCE: &str =

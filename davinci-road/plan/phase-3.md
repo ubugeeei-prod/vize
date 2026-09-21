@@ -9,7 +9,7 @@
 - [x] P3-1 `vize_impeto` crate + phase validator
 - [x] P3-2 Reactivity lattice fact group v1
 - [x] P3-3 S2→S3 lowering + shared partition
-- [ ] P3-4 Lean reference semantics + differential runner
+- [x] P3-4 Lean reference semantics + differential runner
 - [x] P3-5 Impeto op reference doc (before optional passes)
 - [ ] P3-6 Vapor backend on S3
 - [x] P3-7 VDOM patch flags from lattice facts _(owner-keyed table and hydrated DOM corpus gate; see [record](./phase-3-records/p3-7.md))_
@@ -81,8 +81,11 @@ and unmount. _Control/slot slice 2026-09-18:_ both Rust-lowered template fixture
 now share full stateful observations, including boolean condition changes and
 absent-slot fallback `v-text` updates. _Model slice 2026-09-22:_ native
 `v-model` (IME, `.lazy`/`.trim`/`.number`, checkbox/radio/select) shares
-twelve full reference observations with both mounted runtimes. Supplied slots
-remain open; this does not close P3-4.
+twelve full reference observations with both mounted runtimes. _Closed
+2026-09-22:_ supplied slots (static text or displayed slot props, including in
+branches and keyed loops) now share eight full observations too. The mounted
+runner and the Lean reference use one contract across the fixture ladder, the
+TS-29 matrix and the model/slot references (see the record).
 
 **P3-5 Op reference doc.** `davinci-road/plan/impeto-ops.md`: every op's
 meaning under both interpretations, written **before any optional pass

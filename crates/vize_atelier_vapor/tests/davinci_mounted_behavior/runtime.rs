@@ -37,6 +37,37 @@ pub(crate) fn mounted_trace_with_identity(
     experimental_patterned_template: bool,
     identities: bool,
 ) -> Value {
+    run_mounted(
+        backend,
+        source,
+        json!({ "context": context, "steps": steps, "identities": identities }),
+        experimental_patterned_template,
+    )
+}
+
+/// Mounts the template under a parent that supplies `slots`
+/// (`{name: {"text": ...} | {"prop": ...}}`), with identity observations.
+pub(crate) fn mounted_trace_with_slots(
+    backend: &str,
+    source: &str,
+    context: Value,
+    steps: Value,
+    slots: Value,
+) -> Value {
+    run_mounted(
+        backend,
+        source,
+        json!({ "context": context, "steps": steps, "identities": true, "slots": slots }),
+        false,
+    )
+}
+
+fn run_mounted(
+    backend: &str,
+    source: &str,
+    mut input: Value,
+    experimental_patterned_template: bool,
+) -> Value {
     // `vapor-legacy` runs the Vapor runtime over the explicitly retained lane:
     // an empty binding-metadata map selects it without changing any binding.
     let legacy = backend == "vapor-legacy";
@@ -81,7 +112,8 @@ pub(crate) fn mounted_trace_with_identity(
         .stderr(Stdio::piped())
         .spawn()
         .expect("start mounted runtime runner (install workspace JS dependencies first)");
-    let input = json!({ "backend": backend, "code": code, "context": context, "steps": steps, "identities": identities });
+    input["backend"] = json!(backend);
+    input["code"] = json!(code);
     child
         .stdin
         .take()

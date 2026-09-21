@@ -21,6 +21,7 @@ mod davinci_mounted_behavior {
     mod native_control;
     mod native_roots;
     pub(crate) mod runtime;
+    mod slots;
 }
 
 use davinci_mounted_behavior::runtime::{

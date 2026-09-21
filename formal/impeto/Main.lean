@@ -6,6 +6,7 @@ import Impeto.ExpressionTests
 import Impeto.IvmMatrix
 import Impeto.ModelBehavior
 import Impeto.ModelTests
+import Impeto.SlotTests
 import Impeto.LatticeFixture
 import Impeto.ScheduleFixture
 import Impeto.Theorems
@@ -155,6 +156,7 @@ def printBackendTrace (backend : Backend) (folioPath : String) : IO UInt32 := do
 def usage : String :=
   "usage: impetoRef --check-fixtures | --check-backend-fixtures | --check-stateful-fixtures | " ++
     "--check-lattice-fixtures | --check-schedule-fixtures | --write-ivm-matrix | --write-model-reference | " ++
+    "--write-slot-reference | " ++
     "--check <s3.folio> <trace> | --trace <s3.folio> | " ++
     "--trace-vdom <s3.folio> | --trace-vapor <s3.folio>"
 
@@ -181,11 +183,16 @@ def main (args : List String) : IO UInt32 := do
             let code <- IvmMatrix.run false
             if code != 0 then return code
             let code <- IvmMatrix.runMatrix "model-reference" ModelBehavior.run 10 false
-            if code != 0 then pure code else ModelTests.check
+            if code != 0 then return code
+            let code <- ModelTests.check
+            if code != 0 then return code
+            let code <- IvmMatrix.runMatrix "slot-reference" LoopBehavior.run 8 false
+            if code != 0 then pure code else SlotTests.check
   | ["--check-lattice-fixtures"] => LatticeFixture.checkFile "fixtures/reactivity-lattice.folio"
   | ["--check-schedule-fixtures"] => ScheduleFixture.check
   | ["--write-ivm-matrix"] => IvmMatrix.run true
   | ["--write-model-reference"] => IvmMatrix.runMatrix "model-reference" ModelBehavior.run 10 true
+  | ["--write-slot-reference"] => IvmMatrix.runMatrix "slot-reference" LoopBehavior.run 8 true
   | ["--check", folioPath, tracePath] => checkPair folioPath tracePath
   | ["--trace", folioPath] => printTrace folioPath
   | ["--trace-vdom", folioPath] => printBackendTrace .vdom folioPath

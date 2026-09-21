@@ -12,8 +12,10 @@ export async function traceMountedBackend({
   context = {},
   steps = [],
   identities = false,
+  slots = null,
 }) {
   assert.ok(backend === "vdom" || backend === "vapor", `unknown backend: ${backend}`);
+  if (slots !== null) validateSuppliedSlots(slots);
   if (identities) validateLoopScenario(context, steps);
   const window = new Window();
   for (const key of [
@@ -35,17 +37,43 @@ export async function traceMountedBackend({
   const vue = await loadRuntime();
   const render = await evaluateCompiledRender(code, vue);
   const events = [];
+  const suppliedText = (spec, props) =>
+    Object.hasOwn(spec, "text") ? spec.text : vue.toDisplayString(props[spec.prop]);
+  const vdomSlots = Object.fromEntries(
+    Object.entries(slots ?? {}).map(([name, spec]) => [
+      name,
+      (props) => [vue.createTextVNode(suppliedText(spec, props))],
+    ]),
+  );
   const state = vue.reactive({
-    $slots: {},
+    $slots: vdomSlots,
     ...context,
     save: () => events.push("save"),
     saveParent: () => events.push("saveParent"),
     record: (value) => events.push(value),
   });
   const cache = [];
+  const vaporChild = vue.defineVaporComponent({ setup: () => render(state) });
+  // A parent supplies slots the way a caller would; it adds no DOM of its own.
+  const vaporSlots = Object.fromEntries(
+    Object.entries(slots ?? {}).map(([name, spec]) => [
+      name,
+      (props) => {
+        const text = window.document.createTextNode("");
+        vue.renderEffect(() => {
+          text.data = suppliedText(spec, props);
+        });
+        return text;
+      },
+    ]),
+  );
   const component =
     backend === "vapor"
-      ? vue.defineVaporComponent({ setup: () => render(state) })
+      ? slots === null
+        ? vaporChild
+        : vue.defineVaporComponent({
+            setup: () => vue.createComponent(vaporChild, null, vaporSlots),
+          })
       : { setup: () => () => render(state, cache) };
   const app = (backend === "vapor" ? vue.createVaporApp : vue.createApp)(component);
   const diagnostics = [];
@@ -143,6 +171,20 @@ export async function traceMountedBackend({
     if (host.childNodes.length) app.unmount();
     host.remove();
     await window.happyDOM.close();
+  }
+}
+
+/** Supplied slots are static text or one displayed slot prop per name. */
+export function validateSuppliedSlots(slots) {
+  assert.ok(slots !== null && typeof slots === "object" && !Array.isArray(slots), "slots object");
+  for (const [name, spec] of Object.entries(slots)) {
+    assert.match(name, /^[A-Za-z][A-Za-z0-9-]*$/u, "unsupported slot name");
+    const keys = Object.keys(spec ?? {});
+    assert.ok(
+      (keys.length === 1 && keys[0] === "text" && typeof spec.text === "string") ||
+        (keys.length === 1 && keys[0] === "prop" && /^[A-Za-z_$][A-Za-z0-9_$]*$/u.test(spec.prop)),
+      "supplied slots render static text or one prop",
+    );
   }
 }
 

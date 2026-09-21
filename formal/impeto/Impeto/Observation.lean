@@ -121,7 +121,7 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
       | .setEvent => pure ["name", "value", "binding-kind"]
       | .setText => pure (if isTextBinding then ["value", "binding-kind"] else ["text"])
       | .branch => pure ["condition"]
-      | .slotOutlet => pure ["name"]
+      | .slotOutlet => pure ["name", "attribute"]
       | .loop => pure ["for-source", "for-value", "for-key", "for-index"]
       | _ => throw s!"unsupported stateful op#{op.id}"
     if operands.any (fun row => !allowed.contains row.role) then throw "unsupported operand role"
@@ -139,7 +139,8 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
       let kind <- Values.one rows op.id "binding-kind"
       if value.target != kind.target ||
           !program.ops.any (fun target => some target.id == value.target &&
-            target.region == op.region && target.kind == .insertNode) then
+            target.region == op.region && (target.kind == .insertNode ||
+              (target.kind == .slotOutlet && op.kind == .setProp && !isTextBinding))) then
         throw "malformed binding target"
       if !isTextBinding then
         if (<- Values.one rows op.id "name").target != value.target then
@@ -157,9 +158,17 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
         else if row.kind != "js" then throw "unsupported condition"
         else validateExpression row
     if op.kind == .slotOutlet then
-      if children.length != 1 || operands.length != 1 then throw "unsupported slot shape"
+      if children.length != 1 then throw "unsupported slot shape"
       if (<- Values.literal (<- Values.one rows op.id "name")).isEmpty then
         throw "unsupported slot name"
+      let mut props := []
+      for row in operands.filter (·.role == "attribute") do
+        props := props ++ [row.name.getD ""]
+        let _ <- Values.literal row
+      for binding in attached program rows op.id do
+        props := props ++ [<- Values.literal (<- Values.one rows binding.id "name")]
+      if props.any (·.isEmpty) || props.eraseDups.length != props.length then
+        throw "unsupported or duplicate slot prop"
     if op.kind == .loop then Iteration.validate program rows op
 
 def selectedBranch (rows : List Operand) (context : Json) (id : Nat) : Except String (Option Nat) := do
@@ -174,8 +183,28 @@ structure Rendered where
   nodes : List View := []
   buttons : List (Bool × Bool) := []
 
+/-- A slot prop as the outlet passes it: a static attribute or a bound value. -/
+def slotProp (program : Program) (rows : List Operand) (context : Json) (outlet : Op)
+    (prop : String) : Except String Json := do
+  if let some row := (Values.forOp rows outlet.id).find? (fun row =>
+      row.role == "attribute" && row.name == some prop) then
+    return .str (<- Values.literal row)
+  for binding in attached program rows outlet.id do
+    if (<- Values.literal (<- Values.one rows binding.id "name")) == prop then
+      return <- evaluate context (<- Values.one rows binding.id "value")
+  throw s!"supplied slot reads missing prop {prop}"
+
+/-- Supplied slot content: static text, or one displayed slot prop. -/
+def suppliedText (program : Program) (rows : List Operand) (context : Json) (outlet : Op)
+    (spec : Json) : Except String String := do
+  match (<- (spec.getObj?).map (fun fields => fields.toList.map (·.1))) with
+  | ["text"] => (<- spec.getObjVal? "text").getStr?
+  | ["prop"] => display (<- slotProp program rows context outlet (<- (<- spec.getObjVal? "prop").getStr?))
+  | _ => throw "supplied slots render static text or one prop"
+
 def renderRegion (program : Program) (rows : List Operand) (context : Json)
-    (fuel : Nat) (regionId : Nat) (scope : List Json := []) : Except String Rendered := do
+    (fuel : Nat) (regionId : Nat) (scope : List Json := []) (slots : Json := .null) :
+    Except String Rendered := do
   match fuel with
   | 0 => throw "cyclic S3 region graph"
   | fuel + 1 =>
@@ -201,7 +230,7 @@ def renderRegion (program : Program) (rows : List Operand) (context : Json)
             let rendered <- match bindings.filter (textBinding rows) with
               | [] => match child with
                 | none => pure ({} : Rendered)
-                | some child => renderRegion program rows context fuel child.id scope
+                | some child => renderRegion program rows context fuel child.id scope slots
               | [binding] => do
                 if child.any (fun r => program.ops.any (fun op => op.region == r.id)) then
                   throw "unsupported v-text with authored children"
@@ -221,11 +250,20 @@ def renderRegion (program : Program) (rows : List Operand) (context : Json)
             if !textBinding rows op then
               let text <- display (<- evaluate context (<- Values.one rows op.id "text"))
               nodes := View.append nodes (.text text)
-        | .branch | .slotOutlet =>
-            let region <- if op.kind == .branch then selectedBranch rows context op.id
-              else pure ((program.regions.find? (fun r => r.owner == some op.id)).map (·.id))
-            if let some region := region then
-              let rendered <- renderRegion program rows context fuel region scope
+        | .slotOutlet =>
+            let name <- Values.literal (<- Values.one rows op.id "name")
+            match slots.getObjVal? name with
+            | .ok spec => nodes := View.append nodes (.text (<- suppliedText program rows context op spec))
+            | .error _ =>
+                let some region := program.regions.find? (fun r => r.owner == some op.id)
+                  | throw "missing slot fallback"
+                let rendered <- renderRegion program rows context fuel region.id scope slots
+                for node in rendered.nodes do
+                  nodes := View.append nodes node
+                buttons := buttons ++ rendered.buttons
+        | .branch =>
+            if let some region := <- selectedBranch rows context op.id then
+              let rendered <- renderRegion program rows context fuel region scope slots
               for node in rendered.nodes do
                 nodes := View.append nodes node
               buttons := buttons ++ rendered.buttons
@@ -233,7 +271,7 @@ def renderRegion (program : Program) (rows : List Operand) (context : Json)
             let some region := program.regions.find? (fun r => r.owner == some op.id)
               | throw "missing loop body"
             for (identity, context) in (<- Iteration.contexts program rows op context) do
-              let rendered <- renderRegion program rows context fuel region.id (scope ++ [identity])
+              let rendered <- renderRegion program rows context fuel region.id (scope ++ [identity]) slots
               for node in rendered.nodes do
                 nodes := View.append nodes node
               buttons := buttons ++ rendered.buttons
@@ -241,9 +279,10 @@ def renderRegion (program : Program) (rows : List Operand) (context : Json)
         | _ => throw "unsupported stateful op"
       pure { nodes := nodes.reverse, buttons }
 
-def observe (program : Program) (rows : List Operand) (context : Json) : Except String Rendered := do
+def observe (program : Program) (rows : List Operand) (context : Json) (slots : Json := .null) :
+    Except String Rendered := do
   validate program rows
-  renderRegion program rows context (program.regions.length + 1) 0
+  renderRegion program rows context (program.regions.length + 1) 0 [] slots
 
 def render (program : Program) (rows : List Operand) (context : Json) : Except String Json := do
   pure (View.tree (<- observe program rows context).nodes)

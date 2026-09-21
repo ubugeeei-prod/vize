@@ -16,3 +16,4 @@ import Impeto.IvmMatrix
 import Impeto.Model
 import Impeto.ModelBehavior
 import Impeto.ModelTests
+import Impeto.SlotTests
