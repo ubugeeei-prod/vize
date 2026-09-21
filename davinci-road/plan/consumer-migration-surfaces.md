@@ -46,7 +46,7 @@ observational guard for planning only. It does not change rollout state.
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
 | Compiler                   |          1271 |                   873 |               398 |             167 |     407 |            1121 |      724 |           633 |           800 |
-| Linter                     |           380 |                   380 |                 0 |             300 |     303 |             735 |      248 |           395 |           587 |
+| Linter                     |           384 |                   384 |                 0 |             300 |     303 |             739 |      248 |           396 |           588 |
 | Typechecker                |          1062 |                   274 |               788 |             502 |     241 |            1049 |      756 |           596 |           847 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            21 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            71 |
@@ -99,7 +99,7 @@ Scope: lint command plus Patina rule engine. This is a lexical inventory, not a 
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |         380 |             261 |      119 |
+| S0               |         384 |             265 |      119 |
 | old AST/parser   |         258 |             218 |       40 |
 | Croquis analysis |          42 |              37 |        5 |
 | raw OXC          |         303 |             219 |       84 |
@@ -114,7 +114,7 @@ Scope: lint command plus Patina rule engine. This is a lexical inventory, not a 
 | `crates/vize_patina/Cargo.toml:13`                                   | manifest | S0 1<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 6 |    10 |
 | `crates/vize_patina/src/rules/script/no_ref_as_operand.rs:29`        | source   | S0 1<br>raw OXC 9                                           |    10 |
 
-Additional source/manifest rows are in the TSV: 325 omitted.
+Additional source/manifest rows are in the TSV: 326 omitted.
 
 #### Top test/dev files
 
