@@ -223,6 +223,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 
 | item                                         | consuming crate     | files | sites |
 | -------------------------------------------- | ------------------- | ----: | ----: |
+| `ArtDefinition`                              | `vize_musea`        |     1 |     1 |
 | `BindingType`                                | `vize_atelier_core` |     1 |    11 |
 | `BindingType`                                | `vize_atelier_sfc`  |    17 |   131 |
 | `BindingType`                                | `vize_canon`        |    10 |    25 |
@@ -230,6 +231,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `BlockLocation`                              | `vize_atelier_sfc`  |     4 |     5 |
 | `BlockLocation`                              | `vize_glyph`        |     1 |     3 |
 | `BlockLocation`                              | `vize_maestro`      |     2 |     2 |
+| `BlockLocation`                              | `vize_musea`        |     1 |     3 |
 | `BlockLocation`                              | `vize_patina`       |     1 |     2 |
 | `DEFINE_EMITS`                               | `vize_atelier_sfc`  |     1 |     2 |
 | `DEFINE_EMITS`                               | `vize_canon`        |     1 |     1 |
@@ -290,6 +292,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `SfcDescriptor`                              | `vize_vitrine`      |     3 |     3 |
 | `SfcError`                                   | `vize_atelier_sfc`  |    20 |    57 |
 | `SfcError`                                   | `vize_canon`        |     2 |     2 |
+| `SfcError`                                   | `vize_musea`        |     1 |     1 |
 | `SfcError`                                   | `vize_patina`       |     1 |     2 |
 | `SfcParseOptions`                            | `vize`              |     9 |    12 |
 | `SfcParseOptions`                            | `vize_atelier_sfc`  |    14 |   105 |
@@ -297,13 +300,16 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `SfcParseOptions`                            | `vize_curator`      |     3 |     3 |
 | `SfcParseOptions`                            | `vize_glyph`        |     1 |     1 |
 | `SfcParseOptions`                            | `vize_maestro`      |     1 |     1 |
+| `SfcParseOptions`                            | `vize_musea`        |     1 |     1 |
 | `SfcParseOptions`                            | `vize_patina`       |     9 |    10 |
 | `SfcParseOptions`                            | `vize_vitrine`      |     9 |    14 |
 | `SfcScriptBlock`                             | `vize_atelier_sfc`  |     1 |     1 |
 | `SfcScriptBlock`                             | `vize_curator`      |     1 |     1 |
 | `SfcScriptBlock`                             | `vize_maestro`      |     3 |     6 |
+| `SfcScriptBlock`                             | `vize_musea`        |     1 |     1 |
 | `SfcStyleBlock`                              | `vize_atelier_sfc`  |     5 |     7 |
 | `SfcStyleBlock`                              | `vize_maestro`      |     2 |     8 |
+| `SfcStyleBlock`                              | `vize_musea`        |     1 |     1 |
 | `SfcTemplateBlock`                           | `vize_atelier_sfc`  |     5 |     6 |
 | `SfcTemplateBlock`                           | `vize_canon`        |     2 |     2 |
 | `ViolationSeverity`                          | `vize_canon`        |     1 |     3 |
@@ -347,6 +353,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `is_vue_builtin`                             | `vize_canon`        |     1 |     1 |
 | `macro_artifact_kind`                        | `vize_atelier_sfc`  |     1 |     3 |
 | `names_match`                                | `vize_patina`       |     3 |     3 |
+| `parse_define_art`                           | `vize_musea`        |     1 |     1 |
 | `parse_program_for_analysis`                 | `vize_canon`        |     4 |     7 |
 | `parse_script_setup`                         | `vize_atelier_sfc`  |     1 |     2 |
 | `parse_script_setup`                         | `vize_maestro`      |     2 |     4 |
@@ -356,6 +363,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `parse_script_with_options`                  | `vize_patina`       |     1 |     1 |
 | `parse_script_with_options_and_jsx`          | `vize_atelier_sfc`  |     1 |     1 |
 | `parse_sfc`                                  | `vize_atelier_sfc`  |     1 |     1 |
+| `parse_sfc`                                  | `vize_musea`        |     1 |     1 |
 | `parse_v_for_expression`                     | `vize_patina`       |     1 |     1 |
 | `prod_scoped_v_bind_name`                    | `vize_atelier_sfc`  |     1 |     1 |
 | `runtime_erased_macro_names`                 | `vize_atelier_sfc`  |     3 |     5 |
@@ -395,7 +403,7 @@ The naive lane counts raw word-boundary text matches per product name (`\.field`
 | `PassedProp`                           |       44 |   66 | `vize_canon` (23/34), `vize_croquis_cf` (17/25), `vize_maestro` (4/7)                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `ProvideInjectTracker`                 |        0 |    1 | `vize_croquis_cf` (0/1)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `ReactivityTracker`                    |        1 |    4 | `vize_atelier_core` (0/1), `vize_atelier_sfc` (0/1), `vize_vitrine` (1/2)                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `Scope`                                |       27 |  104 | `vize` (0/1), `vize_atelier_core` (0/4), `vize_atelier_dom` (0/1), `vize_atelier_jsx` (0/1), `vize_atelier_sfc` (0/5), `vize_atelier_ssr` (0/3), `vize_canon` (25/58), `vize_davinci` (0/1), `vize_maestro` (0/3), `vize_patina` (2/19), `vize_relief` (0/3), `vize_s1_to_s2` (0/2), `vize_s2` (0/1), `vize_vitrine` (0/2)                                                                                                                                                                                                  |
+| `Scope`                                |       27 |  105 | `vize` (0/1), `vize_atelier_core` (0/4), `vize_atelier_dom` (0/1), `vize_atelier_jsx` (0/1), `vize_atelier_sfc` (0/5), `vize_atelier_ssr` (0/3), `vize_canon` (25/58), `vize_davinci` (0/1), `vize_maestro` (0/3), `vize_musea` (0/1), `vize_patina` (2/19), `vize_relief` (0/3), `vize_s1_to_s2` (0/2), `vize_s2` (0/1), `vize_vitrine` (0/2)                                                                                                                                                                              |
 | `ScopeBinding`                         |        2 |   28 | `vize_atelier_core` (1/2), `vize_atelier_jsx` (0/4), `vize_maestro` (1/2), `vize_s1_to_s2` (0/11), `vize_s2` (0/9)                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `ScopeChain`                           |        9 |   13 | `vize_atelier_core` (2/3), `vize_canon` (7/9), `vize_s1_to_s2` (0/1)                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `ScopeData`                            |       53 |   76 | `vize_canon` (35/53), `vize_maestro` (8/11), `vize_patina` (2/4)                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
