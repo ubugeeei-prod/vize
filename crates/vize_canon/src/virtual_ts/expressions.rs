@@ -17,6 +17,7 @@ mod directive_values;
 mod directive_values_tests;
 mod dynamic_arguments;
 mod generic_props_call;
+mod model_update;
 mod native_props;
 #[cfg(test)]
 mod native_props_tests;

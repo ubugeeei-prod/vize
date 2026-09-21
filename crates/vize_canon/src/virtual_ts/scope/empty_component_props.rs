@@ -163,7 +163,8 @@ pub(super) fn generate_scope_checks(
                 ctx.template_binding_access,
                 ctx.source_context,
                 indent,
-            );
+            )
+            .strict_v_model(ctx.strict_v_model);
             generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str());
             generate_component_slot_checks(
                 &mut check_context,

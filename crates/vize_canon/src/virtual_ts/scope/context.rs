@@ -116,6 +116,7 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) source_context: ComponentPropSource<'a>,
     pub(crate) preserve_event_navigation: bool,
     pub(crate) check_unknown_events: bool,
+    pub(crate) strict_v_model: bool,
     pub(crate) experimental_strict_slot_children: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
 }
@@ -161,6 +162,7 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) options: &'a VirtualTsOptions,
     pub(super) preserve_event_navigation: bool,
     pub(super) check_unknown_events: bool,
+    pub(super) strict_v_model: bool,
     pub(super) component_binding_check: ComponentBindingCheck<'a>,
     pub(super) legacy_vue2: bool,
     pub(super) check_unknown_props: bool,

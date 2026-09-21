@@ -94,6 +94,11 @@ pub fn process_call_expression(
                     }
                 })
                 .unwrap_or("modelValue");
+            // The prop a model declares is camelized, as every Vue prop is:
+            // `defineModel('g-g')` is read as `$props.gG` and updated through
+            // `update:gG`.
+            let model_name = vize_carton::camelize(model_name);
+            let model_name = model_name.as_str();
             let declaration = call
                 .arguments
                 .first()

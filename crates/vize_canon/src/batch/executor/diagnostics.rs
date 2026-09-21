@@ -14,6 +14,7 @@ mod lsp;
 mod module_specifier;
 mod patterns;
 mod skip_rules;
+pub(super) mod template_instance;
 mod virtual_path_message;
 
 pub(super) use dedup::dedup_diagnostics;

@@ -1,6 +1,6 @@
 use super::{
     DiagnosticMapper, parse_diagnostic_code, parse_severity, should_skip_diagnostic,
-    should_skip_original_diagnostic,
+    should_skip_original_diagnostic, template_instance::template_instance_diagnostic,
 };
 use crate::batch::Diagnostic;
 use crate::corsa_client::LspDiagnostic;
@@ -38,22 +38,28 @@ impl DiagnosticMapper<'_> {
         }
 
         if let Some(original) = original {
+            let severity = if self.is_unreachable_pattern(
+                virtual_path,
+                diagnostic.range.start.line,
+                diagnostic.range.start.character,
+                code,
+            ) {
+                2
+            } else {
+                parse_severity(diagnostic.severity)
+            };
+            let (code, message) =
+                match template_instance_diagnostic(code, &original, &diagnostic.message) {
+                    Some((code, message)) => (Some(code), message),
+                    None => (code, diagnostic.message),
+                };
             return Some(Diagnostic {
-                message: self.authored_message(&original, diagnostic.message),
+                message: self.authored_message(&original, message),
                 line: original.line,
                 column: original.column,
                 file: original.path,
                 code,
-                severity: if self.is_unreachable_pattern(
-                    virtual_path,
-                    diagnostic.range.start.line,
-                    diagnostic.range.start.character,
-                    code,
-                ) {
-                    2
-                } else {
-                    parse_severity(diagnostic.severity)
-                },
+                severity,
                 block_type: original.block_type,
             });
         }

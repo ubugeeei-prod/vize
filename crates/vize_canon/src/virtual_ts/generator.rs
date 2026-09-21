@@ -9,9 +9,11 @@ mod fallthrough;
 mod file_directives;
 pub(super) mod generics;
 mod global_components;
+mod glued_import;
 mod imports;
 mod legacy_vue2;
 mod macro_anchors;
+mod module_statements;
 mod options_api;
 mod options_api_bridge;
 mod options_api_props_identifiers;
@@ -41,7 +43,7 @@ pub use self::entry::{
     generate_virtual_ts_with_offsets_options_api,
 };
 pub(crate) use self::fallthrough::fallthrough_component_root_starts;
-use self::generics::{HoistedGenericAliases, generic_injection_point, references_any_identifier};
+use self::generics::HoistedGenericAliases;
 use self::global_components::{GlobalComponentDiagnostics, GlobalComponentPlan};
 use self::imports::{
     collect_imported_names, emit_reference_path_directives, emit_reference_type_directives,
@@ -191,6 +193,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         let module_spans = module_plan.module_spans(summary, &namespace_hoist);
         script_blocks.module_spans(summary, script_content, module_spans)
     });
+    let glued_import = glued_import::GluedImportSection::plan(
+        script_content,
+        generation_options.split_script_setup_offsets,
+        &mut module_spans,
+    );
     let mut ambient =
         script_blocks::AmbientProjection::plan(summary, script_content, &mut module_spans);
 
@@ -212,52 +219,33 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         profile!("canon.virtual_ts.emit_module_statements", {
             // Emit each module-level statement with source mapping
             for &(start, end) in &module_spans {
-                if ambient.emit_module_statement(
+                let span = (start, end);
+                if glued_import::GluedImportSection::emit(
+                    glued_import.as_ref(),
+                    span,
                     &mut ts,
                     &mut mappings,
                     script,
-                    (start, end),
+                    &script_source_offset,
+                ) || ambient.emit_module_statement(
+                    &mut ts,
+                    &mut mappings,
+                    script,
+                    span,
                     script_source_offset,
                 ) {
                     continue;
                 }
                 let text = &script[start as usize..end as usize];
 
-                // Splice the SFC generic parameters into a hoisted
-                // type/interface declaration that references them, so the
-                // reference resolves at module scope.
-                if let Some((defaults, names)) = &generic_injection
-                    && let Some(type_name) = hoisted_type_spans.get(&(start, end))
-                    && references_any_identifier(text, names)
-                    && let Some(inject_at) = generic_injection_point(text, type_name)
-                {
-                    let (prefix, suffix) = text.split_at(inject_at);
-                    let src_base = script_source_offset(start as usize);
-
-                    let gen_start = ts.len();
-                    ts.push_str(prefix);
-                    mappings.push(VizeMapping {
-                        gen_range: gen_start..ts.len(),
-                        src_range: src_base..(src_base + prefix.len()),
-                        sub_spans: Vec::new(),
-                    });
-
-                    // Synthetic parameter list; no corresponding source span.
-                    append!(ts, "<{defaults}>");
-                    // Avoid forming `>=` when the alias has no space before `=`.
-                    if suffix.starts_with('=') {
-                        ts.push(' ');
-                    }
-
-                    let gen_start = ts.len();
-                    ts.push_str(suffix);
-                    mappings.push(VizeMapping {
-                        gen_range: gen_start..ts.len(),
-                        src_range: (src_base + prefix.len())
-                            ..(src_base + prefix.len() + suffix.len()),
-                        sub_spans: Vec::new(),
-                    });
-                    ts.push('\n');
+                if module_statements::emit_generic_injected(
+                    &mut ts,
+                    &mut mappings,
+                    text,
+                    script_source_offset(start as usize),
+                    generic_injection.as_ref(),
+                    hoisted_type_spans.get(&span).copied(),
+                ) {
                     continue;
                 }
 

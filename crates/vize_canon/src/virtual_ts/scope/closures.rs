@@ -178,6 +178,7 @@ pub(crate) fn generate_scope_closures(
         options: virtual_ts_options,
         preserve_event_navigation: options.preserve_event_navigation,
         check_unknown_events: check_options.check_unknown_events && check_options.check_emits,
+        strict_v_model: check_options.strict_v_model && check_options.check_emits,
         component_binding_check: options.component_binding_check,
         legacy_vue2: options.legacy_vue2,
         check_unknown_props: check_options.check_unknown_props,

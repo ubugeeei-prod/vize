@@ -185,7 +185,8 @@ pub(super) fn generate_component_props(
                 ctx.template_binding_access,
                 ctx.source_context(),
                 "  ",
-            );
+            )
+            .strict_v_model(ctx.strict_v_model);
             generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
         });
         profile!("canon.virtual_ts.component_slot_checks", {
@@ -225,6 +226,7 @@ pub(super) fn generate_component_props(
             source_context: ctx.source_context(),
             preserve_event_navigation: ctx.preserve_event_navigation,
             check_unknown_events: ctx.check_unknown_events,
+            strict_v_model: ctx.strict_v_model,
             experimental_strict_slot_children: ctx.experimental_strict_slot_children,
             explicit_generics: ctx.explicit_generics,
         };

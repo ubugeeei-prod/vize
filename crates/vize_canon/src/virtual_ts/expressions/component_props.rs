@@ -54,6 +54,7 @@ pub(crate) struct ComponentPropCheckContext<'a, 'b> {
     pub(crate) template_binding_access: &'a TemplateBindingAccess,
     pub(crate) source_context: ComponentPropSource<'a>,
     pub(crate) indent: &'b str,
+    pub(crate) strict_v_model: bool,
 }
 
 impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
@@ -70,7 +71,14 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
             template_binding_access,
             source_context,
             indent,
+            strict_v_model: false,
         }
+    }
+
+    /// Also check what a `v-model` writes back (`strictVModel`).
+    pub(crate) fn strict_v_model(mut self, enabled: bool) -> Self {
+        self.strict_v_model = enabled;
+        self
     }
 }
 
@@ -119,6 +127,7 @@ pub(crate) fn generate_component_prop_checks(
     let template_binding_access = ctx.template_binding_access;
     let source_context = ctx.source_context;
     let indent = ctx.indent;
+    let strict_v_model = ctx.strict_v_model;
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     let has_inline_callback = usage
         .props
@@ -235,7 +244,7 @@ pub(crate) fn generate_component_prop_checks(
                     src_range,
                 });
             }
-            if let Some(src_range) = value_src_range {
+            if let Some(src_range) = value_src_range.clone() {
                 sub_spans.push(VizeSubSpan {
                     gen_range: value_gen_range,
                     src_range,
@@ -246,6 +255,20 @@ pub(crate) fn generate_component_prop_checks(
                 src_range: prop_src_start..prop_src_end,
                 sub_spans,
             });
+            if strict_v_model
+                && super::model_update::is_model_prop(usage, prop)
+                && let Some(target_source) = value_src_range
+            {
+                super::model_update::append_model_update_check(
+                    ts,
+                    mappings,
+                    (component_type_name.as_str(), idx),
+                    prop,
+                    generated_value.as_str(),
+                    target_source,
+                    expr_indent.as_str(),
+                );
+            }
 
             if !grouped_guard && usage.vif_guard.is_some() {
                 append!(*ts, "{indent}}}\n");
