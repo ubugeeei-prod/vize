@@ -2,7 +2,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+use vize_davinci::diagnostic::{Diagnostic, Stage};
 use vize_davinci::id::NodeId;
 use vize_s0::String;
 use vize_s2::op::ModelOp;
@@ -37,8 +37,8 @@ pub(super) fn check_model(
             "error.v-model-arg-on-element",
         )
     };
-    channels.diagnostics.push(Diagnostic::new(
-        Severity::Error,
+    channels.diagnostics.push(Diagnostic::legacy_error(
+        &crate::exemptions::V_MODEL,
         Stage::Semantic,
         model.span,
         String::from(message),

@@ -92,41 +92,11 @@ impl EscapeKind {
 }
 
 /// Epistemic axis for a lattice classification.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Verdict {
-    Proven,
-    Refuted,
-    Unknown,
-}
-
-impl Verdict {
-    /// Stable folio spelling.
-    #[must_use]
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Proven => "proven",
-            Self::Refuted => "refuted",
-            Self::Unknown => "unknown",
-        }
-    }
-
-    /// Parse the stable folio spelling.
-    #[must_use]
-    pub const fn from_str(value: &str) -> Option<Self> {
-        match value.as_bytes() {
-            b"proven" => Some(Self::Proven),
-            b"refuted" => Some(Self::Refuted),
-            b"unknown" => Some(Self::Unknown),
-            _ => None,
-        }
-    }
-
-    /// Whether a consumer may use the value as proof.
-    #[must_use]
-    pub const fn is_proven(self) -> bool {
-        matches!(self, Self::Proven)
-    }
-}
+///
+/// One axis for every fact group: P4-6a moved the type into
+/// `vize_davinci::diagnostic` so witnesses and the verifier share it, and the
+/// lattice re-exports it with its folio spellings unchanged.
+pub use vize_davinci::diagnostic::Verdict;
 
 /// Summary provided by the retained-AST analyzer.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

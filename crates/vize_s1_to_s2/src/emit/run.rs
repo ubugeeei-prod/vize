@@ -64,7 +64,7 @@ pub(super) fn emit_dom_observed<'f>(
     if lowered
         .diagnostics
         .iter()
-        .any(|diagnostic| diagnostic.severity == Severity::Error)
+        .any(|diagnostic| diagnostic.severity() == Severity::Error)
     {
         return Err(EmitError::Diagnostics);
     }

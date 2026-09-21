@@ -10,6 +10,7 @@ mod support;
 use vize_davinci::diagnostic::{Severity, Stage};
 use vize_davinci::id::NodeId;
 use vize_s0::Span;
+use vize_s1_to_s2::exemptions;
 use vize_s1_to_s2::pass::{BranchKey, BranchKeyKind, vif};
 
 use support::{assert_transformed_sound, with_lowered, with_transformed};
@@ -131,7 +132,8 @@ fn duplicate_authored_keys_flag_every_later_branch_exactly() {
     with_transformed(source, |lowered, _, _, _| {
         assert_eq!(lowered.diagnostics.len(), 2, "branches 1 and 2 collide");
         for (diagnostic, occurrence) in lowered.diagnostics.iter().zip([1usize, 2]) {
-            assert_eq!(diagnostic.severity, Severity::Error);
+            assert_eq!(diagnostic.severity(), Severity::Error);
+            assert_eq!(diagnostic.exemption(), Some(&exemptions::LOWERING));
             assert_eq!(diagnostic.stage, Stage::Semantic);
             assert_eq!(diagnostic.message.as_str(), vif::SAME_KEY_MESSAGE);
             assert_eq!(diagnostic.span, span_of(source, r#"key="dup""#, occurrence));
