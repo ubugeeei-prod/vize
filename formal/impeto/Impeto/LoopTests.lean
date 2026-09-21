@@ -47,7 +47,8 @@ def negativeTests (program : Program) (rows : List Operand) (script : Json) : Ex
   expectError "duplicate key" (LoopBehavior.run program rows (script
     |>.setObjVal! "context" (context.setObjVal! "items" (.arr #[item, item]))
     |>.setObjVal! "steps" (.arr #[])))
-  for source in [.null, .bool false, .str "abc", Json.mkObj []] do
+  for source in [.null, .bool false, .str "abc", .num (-1), 1001,
+      Json.mkObj [("0", .str "index-like")]] do
     expectError "non-array source" (LoopBehavior.run program rows (script
       |>.setObjVal! "context" (context.setObjVal! "items" source)
       |>.setObjVal! "steps" (.arr #[])))

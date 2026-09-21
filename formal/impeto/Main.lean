@@ -2,6 +2,8 @@ import Impeto
 import Impeto.BehaviorTests
 import Impeto.ControlTests
 import Impeto.LoopTests
+import Impeto.ExpressionTests
+import Impeto.IvmMatrix
 import Impeto.LatticeFixture
 import Impeto.ScheduleFixture
 import Impeto.Theorems
@@ -150,7 +152,7 @@ def printBackendTrace (backend : Backend) (folioPath : String) : IO UInt32 := do
 
 def usage : String :=
   "usage: impetoRef --check-fixtures | --check-backend-fixtures | --check-stateful-fixtures | " ++
-    "--check-lattice-fixtures | --check-schedule-fixtures | " ++
+    "--check-lattice-fixtures | --check-schedule-fixtures | --write-ivm-matrix | " ++
     "--check <s3.folio> <trace> | --trace <s3.folio> | " ++
     "--trace-vdom <s3.folio> | --trace-vapor <s3.folio>"
 
@@ -159,6 +161,8 @@ def main (args : List String) : IO UInt32 := do
   | ["--check-fixtures"] => checkFixtures fixtures
   | ["--check-backend-fixtures"] => checkBackendFixtures fixtures
   | ["--check-stateful-fixtures"] =>
+      let code <- ExpressionTests.check
+      if code != 0 then return code
       let code <- BehaviorTests.check
       if code != 0 then pure code
       else
@@ -168,9 +172,13 @@ def main (args : List String) : IO UInt32 := do
         if code != 0 then pure code
         else
           let code <- Behavior.check "fixtures/rust-lowered-control-slots"
-          if code != 0 then pure code else LoopTests.check
+          if code != 0 then pure code
+          else
+            let code <- LoopTests.check
+            if code != 0 then pure code else IvmMatrix.run false
   | ["--check-lattice-fixtures"] => LatticeFixture.checkFile "fixtures/reactivity-lattice.folio"
   | ["--check-schedule-fixtures"] => ScheduleFixture.check
+  | ["--write-ivm-matrix"] => IvmMatrix.run true
   | ["--check", folioPath, tracePath] => checkPair folioPath tracePath
   | ["--trace", folioPath] => printTrace folioPath
   | ["--trace-vdom", folioPath] => printBackendTrace .vdom folioPath

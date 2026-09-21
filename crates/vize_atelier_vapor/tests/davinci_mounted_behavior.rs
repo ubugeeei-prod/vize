@@ -16,6 +16,7 @@ mod davinci_mounted_behavior {
     mod control;
     mod events;
     mod loops;
+    mod loops_matrix;
     mod native_control;
     mod native_roots;
     pub(crate) mod runtime;
