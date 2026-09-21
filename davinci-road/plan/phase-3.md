@@ -167,8 +167,11 @@ in favor of the simpler shape) — under a decrementing per-component budget;
 applied/missed; no output regression (TS-11/TS-33).
 _First slice 2026-09-13:_ see
 [P3-10 record](./phase-3-records/p3-10.md) for the task-start budget pin,
-zero-epsilon metric policy, and `-O0` through `-O3` candidate budgets. The S3
-placement alternatives and extraction pass remain open.
+zero-epsilon metric policy, and `-O0` through `-O3` candidate budgets.
+_Placement slice 2026-09-21:_ hoist/cache/group alternatives are an explicit,
+`S3V010`-verified overlay on S3 ops with a companion Folio page; the graph and
+exported partition stay canonical. The extraction pass, decision snapshots,
+remarks, and backend consumption remain open.
 
 **P3-11 IVM oracle.** Incremental-update ≡ from-scratch render on the Lean
 reference for keyed/unkeyed `v-for`, conditional toggles, mixed non-linear

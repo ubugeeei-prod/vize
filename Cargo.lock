@@ -4114,6 +4114,7 @@ dependencies = [
 name = "vize_s2_to_s3"
 version = "0.425.1"
 dependencies = [
+ "davinci_test_support",
  "insta",
  "vize_carton",
  "vize_davinci",

@@ -15,6 +15,7 @@ vize_s2 = { workspace = true }
 vize_s3 = { workspace = true }
 
 [dev-dependencies]
+davinci_test_support = { workspace = true }
 insta = { workspace = true }
 vize_davinci = { workspace = true }
 vize_s1 = { workspace = true }

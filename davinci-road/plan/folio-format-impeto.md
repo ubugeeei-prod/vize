@@ -57,3 +57,20 @@ fact only when the verdict is `proven`. `origin` is one of `local`, `prop`,
 from the P3-2 effect vocabulary: `freeze`, `capture`, `read-prop`,
 `read-reactive`, `mutate-local`, `mutate-global`, `call-unknown`, and
 `allocate`.
+
+## S3 Placement Folio
+
+P3-10 adds `vize_impeto::placement::S3PlacementFolio`, a derived page named
+`[s3-placement-folio]`. Placements are an overlay, so they print on their own
+page and the graph grammar the Lean reference parses stays unchanged.
+
+| section                           | entry grammar                                                    |
+| --------------------------------- | ---------------------------------------------------------------- |
+| `[s3-placement-folio.placements]` | `op=<n> alternatives=<list\|-> leader=<n\|-> chosen=<placement>` |
+
+`placement` is one of `inline`, `hoist`, `cache`, or `group`. `alternatives`
+lists placements comma-separated in that order without repeats; parsing
+rejects any other order so printing stays injective. Records appear in program
+op order. Parsing checks syntax only: whether a record is legal for its program
+is `S3V010`'s call. `crates/vize_impeto/tests/placement_folio.rs` pins the
+TS-16 laws and the exact parse errors.

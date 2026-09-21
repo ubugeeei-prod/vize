@@ -2,6 +2,7 @@ use vize_s0::{Allocator, Span, Vec};
 
 use super::{EffectId, OpId, OpKind, Phase, Region, RegionId, StateEdge};
 use crate::operand::Operand;
+use crate::placement::PlacementRecord;
 
 /// One flat Impeto operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -53,6 +54,9 @@ pub struct Program<'a> {
     pub effects: Vec<'a, EffectScope>,
     /// Executable value information, addressed by operation and region ids.
     pub operands: Vec<'a, Operand<'a>>,
+    /// Placement alternatives and committed choices, in op order. Empty means
+    /// every op keeps the canonical inline shape.
+    pub placements: Vec<'a, PlacementRecord>,
 }
 
 impl<'a> Program<'a> {
@@ -66,6 +70,7 @@ impl<'a> Program<'a> {
             edges: Vec::new_in(&allocator),
             effects: Vec::new_in(&allocator),
             operands: Vec::new_in(&allocator),
+            placements: Vec::new_in(&allocator),
         }
     }
 

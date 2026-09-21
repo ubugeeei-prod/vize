@@ -5,7 +5,8 @@
 // This extends the S1 -> S2 totality target through the Impeto bridge. Arbitrary
 // UTF-8 must produce either a verified S3 program and partition facts or typed
 // diagnostics from earlier stages; it must not panic. When S3 is emitted, the
-// canonical Folio print must re-parse exactly.
+// canonical Folio print must re-parse exactly. P3-10 placement annotation must
+// verify, leave the graph page byte-identical, and round-trip its own page.
 use libfuzzer_sys::fuzz_target;
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_s0::{Allocator, SourceRoot, Span};
@@ -13,6 +14,7 @@ use vize_s1::parse;
 use vize_s1_to_s2::lower as lower_s1_to_s2;
 use vize_s2_to_s3::{Lowered, PartitionKind, lower as lower_s2_to_s3};
 use vize_s3::folio::S3Folio;
+use vize_s3::placement::{S3PlacementFolio, annotate};
 use vize_s3::verify::verify;
 
 fuzz_target!(|data: &[u8]| {
@@ -27,7 +29,7 @@ fuzz_target!(|data: &[u8]| {
     let root = SourceRoot::new(source).expect("the fuzz target rejects u32-overflowing sources");
     let (tree, errors) = parse(&allocator, source);
     let s2 = lower_s1_to_s2(&allocator, &tree, &errors);
-    let lowered = lower_s2_to_s3(&allocator, &s2.root);
+    let mut lowered = lower_s2_to_s3(&allocator, &s2.root);
 
     assert_eq!(verify(&lowered.program), vec![]);
     assert_spans_resolve(root, &lowered);
@@ -37,6 +39,14 @@ fuzz_target!(|data: &[u8]| {
     let printed = folio.print_to_string(FolioMode::Full);
     let reparsed = S3Folio::parse(printed.as_str()).expect("canonical print must re-parse");
     assert_eq!(reparsed, folio);
+
+    annotate(&mut lowered.program);
+    assert_eq!(verify(&lowered.program), vec![]);
+    assert_eq!(S3Folio::of(&lowered.program), folio);
+    assert_partition_matches_program(&lowered);
+    let placements = S3PlacementFolio::of(&lowered.program);
+    let printed = placements.print_to_string(FolioMode::Full);
+    assert_eq!(S3PlacementFolio::parse(printed.as_str()), Ok(placements));
 });
 
 fn assert_spans_resolve(root: SourceRoot<'_>, lowered: &Lowered<'_>) {

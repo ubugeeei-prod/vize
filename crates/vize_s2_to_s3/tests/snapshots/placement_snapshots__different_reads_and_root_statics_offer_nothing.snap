@@ -1,0 +1,30 @@
+---
+source: crates/vize_s2_to_s3/tests/placement_snapshots.rs
+expression: "snapshot(r#\"<main class=\"shell\"><h1>Title</h1><p :lang=\"locale\">{{ label }}</p></main>\"#)"
+---
+[s3-folio]
+phase=built
+
+[s3-folio.regions]
+id=0 parent=- owner=- span=0:74
+id=1 parent=0 owner=0 span=20:67
+id=2 parent=1 owner=1 span=24:29
+id=3 parent=1 owner=3 span=52:63
+
+[s3-folio.ops]
+id=0 kind=impeto.insert-node region=0 effect=- span=0:74
+id=1 kind=impeto.insert-node region=1 effect=- span=20:34
+id=2 kind=impeto.set-text region=2 effect=- span=24:29
+id=3 kind=impeto.insert-node region=1 effect=- span=34:67
+id=4 kind=impeto.set-prop region=1 effect=0 span=37:51
+id=5 kind=impeto.set-text region=3 effect=1 span=52:63
+
+[s3-folio.edges]
+from=4 to=5 kind=effect-order effect=-
+from=1 to=3 kind=dom-order effect=-
+
+[s3-folio.effects]
+id=0 owner=4 region=1 span=37:51
+id=1 owner=5 region=3 span=52:63
+
+[s3-placement-folio]

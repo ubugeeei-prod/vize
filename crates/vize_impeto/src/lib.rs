@@ -15,6 +15,9 @@
 //! validated, and replayed on the same portability lane as the earlier Davinci
 //! stage libraries.
 //!
+//! Placement alternatives (hoist / cache / inline / group) are an explicit
+//! overlay on the op graph; see [`placement`].
+//!
 //! The operation semantics review point lives in
 //! [`davinci-road/plan/impeto-ops.md`](../../../davinci-road/plan/impeto-ops.md)
 //! and is kept in sync with [`op::OpKind`] plus the Lean reference runner.
@@ -27,6 +30,7 @@ pub mod folio;
 pub mod lattice;
 pub mod op;
 pub mod operand;
+pub mod placement;
 pub mod trace;
 pub mod values_folio;
 pub mod verify;

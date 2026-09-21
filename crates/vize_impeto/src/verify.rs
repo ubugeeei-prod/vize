@@ -5,9 +5,8 @@
 //! inference and no repair. Invalid S3 is rejected exactly where it stands.
 
 use alloc::vec::Vec;
-use core::fmt;
 
-use vize_s0::{Span, String, cstr};
+use vize_s0::{Span, cstr};
 
 use crate::op::{Phase, Program, RegionId};
 use lookup::{
@@ -17,63 +16,10 @@ use lookup::{
 
 mod lookup;
 mod operands;
+mod placement;
+mod violation;
 
-/// Which invariant a [`Violation`] reports.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ViolationCode {
-    DuplicateId,
-    RootRegion,
-    OpRegion,
-    EdgeEndpoint,
-    RegionResolution,
-    RegionNesting,
-    EffectScope,
-    ScheduledOrder,
-    Operand,
-}
-
-impl ViolationCode {
-    /// Stable rendering code.
-    #[must_use]
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::DuplicateId => "S3V001",
-            Self::RootRegion => "S3V002",
-            Self::OpRegion => "S3V003",
-            Self::EdgeEndpoint => "S3V004",
-            Self::RegionResolution => "S3V005",
-            Self::RegionNesting => "S3V006",
-            Self::EffectScope => "S3V007",
-            Self::ScheduledOrder => "S3V008",
-            Self::Operand => "S3V009",
-        }
-    }
-}
-
-/// One rejected invariant.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Violation {
-    pub code: ViolationCode,
-    pub span: Span,
-    pub message: String,
-}
-
-impl fmt::Display for Violation {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{} @{}:{} {}",
-            self.code.as_str(),
-            self.span.start,
-            self.span.end,
-            self.message
-        )
-    }
-}
-
-const _: () = assert!(size_of::<ViolationCode>() == 1);
-#[cfg(target_pointer_width = "64")]
-const _: () = assert!(size_of::<Violation>() == 40);
+pub use violation::{Violation, ViolationCode};
 
 /// Validate all invariants required by the artifact's current phase.
 #[must_use]
@@ -86,6 +32,7 @@ pub fn verify(program: &Program<'_>) -> Vec<Violation> {
     check_effects(program, &mut out);
     check_edges(program, &mut out);
     operands::check(program, &mut out);
+    placement::check(program, &mut out);
     out
 }
 

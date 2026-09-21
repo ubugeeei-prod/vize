@@ -1,0 +1,27 @@
+---
+source: crates/vize_s2_to_s3/tests/placement_snapshots.rs
+expression: "snapshot(r#\"<div :title=\"msg\">{{ msg }}</div>\"#)"
+---
+[s3-folio]
+phase=built
+
+[s3-folio.regions]
+id=0 parent=- owner=- span=0:33
+id=1 parent=0 owner=0 span=18:27
+
+[s3-folio.ops]
+id=0 kind=impeto.insert-node region=0 effect=- span=0:33
+id=1 kind=impeto.set-prop region=0 effect=0 span=5:17
+id=2 kind=impeto.set-text region=1 effect=1 span=18:27
+
+[s3-folio.edges]
+from=1 to=2 kind=effect-order effect=-
+
+[s3-folio.effects]
+id=0 owner=1 region=0 span=5:17
+id=1 owner=2 region=1 span=18:27
+
+[s3-placement-folio]
+
+[s3-placement-folio.placements]
+op=2 alternatives=inline,group leader=1 chosen=inline

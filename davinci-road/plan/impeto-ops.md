@@ -95,6 +95,35 @@ initial lowering discipline; P3-10 extraction and later scheduling must either
 prove the exported partition is preserved or rerun validation before consumers
 read it.
 
+## Placement Alternatives
+
+P3-10 keeps the choice of where an op's work runs as an overlay on the graph,
+`Program::placements`, never as a rewrite of ops, regions, edges, effect
+scopes, or operands. An op without a record runs `inline`, its canonical shape.
+`vize_impeto::placement::annotate` records the other shapes; every recorded
+alternative preserves meaning, so choosing among them is a cost question only.
+
+| placement | legal when                                                                                                                                                                                                   | update-model effect                                                          |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `inline`  | always                                                                                                                                                                                                       | the op runs in its own effect scope when dynamic                             |
+| `hoist`   | an `insert-node` whose attached ops and nested regions are literal elements, comments, or text; no `ref`, `ref_for`, `ref_key`, `key`, or `is`; owned by an `if`, `for`, slot, or component region           | the subtree is materialized once and re-inserted; its ops leave update paths |
+| `cache`   | a dynamic `set-event` with one plain JS handler under a static name, and no `for`, slot, or component region above it                                                                                        | the handler is created once instead of re-bound                              |
+| `group`   | a dynamic `set-prop`, `set-dynamic-props`, `set-text`, or `set-html` reading one direct reference (`a` or `a.b`) that its keyed effect-order predecessor reads, in the same root, `if` branch, or `for` item | the op joins the effect unit of the first op of that contiguous run          |
+
+`group` walks only keyed predecessors: a dynamic op with no reactive read
+re-runs only when its controlling region re-renders, where op order is fixed.
+Contiguity means no other keyed op can be reordered by a group, and an
+identical direct reference inside one lexical scope names one binding, so the
+unit re-runs exactly when each member would have. Slot and component content
+can mix scopes and never groups.
+
+Exported partition facts keep describing canonical S3 because the overlay
+never changes an op's effect scope. `S3V010` re-derives every recorded
+alternative and every committed choice: a chosen `group` must stay contiguous
+with its committed unit, and a chosen `hoist` may not sit inside another. The
+Lean reference does not interpret placements yet; the legality rules above are
+the semantic argument until extraction output reaches a backend under TS-28.
+
 ## Review Point
 
 P3-5 lands before optional passes. A new Impeto op, a changed mnemonic, or a

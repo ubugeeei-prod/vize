@@ -16,6 +16,14 @@ The `S3V009` verifier checks value shape, source containment and references in
 every phase. This is a value-transport contract, not yet executable stateful
 Lean semantics or a replacement for the existing backend payloads.
 
+`Program::placements` is the P3-10 placement overlay. `placement::annotate`
+records where each op's work may run instead of inline: a hoisted static
+subtree under a control region, a cached scope-free event handler, or a leaf
+update grouped with the adjacent op reading the same direct reference. The
+overlay never rewrites the graph, so exported partition facts stay canonical;
+`S3V010` re-derives every recorded alternative and committed choice, and
+`S3PlacementFolio` prints the overlay on its own page.
+
 Support and deprecation guarantees are defined in the
 [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
 

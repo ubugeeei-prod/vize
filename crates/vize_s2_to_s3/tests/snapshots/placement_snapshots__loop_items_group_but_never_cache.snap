@@ -1,0 +1,39 @@
+---
+source: crates/vize_s2_to_s3/tests/placement_snapshots.rs
+expression: "snapshot(r#\"<ul><li v-for=\"item in items\" @click=\"pick(item)\" :title=\"item.name\">{{ item.name }}</li></ul>\"#)"
+---
+[s3-folio]
+phase=built
+
+[s3-folio.regions]
+id=0 parent=- owner=- span=0:94
+id=1 parent=0 owner=0 span=4:89
+id=2 parent=1 owner=1 span=4:89
+id=3 parent=2 owner=2 span=69:84
+
+[s3-folio.ops]
+id=0 kind=impeto.insert-node region=0 effect=- span=0:94
+id=1 kind=impeto.for region=1 effect=0 span=4:89
+id=2 kind=impeto.insert-node region=2 effect=1 span=4:89
+id=3 kind=impeto.set-event region=2 effect=2 span=30:49
+id=4 kind=impeto.set-prop region=2 effect=3 span=50:68
+id=5 kind=impeto.set-text region=3 effect=4 span=69:84
+
+[s3-folio.edges]
+from=1 to=2 kind=effect-order effect=-
+from=2 to=3 kind=effect-order effect=-
+from=3 to=4 kind=effect-order effect=-
+from=3 to=4 kind=dom-order effect=-
+from=4 to=5 kind=effect-order effect=-
+
+[s3-folio.effects]
+id=0 owner=1 region=1 span=4:89
+id=1 owner=2 region=2 span=4:89
+id=2 owner=3 region=2 span=30:49
+id=3 owner=4 region=2 span=50:68
+id=4 owner=5 region=3 span=69:84
+
+[s3-placement-folio]
+
+[s3-placement-folio.placements]
+op=5 alternatives=inline,group leader=4 chosen=inline

@@ -1,0 +1,138 @@
+---
+source: crates/vize_s2_to_s3/tests/placement_snapshots.rs
+expression: output
+---
+# kitchen_sink
+[s3-placement-folio]
+
+[s3-placement-folio.placements]
+op=3 alternatives=inline,cache leader=- chosen=inline
+
+# entities_raw
+[s3-placement-folio]
+
+# void_and_self_closing
+[s3-placement-folio]
+
+# quote_forms
+[s3-placement-folio]
+
+# dynamic_directives
+[s3-placement-folio]
+
+[s3-placement-folio.placements]
+op=1 alternatives=inline,cache leader=- chosen=inline
+
+# comments
+[s3-placement-folio]
+
+# interpolation_spacing
+[s3-placement-folio]
+
+# multi_root
+[s3-placement-folio]
+
+# crlf
+[s3-placement-folio]
+
+# unicode
+[s3-placement-folio]
+
+# svg_self_closing
+[s3-placement-folio]
+
+# pre_whitespace
+[s3-placement-folio]
+
+# rcdata_textarea_title
+[s3-placement-folio]
+
+# rcdata_script_style
+[s3-placement-folio]
+
+# nested_template
+[s3-placement-folio]
+
+[s3-placement-folio.placements]
+op=2 alternatives=inline,hoist leader=- chosen=inline
+
+# close_tag_whitespace
+[s3-placement-folio]
+
+# eof_in_tag
+[s3-placement-folio]
+
+# eof_in_tag_ws
+[s3-placement-folio]
+
+# eof_in_attr_name
+[s3-placement-folio]
+
+# eof_in_quoted_value
+[s3-placement-folio]
+
+# eof_in_empty_quoted_value
+[s3-placement-folio]
+
+# unclosed_child
+[s3-placement-folio]
+
+# stray_close
+[s3-placement-folio]
+
+# extra_close
+[s3-placement-folio]
+
+# empty_close
+[s3-placement-folio]
+
+# eof_in_close
+[s3-placement-folio]
+
+# eof_after_close_slash
+[s3-placement-folio]
+
+# missing_attr_value
+[s3-placement-folio]
+
+# solidus_junk
+[s3-placement-folio]
+
+# attr_quote_no_eq
+[s3-placement-folio]
+
+# missing_attr_whitespace
+[s3-placement-folio]
+
+# close_tag_junk
+[s3-placement-folio]
+
+# unclosed_interpolation
+[s3-placement-folio]
+
+# unclosed_comment
+[s3-placement-folio]
+
+# abrupt_empty_comment
+[s3-placement-folio]
+
+# bogus_doctype
+[s3-placement-folio]
+
+# bogus_one_dash
+[s3-placement-folio]
+
+# processing_instruction
+[s3-placement-folio]
+
+# cdata_in_svg
+[s3-placement-folio]
+
+# unquoted_slash_value
+[s3-placement-folio]
+
+# case_insensitive_close
+[s3-placement-folio]
+
+# sibling_li_nests_v1
+[s3-placement-folio]
