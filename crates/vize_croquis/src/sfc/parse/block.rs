@@ -1,5 +1,6 @@
 mod compat;
 mod end;
+mod regex;
 
 use memchr::{memchr, memchr_iter, memmem};
 use std::borrow::Cow;
@@ -7,6 +8,7 @@ use vize_carton::{FxHashMap, String, cstr};
 
 use compat::{can_start_string_literal, is_void_block};
 use end::find_block_end;
+pub(super) use regex::skip_regex_literal;
 
 // Tag name bytes for fast comparison
 pub(super) const TAG_TEMPLATE: &[u8] = b"template";
@@ -130,66 +132,6 @@ pub(super) fn can_start_regex_literal(prev_significant_char: u8) -> bool {
             | b'%'
             | b'^'
     )
-}
-
-pub(super) fn skip_regex_literal(
-    bytes: &[u8],
-    mut pos: usize,
-    len: usize,
-    line: &mut usize,
-    last_newline: &mut usize,
-) -> Option<usize> {
-    // Closing-tag search must ignore `</script>` inside JS regex literals without
-    // allocating a lexer token stream. This byte scanner only activates in
-    // syntactic positions where `/` can start a regex and tracks character
-    // classes/escapes well enough to continue the zero-copy SFC block scan.
-    debug_assert_eq!(bytes[pos], b'/');
-    pos += 1;
-    let mut in_character_class = false;
-
-    while pos < len {
-        let c = bytes[pos];
-
-        if c == b'\n' {
-            // An unescaped newline terminates JavaScript regex literals. Stop
-            // treating this as regex so normal malformed-block handling wins.
-            return None;
-        }
-
-        if c == b'\\' {
-            if pos + 1 < len && bytes[pos + 1] == b'\n' {
-                *line += 1;
-                *last_newline = pos + 1;
-            }
-            pos = (pos + 2).min(len);
-            continue;
-        }
-
-        if in_character_class {
-            if c == b']' {
-                in_character_class = false;
-            }
-            pos += 1;
-            continue;
-        }
-
-        match c {
-            b'[' => {
-                in_character_class = true;
-                pos += 1;
-            }
-            b'/' => {
-                pos += 1;
-                while pos < len && (bytes[pos].is_ascii_alphanumeric() || bytes[pos] == b'_') {
-                    pos += 1;
-                }
-                return Some(pos);
-            }
-            _ => pos += 1,
-        }
-    }
-
-    None
 }
 
 pub(super) fn skip_script_string_literal(

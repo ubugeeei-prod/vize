@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -192,5 +193,41 @@ test("seed_corpus.rs writes seeds for every declared fuzz target", () => {
       new RegExp(`reset_corpus\\(&corpus_root, "${target}"\\)`),
       `seed_corpus.rs must seed corpus/${target}/`,
     );
+  }
+});
+
+test("SFC crash regressions survive corpus regeneration byte-for-byte", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fuzz-regression-seeds-"));
+  try {
+    fs.writeFileSync(path.join(root, "Cargo.toml"), "[workspace]\n");
+    fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages: []\n");
+    const regression = readRepoFile("tests/fuzz/regressions/sfc_parse/issue-6277.txt");
+    const digest = createHash("sha1").update(regression).digest("hex");
+    assert.equal(digest, "cb5e9e231223f2ca26ea0c8afa91c13ebc01b75e");
+    const directory = path.join(root, "tests/fuzz/regressions/sfc_parse");
+    fs.mkdirSync(directory, { recursive: true });
+    const fixture = path.join(directory, "issue-6277.txt");
+    const corpus = path.join(root, "tests/fuzz/corpus/sfc_parse");
+    const seed = () => {
+      const result = spawnSync(
+        "rust-script",
+        [path.join(repoRoot, "tools/commands/ci/fuzz/seed_corpus.rs")],
+        { encoding: "utf8", env: { ...process.env, VIZE_REPO_ROOT: root } },
+      );
+      assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+      assert.match(result.stdout, /Seeded 1 sfc_parse entries/);
+    };
+    fs.writeFileSync(fixture, regression);
+    seed();
+    assert.equal(fs.readFileSync(path.join(corpus, digest.slice(0, 16)), "utf8"), regression);
+    const mutated = `${regression}\n<!-- independent corpus mutation -->\n`;
+    fs.writeFileSync(fixture, mutated);
+    seed();
+    assert.equal(fs.existsSync(path.join(corpus, digest.slice(0, 16))), false);
+    const changedDigest = createHash("sha1").update(mutated).digest("hex").slice(0, 16);
+    assert.deepEqual(fs.readdirSync(corpus), [changedDigest]);
+    assert.equal(fs.readFileSync(path.join(corpus, changedDigest), "utf8"), mutated);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
   }
 });

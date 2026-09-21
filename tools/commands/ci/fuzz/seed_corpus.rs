@@ -66,6 +66,13 @@ fn run() -> Result<(), String> {
     let interpolation = Regex::new(r"(?s)\{\{(.*?)\}\}").unwrap();
 
     let mut sfc_count = 0usize;
+    for file in glob_files(&root, &["tests/fuzz/regressions/sfc_parse/*"])? {
+        write_seed(
+            &sfc_dir,
+            &fs::read(&file).map_err(|error| format!("cannot read {}: {error}", file.display()))?,
+        )?;
+        sfc_count += 1;
+    }
     let mut template_count = 0usize;
     let mut expression_count = 0usize;
     let mut style_count = 0usize;
