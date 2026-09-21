@@ -117,10 +117,9 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.use_helper(RuntimeHelper::CreateElementVNode);
             ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
             ctx.push("(\"");
-            // Anchor the generated tag-name string back to the element's source
-            // position (the `<` of the open tag). No-op without `source_map`.
-            ctx.record_mapping(el.loc.span.start);
-            ctx.push(el.tag);
+            // Anchor the generated tag name at the authored tag name (the byte
+            // after the open tag's `<`). No-op without `source_map`.
+            ctx.push_tag(el);
             ctx.push("\"");
 
             // Calculate patch flag and dynamic props

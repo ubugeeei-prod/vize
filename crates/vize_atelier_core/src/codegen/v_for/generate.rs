@@ -101,7 +101,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
                     ctx.push("(\"");
                     let node_el = unwrapped_child.unwrap_or(el);
-                    ctx.push(node_el.tag);
+                    ctx.push_tag(node_el);
                     ctx.push("\"");
                 }
 
@@ -241,14 +241,14 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push("(\"");
-                    ctx.push(child_el.tag);
+                    ctx.push_tag(child_el);
                     ctx.push("\"");
                 } else {
                     // Regular element
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push("(\"");
-                    ctx.push(el.tag);
+                    ctx.push_tag(el);
                     ctx.push("\"");
                 }
 

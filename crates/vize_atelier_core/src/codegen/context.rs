@@ -1,5 +1,6 @@
 //! Code generation context and result types.
 
+mod spans;
 mod vnode_factory;
 
 use crate::options::CodegenOptions;

@@ -44,8 +44,9 @@ pub(super) fn generate_with_sections_and_options(
         .filter(|child| !is_ignorable_root_text(child) && !is_directive_comment(child))
         .collect();
 
-    // Generate function signature
+    // Generate function signature, anchored at the template section start.
     crate::walk_probe::record_walk(crate::walk_probe::WalkStage::Codegen);
+    ctx.record_mapping(root.loc.span.start);
     profile!(
         "atelier.codegen.function_signature",
         generate_function_signature(&mut ctx)

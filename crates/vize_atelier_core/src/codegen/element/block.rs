@@ -143,8 +143,8 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         // Track helpers for preamble
         ctx.use_helper(RuntimeHelper::OpenBlock);
 
-        // Open block wrapper
-        ctx.push("(");
+        // Open block wrapper, anchored at the element opening the block.
+        ctx.push_mapped("(", el.loc.span.start);
         ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
         ctx.push("(), ");
     }
@@ -154,10 +154,9 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
             ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
             ctx.push("(\"");
-            // Anchor the generated tag-name string back to the element's source
-            // position (the `<` of the open tag). No-op without `source_map`.
-            ctx.record_mapping(el.loc.span.start);
-            ctx.push(el.tag);
+            // Anchor the generated tag name at the authored tag name (the byte
+            // after the open tag's `<`). No-op without `source_map`.
+            ctx.push_tag(el);
             ctx.push("\"");
 
             // Calculate patch flag and dynamic props

@@ -14,6 +14,7 @@ mod helpers;
 mod node;
 mod patch_flag;
 mod props;
+pub mod rewrite_spans;
 mod root;
 mod slots;
 pub mod source_map;
@@ -24,6 +25,14 @@ mod v_if;
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
 mod tests;
+
+#[cfg(test)]
+#[allow(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods
+)]
+mod span_tests;
 
 #[cfg(test)]
 use crate::options::CodegenOptions;

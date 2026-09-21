@@ -74,7 +74,7 @@ fn generate_for_inner(
         256 // UNKEYED_FRAGMENT
     };
 
-    ctx.push("(");
+    ctx.push_mapped("(", for_node.loc.span.start);
     ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
     if is_stable {
         ctx.push("(), ");

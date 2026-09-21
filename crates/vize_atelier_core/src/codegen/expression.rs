@@ -86,21 +86,16 @@ pub fn generate_simple_expression(ctx: &mut CodegenContext, exp: &SimpleExpressi
             content = convert_line_comments_to_block(&content);
         }
 
-        // Record a source-map anchor from this generated expression back to its
-        // template position before any of its bytes are written. Dynamic
-        // expressions are the highest-value mapping target (a debugger steps
-        // from generated `_ctx.foo` back to template `foo`), and this is the
-        // single chokepoint every dynamic expression flows through. No-op unless
-        // the `source_map` flag is on.
-        ctx.record_mapping(exp.loc.span.start);
-
         // Replace generated scope prefixes when X is a known slot/v-for parameter.
         // This handles destructured variables that the transform phase
         // incorrectly prefixed because it didn't know the scope.
         if ctx.has_slot_params() && contains_slot_param_scope_prefix(&content) {
-            ctx.push(&strip_scope_prefixes_for_slot_params(ctx, &content));
-        } else {
-            ctx.push(&content);
+            content = strip_scope_prefixes_for_slot_params(ctx, &content);
         }
+        // Span-carrying emission: the expression and every identifier the
+        // rewrite scoped map back to their authored bytes (a debugger steps
+        // from generated `_ctx.foo` to template `foo`). This is the chokepoint
+        // ordinary dynamic expressions flow through; no-op without maps.
+        ctx.push_expression(&content, exp.loc.span);
     }
 }

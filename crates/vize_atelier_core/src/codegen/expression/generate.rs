@@ -122,7 +122,7 @@ pub fn generate_event_handler(
                 crate::steps::expression::is_function_expression(&processed)
             };
             if is_function {
-                ctx.push(&processed);
+                ctx.push_expression(&processed, simple.loc.span);
                 return;
             }
 
@@ -135,12 +135,12 @@ pub fn generate_event_handler(
             if crate::steps::is_simple_identifier(&processed) || is_member_ref {
                 if for_caching {
                     ctx.push("(...args) => (");
-                    ctx.push(&processed);
+                    ctx.push_expression(&processed, simple.loc.span);
                     ctx.push(" && ");
-                    ctx.push(&processed);
+                    ctx.push_expression(&processed, simple.loc.span);
                     ctx.push("(...args))");
                 } else {
-                    ctx.push(&processed);
+                    ctx.push_expression(&processed, simple.loc.span);
                 }
                 return;
             }
@@ -149,11 +149,11 @@ pub fn generate_event_handler(
             // multi-statement body with no surrounding spaces (`$event => {...}`).
             if processed.contains(';') {
                 ctx.push("$event => {");
-                ctx.push(&processed);
+                ctx.push_expression(&processed, simple.loc.span);
                 ctx.push("}");
             } else {
                 ctx.push("$event => (");
-                ctx.push(&processed);
+                ctx.push_expression(&processed, simple.loc.span);
                 ctx.push(")");
             }
         }
