@@ -147,20 +147,19 @@ vize lint --help-level short src
 
 Key options:
 
-| Option                | Description                                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------------------- |
-| `--fix`               | Apply safe autofixes from rules that provide text edits, then report remaining diagnostics        |
-| `-f, --format`        | Output format: `text`, `rich`, `ansi`, `plain`, `json`, `stylish`, `markdown`, `html`, or `agent` |
-| `--locale`            | Language of diagnostic messages: `en`, `ja`, or `zh`                                              |
-| `--max-warnings`      | Fail when warnings exceed the limit                                                               |
-| `-q, --quiet`         | Show summary only                                                                                 |
-| `--help-level`        | `full`, `short`, or `none`                                                                        |
-| `--preset`            | `happy-path`, `opinionated`, `essential`, `incremental`, or `nuxt`                                |
-| `--cross-file`        | Enable opt-in cross-file checks                                                                   |
-| `--cross-file-tree`   | Print the provide/inject tree when cross-file linting is enabled                                  |
-| `--strict-reactivity` | Enable native checker-backed reactivity-loss linting                                              |
-| `--profile`           | Print timing profile                                                                              |
-| `--slow-threshold`    | Slow file threshold for profile output                                                            |
+| Option                | Description                                                                                                                             |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `--fix`               | Apply safe autofixes from rules that provide text edits, then report remaining diagnostics                                              |
+| `-f, --format`        | Output format: `text`, `rich` (localize with `--locale ja` or `zh`), `ansi`, `plain`, `json`, `stylish`, `markdown`, `html`, or `agent` |
+| `--max-warnings`      | Fail when warnings exceed the limit                                                                                                     |
+| `-q, --quiet`         | Show summary only                                                                                                                       |
+| `--help-level`        | `full`, `short`, or `none`                                                                                                              |
+| `--preset`            | `happy-path`, `opinionated`, `essential`, `incremental`, or `nuxt`                                                                      |
+| `--cross-file`        | Enable opt-in cross-file checks                                                                                                         |
+| `--cross-file-tree`   | Print the provide/inject tree when cross-file linting is enabled                                                                        |
+| `--strict-reactivity` | Enable native checker-backed reactivity-loss linting                                                                                    |
+| `--profile`           | Print timing profile                                                                                                                    |
+| `--slow-threshold`    | Slow file threshold for profile output                                                                                                  |
 
 Presets are intended for staged adoption:
 
@@ -180,7 +179,6 @@ vize lint --preset opinionated --help-level short src
 vize lint --cross-file --cross-file-tree src
 vize lint --strict-reactivity src
 vize lint --format agent src
-vize lint --format rich --locale ja src
 ```
 
 ## Check

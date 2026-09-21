@@ -42,9 +42,9 @@ export const categoryReasons: Record<VecCategory, string> = {
 };
 
 export const expectedProductionAllocVec: StorageSummary = {
-  files: 91,
-  directPaths: 103,
-  boundUses: 356,
+  files: 95,
+  directPaths: 107,
+  boundUses: 385,
 };
 
 function count(value: string, line: number): number {

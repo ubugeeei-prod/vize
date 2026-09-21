@@ -181,8 +181,9 @@ test("the natural committed v-on corpus fits the two-entry inline buckets", () =
   );
   assert.deepEqual(classify("@click.prevent"), { options: 0, event: 1, keys: 0 });
   // Includes native S3 text/event admission, mounted modifier cases and paired
-  // event benchmarks, plus the public-contract @valid.once duplicate listener.
-  assert.equal(spellings.length, 251, "update the measured corpus evidence intentionally");
+  // event benchmarks, plus the public-contract @valid.once duplicate listener,
+  // plus the two long-form `v-on:` spellings of the TS-53 renderer fixture.
+  assert.equal(spellings.length, 253, "update the measured corpus evidence intentionally");
   assert.deepEqual(maxima, { options: 2, event: 2, keys: 2 });
 });
 
