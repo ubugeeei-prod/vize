@@ -151,7 +151,6 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
 
 /// Templates the selector must keep on the legacy walker in this slice.
 pub(super) const REFUSED: &[(&str, &str)] = &[
-    ("dynamic-component", r#"<component :is="tag" class="t" />"#),
     (
         "dynamic-slot-name",
         r#"<Foo><template #[name]>x</template></Foo>"#,
@@ -184,12 +183,8 @@ pub(super) const REFUSED: &[(&str, &str)] = &[
     ("style", "<div><style>.a > b { }</style></div>"),
     ("whitespace-entities", "<p>a&#10;&#32; b</p>"),
     (
-        "component-model-arg",
-        r#"<div><Foo v-model:sort-option="sort" /></div>"#,
-    ),
-    (
-        "component-model-modifier",
-        r#"<div><Foo v-model.trim="t" /></div>"#,
+        "component-model-dynamic-arg",
+        r#"<div><Foo v-model:[prop]="value" /></div>"#,
     ),
 ];
 

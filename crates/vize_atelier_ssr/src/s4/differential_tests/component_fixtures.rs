@@ -123,4 +123,54 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         "component-v-if-branch",
         r#"<Foo v-if="a" /><p v-else>b</p>"#,
     ),
+    (
+        "component-model-arg",
+        r#"<div><Foo v-model:sort-option="sort" /></div>"#,
+    ),
+    (
+        "component-model-modifier",
+        r#"<div><Foo v-model.trim="t" /></div>"#,
+    ),
+    (
+        "component-model-arg-modifiers",
+        r#"<div><Foo v-model:title.trim.number="t" v-model:model-value.lazy="m" v-model="v" @update:title="log" /></div>"#,
+    ),
+    (
+        "component-model-in-slot",
+        r#"<Bar><Foo v-model:open="open" v-model:item.capitalize="item" /></Bar>"#,
+    ),
+    ("dynamic-component", r#"<component :is="tag" class="t" />"#),
+    ("dynamic-component-bare", r#"<div><component /></div>"#),
+    (
+        "dynamic-component-static-is",
+        r#"<div><component is="section" :a="1" @x="y">text</component></div>"#,
+    ),
+    (
+        "dynamic-component-props",
+        r#"<div><component v-bind="attrs" :is="view" :key="k" v-model="m" v-show="s" /></div>"#,
+    ),
+    (
+        "dynamic-component-slots",
+        r#"<component :is="c"><span>{{ s }}</span><template #extra="{ e }">{{ e }}</template></component>"#,
+    ),
+    (
+        "dynamic-component-own-slot",
+        r#"<component :is="c" v-slot="{ x }"><b>{{ x }}</b></component>"#,
+    ),
+    (
+        "dynamic-component-in-slot",
+        r#"<Foo><component :is="c" :p="q"><i>{{ z }}</i></component></Foo>"#,
+    ),
+    (
+        "dynamic-component-if",
+        r#"<component v-if="ok" :is="c" /><div v-else>n</div>"#,
+    ),
+    (
+        "dynamic-component-for",
+        r#"<ul><component v-for="c in cs" :key="c.id" :is="c.view" /></ul>"#,
+    ),
+    (
+        "dynamic-component-outlet",
+        r#"<component :is="wrap"><slot name="inner" /></component>"#,
+    ),
 ];
