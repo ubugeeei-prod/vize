@@ -117,6 +117,8 @@
 
 ## P5-12 — Multi-client LSP conformance
 
+**Landed 2026-09-22** — full record: [phase-5-records/p5-12.md](./phase-5-records/p5-12.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** J
@@ -127,8 +129,6 @@
 
 - [x] `tests/editor-conformance/` scenarios and `tests/tooling/editor-conformance.test.ts`
 - [x] CI matrix with pinned client versions
-
-**Progress:** the scenario, judge, drivers and `.github/workflows/editor-conformance.yml` matrix landed; the task stays open until TS-45 is green on `main` for all four clients — see [phase-5-records/p5-12.md](./phase-5-records/p5-12.md) (Zed is a labeled protocol replay: it has no headless mode).
 
 **Acceptance:** TS-45 green in CI for all four clients; a scenario with a deliberately wrong expectation fails.
 

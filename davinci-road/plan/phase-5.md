@@ -82,7 +82,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [ ] [P5-10](./phase-5-tasks-later.md#p5-10--fault-tolerant-analysis) Fault-tolerant analysis — lane H · gated on P4-1a
 - [ ] [P5-11a](./phase-5-tasks-later.md#p5-11a--resident-resource-baselines-and-methodology) Resident resource baselines and methodology — lane I · startable now
 - [ ] [P5-11b](./phase-5-tasks-later.md#p5-11b--resource-budgets-enforced) Resource budgets enforced — lane I · startable now (behind P5-6c)
-- [ ] [P5-12](./phase-5-tasks-later.md#p5-12--multi-client-lsp-conformance) Multi-client LSP conformance — lane J · startable now
+- [x] [P5-12](./phase-5-tasks-later.md#p5-12--multi-client-lsp-conformance) Multi-client LSP conformance — lane J · startable now
 - [ ] [P5-13](./phase-5-tasks-later.md#p5-13--js-plugin-caching) JS plugin caching — lane K · gated on P4-16
 - [ ] [P5-14](./phase-5-tasks-later.md#p5-14--phase-exit) Phase exit — lane X · gated on P4-17
 
