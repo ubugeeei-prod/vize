@@ -926,6 +926,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/css_engine_panic_bounda
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/css_nesting_guard.rs	11	s0	S0	stage	vize_s0	preferred	6
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/custom_directive_patch_flag.rs	5	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/davinci_arena_pool.rs	27	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/davinci_ts31_sourcemap/compile.rs	15	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/dynamic_template_ref.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/dynamic_template_ref.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/emitter_javascript_output.rs	19	s0	S0	stage	vize_s0	preferred	3
