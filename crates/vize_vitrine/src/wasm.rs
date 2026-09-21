@@ -36,6 +36,8 @@ mod source_offsets;
 mod tests;
 #[cfg(test)]
 mod tests_spolvero;
+#[cfg(test)]
+mod tests_spolvero_profile;
 
 // Re-export type checking bindings from separate module
 #[path = "wasm_typecheck.rs"]

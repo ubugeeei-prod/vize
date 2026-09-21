@@ -1,5 +1,19 @@
 use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen]
+extern "C" {
+    /// `performance.now()`: milliseconds with microsecond-scale resolution
+    /// (5 µs in a cross-origin-isolated page such as the playground).
+    #[wasm_bindgen(js_namespace = performance, js_name = now)]
+    fn performance_now() -> f64;
+}
+
+/// The browser's monotonic clock in nanoseconds, for the ladder timings.
+fn host_clock_ns() -> u64 {
+    // Non-negative and far below u64::MAX nanoseconds for any real session.
+    (performance_now() * 1_000_000.0) as u64
+}
+
 /// Analyze Vue SFC for semantic information (scopes, bindings, etc.).
 #[wasm_bindgen(js_name = "analyzeSfc")]
 pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
@@ -19,11 +33,12 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
     .ok()
     .and_then(|value| value.as_bool())
     .unwrap_or(false);
-    let result = super::analyze_sfc_json_with_options(
+    let result = super::analyze_sfc_json_with_clock(
         source,
         &filename,
         in_tag_comments,
         patterned_template,
+        &host_clock_ns,
     )
     .map_err(|message| JsValue::from_str(&message))?;
     crate::wasm::to_js_value(&result)

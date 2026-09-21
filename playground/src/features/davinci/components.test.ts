@@ -38,9 +38,9 @@ describe("StageRail", () => {
 
 describe("PassTimeline", () => {
   const steps: TimelineStep[] = [
-    { key: "s2/lower", rung: "s2", pass: "lower", changed: true, producer: true },
-    { key: "s2/v-slot", rung: "s2", pass: "v-slot", changed: false, producer: false },
-    { key: "s2/legacy", rung: "s2", pass: "legacy", changed: true, producer: false },
+    { key: "s2/lower", rung: "s2", pass: "lower", changed: true, producer: true, nanos: null },
+    { key: "s2/v-slot", rung: "s2", pass: "v-slot", changed: false, producer: false, nanos: null },
+    { key: "s2/legacy", rung: "s2", pass: "legacy", changed: true, producer: false, nanos: null },
   ];
 
   it("marks producers and changed passes and summarizes them", async () => {

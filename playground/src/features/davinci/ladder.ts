@@ -37,6 +37,8 @@ export interface TimelineStep {
   changed: boolean;
   /** Whether the step is a lowering/parse (a new artifact), not a pass. */
   producer: boolean;
+  /** Measured wall time in nanoseconds, when the run was profiled. */
+  nanos: number | null;
 }
 
 export interface StageLadder {
@@ -105,8 +107,15 @@ function pageLabel(stage: string, pass: string): string {
   return known?.label || `${stage}/${pass}`;
 }
 
-/** Shape a negotiated feed's pages (for one file) into the ladder. */
-export function buildLadder(feed: SpolveroFeed, path?: string): StageLadder {
+/**
+ * Shape a negotiated feed's pages (for one file) into the ladder; `timings`
+ * (from the profile export, keyed `stage/pass`) fills each step's wall time.
+ */
+export function buildLadder(
+  feed: SpolveroFeed,
+  path?: string,
+  timings: ReadonlyMap<string, number> = new Map(),
+): StageLadder {
   const pages: SpolveroPage[] = feed.pages.filter(
     (page) => path === undefined || page.path === path,
   );
@@ -149,6 +158,7 @@ export function buildLadder(feed: SpolveroFeed, path?: string): StageLadder {
         pass: page.pass,
         changed: producer || previous[rung.id] !== page.text,
         producer,
+        nanos: timings.get(page.key) ?? null,
       });
       previous[rung.id] = page.text;
     }

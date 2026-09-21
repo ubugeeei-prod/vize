@@ -10,6 +10,8 @@ import StageRail from "./StageRail.vue";
 import PassTimeline from "./PassTimeline.vue";
 import FolioView from "./FolioView.vue";
 import OutputView from "./OutputView.vue";
+import FolioDiffView from "./FolioDiffView.vue";
+import RemarksPanel from "./RemarksPanel.vue";
 import type { TimelineStep } from "./ladder";
 import { useDavinciLadder } from "./useDavinciLadder";
 
@@ -24,10 +26,15 @@ const {
   error,
   outputs,
   ladderTime,
+  profileNote,
   stage,
   rung,
   page,
   lines,
+  previousPage,
+  diff,
+  pageView,
+  remarks,
   linkedLines,
   outputTarget,
   selectedLine,
@@ -36,12 +43,17 @@ const {
   highlights,
   selectStage,
   selectPage,
+  locateRemark,
   onCursor,
 } = useDavinciLadder(() => props.compiler ?? getWasm());
 
-const pageTabs = computed(() =>
-  rung.value && rung.value.pages.length > 1 ? rung.value.pages : [],
+const showTabs = computed(
+  () => rung.value !== null && (rung.value.pages.length > 1 || rung.value.id !== "s1"),
 );
+
+function toggleView(view: "diff" | "remarks") {
+  pageView.value = pageView.value === view ? "page" : view;
+}
 
 function selectStep(step: TimelineStep) {
   selectPage(step.rung, step.key);
@@ -80,22 +92,47 @@ function snippet(text: string): string {
         <StageRail :rungs="ladder.rungs" :selected="stage" @select="selectStage" />
         <PassTimeline :steps="ladder.timeline" :current="page?.key ?? null" @select="selectStep" />
 
-        <div v-if="pageTabs.length > 0" class="davinci-subtabs" role="tablist" aria-label="Pages">
+        <div v-if="showTabs && rung" class="davinci-subtabs" role="tablist" aria-label="Pages">
           <button
-            v-for="tab in pageTabs"
+            v-for="tab in rung.pages"
             :key="tab.key"
             type="button"
             role="tab"
-            :class="['davinci-subtab', { active: page?.key === tab.key }]"
+            :class="['davinci-subtab', { active: pageView === 'page' && page?.key === tab.key }]"
             :aria-selected="page?.key === tab.key"
-            @click="selectPage(rung!.id, tab.key)"
+            @click="selectPage(rung.id, tab.key)"
           >
             {{ tab.label }}
+          </button>
+          <span class="davinci-subtabs-gap" aria-hidden="true"></span>
+          <button
+            v-if="previousPage"
+            type="button"
+            :class="['davinci-subtab', { active: pageView === 'diff' }]"
+            :aria-pressed="pageView === 'diff'"
+            @click="toggleView('diff')"
+          >
+            Diff vs {{ previousPage.label }}
+          </button>
+          <button
+            type="button"
+            :class="['davinci-subtab', { active: pageView === 'remarks' }]"
+            :aria-pressed="pageView === 'remarks'"
+            @click="toggleView('remarks')"
+          >
+            Remarks <span class="davinci-count">{{ remarks.length }}</span>
           </button>
         </div>
 
         <div class="davinci-body">
           <OutputView v-if="stage === 's4'" v-model:target="outputTarget" :outputs :theme />
+          <RemarksPanel v-else-if="pageView === 'remarks'" :remarks @locate="locateRemark" />
+          <FolioDiffView
+            v-else-if="pageView === 'diff' && diff && previousPage && page"
+            :diff
+            :before="previousPage.label"
+            :after="page.label"
+          />
           <FolioView
             v-else-if="page"
             :lines
@@ -120,6 +157,9 @@ function snippet(text: string): string {
           >
           <span v-else class="davinci-hint"
             >Emitted by the same compiler build, from the same source</span
+          >
+          <span v-if="profileNote" class="davinci-hint"
+            >Step timings unavailable: {{ profileNote }}</span
           >
           <span v-if="ladder.unplaced.length" class="davinci-hint"
             >Unplaced pages: {{ ladder.unplaced.join(", ") }}</span

@@ -67,7 +67,7 @@ function toggle(index: number) {
       </div>
       <div
         v-else
-        :class="['davinci-line', { section: line.tokens[0]?.type === 'section' }]"
+        :class="['davinci-line', { 'davinci-section': line.tokens[0]?.type === 'section' }]"
         :data-line="line.index"
       >
         <span class="davinci-ln">{{ line.index + 1 }}</span>
