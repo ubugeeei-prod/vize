@@ -177,14 +177,19 @@ impl<'a> MarkupElement<'a> {
         }
     }
 
-    /// Visit direct child nodes.
+    /// Visit direct child nodes, as authored.
     ///
-    /// Control flow is structured on every backend: a `v-if` chain is one
-    /// [`MarkupNode::If`] and a `v-for` one [`MarkupNode::For`].
+    /// In a template an element that carries `v-if` / `v-for` is itself the
+    /// child — the scope structure is what the visitor's scope hooks carry.
+    /// A JSX conditional or list is an expression, so it is one
+    /// [`MarkupNode::If`] / [`MarkupNode::For`] (as is an `IfNode` /
+    /// `ForNode` in a lowered JSX root).
     pub fn walk_children(&self, visitor: &mut impl FnMut(MarkupNode<'a>)) {
         match self.inner {
             MarkupElementInner::Relief(node) => {
-                relief_scopes::walk_child_nodes(&node.children, visitor);
+                for child in &node.children {
+                    visitor(MarkupNode::from_relief_child(child));
+                }
             }
             MarkupElementInner::JsxElement { node, offset } => {
                 for child in &jsx_element_ref(node).children {

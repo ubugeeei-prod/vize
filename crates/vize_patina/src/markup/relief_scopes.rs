@@ -9,9 +9,8 @@
 //! scope), the same `v-for` admission (a blank value builds no list) — so a
 //! rule observes one document whichever backend projected it.
 
-use super::element::MarkupElement;
 use super::loc_to_range;
-use super::node::{MarkupNode, MarkupText};
+use super::node::MarkupText;
 use crate::ir::ByteRange;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
@@ -179,34 +178,4 @@ pub(super) fn carrier_range(element: &ElementNode<'_>) -> ByteRange {
         }
     }
     range
-}
-
-/// Visit a raw sibling list as structured child nodes: a chain is one
-/// [`MarkupNode::If`] followed by its kept gaps, a listed element one
-/// [`MarkupNode::For`]; already-structured (lowered) nodes pass through.
-pub(super) fn walk_child_nodes<'a>(
-    children: &'a [TemplateChildNode<'a>],
-    visitor: &mut impl FnMut(MarkupNode<'a>),
-) {
-    let mut index = 0;
-    while let Some(child) = children.get(index) {
-        if let TemplateChildNode::Element(element) = child {
-            if matches!(branch_of(element), Some((BranchKind::If, _))) {
-                let chain = ReliefChain::scan(children, index);
-                visitor(MarkupNode::If(chain.range()));
-                chain.walk_kept_gaps(&mut |text| visitor(MarkupNode::Text(text)));
-                index = chain.end;
-                continue;
-            }
-            if list_of(element).is_some() {
-                visitor(MarkupNode::For(loc_to_range(&element.loc)));
-                index += 1;
-                continue;
-            }
-            visitor(MarkupNode::Element(MarkupElement::new(element)));
-        } else {
-            visitor(MarkupNode::from_relief_child(child));
-        }
-        index += 1;
-    }
 }

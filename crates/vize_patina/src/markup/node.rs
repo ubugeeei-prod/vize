@@ -83,18 +83,18 @@ pub enum MarkupNode<'a> {
     Comment(ByteRange),
     /// Interpolation node.
     Interpolation(ByteRange),
-    /// Conditional scope (`v-if` chain, `cond && <x/>`).
+    /// A JSX conditional expression (`cond && <x/>`, a ternary).
     If(ByteRange),
-    /// List scope (`v-for`, `items.map(...)`).
+    /// A JSX list expression (`items.map(...)`).
     For(ByteRange),
     /// Any other node that is currently not projected.
     Other(ByteRange),
 }
 
 impl<'a> MarkupNode<'a> {
-    /// A child of an already-structured Relief tree (lowered JSX, where
-    /// `IfNode` / `ForNode` exist). Raw template siblings go through
-    /// [`super::relief_scopes`] first, which groups directive chains.
+    /// One Relief child as authored: a raw template's `v-if` / `v-for`
+    /// carrier is an element; a lowered JSX root's `IfNode` / `ForNode` is a
+    /// scope node.
     pub(super) fn from_relief_child(child: &'a TemplateChildNode<'a>) -> Self {
         match child {
             TemplateChildNode::Element(element) => Self::Element(MarkupElement::new(element)),
