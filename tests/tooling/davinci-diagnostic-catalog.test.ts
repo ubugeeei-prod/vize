@@ -133,6 +133,24 @@ test("TS-53: the catalog check fails on a removed, emptied or drifted entry", ()
   ]);
 });
 
+test("TS-53: `vize explain` has a committed page for every code in every locale", () => {
+  const compiler = parseCompilerCodes();
+  const expected = [...[...compiler.codes.values()].sort(), ...[...parseRules().keys()].sort()];
+  for (const locale of locales) {
+    const pages = read(
+      "crates",
+      "vize",
+      "src",
+      "commands",
+      "explain",
+      "snapshots",
+      `${locale}.txt`,
+    );
+    const headers = [...pages.matchAll(/^=== (.+)$/gmu)].map((match) => match[1]);
+    assert.deepEqual(headers, expected, `${locale} explain pages`);
+  }
+});
+
 /** The TS-53 renderer case names, from the case list and its modules. */
 export function renderCaseNames(): string[] {
   const dir = path.join("crates", "vize_davinci", "tests", "diagnostic_render");

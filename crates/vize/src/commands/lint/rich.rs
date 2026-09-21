@@ -1,25 +1,22 @@
 //! `vize lint --format rich`: lint results through the Davinci diagnostic
 //! renderer (P4-14a), in the locale `--locale` selects.
 //!
-//! This is the CLI edge the renderer's contract names: the one place a
-//! `vize_carton` translator becomes a [`Catalog`], and the interim mapping
-//! from Patina's `LintDiagnostic` onto the unified `vize_davinci::Diagnostic`.
-//! The mapping is deliberately mechanical — a label becomes a secondary
-//! part, a fix becomes a titled run of suggestions, help becomes a footer —
-//! and P4-6c's canonical Patina conversion replaces it, taking the
-//! file-absolute span fix for FP-1 with it.
+//! The renderer's catalog is the shipped translator
+//! (`explain::catalog::LocaleCatalog`, the CLI edge the renderer's contract
+//! names). This module holds the interim mapping from Patina's
+//! `LintDiagnostic` onto the unified `vize_davinci::Diagnostic`. The mapping
+//! is deliberately mechanical — a label becomes a secondary part, a fix
+//! becomes a titled run of suggestions, help becomes a footer — and P4-6c's
+//! canonical Patina conversion replaces it, taking the file-absolute span fix
+//! for FP-1 with it.
 
-use std::borrow::Cow;
-use std::io::IsTerminal;
-
+pub(super) use crate::commands::explain::catalog::parse_locale;
+use crate::commands::explain::catalog::{LocaleCatalog, color_enabled};
 use vize_davinci::diagnostic::{Diagnostic, DiagnosticPart, PartKind, Severity, Stage};
-use vize_davinci::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
-use vize_fresco::{
-    ColorSupport, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
-};
+use vize_davinci::render::{Renderer, SourceFile};
 use vize_patina::{HelpRenderTarget, LintDiagnostic, LintResult, OutputFormat, render_help};
-use vize_s0::i18n::{Locale, Translator, translator};
-use vize_s0::{FxHashMap, Span, String, cstr};
+use vize_s0::i18n::Locale;
+use vize_s0::{FxHashMap, Span, String};
 
 /// The `--format` value selecting this renderer.
 const RICH: &str = "rich";
@@ -40,14 +37,6 @@ pub(super) fn parse_format(format: &str) -> (OutputFormat, bool) {
     (parsed, false)
 }
 
-/// Parse `--locale`, exiting with usage on an unknown locale.
-pub(super) fn parse_locale(locale: &str) -> Locale {
-    Locale::parse(locale).unwrap_or_else(|| {
-        eprintln!("Unknown locale '{locale}'. Expected one of: en, ja, zh");
-        std::process::exit(2);
-    })
-}
-
 /// Render `results` richly when `rich` is set, through Patina's formatter
 /// otherwise.
 pub(super) fn format_results(
@@ -62,53 +51,6 @@ pub(super) fn format_results(
     }
     let color = color_enabled();
     render(results, sources, locale, color)
-}
-
-fn color_enabled() -> bool {
-    let probe = TerminalCapabilityProbe::from_process(80, 24, std::io::stdout().is_terminal());
-    let capabilities = TerminalCapabilities::resolve(&probe, TerminalProfileOptions::default());
-    capabilities.color().value() != ColorSupport::Monochrome
-}
-
-/// The shipped translator in one locale, as renderer vocabulary. A phrase the
-/// locale lacks falls back to the built-in English, never to its key; the
-/// TS-53 catalog check keeps that fallback unreachable.
-pub(crate) struct LocaleCatalog {
-    translator: &'static Translator,
-    locale: Locale,
-}
-
-impl LocaleCatalog {
-    pub(crate) fn new(locale: Locale) -> Self {
-        Self {
-            translator: translator(),
-            locale,
-        }
-    }
-
-    fn format(&self, key: &str, vars: &[(&str, &str)]) -> String {
-        self.translator
-            .format(self.locale, key, vars)
-            .as_str()
-            .into()
-    }
-
-    fn count(&self, noun: &str, count: usize) -> String {
-        let form = if count == 1 { "one" } else { "other" };
-        let count = cstr!("{count}");
-        self.format(&cstr!("render.summary.{noun}.{form}"), &[("count", &count)])
-    }
-}
-
-impl Catalog for LocaleCatalog {
-    fn phrase(&self, phrase: Phrase) -> &str {
-        if self.translator.has_key(self.locale, phrase.key())
-            && let Cow::Borrowed(text) = self.translator.get(self.locale, phrase.key())
-        {
-            return text;
-        }
-        EnglishCatalog.phrase(phrase)
-    }
 }
 
 /// Render every diagnostic of every result, then the summary line.

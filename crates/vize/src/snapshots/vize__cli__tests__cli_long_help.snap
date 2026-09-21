@@ -4,7 +4,7 @@ expression: normalize_help(help)
 ---
 High-performance Vue.js toolchain in Rust
 
-Usage: vize [COMMAND]
+Usage: vize [OPTIONS] [COMMAND]
 
 Commands:
   build           Compile Vue SFC files (default command) [alias: atelier]
@@ -13,6 +13,7 @@ Commands:
   check           Type check Vue, JSX, and TSX files
   inspector       Create playground compiler inspector payloads and agent reports
   curator         Curator utilities for diagnostics and reports
+  explain         Explain a diagnostic code: what it means and how to fix it
   doctor          Analyze whole-application health
   clean           Remove Vize-generated cache artifacts
   check-server    Start type check JSON-RPC server (Unix only)
@@ -28,6 +29,9 @@ Commands:
 Options:
   -v, --version
           Print version
+
+      --explain <CODE>
+          Explain a diagnostic code, e.g. vue/require-v-for-key (same as `vize explain`)
 
   -h, --help
           Print help

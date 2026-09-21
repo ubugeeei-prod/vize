@@ -11,6 +11,10 @@ struct Cli {
     #[arg(short = 'v', short_alias = 'V', long, action = clap::ArgAction::Version)]
     version: (),
 
+    /// Explain a diagnostic code, e.g. vue/require-v-for-key (same as `vize explain`)
+    #[arg(long, value_name = "CODE")]
+    explain: Option<vize_s0::String>,
+
     #[command(subcommand)]
     command: Option<Commands>,
 }
@@ -38,6 +42,9 @@ enum Commands {
 
     /// Curator utilities for diagnostics and reports
     Curator(crate::commands::curator::CuratorArgs),
+
+    /// Explain a diagnostic code: what it means and how to fix it
+    Explain(crate::commands::explain::ExplainArgs),
 
     /// Analyze whole-application health
     Doctor(crate::commands::doctor::DoctorArgs),
@@ -87,6 +94,13 @@ pub fn run_from_args(args: Vec<String>) {
 }
 
 fn run(cli: Cli) {
+    if let Some(code) = cli.explain {
+        return crate::commands::explain::run(crate::commands::explain::ExplainArgs {
+            code: Some(code),
+            locale: "en".into(),
+            list: false,
+        });
+    }
     match cli.command {
         Some(Commands::Build(args)) => crate::commands::build::run(args),
         #[cfg(feature = "glyph")]
@@ -95,6 +109,7 @@ fn run(cli: Cli) {
         Some(Commands::Check(args)) => crate::commands::check::run(args),
         Some(Commands::Inspector(args)) => crate::commands::inspector::run(args),
         Some(Commands::Curator(args)) => crate::commands::curator::run(args),
+        Some(Commands::Explain(args)) => crate::commands::explain::run(args),
         Some(Commands::Doctor(args)) => crate::commands::doctor::run(args),
         Some(Commands::Clean(args)) => crate::commands::clean::run(args),
         #[cfg(unix)]

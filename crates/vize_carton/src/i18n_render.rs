@@ -19,7 +19,7 @@ type MessageMap = FxHashMap<&'static str, &'static str>;
 
 /// Insert the renderer vocabulary into the locale message maps.
 pub(crate) fn register(messages: &mut [MessageMap; 3]) {
-    for &(key, en, ja, zh) in ENTRIES {
+    for &(key, en, ja, zh) in ENTRIES.iter().chain(crate::i18n_explain::ENTRIES) {
         messages[0].insert(key, en);
         messages[1].insert(key, ja);
         messages[2].insert(key, zh);

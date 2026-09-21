@@ -41,6 +41,7 @@ export function parseEntries(source: string): Array<[string, Entry]> {
 export function catalogEntries(): Array<[string, Entry]> {
   return [
     "i18n_render.rs",
+    "i18n_explain.rs",
     "i18n_compiler.rs",
     "i18n_compiler_template.rs",
     "i18n_compiler_directive.rs",

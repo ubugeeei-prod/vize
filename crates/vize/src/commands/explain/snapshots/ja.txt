@@ -1,0 +1,3007 @@
+=== compiler/abrupt-closing-of-empty-comment
+compiler/abrupt-closing-of-empty-comment · コンパイラーエラー
+不正なコメントです。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  コメントは <!-- … --> の形で書いてください。<!--> や <!---> ではコメントが途中で閉じてしまいます
+=== compiler/cache-handler-not-supported
+compiler/cache-handler-not-supported · コンパイラーエラー
+このモードでは cacheHandlers オプションを使えません。
+
+ステージ: emit
+重大度: エラー
+
+ヒント:
+  ハンドラーのキャッシュには prefixIdentifiers が必要です。このモードでは cacheHandlers オプションを外してください
+=== compiler/cdata-in-html-content
+compiler/cdata-in-html-content · コンパイラーエラー
+CDATA セクションは XML コンテキストでのみ使用できます。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  <![CDATA[ … ]]> は <svg> や <math> の中でしか使えません。代わりにテキストをエスケープしてください
+=== compiler/duplicate-attribute
+compiler/duplicate-attribute · コンパイラーエラー
+属性が重複しています。
+
+ステージ: surface
+重大度: 警告
+
+ヒント:
+  どちらか一方を削除するか、値を 1 つにまとめてください
+=== compiler/end-tag-with-attributes
+compiler/end-tag-with-attributes · コンパイラーエラー
+終了タグには属性を指定できません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  属性は対応する開始タグに移してください
+=== compiler/end-tag-with-trailing-solidus
+compiler/end-tag-with-trailing-solidus · コンパイラーエラー
+終了タグの末尾にスラッシュは付けられません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  </div/> ではなく </div> と書いてください
+=== compiler/eof-before-tag-name
+compiler/eof-before-tag-name · コンパイラーエラー
+タグ名の前でファイルが終わっています。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  < の直後でファイルが終わっています。タグを書き終えるか、余分な < を削除してください
+=== compiler/eof-in-cdata
+compiler/eof-in-cdata · コンパイラーエラー
+CDATA セクションの途中でファイルが終わっています。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  ]]> でセクションを閉じてください
+=== compiler/eof-in-comment
+compiler/eof-in-comment · コンパイラーエラー
+コメントの途中でファイルが終わっています。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  --> でコメントを閉じてください
+=== compiler/eof-in-script-html-comment-like-text
+compiler/eof-in-script-html-comment-like-text · コンパイラーエラー
+スクリプトの途中でファイルが終わっています。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  <script> 内の <!-- が閉じられていません。削除するか --> で閉じてください
+=== compiler/eof-in-tag
+compiler/eof-in-tag · コンパイラーエラー
+タグの途中でファイルが終わっています。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  ファイルが終わる前に > でタグを閉じてください
+=== compiler/extend-point
+compiler/extend-point · コンパイラーエラー
+拡張ポイントです。
+
+ステージ: surface
+重大度: エラー
+=== compiler/incorrectly-closed-comment
+compiler/incorrectly-closed-comment · コンパイラーエラー
+コメントの閉じ方が正しくありません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  コメントは --!> ではなく --> で閉じてください
+=== compiler/incorrectly-opened-comment
+compiler/incorrectly-opened-comment · コンパイラーエラー
+コメントの開き方が正しくありません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  コメントは <!-- で始めてください。<! だけでは不正なコメントとして扱われます
+=== compiler/invalid-end-tag
+compiler/invalid-end-tag · コンパイラーエラー
+終了タグが不正です。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  対応する開始タグがありません。この終了タグを削除するか、開始タグを追加してください
+=== compiler/invalid-expression
+compiler/invalid-expression · コンパイラーエラー
+JavaScript の式を解析できませんでした。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  テンプレート内の式は 1 つの JavaScript 式でなければなりません。if や let などの文は書けません
+=== compiler/invalid-first-character-of-tag-name
+compiler/invalid-first-character-of-tag-name · コンパイラーエラー
+タグ名の先頭の文字が不正です。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  タグ名は英字で始めてください。< という文字そのものを表示するには &lt; と書きます
+=== compiler/missing-attribute-value
+compiler/missing-attribute-value · コンパイラーエラー
+属性値がありません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  = の後に値を書くか、= を削除してください
+=== compiler/missing-directive-modifier
+compiler/missing-directive-modifier · コンパイラーエラー
+ディレクティブ修飾子がありません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  @click.stop のように、. の後には修飾子名を書いてください
+=== compiler/missing-directive-name
+compiler/missing-directive-name · コンパイラーエラー
+ディレクティブ名がありません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  v-show のように、v- の後にディレクティブ名を書いてください
+=== compiler/missing-dynamic-directive-argument-end
+compiler/missing-dynamic-directive-argument-end · コンパイラーエラー
+動的ディレクティブ引数の閉じ括弧が見つかりません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  :[key]="value" のように、動的引数を ] で閉じてください
+=== compiler/missing-end-tag
+compiler/missing-end-tag · コンパイラーエラー
+要素の終了タグがありません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  親要素が終わる前にこの要素を閉じてください
+=== compiler/missing-end-tag-name
+compiler/missing-end-tag-name · コンパイラーエラー
+終了タグの名前がありません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  </> は終了タグになりません。</div> のように要素名を書いてください
+=== compiler/missing-interpolation-end
+compiler/missing-interpolation-end · コンパイラーエラー
+補間の終了記号が見つかりません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  }} で補間を閉じてください
+=== compiler/missing-whitespace-between-attributes
+compiler/missing-whitespace-between-attributes · コンパイラーエラー
+属性の間に空白が必要です。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  属性と属性の間を空白で区切ってください
+=== compiler/module-mode-not-supported
+compiler/module-mode-not-supported · コンパイラーエラー
+このモードでは ES モジュールモードを使えません。
+
+ステージ: emit
+重大度: エラー
+
+ヒント:
+  ここでは function モードでコンパイルするか、ES モジュールを出力するビルドに切り替えてください
+=== compiler/nested-comment
+compiler/nested-comment · コンパイラーエラー
+コメントを入れ子にすることはできません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  コメントの中に <!-- は書けません。外側のコメントを先に閉じてください
+=== compiler/prefix-id-not-supported
+compiler/prefix-id-not-supported · コンパイラーエラー
+このモードでは prefixIdentifiers オプションを使えません。
+
+ステージ: emit
+重大度: エラー
+
+ヒント:
+  このモードでは識別子にプレフィックスを付けずにコンパイルします。prefixIdentifiers オプションを外してください
+=== compiler/scope-id-not-supported
+compiler/scope-id-not-supported · コンパイラーエラー
+このモードでは scopeId オプションを使えません。
+
+ステージ: emit
+重大度: エラー
+
+ヒント:
+  スコープ付きスタイルにはモジュールモードが必要です。scopeId オプションを外すか、モードを切り替えてください
+=== compiler/unexpected-character-in-attribute-name
+compiler/unexpected-character-in-attribute-name · コンパイラーエラー
+属性名に使えない文字が含まれています。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  属性名に "、'、< は使えません。= や引用符の書き忘れがないか確認してください
+=== compiler/unexpected-character-in-unquoted-attribute-value
+compiler/unexpected-character-in-unquoted-attribute-value · コンパイラーエラー
+引用符で囲まれていない属性値に使えない文字が含まれています。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  値を引用符で囲んでください。"、'、<、=、   を含む値には引用符が必要です
+=== compiler/unexpected-equals-sign-before-attribute-name
+compiler/unexpected-equals-sign-before-attribute-name · コンパイラーエラー
+属性名の前に予期しない `=` があります。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  属性名を = で始めることはできません。余分な = を削除してください
+=== compiler/unexpected-null-character
+compiler/unexpected-null-character · コンパイラーエラー
+予期しない NULL 文字があります。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  U+0000 文字を削除してください。多くの場合、ファイルの破損やバイナリデータの混入が原因です
+=== compiler/unexpected-question-mark-instead-of-tag-name
+compiler/unexpected-question-mark-instead-of-tag-name · コンパイラーエラー
+タグ名が不正です。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  <? は処理命令の書き出しですが、HTML では使えません。削除してください
+=== compiler/unexpected-solidus-in-tag
+compiler/unexpected-solidus-in-tag · コンパイラーエラー
+タグの中に予期しないスラッシュがあります。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  / を書けるのは、タグを自己終了させる > の直前だけです
+=== compiler/unhandled-code-path
+compiler/unhandled-code-path · コンパイラーエラー
+想定外のコードパスに到達しました。
+
+ステージ: emit
+重大度: エラー
+
+ヒント:
+  コンパイラーの不具合です。発生したテンプレートを添えて報告してください
+=== compiler/v-bind-no-expression
+compiler/v-bind-no-expression · コンパイラーエラー
+v-bind に式がありません。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  :title="title" のように値をバインドするか、同名省略記法の :title（Vue 3.4 以降）を使ってください
+=== compiler/v-bind-same-name-shorthand
+compiler/v-bind-same-name-shorthand · コンパイラーエラー
+v-bind の省略記法には prop 名が必要です。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  同名省略記法には :title のような静的な名前が必要です。動的な :[name] には値を指定してください
+=== compiler/v-else-no-adjacent-if
+compiler/v-else-no-adjacent-if · コンパイラーエラー
+v-else/v-else-if の直前に v-if がありません。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  v-if または v-else-if を持つ要素の直後に置いてください。間に書けるのはコメントと空白だけです
+=== compiler/v-for-malformed-expression
+compiler/v-for-malformed-expression · コンパイラーエラー
+v-for の式が不正です。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  item in items、(item, index) in items、(value, key, index) in object のいずれかの形で書いてください
+=== compiler/v-for-no-expression
+compiler/v-for-no-expression · コンパイラーエラー
+v-for に式がありません。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  v-for="item in items" のように反復の対象を指定してください
+=== compiler/v-for-template-key-placement
+compiler/v-for-template-key-placement · コンパイラーエラー
+<template v-for> の key は <template> タグに指定してください。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  :key を子要素から <template v-for> に移してください
+=== compiler/v-if-no-expression
+compiler/v-if-no-expression · コンパイラーエラー
+v-if/v-else-if に式がありません。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  v-if="visible" のように条件式を指定してください
+=== compiler/v-if-same-key
+compiler/v-if-same-key · コンパイラーエラー
+v-if/v-else-if の各分岐には一意なキーが必要です。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  分岐ごとに異なる key を指定するか、key を省略して Vue に生成させてください
+=== compiler/v-model-arg-on-element
+compiler/v-model-arg-on-element · コンパイラーエラー
+通常の要素では v-model の引数は使えません。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  v-model:title のような引数はコンポーネントでしか使えません。ネイティブの入力要素には引数なしの v-model を使ってください
+=== compiler/v-model-malformed-expression
+compiler/v-model-malformed-expression · コンパイラーエラー
+v-model の値は有効な JavaScript のメンバー式である必要があります。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  v-model は値を書き戻すため、関数呼び出しやリテラルではなく form.title のような変数かプロパティをバインドしてください
+=== compiler/v-model-no-expression
+compiler/v-model-no-expression · コンパイラーエラー
+v-model に式がありません。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  v-model="title" のように、書き込み可能な値をバインドしてください
+=== compiler/v-model-on-props
+compiler/v-model-on-props · コンパイラーエラー
+v-model は props には使えません。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  props は読み取り専用です。代わりに update:<prop> イベントを発行するか、props の値をローカルの状態にコピーしてください
+=== compiler/v-model-on-scope
+compiler/v-model-on-scope · コンパイラーエラー
+v-model は v-for や v-slot のスコープ変数には使えません。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  スコープ変数はローカルなコピーです。v-model="items[index]" のように元のデータをバインドしてください
+=== compiler/v-on-no-expression
+compiler/v-on-no-expression · コンパイラーエラー
+v-on に式がありません。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  @click="save" のようにハンドラーを指定するか、@submit.prevent のように修飾子だけの形にしてください
+=== compiler/v-show-no-expression
+compiler/v-show-no-expression · コンパイラーエラー
+v-show に式がありません。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  v-show="open" のように条件式を指定してください
+=== compiler/v-slot-duplicate-slot-names
+compiler/v-slot-duplicate-slot-names · コンパイラーエラー
+スロット名が重複しています。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  コンポーネントの各スロットは 1 回しか渡せません。2 つの <template> を 1 つにまとめてください
+=== compiler/v-slot-extraneous-default-slot-children
+compiler/v-slot-extraneous-default-slot-children · コンパイラーエラー
+明示的なデフォルトスロットがあるコンポーネントに、余分な子要素があります。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  これらの子要素を <template #default> の中に移すか、明示的なデフォルトスロットを削除してください
+=== compiler/v-slot-misplaced
+compiler/v-slot-misplaced · コンパイラーエラー
+v-slot はコンポーネントか <template> タグにしか使えません。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  内容を <template #name> で囲むか、v-slot をコンポーネントに移してください
+=== compiler/v-slot-mixed-slot-usage
+compiler/v-slot-mixed-slot-usage · コンパイラーエラー
+名前付きスロットと混在した v-slot の使い方が検出されました。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  名前付きスロットを使うコンポーネントでは、デフォルトスロットも <template #default> に書いてください
+=== compiler/v-slot-unexpected-directive-on-slot-outlet
+compiler/v-slot-unexpected-directive-on-slot-outlet · コンパイラーエラー
+<slot> アウトレットにカスタムディレクティブは使えません。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  <slot> 自体は要素を描画しません。ディレクティブは内側か外側の要素に移してください
+=== a11y/alt-text
+a11y/alt-text · lint ルール
+メディア要素に代替テキストを要求する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+=== a11y/anchor-has-content
+a11y/anchor-has-content · lint ルール
+アンカー要素にアクセシブルなコンテンツを必須にする
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  テキストコンテンツ、alt属性を持つ画像、またはaria-label属性を追加してください
+=== a11y/anchor-is-valid
+a11y/anchor-is-valid · lint ルール
+アンカー要素に有効なhrefを強制する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  修正:
+    <!-- 有効なURLを使用 -->
+    <a href="/about">About</a>
+
+    <!-- クリックハンドラには<button>を使用 -->
+    <button @click="handleClick">アクション</button>
+
+    <!-- 動的URLの場合 -->
+    <a :href="url">リンク</a>
+=== a11y/aria-props
+a11y/aria-props · lint ルール
+無効なARIA属性を禁止する
+
+カテゴリー: accessibility
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  理由: 無効なARIA属性は、支援技術がユーザーに意図した意味を伝えることを妨げます。
+  有効なARIA属性はWAI-ARIA仕様で定義されています:
+  https://www.w3.org/TR/wai-aria/#state_prop_def
+  よく使うARIA属性:
+    <!-- ラベル付け -->
+    <input aria-label="検索" />
+    <div aria-labelledby="title-id">
+
+    <!-- 状態 -->
+    <button aria-expanded="false">
+    <input aria-invalid="true">
+
+    <!-- 関係性 -->
+    <input aria-describedby="hint-id">
+    <div aria-controls="panel-id">
+  注意: カスタムaria-*属性は許可されていません。WAI-ARIA仕様の属性のみを使用してください。
+=== a11y/aria-role
+a11y/aria-role · lint ルール
+ARIA roleを持つ要素は、有効で非抽象的なARIA roleを使用する必要がある
+
+カテゴリー: accessibility
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  理由: 無効なARIA roleは、支援技術がユーザーに意図した意味を伝えることを妨げます。
+  有効なARIA roleはWAI-ARIA仕様で定義されています:
+  https://www.w3.org/TR/wai-aria/#role_definitions
+  よく使うrole:
+    <!-- ウィジェットrole -->
+    <div role="button">クリック</div>
+    <div role="dialog">モーダル内容</div>
+    <div role="checkbox">トグル</div>
+
+    <!-- ランドマークrole -->
+    <nav role="navigation">...</nav>
+    <main role="main">...</main>
+    <aside role="complementary">...</aside>
+
+    <!-- ドキュメント構造role -->
+    <div role="heading" aria-level="2">タイトル</div>
+    <div role="list">...</div>
+=== a11y/aria-unsupported-elements
+a11y/aria-unsupported-elements · lint ルール
+ARIA属性をサポートしない要素でのARIA属性を禁止する
+
+カテゴリー: accessibility
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  ARIA属性またはroleを削除してください。<meta>、<html>、<script>、<style>などの要素はレンダリングされず、ARIAをサポートしません
+=== a11y/click-events-have-key-events
+a11y/click-events-have-key-events · lint ルール
+クリックイベントとともにキーボードイベントハンドラを必須にする
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  @keydownまたは@keyupハンドラを追加するか、<button>のようなインタラクティブ要素を使用してください
+=== a11y/form-control-has-label
+a11y/form-control-has-label · lint ルール
+フォームコントロールに関連付けられたラベルを必須にする
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  aria-label、aria-labelledby、またはfor/idが一致する<label>要素を追加してください
+=== a11y/heading-has-content
+a11y/heading-has-content · lint ルール
+見出し要素にアクセシブルなコンテンツを必須にする
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  テキストコンテンツまたはaria-label属性を追加してください
+=== a11y/heading-levels
+a11y/heading-levels · lint ルール
+見出しレベルを飛ばすことを禁止する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  見出しレベルは1つずつ増加すべきです。スクリーンリーダーのユーザーは見出しレベルでナビゲートするため、レベルのスキップはドキュメント構造を混乱させます。
+=== a11y/iframe-has-title
+a11y/iframe-has-title · lint ルール
+iframe要素にtitle属性を必須にする
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  スクリーンリーダー用にiframeの内容を説明するtitle="..."を追加してください
+=== a11y/img-alt
+a11y/img-alt · lint ルール
+画像にalt属性を必須にする
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  情報を伝える画像にはalt="説明"を、装飾的な画像にはalt=""を追加してください
+=== a11y/interactive-supports-focus
+a11y/interactive-supports-focus · lint ルール
+インタラクティブロール要素にフォーカス可能であることを要求する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  理由: インタラクティブロールはキーボードユーザーが操作できることを意味します。
+  修正:
+    <div role="button" tabindex="0" @click="handle">
+    クリック
+    </div>
+  より良い方法: ネイティブのインタラクティブ要素を使用:
+    <button @click="handle">クリック</button>
+=== a11y/label-has-for
+a11y/label-has-for · lint ルール
+ラベルに関連するフォームコントロールを要求する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  修正方法:
+  1. for属性を使用:
+    <label for="name">名前</label>
+    <input id="name" type="text">
+  2. フォームコントロールをラップ:
+    <label>名前 <input type="text"></label>
+=== a11y/landmark-roles
+a11y/landmark-roles · lint ルール
+ランドマークロールの配置と一意性を検証する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+=== a11y/media-has-caption
+a11y/media-has-caption · lint ルール
+メディア要素にキャプションを要求する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  修正:
+    <video src="movie.mp4">
+    <track kind="captions" src="captions.vtt" />
+    </video>
+  代替手段:
+  - 装飾的なメディアにはmuted属性を追加
+  - 説明付きメディアにはaria-labelを追加
+=== a11y/mouse-events-have-key-events
+a11y/mouse-events-have-key-events · lint ルール
+マウスイベントにフォーカス/ブラーイベントを要求する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  理由: キーボード・タッチユーザーはマウスイベントを発火できません。
+  修正:
+    <div
+    @mouseenter="show"
+    @mouseleave="hide"
+    @focus="show"
+    @blur="hide"
+    tabindex="0"
+    >
+    ホバーまたはフォーカスしてください
+    </div>
+=== a11y/no-access-key
+a11y/no-access-key · lint ルール
+accesskey属性の使用を禁止する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  accesskey属性を削除してください。アクセスキーはプラットフォーム間で不一致なキーボードショートカットを作成し、支援技術のショートカットと競合します
+=== a11y/no-aria-hidden-on-focusable
+a11y/no-aria-hidden-on-focusable · lint ルール
+フォーカス可能な要素でのaria-hidden="true"を禁止する
+
+カテゴリー: accessibility
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  aria-hidden="true"を削除するか、tabindex="-1"で要素をフォーカス不可にしてください
+=== a11y/no-autofocus
+a11y/no-autofocus · lint ルール
+autofocus属性の使用を禁止する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  autofocus属性を削除してください。必要な場合はrefとfocus()を使用してプログラムでフォーカスを管理してください
+=== a11y/no-distracting-elements
+a11y/no-distracting-elements · lint ルール
+<marquee>や<blink>などの注意散漫な要素を禁止する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  この要素を削除するか、動きを抑制したCSSアニメーションを使用してください
+=== a11y/no-i-for-icon
+a11y/no-i-for-icon · lint ルール
+<i>要素をアイコンとして使用することを禁止
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  理由: <i>要素はHTMLでは*イタリック体テキスト*を意味します。アイコンフォントとして使用するとアクセシビリティの問題が生じます。スクリーンリーダーが意味のないコンテンツを読み上げる可能性があります。
+  修正: <span>とaria-hidden="true"を使用してください:
+    <span class="fas fa-home" aria-hidden="true"></span>
+    <span class="sr-only">ホーム</span>
+  またはSVGアイコンコンポーネントを使用してください。
+=== a11y/no-redundant-roles
+a11y/no-redundant-roles · lint ルール
+冗長なARIAロールを禁止する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  冗長なrole属性を削除してください。この要素はHTMLのセマンティクスから既にこのロールを暗黙的に持っています
+=== a11y/no-refer-to-non-existent-id
+a11y/no-refer-to-non-existent-id · lint ルール
+存在しないIDへの参照を禁止
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  理由: for、aria-labelledby、aria-describedby等のID参照属性は、そのIDを持つ要素が存在する必要があります。参照が壊れると関連付けが無効になります。
+  修正: 参照先のIDがテンプレート内に存在することを確認してください:
+    <label for="name">名前:</label>
+    <input id="name" type="text">
+=== a11y/no-role-presentation-on-focusable
+a11y/no-role-presentation-on-focusable · lint ルール
+フォーカス可能な要素でのrole="presentation"またはrole="none"を禁止する
+
+カテゴリー: accessibility
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  role属性を削除するか、要素をフォーカス不可にしてください。presentationロールは要素がフォーカス可能なまま意味的な意味を削除します
+=== a11y/no-static-element-interactions
+a11y/no-static-element-interactions · lint ルール
+静的要素のイベントハンドラを禁止する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  理由: 非インタラクティブ要素（div、spanなど）はroleなしでクリック/キーボードハンドラを持つべきではありません。
+  修正方法:
+  1. ネイティブのインタラクティブ要素を使用:
+    <button @click="handle">クリック</button>
+  2. roleとtabindexを追加:
+    <div role="button" tabindex="0" @click="handle">
+    クリック
+    </div>
+=== a11y/placeholder-label-option
+a11y/placeholder-label-option · lint ルール
+select のプレースホルダー用 option に disabled か hidden を必須にする
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  プレースホルダー<option>にdisabledまたはhiddenを追加して、選択されないようにしてください:
+  <option value="" disabled>選択してください</option>
+=== a11y/role-has-required-aria-props
+a11y/role-has-required-aria-props · lint ルール
+ARIAロールに必須プロパティを要求する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  ロール{role}の必須属性: {props}
+  例:
+    <div role="{role}" {props}="...">
+    コンテンツ
+    </div>
+=== a11y/tabindex-no-positive
+a11y/tabindex-no-positive · lint ルール
+正のtabindex値を禁止する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  フォーカス可能な要素にはtabindex="0"を、プログラムによるフォーカスのみにはtabindex="-1"を使用してください
+=== a11y/use-list
+a11y/use-list · lint ルール
+箇条書きのようなテキストにはリスト要素を使うよう提案する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/accessibility.md
+
+ヒント:
+  スクリーンリーダーは箇条書き文字をリスト項目として識別できません。代わりにセマンティックな<ul>/<ol>と<li>要素を使用してください。
+=== css/no-display-none
+css/no-display-none · lint ルール
+display: none の代わりに v-show を使うよう提案する
+
+カテゴリー: css
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== css/no-hardcoded-values
+css/no-hardcoded-values · lint ルール
+ハードコードされた値の代わりに CSS 変数を使うよう提案する
+
+カテゴリー: css
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== css/no-id-selectors
+css/no-id-selectors · lint ルール
+CSS での ID セレクターの使用を非推奨とする
+
+カテゴリー: css
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== css/no-important
+css/no-important · lint ルール
+CSS での !important の使用を非推奨とする
+
+カテゴリー: css
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== css/no-utility-classes
+css/no-utility-classes · lint ルール
+コンポーネントのスタイルでユーティリティクラスを実装することを警告する
+
+カテゴリー: css
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== css/no-v-bind-performance
+css/no-v-bind-performance · lint ルール
+CSS の v-bind() によるパフォーマンスコストを警告する
+
+カテゴリー: css
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== css/prefer-logical-properties
+css/prefer-logical-properties · lint ルール
+国際化に対応しやすい CSS 論理プロパティを推奨する
+
+カテゴリー: css
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== css/prefer-nested-selectors
+css/prefer-nested-selectors · lint ルール
+子孫セレクターには CSS ネストを推奨する
+
+カテゴリー: css
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== css/prefer-slotted
+css/prefer-slotted · lint ルール
+スロットの内容のスタイル指定には ::v-slotted() を推奨する
+
+カテゴリー: css
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== css/require-font-display
+css/require-font-display · lint ルール
+@font-face ルールで font-display を必須にする
+
+カテゴリー: css
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== ecosystem/nuxt-prefer-nuxt-link
+ecosystem/nuxt-prefer-nuxt-link · lint ルール
+アプリ内部へのリンクには NuxtLink を推奨する
+
+カテゴリー: ecosystem
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/ecosystem.md
+=== ecosystem/pinia-prefer-store-to-refs
+ecosystem/pinia-prefer-store-to-refs · lint ルール
+Pinia ストアを分割代入するときは storeToRefs() を推奨する
+
+カテゴリー: Ecosystem
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/ecosystem.md
+=== ecosystem/router-link-require-to
+ecosystem/router-link-require-to · lint ルール
+RouterLink と NuxtLink コンポーネントに遷移先の `to` を必須にする
+
+カテゴリー: ecosystem
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/ecosystem.md
+=== ecosystem/void-link-require-href
+ecosystem/void-link-require-href · lint ルール
+Void Vue の Link コンポーネントに `href` を必須にする
+
+カテゴリー: ecosystem
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/ecosystem.md
+=== ecosystem/void-link-valid-method
+ecosystem/void-link-valid-method · lint ルール
+Void Vue の Link コンポーネントに静的に渡した method を検証する
+
+カテゴリー: ecosystem
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/ecosystem.md
+=== ecosystem/vue-i18n-no-missing-key
+ecosystem/vue-i18n-no-missing-key · lint ルール
+SFC ローカルのメッセージに存在しない静的な vue-i18n キーを報告する
+
+カテゴリー: ecosystem
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/ecosystem.md
+=== ecosystem/vue-router-prefer-named-link
+ecosystem/vue-router-prefer-named-link · lint ルール
+RouterLink では静的なパス文字列より名前付きルートのオブジェクトを推奨する
+
+カテゴリー: ecosystem
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/ecosystem.md
+=== ecosystem/vue-router-prefer-named-push
+ecosystem/vue-router-prefer-named-push · lint ルール
+Vue Router のプログラムによるナビゲーションでは名前付きルートのオブジェクトを推奨する
+
+カテゴリー: Ecosystem
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/ecosystem.md
+=== ecosystem/vue-test-utils-no-html-snapshot
+ecosystem/vue-test-utils-no-html-snapshot · lint ルール
+Vue Test Utils のテストで wrapper.html() をスナップショットに取ることを避ける
+
+カテゴリー: Ecosystem
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/ecosystem.md
+=== html/deprecated-attr
+html/deprecated-attr · lint ルール
+非推奨の HTML 属性を禁止する
+
+カテゴリー: html-conformance
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/html.md
+
+ヒント:
+  代わりに{suggestion}を使用してください。
+=== html/deprecated-element
+html/deprecated-element · lint ルール
+非推奨の HTML 要素を禁止する
+
+カテゴリー: html-conformance
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/html.md
+
+ヒント:
+  この要素はHTML Living Standardで廃止されています。CSSを使用したモダンなHTML要素を代わりに使用してください。
+=== html/id-duplication
+html/id-duplication · lint ルール
+要素 ID の重複を禁止する
+
+カテゴリー: html-conformance
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/html.md
+
+ヒント:
+  要素のIDはドキュメント内で一意でなければなりません。IDの重複はlabel関連付け、ARIA参照、getElementById()を壊します。
+=== html/no-consecutive-br
+html/no-consecutive-br · lint ルール
+<br> 要素を連続して置くことを禁止する
+
+カテゴリー: html-conformance
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/html.md
+
+ヒント:
+  複数の<br>タグの代わりに、<p>要素やCSSのmargin/paddingを使用してください。
+=== html/no-dupe-style-properties
+html/no-dupe-style-properties · lint ルール
+インラインstyle属性内の重複するプロパティを禁止する
+
+カテゴリー: html-conformance
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/html.md
+
+ヒント:
+  重複した宣言を削除してください。同じプロパティを複数回宣言しても最後の値だけが適用されるため、それより前の宣言は無効なコードです。
+=== html/no-duplicate-class
+html/no-duplicate-class · lint ルール
+静的なclass属性内で重複したクラス名を禁止する
+
+カテゴリー: html-conformance
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/html.md
+
+ヒント:
+  重複しているクラス名を削除し、各クラス名がclass属性内で一度だけ現れるようにしてください。
+=== html/no-duplicate-dt
+html/no-duplicate-dt · lint ルール
+<dl> 内で <dt> の名前が重複することを禁止する
+
+カテゴリー: html-conformance
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/html.md
+
+ヒント:
+  定義リスト内の各用語は一意であるべきです。1つの<dt>に定義をまとめるか、異なる用語を使用してください。
+=== html/no-empty-palpable-content
+html/no-empty-palpable-content · lint ルール
+目に見える内容を持つべき要素が空であることを禁止する
+
+カテゴリー: html-conformance
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/html.md
+
+ヒント:
+  テキストコンテンツ、子要素を追加するか、アクセシブルなコンテンツにはaria-labelを使用してください。
+=== html/require-datetime
+html/require-datetime · lint ルール
+<time> 要素に datetime 属性を必須にする
+
+カテゴリー: html-conformance
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/html.md
+
+ヒント:
+  機械可読な日時値を持つdatetime属性を追加してください。例: <time datetime="2024-12-25">クリスマス</time>
+=== musea/no-empty-variant
+musea/no-empty-variant · lint ルール
+空の <variant> ブロックを禁止する
+
+カテゴリー: musea
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== musea/prefer-design-tokens
+musea/prefer-design-tokens · lint ルール
+ハードコードされたプリミティブ値よりデザイントークンの CSS 変数を推奨する
+
+カテゴリー: musea
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== musea/require-component
+musea/require-component · lint ルール
+<art> ブロックに component 属性を必須にする
+
+カテゴリー: musea
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== musea/require-title
+musea/require-title · lint ルール
+artブロックにtitle属性を必須にする
+
+カテゴリー: musea
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+
+ヒント:
+  コンポーネントを説明するtitle属性を追加してください
+=== musea/unique-variant-names
+musea/unique-variant-names · lint ルール
+バリアント名が一意であることを必須にする
+
+カテゴリー: musea
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== musea/valid-variant
+musea/valid-variant · lint ルール
+<variant> ブロックに name 属性を必須にする
+
+カテゴリー: musea
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/musea-and-css.md
+=== nuxt/no-nuxt-config-test-key
+nuxt/no-nuxt-config-test-key · lint ルール
+Nuxt の設定で `test` キーを指定することを禁止する
+
+カテゴリー: Nuxt
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/index.md
+=== nuxt/no-page-meta-runtime-values
+nuxt/no-page-meta-runtime-values · lint ルール
+`definePageMeta` の直下でランタイムの値を参照することを禁止する（ビルド時に別チャンクへ抽出され、コンポーネントの setup より前に実行されるため）
+
+カテゴリー: Nuxt
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/index.md
+=== nuxt/nuxt-config-keys-order
+nuxt/nuxt-config-keys-order · lint ルール
+Nuxt の設定プロパティを推奨の順序で書くことを推奨する
+
+カテゴリー: Nuxt
+既定の重大度: エラー
+自動修正: あり
+ドキュメント: docs/content/rules/index.md
+=== nuxt/prefer-import-meta
+nuxt/prefer-import-meta · lint ルール
+`process.*` より `import.meta.*` を推奨する
+
+カテゴリー: Nuxt
+既定の重大度: エラー
+自動修正: あり
+ドキュメント: docs/content/rules/index.md
+=== petite-vue/no-unsupported-directive
+petite-vue/no-unsupported-directive · lint ルール
+petite-vueがサポートしないディレクティブを禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/index.md
+
+ヒント:
+  petite-vueはv-scope、v-effect、v-if/v-else/v-else-if、v-for、v-show、v-html、v-text、v-model、v-bind(:)、v-on(@)、v-once、v-pre、v-cloak、およびref属性をサポートします。サポートされていないディレクティブを削除するか、サポートされている代替手段を使用してください。
+=== petite-vue/valid-v-effect
+petite-vue/valid-v-effect · lint ルール
+v-effectに空でない式を要求する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/index.md
+
+ヒント:
+  v-effect="el.textContent = count" のように、リアクティブな副作用として実行する文をv-effectに指定するか、空のディレクティブを削除してください。
+=== petite-vue/valid-v-scope
+petite-vue/valid-v-scope · lint ルール
+v-scopeにオブジェクトリテラルをバインドすることを必須にする
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/index.md
+
+ヒント:
+  petite-vueのv-scopeは、オブジェクトリテラル（例: v-scope="{ count: 0 }"）からスコープのバインディングを導入します。オブジェクト以外の値はバインディングを宣言しません。オブジェクトリテラルを使用するか、バインディングなしでスコープルートを示す場合は値なしのv-scopeを使用してください。
+=== script/component-options-name-casing
+script/component-options-name-casing · lint ルール
+コンポーネントの `name` オプションに PascalCase を強制する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/custom-event-name-casing
+script/custom-event-name-casing · lint ルール
+発行するカスタムイベント名に camelCase を強制する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/define-emits-declaration
+script/define-emits-declaration · lint ルール
+defineEmits にはランタイム・配列形式ではなく型ベースの defineEmits<{}>() 形式を強制する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/define-macros-order
+script/define-macros-order · lint ルール
+<script setup> 内の Vue コンパイラーマクロの順序を統一する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/define-props-declaration
+script/define-props-declaration · lint ルール
+defineProps にはランタイム・オブジェクト形式ではなく型ベースの defineProps<{ ... }>() を強制する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/define-props-destructuring
+script/define-props-destructuring · lint ルール
+<script setup> で defineProps の戻り値を分割代入することを禁止する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-arrow-functions-in-watch
+script/no-arrow-functions-in-watch · lint ルール
+Options API の watch ハンドラーにアロー関数を使うことを禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-async-in-computed
+script/no-async-in-computed · lint ルール
+computedプロパティでの非同期関数を禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+ヒント:
+  非同期操作にはrefとcleanup付きのwatch()を使用し、結果を書き込む前に古い処理を中断または無視してください
+=== script/no-boolean-default
+script/no-boolean-default · lint ルール
+Boolean 型の props にデフォルト値を指定することを禁止する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-deep-destructure-in-props
+script/no-deep-destructure-in-props · lint ルール
+definePropsでの深くネストした分割代入を禁止する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+ヒント:
+  シンプルな分割代入を使用し、ネストしたプロパティにはcomputedまたは直接のpropアクセス経由でアクセスしてください: const props = defineProps<...>(); const nested = computed(() => props.parent.child)
+=== script/no-deprecated-data-object-declaration
+script/no-deprecated-data-object-declaration · lint ルール
+コンポーネントの data オプションにオブジェクトリテラルを使うことを禁止する（Vue 3 では関数が必要）
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-deprecated-destroyed-lifecycle
+script/no-deprecated-destroyed-lifecycle · lint ルール
+非推奨の destroyed と beforeDestroy ライフサイクルフックを禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: あり
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-deprecated-dollar-listeners-api
+script/no-deprecated-dollar-listeners-api · lint ルール
+Vue 3 で削除された $listeners インスタンスプロパティを禁止する（$attrs に統合）
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-deprecated-dollar-scopedslots-api
+script/no-deprecated-dollar-scopedslots-api · lint ルール
+Vue 3 で削除された $scopedSlots インスタンスプロパティを禁止する（$slots を使用）
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-deprecated-events-api
+script/no-deprecated-events-api · lint ルール
+削除された Vue 2 のイベント API（$on / $off / $once）を禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-deprecated-props-default-this
+script/no-deprecated-props-default-this · lint ルール
+props の default・validator 関数の中での `this` を禁止する（Vue 3 で削除）
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-dupe-keys
+script/no-dupe-keys · lint ルール
+Options API の props・data・computed・methods・setup・inject の間でのキーの重複を禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-duplicate-attr-inheritance
+script/no-duplicate-attr-inheritance · lint ルール
+フォールスルー属性を二重に適用しているコンポーネントを検出する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-export-in-script-setup
+script/no-export-in-script-setup · lint ルール
+<script setup> 内の export 文を禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-get-current-instance
+script/no-get-current-instance · lint ルール
+getCurrentInstance()を禁止する
+
+カテゴリー: Vapor
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+ヒント:
+  代わりにprovide/injectまたはcomposablesを使用してください
+=== script/no-import-compiler-macros
+script/no-import-compiler-macros · lint ルール
+自動インポートされる Vue コンパイラーマクロをインポートすることを禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-internal-imports
+script/no-internal-imports · lint ルール
+Vue の内部モジュールからのインポートを禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-multiple-slot-args
+script/no-multiple-slot-args · lint ルール
+スコープ付きスロット関数の呼び出しに 2 つ以上の引数を渡すことを禁止する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-next-tick
+script/no-next-tick · lint ルール
+Vapor 向けのコンポーネントで nextTick() を使うことを禁止する
+
+カテゴリー: Vapor
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-options-api
+script/no-options-api · lint ルール
+Options APIパターンを禁止する
+
+カテゴリー: Vapor
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+ヒント:
+  <script setup>とComposition APIを使用するようにリファクタリングしてください
+=== script/no-potential-component-option-typo
+script/no-potential-component-option-typo · lint ルール
+Options API のコンポーネントオプション名にありがちなタイプミスを検出する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-reactive-destructure
+script/no-reactive-destructure · lint ルール
+リアクティビティが失われる、リアクティブオブジェクトの分割代入を禁止する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-ref-as-operand
+script/no-ref-as-operand · lint ルール
+ref をオペランドとして使うときは `.value` 経由でアクセスすることを必須にする
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-required-prop-with-default
+script/no-required-prop-with-default · lint ルール
+required: true とデフォルト値の両方を持つ props を禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-reserved-identifiers
+script/no-reserved-identifiers · lint ルール
+Vue コンパイラーの予約識別子を使うことを禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-reserved-keys
+script/no-reserved-keys · lint ルール
+Options API の props・data・computed・methods・setup・inject のキーに Vue の予約名を使うことを禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-reserved-props
+script/no-reserved-props · lint ルール
+コンポーネントの props 宣言で予約名を使うことを禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-restricted-globals
+script/no-restricted-globals · lint ルール
+型付きラッパーを経由すべき実行環境のグローバル変数を直接参照することを禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-restricted-members
+script/no-restricted-members · lint ルール
+プロジェクトで設定した object.property 形式のメンバーアクセスを禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-side-effects-in-computed-properties
+script/no-side-effects-in-computed-properties · lint ルール
+Options API の computed ゲッターでの副作用を禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-top-level-ref-in-script
+script/no-top-level-ref-in-script · lint ルール
+リクエスト間での状態汚染を防ぐため、トップレベルの ref・reactive を禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-unstable-nested-components
+script/no-unstable-nested-components · lint ルール
+setup や render 関数の中でコンポーネントを定義することを禁止する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-unused-emit-declarations
+script/no-unused-emit-declarations · lint ルール
+宣言されているのに一度も発行されないイベントを検出する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-use-computed-property-like-method
+script/no-use-computed-property-like-method · lint ルール
+Options API の算出プロパティをメソッドのように呼び出すことを禁止する
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-with-defaults
+script/no-with-defaults · lint ルール
+withDefaults を非推奨とし、分割代入でのデフォルト値を推奨する（Vue 3.5 以降）
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/prefer-computed
+script/prefer-computed · lint ルール
+派生したリアクティブな状態には computed() を推奨する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/prefer-define-options
+script/prefer-define-options · lint ルール
+name や inheritAttrs を設定するだけの通常の <script> より defineOptions() を推奨する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/prefer-import-from-vue
+script/prefer-import-from-vue · lint ルール
+内部パッケージではなく 'vue' からインポートすることを推奨する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/prefer-ref-over-reactive
+script/prefer-ref-over-reactive · lint ルール
+状態管理には reactive() より ref() を推奨する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/prefer-use-attrs
+script/prefer-use-attrs · lint ルール
+context.attrs より useAttrs() を推奨する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/prefer-use-id
+script/prefer-use-id · lint ルール
+一意な ID の生成には useId() を推奨する（Vue 3.5 以降）
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/prefer-use-slots
+script/prefer-use-slots · lint ルール
+context.slots より useSlots() を推奨する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/prefer-use-template-ref
+script/prefer-use-template-ref · lint ルール
+テンプレート参照には ref より useTemplateRef を推奨する（Vue 3.5 以降）
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/require-default-prop
+script/require-default-prop · lint ルール
+Boolean 以外の省略可能な props にデフォルト値を必須にする
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/require-explicit-emits
+script/require-explicit-emits · lint ルール
+発行するイベントを defineEmits か emits オプションで宣言することを必須にする
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/require-explicit-slots
+script/require-explicit-slots · lint ルール
+useSlots() で使うスロットに defineSlots<...>() での明示的な型付けを必須にする
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/require-function-return-type
+script/require-function-return-type · lint ルール
+関数に戻り値の型注釈を必須にする
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/require-prop-type-constructor
+script/require-prop-type-constructor · lint ルール
+props の `type` には文字列リテラルではなくコンストラクターを指定することを必須にする
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/require-prop-types
+script/require-prop-types · lint ルール
+すべての props に型の宣言を必須にする
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/require-symbol-provide
+script/require-symbol-provide · lint ルール
+provide・inject のインジェクションキーには Symbol を推奨する
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/require-typed-object-prop
+script/require-typed-object-prop · lint ルール
+ランタイム型が `Object` か `Array` の props に明示的な型を必須にする
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/require-typed-ref
+script/require-typed-ref · lint ルール
+値なし・null・undefined で初期化する ref() に明示的な型引数を必須にする
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/require-valid-default-prop
+script/require-valid-default-prop · lint ルール
+props のデフォルト値が宣言した型に合っていることを必須にする
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/return-in-computed-property
+script/return-in-computed-property · lint ルール
+すべての computed ゲッターで値を返すことを必須にする
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/return-in-emits-validator
+script/return-in-emits-validator · lint ルール
+Options API のすべての emits バリデーターで値を返すことを必須にする
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/valid-define-emits
+script/valid-define-emits · lint ルール
+defineEmits() の正しい使い方を強制する（型とランタイム引数の併用不可、ローカル変数の参照不可、呼び出しは 1 回だけ）
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/valid-define-options
+script/valid-define-options · lint ルール
+defineOptions() の正しい使い方を強制する（引数はオブジェクト 1 つ、props・emits・expose・slots は指定不可）
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/valid-define-props
+script/valid-define-props · lint ルール
+defineProps() の正しい使い方を強制する（呼び出しは 1 回だけ、型とランタイム引数の併用不可、ローカル変数の参照不可）
+
+カテゴリー: Script
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== script/valid-next-tick
+script/valid-next-tick · lint ルール
+nextTick() の結果を await するか、チェーンするか、コールバックを渡すことを必須にする
+
+カテゴリー: Script
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== ssr/no-browser-globals-in-ssr
+ssr/no-browser-globals-in-ssr · lint ルール
+SSRコンテキストでブラウザ専用グローバルを禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/ssr.md
+
+ヒント:
+  ブラウザ専用のコードはonMounted()などのクライアントライフサイクルフックに移動するか、<ClientOnly>を使用してください
+=== ssr/no-hydration-mismatch
+ssr/no-hydration-mismatch · lint ルール
+ハイドレーションミスマッチを引き起こす非決定的な値を禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/ssr.md
+
+ヒント:
+  一意のIDにはuseId()を使用するか、クライアント専用の値には<ClientOnly>でラップしてください
+=== type/no-floating-promises
+type/no-floating-promises · lint ルール
+処理されないまま放置された Promise を禁止する
+
+カテゴリー: type-aware
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== type/no-reactivity-loss
+type/no-reactivity-loss · lint ルール
+代入や関数呼び出しでリアクティブな値がただのスナップショットになることを禁止する
+
+カテゴリー: type-aware
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== type/no-unsafe-template-binding
+type/no-unsafe-template-binding · lint ルール
+安全でない型に解決されるテンプレートのバインディングを禁止する
+
+カテゴリー: type-aware
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== type/require-typed-emits
+type/require-typed-emits · lint ルール
+defineEmits に型定義を必須にする
+
+カテゴリー: type-aware
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== type/require-typed-props
+type/require-typed-props · lint ルール
+defineProps に型定義を必須にする
+
+カテゴリー: type-aware
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+=== vapor/no-inline-template
+vapor/no-inline-template · lint ルール
+非推奨のinline-template属性を禁止する
+
+カテゴリー: vapor
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vapor.md
+
+ヒント:
+  inline-templateの代わりにスロットを使用してください
+=== vapor/no-vue-lifecycle-events
+vapor/no-vue-lifecycle-events · lint ルール
+@vue:xxxの要素ごとのライフサイクルイベントを禁止する
+
+カテゴリー: vapor
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vapor.md
+
+ヒント:
+  代わりにコンポーネントライフサイクルフックを使用してください
+=== vapor/prefer-static-class
+vapor/prefer-static-class · lint ルール
+動的バインディングよりも静的クラスを優先する
+
+カテゴリー: vapor
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vapor.md
+
+ヒント:
+  静的なクラスをclass属性に移動してください
+=== vapor/require-vapor-attribute
+vapor/require-vapor-attribute · lint ルール
+script setup に vapor 属性を付けるよう提案する
+
+カテゴリー: vapor
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vapor.md
+=== vue/a11y-img-alt
+vue/a11y-img-alt · lint ルール
+アクセシビリティのために画像にalt属性を必須にする
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  説明的な画像にはalt="説明"を、装飾的な画像にはalt=""を追加してください
+=== vue/attribute-hyphenation
+vue/attribute-hyphenation · lint ルール
+テンプレートでの属性名のケーシングを強制する
+
+カテゴリー: strongly-recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  属性名にはケバブケースを使用してください
+=== vue/attribute-order
+vue/attribute-order · lint ルール
+テンプレートでの属性の順序を強制する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  推奨される順序に属性を並び替えてください
+=== vue/component-definition-name-casing
+vue/component-definition-name-casing · lint ルール
+コンポーネントファイル名にPascalCaseまたはkebab-caseを強制する
+
+カテゴリー: strongly-recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  ファイル名をPascalCaseまたはkebab-caseに変更してください:
+    myComponent.vue  -> MyComponent.vue
+    my-Component.vue -> my-component.vue
+=== vue/component-name-in-template-casing
+vue/component-name-in-template-casing · lint ルール
+テンプレートでのコンポーネント名のスタイルを強制する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+=== vue/html-button-has-type
+vue/html-button-has-type · lint ルール
+button要素に明示的で有効なtypeを必須にする
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  '<button>' の type は既定で "submit" となり、囲っているフォームを送信します。明示的に type="button"、"submit"、"reset" のいずれかを指定してください。
+=== vue/html-quotes
+vue/html-quotes · lint ルール
+HTML属性の引用符スタイルを強制する
+
+カテゴリー: strongly-recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  HTML属性値に一貫した引用符スタイルを使用してください。
+=== vue/html-self-closing
+vue/html-self-closing · lint ルール
+セルフクロージングスタイルを強制する
+
+カテゴリー: strongly-recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  セルフクロージング構文を使用してください
+=== vue/multi-word-component-names
+vue/multi-word-component-names · lint ルール
+コンポーネント名を複数単語にすることを要求する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  複数の単語を使用するようにコンポーネント名を変更してください（例: "Item"の代わりに"TodoItem"）
+=== vue/mustache-interpolation-spacing
+vue/mustache-interpolation-spacing · lint ルール
+マスタッシュ補間のスペーシングを強制する
+
+カテゴリー: strongly-recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+=== vue/no-array-index-key
+vue/no-array-index-key · lint ルール
+v-forのインデックス変数をそのまま :key に使うことを禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  :key には項目の安定したid（例: :key="item.id"）をバインドしてください。リストの並べ替えやフィルタリングでインデックスは変化するため、Vueが誤った要素の状態を再利用してしまいます。
+=== vue/no-bare-strings-in-template
+vue/no-bare-strings-in-template · lint ルール
+国際化すべきテンプレート内の生の人間可読テキストを禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  テキストを翻訳関数に移してください。例: 内容には {{ $t('key') }}、属性には :title="$t('key')" を使用します。
+=== vue/no-boolean-attr-value
+vue/no-boolean-attr-value · lint ルール
+HTML の真偽値属性に明示的な値を指定することを禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  値を削除してください。{attr}="..."ではなく{attr}のみを使用してください。
+=== vue/no-child-content
+vue/no-child-content · lint ルール
+v-htmlまたはv-text使用時に子コンテンツを禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-htmlまたはv-textを使用する場合、子コンテンツは無視されます。子コンテンツを削除してください
+=== vue/no-deprecated-filter
+vue/no-deprecated-filter · lint ルール
+非推奨の Vue 2 フィルター構文（`|` パイプ）を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  フィルターをメソッド呼び出しまたは算出プロパティに置き換えてください（例: {{ message | capitalize }} ではなく {{ capitalize(message) }}）。
+=== vue/no-deprecated-functional-template
+vue/no-deprecated-functional-template · lint ルール
+SFCの`<template>`への`functional`属性を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  functionalを削除してステートフルなコンポーネントにするか、関数型コンポーネントを通常の関数（レンダー関数やJSXなど）として記述してください。
+=== vue/no-deprecated-html-element-is
+vue/no-deprecated-html-element-is · lint ルール
+ネイティブHTML要素への`is`属性を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  動的コンポーネントには<component :is="...">を使うか、カスタマイズされた組み込み要素には値にvue:を付けてください（例: is="vue:MyComponent"）。
+=== vue/no-deprecated-inline-template
+vue/no-deprecated-inline-template · lint ルール
+非推奨の`inline-template`属性を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  マークアップを子コンポーネントへ移すか、inline-templateの代わりにスロットで渡してください。
+=== vue/no-deprecated-router-link-tag-prop
+vue/no-deprecated-router-link-tag-prop · lint ルール
+<router-link> の非推奨な `tag` プロパティを禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  tag プロパティを削除し、v-slot（href・navigate・isActive を公開します）を使って要素を自分でレンダリングしてください。
+=== vue/no-deprecated-scope-attribute
+vue/no-deprecated-scope-attribute · lint ルール
+<template> の非推奨の scope 属性を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  代わりに v-slot を使用してください（例: <template v-slot="props">）。
+=== vue/no-deprecated-slot-attribute
+vue/no-deprecated-slot-attribute · lint ルール
+非推奨の slot 属性を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  代わりに v-slot を使用してください（例: <template v-slot:header>）。
+=== vue/no-deprecated-slot-scope-attribute
+vue/no-deprecated-slot-scope-attribute · lint ルール
+非推奨の slot-scope 属性を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  代わりに v-slot を使用してください（例: <template v-slot="props">）。
+=== vue/no-deprecated-v-bind-sync
+vue/no-deprecated-v-bind-sync · lint ルール
+`v-bind` の非推奨な `.sync` 修飾子を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  Vue 3 では .sync 修飾子は削除され、引数付きの v-model に統合されました。v-model:<prop> に置き換えてください（例: :title.sync="title" → v-model:title="title"）。
+=== vue/no-deprecated-v-on-native-modifier
+vue/no-deprecated-v-on-native-modifier · lint ルール
+`v-on` の非推奨な `.native` 修飾子を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  Vue 3 では .native 修飾子は削除されました。コンポーネントのイベントとして宣言されていないリスナーは自動的にルート要素へフォールスルーします。.native を削除してください（例: @click.native → @click）。
+=== vue/no-deprecated-v-on-number-modifiers
+vue/no-deprecated-v-on-number-modifiers · lint ルール
+v-on の非推奨な数値 keyCode 修飾子を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  数値 keyCode 修飾子を名前付きキーに置き換えてください（例: @keyup.13 ではなく @keyup.enter）。
+=== vue/no-dupe-v-else-if
+vue/no-dupe-v-else-if · lint ルール
+v-ifチェーンでの重複条件を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  重複する条件を削除または変更してください
+=== vue/no-duplicate-attributes
+vue/no-duplicate-attributes · lint ルール
+重複する属性を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  重複する属性を削除してください
+=== vue/no-empty-component-block
+vue/no-empty-component-block · lint ルール
+<template></template> や <script></script>、<style></style> などの空のSFCブロックを禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  ブロックに意味のある内容を追加するか、ブロックごと削除してください。
+=== vue/no-inline-style
+vue/no-inline-style · lint ルール
+インラインスタイル属性の使用を非推奨にする
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  CSSクラスまたはスコープ付きスタイルを使用してください
+=== vue/no-invalid-html-attribute
+vue/no-invalid-html-attribute · lint ルール
+HTML属性の無効な静的値を禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  この要素で許可されている標準のrelトークンだけを使ってください。例: リンクのnoopener noreferrer、link要素のstylesheet。
+=== vue/no-lone-template
+vue/no-lone-template · lint ルール
+不要なtemplate使用を禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  <template>ラッパーを削除するか、ディレクティブ（v-if、v-for、v-slot）を追加してください
+=== vue/no-multi-spaces
+vue/no-multi-spaces · lint ルール
+複数の連続したスペースを禁止する
+
+カテゴリー: strongly-recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  複数のスペースを1つのスペースに置き換えてください
+=== vue/no-multiple-objects-in-class
+vue/no-multiple-objects-in-class · lint ルール
+:class配列バインディング内の複数のオブジェクトリテラルを禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  オブジェクトを1つにまとめてください。例: :class="[{ a }, { b }]" は :class="{ a, b }" になります。
+=== vue/no-multiple-template-root
+vue/no-multiple-template-root · lint ルール
+テンプレートに複数のルートノードを置くことを禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  テンプレートを1つの描画要素で囲み、条件分岐は1つのv-ifチェーンにまとめてください。
+=== vue/no-mutating-props
+vue/no-mutating-props · lint ルール
+コンポーネントの props を変更することを禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+=== vue/no-negated-v-if-condition
+vue/no-negated-v-if-condition · lint ルール
+v-elseを伴う連鎖で否定されたv-if条件を禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  先頭の '!' を削除し、v-ifとv-elseの分岐の中身を入れ替えてください。
+=== vue/no-non-component-keep-alive-child
+vue/no-non-component-keep-alive-child · lint ルール
+<KeepAlive>直下の通常要素ラッパーを禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  条件やkeyをコンポーネントの子へ移すか、<component :is="...">で動的コンポーネントを直接描画してください
+=== vue/no-preprocessor-lang
+vue/no-preprocessor-lang · lint ルール
+CSS プリプロセッサーを非推奨とし、モダンな CSS を推奨する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+=== vue/no-reserved-component-names
+vue/no-reserved-component-names · lint ルール
+予約されたコンポーネント名を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  予約名を避けるためにコンポーネント名を変更してください
+=== vue/no-root-v-if
+vue/no-root-v-if · lint ルール
+テンプレートの唯一のルート要素への v-if を禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  内容を常に存在するルート要素で囲むか、v-if の代わりに v-show を使用してください。
+=== vue/no-script-non-standard-lang
+vue/no-script-non-standard-lang · lint ルール
+標準外の script の lang 値を非推奨とする
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+=== vue/no-src-attribute
+vue/no-src-attribute · lint ルール
+SFC ブロックでの src 属性を非推奨とする
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+=== vue/no-static-inline-styles
+vue/no-static-inline-styles · lint ルール
+静的なインラインの style 属性を禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+=== vue/no-template-key
+vue/no-template-key · lint ルール
+template要素でのkey属性を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  keyをtemplate内の最初の子要素に移動してください
+=== vue/no-template-lang
+vue/no-template-lang · lint ルール
+template ブロックでの lang 属性を非推奨とする
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+=== vue/no-template-shadow
+vue/no-template-shadow · lint ルール
+v-forでの変数シャドーイングを禁止する
+
+カテゴリー: strongly-recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  シャドーイングを避けるために変数名を変更してください
+=== vue/no-template-target-blank
+vue/no-template-target-blank · lint ルール
+rel="noopener noreferrer"のないtarget="_blank"を禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  新しいタブで開くリンクにはrel="noopener noreferrer"を追加してください。noopenerはwindow.openerを保護し、noreferrerはリファラー情報を送信しません
+=== vue/no-textarea-mustache
+vue/no-textarea-mustache · lint ルール
+textareaでのマスタッシュ補間を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  textareaではマスタッシュ補間の代わりにv-modelを使用してください
+=== vue/no-undefined-refs
+vue/no-undefined-refs · lint ルール
+テンプレート内の未定義参照を禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  変数がインポートされているか、<script setup>で定義されていることを確認してください
+=== vue/no-unsafe-url
+vue/no-unsafe-url · lint ルール
+安全でないURLバインディングについて警告する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  javascript:プロトコルによるXSSを防ぐため、バインディング前にURLをサニタイズしてください
+=== vue/no-unsandboxed-iframe
+vue/no-unsandboxed-iframe · lint ルール
+iframe要素にsandbox属性を必須にする
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  sandbox属性（最も制限的にするにはsandbox=""）を追加し、埋め込みコンテンツに必要な権限だけを再付与してください
+=== vue/no-unused-components
+vue/no-unused-components · lint ルール
+テンプレートで使われないコンポーネントの登録を禁止する
+
+カテゴリー: essential
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+=== vue/no-unused-properties
+vue/no-unused-properties · lint ルール
+defineProps で定義したのに使われない props を禁止する
+
+カテゴリー: strongly-recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+=== vue/no-unused-refs
+vue/no-unused-refs · lint ルール
+<script> で一度も参照されないテンプレート参照（ref="x"）を報告する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+=== vue/no-unused-vars
+vue/no-unused-vars · lint ルール
+v-forディレクティブで未使用の変数定義を禁止する
+
+カテゴリー: essential
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  未使用の変数を削除するか、意図的に使用しないことを示すために_を接頭辞として付けてください
+=== vue/no-use-v-else-with-v-for
+vue/no-use-v-else-with-v-for · lint ルール
+v-forと同じ要素でのv-else-ifまたはv-elseの使用を禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  条件ディレクティブをv-for要素を囲むラッパー要素に移動してください。
+=== vue/no-use-v-if-with-v-for
+vue/no-use-v-if-with-v-for · lint ルール
+v-forと同じ要素でのv-ifの使用を禁止する
+
+カテゴリー: essential
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-ifをラッパー要素に移動するか、computedプロパティを使用してください
+=== vue/no-useless-mustaches
+vue/no-useless-mustaches · lint ルール
+式が定数文字列リテラルのマスタッシュ補間を禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  マスタッシュを素のテキストに置き換えてください（{{ 'x' }} は x になります）。
+=== vue/no-useless-template-attributes
+vue/no-useless-template-attributes · lint ルール
+<template>要素の不要な属性を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  <template>はDOMにレンダリングされません。構造的ディレクティブ（v-if、v-for、v-slot）と:keyのみが有効です
+=== vue/no-useless-v-bind
+vue/no-useless-v-bind · lint ルール
+値が単なる文字列リテラルのv-bindを禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  バインディングを静的属性に置き換えてください（:foo='bar' ではなく foo=bar）。
+=== vue/no-v-for-template-key-on-child
+vue/no-v-for-template-key-on-child · lint ルール
+`<template v-for>`の子要素への`key`を禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  :keyを<template v-for>要素に移動してください。Vue 3ではキーは子要素ではなくtemplateに置きます（Vue 2とは逆）。
+=== vue/no-v-html
+vue/no-v-html · lint ルール
+XSS攻撃を防ぐためにv-htmlの使用を禁止する
+
+カテゴリー: essential
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  テキスト補間{{ }}またはサニタイゼーションライブラリの使用を検討してください
+=== vue/no-v-text
+vue/no-v-text · lint ルール
+v-textディレクティブを禁止し、マスタッシュ補間を推奨する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-text="expr" を要素の内容のマスタッシュ補間に置き換えてください（例: <div>{{ expr }}</div>）。
+=== vue/no-v-text-v-html-on-component
+vue/no-v-text-v-html-on-component · lint ルール
+コンポーネント要素でのv-text/v-htmlを禁止する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  コンポーネントは独自のレンダリングロジックを持っています。propsまたはスロット経由でコンテンツを渡してください
+=== vue/permitted-contents
+vue/permitted-contents · lint ルール
+HTMLコンテンツモデルルールを強制
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  理由: HTMLにはコンテンツモデルルールがあり、どの要素をどの要素内にネストできるかが定義されています。これらのルールに違反すると、ブラウザがDOMを自動修正し、予期しない表示になります。
+  主なルール:
+  - <p>、<span>、<a>にはフレージング（インライン）コンテンツのみ配置可能
+  - <a>と<button>は互いにネスト不可
+  - <ul>/<ol>の直接の子は<li>のみ
+  - <table>の直接の子は<thead>、<tbody>、<tfoot>、<tr>、<caption>のみ
+=== vue/prefer-props-shorthand
+vue/prefer-props-shorthand · lint ルール
+同名propsバインディングに省略構文を強制する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  propsの省略構文を使用してください
+=== vue/prefer-true-attribute-shorthand
+vue/prefer-true-attribute-shorthand · lint ルール
+trueをバインドする真偽値属性は省略形を推奨する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  ='true' のバインディングを削除し、属性名だけを記述してください。
+=== vue/prop-name-casing
+vue/prop-name-casing · lint ルール
+宣言されたprop名のケーシングを強制する
+
+カテゴリー: strongly-recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  propの宣言にはcamelCaseを使用してください（テンプレート側はkebab-caseのままで構いません）:
+    <!-- 悪い例 -->
+    defineProps({ 'my-prop': String })
+
+    <!-- 良い例 -->
+    defineProps({ myProp: String })
+=== vue/require-component-is
+vue/require-component-is · lint ルール
+`<component>`要素に`v-bind:is`を必須にする
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  <component>は動的コンポーネントであり、レンダリングするコンポーネントを決定するためにis属性が必要です
+=== vue/require-component-registration
+vue/require-component-registration · lint ルール
+コンポーネントの明示的なインポートか登録を必須にする
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+=== vue/require-scoped-style
+vue/require-scoped-style · lint ルール
+styleブロックにscoped属性を必須にする
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  styleブロックに'scoped'属性を追加してください
+=== vue/require-toggle-inside-transition
+vue/require-toggle-inside-transition · lint ルール
+`<transition>`で囲む要素にトグルを必須にする
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-if、v-show、v-else、v-else-if、バインドされた:keyを追加するか、動的な<component :is>を使用してください。そうしないと要素が出入りせず、<transition>は何もしません。
+=== vue/require-v-for-key
+vue/require-v-for-key · lint ルール
+v-forディレクティブにv-bind:keyを必須にする
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  各項目を一意に識別できる値を :key に指定してください
+=== vue/scoped-event-names
+vue/scoped-event-names · lint ルール
+整理のためにスコープ付きイベント名を提案する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  汎用的な名前の代わりに'update:modelValue'のようなスコープ付きイベント名を使用してください
+=== vue/sfc-element-order
+vue/sfc-element-order · lint ルール
+SFC のトップレベル要素の順序を統一する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+=== vue/single-style-block
+vue/single-style-block · lint ルール
+style ブロックを 1 つにまとめることを推奨する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+=== vue/slot-name-casing
+vue/slot-name-casing · lint ルール
+v-slotで使用する名前付きスロットにケバブケースを強制する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。
+=== vue/this-in-template
+vue/this-in-template · lint ルール
+テンプレート式での `this.` を禁止する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  'this.' を削除してください。Vue はテンプレートの識別子をコンポーネントインスタンスから自動的に解決します。
+=== vue/use-unique-element-ids
+vue/use-unique-element-ids · lint ルール
+静的リテラルの代わりにuseId()を使用してユニークな要素IDを強制する
+
+カテゴリー: accessibility
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  理由: 静的なid属性は、コンポーネントが複数回レンダリングされると重複IDを引き起こし、アクセシビリティの問題や機能の破損（例：label-input関連付け）につながります。
+  修正: Vue 3.5+ の useId() を使用:
+    <script setup>
+    import { useId } from 'vue'
+
+    const id = useId()
+    </script>
+
+    <template>
+    <label :for="id">名前:</label>
+    <input :id="id" type="text">
+    </template>
+  メリット:
+  - 各コンポーネントインスタンスにユニークなIDを生成
+  - サーバーとクライアントのレンダリング間で安定（SSR対応）
+  - label、ARIA属性、フォーム関連付けに対応
+=== vue/use-v-on-exact
+vue/use-v-on-exact · lint ルール
+システム修飾子使用時にv-onに.exact修飾子を強制する
+
+カテゴリー: essential
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  @clickはCtrl/Shift/Alt/Metaが押されている時も発火します。.exactを追加してシステム修飾子なしの場合のみ発火するようにしてください
+=== vue/v-bind-style
+vue/v-bind-style · lint ルール
+v-bindディレクティブのスタイルを強制する
+
+カテゴリー: strongly-recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  推奨されるスタイルに置き換えてください
+=== vue/v-on-event-hyphenation
+vue/v-on-event-hyphenation · lint ルール
+コンポーネントの v-on におけるカスタムイベント名のハイフネーションを強制する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  発行されるイベント名と一致するように、リスナー名をケバブケースに変更してください。
+=== vue/v-on-handler-style
+vue/v-on-handler-style · lint ルール
+v-onハンドラをメソッド参照またはインライン関数として記述することを強制する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  ハンドラをインライン文ではなく、メソッド参照（例: @click="handler"）またはインライン関数（例: @click="() => count++"）として記述してください。
+=== vue/v-on-style
+vue/v-on-style · lint ルール
+v-onディレクティブのスタイルを強制する
+
+カテゴリー: strongly-recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  推奨されるスタイルに置き換えてください
+=== vue/v-slot-style
+vue/v-slot-style · lint ルール
+v-slotディレクティブのスタイルを強制する
+
+カテゴリー: strongly-recommended
+既定の重大度: 警告
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  省略記法: <template #header> (デフォルト)
+  完全記法: <template v-slot:header>
+  一貫したスタイルを選択してください。
+=== vue/valid-attribute-name
+vue/valid-attribute-name · lint ルール
+有効な属性名を必須にする
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  属性名にスペース、引用符、>、/、=、制御文字を含めることはできません
+=== vue/valid-template-root
+vue/valid-template-root · lint ルール
+Vue 3のフラグメントセマンティクスに対して有効な `<template>` ルートを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  <template> や <slot> をルートノードとして使わず、内容を実要素（例: <div>）で囲んでください。
+=== vue/valid-v-bind
+vue/valid-v-bind · lint ルール
+有効なv-bindディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-bindディレクティブに式を追加してください
+=== vue/valid-v-cloak
+vue/valid-v-cloak · lint ルール
+有効なv-cloakディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-cloakディレクティブから値・引数・修飾子を削除してください
+=== vue/valid-v-else
+vue/valid-v-else · lint ルール
+有効なv-elseディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: あり
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-elseはv-ifまたはv-else-if要素の直後に配置してください
+=== vue/valid-v-for
+vue/valid-v-for · lint ルール
+有効なv-forディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  構文: v-for="item in items" または v-for="(item, index) in items" を使用してください
+=== vue/valid-v-html
+vue/valid-v-html · lint ルール
+有効なv-htmlディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-htmlディレクティブに式を追加し、引数・修飾子を削除してください
+=== vue/valid-v-if
+vue/valid-v-if · lint ルール
+有効なv-ifディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-ifディレクティブに式を追加してください
+=== vue/valid-v-memo
+vue/valid-v-memo · lint ルール
+有効なv-memoディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-memo="[valueA, valueB]"のように依存配列を指定してください
+=== vue/valid-v-model
+vue/valid-v-model · lint ルール
+有効なv-modelディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-modelはinput、textarea、select、またはカスタムコンポーネントで使用できます
+=== vue/valid-v-on
+vue/valid-v-on · lint ルール
+有効なv-onディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  @clickやv-on:clickのようにイベント名を追加してください
+=== vue/valid-v-once
+vue/valid-v-once · lint ルール
+有効なv-onceディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-onceディレクティブから値・引数・修飾子を削除してください
+=== vue/valid-v-show
+vue/valid-v-show · lint ルール
+有効なv-showディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-showディレクティブに式を追加してください
+=== vue/valid-v-slot
+vue/valid-v-slot · lint ルール
+有効なv-slotディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  コンポーネント内のコンポーネントまたはtemplate要素でv-slotを使用してください
+=== vue/valid-v-text
+vue/valid-v-text · lint ルール
+有効なv-textディレクティブを強制する
+
+カテゴリー: essential
+既定の重大度: エラー
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+
+ヒント:
+  v-textディレクティブに式を追加し、引数・修飾子を削除してください
+=== vue/warn-custom-block
+vue/warn-custom-block · lint ルール
+SFC ファイル内のカスタムブロックを警告する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
+=== vue/warn-custom-directive
+vue/warn-custom-directive · lint ルール
+登録が必要なカスタムディレクティブを警告する
+
+カテゴリー: recommended
+既定の重大度: 警告
+自動修正: なし
+ドキュメント: docs/content/rules/vue.md
