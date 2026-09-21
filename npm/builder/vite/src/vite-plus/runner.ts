@@ -27,7 +27,7 @@ export async function runTools(
   const formatCheck =
     task === "fmt:check" || (task === "check" && !fix) || args.includes("--check");
   if (task === "check" && args.some((arg) => arg.startsWith("-") && arg !== "--fix")) {
-    throw new Error("Vize check tasks accept paths and --fix. Put tool options in withVize().");
+    throw new Error("Vize check tasks accept paths and --fix. Put tool options in withVue().");
   }
   let status = 0;
   async function run(binary: string, argv: string[]) {
@@ -65,7 +65,7 @@ export async function runTools(
     const patterns = args.filter((arg) => !["--check", "--write", "-w", "--fix"].includes(arg));
     if (patterns.some((arg) => arg.startsWith("-"))) {
       throw new Error(
-        "Vize fmt tasks accept paths and --check/--write. Put formatter options in withVize().",
+        "Vize fmt tasks accept paths and --check/--write. Put formatter options in withVue().",
       );
     }
     if (options.fmt !== false) {
@@ -96,7 +96,7 @@ export async function runTask(argv: string[]): Promise<number> {
   const loaded = await loadConfigFromFile({ command: "build", mode: "production" });
   const metadata = (loaded?.config as ConfigWithVizeTasks | undefined)?.[taskConfigKey];
   if (!metadata)
-    throw new Error("The current vite.config must export withVize() or withVize().vp(...).");
+    throw new Error("The current vite.config must export withVue() or withVue().vp(...).");
   const vizeRequire = createRequire(import.meta.url);
   const native = path.resolve(path.dirname(vizeRequire.resolve("vize")), "../bin/vize");
   return runTools(task as VizeTask, args, metadata, vp, native, execute);

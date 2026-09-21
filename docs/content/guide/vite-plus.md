@@ -4,26 +4,28 @@ title: Vite+
 
 # Vite+
 
-`withVize` connects the Vize compiler, native typechecker, native linter, and formatter
+`withVue` connects the Vize compiler, native typechecker, native linter, and formatter
 to Vite+ from one config. Install `@vizejs/vite-plugin` and your preferred version of
 `vite-plus` in the project. Vite+ is an optional peer dependency: Vize does not pin,
 download, or replace it. Plain Vite users can keep the ordinary plugin entry.
 
 ```ts
 // vite.config.ts
-import { withVize } from "@vizejs/vite-plugin/vite-plus";
+import { withVue } from "@vizejs/vite-plugin/vite-plus";
 
-export default withVize();
+export default withVue();
 ```
+
+`withVize` is also exported as an alias of `withVue`, with the same configuration and task behavior.
 
 No extra plugin registration or Vize CLI scripts are needed. With no argument,
 the helper reads an existing `vize.config.*` when present. You can instead pass
 the shared configuration directly, including an async config function or scoped entries:
 
 ```ts
-import { withVize } from "@vizejs/vite-plugin/vite-plus";
+import { withVue } from "@vizejs/vite-plugin/vite-plus";
 
-export default withVize({
+export default withVue({
   compiler: { sourceMap: true },
   linter: { preset: "essential", rules: { "vue/no-v-html": "error" } },
   formatter: { singleQuote: true },
@@ -75,14 +77,14 @@ avoid referencing rules unavailable in that version. Explicit `.vp({ lint: { rul
 settings and overrides can re-enable a rule.
 
 Formatting assigns `**/*.vue` to Vize and excludes it from Oxfmt. Configure Vue
-formatting in `withVize({ formatter: ... })`; `.vp({ fmt: ... })` controls Oxfmt.
+formatting in `withVue({ formatter: ... })`; `.vp({ fmt: ... })` controls Oxfmt.
 Use shared Vize `ignores`/scoped entries for native exclusions, and the corresponding
 Vite+ tool's `ignorePatterns` for its exclusions.
 
 The optional second argument controls integration:
 
 ```ts
-export default withVize(
+export default withVue(
   { linter: { preset: "essential" } },
   {
     tasks: { check: "verify", preview: false },
@@ -99,8 +101,8 @@ export default withVize(
   ownership themselves.
 
 Direct Vize CLI commands and editors still discover `vize.config.*`. To share the
-same config with those consumers, keep it in that file and use `withVize()` or
-import the config into `withVize(config)`.
+same config with those consumers, keep it in that file and use `withVue()` or
+import the config into `withVue(config)`.
 
 When compilation is enabled, the helper replaces an existing `vite:vue` plugin
 from `@vitejs/plugin-vue`, including nested and async plugin lists, to prevent

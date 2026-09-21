@@ -26,7 +26,7 @@ function run(cwd: string, args: string[], expected = 0) {
   return output;
 }
 
-test("packed withVize runs native and Vite+ tools using the consumer's installed peer", () => {
+test("packed withVue runs native and Vite+ tools using the consumer's installed peer", () => {
   run(path.join(root, "npm/cli"), ["pack"]);
   run(plugin, ["pack"]);
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vp-consumer space-"));
@@ -52,8 +52,8 @@ test("packed withVize runs native and Vite+ tools using the consumer's installed
     write("package.json", JSON.stringify({ name: "vize-consumer", type: "module", private: true }));
     write(
       "vite.config.ts",
-      `import { withVize } from "@vizejs/vite-plugin/vite-plus";
-export default withVize({ linter: { preset: "essential", rules: { "vue/no-v-html": "error" } } }).vp({
+      `import { withVue } from "@vizejs/vite-plugin/vite-plus";
+export default withVue({ linter: { preset: "essential", rules: { "vue/no-v-html": "error" } } }).vp({
   plugins: [{ name: "vite:vue", transform() { throw new Error("Old Vue compiler must be replaced"); } }],
   lint: { rules: { "no-debugger": "error" } },
   fmt: { ignorePatterns: ["dist/**"] },
@@ -130,11 +130,11 @@ function checkConsumerTypes(directory: string, write: (name: string, value: stri
   write(
     "consumer.mts",
     `import { defineConfig } from "vite-plus";
-import { withVize } from "@vizejs/vite-plugin/vite-plus";
+import { withVue } from "@vizejs/vite-plugin/vite-plus";
 declare module "vite-plus" { interface UserConfig { futureOption?: { enabled: boolean }; } }
-export default defineConfig(withVize().vp({ futureOption: { enabled: true } }));
+export default defineConfig(withVue().vp({ futureOption: { enabled: true } }));
 // @ts-expect-error Consumer Vite+ owns this option's type.
-withVize().vp({ futureOption: { enabled: "wrong" } });
+withVue().vp({ futureOption: { enabled: "wrong" } });
 `,
   );
   const tsc = path.join(path.dirname(require.resolve("typescript/package.json")), "bin/tsc");

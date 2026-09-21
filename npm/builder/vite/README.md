@@ -28,17 +28,19 @@ Install the `vite-plus` version your project uses, then configure the whole tool
 
 ```ts
 // vite.config.ts
-import { withVize } from "@vizejs/vite-plugin/vite-plus";
+import { withVue } from "@vizejs/vite-plugin/vite-plus";
 
-export default withVize();
+export default withVue();
 ```
+
+`withVize` remains available as an alias of `withVue`.
 
 `vp run check`, `vp run lint`, `vp run fmt`, and `vp run build` now include Vize.
 `lint:fix`, `fmt:check`, `dev`, `preview`, and `test` tasks are also available.
-For configuration, use `withVize(vizeConfig).vp(vitePlusConfig)`:
+For configuration, use `withVue(vizeConfig).vp(vitePlusConfig)`:
 
 ```ts
-export default withVize({
+export default withVue({
   linter: { preset: "essential" },
   formatter: { singleQuote: true },
 }).vp({

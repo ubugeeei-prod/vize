@@ -3,18 +3,20 @@ import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { withVize } from "../vite-plus.ts";
+import { withVue, withVize } from "../vite-plus.ts";
 import { taskConfigKey } from "./types.ts";
 import { createTasks } from "./tasks.ts";
 
+assert.equal(withVize, withVue, "withVize must remain the same configurable helper");
+
 const env = { command: "build", mode: "production" } as const;
 
-void test("withVize composes async Vite+ config without mutating either input", async () => {
+void test("withVue composes async Vite+ config without mutating either input", async () => {
   const config = { linter: { preset: "essential" as const } };
   const plugin = { name: "consumer-plugin" };
   const rules = { "vue/valid-define-props": "warn" as const };
   const source = { plugins: [plugin], lint: { rules }, fmt: { ignorePatterns: ["generated/**"] } };
-  const result = await withVize(config, { plugin: false, tasks: false }).vp(async (context) => {
+  const result = await withVue(config, { plugin: false, tasks: false }).vp(async (context) => {
     assert.equal(context.mode, "production");
     return source;
   })(env);
@@ -36,15 +38,15 @@ void test("withVize composes async Vite+ config without mutating either input", 
 void test("tool ownership and conflict defaults can be disabled independently", async () => {
   const vp = { lint: { plugins: ["eslint" as const] }, fmt: { printWidth: 90 } };
   for (const options of [{ conflicts: false }, { lint: false, fmt: false }]) {
-    const config = await withVize({}, { ...options, plugin: false, tasks: false }).vp(vp)(env);
+    const config = await withVue({}, { ...options, plugin: false, tasks: false }).vp(vp)(env);
     assert.equal(config.lint, vp.lint);
     assert.equal(config.fmt, vp.fmt);
   }
 });
 
-void test("bare withVize installs its compiler and preserves caller plugins", async () => {
+void test("bare withVue installs its compiler and preserves caller plugins", async () => {
   const previousCompiler = { name: "vite:vue" };
-  const config = await withVize({}, { tasks: false }).vp({
+  const config = await withVue({}, { tasks: false }).vp({
     plugins: [Promise.resolve([previousCompiler]), { name: "consumer" }],
   })(env);
   const plugins = ((config.plugins ?? []) as unknown[]).flat(Infinity) as { name: string }[];
@@ -98,7 +100,7 @@ void test("each consumer's Vite+ selects the available overlap rules", async () 
         `console.log(${JSON.stringify(JSON.stringify([{ scope: "vue", value: rule }]))});`,
       );
       process.chdir(directory);
-      const config = await withVize({}, { plugin: false, tasks: false })(env);
+      const config = await withVue({}, { plugin: false, tasks: false })(env);
       assert.deepEqual(config.lint?.rules, { [`vue/${rule}`]: "off" });
     } finally {
       process.chdir(cwd);

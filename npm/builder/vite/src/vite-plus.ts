@@ -13,7 +13,7 @@ export type {
 } from "./vite-plus/types.ts";
 
 /** One shared Vize config, with optional configuration owned and typed by Vite+. */
-export function withVize(
+export function withVue(
   config?: UserConfigExport,
   options: VizePlusOptions = {},
 ): VizePlusConfigFactory {
@@ -61,3 +61,6 @@ async function withoutVueCompiler(plugins: PluginOption[]): Promise<PluginOption
   }
   return result;
 }
+
+/** Alias for projects that prefer the Vize toolchain name. */
+export { withVue as withVize };
