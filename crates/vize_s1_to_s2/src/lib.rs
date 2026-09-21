@@ -66,6 +66,7 @@ extern crate alloc;
 extern crate std;
 
 pub mod emit;
+pub mod key;
 pub mod lower;
 pub mod pass;
 

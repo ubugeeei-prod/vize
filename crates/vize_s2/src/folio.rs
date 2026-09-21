@@ -29,6 +29,8 @@
 use alloc::vec::Vec;
 
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::key::{KeySink, KeyedArtifact, schema};
+use vize_davinci::stage::Stage;
 
 mod owned;
 mod parse;
@@ -59,10 +61,22 @@ pub type DisegnoFolio = S2Folio;
 
 impl Folio for S2Folio {
     fn print<W: core::fmt::Write>(&self, w: &mut W, mode: FolioMode) -> core::fmt::Result {
-        print::print(self, w, mode)
+        print::print(self, w, print::Style::folio(mode))
     }
 
     fn parse(input: &str) -> Result<Self, FolioError> {
         parse::parse(input)
+    }
+}
+
+/// The P5-1a S2 page key: the `Full` form with every span rebased to the
+/// block start, so a page keys identically wherever its block sits.
+impl KeyedArtifact for S2Folio {
+    const STAGE: Stage = Stage::Semantic;
+    const SCHEMA_VERSION: u32 = schema::S2_PAGE;
+
+    fn feed_key(&self, sink: &mut KeySink) {
+        let style = print::Style::keyed(sink.block_start());
+        print::print(self, sink, style).expect("a key sink never fails a write");
     }
 }

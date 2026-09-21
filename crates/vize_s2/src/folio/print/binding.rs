@@ -11,15 +11,14 @@ use super::super::owned::{
     FolioVueCssBind, FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow,
     FolioVueSlotScope, FolioVueSync, FolioVueText,
 };
-use super::{end_line, indent, print_expr, print_name, quoted};
-use vize_davinci::folio::FolioMode;
+use super::{Style, end_line, indent, print_expr, print_name, quoted};
 use vize_s0::String;
 
 pub(super) fn print_attribute<W: Write>(
     w: &mut W,
     attribute: &FolioAttribute,
     depth: usize,
-    mode: FolioMode,
+    mode: Style,
 ) -> Result {
     indent(w, depth)?;
     write!(w, "attr {}", attribute.name)?;
@@ -34,7 +33,7 @@ pub(super) fn print_binding<W: Write>(
     w: &mut W,
     binding: &FolioBinding,
     depth: usize,
-    mode: FolioMode,
+    mode: Style,
 ) -> Result {
     match binding {
         FolioBinding::Bind(bind) => print_bind(w, bind, depth, mode),
@@ -97,7 +96,7 @@ fn print_mods<W: Write>(w: &mut W, modifiers: &[String]) -> Result {
     w.write_char(']')
 }
 
-fn print_bind<W: Write>(w: &mut W, bind: &FolioBind, depth: usize, mode: FolioMode) -> Result {
+fn print_bind<W: Write>(w: &mut W, bind: &FolioBind, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("ui.bind")?;
     if let Some(name) = &bind.name {
@@ -112,7 +111,7 @@ fn print_bind<W: Write>(w: &mut W, bind: &FolioBind, depth: usize, mode: FolioMo
     end_line(w, bind.span, mode)
 }
 
-fn print_on<W: Write>(w: &mut W, on: &FolioOn, depth: usize, mode: FolioMode) -> Result {
+fn print_on<W: Write>(w: &mut W, on: &FolioOn, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("ui.on")?;
     if let Some(name) = &on.name {
@@ -131,7 +130,7 @@ fn print_slot_content<W: Write>(
     w: &mut W,
     content: &FolioSlotContent,
     depth: usize,
-    mode: FolioMode,
+    mode: Style,
 ) -> Result {
     indent(w, depth)?;
     w.write_str("ui.slot-content")?;
@@ -151,7 +150,7 @@ fn print_directive<W: Write>(
     w: &mut W,
     directive: &FolioVueDirective,
     depth: usize,
-    mode: FolioMode,
+    mode: Style,
 ) -> Result {
     indent(w, depth)?;
     w.write_str("vue.directive ")?;
@@ -172,7 +171,7 @@ fn print_css_bind<W: Write>(
     w: &mut W,
     bind: &FolioVueCssBind,
     depth: usize,
-    mode: FolioMode,
+    mode: Style,
 ) -> Result {
     indent(w, depth)?;
     w.write_str("vue.css-bind value=")?;
@@ -180,7 +179,7 @@ fn print_css_bind<W: Write>(
     end_line(w, bind.span, mode)
 }
 
-fn print_sync<W: Write>(w: &mut W, sync: &FolioVueSync, depth: usize, mode: FolioMode) -> Result {
+fn print_sync<W: Write>(w: &mut W, sync: &FolioVueSync, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.sync name=")?;
     quoted(w, sync.name.as_str())?;
@@ -194,7 +193,7 @@ fn print_slot_scope<W: Write>(
     w: &mut W,
     scope: &FolioVueSlotScope,
     depth: usize,
-    mode: FolioMode,
+    mode: Style,
 ) -> Result {
     indent(w, depth)?;
     w.write_str("vue.slot-scope")?;
@@ -209,27 +208,27 @@ fn print_slot_scope<W: Write>(
     end_line(w, scope.span, mode)
 }
 
-fn print_once<W: Write>(w: &mut W, once: &FolioVueOnce, depth: usize, mode: FolioMode) -> Result {
+fn print_once<W: Write>(w: &mut W, once: &FolioVueOnce, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.once")?;
     end_line(w, once.span, mode)
 }
 
-fn print_memo<W: Write>(w: &mut W, memo: &FolioVueMemo, depth: usize, mode: FolioMode) -> Result {
+fn print_memo<W: Write>(w: &mut W, memo: &FolioVueMemo, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.memo value=")?;
     print_expr(w, &memo.value, mode)?;
     end_line(w, memo.span, mode)
 }
 
-fn print_show<W: Write>(w: &mut W, show: &FolioVueShow, depth: usize, mode: FolioMode) -> Result {
+fn print_show<W: Write>(w: &mut W, show: &FolioVueShow, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.show value=")?;
     print_expr(w, &show.value, mode)?;
     end_line(w, show.span, mode)
 }
 
-fn print_html<W: Write>(w: &mut W, html: &FolioVueHtml, depth: usize, mode: FolioMode) -> Result {
+fn print_html<W: Write>(w: &mut W, html: &FolioVueHtml, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.html")?;
     if let Some(value) = &html.value {
@@ -239,12 +238,7 @@ fn print_html<W: Write>(w: &mut W, html: &FolioVueHtml, depth: usize, mode: Foli
     end_line(w, html.span, mode)
 }
 
-fn print_vue_text<W: Write>(
-    w: &mut W,
-    text: &FolioVueText,
-    depth: usize,
-    mode: FolioMode,
-) -> Result {
+fn print_vue_text<W: Write>(w: &mut W, text: &FolioVueText, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.text")?;
     if let Some(value) = &text.value {
@@ -254,12 +248,7 @@ fn print_vue_text<W: Write>(
     end_line(w, text.span, mode)
 }
 
-fn print_cloak<W: Write>(
-    w: &mut W,
-    cloak: &FolioVueCloak,
-    depth: usize,
-    mode: FolioMode,
-) -> Result {
+fn print_cloak<W: Write>(w: &mut W, cloak: &FolioVueCloak, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.cloak")?;
     end_line(w, cloak.span, mode)

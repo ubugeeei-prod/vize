@@ -23,6 +23,8 @@
 //! - [`legacy_plan`] — the shipped backends' template traversals, declared as
 //!   plans so a migration has something to be measured against.
 //! - [`folio`] — the textual stage-dump contract (`trait Folio`).
+//! - [`key`] — [`ArtifactKey`](key::ArtifactKey), the span-relative content
+//!   identity every cache of a stage artifact keys on (P5-1a).
 //!
 //! The stage IRs themselves land in their own crates (`vize_s2` for S2);
 //! see `davinci-road/architecture.md`. New implementation code should prefer
@@ -46,6 +48,7 @@ pub mod diagnostic;
 pub mod fact;
 pub mod folio;
 pub mod id;
+pub mod key;
 pub mod legacy_plan;
 pub mod pass;
 pub mod side_table;
