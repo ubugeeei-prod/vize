@@ -69,10 +69,7 @@ function snippet(text: string): string {
     <section class="davinci-stages" aria-label="Davinci stage ladder">
       <header class="davinci-bar">
         <h2 class="davinci-title">Davinci stage ladder</h2>
-        <span
-          v-if="ladderTime !== null"
-          class="davinci-badge"
-          title="analyzeSfc wall time"
+        <span v-if="ladderTime !== null" class="davinci-badge" title="analyzeSfc wall time"
           >{{ ladderTime.toFixed(2) }} ms</span
         >
         <span class="davinci-badge" title="Spolvero feed schema_version">feed v1</span>
