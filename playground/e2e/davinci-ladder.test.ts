@@ -58,13 +58,14 @@ describe("Davinci stage ladder from the real compiler", () => {
       ["s1", ["12 lines"], ["s1/parse"]],
       [
         "s2",
-        ["19 ops", "3 passes"],
+        ["19 ops", "4 passes"],
         [
           "s2/lower",
           "s2-plan/transform",
           "s2/v-slot",
           "s2/v-model",
           "s2/hoist-static",
+          "s2/template-complexity",
           "s2-provenance/transform",
         ],
       ],
@@ -80,6 +81,7 @@ describe("Davinci stage ladder from the real compiler", () => {
       ["s2/v-slot", false, false],
       ["s2/v-model", false, false],
       ["s2/hoist-static", false, false],
+      ["s2/template-complexity", false, false],
       ["s3/lower", true, true],
     ]);
   });
@@ -103,18 +105,19 @@ describe("Davinci stage ladder from the real compiler", () => {
       ["s2/v-slot", "number"],
       ["s2/v-model", "number"],
       ["s2/hoist-static", "number"],
+      ["s2/template-complexity", "number"],
       ["s3/lower", "number"],
     ]);
     expect(ladder.timeline.every((step) => step.nanos! >= 0)).toBe(true);
   });
 
   it("runs each pass in its own walk, per the compiler's plan page", () => {
-    // Two mandatory barriers and an optional analysis with no fusable
-    // neighbour: three walks, each timed once, attributed to its lead pass.
+    // Two mandatory barriers, then the two optional analyses fused into
+    // the third walk, timed once and attributed to its lead pass.
     expect(ladder.walks.map(({ index, passes, fusable }) => [index, passes, fusable])).toEqual([
       [0, ["v-slot"], false],
       [1, ["v-model"], false],
-      [2, ["hoist-static"], true],
+      [2, ["hoist-static", "template-complexity"], true],
     ]);
     expect(ladder.walks.every(({ nanos }) => typeof nanos === "number" && nanos >= 0)).toBe(true);
     expect(ladder.timeline.map(({ key, walk }) => [key, walk])).toEqual([
@@ -123,6 +126,7 @@ describe("Davinci stage ladder from the real compiler", () => {
       ["s2/v-slot", 0],
       ["s2/v-model", 1],
       ["s2/hoist-static", 2],
+      ["s2/template-complexity", 2],
       ["s3/lower", null],
     ]);
   });
@@ -136,6 +140,7 @@ describe("Davinci stage ladder from the real compiler", () => {
       "s1/parse",
       "s2/hoist-static",
       "s2/lower",
+      "s2/template-complexity",
       "s2/v-model",
       "s2/v-slot",
       "s3/lower",

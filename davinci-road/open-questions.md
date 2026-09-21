@@ -102,6 +102,12 @@ which writes the metric spec and confirms or amends this recommendation;
 [P4-9b](./plan/phase-4-tasks-later.md#p4-9b--cross-file-complexity-rule-and-doctor-finding)
 ships the rule and the Doctor finding.
 
+**Confirmed with amendments by P4-9a (2026-09-22):** the definition now lives
+in [complexity-metrics.md](./plan/complexity-metrics.md). Scoped slots nest
+without an increment of their own, `v-else-if`/`v-else` are flat hybrids,
+every non-JS payload counts as unknown, handlers count, and the full-corpus
+p95 pins the defaults at cyclomatic > 11 and cognitive > 16 (warning).
+
 ## `no_std` boundary reality check
 
 Davinci-owned crates are `no_std + alloc` by charter #18, but the practical

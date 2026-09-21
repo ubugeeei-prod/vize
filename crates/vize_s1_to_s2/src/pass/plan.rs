@@ -32,31 +32,35 @@
 //! `run` for the `if let Op::…` that is its whole body, and
 //! `tests/lowering_features.rs` for the behavioural pin. `v-if` joins
 //! the lowering-published families, so its op bit is ignored like
-//! `v-for` and compound text. `hoist` is the one decline made for a
-//! different reason: it is `Optional`, and the DOM emit declines its
-//! product outright under `hoist_static: false`.
+//! `v-for` and compound text. `hoist` and `template-complexity` are the
+//! declines made for a different reason: both are `Optional`, the DOM
+//! emit declines hoist facts outright under `hoist_static: false`, and
+//! no emitter reads complexity facts at all.
 
 use vize_davinci::pass::{PassDesc, Pipeline};
 
 use crate::lower::{LegacyCaps, LoweringFeatures};
 
-use super::{S2_STAGE, hoist, legacy, vmodel, vslot};
+use super::{S2_STAGE, cfg, hoist, legacy, vmodel, vslot};
 
 /// Product-facing selection for optional S2 transform work.
 ///
 /// The transform catalogue stays the full review surface. One-shot DOM
 /// emission can still decline facts it cannot consume: with
 /// `hoist_static: false`, `hoist-static` would only spend an S2 walk to
-/// produce facts that the emitter is required to ignore.
+/// produce facts that the emitter is required to ignore, and no emitter
+/// reads `template-complexity`'s facts at all.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TransformProfile {
     include_static_analysis: bool,
+    include_complexity_analysis: bool,
 }
 
 impl TransformProfile {
     /// The full transform plan.
     pub const DEFAULT: Self = Self {
         include_static_analysis: true,
+        include_complexity_analysis: true,
     };
 
     /// Drop the optional `hoist-static` analysis pass.
@@ -64,12 +68,28 @@ impl TransformProfile {
     pub const fn without_static_analysis(self) -> Self {
         Self {
             include_static_analysis: false,
+            ..self
+        }
+    }
+
+    /// Drop the optional `template-complexity` analysis pass (every
+    /// emitter: none reads it).
+    #[must_use]
+    pub const fn without_complexity_analysis(self) -> Self {
+        Self {
+            include_complexity_analysis: false,
+            ..self
         }
     }
 
     #[must_use]
     pub const fn includes_static_analysis(self) -> bool {
         self.include_static_analysis
+    }
+
+    #[must_use]
+    pub const fn includes_complexity_analysis(self) -> bool {
+        self.include_complexity_analysis
     }
 }
 
@@ -79,17 +99,19 @@ impl TransformProfile {
 /// filtered — never reordered. The passes touch disjoint op families and
 /// carry no semantic dependency on one another (`super::TRANSFORM`'s
 /// docs), which is what makes an arbitrary subset a legal pipeline.
-const SELECTABLE: [(PassDesc, u8); 4] = [
+const SELECTABLE: [(PassDesc, u8); 5] = [
     (legacy::DESC, LEGACY_SUGAR),
     (vslot::DESC, SLOT_CARRIERS),
     (vmodel::DESC, MODEL_BINDINGS),
     (hoist::DESC, STATIC_ANALYSIS),
+    (cfg::DESC, COMPLEXITY_ANALYSIS),
 ];
 
 const LEGACY_SUGAR: u8 = 1 << 0;
 const SLOT_CARRIERS: u8 = 1 << 1;
 const MODEL_BINDINGS: u8 = 1 << 2;
 const STATIC_ANALYSIS: u8 = 1 << 3;
+const COMPLEXITY_ANALYSIS: u8 = 1 << 4;
 
 /// Every mask, hence every plan.
 const PLAN_COUNT: usize = 1 << SELECTABLE.len();
@@ -135,7 +157,7 @@ const fn all_plans() -> [Plan; PLAN_COUNT] {
     let mut plans = [Plan::EMPTY; PLAN_COUNT];
     let mut mask = 0;
     while mask < PLAN_COUNT {
-        // `mask` is bounded by `PLAN_COUNT`, which is `1 << 4`.
+        // `mask` is bounded by `PLAN_COUNT`, which is `1 << 5`.
         #[expect(clippy::cast_possible_truncation)]
         let bits = mask as u8;
         plans[mask] = plan_for_mask(bits);
@@ -149,9 +171,10 @@ static PLANS: [Plan; PLAN_COUNT] = all_plans();
 
 // The full plan is the landed selectable table, and the empty plan is now
 // truly empty: a plan-shape regression is a compile error, not a test failure.
-const _: () = assert!(plan_for_mask(u8::MAX).len == 4);
+const _: () = assert!(plan_for_mask(u8::MAX).len == 5);
 const _: () = assert!(plan_for_mask(0).len == 0);
 const _: () = assert!(plan_for_mask(STATIC_ANALYSIS).len == 1);
+const _: () = assert!(plan_for_mask(STATIC_ANALYSIS | COMPLEXITY_ANALYSIS).len == 2);
 
 fn mask_for(caps: LegacyCaps, features: LoweringFeatures, profile: TransformProfile) -> u8 {
     let mut mask = 0;
@@ -168,6 +191,9 @@ fn mask_for(caps: LegacyCaps, features: LoweringFeatures, profile: TransformProf
     }
     if profile.includes_static_analysis() {
         mask |= STATIC_ANALYSIS;
+    }
+    if profile.includes_complexity_analysis() {
+        mask |= COMPLEXITY_ANALYSIS;
     }
     mask
 }

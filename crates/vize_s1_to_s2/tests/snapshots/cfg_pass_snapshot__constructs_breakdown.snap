@@ -1,0 +1,27 @@
+---
+source: crates/vize_s1_to_s2/tests/cfg_pass_snapshot.rs
+expression: "print_facts(complexity, &source).as_str()"
+---
+[complexity]
+cyclomatic=15
+cognitive=18
+unknown=1
+max-nesting=2
+rows=15
+
+[complexity.breakdown]
+v-if        @18:34 nesting=0 cyclomatic+1 cognitive+1  ready && !failed
+logical     @18:34 nesting=0 cyclomatic+1 cognitive+1  ready && !failed
+v-else-if   @62:91 nesting=0 cyclomatic+1 cognitive+1  failed || timedOut || aborted
+logical     @62:91 nesting=0 cyclomatic+2 cognitive+1  failed || timedOut || aborted
+v-else      @106:127 nesting=0 cyclomatic+0 cognitive+1  <p v-else>loading</p>
+v-for       @158:163 nesting=0 cyclomatic+1 cognitive+1  items
+conditional @188:215 nesting=1 cyclomatic+1 cognitive+2  item.done ? 'done' : 'todo'
+v-if        @233:244 nesting=1 cyclomatic+1 cognitive+2  item.pinned
+logical     @249:283 nesting=2 cyclomatic+2 cognitive+1  item.label ?? item.fallback ?? '-'
+scoped-slot @345:359 nesting=0 cyclomatic+0 cognitive+0  #row="{ row }"
+logical     @378:404 nesting=1 cyclomatic+1 cognitive+1  row.visible && row.enabled
+conditional @409:453 nesting=1 cyclomatic+1 cognitive+2  row.score > 9 ? (row.star ? '**' : '*') : ''
+conditional @426:447 nesting=2 cyclomatic+1 cognitive+3  row.star ? '**' : '*'
+unknown     @526:543 nesting=0 cyclomatic+0 cognitive+0  submit(); reset()
+conditional @563:591 nesting=0 cyclomatic+1 cognitive+1  named ? 'custom' : 'default'

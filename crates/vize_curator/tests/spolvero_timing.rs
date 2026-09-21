@@ -48,17 +48,18 @@ fn every_step_is_timed_between_its_own_two_clock_reads() {
             step("s2", "v-slot", 9_000),
             step("s2", "v-model", 13_000),
             step("s2", "hoist-static", 17_000),
-            step("s3", "lower", 21_000),
+            step("s2", "template-complexity", 21_000),
+            step("s3", "lower", 25_000),
         ]
     );
-    // Every walk of this plan holds one pass (the plan page says so), so a
-    // walk's window is its pass's, closed by the same clock reading.
+    // Barriers own a walk each. `hoist-static` and `template-complexity`
+    // share the third: it opens on read 8 and closes on read 11.
     assert_eq!(
         run.walks,
         vec![
             step("s2", "v-slot", 9_000),
             step("s2", "v-model", 13_000),
-            step("s2", "hoist-static", 17_000),
+            step("s2", "hoist-static", 57_000),
         ]
     );
     // Timing observes: the pages are exactly the untimed ladder's.
@@ -108,8 +109,9 @@ fn the_timings_export_as_a_schema_valid_profile_document() {
             "budget": { "max_spans": 512, "max_counters": 256 },
             "truncation": { "dropped_spans": 0, "dropped_counters": 0 },
             "spans": [
-                step("lower", "s3", 21_000, 32_000),
-                walk("hoist-static", 17_000, 32_000),
+                walk("hoist-static", 57_000, 64_000),
+                step("lower", "s3", 25_000, 32_000),
+                step("template-complexity", "s2", 21_000, 32_000),
                 step("hoist-static", "s2", 17_000, 32_000),
                 walk("v-model", 13_000, 16_000),
                 step("v-model", "s2", 13_000, 16_000),

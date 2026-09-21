@@ -1,0 +1,41 @@
+---
+source: crates/vize_s1_to_s2/tests/cfg_pass_snapshot.rs
+expression: "folio.print_to_string(FolioMode::Full).as_str()"
+---
+[disegno]
+ops=28
+
+[disegno.ops]
+ui.element main @0:616
+  ui.if @9:127
+    branch js("ready && !failed" @18:34) @9:45
+      ui.element p @9:45
+        ui.text "ready" @36:41
+    branch js("failed || timedOut || aborted" @62:91) @48:103
+      ui.element p @48:103
+        ui.text "failed" @93:99
+    branch @106:127
+      ui.element p @106:127
+        ui.text "loading" @116:123
+  ui.element ul @130:308
+    ui.for source=js("items" @158:163) value=js("item" @150:154) @139:300
+      ui.element li @139:300
+        ui.bind name="key" value=js("item.id" @171:178) @165:179
+        ui.bind name="class" value=js("item.done ? 'done' : 'todo'" @188:215) @180:216
+        ui.if @224:290
+          branch js("item.pinned" @233:244) @224:290
+            ui.element b @224:290
+              ui.interpolation js("item.label ?? item.fallback ?? '-'" @249:283) @246:286
+  ui.component List @311:486
+    ui.bind name="rows" value=js("rows" @324:328) @317:329
+    ui.element template @335:476
+      ui.slot-content name="row" params=js("{ row }" @351:358) @345:359
+      ui.element i @367:460
+        vue.show value=js("row.visible && row.enabled" @378:404) @370:405
+        ui.interpolation js("row.score > 9 ? (row.star ? '**' : '*') : ''" @409:453) @406:456
+  ui.element input @489:547
+    ui.model read=js("query" @505:510) write=js("query" @505:510) @496:511
+      attr element-kind="input" @496:511
+    ui.on name="keyup" mods="enter" handler=opaque(multi-statement "submit(); reset()" @526:543) @512:544
+  ui.slot name=js("named ? 'custom' : 'default'" @563:591) @550:608
+    ui.text "fallback" @593:601

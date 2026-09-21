@@ -1,0 +1,26 @@
+---
+source: crates/vize_s1_to_s2/tests/cfg_pass_snapshot.rs
+expression: "print_facts(complexity, &source).as_str()"
+---
+[complexity]
+cyclomatic=13
+cognitive=18
+unknown=0
+max-nesting=3
+rows=14
+
+[complexity.breakdown]
+conditional @50:76 nesting=0 cyclomatic+1 cognitive+1  user ? user.name : 'Guest'
+v-if        @103:123 nesting=0 cyclomatic+1 cognitive+1  isAdmin && !readonly
+logical     @103:123 nesting=0 cyclomatic+1 cognitive+1  isAdmin && !readonly
+logical     @213:234 nesting=0 cyclomatic+1 cognitive+1  loading || refreshing
+scoped-slot @251:274 nesting=0 cyclomatic+0 cognitive+0  #cell="{ row, column }"
+v-if        @294:317 nesting=1 cyclomatic+1 cognitive+2  column.key === 'status'
+conditional @327:352 nesting=2 cyclomatic+1 cognitive+3  row.active ? 'on' : 'off'
+logical     @366:389 nesting=2 cyclomatic+1 cognitive+1  row.status ?? 'unknown'
+v-else-if   @427:459 nesting=1 cyclomatic+1 cognitive+1  column.key === 'link' && row.url
+logical     @427:459 nesting=1 cyclomatic+1 cognitive+1  column.key === 'link' && row.url
+v-else      @503:600 nesting=1 cyclomatic+0 cognitive+1  <template v-else>…
+v-for       @547:555 nesting=2 cyclomatic+1 cognitive+3  row.tags
+v-if        @643:667 nesting=0 cyclomatic+1 cognitive+1  !rows.length && !loading
+logical     @643:667 nesting=0 cyclomatic+1 cognitive+1  !rows.length && !loading

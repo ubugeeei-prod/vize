@@ -29,7 +29,7 @@ ui.component Comp @39:90
 "#;
 
 /// The executed transform plan: the two mandatory barriers own a walk each,
-/// and the optional analysis, having no fusable neighbour, owns the third.
+/// and the two optional analyses share the third.
 const S2_PLAN_PAGE: &str = "[fusion-plan-folio]
 stage=s2
 walks=3
@@ -38,6 +38,7 @@ walks=3
 walk=0 pass=v-slot kind=mandatory-lowering fusability=barrier
 walk=1 pass=v-model kind=mandatory-diagnostic fusability=barrier
 walk=2 pass=hoist-static kind=optional fusability=fusable
+walk=2 pass=template-complexity kind=optional fusability=fusable
 
 ";
 
@@ -166,7 +167,7 @@ fn the_ladder_validates_and_pins_every_rung_exactly() {
 
     // The artifact-selected S2 plan: slot carriers and a model binding keep
     // both mandatory barriers, the default profile keeps the optional static
-    // analysis. Every Vue 3 pass preserves the tree, so its page is the
+    // and complexity analyses. Every Vue 3 pass preserves the tree, so its page is the
     // lowering's page byte for byte - "which pass changed the folio" is none.
     let expected = [
         ("s1", "parse", TEMPLATE),
@@ -175,6 +176,7 @@ fn the_ladder_validates_and_pins_every_rung_exactly() {
         ("s2", "v-slot", S2_PAGE),
         ("s2", "v-model", S2_PAGE),
         ("s2", "hoist-static", S2_PAGE),
+        ("s2", "template-complexity", S2_PAGE),
         ("s2-provenance", "transform", S2_PROVENANCE_PAGE),
         ("s3", "lower", S3_PAGE),
         ("s3-partition", "lower", S3_PARTITION_PAGE),
@@ -199,7 +201,7 @@ fn the_ladder_validates_and_pins_every_rung_exactly() {
 
 #[test]
 fn the_s2_pass_pages_follow_the_artifact_selected_plan() {
-    // No slot carrier, no model: only the optional analysis runs.
+    // No slot carrier, no model: only the optional analyses run.
     let plain = ladder_pages("src/Plain.vue", "<p>{{ a }}</p>");
     assert_eq!(
         rungs(&plain),
@@ -208,6 +210,7 @@ fn the_s2_pass_pages_follow_the_artifact_selected_plan() {
             ("s2", "lower"),
             ("s2-plan", "transform"),
             ("s2", "hoist-static"),
+            ("s2", "template-complexity"),
             ("s2-provenance", "transform"),
             ("s3", "lower"),
             ("s3-partition", "lower"),
@@ -262,9 +265,10 @@ fn a_malformed_template_still_climbs_every_rung() {
             (
                 "s2-plan",
                 "transform",
-                "[fusion-plan-folio]\nstage=s2\nwalks=1\n\n[fusion-plan-folio.passes]\nwalk=0 pass=hoist-static kind=optional fusability=fusable\n\n",
+                "[fusion-plan-folio]\nstage=s2\nwalks=1\n\n[fusion-plan-folio.passes]\nwalk=0 pass=hoist-static kind=optional fusability=fusable\nwalk=0 pass=template-complexity kind=optional fusability=fusable\n\n",
             ),
             ("s2", "hoist-static", s2),
+            ("s2", "template-complexity", s2),
             (
                 "s2-provenance",
                 "transform",

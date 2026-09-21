@@ -34,18 +34,18 @@ use vize_s2::folio::DisegnoFolio;
 /// facts are lowering-published, so a compound run no longer buys a
 /// transform pass.
 const DECLINED_PASS_CASES: &[(&str, &str, u32)] = &[
-    ("plain element", "<div class=\"a\">text</div>", 1),
-    ("nested elements", "<section><p>a</p><p>b</p></section>", 1),
-    ("lone interpolation", "<p>{{ msg }}</p>", 1),
-    ("compound interpolation", "<p>{{ msg }} tail</p>", 1),
+    ("plain element", "<div class=\"a\">text</div>", 2),
+    ("nested elements", "<section><p>a</p><p>b</p></section>", 2),
+    ("lone interpolation", "<p>{{ msg }}</p>", 2),
+    ("compound interpolation", "<p>{{ msg }} tail</p>", 2),
     (
         "bind and on",
         "<button :id=\"id\" @click=\"go\">x</button>",
-        1,
+        2,
     ),
-    ("comment", "<div><!-- note --><span>x</span></div>", 1),
-    ("show directive", "<div v-show=\"open\">x</div>", 1),
-    ("html directive", "<div v-html=\"raw\"></div>", 1),
+    ("comment", "<div><!-- note --><span>x</span></div>", 2),
+    ("show directive", "<div v-show=\"open\">x</div>", 2),
+    ("html directive", "<div v-html=\"raw\"></div>", 2),
 ];
 
 fn features_of(source: &str) -> LoweringFeatures {
@@ -162,7 +162,7 @@ fn a_family_free_template_sets_no_bit() {
             assert!(!features.has_for_ops());
             assert!(!features.has_slot_carriers());
             assert!(!features.has_model_bindings());
-        } else if *expected_passes == 1 {
+        } else if *expected_passes == 2 {
             assert_eq!(
                 features,
                 LoweringFeatures::EMPTY,
@@ -187,6 +187,7 @@ struct Products {
     text_facts: usize,
     model_faults: usize,
     static_facts: usize,
+    complexity: Option<vize_s1_to_s2::pass::ComplexityFacts>,
 }
 
 fn products(
@@ -208,6 +209,7 @@ fn products(
         text_facts: facts.text_facts.len(),
         model_faults: facts.model_faults.len(),
         static_facts: facts.static_facts.len(),
+        complexity: facts.complexity.clone(),
     }
 }
 
@@ -256,13 +258,14 @@ fn declining_a_pass_changes_no_product() {
             planned_passes, *expected_planned_passes,
             "{name}: planned pass count",
         );
-        assert_eq!(forced_passes, 3, "{name}: the full table is three passes");
+        assert_eq!(forced_passes, 4, "{name}: the full table is four passes");
     }
 }
 
-/// The headline measurement, kept beside the claim it supports.
+/// The headline measurement, kept beside the claim it supports: only the
+/// two optional analyses, which share one walk.
 #[test]
-fn a_family_free_template_plans_one_pass_not_three() {
+fn a_family_free_template_plans_two_passes_not_four() {
     let (_, passes) = run("<div class=\"a\"><span>b</span></div>", false);
-    assert_eq!(passes, 1);
+    assert_eq!(passes, 2);
 }
