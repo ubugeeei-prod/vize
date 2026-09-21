@@ -67,7 +67,7 @@ const allowedExtensionEntries = [
   tsVueVsix.typescriptVuePluginAllowedEntry,
   /^extension\/package\.json$/,
   /^extension\/readme\.md$/,
-  /^extension\/syntaxes\/(?:art-vue|vue|vue-script)\.tmLanguage\.json$/,
+  /^extension\/syntaxes\/(?:art-vue|vue|vue-pattern|vue-script)\.tmLanguage\.json$/,
 ];
 
 for (const name of entryNames.filter((entry) => entry.startsWith("extension/"))) {

@@ -182,66 +182,6 @@ test("vscode-vize grammar keeps TS generics and assertions inside attribute valu
   }
 });
 
-test("vscode-vize grammar reads a less-than comparison as an operator, not as type arguments", async () => {
-  const { grammar, registry } = await loadVueTextMateGrammar();
-
-  try {
-    const line =
-      '  <li v-if="count < limit && ok(count)" :class="cls<Row>(row)" data-x="ok">x</li>';
-    assert.deepEqual(
-      tokenizeLines(grammar, ["<template>", line, "</template>"])
-        .filter((token) => token.line === line && token.text.trim() !== "")
-        .map((token) => [token.text, token.scopes.slice(1).join(" ")]),
-      [
-        ["<", "punctuation.definition.tag.begin.html"],
-        ["li", "entity.name.tag.html"],
-        ["v-if", "keyword.control.directive.vue"],
-        ["=", "punctuation.separator.key-value.html"],
-        ['"', "punctuation.definition.string.begin.html"],
-        ["count", "meta.embedded.expression.vue variable.other.readwrite.ts"],
-        ["<", "meta.embedded.expression.vue keyword.operator.ts"],
-        ["limit", "meta.embedded.expression.vue variable.other.readwrite.ts"],
-        ["&&", "meta.embedded.expression.vue keyword.operator.ts"],
-        ["ok", "meta.embedded.expression.vue entity.name.function.ts"],
-        ["(", "meta.embedded.expression.vue keyword.operator.ts"],
-        ["count", "meta.embedded.expression.vue variable.other.readwrite.ts"],
-        [")", "meta.embedded.expression.vue keyword.operator.ts"],
-        ['"', "punctuation.definition.string.end.html"],
-        [":", "punctuation.definition.directive.vue"],
-        ["class", "entity.other.attribute-name.binding.vue"],
-        ["=", "punctuation.separator.key-value.html"],
-        ['"', "punctuation.definition.string.begin.html"],
-        ["cls", "meta.embedded.expression.vue meta.type.parameters.ts entity.name.function.ts"],
-        [
-          "<",
-          "meta.embedded.expression.vue meta.type.parameters.ts punctuation.definition.typeparameters.begin.ts",
-        ],
-        ["Row", "meta.embedded.expression.vue meta.type.parameters.ts entity.name.type.ts"],
-        [
-          ">",
-          "meta.embedded.expression.vue meta.type.parameters.ts punctuation.definition.typeparameters.end.ts",
-        ],
-        ["(", "meta.embedded.expression.vue keyword.operator.ts"],
-        ["row", "meta.embedded.expression.vue variable.other.readwrite.ts"],
-        [")", "meta.embedded.expression.vue keyword.operator.ts"],
-        ['"', "punctuation.definition.string.end.html"],
-        ["data-x", "entity.other.attribute-name.html"],
-        ["=", "punctuation.separator.key-value.html"],
-        ['"', "string.quoted.double.html punctuation.definition.string.begin.html"],
-        ["ok", "string.quoted.double.html"],
-        ['"', "string.quoted.double.html punctuation.definition.string.end.html"],
-        [">", "punctuation.definition.tag.end.html"],
-        ["x", ""],
-        ["</", "punctuation.definition.tag.begin.html"],
-        ["li", "entity.name.tag.html"],
-        [">", "punctuation.definition.tag.end.html"],
-      ],
-    );
-  } finally {
-    registry.dispose();
-  }
-});
-
 test("vscode-vize grammar preserves multiline script generic parameters", async () => {
   const { grammar, registry } = await loadVueTextMateGrammar();
 

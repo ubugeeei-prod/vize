@@ -232,6 +232,42 @@ test("literals, wildcards, entities and rejected declarations have their own sco
   );
 });
 
+test("a <template> arm is a pattern too, in either quote style", () => {
+  for (const quote of ['"', "'"]) {
+    const [line] = tokenize(grammar, [
+      "<template>",
+      `<template v-when=${quote}{ const id }${quote} :key="id">`,
+    ]).slice(1);
+    assert.deepEqual(
+      line.tokens
+        .map((token): [string, string] => [
+          line.text.slice(token.start, token.end),
+          token.scopes.slice(1).join(" "),
+        ])
+        .filter(([text]) => text.trim() !== ""),
+      [
+        ["<", "punctuation.definition.tag.begin.html"],
+        ["template", "entity.name.tag.template.html"],
+        ["v-when", "keyword.control.directive.vue"],
+        ["=", "punctuation.separator.key-value.html"],
+        [quote, "punctuation.definition.string.begin.html"],
+        ["{", "meta.pattern.vue punctuation.definition.pattern.vue"],
+        ["const", "meta.pattern.vue keyword.declaration.pattern.vue"],
+        ["id", "meta.pattern.vue variable.other.constant.ts"],
+        ["}", "meta.pattern.vue punctuation.definition.pattern.vue"],
+        [quote, "punctuation.definition.string.end.html"],
+        [":", "punctuation.definition.directive.vue"],
+        ["key", "entity.other.attribute-name.binding.vue"],
+        ["=", "punctuation.separator.key-value.html"],
+        ['"', "punctuation.definition.string.begin.html"],
+        ["id", "meta.embedded.expression.vue variable.other.readwrite.ts"],
+        ['"', "punctuation.definition.string.end.html"],
+        [">", "punctuation.definition.tag.end.html"],
+      ],
+    );
+  }
+});
+
 test("an unfinished guard ends with its attribute instead of swallowing the tag", () => {
   const [line] = tokenize(grammar, ["<template>", `<p v-when="_ if (a" class="x">text</p>`]).slice(
     1,
