@@ -29,6 +29,8 @@ pub(super) struct ComponentSlots {
     pub(super) named: std::vec::Vec<SlotSpec>,
     /// A `<slot>` outlet anywhere in the content forwards slots.
     pub(super) forwards: bool,
+    /// `createSlots` entries, in content order.
+    pub(super) dynamic: std::vec::Vec<super::create_slots::Dynamic>,
 }
 
 /// The `v-slot` binding of a slot carrier.
@@ -65,14 +67,18 @@ fn slot_head(file: &str, content: &s2::SlotContentOp<'_>) -> Result<(String, Opt
         Some(DynamicName::Static(name)) => name.to_compact_string(),
         Some(DynamicName::Dynamic(_)) => return Err(LegacyReason::Operation.into()),
     };
+    Ok((name, slot_pattern(file, content)?))
+}
+
+/// The props pattern of a `v-slot` spelling, TypeScript erased.
+pub(super) fn slot_pattern(file: &str, content: &s2::SlotContentOp<'_>) -> Result<Option<String>> {
     if !content.modifiers.is_empty() {
         return Err(LegacyReason::Operation.into());
     }
-    let pattern = content.params.map(|params| {
+    Ok(content.params.map(|params| {
         let authored = quote_padded(file, params.source(), params.span());
         vize_atelier_core::steps::strip_typescript_from_expression(authored)
-    });
-    Ok((name, pattern))
+    }))
 }
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
@@ -95,6 +101,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             default: std::vec::Vec::new(),
             named: std::vec::Vec::new(),
             forwards,
+            dynamic: std::vec::Vec::new(),
         };
         if let Some(content) = slot_content(&component.bindings) {
             let (name, pattern) = slot_head(self.ctx.source, content)?;
@@ -114,7 +121,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         }
         for child in children {
             let child_end = self.child_end(child)?;
-            if let Some((element, content)) = self.template_slot(child) {
+            if let Some(dynamic) = self.dynamic_slot_source(child)? {
+                slots.dynamic.push(dynamic);
+            } else if let Some((element, content)) = self.template_slot(child) {
                 let (name, pattern) = slot_head(self.ctx.source, content)?;
                 let inner = child + 1 + element.attributes.len() + element.bindings.len();
                 let ranges = self
@@ -127,10 +136,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                     pattern,
                     ranges,
                 });
-            } else if self.segments[child..child_end].iter().any(|segment| {
-                matches!(segment.source, Source::Element(element) if slot_content(&element.bindings).is_some())
-            }) {
-                // A slot carrier under `v-if` / `v-for` needs `createSlots`.
+            } else if self.nested_carrier(child, child_end)? {
+                // A slot carrier nested below plain content has no legacy
+                // `createSlots` entry shape the plan emitter reproduces.
                 return Err(LegacyReason::Operation.into());
             } else {
                 slots.default.push((child, child_end));
@@ -139,8 +147,25 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         Ok(slots)
     }
 
+    /// Whether `[start, end)` holds a slot carrier outside the content of
+    /// nested components (which own their own carriers).
+    fn nested_carrier(&self, start: usize, end: usize) -> Result<bool> {
+        let mut pos = start;
+        while pos < end {
+            let segment = self.segments[pos];
+            match (segment.kind, segment.source) {
+                (Kind::Component, _) => pos = self.child_end(pos)?,
+                (_, Source::Element(element)) if slot_content(&element.bindings).is_some() => {
+                    return Ok(true);
+                }
+                _ => pos += 1,
+            }
+        }
+        Ok(false)
+    }
+
     /// The `<template v-slot>` carrier at `start`, if it is one.
-    fn template_slot(
+    pub(super) fn template_slot(
         &self,
         start: usize,
     ) -> Option<(&'r s2::ElementOp<'a>, &'r s2::SlotContentOp<'a>)> {
@@ -165,6 +190,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     /// The push-form slots object, written in place.
     pub(super) fn emit_slots_object(&mut self, slots: &ComponentSlots) -> Result<()> {
+        if !slots.dynamic.is_empty() {
+            return self.emit_create_slots(slots);
+        }
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
         self.ctx.push("{\n");
         self.ctx.indent_level += 1;
@@ -193,7 +221,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         Ok(())
     }
 
-    fn slot_property(&mut self, spec: &SlotSpec) -> Result<()> {
+    pub(super) fn slot_property(&mut self, spec: &SlotSpec) -> Result<()> {
         self.ctx.push_indent();
         if is_valid_js_identifier(&spec.name) {
             self.ctx.push(&spec.name);
@@ -208,7 +236,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     /// `_withCtx((params, _push, _parent, _scopeId) => { if (_push) { ... }
     /// else { return [...] } })`.
-    fn slot_fn(&mut self, spec: &SlotSpec) -> Result<()> {
+    pub(super) fn slot_fn(&mut self, spec: &SlotSpec) -> Result<()> {
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
         self.ctx.push("_withCtx((");
         self.ctx.push(spec.pattern.as_deref().unwrap_or("_"));

@@ -178,9 +178,13 @@ divergences).
 _Eighth slice 2026-09-22:_ `<component :is>`, component `v-model`
 arguments and modifiers, and whitespace/comment gaps between `v-if` branches
 emit from the plan (checkout smoke: 643 of 717; vendor sample: 1,207 of
-1,279; 0 divergences). `createSlots` shapes, custom directives, `v-once` /
-`v-cloak`, `@vize:` directive comments, a canonical Real Project Matrix run,
-and the legacy walker deletion remain before P3-8 closes.
+1,279; 0 divergences).
+_Ninth slice 2026-09-22:_ `createSlots` shapes (conditional, looped, and
+dynamically named slot templates) emit from the plan, and every traversal
+ladder fixture now skips the legacy SSR codegen walk (checkout smoke: 650 of
+717; vendor sample: 1,242 of 1,279; 0 divergences). Custom directives,
+`v-once` / `v-cloak`, `@vize:` directive comments, a canonical Real Project
+Matrix run, and the legacy walker deletion remain before P3-8 closes.
 
 **P3-9 S4 emitter + source maps.** Structured span-carrying emission document
 replaces `CodegenContext.code` string appends across dom/vapor/ssr; one

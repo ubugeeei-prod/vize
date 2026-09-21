@@ -190,10 +190,17 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     pub(super) fn vnode_slots(&mut self, component: &'r s2::ComponentOp<'a>) -> Result<String> {
         let start = self.pos;
         let slots = self.component_slots(component, start)?;
-        let has_content =
-            slots.own.is_some() || !slots.default.is_empty() || !slots.named.is_empty();
+        let has_content = slots.own.is_some()
+            || !slots.default.is_empty()
+            || !slots.named.is_empty()
+            || !slots.dynamic.is_empty();
         if !has_content {
             return Ok("null".to_compact_string());
+        }
+        if !slots.dynamic.is_empty() {
+            let out = self.vnode_create_slots(&slots)?;
+            self.pos = self.region_end(start)?;
+            return Ok(out);
         }
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
         let mut out = String::from("{ ");
@@ -218,12 +225,17 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     /// `name: _withCtx((params) => [children])`.
-    fn vnode_slot_entry(&mut self, spec: &super::slots::SlotSpec) -> Result<String> {
+    pub(super) fn vnode_slot_entry(&mut self, spec: &super::slots::SlotSpec) -> Result<String> {
         let key = if is_identifier(&spec.name) {
             spec.name.clone()
         } else {
             quoted_js_string(&spec.name)
         };
+        Ok(cstr!("{key}: {}", self.vnode_slot_fn(spec)?))
+    }
+
+    /// `_withCtx((params) => [children])`.
+    pub(super) fn vnode_slot_fn(&mut self, spec: &super::slots::SlotSpec) -> Result<String> {
         let mut params = vize_s0::FxHashSet::default();
         if let Some(pattern) = spec.pattern.as_deref() {
             crate::codegen::helpers::extract_destructure_params(pattern.trim(), &mut params);
@@ -239,7 +251,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         }
         self.exprs.leave(mark);
         let pattern = spec.pattern.as_deref().unwrap_or("_");
-        Ok(cstr!("{key}: _withCtx(({pattern}) => {})", children?))
+        Ok(cstr!("_withCtx(({pattern}) => {})", children?))
     }
 
     /// The position of the closing segment of the region starting at `start`.

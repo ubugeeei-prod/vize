@@ -175,7 +175,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
 /// A callback parameter spelled exactly as authored. Empty or typed
 /// positions have no reproducible legacy spelling and keep the legacy lane.
-fn alias<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
+pub(super) fn alias<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
     let source = match expr {
         ExprRef::Js(js) => js.source,
         ExprRef::Opaque(opaque) => opaque.source,

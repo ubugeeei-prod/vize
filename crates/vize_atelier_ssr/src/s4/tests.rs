@@ -71,11 +71,11 @@ fn unsupported_emission_options_select_legacy_after_the_witness() {
 fn unowned_shapes_name_their_legacy_reason() {
     let cases = [
         (
-            r#"<Foo><template #[n]>x</template></Foo>"#,
+            r#"<Foo><div v-if="a"><template #a>x</template></div></Foo>"#,
             LegacyReason::Operation,
         ),
         (
-            r#"<Foo><template v-if="a" #a>x</template></Foo>"#,
+            r#"<Foo><template #[names[0]]>x</template></Foo>"#,
             LegacyReason::Operation,
         ),
         (r#"<Foo v-model:[a]="x" />"#, LegacyReason::Binding),
