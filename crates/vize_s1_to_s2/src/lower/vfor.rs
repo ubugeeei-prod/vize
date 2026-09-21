@@ -37,6 +37,18 @@ pub(crate) struct ForSplit {
     pub source_start: usize,
 }
 
+/// Vue's `v-for` split of an authored value, for surface consumers that
+/// must agree with the lowering (the Patina markup facade, P4-7a): the
+/// value alias when authored and the source, as sub-slices of `raw`.
+/// `None` when the value does not split — the lowering then keeps it
+/// whole as `Opaque(ForValue)`.
+pub fn split_v_for_value(raw: &str) -> Option<(Option<&str>, &str)> {
+    let split = split_for(raw)?;
+    let aliases = split_aliases(&raw[..split.alias_end])?;
+    let value = aliases.first().copied().filter(|alias| !alias.is_empty());
+    Some((value, &raw[split.source_start..]))
+}
+
 /// Find the first viable ` in ` / ` of ` separator: the keyword with
 /// whitespace on both sides, exactly the shipped grammar.
 pub(crate) fn split_for(content: &str) -> Option<ForSplit> {

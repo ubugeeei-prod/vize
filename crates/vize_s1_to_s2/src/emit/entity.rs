@@ -9,7 +9,10 @@ use core::num::IntErrorKind;
 use htmlize::{Context, ENTITIES, ENTITY_MAX_LENGTH, ENTITY_MIN_LENGTH};
 use vize_s0::String;
 
-pub(super) fn decode_html_entities(source: &str) -> String {
+/// Decode HTML entities exactly as the Vue template tokenizer does — the one
+/// decoder every S2 consumer of authored text uses (DOM emission, and the
+/// Patina markup facade reading merged text parts).
+pub fn decode_html_entities(source: &str) -> String {
     if !source.contains('&') {
         return String::from(source);
     }
@@ -24,6 +27,32 @@ pub(super) fn decode_html_entities(source: &str) -> String {
             continue;
         }
         if let Some((ch, consumed)) = try_decode_entity(&bytes[index..], Context::General) {
+            out.push(ch);
+            index += consumed;
+            continue;
+        }
+
+        let ch = source[index..].chars().next().unwrap_or('\u{FFFD}');
+        out.push(ch);
+        index += ch.len_utf8();
+    }
+    out
+}
+
+/// Decode HTML entities in an authored attribute value with the tokenizer's
+/// attribute-context rules (a legacy named reference followed by `=` or an
+/// alphanumeric stays literal) — the same decoding the template parser
+/// applies to every attribute value.
+pub fn decode_html_attribute_entities(source: &str) -> String {
+    if !source.contains('&') {
+        return String::from(source);
+    }
+
+    let bytes = source.as_bytes();
+    let mut out = String::with_capacity(source.len());
+    let mut index = 0usize;
+    while index < bytes.len() {
+        if let Some((ch, consumed)) = try_decode_entity(&bytes[index..], Context::Attribute) {
             out.push(ch);
             index += consumed;
             continue;

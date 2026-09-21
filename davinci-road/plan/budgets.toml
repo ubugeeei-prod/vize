@@ -205,11 +205,11 @@ s1_to_s2_emit_von_two_per_bucket = { wall_p50_ns = 0, allocs = 18, rss_peak_byte
 # the output path before the production-lane switch.
 s1_to_s2_emit_p2_11_dom_surface = { wall_p50_ns = 0, allocs = 60, rss_peak_bytes = 0, wall_tolerance = 0.10 }
 
-# Patina direct-IR JSX markup probe. The measured window is the per-rule
-# `visit_with` loop over a one-root, diagnostic-free JSX module; root
-# discovery streams into the walker, so the *measured* zero is the witness
-# that no per-rule root vector (or child spill) exists on the pass.
+# Patina markup probes: the per-rule `visit_with` window over one diagnostic-free
+# root, as JSX and (P4-7a) as a Vue template through the S2 facade, parse and
+# lowering as setup. Measured zeros: zero-copy views, no root vector or spill.
 patina_jsx_markup_one_root = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+patina_s2_markup_one_root = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
 # Musea `parse_art` on the S0/S1 reader (P4-13). Each window is one whole
 # parse over a pinned Art file: the corpus's `defineArt()` shape, the legacy

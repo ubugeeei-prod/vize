@@ -11,6 +11,8 @@ const ssrS4CorpusCommand =
   'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture';
 const jsxS2VdomParityCommand =
   "cargo test -p vize_atelier_jsx --features davinci-differential --lib vdom::s2_differential::s2_vdom_admitted_cases_match_relief_codegen -- --exact";
+const patinaMarkupDifferentialCommand =
+  'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features davinci-differential --test davinci_markup_differential -- --nocapture';
 
 test("feature-gated S1-to-S2 corpus lanes ride the required clippy-and-test job", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
@@ -64,5 +66,13 @@ test("feature-gated S1-to-S2 corpus lanes ride the required clippy-and-test job"
   assert.ok(
     clippyJob.includes(jsxS2VdomParityCommand),
     "the feature-gated JSX S2 VDOM parity entry must run explicitly after cargo test --workspace",
+  );
+  assert.match(
+    readRepoFile("crates", "vize_patina", "Cargo.toml"),
+    /^\[\[test\]\]\nname = "davinci_markup_differential"\nrequired-features = \["davinci-differential"\]$/m,
+  );
+  assert.ok(
+    clippyJob.includes(patinaMarkupDifferentialCommand),
+    "the P4-7a markup facade lane must sweep the checkout's own .vue shard after cargo test --workspace",
   );
 });

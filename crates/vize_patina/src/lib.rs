@@ -125,7 +125,7 @@ pub use linter::{LintResult, Linter};
 pub use markup::{
     MarkupAttribute, MarkupBinding, MarkupBindingKind, MarkupConditional, MarkupContext,
     MarkupDirective, MarkupDocument, MarkupDocumentVisitor, MarkupElement, MarkupElementKind,
-    MarkupList, MarkupNode, MarkupRule, MarkupText,
+    MarkupList, MarkupNode, MarkupRule, MarkupText, S2Markup, S2Template,
 };
 pub use output::{OutputFormat, format_results, format_summary, rule_docs_path};
 pub use preset::LintPreset;

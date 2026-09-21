@@ -135,6 +135,7 @@ pub use self::budget::{
 use self::buf::Buf;
 pub(crate) use self::custom_element::tag_pattern_matches;
 use self::dispatch::{emit_for_item_call, emit_for_op, emit_if_branch_call, emit_if_op};
+pub use self::entity::{decode_html_attribute_entities, decode_html_entities};
 pub use self::entry::{
     DomEmit, DomEmitSections, emit_dom_source, emit_dom_source_with_caps,
     emit_dom_source_with_options,

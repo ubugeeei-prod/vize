@@ -1,4 +1,4 @@
-use super::{MarkupElement, MarkupElementInner};
+use super::element::{MarkupElement, MarkupElementInner};
 use vize_relief::TemplateChildNode;
 
 pub(super) fn walk_relief_children<'a>(
