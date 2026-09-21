@@ -86,24 +86,6 @@
       "covered": 35,
       "exact": 35
     },
-    "legacy-sfc/text-matching-recovery": {
-      "anchors": {
-        "script-and-setup:const title = ref('Hello')@7:1": "exact",
-        "script-and-setup:export const version = '1.0.0'@2:1": "exact",
-        "script-and-setup:function rename(next) {@8:1": "exact",
-        "script-and-setup:import { ref } from 'vue'@6:1": "exact",
-        "script-and-setup:title.value = next@9:3": "exact",
-        "setup-counter:const count = ref(0)@8:1": "exact",
-        "setup-counter:const label = computed(() => `Count: ${count.value}`)@10:1": "exact",
-        "setup-counter:const step = ref(2)@9:1": "exact",
-        "setup-counter:count.value += step.value@12:3": "exact",
-        "setup-counter:function bump() {@11:1": "exact",
-        "setup-counter:import { computed, ref } from 'vue'@6:1": "exact"
-      },
-      "authored": 11,
-      "covered": 11,
-      "exact": 11
-    },
     "sfc/rewritten-statement": {
       "anchors": {
         "async-setup:const count = ref(data.count)@4:1": "exact",

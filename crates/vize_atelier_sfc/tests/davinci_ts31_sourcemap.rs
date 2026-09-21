@@ -60,13 +60,7 @@ fn measure_battery() -> serde_json::Value {
             measure_fixture(&mut rows, backend, fixture, compile::TEMPLATE_FILENAME);
         }
     }
-    for backend in [Backend::Sfc, Backend::LegacySfc] {
-        for fixture in &sfcs {
-            measure_fixture(&mut rows, backend, fixture, compile::SFC_FILENAME);
-        }
-    }
-    // Rewritten statements are measured on the structured SFC map only.
-    for fixture in &sfc_rewrites {
+    for fixture in sfcs.iter().chain(&sfc_rewrites) {
         measure_fixture(&mut rows, Backend::Sfc, fixture, compile::SFC_FILENAME);
     }
     let rows = rows

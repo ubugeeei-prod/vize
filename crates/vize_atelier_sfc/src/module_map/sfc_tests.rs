@@ -68,7 +68,7 @@ fn render(code: &str, source: &str, map: &serde_json::Value) -> Vec<String> {
         .collect()
 }
 
-const SHAPES: [&str; 7] = [
+const SHAPES: [&str; 8] = [
     "<script setup>\nimport { ref } from 'vue'\nconst n = ref(1)\n</script>\n<template><p>{{ n }}</p></template>\n",
     "<script setup lang=\"ts\">\nconst props = defineProps<{ a: string }>()\nconst b: number = 1\n</script>\n<template><p>{{ props.a }}{{ b }}</p></template>\n",
     "<script lang=\"ts\">\nexport default { data: () => ({ n: 1 as number }) }\n</script>\n<template><p>{{ n }}</p></template>\n",
@@ -76,6 +76,7 @@ const SHAPES: [&str; 7] = [
     "<script setup>\nconst Lazy = defineLazyHydrationComponent('visible', () => import('./A.vue'))\nconst keep = 1\n</script>\n<template><Lazy :n=\"keep\" /></template>\n",
     "<script setup>\ndefinePageMeta({ layout: 'x' })\nconst after = 2\n</script>\n<template><p>{{ after }}</p></template>\n",
     "<script setup>\nimport { reactive } from 'vue'\nconst form = reactive({ a: '' })\nconst stay = await Promise.resolve(1)\n</script>\n<template><input v-model=\"form\">{{ stay }}</template>\n",
+    "<script setup>\r\nconst crlf = 1\r\nconst next = crlf + 1\r\n</script>\r\n<template><p>{{ next }}</p></template>\r\n",
 ];
 
 #[test]
@@ -159,4 +160,36 @@ fn stripping_typescript_at_the_boundary_carries_the_map() {
             .any(|segment| segment == r#""const b = 1;" -> "const b: num""#),
         "{segments:#?}"
     );
+}
+
+/// Carried over from the deleted text-matching recovery's tests (#3399): the
+/// codegen flag gates the map, which embeds the authored `.vue`, and a copied
+/// statement resolves to its authored line and column.
+#[test]
+fn compile_sfc_attaches_a_map_only_when_the_flag_is_on() {
+    const COUNTER_VUE: &str = "<template>\n  <button @click=\"bump\">{{ count }}</button>\n</template>\n\n<script setup>\nimport { ref } from 'vue'\n\nconst count = ref(0)\nfunction bump() {\n  count.value += 1\n}\n</script>\n";
+    assert_eq!(compile(COUNTER_VUE, false, false).map, None);
+
+    let result = compile(COUNTER_VUE, false, true);
+    let map = result.map.expect("source_map: true attaches a map");
+    assert_eq!(map["sources"], serde_json::json!([FILENAME]));
+    assert_eq!(map["sourcesContent"], serde_json::json!([COUNTER_VUE]));
+    let line = result
+        .code
+        .lines()
+        .position(|line| line == "const count = ref(0)")
+        .expect("the emitter copies the authored statement verbatim") as u32;
+    let json = serde_json::to_string(&map).unwrap();
+    let parsed = SourceMap::from_json_string(&json).unwrap();
+    let first = parsed
+        .get_tokens()
+        .find(|token| token.get_dst_line() == line)
+        .map(|token| {
+            (
+                token.get_dst_col(),
+                token.get_src_line(),
+                token.get_src_col(),
+            )
+        });
+    assert_eq!(first, Some((0, 7, 0)));
 }

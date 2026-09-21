@@ -49,8 +49,6 @@ pub enum Backend {
     Ssr,
     /// The structured SFC module map `compile_sfc` attaches.
     Sfc,
-    /// The legacy text-matching recovery over the same compiled module.
-    LegacySfc,
 }
 
 impl Backend {
@@ -60,7 +58,6 @@ impl Backend {
             Backend::Vapor => "vapor",
             Backend::Ssr => "ssr",
             Backend::Sfc => "sfc",
-            Backend::LegacySfc => "legacy-sfc",
         }
     }
 }

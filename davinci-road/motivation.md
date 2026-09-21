@@ -62,7 +62,7 @@ virtual TS independently. Within canon alone, diagnostic messages are assembled
 on two independent paths (persistent session vs Corsa CLI), so a fix applied to
 one silently misses the other. SSR and Vapor emit **no source maps at all**, and
 SFC-level maps are _recovered_ by matching emitted lines back to authored text
-(`crates/vize_atelier_sfc/src/source_map.rs` is candid about this).
+(the since-deleted `crates/vize_atelier_sfc/src/source_map.rs` was candid about this).
 
 ### 6. Node and span costs on the hot path
 
