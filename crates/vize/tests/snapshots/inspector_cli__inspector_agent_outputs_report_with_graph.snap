@@ -68,12 +68,31 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
           "text": "\n  <span>child</span>\n"
         }
       ],
+      "remarks": [
+        {
+          "args": [
+            {
+              "key": "tag",
+              "value": "span"
+            }
+          ],
+          "kind": "applied",
+          "name": "static-subtree",
+          "pass": "hoist-static",
+          "path": "src/Child.vue",
+          "span": {
+            "end": 31,
+            "start": 13
+          },
+          "stage": "s2"
+        }
+      ],
       "schema_version": 1
     },
     "target": "dom",
     "version": 1
   },
-  "playgroundUrl": "https://example.test/play/?tab=inspector#inspector=%7B%22version%22%3A1%2C%22target%22%3A%22dom%22%2C%22selectedFile%22%3A%22src%2FApp.vue%22%2C%22options%22%3A%7B%22customRenderer%22%3Afalse%2C%22templateSyntax%22%3A%22standard%22%7D%2C%22files%22%3A%5B%7B%22path%22%3A%22src%2FApp.vue%22%2C%22source%22%3A%22%3Cscript%20setup%20lang%3D%5C%22ts%5C%22%3E%5Cnimport%20Child%20from%20%27.%2FChild%27%5Cn%3C%2Fscript%3E%5Cn%5Cn%3Ctemplate%3E%5Cn%20%20%3CChild%20%2F%3E%5Cn%3C%2Ftemplate%3E%5Cn%22%7D%2C%7B%22path%22%3A%22src%2FChild.vue%22%2C%22source%22%3A%22%3Ctemplate%3E%5Cn%20%20%3Cspan%3Echild%3C%2Fspan%3E%5Cn%3C%2Ftemplate%3E%5Cn%22%7D%5D%2C%22spolvero%22%3A%7B%22command%22%3A%22inspector%22%2C%22pages%22%3A%5B%7B%22pass%22%3A%22parse%22%2C%22path%22%3A%22src%2FApp.vue%22%2C%22stage%22%3A%22s1%22%2C%22text%22%3A%22%5Cn%20%20%3CChild%20%2F%3E%5Cn%22%7D%2C%7B%22pass%22%3A%22parse%22%2C%22path%22%3A%22src%2FChild.vue%22%2C%22stage%22%3A%22s1%22%2C%22text%22%3A%22%5Cn%20%20%3Cspan%3Echild%3C%2Fspan%3E%5Cn%22%7D%5D%2C%22schema_version%22%3A1%7D%7D",
+  "playgroundUrl": "https://example.test/play/?tab=inspector#inspector=%7B%22version%22%3A1%2C%22target%22%3A%22dom%22%2C%22selectedFile%22%3A%22src%2FApp.vue%22%2C%22options%22%3A%7B%22customRenderer%22%3Afalse%2C%22templateSyntax%22%3A%22standard%22%7D%2C%22files%22%3A%5B%7B%22path%22%3A%22src%2FApp.vue%22%2C%22source%22%3A%22%3Cscript%20setup%20lang%3D%5C%22ts%5C%22%3E%5Cnimport%20Child%20from%20%27.%2FChild%27%5Cn%3C%2Fscript%3E%5Cn%5Cn%3Ctemplate%3E%5Cn%20%20%3CChild%20%2F%3E%5Cn%3C%2Ftemplate%3E%5Cn%22%7D%2C%7B%22path%22%3A%22src%2FChild.vue%22%2C%22source%22%3A%22%3Ctemplate%3E%5Cn%20%20%3Cspan%3Echild%3C%2Fspan%3E%5Cn%3C%2Ftemplate%3E%5Cn%22%7D%5D%2C%22spolvero%22%3A%7B%22command%22%3A%22inspector%22%2C%22pages%22%3A%5B%7B%22pass%22%3A%22parse%22%2C%22path%22%3A%22src%2FApp.vue%22%2C%22stage%22%3A%22s1%22%2C%22text%22%3A%22%5Cn%20%20%3CChild%20%2F%3E%5Cn%22%7D%2C%7B%22pass%22%3A%22parse%22%2C%22path%22%3A%22src%2FChild.vue%22%2C%22stage%22%3A%22s1%22%2C%22text%22%3A%22%5Cn%20%20%3Cspan%3Echild%3C%2Fspan%3E%5Cn%22%7D%5D%2C%22remarks%22%3A%5B%7B%22args%22%3A%5B%7B%22key%22%3A%22tag%22%2C%22value%22%3A%22span%22%7D%5D%2C%22kind%22%3A%22applied%22%2C%22name%22%3A%22static-subtree%22%2C%22pass%22%3A%22hoist-static%22%2C%22path%22%3A%22src%2FChild.vue%22%2C%22span%22%3A%7B%22end%22%3A31%2C%22start%22%3A13%7D%2C%22stage%22%3A%22s2%22%7D%5D%2C%22schema_version%22%3A1%7D%7D",
   "schema": "vize.inspector.agent",
   "semanticFiles": [
     {

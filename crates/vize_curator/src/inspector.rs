@@ -22,4 +22,7 @@ pub use payload::{
     InspectorTemplateSyntax, build_agent_report, build_payload, build_playground_url,
     serialize_agent_report, serialize_payload,
 };
-pub use spolvero::{SpolveroFeed, SpolveroPage, s1_page, spolvero_value};
+pub use spolvero::{
+    SpolveroFeed, SpolveroPage, SpolveroRemark, s1_page, spolvero_value,
+    spolvero_value_with_remarks, template_remarks,
+};

@@ -105,6 +105,7 @@ fn folio_dir_feed_validates_and_carries_the_dump_pages_exactly() {
                 { "path": null, "stage": "s2", "pass": "alpha", "text": BUDGET },
                 { "path": null, "stage": "s2", "pass": "beta", "text": BUDGET },
             ],
+            "remarks": [],
         })
     );
 }
@@ -126,6 +127,7 @@ fn a_fully_gated_dump_feeds_zero_pages_loudly() {
             "schema_version": 1,
             "command": "davinci-opt",
             "pages": [],
+            "remarks": [],
         })
     );
 }
@@ -159,7 +161,7 @@ fn the_feed_escapes_page_text_into_valid_json_exactly() {
         json.as_str(),
         "{\"schema_version\":1,\"command\":\"davinci-opt\",\"pages\":[{\"path\":null,\
          \"stage\":\"s2\",\"pass\":\"alpha\",\
-         \"text\":\"a\\\"b\\\\c\\nd\\re\\tf\\u0001g\u{3042}\\n\"}]}\n"
+         \"text\":\"a\\\"b\\\\c\\nd\\re\\tf\\u0001g\u{3042}\\n\"}],\"remarks\":[]}\n"
     );
     let parsed: serde_json::Value = serde_json::from_str(json.as_str()).expect("feed parses");
     assert_eq!(schema_check::validate(&load_schema(), &parsed, "$"), Ok(()));
@@ -250,5 +252,59 @@ fn consumers_negotiate_schema_version_before_reading_pages() {
                 found: 2,
             }
         ))
+    );
+}
+
+#[test]
+fn the_feed_carries_remarks_beside_the_pages() {
+    use vize_davinci::folio::feed::SpolveroRemark;
+    use vize_davinci::pass::RemarkKind;
+    use vize_davinci::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
+    use vize_s0::{Span, String};
+
+    let arg = |key: &str, value: &str| RecordedArg {
+        key: String::from(key),
+        value: RemarkArgValue::Str(String::from(value)),
+    };
+    let mut feed = SpolveroFeed::new("inspector");
+    feed.remarks.push(SpolveroRemark {
+        path: Some(String::from("src/App.vue")),
+        remark: RecordedRemark {
+            stage: String::from("s2"),
+            pass: String::from("hoist-static"),
+            kind: RemarkKind::Missed,
+            name: String::from("static-props"),
+            span: Span::new(10, 42),
+            args: vec![arg("tag", "button"), arg("blocker", "binding")],
+        },
+    });
+    let json = feed.to_json();
+    assert_eq!(
+        json.as_str(),
+        "{\"schema_version\":1,\"command\":\"inspector\",\"pages\":[],\"remarks\":[\
+         {\"path\":\"src/App.vue\",\"stage\":\"s2\",\"pass\":\"hoist-static\",\
+         \"kind\":\"missed\",\"name\":\"static-props\",\"span\":{\"start\":10,\"end\":42},\
+         \"args\":[{\"key\":\"tag\",\"value\":\"button\"},\
+         {\"key\":\"blocker\",\"value\":\"binding\"}]}]}\n"
+    );
+    let mut parsed: serde_json::Value = serde_json::from_str(json.as_str()).expect("feed parses");
+    let schema = load_schema();
+    assert_eq!(schema_check::validate(&schema, &parsed, "$"), Ok(()));
+
+    // A pre-P3-13 v1 document (no `remarks` member) stays valid: the member
+    // is additive.
+    let mut earlier = parsed.clone();
+    earlier
+        .as_object_mut()
+        .expect("feed is an object")
+        .remove("remarks");
+    assert_eq!(schema_check::validate(&schema, &earlier, "$"), Ok(()));
+
+    parsed["remarks"][0]["kind"] = serde_json::Value::from("hoisted");
+    let error = schema_check::validate(&schema, &parsed, "$").expect_err("bad kind fails");
+    assert_eq!(
+        error.message().as_str(),
+        "schema violation at `$.remarks[0].kind`: string does not match pattern \
+         `^(applied|missed|analysis)$`"
     );
 }

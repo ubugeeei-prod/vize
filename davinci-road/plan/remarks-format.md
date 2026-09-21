@@ -109,10 +109,32 @@ unexplained applied → missed transitions" a machine check rather than a
 review convention. A plain run also rejects an explanation that names no
 baseline `missed` remark, so the ledger cannot rot.
 
+## Spolvero and the backlog
+
+The Spolvero feed (`spolvero-feed.schema.json`) carries a `remarks` member
+since P3-13: each item is a remark document item plus the `path` it was
+produced for, spans in file byte offsets. The member is additive to feed
+v1 — every producer emits it (possibly empty), and it is optional in the
+schema so earlier v1 documents stay valid. Producers: the inspector payload
+and wasm `analyzeSfc` (`vize_curator::inspector::template_remarks`, one run
+of lowering + the S2 transform pipeline per inline HTML template) and
+`davinci-opt --folio-dir` (the run's own log). This is what the playground's
+decision view renders (C-5).
+
+**C-13 backlog.** `vize_davinci::folio::remarks::backlog::mine_missed`
+groups a corpus's `missed` remarks by `(stage, pass, name, reason)` and
+ranks them by hits. It relies on one vocabulary rule: **a remark's first
+argument is its subject** (what the decision is about — `tag`,
+`component`); the remaining arguments are its **reason**. The TS-32 test
+renders the backlog of its corpus into
+[`remarks-backlog.md`](./remarks-backlog.md) and pins it exactly, so the
+backlog is always the one the committed baseline implies.
+
 ## Vocabulary registry
 
-Every remark name a pass may emit, with its arguments in emission order.
-Adding a name or an argument key is a registry change in the same PR.
+Every remark name a pass may emit, with its arguments in emission order —
+subject first. Adding a name or an argument key is a registry change in the
+same PR.
 
 ### `s2.hoist-static` (`crates/vize_s1_to_s2/src/pass/hoist/remarks.rs`)
 

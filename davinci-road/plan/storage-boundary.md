@@ -21,8 +21,8 @@ or `collections` modules does not bypass the boundary.
 
 ## Retained `alloc::vec::Vec` inventory
 
-The five library trees in the reviewed inventory contain 92 production files,
-104 direct `alloc::vec::Vec` paths, and 363 bound `Vec`/`StdVec` uses. "Direct"
+The five library trees in the reviewed inventory contain 93 production files,
+105 direct `alloc::vec::Vec` paths, and 368 bound `Vec`/`StdVec` uses. "Direct"
 counts imports and fully-qualified paths; "bound" counts every type,
 constructor, and method path reached through a direct `Vec` import or alias.
 The executable ledger requires strict equality, so both growth and reduction
@@ -30,8 +30,8 @@ must update the file row and aggregate evidence in the same change.
 
 | Category | Files | Direct paths | Bound uses | Reason                                                                                                                    |
 | -------- | ----: | -----------: | ---------: | ------------------------------------------------------------------------------------------------------------------------- |
-| contract |    20 |           31 |         80 | Owned Folio, S2/S3 serialization data, and stage dumps have input-defined cardinality and form stable contracts.          |
-| analysis |    14 |           15 |         52 | Diagnostics, side tables, fact tables, filters, and verifier results grow with the input; no inline bound is established. |
+| contract |    20 |           31 |         83 | Owned Folio, S2/S3 serialization data, and stage dumps have input-defined cardinality and form stable contracts.          |
+| analysis |    15 |           16 |         54 | Diagnostics, side tables, fact tables, filters, and verifier results grow with the input; no inline bound is established. |
 | lower    |    13 |           13 |         52 | Lowering worklists and owned results grow with source-tree shape. Bounded substructures may migrate independently.        |
 | pass     |    13 |           13 |         52 | Facts, provenance, and traversal worklists grow with the number of operations.                                            |
 | emit     |    32 |           32 |        127 | Ordered output buffers and collected emission inputs grow with the document.                                              |
@@ -62,9 +62,9 @@ or count and fails the gate instead of becoming a `no_std` escape from S0.
 
 | Scope    | Type                    | Files | Direct paths | Bound uses |
 | -------- | ----------------------- | ----: | -----------: | ---------: |
-| infra    | `alloc::vec::Vec`       |    16 |           16 |         60 |
+| infra    | `alloc::vec::Vec`       |    17 |           17 |         65 |
 | infra    | `alloc::string::String` |     0 |            0 |          0 |
-| infra    | `vize_s0::String`       |    17 |           17 |        120 |
+| infra    | `vize_s0::String`       |    18 |           18 |        135 |
 | infra    | `vize_s0::Vec`          |     0 |            0 |          0 |
 | infra    | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s1       | `alloc::vec::Vec`       |     0 |            0 |          0 |

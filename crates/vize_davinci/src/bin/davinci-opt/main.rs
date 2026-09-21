@@ -235,6 +235,7 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
         .expect("a no-op pass body cannot fail");
     }
     let Pair(Pair(_, budget), remarks) = observers;
+    let log = RemarkLog::new(remarks.finish());
     eprintln!(
         "davinci-opt: pipeline {}: walks={} passes={}",
         print_pipelines(&segments),
@@ -242,7 +243,7 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
         budget.passes,
     );
     if let (Some(dir), Some(dump)) = (args.folio_dir.as_deref(), dump.as_ref()) {
-        if let Err(message) = export::write_dump(dir, dump) {
+        if let Err(message) = export::write_dump(dir, dump, &log) {
             eprintln!("davinci-opt: {message}");
             return ExitCode::from(1);
         }
@@ -261,7 +262,6 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
         }
     }
     if let Some(path) = args.remarks.as_deref() {
-        let log = RemarkLog::new(remarks.finish());
         if let Err(message) = export::write_remarks(path, &log) {
             eprintln!("davinci-opt: {message}");
             return ExitCode::from(1);

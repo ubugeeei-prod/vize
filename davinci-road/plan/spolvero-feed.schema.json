@@ -48,6 +48,46 @@
           }
         }
       }
+    },
+    "remarks": {
+      "type": "array",
+      "description": "Optimization remarks (P3-13), per file in canonical order: each item is a remarks.schema.json remark item plus the `path` it was produced for, spans in byte offsets into that file. Additive to v1: every producer emits it since P3-13; it is optional so earlier v1 documents stay valid. Grammar and vocabulary: davinci-road/plan/remarks-format.md.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "stage", "pass", "kind", "name", "span", "args"],
+        "properties": {
+          "path": {
+            "type": ["string", "null"],
+            "description": "Source file the remark was produced for; null for a single-artifact pipeline run."
+          },
+          "stage": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$" },
+          "pass": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$" },
+          "kind": { "type": "string", "pattern": "^(applied|missed|analysis)$" },
+          "name": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$" },
+          "span": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["start", "end"],
+            "properties": {
+              "start": { "type": "integer", "minimum": 0 },
+              "end": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["key", "value"],
+              "properties": {
+                "key": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$" },
+                "value": { "type": ["string", "integer", "boolean"] }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

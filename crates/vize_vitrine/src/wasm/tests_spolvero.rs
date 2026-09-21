@@ -62,7 +62,11 @@ fn the_analyze_result_carries_the_s1_spolvero_feed() {
 
     // The S1 page's text equals the authored template bytes (the TS-19
     // fidelity law observed at this consumer), proven through the surface
-    // tree rather than copied from the source.
+    // tree rather than copied from the source. The P3-13 remark explains why
+    // the `<div>` is not whole-hoistable; its span is file-absolute, derived
+    // here from the source text.
+    let start = SOURCE.find("<div>").expect("div opens");
+    let end = SOURCE.find("</div>").expect("div closes") + "</div>".len();
     assert_eq!(
         result["spolvero"],
         serde_json::json!({
@@ -71,6 +75,15 @@ fn the_analyze_result_carries_the_s1_spolvero_feed() {
             "pages": [
                 { "path": "src/App.vue", "stage": "s1", "pass": "parse", "text": TEMPLATE },
             ],
+            "remarks": [{
+                "path": "src/App.vue", "stage": "s2", "pass": "hoist-static", "kind": "missed",
+                "name": "static-subtree", "span": { "start": start, "end": end },
+                "args": [
+                    { "key": "tag", "value": "div" },
+                    { "key": "blocker", "value": "child" },
+                    { "key": "op", "value": "ui.interpolation" },
+                ],
+            }],
         })
     );
 }
@@ -86,6 +99,7 @@ fn a_template_less_sfc_feeds_zero_pages() {
             "schema_version": 1,
             "command": "analyze-sfc",
             "pages": [],
+            "remarks": [],
         })
     );
 }

@@ -43,11 +43,32 @@ fn the_payload_feed_validates_and_carries_the_s1_page_exactly() {
     // byte-fidelity law observed at the consumer - proven through the
     // surface tree rather than copied from the source.
     let template = "\n  <div :class=\"cls\">{{ msg }}</div>\n  <br>\n";
+    let source =
+        cstr!("<script setup>const msg = 'hi'</script>\n<template>{template}</template>\n");
     let json = payload_json(vec![InspectorSourceFile {
         path: cstr!("src/App.vue"),
-        source: cstr!("<script setup>const msg = 'hi'</script>\n<template>{template}</template>\n"),
+        source: source.clone(),
     }]);
 
+    // P3-13: the template's hoist-static remarks ride beside the page, spans
+    // in file byte offsets - derived here from the source text, not from
+    // the producer.
+    let div_start = source.find("<div").expect("div opens");
+    let div_end = source.find("</div>").expect("div closes") + "</div>".len();
+    let br_start = source.find("<br>").expect("br present");
+    let remark = |kind: &str, name: &str, (start, end): (usize, usize), extra: bool| {
+        let mut args =
+            vec![serde_json::json!({ "key": "tag", "value": if extra { "div" } else { "br" } })];
+        if extra {
+            args.push(serde_json::json!({ "key": "blocker", "value": "binding" }));
+            args.push(serde_json::json!({ "key": "op", "value": "ui.bind" }));
+            args.push(serde_json::json!({ "key": "rule", "value": "reserved-key" }));
+        }
+        serde_json::json!({
+            "path": "src/App.vue", "stage": "s2", "pass": "hoist-static", "kind": kind,
+            "name": name, "span": { "start": start, "end": end }, "args": args,
+        })
+    };
     let spolvero = &json["spolvero"];
     assert_eq!(
         schema_check::validate(&load_schema(), spolvero, "$"),
@@ -60,6 +81,11 @@ fn the_payload_feed_validates_and_carries_the_s1_page_exactly() {
             "command": "inspector",
             "pages": [
                 { "path": "src/App.vue", "stage": "s1", "pass": "parse", "text": template },
+            ],
+            "remarks": [
+                remark("missed", "static-props", (div_start, div_end), true),
+                remark("missed", "static-subtree", (div_start, div_end), true),
+                remark("applied", "static-subtree", (br_start, br_start + "<br>".len()), false),
             ],
         })
     );
@@ -92,6 +118,7 @@ fn files_without_a_renderable_template_contribute_no_page() {
             "schema_version": 1,
             "command": "inspector",
             "pages": [],
+            "remarks": [],
         })
     );
 }

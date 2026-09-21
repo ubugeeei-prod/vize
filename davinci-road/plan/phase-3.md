@@ -219,8 +219,10 @@ a compile-time zero-cost gate (0 allocations detached, measured), the
 `hoist-static` as the first emitter. _TS-32 slice 2026-09-21:_ the corpus
 remarks-diff over the 433 in-repo fixtures is wired into `clippy-and-test`
 against a committed baseline whose bless refuses unexplained
-`applied → missed` transitions. Feed/Spolvero rendering and emitters
-outside the pass manager remain open.
+`applied → missed` transitions. _Feed slice 2026-09-21:_ the Spolvero feed
+(inspector, `analyzeSfc`, `davinci-opt`) carries the remarks, and the C-13
+backlog is mined from the TS-32 corpus. Playground rendering (C-5) and
+emitters outside the pass manager remain open.
 
 **P3-14 `folio-reduce`.** Interestingness-script driver (llvm-reduce model)
 with S1-subtree deletion vocabulary; oracles composable from diagnostics /

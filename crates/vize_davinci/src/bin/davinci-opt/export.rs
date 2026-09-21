@@ -11,7 +11,7 @@
 use std::path::Path;
 
 use vize_davinci::folio::dump::FolioDump;
-use vize_davinci::folio::feed::SpolveroFeed;
+use vize_davinci::folio::feed::{SpolveroFeed, SpolveroRemark};
 use vize_davinci::folio::remarks::RemarkLog;
 use vize_s0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
 use vize_s0::{String, cstr};
@@ -28,13 +28,14 @@ const FEED_FILE: &str = "spolvero.json";
 /// The directory is created even when the dump is empty (a fully hash-gated
 /// run over no-op passes), and the feed is written even then, with zero
 /// pages - so "the gate emitted nothing" is observable in both artifacts
-/// rather than indistinguishable from "the flag was ignored".
+/// rather than indistinguishable from "the flag was ignored". The feed also
+/// carries the run's remarks (P3-13), the same log `--remarks` writes.
 ///
 /// # Errors
 ///
 /// Returns a formatted message naming the path that could not be created or
 /// written.
-pub fn write_dump(dir: &Path, dump: &FolioDump) -> Result<(), String> {
+pub fn write_dump(dir: &Path, dump: &FolioDump, log: &RemarkLog) -> Result<(), String> {
     std::fs::create_dir_all(dir)
         .map_err(|error| cstr!("--folio-dir: cannot create {}: {error}", dir.display()))?;
     for page in &dump.pages {
@@ -43,7 +44,15 @@ pub fn write_dump(dir: &Path, dump: &FolioDump) -> Result<(), String> {
             .map_err(|error| cstr!("--folio-dir: cannot write {}: {error}", path.display()))?;
     }
     let feed_path = dir.join(FEED_FILE);
-    let feed = SpolveroFeed::of_dump("davinci-opt", dump);
+    let mut feed = SpolveroFeed::of_dump("davinci-opt", dump);
+    feed.remarks = log
+        .remarks
+        .iter()
+        .map(|remark| SpolveroRemark {
+            path: None,
+            remark: remark.clone(),
+        })
+        .collect();
     std::fs::write(&feed_path, feed.to_json().as_bytes())
         .map_err(|error| cstr!("--folio-dir: cannot write {}: {error}", feed_path.display()))
 }

@@ -4286,6 +4286,7 @@ dependencies = [
  "vize_croquis_cf",
  "vize_davinci",
  "vize_s1",
+ "vize_s1_to_s2",
 ]
 
 [[package]]

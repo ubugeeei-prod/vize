@@ -237,7 +237,27 @@ pub(super) fn analyze_sfc_json_with_options(
         .map(|template| vize_curator::inspector::s1_page(filename, &template.content))
         .into_iter()
         .collect();
-    let spolvero = vize_curator::inspector::spolvero_value("analyze-sfc", spolvero_pages);
+    // P3-13: the inline HTML template's optimization remarks ride beside the
+    // pages, spans in file byte offsets.
+    let spolvero_remarks = descriptor
+        .template
+        .as_ref()
+        .filter(|template| {
+            template.src.is_none() && template.lang.as_deref().is_none_or(|lang| lang == "html")
+        })
+        .map(|template| {
+            vize_curator::inspector::template_remarks(
+                filename,
+                &template.content,
+                template.loc.start,
+            )
+        })
+        .unwrap_or_default();
+    let spolvero = vize_curator::inspector::spolvero_value_with_remarks(
+        "analyze-sfc",
+        spolvero_pages,
+        spolvero_remarks,
+    );
 
     let diagnostics = input::diagnostics(source, template_offset, &summary);
     let warnings = summary

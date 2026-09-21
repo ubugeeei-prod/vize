@@ -26,6 +26,10 @@
 //!     --test davinci_remarks_corpus -- --nocapture
 //! ```
 
+mod davinci_remarks_corpus_support;
+
+use davinci_remarks_corpus_support as support;
+
 use std::path::{Path, PathBuf};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
@@ -225,6 +229,11 @@ fn corpus_remarks_match_the_committed_baseline() {
             current.print_to_string(FolioMode::Full).as_bytes(),
         )
         .expect("baseline writes");
+        std::fs::write(
+            root.join(support::BACKLOG_REL),
+            support::backlog_markdown(&current).as_bytes(),
+        )
+        .expect("backlog writes");
         return;
     }
 
@@ -259,5 +268,13 @@ fn corpus_remarks_match_the_committed_baseline() {
         current.print_to_string(FolioMode::Full).as_str(),
         committed_text.as_str(),
         "the baseline is not in canonical form; re-bless with {UPDATE_ENV}=1"
+    );
+    // C-13: the committed backlog is exactly the one mined from the corpus.
+    let backlog = std::fs::read_to_string(root.join(support::BACKLOG_REL)).unwrap_or_default();
+    assert_eq!(
+        support::backlog_markdown(&current).as_str(),
+        backlog.as_str(),
+        "{} is stale; regenerate with {UPDATE_ENV}=1",
+        support::BACKLOG_REL
     );
 }

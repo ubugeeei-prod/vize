@@ -26,6 +26,7 @@
 //! it in canonical order. `Display` drops the spans and carries no
 //! round-trip law.
 
+pub mod backlog;
 pub mod corpus;
 pub mod diff;
 mod parse;
@@ -38,7 +39,7 @@ use vize_s0::String;
 use super::feed::push_json_string;
 use super::page::{LineEvent, ParseState};
 use super::{Folio, FolioError, FolioMode};
-use crate::pass::observer::{RecordedRemark, RemarkArgValue, RemarkKind};
+use crate::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue, RemarkKind};
 
 /// The remark JSON document's format version. Incompatible shape changes
 /// bump this **and** the committed schema's `const` together.
@@ -116,8 +117,16 @@ impl RemarkLog {
 
 /// One remark as a JSON object: key order `stage`, `pass`, `kind`, `name`,
 /// `span` (`start`, `end`), `args` (`key`, `value` per entry).
-pub(crate) fn push_remark_json(out: &mut String, remark: &RecordedRemark) {
-    out.push_str("{\"stage\":");
+fn push_remark_json(out: &mut String, remark: &RecordedRemark) {
+    out.push('{');
+    push_remark_fields(out, remark);
+    out.push('}');
+}
+
+/// A remark's JSON members without the braces, so the Spolvero feed can
+/// prefix its `path` and stay the same shape as the remark document.
+pub(crate) fn push_remark_fields(out: &mut String, remark: &RecordedRemark) {
+    out.push_str("\"stage\":");
     push_json_string(out, remark.stage.as_str());
     out.push_str(",\"pass\":");
     push_json_string(out, remark.pass.as_str());
@@ -146,7 +155,7 @@ pub(crate) fn push_remark_json(out: &mut String, remark: &RecordedRemark) {
         }
         out.push('}');
     }
-    out.push_str("]}");
+    out.push(']');
 }
 
 /// One remark as its canonical `[remarks]` entry line, without the newline
@@ -180,7 +189,12 @@ fn print_entry<W: fmt::Write>(w: &mut W, remark: &RecordedRemark, mode: FolioMod
     if mode == FolioMode::Full {
         write!(w, " @{}:{}", remark.span.start, remark.span.end)?;
     }
-    for arg in &remark.args {
+    print_args(w, &remark.args)
+}
+
+/// ` key=value` per argument, the entry line's spelling.
+fn print_args<W: fmt::Write>(w: &mut W, args: &[RecordedArg]) -> fmt::Result {
+    for arg in args {
         write!(w, " {}=", arg.key)?;
         match &arg.value {
             RemarkArgValue::Str(text) => {
@@ -193,6 +207,18 @@ fn print_entry<W: fmt::Write>(w: &mut W, remark: &RecordedRemark, mode: FolioMod
         }
     }
     Ok(())
+}
+
+/// Arguments in their entry-line spelling (`key="value" key=1`), space
+/// separated, no leading space - the reason text the backlog groups by.
+#[must_use]
+pub fn args_text(args: &[RecordedArg]) -> String {
+    let mut out = String::default();
+    print_args(&mut out, args).expect("printing into a string cannot fail");
+    match out.strip_prefix(' ') {
+        Some(trimmed) => String::from(trimmed),
+        None => out,
+    }
 }
 
 /// The one section the page declares.

@@ -32,6 +32,8 @@ use core::fmt::Write as _;
 use vize_s0::String;
 
 use crate::folio::dump::FolioDump;
+use crate::folio::remarks::push_remark_fields;
+use crate::pass::observer::RecordedRemark;
 
 /// The feed format version. Incompatible shape changes bump this **and**
 /// the committed schema's `const` together.
@@ -63,6 +65,17 @@ pub struct SpolveroPage {
     pub text: String,
 }
 
+/// One optimization remark in the feed (P3-13): the recorded remark plus
+/// the file it was produced for. Spans are byte offsets into that file
+/// (or into the stdin artifact when `path` is `None`).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SpolveroRemark {
+    /// Source file, as for [`SpolveroPage::path`].
+    pub path: Option<String>,
+    /// The remark (`remarks-format.md` shape).
+    pub remark: RecordedRemark,
+}
+
 /// The Spolvero feed v1 payload.
 ///
 /// `schema_version` is not a field: it is [`SPOLVERO_FEED_SCHEMA_VERSION`],
@@ -74,6 +87,11 @@ pub struct SpolveroFeed {
     pub command: String,
     /// The pages, in emission order.
     pub pages: Vec<SpolveroPage>,
+    /// The optimization remarks (P3-13), per file in canonical order - the
+    /// decision explanations Spolvero renders beside the pages. Additive
+    /// to v1: every producer emits the member (possibly empty), and the
+    /// schema keeps it optional so earlier v1 documents stay valid.
+    pub remarks: Vec<SpolveroRemark>,
 }
 
 impl SpolveroFeed {
@@ -95,6 +113,7 @@ impl SpolveroFeed {
         Self {
             command: String::from(command),
             pages: Vec::new(),
+            remarks: Vec::new(),
         }
     }
 
@@ -115,12 +134,14 @@ impl SpolveroFeed {
                     text: page.text.clone(),
                 })
                 .collect(),
+            remarks: Vec::new(),
         }
     }
 
     /// Serialize to the committed v1 JSON shape: one line, key order
     /// `schema_version`, `command`, `pages` (pages: `path`, `stage`,
-    /// `pass`, `text`), trailing newline.
+    /// `pass`, `text`), `remarks` (`path`, then the remark document's item
+    /// fields), trailing newline.
     ///
     /// Hand-written rather than serde-derived so the `no_std + alloc`
     /// library stays dependency-free; the escaping law (output parses back
@@ -148,6 +169,20 @@ impl SpolveroFeed {
             push_json_string(&mut out, page.pass.as_str());
             out.push_str(",\"text\":");
             push_json_string(&mut out, page.text.as_str());
+            out.push('}');
+        }
+        out.push_str("],\"remarks\":[");
+        for (index, entry) in self.remarks.iter().enumerate() {
+            if index > 0 {
+                out.push(',');
+            }
+            out.push_str("{\"path\":");
+            match entry.path.as_deref() {
+                Some(path) => push_json_string(&mut out, path),
+                None => out.push_str("null"),
+            }
+            out.push(',');
+            push_remark_fields(&mut out, &entry.remark);
             out.push('}');
         }
         out.push_str("]}\n");

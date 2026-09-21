@@ -20,13 +20,17 @@
 //!   has a Vue producer in the S1→S2 lowering, and the feed shape is
 //!   stage-agnostic, so S2 pages join by pushing more [`SpolveroPage`]s here,
 //!   with no schema change.
+//! - **Remarks** (P3-13): every inline HTML template's optimization remarks
+//!   from the S2 transform pipeline ([`template_remarks`]), spans in file
+//!   byte offsets - the decision explanations Spolvero renders (C-5).
 //!
 //! Files that are not `.vue`, fail SFC parsing, or have no template block
 //! contribute no page: the feed is a stage-dump channel, not a diagnostics
 //! channel (diagnostics stay on their own surfaces).
 
-pub use vize_davinci::folio::feed::{SpolveroFeed, SpolveroPage};
-use vize_s0::{Allocator, String, cstr};
+pub use vize_davinci::folio::feed::{SpolveroFeed, SpolveroPage, SpolveroRemark};
+use vize_davinci::pass::RemarkCollector;
+use vize_s0::{Allocator, Span, String, cstr};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
@@ -47,6 +51,35 @@ pub fn s1_page(path: &str, template: &str) -> SpolveroPage {
     }
 }
 
+/// The optimization remarks (P3-13) the S2 transform pipeline emits for
+/// one template: S1 parse, S1→S2 lowering (Vue 3 dialect), the transform
+/// pipeline under a remark collector, in canonical order. `offset` is the
+/// template content's byte offset in its file, so spans come out
+/// file-absolute - the same framing as the TS-32 corpus baseline.
+#[must_use]
+pub fn template_remarks(path: &str, template: &str, offset: usize) -> Vec<SpolveroRemark> {
+    let Ok(offset) = u32::try_from(offset) else {
+        return Vec::new();
+    };
+    let allocator = Allocator::default();
+    let (tree, errors) = vize_s1::parse(&allocator, template);
+    let mut lowered =
+        vize_s1_to_s2::lower_with_caps(&allocator, &tree, &errors, vize_s1_to_s2::LegacyCaps::VUE3);
+    let mut collector = RemarkCollector::new();
+    let _facts = vize_s1_to_s2::pass::run_transform(&mut lowered, &mut collector);
+    collector
+        .finish()
+        .into_iter()
+        .map(|mut remark| {
+            remark.span = Span::new(remark.span.start + offset, remark.span.end + offset);
+            SpolveroRemark {
+                path: Some(String::from(path)),
+                remark,
+            }
+        })
+        .collect()
+}
+
 /// A feed's embeddable JSON value, through the one serializer.
 ///
 /// # Panics
@@ -55,18 +88,35 @@ pub fn s1_page(path: &str, template: &str) -> SpolveroPage {
 /// feed's escaping law (pinned by the TS-52 tests).
 #[must_use]
 pub fn spolvero_value(command: &str, pages: Vec<SpolveroPage>) -> serde_json::Value {
+    spolvero_value_with_remarks(command, pages, Vec::new())
+}
+
+/// [`spolvero_value`] carrying optimization remarks beside the pages.
+///
+/// # Panics
+///
+/// As [`spolvero_value`].
+#[must_use]
+pub fn spolvero_value_with_remarks(
+    command: &str,
+    pages: Vec<SpolveroPage>,
+    remarks: Vec<SpolveroRemark>,
+) -> serde_json::Value {
     let feed = SpolveroFeed {
         command: String::from(command),
         pages,
+        remarks,
     };
     serde_json::from_str(feed.to_json().as_str())
         .expect("SpolveroFeed::to_json emits valid JSON by the feed escaping law")
 }
 
 /// The inspector payload's feed: S1 pages for every parseable `.vue` file
-/// with a template, in payload file order (S2 joins with P2-8).
+/// with a template, in payload file order (S2 joins with P2-8), plus each
+/// inline HTML template's optimization remarks (P3-13).
 pub(super) fn payload_spolvero(files: &[InspectorSourceFile]) -> serde_json::Value {
     let mut pages = Vec::new();
+    let mut remarks = Vec::new();
     for file in files {
         if !file.path.ends_with(".vue") {
             continue;
@@ -76,7 +126,15 @@ pub(super) fn payload_spolvero(files: &[InspectorSourceFile]) -> serde_json::Val
         };
         if let Some(template) = descriptor.template.as_ref() {
             pages.push(s1_page(file.path.as_str(), template.content.as_ref()));
+            let html = template.lang.as_deref().is_none_or(|lang| lang == "html");
+            if template.src.is_none() && html {
+                remarks.extend(template_remarks(
+                    file.path.as_str(),
+                    template.content.as_ref(),
+                    template.loc.start,
+                ));
+            }
         }
     }
-    spolvero_value("inspector", pages)
+    spolvero_value_with_remarks("inspector", pages, remarks)
 }

@@ -21,7 +21,7 @@
 - [ ] C-10 Loop harness: profile diff → candidate → gates → PR (starts: P0-4 gates exist)
 - [ ] C-11 Auto-merge wiring with audit trail (auto-merged PRs carry gate evidence; starts: after C-10 has human-reviewed history)
 - [ ] C-12 Sandboxing: worktree isolation + corpus-run quotas for experiments
-- [ ] C-13 Missed-remarks mining as the optimization backlog (starts: P3-13)
+- [ ] C-13 Missed-remarks mining as the optimization backlog (starts: P3-13) _(first version: [remarks-backlog.md](./remarks-backlog.md), mined from the TS-32 corpus)_
 
 ## Corpus operations (charter #31)
 
