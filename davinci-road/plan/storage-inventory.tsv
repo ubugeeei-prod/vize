@@ -1,5 +1,7 @@
 scope	category	file	alloc_vec_direct	alloc_vec_bound	s0_string_direct	s0_string_bound	arena_vec_direct	arena_vec_bound	small_vec_direct	small_vec_bound
-infra	analysis	crates/vize_davinci/src/diagnostic.rs	1	2	1	5	0	0	0	0
+infra	analysis	crates/vize_davinci/src/diagnostic.rs	1	2	1	7	0	0	0	0
+infra	analysis	crates/vize_davinci/src/diagnostic/witness.rs	1	2	0	0	0	0	0	0
+infra	-	crates/vize_davinci/src/diagnostic/witness/key.rs	0	0	1	2	0	0	0	0
 infra	analysis	crates/vize_davinci/src/fact/table.rs	1	7	0	0	0	0	0	0
 infra	-	crates/vize_davinci/src/folio.rs	0	0	1	4	0	0	0	0
 infra	contract	crates/vize_davinci/src/folio/croquis.rs	1	16	1	17	0	0	0	0

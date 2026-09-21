@@ -11,6 +11,7 @@
 mod support;
 
 use vize_davinci::diagnostic::{Severity, Stage};
+use vize_s1_to_s2::exemptions;
 use vize_s1_to_s2::pass::{ModelFacts, ModelFault, vmodel};
 
 use support::{assert_transformed_sound, with_transformed};
@@ -21,7 +22,8 @@ fn a_model_on_a_v_for_alias_is_flagged_with_reliefs_wording() {
     with_transformed(source, |lowered, _, facts, _| {
         assert_eq!(lowered.diagnostics.len(), 1);
         let diagnostic = &lowered.diagnostics[0];
-        assert_eq!(diagnostic.severity, Severity::Error);
+        assert_eq!(diagnostic.severity(), Severity::Error);
+        assert_eq!(diagnostic.exemption(), Some(&exemptions::V_MODEL));
         assert_eq!(diagnostic.stage, Stage::Semantic);
         assert_eq!(diagnostic.message.as_str(), vmodel::ON_SCOPE_MESSAGE);
         // The fault fact is the legacy removal's preserving twin: one

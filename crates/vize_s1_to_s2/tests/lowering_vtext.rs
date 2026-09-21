@@ -3,7 +3,7 @@
 mod support;
 
 use support::artifact;
-use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+use vize_davinci::diagnostic::{Advisory, Diagnostic, Stage};
 use vize_s0::{Span, cstr};
 
 #[test]
@@ -68,7 +68,7 @@ fn v_text_with_argument_or_modifier_still_defers() {
         assert_eq!(
             art.diagnostics,
             vec![Diagnostic::new(
-                Severity::Info,
+                Advisory::Info,
                 Stage::Semantic,
                 Span::new(3, 19),
                 "`v-text` is representable as `vue.text` only with no argument or modifier",
