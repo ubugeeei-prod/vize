@@ -8,8 +8,11 @@ infra	contract	crates/vize_davinci/src/folio/croquis/print.rs	1	2	1	0	0	0	0	0
 infra	contract	crates/vize_davinci/src/folio/dump.rs	1	2	1	7	0	0	0	0
 infra	contract	crates/vize_davinci/src/folio/feed.rs	1	2	1	10	0	0	0	0
 infra	contract	crates/vize_davinci/src/folio/page.rs	1	2	1	2	0	0	0	0
+infra	contract	crates/vize_davinci/src/folio/remarks.rs	1	3	1	4	0	0	0	0
+infra	contract	crates/vize_davinci/src/folio/remarks/parse.rs	1	2	1	8	0	0	0	0
 infra	-	crates/vize_davinci/src/folio/repro.rs	0	0	1	15	0	0	0	0
 infra	-	crates/vize_davinci/src/folio/value.rs	0	0	1	2	0	0	0	0
+infra	analysis	crates/vize_davinci/src/pass/observer/remark/record.rs	1	4	1	10	0	0	0	0
 infra	analysis	crates/vize_davinci/src/pass/pipeline.rs	1	4	1	2	0	0	0	0
 infra	analysis	crates/vize_davinci/src/side_table.rs	1	2	0	0	0	0	0	0
 s1	-	crates/vize_s1/src/build.rs	0	0	0	0	1	7	0	0
