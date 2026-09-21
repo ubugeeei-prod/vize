@@ -8,17 +8,7 @@ abbrev identifier := Iteration.identifier
 abbrev validateExpression := Iteration.validateExpression
 abbrev evaluate := Iteration.evaluate
 
-def display (value : Json) : Except String String :=
-  match value with
-  | .null => pure ""
-  | .str text => pure text
-  | .bool true => pure "true"
-  | .bool false => pure "false"
-  | .num _ => do
-      let n <- value.getInt?
-      if n < -2147483648 || n > 2147483647 then throw "unsupported display number"
-      pure (toString n)
-  | _ => throw "unsupported display value"
+abbrev display := Iteration.display
 
 def textBinding (rows : List Operand) (op : Op) : Bool :=
   op.kind == .setText && (Values.forOp rows op.id).any (fun row => row.role == "binding-kind")
@@ -136,7 +126,8 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
       for (row, index) in operands.zipIdx do
         if row.kind == "absent" then
           if index == 0 || index + 1 != operands.length then throw "else must be the final branch"
-        else if row.kind != "js" || !identifier row.text then throw "unsupported condition"
+        else if row.kind != "js" then throw "unsupported condition"
+        else validateExpression row
     if op.kind == .slotOutlet then
       if children.length != 1 || operands.length != 1 then throw "unsupported slot shape"
       if (<- Values.literal (<- Values.one rows op.id "name")).isEmpty then
@@ -146,7 +137,7 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
 def selectedBranch (rows : List Operand) (context : Json) (id : Nat) : Except String (Option Nat) := do
   for row in Values.forOp rows id do
     let selected <- if row.kind == "absent" then pure true
-      else (<- evaluate context row).getBool?
+      else Expression.truthy <$> evaluate context row
     if selected then
       return row.region
   pure none

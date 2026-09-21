@@ -1,4 +1,5 @@
 import Impeto.Values
+import Impeto.Expression
 
 namespace Impeto.Iteration
 open Lean
@@ -13,9 +14,49 @@ def path (text : String) : Bool :=
   (text.splitOn ".").all (fun part => identifier part &&
     !["__proto__", "constructor", "prototype"].contains part)
 
+/-- `toDisplayString` over the reference value domain. -/
+def display (value : Json) : Except String String :=
+  match value with
+  | .null => pure ""
+  | .str text => pure text
+  | .bool true => pure "true"
+  | .bool false => pure "false"
+  | .num _ => do
+      let n <- value.getInt?
+      if n < -2147483648 || n > 2147483647 then throw "unsupported display number"
+      pure (toString n)
+  | _ => throw "unsupported display value"
+
+/-- Literal text whose DOM spelling needs no entity decoding or whitespace condensing. -/
+def plainText (text : String) : Bool :=
+  !text.toList.any (fun c => c == '&' || c == '<' || c == '\n' || c == '\t' || c == '\r') &&
+    (text.splitOn "  ").length == 1
+
+/-- Compound text as S3 preserves it: literal runs and `{{ expression }}` holes. -/
+def compoundParts (text : String) : Except String (List (Bool × String)) := do
+  let pieces := text.splitOn "{{"
+  let some first := pieces.head? | throw "empty compound text"
+  if !plainText first || first.contains '}' then throw "unsupported compound literal"
+  let mut parts := if first.isEmpty then [] else [(false, first)]
+  for piece in pieces.drop 1 do
+    let [expr, literal] := piece.splitOn "}}" | throw "unbalanced compound interpolation"
+    if !plainText literal || literal.contains '}' then throw "unsupported compound literal"
+    parts := parts ++ [(true, expr)] ++ (if literal.isEmpty then [] else [(false, literal)])
+  if !parts.any (·.1) then throw "compound text without interpolation"
+  pure parts
+
 def validateExpression (row : Operand) : Except String Unit := do
-  if row.kind != "literal" && !(row.kind == "js" && path row.text) then
-    throw s!"unsupported expression {row.kind}: {row.text}"
+  if row.kind == "literal" then return
+  if row.kind == "opaque" && row.qualifier == "compound" then
+    for (isExpr, text) in <- compoundParts row.text do
+      if isExpr then
+        if let .error message := Expression.parse text then
+          throw s!"unsupported interpolation {text}: {message}"
+    return
+  if row.kind != "js" then throw s!"unsupported expression {row.kind}: {row.text}"
+  match Expression.parse row.text with
+  | .ok _ => pure ()
+  | .error message => throw s!"unsupported expression {row.text}: {message}"
 
 def lookup (context : Json) (text : String) : Except String Json := do
   if !path text then throw "unsupported member path"
@@ -26,7 +67,14 @@ def lookup (context : Json) (text : String) : Except String Json := do
 
 def evaluate (context : Json) (row : Operand) : Except String Json := do
   validateExpression row
-  if row.kind == "literal" then pure (.str row.text) else lookup context row.text
+  if row.kind == "literal" then return .str row.text
+  if row.kind == "opaque" then
+    let mut text := ""
+    for (isExpr, part) in <- compoundParts row.text do
+      let piece <- if isExpr then display (<- Expression.evaluate context part) else pure part
+      text := text ++ piece
+    return .str text
+  Expression.evaluate context row.text
 
 def recordArgument (text : String) : Option String :=
   if text.startsWith "record(" && text.endsWith ")" then
@@ -54,13 +102,18 @@ def validate (program : Program) (rows : List Operand) (op : Op) : Except String
   let operands := Values.forOp rows op.id
   if operands.length != 4 then throw "expected four loop operands"
   let source <- Values.one rows op.id "for-source"
-  if source.kind != "js" || !path source.text then throw "unsupported loop source"
-  let value <- alias (<- Values.one rows op.id "for-value")
-  let index <- Values.one rows op.id "for-key"
-  if index.kind != "absent" then
-    if (<- alias index) == value then throw "duplicate loop alias"
-  if (<- Values.one rows op.id "for-index").kind != "absent" then
-    throw "third array alias is outside the reference subset"
+  if source.kind != "js" then throw "unsupported loop source"
+  validateExpression source
+  let mut aliases := [<- alias (<- Values.one rows op.id "for-value")]
+  for role in ["for-key", "for-index"] do
+    let row <- Values.one rows op.id role
+    if row.kind != "absent" then
+      let name <- alias row
+      if aliases.contains name then throw "duplicate loop alias"
+      aliases := aliases ++ [name]
+  if (<- Values.one rows op.id "for-key").kind == "absent" &&
+      (<- Values.one rows op.id "for-index").kind != "absent" then
+    throw "third loop alias without a second alias"
   let [region] := program.regions.filter (fun r => r.owner == some op.id)
     | throw "expected one loop body"
   let [root] := program.ops.filter (fun child => child.region == region.id && child.kind == .insertNode)
@@ -81,7 +134,33 @@ def keyValue (value : Json) : Except String Json := do
       pure value
   | _ => throw "loop keys must be strings or signed 32-bit integers"
 
--- `for-key` is the second array alias. Vue's :key belongs to the repeated root.
+/-- JavaScript enumerates canonical array-index keys before other keys, so
+objects with such keys have no order shared with the JSON reference. -/
+def arrayIndexKey (key : String) : Bool :=
+  match key.toNat? with
+  | some n => toString n == key && n < 4294967295
+  | none => false
+
+/-- Iteration entries as `renderList` produces them: value, second alias and
+optional third alias. Objects iterate in the canonical key order that the
+Rust scenario loader also serializes, and ranges yield `1..n`. -/
+def entries (source : Json) (third : Bool) : Except String (List (Json × Json × Json)) := do
+  match source with
+  | .arr items =>
+      if third then throw "third loop alias requires an object source"
+      pure (items.toList.zipIdx.map fun (item, index) => (item, toJson index, .null))
+  | .num _ =>
+      if third then throw "third loop alias requires an object source"
+      let n <- Expression.integer source
+      if n < 0 || n > 1000 then throw "unsupported range source"
+      pure ((List.range n.toNat).map fun index => (toJson (index + 1), toJson index, .null))
+  | .obj fields =>
+      let pairs := fields.toList.map fun ⟨key, value⟩ => (key, value)
+      if pairs.any (arrayIndexKey ·.1) then throw "unsupported integer-like object key"
+      pure (pairs.zipIdx.map fun ((key, value), index) => (value, .str key, toJson index))
+  | _ => throw "unsupported loop source value"
+
+-- `for-key` is the second alias (index or object key). Vue's :key belongs to the repeated root.
 def contexts (program : Program) (rows : List Operand) (op : Op)
     (context : Json) : Except String (List (Json × Json)) := do
   validate program rows op
@@ -93,14 +172,17 @@ def contexts (program : Program) (rows : List Operand) (op : Op)
     row.kind == "literal" && row.text == "key")
   if keys.length > 1 then throw "duplicate loop key binding"
   let valueAlias <- alias (<- Values.one rows op.id "for-value")
-  let indexRow <- Values.one rows op.id "for-key"
-  let indexAlias <- if indexRow.kind == "absent" then pure none else some <$> alias indexRow
-  let items <- (<- evaluate context (<- Values.one rows op.id "for-source")).getArr?
+  let secondRow <- Values.one rows op.id "for-key"
+  let secondAlias <- if secondRow.kind == "absent" then pure none else some <$> alias secondRow
+  let thirdRow <- Values.one rows op.id "for-index"
+  let thirdAlias <- if thirdRow.kind == "absent" then pure none else some <$> alias thirdRow
+  let source <- evaluate context (<- Values.one rows op.id "for-source")
   let mut result := []
   let mut seen := []
-  for (item, index) in items.toList.zipIdx do
+  for ((item, second, third), index) in (<- entries source thirdAlias.isSome).zipIdx do
     let mut scope := context.setObjVal! valueAlias item
-    if let some name := indexAlias then scope := scope.setObjVal! name (toJson index)
+    if let some name := secondAlias then scope := scope.setObjVal! name second
+    if let some name := thirdAlias then scope := scope.setObjVal! name third
     let identity <- match keys with
       | [] => pure (Json.arr #[.str "position", toJson index])
       | [key] => do

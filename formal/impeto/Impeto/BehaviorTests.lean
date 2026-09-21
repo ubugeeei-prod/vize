@@ -56,8 +56,10 @@ def referenceTests (program : Program) (rows : List Operand) (script : Json) : E
   for kind in ["opaque", "foreign", "vue.filter", "absent"] do
     expectError "unsupported expression kind" (Behavior.run program
       (rows.map (fun row => if row.role == "text" then { row with kind } else row)) script)
-  expectError "compound expression" (Behavior.run program
-    (rows.map (fun row => if row.role == "text" then { row with text := "label + '!'" } else row)) script)
+  for text in ["label == '!'", "label / 2", "label()", "label[0]", "label ?? 'x'", "1.5",
+      "typeof label", "label.__proto__", "'\\u0041'", "undefined", "label,label", "`x`"] do
+    expectError s!"unsupported expression {text}" (Behavior.run program
+      (rows.map (fun row => if row.role == "text" then { row with text } else row)) script)
   expectError "missing text" (Behavior.run program (rows.filter (fun row => row.role != "text")) script)
   expectError "duplicate text" (Behavior.run program (rows ++ rows.filter (fun row => row.role == "text")) script)
   expectError "dangling operand" (Behavior.run program (rows.map (fun row => { row with op := 999 })) script)

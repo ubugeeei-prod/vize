@@ -16,7 +16,7 @@
 - [ ] P3-8 SSR thin path
 - [ ] P3-9 S4 structured emitter + universal source maps _(slice 1 pins TS-31 source-map budgets before emitter migration; see [record](./phase-3-records/p3-9.md))_
 - [ ] P3-10 Try-measure-commit extraction _(slice 1 pins optimization budgets before extraction; see [record](./phase-3-records/p3-10.md))_
-- [ ] P3-11 IVM oracle
+- [x] P3-11 IVM oracle
 - [ ] P3-12 Behavioral (sprout) runner incl. IME scripts
 - [ ] P3-13 Optimization remarks + corpus remarks-diff
 - [x] P3-14 `folio-reduce` _(`vize reduce`; see [record](./phase-3-records/p3-14.md))_
@@ -192,8 +192,12 @@ expressions (TS-29). _Accept:_ suite green over matrix fixtures.
 
 _Array-loop slice 2026-09-20:_ the [P3-11 record](./phase-3-records/p3-11.md)
 adds independent scoped array execution and retained-identity reconciliation,
-with full mounted VDOM/Vapor observations. General iteration, mixed non-linear
-expressions and scheduling/linearity evidence remain open.
+with full mounted VDOM/Vapor observations. _Closed 2026-09-21:_ a generated
+32-case matrix covers keyed and positional arrays, objects and ranges; per-item
+and guard toggles; and non-linear expressions evaluated by an independent Lean
+JavaScript subset. It runs through the proved update machine and both mounted
+runtimes. The only divergence is an exactly pinned upstream `runtime-vapor`
+unkeyed-object key-alias defect.
 
 **P3-12 Behavioral runner.** Sprout-style: mount compiled VDOM + Vapor
 against scripted prop/interaction traces in a headless DOM; **IME composition
