@@ -99,6 +99,7 @@
 
 mod context;
 mod diagnostic;
+pub mod html_content_model;
 pub mod ir;
 mod linter;
 pub mod markup;
