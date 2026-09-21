@@ -19,7 +19,6 @@ pub(crate) fn register(registry: &mut RuleRegistry) {
     html::register(registry);
     #[cfg(not(target_arch = "wasm32"))]
     type_aware::register(registry);
-    crate::rules::facts::register(registry);
 }
 
 pub(crate) fn register_nuxt(registry: &mut RuleRegistry) {

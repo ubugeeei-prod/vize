@@ -8,9 +8,18 @@ mod max_template_complexity;
 
 pub use max_template_complexity::MaxTemplateComplexity;
 
+use vize_davinci::fact::FactConsumer;
+
 use crate::rule::RuleRegistry;
 
-/// Register the fact rules the opinionated preset carries.
-pub(crate) fn register(registry: &mut RuleRegistry) {
-    registry.register(Box::new(MaxTemplateComplexity));
+/// Register the fact rules a project enables by name.
+///
+/// `vue/max-template-complexity` belongs to no preset: its thresholds are
+/// the corpus p95, so about one real component in twenty exceeds them, and
+/// a preset that suddenly warned on those would churn every project that
+/// adopted it (charter #23). A project opts in by naming the rule.
+pub(crate) fn register_opt_in(registry: &mut RuleRegistry) {
+    if !registry.has_rule(MaxTemplateComplexity::NAME) {
+        registry.register(Box::new(MaxTemplateComplexity));
+    }
 }

@@ -1,8 +1,11 @@
 use super::MaxTemplateComplexity;
 use crate::diagnostic::Severity;
 use crate::linter::Linter;
+use crate::preset::LintPreset;
 use crate::rule::RuleRegistry;
 use crate::{LintResult, OutputFormat, format_results};
+
+const RULE: &str = "vue/max-template-complexity";
 
 fn lint(source: &str) -> LintResult {
     let mut registry = RuleRegistry::new();
@@ -110,6 +113,30 @@ fn a_component_within_the_thresholds_is_silent() {
 "#;
     let result = lint(source);
     assert_eq!(result.diagnostics.len(), 0);
+}
+
+#[test]
+fn no_preset_carries_the_rule_and_naming_it_enables_it() {
+    for preset in LintPreset::ALL {
+        let result = Linter::with_preset(preset).lint_sfc(COMPLEX, "Dashboard.vue");
+        assert!(
+            result.diagnostics.iter().all(|d| d.rule_name != RULE),
+            "{preset:?} must not carry {RULE}"
+        );
+    }
+    let enabled = Linter::with_preset(LintPreset::Opinionated)
+        .with_additional_rules(vec![RULE.into()])
+        .lint_sfc(COMPLEX, "Dashboard.vue");
+    let fired: Vec<_> = enabled
+        .diagnostics
+        .iter()
+        .filter(|d| d.rule_name == RULE)
+        .map(|d| d.message.as_str())
+        .collect();
+    assert_eq!(
+        fired,
+        vec!["Template complexity is too high: cyclomatic 13 (limit 11), cognitive 25 (limit 16)"]
+    );
 }
 
 #[test]

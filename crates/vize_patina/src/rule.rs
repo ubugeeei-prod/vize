@@ -226,9 +226,7 @@ impl RuleRegistry {
     /// opt-in. These rules do not belong to any preset.
     pub fn with_opt_in_rules() -> Self {
         let mut registry = Self::with_capacity(16);
-        crate::rules::ecosystem::register_opt_in(&mut registry);
-        crate::rules::petite_vue::register_opt_in(&mut registry);
-        crate::rules::vue::register_opt_in(&mut registry);
+        registry.register_opt_in_rules();
         registry
     }
 
@@ -237,6 +235,7 @@ impl RuleRegistry {
         crate::rules::ecosystem::register_opt_in(self);
         crate::rules::petite_vue::register_opt_in(self);
         crate::rules::vue::register_opt_in(self);
+        crate::rules::facts::register_opt_in(self);
     }
 
     /// Create the default happy-path registry.

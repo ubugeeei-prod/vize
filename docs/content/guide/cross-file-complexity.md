@@ -68,10 +68,23 @@ score beside diagnostics so those signals are visible while editing fixtures.
 
 ## Lint Rule and Doctor Finding
 
-`vue/max-template-complexity` is in the `opinionated` preset and reports as a `warning`. It warns
-when a component's own template has cyclomatic complexity above 11 or cognitive complexity above
-16. Those limits are the p95 over Vize's real-world corpus of 40,724 templates. The warning points
-at the `<template>` tag and labels the five constructs that add the most complexity.
+`vue/max-template-complexity` reports a `warning` when a component's own template has cyclomatic
+complexity above 11 or cognitive complexity above 16. Those limits are the p95 over Vize's
+real-world corpus of 40,724 templates. The warning points at the `<template>` tag and labels the
+five constructs that add the most complexity.
+
+Because the limits are a p95, about one real component in twenty exceeds them. No preset enables
+the rule, so turning it on is a project decision. Name it under `linter.rules` to enable it:
+
+```ts
+export default defineConfig({
+  linter: {
+    rules: {
+      "vue/max-template-complexity": "warn",
+    },
+  },
+});
+```
 
 `vize doctor` reports a template-complexity hotspot, as a notice, when a component's rendered
 complexity is above the corpus p95: cyclomatic 106 or cognitive 139.
