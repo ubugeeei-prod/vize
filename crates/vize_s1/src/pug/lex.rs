@@ -21,7 +21,7 @@ mod attrs;
 mod keyword;
 mod text;
 
-use alloc::vec::Vec;
+use vize_s0::{Allocator, Vec};
 
 use super::error::PugErrorCode;
 use super::tree::PugRefusal;
@@ -77,14 +77,15 @@ enum IndentRe {
     Spaces,
 }
 
-pub(crate) struct Lexer<'s, 'o> {
-    src: &'s str,
+pub(crate) struct Lexer<'a, 'o> {
+    allocator: &'a Allocator,
+    src: &'a str,
     pos: usize,
     end: usize,
-    out: &'o mut Vec<Tok>,
-    errors: &'o mut Vec<(PugErrorCode, u32)>,
+    out: &'o mut Vec<'a, Tok>,
+    errors: &'o mut Vec<'a, (PugErrorCode, u32)>,
     /// Current indentation last (pug's `indentStack[0]`).
-    indent_stack: Vec<usize>,
+    indent_stack: Vec<'a, usize>,
     indent_re: Option<IndentRe>,
     interpolation_allowed: bool,
     interpolated: bool,
@@ -92,22 +93,30 @@ pub(crate) struct Lexer<'s, 'o> {
 }
 
 /// Lex the whole logical text.
-pub(crate) fn lex(src: &str, out: &mut Vec<Tok>, errors: &mut Vec<(PugErrorCode, u32)>) {
-    let mut lexer = Lexer::new(src, 0, src.len(), out, errors, false);
+pub(crate) fn lex<'a>(
+    allocator: &'a Allocator,
+    src: &'a str,
+    out: &mut Vec<'a, Tok>,
+    errors: &mut Vec<'a, (PugErrorCode, u32)>,
+) {
+    let mut lexer = Lexer::new(allocator, src, 0, src.len(), out, errors, false);
     lexer.run();
 }
 
-impl<'s, 'o> Lexer<'s, 'o> {
+impl<'a, 'o> Lexer<'a, 'o> {
     fn new(
-        src: &'s str,
+        allocator: &'a Allocator,
+        src: &'a str,
         pos: usize,
         end: usize,
-        out: &'o mut Vec<Tok>,
-        errors: &'o mut Vec<(PugErrorCode, u32)>,
+        out: &'o mut Vec<'a, Tok>,
+        errors: &'o mut Vec<'a, (PugErrorCode, u32)>,
         interpolated: bool,
     ) -> Self {
-        let indent_stack = alloc::vec![0];
+        let mut indent_stack = Vec::new_in(&allocator);
+        indent_stack.push(0);
         Self {
+            allocator,
             src,
             pos,
             end,
@@ -155,7 +164,7 @@ impl<'s, 'o> Lexer<'s, 'o> {
             || self.fail();
     }
 
-    fn input(&self) -> &'s str {
+    fn input(&self) -> &'a str {
         &self.src[self.pos..self.end]
     }
 

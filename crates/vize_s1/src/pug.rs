@@ -69,11 +69,11 @@ pub fn parse_pug<'a>(
         "S1 sources are u32-addressed"
     );
     let logical = logical::Logical::new(allocator, source);
-    let mut tokens = alloc::vec::Vec::new();
-    let mut lex_errors = alloc::vec::Vec::new();
-    lex::lex(logical.text, &mut tokens, &mut lex_errors);
+    let mut tokens = Vec::new_in(&allocator);
+    let mut lex_errors = Vec::new_in(&allocator);
+    lex::lex(allocator, logical.text, &mut tokens, &mut lex_errors);
     let mut errors = Vec::new_in(&allocator);
-    for (code, at) in lex_errors {
+    for &(code, at) in lex_errors.iter() {
         errors.push(PugError {
             code,
             offset: logical.at(at as usize),

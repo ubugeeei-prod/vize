@@ -70,7 +70,7 @@ impl Lexer<'_, '_> {
         } else if line.starts_with(b"doctype") {
             (PugRefusal::Doctype, None)
         } else if line.starts_with(b"#{") {
-            let unbalanced = parse_until(self.input(), b'}', 2).is_err();
+            let unbalanced = parse_until(self.allocator, self.input(), b'}', 2).is_err();
             (
                 PugRefusal::Interpolation,
                 unbalanced.then_some(PugErrorCode::NoEndBracket),
@@ -195,7 +195,7 @@ impl Lexer<'_, '_> {
         let code_start = self.pos + flag + blanks.min(line_len - flag - 1);
         let mut code_end = self.pos + line_len;
         if self.interpolated {
-            match parse_until(&self.src[code_start..code_end], b']', 0) {
+            match parse_until(self.allocator, &self.src[code_start..code_end], b']', 0) {
                 Ok(close) => code_end = code_start + close,
                 Err(_) => self.error(PugErrorCode::NoEndBracket, code_start),
             }
@@ -273,7 +273,10 @@ impl Lexer<'_, '_> {
         }
         let after = self.pos + 11;
         let rest = &self.src[after..self.end];
-        let end = match rest.starts_with('(').then(|| parse_until(rest, b')', 1)) {
+        let end = match rest
+            .starts_with('(')
+            .then(|| parse_until(self.allocator, rest, b')', 1))
+        {
             Some(Ok(close)) => after + close + 1,
             _ => {
                 self.error(PugErrorCode::NoEndBracket, after);

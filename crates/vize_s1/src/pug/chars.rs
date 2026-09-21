@@ -4,7 +4,7 @@
 //! regexp-vs-divide heuristic, same failure points, so the surface tree
 //! splits exactly where the pinned `pug` does.
 
-use alloc::vec::Vec;
+use vize_s0::{Allocator, Vec};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Frame {
@@ -26,24 +26,25 @@ pub(crate) enum ScanError {
     Mismatched(usize),
 }
 
-pub(crate) struct State {
-    stack: Vec<Frame>,
+pub(crate) struct State<'a> {
+    stack: Vec<'a, Frame>,
     regexp_start: bool,
     escaped: bool,
     has_dollar: bool,
     /// Significant characters, most recent last (comments excluded).
-    history: Vec<char>,
+    history: Vec<'a, char>,
     last_char: Option<char>,
 }
 
-impl State {
-    pub(crate) fn new() -> Self {
+impl<'a> State<'a> {
+    /// Scanner state; its stacks live in the parse arena.
+    pub(crate) fn new(allocator: &'a Allocator) -> Self {
         Self {
-            stack: Vec::new(),
+            stack: Vec::new_in(&allocator),
             regexp_start: false,
             escaped: false,
             has_dollar: false,
-            history: Vec::new(),
+            history: Vec::new_in(&allocator),
             last_char: None,
         }
     }
@@ -157,8 +158,13 @@ impl State {
 
 /// `parseUntil(src, delimiter, { start })`: the offset (relative to `src`)
 /// of the first `delimiter` byte met while not nesting.
-pub(crate) fn parse_until(src: &str, delimiter: u8, start: usize) -> Result<usize, ScanError> {
-    let mut state = State::new();
+pub(crate) fn parse_until(
+    allocator: &Allocator,
+    src: &str,
+    delimiter: u8,
+    start: usize,
+) -> Result<usize, ScanError> {
+    let mut state = State::new(allocator);
     for (index, ch) in src[start..].char_indices() {
         let at = start + index;
         if !state.is_nesting() && src.as_bytes()[at] == delimiter {
@@ -263,14 +269,18 @@ fn is_regexp(history: &[char]) -> bool {
     if first == '}' || is_punctuator(Some(first)) {
         return true;
     }
-    // `/^\w+\b/` over the reversed history: the latest word, reversed back.
-    let mut word: Vec<u8> = recent
-        .take_while(|ch| ch.is_ascii_alphanumeric() || *ch == '_')
-        .map(|ch| ch as u8)
-        .collect();
-    word.reverse();
-    !word.is_empty()
-        && KEYWORDS
-            .iter()
-            .any(|keyword| keyword.as_bytes() == word.as_slice())
+    // `/^\w+\b/` over the reversed history: the latest word, compared
+    // back to front (keywords are at most 10 bytes; a longer word is none).
+    let mut word = [0u8; 11];
+    let mut len = 0;
+    for ch in recent.take_while(|ch| ch.is_ascii_alphanumeric() || *ch == '_') {
+        if len == word.len() {
+            return false;
+        }
+        word[len] = ch as u8;
+        len += 1;
+    }
+    KEYWORDS.iter().any(|keyword| {
+        keyword.len() == len && keyword.bytes().rev().eq(word[..len].iter().copied())
+    })
 }

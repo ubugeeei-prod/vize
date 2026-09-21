@@ -22,7 +22,7 @@ impl Lexer<'_, '_> {
         if !self.input().starts_with('(') {
             return false;
         }
-        let close = match parse_until(self.input(), b')', 1) {
+        let close = match parse_until(self.allocator, self.input(), b')', 1) {
             Ok(close) => close,
             Err(error) => {
                 let code = match error {
@@ -117,7 +117,7 @@ impl Lexer<'_, '_> {
             at += 1;
         }
         let value_start = at;
-        let mut state = State::new();
+        let mut state = State::new(self.allocator);
         while at < end {
             let byte = bytes[at];
             if !(state.is_nesting() || state.is_string()) {
@@ -158,16 +158,14 @@ impl Lexer<'_, '_> {
 
 /// The structural stand-in for `is-expression`: non-blank, balanced, not
 /// inside a string or comment, and not ending in an operator.
+///
+/// Called only where the running scanner state is neither nesting nor
+/// inside a string (so the value is balanced and outside any comment);
+/// what remains is the operator test on its last significant character.
 pub(crate) fn looks_complete(value: &str) -> bool {
     let trimmed = value.trim_end_matches(crate::pug::logical::is_js_whitespace);
-    let Some(last) = trimmed.chars().last() else {
-        return false;
-    };
-    let mut state = State::new();
-    for ch in trimmed.chars() {
-        if state.push(ch).is_err() {
-            return false;
-        }
-    }
-    !state.is_nesting() && (matches!(last, ')' | ']' | '}') || !is_punctuator(Some(last)))
+    trimmed
+        .chars()
+        .last()
+        .is_some_and(|last| matches!(last, ')' | ']' | '}') || !is_punctuator(Some(last)))
 }

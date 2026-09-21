@@ -2,7 +2,7 @@
 //! text blocks, and pug's `addText` splitter (`#[…]` tag interpolation,
 //! `#{…}`/`!{…}` code interpolation, `\`-escapes).
 
-use alloc::vec::Vec;
+use vize_s0::Vec;
 
 use super::{Lexer, Tk};
 use crate::pug::chars::parse_until;
@@ -79,7 +79,7 @@ impl Lexer<'_, '_> {
             }
             let tabs = self.indent_re == Some(super::IndentRe::Tabs);
             let indent_char = if tabs { b'\t' } else { b' ' };
-            let mut lines: Vec<(usize, usize, usize)> = Vec::new();
+            let mut lines: Vec<(usize, usize, usize)> = Vec::new_in(&self.allocator);
             let mut ptr = self.pos;
             loop {
                 // `ptr` sits on the `\n` that precedes the candidate line.
@@ -126,7 +126,7 @@ impl Lexer<'_, '_> {
     /// `addText` over the value `[start, end)`.
     pub(super) fn add_text(&mut self, kind: Tk, mut start: usize, end: usize) {
         let mut token_start = start;
-        let mut escapes: Vec<usize> = Vec::new();
+        let mut escapes: Vec<usize> = Vec::new_in(&self.allocator);
         let mut has_prefix = false;
         loop {
             let value = &self.src[start..end];
@@ -182,7 +182,7 @@ impl Lexer<'_, '_> {
                     self.emit_text(kind, token_start, start + at, &escapes);
                 }
                 let body = start + at + 2;
-                match parse_until(&self.src[body..end], b'}', 0) {
+                match parse_until(self.allocator, &self.src[body..end], b'}', 0) {
                     Ok(close) => {
                         self.push(Tk::CodeInterp, start + at, body + close + 1);
                         if body + close + 1 < end {
@@ -218,7 +218,15 @@ impl Lexer<'_, '_> {
 
     /// Lex a `#[…]` body with a child lexer; returns where it stopped.
     fn child(&mut self, start: usize, end: usize) -> usize {
-        let mut child = Lexer::new(self.src, start, end, self.out, self.errors, true);
+        let mut child = Lexer::new(
+            self.allocator,
+            self.src,
+            start,
+            end,
+            self.out,
+            self.errors,
+            true,
+        );
         vize_s0::ensure_sufficient_stack(|| child.run());
         child.pos
     }
