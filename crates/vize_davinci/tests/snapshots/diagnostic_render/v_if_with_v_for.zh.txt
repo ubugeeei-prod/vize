@@ -1,0 +1,9 @@
+错误[vue/no-use-v-if-with-v-for]: `v-if` 先于 `v-for` 求值，因此无法访问 `user`。
+ --> src/components/ActiveUsers.vue:7:31
+  |
+7 |     <li v-for="user in users" v-if="user.active" :key="user.id">
+  |         --------------------- ^^^^^^^^^^^^^^^^^^ ……但这个 `v-if` 会先求值
+  |         |
+  |         `user` 由这个 `v-for` 声明……
+  |
+  = 帮助: 请在计算属性中过滤列表，或用 `<template v-for>` 包裹后在内部使用 `v-if`

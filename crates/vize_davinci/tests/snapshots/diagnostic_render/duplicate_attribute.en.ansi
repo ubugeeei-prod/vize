@@ -1,0 +1,13 @@
+[1;91merror[vue/no-duplicate-attributes][0m[1m: Duplicate attribute `class`.[0m
+ [1;94m-->[0m src/components/SaveButton.vue:2:37
+  [1;94m|[0m
+[1;94m2[0m [1;94m|[0m   <button class="btn" type="submit" class="btn-primary">Save</button>
+  [1;94m|[0m           [1;94m-----------[0m               [1;91m^^^^^^^^^^^^^^^^^^^[0m [1;91m`class` is set again here[0m
+  [1;94m|[0m           [1;94m|[0m
+  [1;94m|[0m           [1;94mfirst set here[0m
+  [1;94m|[0m
+[1;96mhelp[0m: merge the values into one `class`
+  [1;94m|[0m
+[1;94m2[0m [31m-[0m   <button [31mclass="btn"[0m type="submit"[31m class="btn-primary"[0m>Save</button>
+[1;94m2[0m [32m+[0m   <button [32mclass="btn btn-primary"[0m type="submit">Save</button>
+  [1;94m|[0m

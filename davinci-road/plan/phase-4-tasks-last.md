@@ -158,6 +158,8 @@
 
 ## P4-14a — Structured diagnostic renderer
 
+**Landed 2026-09-22** — full record: [phase-4-records/p4-14a.md](./phase-4-records/p4-14a.md).
+
 **Start gate:** startable now — P3-independent.
 
 **Lane:** M
@@ -166,8 +168,8 @@
 
 **Steps:**
 
-- [ ] Renderer + `Catalog` trait (`#![no_std]` + `alloc`); east-asian-wide width handling for ja/zh excerpts
-- [ ] Register **TS-53** in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test diagnostic_render` + `node --test tests/tooling/davinci-diagnostic-catalog.test.ts`
+- [x] Renderer + `Catalog` trait (`#![no_std]` + `alloc`); east-asian-wide width handling for ja/zh excerpts
+- [x] Register **TS-53** in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test diagnostic_render` + `node --test tests/tooling/davinci-diagnostic-catalog.test.ts`
 
 **Acceptance:** TS-53 snapshot fixtures exact per locale (en/ja/zh), including wide-character alignment and multi-label excerpts; TS-24; TS-1, TS-13.
 

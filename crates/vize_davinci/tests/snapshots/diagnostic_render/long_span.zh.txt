@@ -1,0 +1,18 @@
+警告[vue/single-style-block]: 每个组件只允许一个 `<style scoped>` 块。
+  --> src/components/Styled.vue:11:1
+   |
+ 5 | / <style scoped>
+ 6 | | .a {
+ 7 | |   color: red;
+ 8 | | }
+ 9 | | </style>
+   | |________- 第一个在这里
+10 |
+11 | / <style scoped>
+12 | | .a {
+...  |
+22 | | }
+23 | | </style>
+   | |________^ 第二个 `<style scoped>` 块
+   |
+   = 帮助: 请将规则合并到同一个块中

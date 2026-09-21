@@ -7,6 +7,7 @@ mod cross_file;
 mod entry_rules;
 mod fix;
 mod patterns;
+mod rich;
 mod stdout;
 
 #[cfg(test)]
@@ -30,7 +31,7 @@ use std::time::{Duration, Instant};
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
-use vize_patina::{HelpLevel, LintPreset, OutputFormat, format_results};
+use vize_patina::{HelpLevel, LintPreset, OutputFormat};
 use vize_s0::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 
 pub fn run(args: LintArgs) {
@@ -42,13 +43,8 @@ pub fn run(args: LintArgs) {
         eprintln!("\x1b[31mError:\x1b[0m {}", error);
         std::process::exit(2);
     }
-    let format = OutputFormat::parse(args.format.as_str()).unwrap_or_else(|| {
-        eprintln!(
-            "Unknown lint output format '{}'. Expected one of: text, ansi, plain, json, stylish, markdown, html, agent",
-            args.format
-        );
-        std::process::exit(2);
-    });
+    let (format, rich) = rich::parse_format(args.format.as_str());
+    let locale = rich::parse_locale(args.locale.as_str());
     let render_details = aggregate::should_render_details(format, args.quiet);
     crate::config::write_schema(None);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
@@ -228,7 +224,7 @@ pub fn run(args: LintArgs) {
 
         let output = profile!(
             "cli.lint.output.format_results",
-            format_results(&lint_results, &sources, format)
+            rich::format_results(rich, locale, &lint_results, &sources, format)
         );
         if !output.trim().is_empty() {
             stdout::write(output.as_bytes());

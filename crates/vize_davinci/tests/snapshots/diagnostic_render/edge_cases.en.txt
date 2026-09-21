@@ -1,0 +1,37 @@
+error
+ --> edge.vue:1:3
+  |
+1 | a    bé
+  |      ^
+
+warning[edge/past-end]: Past the end.
+ --> edge.vue:3:2
+  |
+3 | c
+  |  ^
+
+info[edge/split]: Escape ␛[31mbytes␛[0m stay visible.
+ --> edge.vue:1:4
+  |
+1 | a    bé
+  |       ^
+
+hint[edge/elsewhere]: Two primaries.
+ --> edge.vue:1:1
+  |
+1 | a    bé
+  | ^
+2 |
+3 | c
+  | ^ labelled
+  |
+help: suggested fix
+  |
+1 - a    bé
+1 + xé
+  |
+help: suggested fix
+  |
+1 - a    bé
+1 + a    yé
+  |

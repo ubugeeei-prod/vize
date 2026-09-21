@@ -1,0 +1,14 @@
+错误[vue/require-toggle-inside-transition]: `<Transition>` 内的元素必须通过 `v-if` 或 `v-show` 切换显示。
+ --> src/components/Greeting.vue:6:5
+  |
+2 | /    <Transition name="fade">
+3 | |/     <p v-if="show">
+4 | ||       Hello
+5 | ||     </p>
+  | ||________- 这个兄弟元素能正确切换
+6 | |/     <span>
+7 | ||       world
+8 | ||     </span>
+  | ||___________^ 这个 `<span>` 永远不会进入或离开
+9 | |    </Transition>
+  | |________________- 过渡只会作用于进入或离开的子元素

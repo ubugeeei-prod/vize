@@ -21,6 +21,8 @@
 //! - [`legacy_plan`] — the shipped backends' template traversals, declared as
 //!   plans so a migration has something to be measured against.
 //! - [`folio`] — the textual stage-dump contract (`trait Folio`).
+//! - [`render`] — the rustc/Elm-grade terminal renderer every diagnostic
+//!   surface shares, localized through a caller-supplied catalog.
 //!
 //! The stage IRs themselves land in their own crates (`vize_s2` for S2);
 //! see `davinci-road/architecture.md`. New implementation code should prefer
@@ -45,5 +47,6 @@ pub mod folio;
 pub mod id;
 pub mod legacy_plan;
 pub mod pass;
+pub mod render;
 pub mod side_table;
 pub mod stage;

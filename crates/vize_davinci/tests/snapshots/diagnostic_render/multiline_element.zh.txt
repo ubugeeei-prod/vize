@@ -1,0 +1,14 @@
+错误[a11y/img-alt]: `<img>` 元素必须有 `alt` 属性。
+ --> src/components/AppHeader.vue:3:5
+  |
+3 | /     <img
+4 | |       src="/vize.svg"
+5 | |       class="logo"
+6 | |     >
+  | |_____^ 屏幕阅读器无法描述这张图片
+  |
+  = 帮助: 如果图片仅用于装饰，请使用 `alt=""`
+帮助: 添加描述图片内容的替代文本
+  |
+3 |     <img alt="Vize"
+  |         +++++++++++

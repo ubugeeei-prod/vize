@@ -1,0 +1,11 @@
+エラー[vue/valid-v-model]: `v-model` と、その展開先であるプロパティとリスナーが同時に指定されています。
+ --> src/components/Profile.vue:2:14
+  |
+2 |   <NameInput v-model="form.name" :model-value="name" @update:model-value="setName" />
+  |              ^^^^^^^^^^^^^^^^^^^ ------------------- ----------------------------- …このリスナーも二重に実行されます
+  |              |                   |
+  |              |                   …そのため、このプロパティと衝突します
+  |              `v-model` は `modelValue` プロパティと
+  |              `update:modelValue` リスナーに展開されます…
+  |
+  = ヒント: `v-model` と明示的な組み合わせのどちらか一方だけを残してください

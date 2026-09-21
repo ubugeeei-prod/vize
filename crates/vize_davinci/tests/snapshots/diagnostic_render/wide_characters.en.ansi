@@ -1,0 +1,14 @@
+[1;91merror[vue/no-undefined-refs][0m[1m: `ユーザ名` is not defined.[0m
+ [1;94m-->[0m src/components/あいさつ.vue:8:25
+  [1;94m|[0m
+[1;94m4[0m [1;94m|[0m const ユーザー名 = ref("うぶげ")
+  [1;94m|[0m       [1;94m----------[0m [1;94ma binding with a similar name is declared here[0m
+...
+[1;94m8[0m [1;94m|[0m   <p class="挨拶">ようこそ、{{ ユーザ名 }}さん！🎉</p>
+  [1;94m|[0m                                [1;91m^^^^^^^^[0m [1;91mnot declared in this component[0m
+  [1;94m|[0m
+[1;96mhelp[0m: did you mean `ユーザー名`?
+  [1;94m|[0m
+[1;94m8[0m [31m-[0m   <p class="挨拶">ようこそ、{{ [31mユーザ名[0m }}さん！🎉</p>
+[1;94m8[0m [32m+[0m   <p class="挨拶">ようこそ、{{ [32mユーザー名[0m }}さん！🎉</p>
+  [1;94m|[0m

@@ -1,7 +1,7 @@
 //! Batch resolution of declaration-ordered `entries[].linter.rules`.
 
 use std::path::{Path, PathBuf};
-use vize_patina::{HelpLevel, LintPreset, Linter, Severity};
+use vize_patina::{HelpLevel, LintPreset, Linter, Locale, Severity};
 use vize_s0::{
     FxHashMap, String,
     config::{
@@ -84,6 +84,7 @@ impl ResolvedLinterRuleGroups {
                         config.rule_severity_overrides(),
                     ))
                     .with_help_level(help_level)
+                    .with_locale(Locale::parse(&args.locale).unwrap_or_default())
                     .with_type_aware_lint(type_aware)
                     .with_vue_version(features.vue_version)
                     .with_vapor_mode(features.vapor)

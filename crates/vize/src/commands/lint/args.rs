@@ -25,9 +25,13 @@ pub struct LintArgs {
     #[arg(long)]
     pub no_config: bool,
 
-    /// Output format (text, ansi, plain, json, stylish, markdown, html, agent)
+    /// Output format (text, rich, ansi, plain, json, stylish, markdown, html, agent)
     #[arg(short, long, default_value = "text")]
     pub format: String,
+
+    /// Language of diagnostic messages and the rich renderer: en, ja, zh
+    #[arg(long, default_value = "en")]
+    pub locale: String,
 
     /// Maximum number of warnings before failing
     #[arg(long)]

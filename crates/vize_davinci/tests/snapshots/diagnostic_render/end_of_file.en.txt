@@ -1,0 +1,13 @@
+error: Element is missing end tag.
+ --> src/components/Card.vue:4:1
+  |
+2 |   <div class="card">
+  |   ------------------ this `<div>` is never closed
+3 |     <p>Card</p>
+4 |
+  | ^ the file ends here
+  |
+help: suggested fix
+  |
+4 |   </div>
+  | ++++++++

@@ -1,0 +1,13 @@
+[1;91merror[0m[1m: Element is missing end tag.[0m
+ [1;94m-->[0m src/components/Card.vue:4:1
+  [1;94m|[0m
+[1;94m2[0m [1;94m|[0m   <div class="card">
+  [1;94m|[0m   [1;94m------------------[0m [1;94mthis `<div>` is never closed[0m
+[1;94m3[0m [1;94m|[0m     <p>Card</p>
+[1;94m4[0m [1;94m|[0m
+  [1;94m|[0m [1;91m^[0m [1;91mthe file ends here[0m
+  [1;94m|[0m
+[1;96mhelp[0m: suggested fix
+  [1;94m|[0m
+[1;94m4[0m [1;94m|[0m   </div>
+  [1;94m|[0m [32m++++++++[0m

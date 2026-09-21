@@ -1,0 +1,13 @@
+警告: 属性值中包含双向文本控制字符。
+ --> src/components/Download.vue:2:12
+  |
+2 |     <p title="�fdp.exe">    download</p>
+  |               ^------- 显示时顺序颠倒，看起来像 `exe.pdf`
+  |               |
+  |               从右到左覆盖字符隐藏了其后文本的真实顺序
+  |
+帮助: 可以这样修复
+  |
+2 -     <p title="�fdp.exe">    download</p>
+2 +     <p title="fdp.exe">    download</p>
+  |

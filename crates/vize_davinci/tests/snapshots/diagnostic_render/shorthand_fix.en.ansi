@@ -1,0 +1,15 @@
+[1;93mwarning[vue/v-on-style][0m[1m: Expected `@` instead of `v-on:`.[0m
+ [1;94m-->[0m src/components/TitleForm.vue:2:9
+  [1;94m|[0m
+[1;94m2[0m [1;94m|[0m   <form v-on:submit.prevent="save">
+  [1;94m|[0m         [1;93m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m [1;93mlong-form `v-on:`[0m
+[1;94m3[0m [1;94m|[0m     <input v-model="title" v-on:keydown.enter="save">
+  [1;94m|[0m                            [1;94m-------------------------[0m [1;94mand here[0m
+  [1;94m|[0m
+[1;96mhelp[0m: use the `@` shorthand
+  [1;94m|[0m
+[1;94m2[0m [31m-[0m   <form [31mv-on:[0msubmit.prevent="save">
+[1;94m3[0m [31m-[0m     <input v-model="title" [31mv-on:[0mkeydown.enter="save">
+[1;94m2[0m [32m+[0m   <form [32m@[0msubmit.prevent="save">
+[1;94m3[0m [32m+[0m     <input v-model="title" [32m@[0mkeydown.enter="save">
+  [1;94m|[0m

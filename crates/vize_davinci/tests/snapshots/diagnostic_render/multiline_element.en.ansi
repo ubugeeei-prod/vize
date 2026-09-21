@@ -1,0 +1,14 @@
+[1;91merror[a11y/img-alt][0m[1m: `<img>` elements must have an `alt` attribute.[0m
+ [1;94m-->[0m src/components/AppHeader.vue:3:5
+  [1;94m|[0m
+[1;94m3[0m [1;94m|[0m [1;91m/[0m     <img
+[1;94m4[0m [1;94m|[0m [1;91m|[0m       src="/vize.svg"
+[1;94m5[0m [1;94m|[0m [1;91m|[0m       class="logo"
+[1;94m6[0m [1;94m|[0m [1;91m|[0m     >
+  [1;94m|[0m [1;91m|_____^[0m [1;91mscreen readers cannot describe this image[0m
+  [1;94m|[0m
+  [1;94m=[0m [1mhelp[0m: use `alt=""` if the image is purely decorative
+[1;96mhelp[0m: describe what the image shows
+  [1;94m|[0m
+[1;94m3[0m [1;94m|[0m     <img alt="Vize"
+  [1;94m|[0m         [32m+++++++++++[0m

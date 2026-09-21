@@ -1,0 +1,9 @@
+エラー[vue/no-use-v-if-with-v-for]: `v-if` は `v-for` より先に評価されるため、`user` を参照できません。
+ --> src/components/ActiveUsers.vue:7:31
+  |
+7 |     <li v-for="user in users" v-if="user.active" :key="user.id">
+  |         --------------------- ^^^^^^^^^^^^^^^^^^ …この `v-if` のほうが先に評価されます
+  |         |
+  |         `user` はこの `v-for` で宣言されますが…
+  |
+  = ヒント: 算出プロパティで一覧を絞り込むか、`<template v-for>` で囲んでその内側で `v-if` を使ってください

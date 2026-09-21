@@ -1,0 +1,27 @@
+警告[a11y/click-events-have-key-events]: 带有点击处理程序的非交互元素还必须有键盘事件处理程序。
+ --> src/components/Counter.vue:6:9
+  |
+6 |   <div  @click="count++">{{ count }}</div>
+  |         ^^^^^^^^^^^^^^^^
+  |
+  = 帮助: 键盘用户无法触发此处理程序。
+          请改用 `<button>`，或添加 `@keydown.enter` 和 `tabindex="0"`
+
+提示[vue/no-multi-spaces]: `@click` 前有多个连续空格。
+ --> src/components/Counter.vue:6:7
+  |
+6 |   <div  @click="count++">{{ count }}</div>
+  |       ^^
+  |
+帮助: 可以这样修复
+  |
+6 -   <div  @click="count++">{{ count }}</div>
+6 +   <div @click="count++">{{ count }}</div>
+  |
+
+信息: `ref` 未经导入即被使用。
+      它通过 Vue API 的自动导入解析。
+ --> src/components/Counter.vue:2:15
+  |
+2 | const count = ref(0)
+  |               ^^^

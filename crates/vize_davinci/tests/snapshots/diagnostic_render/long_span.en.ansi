@@ -1,0 +1,18 @@
+[1;93mwarning[vue/single-style-block][0m[1m: Only one `<style scoped>` block is allowed per component.[0m
+  [1;94m-->[0m src/components/Styled.vue:11:1
+   [1;94m|[0m
+ [1;94m5[0m [1;94m|[0m [1;94m/[0m <style scoped>
+ [1;94m6[0m [1;94m|[0m [1;94m|[0m .a {
+ [1;94m7[0m [1;94m|[0m [1;94m|[0m   color: red;
+ [1;94m8[0m [1;94m|[0m [1;94m|[0m }
+ [1;94m9[0m [1;94m|[0m [1;94m|[0m </style>
+   [1;94m|[0m [1;94m|________-[0m [1;94mthe first one is here[0m
+[1;94m10[0m [1;94m|[0m
+[1;94m11[0m [1;94m|[0m [1;93m/[0m <style scoped>
+[1;94m12[0m [1;94m|[0m [1;93m|[0m .a {
+...  [1;93m|[0m
+[1;94m22[0m [1;94m|[0m [1;93m|[0m }
+[1;94m23[0m [1;94m|[0m [1;93m|[0m </style>
+   [1;94m|[0m [1;93m|________^[0m [1;93ma second `<style scoped>` block[0m
+   [1;94m|[0m
+   [1;94m=[0m [1mhelp[0m: merge the rules into a single block

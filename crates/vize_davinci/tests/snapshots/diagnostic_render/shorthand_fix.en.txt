@@ -1,0 +1,15 @@
+warning[vue/v-on-style]: Expected `@` instead of `v-on:`.
+ --> src/components/TitleForm.vue:2:9
+  |
+2 |   <form v-on:submit.prevent="save">
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^ long-form `v-on:`
+3 |     <input v-model="title" v-on:keydown.enter="save">
+  |                            ------------------------- and here
+  |
+help: use the `@` shorthand
+  |
+2 -   <form v-on:submit.prevent="save">
+3 -     <input v-model="title" v-on:keydown.enter="save">
+2 +   <form @submit.prevent="save">
+3 +     <input v-model="title" @keydown.enter="save">
+  |

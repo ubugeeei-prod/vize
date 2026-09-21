@@ -1,0 +1,13 @@
+エラー[vue/no-duplicate-attributes]: 属性 `class` が重複しています。
+ --> src/components/SaveButton.vue:2:37
+  |
+2 |   <button class="btn" type="submit" class="btn-primary">Save</button>
+  |           -----------               ^^^^^^^^^^^^^^^^^^^ ここで `class` をもう一度指定しています
+  |           |
+  |           最初の指定はここです
+  |
+ヒント: 値を 1 つの `class` にまとめてください
+  |
+2 -   <button class="btn" type="submit" class="btn-primary">Save</button>
+2 +   <button class="btn btn-primary" type="submit">Save</button>
+  |

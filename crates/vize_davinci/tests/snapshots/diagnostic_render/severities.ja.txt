@@ -1,0 +1,27 @@
+警告[a11y/click-events-have-key-events]: クリックハンドラーを持つ非インタラクティブな要素には、キーボード用のハンドラーも必要です。
+ --> src/components/Counter.vue:6:9
+  |
+6 |   <div  @click="count++">{{ count }}</div>
+  |         ^^^^^^^^^^^^^^^^
+  |
+  = ヒント: キーボードの利用者はこのハンドラーを実行できません。
+            `<button>` を使うか、`@keydown.enter` と `tabindex="0"` を追加してください
+
+提案[vue/no-multi-spaces]: `@click` の前に空白が連続しています。
+ --> src/components/Counter.vue:6:7
+  |
+6 |   <div  @click="count++">{{ count }}</div>
+  |       ^^
+  |
+ヒント: 次のように修正できます
+  |
+6 -   <div  @click="count++">{{ count }}</div>
+6 +   <div @click="count++">{{ count }}</div>
+  |
+
+情報: `ref` はインポートせずに使われています。
+      Vue API の自動インポートによって解決されます。
+ --> src/components/Counter.vue:2:15
+  |
+2 | const count = ref(0)
+  |               ^^^
