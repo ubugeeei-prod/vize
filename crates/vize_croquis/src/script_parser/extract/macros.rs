@@ -2,7 +2,7 @@ use oxc_ast::ast::{Argument, CallExpression, Expression};
 use oxc_span::GetSpan;
 
 use crate::macros::{ArtDefinition, DEFINE_ART, MacroKind, ModelDefinition};
-use vize_carton::CompactString;
+use vize_carton::{CompactString, FxHashMap};
 
 use super::super::ScriptParseResult;
 use super::common::{
@@ -185,7 +185,7 @@ pub fn process_call_expression(
         }
 
         MacroKind::Custom if callee_name == DEFINE_ART => {
-            if let Some(art) = extract_define_art(result, call) {
+            if let Some(art) = extract_define_art(&result.import_sources, call) {
                 result.macros.set_define_art(art);
             }
         }
@@ -261,8 +261,11 @@ fn runtime_constructor_model_type(name: &str) -> Option<&'static str> {
     }
 }
 
-fn extract_define_art(
-    result: &ScriptParseResult,
+/// `defineArt(component, options)` → [`ArtDefinition`]. `import_sources` maps
+/// a local import name to its module specifier as recorded so far in
+/// statement order; an identifier component resolves through it.
+pub(in crate::script_parser) fn extract_define_art(
+    import_sources: &FxHashMap<CompactString, CompactString>,
     call: &CallExpression<'_>,
 ) -> Option<ArtDefinition> {
     let first_arg = call.arguments.first()?;
@@ -280,7 +283,7 @@ fn extract_define_art(
             let component_name = argument_identifier(first_arg)?;
             (
                 CompactString::new(component_name),
-                result.import_sources.get(component_name).cloned(),
+                import_sources.get(component_name).cloned(),
             )
         };
     let mut art = ArtDefinition {

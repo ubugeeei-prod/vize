@@ -11,7 +11,19 @@ mod art_block;
 mod blocks;
 mod variant;
 
-use super::parse_define_art_metadata;
+use super::{DefineArtMetadata, define_art_metadata};
+
+/// The old `defineArt()` reader: the full script-setup analysis. Kept here
+/// so the oracle stays independent of the defineArt-only reader under test.
+fn parse_define_art_metadata<'a>(
+    allocator: &'a Allocator,
+    script: &'a str,
+) -> Option<DefineArtMetadata<'a>> {
+    memmem::find(script.as_bytes(), b"defineArt")?;
+    let parsed = vize_croquis::script_parser::parse_script_setup(script);
+    let art = parsed.macros.define_art()?;
+    Some(define_art_metadata(allocator, art))
+}
 use crate::types::{ArtDescriptor, ArtParseOptions, ArtParseResult, SourceLocation};
 use blocks::parse_sfc_blocks;
 use memchr::{memchr, memmem};

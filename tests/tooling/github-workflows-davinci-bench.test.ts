@@ -42,6 +42,10 @@ test("check workflow uploads Davinci allocation bench reports", () => {
     steps[gateIndex].run ?? "",
     /rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench patina_jsx_markup_one_root/,
   );
+  assert.match(
+    steps[gateIndex].run ?? "",
+    /cargo bench -p vize_musea --bench davinci_art -- --quick && rust-script tools\/commands\/davinci\/bench-compare\.rs --bench musea_parse_art_define_art --bench musea_parse_art_legacy_attrs --bench musea_parse_art_inline$/,
+  );
   assert.deepEqual(steps[gateIndex + 1], {
     name: "Upload Davinci allocation bench reports",
     if: "${{ always() }}",

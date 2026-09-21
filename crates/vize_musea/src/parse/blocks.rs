@@ -44,8 +44,12 @@ pub(crate) fn split_blocks<'a>(
         line: 1,
         message: "Art source exceeds the u32 offset space".to_compact_string(),
     })?;
-    let descriptor = parse_sfc(source, SfcParseOptions::default())
-        .map_err(|error| container_error(source, error))?;
+    // Musea never compiles styles, so the per-style `v-bind()` scan is skipped.
+    let options = SfcParseOptions {
+        skip_css_vars: true,
+        ..SfcParseOptions::default()
+    };
+    let descriptor = parse_sfc(source, options).map_err(|error| container_error(source, error))?;
 
     let art = descriptor
         .custom_blocks

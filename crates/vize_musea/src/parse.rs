@@ -152,13 +152,23 @@ fn parse_define_art_metadata<'a>(
 ) -> Option<DefineArtMetadata<'a>> {
     // Cheap pre-check: defineArt() can only return Some if the literal token
     // "defineArt" appears in the source (it is a compiler macro recognized by
-    // name and cannot be aliased), so skip the heavyweight OXC parse otherwise.
+    // name and cannot be aliased), so skip the OXC parse otherwise.
     if !script.contains("defineArt") {
         return None;
     }
 
-    let parsed = vize_croquis::script_parser::parse_script_setup(script);
-    let art = parsed.macros.define_art()?;
+    // The defineArt-only reader: one parse, none of the binding/scope
+    // analysis the full `parse_script_setup` runs for other consumers, and
+    // pinned equal to it by croquis's own differential battery.
+    let art = vize_croquis::script_parser::parse_define_art(script)?;
+    Some(define_art_metadata(allocator, &art))
+}
+
+/// The descriptor-side copy of a `defineArt()` call's metadata.
+pub(crate) fn define_art_metadata<'a>(
+    allocator: &'a Allocator,
+    art: &vize_croquis::macros::ArtDefinition,
+) -> DefineArtMetadata<'a> {
     let mut meta = DefineArtMetadata::new(allocator);
 
     meta.component_name = Some(allocator.alloc_str(art.component_name.as_str()));
@@ -186,8 +196,7 @@ fn parse_define_art_metadata<'a>(
     for tag in &art.tags {
         meta.tags.push(allocator.alloc_str(tag.as_str()));
     }
-
-    Some(meta)
+    meta
 }
 
 /// Source location of `[start, end)`; the line and column are computed from

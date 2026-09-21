@@ -200,6 +200,16 @@ s1_to_s2_emit_p2_11_dom_surface = { wall_p50_ns = 0, allocs = 60, rss_peak_bytes
 # that no per-rule root vector (or child spill) exists on the pass.
 patina_jsx_markup_one_root = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
+# Musea `parse_art` on the S0/S1 reader (P4-13). Each window is one whole
+# parse over a pinned Art file: the corpus's `defineArt()` shape, the legacy
+# `<art title=…>` shape and the in-repo gallery's inline `<art>`. The exact
+# alloc gate is the regression tripwire: reading `defineArt()` through the
+# full script-setup analysis again measures 58 / 53 allocations instead of
+# 14 / 10 on the two `defineArt()` cases.
+musea_parse_art_define_art = { wall_p50_ns = 0, allocs = 14, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+musea_parse_art_legacy_attrs = { wall_p50_ns = 0, allocs = 15, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+musea_parse_art_inline = { wall_p50_ns = 0, allocs = 10, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+
 [allocation_peak]
 # Exact peak live bytes over each stage window. The counting allocator makes
 # the value deterministic on one platform, but allocator requests can differ

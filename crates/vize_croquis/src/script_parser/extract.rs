@@ -16,6 +16,7 @@ mod slots;
 pub use common::{extract_call_expression, get_binding_type_from_kind};
 pub(in crate::script_parser) use emits::extract_runtime_emit_payload_type;
 pub use exports::{process_invalid_export, process_type_export};
+pub(in crate::script_parser) use macros::extract_define_art;
 pub use macros::process_call_expression;
 pub(in crate::script_parser) use plain_values::reactive_destructure_source;
 pub use plain_values::{

@@ -12,6 +12,8 @@ mod block_location_tests;
 #[cfg(test)]
 mod regex_recovery_tests;
 #[cfg(test)]
+mod skip_css_vars_tests;
+#[cfg(test)]
 mod tests;
 
 pub use parse_sfc::parse_sfc;

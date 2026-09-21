@@ -4003,6 +4003,7 @@ name = "vize_musea"
 version = "0.425.1"
 dependencies = [
  "criterion",
+ "davinci_harness",
  "insta",
  "memchr",
  "serde",

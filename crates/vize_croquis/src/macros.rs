@@ -328,7 +328,7 @@ pub struct SlotsDefinition {
 }
 
 /// Musea art metadata from defineArt(component, options).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ArtDefinition {
     pub component_name: CompactString,
     pub component_source: Option<CompactString>,

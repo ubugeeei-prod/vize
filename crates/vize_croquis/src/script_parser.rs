@@ -17,6 +17,7 @@
 //! - [`extract`] - Props/emits extraction and reactivity detection
 //! - [`walk`] - Scope walking functions
 
+mod define_art;
 mod extract;
 mod globals;
 mod parse;
@@ -26,6 +27,7 @@ mod result;
 mod typeof_refs;
 mod walk;
 
+pub use define_art::parse_define_art;
 pub use parse::{
     analyze_script_setup_program, parse_script, parse_script_setup,
     parse_script_setup_with_generic, parse_script_setup_with_generic_and_jsx,
