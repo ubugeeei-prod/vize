@@ -1,6 +1,7 @@
 //! Vapor Intermediate Representation (IR) types.
 mod constructors;
 mod control_flow;
+mod events;
 
 pub use control_flow::{ForIRNode, IfIRNode, NegativeBranch};
 

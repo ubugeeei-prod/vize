@@ -39,7 +39,12 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             .collect::<std::vec::Vec<_>>()
             .join(",");
         cstr!("_withModifiers({}, [{}])", invoker_body, mods)
-    } else if !set_event.modifiers.keys.is_empty() {
+    } else {
+        invoker_body
+    };
+    // Key filtering wraps the DOM guard: a non-matching key must not stop
+    // propagation or prevent the default action before it is rejected.
+    let wrapped_handler = if !set_event.modifiers.keys.is_empty() {
         ctx.use_helper("withKeys");
         let keys = set_event
             .modifiers
@@ -48,9 +53,9 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             .map(|k| ["\"", k, "\""].concat())
             .collect::<std::vec::Vec<_>>()
             .join(",");
-        cstr!("_withKeys({}, [{}])", invoker_body, keys)
+        cstr!("_withKeys({}, [{}])", wrapped_handler, keys)
     } else {
-        invoker_body
+        wrapped_handler
     };
 
     if set_event.delegate {
@@ -101,8 +106,9 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
                 element, event_name, wrapped_handler
             ));
             ctx.indent();
-            for opt in &opts {
-                ctx.push_line(opt);
+            for (index, opt) in opts.iter().enumerate() {
+                let comma = if index + 1 < opts.len() { "," } else { "" };
+                ctx.push_line_fmt(format_args!("{opt}{comma}"));
             }
             ctx.deindent();
             ctx.push_line("})");

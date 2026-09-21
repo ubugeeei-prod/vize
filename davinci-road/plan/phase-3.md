@@ -104,6 +104,11 @@ ordinary native HTML with direct-reference prop/text/click bindings, bypassing
 legacy transform/lowering. Unsupported surfaces explicitly retain the legacy
 lane. Graph-payload mutations, zero legacy-walk probes, and mounted identity/event
 traces enforce that boundary; full parity and benchmark promotion remain open.
+_Text/event expansion 2026-09-21:_ validated compound-text parts now survive into
+S3 generation with coalesced DOM addresses and stable following siblings. Static
+events share modifier/delegation semantics with legacy lowering; mounted traces
+cover key/DOM guard composition and combined listener options. The remaining
+P3-6 semantic, corpus and benchmark gates are unchanged.
 
 **P3-7 VDOM patch flags from facts.** `patch_flag.rs` inference replaced by
 lattice-fact consumption; flags become explicit S3 decisions (or S2→S4

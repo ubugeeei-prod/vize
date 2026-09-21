@@ -7,7 +7,7 @@ use vize_s3::{
     operand::{Operand, OperandRole as Role, ValueKind},
 };
 
-use super::{Binding, Content, NativeArtifact, Node};
+use super::{Binding, Content, NativeArtifact, Node, TextPart};
 use crate::s3::{AdmissionFailure, LegacyReason};
 
 type Result<T> = core::result::Result<T, AdmissionFailure>;
@@ -29,28 +29,7 @@ pub(super) fn admit<'a>(program: &Program<'a>) -> Result<NativeArtifact<'a>> {
         let values = operands.get(&op.id).map_or(&[][..], |v| &v[..]);
         let content = match op.kind {
             OpKind::InsertNode => element(values)?,
-            OpKind::SetText if values.len() == 1 && values[0].role == Role::Text => {
-                if values[0].target.is_some()
-                    || values[0].region.is_some()
-                    || values[0].name.is_some()
-                {
-                    return Err(LegacyReason::Structure.into());
-                }
-                let value = values[0].value;
-                match value.kind {
-                    ValueKind::Literal if !value.text.is_empty() && !value.text.contains('&') => {
-                        Content::Text {
-                            value: value.text,
-                            dynamic: false,
-                        }
-                    }
-                    ValueKind::Js if reference(value.text) => Content::Text {
-                        value: value.text.trim(),
-                        dynamic: true,
-                    },
-                    _ => return Err(LegacyReason::ExpressionOrEncoding.into()),
-                }
-            }
+            OpKind::SetText if values.iter().all(|value| value.role == Role::Text) => text(values)?,
             OpKind::SetProp | OpKind::SetEvent => {
                 let (target, binding) = binding(values, op.kind)?;
                 if op.effect.is_none() {
@@ -117,10 +96,6 @@ pub(super) fn admit<'a>(program: &Program<'a>) -> Result<NativeArtifact<'a>> {
             .map(|id| indexes[id].0)
             .collect();
         if children.iter().any(|child| *child <= index)
-            || children.windows(2).any(|pair| {
-                matches!(nodes[pair[0]].content, Content::Text { .. })
-                    && matches!(nodes[pair[1]].content, Content::Text { .. })
-            })
             || matches!(nodes[index].content, Content::Element { tag, .. } if vize_carton::is_void_tag(tag) && !children.is_empty())
         {
             return Err(LegacyReason::Structure.into());
@@ -221,7 +196,14 @@ fn binding<'a>(values: &[&Operand<'a>], kind: OpKind) -> Result<(OpId, Binding<'
     }
     let name = one(values, Role::Name)?;
     let value = one(values, Role::Value)?;
-    if values.len() != 3 {
+    let mut modifiers = std::vec::Vec::new();
+    for value in values.iter().filter(|value| value.role == Role::Modifier) {
+        if !event || value.value.kind != ValueKind::Literal || !event_name(value.value.text) {
+            return Err(LegacyReason::Binding.into());
+        }
+        modifiers.push(value.value.text);
+    }
+    if values.len() != 3 + modifiers.len() {
         return Err(LegacyReason::Binding.into());
     }
     let target = binding.target.ok_or(LegacyReason::Structure)?;
@@ -230,7 +212,7 @@ fn binding<'a>(values: &[&Operand<'a>], kind: OpKind) -> Result<(OpId, Binding<'
         .any(|v| v.target != Some(target) || v.region.is_some() || v.name.is_some())
         || name.value.kind != ValueKind::Literal
         || if event {
-            name.value.text != "click"
+            !event_name(name.value.text)
         } else {
             !attribute_name(name.value.text)
         }
@@ -246,8 +228,16 @@ fn binding<'a>(values: &[&Operand<'a>], kind: OpKind) -> Result<(OpId, Binding<'
             name: name.value.text,
             value: value.value.text.trim(),
             event,
+            modifiers,
         },
     ))
+}
+
+fn event_name(name: &str) -> bool {
+    name.starts_with(|c: char| c.is_ascii_alphabetic())
+        && name
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | ':'))
 }
 
 fn one<'b, 'a>(values: &'b [&Operand<'a>], role: Role) -> Result<&'b Operand<'a>> {
@@ -272,19 +262,50 @@ fn attribute_name(name: &str) -> bool {
             .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
 }
 
-fn reference(value: &str) -> bool {
+pub(in crate::s3) fn reference(value: &str) -> bool {
     // A deliberately narrower grammar than JavaScript. The S3 producer has
     // already classified it as JS; no reparsing or opaque reinterpretation.
     let value = value.trim();
-    !matches!(
-        value.split('.').next(),
-        Some("this" | "true" | "false" | "null" | "$event")
-    ) && value.split('.').all(|part| {
-        part.starts_with(|c: char| c.is_ascii_alphabetic() || c == '_' || c == '$')
-            && part
-                .chars()
-                .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
-    })
+    let root = value.split('.').next().unwrap_or_default();
+    root != "$event"
+        && !oxc_syntax::keyword::is_reserved_keyword(root)
+        && value.split('.').all(|part| {
+            part.starts_with(|c: char| c.is_ascii_alphabetic() || c == '_' || c == '$')
+                && part
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
+        })
+}
+
+fn text<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
+    if values.is_empty()
+        || values.iter().any(|value| {
+            value.role != Role::Text
+                || value.target.is_some()
+                || value.region.is_some()
+                || value.name.is_some()
+        })
+        || values
+            .windows(2)
+            .any(|pair| pair[0].value.span.end != pair[1].value.span.start)
+    {
+        return Err(AdmissionFailure::Invalid("invalid native text run"));
+    }
+    let mut parts = std::vec::Vec::new();
+    for operand in values {
+        let value = operand.value;
+        let dynamic = match value.kind {
+            ValueKind::Literal if !value.text.is_empty() && !value.text.contains('&') => false,
+            ValueKind::Js if reference(value.text) => true,
+            _ => return Err(LegacyReason::ExpressionOrEncoding.into()),
+        };
+        parts.push(TextPart {
+            value: value.text,
+            dynamic,
+        });
+    }
+    let dynamic = parts.iter().any(|part| part.dynamic);
+    Ok(Content::Text { parts, dynamic })
 }
 
 fn check_order(

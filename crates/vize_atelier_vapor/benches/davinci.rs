@@ -84,5 +84,39 @@ fn davinci(criterion: &mut Criterion) {
     }
 }
 
-criterion_group!(davinci_group, davinci);
+/// Compare the admitted production route and explicitly retained legacy route
+/// in the same process. Empty metadata selects legacy without changing bindings.
+fn native_pair(criterion: &mut Criterion) {
+    let mut group = criterion.benchmark_group("vapor_native_pair");
+    for (name, source) in [
+        (
+            "text_runs",
+            "<main>Hello {{ name }}!<span>{{ first }} / {{ last }}</span><button @click=\"save\">Save {{ count }}</button></main>",
+        ),
+        (
+            "events",
+            "<main @keydown=\"save\"><button @click.stop=\"save\" @keydown.enter.stop=\"save\">{{ label }}</button><input @focus=\"save\" @change.once=\"save\"></main>",
+        ),
+    ] {
+        for (lane, legacy) in [("s3", false), ("legacy", true)] {
+            group.bench_function(criterion::BenchmarkId::new(name, lane), |bencher| {
+                bencher.iter(|| {
+                    let allocator = Allocator::new();
+                    std::hint::black_box(compile_vapor(
+                        &allocator,
+                        source,
+                        VaporCompilerOptions {
+                            prefix_identifiers: true,
+                            binding_metadata: legacy.then(Default::default),
+                            ..Default::default()
+                        },
+                    ))
+                });
+            });
+        }
+    }
+    group.finish();
+}
+
+criterion_group!(davinci_group, davinci, native_pair);
 davinci_harness::main!(davinci_group);

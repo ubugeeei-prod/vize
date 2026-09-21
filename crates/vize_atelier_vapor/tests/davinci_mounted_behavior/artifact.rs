@@ -112,6 +112,42 @@ fn native_artifact_updates_adjacent_dynamic_children_independently() {
 }
 
 #[test]
+fn native_artifact_coalesces_text_runs_without_shifting_following_elements() {
+    let source = r#"<main data-id="root">Hello {{ a }} / {{ b }}!<span data-id="middle" :title="title">{{ b }}{{ a }}</span>Tail {{ a }}{{ b }}<b data-id="last">{{ title }}</b></main>"#;
+    let observation = |first, middle, tail, title| {
+        json!({
+            "tree": [{"tag": "main", "attributes": {"data-id": "root"}, "children": [
+                first,
+                {"tag": "span", "attributes": {"data-id": "middle", "title": title}, "children": [middle]},
+                tail,
+                {"tag": "b", "attributes": {"data-id": "last"}, "children": [title]}
+            ]}],
+            "events": [], "identities": [["root", 0], ["middle", 1], ["last", 2]]
+        })
+    };
+    let expected = json!([
+        observation("Hello A / B!", "BA", "Tail AB", "start"),
+        observation("Hello 雪 / B!", "B雪", "Tail 雪B", "next"),
+        observation("Hello  / 42!", "42", "Tail 42", "last"),
+        {"tree": [], "events": [], "identities": []}
+    ]);
+    for backend in ["vdom", "vapor"] {
+        let actual = mounted_trace_with_identity(
+            backend,
+            source,
+            json!({"a": "A", "b": "B", "title": "start"}),
+            json!([
+                {"patch": {"a": "雪", "title": "next"}},
+                {"patch": {"a": null, "b": 42, "title": "last"}}
+            ]),
+            false,
+            true,
+        );
+        assert_eq!(actual, expected, "{backend}");
+    }
+}
+
+#[test]
 fn inline_event_expressions_keep_their_implicit_parameter_scope() {
     let observation = |events| {
         json!({

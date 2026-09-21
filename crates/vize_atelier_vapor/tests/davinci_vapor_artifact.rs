@@ -15,6 +15,10 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
         r#"<section><span>fixed</span><div :title="state.title"><b>{{ state.label }}</b></div><button @click="actions.save">{{ label }}</button></section>"#,
         "<div><span>static</span>{{ label }}<br><b>tail</b></div>",
         "<div><section><span>static 雪</span></section><hr></div>",
+        "<div>hello {{ name }}!<span>{{ a }}{{ b }}</span>tail {{ end }}</div>",
+        "<main><b>fixed</b>{{ a }} / {{ b }}<span :title=\"name\">next</span>{{ end }}</main>",
+        "<main @keydown.enter=\"save\"><button @click.stop=\"save\">{{ label }}</button></main>",
+        "<div @focus=\"save\" @change.once=\"save\" @custom-event.capture=\"save\"></div>",
     ];
     for source in accepted {
         for prefix_identifiers in [false, true] {

@@ -4,6 +4,7 @@
 //! select the retained legacy lane explicitly; corrupt invariants never emit.
 
 mod native;
+mod text;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{Allocator, String, cstr, profile, profiler::global_profiler};
@@ -122,7 +123,17 @@ pub(crate) fn lower_source_for_vapor<'a>(
         {
             return VaporS3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
         }
-        let s3 = vize_s2_to_s3::lower(allocator, &s2.root);
+        let mut s3 = vize_s2_to_s3::lower(allocator, &s2.root);
+        if let Err(failure) = text::capture(allocator, &s2, &mut s3) {
+            return match failure {
+                AdmissionFailure::Unsupported(reason) => VaporS3BridgeStatus::Legacy(reason),
+                AdmissionFailure::Invalid(message) => {
+                    VaporS3BridgeStatus::Rejected(std::vec![cstr!(
+                        "Davinci S3 verifier rejected Vapor artifact: {message}"
+                    )])
+                }
+            };
+        }
         admit(s3)
     })
 }

@@ -72,28 +72,6 @@ impl<'a> Emitter<'a, '_> {
         offset: usize,
         template: &mut String,
     ) {
-        if let Content::Text { value, dynamic } = self.artifact.nodes[index].content {
-            if dynamic {
-                template.push(' ');
-                let parent = parent.expect("admitted text has a materialized parent");
-                let element = if offset == 0 {
-                    parent
-                } else {
-                    let id = self.child(parent, offset);
-                    self.ir.standalone_text_elements.insert(id);
-                    id
-                };
-                let values = self.values(value);
-                self.effect(OperationNode::SetText(SetTextIRNode {
-                    element,
-                    is_element: false,
-                    values,
-                }));
-            } else {
-                escape(template, value);
-            }
-            return;
-        }
         let id = if self.artifact.root == index {
             let id = self.next_id;
             self.next_id += 1;
@@ -135,12 +113,20 @@ impl<'a> Emitter<'a, '_> {
             let element = id.expect("binding target is materialized");
             let key = self.expression(binding.name, true);
             let op = if binding.event {
+                let modifiers = EventModifiers::from_names(
+                    self.allocator,
+                    Some(binding.name),
+                    binding.modifiers.iter().copied(),
+                );
+                let name = modifiers.event_name(binding.name);
+                let delegate = modifiers.can_delegate(name);
+                let key = self.expression(name, true);
                 OperationNode::SetEvent(SetEventIRNode {
                     element,
                     key,
                     value: Some(self.expression(binding.value, false)),
-                    modifiers: EventModifiers::new(self.allocator),
-                    delegate: true,
+                    modifiers,
+                    delegate,
                     effect: false,
                 })
             } else {
@@ -162,18 +148,70 @@ impl<'a> Emitter<'a, '_> {
                 self.effect(op);
             }
         }
-        for offset in 0..self.artifact.nodes[index].children.len() {
-            self.node(
-                self.artifact.nodes[index].children[offset],
-                id,
-                offset,
-                template,
-            );
-        }
+        self.children(index, id, template);
         if !vize_carton::is_void_tag(tag) {
             template.push_str("</");
             template.push_str(tag);
             template.push('>');
+        }
+    }
+
+    fn children(&mut self, index: usize, parent: Option<usize>, template: &mut String) {
+        let mut cursor = 0;
+        let mut offset = 0;
+        while cursor < self.artifact.nodes[index].children.len() {
+            let child = self.artifact.nodes[index].children[cursor];
+            if matches!(self.artifact.nodes[child].content, Content::Text { .. }) {
+                let start = cursor;
+                let mut dynamic = false;
+                while cursor < self.artifact.nodes[index].children.len() {
+                    let child = self.artifact.nodes[index].children[cursor];
+                    let Content::Text { dynamic: part, .. } = self.artifact.nodes[child].content
+                    else {
+                        break;
+                    };
+                    dynamic |= part;
+                    cursor += 1;
+                }
+                // HTML parsing coalesces adjacent text. One S3 text run must
+                // own one DOM address, even when it contains many expressions.
+                let mut values = Vec::new_in(&self.allocator);
+                for position in start..cursor {
+                    let child = self.artifact.nodes[index].children[position];
+                    let Content::Text { ref parts, .. } = self.artifact.nodes[child].content else {
+                        unreachable!("text run checked above")
+                    };
+                    for part in parts {
+                        if dynamic {
+                            values.push(self.expression(part.value, !part.dynamic));
+                        }
+                        if part.dynamic {
+                            template.push(' ');
+                        } else {
+                            escape(template, part.value);
+                        }
+                    }
+                }
+                if dynamic {
+                    let parent = parent.expect("dynamic ancestry is materialized");
+                    let element = if offset == 0 {
+                        parent
+                    } else {
+                        let id = self.child(parent, offset);
+                        self.ir.standalone_text_elements.insert(id);
+                        id
+                    };
+                    self.effect(OperationNode::SetText(SetTextIRNode {
+                        element,
+                        is_element: false,
+                        values,
+                    }));
+                }
+            } else {
+                self.node(child, parent, offset, template);
+                cursor += 1;
+            }
+            offset += 1;
         }
     }
 

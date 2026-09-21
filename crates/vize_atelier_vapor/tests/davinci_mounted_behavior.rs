@@ -14,6 +14,7 @@ use vize_carton::Allocator;
 mod davinci_mounted_behavior {
     mod artifact;
     mod control;
+    mod events;
     mod loops;
     pub(crate) mod runtime;
 }

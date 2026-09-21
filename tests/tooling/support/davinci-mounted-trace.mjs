@@ -39,6 +39,7 @@ export async function traceMountedBackend({
     $slots: {},
     ...context,
     save: () => events.push("save"),
+    saveParent: () => events.push("saveParent"),
     record: (value) => events.push(value),
   });
   const cache = [];
@@ -114,7 +115,19 @@ export async function traceMountedBackend({
           for (const option of target.options)
             option.selected = step.selectedValues.includes(option.value);
         }
-        target.dispatchEvent(new window.Event(step.event, { bubbles: true, cancelable: true }));
+        const EventClass = Object.hasOwn(step, "key")
+          ? window.KeyboardEvent
+          : Object.hasOwn(step, "button")
+            ? window.MouseEvent
+            : window.Event;
+        target.dispatchEvent(
+          new EventClass(step.event, {
+            bubbles: step.bubbles ?? true,
+            cancelable: true,
+            ...(Object.hasOwn(step, "key") ? { key: step.key } : {}),
+            ...(Object.hasOwn(step, "button") ? { button: step.button } : {}),
+          }),
+        );
       } else {
         throw new Error(`unknown interaction step: ${JSON.stringify(step)}`);
       }

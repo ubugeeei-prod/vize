@@ -162,34 +162,22 @@ pub(crate) fn transform_directive<'a>(
                     };
 
                     // Parse modifiers
-                    let mut modifiers = crate::ir::EventModifiers::new(ctx.allocator);
-                    let event_name = key_exp.content;
+                    let modifiers = crate::ir::EventModifiers::from_names(
+                        ctx.allocator,
+                        key_exp.is_static.then_some(key_exp.content),
+                        dir.modifiers.iter().map(|modifier| modifier.content),
+                    );
+                    let event_name = if key_exp.is_static {
+                        modifiers.event_name(key_exp.content)
+                    } else {
+                        key_exp.content
+                    };
+                    let mut key = key;
+                    key.content = event_name;
                     let is_dynamic = !key_exp.is_static;
 
-                    for m in dir.modifiers.iter() {
-                        match m.content {
-                            "once" => modifiers.options.once = true,
-                            "capture" => modifiers.options.capture = true,
-                            "passive" => modifiers.options.passive = true,
-                            "stop" | "prevent" | "self" => {
-                                modifiers.non_keys.push(m.content);
-                            }
-                            "enter" | "tab" | "delete" | "esc" | "space" | "up" | "down"
-                            | "left" | "right" => {
-                                modifiers.keys.push(m.content);
-                            }
-                            _ => {
-                                modifiers.non_keys.push(m.content);
-                            }
-                        }
-                    }
-
                     // Determine delegation
-                    let delegate = !is_dynamic
-                        && !modifiers.options.once
-                        && !modifiers.options.capture
-                        && !modifiers.options.passive
-                        && is_delegatable_event(event_name);
+                    let delegate = !is_dynamic && modifiers.can_delegate(event_name);
 
                     let set_event = SetEventIRNode {
                         element: element_id,
@@ -402,49 +390,6 @@ fn clone_expression<'a>(
             ExpressionNode::Simple(Box::new_in(cloned, &ctx.allocator))
         }
     })
-}
-
-/// Check if an event can use delegation
-fn is_delegatable_event(name: &str) -> bool {
-    matches!(
-        name,
-        "click"
-            | "dblclick"
-            | "mousedown"
-            | "mouseup"
-            | "mousemove"
-            | "mouseenter"
-            | "mouseleave"
-            | "mouseover"
-            | "mouseout"
-            | "keydown"
-            | "keyup"
-            | "keypress"
-            | "pointerdown"
-            | "pointerup"
-            | "pointermove"
-            | "pointerenter"
-            | "pointerleave"
-            | "pointerover"
-            | "pointerout"
-            | "touchstart"
-            | "touchend"
-            | "touchmove"
-            | "focusin"
-            | "focusout"
-            | "input"
-            | "change"
-            | "contextmenu"
-            | "wheel"
-            | "scroll"
-            | "drag"
-            | "dragstart"
-            | "dragend"
-            | "dragenter"
-            | "dragleave"
-            | "dragover"
-            | "drop"
-    )
 }
 
 /// Camelize a hyphenated string (e.g. "view-box" -> "viewBox")

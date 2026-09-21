@@ -2,7 +2,7 @@
 //! graph. Only this module can construct the payload consumed by `into_ir`.
 
 mod emit;
-mod validate;
+pub(super) mod validate;
 
 use vize_carton::Allocator;
 use vize_s2_to_s3::Lowered;
@@ -29,9 +29,15 @@ enum Content<'a> {
         attributes: std::vec::Vec<(&'a str, Option<&'a str>)>,
     },
     Text {
-        value: &'a str,
+        parts: std::vec::Vec<TextPart<'a>>,
         dynamic: bool,
     },
+}
+
+#[derive(Debug)]
+struct TextPart<'a> {
+    value: &'a str,
+    dynamic: bool,
 }
 
 #[derive(Debug)]
@@ -39,6 +45,7 @@ struct Binding<'a> {
     name: &'a str,
     value: &'a str,
     event: bool,
+    modifiers: std::vec::Vec<&'a str>,
 }
 
 impl<'a> NativeArtifact<'a> {

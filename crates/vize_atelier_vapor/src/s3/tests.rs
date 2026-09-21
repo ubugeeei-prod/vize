@@ -8,7 +8,7 @@ use vize_s3::{
     operand::{OperandRole, ValueKind},
 };
 
-fn options() -> VaporS3BridgeOptions {
+pub(super) fn options() -> VaporS3BridgeOptions {
     VaporS3BridgeOptions {
         ssr: false,
         custom_renderer: false,
@@ -172,7 +172,6 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<div v-if=\"ok\" />",
         "<div v-for=\"x in xs\" />",
         "<div>{{ one + two }}</div>",
-        "<div>hello {{ name }}</div>",
         "<div v-pre>{{ literal }}</div>",
         "<div v-show=\"ok\" />",
         "<input v-model=\"text\" />",
@@ -182,7 +181,6 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<div :[key]=\"value\" />",
         "<div ref=\"node\" />",
         "<div :class=\"classes\" class=\"base\" />",
-        "<div @click.stop=\"save\" />",
         "<div @click=\"save()\" />",
         "<button @click=\"$event\" />",
         "<svg><circle /></svg>",
@@ -213,6 +211,42 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         ),
         VaporS3BridgeStatus::Legacy(LegacyReason::Options)
     ));
+}
+
+#[test]
+fn native_event_families_are_admitted() {
+    let allocator = Allocator::new();
+    let source = "<div @focus=\"save\" @change.once=\"save\" @custom-event.capture=\"save\" />";
+    let status = lower_source_for_vapor(&allocator, source, options());
+    assert!(
+        matches!(status, VaporS3BridgeStatus::Accepted(_)),
+        "{status:?}"
+    );
+    for directive in [
+        "focus",
+        "change.once",
+        "custom-event.capture",
+        "keydown.enter.stop",
+        "click.once.capture.passive",
+    ] {
+        let source = vize_carton::cstr!("<div @{directive}=\"save\" />");
+        let status = lower_source_for_vapor(&allocator, &source, options());
+        assert!(
+            matches!(status, VaporS3BridgeStatus::Accepted(_)),
+            "{directive}: {status:?}"
+        );
+    }
+}
+
+#[test]
+fn adjacent_text_runs_are_admitted() {
+    let allocator = Allocator::new();
+    let source = "<div>hello {{ name }}!<span>{{ a }}{{ b }}</span>tail {{ end }}</div>";
+    let status = lower_source_for_vapor(&allocator, source, options());
+    assert!(
+        matches!(status, VaporS3BridgeStatus::Accepted(_)),
+        "{status:?}"
+    );
 }
 
 #[test]
