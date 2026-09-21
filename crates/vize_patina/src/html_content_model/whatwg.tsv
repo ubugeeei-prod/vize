@@ -4,6 +4,8 @@
 # projects; the checker's verdicts over it are pinned against an independent
 # HTML parser (`legacy-tools/davinci/html-content-model-oracle.mjs`).
 #
+# GENERATED from the snapshot excerpt in `whatwg/` — do not edit by hand:
+#   rust-script tools/commands/davinci/html-content-model.rs --write
 # snapshot	https://html.spec.whatwg.org/multipage/	Last Updated 21 September 2026
 #
 # Row format (tab separated):
@@ -28,81 +30,81 @@
 set	special	parsing.html#special	address applet area article aside base basefont bgsound blockquote body br button caption center col colgroup dd details dir div dl dt embed fieldset figcaption figure footer form frame frameset h1 h2 h3 h4 h5 h6 head header hgroup hr html iframe img input keygen li link listing main marquee menu meta nav noembed noframes noscript object ol p param plaintext pre script search section select source style summary table tbody td template textarea tfoot th thead title tr track ul wbr xmp math:mi math:mo math:mn math:ms math:mtext math:annotation-xml svg:foreignObject svg:desc svg:title
 set	scope	parsing.html#has-an-element-in-scope	applet caption html table td th marquee object select template math:mi math:mo math:mn math:ms math:mtext math:annotation-xml svg:foreignObject svg:desc svg:title
 set	button-scope	parsing.html#has-an-element-in-button-scope	applet caption html table td th marquee object select template math:mi math:mo math:mn math:ms math:mtext math:annotation-xml svg:foreignObject svg:desc svg:title button
-set	marker	parsing.html#concept-parser-marker	applet marquee object template td th caption
+set	marker	parsing.html#concept-parser-marker	applet object marquee template td th caption
 set	implied-end	parsing.html#generate-implied-end-tags	dd dt li optgroup option p rb rp rt rtc
 set	closes-p	parsing.html#parsing-main-inbody	address article aside blockquote center details dialog dir div dl fieldset figcaption figure footer header hgroup main menu nav ol p search section summary ul h1 h2 h3 h4 h5 h6 pre listing form li dd dt plaintext table hr xmp
 set	heading	parsing.html#parsing-main-inbody	h1 h2 h3 h4 h5 h6
 set	list-item-loop-transparent	parsing.html#parsing-main-inbody	address div p
-set	table-part	parsing.html#parsing-main-inbody	caption col colgroup tbody td tfoot th thead tr
-set	document-part	parsing.html#parsing-main-inbody	html head body frameset frame
-set	raw-text	parsing.html#generic-raw-text-element-parsing-algorithm	textarea title style script xmp iframe noembed noframes plaintext
+set	table-part	parsing.html#parsing-main-incaption	caption col colgroup tbody td tfoot th thead tr
+set	document-part	parsing.html#parsing-main-inbody	html body frameset frame head
+set	raw-text	parsing.html#generic-raw-text-element-parsing-algorithm	title noframes style script plaintext textarea xmp iframe noembed
 set	scripting-dependent	parsing.html#parsing-main-inbody	noscript
-set	void	parsing.html#parsing-main-inbody	area base br col embed hr img input link meta source track wbr basefont bgsound frame keygen param
+set	void	parsing.html#parsing-main-inbody	area br embed img keygen wbr input param source track hr base basefont bgsound link meta col
 set	foreign-breakout	parsing.html#parsing-main-inforeign	b big blockquote body br center code dd div dl dt em embed h1 h2 h3 h4 h5 h6 head hr i img li listing menu meta nobr ol p pre ruby s small span strong strike sub sup table tt u ul var font?font-presentational
 set	mathml-text-integration	parsing.html#mathml-text-integration-point	math:mi math:mo math:mn math:ms math:mtext
-set	html-integration	parsing.html#html-integration-point	svg:foreignObject svg:desc svg:title math:annotation-xml?encoding-html
-set	table-children	parsing.html#parsing-main-intable	caption colgroup tbody tfoot thead script style template input?type-hidden form
+set	html-integration	parsing.html#html-integration-point	math:annotation-xml?encoding-html svg:foreignObject svg:desc svg:title
+set	table-children	parsing.html#parsing-main-intable	caption colgroup tbody tfoot thead style script template input?type-hidden form
 set	table-wrapped	parsing.html#parsing-main-intable	col td th tr
-set	section-children	parsing.html#parsing-main-intbody	tr script style template input?type-hidden form
-set	section-wrapped	parsing.html#parsing-main-intbody	td th
-set	row-children	parsing.html#parsing-main-intr	td th script style template input?type-hidden form
+set	section-children	parsing.html#parsing-main-intbody	tr style script template input?type-hidden form
+set	section-wrapped	parsing.html#parsing-main-intbody	th td
+set	row-children	parsing.html#parsing-main-intr	th td style script template input?type-hidden form
 set	colgroup-children	parsing.html#parsing-main-incolgroup	col template
-set	transparent	dom.html#transparent	a ins del map object audio video canvas slot
+set	transparent	dom.html#transparent	a audio canvas del ins map object slot video
 
 category	phrasing	dom.html#phrasing-content	a abbr audio b bdi bdo br button canvas cite code data datalist del dfn em embed i iframe img input ins kbd label map mark math:math meter noscript object output picture progress q ruby s samp script select selectedcontent slot small span strong sub sup svg:svg template textarea time u var video wbr #text area?in-map link?body-ok meta?itemprop
 category	heading	dom.html#heading-content	h1 h2 h3 h4 h5 h6 hgroup
 category	interactive	dom.html#interactive-content	button details embed iframe label select textarea a?href audio?controls img?usemap img?controls input?type-not-hidden video?controls
 category	script-supporting	dom.html#script-supporting-elements-2	script template
 
-children	abbr	text-level-semantics.html#the-abbr-element	@phrasing
-children	b	text-level-semantics.html#the-b-element	@phrasing
-children	bdi	text-level-semantics.html#the-bdi-element	@phrasing
-children	bdo	text-level-semantics.html#the-bdo-element	@phrasing
-children	button	form-elements.html#the-button-element	@phrasing
-children	cite	text-level-semantics.html#the-cite-element	@phrasing
-children	code	text-level-semantics.html#the-code-element	@phrasing
-children	data	text-level-semantics.html#the-data-element	@phrasing
-children	dfn	text-level-semantics.html#the-dfn-element	@phrasing
-children	em	text-level-semantics.html#the-em-element	@phrasing
+children	abbr	indices.html#elements-3:abbr	@phrasing
+children	b	indices.html#elements-3:b	@phrasing
+children	bdi	indices.html#elements-3:bdi	@phrasing
+children	bdo	indices.html#elements-3:bdo	@phrasing
+children	button	indices.html#elements-3:button	@phrasing
+children	cite	indices.html#elements-3:cite	@phrasing
+children	code	indices.html#elements-3:code	@phrasing
+children	data	indices.html#elements-3:data	@phrasing
+children	dfn	indices.html#elements-3:dfn	@phrasing
+children	em	indices.html#elements-3:em	@phrasing
 children	h1	sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements	@phrasing
 children	h2	sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements	@phrasing
 children	h3	sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements	@phrasing
 children	h4	sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements	@phrasing
 children	h5	sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements	@phrasing
 children	h6	sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements	@phrasing
-children	i	text-level-semantics.html#the-i-element	@phrasing
-children	kbd	text-level-semantics.html#the-kbd-element	@phrasing
-children	label	forms.html#the-label-element	@phrasing
-children	legend	form-elements.html#the-legend-element	@phrasing @heading
-children	mark	text-level-semantics.html#the-mark-element	@phrasing
-children	meter	form-elements.html#the-meter-element	@phrasing
-children	output	form-elements.html#the-output-element	@phrasing
-children	p	grouping-content.html#the-p-element	@phrasing
-children	pre	grouping-content.html#the-pre-element	@phrasing
-children	progress	form-elements.html#the-progress-element	@phrasing
-children	q	text-level-semantics.html#the-q-element	@phrasing
-children	rt	text-level-semantics.html#the-rt-element	@phrasing
-children	ruby	text-level-semantics.html#the-ruby-element	@phrasing rt rp
-children	s	text-level-semantics.html#the-s-element	@phrasing
-children	samp	text-level-semantics.html#the-samp-element	@phrasing
-children	small	text-level-semantics.html#the-small-element	@phrasing
-children	span	text-level-semantics.html#the-span-element	@phrasing
-children	strong	text-level-semantics.html#the-strong-element	@phrasing
+children	i	indices.html#elements-3:i	@phrasing
+children	kbd	indices.html#elements-3:kbd	@phrasing
+children	label	indices.html#elements-3:label	@phrasing
+children	legend	indices.html#elements-3:legend	@phrasing @heading
+children	mark	indices.html#elements-3:mark	@phrasing
+children	meter	indices.html#elements-3:meter	@phrasing
+children	output	indices.html#elements-3:output	@phrasing
+children	p	indices.html#elements-3:p	@phrasing
+children	pre	indices.html#elements-3:pre	@phrasing
+children	progress	indices.html#elements-3:progress	@phrasing
+children	q	indices.html#elements-3:q	@phrasing
+children	rt	indices.html#elements-3:rt	@phrasing
+children	ruby	indices.html#elements-3:ruby	@phrasing rt rp
+children	s	indices.html#elements-3:s	@phrasing
+children	samp	indices.html#elements-3:samp	@phrasing
+children	small	indices.html#elements-3:small	@phrasing
+children	span	indices.html#elements-3:span	@phrasing
+children	strong	indices.html#elements-3:strong	@phrasing
 children	sub	text-level-semantics.html#the-sub-and-sup-elements	@phrasing
-children	summary	interactive-elements.html#the-summary-element	@phrasing @heading
+children	summary	indices.html#elements-3:summary	@phrasing @heading
 children	sup	text-level-semantics.html#the-sub-and-sup-elements	@phrasing
-children	time	text-level-semantics.html#the-time-element	@phrasing
-children	u	text-level-semantics.html#the-u-element	@phrasing
-children	var	text-level-semantics.html#the-var-element	@phrasing
-children	ul	grouping-content.html#the-ul-element	li @script-supporting
-children	ol	grouping-content.html#the-ol-element	li @script-supporting
-children	menu	grouping-content.html#the-menu-element	li @script-supporting
-children	dl	grouping-content.html#the-dl-element	dt dd div @script-supporting
-children	hgroup	sections.html#the-hgroup-element	h1 h2 h3 h4 h5 h6 p @script-supporting
-children	picture	embedded-content.html#the-picture-element	source img @script-supporting
-children	table	tables.html#the-table-element	caption colgroup thead tbody tfoot tr @script-supporting
-children	thead	tables.html#the-thead-element	tr @script-supporting
-children	tbody	tables.html#the-tbody-element	tr @script-supporting
-children	tfoot	tables.html#the-tfoot-element	tr @script-supporting
-children	tr	tables.html#the-tr-element	td th @script-supporting
-children	colgroup	tables.html#the-colgroup-element	col template
+children	time	indices.html#elements-3:time	@phrasing
+children	u	indices.html#elements-3:u	@phrasing
+children	var	indices.html#elements-3:var	@phrasing
+children	ul	indices.html#elements-3:ul	li @script-supporting
+children	ol	indices.html#elements-3:ol	li @script-supporting
+children	menu	indices.html#elements-3:menu	li @script-supporting
+children	dl	indices.html#elements-3:dl	dt dd div @script-supporting
+children	hgroup	indices.html#elements-3:hgroup	h1 h2 h3 h4 h5 h6 p @script-supporting
+children	picture	indices.html#elements-3:picture	source img @script-supporting
+children	table	indices.html#elements-3:table	caption colgroup thead tbody tfoot tr @script-supporting
+children	thead	indices.html#elements-3:thead	tr @script-supporting
+children	tbody	indices.html#elements-3:tbody	tr @script-supporting
+children	tfoot	indices.html#elements-3:tfoot	tr @script-supporting
+children	tr	indices.html#elements-3:tr	th td @script-supporting
+children	colgroup	indices.html#elements-3:colgroup	col template

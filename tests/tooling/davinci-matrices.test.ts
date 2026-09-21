@@ -39,6 +39,11 @@ const matrices = [
     generator: "tools/commands/davinci/matrix-gen.rs",
     artifact: "tests/fixtures/davinci-matrix/",
   },
+  {
+    name: "HTML content-model fact table (P4-11a, pinned WHATWG snapshot)",
+    generator: "tools/commands/davinci/html-content-model.rs",
+    artifact: "crates/vize_patina/src/html_content_model/whatwg.tsv",
+  },
 ];
 
 function runCheck(generator: string, extraArgs: string[] = []) {
@@ -90,6 +95,37 @@ test("the fixture-plane staleness check fails on an injected edit", () => {
       `--check accepted a stale fixture plane:\n${stale.stdout}${stale.stderr}`.trim(),
     );
     assert.equal(stale.stdout.includes("stale: native--v-if.vue"), true, stale.stdout);
+  } finally {
+    fs.rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
+// Same discipline for the P4-11a content-model table: regenerate it into a
+// throwaway copy, then prove `--check` rejects a one-member edit there.
+test("the content-model table staleness check fails on an injected edit", () => {
+  const generator = "tools/commands/davinci/html-content-model.rs";
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-html-content-model-"));
+  const table = path.join(scratch, "whatwg.tsv");
+  try {
+    const write = spawnSync(
+      "rust-script",
+      [path.join(repoRoot, generator), "--write", "--table", table],
+      { cwd: repoRoot, encoding: "utf8" },
+    );
+    assert.equal(write.status, 0, `${write.stdout}${write.stderr}`.trim());
+    const clean = runCheck(generator, ["--table", table]);
+    assert.equal(clean.status, 0, `${clean.stdout}${clean.stderr}`.trim());
+    const rows = fs.readFileSync(table, "utf8");
+    const edited = rows.replace(/^(set\tvoid\t[^\t]+\t)area /mu, "$1");
+    assert.notEqual(edited, rows, "the injected edit must change the void row");
+    fs.writeFileSync(table, edited);
+    const stale = runCheck(generator, ["--table", table]);
+    assert.equal(
+      stale.status,
+      1,
+      `--check accepted a stale content-model table:\n${stale.stdout}${stale.stderr}`.trim(),
+    );
+    assert.equal(stale.stdout.includes("- set\tvoid\t"), true, stale.stdout);
   } finally {
     fs.rmSync(scratch, { recursive: true, force: true });
   }

@@ -19,7 +19,10 @@
 //! **Data.** Every element set and content model the checker reads comes
 //! from `whatwg.tsv`, a projection of a pinned WHATWG snapshot whose rows
 //! each name the spec clause they project; the loader rejects unknown,
-//! duplicate and missing rows.
+//! duplicate and missing rows. The table is generated from the committed
+//! snapshot excerpt (`whatwg/`) by
+//! `rust-script tools/commands/davinci/html-content-model.rs --write`, and
+//! its `--check` mode keeps it current in `tests/tooling/davinci-matrices.test.ts`.
 //!
 //! **Precision tier `exact` within the declared domain.** Every fact is
 //! three-valued; a violation is reported only when it is proven in every

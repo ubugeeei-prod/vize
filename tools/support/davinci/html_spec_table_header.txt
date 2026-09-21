@@ -1,0 +1,29 @@
+# HTML content-model facts: a machine-readable projection of the WHATWG HTML
+# Living Standard, the single source the vize HTML conformance checker reads
+# (`vize_patina::html_content_model`). Every row names the spec clause it
+# projects; the checker's verdicts over it are pinned against an independent
+# HTML parser (`legacy-tools/davinci/html-content-model-oracle.mjs`).
+#
+# GENERATED from the snapshot excerpt in `whatwg/` — do not edit by hand:
+#   rust-script tools/commands/davinci/html-content-model.rs --write
+# snapshot	https://html.spec.whatwg.org/multipage/	Last Updated 21 September 2026
+#
+# Row format (tab separated):
+#   kind	name	spec-anchor	members (space separated)
+# kind:
+#   set       an element set named by the tree-construction algorithm (§13.2)
+#   category  a content category (§3.2.5.2, index "List of element content categories")
+#   children  an element's content model (index "List of elements", Children column)
+# member syntax:
+#   tag            an HTML-namespace element, ASCII lowercase
+#   svg:tag        an SVG-namespace element (case-adjusted per §13.2.6.5)
+#   math:tag       a MathML-namespace element
+#   tag?cond       conditional membership; cond is an attribute predicate the
+#                  checker evaluates three-valued (dynamic bindings are unknown)
+#   @category      every member of that category row
+#   #text          text that is not inter-element whitespace
+#
+# Anchors are fragments of https://html.spec.whatwg.org/multipage/<anchor>.
+# Every row is referenced by name from the checker; the checker's loader
+# rejects unknown kinds, unknown names, duplicate rows and missing rows.
+
