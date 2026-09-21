@@ -148,8 +148,11 @@ measured coverage; TS-11 empty (maps are additive artifacts).
 _First slice 2026-09-13:_ see
 [P3-9 record](./phase-3-records/p3-9.md) for the TS-31 budget pin.
 _Second slice 2026-09-13:_ the same record now covers SSR/Vapor opt-in map
-entry points and binding bridge propagation. Token-level structured emission,
-coverage measurement, and legacy recovery removal remain open.
+entry points and binding bridge propagation. _Third slice 2026-09-21:_ TS-31
+is measured by an independent-decoder harness over a committed fixture battery
+([report](./ts31-sourcemap-coverage.json)); rows below budget are listed in the
+record's tracked-shortfall ledger. Token-level structured emission and legacy
+recovery removal remain open.
 
 **P3-10 Try-measure-commit.** Placement alternatives (hoist/cache/inline/
 group) kept explicit on S3 nodes; extraction pass performs candidates,

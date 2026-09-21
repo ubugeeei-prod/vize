@@ -1,0 +1,307 @@
+# TS-31 source-map coverage battery: template fixtures (Davinci P3-9).
+#
+# Every fixture is compiled by the DOM, Vapor and SSR backends with source maps
+# on. Each `[[fixture.anchor]]` names one authored token the map must resolve:
+#
+# - `find` locates the token's context (`nth` picks the occurrence, default 0)
+#   and `token` (default: `find`) is the authored token inside that context.
+#   The authored span is the token's bytes; the oracle comes from this file,
+#   never from the map under test.
+# - `static-template` and `text-matching-recovery` anchors are emitted
+#   verbatim (override with `generated`).
+# - `rewritten-identifier` anchors are emitted as the identifier behind an
+#   optional context rewrite (`_ctx.`, `$setup.`, `$props.`, `_unref(` ...).
+# - `section-boundary` anchors carry the construct each backend emits where
+#   the authored structural unit's code begins (`dom`, `vapor`, `ssr`); the
+#   authored token is the unit's opening `<`.
+
+[[fixture]]
+name = "attributes-and-text"
+source = '''
+<section class="card" id="main">
+  <h1 title="Heading">Welcome home</h1>
+  <p :title="tooltip">{{ message }}</p>
+</section>'''
+
+[[fixture.anchor]]
+category = "section-boundary"
+find = "<section"
+token = "<"
+dom = "export function render("
+vapor = "export function render("
+ssr = "function ssrRender("
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<section"
+token = "section"
+
+[[fixture.anchor]]
+category = "static-template"
+find = 'class="card"'
+token = "class"
+
+[[fixture.anchor]]
+category = "static-template"
+find = '"card"'
+token = "card"
+
+[[fixture.anchor]]
+category = "static-template"
+find = 'id="main"'
+token = "id"
+
+[[fixture.anchor]]
+category = "static-template"
+find = '"main"'
+token = "main"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<h1"
+token = "h1"
+
+[[fixture.anchor]]
+category = "static-template"
+find = 'title="Heading"'
+token = "title"
+
+[[fixture.anchor]]
+category = "static-template"
+find = '"Heading"'
+token = "Heading"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "Welcome home"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<p "
+token = "p"
+
+[[fixture.anchor]]
+category = "static-template"
+find = ":title"
+token = "title"
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "tooltip"
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "message"
+
+[[fixture]]
+name = "events-and-expressions"
+source = '''
+<div>
+  <button @click="increment">Add</button>
+  <span>{{ count + offset }}</span>
+  <em>{{ user.name }}</em>
+</div>'''
+
+[[fixture.anchor]]
+category = "section-boundary"
+find = "<div"
+token = "<"
+dom = "export function render("
+vapor = "export function render("
+ssr = "function ssrRender("
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<div"
+token = "div"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<button"
+token = "button"
+
+[[fixture.anchor]]
+category = "static-template"
+find = ">Add<"
+token = "Add"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<span"
+token = "span"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<em"
+token = "em"
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "increment"
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "count"
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "offset"
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "user"
+
+[[fixture]]
+name = "control-flow"
+source = '''
+<ul>
+  <li v-if="visible">Shown</li>
+  <li v-else-if="pending">Loading</li>
+  <li v-else>Hidden</li>
+  <li v-for="item in items" :key="item.id">{{ item.label }}</li>
+</ul>'''
+
+[[fixture.anchor]]
+category = "section-boundary"
+find = "<ul"
+token = "<"
+dom = "export function render("
+vapor = "export function render("
+ssr = "function ssrRender("
+
+[[fixture.anchor]]
+category = "section-boundary"
+find = "<li v-if"
+token = "<"
+dom = "(_openBlock("
+vapor = "_createIf("
+ssr = "if ("
+
+[[fixture.anchor]]
+category = "section-boundary"
+find = "<li v-else-if"
+token = "<"
+dom = "(_openBlock("
+vapor = "_createIf("
+ssr = "else if ("
+
+[[fixture.anchor]]
+category = "section-boundary"
+find = "<li v-else>"
+token = "<"
+dom = "(_openBlock("
+vapor = "() => {"
+ssr = "else {"
+
+[[fixture.anchor]]
+category = "section-boundary"
+find = "<li v-for"
+token = "<"
+dom = "(_openBlock("
+vapor = "_createFor("
+ssr = "_ssrRenderList("
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<ul"
+token = "ul"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<li v-if"
+token = "li"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<li v-else-if"
+token = "li"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<li v-else>"
+token = "li"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<li v-for"
+token = "li"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "Shown"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "Loading"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "Hidden"
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "visible"
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "pending"
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "in items"
+token = "items"
+
+[[fixture]]
+name = "named-slots"
+source = '''
+<BaseCard>
+  <template #header>Title</template>
+  <template #default>{{ body }}</template>
+</BaseCard>'''
+
+[[fixture.anchor]]
+category = "section-boundary"
+find = "<BaseCard"
+token = "<"
+dom = "export function render("
+vapor = "export function render("
+ssr = "function ssrRender("
+
+[[fixture.anchor]]
+category = "section-boundary"
+find = "<template #header"
+token = "<"
+dom = "_withCtx("
+vapor = "() => {"
+ssr = "_withCtx("
+
+[[fixture.anchor]]
+category = "section-boundary"
+find = "<template #default"
+token = "<"
+dom = "_withCtx("
+vapor = "() => {"
+ssr = "_withCtx("
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<BaseCard"
+token = "BaseCard"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "#header"
+token = "header"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "#default"
+token = "default"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "Title"
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "body"

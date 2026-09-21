@@ -1,0 +1,235 @@
+{
+  "battery": {
+    "sfcs": 2,
+    "templates": 4
+  },
+  "command": "cargo test -p vize_atelier_sfc --test davinci_ts31_sourcemap",
+  "rows": {
+    "dom/rewritten-identifier": {
+      "anchors": {
+        "attributes-and-text:message@3:26": "exact",
+        "attributes-and-text:tooltip@3:14": "exact",
+        "control-flow:items@5:22": "exact",
+        "control-flow:pending@3:18": "exact",
+        "control-flow:visible@2:13": "exact",
+        "events-and-expressions:count@3:12": "exact",
+        "events-and-expressions:increment@2:19": "unmapped",
+        "events-and-expressions:offset@3:20": "unmapped",
+        "events-and-expressions:user@4:10": "exact",
+        "named-slots:body@3:25": "unmapped"
+      },
+      "authored": 10,
+      "covered": 7,
+      "exact": 7
+    },
+    "dom/section-boundary": {
+      "anchors": {
+        "attributes-and-text:<@1:1": "covered",
+        "control-flow:<@1:1": "covered",
+        "control-flow:<@2:3": "unmapped",
+        "control-flow:<@3:3": "unmapped",
+        "control-flow:<@4:3": "unmapped",
+        "control-flow:<@5:3": "unmapped",
+        "events-and-expressions:<@1:1": "covered",
+        "named-slots:<@1:1": "unmapped",
+        "named-slots:<@2:3": "unmapped",
+        "named-slots:<@3:3": "unmapped"
+      },
+      "authored": 10,
+      "covered": 3,
+      "exact": 0
+    },
+    "dom/static-template": {
+      "anchors": {
+        "attributes-and-text:Heading@2:14": "exact",
+        "attributes-and-text:Welcome home@2:23": "exact",
+        "attributes-and-text:card@1:17": "exact",
+        "attributes-and-text:class@1:10": "exact",
+        "attributes-and-text:h1@2:4": "unmapped",
+        "attributes-and-text:id@1:23": "exact",
+        "attributes-and-text:main@1:27": "exact",
+        "attributes-and-text:p@3:4": "unmapped",
+        "attributes-and-text:section@1:2": "unmapped",
+        "attributes-and-text:title@2:7": "exact",
+        "attributes-and-text:title@3:7": "exact",
+        "control-flow:Hidden@4:14": "unmapped",
+        "control-flow:Loading@3:27": "unmapped",
+        "control-flow:Shown@2:22": "unmapped",
+        "control-flow:li@2:4": "unmapped",
+        "control-flow:li@3:4": "unmapped",
+        "control-flow:li@4:4": "unmapped",
+        "control-flow:li@5:4": "unmapped",
+        "control-flow:ul@1:2": "unmapped",
+        "events-and-expressions:Add@2:30": "exact",
+        "events-and-expressions:button@2:4": "unmapped",
+        "events-and-expressions:div@1:2": "unmapped",
+        "events-and-expressions:em@4:4": "unmapped",
+        "events-and-expressions:span@3:4": "unmapped",
+        "named-slots:BaseCard@1:2": "unmapped",
+        "named-slots:Title@2:21": "unmapped",
+        "named-slots:default@3:14": "unmapped",
+        "named-slots:header@2:14": "unmapped"
+      },
+      "authored": 28,
+      "covered": 9,
+      "exact": 9
+    },
+    "legacy-sfc/text-matching-recovery": {
+      "anchors": {
+        "script-and-setup:const title = ref('Hello')@7:1": "exact",
+        "script-and-setup:export const version = '1.0.0'@2:1": "exact",
+        "script-and-setup:function rename(next) {@8:1": "exact",
+        "script-and-setup:import { ref } from 'vue'@6:1": "exact",
+        "script-and-setup:title.value = next@9:3": "exact",
+        "setup-counter:const count = ref(0)@8:1": "exact",
+        "setup-counter:const label = computed(() => `Count: ${count.value}`)@10:1": "exact",
+        "setup-counter:const step = ref(2)@9:1": "exact",
+        "setup-counter:count.value += step.value@12:3": "exact",
+        "setup-counter:function bump() {@11:1": "exact",
+        "setup-counter:import { computed, ref } from 'vue'@6:1": "exact"
+      },
+      "authored": 11,
+      "covered": 11,
+      "exact": 11
+    },
+    "ssr/rewritten-identifier": {
+      "anchors": {
+        "attributes-and-text:message@3:26": "unmapped",
+        "attributes-and-text:tooltip@3:14": "unmapped",
+        "control-flow:items@5:22": "unmapped",
+        "control-flow:pending@3:18": "unmapped",
+        "control-flow:visible@2:13": "unmapped",
+        "events-and-expressions:count@3:12": "unmapped",
+        "events-and-expressions:increment@2:19": "unmapped",
+        "events-and-expressions:offset@3:20": "unmapped",
+        "events-and-expressions:user@4:10": "unmapped",
+        "named-slots:body@3:25": "unmapped"
+      },
+      "authored": 10,
+      "covered": 0,
+      "exact": 0
+    },
+    "ssr/section-boundary": {
+      "anchors": {
+        "attributes-and-text:<@1:1": "exact",
+        "control-flow:<@1:1": "exact",
+        "control-flow:<@2:3": "unmapped",
+        "control-flow:<@3:3": "unmapped",
+        "control-flow:<@4:3": "unmapped",
+        "control-flow:<@5:3": "unmapped",
+        "events-and-expressions:<@1:1": "exact",
+        "named-slots:<@1:1": "exact",
+        "named-slots:<@2:3": "unmapped",
+        "named-slots:<@3:3": "unmapped"
+      },
+      "authored": 10,
+      "covered": 4,
+      "exact": 4
+    },
+    "ssr/static-template": {
+      "anchors": {
+        "attributes-and-text:Heading@2:14": "unmapped",
+        "attributes-and-text:Welcome home@2:23": "unmapped",
+        "attributes-and-text:card@1:17": "unmapped",
+        "attributes-and-text:class@1:10": "unmapped",
+        "attributes-and-text:h1@2:4": "unmapped",
+        "attributes-and-text:id@1:23": "unmapped",
+        "attributes-and-text:main@1:27": "unmapped",
+        "attributes-and-text:p@3:4": "unmapped",
+        "attributes-and-text:section@1:2": "unmapped",
+        "attributes-and-text:title@2:7": "unmapped",
+        "attributes-and-text:title@3:7": "unmapped",
+        "control-flow:Hidden@4:14": "unmapped",
+        "control-flow:Loading@3:27": "unmapped",
+        "control-flow:Shown@2:22": "unmapped",
+        "control-flow:li@2:4": "unmapped",
+        "control-flow:li@3:4": "unmapped",
+        "control-flow:li@4:4": "unmapped",
+        "control-flow:li@5:4": "unmapped",
+        "control-flow:ul@1:2": "unmapped",
+        "events-and-expressions:Add@2:30": "unmapped",
+        "events-and-expressions:button@2:4": "unmapped",
+        "events-and-expressions:div@1:2": "unmapped",
+        "events-and-expressions:em@4:4": "unmapped",
+        "events-and-expressions:span@3:4": "unmapped",
+        "named-slots:BaseCard@1:2": "unmapped",
+        "named-slots:Title@2:21": "unmapped",
+        "named-slots:default@3:14": "unmapped",
+        "named-slots:header@2:14": "unmapped"
+      },
+      "authored": 28,
+      "covered": 0,
+      "exact": 0
+    },
+    "vapor/rewritten-identifier": {
+      "anchors": {
+        "attributes-and-text:message@3:26": "unmapped",
+        "attributes-and-text:tooltip@3:14": "unmapped",
+        "control-flow:items@5:22": "unmapped",
+        "control-flow:pending@3:18": "unmapped",
+        "control-flow:visible@2:13": "unmapped",
+        "events-and-expressions:count@3:12": "unmapped",
+        "events-and-expressions:increment@2:19": "unmapped",
+        "events-and-expressions:offset@3:20": "unmapped",
+        "events-and-expressions:user@4:10": "unmapped",
+        "named-slots:body@3:25": "unmapped"
+      },
+      "authored": 10,
+      "covered": 0,
+      "exact": 0
+    },
+    "vapor/section-boundary": {
+      "anchors": {
+        "attributes-and-text:<@1:1": "covered",
+        "control-flow:<@1:1": "covered",
+        "control-flow:<@2:3": "unmapped",
+        "control-flow:<@3:3": "unmapped",
+        "control-flow:<@4:3": "unmapped",
+        "control-flow:<@5:3": "unmapped",
+        "events-and-expressions:<@1:1": "covered",
+        "named-slots:<@1:1": "covered",
+        "named-slots:<@2:3": "unmapped",
+        "named-slots:<@3:3": "unmapped"
+      },
+      "authored": 10,
+      "covered": 4,
+      "exact": 0
+    },
+    "vapor/static-template": {
+      "anchors": {
+        "attributes-and-text:Heading@2:14": "unmapped",
+        "attributes-and-text:Welcome home@2:23": "unmapped",
+        "attributes-and-text:card@1:17": "unmapped",
+        "attributes-and-text:class@1:10": "unmapped",
+        "attributes-and-text:h1@2:4": "unmapped",
+        "attributes-and-text:id@1:23": "unmapped",
+        "attributes-and-text:main@1:27": "unmapped",
+        "attributes-and-text:p@3:4": "unmapped",
+        "attributes-and-text:section@1:2": "unmapped",
+        "attributes-and-text:title@2:7": "unmapped",
+        "attributes-and-text:title@3:7": "unmapped",
+        "control-flow:Hidden@4:14": "unmapped",
+        "control-flow:Loading@3:27": "unmapped",
+        "control-flow:Shown@2:22": "unmapped",
+        "control-flow:li@2:4": "unmapped",
+        "control-flow:li@3:4": "unmapped",
+        "control-flow:li@4:4": "unmapped",
+        "control-flow:li@5:4": "unmapped",
+        "control-flow:ul@1:2": "unmapped",
+        "events-and-expressions:Add@2:30": "unmapped",
+        "events-and-expressions:button@2:4": "unmapped",
+        "events-and-expressions:div@1:2": "unmapped",
+        "events-and-expressions:em@4:4": "unmapped",
+        "events-and-expressions:span@3:4": "unmapped",
+        "named-slots:BaseCard@1:2": "unmapped",
+        "named-slots:Title@2:21": "unmapped",
+        "named-slots:default@3:14": "unmapped",
+        "named-slots:header@2:14": "unmapped"
+      },
+      "authored": 28,
+      "covered": 0,
+      "exact": 0
+    }
+  },
+  "suite": "TS-31"
+}

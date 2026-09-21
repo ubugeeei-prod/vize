@@ -1,0 +1,92 @@
+# TS-31 source-map coverage battery: SFC fixtures (Davinci P3-9).
+#
+# Measures the SFC module map against authored `<script>` / `<script setup>`
+# statements. This is the domain the legacy text-matching recovery
+# (`crates/vize_atelier_sfc/src/source_map.rs`) documents: plain JavaScript
+# statements that the SFC emitter copies verbatim and that occur once in the
+# authored script. The structured SFC path must reach at least the legacy
+# row's measured coverage over this same battery before the recovery can be
+# deleted. Anchor fields follow `templates.toml`.
+
+[[fixture]]
+name = "setup-counter"
+source = '''
+<template>
+  <button @click="bump">{{ label }}</button>
+</template>
+
+<script setup>
+import { computed, ref } from 'vue'
+
+const count = ref(0)
+const step = ref(2)
+const label = computed(() => `Count: ${count.value}`)
+function bump() {
+  count.value += step.value
+}
+</script>
+'''
+
+[[fixture.anchor]]
+category = "text-matching-recovery"
+find = "import { computed, ref } from 'vue'"
+
+[[fixture.anchor]]
+category = "text-matching-recovery"
+find = "const count = ref(0)"
+
+[[fixture.anchor]]
+category = "text-matching-recovery"
+find = "const step = ref(2)"
+
+[[fixture.anchor]]
+category = "text-matching-recovery"
+find = "const label = computed(() => `Count: ${count.value}`)"
+
+[[fixture.anchor]]
+category = "text-matching-recovery"
+find = "function bump() {"
+
+[[fixture.anchor]]
+category = "text-matching-recovery"
+find = "count.value += step.value"
+
+[[fixture]]
+name = "script-and-setup"
+source = '''
+<script>
+export const version = '1.0.0'
+</script>
+
+<script setup>
+import { ref } from 'vue'
+const title = ref('Hello')
+function rename(next) {
+  title.value = next
+}
+</script>
+
+<template>
+  <h1 @click="rename('World')">{{ title }} {{ version }}</h1>
+</template>
+'''
+
+[[fixture.anchor]]
+category = "text-matching-recovery"
+find = "export const version = '1.0.0'"
+
+[[fixture.anchor]]
+category = "text-matching-recovery"
+find = "import { ref } from 'vue'"
+
+[[fixture.anchor]]
+category = "text-matching-recovery"
+find = "const title = ref('Hello')"
+
+[[fixture.anchor]]
+category = "text-matching-recovery"
+find = "function rename(next) {"
+
+[[fixture.anchor]]
+category = "text-matching-recovery"
+find = "title.value = next"
