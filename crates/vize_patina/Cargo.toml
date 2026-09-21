@@ -27,6 +27,7 @@ vize_atelier_jsx.workspace = true
 # same S1→S2 dependency.
 vize_davinci.workspace = true
 vize_s1.workspace = true
+# The S2 template-complexity pass behind `vue/max-template-complexity`.
 vize_s1_to_s2.workspace = true
 vize_s2.workspace = true
 

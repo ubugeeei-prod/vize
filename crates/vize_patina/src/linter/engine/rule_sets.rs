@@ -27,6 +27,7 @@ pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/no-unused-properties",
     "vue/no-unused-refs",
     "vue/prop-name-casing",
+    "vue/max-template-complexity",
     "vue/sfc-element-order",
     "vue/require-scoped-style",
     "vue/single-style-block",

@@ -3,6 +3,7 @@
 pub mod a11y;
 pub mod css;
 pub mod ecosystem;
+pub mod facts;
 pub mod html;
 pub mod musea;
 pub mod opinionated;

@@ -51,8 +51,10 @@ use crate::lower::Lowered;
 mod expr;
 mod print;
 mod regions;
+mod source;
 
 pub use print::print_facts;
+pub use source::{COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE, run_template_range};
 
 /// The pass name in pipeline strings and folio pages.
 pub const NAME: &str = "template-complexity";

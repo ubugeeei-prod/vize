@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/src/rules/facts/max_template_complexity_tests.rs
+expression: strip_ansi(&output)
+---
+
+  ⚠ [vize:vue/max-template-complexity] Template complexity is too high: cyclomatic 13 (limit 11), cognitive 25 (limit 16)
+    ╭─[Dashboard.vue:5:1]
+  4 │
+  5 │ <template>
+    · ──────────
+  6 │   <section>
+  7 │     <h1>{{ user ? user.name : 'Guest' }}</h1>
+  8 │     <DataTable :rows="rows">
+  9 │       <template #cell="{ row, column }">
+ 10 │         <span v-if="column.key === 'status'" :class="row.active ? 'on' : 'off'">
+    ·                     ───────────┬───────────          ────────────┬────────────
+    ·                                │                                 ╰── conditional at nesting 2: +3 cognitive, +1 cyclomatic
+    ·                                ╰── v-if at nesting 1: +2 cognitive, +1 cyclomatic
+ 11 │           {{ row.status ?? 'unknown' }}
+ 12 │         </span>
+ 13 │         <a v-else-if="column.key === 'link' && row.url" :href="row.url">{{ row.label }}</a>
+ 14 │         <template v-else>
+ 15 │           <em v-for="tag in row.tags" :key="tag">
+    ·                             ────┬───
+    ·                                 ╰── v-for at nesting 2: +3 cognitive, +1 cyclomatic
+ 16 │             <b v-if="tag.pinned || tag.starred">{{ tag.hot ? '!' : '' }}</b>
+    ·                      ────────────┬────────────     ─────────┬────────
+    ·                                  │                          ╰── conditional at nesting 4: +5 cognitive, +1 cyclomatic
+    ·                                  ╰── v-if at nesting 3: +4 cognitive, +1 cyclomatic
+ 17 │           </em>
+    ╰────
+  help: Move the deepest branches or loops into child components: a child's complexity never counts toward this component's own score
+        Reference: docs/content/rules/vue.md

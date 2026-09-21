@@ -207,3 +207,5 @@
 **Deps:** P4-9a, P4-3b, P4-6a.
 
 **Non-goals:** error severity for complexity; project-wide bands beyond the existing report.
+
+**Progress 2026-09-22:** slice 1 landed `vue/max-template-complexity` (own complexity, opinionated preset, exact diagnostics with labelled contributors); rendered complexity, the Doctor finding and the facts-fed `ComplexityInput` are open — see the [P4-9b record](./phase-4-records/p4-9b.md).

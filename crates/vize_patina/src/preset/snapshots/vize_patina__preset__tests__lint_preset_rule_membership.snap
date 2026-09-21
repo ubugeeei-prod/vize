@@ -591,6 +591,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "type/no-floating-promises",
     "type/no-reactivity-loss",
     "type/no-unsafe-template-binding",
+    "vue/max-template-complexity",
     "script/no-options-api",
     "script/no-get-current-instance",
     "script/no-async-in-computed",

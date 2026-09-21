@@ -157,6 +157,7 @@ export const LINT_RULE_NAMES = [
   "vue/html-button-has-type",
   "vue/html-quotes",
   "vue/html-self-closing",
+  "vue/max-template-complexity",
   "vue/multi-word-component-names",
   "vue/mustache-interpolation-spacing",
   "vue/no-array-index-key",

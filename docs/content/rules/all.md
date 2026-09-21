@@ -4,7 +4,7 @@ title: All Patina Rules
 
 # All Patina Rules
 
-This page lists all 248 Patina rule implementations declared under `crates/vize_patina/src/rules`. The category pages keep the longer examples; this page is the compact reference for coverage, default severity, preset membership, fixability, rule-option support, and source implementation.
+This page lists all 249 Patina rule implementations declared under `crates/vize_patina/src/rules`. The category pages keep the longer examples; this page is the compact reference for coverage, default severity, preset membership, fixability, rule-option support, and source implementation.
 
 Preset names use Vize CLI terminology. The oxlint plugin metadata name `general-recommended` is shown here as `happy-path`. `_none_` means the rule is opt-in, host-driven, or outside the bundled lint presets.
 
@@ -16,7 +16,7 @@ Rules marked with `ruleOptions` accept typed project-local settings under `linte
 | --- | ---: |
 | [Essential](#essential-50) | 50 |
 | [Strongly Recommended](#strongly-recommended-12) | 12 |
-| [Recommended](#recommended-44) | 44 |
+| [Recommended](#recommended-45) | 45 |
 | [Accessibility](#accessibility-31) | 31 |
 | [HTML Conformance](#html-conformance-9) | 9 |
 | [Type Aware](#type-aware-5) | 5 |
@@ -99,7 +99,7 @@ Rules marked with `ruleOptions` accept typed project-local settings under `linte
 | `vue/v-on-style` | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Yes | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_on_style.rs#L28) | Enforce `v-on` directive style |
 | `vue/v-slot-style` | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Yes | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_slot_style.rs#L40) | Enforce `v-slot` directive style |
 
-## Recommended (44)
+## Recommended (45)
 
 | Rule | Severity | Presets | Fixable | Options | Implementation | Description |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -109,6 +109,7 @@ Rules marked with `ruleOptions` accept typed project-local settings under `linte
 | `vue/attribute-order` | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_order.rs#L36) | Enforce a consistent order of attributes |
 | `vue/component-name-in-template-casing` | `warning` | `nuxt`, `opinionated` | Yes | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/component_name_in_template_casing.rs#L28) | Enforce specific casing for component names in templates |
 | `vue/html-button-has-type` | `warning` | `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_button_has_type.rs#L39) | Require an explicit valid type on button elements |
+| `vue/max-template-complexity` | `warning` | `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/max_template_complexity.rs#L53) | Limit a component's own template complexity (cyclomatic and cognitive) |
 | `vue/no-array-index-key` | `warning` | `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs#L31) | Disallow using the v-for index variable directly as the :key |
 | `vue/no-bare-strings-in-template` | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L47) | Disallow raw human-readable text in the template that should be internationalized |
 | `vue/no-boolean-attr-value` | `warning` | `nuxt`, `opinionated` | Yes | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs#L35) | Disallow explicit values for boolean HTML attributes |
