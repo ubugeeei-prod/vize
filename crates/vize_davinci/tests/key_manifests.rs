@@ -8,7 +8,8 @@
 use std::fmt::Write as _;
 
 use vize_davinci::key::{
-    AmbientInput, ArtifactKey, CachedArtifact, KeyManifest, ManifestError, source_block_key,
+    AmbientInput, ArtifactKey, CachedArtifact, InputSet, KeyManifest, ManifestError,
+    source_block_key,
 };
 use vize_davinci::stage::Stage;
 use vize_s0::String;
@@ -89,17 +90,15 @@ fn nothing_but_a_declared_value_changes_the_key() {
 #[test]
 fn a_manifest_with_a_missing_or_extra_input_cannot_key() {
     let artifact = CachedArtifact::SemanticPage;
-    let missing = full_manifest(artifact);
-    let mut without = KeyManifest::new();
-    for input in artifact.inputs().iter().skip(1) {
-        without.set(*input, missing.get(*input).expect("set"));
-    }
+    let without = KeyManifest::new()
+        .with(AmbientInput::ToolchainVersion, "0.425.1")
+        .with(AmbientInput::FeatureFlags, "");
     assert_eq!(
         key(artifact, &without),
         Err(ManifestError::Undeclared {
             artifact,
-            missing: vec![AmbientInput::ProjectConfig],
-            extra: vec![],
+            missing: InputSet::of(&[AmbientInput::ProjectConfig]),
+            extra: InputSet::EMPTY,
         })
     );
     let extra = full_manifest(artifact).with(AmbientInput::Platform, "aarch64-apple-darwin");
@@ -107,9 +106,15 @@ fn a_manifest_with_a_missing_or_extra_input_cannot_key() {
         key(artifact, &extra),
         Err(ManifestError::Undeclared {
             artifact,
-            missing: vec![],
-            extra: vec![AmbientInput::Platform],
+            missing: InputSet::EMPTY,
+            extra: InputSet::of(&[AmbientInput::Platform]),
         })
+    );
+    assert_eq!(
+        InputSet::of(&[AmbientInput::Platform, AmbientInput::ProjectIdentity])
+            .iter()
+            .collect::<Vec<_>>(),
+        [AmbientInput::ProjectIdentity, AmbientInput::Platform]
     );
 }
 

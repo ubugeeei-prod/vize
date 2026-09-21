@@ -9,20 +9,19 @@
 //! cached artifact declares which ambient inputs it reads
 //! ([`CachedArtifact::inputs`], documented row for row in
 //! `davinci-road/plan/key-manifests.md`). A [`KeyManifest`] carries their
-//! values and folds into a key only when it declares **exactly** the
+//! values' digests and folds into a key only when it sets **exactly** the
 //! artifact's inputs: a missing one is the corruption bug, an extra one is an
 //! undeclared input — both are errors, never silently accepted.
 
-use alloc::vec::Vec;
-
-use vize_s0::String;
-
-use super::sink::MANIFEST_DOMAIN;
-use super::{ArtifactKey, KeySink};
 use crate::stage::Stage;
 
-/// One ambient input.
+mod fold;
+
+pub use fold::{InputSet, KeyManifest, ManifestError};
+
+/// One ambient input. The discriminants are the manifest order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(u8)]
 pub enum AmbientInput {
     /// The project's identity: its canonical root / `tsconfig.json` path.
     ProjectIdentity,
@@ -104,7 +103,7 @@ impl CachedArtifact {
         }
     }
 
-    /// The stages whose [`ArtifactKey`]s may be this artifact's content key:
+    /// The stages whose [`ArtifactKey`](crate::key::ArtifactKey)s may be this artifact's content key:
     /// a projection segment is keyed by its script block's S0 key or its
     /// template's S2 page key; a Corsa session has no content key and is
     /// keyed by its manifest alone ([`KeyManifest::fingerprint`]).
@@ -147,136 +146,3 @@ impl CachedArtifact {
         }
     }
 }
-
-/// Why a manifest cannot key an artifact.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ManifestError {
-    /// The content key belongs to another stage than the artifact.
-    WrongStage {
-        /// The artifact being keyed.
-        artifact: CachedArtifact,
-        /// The content key's stage.
-        stage: Stage,
-    },
-    /// The manifest does not declare exactly the artifact's inputs.
-    Undeclared {
-        /// The artifact being keyed.
-        artifact: CachedArtifact,
-        /// Declared inputs the manifest lacks (the corruption bug).
-        missing: Vec<AmbientInput>,
-        /// Manifest inputs the artifact does not declare.
-        extra: Vec<AmbientInput>,
-    },
-}
-
-/// Values of ambient inputs, one per input, in manifest order.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
-pub struct KeyManifest {
-    values: Vec<(AmbientInput, String)>,
-}
-
-impl KeyManifest {
-    /// An empty manifest.
-    #[must_use]
-    pub const fn new() -> Self {
-        Self { values: Vec::new() }
-    }
-
-    /// Set `input` to `value` (replacing an earlier value).
-    #[must_use]
-    pub fn with(mut self, input: AmbientInput, value: &str) -> Self {
-        self.set(input, value);
-        self
-    }
-
-    /// Set `input` to `value` (replacing an earlier value).
-    pub fn set(&mut self, input: AmbientInput, value: &str) {
-        match self.values.binary_search_by_key(&input, |(held, _)| *held) {
-            Ok(at) => self.values[at].1 = String::from(value),
-            Err(at) => self.values.insert(at, (input, String::from(value))),
-        }
-    }
-
-    /// The value of `input`, if set.
-    #[must_use]
-    pub fn get(&self, input: AmbientInput) -> Option<&str> {
-        self.values
-            .binary_search_by_key(&input, |(held, _)| *held)
-            .ok()
-            .map(|at| self.values[at].1.as_str())
-    }
-
-    /// Check that the manifest sets exactly `artifact`'s declared inputs.
-    pub fn check(&self, artifact: CachedArtifact) -> Result<(), ManifestError> {
-        let declared = artifact.inputs();
-        let missing: Vec<AmbientInput> = declared
-            .iter()
-            .copied()
-            .filter(|input| self.get(*input).is_none())
-            .collect();
-        let extra: Vec<AmbientInput> = self
-            .values
-            .iter()
-            .map(|(input, _)| *input)
-            .filter(|input| !declared.contains(input))
-            .collect();
-        if missing.is_empty() && extra.is_empty() {
-            return Ok(());
-        }
-        Err(ManifestError::Undeclared {
-            artifact,
-            missing,
-            extra,
-        })
-    }
-
-    /// The manifest's own key for `artifact` — the whole key of an artifact
-    /// with no content key (a Corsa session).
-    pub fn fingerprint(&self, artifact: CachedArtifact) -> Result<[u8; 16], ManifestError> {
-        self.check(artifact)?;
-        // No content key: the domain's stage and version slots are fixed.
-        let mut sink = KeySink::in_domain(MANIFEST_DOMAIN, Stage::Source, 0, 0);
-        sink.feed_tag(NO_CONTENT);
-        self.fold_into(&mut sink, artifact);
-        Ok(sink.finish().hash())
-    }
-
-    fn fold_into(&self, sink: &mut KeySink, artifact: CachedArtifact) {
-        sink.feed_str(artifact.name());
-        sink.feed_u32(self.values.len() as u32);
-        for (input, value) in &self.values {
-            sink.feed_str(input.name());
-            sink.feed_str(value.as_str());
-        }
-    }
-}
-
-impl ArtifactKey {
-    /// The cache key of `artifact`: this content key with the manifest's
-    /// ambient inputs folded in. Stage and recipe version are kept; only the
-    /// hash changes. Fails unless the manifest declares exactly the
-    /// artifact's inputs and the content key is one of the artifact's
-    /// [`content_stages`](CachedArtifact::content_stages).
-    pub fn with_manifest(
-        self,
-        artifact: CachedArtifact,
-        manifest: &KeyManifest,
-    ) -> Result<Self, ManifestError> {
-        if !artifact.content_stages().contains(&self.stage) {
-            return Err(ManifestError::WrongStage {
-                artifact,
-                stage: self.stage,
-            });
-        }
-        manifest.check(artifact)?;
-        let mut sink = KeySink::in_domain(MANIFEST_DOMAIN, self.stage, self.schema_version, 0);
-        sink.feed_tag(WITH_CONTENT);
-        sink.feed_digest(&self.hash);
-        manifest.fold_into(&mut sink, artifact);
-        Ok(sink.finish())
-    }
-}
-
-/// Fold markers: a manifest over a content key, or a manifest alone.
-const WITH_CONTENT: u8 = 1;
-const NO_CONTENT: u8 = 0;
