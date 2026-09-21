@@ -80,7 +80,7 @@ impl Case {
 pub fn diagnostics_text(diagnostics: &[Diagnostic]) -> String {
     let mut out = String::default();
     for diagnostic in diagnostics {
-        assert!(!diagnostic.message.contains('\n'), "line-atomic messages");
+        assert_eq!(diagnostic.message.find('\n'), None, "line-atomic messages");
         let severity = match diagnostic.severity {
             Severity::Error => "error",
             Severity::Warning => "warning",
