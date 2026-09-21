@@ -11,7 +11,8 @@
 use std::borrow::Cow;
 
 use vize_croquis::sfc::{
-    BlockLocation, SfcError, SfcParseOptions, SfcScriptBlock, SfcStyleBlock, parse_sfc,
+    BlockLocation, SfcError, SfcParseOptions, SfcScriptBlock, SfcStyleBlock,
+    parse_sfc_without_css_vars,
 };
 use vize_s0::{Allocator, SourceBlock, SourceRoot, ToCompactString, Vec};
 
@@ -45,11 +46,8 @@ pub(crate) fn split_blocks<'a>(
         message: "Art source exceeds the u32 offset space".to_compact_string(),
     })?;
     // Musea never compiles styles, so the per-style `v-bind()` scan is skipped.
-    let options = SfcParseOptions {
-        skip_css_vars: true,
-        ..SfcParseOptions::default()
-    };
-    let descriptor = parse_sfc(source, options).map_err(|error| container_error(source, error))?;
+    let descriptor = parse_sfc_without_css_vars(source, SfcParseOptions::default())
+        .map_err(|error| container_error(source, error))?;
 
     let art = descriptor
         .custom_blocks

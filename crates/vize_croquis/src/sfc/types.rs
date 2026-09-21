@@ -302,9 +302,6 @@ pub struct SfcParseOptions {
     pub ignore_empty: bool,
     /// Template parser options.
     pub template_parse_options: Option<vize_relief::options::ParserOptions>,
-    /// Leave `SfcDescriptor::css_vars` empty: skip the per-style `v-bind()`
-    /// scan for block-level readers that never compile styles (Musea).
-    pub skip_css_vars: bool,
 }
 
 /// Padding option for source-map alignment.

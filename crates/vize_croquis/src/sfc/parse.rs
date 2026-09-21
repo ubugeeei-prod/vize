@@ -16,4 +16,4 @@ mod skip_css_vars_tests;
 #[cfg(test)]
 mod tests;
 
-pub use parse_sfc::parse_sfc;
+pub use parse_sfc::{parse_sfc, parse_sfc_without_css_vars};

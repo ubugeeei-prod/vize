@@ -17,7 +17,7 @@ mod css_transform;
 mod parse;
 mod types;
 
-pub use parse::parse_sfc;
+pub use parse::{parse_sfc, parse_sfc_without_css_vars};
 pub use types::{
     BindingMetadata, BindingType, BlockLocation, PadOption, SfcCustomBlock, SfcDescriptor,
     SfcError, SfcParseOptions, SfcScriptBlock, SfcStyleBlock, SfcTemplateBlock,
