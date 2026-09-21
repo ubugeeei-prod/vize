@@ -23,7 +23,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | ----------------- | ----: | ----: |
 | `BlockLocation`   |     1 |     1 |
 | `SfcDescriptor`   |     1 |     2 |
-| `SfcParseOptions` |    10 |    13 |
+| `SfcParseOptions` |    11 |    14 |
 | `to_pascal_case`  |     1 |     1 |
 
 ## Naive grep disagreements (resolved/grep)
@@ -32,7 +32,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | ------------------------------------- | -------: | ---: |
 | `Analyzer`                            |        1 |    2 |
 | `AnalyzerOptions`                     |        1 |    2 |
-| `Croquis`                             |        1 |    2 |
+| `Croquis`                             |        1 |    3 |
 | `EffectGraphScript`                   |        2 |    3 |
 | `Scope`                               |        0 |    1 |
 | `build_effect_graph_from_sfc_scripts` |        1 |    2 |

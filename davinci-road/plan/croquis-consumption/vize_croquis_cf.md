@@ -20,7 +20,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `EventHandlerScopeData`                | type  | `scope`             |     1 |     1 |
 | `EventListener`                        | type  | `croquis::template` |     6 |    10 |
 | `PassedProp`                           | type  | `croquis::template` |     8 |    17 |
-| `ScopeData`                            | type  | `scope`             |     8 |     8 |
+| `ScopeData`                            | type  | `scope`             |     9 |     9 |
 | `ScopeId`                              | type  | `scope`             |    13 |    23 |
 | `ScopeKind`                            | type  | `scope`             |    10 |    21 |
 | `SlotUsage`                            | type  | `croquis::template` |     2 |     3 |
@@ -39,7 +39,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.provide_inject`               | field | `croquis`           |    10 |    26 |
 | `Croquis.race_conditions`              | field | `croquis`           |     1 |     1 |
 | `Croquis.reactivity`                   | field | `croquis`           |    11 |    22 |
-| `Croquis.scopes`                       | field | `croquis`           |    17 |    27 |
+| `Croquis.scopes`                       | field | `croquis`           |    18 |    28 |
 | `Croquis.setup_context`                | field | `croquis`           |     1 |     1 |
 | `Croquis.template_expressions`         | field | `croquis`           |     6 |    12 |
 | `Croquis.template_info`                | field | `croquis`           |     5 |    14 |
@@ -93,7 +93,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `build_effect_graph_from_script`       |        2 |    3 |
 | `build_effect_graph_from_script_setup` |        1 |    2 |
 | `build_effect_graph_from_sfc_scripts`  |        1 |    2 |
-| `Croquis.bindings`                     |        2 |   10 |
+| `Croquis.bindings`                     |        2 |   11 |
 | `Croquis.component_usages`             |       33 |   38 |
 | `Croquis.macros`                       |       25 |   27 |
 | `Croquis.provide_inject`               |       26 |   34 |

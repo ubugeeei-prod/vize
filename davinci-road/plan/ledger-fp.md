@@ -96,3 +96,33 @@ and drop exactly the two witnesses above. The 107 new reports are triaged
 phrasing, `form-elements.html#the-button-element`) and one `<tr>` directly in
 `<table>` (`elk/app/components/report/ReportModal.vue:190:9`; the parser
 inserts an implied `<tbody>`, `parsing.html#parsing-main-intable`).
+
+## FP-3 — `html/cross-component-nesting` reports a child branch the call site cannot take
+
+Surfaced by the P4-11b corpus triage (`vize lint --cross-file` over elk,
+misskey, npmx.dev, nuxt-ui and reka-ui: 9 findings, all in misskey). The
+composed check re-reads every child template in the parent's open-element
+chain and, like the per-file checker, does not evaluate `v-if` conditions:
+every branch is assumed reachable.
+
+**Witnesses:**
+
+- `misskey/packages/frontend/src/pages/drive.file.info.vue:39:5` and `:45:5`:
+  `<MkKeyValue>` inside `<button>`; `MkKeyValue.vue:13:3` renders
+  `<button v-if="copy">`, and neither call site passes `copy`, so the nested
+  button never renders there. The same usages are still non-conforming — the
+  child's root `<div>` (`MkKeyValue.vue:7:1`) inside `<button>` is reported
+  alongside, and that report is justified.
+
+**Disposition:** `deferred-with-issue` — prop-sensitive branch feasibility
+(a child `v-if` over a prop the call site leaves unset) is outside the
+declared P4-11b domain; tracked as the P4-11b follow-up in
+[phase-4-records/p4-11b.md](./phase-4-records/p4-11b.md). The other 7
+findings are `justified-with-witness`: `<div>` roots inside `<button>`
+(2, the root sites above) and inside `<span>` (3,
+`src/ui/_common_/statusbar-{federation,rss,user-list}.vue:16:4` through
+`MkMarqueeText.vue:7:1`; both content models are phrasing), and a `<canvas>`
+and an `<img>` carrying `tabindex` inside `<a>`
+(`src/pages/admin-file.root.vue:11:5` through `MkImgWithBlurhash.vue:17:3`
+and `:29:3`; the `a` content model forbids descendants with `tabindex`,
+`text-level-semantics.html#the-a-element`).

@@ -1,6 +1,7 @@
 //! Cross-file analyzer state and module wiring.
 
 mod accessors;
+mod component_imports;
 mod constructors;
 mod deps;
 mod diagnostics;

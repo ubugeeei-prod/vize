@@ -1,0 +1,66 @@
+[
+  {
+    "errorCount": 3,
+    "file": "src/App.vue",
+    "messages": [
+      {
+        "column": 7,
+        "endColumn": 16,
+        "endLine": 14,
+        "help": "Why: the browser re-parses the rendered HTML of the whole page, so a child component's root element is nested exactly where the parent renders the component. Each template is valid on its own; together they are not, and the browser's DOM will not match the virtual DOM (hydration mismatch).\nFix: render the component where its root element is permitted, or change the parent element or the child's root element (for example <div> instead of <p> around block-level components).",
+        "line": 14,
+        "message": "[vize:html/cross-component-nesting] <div> (rendered by <InfoCard> at src/components/InfoCard.vue:6:3) closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "ruleId": "html/cross-component-nesting",
+        "severity": 2
+      },
+      {
+        "column": 7,
+        "endColumn": 16,
+        "endLine": 18,
+        "help": "Why: the browser re-parses the rendered HTML of the whole page, so a child component's root element is nested exactly where the parent renders the component. Each template is valid on its own; together they are not, and the browser's DOM will not match the virtual DOM (hydration mismatch).\nFix: render the component where its root element is permitted, or change the parent element or the child's root element (for example <div> instead of <p> around block-level components).",
+        "line": 18,
+        "message": "[vize:html/cross-component-nesting] <tr> (rendered by <PriceRow> at src/components/PriceRow.vue:6:3) directly inside <table> gets an implied wrapper (<tbody>, <tr> or <colgroup>) from the HTML parser",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "ruleId": "html/cross-component-nesting",
+        "severity": 2
+      },
+      {
+        "column": 36,
+        "endColumn": 47,
+        "endLine": 20,
+        "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested.",
+        "line": 20,
+        "message": "[vize:html/cross-component-nesting] <button> (rendered by <LinkButton> at src/components/LinkButton.vue:2:3) is interactive content and cannot be nested in <a>",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "ruleId": "html/cross-component-nesting",
+        "severity": 2
+      }
+    ],
+    "warningCount": 0
+  },
+  {
+    "errorCount": 0,
+    "file": "src/components/InfoCard.vue",
+    "messages": [],
+    "warningCount": 0
+  },
+  {
+    "errorCount": 0,
+    "file": "src/components/LinkButton.vue",
+    "messages": [],
+    "warningCount": 0
+  },
+  {
+    "errorCount": 0,
+    "file": "src/components/PriceRow.vue",
+    "messages": [],
+    "warningCount": 0
+  },
+  {
+    "errorCount": 0,
+    "file": "src/components/SafeBadge.vue",
+    "messages": [],
+    "warningCount": 0
+  }
+]
