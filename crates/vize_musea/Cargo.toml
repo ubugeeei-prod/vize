@@ -21,9 +21,6 @@ thiserror.workspace = true
 insta.workspace = true
 criterion.workspace = true
 davinci_harness.workspace = true
-# Only the retained P4-13 differential oracle (`src/parse/legacy*`, test-only)
-# still scans bytes; it leaves with that oracle.
-memchr.workspace = true
 
 [[bench]]
 name = "art_parse"

@@ -4453,7 +4453,6 @@ dependencies = [
  "criterion",
  "davinci_harness",
  "insta",
- "memchr",
  "serde",
  "serde_json",
  "thiserror 2.0.20",

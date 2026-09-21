@@ -1,9 +1,9 @@
 //! Intentional P4-13 divergences from the retired hand scanner, each pinned
-//! exactly. The first four are the corpus fixtures on the differential
-//! ledger (`differential_tests::INTENTIONAL_DIVERGENCES`); the rest are
-//! scanner bugs no committed fixture happened to exercise. Every case is a
-//! place where the substring scanner read something other than what the
-//! SFC/HTML syntax says — the S0/S1 reading is the authored structure.
+//! exactly. D1–D4 are the eight corpus fixtures slice 1's differential lane
+//! ledgered (the P4-13 record lists them); the rest are scanner bugs no
+//! committed fixture happened to exercise. Every case is a place where the
+//! substring scanner read something other than what the SFC/HTML syntax
+//! says — the S0/S1 reading is the authored structure.
 
 use super::parse_art;
 use crate::types::{ArtDescriptor, ArtParseError, ArtParseOptions};

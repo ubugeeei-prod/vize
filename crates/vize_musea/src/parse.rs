@@ -20,11 +20,9 @@ mod status;
 mod variant;
 
 #[cfg(test)]
-mod differential_tests;
-#[cfg(test)]
 mod divergence_tests;
 #[cfg(test)]
-mod legacy;
+mod golden_tests;
 
 use crate::types::{ArtDescriptor, ArtParseError, ArtParseOptions, ArtParseResult, SourceLocation};
 use vize_s0::Allocator;

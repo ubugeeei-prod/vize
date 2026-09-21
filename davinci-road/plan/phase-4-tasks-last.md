@@ -148,7 +148,7 @@
 
 **Steps:**
 
-- [ ] Re-implement `parse_art` over the splitter and `vize_s1`; delete the scanner
+- [x] Re-implement `parse_art` over the splitter and `vize_s1`; delete the scanner
 
 **Acceptance:** `cargo test -p vize_musea` snapshots unchanged (TS-1); TS-11 art surface empty; `grep -rn "memchr" crates/vize_musea/src/parse*` empty; the six Musea rules' fixtures unchanged (TS-9).
 
@@ -156,7 +156,7 @@
 
 **Non-goals:** new Art features; Musea UI.
 
-_Slice 1 (2026-09-21):_ `parse_art` re-implemented over the splitter and S1; the scanner survives only as the test-only differential oracle until slice 2 deletes it — see the [P4-13 record](./phase-4-records/p4-13.md) for the lane results and the divergence ledger.
+**Landed 2026-09-22:** `parse_art` on the splitter and S1, the scanner deleted after the differential lane, the corpus frozen as a fingerprint golden — see the [P4-13 record](./phase-4-records/p4-13.md) for the lane results and the divergence ledger.
 
 ## P4-14a — Structured diagnostic renderer
 
