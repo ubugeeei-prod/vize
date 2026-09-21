@@ -26,6 +26,12 @@ fixtures are read from the pinned spec's AST. Rename checks additionally apply
 the edits and check the result: expanding `{ const value }` to
 `{ value: const renamed }` preserves the original property key.
 
+`pattern-sfc-reference.test.ts` runs `compiler-sfc/__tests__/vMatch.spec.ts` through the
+real CLI: a `v-match` on the SFC's own `<template>` compiles to the same output as the
+match nested in an inner block on DOM, SSR and Vapor, its header keeps a TypeScript
+import alive, and each invalid header is one error at the directive. The reference's
+source-map case needs a compile API the CLI does not expose and stays inventory-only.
+
 `pattern-selection-reference.test.ts` runs the selection-semantics half of
 `compiler-core/__tests__/patterns.spec.ts`, its match table and all nine scenarios,
 through a render function compiled by the real CLI: every arm reports its index and
