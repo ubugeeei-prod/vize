@@ -31,6 +31,11 @@ export function runFreshProjectInitChecks(context) {
   assert.equal(context.repoRoot, fs.realpathSync(process.env.VIZE_REPO_ROOT));
   assert.equal(context.installDir, process.cwd());
   assert.equal(context.tempDir, path.dirname(context.installDir));
+  assert.equal(process.env.COREPACK_HOME, path.join(context.tempDir, "corepack"));
+  assert.equal(process.env.COREPACK_ENABLE_DOWNLOAD_PROMPT, "0");
+  for (const name of ["CORSA_PATH", "CORSA_EXECUTABLE", "TSGO_PATH", "TSGO_EXECUTABLE"]) {
+    assert.equal(process.env[name], undefined);
+  }
   assert.ok(fs.statSync(context.vizeBin).isFile());
   assert.deepEqual(Object.keys(context.peers).sort(), ["typescript", "vite", "vite-plus", "vue"]);
   throw new Error("fresh-project oracle reached with complete packed context");
@@ -56,12 +61,26 @@ export function runFreshProjectInitChecks(context) {
     );
     const result = spawnSync(
       "rust-script",
-      ["tools/commands/release/npm/smoke-release-install.rs", "--runtime-checks", cli, platform],
+      [
+        "--force",
+        "tools/commands/release/npm/smoke-release-install.rs",
+        "--runtime-checks",
+        cli,
+        platform,
+      ],
       {
         cwd: root,
         encoding: "utf8",
         timeout: 180_000,
-        env: { ...process.env, VIZE_REPO_ROOT: fs.realpathSync(temporary) },
+        env: {
+          ...process.env,
+          VIZE_REPO_ROOT: fs.realpathSync(temporary),
+          COREPACK_HOME: path.join(temporary, "stale-host-corepack"),
+          CORSA_PATH: "/unrelated/host/corsa",
+          CORSA_EXECUTABLE: "/unrelated/host/corsa",
+          TSGO_PATH: "/unrelated/host/tsgo",
+          TSGO_EXECUTABLE: "/unrelated/host/tsgo",
+        },
       },
     );
     assert.ifError(result.error);
@@ -111,7 +130,12 @@ if (args[0] === "init") {
     );
     const result = spawnSync(
       "rust-script",
-      ["tools/commands/release/npm/smoke-release-install.rs", "--runtime-checks", packageRoot],
+      [
+        "--force",
+        "tools/commands/release/npm/smoke-release-install.rs",
+        "--runtime-checks",
+        packageRoot,
+      ],
       { cwd: root, encoding: "utf8", timeout: 180_000 },
     );
     assert.ifError(result.error);

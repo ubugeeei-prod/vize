@@ -541,7 +541,7 @@ jobs:
           moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install release package tarballs
         run: |
-          rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
+          rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
             npm/native npm/native/npm/* \
             npm/fresco-native \
             npm/cli \
@@ -607,7 +607,7 @@ jobs:
       - name: List packages
         run: ls -R npm/native/npm/
       - name: Smoke install native package tarballs
-        run: rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks npm/native npm/native/npm/*
+        run: rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks npm/native npm/native/npm/*
       - name: Publish platform packages
         run: moon run --target native tools/moon/cmd/publish_npm_package_dirs -- npm/native/npm --provenance
       - name: Publish

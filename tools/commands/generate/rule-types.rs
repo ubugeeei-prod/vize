@@ -14,8 +14,7 @@ use std::{collections::BTreeSet, process::ExitCode};
 #[path = "../../support/common.rs"]
 mod common;
 
-const LINT_RULE_SNAPSHOT_REL: &str =
-    "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap";
+const LINT_RULE_SNAPSHOT_REL: &str = "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap";
 const LINT_RULE_TYPES_REL: &str = "npm/cli/src/types/rules.ts";
 
 fn main() -> ExitCode {
@@ -36,6 +35,8 @@ fn run() -> Result<(), String> {
 }
 
 fn snapshot_json_body(snapshot: &str) -> Result<String, String> {
+    // Git's Windows checkout can use CRLF for both insta delimiters and JSON.
+    let snapshot = snapshot.replace("\r\n", "\n");
     if !snapshot.starts_with("---\n") {
         return Err("Invalid insta snapshot format for lint preset rule membership".to_string());
     }
@@ -100,6 +101,18 @@ mod tests {
     fn rejects_invalid_snapshot_frontmatter() {
         assert!(snapshot_json_body("{}").is_err());
         assert!(snapshot_json_body("---\nsource: test\n{}").is_err());
+        assert!(snapshot_json_body("---\r\nsource: test\r\n{}").is_err());
+        assert!(snapshot_json_body("---\rsource: test\r---\r{}").is_err());
+    }
+
+    #[test]
+    fn accepts_crlf_without_changing_json_string_escapes() {
+        let snapshot =
+            "---\r\nsource: test\r\n---\r\n{\r\n  \"base\": [\"escaped\\r\\n\"]\r\n}\r\n";
+        assert_eq!(
+            snapshot_json_body(snapshot).unwrap(),
+            "{\n  \"base\": [\"escaped\\r\\n\"]\n}\n"
+        );
     }
 
     #[test]

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -19,13 +20,14 @@ const lintRuleTypesPath = path.join(repoRoot, "npm", "cli", "src", "types", "rul
 const ruleTypesScriptPath = path.join(repoRoot, "tools", "commands", "generate", "rule-types.rs");
 
 function collectLintRuleNames(snapshotContent: string): string[] {
-  const frontmatterEnd = snapshotContent.indexOf("\n---\n", 4);
+  const lines = snapshotContent.split(/\r?\n/u);
+  const frontmatterEnd = lines.indexOf("---", 1);
 
-  if (!snapshotContent.startsWith("---\n") || frontmatterEnd === -1) {
+  if (lines[0] !== "---" || frontmatterEnd === -1) {
     throw new Error("Invalid insta snapshot format for lint preset rule membership");
   }
 
-  const snapshotValue = JSON.parse(snapshotContent.slice(frontmatterEnd + "\n---\n".length)) as
+  const snapshotValue = JSON.parse(lines.slice(frontmatterEnd + 1).join("\n")) as
     | Record<string, unknown>
     | unknown[];
 
@@ -69,7 +71,7 @@ test("rule type generator keeps generated lint rule types in sync", () => {
     collectLintRuleNames(fs.readFileSync(lintRuleSnapshotPath, "utf8")),
   );
 
-  assert.equal(fs.readFileSync(lintRuleTypesPath, "utf8"), expected);
+  assert.equal(fs.readFileSync(lintRuleTypesPath, "utf8").replaceAll("\r\n", "\n"), expected);
 
   const result = spawnSync("rust-script", [ruleTypesScriptPath], {
     cwd: repoRoot,
@@ -77,4 +79,29 @@ test("rule type generator keeps generated lint rule types in sync", () => {
   });
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
   assert.equal(fs.readFileSync(lintRuleTypesPath, "utf8"), expected);
+});
+
+test("rule type generation preserves membership with CRLF snapshot frontmatter", () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-rule-types-crlf-"));
+  try {
+    fs.writeFileSync(path.join(temporary, "Cargo.toml"), "[workspace]\n");
+    fs.writeFileSync(path.join(temporary, "pnpm-workspace.yaml"), "packages: []\n");
+    const snapshot = path.join(temporary, path.relative(repoRoot, lintRuleSnapshotPath));
+    fs.mkdirSync(path.dirname(snapshot), { recursive: true });
+    const content =
+      '---\nsource: fixture\n---\n{"base":["valid-v-slot","v-for-key"],"strict":["v-for-key"]}\n';
+    fs.writeFileSync(snapshot, content.replaceAll("\n", "\r\n"));
+    const result = spawnSync("rust-script", [ruleTypesScriptPath], {
+      cwd: repoRoot,
+      encoding: "utf8",
+      env: { ...process.env, VIZE_REPO_ROOT: fs.realpathSync(temporary) },
+    });
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
+    assert.equal(
+      fs.readFileSync(path.join(temporary, path.relative(repoRoot, lintRuleTypesPath)), "utf8"),
+      generateLintRuleTypes(["v-for-key", "valid-v-slot"]),
+    );
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
 });

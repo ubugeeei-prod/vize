@@ -203,6 +203,6 @@ jobs:
       - name: Fresh install and runtime smoke published tarballs
         shell: bash
         run: |
-          rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
+          rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
             npm/native npm/native/npm/* \
             npm/cli npm/builder/vite

@@ -260,6 +260,13 @@ test("the release runtime smoke runs the fresh-project matrix", () => {
     const runtimeSmokeArgs = smokeInstallInvocations(workflow).filter((args) =>
       args.includes("--runtime-checks"),
     );
+    for (const args of runtimeSmokeArgs) {
+      assert.equal(
+        args[1],
+        "--force",
+        "shared Rust helper edits must invalidate the script binary",
+      );
+    }
     assert.ok(
       runtimeSmokeArgs.some(
         (args) => args.includes("--prepare-manifests") && args.includes("npm/cli"),
