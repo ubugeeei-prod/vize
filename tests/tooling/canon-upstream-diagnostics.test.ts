@@ -23,6 +23,27 @@ const manifest = JSON.parse(
   fs.readFileSync(path.join(fixtureRoot, "manifest.json"), "utf8"),
 ) as Manifest;
 
+// Diagnostics Vize reports where the upstream oracle reports none, each owned
+// by a reviewed reason. They are part of the exact expectation of their
+// project: one that moves, disappears or gains a neighbour fails the corpus.
+type DocumentedDifferences = {
+  schema: string;
+  version: number;
+  revision: string;
+  differences: Array<{
+    id: string;
+    issue: number;
+    reason: string;
+    vizeOnly: Manifest["expectedDiagnostics"];
+  }>;
+};
+const documented = JSON.parse(
+  fs.readFileSync(path.join(fixtureRoot, "documented-differences.json"), "utf8"),
+) as DocumentedDifferences;
+const vizeOnly = documented.differences.flatMap((difference) => difference.vizeOnly);
+const identity = (d: Manifest["expectedDiagnostics"][number]) =>
+  `${d.file}:${d.line}:${d.column}:${d.code}`;
+
 test("the pinned Vue Language Tools corpus preserves every source and expected error", () => {
   assert.equal(manifest.revision, "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899");
   assert.match(fs.readFileSync(path.join(fixtureRoot, "LICENSE"), "utf8"), /MIT License/);
@@ -39,6 +60,42 @@ test("the pinned Vue Language Tools corpus preserves every source and expected e
   assert.deepEqual(projects, [...manifest.projects].sort());
   assert.equal(projects.length, 230);
   assert.equal(manifest.expectedDiagnostics.length, 39);
+});
+
+test("every documented difference names an authored line the oracle keeps clean", () => {
+  assert.deepEqual(
+    { schema: documented.schema, version: documented.version, revision: documented.revision },
+    {
+      schema: "vize.vueLanguageToolsDocumentedDifferences",
+      version: 1,
+      revision: manifest.revision,
+    },
+  );
+  assert.deepEqual(
+    documented.differences.map((difference) => [difference.id, difference.issue]),
+    [["component-default-export-identity", 6253]],
+  );
+  for (const difference of documented.differences) {
+    assert.ok(difference.reason.length >= 200, `${difference.id} must explain itself`);
+  }
+  assert.deepEqual(vizeOnly.map(identity), [
+    "components/main.vue:70:11:2345",
+    "components/main.vue:71:11:2345",
+    "components/main.vue:72:11:2345",
+    "components/main.vue:73:11:2345",
+    "components/main.vue:74:11:2345",
+    "defineModel/main.vue:25:11:2345",
+  ]);
+  const oracle = new Set(manifest.expectedDiagnostics.map(identity));
+  const corpus = new Set(manifest.files.map((file) => file.path));
+  for (const diagnostic of vizeOnly) {
+    assert.equal(oracle.has(identity(diagnostic)), false, identity(diagnostic));
+    assert.equal(
+      corpus.has(`test-workspace/tsc/${diagnostic.file}`),
+      true,
+      `${diagnostic.file} is not a corpus source`,
+    );
+  }
 });
 
 test(
@@ -92,7 +149,7 @@ test(
             await t.test(project, async () => {
               const projectRoot = path.join(directory, "test-workspace/tsc", project);
               const actual = (await check(projectRoot)).filter((d) => d.severity === "error");
-              const expected = manifest.expectedDiagnostics
+              const expected = [...manifest.expectedDiagnostics, ...vizeOnly]
                 .filter((d) => d.file.startsWith(`${project}/`))
                 .map((d) => ({ ...d, file: d.file.slice(project.length + 1) }));
               assert.deepEqual(

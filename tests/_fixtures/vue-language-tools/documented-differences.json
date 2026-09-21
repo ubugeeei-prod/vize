@@ -1,0 +1,20 @@
+{
+  "schema": "vize.vueLanguageToolsDocumentedDifferences",
+  "version": 1,
+  "revision": "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",
+  "differences": [
+    {
+      "id": "component-default-export-identity",
+      "issue": 6253,
+      "reason": "Each of these lines is `exactType(Component, defineComponent({...}))`: the upstream helper compares the two types for identity, so it only accepts a default export that is the very type vue-tsc generates for the SFC. Vize types the default export as its own component contract (`__vizeCheck`, `__vizeRawProps`, `__vizeEmitProps`, `__vizeFallthroughProps`, ... intersected with the public constructor), and every consumer-side check reads that contract off `typeof Component`: generic prop resolution, raw props, emit listeners, fallthrough props and structural slots. The contract is what makes those checks exact for components that reach a template through a barrel, a registration or a value, which an identical-to-vue-tsc export cannot carry. The components behave identically in every other project of the corpus (their props, emits, slots, models and exposed instances are checked there); only their identity with `defineComponent` differs. Closing this needs the contract to move off the default export, which is tracked separately.",
+      "vizeOnly": [
+        { "file": "components/main.vue", "line": 70, "column": 11, "code": 2345 },
+        { "file": "components/main.vue", "line": 71, "column": 11, "code": 2345 },
+        { "file": "components/main.vue", "line": 72, "column": 11, "code": 2345 },
+        { "file": "components/main.vue", "line": 73, "column": 11, "code": 2345 },
+        { "file": "components/main.vue", "line": 74, "column": 11, "code": 2345 },
+        { "file": "defineModel/main.vue", "line": 25, "column": 11, "code": 2345 }
+      ]
+    }
+  ]
+}
