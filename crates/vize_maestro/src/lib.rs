@@ -100,16 +100,21 @@ fn init_file_logging() {
 
         let log_path = log_dir.join("lsp.log");
 
-        // Try to open log file, fall back to stderr
+        // Try to open log file, fall back to stderr. Internal-error reporting
+        // is off: when an editor closes the server's stderr pipe (Neovim's
+        // default exit does, right after `shutdown`), tracing-subscriber would
+        // `eprintln!` about the failed log write, and that panics.
         if let Ok(file) = OpenOptions::new().create(true).append(true).open(&log_path) {
             tracing_subscriber::fmt()
                 .with_writer(file.and(std::io::stderr))
                 .with_ansi(false)
+                .log_internal_errors(false)
                 .init();
         } else {
             tracing_subscriber::fmt()
                 .with_writer(std::io::stderr)
                 .with_ansi(false)
+                .log_internal_errors(false)
                 .init();
         }
     });
@@ -147,6 +152,7 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
     tracing_subscriber::fmt()
         .with_writer(std::io::stderr)
         .with_ansi(false)
+        .log_internal_errors(false)
         .init();
 
     tracing::info!("Starting vize_maestro LSP server on port {}", port);

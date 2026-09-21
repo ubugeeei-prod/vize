@@ -29,17 +29,23 @@ pub struct LspProcess {
 
 impl LspProcess {
     pub fn spawn(project_root: &Path) -> Self {
+        Self::spawn_with_stderr(project_root, Stdio::piped())
+    }
+
+    /// Spawns with a caller-chosen stderr (e.g. a pipe whose reader an editor
+    /// already closed); only a piped stderr is captured for failure reports.
+    pub fn spawn_with_stderr(project_root: &Path, stderr_target: Stdio) -> Self {
         let mut child = Command::new(env!("CARGO_BIN_EXE_vize"))
             .current_dir(project_root)
             .arg("lsp")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
+            .stderr(stderr_target)
             .spawn()
             .unwrap();
         let stdin = child.stdin.take().unwrap();
         let stdout = child.stdout.take().unwrap();
-        let stderr_pipe = child.stderr.take().unwrap();
+        let stderr_pipe = child.stderr.take();
 
         let (messages_tx, messages) = mpsc::channel();
         let stderr = Arc::new(Mutex::new(Vec::new()));
@@ -73,16 +79,18 @@ impl LspProcess {
         });
         process.stdout_reader = Some(stdout_reader);
 
-        let stderr_buffer = Arc::clone(&stderr);
-        let stderr_reader = std::thread::spawn(move || {
-            let mut reader = std::io::BufReader::new(stderr_pipe);
-            let mut buffer = Vec::new();
-            let _ = reader.read_to_end(&mut buffer);
-            *stderr_buffer
-                .lock()
-                .unwrap_or_else(std::sync::PoisonError::into_inner) = buffer;
-        });
-        process.stderr_reader = Some(stderr_reader);
+        if let Some(stderr_pipe) = stderr_pipe {
+            let stderr_buffer = Arc::clone(&stderr);
+            let stderr_reader = std::thread::spawn(move || {
+                let mut reader = std::io::BufReader::new(stderr_pipe);
+                let mut buffer = Vec::new();
+                let _ = reader.read_to_end(&mut buffer);
+                *stderr_buffer
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner) = buffer;
+            });
+            process.stderr_reader = Some(stderr_reader);
+        }
 
         process
     }

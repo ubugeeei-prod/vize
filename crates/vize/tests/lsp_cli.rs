@@ -53,6 +53,41 @@ fn lsp_exit_notification_terminates_process_while_stdin_stays_open() {
     assert!(status.success(), "LSP exited with {status}");
 }
 
+/// Neovim's default exit (`exit_timeout = false`) sends `shutdown` and then
+/// closes the server's pipes without waiting, so the server's next log write
+/// hits a closed stderr. Found by TS-45 (P5-12): the tracing subscriber's
+/// internal-error fallback `eprintln!`ed about the failed write and panicked,
+/// so the server died with exit code 101 instead of answering.
+#[test]
+fn lsp_survives_a_closed_stderr_pipe() {
+    let project = tempfile::tempdir().unwrap();
+    let root_uri = file_uri(project.path());
+    let (closed_reader, stderr_writer) = std::io::pipe().unwrap();
+    drop(closed_reader);
+    let mut lsp = LspProcess::spawn_with_stderr(project.path(), stderr_writer.into());
+
+    lsp.send(json!({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "processId": null,
+            "rootUri": root_uri,
+            "capabilities": {},
+            "initializationOptions": { "lint": false, "typecheck": false, "ecosystem": false }
+        }
+    }));
+    let initialize = lsp.recv_response(1);
+    assert!(initialize["result"].is_object(), "{initialize:#}");
+    lsp.send(json!({ "jsonrpc": "2.0", "method": "initialized", "params": {} }));
+    lsp.send(json!({ "jsonrpc": "2.0", "id": 2, "method": "shutdown" }));
+    let shutdown = lsp.recv_response(2);
+    assert!(shutdown["result"].is_null(), "{shutdown:#}");
+    lsp.send(json!({ "jsonrpc": "2.0", "method": "exit" }));
+    let status = lsp.wait_for_exit();
+    assert!(status.success(), "LSP exited with {status}");
+}
+
 #[test]
 fn lsp_corsa_smoke_publishes_diagnostics_and_hover() {
     let workspace_root = workspace_root();
