@@ -16,6 +16,7 @@ on:
       - "davinci-road/plan/phase-3.md"
       - "davinci-road/plan/test-suites.md"
       - "tests/tooling/davinci-lean-reference.test.ts"
+      - "tests/tooling/davinci-lean-workflow.test.ts"
       - "tests/tooling/support/davinci-runtime-trace.mjs"
       - "tests/tooling/support/davinci-mounted-trace.mjs"
       - "tests/tooling/support/davinci-event-*.mjs"
@@ -38,6 +39,7 @@ on:
       - "davinci-road/plan/phase-3.md"
       - "davinci-road/plan/test-suites.md"
       - "tests/tooling/davinci-lean-reference.test.ts"
+      - "tests/tooling/davinci-lean-workflow.test.ts"
       - "tests/tooling/support/davinci-runtime-trace.mjs"
       - "tests/tooling/support/davinci-mounted-trace.mjs"
       - "tests/tooling/support/davinci-event-*.mjs"
@@ -97,6 +99,17 @@ jobs:
       - name: Run TS-28 stateful reference differential
         working-directory: formal/impeto
         run: lake exe impetoRef --check-stateful-fixtures
+      - name: Reject P3-15 proof escapes in the Lean package
+        working-directory: formal/impeto
+        run: |
+          status=0
+          grep -rnwE --include='*.lean' --exclude-dir=.lake 'sorry|admit|axiom|native_decide' . || status=$?
+          test "$status" -eq 1
+      - name: Run P3-15 reactivity lattice differential
+        working-directory: formal/impeto
+        run: lake exe impetoRef --check-lattice-fixtures
+      - name: Check Rust reactivity lattice fact provenance
+        run: cargo test -p vize_impeto --test lattice_reference_fixture
       - name: Check Rust S3 graph and value fixture provenance
         run: cargo test -p vize_s2_to_s3 --test lean_reference_fixture
       - name: Run TS-28 compiled backend trace

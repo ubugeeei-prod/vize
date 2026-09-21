@@ -204,6 +204,12 @@ effect-grouping preserves dependency edges, keyed-`v-for` IVM linearity —
 proved against the P3-4 semantics as they stabilize. _Accept:_ theorems in
 CI-lenient lane; failures block S3-semantics changes, not unrelated PRs.
 
+_Lattice slice 2026-09-21:_ the [P3-15 record](./phase-3-records/p3-15.md)
+proves the lattice order, least-upper-bound join, declarative-spec minimality
+and classification monotonicity in Lean, audits every theorem's foundations
+during `lake build`, and checks the Rust evaluator's 400-row fact page against
+the proved classifier. Effect-grouping and IVM linearity theorems remain open.
+
 **P3-16 Phase exit.**
 
 _First slice 2026-09-14:_ see
