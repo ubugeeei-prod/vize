@@ -210,6 +210,11 @@ three backends; Vapor compile bench improves (it stops paying for VDOM).
   (cross-file via the component graph), app-level facts (route trees, typed
   route params, `definePageMeta`), and composed HTML-conformance checks.
 
+**Early re-cut (2026-09-21):** phase 4 was re-cut into full contracts while
+phase 3 is still live, because almost all of it reads only S2; 35 of its 39
+tasks are startable now and 4 are gated on named phase-3 tasks
+([phase-4.md](./plan/phase-4.md)). The phase still exits after phase 3.
+
 **Exit gate:** `vize check` corpus parity; corpus lint-agreement; Glyph's four
 corpus properties (idempotence, parse-preservation, lint-agreement, pug) hold
 with an empty waiver ledger; the rule-parity matrix shows SFC/JSX convergence

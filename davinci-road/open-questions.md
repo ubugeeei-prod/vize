@@ -40,32 +40,67 @@
 
 ## Orphan analyses: productize or cut
 
-`RaceConditionTracker` and `ProvideInjectTracker` have zero consumers;
-`EffectGraph` has one (Doctor). The semantic-engine plan gives each a product
-(async-race rules, cross-file provide/inject pairing, Vapor effect grouping) —
-but each needs corpus evidence that the analysis is sound at scale before it
-ships as a rule. Any product that doesn't earn corpus trust gets its fact group
-demand-gated to zero cost rather than deleted, per charter #5.
+`RaceConditionTracker` and `ProvideInjectTracker` had zero consumers at the
+2026-08-13 audit; `EffectGraph` had one (Doctor). Every product that doesn't
+earn corpus trust gets its fact group demand-gated to zero cost rather than
+deleted, per charter #5.
+
+**Re-measured at the phase-4 re-cut (2026-09-21):** provide/inject and race
+analysis are now read by `vize_croquis_cf`'s cross-file rules, which `vize lint`
+and Doctor enable; `EffectGraph` feeds Doctor and the croquis_cf complexity
+report. The zero-consumer products are now `Croquis.hoists`, `Croquis.symbols`,
+`Croquis.used_directives` and the `reactivity_overlay` family
+([consumption matrix](./plan/croquis-consumption.md)). Owners:
+[P4-4a](./plan/phase-4-tasks.md#p4-4a--orphan-verdicts-for-non-effect-products)
+rules on those and on the corpus soundness of the provide/inject and race rules;
+[P4-4b](./plan/phase-4-tasks.md#p4-4b--effect-graph-verdict) owns `EffectGraph`
+once P3-6 gives it a Vapor consumer.
 
 ## Rule-corpus fairness measurement
 
-Charter #7 needs a metric: of Patina's 345 rule files, which are neutral-core
-(should run on SFC + JSX + external dialects), which are Vue-dialect-bound
-(`v-model` modifiers), and which are container-bound (SFC block structure)?
-The phase-0 rule-parity matrix defines the classification; phase 4's exit gate
-consumes it. Open: whether the classification is declared per rule (a
-`dialect_scope` field) or derived from the fact groups the rule demands — with
-static demand declarations (charter #8) the derived form is nearly free, so
-lean derived unless rule authors need overrides.
+Charter #7 needs a metric: which Patina rules are neutral-core (should run on
+SFC + JSX + external dialects), which are Vue-dialect-bound (`v-model`
+modifiers), and which are container-bound (SFC block structure)? The phase-0
+rule-parity matrix defines the classification (today 248 rules: 92 / 133 / 23);
+phase 4's exit gate consumes it.
+
+**Recommendation (phase-4 re-cut, 2026-09-21):** derive the class from the
+fact groups and op kinds a rule demands (static demand declarations, charter #8,
+make it nearly free) and keep the existing
+[`rule-parity-overrides.toml`](./plan/rule-parity-overrides.toml) sidecar as the
+only override path, each override carrying a reason; no per-rule
+`dialect_scope` field. Owner:
+[P4-8a](./plan/phase-4-tasks-later.md#p4-8a--neutral-core-rule-wave) confirms or
+amends this in its first installment, after which this entry becomes a stub.
 
 ## Complexity metric definition
 
 Which metric family for template CFGs — cyclomatic, cognitive, or both — and
 how cross-file attribution works (does a complex child component tax its
-parents, or only its own score?), plus thresholds and rule presentation.
-Decide with corpus distributions in hand (phase 4), not a priori; the existing
-`vize_curator` complexity module and cross-file-complexity guide are the
-starting data.
+parents, or only its own score?), plus thresholds and rule presentation. The
+existing scorer (`vize_croquis_cf/src/rules/complexity.rs`) counts `v-if`s,
+`v-for`s, components and logical operators scanned from expression text; it has
+no CFG and sums a whole project.
+
+**Recommendation (phase-4 re-cut, 2026-09-21):** both families, computed per
+component over S2 regions. **Own cyclomatic** = 1 + decisions (each `ui.if`
+branch beyond the first, one more for an `ui.if` without `v-else`, each
+`ui.for`, each `&&`/`||`/`??`/`?:` in a retained expression AST; opaque
+expressions add nothing and are counted as unknown). **Own cognitive** follows
+the SonarSource model: +1 per structure, plus the nesting depth of nested
+`ui.if`/`ui.for`/scoped-slot regions, +1 per run of like logical operators.
+**Attribution:** a child never taxes its parent's _own_ score — the lint rule
+fires on own complexity only, so composing components never makes a parent
+look worse — while a separate **rendered** complexity (own + Σ own over the
+distinct child components reachable in the render tree, strongly connected
+components collapsed) is the cross-file number charter #17 asks for and drives
+Doctor hotspots. **Presentation:** one warning-severity rule with tier `exact`;
+**thresholds are deferred to corpus data**: the default is pinned at the
+measured corpus p95 by
+[P4-9a](./plan/phase-4-tasks-later.md#p4-9a--template-cfg-complexity-facts-and-metric-spec),
+which writes the metric spec and confirms or amends this recommendation;
+[P4-9b](./plan/phase-4-tasks-later.md#p4-9b--cross-file-complexity-rule-and-doctor-finding)
+ships the rule and the Doctor finding.
 
 ## `no_std` boundary reality check
 
@@ -93,7 +128,14 @@ SDK; how rule output caching keys include the plugin's own version/content;
 and whether the same SDK surface doubles for the WASM tier (one authoring
 model, two runtimes). ESLint-compatibility (running existing eslint-plugin-vue
 rules unchanged) is explicitly _not_ the goal — the SDK targets the
-neutral-core view. Needs a phase-4/5 spike with a real custom-rule case.
+neutral-core view.
+
+**Deferred to its spike (phase-4 re-cut, 2026-09-21):** the decision is the
+deliverable of [P4-16](./plan/phase-4-tasks-last.md#p4-16--js-plugin-sdk-spike),
+which must measure it with a real custom rule rather than argue it. The
+working hypothesis the spike tests first: serialized visit batches over sync
+napi with demands declared as a static list in the plugin manifest, because
+charter #29 already requires JS to run outside the fused walks in batched passes.
 
 ## App-level fact provider contract
 
@@ -101,5 +143,24 @@ Route trees, `definePageMeta`, i18n catalogs: in-tree providers cover Vue
 Router and Nuxt (Vue-family scope), but the provider interface should be the
 same one external ecosystems would use. Open: is a convention provider a third
 kind of first-party plug-in (like input dialects), or a consumer of the
-cross-file fact API with write access? Decide when phase 4 generalizes
-Maestro's ecosystem services.
+cross-file fact API with write access?
+
+**Recommendation (phase-4 re-cut, 2026-09-21):** neither a new plug-in kind nor
+general write access. A provider is a **project-level population pass in the
+fact demand graph**: it declares its ambient inputs (the files, globs and
+config it reads — exactly what P5-1's key manifests need) and **exclusively
+owns** its output groups (single writer, enforced by the registry), and
+consumers demand those groups like any other fact. In-tree providers compile in
+behind cargo features (charter #15's first tier); external providers use the
+same interface through charter #29's "custom fact providers" hook family.
+Owner: [P4-10a](./plan/phase-4-tasks-last.md#p4-10a--provider-contract-and-vue-router-provider)
+lands the contract with the Vue Router provider and turns this entry into a stub.
+
+## Communications (charter #45) and the Vue Fes Japan 2026 presentation
+
+Charter #45 keeps Davinci repository-internal "until the maintainer chooses".
+On 2026-09-21 the maintainer set a public presentation target — Vue Fes Japan
+2026 on 2026-10-24 — and a completion target of 2026-09-23, which is why
+[phase 4 was re-cut early](./plan/phase-4.md). This entry records what changed,
+as the charter's revisit rule requires; amending row #45 itself is the
+maintainer's decision (P6-12 was its planned decision point).

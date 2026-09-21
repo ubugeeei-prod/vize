@@ -293,7 +293,7 @@ test("P2-11 records current installments without presenting stale remainders", (
 test("suite registry debt and the TS-52 transport decision stay resolved", () => {
   const maximum = suiteMaximum(text.suites);
   const p2Suites = requiredLine(text.suites, /^\| P2\s+\|[^\n]+$/mu, "P2 suite map row");
-  assert.equal(maximum, 52);
+  assert.equal(maximum, 53);
   assertSuiteRange(text.readme, maximum);
   assert.match(text.suites, /^\| TS-25 \|[^\n]*P2-9[^\n]*P2-11[^\n]*P2-16/mu);
   assert.match(text.suites, /^\| TS-52 \|[^\n]*Spolvero feed payload/mu);
@@ -330,8 +330,8 @@ test("validator rejects a stale task count or suite range", () => {
     /stale task count: expected 22 of 22/,
   );
   assert.throws(
-    () => assertSuiteRange(text.readme.replace("TS-1..52", "TS-1..51"), maximum),
-    /stale suite range: expected TS-1\.\.52/,
+    () => assertSuiteRange(text.readme.replace("TS-1..53", "TS-1..52"), maximum),
+    /stale suite range: expected TS-1\.\.53/,
   );
 });
 
