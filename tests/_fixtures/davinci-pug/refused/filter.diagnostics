@@ -1,0 +1,1 @@
+6..15 Semantic ":markdown" — pug `:filter` is not supported in Vue templates: filters run at build time

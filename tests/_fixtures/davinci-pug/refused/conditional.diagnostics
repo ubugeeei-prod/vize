@@ -1,0 +1,2 @@
+0..7 Semantic "if user" — pug `if/unless/else` is not supported in Vue templates: it runs JavaScript at build time; use `v-if` / `v-for`
+15..19 Semantic "else" — pug `if/unless/else` is not supported in Vue templates: it runs JavaScript at build time; use `v-if` / `v-for`

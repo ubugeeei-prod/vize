@@ -1,0 +1,2 @@
+0..11 Semantic "- var n = 0" — pug unbuffered code (`- …`) is not supported in Vue templates: it runs JavaScript at build time
+12..23 Semantic "while n < 3" — pug `while` is not supported in Vue templates: it runs JavaScript at build time; use `v-if` / `v-for`

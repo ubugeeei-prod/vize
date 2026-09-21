@@ -1,0 +1,1 @@
+0..12 Semantic "doctype html" — pug `doctype` is not supported in Vue templates: a Vue template renders a fragment, not a document

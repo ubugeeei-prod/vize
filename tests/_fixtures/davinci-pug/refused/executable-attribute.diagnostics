@@ -1,0 +1,2 @@
+7..10 Semantic "url" — pug attribute `href` has an executable value; Vue templates accept only constant pug attribute values (use `:href` for bindings)
+17..29 Semantic "\"x\" + suffix" — pug attribute `title` has an executable value; Vue templates accept only constant pug attribute values (use `:title` for bindings)

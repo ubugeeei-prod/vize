@@ -64,6 +64,7 @@
 extern crate alloc;
 
 pub mod parse;
+pub mod pug;
 pub mod render;
 pub mod surface;
 

@@ -48,6 +48,7 @@ mod html;
 mod if_keys;
 mod leaf;
 mod once_memo;
+pub mod pug;
 mod show;
 mod slot;
 mod structural;

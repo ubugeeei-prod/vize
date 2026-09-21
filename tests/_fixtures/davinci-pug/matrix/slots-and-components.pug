@@ -1,0 +1,7 @@
+my-list(:items="rows")
+  template(#header)
+    h2 Rows
+  template(#item="{ row }")
+    my-row(:row="row" v-bind="$attrs")
+  template(v-slot:footer)
+    small end

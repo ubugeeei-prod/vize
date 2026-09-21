@@ -1,0 +1,1 @@
+6..33 Semantic "include partials/header.pug" — pug `include` is not supported in Vue templates: it links other pug files at build time

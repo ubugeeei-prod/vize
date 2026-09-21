@@ -28,6 +28,8 @@ vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }
 vize_atelier_ssr = { workspace = true }
 vize_atelier_vapor = { workspace = true }
+# The Davinci pug dialect: `<template lang="pug">` desugars through S1.
+vize_s1_to_s2 = { workspace = true }
 
 # OXC for JavaScript/TypeScript parsing and transformation
 oxc_parser = { workspace = true }

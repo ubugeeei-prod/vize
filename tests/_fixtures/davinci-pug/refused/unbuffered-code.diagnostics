@@ -1,0 +1,1 @@
+0..19 Semantic "- const title = 'x'" — pug unbuffered code (`- …`) is not supported in Vue templates: it runs JavaScript at build time

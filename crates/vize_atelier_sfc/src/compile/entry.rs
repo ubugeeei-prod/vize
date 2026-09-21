@@ -1,3 +1,4 @@
+mod pug;
 mod root_match;
 use crate::types::{
     SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,

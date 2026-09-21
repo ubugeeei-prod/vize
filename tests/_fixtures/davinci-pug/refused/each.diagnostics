@@ -1,0 +1,1 @@
+5..23 Semantic "each item in items" — pug `each/for` is not supported in Vue templates: it runs JavaScript at build time; use `v-if` / `v-for`

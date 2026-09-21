@@ -36,6 +36,7 @@ pub(super) fn compile_sfc_inner(
             .is_some_and(|options| options.experimental_in_tag_comments),
         template_syntax,
     )?;
+    let descriptor = super::pug::prepare_pug_template(&descriptor)?;
     super::super::compile_sfc_inner(
         &descriptor,
         options,

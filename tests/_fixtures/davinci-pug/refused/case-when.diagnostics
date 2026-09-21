@@ -1,0 +1,1 @@
+0..9 Semantic "case kind" — pug `case` is not supported in Vue templates: it runs JavaScript at build time; use `v-if` / `v-for`

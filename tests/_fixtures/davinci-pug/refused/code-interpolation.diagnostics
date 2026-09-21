@@ -1,0 +1,2 @@
+8..15 Semantic "#{name}" — pug `#{…}` / `!{…}` interpolation is not supported in Vue templates: use `{{ … }}`
+21..27 Semantic "!{raw}" — pug `#{…}` / `!{…}` interpolation is not supported in Vue templates: use `{{ … }}`

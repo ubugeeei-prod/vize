@@ -1,0 +1,2 @@
+0..18 Semantic "extends layout.pug" — pug `extends` is not supported in Vue templates: it links other pug files at build time
+19..32 Semantic "block content" — pug `block` is not supported in Vue templates: it links other pug files at build time
