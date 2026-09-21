@@ -49,12 +49,14 @@ use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
 
 mod expr;
+pub mod group;
 mod print;
 mod regions;
 mod source;
 
+pub use group::{TEMPLATE_FACTS, TemplateComplexityGroup};
 pub use print::print_facts;
-pub use source::{COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE, run_template_range};
+pub use source::{COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE, template_facts};
 
 /// The pass name in pipeline strings and folio pages.
 pub const NAME: &str = "template-complexity";

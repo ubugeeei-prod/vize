@@ -187,7 +187,7 @@
 
 **Non-goals:** cross-file attribution and the rule (P4-9b); script-side complexity.
 
-**Progress 2026-09-22:** all three steps landed — the [metric spec](./complexity-metrics.md), the `template-complexity` pass fused beside `hoist-static`, TS-34 exact over the matrix plane, the CI shard and the full corpus (40,724 templates), TS-17 snapshots, the TS-10 probe (3 allocs) and thresholds cyclomatic > 11 / cognitive > 16. Open: the `ComplexityFacts` fact-group registration on P4-1a's API — see the [P4-9a record](./phase-4-records/p4-9a.md).
+**Landed 2026-09-22:** the [metric spec](./complexity-metrics.md) and the `template-complexity` pass, fused beside `hoist-static` and registered as the `TemplateComplexityGroup` fact group on P4-1a's API. TS-34 agrees exactly over the matrix plane, the CI shard and the full corpus (40,724 templates). Also landed: the TS-17 snapshots, the TS-10 probe (3 allocs), the TS-35 demand test, and the thresholds cyclomatic > 11 / cognitive > 16. See the [P4-9a record](./phase-4-records/p4-9a.md).
 
 ## P4-9b — Cross-file complexity rule and Doctor finding
 
@@ -208,4 +208,4 @@
 
 **Non-goals:** error severity for complexity; project-wide bands beyond the existing report.
 
-**Progress 2026-09-22:** both steps landed. The `vue/max-template-complexity` rule judges own complexity. Rendered complexity counts each component in the render tree once (shared children once, recursion once). The Doctor hotspot fires at the rendered p95 (cyclomatic > 106 or cognitive > 139). The curator shows a per-component breakdown, and `ComplexityInput` is fed from the facts. Still open: TS-35 on the P4-1a fact API, and the P4-3b and P4-6a dependencies. See the [P4-9b record](./phase-4-records/p4-9b.md).
+**Progress 2026-09-22:** both steps landed. The `vue/max-template-complexity` rule judges own complexity. Rendered complexity counts each component in the render tree once (shared children once, recursion once). The Doctor hotspot fires at the rendered p95 (cyclomatic > 106 or cognitive > 139). The curator shows a per-component breakdown, and `ComplexityInput` is fed from the facts. Both consumers read the facts under declared demands (TS-35). Still open: the P4-3b and P4-6a dependencies. See the [P4-9b record](./phase-4-records/p4-9b.md).

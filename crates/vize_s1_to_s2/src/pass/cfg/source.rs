@@ -5,12 +5,14 @@
 //! Lint (`vue/max-template-complexity`) and cross-file analysis
 //! (`vize_croquis_cf`) both start from a file and a template byte range;
 //! this is the one place that turns that pair into facts, so neither
-//! consumer re-derives the S1 → S2 → pass pipeline.
+//! consumer re-derives the S1 → S2 → pass pipeline. The facts are read
+//! through the P4-1a fact API ([`super::group`]) under the consumer's own
+//! declared demand.
 
-use vize_s0::{Allocator, SourceRoot};
+use vize_davinci::fact::{FactConsumer, FactManager};
 
 use super::ComplexityFacts;
-use crate::lower::lower_source_block;
+use super::group::{TEMPLATE_FACTS, TemplateComplexityGroup};
 
 /// Default warning threshold on own cyclomatic complexity: a component
 /// warns when its cyclomatic complexity is **strictly above** this value
@@ -21,20 +23,34 @@ pub const CYCLOMATIC_WARN_ABOVE: u32 = 11;
 /// (the full-corpus p95, `complexity-metrics.md`).
 pub const COGNITIVE_WARN_ABOVE: u32 = 16;
 
-/// Facts of the template occupying `source[start..end]`, spans relative to
-/// `source`; `None` when the range is not a valid slice of `source`.
+/// Consumer `C`'s read of the facts of the template occupying
+/// `source[start..end]`, spans relative to `source`; `None` when the range
+/// is not a valid slice of `source`.
 ///
-/// Parses and lowers the block into a private arena, runs the pass, and
-/// returns the owned facts (the arena is dropped before returning).
+/// Computes the [`TemplateComplexityGroup`] for the block through a fact
+/// manager, reads it through `C`'s declared view, and places the owned
+/// facts in the file.
+///
+/// # Panics
+///
+/// Panics when `C` demands a group the template registry does not compute,
+/// or does not declare the complexity group (debug builds): a consumer
+/// declaration bug, never an input property.
 #[must_use]
-pub fn run_template_range(source: &str, start: u32, end: u32) -> Option<ComplexityFacts> {
+pub fn template_facts<C: FactConsumer>(
+    source: &str,
+    start: u32,
+    end: u32,
+) -> Option<ComplexityFacts> {
     let template = source.get(start as usize..end as usize)?;
-    let root = SourceRoot::new(source).ok()?;
-    let block = root.block(template, start).ok()?;
-    let allocator = Allocator::new();
-    let (tree, errors) = vize_s1::parse(&allocator, template);
-    let lowered = lower_source_block(&allocator, &tree, &errors, block);
-    Some(super::run(&lowered))
+    let mut manager = FactManager::new(&TEMPLATE_FACTS, template);
+    let view = manager
+        .prepare::<C>()
+        .expect("the template registry computes every group a template consumer demands");
+    let table = view
+        .get::<TemplateComplexityGroup>()
+        .expect("a template-complexity consumer declares the complexity group");
+    table.get(&()).cloned().map(|facts| facts.shifted(start))
 }
 
 impl ComplexityFacts {
@@ -47,7 +63,15 @@ impl ComplexityFacts {
 
 #[cfg(test)]
 mod tests {
-    use super::{COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE, run_template_range};
+    use super::super::group::TemplateComplexityGroup;
+    use super::{COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE, template_facts};
+    use vize_davinci::fact::{Demand, FactConsumer, FactGroup};
+
+    struct Probe;
+    impl FactConsumer for Probe {
+        const NAME: &'static str = "cfg-source-probe";
+        const DEMAND: Demand = Demand::NONE.with(TemplateComplexityGroup::ID);
+    }
 
     #[test]
     fn the_thresholds_are_the_ones_the_spec_pins() {
@@ -63,7 +87,7 @@ mod tests {
         let source = "<script>x</script>\n<template><p v-if=\"a\">x</p></template>";
         let start = source.find("<template>").expect("template") + "<template>".len();
         let end = source.find("</template>").expect("close");
-        let facts = run_template_range(
+        let facts = template_facts::<Probe>(
             source,
             u32::try_from(start).expect("small"),
             u32::try_from(end).expect("small"),
@@ -77,6 +101,6 @@ mod tests {
 
     #[test]
     fn a_range_outside_the_source_is_refused() {
-        assert_eq!(run_template_range("<p/>", 2, 9), None);
+        assert_eq!(template_facts::<Probe>("<p/>", 2, 9), None);
     }
 }

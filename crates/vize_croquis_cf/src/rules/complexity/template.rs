@@ -3,7 +3,17 @@
 //! say where the complexity comes from without re-reading the file.
 
 use vize_croquis::sfc::{SfcParseOptions, parse_sfc};
-use vize_s1_to_s2::pass::cfg::{self, ComplexityFacts, DecisionKind};
+use vize_davinci::fact::{Demand, FactConsumer, FactGroup};
+use vize_s1_to_s2::pass::cfg::{self, ComplexityFacts, DecisionKind, TemplateComplexityGroup};
+
+/// The cross-file analyzer as a fact consumer: it reads the template
+/// complexity group and nothing else (TS-35).
+struct CrossFileTemplateFacts;
+
+impl FactConsumer for CrossFileTemplateFacts {
+    const NAME: &'static str = "croquis-cf/template-complexity";
+    const DEMAND: Demand = Demand::NONE.with(TemplateComplexityGroup::ID);
+}
 
 /// Own cyclomatic complexity warns strictly above this (corpus p95).
 pub const TEMPLATE_CYCLOMATIC_WARN_ABOVE: u32 = cfg::CYCLOMATIC_WARN_ABOVE;
@@ -70,7 +80,7 @@ impl TemplateComplexity {
         }
         let start = u32::try_from(template.loc.start).ok()?;
         let end = u32::try_from(template.loc.end).ok()?;
-        let facts = cfg::run_template_range(source, start, end)?;
+        let facts = cfg::template_facts::<CrossFileTemplateFacts>(source, start, end)?;
         Some(Self::from_facts(&facts, source))
     }
 

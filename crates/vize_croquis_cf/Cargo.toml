@@ -13,6 +13,8 @@ vize_carton.workspace = true
 vize_croquis.workspace = true
 # The S2 template-complexity facts behind the cross-file complexity report.
 vize_s1_to_s2.workspace = true
+# The P4-1a fact API the template-complexity consumers declare demands on.
+vize_davinci.workspace = true
 rustc-hash.workspace = true
 oxc_allocator.workspace = true
 oxc_ast.workspace = true

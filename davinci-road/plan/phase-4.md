@@ -94,7 +94,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [ ] [P4-8a](./phase-4-tasks-later.md#p4-8a--neutral-core-rule-wave) Neutral-core rule wave — lane F · startable now
 - [ ] [P4-8b](./phase-4-tasks-later.md#p4-8b--dialect-bound-rule-wave) Dialect-bound rule wave — lane F · startable now
 - [ ] [P4-8c](./phase-4-tasks-later.md#p4-8c--container-bound-wave-and-legacy-visitor-retirement) Container-bound wave and legacy visitor retirement — lane F · startable now
-- [ ] [P4-9a](./phase-4-tasks-later.md#p4-9a--template-cfg-complexity-facts-and-metric-spec) Template CFG complexity facts and metric spec — lane G · startable now
+- [x] [P4-9a](./phase-4-tasks-later.md#p4-9a--template-cfg-complexity-facts-and-metric-spec) Template CFG complexity facts and metric spec — lane G · startable now
 - [ ] [P4-9b](./phase-4-tasks-later.md#p4-9b--cross-file-complexity-rule-and-doctor-finding) Cross-file complexity rule and Doctor finding — lane G · startable now
 - [ ] [P4-10a](./phase-4-tasks-last.md#p4-10a--provider-contract-and-vue-router-provider) Provider contract and Vue Router provider — lane H · startable now
 - [ ] [P4-10b](./phase-4-tasks-last.md#p4-10b--nuxt-provider-and-projected-route-types) Nuxt provider and projected route types — lane H · startable now (behind P4-5b)

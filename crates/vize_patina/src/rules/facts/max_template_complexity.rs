@@ -5,8 +5,9 @@
 //! or cognitive complexity above 16, the full-corpus p95 recorded in
 //! `davinci-road/plan/complexity-metrics.md`.
 //!
-//! The facts come from the S2 `template-complexity` pass
-//! (`vize_s1_to_s2::pass::cfg`) over the lowered template — `v-if` /
+//! The facts come from the S2 `template-complexity` fact group
+//! (`vize_s1_to_s2::pass::cfg`, read under this rule's declared demand)
+//! over the lowered template — `v-if` /
 //! `v-else-if` / `v-else` branches, `v-for` loops, scoped-slot nesting and
 //! the logical and conditional operators of every evaluated expression —
 //! never from text scanning. **Tier `exact`**: the rule reports a property
@@ -42,8 +43,10 @@
 //! </template>
 //! ```
 
+use vize_davinci::fact::{Demand, FactConsumer, FactGroup};
 use vize_s1_to_s2::pass::cfg::{
-    COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE, Contribution, run_template_range,
+    COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE, Contribution, TemplateComplexityGroup,
+    template_facts,
 };
 
 use crate::context::LintContext;
@@ -64,6 +67,12 @@ const MAX_LABELS: usize = 5;
 /// Warn on a component whose own template complexity exceeds the thresholds.
 #[derive(Default)]
 pub struct MaxTemplateComplexity;
+
+/// The rule reads exactly one fact group (TS-35: declared, never inferred).
+impl FactConsumer for MaxTemplateComplexity {
+    const NAME: &'static str = "vue/max-template-complexity";
+    const DEMAND: Demand = Demand::NONE.with(TemplateComplexityGroup::ID);
+}
 
 impl Rule for MaxTemplateComplexity {
     fn meta(&self) -> &'static RuleMeta {
@@ -86,7 +95,7 @@ impl Rule for MaxTemplateComplexity {
         ) else {
             return;
         };
-        let Some(facts) = run_template_range(ctx.source, start, end) else {
+        let Some(facts) = template_facts::<Self>(ctx.source, start, end) else {
             return;
         };
         if !facts.exceeds_default_thresholds() {
