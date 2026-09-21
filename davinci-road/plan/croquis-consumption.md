@@ -363,7 +363,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `parse_script_with_options`                  | `vize_patina`       |     1 |     1 |
 | `parse_script_with_options_and_jsx`          | `vize_atelier_sfc`  |     1 |     1 |
 | `parse_sfc`                                  | `vize_atelier_sfc`  |     1 |     1 |
-| `parse_sfc`                                  | `vize_musea`        |     1 |     1 |
+| `parse_sfc_without_css_vars`                 | `vize_musea`        |     1 |     1 |
 | `parse_v_for_expression`                     | `vize_patina`       |     1 |     1 |
 | `prod_scoped_v_bind_name`                    | `vize_atelier_sfc`  |     1 |     1 |
 | `runtime_erased_macro_names`                 | `vize_atelier_sfc`  |     3 |     5 |
