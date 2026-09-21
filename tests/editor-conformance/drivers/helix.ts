@@ -29,6 +29,31 @@ function version(): string {
   return /^helix (\S+)/mu.exec(output)?.[1] ?? "unknown";
 }
 
+/** Terminal output without its escape sequences (CSI, OSC, charset) and control bytes. */
+function visibleText(raw: string): string {
+  let text = "";
+  for (let at = 0; at < raw.length; at += 1) {
+    const code = raw.charCodeAt(at);
+    if (code === 0x1b) {
+      const kind = raw[at + 1];
+      at += 1;
+      if (kind === "[") {
+        do at += 1;
+        while (at < raw.length && (raw.charCodeAt(at) < 0x40 || raw.charCodeAt(at) > 0x7e));
+      } else if (kind === "]") {
+        do at += 1;
+        while (at < raw.length && raw.charCodeAt(at) !== 0x07 && raw.charCodeAt(at) !== 0x1b);
+      } else if (kind === "(" || kind === ")") {
+        at += 1;
+      }
+      text += " ";
+    } else if (code >= 0x20 || code === 0x0a) {
+      text += raw[at];
+    }
+  }
+  return text.replace(/ {2,}/gu, " ");
+}
+
 /** The packaged languages.toml with `formatting = true` added to the server config table. */
 function userLanguages(): string {
   const packaged = fs.readFileSync(
@@ -170,10 +195,9 @@ async function run(context: DriverContext): Promise<void> {
   } catch (error) {
     editor.kill("SIGKILL");
     // What Helix last drew, with terminal control sequences stripped.
-    const drawn = (fs.existsSync(screen) ? fs.readFileSync(screen, "utf8") : "")
-      .replace(/\x1b\[[0-9;?<>=]*[ -/]*[@-~]|\x1b[()=>][0-9A-Za-z]?|\x1b\][^\x07]*\x07/gu, " ")
-      .replace(/ {2,}/gu, " ")
-      .slice(-3000);
+    const drawn = visibleText(fs.existsSync(screen) ? fs.readFileSync(screen, "utf8") : "").slice(
+      -3000,
+    );
     const tail = readTranscript(context.transcript)
       .slice(-5)
       .map((entry) => JSON.stringify(entry).slice(0, 300));

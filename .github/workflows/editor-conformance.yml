@@ -47,7 +47,12 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      # The runner's rustup installs the toolchain pinned in rust-toolchain.toml.
+      - name: Install the repository Rust toolchain
+        run: |
+          rustup --version
+          rustup toolchain install || rustup show active-toolchain
+          cargo --version
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -128,9 +133,11 @@ jobs:
           "${RUNNER_TEMP}/helix/hx" --version
           python3 --version
 
-      - name: Setup Rust for VS Code packaging
+      - name: Install the repository Rust toolchain for VS Code packaging
         if: matrix.client == 'vscode'
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        run: |
+          rustup toolchain install || rustup show active-toolchain
+          cargo --version
       - name: Setup Rust Script for VS Code packaging
         if: matrix.client == 'vscode'
         uses: ./.github/actions/setup-rust-script
