@@ -2,14 +2,14 @@
 use super::{
     offset_to_position, offset_to_position_str, position_to_offset, position_to_offset_str,
 };
-use ropey::Rope;
+use crate::document::DocumentText;
 use tower_lsp::lsp_types::Position;
 
 #[test]
 fn rope_positions_reject_line_terminators_and_use_utf16_ranges() {
     for ending in ["\n", "\r", "\r\n"] {
         let source = vize_s0::cstr!("a😀{ending}b");
-        let rope = Rope::from_str(&source);
+        let rope = DocumentText::new(&source);
         assert_eq!(position_to_offset(&rope, Position::new(0, 3)), Some(5));
         assert_eq!(position_to_offset(&rope, Position::new(0, 2)), None);
         assert_eq!(position_to_offset(&rope, Position::new(0, 4)), None);
@@ -27,7 +27,7 @@ fn rope_positions_reject_line_terminators_and_use_utf16_ranges() {
 #[test]
 fn rope_utf16_tree_measures_cross_many_chunks() {
     let source = vize_s0::cstr!("prefix\n{}x\n", "a😀".repeat(8192));
-    let rope = Rope::from_str(&source);
+    let rope = DocumentText::new(&source);
     let end = source.len() - 1;
     assert_eq!(
         offset_to_position(&rope, end),
@@ -45,7 +45,7 @@ fn rope_utf16_tree_measures_cross_many_chunks() {
 
 #[test]
 fn test_offset_to_position() {
-    let rope = Rope::from_str("hello\nworld\n");
+    let rope = DocumentText::new("hello\nworld\n");
 
     // Start of file
     assert_eq!(
@@ -86,7 +86,7 @@ fn test_offset_to_position() {
 
 #[test]
 fn test_position_to_offset() {
-    let rope = Rope::from_str("hello\nworld\n");
+    let rope = DocumentText::new("hello\nworld\n");
 
     // Start of file
     assert_eq!(
@@ -127,7 +127,7 @@ fn test_position_to_offset() {
 
 #[test]
 fn test_offset_to_position_counts_utf16_code_units() {
-    let rope = Rope::from_str("a😀b\nc");
+    let rope = DocumentText::new("a😀b\nc");
 
     assert_eq!(
         offset_to_position(&rope, "a😀".len()),
@@ -147,7 +147,7 @@ fn test_offset_to_position_counts_utf16_code_units() {
 
 #[test]
 fn test_position_to_offset_counts_utf16_code_units() {
-    let rope = Rope::from_str("a😀b\nc");
+    let rope = DocumentText::new("a😀b\nc");
 
     assert_eq!(
         position_to_offset(
@@ -173,7 +173,7 @@ fn test_position_to_offset_counts_utf16_code_units() {
 
 #[test]
 fn test_position_to_offset_rejects_utf16_surrogate_pair_interior() {
-    let rope = Rope::from_str("a😀b");
+    let rope = DocumentText::new("a😀b");
 
     assert_eq!(
         position_to_offset(

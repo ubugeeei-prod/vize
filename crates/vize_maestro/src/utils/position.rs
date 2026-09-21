@@ -1,10 +1,11 @@
 //! Position and range utilities for converting between LSP and internal representations.
 
-use ropey::{Rope, RopeSlice};
+use crate::document::DocumentText;
+use ropey::RopeSlice;
 use tower_lsp::lsp_types::{Position, Range};
 
 /// Convert a byte offset to an LSP Position (0-based line and character).
-pub fn offset_to_position(rope: &Rope, offset: usize) -> Option<Position> {
+pub fn offset_to_position(rope: &DocumentText, offset: usize) -> Option<Position> {
     if offset > rope.len_bytes() {
         return None;
     }
@@ -28,7 +29,7 @@ pub fn offset_to_position(rope: &Rope, offset: usize) -> Option<Position> {
 }
 
 /// Convert an LSP Position (0-based) to a byte offset.
-pub fn position_to_offset(rope: &Rope, position: Position) -> Option<usize> {
+pub fn position_to_offset(rope: &DocumentText, position: Position) -> Option<usize> {
     let line = position.line as usize;
     let character = position.character as usize;
 
@@ -107,7 +108,7 @@ pub fn position_to_offset_str(content: &str, line: u32, character: u32) -> usize
 }
 
 /// Get the range of a line (0-based line number).
-pub fn line_range(rope: &Rope, line: usize) -> Option<Range> {
+pub fn line_range(rope: &DocumentText, line: usize) -> Option<Range> {
     if line >= rope.len_lines() {
         return None;
     }

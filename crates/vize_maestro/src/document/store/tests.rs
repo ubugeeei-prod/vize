@@ -1,6 +1,8 @@
 use super::{Document, DocumentStore};
 use tower_lsp::lsp_types::{Position, Range, TextDocumentContentChangeEvent, Url};
 
+mod unicode_boundaries;
+
 fn test_uri() -> Url {
     Url::parse("file:///test.vue").unwrap()
 }

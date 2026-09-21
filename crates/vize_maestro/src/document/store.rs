@@ -5,9 +5,9 @@ use std::sync::OnceLock;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use dashmap::DashMap;
-use ropey::Rope;
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 
+use super::DocumentText;
 use crate::utils::position_to_offset;
 
 /// Source of [`Document::revision`] stamps.
@@ -31,7 +31,7 @@ pub struct Document {
     /// Document version
     pub version: i32,
     /// Document content stored as a rope for efficient editing
-    pub content: Rope,
+    pub content: DocumentText,
     /// Language ID (e.g., "vue", "typescript")
     pub language_id: String,
     /// Monotonic stamp for the exact content this document currently holds.
@@ -53,7 +53,7 @@ impl Document {
         Self {
             uri,
             version,
-            content: Rope::from_str(&content),
+            content: DocumentText::new(&content),
             language_id,
             revision: next_revision(),
             petite_vue_detected: OnceLock::new(),
@@ -118,13 +118,12 @@ impl Document {
                         return;
                     }
 
-                    self.content.remove(start_char..end_char);
-                    self.content.insert(start_char, &change.text);
+                    self.content.replace(start_char..end_char, &change.text);
                 }
             }
         } else {
             // Full content replacement
-            self.content = Rope::from_str(&change.text);
+            self.content = DocumentText::new(&change.text);
         }
     }
 }
