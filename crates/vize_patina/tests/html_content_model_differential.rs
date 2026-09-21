@@ -254,7 +254,7 @@ fn truncated_verdicts_hold_in_every_faithful_context() {
         }
     }
     assert_eq!(violations, Vec::<String>::new());
-    assert_eq!((proven, refuted, undecided), (285, 594, 921));
+    assert_eq!((proven, refuted, undecided), (285, 595, 920));
 }
 
 #[test]

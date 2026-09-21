@@ -221,7 +221,14 @@ pub fn html_start_tag(chain: &Chain, subject: &Subject<'_>, parent_is_html: bool
             return Outcome::Diverge(V::RawTextContent, None);
         }
         "button" => step!(chain.in_scope("button", Row::Scope), V::ButtonAutoClosed),
-        "a" => step!(chain.anchor_after_marker(), V::FormattingAdopted),
+        // The adoption agency only restructures when the open `a` is also in
+        // scope; across a non-marker scope boundary (`select`, an SVG/MathML
+        // integration point) it aborts and the new `a` is inserted in place
+        // (the content-model family still reports the nested `a`).
+        "a" => step!(
+            scan_and(chain.anchor_after_marker(), chain.in_scope("a", Row::Scope)),
+            V::FormattingAdopted
+        ),
         "nobr" => step!(chain.in_scope("nobr", Row::Scope), V::FormattingAdopted),
         "select" | "input" => {
             step!(chain.in_scope("select", Row::Scope), V::SelectAutoClosed);
