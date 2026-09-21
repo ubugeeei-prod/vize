@@ -52,6 +52,7 @@ export function catalogEntries(): Array<[string, Entry]> {
     "i18n_cross_file.rs",
     "i18n_cross_file_reactivity.rs",
     "i18n_verifier.rs",
+    "i18n_canon.rs",
   ].flatMap((file) => parseEntries(read("crates", "vize_carton", "src", file)));
 }
 
@@ -77,7 +78,7 @@ export function legacyTranslations(): Map<string, Partial<Entry>> {
   return merged;
 }
 
-function rustFiles(dir: string): string[] {
+export function rustFiles(dir: string): string[] {
   return fs.readdirSync(path.join(repoRoot, dir), { withFileTypes: true }).flatMap((entry) => {
     const child = path.join(dir, entry.name);
     if (entry.isDirectory()) return rustFiles(child);
@@ -100,40 +101,6 @@ export function parseRules(): Map<string, string> {
   return rules;
 }
 
-/** Every string literal in `file` matching `pattern`, distinct, in order. */
-function literalCodes(file: string[], pattern: RegExp): string[] {
-  return [...new Set([...read(...file).matchAll(pattern)].map((match) => match[1]))];
-}
-
-/** The codes of the producers that describe rather than template messages:
- * croquis_cf's `CrossFileDiagnostic::code()`, S2's and S3's
- * `ViolationCode::as_str()`. */
-export function describedCodes(): Map<string, string[]> {
-  return new Map([
-    [
-      "croquis_cf",
-      literalCodes(
-        ["crates", "vize_croquis_cf", "src", "diagnostics", "rules.rs"],
-        /"(vize:croquis\/cf\/[a-z-]+)"/gu,
-      ),
-    ],
-    ["s2 verifier", literalCodes(["crates", "vize_s2", "src", "verify.rs"], /"(S2V\d{3})"/gu)],
-    ["s3 verifier", literalCodes(["crates", "vize_impeto", "src", "verify.rs"], /"(S3V\d{3})"/gu)],
-  ]);
-}
-
-/** Every described code without a description in the catalogue. */
-export function describedProblems(
-  codes: Map<string, string[]>,
-  entries: Array<[string, Entry]>,
-): string[] {
-  const table = new Map(entries);
-  return [...codes.values()]
-    .flat()
-    .filter((code) => !table.has(`${code}.description`))
-    .map((code) => `\`${code}\` has no description`);
-}
-
 /** Every rule without a description in some locale, and every catalogue
  * description whose English drifts from its rule or names no rule. */
 export function ruleProblems(
@@ -142,7 +109,8 @@ export function ruleProblems(
   entries: Array<[string, Entry]>,
 ): string[] {
   const problems: string[] = [];
-  const ruleKey = /^[a-z0-9-]+\/[a-z0-9-]+\.description$/u;
+  // Rule descriptions; `canon/` and `sfc/` descriptions belong to `describedCodes`.
+  const ruleKey = /^(?!canon\/|sfc\/)[a-z0-9-]+\/[a-z0-9-]+\.description$/u;
   const owned = new Map(entries.filter(([key]) => ruleKey.test(key)));
   for (const [key, entry] of owned) {
     const rule = key.slice(0, -".description".length);

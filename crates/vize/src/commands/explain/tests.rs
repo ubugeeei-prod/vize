@@ -46,8 +46,11 @@ fn the_generated_list_covers_every_code_once() {
             count(|subject| matches!(subject, Subject::Rule(_))),
             count(|subject| matches!(subject, Subject::Described(Described::CrossFile(_)))),
             count(|subject| matches!(subject, Subject::Described(Described::Verifier(_)))),
+            count(|subject| matches!(subject, Subject::Described(Described::TypeCheck(_)))),
+            count(|subject| matches!(subject, Subject::Described(Described::Sfc(_)))),
+            count(|subject| matches!(subject, Subject::Described(Described::TypeScript(_)))),
         ),
-        (56, 248, 60, 15)
+        (56, 248, 60, 16, 18, 14, 22)
     );
     let mut codes: Vec<&str> = all.iter().map(Subject::code).collect();
     codes.sort_unstable();

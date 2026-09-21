@@ -80,27 +80,44 @@ pub(crate) fn page(subject: &Subject, catalog: &LocaleCatalog, color: bool) -> S
         }
         Subject::Rule(rule) => rule_page(&mut out, paint, catalog, rule, color),
         Subject::Described(described) => {
-            let code = subject.code();
-            let kind = match described {
-                Described::CrossFile(_) => "explain.kind.cross_file",
-                Described::Verifier(_) => "explain.kind.verifier",
-            };
-            heading(&mut out, paint, code, &catalog.format(kind, &[]));
-            let description = catalog.format(&cstr!("{code}.description"), &[]);
-            line(&mut out, paint, &description);
-            if let Described::CrossFile(_) = described {
-                out.push('\n');
-                field(
-                    &mut out,
-                    paint,
-                    catalog,
-                    "explain.docs",
-                    rule_docs_path(code),
-                );
-            }
+            described_page(&mut out, paint, catalog, described, color);
         }
     }
     out
+}
+
+fn described_page(
+    out: &mut String,
+    paint: Paint,
+    catalog: &LocaleCatalog,
+    described: &Described,
+    color: bool,
+) {
+    let code = Subject::Described(*described).code();
+    let kind = match described {
+        Described::CrossFile(_) => "explain.kind.cross_file",
+        Described::Verifier(_) => "explain.kind.verifier",
+        Described::TypeCheck(_) => "explain.kind.type_check",
+        Described::Sfc(_) => "explain.kind.sfc",
+        Described::TypeScript(_) => "explain.kind.typescript",
+    };
+    heading(out, paint, code, &catalog.format(kind, &[]));
+    if let Described::TypeScript(_) = described {
+        line(out, paint, &catalog.format(&cstr!("{code}.message"), &[]));
+        if let Some(help) = catalog.text(&cstr!("{code}.help")) {
+            help_section(out, paint, catalog, help, color);
+        }
+        return;
+    }
+    line(
+        out,
+        paint,
+        &catalog.format(&cstr!("{code}.description"), &[]),
+    );
+    if let Described::CrossFile(_) = described {
+        out.push('\n');
+        field(out, paint, catalog, "explain.docs", rule_docs_path(code));
+    }
 }
 
 fn rule_page(out: &mut String, paint: Paint, catalog: &LocaleCatalog, rule: &Rule, color: bool) {

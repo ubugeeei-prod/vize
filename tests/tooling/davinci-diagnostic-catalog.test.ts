@@ -8,8 +8,6 @@ import {
   block,
   catalogEntries,
   compilerProblems,
-  describedCodes,
-  describedProblems,
   legacyTranslations,
   locales,
   parseCompilerCodes,
@@ -22,6 +20,12 @@ import {
   tableProblems,
   vocabularyProblems,
 } from "./davinci-diagnostic-catalog-sources.ts";
+import {
+  describedCodes,
+  describedProblems,
+  typeScriptCodes,
+  typeScriptProblems,
+} from "./davinci-diagnostic-catalog-producers.ts";
 
 // TS-53 (davinci-road/plan/test-suites.md), catalog half: every word the
 // Davinci diagnostic renderer prints around producer text, and every
@@ -75,14 +79,16 @@ test("TS-53: every one of the 248 lint rules has a description in every locale",
   assert.deepEqual(ruleProblems(rules, legacyTranslations(), catalogEntries()), []);
 });
 
-test("TS-53: every cross-file and stage-verifier code is described in every locale", () => {
+test("TS-53: every cross-file, verifier, type-checker and SFC code is described", () => {
   const codes = describedCodes();
   assert.deepEqual(
     [...codes].map(([producer, list]) => [producer, list.length]),
     [
       ["croquis_cf", 60],
       ["s2 verifier", 6],
-      ["s3 verifier", 9],
+      ["s3 verifier", 10],
+      ["canon", 18],
+      ["sfc", 14],
     ],
     "the parser reads every producer's code table",
   );
@@ -91,6 +97,15 @@ test("TS-53: every cross-file and stage-verifier code is described in every loca
   assert.deepEqual(describedProblems(codes, entries), [
     "`vize:croquis/cf/pinia-getter` has no description",
   ]);
+});
+
+test("TS-53: every TypeScript-numbered type-checker code has a message and help", () => {
+  const codes = typeScriptCodes();
+  assert.equal(codes.length, 22, "the parser reads every TypeErrorCode::help_key() arm");
+  const legacy = legacyTranslations();
+  assert.deepEqual(typeScriptProblems(codes, legacy), []);
+  const withoutZh = new Map(legacy).set("ts/2304.help", { ...legacy.get("ts/2304.help"), zh: "" });
+  assert.deepEqual(typeScriptProblems(codes, withoutZh), ["`ts/2304.help` is missing in zh"]);
 });
 
 test("TS-53: the catalog check fails on a removed, emptied or drifted entry", () => {
@@ -158,7 +173,7 @@ test("TS-53: `vize explain` has a committed page for every code in every locale"
   const expected = [
     ...[...compiler.codes.values()].sort(),
     ...[...parseRules().keys()].sort(),
-    ...[...describedCodes().values()].flat().sort(),
+    ...[...[...describedCodes().values()].flat(), ...typeScriptCodes()].sort(),
   ];
   for (const locale of locales) {
     const pages = read(

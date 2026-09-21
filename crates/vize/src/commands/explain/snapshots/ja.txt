@@ -3050,6 +3050,471 @@ S3 のスケジュール済みエッジが後方か自分自身を指してい�
 === S3V009
 S3V009 · ステージ検証器の不変条件
 S3 の op に不正なオペランドがあります
+=== S3V010
+S3V010 · ステージ検証器の不変条件
+S3 の配置記録を再導出できません。op を解決できないか、op の順序に反しているか、代替案や確定した選択が不正です
+=== canon/fallthrough-attrs
+canon/fallthrough-attrs · 型チェックの診断
+フォールスルー属性を取りこぼすおそれのある、ルート要素が複数のコンポーネントを報告する
+=== canon/invalid-export
+canon/invalid-export · 型チェックの診断
+バインディングをエクスポートできない `<script setup>` からのエクスポートを報告する
+=== canon/module-level-computed
+canon/module-level-computed · 型チェックの診断
+後始末されることのない、モジュールレベルの `computed` を報告する
+=== canon/module-level-inject
+canon/module-level-inject · 型チェックの診断
+`setup()` や `<script setup>` の外での `inject()` を報告する
+=== canon/module-level-lifecycle
+canon/module-level-lifecycle · 型チェックの診断
+`setup()` や `<script setup>` の外で登録されるライフサイクルフックを報告する
+=== canon/module-level-provide
+canon/module-level-provide · 型チェックの診断
+`setup()` や `<script setup>` の外での `provide()` を報告する
+=== canon/module-level-state
+canon/module-level-state · 型チェックの診断
+SSR ではリクエスト間で共有されてしまう、モジュールレベルのリアクティブな状態を報告する
+=== canon/module-level-watch
+canon/module-level-watch · 型チェックの診断
+後始末されることのない、モジュールレベルのウォッチャーを報告する
+=== canon/parse-error
+canon/parse-error · 型チェックの診断
+ブロックに分割できなかった SFC を報告する
+=== canon/patterned-template
+canon/patterned-template · 型チェックの診断
+テンプレート内の `v-match`・`v-when` のパターン構文の誤りを報告する
+=== canon/reactivity-loss
+canon/reactivity-loss · 型チェックの診断
+分割代入・値の取り出し・再代入によって値がリアクティブな元から切り離されることを報告する
+=== canon/script-parse-error
+canon/script-parse-error · 型チェックの診断
+解析できなかった script ブロックを報告する
+=== canon/template-parse-error
+canon/template-parse-error · 型チェックの診断
+型チェックのために解析できなかったテンプレートを報告する
+=== canon/undefined-binding
+canon/undefined-binding · 型チェックの診断
+`<script setup>` で宣言もインポートもされていない、テンプレート内の参照を報告する
+=== canon/untyped-emit
+canon/untyped-emit · 型チェックの診断
+ペイロードの型を指定せずに宣言されたイベントを報告する
+=== canon/untyped-emits
+canon/untyped-emits · 型チェックの診断
+型定義のない `defineEmits()` を報告する
+=== canon/untyped-prop
+canon/untyped-prop · 型チェックの診断
+型を指定せずに宣言された props を報告する
+=== canon/untyped-props
+canon/untyped-props · 型チェックの診断
+型定義のない `defineProps()` を報告する
+=== sfc/CSS_MODULE_COMPILE_ERROR
+sfc/CSS_MODULE_COMPILE_ERROR · SFC コンパイラーの診断
+`<style module>` ブロックのコンパイルに失敗しました
+=== sfc/DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE
+sfc/DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE · SFC コンパイラーの診断
+分割代入した props のデフォルト値が、宣言された型と合っていません
+=== sfc/DEFINE_PROPS_DESTRUCTURE_PARSE
+sfc/DEFINE_PROPS_DESTRUCTURE_PARSE · SFC コンパイラーの診断
+分割代入された `defineProps()` を変換のために解析できませんでした
+=== sfc/DUPLICATE_SCRIPT
+sfc/DUPLICATE_SCRIPT · SFC コンパイラーの診断
+SFC に通常の `<script>` ブロックが複数あります
+=== sfc/DUPLICATE_SCRIPT_SETUP
+sfc/DUPLICATE_SCRIPT_SETUP · SFC コンパイラーの診断
+SFC に `<script setup>` ブロックが複数あります
+=== sfc/DUPLICATE_TEMPLATE
+sfc/DUPLICATE_TEMPLATE · SFC コンパイラーの診断
+SFC に `<template>` ブロックが複数あります
+=== sfc/MALFORMED_BLOCK
+sfc/MALFORMED_BLOCK · SFC コンパイラーの診断
+SFC のトップレベルのブロックが、閉じられていないタグなどで壊れています
+=== sfc/SCRIPT_SETUP_MACRO_SCOPE
+sfc/SCRIPT_SETUP_MACRO_SCOPE · SFC コンパイラーの診断
+コンパイラーマクロの引数は `setup()` の外へ巻き上げられるため、`<script setup>` 内で宣言した変数は参照できません
+=== sfc/STANDALONE_EXTERNAL_IMPORT
+sfc/STANDALONE_EXTERNAL_IMPORT · SFC コンパイラーの診断
+スタンドアロン出力に Vue 以外のモジュールのインポートが残っており、CDN で使うにはそれらを別途用意する必要があります
+=== sfc/TEMPLATE_ERROR
+sfc/TEMPLATE_ERROR · SFC コンパイラーの診断
+テンプレートのコンパイルに失敗しました。理由は一覧されたコンパイラーエラーを参照してください
+=== sfc/VAPOR_SSR_FALLBACK
+sfc/VAPOR_SSR_FALLBACK · SFC コンパイラーの診断
+Vapor の SSR にはまだ対応していないため、通常の SSR 出力にフォールバックします
+=== sfc/VAPOR_TEMPLATE_ERROR
+sfc/VAPOR_TEMPLATE_ERROR · SFC コンパイラーの診断
+Vapor モードでのテンプレートのコンパイルに失敗しました
+=== sfc/V_MATCH_SYNTAX
+sfc/V_MATCH_SYNTAX · SFC コンパイラーの診断
+ルートの `v-match` テンプレートの書き方が正しくありません
+=== sfc/V_MODEL_CONST_REACTIVE_DEMOTED
+sfc/V_MODEL_CONST_REACTIVE_DEMOTED · SFC コンパイラーの診断
+`v-model` が `const` のリアクティブなバインディングに書き込むため、コンパイラーが宣言を `let` に変更しました
+=== ts/2300
+ts/2300 · TypeScript のエラー
+識別子'{name}'が重複しています
+
+ヒント:
+  {name}の宣言が重複しています。
+  この識別子は既にこのスコープで宣言されています。
+  解決方法:
+  - いずれかの宣言の名前を変更
+  - 重複を削除
+  - 同じものを2回インポートしていないか確認
+=== ts/2304
+ts/2304 · TypeScript のエラー
+'{name}'が見つかりません
+
+ヒント:
+  {name} が定義されていません。
+  考えられる原因:
+  - 変数がインポートまたは宣言されていない
+  - 名前にタイプミスがある
+  - 変数が別のスコープで定義されている
+  解決方法:
+    // 1. モジュールからインポート
+    import { {name} } from './module';
+
+    // 2. script setupで宣言
+    const {name} = ...;
+
+    // 3. 名前のタイプミスを確認
+=== ts/2307
+ts/2307 · TypeScript のエラー
+モジュール'{module}'またはその型宣言が見つかりません
+
+ヒント:
+  モジュールが見つかりません: {module}
+  考えられる原因:
+  - パッケージがインストールされていない
+  - インポートパスが間違っている
+  - 型宣言が不足している
+  解決方法:
+    # 1. パッケージをインストール
+    npm install {module}
+
+    # 2. 型宣言をインストール（別パッケージの場合）
+    npm install -D @types/{module}
+  ローカルモジュールの場合:
+  - ファイルパスが正しいか確認
+  - 相対パスを使用: ./ または ../
+  - ファイル拡張子を確認
+=== ts/2322
+ts/2322 · TypeScript のエラー
+型'{source}'を型'{target}'に割り当てることはできません
+
+ヒント:
+  型の不一致が検出されました。
+  {target}を期待する場所に{source}型の値を割り当てようとしています。
+  一般的な修正方法:
+  - 値が期待される型と一致するか確認
+  - 確信がある場合は型アサーションを使用: value as {target}
+  - 実際の型を受け入れるように型定義を更新
+  例:
+    // targetが'number'でsourceが'string'の場合
+    const value = parseInt(stringValue); // stringをnumberに変換
+=== ts/2339
+ts/2339 · TypeScript のエラー
+プロパティ'{name}'は型'{type}'に存在しません
+
+ヒント:
+  プロパティ{name}が{type}に見つかりません。
+  考えられる原因:
+  - プロパティ名のスペルミス
+  - この型にプロパティが存在しない
+  - 先に型を絞り込む必要がある
+  解決方法:
+    // 1. プロパティの存在確認
+    if ('{name}' in obj) {
+    obj.{name};
+    }
+
+    // 2. オプショナルチェーンを使用
+    obj?.{name};
+
+    // 3. 型定義にプロパティを追加
+    interface MyType {
+    {name}: SomeType;
+    }
+=== ts/2344
+ts/2344 · TypeScript のエラー
+型'{type}'は制約'{constraint}'を満たしていません
+
+ヒント:
+  型制約違反です。
+  型{type}は{constraint}の要件を満たしていません。
+  解決方法:
+  型が必要な制約を拡張または実装していることを確認してください:
+    // 例: TはSomeBaseを拡張する必要がある
+    function example<T extends SomeBase>(value: T) { }
+=== ts/2345
+ts/2345 · TypeScript のエラー
+型'{source}'の引数を型'{target}'のパラメータに割り当てることはできません
+
+ヒント:
+  引数の型が一致しません。
+  関数は{target}を期待していますが、{source}を受け取りました。
+  解決方法:
+  - 値を期待される型に変換
+  - 正しい引数を渡しているか確認
+  - 必要に応じて関数のシグネチャを更新
+
+    // 例: 関数がnumberを期待する場合
+    func(Number(value)); // numberに変換
+=== ts/2349
+ts/2349 · TypeScript のエラー
+この式は呼び出し可能ではありません
+
+ヒント:
+  関数ではない値を呼び出そうとしています。
+  関数ではないものを呼び出そうとしています。
+  一般的な原因:
+  - 値がundefinedまたはnull
+  - 関数ではなくオブジェクト
+  - プロパティがメソッドではなく値を返す
+  解決方法:
+    // 呼び出す前に関数かどうか確認
+    if (typeof maybeFunc === 'function') {
+    maybeFunc();
+    }
+
+    // またはオプショナルチェーンを使用
+    maybeFunc?.();
+=== ts/2351
+ts/2351 · TypeScript のエラー
+この式はコンストラクト可能ではありません
+
+ヒント:
+  この値にnewを使用できません。
+  この式はnewと一緒に使用できません。
+  一般的な原因:
+  - クラスやコンストラクタ関数ではない
+  - クラスではなく型をインスタンス化しようとしている
+  例:
+    // ❌ 間違い: 型エイリアスはクラスではない
+    type MyType = { x: number };
+    new MyType(); // エラー!
+
+    // ✅ 正しい: クラスを使用
+    class MyClass { x: number = 0; }
+    new MyClass(); // OK
+=== ts/2451
+ts/2451 · TypeScript のエラー
+ブロックスコープの変数'{name}'を再宣言できません
+
+ヒント:
+  変数{name}は既に宣言されています。
+  同じスコープでletまたはconst変数を再宣言することはできません。
+  解決方法:
+    // 1. 変数名を変更
+    const {name}2 = ...;
+
+    // 2. 再宣言ではなく代入（letの場合）
+    {name} = newValue;
+
+    // 3. 別のスコープを使用
+    {
+    const {name} = ...; // 新しいブロックではOK
+    }
+=== ts/2531
+ts/2531 · TypeScript のエラー
+オブジェクトは'null'である可能性があります
+
+ヒント:
+  null値の可能性が検出されました。
+  TypeScriptはこの値がnullである可能性を警告しています。
+  解決方法:
+    // 1. オプショナルチェーンを使用
+    obj?.property;
+
+    // 2. Null合体演算子を使用
+    const value = obj ?? defaultValue;
+
+    // 3. nullチェックを追加
+    if (obj !== null) {
+    obj.property;
+    }
+
+    // 4. 非nullアサーション（確実な場合のみ）
+    obj!.property; // 100%確実な場合のみ
+=== ts/2532
+ts/2532 · TypeScript のエラー
+オブジェクトは'undefined'である可能性があります
+
+ヒント:
+  undefined値の可能性が検出されました。
+  TypeScriptはこの値がundefinedである可能性を警告しています。
+  解決方法:
+    // 1. オプショナルチェーンを使用
+    obj?.property;
+
+    // 2. デフォルト値を提供
+    const value = obj ?? defaultValue;
+
+    // 3. undefinedチェックを追加
+    if (obj !== undefined) {
+    obj.property;
+    }
+
+    // 4. 値を初期化
+    const obj = ref<Type>(initialValue);
+=== ts/2554
+ts/2554 · TypeScript のエラー
+{expected}個の引数が必要ですが、{actual}個指定されました
+
+ヒント:
+  引数の数が間違っています。
+  関数は{expected}個の引数を期待していますが、{actual}個指定されました。
+  解決方法:
+  - 不足している引数を追加
+  - 余分な引数を削除
+  - 関数のシグネチャを確認
+
+    // 関数定義を確認
+    function example(a: string, b?: number) { }
+    // 必須: a (string)
+    // オプション: b (number)
+=== ts/2555
+ts/2555 · TypeScript のエラー
+{expected}個の引数が必要ですが、{actual}個指定されました
+
+ヒント:
+  引数が多すぎます。
+  関数は{expected}個の引数のみ受け付けますが、{actual}個渡されました。
+  解決方法:
+  余分な引数を削除するか、関数を更新してより多くのパラメータを受け入れるようにしてください。
+=== ts/2741
+ts/2741 · TypeScript のエラー
+プロパティ'{name}'は型'{source}'にありませんが、型'{target}'では必須です
+
+ヒント:
+  必須プロパティがありません: {name}
+  型{target}はプロパティ{name}を必要としていますが、{source}には存在しません。
+  解決方法:
+    // 1. 不足しているプロパティを追加
+    const obj: {target} = {
+    ...existingProps,
+    {name}: value,
+    };
+
+    // 2. 型定義でプロパティをオプショナルに
+    interface {target} {
+    {name}?: Type; // オプショナル
+    }
+=== ts/7006
+ts/7006 · TypeScript のエラー
+パラメータ'{name}'の型は暗黙的に'any'になります
+
+ヒント:
+  {name}の型注釈がありません。
+  TypeScriptはこのパラメータの型を推論できません。
+  解決方法 - 明示的な型を追加:
+    // 変更前
+    function example({name}) { }
+
+    // 変更後
+    function example({name}: string) { }
+
+    // デフォルト値あり（型推論される）
+    function example({name} = 'default') { }
+=== ts/vue/9001
+ts/vue/9001 · TypeScript のエラー
+'{name}'のprop型が無効です
+
+ヒント:
+  {name}のprop型が一致しません。
+  propの値がdefinePropsで定義された期待される型と一致しません。
+  解決方法:
+    // prop定義を確認
+    defineProps<{
+    {name}: string; // 期待される型
+    }>();
+
+    // 親が正しい型を渡しているか確認
+    <MyComponent :{name}="stringValue" />
+=== ts/vue/9002
+ts/vue/9002 · TypeScript のエラー
+無効なemit呼び出し: '{event}'
+
+ヒント:
+  {event}のemit使用が無効です。
+  emit呼び出しが定義されたイベントと一致しません。
+  解決方法:
+    // emit定義を確認
+    const emit = defineEmits<{
+    {event}: [payload: PayloadType];
+    }>();
+
+    // 正しいペイロードで呼び出し
+    emit('{event}', payload);
+=== ts/vue/9003
+ts/vue/9003 · TypeScript のエラー
+不明なコンポーネント: '{name}'
+
+ヒント:
+  コンポーネント{name}が見つかりません。
+  考えられる原因:
+  - コンポーネントがインポートされていない
+  - コンポーネント名のスペルミス
+  - ケバブケースとパスカルケースの違い
+  解決方法:
+    // コンポーネントをインポート
+    import {name} from './components/{name}.vue';
+
+    // またはグローバルに登録
+    app.component('{name}', {name});
+=== ts/vue/9004
+ts/vue/9004 · TypeScript のエラー
+無効なslot使用: '{name}'
+
+ヒント:
+  スロット{name}の使用エラー。
+  一般的な問題:
+  - コンポーネントにスロットが存在しない
+  - スロットpropsが間違っている
+  使用方法:
+    <template>
+    <MyComponent>
+    <template #{name}="{ prop }">
+    <!-- スロットコンテンツ -->
+    </template>
+    </MyComponent>
+    </template>
+=== ts/vue/9005
+ts/vue/9005 · TypeScript のエラー
+無効なディレクティブ: '{name}'
+
+ヒント:
+  ディレクティブ{name}エラー。
+  一般的な原因:
+  - ディレクティブが登録されていない
+  - ディレクティブの構文が間違っている
+  解決方法:
+    // ローカルにディレクティブを登録
+    import { v{name} } from './directives';
+
+    // またはグローバルに
+    app.directive('{name}', {
+    mounted(el, binding) { ... }
+    });
+=== ts/vue/9006
+ts/vue/9006 · TypeScript のエラー
+リアクティビティの問題が検出されました
+
+ヒント:
+  リアクティビティが失われる可能性があります。
+  値のアクセス方法や分割代入の方法により、リアクティビティが失われる可能性があります。
+  一般的な問題と修正:
+    // ❌ 分割代入でリアクティビティが失われる
+    const { count } = props;
+
+    // ✅ toRefsを使用
+    const { count } = toRefs(props);
+
+    // ❌ refの値を代入
+    let x = ref(0).value;
+
+    // ✅ refを保持
+    const x = ref(0);
 === vize:croquis/cf/array-mutation
 vize:croquis/cf/array-mutation · ファイル横断の診断
 リアクティブな更新を起こさない配列の変更を報告する

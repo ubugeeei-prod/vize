@@ -96,4 +96,10 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "S3 の op に不正なオペランドがあります",
         "S3 的 op 含有无效的操作数",
     ),
+    (
+        "S3V010.description",
+        "An S3 placement record does not re-derive: its op does not resolve, it is out of op order, or its alternatives or committed choice are invalid",
+        "S3 の配置記録を再導出できません。op を解決できないか、op の順序に反しているか、代替案や確定した選択が不正です",
+        "S3 的放置记录无法重新推导：其 op 无法解析、不符合 op 顺序，或其备选方案或已确定的选择无效",
+    ),
 ];

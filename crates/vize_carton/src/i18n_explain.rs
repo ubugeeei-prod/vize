@@ -24,6 +24,24 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "ステージ検証器の不変条件",
         "阶段校验器不变量",
     ),
+    (
+        "explain.kind.type_check",
+        "type-check diagnostic",
+        "型チェックの診断",
+        "类型检查诊断",
+    ),
+    (
+        "explain.kind.sfc",
+        "SFC compiler diagnostic",
+        "SFC コンパイラーの診断",
+        "SFC 编译器诊断",
+    ),
+    (
+        "explain.kind.typescript",
+        "TypeScript error",
+        "TypeScript のエラー",
+        "TypeScript 错误",
+    ),
     ("explain.category", "category", "カテゴリー", "类别"),
     ("explain.severity", "severity", "重大度", "严重级别"),
     (

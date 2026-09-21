@@ -53,6 +53,7 @@ pub mod flags;
 pub mod general;
 pub mod hash;
 pub mod i18n;
+mod i18n_canon;
 mod i18n_compiler;
 mod i18n_compiler_directive;
 mod i18n_compiler_template;

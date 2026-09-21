@@ -3397,6 +3397,471 @@ S3 的调度边指向前面或指向自身
 === S3V009
 S3V009 · 阶段校验器不变量
 S3 的 op 含有无效的操作数
+=== S3V010
+S3V010 · 阶段校验器不变量
+S3 的放置记录无法重新推导：其 op 无法解析、不符合 op 顺序，或其备选方案或已确定的选择无效
+=== canon/fallthrough-attrs
+canon/fallthrough-attrs · 类型检查诊断
+报告可能丢失透传属性的多根组件
+=== canon/invalid-export
+canon/invalid-export · 类型检查诊断
+报告从不能导出绑定的 `<script setup>` 中进行的导出
+=== canon/module-level-computed
+canon/module-level-computed · 类型检查诊断
+报告永远不会被清理的模块级 `computed`
+=== canon/module-level-inject
+canon/module-level-inject · 类型检查诊断
+报告在 `setup()` 或 `<script setup>` 之外调用的 `inject()`
+=== canon/module-level-lifecycle
+canon/module-level-lifecycle · 类型检查诊断
+报告在 `setup()` 或 `<script setup>` 之外注册的生命周期钩子
+=== canon/module-level-provide
+canon/module-level-provide · 类型检查诊断
+报告在 `setup()` 或 `<script setup>` 之外调用的 `provide()`
+=== canon/module-level-state
+canon/module-level-state · 类型检查诊断
+报告在 SSR 中会被多个请求共享的模块级响应式状态
+=== canon/module-level-watch
+canon/module-level-watch · 类型检查诊断
+报告永远不会被清理的模块级侦听器
+=== canon/parse-error
+canon/parse-error · 类型检查诊断
+报告无法拆分为各个块的 SFC
+=== canon/patterned-template
+canon/patterned-template · 类型检查诊断
+报告模板中无效的 `v-match` / `v-when` 模式语法
+=== canon/reactivity-loss
+canon/reactivity-loss · 类型检查诊断
+报告因解构、提取或重新赋值而使值脱离其响应式来源
+=== canon/script-parse-error
+canon/script-parse-error · 类型检查诊断
+报告无法解析的 script 块
+=== canon/template-parse-error
+canon/template-parse-error · 类型检查诊断
+报告无法为类型检查而解析的模板
+=== canon/undefined-binding
+canon/undefined-binding · 类型检查诊断
+报告 `<script setup>` 中既未声明也未导入的模板引用
+=== canon/untyped-emit
+canon/untyped-emit · 类型检查诊断
+报告未指定载荷类型就声明的事件
+=== canon/untyped-emits
+canon/untyped-emits · 类型检查诊断
+报告没有类型定义的 `defineEmits()`
+=== canon/untyped-prop
+canon/untyped-prop · 类型检查诊断
+报告未指定类型就声明的 prop
+=== canon/untyped-props
+canon/untyped-props · 类型检查诊断
+报告没有类型定义的 `defineProps()`
+=== sfc/CSS_MODULE_COMPILE_ERROR
+sfc/CSS_MODULE_COMPILE_ERROR · SFC 编译器诊断
+`<style module>` 块编译失败
+=== sfc/DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE
+sfc/DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE · SFC 编译器诊断
+解构 prop 的默认值与其声明的类型不符
+=== sfc/DEFINE_PROPS_DESTRUCTURE_PARSE
+sfc/DEFINE_PROPS_DESTRUCTURE_PARSE · SFC 编译器诊断
+无法解析解构的 `defineProps()` 以进行转换
+=== sfc/DUPLICATE_SCRIPT
+sfc/DUPLICATE_SCRIPT · SFC 编译器诊断
+SFC 中有多个普通 `<script>` 块
+=== sfc/DUPLICATE_SCRIPT_SETUP
+sfc/DUPLICATE_SCRIPT_SETUP · SFC 编译器诊断
+SFC 中有多个 `<script setup>` 块
+=== sfc/DUPLICATE_TEMPLATE
+sfc/DUPLICATE_TEMPLATE · SFC 编译器诊断
+SFC 中有多个 `<template>` 块
+=== sfc/MALFORMED_BLOCK
+sfc/MALFORMED_BLOCK · SFC 编译器诊断
+SFC 顶层块格式错误，例如标签未闭合
+=== sfc/SCRIPT_SETUP_MACRO_SCOPE
+sfc/SCRIPT_SETUP_MACRO_SCOPE · SFC 编译器诊断
+编译器宏的参数会被提升到 `setup()` 之外，因此不能引用 `<script setup>` 中声明的变量
+=== sfc/STANDALONE_EXTERNAL_IMPORT
+sfc/STANDALONE_EXTERNAL_IMPORT · SFC 编译器诊断
+独立输出中仍导入了非 Vue 模块，通过 CDN 使用时需要另行提供这些依赖
+=== sfc/TEMPLATE_ERROR
+sfc/TEMPLATE_ERROR · SFC 编译器诊断
+模板编译失败；原因请参阅其中列出的编译器错误
+=== sfc/VAPOR_SSR_FALLBACK
+sfc/VAPOR_SSR_FALLBACK · SFC 编译器诊断
+尚不支持 Vapor SSR，因此回退为标准 SSR 输出
+=== sfc/VAPOR_TEMPLATE_ERROR
+sfc/VAPOR_TEMPLATE_ERROR · SFC 编译器诊断
+模板在 Vapor 模式下编译失败
+=== sfc/V_MATCH_SYNTAX
+sfc/V_MATCH_SYNTAX · SFC 编译器诊断
+根级 `v-match` 模板格式错误
+=== sfc/V_MODEL_CONST_REACTIVE_DEMOTED
+sfc/V_MODEL_CONST_REACTIVE_DEMOTED · SFC 编译器诊断
+`v-model` 会写入 `const` 响应式绑定，因此编译器已将该声明改为 `let`
+=== ts/2300
+ts/2300 · TypeScript 错误
+重复的标识符'{name}'
+
+帮助:
+  {name}的重复声明。
+  此标识符已在此作用域中声明。
+  解决方案:
+  - 重命名其中一个声明
+  - 删除重复项
+  - 检查是否意外导入了同一内容两次
+=== ts/2304
+ts/2304 · TypeScript 错误
+找不到名称'{name}'
+
+帮助:
+  {name} 未定义。
+  可能原因:
+  - 变量未导入或声明
+  - 名称拼写错误
+  - 变量定义在不同作用域
+  解决方案:
+    // 1. 从模块导入
+    import { {name} } from './module';
+
+    // 2. 在script setup中声明
+    const {name} = ...;
+
+    // 3. 检查名称拼写
+=== ts/2307
+ts/2307 · TypeScript 错误
+找不到模块'{module}'或其对应的类型声明
+
+帮助:
+  找不到模块: {module}
+  可能原因:
+  - 包未安装
+  - 导入路径不正确
+  - 缺少类型声明
+  解决方案:
+    # 1. 安装包
+    npm install {module}
+
+    # 2. 安装类型声明（如果单独）
+    npm install -D @types/{module}
+  对于本地模块:
+  - 检查文件路径是否正确
+  - 使用相对路径: ./ 或 ../
+  - 检查文件扩展名
+=== ts/2322
+ts/2322 · TypeScript 错误
+类型'{source}'不能分配给类型'{target}'
+
+帮助:
+  检测到类型不匹配。
+  您正尝试将{source}类型的值分配给期望{target}的目标。
+  常见修复:
+  - 检查值是否匹配期望的类型
+  - 如果确定，使用类型断言: value as {target}
+  - 更新类型定义以接受实际类型
+  示例:
+    // 如果目标是'number'但源是'string'
+    const value = parseInt(stringValue); // 将string转换为number
+=== ts/2339
+ts/2339 · TypeScript 错误
+类型'{type}'上不存在属性'{name}'
+
+帮助:
+  在{type}上找不到属性{name}。
+  可能原因:
+  - 属性名拼写错误
+  - 该类型上不存在此属性
+  - 需要先缩窄类型
+  解决方案:
+    // 1. 检查属性是否存在
+    if ('{name}' in obj) {
+    obj.{name};
+    }
+
+    // 2. 使用可选链
+    obj?.{name};
+
+    // 3. 在类型定义中添加属性
+    interface MyType {
+    {name}: SomeType;
+    }
+=== ts/2344
+ts/2344 · TypeScript 错误
+类型'{type}'不满足约束'{constraint}'
+
+帮助:
+  类型约束违规。
+  类型{type}不满足{constraint}的要求。
+  解决方案:
+  确保您的类型扩展或实现所需的约束:
+    // 示例: T必须扩展SomeBase
+    function example<T extends SomeBase>(value: T) { }
+=== ts/2345
+ts/2345 · TypeScript 错误
+类型'{source}'的参数不能分配给类型'{target}'的参数
+
+帮助:
+  参数类型不匹配。
+  函数期望{target}但收到{source}。
+  解决方案:
+  - 将值转换为期望的类型
+  - 检查是否传递了正确的参数
+  - 如需要更新函数签名
+
+    // 示例：函数期望number
+    func(Number(value)); // 转换为number
+=== ts/2349
+ts/2349 · TypeScript 错误
+此表达式不可调用
+
+帮助:
+  无法调用非函数值。
+  您正尝试调用不是函数的东西。
+  常见原因:
+  - 值是undefined或null
+  - 它是对象，不是函数
+  - 属性返回值，而非方法
+  解决方案:
+    // 调用前检查是否是函数
+    if (typeof maybeFunc === 'function') {
+    maybeFunc();
+    }
+
+    // 或使用可选链
+    maybeFunc?.();
+=== ts/2351
+ts/2351 · TypeScript 错误
+此表达式不可构造
+
+帮助:
+  无法对此值使用new。
+  此表达式不能与new一起使用。
+  常见原因:
+  - 它不是类或构造函数
+  - 您试图实例化类型，而非类
+  示例:
+    // 错误: 类型别名，不是类
+    type MyType = { x: number };
+    new MyType(); // 错误！
+
+    // 正确: 使用类
+    class MyClass { x: number = 0; }
+    new MyClass(); // 可以
+=== ts/2451
+ts/2451 · TypeScript 错误
+无法重新声明块作用域变量'{name}'
+
+帮助:
+  变量{name}已声明。
+  不能在同一作用域中重新声明let或const变量。
+  解决方案:
+    // 1. 重命名变量
+    const {name}2 = ...;
+
+    // 2. 赋值而非重新声明
+    {name} = newValue; // 如果使用let
+
+    // 3. 使用不同作用域
+    {
+    const {name} = ...; // 在新块中可以
+    }
+=== ts/2531
+ts/2531 · TypeScript 错误
+对象可能为'null'
+
+帮助:
+  检测到可能的null值。
+  TypeScript警告此值可能为null。
+  解决方案:
+    // 1. 使用可选链
+    obj?.property;
+
+    // 2. 使用空值合并
+    const value = obj ?? defaultValue;
+
+    // 3. 添加null检查
+    if (obj !== null) {
+    obj.property;
+    }
+
+    // 4. 使用非空断言（仅在确定时）
+    obj!.property; // 仅在100%确定时使用
+=== ts/2532
+ts/2532 · TypeScript 错误
+对象可能为'undefined'
+
+帮助:
+  检测到可能的undefined值。
+  TypeScript警告此值可能为undefined。
+  解决方案:
+    // 1. 使用可选链
+    obj?.property;
+
+    // 2. 提供默认值
+    const value = obj ?? defaultValue;
+
+    // 3. 添加undefined检查
+    if (obj !== undefined) {
+    obj.property;
+    }
+
+    // 4. 初始化值
+    const obj = ref<Type>(initialValue);
+=== ts/2554
+ts/2554 · TypeScript 错误
+期望{expected}个参数，但获得{actual}个
+
+帮助:
+  参数数量错误。
+  函数期望{expected}个参数，但您提供了{actual}个。
+  解决方案:
+  - 添加缺少的参数
+  - 删除多余的参数
+  - 检查函数签名
+
+    // 检查函数定义
+    function example(a: string, b?: number) { }
+    // 必需: a (string)
+    // 可选: b (number)
+=== ts/2555
+ts/2555 · TypeScript 错误
+期望{expected}个参数，但获得{actual}个
+
+帮助:
+  提供了过多参数。
+  函数只接受{expected}个参数，但您传递了{actual}个。
+  解决方案:
+  删除多余的参数或更新函数以接受更多参数。
+=== ts/2741
+ts/2741 · TypeScript 错误
+类型'{source}'中缺少属性'{name}'，但类型'{target}'中需要该属性
+
+帮助:
+  缺少必需属性: {name}
+  类型{target}需要属性{name}，但它在{source}中不存在。
+  解决方案:
+    // 1. 添加缺少的属性
+    const obj: {target} = {
+    ...existingProps,
+    {name}: value,
+    };
+
+    // 2. 在类型定义中使属性可选
+    interface {target} {
+    {name}?: Type; // 可选
+    }
+=== ts/7006
+ts/7006 · TypeScript 错误
+参数'{name}'隐式具有'any'类型
+
+帮助:
+  {name}缺少类型注解。
+  TypeScript无法推断此参数的类型。
+  解决方案 - 添加显式类型:
+    // 之前
+    function example({name}) { }
+
+    // 之后
+    function example({name}: string) { }
+
+    // 带默认值（类型推断）
+    function example({name} = 'default') { }
+=== ts/vue/9001
+ts/vue/9001 · TypeScript 错误
+'{name}'的prop类型无效
+
+帮助:
+  {name}的Prop类型不匹配。
+  prop值与defineProps中定义的期望类型不匹配。
+  解决方案:
+    // 检查prop定义
+    defineProps<{
+    {name}: string; // 期望类型
+    }>();
+
+    // 确保父组件传递正确类型
+    <MyComponent :{name}="stringValue" />
+=== ts/vue/9002
+ts/vue/9002 · TypeScript 错误
+无效的emit调用: '{event}'
+
+帮助:
+  {event}的emit用法无效。
+  emit调用与定义的事件不匹配。
+  解决方案:
+    // 检查emit定义
+    const emit = defineEmits<{
+    {event}: [payload: PayloadType];
+    }>();
+
+    // 用正确的payload调用
+    emit('{event}', payload);
+=== ts/vue/9003
+ts/vue/9003 · TypeScript 错误
+未知组件: '{name}'
+
+帮助:
+  找不到组件{name}。
+  可能原因:
+  - 组件未导入
+  - 组件名拼写错误
+  - 使用了kebab-case而非PascalCase（或反之）
+  解决方案:
+    // 导入组件
+    import {name} from './components/{name}.vue';
+
+    // 或全局注册
+    app.component('{name}', {name});
+=== ts/vue/9004
+ts/vue/9004 · TypeScript 错误
+无效的slot用法: '{name}'
+
+帮助:
+  Slot {name} 用法错误。
+  常见问题:
+  - 组件上不存在此slot
+  - slot props错误
+  用法:
+    <template>
+    <MyComponent>
+    <template #{name}="{ prop }">
+    <!-- slot内容 -->
+    </template>
+    </MyComponent>
+    </template>
+=== ts/vue/9005
+ts/vue/9005 · TypeScript 错误
+无效的指令: '{name}'
+
+帮助:
+  指令{name}错误。
+  常见原因:
+  - 指令未注册
+  - 指令语法错误
+  解决方案:
+    // 局部注册指令
+    import { v{name} } from './directives';
+
+    // 或全局注册
+    app.directive('{name}', {
+    mounted(el, binding) { ... }
+    });
+=== ts/vue/9006
+ts/vue/9006 · TypeScript 错误
+检测到响应性问题
+
+帮助:
+  可能丢失响应性。
+  您的代码可能因值的访问或解构方式而丢失响应性。
+  常见问题和修复:
+    // 错误 - 解构丢失响应性
+    const { count } = props;
+
+    // 正确 - 使用toRefs
+    const { count } = toRefs(props);
+
+    // 错误 - 赋值ref的value
+    let x = ref(0).value;
+
+    // 正确 - 保持ref
+    const x = ref(0);
 === vize:croquis/cf/array-mutation
 vize:croquis/cf/array-mutation · 跨文件诊断
 报告不会触发响应式更新的数组修改

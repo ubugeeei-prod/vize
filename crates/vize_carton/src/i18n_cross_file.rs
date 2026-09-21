@@ -8,7 +8,8 @@
 //! the specific message makes sense. Attributes, emits, provide/inject, IDs,
 //! SSR boundaries, dependencies, props and slots are here; setup context and
 //! reactivity in [`crate::i18n_cross_file_reactivity`]; verifier codes in
-//! [`crate::i18n_verifier`]. `tests/tooling/davinci-diagnostic-catalog.test.ts`
+//! [`crate::i18n_verifier`]; type-checker and SFC compiler codes in
+//! [`crate::i18n_canon`]. `tests/tooling/davinci-diagnostic-catalog.test.ts`
 //! enumerates the codes from their producers' sources and fails on one
 //! without a description in every locale.
 
@@ -22,6 +23,7 @@ pub(crate) fn register(messages: &mut [MessageMap; 3]) {
         ENTRIES,
         crate::i18n_cross_file_reactivity::ENTRIES,
         crate::i18n_verifier::ENTRIES,
+        crate::i18n_canon::ENTRIES,
     ];
     for &(key, en, ja, zh) in tables.into_iter().flatten() {
         messages[0].insert(key, en);

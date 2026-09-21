@@ -3211,6 +3211,471 @@ An S3 scheduled edge points backward or to itself
 === S3V009
 S3V009 · stage verifier invariant
 An S3 op has an invalid operand
+=== S3V010
+S3V010 · stage verifier invariant
+An S3 placement record does not re-derive: its op does not resolve, it is out of op order, or its alternatives or committed choice are invalid
+=== canon/fallthrough-attrs
+canon/fallthrough-attrs · type-check diagnostic
+Report a multi-root component that may drop fallthrough attributes
+=== canon/invalid-export
+canon/invalid-export · type-check diagnostic
+Report an export from `<script setup>`, which cannot export bindings
+=== canon/module-level-computed
+canon/module-level-computed · type-check diagnostic
+Report a module-level `computed`, which is never cleaned up
+=== canon/module-level-inject
+canon/module-level-inject · type-check diagnostic
+Report `inject()` outside `setup()` or `<script setup>`
+=== canon/module-level-lifecycle
+canon/module-level-lifecycle · type-check diagnostic
+Report lifecycle hooks registered outside `setup()` or `<script setup>`
+=== canon/module-level-provide
+canon/module-level-provide · type-check diagnostic
+Report `provide()` outside `setup()` or `<script setup>`
+=== canon/module-level-state
+canon/module-level-state · type-check diagnostic
+Report module-level reactive state, which SSR shares across requests
+=== canon/module-level-watch
+canon/module-level-watch · type-check diagnostic
+Report a module-level watcher, which is never cleaned up
+=== canon/parse-error
+canon/parse-error · type-check diagnostic
+Report an SFC that could not be split into its blocks
+=== canon/patterned-template
+canon/patterned-template · type-check diagnostic
+Report invalid `v-match` / `v-when` pattern syntax in a template
+=== canon/reactivity-loss
+canon/reactivity-loss · type-check diagnostic
+Report destructuring, extracting or reassigning that cuts a value off from its reactive source
+=== canon/script-parse-error
+canon/script-parse-error · type-check diagnostic
+Report a script block that could not be parsed
+=== canon/template-parse-error
+canon/template-parse-error · type-check diagnostic
+Report a template that could not be parsed for type checking
+=== canon/undefined-binding
+canon/undefined-binding · type-check diagnostic
+Report a template reference that `<script setup>` neither declares nor imports
+=== canon/untyped-emit
+canon/untyped-emit · type-check diagnostic
+Report an event declared without a payload type
+=== canon/untyped-emits
+canon/untyped-emits · type-check diagnostic
+Report `defineEmits()` without a type definition
+=== canon/untyped-prop
+canon/untyped-prop · type-check diagnostic
+Report a prop declared without a type
+=== canon/untyped-props
+canon/untyped-props · type-check diagnostic
+Report `defineProps()` without a type definition
+=== sfc/CSS_MODULE_COMPILE_ERROR
+sfc/CSS_MODULE_COMPILE_ERROR · SFC compiler diagnostic
+A `<style module>` block failed to compile
+=== sfc/DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE
+sfc/DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE · SFC compiler diagnostic
+A destructured prop's default value does not match its declared type
+=== sfc/DEFINE_PROPS_DESTRUCTURE_PARSE
+sfc/DEFINE_PROPS_DESTRUCTURE_PARSE · SFC compiler diagnostic
+A destructured `defineProps()` could not be parsed for transformation
+=== sfc/DUPLICATE_SCRIPT
+sfc/DUPLICATE_SCRIPT · SFC compiler diagnostic
+An SFC has more than one plain `<script>` block
+=== sfc/DUPLICATE_SCRIPT_SETUP
+sfc/DUPLICATE_SCRIPT_SETUP · SFC compiler diagnostic
+An SFC has more than one `<script setup>` block
+=== sfc/DUPLICATE_TEMPLATE
+sfc/DUPLICATE_TEMPLATE · SFC compiler diagnostic
+An SFC has more than one `<template>` block
+=== sfc/MALFORMED_BLOCK
+sfc/MALFORMED_BLOCK · SFC compiler diagnostic
+A top-level SFC block is malformed, such as an unterminated tag
+=== sfc/SCRIPT_SETUP_MACRO_SCOPE
+sfc/SCRIPT_SETUP_MACRO_SCOPE · SFC compiler diagnostic
+A compiler macro's arguments reference a variable declared inside `<script setup>`, but they are hoisted outside `setup()`
+=== sfc/STANDALONE_EXTERNAL_IMPORT
+sfc/STANDALONE_EXTERNAL_IMPORT · SFC compiler diagnostic
+Standalone output still imports non-Vue modules that a CDN build must provide separately
+=== sfc/TEMPLATE_ERROR
+sfc/TEMPLATE_ERROR · SFC compiler diagnostic
+The template failed to compile; the compiler errors it lists say why
+=== sfc/VAPOR_SSR_FALLBACK
+sfc/VAPOR_SSR_FALLBACK · SFC compiler diagnostic
+Vapor SSR is not supported yet, so the component falls back to standard SSR output
+=== sfc/VAPOR_TEMPLATE_ERROR
+sfc/VAPOR_TEMPLATE_ERROR · SFC compiler diagnostic
+The template failed to compile in Vapor mode
+=== sfc/V_MATCH_SYNTAX
+sfc/V_MATCH_SYNTAX · SFC compiler diagnostic
+A root `v-match` template is malformed
+=== sfc/V_MODEL_CONST_REACTIVE_DEMOTED
+sfc/V_MODEL_CONST_REACTIVE_DEMOTED · SFC compiler diagnostic
+`v-model` writes to a `const` reactive binding, so the compiler turned the declaration into `let`
+=== ts/2300
+ts/2300 · TypeScript error
+Duplicate identifier '{name}'
+
+help:
+  Duplicate declaration of {name}.
+  This identifier is already declared in this scope.
+  Solutions:
+  - Rename one of the declarations
+  - Remove the duplicate
+  - Check if you're accidentally importing the same thing twice
+=== ts/2304
+ts/2304 · TypeScript error
+Cannot find name '{name}'
+
+help:
+  {name} is not defined.
+  Possible causes:
+  - The variable is not imported or declared
+  - There's a typo in the name
+  - The variable is defined in a different scope
+  Solutions:
+    // 1. Import from a module
+    import { {name} } from './module';
+
+    // 2. Declare in script setup
+    const {name} = ...;
+
+    // 3. Check for typos in the name
+=== ts/2307
+ts/2307 · TypeScript error
+Cannot find module '{module}' or its corresponding type declarations
+
+help:
+  Module not found: {module}
+  Possible causes:
+  - The package is not installed
+  - The import path is incorrect
+  - Type declarations are missing
+  Solutions:
+    # 1. Install the package
+    npm install {module}
+
+    # 2. Install type declarations (if separate)
+    npm install -D @types/{module}
+  For local modules:
+  - Check the file path is correct
+  - Use relative paths: ./ or ../
+  - Check file extension
+=== ts/2322
+ts/2322 · TypeScript error
+Type '{source}' is not assignable to type '{target}'
+
+help:
+  Type mismatch detected.
+  You're trying to assign a value of type {source} to something that expects {target}.
+  Common fixes:
+  - Check if the value matches the expected type
+  - Use type assertion if you're sure: value as {target}
+  - Update the type definition to accept the actual type
+  Example:
+    // If target is 'number' but source is 'string'
+    const value = parseInt(stringValue); // Convert string to number
+=== ts/2339
+ts/2339 · TypeScript error
+Property '{name}' does not exist on type '{type}'
+
+help:
+  Property {name} not found on {type}.
+  Possible causes:
+  - The property name is misspelled
+  - The property doesn't exist on this type
+  - You need to narrow the type first
+  Solutions:
+    // 1. Check if property exists
+    if ('{name}' in obj) {
+    obj.{name};
+    }
+
+    // 2. Use optional chaining
+    obj?.{name};
+
+    // 3. Add property to type definition
+    interface MyType {
+    {name}: SomeType;
+    }
+=== ts/2344
+ts/2344 · TypeScript error
+Type '{type}' does not satisfy the constraint '{constraint}'
+
+help:
+  Type constraint violation.
+  The type {type} doesn't meet the requirements of {constraint}.
+  Solution:
+  Ensure your type extends or implements the required constraint:
+    // Example: T must extend SomeBase
+    function example<T extends SomeBase>(value: T) { }
+=== ts/2345
+ts/2345 · TypeScript error
+Argument of type '{source}' is not assignable to parameter of type '{target}'
+
+help:
+  Argument type mismatch.
+  The function expects {target} but received {source}.
+  Solutions:
+  - Convert the value to the expected type
+  - Check if you're passing the correct argument
+  - Update the function signature if needed
+
+    // Example: function expects number
+    func(Number(value)); // Convert to number
+=== ts/2349
+ts/2349 · TypeScript error
+This expression is not callable
+
+help:
+  Cannot call non-function value.
+  You're trying to call something that isn't a function.
+  Common causes:
+  - The value is undefined or null
+  - It's an object, not a function
+  - The property returns a value, not a method
+  Solutions:
+    // Check if it's a function before calling
+    if (typeof maybeFunc === 'function') {
+    maybeFunc();
+    }
+
+    // Or use optional chaining
+    maybeFunc?.();
+=== ts/2351
+ts/2351 · TypeScript error
+This expression is not constructable
+
+help:
+  Cannot use new on this value.
+  This expression cannot be used with new.
+  Common causes:
+  - It's not a class or constructor function
+  - You're trying to instantiate a type, not a class
+  Example:
+    // Wrong: type alias, not a class
+    type MyType = { x: number };
+    new MyType(); // Error!
+
+    // Correct: use class
+    class MyClass { x: number = 0; }
+    new MyClass(); // OK
+=== ts/2451
+ts/2451 · TypeScript error
+Cannot redeclare block-scoped variable '{name}'
+
+help:
+  Variable {name} already declared.
+  You cannot redeclare a let or const variable in the same scope.
+  Solutions:
+    // 1. Rename the variable
+    const {name}2 = ...;
+
+    // 2. Assign instead of redeclare
+    {name} = newValue; // if using let
+
+    // 3. Use different scope
+    {
+    const {name} = ...; // OK in new block
+    }
+=== ts/2531
+ts/2531 · TypeScript error
+Object is possibly 'null'
+
+help:
+  Possible null value detected.
+  TypeScript warns that this value might be null.
+  Solutions:
+    // 1. Use optional chaining
+    obj?.property;
+
+    // 2. Use nullish coalescing
+    const value = obj ?? defaultValue;
+
+    // 3. Add null check
+    if (obj !== null) {
+    obj.property;
+    }
+
+    // 4. Use non-null assertion (if certain)
+    obj!.property; // Only if you're 100% sure
+=== ts/2532
+ts/2532 · TypeScript error
+Object is possibly 'undefined'
+
+help:
+  Possible undefined value detected.
+  TypeScript warns that this value might be undefined.
+  Solutions:
+    // 1. Use optional chaining
+    obj?.property;
+
+    // 2. Provide default value
+    const value = obj ?? defaultValue;
+
+    // 3. Add undefined check
+    if (obj !== undefined) {
+    obj.property;
+    }
+
+    // 4. Initialize the value
+    const obj = ref<Type>(initialValue);
+=== ts/2554
+ts/2554 · TypeScript error
+Expected {expected} arguments, but got {actual}
+
+help:
+  Wrong number of arguments.
+  The function expects {expected} argument(s) but you provided {actual}.
+  Solutions:
+  - Add missing arguments
+  - Remove extra arguments
+  - Check the function signature
+
+    // Check function definition
+    function example(a: string, b?: number) { }
+    // Required: a (string)
+    // Optional: b (number)
+=== ts/2555
+ts/2555 · TypeScript error
+Expected {expected} arguments, but got {actual}
+
+help:
+  Too many arguments provided.
+  The function only accepts {expected} argument(s) but you passed {actual}.
+  Solution:
+  Remove the extra arguments or update the function to accept more parameters.
+=== ts/2741
+ts/2741 · TypeScript error
+Property '{name}' is missing in type '{source}' but required in type '{target}'
+
+help:
+  Missing required property: {name}
+  The type {target} requires property {name} but it's not present in {source}.
+  Solutions:
+    // 1. Add the missing property
+    const obj: {target} = {
+    ...existingProps,
+    {name}: value,
+    };
+
+    // 2. Make property optional in type definition
+    interface {target} {
+    {name}?: Type; // Optional
+    }
+=== ts/7006
+ts/7006 · TypeScript error
+Parameter '{name}' implicitly has an 'any' type
+
+help:
+  Missing type annotation for {name}.
+  TypeScript cannot infer the type of this parameter.
+  Solution - Add explicit type:
+    // Before
+    function example({name}) { }
+
+    // After
+    function example({name}: string) { }
+
+    // With default value (type inferred)
+    function example({name} = 'default') { }
+=== ts/vue/9001
+ts/vue/9001 · TypeScript error
+Invalid prop type for '{name}'
+
+help:
+  Prop type mismatch for {name}.
+  The prop value doesn't match the expected type defined in defineProps.
+  Solutions:
+    // Check prop definition
+    defineProps<{
+    {name}: string; // Expected type
+    }>();
+
+    // Ensure parent passes correct type
+    <MyComponent :{name}="stringValue" />
+=== ts/vue/9002
+ts/vue/9002 · TypeScript error
+Invalid emit call: '{event}'
+
+help:
+  Invalid emit usage for {event}.
+  The emit call doesn't match the defined events.
+  Solutions:
+    // Check emit definition
+    const emit = defineEmits<{
+    {event}: [payload: PayloadType];
+    }>();
+
+    // Call with correct payload
+    emit('{event}', payload);
+=== ts/vue/9003
+ts/vue/9003 · TypeScript error
+Unknown component: '{name}'
+
+help:
+  Component {name} not found.
+  Possible causes:
+  - Component is not imported
+  - Component name is misspelled
+  - Using kebab-case instead of PascalCase (or vice versa)
+  Solutions:
+    // Import the component
+    import {name} from './components/{name}.vue';
+
+    // Or register globally
+    app.component('{name}', {name});
+=== ts/vue/9004
+ts/vue/9004 · TypeScript error
+Invalid slot usage: '{name}'
+
+help:
+  Slot {name} usage error.
+  Common issues:
+  - Slot doesn't exist on the component
+  - Wrong slot props
+  Usage:
+    <template>
+    <MyComponent>
+    <template #{name}="{ prop }">
+    <!-- slot content -->
+    </template>
+    </MyComponent>
+    </template>
+=== ts/vue/9005
+ts/vue/9005 · TypeScript error
+Invalid directive: '{name}'
+
+help:
+  Directive {name} error.
+  Common causes:
+  - Directive is not registered
+  - Wrong directive syntax
+  Solutions:
+    // Register directive locally
+    import { v{name} } from './directives';
+
+    // Or globally
+    app.directive('{name}', {
+    mounted(el, binding) { ... }
+    });
+=== ts/vue/9006
+ts/vue/9006 · TypeScript error
+Reactivity issue detected
+
+help:
+  Possible reactivity loss.
+  Your code may lose reactivity due to how values are accessed or destructured.
+  Common issues and fixes:
+    // ❌ Destructuring loses reactivity
+    const { count } = props;
+
+    // ✅ Use toRefs
+    const { count } = toRefs(props);
+
+    // ❌ Assigning ref value
+    let x = ref(0).value;
+
+    // ✅ Keep the ref
+    const x = ref(0);
 === vize:croquis/cf/array-mutation
 vize:croquis/cf/array-mutation · cross-file diagnostic
 Report array mutations that do not trigger reactive updates

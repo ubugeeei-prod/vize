@@ -34,6 +34,13 @@ pub(crate) enum Described {
     CrossFile(&'static str),
     /// `S2V…` / `S3V…`.
     Verifier(&'static str),
+    /// `canon/<name>`, the SFC type checker's codes.
+    TypeCheck(&'static str),
+    /// `sfc/<NAME>`, the SFC compiler's codes.
+    Sfc(&'static str),
+    /// `ts/<n>` / `ts/vue/<n>`, catalogued with a message and help rather
+    /// than a description.
+    TypeScript(&'static str),
 }
 
 /// A code with a page.
@@ -49,22 +56,38 @@ impl Subject {
         match self {
             Self::Compiler(code) => code.code(),
             Self::Rule(rule) => rule.name,
-            Self::Described(Described::CrossFile(code) | Described::Verifier(code)) => code,
+            Self::Described(
+                Described::CrossFile(code)
+                | Described::Verifier(code)
+                | Described::TypeCheck(code)
+                | Described::Sfc(code)
+                | Described::TypeScript(code),
+            ) => code,
         }
     }
 }
 
 /// Every described code, read from the catalogue's `<code>.description`
-/// keys. The TS-53 catalog check derives the same list from the producers'
-/// sources (`CrossFileDiagnostic::code()`, both `ViolationCode::as_str()`) and
+/// keys (and `ts/<n>.message` for the TypeScript-numbered codes). The TS-53 catalog check derives the same list from the producers'
+/// sources (`CrossFileDiagnostic::code()`, both `ViolationCode::as_str()`,
+/// the type checker's and SFC compiler's code literals, `TypeErrorCode`) and
 /// fails when the two disagree, so the catalogue is a checked mirror.
 pub(crate) fn described() -> Vec<Described> {
     let mut codes: Vec<Described> = translator()
         .keys(Locale::En)
-        .filter_map(|key| key.strip_suffix(".description"))
-        .filter_map(|code| {
+        .filter_map(|key| {
+            if let Some(code) = key.strip_suffix(".message") {
+                return code
+                    .starts_with("ts/")
+                    .then_some(Described::TypeScript(code));
+            }
+            let code = key.strip_suffix(".description")?;
             if code.starts_with("vize:croquis/cf/") {
                 Some(Described::CrossFile(code))
+            } else if code.starts_with("canon/") {
+                Some(Described::TypeCheck(code))
+            } else if code.starts_with("sfc/") {
+                Some(Described::Sfc(code))
             } else if is_verifier_code(code) {
                 Some(Described::Verifier(code))
             } else {
