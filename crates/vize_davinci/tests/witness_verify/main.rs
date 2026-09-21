@@ -69,8 +69,8 @@ fn the_valid_chain() -> WitnessChain {
 
 #[test]
 fn the_rule_emits_one_proven_error_whose_witness_verifies() {
-    let mut manager = FactManager::new(&REGISTRY, TEXT);
-    let view = manager.prepare::<RepeatedWord>().expect("registered");
+    let mut manager = FactManager::new(&REGISTRY);
+    let view = manager.prepare::<RepeatedWord>(TEXT).expect("registered");
     let found = repeated_words(&view);
     let expected = Diagnostic::proven(
         Stage::Semantic,
@@ -161,8 +161,8 @@ fn forged_witnesses_are_rejected_with_their_exact_error() {
             },
         ),
     ];
-    let mut manager = FactManager::new(&REGISTRY, TEXT);
-    let view = manager.prepare::<RepeatedWord>().expect("registered");
+    let mut manager = FactManager::new(&REGISTRY);
+    let view = manager.prepare::<RepeatedWord>(TEXT).expect("registered");
     for (case, forged, expected) in fixtures {
         let error = Diagnostic::proven(
             Stage::Semantic,
@@ -176,8 +176,8 @@ fn forged_witnesses_are_rejected_with_their_exact_error() {
 
 #[test]
 fn the_first_failing_link_is_reported_by_its_position_in_the_chain() {
-    let mut manager = FactManager::new(&REGISTRY, TEXT);
-    let view = manager.prepare::<RepeatedWord>().expect("registered");
+    let mut manager = FactManager::new(&REGISTRY);
+    let view = manager.prepare::<RepeatedWord>(TEXT).expect("registered");
     let forged = the_valid_chain().then(link(AnalysisGroup::Sentence, 0, 32, WitnessKey::Artifact));
     assert_eq!(
         verify_chain(&forged, &view, &CHECKS),
@@ -192,7 +192,7 @@ fn the_first_failing_link_is_reported_by_its_position_in_the_chain() {
 
 #[test]
 fn a_view_taken_before_the_run_computed_the_group_refuses_the_witness() {
-    let manager = FactManager::new(&REGISTRY, TEXT);
+    let manager = FactManager::new(&REGISTRY);
     let view = manager.view::<RepeatedWord>();
     assert_eq!(
         verify_chain(&the_valid_chain(), &view, &CHECKS),
@@ -205,8 +205,8 @@ fn a_view_taken_before_the_run_computed_the_group_refuses_the_witness() {
 
 #[test]
 fn only_chains_are_rechecked_and_a_forged_why_is_refused_too() {
-    let mut manager = FactManager::new(&REGISTRY, TEXT);
-    let view = manager.prepare::<RepeatedWord>().expect("registered");
+    let mut manager = FactManager::new(&REGISTRY);
+    let view = manager.prepare::<RepeatedWord>(TEXT).expect("registered");
     let exempt = Diagnostic::legacy_error(&EXEMPT, Stage::Surface, Span::new(0, 3), "legacy");
     let plain = Diagnostic::new(Advisory::Warning, Stage::Semantic, Span::new(0, 3), "plain");
     let forged_why =
@@ -228,8 +228,8 @@ fn only_chains_are_rechecked_and_a_forged_why_is_refused_too() {
 
 #[test]
 fn the_audit_rechecks_every_diagnostic_in_debug_and_is_free_in_release() {
-    let mut manager = FactManager::new(&REGISTRY, TEXT);
-    let view = manager.prepare::<RepeatedWord>().expect("registered");
+    let mut manager = FactManager::new(&REGISTRY);
+    let view = manager.prepare::<RepeatedWord>(TEXT).expect("registered");
     let mut batch = repeated_words(&view);
     batch.push(Diagnostic::legacy_error(
         &EXEMPT,

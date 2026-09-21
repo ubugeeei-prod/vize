@@ -71,7 +71,7 @@ pub fn verify(
 /// As [`verify`].
 pub fn verify_as<C: FactConsumer, A: ?Sized + 'static>(
     diagnostic: &Diagnostic,
-    facts: &FactManager<'_, '_, A>,
+    facts: &FactManager<'_, A>,
     checks: &WitnessChecks,
 ) -> Result<(), WitnessError> {
     verify(diagnostic, &facts.view::<C>(), checks)
