@@ -186,9 +186,9 @@ export function renderVscodeExtensions(indent: string | number): string {
 /** Editor integrations shipped from this repo, reported alongside the VS Code one. */
 export const EDITOR_INTEGRATIONS = [
   "VS Code: ubugeeei.vize (recommended in .vscode/extensions.json)",
-  "Zed: tools/zed-vize",
-  "Neovim: tools/nvim-vize",
-  "Vim: tools/vim-vize",
-  "Helix: tools/helix-vize",
-  "Emacs: tools/emacs-vize",
+  "Zed: editors/zed",
+  "Neovim: editors/nvim",
+  "Vim: editors/vim",
+  "Helix: editors/helix",
+  "Emacs: editors/emacs",
 ] as const;

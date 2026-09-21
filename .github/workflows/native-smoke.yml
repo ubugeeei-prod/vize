@@ -169,6 +169,7 @@ jobs:
         shell: bash
         run: |
           vp install --frozen-lockfile --prefer-offline \
+            --filter . \
             --filter './npm/native...' \
             --filter './npm/cli...' \
             --filter './npm/builder/vite...'

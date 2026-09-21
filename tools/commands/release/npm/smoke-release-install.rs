@@ -13,6 +13,8 @@
 mod common;
 #[path = "../../../support/release/npm_publish.rs"]
 mod npm_publish;
+#[path = "../../../support/release/npm_smoke_init.rs"]
+mod npm_smoke_init;
 
 use serde_json::{Map, Value, json};
 use std::{
@@ -541,7 +543,6 @@ fn run_runtime_checks(
     all_packages: &[PackageInfo],
     temp_dir: &Path,
 ) -> Result<(), String> {
-    let _ = (all_packages, temp_dir);
     write_runtime_smoke_project(install_dir)?;
     if packages
         .iter()
@@ -608,7 +609,18 @@ const required = require("@vizejs/native");
             install_dir,
         )?;
         println!("runtime: vize lint");
-        run_init_typecheck_checks(install_dir, &vize_bin)?;
+        npm_smoke_init::run(
+            install_dir,
+            &json!({
+                "installDir": install_dir,
+                "vizeBin": vize_bin,
+                "repoRoot": repo_root()?,
+                "tempDir": temp_dir,
+                "peers": RUNTIME_PEER_DEPENDENCIES.iter().copied().collect::<BTreeMap<_, _>>(),
+                "packed": all_packages.iter().map(|package| (&package.name, &package.tarball)).collect::<BTreeMap<_, _>>(),
+                "versions": all_packages.iter().map(|package| (&package.name, &package.version)).collect::<BTreeMap<_, _>>(),
+            }),
+        )?;
     }
     if packages
         .iter()
@@ -660,47 +672,6 @@ fn write_runtime_smoke_project(install_dir: &Path) -> Result<(), String> {
         source_dir.join("main.ts"),
         "import { createApp } from \"vue\";\nimport App from \"./App.vue\";\n\ncreateApp(App).mount(\"#app\");\n",
     )
-}
-
-fn run_init_typecheck_checks(install_dir: &Path, vize_bin: &Path) -> Result<(), String> {
-    for language in ["typescript", "javascript"] {
-        let project = install_dir.join(format!("init-smoke-{language}"));
-        fs::create_dir_all(&project)
-            .map_err(|error| format!("cannot create {}: {error}", project.display()))?;
-        let mut dev_dependencies = Map::new();
-        dev_dependencies.insert("vue".to_string(), json!("3.5.34"));
-        if language == "typescript" {
-            dev_dependencies.insert("typescript".to_string(), json!("6.0.3"));
-        }
-        common::write_json_pretty(
-            project.join("package.json"),
-            &json!({
-                "name": format!("vize-init-{language}-smoke"),
-                "private": true,
-                "type": "module",
-                "devDependencies": Value::Object(dev_dependencies),
-            }),
-        )?;
-        run_command(
-            env::var("NODE_BIN").unwrap_or_else(|_| "node".to_string()),
-            &[
-                vize_bin.to_string_lossy().as_ref(),
-                "init",
-                "--yes",
-                "--typecheck",
-                "--no-install",
-            ],
-            None,
-            &project,
-        )?;
-        run_command(
-            env::var("NPM_BIN").unwrap_or_else(|_| "npm".to_string()),
-            &["run", "--silent", "vize:check"],
-            None,
-            &project,
-        )?;
-    }
-    Ok(())
 }
 
 fn run_installed_content_mapper_checks(install_dir: &Path) -> Result<(), String> {

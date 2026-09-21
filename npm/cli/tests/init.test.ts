@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 
 import { test } from "vite-plus/test";
+
+import { EDITOR_INTEGRATIONS } from "../src/init/templates.ts";
 
 import {
   ALL_FEATURES,
@@ -82,6 +85,20 @@ const EXPECTED_EXTENSIONS = `{
   ]
 }
 `;
+
+test("init reports the existing editor integration directories", () => {
+  assert.deepEqual(EDITOR_INTEGRATIONS.slice(1), [
+    "Zed: editors/zed",
+    "Neovim: editors/nvim",
+    "Vim: editors/vim",
+    "Helix: editors/helix",
+    "Emacs: editors/emacs",
+  ]);
+  for (const integration of EDITOR_INTEGRATIONS.slice(1)) {
+    const relative = integration.split(": ")[1];
+    assert.ok(fs.statSync(new URL(`../../../${relative}`, import.meta.url)).isDirectory());
+  }
+});
 
 function vitePlusProject(name: string): string {
   const root = temporaryProject(name);

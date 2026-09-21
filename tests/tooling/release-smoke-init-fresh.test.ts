@@ -218,6 +218,11 @@ function workflowSteps(workflow: string, jobName: string) {
 }
 
 test("the release runtime smoke runs the fresh-project matrix", () => {
+  const command = readRepoFile("tools", "commands", "release", "npm", "smoke-release-install.rs");
+  const bridge = readRepoFile("tools", "support", "release", "npm_smoke_init.rs");
+  assert.match(command, /npm_smoke_init::run\(/u);
+  assert.match(bridge, /runInitTypecheckChecks\(context\.installDir,/u);
+  assert.match(bridge, /runFreshProjectInitChecks\(context\)/u);
   const runtime = readRepoFile("legacy-tools", "npm", "smoke-release-runtime.mjs");
   // The context keys the fresh-project driver needs, independent of the order
   // and line breaks the call site happens to use.

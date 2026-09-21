@@ -31,4 +31,7 @@ test("native smoke keeps MoonBit out of the npm fresh install path", () => {
   assert.match(freshJob, /target:\s*darwin-x64/);
   assert.doesNotMatch(freshJob, /setup-moonbit/);
   assert.match(freshJob, /vp run --filter '\.\/npm\/cli' build/);
+  // Installed-package assertions import the shared semver test helper. The
+  // root owns that dependency; selecting only npm package closures misses it.
+  assert.match(freshJob, /vp install --frozen-lockfile --prefer-offline \\\n\s+--filter \. \\/);
 });

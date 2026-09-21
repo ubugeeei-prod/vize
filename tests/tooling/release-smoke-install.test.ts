@@ -232,7 +232,8 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(smokeSources, /"check"[\s\S]*"src\/App\.vue"/);
   assert.match(smokeSources, /"lint"[\s\S]*"src\/App\.vue"/);
   assert.match(smokeSources, /runInitTypecheckChecks\([\s\S]*RUNTIME_PEER_DEPENDENCIES\)/);
-  assert.match(rustScript, /project\.join\("package\.json"\)/);
+  assert.match(rustScript, /npm_smoke_init::run\(/);
+  assert.doesNotMatch(rustScript, /fn run_init_typecheck_checks\(/);
   assert.doesNotMatch(rustScript, /"--language"/);
   assert.match(runtimeScript, /VIZE_TEST_CONTENT_MAPPER_TSGO/);
   assert.match(runtimeScript, /runInstalledContentMapperChecks/);
