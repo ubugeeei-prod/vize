@@ -37,10 +37,10 @@ pub(crate) use canonical::{
     map_canonical_corsa_workspace_edit, map_canonical_exact_edit_range, map_canonical_lsp_range,
     map_canonical_materialized_module_location, map_canonical_prepare_rename,
     matching_component_prop_navigation_positions, materialized_semantic_positions,
-    merge_canonical_workspace_edits, open_canonical_virtual_document,
-    open_canonical_virtual_document_strict, open_canonical_virtual_project_document,
-    open_canonical_virtual_project_document_strict, open_canonical_virtual_workspace_document,
-    tower_range,
+    merge_canonical_workspace_edits, open_canonical_script_document,
+    open_canonical_virtual_document, open_canonical_virtual_document_strict,
+    open_canonical_virtual_project_document, open_canonical_virtual_project_document_strict,
+    open_canonical_virtual_workspace_document, tower_range,
 };
 pub(crate) use html_attribute::{
     html_attribute_request_path, html_attribute_virtual_document, native_dom_attribute_info,

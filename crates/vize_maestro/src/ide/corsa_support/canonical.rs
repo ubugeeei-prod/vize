@@ -11,7 +11,9 @@ mod mapping;
 mod open;
 mod project;
 pub(super) mod rename;
+mod script;
 mod semantic_links;
+pub(crate) use script::open_canonical_script_document;
 
 pub(crate) use component_completion::canonical_component_prop_position;
 pub(crate) use exact_edits::map_canonical_exact_edit_range;

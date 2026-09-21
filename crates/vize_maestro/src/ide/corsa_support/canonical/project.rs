@@ -237,7 +237,7 @@ async fn open_canonical_virtual_project_document_with_scope(
 /// If the governing config is missing, preserve the inferred-project fallback
 /// and search the discovered workspace surface. A configured project that does
 /// not own the query must not donate any workspace sources to that query.
-fn same_typescript_project(
+pub(super) fn same_typescript_project(
     ctx: &IdeContext<'_>,
     sources: Vec<(Url, std::string::String)>,
 ) -> Vec<(Url, std::string::String)> {

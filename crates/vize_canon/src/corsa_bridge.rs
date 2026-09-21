@@ -48,7 +48,9 @@ mod worker;
 pub use batch_checker::BatchTypeChecker;
 pub use bridge::CorsaBridge;
 pub(crate) use editor_session::EditorMirrorSession;
-pub use script_document::{CorsaScriptVirtualDocument, CorsaScriptVirtualDocumentRequest};
+pub use script_document::{
+    CorsaScriptVirtualDocument, CorsaScriptVirtualDocumentRequest, CorsaScriptVirtualProject,
+};
 pub use types::{
     CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionList,
     LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,

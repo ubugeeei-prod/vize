@@ -38,7 +38,7 @@ pub(super) async fn prepare(
         };
 
         let ctx = IdeContext::with_content(&server.state, uri, offset, content);
-        if crate::utils::is_jsx_path(uri.path()) {
+        if crate::utils::is_jsx_path(uri.path()) && !server.state.jsx_typecheck_enabled() {
             return Ok(None);
         }
 
@@ -116,7 +116,14 @@ fn context_for_item<'a>(
     server: &'a MaestroServer,
     item: &'a CallHierarchyItem,
 ) -> Option<IdeContext<'a>> {
-    let content = server.state.documents.text(&item.uri)?;
+    if crate::utils::is_jsx_path(item.uri.path()) && !server.state.jsx_typecheck_enabled() {
+        return None;
+    }
+    let content = server
+        .state
+        .documents
+        .text(&item.uri)
+        .or_else(|| std::fs::read_to_string(item.uri.to_file_path().ok()?).ok())?;
     let offset = position_to_offset(
         &content,
         item.selection_range.start.line,

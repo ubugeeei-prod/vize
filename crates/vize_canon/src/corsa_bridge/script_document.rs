@@ -27,6 +27,7 @@ struct BuiltScriptVirtualProject {
     documents: Vec<(String, String)>,
     session_project_root: Option<PathBuf>,
     materialized_changes: crate::batch::virtual_project::MaterializedFileDelta,
+    materialized_sources: Vec<super::CorsaMaterializedSource>,
 }
 
 /// The exact native script overlay and its import-coordinate transform.
@@ -39,6 +40,13 @@ pub struct CorsaScriptVirtualDocument {
     pub resolved_dependencies: Vec<PathBuf>,
 }
 
+/// Script projection and all source identities retained by the same project revision.
+pub struct CorsaScriptVirtualProject {
+    pub document: CorsaScriptVirtualDocument,
+    pub materialized_sources: Vec<super::CorsaMaterializedSource>,
+    pub session_project_root: Option<PathBuf>,
+}
+
 impl CorsaBridge {
     /// Open a generated TS/JS host together with every reachable Vue virtual
     /// document, using the same graph materialization as an SFC host.
@@ -46,6 +54,16 @@ impl CorsaBridge {
         &self,
         request: CorsaScriptVirtualDocumentRequest<'_>,
     ) -> Result<CorsaScriptVirtualDocument, CorsaBridgeError> {
+        self.open_script_virtual_project(request)
+            .await
+            .map(|project| project.document)
+    }
+
+    /// Retain the exact project mappings for cross-file navigation from scripts.
+    pub async fn open_script_virtual_project(
+        &self,
+        request: CorsaScriptVirtualDocumentRequest<'_>,
+    ) -> Result<CorsaScriptVirtualProject, CorsaBridgeError> {
         let virtual_ts_options = request.virtual_ts_options;
         let project = build_script_virtual_project_with_package_routes(
             request,
@@ -59,11 +77,15 @@ impl CorsaBridge {
         )?;
         self.open_canon_project_documents(
             &project.documents,
-            project.session_project_root,
+            project.session_project_root.clone(),
             project.materialized_changes,
         )
         .await?;
-        Ok(project.host)
+        Ok(CorsaScriptVirtualProject {
+            document: project.host,
+            materialized_sources: project.materialized_sources,
+            session_project_root: project.session_project_root,
+        })
     }
 }
 
@@ -175,5 +197,6 @@ fn build_script_virtual_project_with_package_routes(
         documents,
         session_project_root,
         materialized_changes: alias_context.materialized_changes.clone(),
+        materialized_sources,
     })
 }

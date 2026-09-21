@@ -1,4 +1,4 @@
-//! Type-aware `textDocument/prepareCallHierarchy` for authored Vue files.
+//! Checker-backed call hierarchy over authored Vue and script project sources.
 
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
@@ -17,7 +17,7 @@ use vize_canon::{CorsaBridge, LspLocation, LspPosition, LspRange};
 #[cfg(feature = "native")]
 use super::{IdeContext, corsa_support};
 #[cfg(feature = "native")]
-use crate::virtual_code::BlockType;
+mod document;
 
 /// Checker-backed call-hierarchy service.
 pub struct CallHierarchyService;
@@ -38,25 +38,14 @@ impl CallHierarchyService {
             return None;
         }
 
-        match ctx.block_type? {
-            BlockType::Template | BlockType::Script | BlockType::ScriptSetup
-                if !ctx.uri.path().ends_with(".art.vue") =>
-            {
-                Self::prepare_in_canonical_sfc(ctx, &bridge).await
-            }
-            BlockType::Template
-            | BlockType::Script
-            | BlockType::ScriptSetup
-            | BlockType::Style(_)
-            | BlockType::Art(_) => None,
-        }
+        Self::prepare_in_canonical_sfc(ctx, &bridge).await
     }
 
     async fn prepare_in_canonical_sfc(
         ctx: &IdeContext<'_>,
         bridge: &CorsaBridge,
     ) -> Option<Vec<CallHierarchyItem>> {
-        let document = corsa_support::open_canonical_virtual_project_document(ctx, bridge).await?;
+        let document = document::open(ctx, bridge, false).await?;
         let (line, character) =
             corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?;
         let items = bridge
@@ -87,25 +76,14 @@ impl CallHierarchyService {
             return None;
         }
 
-        match ctx.block_type? {
-            BlockType::Template | BlockType::Script | BlockType::ScriptSetup
-                if !ctx.uri.path().ends_with(".art.vue") =>
-            {
-                let document =
-                    corsa_support::open_canonical_virtual_project_document(ctx, &bridge).await?;
-                let raw_item = Self::raw_item(item)?;
-                let calls = bridge
-                    .call_hierarchy_incoming_calls(raw_item)
-                    .await
-                    .ok()??;
-                Self::map_incoming_calls(ctx, &document, calls)
-            }
-            BlockType::Template
-            | BlockType::Script
-            | BlockType::ScriptSetup
-            | BlockType::Style(_)
-            | BlockType::Art(_) => None,
-        }
+        let document = document::open(ctx, &bridge, true).await?;
+        let raw_item = document::refresh_item(ctx, &document, item, &bridge).await?;
+        let calls = bridge
+            .call_hierarchy_incoming_calls(raw_item)
+            .await
+            .ok()?
+            .unwrap_or_else(|| serde_json::json!([]));
+        Self::map_incoming_calls(ctx, &document, calls)
     }
 
     /// Resolve outgoing calls for a prepared item and keep call-site ranges on
@@ -120,26 +98,12 @@ impl CallHierarchyService {
             return None;
         }
 
-        match ctx.block_type? {
-            BlockType::Template | BlockType::Script | BlockType::ScriptSetup
-                if !ctx.uri.path().ends_with(".art.vue") =>
-            {
-                let document =
-                    corsa_support::open_canonical_virtual_project_document(ctx, &bridge).await?;
-                let raw_item = Self::raw_item(item)?;
-                let origin_uri = raw_item.get("uri")?.as_str()?.to_owned();
-                let calls = bridge
-                    .call_hierarchy_outgoing_calls(raw_item)
-                    .await
-                    .ok()??;
-                Self::map_outgoing_calls(ctx, &document, &origin_uri, calls)
-            }
-            BlockType::Template
-            | BlockType::Script
-            | BlockType::ScriptSetup
-            | BlockType::Style(_)
-            | BlockType::Art(_) => None,
-        }
+        let document = document::open(ctx, &bridge, false).await?;
+        let raw_item = document::refresh_item(ctx, &document, item, &bridge).await?;
+        let origin_uri = raw_item.get("uri")?.as_str()?.to_owned();
+        let calls = bridge.call_hierarchy_outgoing_calls(raw_item).await.ok()?;
+        let calls = calls.unwrap_or_else(|| serde_json::json!([]));
+        Self::map_outgoing_calls(ctx, &document, &origin_uri, calls)
     }
 
     fn map_canonical_item(
@@ -154,7 +118,20 @@ impl CallHierarchyService {
             .filter(|range| range.uri == selection.uri)
             .unwrap_or_else(|| selection.clone());
         if let Some(raw_item) = raw_item {
-            item.data = Some(Self::raw_item_data(raw_item));
+            let source = if selection.uri == *ctx.uri {
+                ctx.content.to_string()
+            } else if let Some(source) = document.authored_source(&selection.uri) {
+                source.to_owned()
+            } else {
+                ctx.state
+                    .documents
+                    .text(&selection.uri)
+                    .or_else(|| std::fs::read_to_string(selection.uri.to_file_path().ok()?).ok())?
+            };
+            item.data = Some(serde_json::json!({
+                RAW_CALL_HIERARCHY_ITEM_DATA_KEY: raw_item,
+                "vizeCallHierarchySourceHash": vize_s0::hash::hash_str(&source).to_string(),
+            }));
         }
 
         Some(CallHierarchyItem {
@@ -228,20 +205,6 @@ impl CallHierarchyService {
             .filter(|location| location.uri == *expected_uri)
             .map(|location| location.range)
             .collect()
-    }
-
-    fn raw_item(item: &CallHierarchyItem) -> Option<Value> {
-        item.data
-            .as_ref()
-            .and_then(|data| data.get(RAW_CALL_HIERARCHY_ITEM_DATA_KEY))
-            .cloned()
-            .or_else(|| serde_json::to_value(item).ok())
-    }
-
-    fn raw_item_data(raw_item: Value) -> Value {
-        let mut data = serde_json::Map::new();
-        data.insert(RAW_CALL_HIERARCHY_ITEM_DATA_KEY.to_string(), raw_item);
-        Value::Object(data)
     }
 
     fn map_canonical_item_range(

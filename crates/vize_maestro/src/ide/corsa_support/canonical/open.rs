@@ -95,8 +95,31 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
         })
         .collect();
 
-    let materialized_sources = opened
-        .materialized_sources
+    let materialized_sources = map_materialized_sources(ctx, opened.materialized_sources);
+
+    Ok(Some(CanonicalVirtualDocument {
+        source_uri: ctx.uri.clone(),
+        request_uri: opened.request_uri,
+        virtual_result: VirtualTsResult {
+            code: opened.code.to_string(),
+            source_mappings: opened.mappings,
+            semantic_links: semantic_links_after_import_rewrite(
+                opened.semantic_links,
+                &opened.import_source_map,
+            ),
+            import_source_map: opened.import_source_map,
+        },
+        dependencies,
+        materialized_sources,
+        session_project_roots: opened.session_project_root.into_iter().collect(),
+    }))
+}
+
+pub(super) fn map_materialized_sources(
+    ctx: &IdeContext<'_>,
+    sources: Vec<vize_canon::CorsaMaterializedSource>,
+) -> Vec<CanonicalMaterializedSource> {
+    sources
         .into_iter()
         .filter_map(|materialized| {
             let source_uri = authored_uri(ctx, &materialized.source_path)?;
@@ -119,24 +142,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
                 mapping_kind: materialized.mapping_kind,
             })
         })
-        .collect();
-
-    Ok(Some(CanonicalVirtualDocument {
-        source_uri: ctx.uri.clone(),
-        request_uri: opened.request_uri,
-        virtual_result: VirtualTsResult {
-            code: opened.code.to_string(),
-            source_mappings: opened.mappings,
-            semantic_links: semantic_links_after_import_rewrite(
-                opened.semantic_links,
-                &opened.import_source_map,
-            ),
-            import_source_map: opened.import_source_map,
-        },
-        dependencies,
-        materialized_sources,
-        session_project_roots: opened.session_project_root.into_iter().collect(),
-    }))
+        .collect()
 }
 
 fn authored_uri(ctx: &IdeContext<'_>, source_path: &std::path::Path) -> Option<Url> {
