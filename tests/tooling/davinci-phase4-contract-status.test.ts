@@ -209,7 +209,11 @@ test("start gates are honest about phase 3", () => {
     const cls = gateClass(gate);
     if (cls === "startable now") {
       startable += 1;
-      assert.deepEqual(openP3, [], `${id} is marked startable now but depends on open ${openP3}`);
+      assert.deepEqual(
+        openP3,
+        [],
+        `${id} is marked startable now but depends on open ${openP3.join(", ")}`,
+      );
     } else {
       const task = cls.replace("gated on ", "");
       assert.ok(p3.has(task), `${id} is gated on unknown ${task}`);
