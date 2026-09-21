@@ -43,9 +43,19 @@ pub(super) fn emit_call(
     position: Position,
 ) -> Result<(), EmitError> {
     admit(cx, component)?;
-    let facts = id.and_then(|id| cx.facts.slot_facts.get(id));
+    let slot_if_branch_root = core::mem::take(&mut cx.slot_if_branch_root);
+    if matches!(position, Position::Root) && cx.hoist_static && cx.scope.inline() {
+        super::props_object::check_hoist_gap(&component.attributes, &component.bindings)?;
+    }
     let create = create_slots::needs_create_slots(cx, &component.children);
     let spread = slots::slots_spread(&component.bindings)?;
+    // `has_slot_children`: the shipped codegen builds no slot object for a
+    // component without children unless `v-slots` forwards one — even when
+    // the component's own `v-slot` names a slot (P3-17, measured on the
+    // production-path parity oracle).
+    let facts = id
+        .and_then(|id| cx.facts.slot_facts.get(id))
+        .filter(|_| !component.children.ops.is_empty() || spread.is_some());
     let array = builtin::array_children(component.name);
     if array && (create || spread.is_some()) {
         return Err(EmitError::unsupported_at(
@@ -55,6 +65,9 @@ pub(super) fn emit_call(
     }
     let has_array = array && slots::has_implicit_default(&component.children);
     let has_slots = !array && (facts.is_some() || create || spread.is_some());
+    if cx.scope.inline() && has_slots && named_template_follows_default(&component.children) {
+        cx.reordered_slots = true;
+    }
     let forwards_slot = super::outlet::has_forwarded_outlet(&component.children);
     let filler_default_props_placeholder =
         !array && !has_slots && slots::filler_default_needs_props_placeholder(&component.children);
@@ -103,8 +116,11 @@ pub(super) fn emit_call(
     {
         cx.buf.push_hoist(props.source.clone());
     }
-    let static_props_hoist_blocked =
-        has_custom || for_item || if_key.is_some() || has_component_root_slot;
+    let static_props_hoist_blocked = has_custom
+        || for_item
+        || if_key.is_some()
+        || has_component_root_slot
+        || slot_if_branch_root;
     let can_hoist_static_props = !static_props_hoist_blocked
         && call_props::can_hoist_static_props(
             cx,
@@ -225,7 +241,9 @@ pub(super) fn emit_call(
             facts,
             spread: spread.as_ref(),
             emit_flag,
-            keyed_branch: if_key.is_some(),
+            // A `v-for` item's key is not a branch key: the shipped codegen
+            // keeps the builtin's array children multi-line there (P3-17).
+            keyed_branch: if_key.is_some() && !for_item,
             transition_slot_root,
         },
     );
@@ -237,4 +255,24 @@ pub(super) fn emit_call(
     emit_dynamic_props(cx, &patch.dynamic_props);
     cx.buf.push(")");
     Ok(())
+}
+
+/// A named slot template authored after a conditional chain in the default
+/// content — the shape whose `_unref` registration point the emitter was
+/// measured to misplace (misskey `chat/room.vue`); simpler default content
+/// ahead of a named template keeps the shipped order and stays admitted.
+fn named_template_follows_default(children: &vize_s2::op::Region<'_>) -> bool {
+    let mut saw_conditional_default = false;
+    for op in children.ops.iter() {
+        match op {
+            vize_s2::op::Op::Element(element) if slots::is_slot_template(element) => {
+                if saw_conditional_default {
+                    return true;
+                }
+            }
+            vize_s2::op::Op::If(_) => saw_conditional_default = true,
+            _ => {}
+        }
+    }
+    false
 }

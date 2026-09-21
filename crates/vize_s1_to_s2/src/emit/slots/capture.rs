@@ -82,20 +82,29 @@ pub(in crate::emit) fn capture(
 }
 
 fn emit_slot_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
+    // The lone root of a conditional `createSlots` entry is the shipped
+    // `if_branch_root`: only its children are hoisted (P3-17).
+    let branch_root = !is_whitespace_text(op) && core::mem::take(&mut cx.slot_if_branch_root);
     if crate::emit::slot_root::emit_transition_child(cx, op)? {
         return Ok(());
     }
     match op {
         Op::Text(_) | Op::Interpolation(_) => emit_slot_text_child(cx, op),
+        Op::Element(element) if branch_root && !is_slot_template(element) => {
+            crate::emit::vnode::emit_branch_root_element(cx, element)
+        }
         Op::Element(element) if cx.hoist_static && is_static_element_tree(element, cx.is_ts) => {
             emit_hoisted_element(cx, element)
         }
-        Op::Element(_)
-        | Op::Component(_)
-        | Op::Comment(_)
-        | Op::If(_)
-        | Op::For(_)
-        | Op::Slot(_) => emit_array_child(cx, op, false, false),
+        Op::Component(_) => {
+            cx.slot_if_branch_root = branch_root;
+            let emitted = emit_array_child(cx, op, false, false);
+            cx.slot_if_branch_root = false;
+            emitted
+        }
+        Op::Element(_) | Op::Comment(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
+            emit_array_child(cx, op, false, false)
+        }
     }
 }
 

@@ -40,6 +40,7 @@
 )]
 
 mod davinci_production_reach {
+    pub mod diff;
     pub mod shapes;
     pub mod tally;
 }
@@ -48,9 +49,10 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use davinci_production_reach::diff::divergence;
 use davinci_production_reach::shapes::{Shape, compile};
 use davinci_production_reach::tally::{Lane, Tally, classify, floors};
-use vize_atelier_sfc::{SfcCompileResult, SfcError, SfcParseOptions, parse_sfc};
+use vize_atelier_sfc::{SfcCompileResult, SfcParseOptions, parse_sfc};
 use vize_s0::profiler::global_profiler;
 
 #[test]
@@ -191,84 +193,61 @@ fn measure(
         }
     };
     let accepted = lane == Lane::Accepted;
+    let croquis = lane == Lane::Legacy("croquis".to_owned());
     if lane == Lane::Unrecorded && tally.unrecorded_samples.len() < 5 {
         tally.unrecorded_samples.push(name.to_owned());
     }
     tally.record(lane);
     if accepted && shape.is_dom() {
-        tally.compared += 1;
-        let legacy =
-            vize_atelier_dom::differential::with_legacy_lane(|| compile(descriptor, name, shape));
-        if let Some(divergence) = divergence(&selected, &legacy) {
-            tally
-                .divergences
-                .push(format!("{name} [{}]: {divergence}", shape.id()));
-        }
+        compare_with_legacy(descriptor, name, shape, &selected, tally);
+    }
+    if croquis && shape.is_dom() {
+        measure_projection(descriptor, name, shape, tally);
     }
 }
 
-/// The first field on which the S2-selected and forced-legacy modules differ.
-fn divergence(
+/// The Croquis projection the production selector still refuses (perf):
+/// how many refused templates S2 would emit, each held to whole-module
+/// parity with the legacy lane.
+fn measure_projection(
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    name: &str,
+    shape: Shape,
+    tally: &mut Tally,
+) {
+    let profiler = global_profiler();
+    profiler.clear();
+    profiler.enable();
+    let projected = vize_atelier_dom::differential::with_croquis_projection(|| {
+        compile(descriptor, name, shape)
+    });
+    let counters = profiler.counter_summary();
+    profiler.disable();
+    profiler.clear();
+    let Ok(projected) = projected else {
+        return;
+    };
+    if classify(shape, &counters) == Ok(Lane::Accepted) {
+        tally.ready += 1;
+        compare_with_legacy(descriptor, name, shape, &projected, tally);
+    }
+}
+
+fn compare_with_legacy(
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    name: &str,
+    shape: Shape,
     selected: &SfcCompileResult,
-    legacy: &Result<SfcCompileResult, SfcError>,
-) -> Option<String> {
-    let legacy = match legacy {
-        Ok(legacy) => legacy,
-        Err(error) => return Some(format!("legacy lane failed: {error:?}")),
-    };
-    if selected.code != legacy.code {
-        return Some(format!(
-            "code differs at byte {}:\n--- s2\n{}\n--- legacy\n{}",
-            first_diff(&selected.code, &legacy.code),
-            window(&selected.code, &legacy.code),
-            window(&legacy.code, &selected.code),
-        ));
+    tally: &mut Tally,
+) {
+    tally.compared += 1;
+    let legacy =
+        vize_atelier_dom::differential::with_legacy_lane(|| compile(descriptor, name, shape));
+    if let Some(divergence) = divergence(selected, &legacy) {
+        tally
+            .divergences
+            .push(format!("{name} [{}]: {divergence}", shape.id()));
     }
-    if selected.css != legacy.css {
-        return Some("css differs".to_owned());
-    }
-    let messages = |errors: &[SfcError]| -> Vec<String> {
-        errors
-            .iter()
-            .map(|error| error.message.to_string())
-            .collect()
-    };
-    if messages(&selected.errors) != messages(&legacy.errors) {
-        return Some(format!(
-            "errors differ: s2={:?} legacy={:?}",
-            messages(&selected.errors),
-            messages(&legacy.errors)
-        ));
-    }
-    if messages(&selected.warnings) != messages(&legacy.warnings) {
-        return Some(format!(
-            "warnings differ: s2={:?} legacy={:?}",
-            messages(&selected.warnings),
-            messages(&legacy.warnings)
-        ));
-    }
-    None
-}
-
-fn first_diff(left: &str, right: &str) -> usize {
-    left.bytes()
-        .zip(right.bytes())
-        .position(|(left, right)| left != right)
-        .unwrap_or_else(|| left.len().min(right.len()))
-}
-
-fn window(source: &str, other: &str) -> String {
-    let diff = first_diff(source, other);
-    let start = source[..diff]
-        .char_indices()
-        .rev()
-        .nth(120)
-        .map_or(0, |(index, _)| index);
-    let end = source[diff..]
-        .char_indices()
-        .nth(200)
-        .map_or(source.len(), |(index, _)| diff + index);
-    source[start..end].to_owned()
 }
 
 fn report(scope: &str, sweep: &Sweep) {
@@ -313,6 +292,21 @@ fn assert_floors(sweep: &Sweep) {
     let mut failures = Vec::new();
     for (shape, tally) in sweep.tallies.values() {
         let floor = floors[shape.id()];
+        if tally.ready < floor.ready_min {
+            failures.push(format!(
+                "[reach].{}: parity-ready {} < ready_min {} (a projection regression)",
+                shape.id(),
+                tally.ready,
+                floor.ready_min
+            ));
+        } else if tally.ready > floor.ready_min {
+            eprintln!(
+                "[reach].{}: parity-ready {} > ready_min {}; raise the floor (ratchet)",
+                shape.id(),
+                tally.ready,
+                floor.ready_min
+            );
+        }
         if tally.accepted < floor.accepted_min {
             failures.push(format!(
                 "[reach].{}: accepted {} < accepted_min {} (a production-reach regression)",

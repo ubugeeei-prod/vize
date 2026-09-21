@@ -70,8 +70,8 @@ const { resolveComponent: _resolveComponent, normalizeProps: _normalizeProps, op
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_Foo = _resolveComponent(\"Foo\")
 
-  return (_openBlock(), _createBlock(_component_Foo, _normalizeProps({ [field]: msg,
-  [\"onUpdate:\" + field]: $event => ((msg) = $event) }), null, 16 /* FULL_PROPS */))
+  return (_openBlock(), _createBlock(_component_Foo, _normalizeProps({ [(field)]: msg,
+  [\"onUpdate:\" + (field)]: $event => ((msg) = $event) }), null, 16 /* FULL_PROPS */))
 }")
     );
 }
@@ -86,9 +86,9 @@ const { resolveComponent: _resolveComponent, normalizeProps: _normalizeProps, op
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_Foo = _resolveComponent(\"Foo\")
 
-  return (_openBlock(), _createBlock(_component_Foo, _normalizeProps({ [field]: msg,
-  [\"onUpdate:\" + field]: $event => ((msg) = $event),
-  [field + \"Modifiers\"]: { trim: true } }), null, 16 /* FULL_PROPS */))
+  return (_openBlock(), _createBlock(_component_Foo, _normalizeProps({ [(field)]: msg,
+  [\"onUpdate:\" + (field)]: $event => ((msg) = $event),
+  [(field) + \"Modifiers\"]: { trim: true } }), null, 16 /* FULL_PROPS */))
 }")
     );
 }

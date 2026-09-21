@@ -171,8 +171,8 @@ impl Visit<'_> for IdentifierVisitor<'_> {
                 return;
             }
             let prefix = self.scope.codegen_prefix(name);
-            let is_ref = self.scope.is_ref_binding(name);
-            let needs_unref = self.scope.needs_unref(name);
+            let is_ref = self.scope.codegen_is_ref_binding(name);
+            let needs_unref = self.scope.codegen_needs_unref(name);
             if prefix.is_empty() && !is_ref && !needs_unref {
                 return;
             }

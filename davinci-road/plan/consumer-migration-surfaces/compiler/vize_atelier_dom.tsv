@@ -5,6 +5,10 @@ compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	24	s0	S0	stage	viz
 compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	24	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	24	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile.rs	12	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/croquis_facts.rs	23	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/croquis_facts.rs	23	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/src/compile/croquis_facts.rs	93	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/src/compile/croquis_facts.rs	93	croquis	Croquis analysis	old	vize_croquis	legacy	2
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/custom_elements.rs	14	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/inner.rs	11	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/inner.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	1

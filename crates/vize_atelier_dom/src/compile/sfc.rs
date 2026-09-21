@@ -36,22 +36,24 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
         &codegen_opts,
         &custom_elements,
         template_syntax,
-        options.croquis.is_some(),
+        stage_options::unprojectable_croquis(&options),
         pipeline::S2EmitSelection::RequireSections,
         experimental_self_component,
-    ) && !stage_options::source_may_contain_patterned_template_syntax(source);
+    ) && !stage_options::source_may_contain_patterned_template_syntax(source)
+        && !stage_options::source_may_contain_vize_directive_comment(source);
 
     let mut force_compat_sections = false;
     let fast_path_supported = selector::s2_sfc_fast_path_supported_source(source);
 
     if use_s2_emit && fast_path_supported && !codegen_opts.source_map {
-        let binding_table = stage_options::s2_binding_table(options.binding_metadata.as_ref());
+        let binding_table = stage_options::s2_binding_table_for(&options);
         let s2_options = stage_options::s2_emit_options(
             &options,
             &codegen_opts,
             &custom_elements,
             binding_table.as_ref(),
             hoisted_scope_id.as_deref(),
+            codegen_experimental_options.component_name.as_deref(),
         );
         if let Some(s2_options) = s2_options
             && let Ok(result) = profile!(

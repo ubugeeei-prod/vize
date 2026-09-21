@@ -140,6 +140,7 @@ pub use self::entry::{
     emit_dom_source_with_options,
 };
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
+pub use self::options::ReactiveRead;
 pub use self::options::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
 pub use self::run::{emit_dom, emit_dom_with_options};
 pub use self::transform_expr::{
@@ -181,6 +182,13 @@ struct EmitCx<'facts> {
     template_for_item_root_id: Option<NodeId>,
     /// The current branch root was unwrapped from `<template v-if>`.
     template_if_branch_root: bool,
+    /// The node about to be emitted is the lone child of a conditional
+    /// `createSlots` entry: the shipped hoist walk treats it as the branch
+    /// root and hoists neither it nor its props (P3-17).
+    slot_if_branch_root: bool,
+    /// An inline render emitted a component whose named slot templates are
+    /// printed ahead of earlier-authored default content (P3-17).
+    reordered_slots: bool,
     /// The current `v-for` branch root came from an authored `<template v-if>`.
     template_if_for_branch_root: bool,
     /// A native root unwrapped from `<template v-for>` drops an authored
