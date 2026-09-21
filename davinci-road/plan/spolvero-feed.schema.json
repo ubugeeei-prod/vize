@@ -51,7 +51,7 @@
     },
     "remarks": {
       "type": "array",
-      "description": "Optimization remarks (P3-13), per file in canonical order: each item is a remarks.schema.json remark item plus the `path` it was produced for, spans in byte offsets into that file. Additive to v1: every producer emits it since P3-13; it is optional so earlier v1 documents stay valid. Grammar and vocabulary: davinci-road/plan/remarks-format.md.",
+      "description": "Optimization remarks (P3-13), per file in canonical order: each item is a remarks.schema.json remark item plus the `path` it was produced for, spans in byte offsets into the artifact the pipeline lowered (the frame of that file's pages: the template content for the inspector and analyzeSfc). Additive to v1: every producer emits it since P3-13; it is optional so earlier v1 documents stay valid. Grammar and vocabulary: davinci-road/plan/remarks-format.md.",
       "items": {
         "type": "object",
         "additionalProperties": false,

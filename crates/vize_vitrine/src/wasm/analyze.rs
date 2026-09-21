@@ -238,20 +238,14 @@ pub(super) fn analyze_sfc_json_with_options(
         .into_iter()
         .collect();
     // P3-13: the inline HTML template's optimization remarks ride beside the
-    // pages, spans in file byte offsets.
+    // pages, spans in the template's byte frame (the pages' frame).
     let spolvero_remarks = descriptor
         .template
         .as_ref()
         .filter(|template| {
             template.src.is_none() && template.lang.as_deref().is_none_or(|lang| lang == "html")
         })
-        .map(|template| {
-            vize_curator::inspector::template_remarks(
-                filename,
-                &template.content,
-                template.loc.start,
-            )
-        })
+        .map(|template| vize_curator::inspector::template_remarks(filename, &template.content))
         .unwrap_or_default();
     let spolvero = vize_curator::inspector::spolvero_value_with_remarks(
         "analyze-sfc",

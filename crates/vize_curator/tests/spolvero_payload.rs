@@ -51,11 +51,11 @@ fn the_payload_feed_validates_and_carries_the_s1_page_exactly() {
     }]);
 
     // P3-13: the template's hoist-static remarks ride beside the page, spans
-    // in file byte offsets - derived here from the source text, not from
-    // the producer.
-    let div_start = source.find("<div").expect("div opens");
-    let div_end = source.find("</div>").expect("div closes") + "</div>".len();
-    let br_start = source.find("<br>").expect("br present");
+    // in the template's byte frame (the pages' frame) - derived here from the
+    // template text, not from the producer.
+    let div_start = template.find("<div").expect("div opens");
+    let div_end = template.find("</div>").expect("div closes") + "</div>".len();
+    let br_start = template.find("<br>").expect("br present");
     let remark = |kind: &str, name: &str, (start, end): (usize, usize), extra: bool| {
         let mut args =
             vec![serde_json::json!({ "key": "tag", "value": if extra { "div" } else { "br" } })];

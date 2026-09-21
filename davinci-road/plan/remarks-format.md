@@ -113,8 +113,9 @@ baseline `missed` remark, so the ledger cannot rot.
 
 The Spolvero feed (`spolvero-feed.schema.json`) carries a `remarks` member
 since P3-13: each item is a remark document item plus the `path` it was
-produced for, spans in file byte offsets. The member is additive to feed
-v1 — every producer emits it (possibly empty), and it is optional in the
+produced for, spans in the frame of that file's pages (template bytes for
+the inspector and `analyzeSfc`). The member is additive to feed v1 —
+every producer emits it (possibly empty), and it is optional in the
 schema so earlier v1 documents stay valid. Producers: the inspector payload
 and wasm `analyzeSfc` (`vize_curator::inspector::template_remarks`, one run
 of lowering + the S2 transform pipeline per inline HTML template) and

@@ -21,8 +21,9 @@
 //!   stage-agnostic, so S2 pages join by pushing more [`SpolveroPage`]s here,
 //!   with no schema change.
 //! - **Remarks** (P3-13): every inline HTML template's optimization remarks
-//!   from the S2 transform pipeline ([`template_remarks`]), spans in file
-//!   byte offsets - the decision explanations Spolvero renders (C-5).
+//!   from the S2 transform pipeline ([`template_remarks`]), spans in the
+//!   template's byte frame (the pages' frame) - the decision explanations
+//!   Spolvero renders (C-5).
 //!
 //! Files that are not `.vue`, fail SFC parsing, or have no template block
 //! contribute no page: the feed is a stage-dump channel, not a diagnostics
@@ -30,7 +31,7 @@
 
 pub use vize_davinci::folio::feed::{SpolveroFeed, SpolveroPage, SpolveroRemark};
 use vize_davinci::pass::RemarkCollector;
-use vize_s0::{Allocator, Span, String, cstr};
+use vize_s0::{Allocator, String, cstr};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
@@ -53,14 +54,11 @@ pub fn s1_page(path: &str, template: &str) -> SpolveroPage {
 
 /// The optimization remarks (P3-13) the S2 transform pipeline emits for
 /// one template: S1 parse, S1→S2 lowering (Vue 3 dialect), the transform
-/// pipeline under a remark collector, in canonical order. `offset` is the
-/// template content's byte offset in its file, so spans come out
-/// file-absolute - the same framing as the TS-32 corpus baseline.
+/// pipeline under a remark collector, in canonical order. Spans are byte
+/// offsets into `template` - the frame of the feed's S1/S2 pages, so a
+/// remark and the page lines it explains highlight the same source bytes.
 #[must_use]
-pub fn template_remarks(path: &str, template: &str, offset: usize) -> Vec<SpolveroRemark> {
-    let Ok(offset) = u32::try_from(offset) else {
-        return Vec::new();
-    };
+pub fn template_remarks(path: &str, template: &str) -> Vec<SpolveroRemark> {
     let allocator = Allocator::default();
     let (tree, errors) = vize_s1::parse(&allocator, template);
     let mut lowered =
@@ -70,12 +68,9 @@ pub fn template_remarks(path: &str, template: &str, offset: usize) -> Vec<Spolve
     collector
         .finish()
         .into_iter()
-        .map(|mut remark| {
-            remark.span = Span::new(remark.span.start + offset, remark.span.end + offset);
-            SpolveroRemark {
-                path: Some(String::from(path)),
-                remark,
-            }
+        .map(|remark| SpolveroRemark {
+            path: Some(String::from(path)),
+            remark,
         })
         .collect()
 }
@@ -131,7 +126,6 @@ pub(super) fn payload_spolvero(files: &[InspectorSourceFile]) -> serde_json::Val
                 remarks.extend(template_remarks(
                     file.path.as_str(),
                     template.content.as_ref(),
-                    template.loc.start,
                 ));
             }
         }

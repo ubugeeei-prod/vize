@@ -66,8 +66,10 @@ pub struct SpolveroPage {
 }
 
 /// One optimization remark in the feed (P3-13): the recorded remark plus
-/// the file it was produced for. Spans are byte offsets into that file
-/// (or into the stdin artifact when `path` is `None`).
+/// the file it was produced for. Spans are byte offsets into the artifact
+/// the pipeline lowered - the same frame as that file's pages (the template
+/// content for the inspector and `analyzeSfc`, the stdin artifact for
+/// `davinci-opt`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpolveroRemark {
     /// Source file, as for [`SpolveroPage::path`].

@@ -63,10 +63,10 @@ fn the_analyze_result_carries_the_s1_spolvero_feed() {
     // The S1 page's text equals the authored template bytes (the TS-19
     // fidelity law observed at this consumer), proven through the surface
     // tree rather than copied from the source. The P3-13 remark explains why
-    // the `<div>` is not whole-hoistable; its span is file-absolute, derived
-    // here from the source text.
-    let start = SOURCE.find("<div>").expect("div opens");
-    let end = SOURCE.find("</div>").expect("div closes") + "</div>".len();
+    // the `<div>` is not whole-hoistable; its span is in the template's byte
+    // frame (the pages' frame), derived here from the template text.
+    let start = TEMPLATE.find("<div>").expect("div opens");
+    let end = TEMPLATE.find("</div>").expect("div closes") + "</div>".len();
     assert_eq!(
         result["spolvero"],
         serde_json::json!({
