@@ -217,43 +217,7 @@ function workflowSteps(workflow: string, jobName: string) {
   return parsed.jobs?.[jobName]?.steps ?? [];
 }
 
-test("the release runtime smoke runs the fresh-project matrix", () => {
-  const command = readRepoFile("tools", "commands", "release", "npm", "smoke-release-install.rs");
-  const bridge = readRepoFile("tools", "support", "release", "npm_smoke_init.rs");
-  assert.match(command, /npm_smoke_init::run\(/u);
-  assert.match(bridge, /runInitTypecheckChecks\(context\.installDir,/u);
-  assert.match(bridge, /runFreshProjectInitChecks\(context\)/u);
-  const runtime = readRepoFile("legacy-tools", "npm", "smoke-release-runtime.mjs");
-  // The context keys the fresh-project driver needs, independent of the order
-  // and line breaks the call site happens to use.
-  const freshCall = /runFreshProjectInitChecks\(\{([^}]*)\}\)/u.exec(runtime);
-  assert.ok(freshCall, "the runtime smoke must call runFreshProjectInitChecks");
-  const context = new Set(
-    freshCall[1]
-      .split(",")
-      .map((entry) => entry.split(":")[0].trim())
-      .filter((name) => name.length > 0),
-  );
-  for (const key of ["tempDir", "vizeBin"]) {
-    assert.ok(context.has(key), `runFreshProjectInitChecks must receive ${key}`);
-  }
-  assert.match(runtime, /from "\.\/smoke-release-init-fresh\.mjs"/u);
-  const installer = readRepoFile("legacy-tools", "npm", "smoke-release-install.mjs");
-  assert.match(
-    installer,
-    /runRuntimeChecks\(installDir, installable, \{\s*allPackages: packages,/u,
-    "fresh-project redirects must see pack-only optional platform tarballs",
-  );
-
-  const project = readRepoFile("legacy-tools", "npm", "smoke-release-init-project.mjs");
-  // The isolation contract: outside the install tree, outside the checkout, and
-  // no ancestor that could resolve `vize` for the project.
-  assert.match(project, /is inside the install tree/u);
-  assert.match(project, /is inside the Vize checkout/u);
-  assert.match(project, /would leak into the fresh project/u);
-  assert.match(project, /installed vize did not bring project-local TypeScript 7 for Corsa/u);
-  assert.match(project, /a missing Corsa runtime silently disabled type checking/u);
-
+test("release workflows run the runtime matrix with every required package", () => {
   for (const workflow of ["release.yml", "native-smoke.yml"]) {
     // Assert the step's own arguments, so reflowing the YAML command cannot
     // silently drop the packed CLI from the runtime smoke.

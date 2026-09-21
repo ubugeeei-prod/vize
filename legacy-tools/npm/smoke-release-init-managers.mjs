@@ -65,7 +65,9 @@ export const PACKAGE_MANAGERS = {
     environment: {},
     projectFiles: {},
     redirectPlannedDependencies: true,
-    runScriptArgs: (script, extra) => ["run", "--silent", script, ...extra],
+    // pnpm can reinstall before running a script. --silent hides that
+    // installer's errors too, leaving CI with only an unexplained exit 1.
+    runScriptArgs: (script, extra) => ["run", script, ...extra],
     redirect: (_manifest, redirects) => ({
       "pnpm-workspace.yaml": pnpmWorkspaceOverrides(redirects),
     }),

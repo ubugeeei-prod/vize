@@ -1,6 +1,7 @@
 #!/usr/bin/env rust-script
 //! ```cargo
 //! [dependencies]
+//! dunce = "1"
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! tempfile = "3"
@@ -95,11 +96,9 @@ fn parse_args(argv: Vec<std::ffi::OsString>) -> Result<Options, String> {
             "--prepare-manifests" => options.prepare_manifests = true,
             "--runtime-checks" => options.runtime_checks = true,
             value if value.starts_with("--") => return Err(format!("Unknown argument: {value}")),
-            value => options.package_dirs.push(
-                PathBuf::from(value)
-                    .canonicalize()
-                    .unwrap_or_else(|_| PathBuf::from(value)),
-            ),
+            value => options
+                .package_dirs
+                .push(dunce::canonicalize(value).unwrap_or_else(|_| PathBuf::from(value))),
         }
     }
     if options.package_dirs.is_empty() {
@@ -394,7 +393,10 @@ fn pack_package(package_dir: &Path, pack_dir: &Path) -> Result<PathBuf, String> 
             package_dir.display()
         ));
     }
-    fs::canonicalize(created.remove(0)).map_err(|error| error.to_string())
+    // npm's file: parser treats a Windows verbatim prefix as URL syntax and
+    // turns \\?\C:\... into C:/?/C:/.... Keep paths canonical, but use the
+    // ordinary drive/UNC spelling Node and package managers understand.
+    dunce::canonicalize(created.remove(0)).map_err(|error| error.to_string())
 }
 
 fn dir_entries(dir: &Path) -> Result<BTreeMap<String, ()>, String> {
@@ -887,7 +889,7 @@ fn canonical_temp_dir() -> Result<PathBuf, String> {
         .tempdir()
         .map_err(|error| format!("cannot create temp dir: {error}"))?;
     let path = dir.keep();
-    fs::canonicalize(&path)
+    dunce::canonicalize(&path)
         .map_err(|error| format!("cannot canonicalize {}: {error}", path.display()))
 }
 
@@ -931,14 +933,16 @@ fn copy_dir(source: &Path, target: &Path) -> Result<(), String> {
 }
 
 fn repo_root() -> Result<PathBuf, String> {
-    common::repo_root().or_else(|_| {
-        Path::new(file!())
-            .ancestors()
-            .find(|candidate| {
-                candidate.join("Cargo.toml").is_file()
-                    && candidate.join("pnpm-workspace.yaml").is_file()
-            })
-            .map(Path::to_path_buf)
-            .ok_or_else(|| "cannot resolve Vize repository root from script path".to_string())
-    })
+    common::repo_root()
+        .or_else(|_| {
+            Path::new(file!())
+                .ancestors()
+                .find(|candidate| {
+                    candidate.join("Cargo.toml").is_file()
+                        && candidate.join("pnpm-workspace.yaml").is_file()
+                })
+                .map(Path::to_path_buf)
+                .ok_or_else(|| "cannot resolve Vize repository root from script path".to_string())
+        })
+        .map(|root| dunce::simplified(&root).to_path_buf())
 }
