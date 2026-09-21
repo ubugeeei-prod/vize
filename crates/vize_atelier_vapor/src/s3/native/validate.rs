@@ -5,6 +5,7 @@
 mod attach;
 mod component;
 mod control;
+mod model;
 mod operands;
 mod order;
 mod slots;
@@ -143,6 +144,7 @@ pub(super) fn admit<'a>(
     let parents = tree::assemble(program, &mut nodes, &slots, &mut regions)?;
     attach::bindings(&mut nodes, &slots, &parents, bindings)?;
     slots::check(&nodes, &parents)?;
+    model::check(&nodes)?;
     tree::check_nesting(&nodes, &parents)?;
     // The root fragment may hold several nodes, text included.
     let roots = std::mem::take(&mut regions[RegionId::ROOT.index() as usize]);

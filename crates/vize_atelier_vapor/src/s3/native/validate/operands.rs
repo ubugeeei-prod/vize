@@ -73,6 +73,11 @@ pub(super) fn binding<'a>(
     retained: &Retained<'_, 'a>,
 ) -> Result<(OpId, Binding<'a>)> {
     let binding = one(values, Role::BindingKind)?;
+    if (kind, binding.value.kind, binding.value.text)
+        == (OpKind::SetProp, ValueKind::Literal, "model")
+    {
+        return super::model::model(values);
+    }
     // Generic ops carry several families (SetProp is also model/sync, a
     // Directive op also once/memo/cloak/custom). Select the family first.
     let family = match (kind, binding.value.kind, binding.value.text) {

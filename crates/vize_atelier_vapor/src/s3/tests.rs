@@ -188,9 +188,9 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<div>{{ one as number }}</div>",
         "<div v-pre>{{ literal }}</div>",
         "<div v-once></div>",
-        "<input v-model=\"text\" />",
-        "<input v-model.lazy=\"text\" />",
-        "<input type=\"checkbox\" v-model=\"checked\" />",
+        "<input v-model=\"items[i]\" />",
+        "<input v-model.foo=\"text\" />",
+        "<MyComp v-model=\"checked\" />",
         "<div v-cloak></div>",
         "<div :[key]=\"value\"></div>",
         "<div ref=\"node\"></div>",
@@ -306,6 +306,7 @@ mod control;
 mod attributes;
 mod components;
 mod elements;
+mod models;
 mod parser_agreement;
 mod slots;
 mod templates;

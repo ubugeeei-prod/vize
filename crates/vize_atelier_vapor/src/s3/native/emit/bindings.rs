@@ -1,7 +1,7 @@
 //! Element bindings in authored order: props and content directives are
 //! render effects; listeners and `v-show` are one-time operations.
 
-use vize_atelier_core::{DirectiveNode, ExpressionNode, SourceLocation};
+use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
 use vize_carton::{Box, Vec};
 
 use super::super::{BindingKind, Content, Expr};
@@ -113,6 +113,29 @@ impl<'a> Emitter<'a, '_> {
                     }),
                     block,
                 );
+            }
+            BindingKind::Model => {
+                let mut dir = DirectiveNode::new(self.allocator, "model", SourceLocation::STUB);
+                dir.exp = Some(ExpressionNode::Simple(
+                    self.expression(binding.value, false),
+                ));
+                for modifier in &binding.modifiers {
+                    dir.modifiers.push(SimpleExpressionNode::new(
+                        modifier,
+                        true,
+                        SourceLocation::STUB,
+                    ));
+                }
+                block
+                    .operation
+                    .push(OperationNode::Directive(DirectiveIRNode {
+                        element,
+                        dir: Box::new_in(dir, &self.allocator),
+                        name: "model",
+                        builtin: true,
+                        tag,
+                        input_type,
+                    }));
             }
             BindingKind::Slot => unreachable!("slot content is emitted with its component"),
         }

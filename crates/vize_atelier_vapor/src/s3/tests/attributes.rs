@@ -62,7 +62,7 @@ fn unsupported_attribute_shapes_select_exact_legacy_reasons() {
         (r#"<div style="color: red" :style="s"></div>"#, Binding),
         (r#"<div class :class="c"></div>"#, Binding),
         (r#"<div :class="a" :class="b"></div>"#, Binding),
-        (r#"<input v-model="value">"#, Binding),
+        (r#"<input :type="kind" v-model="value">"#, Binding),
         (r#"<div v-focus="value"></div>"#, Operation),
         (r#"<div v-once>{{ value }}</div>"#, Operation),
         (
