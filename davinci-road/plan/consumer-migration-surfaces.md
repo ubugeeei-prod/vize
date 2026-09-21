@@ -50,7 +50,7 @@ observational guard for planning only. It does not change rollout state.
 | Typechecker                |          1062 |                   274 |               788 |             502 |     241 |            1049 |      756 |           596 |           847 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            21 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            71 |
-| LSP                        |           340 |                   340 |                 0 |             118 |      63 |             385 |      136 |           197 |           452 |
+| LSP                        |           342 |                   342 |                 0 |             118 |      63 |             385 |      138 |           197 |           452 |
 
 ## Consumer details
 
@@ -226,7 +226,7 @@ Scope: lsp/ide commands plus Maestro editor/server crate. This is a lexical inve
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |         340 |             234 |      106 |
+| S0               |         342 |             234 |      108 |
 | old AST/parser   |          59 |              46 |       13 |
 | Croquis analysis |          59 |              43 |       16 |
 | raw OXC          |          63 |              62 |        1 |
@@ -248,10 +248,10 @@ Additional source/manifest rows are in the TSV: 134 omitted.
 | file                                                             | class    | surfaces                   | sites |
 | ---------------------------------------------------------------- | -------- | -------------------------- | ----: |
 | `crates/vize_maestro/src/server/state/virtual_docs.rs:69`        | test/dev | S0 7<br>old AST/parser 2   |     9 |
+| `crates/vize_maestro/src/document/text/tests.rs:4`               | test/dev | S0 8                       |     8 |
 | `crates/vize_maestro/src/virtual_code/template_code_tests.rs:12` | test/dev | S0 4<br>old AST/parser 4   |     8 |
 | `crates/vize_maestro/src/ide/inlay_hint.rs:21`                   | test/dev | S0 4<br>Croquis analysis 3 |     7 |
 | `crates/vize_maestro/src/server/state.rs:37`                     | test/dev | S0 7                       |     7 |
-| `crates/vize_maestro/src/document/text/tests.rs:4`               | test/dev | S0 6                       |     6 |
 
 Additional test/dev rows are in the TSV: 63 omitted.
 

@@ -3017,7 +3017,7 @@ lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	45	raw_oxc	raw OXC	raw	oxc_seman
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	45	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 lsp	LSP	source	crates/vize_maestro/src/document/store.rs	79	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/document/text.rs	6	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/document/text/tests.rs	4	s0	S0	stage	vize_s0	preferred	6
+lsp	LSP	test/dev	crates/vize_maestro/src/document/text/tests.rs	4	s0	S0	stage	vize_s0	preferred	8
 lsp	LSP	source	crates/vize_maestro/src/ide.rs	98	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/auto_insert.rs	77	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/call_hierarchy.rs	133	s0	S0	stage	vize_s0	preferred	1

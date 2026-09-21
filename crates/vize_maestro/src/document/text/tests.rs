@@ -117,3 +117,16 @@ fn ordinary_documents_need_no_exceptional_boundary_allocation() {
     assert!(text.ignored_breaks.is_empty());
     assert!(!text.ignored_breaks.spilled());
 }
+
+#[test]
+fn snapshot_comparisons_follow_edits_without_flattening_the_rope() {
+    let prefix = "x".repeat(4096);
+    let source = vize_s0::cstr!("{prefix}\u{2028}😀\r\nlast");
+    let mut text = DocumentText::new(&source);
+    assert!(text == source.as_str());
+    assert!(text != &source[..4096]);
+    text.replace(4097..4098, "😃");
+    assert!(text != source.as_str());
+    let edited = vize_s0::cstr!("{prefix}\u{2028}😃\r\nlast");
+    assert!(text == edited.as_str());
+}

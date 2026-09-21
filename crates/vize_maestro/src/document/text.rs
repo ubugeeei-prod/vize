@@ -130,6 +130,12 @@ impl fmt::Display for DocumentText {
     }
 }
 
+impl PartialEq<&str> for DocumentText {
+    fn eq(&self, other: &&str) -> bool {
+        self.rope == *other
+    }
+}
+
 fn ignored_break_ends(source: &str, scan_unicode: bool) -> impl Iterator<Item = usize> + '_ {
     let bytes = source.as_bytes();
     let mut ascii = memchr::memchr2_iter(0x0b, 0x0c, bytes)
