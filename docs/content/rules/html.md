@@ -196,3 +196,47 @@ Good:
   <td aria-label="No value"></td>
 </template>
 ```
+
+## `html/cross-component-nesting`
+
+Reports HTML nesting that is only wrong once components are composed: a child component's root
+element that the browser would re-parent, drop out of, or reject where the parent renders it. Each
+template is valid on its own, so no per-file check can see it; after server rendering the browser
+builds a different DOM than Vue's virtual DOM (a hydration mismatch), or a non-conforming one.
+
+Emitted by `vize lint --cross-file`. The diagnostic is reported at the usage site and names the
+child's root element and its position, so the witness spans both files. Children are resolved
+through the parent's imports only (aliases follow the import; a same-named file elsewhere is never
+picked by name). A single root, every `v-if`/`v-else` alternative and every root of a fragment is
+checked; a `<slot>` pass-through, a dynamic `:is` and an unresolved component are not reported.
+
+Bad:
+
+```vue
+<!-- App.vue -->
+<script setup>
+import InfoCard from "./InfoCard.vue";
+</script>
+
+<template>
+  <p>Summary <InfoCard /></p>
+</template>
+```
+
+```vue
+<!-- InfoCard.vue -->
+<template>
+  <div class="card"><slot /></div>
+</template>
+```
+
+Good:
+
+```vue
+<!-- App.vue -->
+<template>
+  <div>Summary <InfoCard /></div>
+</template>
+```
+
+See `examples/html-conformance` for a runnable project.

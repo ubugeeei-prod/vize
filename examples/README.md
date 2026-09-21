@@ -170,6 +170,22 @@ inputs alongside the other checked examples.
 
 ---
 
+## Cross-component HTML Conformance Example
+
+`examples/html-conformance/` contains Vue components that are each valid HTML on their own and
+invalid once composed: a `<div>` root rendered inside `<p>`, a `<tr>` root inside `<table>`, and a
+`<button>` root inside `<a>`. `vize lint --cross-file` reports each collision at the usage site
+and names the child's root element and its position:
+
+```bash
+cd examples/html-conformance
+vize lint --cross-file 'src/**/*.vue'
+```
+
+The command intentionally exits non-zero. See `examples/html-conformance/README.md`.
+
+---
+
 ## Vite + Musea Example
 
 The `examples/vite-musea/` directory contains a sample component gallery built with Vite + Musea.
