@@ -10,6 +10,11 @@
 //!
 //! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widens the committed battery to
 //! every `.vue` file under `<dir>` (see `davinci_test_support::corpus`).
+//!
+//! Two sweeps share the input. The emitter sweep derives options by hand and
+//! measures what the plan emitter can own; the production sweep
+//! (`davinci_ssr_corpus/production.rs`) drives the SFC adapter entry point
+//! unchanged and reports the production reach.
 
 #![allow(clippy::disallowed_macros, clippy::disallowed_types)]
 
@@ -19,6 +24,9 @@ use std::fs;
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_atelier_ssr::differential::{SsrLaneComparison, compare_ssr_lanes};
 use vize_atelier_ssr::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
+
+#[path = "davinci_ssr_corpus/production.rs"]
+mod production;
 
 const BATTERY: &[(&str, &str)] = &[
     (
@@ -208,18 +216,39 @@ fn ssr_lanes_agree_on_sfc_templates_body() {
     assert_eq!(battery.templates, BATTERY.len() as u64);
     assert_eq!(battery.compared, BATTERY.len() as u64);
     assert_clean("battery", &battery);
+    let mut battery_production = production::ProductionReport::default();
+    for (name, source) in BATTERY {
+        production::compare(name, source, &mut battery_production);
+    }
+    assert_eq!(battery_production.compared, BATTERY.len() as u64);
+    production::assert_clean("battery", &battery_production);
 
     let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
         eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
     let mut corpus = Report::default();
+    let mut reach = production::ProductionReport::default();
     for file in &sweep.files {
         let Ok(source) = fs::read_to_string(file) else {
             continue;
         };
-        compare_sfc(file.to_string_lossy().as_ref(), &source, &mut corpus);
+        let name = file.to_string_lossy();
+        compare_sfc(name.as_ref(), &source, &mut corpus);
+        production::compare(name.as_ref(), &source, &mut reach);
     }
+    eprintln!(
+        "davinci SSR production sweep: scope={} templates={} compared={} s4={} error_skips={} rejected={} divergences={}",
+        sweep.scope_label(),
+        reach.templates,
+        reach.compared,
+        reach.reach(),
+        reach.error_skips,
+        reach.rejected.len(),
+        reach.divergences.len(),
+    );
+    eprintln!("davinci SSR production lanes: {:?}", reach.lanes);
+    production::assert_clean("production", &reach);
     eprintln!(
         "davinci SSR corpus sweep: scope={} files={} parsed={} templates={} compared={} s4={} legacy_error_skips={} rejected={} divergences={}",
         sweep.scope_label(),

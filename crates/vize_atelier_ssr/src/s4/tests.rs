@@ -53,6 +53,21 @@ fn unsupported_bridge_options_select_legacy_before_lowering() {
 }
 
 #[test]
+fn a_croquis_summary_names_its_own_legacy_reason() {
+    let selection = select(
+        r#"<div>{{ msg }}</div>"#,
+        &SsrCompilerOptions {
+            croquis: Some(Box::default()),
+            ..SsrCompilerOptions::default()
+        },
+    );
+    assert!(
+        matches!(selection, SsrS4Selection::Legacy(LegacyReason::Croquis)),
+        "got {selection:?}"
+    );
+}
+
+#[test]
 fn unsupported_emission_options_select_legacy_after_the_witness() {
     let selection = select(
         r#"<div>{{ msg }}</div>"#,

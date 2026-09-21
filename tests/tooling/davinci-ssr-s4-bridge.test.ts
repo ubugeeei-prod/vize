@@ -46,6 +46,7 @@ test("SSR S4 selection counters name every legacy reason", () => {
   );
   assert.deepEqual(variants, [
     "Options",
+    "Croquis",
     "SurfaceSemantics",
     "Operation",
     "Element",
@@ -57,6 +58,7 @@ test("SSR S4 selection counters name every legacy reason", () => {
     "davinci.s4_ssr.accepted",
     "davinci.s4_ssr.rejected",
     "davinci.s4_ssr.legacy.options",
+    "davinci.s4_ssr.legacy.croquis",
     "davinci.s4_ssr.legacy.surface_semantics",
     "davinci.s4_ssr.legacy.operation",
     "davinci.s4_ssr.legacy.element",

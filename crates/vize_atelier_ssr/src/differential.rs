@@ -12,8 +12,13 @@ use vize_atelier_core::options::{CustomElementMatcher, TemplateSyntaxMode};
 use vize_s0::Allocator;
 
 use crate::compile::{SsrLane, compile_ssr_on_lane};
-use crate::s4::{SsrS4Request, SsrS4Selection, select_ssr_lane};
+use crate::s4::{SsrS4Request, select_ssr_lane};
 use crate::{SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions};
+
+mod production;
+
+pub(crate) use production::{production_lane, record_verdict};
+pub use production::{record_lanes, with_legacy_lane};
 
 /// One compile's output on one lane.
 #[derive(Debug)]
@@ -51,11 +56,7 @@ pub fn compare_ssr_lanes(
                 has_custom_elements: false,
             },
         );
-        match selection {
-            SsrS4Selection::Emitted(_) => "s4",
-            SsrS4Selection::Legacy(reason) => reason.counter_suffix(),
-            SsrS4Selection::Rejected(_) => "rejected",
-        }
+        production::lane_label(&selection)
     };
     let compile = |lane| {
         let allocator = Allocator::new();

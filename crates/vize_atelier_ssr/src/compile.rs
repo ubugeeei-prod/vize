@@ -137,6 +137,10 @@ fn compile_ssr_inner<'a>(
     custom_elements: CustomElementMatcher,
     experimental_options: SsrCompilerExperimentalOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    #[cfg(feature = "davinci-differential")]
+    let lane = crate::differential::production_lane();
+    #[cfg(not(feature = "davinci-differential"))]
+    let lane = SsrLane::Selected;
     compile_ssr_on_lane(
         allocator,
         source,
@@ -144,7 +148,7 @@ fn compile_ssr_inner<'a>(
         template_syntax,
         custom_elements,
         experimental_options,
-        SsrLane::Selected,
+        lane,
     )
 }
 
@@ -205,6 +209,10 @@ pub(crate) fn compile_ssr_on_lane<'a>(
         #[cfg(any(test, feature = "davinci-differential"))]
         SsrLane::LegacyOnly => SsrS4Selection::Legacy(s4::LegacyReason::Options),
     };
+    #[cfg(feature = "davinci-differential")]
+    if lane == SsrLane::Selected {
+        crate::differential::record_verdict(&selection);
+    }
 
     let transform_opts = crate::stage_options::transform_options(&codegen_options);
     let transform_errors = profile!(

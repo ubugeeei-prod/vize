@@ -187,9 +187,14 @@ _Tenth slice 2026-09-22:_ plain `<template>` and the non-raw-text legacy
 content tags (`iframe`, `noscript`, ...) emit from the plan (checkout smoke:
 663 of 717, 0 divergences). Element directives stay refused pending a
 decision: the legacy lane renders them through an unbound `_directives`
-(see the record). That fix, `@vize:` directive comments, element bind
-modifiers, a canonical Real Project Matrix run, and the legacy walker
-deletion remain before P3-8 closes.
+(see the record).
+_Production sweep 2026-09-22:_ the corpus gate also drives the SFC adapter
+entry point on both lanes; production reach is 112 of 722 checkout and 171 of
+1,279 vendor templates (0 divergences), bounded by `legacy.croquis` on every
+`<script setup>` SFC until Croquis-informed rewrites land in the shared
+transform door. The legacy directive fix, `@vize:` directive comments,
+element bind modifiers, a canonical Real Project Matrix run, and the legacy
+walker deletion remain before P3-8 closes.
 
 **P3-9 S4 emitter + source maps.** Structured span-carrying emission document
 replaces `CodegenContext.code` string appends across dom/vapor/ssr; one

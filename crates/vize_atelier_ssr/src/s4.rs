@@ -34,6 +34,10 @@ pub(crate) struct SsrS4Request<'o> {
 pub(crate) enum LegacyReason {
     /// The option surface is outside the S4 lane.
     Options,
+    /// A Croquis summary asks for script-aware expression rewrites the
+    /// shared transform door does not publish yet (production
+    /// `<script setup>` SFCs; the DOM S2 lane refuses them the same way).
+    Croquis,
     /// S2 recorded diagnostics or a lowering rule the lane does not model.
     SurfaceSemantics,
     /// An S2 op kind the plan emitter does not own yet.
@@ -59,6 +63,7 @@ impl LegacyReason {
     const fn counter(self) -> &'static str {
         match self {
             Self::Options => "davinci.s4_ssr.legacy.options",
+            Self::Croquis => "davinci.s4_ssr.legacy.croquis",
             Self::SurfaceSemantics => "davinci.s4_ssr.legacy.surface_semantics",
             Self::Operation => "davinci.s4_ssr.legacy.operation",
             Self::Element => "davinci.s4_ssr.legacy.element",
@@ -195,6 +200,9 @@ fn lower_and_emit(
         s2.diagnostics.len() as u64,
     );
 
+    if request.options.croquis.is_some() {
+        return SsrS4Selection::Legacy(LegacyReason::Croquis);
+    }
     if !emission_supported(request) {
         return SsrS4Selection::Legacy(LegacyReason::Options);
     }
@@ -262,14 +270,12 @@ fn bridge_supported(request: &SsrS4Request<'_>) -> bool {
 }
 
 /// Options whose expression and module semantics the plan emitter owns.
-/// Croquis-informed rewrites, inline render closures, Vue 2 dialect sugar,
-/// and in-tag comments stay with the legacy walker, like the S2 DOM lane.
+/// Inline render closures, Vue 2 dialect sugar, and in-tag comments stay
+/// with the legacy walker, like the S2 DOM lane; a Croquis summary is its
+/// own reason ([`LegacyReason::Croquis`]) because it gates production reach.
 fn emission_supported(request: &SsrS4Request<'_>) -> bool {
     let options = request.options;
-    options.croquis.is_none()
-        && !options.inline
-        && options.dialect == VueVersion::V3
-        && !options.experimental_in_tag_comments
+    !options.inline && options.dialect == VueVersion::V3 && !options.experimental_in_tag_comments
 }
 
 fn record_selection(selection: &SsrS4Selection) {
