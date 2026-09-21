@@ -1,0 +1,225 @@
+/* Davinci tab: source on the left, the stage ladder on the right. The one
+   decorative device is the pounce line between stations - the pricked,
+   dusted line a spolvero transfer leaves - and everything else stays quiet. */
+
+.davinci-playground {
+  --dv-ochre: var(--color-notice);
+  --dv-ochre-bg: var(--color-notice-bg);
+  --dv-ochre-border: var(--color-notice-border);
+  --dv-static: var(--color-teal);
+  --dv-static-bg: var(--color-teal-bg);
+
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(360px, 5fr) 7fr;
+  height: 100%;
+  min-height: 0;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.davinci-source,
+.davinci-stages {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.davinci-source {
+  border-right: 1px solid var(--border-primary);
+}
+
+.davinci-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  flex-shrink: 0;
+}
+
+.davinci-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.davinci-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.davinci-source .davinci-hint {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.davinci-ghost {
+  padding: 4px 10px;
+  font-size: 12px;
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.davinci-ghost:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.davinci-badge {
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+.davinci-editor {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Provenance highlight painted into Monaco (global: Monaco owns its DOM). */
+.davinci-provenance {
+  background: var(--color-notice-bg);
+  outline: 1.5px solid var(--color-notice);
+  outline-offset: -1px;
+  border-radius: 2px;
+}
+
+/* Page tabs within a stage, and output targets */
+.davinci-subtabs {
+  display: flex;
+  gap: 4px;
+  padding: 10px 20px 0;
+  flex-shrink: 0;
+}
+
+.davinci-subtab {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.davinci-subtab:hover {
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+}
+
+.davinci-subtab.active {
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+  background: var(--bg-secondary);
+}
+
+.davinci-body {
+  flex: 1;
+  min-height: 0;
+  padding: 12px 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.davinci-output {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  flex: 1;
+}
+
+.davinci-output .davinci-subtabs {
+  padding: 0;
+}
+
+.davinci-output .davinci-output-code.code-highlight {
+  flex: 1;
+  min-height: 0;
+  --code-line-height: 22px;
+  font-size: 14px;
+}
+
+.davinci-message {
+  margin: 20px;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+}
+
+.davinci-message.error {
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  border-color: var(--color-error-border);
+  white-space: pre-wrap;
+}
+
+.davinci-provenance-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  padding: 0 20px;
+  border-top: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.davinci-span {
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--dv-ochre);
+  background: var(--dv-ochre-bg);
+  border: 1px solid var(--dv-ochre-border);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.davinci-snippet {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 960px) {
+  .davinci-playground {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(240px, 40%) 1fr;
+  }
+
+  .davinci-source {
+    border-right: none;
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  .davinci-timeline {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

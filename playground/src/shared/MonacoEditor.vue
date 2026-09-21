@@ -22,17 +22,29 @@ export interface Diagnostic {
 
 export interface ScopeDecoration extends ScopeDecorationInfo {}
 
+/** A UTF-16 source range painted with `className` (provenance links). */
+export interface EditorHighlight {
+  start: number;
+  end: number;
+  className: string;
+  /** Scroll the range into view when it appears. */
+  reveal?: boolean;
+}
+
 const props = defineProps<{
   modelValue: string;
   language: string;
   diagnostics?: Diagnostic[];
   scopes?: ScopeDecoration[];
+  highlights?: EditorHighlight[];
   readOnly?: boolean;
   theme?: "dark" | "light";
 }>();
 
 const emit = defineEmits<{
   "update:modelValue": [string];
+  /** The primary cursor moved; payload is its UTF-16 model offset. */
+  cursor: [number];
 }>();
 
 const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
@@ -41,6 +53,26 @@ const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme", undefined 
 const resolvedTheme = () => _injectedTheme?.value ?? props.theme ?? "light";
 
 let scopeDecorationIds: string[] = [];
+let highlightDecorationIds: string[] = [];
+
+function applyHighlights(highlights: EditorHighlight[] | undefined) {
+  const editor = editorInstance.value;
+  const model = editor?.getModel();
+  if (!editor || !model) return;
+  const decorations = (highlights ?? []).map((highlight) => {
+    const start = offsetToPosition(model, highlight.start);
+    const end = offsetToPosition(model, highlight.end);
+    return {
+      range: new monaco.Range(start.lineNumber, start.column, end.lineNumber, end.column),
+      options: { className: highlight.className, isWholeLine: false },
+    };
+  });
+  highlightDecorationIds = editor.deltaDecorations(highlightDecorationIds, decorations);
+  const revealed = (highlights ?? []).findIndex((highlight) => highlight.reveal);
+  if (revealed !== -1) {
+    editor.revealRangeInCenterIfOutsideViewport(decorations[revealed].range);
+  }
+}
 
 function applyScopeDecorations(scopes: ScopeDecoration[] | undefined) {
   if (!editorInstance.value) return;
@@ -144,6 +176,11 @@ function mountEditor(container: HTMLDivElement) {
     emit("update:modelValue", value);
   });
 
+  editor.onDidChangeCursorPosition((event) => {
+    const model = editor.getModel();
+    if (model) emit("cursor", model.getOffsetAt(event.position));
+  });
+
   if (props.language === "vue") {
     addVueCommentAction(editor);
   }
@@ -154,6 +191,10 @@ function mountEditor(container: HTMLDivElement) {
 
   if (props.diagnostics && props.diagnostics.length > 0) {
     applyDiagnostics(props.diagnostics);
+  }
+
+  if (props.highlights && props.highlights.length > 0) {
+    applyHighlights(props.highlights);
   }
 }
 
@@ -215,6 +256,14 @@ watch(
     applyScopeDecorations(scopes);
   },
   { immediate: true, deep: true },
+);
+
+watch(
+  () => props.highlights,
+  (highlights) => {
+    applyHighlights(highlights);
+  },
+  { deep: true },
 );
 
 defineExpose({
