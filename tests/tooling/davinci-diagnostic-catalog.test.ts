@@ -8,11 +8,14 @@ import {
   block,
   catalogEntries,
   compilerProblems,
+  legacyTranslations,
   locales,
   parseCompilerCodes,
+  parseRules,
   parseVocabulary,
   read,
   repoRoot,
+  ruleProblems,
   rustString,
   tableProblems,
   vocabularyProblems,
@@ -64,6 +67,12 @@ test("TS-53: every compiler error code is named and catalogued, English unchange
   assert.deepEqual(compilerProblems(compiler, catalogEntries()), []);
 });
 
+test("TS-53: every one of the 248 lint rules has a description in every locale", () => {
+  const rules = parseRules();
+  assert.equal(rules.size, 248, "the parser reads every RuleMeta-family declaration");
+  assert.deepEqual(ruleProblems(rules, legacyTranslations(), catalogEntries()), []);
+});
+
 test("TS-53: the catalog check fails on a removed, emptied or drifted entry", () => {
   const vocabulary = parseVocabulary(vocabularySource);
   const compiler = parseCompilerCodes();
@@ -98,6 +107,29 @@ test("TS-53: the catalog check fails on a removed, emptied or drifted entry", ()
   const renamed = new Map(compiler.codes).set("VShowNoExpression", "compiler/v-show-empty");
   assert.deepEqual(compilerProblems({ ...compiler, codes: renamed }, entries), [
     "ErrorCode::VShowNoExpression is not named `compiler/v-show-no-expression`",
+  ]);
+
+  const rules = parseRules();
+  const legacy = legacyTranslations();
+  const undescribed = edited(entries, "script/prefer-computed.description", null);
+  assert.deepEqual(ruleProblems(rules, legacy, undescribed), [
+    "`script/prefer-computed` has no description in en",
+    "`script/prefer-computed` has no description in ja",
+    "`script/prefer-computed` has no description in zh",
+  ]);
+  const drift = edited(entries, "vue/no-mutating-props.description", (entry) => ({
+    ...entry,
+    en: "Disallow mutating props",
+  }));
+  assert.deepEqual(ruleProblems(rules, legacy, drift), [
+    "`vue/no-mutating-props.description` en differs from its RuleMeta",
+  ]);
+  const legacyWithoutJa = new Map(legacy).set("vue/require-v-for-key.description", {
+    ...legacy.get("vue/require-v-for-key.description"),
+    ja: "",
+  });
+  assert.deepEqual(ruleProblems(rules, legacyWithoutJa, entries), [
+    "`vue/require-v-for-key` has no description in ja",
   ]);
 });
 
