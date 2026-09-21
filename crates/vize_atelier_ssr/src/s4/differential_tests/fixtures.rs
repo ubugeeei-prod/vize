@@ -147,6 +147,23 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         "<ul><li>a</li><li :class=\"c\">{{ b }}</li></ul>",
     ),
     ("unicode", "<p title=\"日本\">こんにちは {{ name }} 🎉</p>"),
+    ("template-plain", "<template><div>a</div></template>"),
+    (
+        "template-nested",
+        "<div><template lang=\"x\"><b :title=\"t\">{{ v }}</b></template></div>",
+    ),
+    (
+        "iframe",
+        "<div><iframe :src=\"u\" frameborder=\"0\" allow=\"x\"></iframe></div>",
+    ),
+    (
+        "iframe-content",
+        "<div><iframe><p>fallback {{ f }}</p></iframe><noscript><img src=\"a.png\"></noscript></div>",
+    ),
+    (
+        "legacy-content-tags",
+        "<div><noembed>x</noembed><noframes>y</noframes><xmp>a &lt; b</xmp></div>",
+    ),
 ];
 
 /// Templates the selector must keep on the legacy walker in this slice.
@@ -166,7 +183,6 @@ pub(super) const REFUSED: &[(&str, &str)] = &[
     ("v-cloak", r#"<div v-cloak>{{ a }}</div>"#),
     ("v-model-argument", r#"<input v-model:foo="msg">"#),
     ("v-model-div", r#"<div v-model="msg"></div>"#),
-    ("template", "<template><div>a</div></template>"),
     ("dynamic-arg", r#"<div><p :[key]="val"></p></div>"#),
     (
         "bind-modifier",
