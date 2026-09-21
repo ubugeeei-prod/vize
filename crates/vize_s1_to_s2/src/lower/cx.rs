@@ -20,7 +20,7 @@
 
 use alloc::vec::Vec;
 
-use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+use vize_davinci::diagnostic::{Advisory, Diagnostic, Stage};
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
 use vize_s0::{Allocator, SourceBlock, Span, String};
@@ -270,8 +270,8 @@ impl<'a> Cx<'a> {
     }
 
     pub(crate) fn error(&mut self, span: Span, message: String) {
-        self.diagnostics.push(Diagnostic::new(
-            Severity::Error,
+        self.diagnostics.push(Diagnostic::legacy_error(
+            &crate::exemptions::LOWERING,
             Stage::Semantic,
             span,
             message,
@@ -287,8 +287,8 @@ impl<'a> Cx<'a> {
     pub(crate) fn report_missing_close(&mut self, element: &Element<'a>) {
         if matches!(element.close, ElementClose::Missing) {
             let span = self.token_span(&element.open.lt_name);
-            self.diagnostics.push(Diagnostic::new(
-                Severity::Error,
+            self.diagnostics.push(Diagnostic::legacy_error(
+                &crate::exemptions::MISSING_END_TAG,
                 Stage::Surface,
                 span,
                 String::from("Element is missing end tag."),
@@ -298,7 +298,7 @@ impl<'a> Cx<'a> {
 
     pub(crate) fn info(&mut self, span: Span, message: String) {
         self.diagnostics.push(Diagnostic::new(
-            Severity::Info,
+            Advisory::Info,
             Stage::Semantic,
             span,
             message,

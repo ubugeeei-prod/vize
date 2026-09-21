@@ -86,7 +86,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [ ] [P4-5a](./phase-4-tasks.md#p4-5a--one-mapping-model-and-one-diagnostic-post-pass) One mapping model and one diagnostic post-pass — lane C · startable now
 - [ ] [P4-5b](./phase-4-tasks.md#p4-5b--s2-projection-as-an-s4-target) S2 projection as an S4 target — lane C · gated on P3-9
 - [ ] [P4-5c](./phase-4-tasks.md#p4-5c--consumers-switch-and-three-generators-deleted) Consumers switch and three generators deleted — lane C · startable now (behind P4-5b)
-- [ ] [P4-6a](./phase-4-tasks-later.md#p4-6a--precision-tiers-and-the-error-witness-law-as-types) Precision tiers and the error-witness law as types — lane D · startable now
+- [x] [P4-6a](./phase-4-tasks-later.md#p4-6a--precision-tiers-and-the-error-witness-law-as-types) Precision tiers and the error-witness law as types — lane D · startable now
 - [ ] [P4-6b](./phase-4-tasks-later.md#p4-6b--witness-verifier) Witness verifier — lane D · startable now
 - [ ] [P4-6c](./phase-4-tasks-later.md#p4-6c--patina-on-the-unified-channel) Patina on the unified channel — lane D · startable now
 - [ ] [P4-7a](./phase-4-tasks-later.md#p4-7a--s2-backed-markup-facade) S2-backed markup facade — lane E · startable now

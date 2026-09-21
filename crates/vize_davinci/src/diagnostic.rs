@@ -6,12 +6,62 @@
 //! structurally removes the two-independent-assembly-paths failure mode in
 //! canon."
 //!
-//! # What P2-1 lands, and what it does not
+//! # The verdict rules, as types (P4-6a)
 //!
-//! This module lands the **type**. Replacing `vize_relief::CompilerError` at
-//! its call sites is P4's convergence task and is explicitly a non-goal here:
-//! a type nothing emits yet cannot change any output byte, which is why
-//! P2-1's corpus acceptance is trivially empty.
+//! `assurance.md`'s "verdicts are proofs" rules are enforced by construction
+//! rather than by review:
+//!
+//! - [`Severity::Error`] is reachable only through [`Diagnostic::proven`],
+//!   which takes a non-empty [`WitnessChain`] naming fact groups, or through
+//!   [`Diagnostic::legacy_error`], which takes a declared [`Exemption`]
+//!   counted by `davinci-road/plan/witness-exemptions.tsv` — an inventory
+//!   that only shrinks.
+//! - [`Diagnostic::new`] takes an [`Advisory`] severity, so an error without
+//!   a witness is a type error — the provisional "canary that tries
+//!   error-on-unknown fails to compile":
+//!
+//! ```compile_fail,E0308
+//! use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+//! use vize_s0::Span;
+//!
+//! let unproven = Diagnostic::new(Severity::Error, Stage::Semantic, Span::new(0, 1), "maybe");
+//! ```
+//!
+//!   Its twin, identical but for the severity, builds — so the canary fails
+//!   for exactly the severity (stable rustdoc does not check the error code;
+//!   the twin is what pins the reason):
+//!
+//! ```
+//! use vize_davinci::diagnostic::{Advisory, Diagnostic, Stage};
+//! use vize_s0::Span;
+//!
+//! let unproven = Diagnostic::new(Advisory::Warning, Stage::Semantic, Span::new(0, 1), "maybe");
+//! ```
+//!
+//! - The fields that carry the claim — severity and witness — are private,
+//!   so a struct literal cannot forge an unwitnessed error either:
+//!
+//! ```compile_fail,E0451
+//! use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+//! use vize_s0::Span;
+//!
+//! let forged = Diagnostic {
+//!     severity: Severity::Error,
+//!     stage: Stage::Semantic,
+//!     span: Span::new(0, 1),
+//!     message: "maybe".into(),
+//!     parts: Vec::new(),
+//!     witness: None,
+//! };
+//! ```
+//!
+//! - Rules declare a [`RuleContract`] — a [`Tier`] over a declared
+//!   [`Domain`] — whose const constructor rejects a heuristic rule declaring
+//!   error severity at compile time (see [`tier`]).
+//!
+//! Re-checking a witness against the fact base is P4-6b's verifier
+//! (`vize_davinci::witness`); this module only makes the unproven error
+//! unrepresentable.
 //!
 //! # Coordinates
 //!
@@ -36,29 +86,19 @@
 //! field in the compiler moved to `&'a str` in that change; diagnostics did
 //! not, for exactly this reason.
 
+pub mod severity;
+pub mod tier;
+pub mod verdict;
+pub mod witness;
+
 use alloc::vec::Vec;
 
 pub use crate::stage::Stage;
+pub use severity::{Advisory, Severity};
+pub use tier::{Domain, RuleContract, Tier};
+pub use verdict::Verdict;
 use vize_s0::{Span, String};
-
-/// How much a diagnostic claims.
-///
-/// The distinction is load-bearing rather than cosmetic: `assurance.md`'s
-/// no-error-on-maybe rule is that a heuristic "never produces an error; it
-/// produces silence, or an explicitly-labeled hint/suggestion severity that
-/// _says_ it is not a proof". [`Severity::Error`] is the severity P4-6 will
-/// require a verifying [`Witness`] for.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Severity {
-    /// A proven violation. P4-6 will require a verifying witness here.
-    Error,
-    /// A probable problem, stated as such.
-    Warning,
-    /// Information that is not a problem.
-    Info,
-    /// A suggestion the author may ignore.
-    Hint,
-}
+pub use witness::{Exemption, Witness, WitnessChain, WitnessKey, WitnessKeyed, WitnessLink};
 
 /// What a structured part of a diagnostic is doing.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -101,35 +141,15 @@ impl DiagnosticPart {
     }
 }
 
-/// The proof a diagnostic rests on.
-///
-/// `assurance.md`: "An error must carry its witness — the concrete fact chain
-/// that proves the violation (binding → escape → effect edge, with spans via
-/// provenance). The witness is machine-checkable against the fact base, so a
-/// false positive is not a matter of opinion: it is a witness that fails
-/// verification."
-///
-/// **This is a slot, not an implementation.** The fact-chain type and its
-/// verifier arrive with the unified channel at P4-6; until then the variant
-/// set is deliberately just the two states the migration note describes, so
-/// that a diagnostic can already record *that* it is unproven rather than
-/// leave the question unrepresented. Phase 4 exits on "every error-severity
-/// diagnostic carries a verifying witness"; legacy diagnostics are exempt **by
-/// inventory** (see [`Witness::LegacyExempt`]), never silently.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Witness {
-    /// A producer that predates the witness SDK, exempt by inventory.
-    ///
-    /// The payload names the producer, so the exemption is an entry in a list
-    /// rather than an absence — which is the whole point of "never silently".
-    LegacyExempt(String),
-}
-
 /// A diagnostic from any stage, in the one channel every renderer reads.
+///
+/// `severity` and `witness` are private and paired by the constructors: an
+/// error always carries a [`Witness`] — a proof or a counted exemption — and
+/// nothing can lower that pairing after construction.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Diagnostic {
-    /// How much this diagnostic claims.
-    pub severity: Severity,
+    /// How much this diagnostic claims. Read through [`Diagnostic::severity`].
+    severity: Severity,
     /// Which stage produced it.
     pub stage: Stage,
     /// The primary source range, in authored-file byte offsets.
@@ -138,25 +158,30 @@ pub struct Diagnostic {
     pub message: String,
     /// Labelled spans, help and suggestions.
     pub parts: Vec<DiagnosticPart>,
-    /// The proof, once P4-6 lands it. `None` today for every producer.
-    pub witness: Option<Witness>,
+    /// The proof or the exemption. `Some` on every error by construction.
+    witness: Option<Witness>,
 }
 
 /// The classification enums are single-byte tags on every target, so these
 /// hold on the wasm32 lane P2-14 makes required as well - see the note on
 /// `NodeId`'s asserts for why they are not pointer-width-guarded.
 const _: () = assert!(size_of::<Severity>() == 1);
+const _: () = assert!(size_of::<Advisory>() == 1);
 const _: () = assert!(size_of::<Stage>() == 1);
 const _: () = assert!(size_of::<PartKind>() == 1);
 
 /// `Diagnostic` is one owned value copied into batch collections and caches, so
 /// a fat one is paid for per finding: 88 bytes is `Span` (8) + severity/stage
 /// tags + an owned `String` message (24) + the parts `Vec` (24) + the witness
-/// slot (24, and the reason a real witness type must be boxed rather than
-/// inlined when P4-6 lands it). These are 64-bit footprints of
-/// pointer-containing structs, so they carry the `vize_relief` guard.
+/// slot (24). The witness keeps that slot size because its chain is a boxed
+/// slice (16) and an exemption is a `&'static` reference (8) — the P2-1 note's
+/// "a real witness type must be boxed rather than inlined", honoured. These are
+/// 64-bit footprints of pointer-containing structs, so they carry the
+/// `vize_relief` guard.
 #[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<Diagnostic>() == 88);
+#[cfg(target_pointer_width = "64")]
+const _: () = assert!(size_of::<Option<Witness>>() == 24);
 #[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<DiagnosticPart>() == 40);
 
@@ -171,16 +196,57 @@ const _: () = {
 };
 
 impl Diagnostic {
-    /// A diagnostic with no parts and no witness.
+    /// A diagnostic that claims no proof: a warning, a note or a hint.
+    ///
+    /// This is the constructor every unproven finding uses, and it cannot
+    /// build an error — see the module docs for the `compile_fail` canary.
     #[must_use]
-    pub fn new(severity: Severity, stage: Stage, span: Span, message: impl Into<String>) -> Self {
+    pub fn new(severity: Advisory, stage: Stage, span: Span, message: impl Into<String>) -> Self {
+        Self::build(severity.severity(), stage, span, message.into(), None)
+    }
+
+    /// A proven error: `witness` is the non-empty fact chain that proves the
+    /// violation, re-checked against the fact base by P4-6b's verifier.
+    #[must_use]
+    pub fn proven(
+        stage: Stage,
+        span: Span,
+        message: impl Into<String>,
+        witness: WitnessChain,
+    ) -> Self {
+        let witness = Some(Witness::Proven(witness));
+        Self::build(Severity::Error, stage, span, message.into(), witness)
+    }
+
+    /// An error from a producer that predates the witness SDK, exempt from
+    /// the witness law **by inventory**: `exemption` is a declared `static`
+    /// counted by `davinci-road/plan/witness-exemptions.tsv`, never an
+    /// ambient absence.
+    #[must_use]
+    pub fn legacy_error(
+        exemption: &'static Exemption,
+        stage: Stage,
+        span: Span,
+        message: impl Into<String>,
+    ) -> Self {
+        let witness = Some(Witness::LegacyExempt(exemption));
+        Self::build(Severity::Error, stage, span, message.into(), witness)
+    }
+
+    fn build(
+        severity: Severity,
+        stage: Stage,
+        span: Span,
+        message: String,
+        witness: Option<Witness>,
+    ) -> Self {
         Self {
             severity,
             stage,
             span,
-            message: message.into(),
+            message,
             parts: Vec::new(),
-            witness: None,
+            witness,
         }
     }
 
@@ -191,98 +257,46 @@ impl Diagnostic {
         self
     }
 
-    /// Attach a witness.
+    /// Attach the fact chain behind this diagnostic.
+    ///
+    /// On an error it replaces the previous proof, or retires the exemption
+    /// — a proof always supersedes one. On an advisory diagnostic it is the
+    /// "why" a renderer may expand. The severity never changes.
     #[must_use]
-    pub fn with_witness(mut self, witness: Witness) -> Self {
-        self.witness = Some(witness);
+    pub fn with_witness(mut self, witness: WitnessChain) -> Self {
+        self.witness = Some(Witness::Proven(witness));
         self
     }
 
-    /// Whether P4-6's law — every error carries a verifying witness — holds
-    /// for this diagnostic.
-    ///
-    /// Non-error severities satisfy it trivially. The law is not enforced
-    /// anywhere yet, by design: it becomes a gate when the witness type is
-    /// real, and until then this predicate is what an inventory counts.
+    /// How much this diagnostic claims.
     #[must_use]
-    pub fn satisfies_witness_law(&self) -> bool {
-        self.severity != Severity::Error || self.witness.is_some()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{Diagnostic, DiagnosticPart, PartKind, Severity, Stage, Witness};
-    use vize_s0::Span;
-
-    #[test]
-    fn a_new_diagnostic_carries_no_parts_and_no_witness() {
-        let diagnostic = Diagnostic::new(
-            Severity::Warning,
-            Stage::Semantic,
-            Span::new(4, 9),
-            "v-for without a key",
-        );
-        assert_eq!(diagnostic.severity, Severity::Warning);
-        assert_eq!(diagnostic.stage, Stage::Semantic);
-        assert_eq!(diagnostic.span, Span::new(4, 9));
-        assert_eq!(diagnostic.message.as_str(), "v-for without a key");
-        assert!(diagnostic.parts.is_empty());
-        assert_eq!(diagnostic.witness, None);
+    pub fn severity(&self) -> Severity {
+        self.severity
     }
 
-    #[test]
-    fn parts_accumulate_in_the_order_they_are_attached() {
-        let diagnostic = Diagnostic::new(
-            Severity::Error,
-            Stage::Surface,
-            Span::new(0, 1),
-            "unterminated element",
-        )
-        .with_part(DiagnosticPart::new(
-            PartKind::Primary,
-            Span::new(0, 1),
-            "opened here",
-        ))
-        .with_part(DiagnosticPart::new(
-            PartKind::Help,
-            Span::new(9, 9),
-            "add a closing tag",
-        ));
-        assert_eq!(diagnostic.parts.len(), 2);
-        assert_eq!(diagnostic.parts[0].kind, PartKind::Primary);
-        assert_eq!(diagnostic.parts[1].kind, PartKind::Help);
-        assert_eq!(diagnostic.parts[1].message.as_str(), "add a closing tag");
+    /// The proof or the exemption this diagnostic carries. Always `Some` for
+    /// an error; `Some` for an advisory only when a chain was attached.
+    #[must_use]
+    pub fn witness(&self) -> Option<&Witness> {
+        self.witness.as_ref()
     }
 
-    #[test]
-    fn the_witness_law_holds_trivially_below_error_severity() {
-        for severity in [Severity::Warning, Severity::Info, Severity::Hint] {
-            let diagnostic =
-                Diagnostic::new(severity, Stage::Emit, Span::new(0, 0), "not an error");
-            assert!(diagnostic.satisfies_witness_law());
+    /// The fact chain, when this diagnostic carries one.
+    #[must_use]
+    pub fn witness_chain(&self) -> Option<&WitnessChain> {
+        match &self.witness {
+            Some(Witness::Proven(chain)) => Some(chain),
+            Some(Witness::LegacyExempt(_)) | None => None,
         }
     }
 
-    #[test]
-    fn an_error_without_a_witness_fails_the_law_and_with_one_holds_it() {
-        let bare = Diagnostic::new(Severity::Error, Stage::Lowered, Span::new(2, 3), "proven");
-        assert!(!bare.satisfies_witness_law());
-
-        let exempt = bare
-            .clone()
-            .with_witness(Witness::LegacyExempt("vize_canon".into()));
-        assert!(exempt.satisfies_witness_law());
-        assert_eq!(
-            exempt.witness,
-            Some(Witness::LegacyExempt("vize_canon".into()))
-        );
-    }
-
-    #[test]
-    fn severities_order_from_most_to_least_claimed() {
-        assert!(Severity::Error < Severity::Warning);
-        assert!(Severity::Warning < Severity::Info);
-        assert!(Severity::Info < Severity::Hint);
+    /// The exemption this diagnostic reports under, when it is a legacy
+    /// error — what a runtime inventory counts.
+    #[must_use]
+    pub fn exemption(&self) -> Option<&'static Exemption> {
+        match self.witness {
+            Some(Witness::LegacyExempt(exemption)) => Some(exemption),
+            Some(Witness::Proven(_)) | None => None,
+        }
     }
 }

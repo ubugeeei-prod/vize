@@ -264,6 +264,6 @@ fn transform_options(dialect: VueVersion, hoist_static: bool) -> TransformOption
 }
 
 fn blocks_s2_comparison(diagnostic: &vize_davinci::diagnostic::Diagnostic) -> bool {
-    diagnostic.severity == Severity::Error
+    diagnostic.severity() == Severity::Error
         && diagnostic.message.as_str() != vize_s1_to_s2::pass::vif::SAME_KEY_MESSAGE
 }

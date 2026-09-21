@@ -11,7 +11,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+use vize_davinci::diagnostic::{Diagnostic, Stage};
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
 use vize_s0::{Span, String, ensure_sufficient_stack};
@@ -48,8 +48,8 @@ impl Channels<'_> {
         node: Option<NodeId>,
         before: String,
     ) {
-        self.diagnostics.push(Diagnostic::new(
-            Severity::Error,
+        self.diagnostics.push(Diagnostic::legacy_error(
+            &crate::exemptions::V_SLOT,
             Stage::Semantic,
             span,
             String::from(message),

@@ -6,8 +6,9 @@
 mod support;
 
 use support::artifact;
-use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+use vize_davinci::diagnostic::{Advisory, Diagnostic, Stage};
 use vize_s0::{Span, cstr};
+use vize_s1_to_s2::exemptions;
 
 #[test]
 fn a_non_native_tag_lowers_as_a_component() {
@@ -277,7 +278,7 @@ fn ill_formed_v_once_spellings_still_defer() {
         assert_eq!(
             art.diagnostics,
             vec![Diagnostic::new(
-                Severity::Info,
+                Advisory::Info,
                 Stage::Semantic,
                 Span::new(5, attr_end),
                 "`v-once` is representable as `vue.once` only as the bare directive",
@@ -336,8 +337,8 @@ fn a_missing_end_tag_hole_becomes_a_surface_diagnostic() {
     );
     assert_eq!(
         art.diagnostics,
-        vec![Diagnostic::new(
-            Severity::Error,
+        vec![Diagnostic::legacy_error(
+            &exemptions::MISSING_END_TAG,
             Stage::Surface,
             Span::new(5, 10),
             "Element is missing end tag.",

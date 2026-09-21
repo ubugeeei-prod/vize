@@ -7,8 +7,9 @@
 mod support;
 
 use support::artifact;
-use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+use vize_davinci::diagnostic::{Diagnostic, Stage};
 use vize_s0::Span;
+use vize_s1_to_s2::exemptions;
 
 #[test]
 fn a_v_if_chain_groups_into_one_region_owning_if() {
@@ -74,8 +75,8 @@ fn an_unsplittable_for_value_rides_whole_as_the_classified_escape() {
     );
     assert_eq!(
         art.diagnostics,
-        vec![Diagnostic::new(
-            Severity::Error,
+        vec![Diagnostic::legacy_error(
+            &exemptions::LOWERING,
             Stage::Semantic,
             Span::new(10, 15),
             "v-for has invalid expression.",
@@ -179,8 +180,8 @@ fn an_orphan_else_keeps_its_fragment_under_the_exact_error() {
     );
     assert_eq!(
         art.diagnostics,
-        vec![Diagnostic::new(
-            Severity::Error,
+        vec![Diagnostic::legacy_error(
+            &exemptions::LOWERING,
             Stage::Semantic,
             Span::new(5, 11),
             "v-else/v-else-if has no adjacent v-if.",

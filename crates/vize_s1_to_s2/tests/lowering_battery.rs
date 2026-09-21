@@ -12,10 +12,11 @@ mod support;
 
 use davinci_test_support::surface_fixture as battery;
 use support::{assert_authored_artifact, assert_sound, with_lowered};
-use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+use vize_davinci::diagnostic::{Diagnostic, Stage};
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_s0::{Allocator, SourceRoot, Span};
 use vize_s1::parse;
+use vize_s1_to_s2::exemptions;
 use vize_s2::folio::DisegnoFolio;
 use vize_s2::verify::{Rigor, Violation, verify};
 
@@ -100,8 +101,8 @@ ui.element div @18:36
     );
     assert_eq!(
         lowered.diagnostics,
-        vec![Diagnostic::new(
-            Severity::Error,
+        vec![Diagnostic::legacy_error(
+            &exemptions::MISSING_END_TAG,
             Stage::Surface,
             Span::new(23, 28),
             "Element is missing end tag.",
@@ -134,8 +135,8 @@ fn source_block_tokenizer_errors_are_file_absolute() {
     assert_eq!(verify(&folio, Rigor::Canonical), Vec::<Violation>::new());
     assert_eq!(
         lowered.diagnostics,
-        vec![Diagnostic::new(
-            Severity::Error,
+        vec![Diagnostic::legacy_error(
+            &exemptions::SURFACE_SYNTAX,
             Stage::Surface,
             Span::new(22, 22),
             "Unexpected solidus in tag.",
