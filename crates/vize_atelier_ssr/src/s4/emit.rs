@@ -11,6 +11,7 @@ mod attrs;
 mod component;
 mod component_props;
 mod control;
+mod create_slots;
 mod element;
 mod fallthrough;
 mod model;
@@ -20,6 +21,7 @@ mod slots;
 mod text;
 mod vnode;
 mod vnode_control;
+mod vnode_create_slots;
 mod vnode_props;
 
 use vize_davinci::side_table::SideTable;

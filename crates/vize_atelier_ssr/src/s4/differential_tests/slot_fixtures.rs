@@ -133,6 +133,38 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         r#"<Foo><slot v-if="a" :key="k" :v="v" /></Foo>"#,
     ),
     (
+        "create-slots-mixed",
+        r#"<Foo><template v-if="a" #a="{ p }">x{{ p }}</template><template v-else-if="b" #b>y</template><template v-for="n in names" #[n]="s">{{ s }}{{ n }}</template><template #[dyn]>d</template><template #st>s</template>z</Foo>"#,
+    ),
+    (
+        "create-slots-conditional-else",
+        r#"<Foo><template v-if="a" #a>1</template><template v-else #b>2</template></Foo>"#,
+    ),
+    (
+        "create-slots-conditional-plain-branch",
+        r#"<Foo><template v-if="a" #a>1</template><p v-else>plain</p></Foo>"#,
+    ),
+    (
+        "create-slots-looped-aliases",
+        r#"<Foo><template v-for="({ id, label }, i) in cols" #[id]="{ row }">{{ row[id] }} {{ label }} {{ i }}</template></Foo>"#,
+    ),
+    (
+        "create-slots-looped-static-name",
+        r#"<Foo><template v-for="n in 3" #cell>{{ n }}</template></Foo>"#,
+    ),
+    (
+        "create-slots-in-slot",
+        r#"<Bar><Foo><template v-if="a" #a>x</template><template #[k]="{ v }"><i>{{ v }}</i></template></Foo></Bar>"#,
+    ),
+    (
+        "create-slots-in-scope",
+        r#"<Bar v-slot="{ s }"><Foo><template v-for="n in s.names" #[n]><slot :name="n" /></template></Foo></Bar>"#,
+    ),
+    (
+        "create-slots-dynamic-component",
+        r#"<component :is="c"><template v-if="a" #head>h</template>body</component>"#,
+    ),
+    (
         "root-if-keyed",
         r#"<div v-if="a" :key="k" :id="i">x</div><Bar v-else :key="k2" :y="2" />"#,
     ),

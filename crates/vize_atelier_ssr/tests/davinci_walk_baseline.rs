@@ -42,7 +42,7 @@ const BASELINE: [(&str, u64, u64); 6] = [
 const PRODUCTION_FLOOR: [(&str, u64, u64); 6] = [
     ("small", 1, 8),
     ("medium", 1, 33),
-    ("large", 2, 106),
+    ("large", 1, 57),
     ("stress-deep", 1, 72),
     ("stress-wide", 1, 2),
     ("stress-interp", 1, 1001),

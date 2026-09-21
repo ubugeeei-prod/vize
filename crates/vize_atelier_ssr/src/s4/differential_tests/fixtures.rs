@@ -152,16 +152,12 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
 /// Templates the selector must keep on the legacy walker in this slice.
 pub(super) const REFUSED: &[(&str, &str)] = &[
     (
-        "dynamic-slot-name",
-        r#"<Foo><template #[name]>x</template></Foo>"#,
+        "dynamic-slot-name-expression",
+        r#"<Foo><template #[names[0]]>x</template></Foo>"#,
     ),
     (
-        "conditional-slot",
-        r#"<Foo><template v-if="a" #a>x</template></Foo>"#,
-    ),
-    (
-        "looped-slot",
-        r#"<Foo><template v-for="n in names" #[n]>x</template></Foo>"#,
+        "nested-slot-carrier",
+        r#"<Foo><div v-if="a"><template #a>x</template></div></Foo>"#,
     ),
     ("slot-dynamic-prop-key", r#"<div><slot :[k]="v" /></div>"#),
     ("slot-name-twice", r#"<div><slot name :name="n" /></div>"#),
