@@ -6,6 +6,7 @@
 
 mod branch;
 mod generate;
+mod once;
 mod props;
 
 use crate::{IfBranchNode, IfNode, PropNode, RuntimeHelper};
@@ -17,6 +18,14 @@ use vize_s0::ToCompactString;
 
 /// Generate if node.
 pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
+    if once::chain_is_once(if_node) {
+        super::element::generate_v_once_cached(ctx, |ctx| generate_if_chain(ctx, if_node));
+    } else {
+        generate_if_chain(ctx, if_node);
+    }
+}
+
+fn generate_if_chain(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
     ctx.use_helper(RuntimeHelper::OpenBlock);
 
     // Vue always imports createCommentVNode for v-if nodes

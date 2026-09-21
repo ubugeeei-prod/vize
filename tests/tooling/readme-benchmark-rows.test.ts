@@ -8,7 +8,8 @@
  * A reader got a different answer depending on which page they opened.
  *
  * Every row is now published from the same validated artifact, including the
- * same-native-engine type-check comparison against verter-tsc.
+ * type-check comparison against vue-tsc -- the checker Vue projects actually
+ * run, rather than a same-engine tool almost nobody installs.
  */
 
 import assert from "node:assert/strict";
@@ -113,7 +114,7 @@ test("every README row matches the committed benchmark snapshot", () => {
         "vize-lint-max",
       ),
       expectedRow(surfaces, "fmt", "Format", "Prettier", "prettier-cli", "vize-fmt-max"),
-      expectedRow(surfaces, "check", "Type check", "verter-tsc", "verter-tsc", "vize-check-max"),
+      expectedRow(surfaces, "check", "Type check", "vue-tsc", "vue-tsc", "vize-check-max"),
       expectedRow(
         surfaces,
         "vite",

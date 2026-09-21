@@ -7,7 +7,7 @@ use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, RuntimeHelper};
 
 use super::source_map::SourceMapBuilder;
-use vize_s0::FxHashSet;
+use vize_s0::FxHashMap;
 use vize_s0::String;
 
 /// Code generation context using a UTF-8 string buffer for performance.
@@ -45,9 +45,10 @@ pub struct CodegenContext {
     pub(super) used_helpers: RuntimeHelpers,
     /// Cache index for v-once
     pub(super) cache_index: usize,
-    /// Template-scope parameters (slot props and v-for aliases) that should
-    /// not be prefixed with `_ctx.`
-    pub(super) slot_params: FxHashSet<String>,
+    /// Template-scope parameters (slot props, v-for aliases and match bindings)
+    /// that should not be prefixed with `_ctx.`, counted per open scope: a nested
+    /// scope that reuses a name must not unregister the enclosing one on exit.
+    pub(super) slot_params: FxHashMap<String, usize>,
     /// When true, skip `is` prop in generate_props (used for dynamic components)
     pub(super) skip_is_prop: bool,
     /// When true, skip scope_id attribute in props (used for component/slot elements)
@@ -56,6 +57,9 @@ pub struct CodegenContext {
     pub(super) skip_normalize: bool,
     /// When true, we are inside a v-for loop (affects slot stability flags)
     pub(super) in_v_for: bool,
+    /// When true, we are inside a patterned-template scope: its bindings
+    /// change between renders like loop aliases, but refs stay single.
+    pub(super) in_match_scope: bool,
     /// When true, skip v-memo wrapping (already handled by v-for + v-memo)
     pub(super) skip_v_memo: bool,
     /// When true, the props currently being generated belong to a plain
@@ -211,20 +215,25 @@ impl CodegenContext {
     /// Add template-scope parameters (identifiers that should not be prefixed)
     pub fn add_slot_params(&mut self, params: &[String]) {
         for param in params {
-            self.slot_params.insert(param.clone());
+            *self.slot_params.entry(param.clone()).or_insert(0) += 1;
         }
     }
 
     /// Remove template-scope parameters when exiting their scope
     pub fn remove_slot_params(&mut self, params: &[String]) {
         for param in params {
-            self.slot_params.remove(param);
+            if let Some(count) = self.slot_params.get_mut(param) {
+                *count -= 1;
+                if *count == 0 {
+                    self.slot_params.remove(param);
+                }
+            }
         }
     }
 
     /// Check if an identifier is a template-scope parameter
     pub fn is_slot_param(&self, name: &str) -> bool {
-        self.slot_params.contains(name)
+        self.slot_params.contains_key(name)
     }
 
     /// Check if there are any template-scope parameters registered

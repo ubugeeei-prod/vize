@@ -20,20 +20,18 @@ fn assembled(source: &str) -> String {
     })
 }
 
+/// A branch has to be a block, so its single element is that block even when
+/// it is static: `@vue/compiler-dom` never hoists it out from under the key.
 #[test]
-fn a_single_static_template_v_if_stays_a_fragment() {
+fn a_single_static_template_v_if_is_the_branch_block() {
     assert_eq!(
         assembled(r#"<template v-if="ok"><span></span></template>"#),
         "\
-const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode } = Vue
-
-const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"span\")
+const { openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (ok)
-    ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
-      _hoisted_1
-    ], 64 /* STABLE_FRAGMENT */))
+    ? (_openBlock(), _createElementBlock(\"span\", { key: 0 }))
     : _createCommentVNode(\"v-if\", true)
 }"
     );

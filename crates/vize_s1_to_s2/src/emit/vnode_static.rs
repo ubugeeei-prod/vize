@@ -21,12 +21,6 @@ pub(super) fn should_hoist_static_children(
     if cx.conditional_v_for_item {
         return false;
     }
-    if branch_root && cx.template_if_branch_root && has_direct_interpolation_child(element) {
-        if has_direct_component_child(element) {
-            return true;
-        }
-        return false;
-    }
     let requested =
         cx.hoist_static_vnodes || (allow_hoist && (branch_root || !element.bindings.is_empty()));
     if !requested {
@@ -37,22 +31,6 @@ pub(super) fn should_hoist_static_children(
     }
     id.and_then(|id| cx.facts.static_facts.get(id))
         .is_some_and(|fact| fact.level == StaticLevel::NotStatic)
-}
-
-fn has_direct_interpolation_child(element: &ElementOp<'_>) -> bool {
-    element
-        .children
-        .ops
-        .iter()
-        .any(|op| matches!(op, Op::Interpolation(_)))
-}
-
-fn has_direct_component_child(element: &ElementOp<'_>) -> bool {
-    element
-        .children
-        .ops
-        .iter()
-        .any(|op| matches!(op, Op::Component(_)))
 }
 
 pub(super) fn can_whole_hoist_static_element(element: &ElementOp<'_>, is_ts: bool) -> bool {

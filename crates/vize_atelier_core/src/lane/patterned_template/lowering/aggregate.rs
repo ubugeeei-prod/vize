@@ -10,11 +10,10 @@ impl Selector<'_> {
         rest: Option<&PatternRest>,
         value: &str,
     ) {
-        self.tests.push(cstr!("if ({value} == null) return null;"));
+        self.reject_if(&cstr!("{value} == null"));
         for property in properties {
             let key = &property.key.text;
-            self.tests
-                .push(cstr!("if (!({key} in Object({value}))) return null;"));
+            self.reject_unless(&cstr!("{key} in Object({value})"));
             if !matches!(property.pattern.kind, PatternKind::Wildcard) {
                 let child = self.temp();
                 self.tests.push(cstr!("const {child} = {value}[{key}];"));
@@ -45,10 +44,10 @@ impl Selector<'_> {
         rest: Option<&PatternRest>,
         value: &str,
     ) {
-        let operator = if rest.is_some() { ">=" } else { "===" };
+        let mismatch = if rest.is_some() { "<" } else { "!==" };
         let count = elements.len();
-        self.tests.push(cstr!(
-            "if (!Array.isArray({value}) || !({value}.length {operator} {count})) return null;"
+        self.reject_if(&cstr!(
+            "!Array.isArray({value}) || {value}.length {mismatch} {count}"
         ));
         for (index, pattern) in elements.iter().enumerate() {
             if !matches!(pattern.kind, PatternKind::Wildcard) {

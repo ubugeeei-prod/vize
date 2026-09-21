@@ -245,7 +245,6 @@ pub(crate) fn transform_directive<'a>(
             }
         }
         "for" => {
-            // v-for
             if let Some(ref exp) = dir.exp
                 && let ExpressionNode::Simple(source_exp) = exp
             {
@@ -266,6 +265,7 @@ pub(crate) fn transform_directive<'a>(
                     only_child: false,
                     parent: None,
                     anchor: None,
+                    match_scope: false,
                 };
 
                 block

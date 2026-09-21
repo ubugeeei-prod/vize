@@ -1,4 +1,6 @@
 use vize_armature::patterns::MatchArm;
+
+use super::super::structural::{MATCH_SCOPE_RAW_NAME, extract_key_prop};
 use vize_s0::{Allocator, Box, String, Vec, cstr};
 
 use crate::{
@@ -48,6 +50,11 @@ pub(super) fn install_arm_scope<'a>(
         loc.clone(),
     ));
     let mut original = std::mem::replace(el, branch);
+    // The arm's key identifies the branch. It stays readable from the arm's
+    // bindings: the branch key is resolved inside the binding scope below.
+    if let Some(key) = extract_key_prop(&mut original) {
+        el.props.push(key);
+    }
     let mut content = Vec::new_in(&allocator);
     let mut retained = Vec::new_in(&allocator);
     if original.tag == "template" {
@@ -76,8 +83,8 @@ pub(super) fn install_arm_scope<'a>(
     bindings.props.push(create_directive(
         allocator,
         "for",
-        "v-for",
-        Some(cstr!("[, {names}] in [{local}]")),
+        MATCH_SCOPE_RAW_NAME,
+        Some(cstr!("[, {names}] in {local}")),
         loc,
     ));
     el.children.push(TemplateChildNode::Element(Box::new_in(

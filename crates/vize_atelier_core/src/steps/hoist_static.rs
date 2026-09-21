@@ -2,11 +2,13 @@
 //!
 //! Hoists static nodes to reduce runtime overhead.
 
+mod branch_root;
 mod props;
 mod static_type;
 #[cfg(test)]
 mod tests;
 
+use branch_root::if_branch_root;
 use props::{
     create_props_expression, has_static_props, hoist_element_props, is_hoistable_static_prop,
 };
@@ -116,8 +118,9 @@ fn hoist_static_inner<'a>(
                             for child in branch.children.iter_mut() {
                                 if let TemplateChildNode::Element(el) = child {
                                     // Only hoist inside the branch root's children
+                                    let root = if_branch_root(el);
                                     ensure_sufficient_stack(|| {
-                                        hoist_static_inner(ctx, &mut el.children, false, true);
+                                        hoist_static_inner(ctx, &mut root.children, false, true);
                                     });
                                 }
                             }

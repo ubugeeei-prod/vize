@@ -2,19 +2,10 @@
 source: crates/vize_atelier_dom/src/experimental_tests.rs
 expression: full
 ---
-const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, renderList: _renderList } = Vue
-
-const _hoisted_1 = /*#__PURE__*/ _createElementVNode("p", null, "Done")
+const { openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([((__vize_match_0_select_0) => { { const __vize_match_0_select_1 = (() => { if (!((() => { if (!(__vize_match_0_select_0 === 'ready')) return null; return true; })() || (() => { if (!(__vize_match_0_select_0 === 'done')) return null; return true; })())) return null;  {  return [0]; } })(); if (__vize_match_0_select_1 !== null) return __vize_match_0_select_1; } return [-1]; })((status
-))], (__vize_match_0) => {
-    return (_openBlock(), _createElementBlock(_Fragment, null, [
-      (__vize_match_0[0] === 0)
-        ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
-          _hoisted_1
-        ], 64 /* STABLE_FRAGMENT */))
-        : _createCommentVNode("v-if", true)
-    ], 64 /* STABLE_FRAGMENT */))
-  }), 256 /* UNKEYED_FRAGMENT */))
+  return (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (!(__vize_match_0_0 === 'ready' || __vize_match_0_0 === 'done')) break a0; return [0]; } return [-1]; })(status); return (__vize_match_0[0] === 0)
+    ? (_openBlock(), _createElementBlock("p", { key: 0 }, "Done"))
+    : _createCommentVNode("v-if", true) })()
 }

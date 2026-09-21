@@ -33,8 +33,9 @@ mod wrapper;
 
 pub use wrapper::{ForWrapper, WrapperAttr, WrapperClass, WrapperKey, WrapperKeys};
 pub(crate) use wrapper::{
-    capture_wrapper_attrs, capture_wrapper_key, record_template_drops, record_template_drops_except,
+    capture_wrapper_attrs, capture_wrapper_key, record_template_drops_except,
 };
+use wrapper::{chain_once_attr, record_wrapper_key};
 
 /// One scanned branch of a chain: its element, analysis, branch-attr
 /// index, and the gap children it consumes.
@@ -184,6 +185,7 @@ fn lower_if_group<'a>(
     let mut wrapper_keys: StdVec<Option<WrapperKey>> = StdVec::new();
     let mut branch_keys: StdVec<Option<if_keys::BranchKey>> = StdVec::new();
     let mut from_template: StdVec<bool> = StdVec::new();
+    let mut once = false;
     let mut preserved_gaps: StdVec<usize> = StdVec::new();
     for (element, analyzed, attr_idx, gaps) in branches {
         for gap in gaps {
@@ -235,22 +237,9 @@ fn lower_if_group<'a>(
         };
         let branch_span = element_span(cx, element);
         let (mut ops, wrapper_key, is_template) = branch_body(cx, element, &analyzed, ns);
+        once |= is_template && chain_once_attr(element, &analyzed).is_some();
         if let Some(key) = &wrapper_key {
-            let (key_span, spelling) = match key {
-                WrapperKey::Static { span, .. } | WrapperKey::Dynamic { span, .. } => (
-                    *span,
-                    cx.source
-                        .get(span.start as usize..span.end as usize)
-                        .unwrap_or("key"),
-                ),
-            };
-            cx.record(
-                "lower.branch-wrapper-key",
-                node,
-                spelling,
-                cstr!("wrapper key branch={}", lowered.len()),
-                key_span,
-            );
+            record_wrapper_key(cx, node, key, lowered.len());
         }
         let branch_key = wrapper_key
             .as_ref()
@@ -272,6 +261,7 @@ fn lower_if_group<'a>(
             WrapperKeys {
                 branches: wrapper_keys,
                 from_template,
+                once,
             },
         );
     }
@@ -326,7 +316,8 @@ fn branch_body<'a>(
             Some((index, key)) => (Some(index), Some(key)),
             None => (None, None),
         };
-        record_template_drops(cx, element, analyzed, skip);
+        let once = chain_once_attr(element, analyzed);
+        record_template_drops_except(cx, element, analyzed, skip, once.as_slice());
         return (lower_children(cx, &element.children, ns), key, true);
     }
     let op = element_core(cx, element, analyzed, ns);

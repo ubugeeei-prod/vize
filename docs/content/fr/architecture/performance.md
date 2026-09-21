@@ -203,10 +203,10 @@ Versions: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0
 
 | Mesure                      | Fichiers | Outil comparé | Médiane comparée | Vize 1T | Vize max | Rapport  |
 | --------------------------- | -------- | ------------- | ---------------- | ------- | -------- | -------- |
-| Vérification des types      | 500      | verter-tsc    | 2.08s            | 2.03s   | 1.37s    | **1.5x** |
-| Vérification SFC volumineux | 1        | verter-tsc    | 1.58s            | 186.4ms | 190.1ms  | **8.3x** |
+| Vérification des types      | 500      | vue-tsc       | 6.75s            | 2.03s   | 1.37s    | **4.9x** |
+| Vérification SFC volumineux | 1        | vue-tsc       | 1.34s            | 186.4ms | 190.1ms  | **7.0x** |
 
-Les rapports de vérification des types comparent Vize et verter-tsc avec le même moteur tsgo natif épinglé. Chaque exécution chronométrée valide le travail de diagnostic, mais la couverture varie selon les outils. Ces rapports ne prouvent ni une précision équivalente ni un gain par rapport à une ancienne version de Vize. Aucun temps ni classement n'est publié pour les comparateurs rejetés.
+Les rapports de vérification des types comparent Vize et vue-tsc, le vérificateur qu'utilisent aujourd'hui les projets Vue. vue-tsc s'appuie sur le compilateur TypeScript en JavaScript tandis que Vize s'appuie sur tsgo natif : le rapport porte donc sur toute la chaîne d'outils et non sur la seule couche Vue ; les tableaux par classe de moteur de l'instantané complet classent les outils d'un même moteur entre eux pour isoler cette couche. Chaque exécution chronométrée valide le travail de diagnostic, mais la couverture varie selon les outils. Ces rapports ne prouvent ni une précision équivalente ni un gain par rapport à une ancienne version de Vize. Aucun temps ni classement n'est publié pour les comparateurs rejetés.
 
 [Méthodologie et résultats complets](./performance-blacksmith)
 

@@ -330,7 +330,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     // KeepAlive always gets DYNAMIC_SLOTS, and component
                     // slots inside v-for are dynamic by construction.
                     if matches!(el.tag, "KeepAlive" | "keep-alive")
-                        || (ctx.in_v_for && has_slot_children(el))
+                        || ((ctx.in_v_for || ctx.in_match_scope) && has_slot_children(el))
                         || has_dynamic_slots_flag(el, &ctx.source)
                     {
                         let dynamic_slots_flag = 1024;

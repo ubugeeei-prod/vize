@@ -8,6 +8,7 @@ mod component_props;
 mod plain;
 mod props;
 mod slot;
+mod transparent_builtin;
 mod vnode;
 
 use vize_atelier_core::{
@@ -60,8 +61,16 @@ impl<'a> SsrCodegenContext<'a> {
                 self.process_slot_outlet(el);
             }
             ElementType::Template => {
-                // Process template children directly
-                self.process_children(&el.children, false, disable_nested_fragments, false);
+                // Process template children directly. A template renders no
+                // node of its own, so a single child is still the root that
+                // inherits the component's fallthrough attrs.
+                self.process_children_with_fallthrough_attrs(
+                    &el.children,
+                    false,
+                    disable_nested_fragments,
+                    false,
+                    inherit_attrs,
+                );
             }
         }
     }

@@ -79,8 +79,8 @@ fn expected() -> Counters {
             values_compound: 0,
         },
         hoist: HoistCounters {
-            elements: 99,
-            whole: 15,
+            elements: 96,
+            whole: 12,
             props: 7,
             wrapper_hoists: 0,
             comments_elements: 4,

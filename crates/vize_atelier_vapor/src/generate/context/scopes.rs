@@ -23,4 +23,7 @@ pub(crate) struct SlotScope {
     pub(crate) names: std::vec::Vec<String>,
     /// Slot props variable (e.g., "_slotProps0")
     pub(crate) slot_props_var: String,
+    /// Loop scopes already active when this slot scope opened: it is nested
+    /// inside exactly those, so its names shadow theirs and no later ones.
+    pub(crate) for_depth: usize,
 }

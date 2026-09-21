@@ -18,6 +18,7 @@ use crate::{
 use self::directives::{create_directive, install_arm_scope, install_match_scope};
 use self::lowering::generate_selector;
 use self::syntax::expression_source;
+use super::structural::MATCH_SCOPE_RAW_NAME;
 
 pub fn desugar_patterned_templates<'a>(ctx: &mut TransformContext<'a>, root: &mut RootNode<'a>) {
     if !has_match(&root.children) {
@@ -156,12 +157,12 @@ fn rewrite_match_element<'a>(
     let Some(subject) = subject.filter(|_| valid_header) else {
         return;
     };
-    let selector = generate_selector(&arms, &subject, &cstr!("{local}_select"));
+    let selector = generate_selector(&arms, &subject, &local);
     let scope = create_directive(
         ctx.allocator,
         "for",
-        "v-for",
-        Some(cstr!("{local} in [{selector}]")),
+        MATCH_SCOPE_RAW_NAME,
+        Some(cstr!("{local} in {selector}")),
         match_loc,
     );
     install_match_scope(ctx.allocator, el, scope);

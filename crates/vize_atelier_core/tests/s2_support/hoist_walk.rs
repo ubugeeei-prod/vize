@@ -5,7 +5,7 @@
 //! budget; the element/component verdict arms live in
 //! [`super::hoist_owner`].
 
-use vize_atelier_core::{IfBranchNode, TemplateChildNode};
+use vize_atelier_core::{ElementNode, ElementType, TemplateChildNode};
 use vize_davinci::side_table::SideTable;
 use vize_s1_to_s2::pass::StaticFacts;
 use vize_s2::folio::FolioOp;
@@ -128,6 +128,25 @@ pub fn walk_position(
                 let b2 = &node2.branches[index];
                 match (&b1.children[..], &b2.children[..]) {
                     ([TemplateChildNode::Element(el1)], [TemplateChildNode::Element(el2)])
+                        if b1.is_template_if && wraps_single_element(el1) =>
+                    {
+                        // A wrapper around one element renders that element
+                        // as the branch root: it carries the branch key, so
+                        // the driver decides it exactly like an element branch.
+                        walk_branch_roots(
+                            name,
+                            source,
+                            &el1.children,
+                            &el2.children,
+                            &branch.ops,
+                            mode,
+                            suppressed,
+                            next,
+                            facts,
+                            counters,
+                        );
+                    }
+                    ([TemplateChildNode::Element(el1)], [TemplateChildNode::Element(el2)])
                         if b1.is_template_if =>
                     {
                         // Wrapper branch: the S2 region is the
@@ -150,8 +169,8 @@ pub fn walk_position(
                         walk_branch_roots(
                             name,
                             source,
-                            b1,
-                            b2,
+                            &b1.children,
+                            &b2.children,
                             &branch.ops,
                             mode,
                             suppressed,
@@ -228,8 +247,8 @@ pub fn walk_position(
 fn walk_branch_roots(
     name: &str,
     source: &str,
-    b1: &IfBranchNode<'_>,
-    b2: &IfBranchNode<'_>,
+    c1: &[TemplateChildNode<'_>],
+    c2: &[TemplateChildNode<'_>],
     ops: &[FolioOp],
     mode: Mode,
     suppressed: bool,
@@ -237,8 +256,8 @@ fn walk_branch_roots(
     facts: &SideTable<StaticFacts>,
     counters: &mut HoistCounters,
 ) {
-    let r1 = structural(&b1.children);
-    let r2 = structural(&b2.children);
+    let r1 = structural(c1);
+    let r2 = structural(c2);
     let roots = structural_s2(ops);
     assert!(
         r1.len() == r2.len() && r1.len() == roots.len(),
@@ -305,4 +324,12 @@ fn walk_branch_roots(
             }
         }
     }
+}
+
+/// A `<template v-if>` around exactly one non-template element.
+fn wraps_single_element(template: &ElementNode<'_>) -> bool {
+    matches!(
+        &template.children[..],
+        [TemplateChildNode::Element(inner)] if inner.tag_type != ElementType::Template
+    )
 }

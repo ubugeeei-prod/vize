@@ -203,13 +203,15 @@ void test("rejected optional comparators are accounted for but cannot affect a r
     variants: ["vue-tsc", "verter-tsc", "vize-check-1t", "vize-check-max"].map((id) => ({
       id,
       label: id,
-      medianMs: id === "verter-tsc" ? 20 : 10,
+      medianMs: id === "vue-tsc" ? 40 : id === "verter-tsc" ? 20 : 10,
     })),
     rejectedVariants,
   };
   const surface = createSurface(input);
-  assert.equal(surface.primarySpeedup, 2);
-  assert.equal(surface.speedupBaselineId, "verter-tsc");
+  // The rejected Golar rows sit between the published incumbent and Vize, so a
+  // ratio or rank that admitted them would move; both stay exactly as measured.
+  assert.equal(surface.primarySpeedup, 4);
+  assert.equal(surface.speedupBaselineId, "vue-tsc");
   assert.ok(
     surface.engineClassRanking.flatMap((g) => g.rows).every((row) => !row.id.startsWith("golar")),
   );

@@ -61,7 +61,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let collected_slots = collect_slots(el, &ctx.source);
     let has_forwarded_slots = has_forwarded_slot_outlet(el);
     let forwarded_slots_are_dynamic = has_forwarded_slots && ctx.has_slot_params();
-    let has_dynamic_slots = ctx.in_v_for
+    let has_dynamic_slots = (ctx.in_v_for || ctx.in_match_scope)
         || root_slot.is_some_and(is_dynamic_slot)
         || collected_slots.iter().any(|s| s.is_dynamic)
         || forwarded_slots_are_dynamic;
@@ -405,7 +405,7 @@ fn generate_slot_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>)
 /// Strip _ctx. prefix from identifiers that are slot parameters
 fn strip_ctx_prefix_for_slot_params(ctx: &CodegenContext, content: &str) -> String {
     let mut result = String::new(content);
-    for param in &ctx.slot_params {
+    for param in ctx.slot_params.keys() {
         // Replace _ctx.paramName with paramName
         let mut prefixed = String::with_capacity(5 + param.len());
         prefixed.push_str("_ctx.");

@@ -130,13 +130,7 @@ pub fn parse_for_expression_with_options<'a>(
         }
     });
 
-    Some(ForParseResult {
-        source,
-        value,
-        key,
-        index,
-        finalized: false,
-    })
+    Some(ForParseResult::new(source, value, key, index))
 }
 
 fn find_for_separator(content: &str) -> Option<(usize, usize)> {

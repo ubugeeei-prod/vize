@@ -77,7 +77,7 @@
     "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `tools/benchmarks/scripts/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.",
     "Musea rows are the one surface that does not run on the shared SFC corpus: `@vizejs/vite-plugin-musea` only does work for `.art.vue` files, so the lane generates its own pinned art corpus from `tools/benchmarks/scripts/musea-corpus.mjs`. They publish no speedup because no incumbent tool performs this work, and they measure the plugin's own `buildStart`/`load`/`transform` hooks rather than an end-to-end build — by the same reasoning as the Nuxt row above, a whole-build number would sit under the noise floor and could not move when the plugin regresses. `tools/benchmarks/scripts/musea.mjs` runs the lane on its own.",
     "Single-thread lanes are shown where useful, and the primary speedup compares the incumbent default/single-thread lane with Vize's max runner lane.",
-    "Type-check rows span two TypeScript engines: vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa). Their ratio is never published — it would credit TypeScript's Go rewrite to the Vue layer. The published type-check speedup is measured against verter-tsc instead, the incumbent Vue type checker that drives the same native tsgo binary, so it is the Vue layer alone; vue-tsc stays in the table as a same-run reference timing ranked inside its own engine class, and a run where no same-engine incumbent resolves publishes no ratio at all. tools/benchmarks/scripts/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating."
+    "Type-check rows publish their speedup against vue-tsc, the type checker Vue projects actually run. That ratio spans two TypeScript engines — vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa) — so it measures the whole toolchain a reader would replace, not the Vue layer alone, and part of it is TypeScript's Go rewrite rather than anything Vize does. The per-engine-class ranking published beside it isolates the Vue layer by rating each row against the fastest row of its own engine, which is where the same-engine native checkers (verter-tsc, Golar) appear; they are reference rows and never the headline comparison, because almost nobody runs them. tools/benchmarks/scripts/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating."
   ],
   "surfaces": [
     {
@@ -304,9 +304,9 @@
         "vize-check-1t": "tsgo-native",
         "vize-check-max": "tsgo-native"
       },
-      "primarySpeedup": 8.313368443759305,
-      "speedupBaselineId": "verter-tsc",
-      "speedupStatus": "in-class",
+      "primarySpeedup": 7.0383180667869745,
+      "speedupBaselineId": "vue-tsc",
+      "speedupStatus": "cross-engine",
       "engineClassRanking": [
         {
           "engineClass": "typescript-js",
@@ -521,9 +521,9 @@
         "vize-check-1t": "tsgo-native",
         "vize-check-max": "tsgo-native"
       },
-      "primarySpeedup": 1.5135871384696002,
-      "speedupBaselineId": "verter-tsc",
-      "speedupStatus": "in-class",
+      "primarySpeedup": 4.915989578026521,
+      "speedupBaselineId": "vue-tsc",
+      "speedupStatus": "cross-engine",
       "engineClassRanking": [
         {
           "engineClass": "typescript-js",

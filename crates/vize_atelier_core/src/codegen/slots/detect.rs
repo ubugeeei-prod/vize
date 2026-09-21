@@ -104,7 +104,7 @@ pub fn has_slot_children(el: &ElementNode<'_>) -> bool {
 pub fn needs_dynamic_slots_patch(ctx: &CodegenContext, el: &ElementNode<'_>) -> bool {
     el.tag == "KeepAlive"
         || el.tag == "keep-alive"
-        || (ctx.in_v_for && has_slot_children(el))
+        || ((ctx.in_v_for || ctx.in_match_scope) && has_slot_children(el))
         || has_dynamic_slots_flag(el, &ctx.source)
         || (ctx.has_slot_params() && has_forwarded_slot_outlet(el))
 }

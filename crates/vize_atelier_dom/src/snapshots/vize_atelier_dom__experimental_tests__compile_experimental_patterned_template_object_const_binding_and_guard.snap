@@ -2,17 +2,10 @@
 source: crates/vize_atelier_dom/src/experimental_tests.rs
 expression: full
 ---
-const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, renderList: _renderList } = Vue
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList([((__vize_match_0_select_0) => { { const __vize_match_0_select_3 = (() => { if (__vize_match_0_select_0 == null) return null; if (!("kind" in Object(__vize_match_0_select_0))) return null; const __vize_match_0_select_1 = __vize_match_0_select_0["kind"]; if (!(__vize_match_0_select_1 === 'article')) return null; if (!("data" in Object(__vize_match_0_select_0))) return null; const __vize_match_0_select_2 = __vize_match_0_select_0["data"];  { const article = __vize_match_0_select_2; if (!(article.published)) return null; return [0, article]; } })(); if (__vize_match_0_select_3 !== null) return __vize_match_0_select_3; } return [-1]; })((entry
-))], (__vize_match_0) => {
-    return (_openBlock(), _createElementBlock(_Fragment, null, [
-      (__vize_match_0[0] === 0)
-        ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList([__vize_match_0], ([, article]) => {
-          return (_openBlock(), _createElementBlock("article", null, _toDisplayString(article.title), 1 /* TEXT */))
-        }), 256 /* UNKEYED_FRAGMENT */))
-        : _createCommentVNode("v-if", true)
-    ], 64 /* STABLE_FRAGMENT */))
-  }), 256 /* UNKEYED_FRAGMENT */))
+  return (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (__vize_match_0_0 == null) break a0; if (!("kind" in Object(__vize_match_0_0))) break a0; const __vize_match_0_1 = __vize_match_0_0["kind"]; if (__vize_match_0_1 !== 'article') break a0; if (!("data" in Object(__vize_match_0_0))) break a0; const __vize_match_0_2 = __vize_match_0_0["data"]; { const article = __vize_match_0_2; if (!(article.published)) break a0; return [0, article]; } } return [-1]; })(entry); return (__vize_match_0[0] === 0)
+    ? (() => { const [, article] = __vize_match_0; return (_openBlock(), _createElementBlock("article", { key: 0 }, _toDisplayString(article.title), 1 /* TEXT */)) })()
+    : _createCommentVNode("v-if", true) })()
 }

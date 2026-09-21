@@ -9,7 +9,7 @@ use vize_s0::{ensure_sufficient_stack, profile};
 
 use super::element::{transform_element, transform_interpolation};
 use super::structural::{
-    StructuralDirectiveKind, take_structural_directive, transform_v_for,
+    MATCH_SCOPE_RAW_NAME, StructuralDirectiveKind, take_structural_directive, transform_for_scope,
     transform_v_if_with_directive,
 };
 use super::{ExitFns, ParentNode, TransformContext};
@@ -94,6 +94,9 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
 
     // Check structural directives before storing the current-node pointer so
     // the `Element` borrow ends before structural transforms replace the slot.
+    let match_scope = matches!(node, TemplateChildNode::Element(el) if el.props.iter().any(
+        |prop| matches!(prop, PropNode::Directive(dir) if dir.raw_name == Some(MATCH_SCOPE_RAW_NAME))
+    ));
     let structural_result = if let TemplateChildNode::Element(el) = node {
         profile!(
             "atelier.transform.check_structural",
@@ -139,7 +142,7 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
             StructuralDirectiveKind::For => {
                 if let Some(exits) = profile!(
                     "atelier.transform.v_for",
-                    transform_v_for(ctx, exp.as_ref())
+                    transform_for_scope(ctx, exp.as_ref(), match_scope)
                 ) {
                     exit_fns.extend(exits);
                 }

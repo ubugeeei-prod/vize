@@ -203,10 +203,10 @@ Versões: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0
 
 | Medição              | Arquivos | Ferramenta comparada | Mediana comparada | Vize 1T | Vize max | Razão    |
 | -------------------- | -------- | -------------------- | ----------------- | ------- | -------- | -------- |
-| Verificação de tipos | 500      | verter-tsc           | 2.08s             | 2.03s   | 1.37s    | **1.5x** |
-| Tipos em SFC grande  | 1        | verter-tsc           | 1.58s             | 186.4ms | 190.1ms  | **8.3x** |
+| Verificação de tipos | 500      | vue-tsc              | 6.75s             | 2.03s   | 1.37s    | **4.9x** |
+| Tipos em SFC grande  | 1        | vue-tsc              | 1.34s             | 186.4ms | 190.1ms  | **7.0x** |
 
-As razões da verificação de tipos comparam Vize e verter-tsc usando a mesma versão fixa do tsgo nativo. Cada execução cronometrada valida o trabalho de diagnóstico, mas a cobertura varia entre ferramentas. Essas razões não demonstram precisão equivalente nem uma melhoria sobre uma versão anterior do Vize. Comparadores rejeitados não recebem tempo publicado nem classificação.
+As razões da verificação de tipos comparam Vize e vue-tsc, o verificador que os projetos Vue usam hoje. O vue-tsc executa o compilador TypeScript em JavaScript enquanto o Vize executa o tsgo nativo, portanto a razão cobre toda a cadeia de ferramentas e não apenas a camada Vue; as tabelas por classe de motor do instantâneo completo classificam ferramentas do mesmo motor entre si para isolar essa camada. Cada execução cronometrada valida o trabalho de diagnóstico, mas a cobertura varia entre ferramentas. Essas razões não demonstram precisão equivalente nem uma melhoria sobre uma versão anterior do Vize. Comparadores rejeitados não recebem tempo publicado nem classificação.
 
 [Metodologia e resultados completos](./performance-blacksmith)
 

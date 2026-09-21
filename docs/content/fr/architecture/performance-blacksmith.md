@@ -20,15 +20,15 @@ Versions: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0
 | --------------------------- | -------- | ---------------------- | ---------------- | ------- | -------- | ---------- |
 | Compilation SFC             | 3,000    | @vue/compiler-sfc (1T) | 3.57s            | 835.3ms | 65.0ms   | **54.8x**  |
 | Compilation SFC volumineux  | 1        | @vue/compiler-sfc (1T) | 61.4ms           | 16.3ms  | 15.2ms   | **4.0x**   |
-| Vérification SFC volumineux | 1        | verter-tsc             | 1.58s            | 186.4ms | 190.1ms  | **8.3x**   |
+| Vérification SFC volumineux | 1        | vue-tsc                | 1.34s            | 186.4ms | 190.1ms  | **7.0x**   |
 | Lint                        | 3,000    | eslint-plugin-vue (1T) | 20.75s           | 432.3ms | 114.0ms  | **182.0x** |
 | Formatage                   | 3,000    | Prettier CLI           | 29.72s           | 1.07s   | 351.4ms  | **84.6x**  |
-| Vérification des types      | 500      | verter-tsc             | 2.08s            | 2.03s   | 1.37s    | **1.5x**   |
+| Vérification des types      | 500      | vue-tsc                | 6.75s            | 2.03s   | 1.37s    | **4.9x**   |
 | Build Vite                  | 1,000    | @vitejs/plugin-vue     | 1.66s            | n/a     | 889.2ms  | **1.9x**   |
 | Build Nuxt                  | 250      | Nuxt default compiler  | 3.07s            | n/a     | 3.21s    | **0.95x**  |
 | Musea                       | 240      | n/a                    | n/a              | n/a     | 30.9ms   | n/a        |
 
-Les rapports de vérification des types comparent Vize et verter-tsc avec le même moteur tsgo natif épinglé. Chaque exécution chronométrée valide le travail de diagnostic, mais la couverture varie selon les outils. Ces rapports ne prouvent ni une précision équivalente ni un gain par rapport à une ancienne version de Vize. Aucun temps ni classement n'est publié pour les comparateurs rejetés.
+Les rapports de vérification des types comparent Vize et vue-tsc, le vérificateur qu'utilisent aujourd'hui les projets Vue. vue-tsc s'appuie sur le compilateur TypeScript en JavaScript tandis que Vize s'appuie sur tsgo natif : le rapport porte donc sur toute la chaîne d'outils et non sur la seule couche Vue ; les tableaux par classe de moteur de l'instantané complet classent les outils d'un même moteur entre eux pour isoler cette couche. Chaque exécution chronométrée valide le travail de diagnostic, mais la couverture varie selon les outils. Ces rapports ne prouvent ni une précision équivalente ni un gain par rapport à une ancienne version de Vize. Aucun temps ni classement n'est publié pour les comparateurs rejetés.
 
 [Méthodologie et résultats complets](/architecture/performance-blacksmith)
 

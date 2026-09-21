@@ -16,6 +16,10 @@ pub(super) fn generate_for(
     for_node: &ForIRNode<'_>,
     element_template_map: &FxHashMap<usize, usize>,
 ) {
+    if for_node.match_scope {
+        super::match_scope::generate_match_scope(ctx, for_node, element_template_map);
+        return;
+    }
     ctx.use_helper("createFor");
     emit_insertion_state(ctx, for_node.parent, for_node.anchor);
 

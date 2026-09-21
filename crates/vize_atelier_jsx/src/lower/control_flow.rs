@@ -206,16 +206,15 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         let key_alias = params.items.get(1).map(|p| self.dyn_expr(p.pattern.span()));
 
         // `ForParseResult` is not read by codegen, but must be a valid struct.
-        let parse_result = ForParseResult {
-            source: self.dyn_expr(member.object.span()),
-            value: params
+        let parse_result = ForParseResult::new(
+            self.dyn_expr(member.object.span()),
+            params
                 .items
                 .first()
                 .map(|p| self.dyn_expr(p.pattern.span())),
-            key: params.items.get(1).map(|p| self.dyn_expr(p.pattern.span())),
-            index: None,
-            finalized: false,
-        };
+            params.items.get(1).map(|p| self.dyn_expr(p.pattern.span())),
+            None,
+        );
 
         let mut children = self.vec();
         children.push(body_jsx_child);

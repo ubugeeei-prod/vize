@@ -11,6 +11,7 @@ mod events;
 mod for_loop;
 mod if_block;
 mod insertion;
+mod match_scope;
 mod refs;
 mod slots;
 
