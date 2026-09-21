@@ -1,0 +1,8 @@
+consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
+formatter	Formatter	source	crates/vize/src/commands/fmt.rs	17	s0	S0	stage	vize_s0	preferred	1
+formatter	Formatter	source	crates/vize/src/commands/fmt/data.rs	5	s0	S0	stage	vize_s0	preferred	1
+formatter	Formatter	source	crates/vize/src/commands/fmt/data/plain.rs	17	s0	S0	stage	vize_s0	preferred	1
+formatter	Formatter	source	crates/vize/src/commands/fmt/entries.rs	3	s0	S0	stage	vize_s0	preferred	1
+formatter	Formatter	test/dev	crates/vize/src/commands/fmt/files_tests.rs	7	s0	S0	stage	vize_s0	preferred	1
+formatter	Formatter	test/dev	crates/vize/src/commands/fmt/files.rs	125	s0	S0	stage	vize_s0	preferred	4
+formatter	Formatter	source	crates/vize/src/commands/fmt/ignores.rs	80	s0	S0	stage	vize_s0	preferred	1

@@ -1,20 +1,23 @@
-// Markdown renderer for the generated consumer migration surface inventory.
+// Renderer for the committed consumer migration surface inventory: a
+// markdown index whose content depends only on the scan configuration
+// (method, surface legend, consumer scopes, shard layout) plus one TSV shard
+// per (consumer, crate). Nothing committed aggregates across files or crates,
+// so two PRs touching different crates never edit the same committed file;
+// totals live in the on-demand `--summary` view (consumer-migration-summary.mjs).
 
 import { formatTable } from "./markdown.mjs";
 import { SURFACES, surfaceNameKind } from "./consumer-migration-scan.mjs";
 
-function n(value) {
-  return String(value);
-}
+export const SHARD_DIR_REL = "davinci-road/plan/consumer-migration-surfaces";
 
-function surfaceList(surfaceCounts) {
+export function surfaceList(surfaceCounts) {
   const labels = SURFACES.filter((surface) => surfaceCounts[surface.id] > 0).map(
     (surface) => `${surface.label} ${surfaceCounts[surface.id]}`,
   );
   return labels.length === 0 ? "-" : labels.join("<br>");
 }
 
-function modeLabel(mode) {
+export function modeLabel(mode) {
   if (mode === "manifest") return "manifest";
   if (mode === "test") return "test/dev";
   return "source";
@@ -37,100 +40,66 @@ function matchedNamesLabel(surface) {
   return rows.join("<br>");
 }
 
-function renderSurfaceCounts(consumer) {
-  const rows = SURFACES.map((surface) => [
-    surface.label,
-    n(consumer.surfaceCounts[surface.id]),
-    n(
-      consumer.fileRows
-        .filter((row) => row.mode !== "test")
-        .reduce((sum, row) => sum + row.surfaceCounts[surface.id], 0),
-    ),
-    n(
-      consumer.fileRows
-        .filter((row) => row.mode === "test")
-        .reduce((sum, row) => sum + row.surfaceCounts[surface.id], 0),
-    ),
-  ]).filter((row) => row[1] !== "0");
-  if (rows.length === 0) return "_No direct surface mentions found._\n";
+// The crate a scanned file belongs to: every scope entry lives under `crates/<crate>/`.
+function crateOf(relPath) {
+  const [root, crate] = relPath.split("/");
+  if (root !== "crates" || !crate) throw new Error(`scanned file outside crates/: ${relPath}`);
+  return crate;
+}
+
+function entryRoot(entry) {
+  return entry.crate ? `crates/${entry.crate}` : entry.path;
+}
+
+function entryLabel(entry) {
+  const filtered = entry.include || entry.exclude ? " (filtered, see scope)" : "";
+  if (entry.crate) {
+    return `crate \`${entry.crate}\` (\`Cargo.toml\`, \`src\`, \`tests\`, \`benches\`)${filtered}`;
+  }
+  return `\`${entry.path}\`${filtered}`;
+}
+
+/** Every (consumer, crate) shard, fixed by the scan configuration alone. */
+export function shardLayout(consumers) {
+  const shards = [];
+  for (const consumer of consumers) {
+    const byCrate = new Map();
+    for (const entry of consumer.entries) {
+      const crate = crateOf(entryRoot(entry));
+      if (!byCrate.has(crate)) byCrate.set(crate, []);
+      byCrate.get(crate).push(entry);
+    }
+    for (const crate of [...byCrate.keys()].sort((a, b) => a.localeCompare(b))) {
+      shards.push({
+        consumer,
+        crate,
+        entries: byCrate.get(crate),
+        relPath: `${SHARD_DIR_REL}/${consumer.id}/${crate}.tsv`,
+      });
+    }
+  }
+  return shards;
+}
+
+function renderShardTable(consumers) {
   return formatTable(
-    ["surface", "total sites", "source/manifest", "test/dev"],
-    ["left", "right", "right", "right"],
-    rows,
+    ["consumer", "shard", "scanned roots"],
+    ["left", "left", "left"],
+    shardLayout(consumers).map((shard) => {
+      const rel = shard.relPath.slice(SHARD_DIR_REL.length + 1);
+      return [
+        shard.consumer.label,
+        `[\`${rel}\`](./consumer-migration-surfaces/${rel})`,
+        shard.entries.map(entryLabel).join("<br>"),
+      ];
+    }),
   );
 }
 
-function renderFileRows(consumer, modePredicate) {
-  const rows = consumer.fileRows
-    .filter(modePredicate)
-    .sort((a, b) => b.total - a.total || a.relPath.localeCompare(b.relPath))
-    .slice(0, 5)
-    .map((row) => [
-      `\`${row.relPath}:${row.firstLine}\``,
-      modeLabel(row.mode),
-      surfaceList(row.surfaceCounts),
-      n(row.total),
-    ]);
-  if (rows.length === 0) return "_No files in this class._\n";
-  return formatTable(
-    ["file", "class", "surfaces", "sites"],
-    ["left", "left", "left", "right"],
-    rows,
-  );
-}
-
-function renderSummary(consumers) {
-  return formatTable(
-    [
-      "consumer",
-      "stage/Davinci",
-      "preferred stage names",
-      "compat code names",
-      "old AST/Croquis",
-      "raw OXC",
-      "source/manifest",
-      "test/dev",
-      "surface files",
-      "scanned files",
-    ],
-    ["left", "right", "right", "right", "right", "right", "right", "right", "right", "right"],
-    consumers.map((consumer) => [
-      consumer.label,
-      n(consumer.groupCounts.stage),
-      n(consumer.nameKindCounts.preferred),
-      n(consumer.nameKindCounts.compat),
-      n(consumer.groupCounts.old),
-      n(consumer.groupCounts.raw),
-      n(consumer.modeCounts.source + consumer.modeCounts.manifest),
-      n(consumer.modeCounts.test),
-      n(consumer.surfaceFileCount),
-      n(consumer.fileCount),
-    ]),
-  );
-}
-
-function renderConsumer(consumer) {
-  const sourceRows = consumer.fileRows.filter((row) => row.mode !== "test").length;
-  const testRows = consumer.fileRows.filter((row) => row.mode === "test").length;
-  const omittedSource = Math.max(0, sourceRows - 5);
-  const omittedTest = Math.max(0, testRows - 5);
-
-  return (
-    `### ${consumer.label}
-
-Scope: ${consumer.scope}. This is a lexical inventory, not a rollout gate.
-
-${renderSurfaceCounts(consumer)}
-#### Top source and manifest files
-
-${renderFileRows(consumer, (row) => row.mode !== "test")}
-${omittedSource > 0 ? `Additional source/manifest rows are in the TSV: ${omittedSource} omitted.\n` : ""}
-#### Top test/dev files
-
-${renderFileRows(consumer, (row) => row.mode === "test")}
-${omittedTest > 0 ? `Additional test/dev rows are in the TSV: ${omittedTest} omitted.\n` : ""}`.trimEnd() +
-    "\n"
-  );
+function renderScopes(consumers) {
+  return consumers
+    .map((consumer) => `- **${consumer.label}** (\`${consumer.id}\`): ${consumer.scope}.`)
+    .join("\n");
 }
 
 function renderSlices() {
@@ -184,7 +153,8 @@ export function renderConsumerMigrationSurfaces(scan, options) {
   return `<!-- GENERATED FILE - do not edit by hand.
      Regenerate: ${options.regenCommand}
      Verify:     rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
-     Generator:  tools/davinci/consumer-migration-surfaces.mjs -->
+     Totals:     ${options.summaryCommand}
+     Generator:  legacy-tools/davinci/consumer-migration-surfaces.mjs -->
 
 # Consumer migration surfaces
 
@@ -208,18 +178,30 @@ observational guard for planning only. It does not change rollout state.
   \`*_tests.rs\`, and Rust sites after the first \`#[cfg(test)]\` in a file.
 - Content-mapper files under Canon are reported separately from the broader
   typechecker row so that protocol work can move in smaller PRs.
-- Full file x surface x matched-name rows are generated in \`${options.rowsRel}\`; this
-  markdown keeps only top impact files to stay under the source-length gate.
 
 ## Surface legend
 
 ${surfaceLegend}
-## Consumer summary
+## Consumers
 
-${renderSummary(scan.consumers)}
-## Consumer details
+${renderScopes(scan.consumers)}
 
-${scan.consumers.map(renderConsumer).join("\n")}
+## Shards
+
+Every row lives in exactly one TSV shard per (consumer, crate) under
+\`${SHARD_DIR_REL}/\`: one row per file x class x surface x matched name,
+columns \`consumer_id\`, \`consumer\`, \`class\` (\`source\`, \`manifest\`,
+\`test/dev\`), \`file\`, \`first_line\`, \`surface_id\`, \`surface\`,
+\`surface_group\`, \`matched_name\`, \`name_kind\`, \`sites\`. The shard set is
+fixed by the consumer scopes (table below), so it only changes when a scope does.
+
+Cross-file aggregates — per-consumer and per-surface totals and the top files
+by site count — are deliberately **not committed**: they changed with every PR
+and made every open PR conflict. They are pure sums over the shards; print
+them with \`${options.summaryCommand}\`. The staleness check (TS-12)
+byte-compares this page, every shard, and the shard set itself.
+
+${renderShardTable(scan.consumers)}
 ${renderSlices()}
 
 ## Regeneration
@@ -227,50 +209,76 @@ ${renderSlices()}
 \`\`\`sh
 ${options.regenCommand}
 rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
+${options.summaryCommand}
 \`\`\`
 `;
 }
 
-export function renderConsumerMigrationSurfaceRows(scan) {
-  const lines = [
-    [
-      "consumer_id",
-      "consumer",
-      "class",
-      "file",
-      "first_line",
-      "surface_id",
-      "surface",
-      "surface_group",
-      "matched_name",
-      "name_kind",
-      "sites",
-    ].join("\t"),
-  ];
-  for (const consumer of scan.consumers) {
-    for (const row of consumer.fileRows) {
-      for (const surface of SURFACES) {
-        for (const name of surface.names) {
-          const sites = row.surfaceNameCounts[surface.id][name] ?? 0;
-          if (sites === 0) continue;
-          lines.push(
-            [
-              consumer.id,
-              consumer.label,
-              modeLabel(row.mode),
-              row.relPath,
-              String(row.firstLine),
-              surface.id,
-              surface.label,
-              surface.group,
-              name,
-              surfaceNameKind(surface, name),
-              String(sites),
-            ].join("\t"),
-          );
-        }
+const ROW_COLUMNS = [
+  "consumer_id",
+  "consumer",
+  "class",
+  "file",
+  "first_line",
+  "surface_id",
+  "surface",
+  "surface_group",
+  "matched_name",
+  "name_kind",
+  "sites",
+];
+
+function renderRows(consumer, fileRows) {
+  const lines = [ROW_COLUMNS.join("\t")];
+  for (const row of fileRows) {
+    for (const surface of SURFACES) {
+      for (const name of surface.names) {
+        const sites = row.surfaceNameCounts[surface.id][name] ?? 0;
+        if (sites === 0) continue;
+        lines.push(
+          [
+            consumer.id,
+            consumer.label,
+            modeLabel(row.mode),
+            row.relPath,
+            String(row.firstLine),
+            surface.id,
+            surface.label,
+            surface.group,
+            name,
+            surfaceNameKind(surface, name),
+            String(sites),
+          ].join("\t"),
+        );
       }
     }
   }
   return `${lines.join("\n")}\n`;
+}
+
+/** One TSV per (consumer, crate) shard; a shard with no rows keeps its header. */
+export function renderConsumerMigrationShards(scan) {
+  const shards = shardLayout(scan.consumers);
+  const known = new Set(shards.map((shard) => `${shard.consumer.id}\0${shard.crate}`));
+  for (const consumer of scan.consumers) {
+    for (const row of consumer.fileRows) {
+      const key = `${consumer.id}\0${crateOf(row.relPath)}`;
+      if (!known.has(key)) throw new Error(`no shard for ${consumer.id} row ${row.relPath}`);
+    }
+  }
+  return shards.map((shard) => ({
+    relPath: shard.relPath,
+    text: renderRows(
+      shard.consumer,
+      shard.consumer.fileRows.filter((row) => crateOf(row.relPath) === shard.crate),
+    ),
+  }));
+}
+
+/** Every row of every consumer as one TSV (header + rows): the in-memory union of the shards. */
+export function renderConsumerMigrationSurfaceRows(scan) {
+  const rows = scan.consumers.flatMap((consumer) =>
+    renderRows(consumer, consumer.fileRows).split("\n").slice(1, -1),
+  );
+  return `${[ROW_COLUMNS.join("\t"), ...rows].join("\n")}\n`;
 }

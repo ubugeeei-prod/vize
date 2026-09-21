@@ -17,77 +17,53 @@
 //   croquis-producers.mjs  workspace table of croquis-value producers
 //   croquis-file-index.mjs per-file alias tables (pub-use fixpoint)
 //   croquis-analysis.mjs   site counting + naive grep lane
-//   croquis-render.mjs     artifact rendering
+//   croquis-render.mjs     method prose, per-crate grouping, --summary view
+//   croquis-shards.mjs     committed index + one shard per consuming crate
+//   artifact-set.mjs       byte-exact --write/--check of the shard set
+//
+// The committed matrix is sharded: davinci-road/plan/croquis-consumption.md
+// (method + product set, which depend only on vize_croquis) and
+// davinci-road/plan/croquis-consumption/<crate>.md (every per-crate fact).
+// Cross-crate totals are never committed — they changed with every PR and
+// made every open PR conflict — and are printed on demand by --summary.
 //
 // Usage:
-//   rust-script tools/commands/davinci/croquis-consumers.rs --write   # regenerate artifact
-//   rust-script tools/commands/davinci/croquis-consumers.rs --check   # diff against committed
+//   rust-script tools/commands/davinci/croquis-consumers.rs --write     # regenerate index + shards
+//   rust-script tools/commands/davinci/croquis-consumers.rs --check     # byte-compare against committed
+//   rust-script tools/commands/davinci/croquis-consumers.rs --summary   # print cross-crate totals
 //
 // Node builtins only. Output is deterministic (stable sort everywhere,
 // no timestamps, no absolute paths).
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-
+import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.mjs";
 import { analyzeConsumers } from "./lib/croquis-analysis.mjs";
 import { enumerateProducts } from "./lib/croquis-products.mjs";
-import { renderArtifact } from "./lib/croquis-render.mjs";
-import { ARTIFACT, ARTIFACT_REL, REGEN_COMMAND } from "./lib/paths.mjs";
-
-function generate() {
-  const products = enumerateProducts();
-  const analysis = analyzeConsumers(products);
-  return renderArtifact(products, analysis);
-}
+import { renderSummary } from "./lib/croquis-render.mjs";
+import { renderCroquisArtifacts } from "./lib/croquis-shards.mjs";
+import { REGEN_COMMAND, SHARD_DIR_REL } from "./lib/paths.mjs";
 
 function main() {
   const mode = process.argv[2];
-  if (mode !== "--write" && mode !== "--check") {
+  if (mode !== "--write" && mode !== "--check" && mode !== "--summary") {
     console.error(
-      "usage: rust-script tools/commands/davinci/croquis-consumers.rs --write | --check",
+      "usage: rust-script tools/commands/davinci/croquis-consumers.rs --write | --check | --summary",
     );
     process.exit(2);
   }
-  const generated = generate();
-  if (mode === "--write") {
-    writeFileSync(ARTIFACT, generated);
-    console.log(`wrote ${ARTIFACT_REL}`);
+  const products = enumerateProducts();
+  const analysis = analyzeConsumers(products);
+  if (mode === "--summary") {
+    process.stdout.write(renderSummary(products, analysis));
     return;
   }
-  // --check
-  if (!existsSync(ARTIFACT)) {
-    console.error(`stale: ${ARTIFACT_REL} does not exist. Regenerate with: ${REGEN_COMMAND}`);
-    process.exit(1);
-  }
-  const committed = readFileSync(ARTIFACT, "utf8");
-  if (committed === generated) {
-    console.log(`${ARTIFACT_REL} is up to date`);
-    return;
-  }
-  const committedLines = committed.split("\n");
-  const generatedLines = generated.split("\n");
-  let firstDiff = -1;
-  const max = Math.max(committedLines.length, generatedLines.length);
-  for (let i = 0; i < max; i++) {
-    if (committedLines[i] !== generatedLines[i]) {
-      firstDiff = i;
-      break;
-    }
-  }
-  const committedSet = new Set(committedLines);
-  const generatedSet = new Set(generatedLines);
-  const removed = committedLines.filter((l) => !generatedSet.has(l)).length;
-  const added = generatedLines.filter((l) => !committedSet.has(l)).length;
-  console.error(`stale: ${ARTIFACT_REL} drifted from the current sources.`);
-  console.error(
-    `  first differing line: ${firstDiff + 1} (committed ${committedLines.length} lines, regenerated ${generatedLines.length})`,
-  );
-  if (firstDiff >= 0) {
-    console.error(`  - ${(committedLines[firstDiff] ?? "<eof>").slice(0, 160)}`);
-    console.error(`  + ${(generatedLines[firstDiff] ?? "<eof>").slice(0, 160)}`);
-  }
-  console.error(`  lines only in committed: ${removed}, only in regenerated: ${added}`);
-  console.error(`  Regenerate with: ${REGEN_COMMAND}`);
-  process.exit(1);
+  const set = {
+    label: "croquis consumption matrix",
+    files: renderCroquisArtifacts(products, analysis),
+    ownedDirs: [SHARD_DIR_REL],
+    regenCommand: REGEN_COMMAND,
+  };
+  if (mode === "--write") writeArtifactSet(set);
+  else checkArtifactSet(set);
 }
 
 main();

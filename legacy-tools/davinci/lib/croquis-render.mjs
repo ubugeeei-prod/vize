@@ -1,51 +1,57 @@
-// Artifact rendering. Ordering is fully determined by lexical sorts so the
-// staleness check can byte-compare the committed matrix.
+// Shared rendering pieces of the croquis consumption matrix: product
+// identities, the resolution-method prose, per-crate grouping, and the
+// on-demand `--summary` view (cross-crate aggregates, never committed — they
+// would change on every PR and make every other PR conflict). Ordering is
+// fully determined by lexical sorts so the staleness check can byte-compare.
 
 import { formatTable } from "./markdown.mjs";
 import { byKey } from "./ordering.mjs";
-import { REGEN_COMMAND } from "./paths.mjs";
 
-export function renderArtifact(products, analysis) {
-  const { typeProducts, fieldProducts, passthroughs } = products;
-  const { rows, nonProduct, grepRows, globFiles } = analysis;
+export const SUMMARY_COMMAND = "rust-script tools/commands/davinci/croquis-consumers.rs --summary";
 
-  const productIds = [];
+/** Every product in artifact order: type products by name, then `Croquis.<field>` rows. */
+export function productIdsOf(products) {
+  const { typeProducts, fieldProducts } = products;
+  const ids = [];
   for (const name of [...typeProducts.keys()].sort(byKey)) {
-    productIds.push({ id: name, kind: "type", module: typeProducts.get(name).module });
+    ids.push({ id: name, kind: "type", module: typeProducts.get(name).module });
   }
   for (const name of [...fieldProducts.keys()].sort(byKey)) {
-    productIds.push({
-      id: "Croquis." + name,
-      kind: "field",
-      module: "croquis",
-      typeText: fieldProducts.get(name).typeText,
-    });
+    ids.push({ id: "Croquis." + name, kind: "field", module: "croquis" });
   }
+  return ids;
+}
 
-  const rowsByProduct = new Map();
-  for (const row of rows.values()) {
-    if (!rowsByProduct.has(row.product)) rowsByProduct.set(row.product, []);
-    rowsByProduct.get(row.product).push(row);
-  }
-  for (const list of rowsByProduct.values()) list.sort((a, b) => byKey(a.crate, b.crate));
+/** Per consuming crate: resolved rows, non-product rows, and naive-grep sites by product. */
+export function groupByCrate(analysis) {
+  const byCrate = new Map();
+  const entry = (crate) => {
+    if (!byCrate.has(crate)) {
+      byCrate.set(crate, { resolved: new Map(), nonProduct: new Map(), grep: new Map() });
+    }
+    return byCrate.get(crate);
+  };
+  for (const row of analysis.rows.values()) entry(row.crate).resolved.set(row.product, row);
+  for (const row of analysis.nonProduct.values()) entry(row.crate).nonProduct.set(row.product, row);
+  for (const row of analysis.grepRows.values()) entry(row.crate).grep.set(row.product, row.sites);
+  return byCrate;
+}
 
-  const consumed = productIds.filter((p) => rowsByProduct.has(p.id));
-  const unconsumed = productIds.filter((p) => !rowsByProduct.has(p.id));
+/** Products whose resolved and naive-grep counts differ in one crate's group. */
+export function disagreements(productIds, group) {
+  return productIds
+    .map((p) => ({
+      id: p.id,
+      resolved: group.resolved.get(p.id)?.sites ?? 0,
+      grep: group.grep.get(p.id) ?? 0,
+    }))
+    .filter((d) => d.resolved !== d.grep);
+}
 
+export function methodLines(products, analysis) {
+  const { passthroughs } = products;
+  const { globFiles } = analysis;
   const lines = [];
-  lines.push("<!-- GENERATED FILE — do not edit by hand.");
-  lines.push(`     Regenerate: ${REGEN_COMMAND}`);
-  lines.push("     Verify:     rust-script tools/commands/davinci/croquis-consumers.rs --check");
-  lines.push("     Generator:  tools/davinci/croquis-consumers.mjs -->");
-  lines.push("");
-  lines.push("# Croquis consumption matrix");
-  lines.push("");
-  lines.push(
-    "Which workspace crates consume the public analysis products of" +
-      " `crates/vize_croquis`. Mechanizes the 2026-08-13 hand audit in" +
-      " [semantic-engine.md](../semantic-engine.md#the-problem-measured) (Davinci P0-7).",
-  );
-  lines.push("");
   lines.push("## Resolution method (and its limits)");
   lines.push("");
   lines.push("**Product enumeration** — parsed from source, not hardcoded:");
@@ -98,8 +104,17 @@ export function renderArtifact(products, analysis) {
       " (`entry.analysis.race_conditions`, `ctx.croquis().bindings`) are counted" +
       " too.",
   );
+  lines.push(
+    "- **naive grep lane** (cross-check) — raw word-boundary text matches per" +
+      " product name (`\\.field` matches for field rows) over the same files —" +
+      " comments, strings, doc text, and same-named unrelated symbols included," +
+      " imports included. Disagreements are listed per crate, **not** reconciled:" +
+      " `grep > resolved` usually means comments/unrelated same-named symbols (for" +
+      " field rows: field accesses on non-`Croquis` receivers); `grep < resolved`" +
+      " would indicate a resolver bug and must be investigated.",
+  );
   lines.push("");
-  lines.push("**Known limits** (undercounts are possible; the grep lane below bounds them):");
+  lines.push("**Known limits** (undercounts are possible; the naive grep lane bounds them):");
   lines.push("");
   lines.push(
     "- Re-export chains resolve by item **name**, not full module path; same-named" +
@@ -127,116 +142,108 @@ export function renderArtifact(products, analysis) {
   } else {
     lines.push("- No glob imports (`use vize_croquis::…::*`) exist in the workspace today.");
   }
-  lines.push("");
+  return lines;
+}
 
+function sum(values) {
+  return values.reduce((a, b) => a + b, 0);
+}
+
+// One row per id with at least one consuming crate: lead cells, then the
+// crate count and the file/site sums over that id's per-crate rows.
+function totalsTable(leadHeaders, ids, rowsById) {
+  const rows = [];
+  for (const { id, cells } of ids) {
+    const list = rowsById.get(id) ?? [];
+    if (list.length === 0) continue;
+    rows.push([
+      ...cells,
+      String(list.length),
+      String(sum(list.map((row) => row.files.size))),
+      String(sum(list.map((row) => row.sites))),
+    ]);
+  }
+  return formatTable(
+    [...leadHeaders, "crates", "files", "sites"],
+    [...leadHeaders.map(() => "left"), "right", "right", "right"],
+    rows,
+  ).trimEnd();
+}
+
+function rowsBy(map) {
+  const out = new Map();
+  for (const row of map.values()) {
+    if (!out.has(row.product)) out.set(row.product, []);
+    out.get(row.product).push(row);
+  }
+  return out;
+}
+
+/** The on-demand cross-crate view printed by `--summary`. Never committed. */
+export function renderSummary(products, analysis) {
+  const productIds = productIdsOf(products);
+  const resolvedBy = rowsBy(analysis.rows);
+  const byCrate = groupByCrate(analysis);
+  const crates = [...byCrate.keys()].sort(byKey);
+  const lines = [];
+  lines.push("# Croquis consumption summary (computed, not committed)");
+  lines.push("");
+  lines.push(
+    "Cross-crate aggregates of the sharded matrix in" +
+      " `davinci-road/plan/croquis-consumption/`. Printed by `" +
+      SUMMARY_COMMAND +
+      "`; totals are sums over the per-crate shards.",
+  );
+  lines.push("");
   lines.push("## Products with external consumers");
   lines.push("");
-  const productRows = [];
-  for (const p of consumed) {
-    for (const row of rowsByProduct.get(p.id)) {
-      productRows.push([
-        `\`${p.id}\``,
-        p.kind,
-        `\`${p.module}\``,
-        `\`${row.crate}\``,
-        String(row.files.size),
-        String(row.sites),
-      ]);
-    }
-  }
-  lines.push(
-    formatTable(
-      ["product", "kind", "module", "consuming crate", "files", "sites"],
-      ["left", "left", "left", "left", "right", "right"],
-      productRows,
-    ).trimEnd(),
-  );
+  const productCells = productIds.map((p) => ({
+    id: p.id,
+    cells: [`\`${p.id}\``, p.kind, `\`${p.module}\``],
+  }));
+  lines.push(totalsTable(["product", "kind", "module"], productCells, resolvedBy));
   lines.push("");
-
   lines.push("## Products with no external consumers");
   lines.push("");
-  lines.push(
-    "Computed (or exported) by `vize_croquis`, referenced by no other workspace" +
-      " crate under the resolution above.",
-  );
-  lines.push("");
-  const unconsumedByModule = new Map();
-  for (const p of unconsumed) {
-    if (!unconsumedByModule.has(p.module)) unconsumedByModule.set(p.module, []);
-    unconsumedByModule.get(p.module).push(p);
+  const orphansByModule = new Map();
+  for (const p of productIds.filter((p) => !resolvedBy.has(p.id))) {
+    if (!orphansByModule.has(p.module)) orphansByModule.set(p.module, []);
+    orphansByModule.get(p.module).push("`" + p.id + "`");
   }
-  for (const module of [...unconsumedByModule.keys()].sort(byKey)) {
-    const items = unconsumedByModule
-      .get(module)
-      .map((p) => "`" + p.id + "`")
-      .join(", ");
-    lines.push(`- \`${module}\`: ${items}`);
+  for (const module of [...orphansByModule.keys()].sort(byKey)) {
+    lines.push(`- \`${module}\`: ${orphansByModule.get(module).join(", ")}`);
   }
   lines.push("");
-
   lines.push("## Non-product `vize_croquis` imports observed");
   lines.push("");
-  lines.push(
-    "Items consumers import from `vize_croquis` that are outside the product set" +
-      " above (module-path items never re-exported at the crate root nor referenced" +
-      " by `croquis.rs`). Kept visible so nothing resolved is silently dropped.",
-  );
+  const nonProductBy = rowsBy(analysis.nonProduct);
+  const itemCells = [...nonProductBy.keys()]
+    .sort(byKey)
+    .map((id) => ({ id, cells: [`\`${id}\``] }));
+  lines.push(totalsTable(["item"], itemCells, nonProductBy));
   lines.push("");
-  const nonProductRows = [...nonProduct.values()].sort(
-    (a, b) => byKey(a.product, b.product) || byKey(a.crate, b.crate),
-  );
-  lines.push(
-    formatTable(
-      ["item", "consuming crate", "files", "sites"],
-      ["left", "left", "right", "right"],
-      nonProductRows.map((row) => [
-        `\`${row.product}\``,
-        `\`${row.crate}\``,
-        String(row.files.size),
-        String(row.sites),
-      ]),
-    ).trimEnd(),
-  );
-  lines.push("");
-
   lines.push("## Cross-check: symbol-resolved vs naive grep");
   lines.push("");
-  lines.push(
-    "The naive lane counts raw word-boundary text matches per product name" +
-      " (`\\.field` matches for field rows) over the same files — comments," +
-      " strings, doc text, and same-named unrelated symbols included, imports" +
-      " included. Disagreements are listed, **not** reconciled: `grep > resolved`" +
-      " usually means comments/unrelated same-named symbols (for field rows: field" +
-      " accesses on non-`Croquis` receivers); `grep < resolved` would indicate a" +
-      " resolver bug and must be investigated.",
-  );
-  lines.push("");
-  const crossCheckRows = [];
-  const addTo = (map, key, crate, sites) => {
-    if (!map.has(key)) map.set(key, new Map());
-    map.get(key).set(crate, sites);
-  };
-  const resolvedPer = new Map();
-  const grepPer = new Map();
-  for (const row of rows.values()) addTo(resolvedPer, row.product, row.crate, row.sites);
-  for (const row of grepRows.values()) addTo(grepPer, row.product, row.crate, row.sites);
-  const allProducts = productIds.map((p) => p.id);
-  for (const id of allProducts) {
-    const r = resolvedPer.get(id) ?? new Map();
-    const g = grepPer.get(id) ?? new Map();
-    const crates = [...new Set([...r.keys(), ...g.keys()])].sort(byKey);
-    const diffs = crates.filter((c) => (r.get(c) ?? 0) !== (g.get(c) ?? 0));
-    if (diffs.length === 0) continue;
-    const rTotal = [...r.values()].reduce((a, b) => a + b, 0);
-    const gTotal = [...g.values()].reduce((a, b) => a + b, 0);
-    const detail = diffs.map((c) => `\`${c}\` (${r.get(c) ?? 0}/${g.get(c) ?? 0})`).join(", ");
-    crossCheckRows.push([`\`${id}\``, String(rTotal), String(gTotal), detail]);
+  const crossRows = [];
+  for (const p of productIds) {
+    const perCrate = crates
+      .map((crate) => ({ crate, d: disagreements([p], byCrate.get(crate))[0] }))
+      .filter((x) => x.d);
+    if (perCrate.length === 0) continue;
+    let resolved = 0;
+    let grep = 0;
+    for (const group of byCrate.values()) {
+      resolved += group.resolved.get(p.id)?.sites ?? 0;
+      grep += group.grep.get(p.id) ?? 0;
+    }
+    const detail = perCrate.map((x) => `\`${x.crate}\` (${x.d.resolved}/${x.d.grep})`).join(", ");
+    crossRows.push([`\`${p.id}\``, String(resolved), String(grep), detail]);
   }
   lines.push(
     formatTable(
       ["product", "resolved", "grep", "disagreeing crates (resolved/grep)"],
       ["left", "right", "right", "left"],
-      crossCheckRows,
+      crossRows,
     ).trimEnd(),
   );
   lines.push("");

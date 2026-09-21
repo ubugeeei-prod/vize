@@ -1,7 +1,8 @@
 <!-- GENERATED FILE - do not edit by hand.
      Regenerate: rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write
      Verify:     rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
-     Generator:  tools/davinci/consumer-migration-surfaces.mjs -->
+     Totals:     rust-script tools/commands/davinci/consumer-migration-surfaces.rs --summary
+     Generator:  legacy-tools/davinci/consumer-migration-surfaces.mjs -->
 
 # Consumer migration surfaces
 
@@ -25,8 +26,6 @@ observational guard for planning only. It does not change rollout state.
   `*_tests.rs`, and Rust sites after the first `#[cfg(test)]` in a file.
 - Content-mapper files under Canon are reported separately from the broader
   typechecker row so that protocol work can move in smaller PRs.
-- Full file x surface x matched-name rows are generated in `davinci-road/plan/consumer-migration-surfaces.tsv`; this
-  markdown keeps only top impact files to stay under the source-length gate.
 
 ## Surface legend
 
@@ -41,219 +40,50 @@ observational guard for planning only. It does not change rollout state.
 | Croquis analysis | old   | legacy: `vize_croquis`, `vize_croquis_cf`                                                                                                          |
 | raw OXC          | raw   | raw: `oxc_allocator`, `oxc_ast`, `oxc_ast_visit`, `oxc_codegen`, `oxc_formatter`, `oxc_formatter_core`, `oxc_parser`, `oxc_semantic`, `oxc_syntax` |
 
-## Consumer summary
+## Consumers
 
-| consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
-| -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |          1291 |                   893 |               398 |             167 |     407 |            1144 |      721 |           639 |           810 |
-| Linter                     |           380 |                   380 |                 0 |             300 |     303 |             735 |      248 |           395 |           587 |
-| Typechecker                |          1062 |                   274 |               788 |             502 |     241 |            1049 |      756 |           596 |           847 |
-| Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            21 |
-| Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            71 |
-| LSP                        |           342 |                   342 |                 0 |             118 |      63 |             385 |      138 |           197 |           452 |
+- **Compiler** (`compiler`): build command plus atelier compiler crates.
+- **Linter** (`linter`): lint command plus Patina rule engine.
+- **Typechecker** (`typechecker`): check command plus Canon, excluding dedicated content-mapper files.
+- **Typechecker content-mapper** (`typechecker-content-mapper`): content-mapper command plus Canon content-mapper protocol files.
+- **Formatter** (`formatter`): fmt command, Glyph formatter crate, and LSP format handler.
+- **LSP** (`lsp`): lsp/ide commands plus Maestro editor/server crate.
 
-## Consumer details
+## Shards
 
-### Compiler
+Every row lives in exactly one TSV shard per (consumer, crate) under
+`davinci-road/plan/consumer-migration-surfaces/`: one row per file x class x surface x matched name,
+columns `consumer_id`, `consumer`, `class` (`source`, `manifest`,
+`test/dev`), `file`, `first_line`, `surface_id`, `surface`,
+`surface_group`, `matched_name`, `name_kind`, `sites`. The shard set is
+fixed by the consumer scopes (table below), so it only changes when a scope does.
 
-Scope: build command plus atelier compiler crates. This is a lexical inventory, not a rollout gate.
+Cross-file aggregates — per-consumer and per-surface totals and the top files
+by site count — are deliberately **not committed**: they changed with every PR
+and made every open PR conflict. They are pure sums over the shards; print
+them with `rust-script tools/commands/davinci/consumer-migration-surfaces.rs --summary`. The staleness check (TS-12)
+byte-compares this page, every shard, and the shard set itself.
 
-| surface          | total sites | source/manifest | test/dev |
-| ---------------- | ----------: | --------------: | -------: |
-| Davinci          |          34 |              14 |       20 |
-| S0               |        1053 |             560 |      493 |
-| S1               |          15 |               7 |        8 |
-| S2               |          56 |              36 |       20 |
-| S1->S2           |         133 |              31 |      102 |
-| old AST/parser   |          95 |              75 |       20 |
-| Croquis analysis |          72 |              56 |       16 |
-| raw OXC          |         407 |             365 |       42 |
-
-#### Top source and manifest files
-
-| file                                                                         | class    | surfaces                                                                                             | sites |
-| ---------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------- | ----: |
-| `crates/vize_atelier_sfc/src/rewrite_default.rs:6`                           | source   | S0 1<br>raw OXC 27                                                                                   |    28 |
-| `crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs:7`        | source   | S0 3<br>old AST/parser 1<br>raw OXC 20                                                               |    24 |
-| `crates/vize_atelier_core/Cargo.toml:17`                                     | manifest | Davinci 1<br>S0 1<br>S1 1<br>S2 1<br>S1->S2 1<br>old AST/parser 4<br>Croquis analysis 1<br>raw OXC 7 |    17 |
-| `crates/vize_atelier_sfc/src/script/define_props_destructure/collector.rs:6` | source   | S0 2<br>raw OXC 15                                                                                   |    17 |
-| `crates/vize_atelier_core/src/steps/expression/prefix.rs:6`                  | source   | S0 1<br>raw OXC 14                                                                                   |    15 |
-
-Additional source/manifest rows are in the TSV: 375 omitted.
-
-#### Top test/dev files
-
-| file                                                          | class    | surfaces                                      | sites |
-| ------------------------------------------------------------- | -------- | --------------------------------------------- | ----: |
-| `crates/vize_atelier_vapor/src/tests.rs:4`                    | test/dev | S0 42<br>raw OXC 2                            |    44 |
-| `crates/vize_atelier_core/tests/davinci_s2_transform.rs:118`  | test/dev | Davinci 3<br>S0 6<br>S1 3<br>S1->S2 12        |    24 |
-| `crates/vize_atelier_core/src/codegen/tests.rs:5`             | test/dev | S0 20<br>old AST/parser 1                     |    21 |
-| `crates/vize_atelier_sfc/src/compile_script/props/tests.rs:4` | test/dev | S0 15                                         |    15 |
-| `crates/vize_atelier_core/tests/s2_support/compare.rs:10`     | test/dev | Davinci 3<br>S0 4<br>S1 1<br>S2 1<br>S1->S2 4 |    13 |
-
-Additional test/dev rows are in the TSV: 291 omitted.
-
-### Linter
-
-Scope: lint command plus Patina rule engine. This is a lexical inventory, not a rollout gate.
-
-| surface          | total sites | source/manifest | test/dev |
-| ---------------- | ----------: | --------------: | -------: |
-| S0               |         380 |             261 |      119 |
-| old AST/parser   |         258 |             218 |       40 |
-| Croquis analysis |          42 |              37 |        5 |
-| raw OXC          |         303 |             219 |       84 |
-
-#### Top source and manifest files
-
-| file                                                                 | class    | surfaces                                                    | sites |
-| -------------------------------------------------------------------- | -------- | ----------------------------------------------------------- | ----: |
-| `crates/vize/src/commands/lint/entry_rules/rule_option_mapping.rs:1` | source   | S0 14                                                       |    14 |
-| `crates/vize_patina/src/linter/engine.rs:26`                         | source   | S0 5<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 5 |    13 |
-| `crates/vize/src/commands/lint/patterns.rs:22`                       | source   | S0 11                                                       |    11 |
-| `crates/vize_patina/Cargo.toml:13`                                   | manifest | S0 1<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 6 |    10 |
-| `crates/vize_patina/src/rules/script/no_ref_as_operand.rs:29`        | source   | S0 1<br>raw OXC 9                                           |    10 |
-
-Additional source/manifest rows are in the TSV: 325 omitted.
-
-#### Top test/dev files
-
-| file                                                                             | class    | surfaces                                       | sites |
-| -------------------------------------------------------------------------------- | -------- | ---------------------------------------------- | ----: |
-| `crates/vize_patina/src/output/tests.rs:4`                                       | test/dev | S0 23                                          |    23 |
-| `crates/vize_patina/src/markup/tests.rs:49`                                      | test/dev | S0 1<br>old AST/parser 3<br>raw OXC 6          |    10 |
-| `crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs:36` | test/dev | S0 1<br>raw OXC 5                              |     6 |
-| `crates/vize_patina/src/rules/vue/no_mutating_props.rs:35`                       | test/dev | S0 3<br>old AST/parser 2<br>Croquis analysis 1 |     6 |
-| `crates/vize_patina/src/rules/vue/no_unused_components.rs:41`                    | test/dev | S0 1<br>old AST/parser 2<br>Croquis analysis 3 |     6 |
-
-Additional test/dev rows are in the TSV: 74 omitted.
-
-### Typechecker
-
-Scope: check command plus Canon, excluding dedicated content-mapper files. This is a lexical inventory, not a rollout gate.
-
-| surface          | total sites | source/manifest | test/dev |
-| ---------------- | ----------: | --------------: | -------: |
-| S0               |        1062 |             613 |      449 |
-| old AST/parser   |         201 |              61 |      140 |
-| Croquis analysis |         301 |             170 |      131 |
-| raw OXC          |         241 |             205 |       36 |
-
-#### Top source and manifest files
-
-| file                                                                           | class    | surfaces                                                    | sites |
-| ------------------------------------------------------------------------------ | -------- | ----------------------------------------------------------- | ----: |
-| `crates/vize_canon/src/virtual_ts/scope/context.rs:4`                          | source   | S0 6<br>old AST/parser 4<br>Croquis analysis 4              |    14 |
-| `crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs:7` | source   | S0 12                                                       |    12 |
-| `crates/vize_canon/src/sfc_typecheck/checks.rs:4`                              | source   | S0 1<br>Croquis analysis 11                                 |    12 |
-| `crates/vize/src/commands/check/nuxt/parsing.rs:5`                             | source   | S0 1<br>raw OXC 11                                          |    12 |
-| `crates/vize_canon/Cargo.toml:25`                                              | manifest | S0 1<br>old AST/parser 3<br>Croquis analysis 1<br>raw OXC 6 |    11 |
-
-Additional source/manifest rows are in the TSV: 410 omitted.
-
-#### Top test/dev files
-
-| file                                                                                         | class    | surfaces                                          | sites |
-| -------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------- | ----: |
-| `crates/vize_canon/src/virtual_ts/tests.rs:8`                                                | test/dev | S0 38<br>old AST/parser 36<br>Croquis analysis 50 |   124 |
-| `crates/vize_canon/src/virtual_ts/tests/options_api_instance.rs:32`                          | test/dev | S0 7<br>old AST/parser 7<br>Croquis analysis 18   |    32 |
-| `crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_handler_ts7006.rs:41` | test/dev | S0 18                                             |    18 |
-| `crates/vize_canon/src/virtual_ts/expressions/component_props_tests.rs:1`                    | test/dev | S0 8<br>old AST/parser 8<br>Croquis analysis 1    |    17 |
-| `crates/vize_canon/src/virtual_ts/strict_template_globals_tests.rs:3`                        | test/dev | S0 8<br>old AST/parser 7<br>Croquis analysis 1    |    16 |
-
-Additional test/dev rows are in the TSV: 220 omitted.
-
-### Typechecker content-mapper
-
-Scope: content-mapper command plus Canon content-mapper protocol files. This is a lexical inventory, not a rollout gate.
-
-| surface | total sites | source/manifest | test/dev |
-| ------- | ----------: | --------------: | -------: |
-| S0      |           9 |               9 |        0 |
-
-#### Top source and manifest files
-
-| file                                                                             | class  | surfaces | sites |
-| -------------------------------------------------------------------------------- | ------ | -------- | ----: |
-| `crates/vize_canon/src/batch/virtual_project/content_mapper.rs:8`                | source | S0 2     |     2 |
-| `crates/vize_canon/src/batch/virtual_project/content_mapper_alias.rs:1`          | source | S0 1     |     1 |
-| `crates/vize_canon/src/batch/virtual_project/content_mapper_component_name.rs:3` | source | S0 1     |     1 |
-| `crates/vize_canon/src/batch/virtual_project/content_mapper_directives.rs:12`    | source | S0 1     |     1 |
-| `crates/vize_canon/src/batch/virtual_project/content_mapper_protocol.rs:4`       | source | S0 1     |     1 |
-
-Additional source/manifest rows are in the TSV: 3 omitted.
-
-#### Top test/dev files
-
-_No files in this class._
-
-### Formatter
-
-Scope: fmt command, Glyph formatter crate, and LSP format handler. This is a lexical inventory, not a rollout gate.
-
-| surface | total sites | source/manifest | test/dev |
-| ------- | ----------: | --------------: | -------: |
-| S0      |          40 |              28 |       12 |
-| raw OXC |          21 |              14 |        7 |
-
-#### Top source and manifest files
-
-| file                                               | class    | surfaces          | sites |
-| -------------------------------------------------- | -------- | ----------------- | ----: |
-| `crates/vize_glyph/Cargo.toml:13`                  | manifest | S0 1<br>raw OXC 5 |     6 |
-| `crates/vize_glyph/src/options.rs:6`               | source   | S0 1<br>raw OXC 4 |     5 |
-| `crates/vize_glyph/src/script/block_identity.rs:4` | source   | S0 1<br>raw OXC 3 |     4 |
-| `crates/vize_glyph/src/script.rs:10`               | source   | S0 1<br>raw OXC 2 |     3 |
-| `crates/vize_glyph/src/lib.rs:53`                  | source   | S0 2              |     2 |
-
-Additional source/manifest rows are in the TSV: 22 omitted.
-
-#### Top test/dev files
-
-| file                                                 | class    | surfaces          | sites |
-| ---------------------------------------------------- | -------- | ----------------- | ----: |
-| `crates/vize_glyph/src/script.rs:56`                 | test/dev | S0 1<br>raw OXC 7 |     8 |
-| `crates/vize/src/commands/fmt/files.rs:125`          | test/dev | S0 4              |     4 |
-| `crates/vize_glyph/src/formatter/block_indent.rs:47` | test/dev | S0 2              |     2 |
-| `crates/vize_glyph/src/template.rs:28`               | test/dev | S0 2              |     2 |
-| `crates/vize_glyph/src/style/stabilization.rs:226`   | test/dev | S0 1              |     1 |
-
-Additional test/dev rows are in the TSV: 2 omitted.
-
-### LSP
-
-Scope: lsp/ide commands plus Maestro editor/server crate. This is a lexical inventory, not a rollout gate.
-
-| surface          | total sites | source/manifest | test/dev |
-| ---------------- | ----------: | --------------: | -------: |
-| S0               |         342 |             234 |      108 |
-| old AST/parser   |          59 |              46 |       13 |
-| Croquis analysis |          59 |              43 |       16 |
-| raw OXC          |          63 |              62 |        1 |
-
-#### Top source and manifest files
-
-| file                                                            | class    | surfaces                                                    | sites |
-| --------------------------------------------------------------- | -------- | ----------------------------------------------------------- | ----: |
-| `crates/vize_maestro/src/server/state/config.rs:6`              | source   | S0 30                                                       |    30 |
-| `crates/vize_maestro/src/ide/diagnostics/linter_options.rs:6`   | source   | S0 21                                                       |    21 |
-| `crates/vize_maestro/src/ide/type_service/type_context.rs:229`  | source   | S0 14                                                       |    14 |
-| `crates/vize_maestro/Cargo.toml:45`                             | manifest | S0 1<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 6 |    10 |
-| `crates/vize_maestro/src/ide/corsa_support/html_attribute.rs:2` | source   | S0 10                                                       |    10 |
-
-Additional source/manifest rows are in the TSV: 134 omitted.
-
-#### Top test/dev files
-
-| file                                                             | class    | surfaces                   | sites |
-| ---------------------------------------------------------------- | -------- | -------------------------- | ----: |
-| `crates/vize_maestro/src/server/state/virtual_docs.rs:69`        | test/dev | S0 7<br>old AST/parser 2   |     9 |
-| `crates/vize_maestro/src/document/text/tests.rs:4`               | test/dev | S0 8                       |     8 |
-| `crates/vize_maestro/src/virtual_code/template_code_tests.rs:12` | test/dev | S0 4<br>old AST/parser 4   |     8 |
-| `crates/vize_maestro/src/ide/inlay_hint.rs:21`                   | test/dev | S0 4<br>Croquis analysis 3 |     7 |
-| `crates/vize_maestro/src/server/state.rs:37`                     | test/dev | S0 7                       |     7 |
-
-Additional test/dev rows are in the TSV: 63 omitted.
+| consumer                   | shard                                                                                                                  | scanned roots                                                                                            |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Compiler                   | [`compiler/vize.tsv`](./consumer-migration-surfaces/compiler/vize.tsv)                                                 | `crates/vize/src/commands/build.rs`<br>`crates/vize/src/commands/build`                                  |
+| Compiler                   | [`compiler/vize_atelier_core.tsv`](./consumer-migration-surfaces/compiler/vize_atelier_core.tsv)                       | crate `vize_atelier_core` (`Cargo.toml`, `src`, `tests`, `benches`)                                      |
+| Compiler                   | [`compiler/vize_atelier_dom.tsv`](./consumer-migration-surfaces/compiler/vize_atelier_dom.tsv)                         | crate `vize_atelier_dom` (`Cargo.toml`, `src`, `tests`, `benches`)                                       |
+| Compiler                   | [`compiler/vize_atelier_jsx.tsv`](./consumer-migration-surfaces/compiler/vize_atelier_jsx.tsv)                         | crate `vize_atelier_jsx` (`Cargo.toml`, `src`, `tests`, `benches`)                                       |
+| Compiler                   | [`compiler/vize_atelier_sfc.tsv`](./consumer-migration-surfaces/compiler/vize_atelier_sfc.tsv)                         | crate `vize_atelier_sfc` (`Cargo.toml`, `src`, `tests`, `benches`)                                       |
+| Compiler                   | [`compiler/vize_atelier_ssr.tsv`](./consumer-migration-surfaces/compiler/vize_atelier_ssr.tsv)                         | crate `vize_atelier_ssr` (`Cargo.toml`, `src`, `tests`, `benches`)                                       |
+| Compiler                   | [`compiler/vize_atelier_vapor.tsv`](./consumer-migration-surfaces/compiler/vize_atelier_vapor.tsv)                     | crate `vize_atelier_vapor` (`Cargo.toml`, `src`, `tests`, `benches`)                                     |
+| Linter                     | [`linter/vize.tsv`](./consumer-migration-surfaces/linter/vize.tsv)                                                     | `crates/vize/src/commands/lint.rs`<br>`crates/vize/src/commands/lint`                                    |
+| Linter                     | [`linter/vize_patina.tsv`](./consumer-migration-surfaces/linter/vize_patina.tsv)                                       | crate `vize_patina` (`Cargo.toml`, `src`, `tests`, `benches`)                                            |
+| Typechecker                | [`typechecker/vize.tsv`](./consumer-migration-surfaces/typechecker/vize.tsv)                                           | `crates/vize/src/commands/check.rs`<br>`crates/vize/src/commands/check`                                  |
+| Typechecker                | [`typechecker/vize_canon.tsv`](./consumer-migration-surfaces/typechecker/vize_canon.tsv)                               | crate `vize_canon` (`Cargo.toml`, `src`, `tests`, `benches`) (filtered, see scope)                       |
+| Typechecker content-mapper | [`typechecker-content-mapper/vize.tsv`](./consumer-migration-surfaces/typechecker-content-mapper/vize.tsv)             | `crates/vize/src/commands/content_mapper.rs`<br>`crates/vize/src/commands/content_mapper`                |
+| Typechecker content-mapper | [`typechecker-content-mapper/vize_canon.tsv`](./consumer-migration-surfaces/typechecker-content-mapper/vize_canon.tsv) | `crates/vize_canon/src/batch/virtual_project` (filtered, see scope)                                      |
+| Formatter                  | [`formatter/vize.tsv`](./consumer-migration-surfaces/formatter/vize.tsv)                                               | `crates/vize/src/commands/fmt.rs`<br>`crates/vize/src/commands/fmt`                                      |
+| Formatter                  | [`formatter/vize_glyph.tsv`](./consumer-migration-surfaces/formatter/vize_glyph.tsv)                                   | crate `vize_glyph` (`Cargo.toml`, `src`, `tests`, `benches`)                                             |
+| Formatter                  | [`formatter/vize_maestro.tsv`](./consumer-migration-surfaces/formatter/vize_maestro.tsv)                               | `crates/vize_maestro/src/server/format.rs`                                                               |
+| LSP                        | [`lsp/vize.tsv`](./consumer-migration-surfaces/lsp/vize.tsv)                                                           | `crates/vize/src/commands/lsp.rs`<br>`crates/vize/src/commands/ide.rs`<br>`crates/vize/src/commands/ide` |
+| LSP                        | [`lsp/vize_maestro.tsv`](./consumer-migration-surfaces/lsp/vize_maestro.tsv)                                           | crate `vize_maestro` (`Cargo.toml`, `src`, `tests`, `benches`)                                           |
 
 ## Independently mergeable no-rollout slices
 
@@ -299,4 +129,5 @@ protocol behavior.
 ```sh
 rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write
 rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
+rust-script tools/commands/davinci/consumer-migration-surfaces.rs --summary
 ```

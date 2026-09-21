@@ -83,7 +83,9 @@ fn run_node_generator_result(
     usage: &str,
 ) -> Result<u8, String> {
     let mode = mode.ok_or_else(|| usage.to_string())?;
-    if mode != "--write" && mode != "--check" {
+    // `--summary` prints on-demand aggregates of a sharded artifact; generators
+    // that have none reject it with their own usage message.
+    if mode != "--write" && mode != "--check" && mode != "--summary" {
         return Err(usage.to_string());
     }
 

@@ -75,8 +75,9 @@ export function isTestSite(relPath, stripped, index) {
 export function scanWorkspace() {
   const crates = [];
   const allSites = [];
-  let offsetReadTotal = 0;
-  const offsetReadCrates = new Set();
+  // crate -> loc-shaped span-read sites; reported only by `--summary`
+  // (a cross-crate count committed to the artifact churned on every PR).
+  const offsetReadsByCrate = new Map();
   for (const crate of discoverCrates()) {
     const counts = Object.fromEntries(MEMBERS.map((member) => [member, 0]));
     let testSites = 0;
@@ -99,13 +100,12 @@ export function scanWorkspace() {
       }
       const offsetReads = scanMembers(stripped, OFFSET_MEMBERS).length;
       if (offsetReads > 0) {
-        offsetReadTotal += offsetReads;
-        offsetReadCrates.add(crate.name);
+        offsetReadsByCrate.set(crate.name, (offsetReadsByCrate.get(crate.name) ?? 0) + offsetReads);
       }
     }
     if (total > 0) crates.push({ name: crate.name, counts, total, testSites });
   }
-  return { crates, allSites, offsetReadTotal, offsetReadCrateCount: offsetReadCrates.size };
+  return { crates, allSites, offsetReadsByCrate };
 }
 
 /** `path:line` of the first inventoried site in the file, or throw. */

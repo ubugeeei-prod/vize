@@ -1,0 +1,113 @@
+consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts_ast.rs	1	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts_ast.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts_ast.rs	1	raw_oxc	raw OXC	raw	oxc_ast	raw	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts_ast.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts_import_aliases.rs	3	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts_import_aliases.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts_import_aliases.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts_import_aliases.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts_rewrite.rs	3	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts.rs	7	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/imports_aliases.rs	4	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/imports_cache.rs	9	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_generated_tests.rs	3	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_js_tests.rs	2	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_magic_comments_tests.rs	2	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/imports_package_routes.rs	13	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_package_routes.rs	90	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/imports_registration.rs	3	s0	S0	stage	vize_s0	preferred	2
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_registration.rs	175	s0	S0	stage	vize_s0	preferred	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/imports_resolution.rs	5	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/imports_specifiers.rs	3	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_tests.rs	2	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports.rs	12	s0	S0	stage	vize_s0	preferred	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt.rs	8	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/fallback.rs	12	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/fallback.rs	12	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/fallback.rs	12	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/fallback.rs	12	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/fallback/fallback_values.rs	1	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/generated_ast_tests.rs	5	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_ast.rs	3	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_ast.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_ast.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_ast.rs	3	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_ast.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_dir.rs	10	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_values.rs	5	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated.rs	7	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/legacy_template_globals_tests.rs	5	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/legacy_template_globals.rs	2	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/parsing.rs	5	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/parsing.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/parsing.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	9
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/parsing.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins.rs	6	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins/extract.rs	5	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins/extract.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins/extract.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	3
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins/extract.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins/extract/bindings.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	2
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/plugins/tests.rs	6	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/source_scan.rs	6	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/source_scan.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/source_scan.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/source_scan.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/stubs.rs	5	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/tests.rs	4	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/tests.rs	4	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/tests.rs	4	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/tsconfig_aliases.rs	9	s0	S0	stage	vize_s0	preferred	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/virtual_modules.rs	6	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/virtual_modules.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/virtual_modules.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/virtual_modules.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/path_cache.rs	5	s0	S0	stage	vize_s0	preferred	2
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/path_cache.rs	47	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner.rs	147	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/collect_tests.rs	11	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/collect.rs	10	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/collect.rs	273	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/default_imports_explicit_ambient_tests.rs	3	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/default_imports_tests.rs	3	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/default_imports.rs	4	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/diagnostics.rs	9	s0	S0	stage	vize_s0	preferred	3
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/diagnostics/source_context.rs	3	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/diagnostics/source_filter.rs	3	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/execution.rs	9	s0	S0	stage	vize_s0	preferred	3
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/global_components.rs	15	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/global_components/specifier_rewrite.rs	3	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/global_components/workspace_declarations.rs	8	s0	S0	stage	vize_s0	preferred	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/global_components/workspace_declarations.rs	8	old_ast	old AST/parser	old	vize_armature	legacy	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/global_components/workspace_declarations.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/ignores.rs	43	s0	S0	stage	vize_s0	preferred	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/input_scope.rs	16	s0	S0	stage	vize_s0	preferred	3
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/input_scope/tests.rs	18	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/invocation.rs	31	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/nuxt_tsconfig.rs	15	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/nuxt_tsconfig.rs	256	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/nuxt_tsconfig/cache.rs	10	s0	S0	stage	vize_s0	preferred	5
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/nuxt_tsconfig/path_options_tests.rs	252	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_declarations.rs	2	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_json.rs	3	s0	S0	stage	vize_s0	preferred	4
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_profile.rs	4	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output.rs	5	s0	S0	stage	vize_s0	preferred	3
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/program_inputs.rs	3	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/programs.rs	5	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/resolve.rs	7	s0	S0	stage	vize_s0	preferred	8
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/socket.rs	10	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/text_style.rs	6	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs.rs	11	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/ambient.rs	8	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/collect.rs	6	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/default_exclude_tests.rs	17	s0	S0	stage	vize_s0	preferred	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/glob.rs	94	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/hidden_include_tests.rs	10	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/loader.rs	10	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/nuxt_manifest_tests.rs	10	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/ownership_shared_tests.rs	7	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/package_folder_tests.rs	17	s0	S0	stage	vize_s0	preferred	2
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/tests.rs	8	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/type_references.rs	9	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/type_references/tsconfig_types.rs	4	s0	S0	stage	vize_s0	preferred	2

@@ -1,0 +1,6 @@
+consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_alias.rs	1	s0	S0	stage	vize_s0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_component_name.rs	3	s0	S0	stage	vize_s0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_directives.rs	12	s0	S0	stage	vize_s0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_protocol.rs	4	s0	S0	stage	vize_s0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper.rs	8	s0	S0	stage	vize_s0	preferred	2

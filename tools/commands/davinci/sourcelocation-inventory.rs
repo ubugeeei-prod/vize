@@ -17,6 +17,6 @@ fn main() -> ExitCode {
     artifact_command::run_node_generator(
         env::args().nth(1).as_deref(),
         "legacy-tools/davinci/sourcelocation-inventory.mjs",
-        "usage: rust-script tools/commands/davinci/sourcelocation-inventory.rs --write | --check",
+        "usage: rust-script tools/commands/davinci/sourcelocation-inventory.rs --write | --check | --summary",
     )
 }

@@ -17,6 +17,6 @@ fn main() -> ExitCode {
     artifact_command::run_node_generator(
         env::args().nth(1).as_deref(),
         "legacy-tools/davinci/croquis-consumers.mjs",
-        "usage: rust-script tools/commands/davinci/croquis-consumers.rs --write | --check",
+        "usage: rust-script tools/commands/davinci/croquis-consumers.rs --write | --check | --summary",
     )
 }

@@ -20,16 +20,16 @@
 // or deleted consumer fails regeneration instead of going silently stale.
 //
 // Usage:
-//   rust-script tools/commands/davinci/sourcelocation-inventory.rs --write   # regenerate
-//   rust-script tools/commands/davinci/sourcelocation-inventory.rs --check   # diff committed
+//   rust-script tools/commands/davinci/sourcelocation-inventory.rs --write     # regenerate
+//   rust-script tools/commands/davinci/sourcelocation-inventory.rs --check     # diff committed
+//   rust-script tools/commands/davinci/sourcelocation-inventory.rs --summary   # span-read counts
 //
 // Node builtins only. Output is deterministic (stable sort everywhere,
 // no timestamps, no absolute paths).
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import path from "node:path";
-
+import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.mjs";
 import { formatTable } from "./lib/markdown.mjs";
+import { byKey } from "./lib/ordering.mjs";
 import {
   MEMBERS,
   assertAnchorAbsent,
@@ -37,11 +37,10 @@ import {
   citeAnchor,
   scanWorkspace,
 } from "./lib/sourcelocation-scan.mjs";
-import { repoRoot } from "./lib/paths.mjs";
 
 const ARTIFACT_REL = "davinci-road/plan/sourcelocation-inventory.md";
-const ARTIFACT = path.join(repoRoot, ARTIFACT_REL);
 const REGEN_COMMAND = "rust-script tools/commands/davinci/sourcelocation-inventory.rs --write";
+const SUMMARY_COMMAND = "rust-script tools/commands/davinci/sourcelocation-inventory.rs --summary";
 
 /** `source` reads counted at generation time of the P0-9 map, all migrated
  * to `Span::slice` by Davinci P1-3. */
@@ -50,8 +49,8 @@ const P0_9_SOURCE_READS = 106;
  * known-missed reads the limits section of the P0-9 map documented. */
 const P1_4_LINE_COL_READS = "3 direct sites + 4 known-missed";
 
-function generate() {
-  const { crates, allSites, offsetReadTotal, offsetReadCrateCount } = scanWorkspace();
+function generate(scan) {
+  const { crates, allSites } = scan;
   const grandTotal = crates.reduce((sum, c) => sum + c.total, 0);
   if (grandTotal !== 0) {
     const site = allSites[0];
@@ -160,8 +159,8 @@ any read — or any deleted carrier — comes back.
 - Reads of \`span.start\` / \`span.end\` are **not** inventoried: they are
   the surviving offset representation — the pre-migration
   \`start.offset\` / \`end.offset\` reads moved to them verbatim
-  (${offsetReadTotal} loc-shaped span-read sites across
-  ${offsetReadCrateCount} crates at generation time).
+  (their per-crate counts churn with every PR, so they are not committed:
+  \`${SUMMARY_COMMAND}\` prints them).
 - \`#[cfg(test)]\` code inside \`src/\` is included and reported in the
   "in test code" column: a site counts as test code when its file is a test
   module by name (\`tests.rs\`, \`*_tests.rs\`, \`/tests/\`) or sits at or
@@ -247,50 +246,41 @@ representation:
 `;
 }
 
+function renderSummary(offsetReadsByCrate) {
+  const crates = [...offsetReadsByCrate.keys()].sort(byKey);
+  const total = crates.reduce((sum, crate) => sum + offsetReadsByCrate.get(crate), 0);
+  const table = formatTable(
+    ["crate", "loc-shaped span reads"],
+    ["left", "right"],
+    [
+      ...crates.map((crate) => [`\`${crate}\``, String(offsetReadsByCrate.get(crate))]),
+      [`**total** (${crates.length} crates)`, String(total)],
+    ],
+  );
+  return `# Loc-shaped span reads (computed, not committed)\n\n${table}`;
+}
+
 function main() {
   const mode = process.argv[2];
-  if (mode !== "--write" && mode !== "--check") {
+  if (mode !== "--write" && mode !== "--check" && mode !== "--summary") {
     console.error(
-      "usage: rust-script tools/commands/davinci/sourcelocation-inventory.rs --write | --check",
+      "usage: rust-script tools/commands/davinci/sourcelocation-inventory.rs --write | --check | --summary",
     );
     process.exit(2);
   }
-  const generated = generate();
-  if (mode === "--write") {
-    writeFileSync(ARTIFACT, generated);
-    console.log(`wrote ${ARTIFACT_REL}`);
+  const scan = scanWorkspace();
+  const text = generate(scan);
+  if (mode === "--summary") {
+    process.stdout.write(renderSummary(scan.offsetReadsByCrate));
     return;
   }
-  // --check
-  if (!existsSync(ARTIFACT)) {
-    console.error(`stale: ${ARTIFACT_REL} does not exist. Regenerate with: ${REGEN_COMMAND}`);
-    process.exit(1);
-  }
-  const committed = readFileSync(ARTIFACT, "utf8");
-  if (committed === generated) {
-    console.log(`${ARTIFACT_REL} is up to date`);
-    return;
-  }
-  const committedLines = committed.split("\n");
-  const generatedLines = generated.split("\n");
-  let firstDiff = -1;
-  const max = Math.max(committedLines.length, generatedLines.length);
-  for (let i = 0; i < max; i++) {
-    if (committedLines[i] !== generatedLines[i]) {
-      firstDiff = i;
-      break;
-    }
-  }
-  console.error(`stale: ${ARTIFACT_REL} drifted from the current sources.`);
-  console.error(
-    `  first differing line: ${firstDiff + 1} (committed ${committedLines.length} lines, regenerated ${generatedLines.length})`,
-  );
-  if (firstDiff >= 0) {
-    console.error(`  - ${(committedLines[firstDiff] ?? "<eof>").slice(0, 160)}`);
-    console.error(`  + ${(generatedLines[firstDiff] ?? "<eof>").slice(0, 160)}`);
-  }
-  console.error(`  Regenerate with: ${REGEN_COMMAND}`);
-  process.exit(1);
+  const set = {
+    label: ARTIFACT_REL,
+    files: [{ relPath: ARTIFACT_REL, text }],
+    regenCommand: REGEN_COMMAND,
+  };
+  if (mode === "--write") writeArtifactSet(set);
+  else checkArtifactSet(set);
 }
 
 main();

@@ -1,0 +1,4 @@
+consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper.rs	18	s0	S0	stage	vize_s0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/project.rs	13	s0	S0	stage	vize_s0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/test_support.rs	6	s0	S0	stage	vize_s0	preferred	1

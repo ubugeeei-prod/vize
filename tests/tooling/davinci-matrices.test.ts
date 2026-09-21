@@ -13,11 +13,18 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 // tests/fixtures/). Each generator supports `--check`, which regenerates
 // in memory and byte-compares against the committed artifact.
 // Add one entry per matrix (P0-8 rule-parity joins this list).
+//
+// The croquis consumption matrix and the consumer migration surfaces are
+// sharded (an index page plus one file per crate / consumer) and commit no
+// cross-crate totals, so parallel PRs touching different crates never
+// conflict on them. `--check` is as strict as before: every shard is
+// byte-compared, and a shard the generator no longer produces is stale.
+// Totals are printed on demand by each generator's `--summary`.
 const matrices = [
   {
     name: "croquis consumption matrix",
     generator: "tools/commands/davinci/croquis-consumers.rs",
-    artifact: "davinci-road/plan/croquis-consumption.md",
+    artifact: "davinci-road/plan/croquis-consumption.md + croquis-consumption/<crate>.md",
   },
   {
     name: "rule-parity matrix (SFC × JSX)",
@@ -32,7 +39,8 @@ const matrices = [
   {
     name: "consumer migration surface inventory",
     generator: "tools/commands/davinci/consumer-migration-surfaces.rs",
-    artifact: "davinci-road/plan/consumer-migration-surfaces.md + .tsv",
+    artifact:
+      "davinci-road/plan/consumer-migration-surfaces.md + consumer-migration-surfaces/<consumer>/<crate>.tsv",
   },
   {
     name: "construct-matrix fixture plane (element kind × directive)",
