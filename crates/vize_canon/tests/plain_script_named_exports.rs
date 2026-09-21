@@ -112,13 +112,14 @@ export function toPageCount(total: number) {
         "export enum DiffDisplayMode {",
         "export const enum DiffMarker {",
         "export class DiffCursor {",
+        "export function toPageCount(total: number) {",
     ] {
         assert!(
             content.contains(declaration),
             "missing declaration: {declaration}\n{content}"
         );
     }
-    for name in ["DiffDisplayMode", "DiffMarker", "DiffCursor"] {
+    for name in ["DiffDisplayMode", "DiffMarker", "DiffCursor", "toPageCount"] {
         assert!(!content.contains(&format!(
             "export const {name} = __vize_plain_script_exports."
         )));
@@ -126,16 +127,10 @@ export function toPageCount(total: number) {
     }
 
     // A value-only declaration must not be handed a type meaning it never had.
-    for (value, absent_type_side) in [
-        (
-            "export const pageSize = __vize_plain_script_exports.pageSize;",
-            "export type pageSize ",
-        ),
-        (
-            "export const toPageCount = __vize_plain_script_exports.toPageCount;",
-            "export type toPageCount ",
-        ),
-    ] {
+    for (value, absent_type_side) in [(
+        "export const pageSize = __vize_plain_script_exports.pageSize;",
+        "export type pageSize ",
+    )] {
         assert!(
             content.contains(value),
             "value-only export must stay available: {value}\n{content}"

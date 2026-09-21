@@ -50,6 +50,38 @@ fn nominal_declarations_keep_module_identity_without_a_namespace() {
 }
 
 #[test]
+fn callable_declarations_and_overloads_keep_identity_without_a_namespace() {
+    let script = "const seed = 1;\nfunction helper(value: number): number { return value + seed }\nexport function build(value: number): number;\nexport function build(value: string): string;\nexport function build(value: number | string) { return typeof value === 'number' ? helper(value) : value }\n";
+    assert_eq!(
+        hoisted_text(script),
+        vec![
+            "function helper(value: number): number { return value + seed }",
+            "export function build(value: number): number;",
+            "export function build(value: string): string;",
+            "export function build(value: number | string) { return typeof value === 'number' ? helper(value) : value }",
+        ]
+    );
+    let plan = plan(script);
+    let mut exports = vec![export("build", PlainScriptExportKind::Value)];
+    plan.reconcile_exports(&mut exports);
+    assert!(exports.is_empty());
+    let mut fields = Vec::new();
+    plan.push_captured_return_fields(&exports, &mut fields);
+    assert_eq!(fields, vec![CompactString::new("seed")]);
+}
+
+#[test]
+fn callable_declarations_keep_their_leading_diagnostic_directives() {
+    let script = "const seed = 1;\n// @ts-expect-error authored return mismatch\nexport function bad(): number { return 'bad' }\n";
+    assert_eq!(
+        hoisted_text(script),
+        vec![
+            "// @ts-expect-error authored return mismatch\nexport function bad(): number { return 'bad' }"
+        ]
+    );
+}
+
+#[test]
 fn a_merge_partner_is_hoisted_and_dropped_from_the_export_bridge() {
     let script = "export function f() {}\nexport namespace f {\n  export const v = 1;\n}\nexport const other = 2;\n";
 

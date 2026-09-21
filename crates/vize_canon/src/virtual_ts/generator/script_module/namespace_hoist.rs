@@ -1,9 +1,12 @@
-//! Preserve nominal types and namespaces at plain-script module scope.
+//! Preserve callable/nominal declarations and namespaces at plain-script module scope.
 //!
 //! Enums and classes must keep their declaration identity for declaration emit:
 //! a value bridge cannot name a function-local enum or preserve generic/private
 //! class identity. They use the same relocation and dependency handling as
 //! namespace merge partners.
+//! Function declarations also keep their native checker identity: exporting a
+//! property read from `__setup()` loses incoming/outgoing call hierarchy. Local
+//! helpers move with exported functions so their call edges stay intact too.
 //!
 //! The plain-`<script>` body is moved inside `__setup()` so its diagnostics stay
 //! anchored to user code (see [`super::plain_exports`]). A `namespace` cannot
@@ -92,7 +95,9 @@ impl NamespaceHoistPlan {
                     }
                     spans.push((span.start, span.end));
                 }
-                Declaration::TSEnumDeclaration(_) | Declaration::ClassDeclaration(_) => {
+                Declaration::TSEnumDeclaration(_)
+                | Declaration::ClassDeclaration(_)
+                | Declaration::FunctionDeclaration(_) => {
                     if let Some(name) = merge_partner_name(declaration) {
                         namespace_names.insert(name);
                     }
@@ -120,7 +125,7 @@ impl NamespaceHoistPlan {
 
         let captured = collect_captures(&parsed.program.body, &spans, &hoisted);
         Self {
-            spans,
+            spans: super::include_leading_ts_directive_comments(script, spans),
             hoisted,
             captured,
         }
