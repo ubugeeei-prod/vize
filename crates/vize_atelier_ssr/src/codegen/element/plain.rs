@@ -4,7 +4,9 @@ use super::props::{
     component_prop_entry, is_static_named_prop, merge_prop_values, normalize_prop_entries,
     quoted_js_string, transform_bound_prop_key, wrap_call,
 };
-use super::spanned_props::{attribute_entry, component_props_object_spanned, wrap_spanned};
+use super::spanned_props::{
+    attribute_entry, component_props_object_spanned, merge_props_call, wrap_spanned,
+};
 use super::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     ToCompactString, VNodePropEntry, cstr, escape_html_attr,
@@ -220,16 +222,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         self.use_core_helper(RuntimeHelper::MergeProps);
-
-        let mut out = SpannedText::plain("_mergeProps(");
-        for (index, arg) in args.iter().enumerate() {
-            if index > 0 {
-                out.push_str(", ");
-            }
-            out.push_spanned(arg);
-        }
-        out.push_str(")");
-        out
+        merge_props_call(&args)
     }
 
     fn merge_props_args_expression(&mut self, args: &[SpannedText]) -> String {
@@ -238,15 +231,7 @@ impl<'a> SsrCodegenContext<'a> {
             [arg] => arg.as_str().into(),
             _ => {
                 self.use_core_helper(RuntimeHelper::MergeProps);
-                let mut out = String::from("_mergeProps(");
-                for (index, arg) in args.iter().enumerate() {
-                    if index > 0 {
-                        out.push_str(", ");
-                    }
-                    out.push_str(arg.as_str());
-                }
-                out.push(')');
-                out
+                merge_props_call(args).as_str().into()
             }
         }
     }
