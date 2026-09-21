@@ -11,6 +11,7 @@ use vize_atelier_core::{
 use vize_croquis::Croquis;
 use vize_s0::{Allocator, String, profile, profiler::global_profiler};
 
+use super::selection::{self, DomLegacyReason};
 use super::{pipeline::DomCompilePipelineOptions, source_map, stage_options};
 use crate::options::DomCompilerOptions;
 
@@ -69,6 +70,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     // warnings or test for parity.
     let fatal_count = errors.iter().filter(|e| !e.is_recoverable()).count();
     if fatal_count > 0 {
+        selection::record(Err(DomLegacyReason::ParseError));
         let codegen_result = CodegenResult {
             code: String::default(),
             preamble: String::default(),
@@ -87,7 +89,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     let has_croquis = options.croquis.is_some();
     let codegen_opts = stage_options::codegen_options(&options, codegen_options);
     let template_syntax_quirks = template_syntax.is_quirks();
-    let use_s2_emit = stage_options::s2_emit_supported(
+    let s2_refusal = stage_options::s2_emit_refusal(
         &options,
         &codegen_opts,
         &custom_elements,
@@ -95,11 +97,15 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         has_croquis,
         s2_emit_selection,
         codegen_experimental_options.self_component,
-    ) && !stage_options::source_may_contain_patterned_template_syntax(source);
+    )
+    .or_else(|| {
+        stage_options::source_may_contain_patterned_template_syntax(source)
+            .then_some(DomLegacyReason::PatternedSource)
+    });
+    let use_s2_emit = s2_refusal.is_none();
     let s2_custom_elements = custom_elements.clone();
-    if use_s2_emit
-        && !codegen_opts.source_map
-        && let Some(result) = stage_options::try_emit_s2(
+    if use_s2_emit && !codegen_opts.source_map {
+        if let Some(result) = stage_options::try_emit_s2(
             allocator,
             source,
             &options,
@@ -107,9 +113,13 @@ pub(super) fn compile_template_inner_with_sections<'a>(
             &s2_custom_elements,
             hoisted_scope_id.as_deref(),
             None,
-        )
-    {
-        return (root, errors.to_vec(), result);
+        ) {
+            selection::record(Ok(()));
+            return (root, errors.to_vec(), result);
+        }
+        selection::record(Err(DomLegacyReason::EmitRefused));
+    } else if let Some(reason) = s2_refusal {
+        selection::record(Err(reason));
     }
 
     let s2_emit_after_transform = (use_s2_emit && codegen_opts.source_map)
@@ -150,6 +160,12 @@ pub(super) fn compile_template_inner_with_sections<'a>(
             template_walks,
         )
     });
+    if use_s2_emit && codegen_opts.source_map {
+        selection::record(match s2_emit {
+            Some(_) => Ok(()),
+            None => Err(DomLegacyReason::EmitRefused),
+        });
+    }
     let codegen_result = match s2_emit {
         Some(result) => source_map::attach_compat_map(&root, &codegen_opts, result),
         None => profile!(

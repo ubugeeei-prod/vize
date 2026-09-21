@@ -34,6 +34,10 @@ pub use compile::custom_elements::{
     compile_template_with_custom_elements_template_syntax_codegen_and_experimental_options,
     compile_template_with_custom_elements_template_syntax_hoisted_scope_id_codegen_and_experimental_options,
 };
+/// Force the legacy DOM lane on this thread, for production-path
+/// differentials over `compile_sfc`.
+#[cfg(feature = "davinci-differential")]
+pub use compile::differential;
 /// The differential lanes' old side — see its own docs for why the ordinary
 /// entry points cannot serve as one.
 #[cfg(feature = "davinci-differential")]

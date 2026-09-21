@@ -1,7 +1,7 @@
 use super::{
     compile_template_inner_with_sections,
     pipeline::{self, DomCompilePipelineOptions},
-    stage_options,
+    selection, stage_options,
 };
 use crate::options::DomCompilerOptions;
 use vize_atelier_core::{
@@ -28,6 +28,9 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
     let codegen_opts = stage_options::codegen_options(&options, codegen_options.clone());
     let experimental_self_component = codegen_experimental_options.self_component;
+    // A refusal here is recorded by the shared pipeline below, which
+    // re-derives it from the same inputs; only the fast path's own outcomes
+    // are recorded in this function.
     let use_s2_emit = stage_options::s2_emit_supported(
         &options,
         &codegen_opts,
@@ -56,13 +59,14 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
                 stage_options::emit_s2(allocator, source, options.dialect, &s2_options, None)
             )
         {
+            selection::record(Ok(()));
             return (Vec::new(), result);
         }
         force_compat_sections = true;
     }
 
     let pipeline_options = if force_compat_sections {
-        DomCompilePipelineOptions::require_sections_compat_with_experimental_options(
+        DomCompilePipelineOptions::after_refusal_with_experimental_options(
             custom_elements,
             codegen_options,
             codegen_experimental_options,

@@ -158,10 +158,8 @@ jobs:
 
       - name: Install JavaScript dependencies
         run: vp install --frozen-lockfile --prefer-offline
-
       - name: Build Vize CLI
         run: cargo build --profile ci -p vize
-
       - name: Exercise real projects with every core tool
         id: core_tools
         if: ${{ !cancelled() }}
@@ -335,6 +333,8 @@ jobs:
         run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run
       - name: Run S4 SSR differential corpus
         run: VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture
+      - name: Measure Davinci production reach on the hydrated corpus
+        run: VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_sfc --features davinci-dom-differential --test davinci_production_reach -- --nocapture
       - name: Finalize S2 DOM corpus evidence
         if: ${{ always() }}
         env:

@@ -16,6 +16,7 @@ use vize_s1_to_s2::{
 };
 
 use super::pipeline::S2EmitSelection;
+use super::selection::DomLegacyReason;
 use crate::namespace::get_namespace;
 use crate::options::DomCompilerOptions;
 
@@ -79,23 +80,54 @@ pub(super) fn codegen_options(
 
 pub(super) fn s2_emit_supported(
     options: &DomCompilerOptions,
+    codegen: &CodegenOptions,
+    custom_elements: &CustomElementMatcher,
+    template_syntax: TemplateSyntaxMode,
+    has_croquis: bool,
+    s2_emit_selection: S2EmitSelection,
+    experimental_self_component: bool,
+) -> bool {
+    s2_emit_refusal(
+        options,
+        codegen,
+        custom_elements,
+        template_syntax,
+        has_croquis,
+        s2_emit_selection,
+        experimental_self_component,
+    )
+    .is_none()
+}
+
+/// The first gate that keeps this compile off the S2 emitter, if any.
+pub(super) fn s2_emit_refusal(
+    options: &DomCompilerOptions,
     _codegen: &CodegenOptions,
     _custom_elements: &CustomElementMatcher,
     template_syntax: TemplateSyntaxMode,
     has_croquis: bool,
     s2_emit_selection: S2EmitSelection,
     experimental_self_component: bool,
-) -> bool {
-    matches!(
-        s2_emit_selection,
-        S2EmitSelection::Allowed | S2EmitSelection::RequireSections
-    ) && !options.ssr
-        && !options.experimental_patterned_template
-        && !experimental_self_component
-        && !options.custom_renderer
-        && options.dialect == vize_s0::config::VueVersion::V3
-        && template_syntax == TemplateSyntaxMode::Standard
-        && !has_croquis
+) -> Option<DomLegacyReason> {
+    #[cfg(feature = "davinci-differential")]
+    if super::selection::differential::legacy_forced() {
+        return Some(DomLegacyReason::Forced);
+    }
+    let reason = match s2_emit_selection {
+        S2EmitSelection::Disabled => DomLegacyReason::Entry,
+        S2EmitSelection::Refused => DomLegacyReason::EmitRefused,
+        S2EmitSelection::Allowed | S2EmitSelection::RequireSections if options.ssr => {
+            DomLegacyReason::Ssr
+        }
+        _ if options.experimental_patterned_template => DomLegacyReason::PatternedTemplate,
+        _ if experimental_self_component => DomLegacyReason::SelfComponent,
+        _ if options.custom_renderer => DomLegacyReason::CustomRenderer,
+        _ if options.dialect != vize_s0::config::VueVersion::V3 => DomLegacyReason::Dialect,
+        _ if template_syntax != TemplateSyntaxMode::Standard => DomLegacyReason::TemplateSyntax,
+        _ if has_croquis => DomLegacyReason::Croquis,
+        _ => return None,
+    };
+    Some(reason)
 }
 
 pub(super) fn source_may_contain_patterned_template_syntax(source: &str) -> bool {

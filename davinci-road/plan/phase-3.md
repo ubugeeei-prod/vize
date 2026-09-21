@@ -22,6 +22,7 @@
 - [x] P3-14 `folio-reduce` _(`vize reduce`; see [record](./phase-3-records/p3-14.md))_
 - [x] P3-15 Lean theorems (lattice / grouping / IVM linearity)
 - [ ] P3-16 Phase exit
+- [ ] P3-17 Production SFC reach _(slice 1 measures `compile_sfc` reach per shipping shape and pins `[reach]` floors; see [record](./phase-3-records/p3-17.md))_
 
 ---
 
@@ -311,6 +312,20 @@ to equal recompute-from-scratch, retain keyed identities and allocate exactly
 the inserted delta, completing the three theorem families in the CI-lenient
 lane (see the record).
 
+**P3-17 Production SFC reach.** Every Davinci backend stage must be reached
+by the compiles users actually run: `compile_sfc` with a Croquis summary,
+inline render closures, binding metadata, scoped styles and module-mode
+hoisting, not only the bare template entry points the stage corpora compare.
+_Accept:_ the production-reach gate reports per-shape reach from the backends'
+selection counters with `budgets.toml [reach]` floors only rising; the
+production-path parity oracle (forced legacy DOM lane, whole-module byte
+equality) is empty; the Croquis refusal is lifted from the DOM selector on
+that oracle. _First slice 2026-09-22:_ see
+[P3-17 record](./phase-3-records/p3-17.md): measured reach is 0/342 DOM
+templates on both DOM shapes, 26/342 SSR, 3/342 Vapor on the committed
+fixtures; the Croquis-informed S2 rewrites and the module-hoisting entry
+remain open.
+
 **P3-16 Phase exit.**
 
 _First slice 2026-09-14:_ see
@@ -322,6 +337,7 @@ that still describe a completed Phase 3 task as unfinished.
 
 - [ ] Vapor: TS-33 behavioral parity green; SSR **and VDOM**: TS-11 byte-empty (P3-7 changes patch-flag derivation, so DOM parity re-gates here)
 - [ ] TS-31 source-map coverage ≥ budget on all three backends
+- [ ] Production reach: `[reach]` floors held and raised, production-path DOM parity oracle empty, no DOM shape refused for its Croquis summary (P3-17)
 - [ ] Vapor compile bench beats the pinned double-transform floor
 - [ ] TS-32 remarks-diff clean; old vapor/ssr lanes + flags deleted
 - [ ] TS-27/TS-28/TS-29/TS-30 all mandatory-green; TS-20 totality fuzz extended to S2→S3 green

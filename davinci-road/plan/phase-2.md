@@ -173,3 +173,13 @@ probe counts.
 - [x] **Differential lanes green and their retirement condition restated** — TS-25 zero divergence for P2-9, P2-11 and P2-16, with the phase-1 lanes' "for one release" life either honoured or explicitly re-dated. Evidence: P2-20 restates that verification-only `davinci-differential` lanes stay required until the first phase-3 task either deletes the corresponding old consumer path with zero-divergence evidence or re-dates the lane in that task's record; phase-1's one-release life has been honored by the stable releases through `v0.421.0`.
 - [x] **Standing gates held throughout** — TS-1..9 unchanged, TS-12 matrices current, TS-13 assertion lint clean under its allowlist, TS-14 mutation scores held for the new crates, TS-15 profiler export validating, TS-26 counter law still pinned. Evidence: the P2-20 PR runs the Check, Benchmark, App E2E, CodeQL, Miri, pkg.pr.new and title-policy workflows; local verification reran the phase-2 ledger, source-length, traversal, transform and folio witnesses before opening the PR.
 - [x] **Corpus waiver ledger empty and the phase-boundary expansion audit done** — C-14, C-16. Evidence: `corpus-coverage.md` records the hydrated 142/142 scan with MathML as the only matrix-only S2 element kind; the Real Project Matrix workflow audits formatter waiver owners and enforces the surface verdict; `glyph-corpus-*` tests consume every known formatter waiver and the current DOM corpus artifact records zero DOM output waivers.
+
+_Correction 2026-09-22 (P3-17):_ the first exit line's evidence is the
+template-compiler lane (`compile_template` in its default function-mode shape)
+and it stands for those callers. It did not cover production SFC compiles:
+measured by `davinci_production_reach`, no committed-fixture template compiled
+through `compile_sfc` reached the S2 emitter on either shipping DOM shape,
+because the selector refused every Croquis-carrying (`<script setup>`)
+template and the module-hoisting SFC route never attempted S2. The ticked line
+is left as recorded; the production reach and its closure are tracked in
+[P3-17](./phase-3-records/p3-17.md).
