@@ -182,7 +182,9 @@ pub(crate) fn transform_for_node<'a>(
     for_node: &ForNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
-    transform_for_node_with_options(ctx, for_node, block, None, None, true);
+    // A block-level loop shares its insertion parent with other blocks, so it
+    // can never clear that parent wholesale.
+    transform_for_node_with_options(ctx, for_node, block, None, None, true, false);
 }
 
 pub(crate) fn transform_for_node_into_parent<'a>(
@@ -191,8 +193,17 @@ pub(crate) fn transform_for_node_into_parent<'a>(
     block: &mut BlockIRNode<'a>,
     parent: usize,
     anchor: usize,
+    only_child: bool,
 ) {
-    transform_for_node_with_options(ctx, for_node, block, Some(parent), Some(anchor), false);
+    transform_for_node_with_options(
+        ctx,
+        for_node,
+        block,
+        Some(parent),
+        Some(anchor),
+        false,
+        only_child,
+    );
 }
 
 fn transform_for_node_with_options<'a>(
@@ -202,6 +213,7 @@ fn transform_for_node_with_options<'a>(
     parent: Option<usize>,
     anchor: Option<usize>,
     add_return: bool,
+    only_child: bool,
 ) {
     // Allocate for-node ID first (before children consume IDs)
     let for_id = ctx.next_id();
@@ -246,7 +258,9 @@ fn transform_for_node_with_options<'a>(
         render,
         once: false,
         component: false,
-        only_child: for_node.children.len() == 1,
+        // Upstream fast removal clears the insertion parent; the loop must be
+        // that element's sole child, not merely render a single element.
+        only_child,
         parent,
         anchor,
         match_scope: for_node.parse_result.match_scope,

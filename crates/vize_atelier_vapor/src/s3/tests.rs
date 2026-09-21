@@ -24,7 +24,10 @@ pub(super) fn options() -> VaporS3BridgeOptions {
 const SOURCE: &str =
     r#"<main class="shell"><button :disabled="locked" @click="save">{{ label }}</button></main>"#;
 
-fn generated(status: VaporS3BridgeStatus<'_>, allocator: &Allocator) -> vize_carton::String {
+pub(super) fn generated(
+    status: VaporS3BridgeStatus<'_>,
+    allocator: &Allocator,
+) -> vize_carton::String {
     let VaporS3BridgeStatus::Accepted(artifact) = status else {
         panic!("expected an executable artifact: {status:?}");
     };
@@ -55,7 +58,10 @@ fn lowered<'a>(allocator: &'a Allocator) -> vize_s2_to_s3::Lowered<'a> {
     lowered_source(allocator, SOURCE)
 }
 
-fn lowered_source<'a>(allocator: &'a Allocator, source: &str) -> vize_s2_to_s3::Lowered<'a> {
+pub(super) fn lowered_source<'a>(
+    allocator: &'a Allocator,
+    source: &str,
+) -> vize_s2_to_s3::Lowered<'a> {
     let scratch = Allocator::new();
     let (tree, errors) = vize_s1::parse(&scratch, source);
     let s2 = vize_s1_to_s2::lower(&scratch, &tree, &errors);
@@ -169,8 +175,8 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
     let allocator = Allocator::new();
     for source in [
         "<Comp />",
-        "<div v-if=\"ok\" />",
-        "<div v-for=\"x in xs\" />",
+        "<template v-if=\"ok\"><div /><div /></template>",
+        "<div v-for=\"x in xs.items()\" />",
         "<div>{{ one + two }}</div>",
         "<div v-pre>{{ literal }}</div>",
         "<div v-show=\"ok\" />",
@@ -270,3 +276,5 @@ fn empty_static_text_cannot_shift_materialized_child_addresses() {
         VaporS3BridgeStatus::Legacy(LegacyReason::ExpressionOrEncoding)
     ));
 }
+
+mod control;

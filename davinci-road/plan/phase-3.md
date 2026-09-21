@@ -109,6 +109,11 @@ S3 generation with coalesced DOM addresses and stable following siblings. Static
 events share modifier/delegation semantics with legacy lowering; mounted traces
 cover key/DOM guard composition and combined listener options. The remaining
 P3-6 semantic, corpus and benchmark gates are unchanged.
+_Control-flow slice 2026-09-21:_ S3 `If`/`For` project natively: branch chains
+and element-carried keyed/unkeyed loops with identifier aliases, nested inside
+admitted elements or at the root. Template wrappers, destructuring and nested
+bodies count as `legacy.control_flow`. Mounted identity traces fixed a shared
+fast-removal defect in both lanes; fixture parity holds at 116/117.
 
 **P3-7 VDOM patch flags from facts.** `patch_flag.rs` inference replaced by
 lattice-fact consumption; flags become explicit S3 decisions (or S2→S4

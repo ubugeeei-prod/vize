@@ -19,7 +19,7 @@ _setClass(n6, _for_item1.value)
 _setText(x6, _toDisplayString(_for_item1.value))
 })
 return n6
-}, (icon, i) => (`${_for_item0.value}-${i}`), 1)
+}, (icon, i) => (`${_for_item0.value}-${i}`))
 return n4
 }, (n) => (`set-${n}`), 4)
 return n0

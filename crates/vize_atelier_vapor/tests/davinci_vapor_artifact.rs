@@ -19,6 +19,23 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
         "<main><b>fixed</b>{{ a }} / {{ b }}<span :title=\"name\">next</span>{{ end }}</main>",
         "<main @keydown.enter=\"save\"><button @click.stop=\"save\">{{ label }}</button></main>",
         "<div @focus=\"save\" @change.once=\"save\" @custom-event.capture=\"save\"></div>",
+        "<div v-if=\"ready\">{{ label }}</div>",
+        "<div v-if=\"a\">A</div><div v-else-if=\"b\">B</div><div v-else>C</div>",
+        "<div><span v-if=\"a\">A</span><b v-else>{{ label }}</b><i>tail</i></div>",
+        "<ul><li v-for=\"item in items\" :key=\"item.id\" :title=\"item.title\">{{ item.label }}</li></ul>",
+        "<span v-for=\"(item, name, position) in items\">{{ position }}</span>",
+        "<section><span>head</span><div v-for=\"(row, i) in rows\" :key=\"row.id\" @click=\"save\">{{ i }}: {{ row.label }}<b v-if=\"row.ok\">ok</b></div><span>tail {{ n }}</span></section>",
+        "<main><section v-if=\"open\"><b>title</b><span v-for=\"n in 3\">{{ n }}</span></section></main>",
+        // The mounted `native_control` scenarios, pinned to the native lane.
+        r#"<main data-id="root"><button v-if="mode" data-id="yes" :title="label" @click="save">{{ label }}</button><span v-else-if="alt" data-id="alt">{{ label }}</span><i v-else data-id="none">none</i><b data-id="tail">{{ tail }}</b></main>"#,
+        r#"<main data-id="root"><button v-for="(item, position) in items" :key="item.id" :data-id="item.id" :title="position" @click="save">{{ item.label }}</button><span data-id="tail">{{ item }}</span></main>"#,
+        r#"<main data-id="root"><button v-for="(item, position) in items" :data-id="item.id" :title="position" @click="save">{{ item.label }}</button><span data-id="tail">{{ item }}</span></main>"#,
+        r#"<main data-id="root"><section v-if="open" data-id="panel"><b data-id="title">{{ title }}</b><span v-for="row in rows" :key="row.id" :data-id="row.id">{{ row.label }}</span><ul data-id="cells"><li v-for="cell in cells" :key="cell" :data-id="cell">{{ cell }}</li></ul></section><i data-id="tail">tail</i></main>"#,
+        r#"<main><span v-for="(value, name, position) in entries" :key="name" :data-name="name" :title="position">{{ value }}</span><b v-for="n in 3">{{ n }}</b></main>"#,
+        r#"<b v-if="a" :title="label">{{ label }}</b><i v-else-if="b">B</i><span v-else>none</span>"#,
+        r#"<b v-for="item in items" :key="item">{{ item }}</b>"#,
+        // The `vapor_native_pair/control_flow` bench fixture.
+        r#"<main><section v-if="open"><b>{{ title }}</b><span v-for="row in rows" :key="row.id" :title="row.title">{{ row.label }}</span></section><i v-else>closed</i><ul><li v-for="(cell, i) in cells" @click="save">{{ i }}: {{ cell }}</li></ul></main>"#,
     ];
     for source in accepted {
         for prefix_identifiers in [false, true] {
@@ -90,7 +107,7 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
     assert_eq!(map["sourcesContent"], serde_json::json!([source]));
     for source in [
         "<div>{{ value + 1 }}</div>",
-        "<div v-if=\"ok\">{{ value }}</div>",
+        "<template v-if=\"ok\"><b>{{ value }}</b></template>",
         "<button @click=\"save()\">{{ label }}</button>",
         "<div v-pre>{{ raw }}</div>",
     ] {

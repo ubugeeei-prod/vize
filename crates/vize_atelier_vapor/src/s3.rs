@@ -36,6 +36,7 @@ pub(crate) enum LegacyReason {
     Binding,
     ExpressionOrEncoding,
     Structure,
+    ControlFlow,
 }
 
 impl LegacyReason {
@@ -48,6 +49,7 @@ impl LegacyReason {
             Self::Binding => "davinci.s3_vapor.legacy.binding",
             Self::ExpressionOrEncoding => "davinci.s3_vapor.legacy.expression_or_encoding",
             Self::Structure => "davinci.s3_vapor.legacy.structure",
+            Self::ControlFlow => "davinci.s3_vapor.legacy.control_flow",
         }
     }
 }
@@ -122,6 +124,17 @@ pub(crate) fn lower_source_for_vapor<'a>(
             })
         {
             return VaporS3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
+        }
+        // Template wrappers and carrier branch keys live in S2 side facts that
+        // S3 does not carry. Admitting their unwrapped regions would drop them.
+        if !s2.wrappers.is_empty()
+            || !s2.for_wrappers.is_empty()
+            || s2
+                .if_facts
+                .iter()
+                .any(|(_, facts)| facts.branches.iter().any(Option::is_some))
+        {
+            return VaporS3BridgeStatus::Legacy(LegacyReason::ControlFlow);
         }
         let mut s3 = vize_s2_to_s3::lower(allocator, &s2.root);
         if let Err(failure) = text::capture(allocator, &s2, &mut s3) {

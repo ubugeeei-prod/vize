@@ -37,6 +37,10 @@ pub(crate) fn mounted_trace_with_identity(
     experimental_patterned_template: bool,
     identities: bool,
 ) -> Value {
+    // `vapor-legacy` runs the Vapor runtime over the explicitly retained lane:
+    // an empty binding-metadata map selects it without changing any binding.
+    let legacy = backend == "vapor-legacy";
+    let backend = if legacy { "vapor" } else { backend };
     let allocator = Allocator::new();
     let code = if backend == "vdom" {
         let (_, errors, result) = compile_template_with_options(
@@ -57,6 +61,7 @@ pub(crate) fn mounted_trace_with_identity(
             VaporCompilerOptions {
                 prefix_identifiers: true,
                 experimental_patterned_template,
+                binding_metadata: legacy.then(Default::default),
                 ..Default::default()
             },
         );

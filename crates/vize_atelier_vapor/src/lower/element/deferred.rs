@@ -90,6 +90,14 @@ fn transform_dynamic_children_with_ids<'a>(
     let mut child_id_index = 0usize;
     let mut rendered_index = 0usize;
     let mut in_text_run = false;
+    // Comments do not render in Vapor templates; template wrappers flatten
+    // into siblings and are never a sole direct child here.
+    let sole_child = el
+        .children
+        .iter()
+        .filter(|child| !matches!(child, TemplateChildNode::Comment(_)))
+        .count()
+        == 1;
     transform_dynamic_children_in_slice(
         ctx,
         &el.children,
@@ -100,6 +108,7 @@ fn transform_dynamic_children_with_ids<'a>(
         &mut rendered_index,
         &mut in_text_run,
         &mut prev_template_backed_child,
+        sole_child,
     );
     debug_assert_eq!(child_id_index, child_ids.len());
 }
@@ -115,6 +124,7 @@ fn transform_dynamic_children_in_slice<'a>(
     rendered_index: &mut usize,
     in_text_run: &mut bool,
     prev_template_backed_child: &mut Option<(usize, usize)>,
+    sole_child: bool,
 ) {
     for child in vize_atelier_core::walk_probe::vapor_children(children) {
         let TemplateChildNode::Element(child_el) = child else {
@@ -127,7 +137,7 @@ fn transform_dynamic_children_in_slice<'a>(
                 }
                 TemplateChildNode::For(node) => {
                     let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index);
-                    transform_for_node_into_parent(ctx, node, block, parent_id, anchor);
+                    transform_for_node_into_parent(ctx, node, block, parent_id, anchor, sole_child);
                     *rendered_index += 1;
                     *in_text_run = false;
                 }
@@ -156,6 +166,7 @@ fn transform_dynamic_children_in_slice<'a>(
                     rendered_index,
                     in_text_run,
                     prev_template_backed_child,
+                    false,
                 );
             });
             continue;

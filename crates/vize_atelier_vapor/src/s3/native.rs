@@ -32,6 +32,28 @@ enum Content<'a> {
         parts: std::vec::Vec<TextPart<'a>>,
         dynamic: bool,
     },
+    /// Authored branch order. Each branch renders exactly one native element.
+    If { branches: std::vec::Vec<Branch<'a>> },
+    /// One element-carried loop. `children` holds its single body element.
+    For(Loop<'a>),
+}
+
+#[derive(Debug)]
+struct Branch<'a> {
+    /// `None` only for a trailing unconditional (`v-else`) branch.
+    condition: Option<&'a str>,
+    region: vize_s3::op::RegionId,
+    root: Option<usize>,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct Loop<'a> {
+    source: &'a str,
+    value: &'a str,
+    key: Option<&'a str>,
+    index: Option<&'a str>,
+    /// The body element's `:key`, lifted out of its ordinary bindings.
+    key_prop: Option<&'a str>,
 }
 
 #[derive(Debug)]

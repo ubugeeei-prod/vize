@@ -97,6 +97,10 @@ fn native_pair(criterion: &mut Criterion) {
             "events",
             "<main @keydown=\"save\"><button @click.stop=\"save\" @keydown.enter.stop=\"save\">{{ label }}</button><input @focus=\"save\" @change.once=\"save\"></main>",
         ),
+        (
+            "control_flow",
+            "<main><section v-if=\"open\"><b>{{ title }}</b><span v-for=\"row in rows\" :key=\"row.id\" :title=\"row.title\">{{ row.label }}</span></section><i v-else>closed</i><ul><li v-for=\"(cell, i) in cells\" @click=\"save\">{{ i }}: {{ cell }}</li></ul></main>",
+        ),
     ] {
         for (lane, legacy) in [("s3", false), ("legacy", true)] {
             group.bench_function(criterion::BenchmarkId::new(name, lane), |bencher| {
