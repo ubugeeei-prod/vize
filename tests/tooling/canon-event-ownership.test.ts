@@ -41,9 +41,11 @@ test("handler references and authored callbacks preserve lexical $event ownershi
         [],
         handler,
       );
+      // An authored callback owns its parameters: `$event` is a template name
+      // like any other there, and nothing on the instance provides it.
       assert.deepEqual(
         (await errors("function consume(value: string) {}", handler)).map((d) => d.code),
-        [2552],
+        [2551],
         handler,
       );
     }

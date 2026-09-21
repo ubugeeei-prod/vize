@@ -35,9 +35,9 @@ const staleListBindingDiagnostic = {
     end: { line: 1, character: 23 },
   },
   severity: 1,
-  code: 2304,
+  code: 2339,
   source: "vize/types",
-  message: "Cannot find name 'list'.",
+  message: "Property 'list' does not exist on the component instance.",
 };
 
 // `this.list` inside `fetchData`, reached through the Options API typed
@@ -105,7 +105,7 @@ test("vue-element-admin data-key-only rename keeps every published range inside 
             {
               file: sourcePath,
               diagnostics: [
-                "error:2:20 [TS2304] Cannot find name 'list'.",
+                "error:2:20 [TS2339] Property 'list' does not exist on the component instance.",
                 "error:50:14 [TS2339] Property 'list' does not exist on type '__VizeThis'.",
               ],
             },

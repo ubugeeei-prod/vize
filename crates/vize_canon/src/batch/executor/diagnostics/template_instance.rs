@@ -1,13 +1,9 @@
-//! A name a template cannot resolve is a property the component instance
-//! lacks. The virtual module binds template names as lexical variables, so
-//! TypeScript reports the lexical codes (`TS2304` / `TS2552`); the Vue
-//! toolchain reads the same names from the instance and reports `TS2339` /
-//! `TS2551`. Authored templates get the instance codes.
+//! Batch checking reports a name a template cannot resolve with the instance
+//! codes of [`crate::template_instance_names`].
 
 use crate::batch::{OriginalPosition, SfcBlockType};
-use vize_carton::{String, cstr};
-
-const CANNOT_FIND_NAME: &str = "Cannot find name '";
+use crate::template_instance_names::instance_diagnostic;
+use vize_carton::String;
 
 /// The instance-level `(code, message)` for a lexical lookup failure inside a
 /// template, or `None` when the diagnostic stays as TypeScript reported it.
@@ -19,24 +15,7 @@ pub(in crate::batch::executor) fn template_instance_diagnostic(
     if original.block_type != Some(SfcBlockType::Template) {
         return None;
     }
-    let rest = message.strip_prefix(CANNOT_FIND_NAME)?;
-    let (name, rest) = rest.split_once('\'')?;
-    match code? {
-        2304 => Some((
-            2339,
-            cstr!("Property '{name}' does not exist on the component instance."),
-        )),
-        2552 => {
-            let suggestion = rest.strip_prefix(". Did you mean '")?.strip_suffix("'?")?;
-            Some((
-                2551,
-                cstr!(
-                    "Property '{name}' does not exist on the component instance. Did you mean '{suggestion}'?"
-                ),
-            ))
-        }
-        _ => None,
-    }
+    instance_diagnostic(code?, message)
 }
 
 #[cfg(test)]
@@ -55,7 +34,7 @@ mod tests {
     }
 
     #[test]
-    fn a_template_name_is_an_instance_property() {
+    fn only_template_names_are_instance_properties() {
         assert_eq!(
             template_instance_diagnostic(
                 Some(2304),
@@ -69,22 +48,6 @@ mod tests {
         );
         assert_eq!(
             template_instance_diagnostic(
-                Some(2552),
-                &at(SfcBlockType::Template),
-                "Cannot find name 'cout'. Did you mean 'count'?"
-            ),
-            Some((
-                2551,
-                "Property 'cout' does not exist on the component instance. Did you mean 'count'?"
-                    .into()
-            ))
-        );
-    }
-
-    #[test]
-    fn script_names_and_other_codes_are_left_alone() {
-        assert_eq!(
-            template_instance_diagnostic(
                 Some(2304),
                 &at(SfcBlockType::ScriptSetup),
                 "Cannot find name 'missing'."
@@ -93,9 +56,9 @@ mod tests {
         );
         assert_eq!(
             template_instance_diagnostic(
-                Some(2322),
+                None,
                 &at(SfcBlockType::Template),
-                "Type 'string' is not assignable to type 'number'."
+                "Cannot find name 'missing'."
             ),
             None
         );

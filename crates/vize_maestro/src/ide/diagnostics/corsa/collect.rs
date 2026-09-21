@@ -14,6 +14,8 @@ use vize_s0::cstr;
 
 #[path = "template_directives.rs"]
 mod template_directives;
+#[path = "template_instance.rs"]
+mod template_instance;
 
 /// One attempt either yields diagnostics (possibly empty for non-Corsa
 /// reasons such as unsupported documents) or fails on a bridge call.
@@ -248,6 +250,7 @@ impl DiagnosticService {
         // One authored problem inside the shared script context is reported by
         // every variant document that includes it, so the per-document dedup
         // has to be repeated across the whole set.
+        template_instance::apply(&content, &mut diagnostics);
         template_directives::apply(&content, &mut diagnostics);
         Ok(deduplicate_diagnostics(diagnostics))
     }

@@ -65,8 +65,8 @@
       "file": "src/components/footer/footGuide.vue",
       "diagnostics": [
         "error:23:65 [TS18004] No value exists in scope for the shorthand property 'geohash'. Either declare one or provide an initializer.",
-        "error:23:65 [TS2304] Cannot find name 'geohash'.",
-        "error:29:58 [TS2304] Cannot find name 'geohash'.",
+        "error:23:65 [TS2339] Property 'geohash' does not exist on the component instance.",
+        "error:29:58 [TS2339] Property 'geohash' does not exist on the component instance.",
         "error:51:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:71:16 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
@@ -74,8 +74,8 @@
     {
       "file": "src/components/header/head.vue",
       "diagnostics": [
-        "error:10:27 [TS2304] Cannot find name 'userInfo'.",
-        "error:11:44 [TS2304] Cannot find name 'userInfo'.",
+        "error:10:27 [TS2339] Property 'userInfo' does not exist on the component instance.",
+        "error:11:44 [TS2339] Property 'userInfo' does not exist on the component instance.",
         "error:27:40 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
@@ -169,8 +169,8 @@
     {
       "file": "src/page/confirmOrder/children/children/addAddress.vue",
       "diagnostics": [
-        "error:38:127 [TS2304] Cannot find name 'searchAddress'.",
-        "error:38:142 [TS2304] Cannot find name 'searchAddress'.",
+        "error:38:127 [TS2339] Property 'searchAddress' does not exist on the component instance.",
+        "error:38:142 [TS2339] Property 'searchAddress' does not exist on the component instance.",
         "error:60:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:102:28 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
         "error:102:45 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
@@ -215,8 +215,8 @@
     {
       "file": "src/page/confirmOrder/children/payment.vue",
       "diagnostics": [
-        "error:10:31 [TS2304] Cannot find name 'cartPrice'.",
-        "error:10:42 [TS2304] Cannot find name 'cartPrice'.",
+        "error:10:31 [TS2339] Property 'cartPrice' does not exist on the component instance.",
+        "error:10:42 [TS2339] Property 'cartPrice' does not exist on the component instance.",
         "error:46:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:85:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
         "error:87:21 [TS2322] Type 'string' is not assignable to type 'number'.",
@@ -255,16 +255,16 @@
     {
       "file": "src/page/confirmOrder/confirmOrder.vue",
       "diagnostics": [
-        "error:10:53 [TS2304] Cannot find name 'choosedAddress'.",
-        "error:13:37 [TS2304] Cannot find name 'choosedAddress'.",
-        "error:14:37 [TS2304] Cannot find name 'choosedAddress'.",
-        "error:15:37 [TS2304] Cannot find name 'choosedAddress'.",
-        "error:18:41 [TS2304] Cannot find name 'choosedAddress'.",
-        "error:18:97 [TS2304] Cannot find name 'choosedAddress'.",
-        "error:18:121 [TS2304] Cannot find name 'choosedAddress'.",
-        "error:19:34 [TS2304] Cannot find name 'choosedAddress'.",
-        "error:88:50 [TS2304] Cannot find name 'remarkText'.",
-        "error:88:62 [TS2304] Cannot find name 'inputText'.",
+        "error:10:53 [TS2339] Property 'choosedAddress' does not exist on the component instance.",
+        "error:13:37 [TS2339] Property 'choosedAddress' does not exist on the component instance.",
+        "error:14:37 [TS2339] Property 'choosedAddress' does not exist on the component instance.",
+        "error:15:37 [TS2339] Property 'choosedAddress' does not exist on the component instance.",
+        "error:18:41 [TS2339] Property 'choosedAddress' does not exist on the component instance.",
+        "error:18:97 [TS2339] Property 'choosedAddress' does not exist on the component instance.",
+        "error:18:121 [TS2339] Property 'choosedAddress' does not exist on the component instance.",
+        "error:19:34 [TS2339] Property 'choosedAddress' does not exist on the component instance.",
+        "error:88:50 [TS2339] Property 'remarkText' does not exist on the component instance.",
+        "error:88:62 [TS2339] Property 'inputText' does not exist on the component instance.",
         "error:134:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:188:26 [TS2339] Property 'remarkText' does not exist on type '__VizeThis'.",
         "error:189:40 [TS2339] Property 'remarkText' does not exist on type '__VizeThis'.",
@@ -309,8 +309,8 @@
       "file": "src/page/food/food.vue",
       "diagnostics": [
         "error:21:22 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
-        "error:35:62 [TS2304] Cannot find name 'index'.",
-        "error:172:251 [TS2304] Cannot find name 'latitude'.",
+        "error:35:62 [TS2339] Property 'index' does not exist on the component instance.",
+        "error:172:251 [TS2339] Property 'latitude' does not exist on the component instance.",
         "error:178:40 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:225:27 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
         "error:226:29 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
@@ -365,22 +365,22 @@
     {
       "file": "src/page/order/children/orderDetail.vue",
       "diagnostics": [
-        "error:7:45 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
-        "error:8:26 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
-        "error:9:26 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
+        "error:7:45 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+        "error:8:26 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+        "error:9:26 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
         "error:10:83 [TS18004] No value exists in scope for the shorthand property 'geohash'. Either declare one or provide an initializer.",
-        "error:10:83 [TS2304] Cannot find name 'geohash'.",
-        "error:10:96 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
+        "error:10:83 [TS2339] Property 'geohash' does not exist on the component instance.",
+        "error:10:96 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
         "error:13:88 [TS18004] No value exists in scope for the shorthand property 'geohash'. Either declare one or provide an initializer.",
-        "error:13:101 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
-        "error:15:53 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
-        "error:16:37 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
-        "error:23:44 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
-        "error:33:33 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
-        "error:33:65 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
-        "error:35:47 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
-        "error:65:34 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
-        "error:77:34 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
+        "error:13:101 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+        "error:15:53 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+        "error:16:37 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+        "error:23:44 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+        "error:33:33 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+        "error:33:65 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+        "error:35:47 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+        "error:65:34 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+        "error:77:34 [TS2551] Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
         "error:90:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:95:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
         "error:123:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
@@ -394,7 +394,7 @@
       "file": "src/page/order/order.vue",
       "diagnostics": [
         "error:30:67 [TS18004] No value exists in scope for the shorthand property 'geohash'. Either declare one or provide an initializer.",
-        "error:30:67 [TS2304] Cannot find name 'geohash'.",
+        "error:30:67 [TS2339] Property 'geohash' does not exist on the component instance.",
         "error:47:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:89:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
         "error:89:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
@@ -417,7 +417,7 @@
     {
       "file": "src/page/profile/children/children/address.vue",
       "diagnostics": [
-        "error:8:38 [TS2304] Cannot find name 'removeAddress'.",
+        "error:8:38 [TS2339] Property 'removeAddress' does not exist on the component instance.",
         "error:38:40 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:49:9 [TS2300] Duplicate identifier 'mounted'.",
         "error:53:9 [TS2300] Duplicate identifier 'mounted'.",
@@ -433,7 +433,7 @@
     {
       "file": "src/page/profile/children/children/children/add.vue",
       "diagnostics": [
-        "error:13:87 [TS2304] Cannot find name 'addAddress'.",
+        "error:13:87 [TS2339] Property 'addAddress' does not exist on the component instance.",
         "error:44:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:139:53 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
         "error:139:91 [TS2339] Property 'addAddress' does not exist on type '__VizeThis'.",
@@ -463,8 +463,8 @@
     {
       "file": "src/page/profile/children/info.vue",
       "diagnostics": [
-        "error:9:33 [TS2304] Cannot find name 'userInfo'.",
-        "error:9:62 [TS2304] Cannot find name 'userInfo'.",
+        "error:9:33 [TS2339] Property 'userInfo' does not exist on the component instance.",
+        "error:9:62 [TS2339] Property 'userInfo' does not exist on the component instance.",
         "error:106:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:154:35 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
         "error:157:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
@@ -480,11 +480,11 @@
     {
       "file": "src/page/profile/profile.vue",
       "diagnostics": [
-        "error:6:35 [TS2304] Cannot find name 'userInfo'.",
-        "error:6:45 [TS2304] Cannot find name 'userInfo'.",
-        "error:7:45 [TS2304] Cannot find name 'userInfo'.",
-        "error:7:89 [TS2304] Cannot find name 'userInfo'.",
-        "error:7:99 [TS2304] Cannot find name 'userInfo'.",
+        "error:6:35 [TS2339] Property 'userInfo' does not exist on the component instance.",
+        "error:6:45 [TS2339] Property 'userInfo' does not exist on the component instance.",
+        "error:7:45 [TS2339] Property 'userInfo' does not exist on the component instance.",
+        "error:7:89 [TS2339] Property 'userInfo' does not exist on the component instance.",
+        "error:7:99 [TS2339] Property 'userInfo' does not exist on the component instance.",
         "error:142:38 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:179:29 [TS2551] Property 'getImgPath' does not exist on type '__VizeThis'. Did you mean 'imgpath'?",
         "error:181:18 [TS2339] Property 'SAVE_AVANDER' does not exist on type '__VizeThis'.",
@@ -505,7 +505,7 @@
     {
       "file": "src/page/service/children/questionDetail.vue",
       "diagnostics": [
-        "error:3:32 [TS2304] Cannot find name 'question'.",
+        "error:3:32 [TS2339] Property 'question' does not exist on the component instance.",
         "error:12:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:13:26 [TS2307] Cannot find module 'showdown' or its corresponding type declarations.",
         "error:14:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
@@ -523,28 +523,28 @@
     {
       "file": "src/page/shop/children/children/shopSafe.vue",
       "diagnostics": [
-        "error:11:60 [TS2304] Cannot find name 'shopDetail'.",
-        "error:21:70 [TS2304] Cannot find name 'shopDetail'.",
-        "error:26:41 [TS2304] Cannot find name 'shopDetail'.",
-        "error:26:88 [TS2304] Cannot find name 'shopDetail'.",
-        "error:38:34 [TS2304] Cannot find name 'shopDetail'.",
-        "error:42:34 [TS2304] Cannot find name 'shopDetail'.",
-        "error:46:34 [TS2304] Cannot find name 'shopDetail'.",
-        "error:50:34 [TS2304] Cannot find name 'shopDetail'.",
-        "error:54:34 [TS2304] Cannot find name 'shopDetail'.",
-        "error:58:34 [TS2304] Cannot find name 'shopDetail'.",
-        "error:62:34 [TS2304] Cannot find name 'shopDetail'.",
-        "error:71:34 [TS2304] Cannot find name 'shopDetail'.",
-        "error:75:34 [TS2304] Cannot find name 'shopDetail'.",
-        "error:79:34 [TS2304] Cannot find name 'shopDetail'.",
-        "error:83:34 [TS2304] Cannot find name 'shopDetail'.",
-        "error:87:34 [TS2304] Cannot find name 'shopDetail'.",
-        "error:94:70 [TS2304] Cannot find name 'shopDetail'.",
+        "error:11:60 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:21:70 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:26:41 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:26:88 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:38:34 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:42:34 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:46:34 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:50:34 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:54:34 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:58:34 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:62:34 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:71:34 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:75:34 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:79:34 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:83:34 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:87:34 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:94:70 [TS2339] Property 'shopDetail' does not exist on the component instance.",
         "error:94:114 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
-        "error:94:125 [TS2304] Cannot find name 'shopDetail'.",
-        "error:95:70 [TS2304] Cannot find name 'shopDetail'.",
+        "error:94:125 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:95:70 [TS2339] Property 'shopDetail' does not exist on the component instance.",
         "error:95:122 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
-        "error:95:133 [TS2304] Cannot find name 'shopDetail'.",
+        "error:95:133 [TS2339] Property 'shopDetail' does not exist on the component instance.",
         "error:104:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:107:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
         "error:108:14 [TS2305] Module '\"src/config/env\"' has no exported member 'localapi'.",
@@ -560,17 +560,17 @@
     {
       "file": "src/page/shop/children/shopDetail.vue",
       "diagnostics": [
-        "error:7:36 [TS2304] Cannot find name 'shopDetail'.",
-        "error:13:36 [TS2304] Cannot find name 'shopDetail'.",
-        "error:31:52 [TS2304] Cannot find name 'shopDetail'.",
-        "error:41:62 [TS2304] Cannot find name 'shopDetail'.",
-        "error:46:33 [TS2304] Cannot find name 'shopDetail'.",
-        "error:46:80 [TS2304] Cannot find name 'shopDetail'.",
-        "error:53:18 [TS2304] Cannot find name 'shopDetail'.",
-        "error:54:21 [TS2304] Cannot find name 'shopDetail'.",
-        "error:55:24 [TS2304] Cannot find name 'shopDetail'.",
-        "error:56:39 [TS2304] Cannot find name 'shopDetail'.",
-        "error:61:39 [TS2304] Cannot find name 'shopDetail'.",
+        "error:7:36 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:13:36 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:31:52 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:41:62 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:46:33 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:46:80 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:53:18 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:54:21 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:55:24 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:56:39 [TS2339] Property 'shopDetail' does not exist on the component instance.",
+        "error:61:39 [TS2339] Property 'shopDetail' does not exist on the component instance.",
         "error:81:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
@@ -578,7 +578,7 @@
       "file": "src/page/shop/shop.vue",
       "diagnostics": [
         "error:80:48 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
-        "error:109:67 [TS2304] Cannot find name 'attribute'.",
+        "error:109:67 [TS2339] Property 'attribute' does not exist on the component instance.",
         "error:234:48 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
         "error:248:60 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
         "error:272:101 Template parse error: Missing whitespace between attributes; inferred a new attribute boundary.",
@@ -617,7 +617,7 @@
     {
       "file": "src/page/vipcard/children/useCart.vue",
       "diagnostics": [
-        "error:4:51 [TS2304] Cannot find name 'userInfo'.",
+        "error:4:51 [TS2339] Property 'userInfo' does not exist on the component instance.",
         "error:24:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:55:44 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
       ]
@@ -631,8 +631,8 @@
     {
       "file": "src/page/vipcard/vipcard.vue",
       "diagnostics": [
-        "error:4:24 [TS2304] Cannot find name 'userInfo'.",
-        "error:5:44 [TS2304] Cannot find name 'userInfo'.",
+        "error:4:24 [TS2339] Property 'userInfo' does not exist on the component instance.",
+        "error:5:44 [TS2339] Property 'userInfo' does not exist on the component instance.",
         "error:76:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:101:22 [TS2339] Property 'ORDER_SUCCESS' does not exist on type '__VizeThis'.",
         "error:102:22 [TS2551] Property 'BUY_CART' does not exist on type '__VizeThis'. Did you mean 'buyCart'?",

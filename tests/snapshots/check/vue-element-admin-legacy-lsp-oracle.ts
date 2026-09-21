@@ -37,9 +37,9 @@ const staleListBindingDiagnostic = {
     end: { line: 1, character: 23 },
   },
   severity: 1,
-  code: 2304,
+  code: 2339,
   source: "vize/types",
-  message: "Cannot find name 'list'.",
+  message: "Property 'list' does not exist on the component instance.",
 };
 
 type DialectVariant = {
@@ -160,8 +160,8 @@ async function waitForDiagnostics(
 
 function isStaleListDiagnostic(diagnostic: PublishDiagnosticsParams["diagnostics"][number]) {
   return (
-    String(diagnostic.code).replace(/^TS/, "") === "2304" &&
-    diagnostic.message === "Cannot find name 'list'."
+    String(diagnostic.code).replace(/^TS/, "") === "2339" &&
+    diagnostic.message === "Property 'list' does not exist on the component instance."
   );
 }
 
@@ -191,7 +191,9 @@ function assertBrokenCheck(result: VizeCheckResult): void {
     files: [
       {
         file: sourcePath,
-        diagnostics: ["error:2:20 [TS2304] Cannot find name 'list'."],
+        diagnostics: [
+          "error:2:20 [TS2339] Property 'list' does not exist on the component instance.",
+        ],
       },
     ],
     errorCount: 1,

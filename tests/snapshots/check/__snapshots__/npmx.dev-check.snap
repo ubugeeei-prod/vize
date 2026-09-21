@@ -831,7 +831,7 @@
         "error:42:10 [TS2552] Cannot find name 'SEVERITY_LEVELS'. Did you mean 'severityLabels'?",
         "error:42:33 [TS7006] Parameter 's' implicitly has an 'any' type.",
         "error:43:10 [TS7006] Parameter 's' implicitly has an 'any' type.",
-        "error:138:31 [TS2552] Cannot find name 'SEVERITY_LEVELS'. Did you mean 'severityLabels'?",
+        "error:138:31 [TS2551] Property 'SEVERITY_LEVELS' does not exist on the component instance. Did you mean 'severityLabels'?",
         "error:138:54 [TS7006] Parameter 's' implicitly has an 'any' type."
       ]
     },

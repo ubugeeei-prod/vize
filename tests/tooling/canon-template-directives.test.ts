@@ -34,7 +34,7 @@ test(
       );
       return cli;
     };
-    const expected = (source: string, token: string, code = 2304) => ({
+    const expected = (source: string, token: string, code = 2339) => ({
       code,
       ...offsetToPosition(source, source.indexOf(token)),
     });
@@ -80,8 +80,8 @@ const Comp = defineComponent({ props: { title: String } });
 <script setup lang="ts"></script>
 <template><MissingComponent /><missing-component /></template>`;
       assert.deepEqual(await errors(unknown), [
-        expected(unknown, "MissingComponent", 2339),
-        expected(unknown, "missing-component", 2339),
+        expected(unknown, "MissingComponent"),
+        expected(unknown, "missing-component"),
       ]);
       const unchecked = unknown.replace("@strictTemplates true", "@strictTemplates false");
       assert.deepEqual(await errors(unchecked), []);

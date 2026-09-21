@@ -62,9 +62,9 @@ const missingListDiagnostic = {
     end: { line: 1, character: 30 },
   },
   severity: 1,
-  code: 2304,
+  code: 2339,
   source: "vize/types",
-  message: "Cannot find name 'missingList'.",
+  message: "Property 'missingList' does not exist on the component instance.",
 };
 
 test("vue-element-admin compiler lowers legacy slot scopes and filters deterministically", async () => {
@@ -359,8 +359,8 @@ async function waitForDiagnostics(
 
 function isMissingListDiagnostic(diagnostic: PublishDiagnosticsParams["diagnostics"][number]) {
   return (
-    String(diagnostic.code).replace(/^TS/, "") === "2304" &&
-    diagnostic.message === "Cannot find name 'missingList'."
+    String(diagnostic.code).replace(/^TS/, "") === "2339" &&
+    diagnostic.message === "Property 'missingList' does not exist on the component instance."
   );
 }
 
@@ -380,7 +380,9 @@ function assertBrokenCheck(result: VizeCheckResult): void {
     files: [
       {
         file: sourcePath,
-        diagnostics: ["error:2:20 [TS2304] Cannot find name 'missingList'."],
+        diagnostics: [
+          "error:2:20 [TS2339] Property 'missingList' does not exist on the component instance.",
+        ],
       },
     ],
     errorCount: 1,
