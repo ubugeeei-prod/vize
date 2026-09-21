@@ -21,8 +21,8 @@ _None._
 | `Croquis`            |        0 |    2 |
 | `EffectGraph`        |        0 |    1 |
 | `Scope`              |        0 |    1 |
-| `Span`               |        0 |   35 |
-| `SymbolId`           |        0 |    1 |
+| `Span`               |        0 |   57 |
+| `SymbolId`           |        0 |    2 |
 | `Croquis.bindings`   |        0 |   10 |
 | `Croquis.macros`     |        0 |    4 |
 | `Croquis.reactivity` |        0 |    3 |
