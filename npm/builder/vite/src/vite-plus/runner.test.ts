@@ -150,3 +150,25 @@ void test("check --fix routes fixes only to lint and format and loads existing s
     assert.deepEqual(calls[4], ["vp", "fmt", "--write", "App.vue"]);
   });
 });
+
+void test("typecheck is standalone or composed with lint exactly once", async () => {
+  await project(async () => {
+    for (const task of ["typecheck", "lint", "check"] as const) {
+      const calls: string[][] = [];
+      await runTools(
+        task,
+        [],
+        { config: {}, options: {}, lintTypecheck: true },
+        "vp",
+        "native",
+        async (_, args) => {
+          calls.push(args);
+          return 0;
+        },
+      );
+      assert.equal(calls.filter((args) => args[0] === "native" && args[1] === "check").length, 1);
+      if (task === "typecheck") assert.equal(calls.length, 1);
+      else assert.ok(calls.some((args) => args[0] === "vp" && args[1] === "lint"));
+    }
+  });
+});

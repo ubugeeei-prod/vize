@@ -27,7 +27,9 @@ export async function runTools(
   const formatCheck =
     task === "fmt:check" || (task === "check" && !fix) || args.includes("--check");
   if (task === "check" && args.some((arg) => arg.startsWith("-") && arg !== "--fix")) {
-    throw new Error("Vize check tasks accept paths and --fix. Put tool options in withVue().");
+    throw new Error(
+      "Vize check tasks accept paths and --fix. Put native tool options in defineConfig().",
+    );
   }
   let status = 0;
   async function run(binary: string, argv: string[]) {
@@ -36,22 +38,14 @@ export async function runTools(
     status = Math.max(status, code);
   }
   async function vize(command: "check" | "lint" | "fmt", argv: string[]) {
-    const env = { mode: "production", command };
-    const config =
-      metadata.config === undefined
-        ? ((await loadConfig(process.cwd(), { env })) ?? {})
-        : await resolveConfigExport(metadata.config, env);
-    // Native relative paths and scoped entries are relative to the config's
-    // directory. Keep the temporary file beside the project's config, not in /tmp.
-    const file = path.resolve(`.vize-vp-${randomUUID()}.json`);
-    try {
-      await writeFile(file, JSON.stringify(config), { flag: "wx", mode: 0o600 });
-      await run(native, [command, "--config", file, ...argv]);
-    } finally {
-      await rm(file, { force: true });
-    }
+    const code = await runNative(command, argv, metadata, native, execute);
+    if (code >= 128) throw Object.assign(new Error("Vize task interrupted"), { exitCode: code });
+    status = Math.max(status, code);
   }
-  if (task === "check" && options.check !== false)
+  if (
+    options.check !== false &&
+    (task === "check" || task === "typecheck" || (lint && metadata.lintTypecheck))
+  )
     await vize(
       "check",
       args.filter((arg) => arg !== "--fix"),
@@ -65,7 +59,7 @@ export async function runTools(
     const patterns = args.filter((arg) => !["--check", "--write", "-w", "--fix"].includes(arg));
     if (patterns.some((arg) => arg.startsWith("-"))) {
       throw new Error(
-        "Vize fmt tasks accept paths and --check/--write. Put formatter options in withVue().",
+        "Vize fmt tasks accept paths and --check/--write. Put native formatter options in defineConfig({ fmt: { vize: ... } }).",
       );
     }
     if (options.fmt !== false) {
@@ -85,24 +79,30 @@ export async function runTools(
 export async function runTask(argv: string[]): Promise<number> {
   const [task, ...rest] = argv;
   const args = rest[0] === "--" ? rest.slice(1) : rest;
+  if (task === "editor:setup") {
+    const { setupEditor } = await import("./editor.ts");
+    await setupEditor();
+    return 0;
+  }
   const { require, binary: vp } = resolveVitePlus();
-  if (["build", "dev", "preview", "test"].includes(task)) {
+  if (["build", "dev", "preview", "test", "pack"].includes(task)) {
     return execute(process.execPath, [vp, task, ...args]);
   }
-  if (!["check", "lint", "lint:fix", "fmt", "fmt:check"].includes(task)) {
+  if (!["check", "typecheck", "lint", "lint:fix", "fmt", "fmt:check"].includes(task)) {
     throw new Error(`Unknown Vize task: ${task}`);
   }
   const { loadConfigFromFile } = require("vite-plus") as typeof import("vite-plus");
   const loaded = await loadConfigFromFile({ command: "build", mode: "production" });
   const metadata = (loaded?.config as ConfigWithVizeTasks | undefined)?.[taskConfigKey];
   if (!metadata)
-    throw new Error("The current vite.config must export withVue() or withVue().vp(...).");
-  const vizeRequire = createRequire(import.meta.url);
-  const native = path.resolve(path.dirname(vizeRequire.resolve("vize")), "../bin/vize");
+    throw new Error(
+      "The current vite.config must use defineConfig from @vizejs/vite-plugin/vite-plus.",
+    );
+  const native = nativeBinary();
   return runTools(task as VizeTask, args, metadata, vp, native, execute);
 }
 
-async function execute(command: string, args: string[]): Promise<number> {
+export async function execute(command: string, args: string[]): Promise<number> {
   return new Promise((resolve) => {
     const child = spawn(command, args, { stdio: "inherit" });
     const forwardInt = () => child.kill("SIGINT");
@@ -123,4 +123,30 @@ async function execute(command: string, args: string[]): Promise<number> {
       resolve(code ?? (signal === "SIGINT" ? 130 : signal === "SIGTERM" ? 143 : 1));
     });
   });
+}
+
+export function nativeBinary(): string {
+  const require = createRequire(import.meta.url);
+  return path.resolve(path.dirname(require.resolve("vize")), "../bin/vize");
+}
+
+export async function runNative(
+  command: "check" | "lint" | "fmt",
+  argv: string[],
+  metadata: VizeTaskConfig,
+  native = nativeBinary(),
+  spawn: Execute = execute,
+): Promise<number> {
+  const env = { mode: "production", command };
+  const config =
+    metadata.config === undefined
+      ? ((await loadConfig(process.cwd(), { env })) ?? {})
+      : await resolveConfigExport(metadata.config, env);
+  const file = path.resolve(`.vize-vp-${randomUUID()}.json`);
+  try {
+    await writeFile(file, JSON.stringify(config), { flag: "wx", mode: 0o600 });
+    return await spawn(process.execPath, [native, command, "--config", file, ...argv]);
+  } finally {
+    await rm(file, { force: true });
+  }
 }

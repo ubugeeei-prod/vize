@@ -1,55 +1,62 @@
-import type { UserConfigExport } from "./types.ts";
 import type { PluginOption } from "vite-plus";
-import type { VitePlusConfig, VizePlusConfigFactory, VizePlusOptions } from "./vite-plus/types.ts";
-import { taskConfigKey } from "./vite-plus/types.ts";
+import type { VizePlusConfigFactory, VizePlusOptions, VueConfig } from "./vite-plus/types.ts";
+import { sourceConfigKey, taskConfigKey } from "./vite-plus/types.ts";
 import { configureTools } from "./vite-plus/conflicts.ts";
 import { createTasks } from "./vite-plus/tasks.ts";
+import { normalizeConfig, resolveConfig } from "./vite-plus/config.ts";
+import { configurePack } from "./vite-plus/pack.ts";
 
 export type {
   VitePlusConfig,
   VizePlusConfigFactory,
   VizePlusOptions,
   VizeTask,
+  VueConfig,
+  VueConfigObject,
+  VizeCompilerOptions,
+  VizeLintOptions,
+  VizePackOptions,
 } from "./vite-plus/types.ts";
 
-/** One shared Vize config, with optional configuration owned and typed by Vite+. */
-export function withVue(
-  config?: UserConfigExport,
-  options: VizePlusOptions = {},
+/** Extend the installed Vite+ configuration with the native Vue toolchain. */
+export function defineConfig(
+  config: VueConfig = {},
+  integration: VizePlusOptions = {},
 ): VizePlusConfigFactory {
-  function create(vpConfig: VitePlusConfig = {}): VizePlusConfigFactory {
-    const factory: VizePlusConfigFactory = Object.assign(
-      async (env: Parameters<VizePlusConfigFactory>[0]) => {
-        const resolved = await (typeof vpConfig === "function" ? vpConfig(env) : vpConfig);
-        const plugins =
-          options.plugin === false
-            ? [...(resolved.plugins ?? [])]
-            : await withoutVueCompiler(resolved.plugins ?? []);
-        if (options.plugin !== false) {
-          const { vize } = await import("./plugin/index.ts");
-          plugins.unshift(vize({ ...options.plugin, config }));
-        }
-        return {
-          ...configureTools(resolved, options),
-          plugins,
-          run:
-            options.tasks === false
-              ? resolved.run
-              : {
-                  ...resolved.run,
-                  tasks: {
-                    ...createTasks(resolved.run?.tasks, options.tasks),
-                    ...resolved.run?.tasks,
-                  },
-                },
-          [taskConfigKey]: { config, options },
-        };
-      },
-      { vp: create },
-    );
-    return factory;
-  }
-  return create();
+  return Object.assign(
+    async (env: Parameters<VizePlusConfigFactory>[0]) => {
+      const source = await resolveConfig(config, env);
+      const { vp, metadata, compiler } = normalizeConfig(source, integration);
+      const { options } = metadata;
+      const plugins =
+        compiler === false ? [...(vp.plugins ?? [])] : await withoutVueCompiler(vp.plugins ?? []);
+      if (compiler !== false) {
+        const { vize } = await import("./plugin/index.ts");
+        // The optional Vite+ peer may expose a different Vite type instance.
+        plugins.unshift(
+          vize({
+            ...compiler,
+            configMode: false,
+            config: metadata.config,
+          }) as unknown as PluginOption,
+        );
+      }
+      return {
+        ...configureTools(vp, options),
+        plugins,
+        pack: await configurePack(source.pack, compiler, metadata),
+        run:
+          options.tasks === false
+            ? vp.run
+            : {
+                ...vp.run,
+                tasks: { ...createTasks(vp.run?.tasks, options.tasks), ...vp.run?.tasks },
+              },
+        [taskConfigKey]: metadata,
+      };
+    },
+    { [sourceConfigKey]: config },
+  );
 }
 
 async function withoutVueCompiler(plugins: PluginOption[]): Promise<PluginOption[]> {
@@ -62,5 +69,5 @@ async function withoutVueCompiler(plugins: PluginOption[]): Promise<PluginOption
   return result;
 }
 
-/** Alias for projects that prefer the Vize toolchain name. */
-export { withVue as withVize };
+/** Equivalent names for projects that prefer an explicit Vue toolchain helper. */
+export { defineConfig as withVue, defineConfig as withVize };

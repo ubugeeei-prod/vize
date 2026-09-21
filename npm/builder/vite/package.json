@@ -56,10 +56,12 @@
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "pnpm --dir ../../native build:debug && node src/test.ts && node --test src/vite-plus/config.test.ts src/vite-plus/runner.test.ts"
+    "test": "pnpm --dir ../../native build:debug && node src/test.ts && node --test src/vite-plus/*.test.ts"
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
+    "@vizejs/unplugin": "workspace:*",
+    "jsonc-parser": "^3.3.1",
     "oxc-parser": "catalog:oxc",
     "tinyglobby": "catalog:repo-tooling",
     "vize": "workspace:*"
@@ -68,11 +70,11 @@
     "@types/node": "catalog:typescript",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
-    "vite-plus": "catalog:vite-stack"
+    "vite-plus": "^0.2.3"
   },
   "peerDependencies": {
     "vite": "^7.3.0 || ^8.0.0",
-    "vite-plus": "*"
+    "vite-plus": ">=0.2.3"
   },
   "peerDependenciesMeta": {
     "vite-plus": {

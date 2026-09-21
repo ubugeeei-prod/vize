@@ -5,12 +5,15 @@ import type { UserConfig } from "vite-plus";
 import type { VizePlusOptions, VizeTask } from "./types.ts";
 
 const tasks: VizeTask[] = [
+  "editor:setup",
   "check",
+  "typecheck",
   "lint",
   "lint:fix",
   "fmt",
   "fmt:check",
   "build",
+  "pack",
   "dev",
   "preview",
   "test",
@@ -34,7 +37,7 @@ export function createTasks(existing: Tasks = {}, names: VizePlusOptions["tasks"
     if (name in existing) continue;
     if (name in scripts || name in result) {
       throw new Error(
-        `withVue task "${name}" already exists. Choose another name with options.tasks.`,
+        `defineConfig task "${name}" already exists. Choose another name with options.tasks.`,
       );
     }
     // Only the package-owned absolute path enters the task shell command.

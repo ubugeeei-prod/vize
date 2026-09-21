@@ -11,7 +11,7 @@ export function resolveVitePlus() {
     packageFile = require.resolve("vite-plus/package.json");
   } catch {
     throw new Error(
-      "withVue requires vite-plus installed in this project. Install your preferred version first.",
+      "defineConfig requires vite-plus installed in this project. Install your preferred version first.",
     );
   }
   const manifest = JSON.parse(readFileSync(packageFile, "utf8"));
@@ -27,7 +27,7 @@ export function availableVueRules(): Set<string> {
   if (cached) return cached;
   const directory = mkdtempSync(path.join(os.tmpdir(), "vize-oxlint-rules-"));
   try {
-    // A standalone project prevents recursive loading of withVue while
+    // A standalone project prevents recursive loading of defineConfig while
     // asking the installed CLI for its public rule catalog.
     writeFileSync(
       path.join(directory, "package.json"),

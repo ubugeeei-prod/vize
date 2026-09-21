@@ -28,39 +28,36 @@ Install the `vite-plus` version your project uses, then configure the whole tool
 
 ```ts
 // vite.config.ts
-import { withVue } from "@vizejs/vite-plugin/vite-plus";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default withVue();
-```
-
-`withVize` remains available as an alias of `withVue`.
-
-`vp run check`, `vp run lint`, `vp run fmt`, and `vp run build` now include Vize.
-`lint:fix`, `fmt:check`, `dev`, `preview`, and `test` tasks are also available.
-For configuration, use `withVue(vizeConfig).vp(vitePlusConfig)`:
-
-```ts
-export default withVue({
-  linter: { preset: "essential" },
-  formatter: { singleQuote: true },
-}).vp({
-  server: { port: 3000 },
-  lint: { rules: { "no-debugger": "error" } },
+export default defineConfig({
+  compiler: { sourceMap: true },
+  typecheck: { strict: true },
+  lint: { vize: { preset: "essential", typecheck: true } },
+  fmt: { vize: { singleQuote: true } },
 });
 ```
 
-Vize native lint and Oxlint both run. Overlapping Vue rules are disabled by default
-only when the installed Vite+ supports them; explicit `vp` rule settings take precedence.
-Vize formats Vue files while Oxfmt formats the remaining files. The helper uses your
-installed `vite-plus` optional peer and its config types, without pinning or installing a version.
+Run `vp run check`, `lint`, `fmt`, `build`, or `pack` without registering another
+plugin or writing CLI scripts. Native lint runs alongside Oxlint; overlapping
+rules and Vue formatting ownership are configured automatically.
 
-Existing package scripts are preserved: a conflicting generated task uses `vize:<name>`
-(for example, `vp run vize:check`). Existing `run.tasks` take precedence. Built-in `vp check`
-and `vp lint` remain Vite+ commands; use `vp run` for the combined tasks. See the
-[Vite+ guide](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/guide/vite-plus.md)
-for task names, opt-outs, and configuration ownership.
+Use `extends` for shared presets and `pack.vize` for native declarations,
+declaration maps, and compiler maps. `vize.lint.typecheck` is also supported.
+`withVue` and `withVize` are aliases with the same single-object API.
 
-### Vite
+Vite+ remains a user-selected optional peer (0.2.3 or later); configuration types
+come from that peer. Ordinary Vite users do not need to install it. Built-in
+`vp check/lint/fmt` keep their Vite+ behavior; combined checks use `vp run`.
+
+Run `vp run editor:setup` to recommend Vize alongside the Vite Plus extension
+pack while preserving existing workspace settings and Oxc's non-Vue formatter.
+
+See the [Vite+ guide](../../../docs/content/guide/vite-plus.md) and
+[editor setup](../../../docs/content/guide/vite-plus-editor.md) for configuration,
+task naming, native editor config, and tool ownership.
+
+## Vite
 
 ```ts
 // vite.config.ts

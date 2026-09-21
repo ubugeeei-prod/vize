@@ -26,8 +26,9 @@ function run(cwd: string, args: string[], expected = 0) {
   return output;
 }
 
-test("packed withVue runs native and Vite+ tools using the consumer's installed peer", () => {
+test("packed defineConfig runs native and Vite+ tools using the consumer's installed peer", () => {
   run(path.join(root, "npm/cli"), ["pack"]);
+  run(path.join(root, "npm/builder/unplugin"), ["pack"]);
   run(plugin, ["pack"]);
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vp-consumer space-"));
   try {
@@ -52,11 +53,11 @@ test("packed withVue runs native and Vite+ tools using the consumer's installed 
     write("package.json", JSON.stringify({ name: "vize-consumer", type: "module", private: true }));
     write(
       "vite.config.ts",
-      `import { withVue } from "@vizejs/vite-plugin/vite-plus";
-export default withVue({ linter: { preset: "essential", rules: { "vue/no-v-html": "error" } } }).vp({
+      `import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({
   plugins: [{ name: "vite:vue", transform() { throw new Error("Old Vue compiler must be replaced"); } }],
-  lint: { rules: { "no-debugger": "error" } },
-  fmt: { ignorePatterns: ["dist/**"] },
+  lint: { ignorePatterns: ["dist/**", "library/**"], vize: { preset: "essential", rules: { "vue/no-v-html": "error" } }, rules: { "no-debugger": "error" } },
+  fmt: { ignorePatterns: ["dist/**", "library/**"], vize: { singleQuote: true } },
 });
 `,
     );
@@ -101,11 +102,44 @@ export default withVue({ linter: { preset: "essential", rules: { "vue/no-v-html"
           moduleResolution: "bundler",
           types: [],
         },
-        include: ["App.vue", "main.ts", "script.ts"],
+        include: ["App.vue", "main.ts", "script.ts", "entry.ts"],
       }),
     );
+    run(directory, ["run", "editor:setup"]);
+    const settings = JSON.parse(
+      fs.readFileSync(path.join(directory, ".vscode/settings.json"), "utf8"),
+    );
+    assert.equal(settings["[vue]"]["editor.defaultFormatter"], "ubugeeei.vize");
+    assert.equal(settings["editor.defaultFormatter"], undefined);
     run(directory, ["run", "fmt"]);
     run(directory, ["run", "check"]);
+    assert.ok(!fs.readdirSync(directory).some((name) => name.startsWith(".vize-vp-")));
+    write("entry.ts", 'export { default as App } from "./App.vue";');
+    fs.appendFileSync(path.join(directory, "vite.config.ts"), "\n");
+    const original = fs.readFileSync(path.join(directory, "vite.config.ts"), "utf8");
+    write(
+      "vite.config.ts",
+      original.replace(
+        "export default defineConfig({",
+        `export default defineConfig({
+      pack: { entry: ["entry.ts"], outDir: "library", format: ["esm"], vize: { dts: true, declarationMap: true, sourcemap: true } },`,
+      ),
+    );
+    run(directory, ["run", "pack"]);
+    const outputs = fs
+      .readdirSync(path.join(directory, "library"), { recursive: true })
+      .map(String);
+    assert.ok(outputs.includes("entry.d.ts"), outputs.join(", "));
+    assert.ok(outputs.includes("App.vue.d.ts"), outputs.join(", "));
+    const declarationMap = JSON.parse(
+      fs.readFileSync(path.join(directory, "library/App.vue.d.ts.map"), "utf8"),
+    );
+    assert.deepEqual(declarationMap.sources, ["../App.vue"]);
+    assert.ok(declarationMap.mappings.length > 0);
+    assert.ok(
+      outputs.some((file) => /\.m?js\.map$/.test(file)),
+      outputs.join(", "),
+    );
     assert.ok(!fs.readdirSync(directory).some((name) => name.startsWith(".vize-vp-")));
     checkConsumerTypes(directory, write);
   } finally {
@@ -129,12 +163,15 @@ function checkConsumerTypes(directory: string, write: (name: string, value: stri
   );
   write(
     "consumer.mts",
-    `import { defineConfig } from "vite-plus";
-import { withVue } from "@vizejs/vite-plugin/vite-plus";
+    `import { defineConfig as defineVpConfig } from "vite-plus";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 declare module "vite-plus" { interface UserConfig { futureOption?: { enabled: boolean }; } }
-export default defineConfig(withVue().vp({ futureOption: { enabled: true } }));
+export default defineVpConfig(defineConfig({ futureOption: { enabled: true }, lint: { vize: { preset: "essential", typecheck: true } } }));
+defineConfig({ compiler: { sourceMap: true }, typecheck: { strict: true }, pack: [{ vize: { declarationMap: true } }], fmt: { vize: { singleQuote: true } } });
 // @ts-expect-error Consumer Vite+ owns this option's type.
-withVue().vp({ futureOption: { enabled: "wrong" } });
+defineConfig({ futureOption: { enabled: "wrong" } });
+// @ts-expect-error Native Vize configuration remains typed.
+defineConfig({ lint: { vize: { preset: "unknown-preset" } } });
 `,
   );
   const tsc = path.join(path.dirname(require.resolve("typescript/package.json")), "bin/tsc");
