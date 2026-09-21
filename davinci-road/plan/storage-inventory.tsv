@@ -21,6 +21,7 @@ infra	-	crates/vize_davinci/src/folio/value.rs	0	0	1	2	0	0	0	0
 infra	analysis	crates/vize_davinci/src/pass/observer/remark/record.rs	1	4	1	10	0	0	0	0
 infra	analysis	crates/vize_davinci/src/pass/pipeline.rs	1	4	1	2	0	0	0	0
 infra	analysis	crates/vize_davinci/src/side_table.rs	1	2	0	0	0	0	0	0
+infra	analysis	crates/vize_davinci/src/witness/audit.rs	1	2	0	0	0	0	0	0
 s1	-	crates/vize_s1/src/build.rs	0	0	0	0	1	7	0	0
 s1	-	crates/vize_s1/src/build/tag.rs	0	0	0	0	1	4	0	0
 s1	-	crates/vize_s1/src/event.rs	0	0	0	0	1	2	0	0

@@ -15,7 +15,9 @@
 //! - [`side_table`] — [`SideTable`](side_table::SideTable), analysis results
 //!   stored beside the tree rather than on fat nodes.
 //! - [`diagnostic`] — [`Diagnostic`](diagnostic::Diagnostic), the one channel
-//!   every renderer reads.
+//!   every renderer reads, with the witness law and precision tiers as types.
+//! - [`witness`] — TS-36: re-checking a diagnostic's witness chain against the
+//!   fact base.
 //! - [`fact`] — the fact API: fact groups, static demand declarations, the
 //!   stratified registry and the [`FactManager`](fact::FactManager).
 //! - [`pass`] — the pass manager: pipelines as const data, classified and
@@ -50,3 +52,4 @@ pub mod legacy_plan;
 pub mod pass;
 pub mod side_table;
 pub mod stage;
+pub mod witness;

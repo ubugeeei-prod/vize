@@ -26,6 +26,7 @@ use alloc::vec::Vec;
 pub use exemption::Exemption;
 pub use key::{WitnessKey, WitnessKeyed};
 
+use crate::fact::FactGroup;
 use crate::pass::AnalysisId;
 use vize_s0::Span;
 
@@ -46,6 +47,15 @@ impl WitnessLink {
     #[must_use]
     pub fn new(group: AnalysisId, span: Span, key: WitnessKey) -> Self {
         Self { group, span, key }
+    }
+
+    /// A link to the fact stored under `key` in fact group `G`, about
+    /// `span` — the typed form a producer holding `G`'s table writes, so the
+    /// group id and the key shape cannot disagree with the table the link
+    /// cites.
+    #[must_use]
+    pub fn of<G: FactGroup<Key: WitnessKeyed>>(key: &G::Key, span: Span) -> Self {
+        Self::new(G::ID, span, key.to_witness_key())
     }
 }
 
