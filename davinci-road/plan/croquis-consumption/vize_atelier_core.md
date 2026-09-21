@@ -38,7 +38,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeBinding`       |        1 |    2 |
 | `ScopeChain`         |        2 |    3 |
 | `ScopeKind`          |        2 |    3 |
-| `Span`               |        0 |    2 |
+| `Span`               |        0 |    7 |
 | `Symbol`             |        0 |    5 |
 | `VForScopeData`      |        1 |    2 |
 | `VSlotScopeData`     |        1 |    2 |
