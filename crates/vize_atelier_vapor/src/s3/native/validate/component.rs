@@ -1,7 +1,6 @@
 //! Operand schemas for components and slot outlets: the tag or static name,
 //! and static attributes as literal props in authored order.
 
-use vize_carton::FxHashSet;
 use vize_s3::operand::{Operand, OperandRole as Role, ValueKind};
 
 use super::super::{Content, Expr, Prop};
@@ -9,7 +8,7 @@ use super::{Result, operands::one};
 use crate::s3::LegacyReason;
 
 /// A resolved component: its tag and static attributes (as literal props).
-pub(super) fn component<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
+pub(super) fn component<'a>(values: &[Operand<'a>]) -> Result<Content<'a>> {
     let tag = one(values, Role::Tag)?;
     if tag.value.kind != ValueKind::Literal || !component_tag(tag.value.text) {
         return Err(LegacyReason::Component.into());
@@ -22,7 +21,7 @@ pub(super) fn component<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
 }
 
 /// A `<slot>` outlet with a static name and static attribute props.
-pub(super) fn outlet<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
+pub(super) fn outlet<'a>(values: &[Operand<'a>]) -> Result<Content<'a>> {
     let name = one(values, Role::Name)?;
     if name.value.kind != ValueKind::Literal || name.target.is_some() {
         return Err(LegacyReason::Component.into());
@@ -34,9 +33,8 @@ pub(super) fn outlet<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
     })
 }
 
-fn static_props<'a>(values: &[&Operand<'a>], head: Role) -> Result<std::vec::Vec<Prop<'a>>> {
+fn static_props<'a>(values: &[Operand<'a>], head: Role) -> Result<std::vec::Vec<Prop<'a>>> {
     let mut props = std::vec::Vec::new();
-    let mut names = FxHashSet::default();
     for value in values {
         if value.target.is_some() || value.region.is_some() {
             return Err(LegacyReason::Structure.into());
@@ -45,7 +43,12 @@ fn static_props<'a>(values: &[&Operand<'a>], head: Role) -> Result<std::vec::Vec
             role if role == head && value.name.is_none() => {}
             Role::Attribute => {
                 let name = value.name.ok_or(LegacyReason::Binding)?;
-                if !component_prop(name) || !names.insert(name) {
+                // The legacy parser reports repeats case-insensitively.
+                if !component_prop(name)
+                    || props
+                        .iter()
+                        .any(|prop: &Prop<'_>| prop.key.eq_ignore_ascii_case(name))
+                {
                     return Err(LegacyReason::Component.into());
                 }
                 let literal = match value.value.kind {

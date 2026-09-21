@@ -3,6 +3,7 @@
 //! Acceptance carries the complete checked backend payload. Unsupported inputs
 //! select the retained legacy lane explicitly; corrupt invariants never emit.
 
+mod markup;
 mod native;
 mod retained;
 mod text;
@@ -130,6 +131,8 @@ pub(crate) fn lower_source_for_vapor<'a>(
                 !record.rule.starts_with("lower.")
                     && !record.rule.starts_with("condense.")
                     && record.rule != "drop.comment"
+                    // HTML content CDATA is a legacy parser diagnostic.
+                    || record.rule == "lower.cdata-text"
             })
         {
             return VaporS3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
@@ -146,6 +149,9 @@ pub(crate) fn lower_source_for_vapor<'a>(
             return VaporS3BridgeStatus::Legacy(LegacyReason::ControlFlow);
         }
         let mut s3 = vize_s2_to_s3::lower(allocator, &s2.root);
+        if markup::legacy_diagnosed(source, &s3.program) {
+            return VaporS3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
+        }
         let mut retained = retained::Retained::collect(allocator, &s2.root);
         if let Err(failure) = text::capture(allocator, &s2, &mut s3, &mut retained) {
             return match failure {
@@ -199,16 +205,25 @@ fn admit<'a>(s3: Lowered<'a>, retained: &retained::Retained<'_, 'a>) -> VaporS3B
 }
 
 pub(crate) fn record_selection(status: &VaporS3BridgeStatus<'_>) {
-    let profiler = global_profiler();
-    if !profiler.is_enabled() {
-        return;
-    }
-    let counter = match status {
-        VaporS3BridgeStatus::Accepted(_) => "davinci.s3_vapor.accepted",
+    record(match status {
+        VaporS3BridgeStatus::Accepted(_) => ACCEPTED,
         VaporS3BridgeStatus::Legacy(reason) => reason.counter(),
         VaporS3BridgeStatus::Rejected(_) => "davinci.s3_vapor.rejected",
-    };
-    profiler.record_counter_enabled(counter, 1);
+    });
+}
+
+/// [`record_selection`] for an admitted artifact already moved into emission.
+pub(crate) fn record_accepted() {
+    record(ACCEPTED);
+}
+
+const ACCEPTED: &str = "davinci.s3_vapor.accepted";
+
+fn record(counter: &'static str) {
+    let profiler = global_profiler();
+    if profiler.is_enabled() {
+        profiler.record_counter_enabled(counter, 1);
+    }
 }
 
 #[cfg(test)]

@@ -6,7 +6,6 @@
 //! those keep the legacy lane rather than being re-derived from text here.
 
 use vize_atelier_core::steps::expression::is_template_global;
-use vize_carton::{FxHashMap, FxHashSet};
 use vize_s3::{
     op::{OpId, OpKind, Program, RegionId},
     operand::{Operand, OperandRole as Role, ValueKind},
@@ -17,7 +16,7 @@ use super::{Result, operands::js, operands::one};
 use crate::s3::{AdmissionFailure, LegacyReason, retained::Retained};
 
 pub(super) fn branches<'a>(
-    values: &[&Operand<'a>],
+    values: &[Operand<'a>],
     retained: &Retained<'_, 'a>,
 ) -> Result<Content<'a>> {
     let mut branches: std::vec::Vec<Branch<'a>> = std::vec::Vec::with_capacity(values.len());
@@ -55,7 +54,7 @@ pub(super) fn branches<'a>(
 }
 
 pub(super) fn for_loop<'a>(
-    values: &[&Operand<'a>],
+    values: &[Operand<'a>],
     retained: &Retained<'_, 'a>,
 ) -> Result<Content<'a>> {
     if values.iter().any(|value| {
@@ -115,39 +114,42 @@ fn alias(kind: ValueKind, text: &str) -> Result<Option<&str>> {
     }
 }
 
-/// Regions inside a conditional branch or loop body. S2 to S3 partitions every
-/// op there as dynamic, so native payload classification must agree.
-pub(super) fn controlled_regions(
-    program: &Program<'_>,
-    kinds: &FxHashMap<OpId, OpKind>,
-) -> Result<FxHashSet<RegionId>> {
-    let meta: FxHashMap<_, _> = program
-        .regions
-        .iter()
-        .map(|region| (region.id, (region.parent, region.owner)))
-        .collect();
-    let mut memo: FxHashMap<RegionId, bool> = FxHashMap::default();
+/// Regions inside a conditional branch or loop body, by region index. S2 to
+/// S3 partitions every op there as dynamic, so native payload classification
+/// must agree. The verifier rejects duplicate ids, so ids below the region
+/// count index a dense table.
+pub(super) fn controlled_regions(program: &Program<'_>) -> Result<std::vec::Vec<bool>> {
+    let count = program.regions.len();
+    let mut meta = std::vec![(None, None); count];
+    for region in &program.regions {
+        *meta
+            .get_mut(region.id.index() as usize)
+            .ok_or(AdmissionFailure::Invalid("region ids are not dense"))? =
+            (region.parent, region.owner);
+    }
+    let mut memo: std::vec::Vec<Option<bool>> = std::vec![None; count];
     let mut path = std::vec::Vec::new();
     for region in &program.regions {
         path.clear();
-        let mut cursor = Some(region.id);
+        let mut cursor: Option<RegionId> = Some(region.id);
         let mut controlled = false;
         while let Some(id) = cursor {
-            if let Some(&known) = memo.get(&id) {
+            let slot = id.index() as usize;
+            let &(parent, owner) = meta
+                .get(slot)
+                .ok_or(AdmissionFailure::Invalid("region does not resolve"))?;
+            if let Some(known) = memo[slot] {
                 controlled = known;
                 break;
             }
-            let &(parent, owner) = meta
-                .get(&id)
-                .ok_or(AdmissionFailure::Invalid("region does not resolve"))?;
-            if path.len() > program.regions.len() {
+            if path.len() > count {
                 return Err(AdmissionFailure::Invalid("region parent cycle"));
             }
-            path.push(id);
+            path.push(slot);
             // Slot content and outlet fallbacks are partitioned as dynamic too.
-            if owner.is_some_and(|owner| {
+            if owner.is_some_and(|owner: OpId| {
                 matches!(
-                    kinds.get(&owner),
+                    program.ops.get(owner.index() as usize).map(|op| op.kind),
                     Some(OpKind::If | OpKind::For | OpKind::CreateComponent | OpKind::SlotOutlet)
                 )
             }) {
@@ -156,12 +158,9 @@ pub(super) fn controlled_regions(
             }
             cursor = parent;
         }
-        for id in &path {
-            memo.insert(*id, controlled);
+        for slot in &path {
+            memo[*slot] = Some(controlled);
         }
     }
-    Ok(memo
-        .into_iter()
-        .filter_map(|(id, controlled)| controlled.then_some(id))
-        .collect())
+    Ok(memo.into_iter().map(|known| known == Some(true)).collect())
 }

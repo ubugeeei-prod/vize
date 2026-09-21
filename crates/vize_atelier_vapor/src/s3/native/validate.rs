@@ -1,5 +1,6 @@
 //! Validate the supported backend shape after the generic graph verifier.
-//! Indexes are built once; source order must agree with explicit S3 edges.
+//! One pass builds dense tables and the ordering obligations; source order
+//! must agree with explicit S3 edges.
 
 mod attach;
 mod component;
@@ -8,9 +9,10 @@ mod operands;
 mod order;
 mod tree;
 
-use vize_carton::FxHashMap;
+use std::borrow::Cow;
+
 use vize_s3::{
-    op::{OpId, OpKind, Phase, Program, RegionId},
+    op::{EdgeKind, OpId, OpKind, Phase, Program, RegionId},
     operand::{Operand, OperandRole as Role},
 };
 
@@ -21,6 +23,9 @@ pub(in crate::s3) use operands::reference;
 
 type Result<T> = core::result::Result<T, AdmissionFailure>;
 
+/// The native node index and region of each op admitted as a node, by op id.
+type Slots = [Option<(usize, RegionId)>];
+
 pub(super) fn admit<'a>(
     program: &Program<'a>,
     retained: &Retained<'_, 'a>,
@@ -28,19 +33,30 @@ pub(super) fn admit<'a>(
     if program.phase != Phase::Built {
         return Err(LegacyReason::Operation.into());
     }
-    let mut operands: FxHashMap<OpId, std::vec::Vec<&Operand<'a>>> = FxHashMap::default();
-    for operand in &program.operands {
-        operands.entry(operand.op).or_default().push(operand);
+    // The S3 lowering mints op ids densely in op order, so ids index tables.
+    if (program.ops.iter().enumerate()).any(|(index, op)| op.id.index() as usize != index) {
+        return Err(AdmissionFailure::Invalid("op ids are not dense"));
     }
-    let kinds: FxHashMap<_, _> = program.ops.iter().map(|op| (op.id, op.kind)).collect();
-    let controlled = control::controlled_regions(program, &kinds)?;
-    let mut nodes = std::vec::Vec::new();
-    let mut indexes = FxHashMap::default();
-    let mut regions: FxHashMap<RegionId, std::vec::Vec<OpId>> = FxHashMap::default();
-    let mut binding_order: FxHashMap<OpId, std::vec::Vec<OpId>> = FxHashMap::default();
+    let (operands, starts) = by_op(program)?;
+    let controlled = control::controlled_regions(program)?;
+    let count = program.ops.len();
+    let mut nodes = std::vec::Vec::with_capacity(count);
+    let mut slots = std::vec![None; count];
+    // Node indexes of each region, in source order.
+    let mut regions: std::vec::Vec<std::vec::Vec<usize>> =
+        std::vec![std::vec::Vec::new(); program.regions.len()];
     let mut bindings = std::vec::Vec::new();
-    for op in &program.ops {
-        let values = operands.get(&op.id).map_or(&[][..], |v| &v[..]);
+    let mut edges = std::vec::Vec::with_capacity(program.edges.len());
+    let mut last_in_region: std::vec::Vec<Option<OpId>> = std::vec![None; program.regions.len()];
+    let mut last_binding: std::vec::Vec<Option<OpId>> = std::vec![None; count];
+    let mut last_effect = None;
+    for (index, op) in program.ops.iter().enumerate() {
+        if op.effect.is_some()
+            && let Some(previous) = last_effect.replace(op.id)
+        {
+            edges.push(order::edge(previous, op.id, EdgeKind::EffectOrder));
+        }
+        let values = &operands[starts[index]..starts[index + 1]];
         let content = match op.kind {
             OpKind::InsertNode => operands::element(values)?,
             OpKind::SetText if values.iter().all(|value| value.role == Role::Text) => {
@@ -57,7 +73,12 @@ pub(super) fn admit<'a>(
                         "binding lacks its dynamic partition",
                     ));
                 }
-                binding_order.entry(target).or_default().push(op.id);
+                let last = last_binding
+                    .get_mut(target.index() as usize)
+                    .ok_or(LegacyReason::Structure)?;
+                if let Some(previous) = last.replace(op.id) {
+                    edges.push(order::edge(previous, op.id, EdgeKind::DomOrder));
+                }
                 bindings.push((target, op.region, op.span.start, binding));
                 continue;
             }
@@ -71,6 +92,14 @@ pub(super) fn admit<'a>(
             OpKind::SlotOutlet => component::outlet(values)?,
             _ => return Err(LegacyReason::Operation.into()),
         };
+        let region = op.region.index() as usize;
+        let (Some(members), Some(last), Some(&controlled)) = (
+            regions.get_mut(region),
+            last_in_region.get_mut(region),
+            controlled.get(region),
+        ) else {
+            return Err(AdmissionFailure::Invalid("op region does not resolve"));
+        };
         // Everything inside a branch or loop body is partitioned as dynamic.
         let dynamic = match content {
             Content::Text { dynamic, .. } => dynamic,
@@ -79,33 +108,60 @@ pub(super) fn admit<'a>(
             | Content::Component { .. }
             | Content::Outlet { .. } => true,
             Content::Element { .. } => false,
-        } || controlled.contains(&op.region);
+        } || controlled;
         if dynamic != op.effect.is_some() {
             return Err(AdmissionFailure::Invalid(
                 "native payload disagrees with its partition",
             ));
         }
-        indexes.insert(op.id, (nodes.len(), op.region));
-        regions.entry(op.region).or_default().push(op.id);
+        if let Some(previous) = last.replace(op.id) {
+            edges.push(order::edge(previous, op.id, EdgeKind::DomOrder));
+        }
+        members.push(nodes.len());
+        slots[index] = Some((nodes.len(), op.region));
         nodes.push(Node {
             content,
             children: std::vec::Vec::new(),
             bindings: std::vec::Vec::new(),
         });
     }
-    order::check(program, &regions, &binding_order)?;
-    let parents = tree::assemble(program, &mut nodes, &indexes, &regions)?;
-    attach::bindings(&mut nodes, &indexes, &parents, bindings)?;
+    order::check(program, edges)?;
+    let parents = tree::assemble(program, &mut nodes, &slots, &mut regions)?;
+    attach::bindings(&mut nodes, &slots, &parents, bindings)?;
     tree::check_nesting(&nodes, &parents)?;
-    let roots: std::vec::Vec<_> = regions
-        .get(&RegionId::ROOT)
-        .into_iter()
-        .flatten()
-        .map(|id| indexes[id].0)
-        .collect();
     // The root fragment may hold several nodes, text included.
+    let roots = std::mem::take(&mut regions[RegionId::ROOT.index() as usize]);
     if roots.is_empty() {
         return Err(LegacyReason::Structure.into());
     }
     Ok(NativeArtifact { nodes, roots })
+}
+
+/// Operands grouped by op in authored order: the program's own storage when
+/// the producer already emitted them by op, else a counting sort.
+fn by_op<'p, 'a>(
+    program: &'p Program<'a>,
+) -> Result<(Cow<'p, [Operand<'a>]>, std::vec::Vec<usize>)> {
+    let mut starts = std::vec![0_usize; program.ops.len() + 1];
+    for operand in &program.operands {
+        *starts
+            .get_mut(operand.op.index() as usize + 1)
+            .ok_or(AdmissionFailure::Invalid("operand op does not resolve"))? += 1;
+    }
+    for index in 1..starts.len() {
+        starts[index] += starts[index - 1];
+    }
+    let operands = if program.operands.is_sorted_by_key(|operand| operand.op) {
+        Cow::Borrowed(&program.operands[..])
+    } else {
+        let mut cursor = starts.clone();
+        let mut placed = program.operands.to_vec();
+        for operand in &program.operands {
+            let slot = &mut cursor[operand.op.index() as usize];
+            placed[*slot] = *operand;
+            *slot += 1;
+        }
+        Cow::Owned(placed)
+    };
+    Ok((operands, starts))
 }

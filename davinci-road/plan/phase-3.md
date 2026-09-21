@@ -127,6 +127,11 @@ _Component slice 2026-09-22:_ ordinary components with props, listeners and
 default slots, `<slot>` outlets with fallbacks, and root fragments/text are
 native; mounted traces register child components per backend and lane. Named
 and scoped slots, dynamic and built-in components stay `legacy.component`.
+_Single parse 2026-09-22:_ admitted sources skip the legacy parser; markup it
+diagnoses (CDATA, self-closed or implicitly closed elements, empty modifiers)
+stays legacy, checked over fixture prefixes and deletions. With dense admission
+tables the native route is 13% faster than the retained lane on expressions
+and 3% on components, 7–9% slower on text, events and control flow.
 
 **P3-7 VDOM patch flags from facts.** `patch_flag.rs` inference replaced by
 lattice-fact consumption; flags become explicit S3 decisions (or S2→S4

@@ -3,36 +3,40 @@
 //! static `class` merges into its `:class` exactly as the retained lane does,
 //! and component/outlet bindings become props in authored order.
 
-use vize_carton::{FxHashMap, FxHashSet};
+use vize_carton::FxHashSet;
 use vize_s3::op::{OpId, RegionId};
 
 use super::super::{Binding, BindingKind, Content, Node, Prop};
-use super::{Result, component::component_prop};
+use super::{Result, Slots, component::component_prop};
 use crate::s3::{AdmissionFailure, LegacyReason};
 
 type Pending<'a> = (OpId, RegionId, u32, Binding<'a>);
 
 pub(super) fn bindings<'a>(
     nodes: &mut [Node<'a>],
-    indexes: &FxHashMap<OpId, (usize, RegionId)>,
+    slots: &Slots,
     parents: &[Option<usize>],
     bindings: std::vec::Vec<Pending<'a>>,
 ) -> Result<()> {
+    // Names already bound per native node: static attributes and props first.
     let mut names = FxHashSet::default();
-    for (id, (index, _)) in indexes {
-        let keys: std::vec::Vec<&str> = match &nodes[*index].content {
+    for (index, node) in nodes.iter().enumerate() {
+        match &node.content {
             Content::Element { attributes, .. } => {
-                attributes.iter().map(|(name, _)| *name).collect()
+                names.extend((attributes.iter()).map(|(name, _)| (index, BindingKind::Prop, *name)))
             }
             Content::Component { props, .. } | Content::Outlet { props, .. } => {
-                props.iter().map(|prop| prop.key).collect()
+                names.extend(
+                    props
+                        .iter()
+                        .map(|prop| (index, BindingKind::Prop, prop.key)),
+                );
             }
-            _ => continue,
-        };
-        names.extend(keys.into_iter().map(|name| (*id, BindingKind::Prop, name)));
+            _ => {}
+        }
     }
     for (target, region, position, mut binding) in bindings {
-        let Some(&(index, target_region)) = indexes.get(&target) else {
+        let Some(&Some((index, target_region))) = slots.get(target.index() as usize) else {
             return Err(LegacyReason::Structure.into());
         };
         if region != target_region {
@@ -40,7 +44,7 @@ pub(super) fn bindings<'a>(
                 "binding target is outside its native region",
             ));
         }
-        let fresh = names.insert((target, binding.kind, binding.name));
+        let fresh = names.insert((index, binding.kind, binding.name));
         match &mut nodes[index].content {
             Content::Element { .. } => {}
             Content::Component { props, .. } => {

@@ -42,7 +42,7 @@ fn unsupported_component_shapes_select_exact_legacy_reasons() {
             Element,
         ),
         (r#"<component :is="view" />"#, Component),
-        (r#"<Teleport to="body"><div /></Teleport>"#, Component),
+        (r#"<Teleport to="body"><div></div></Teleport>"#, Component),
         (r#"<KeepAlive><MyComp /></KeepAlive>"#, Component),
         (r#"<MyComp @change.once="save" />"#, Component),
         (r#"<MyComp :key="id" />"#, Component),

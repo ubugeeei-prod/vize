@@ -183,28 +183,31 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
     let allocator = Allocator::new();
     for source in [
         "<component :is=\"view\" />",
-        "<template v-if=\"ok\"><div /><div /></template>",
-        "<div v-for=\"x in (xs as any)\" />",
+        "<template v-if=\"ok\"><div></div><div></div></template>",
+        "<div v-for=\"x in (xs as any)\"></div>",
         "<div>{{ one as number }}</div>",
         "<div v-pre>{{ literal }}</div>",
-        "<div v-once />",
+        "<div v-once></div>",
         "<input v-model=\"text\" />",
         "<input v-model.lazy=\"text\" />",
         "<input type=\"checkbox\" v-model=\"checked\" />",
-        "<div v-cloak />",
-        "<div :[key]=\"value\" />",
-        "<div ref=\"node\" />",
-        "<div :style=\"s\" style=\"color: red\" />",
-        "<div @click=\"a++; b++\" />",
-        "<button @click=\"$event\" />",
+        "<div v-cloak></div>",
+        "<div :[key]=\"value\"></div>",
+        "<div ref=\"node\"></div>",
+        "<div :style=\"s\" style=\"color: red\"></div>",
+        "<div @click=\"a++; b++\"></div>",
+        "<button @click=\"$event\"></button>",
         "<svg><circle /></svg>",
         "<table><tr><td>{{ value }}</td></tr></table>",
         "<div>&#10; text</div>",
-        "<div title=\"&quot;\" />",
+        "<div title=\"&quot;\"></div>",
         "<Comp v-slot=\"p\">{{ p }}</Comp>",
-        "<Teleport to=\"body\"><div /></Teleport>",
-        "<div v-bind=\"props\" />",
+        "<Teleport to=\"body\"><div></div></Teleport>",
+        "<div v-bind=\"props\"></div>",
         "<pre> text </pre>",
+        // The legacy parser reports invalid self-closing HTML elements.
+        "<div />",
+        "<span v-if=\"ok\" />",
     ] {
         assert!(
             matches!(
@@ -243,7 +246,7 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
 #[test]
 fn native_event_families_are_admitted() {
     let allocator = Allocator::new();
-    let source = "<div @focus=\"save\" @change.once=\"save\" @custom-event.capture=\"save\" />";
+    let source = "<div @focus=\"save\" @change.once=\"save\" @custom-event.capture=\"save\"></div>";
     let status = lower_source_for_vapor(&allocator, source, options());
     assert!(
         matches!(status, VaporS3BridgeStatus::Accepted(_)),
@@ -256,7 +259,7 @@ fn native_event_families_are_admitted() {
         "keydown.enter.stop",
         "click.once.capture.passive",
     ] {
-        let source = vize_carton::cstr!("<div @{directive}=\"save\" />");
+        let source = vize_carton::cstr!("<div @{directive}=\"save\"></div>");
         let status = lower_source_for_vapor(&allocator, &source, options());
         assert!(
             matches!(status, VaporS3BridgeStatus::Accepted(_)),
@@ -302,3 +305,4 @@ mod control;
 
 mod attributes;
 mod components;
+mod parser_agreement;

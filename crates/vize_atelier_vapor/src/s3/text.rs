@@ -65,7 +65,7 @@ pub(super) fn capture<'a>(
                 .parts
                 .windows(2)
                 .any(|pair| pair[0].span.end != pair[1].span.start)
-            || vize_s1_to_s2::lower::rebuild_source(&parts.parts) != value.text
+            || !rebuilds(&parts.parts, value.text)
         {
             return Err(AdmissionFailure::Invalid("compound text parts are stale"));
         }
@@ -93,6 +93,25 @@ pub(super) fn capture<'a>(
     }
     s3.program.operands = operands;
     Ok(())
+}
+
+/// `vize_s1_to_s2::lower::rebuild_source(parts) == text`, without building
+/// the rebuilt string.
+fn rebuilds(parts: &[vize_s1_to_s2::lower::TextPart], mut text: &str) -> bool {
+    for part in parts {
+        let rest = if part.dynamic {
+            text.strip_prefix("{{ ")
+                .and_then(|rest| rest.strip_prefix(part.text.as_str()))
+                .and_then(|rest| rest.strip_prefix(" }}"))
+        } else {
+            text.strip_prefix(part.text.as_str())
+        };
+        let Some(rest) = rest else {
+            return false;
+        };
+        text = rest;
+    }
+    text.is_empty()
 }
 
 #[cfg(test)]
