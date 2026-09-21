@@ -79,6 +79,7 @@ pub enum SsrStringSegmentKind {
     StaticAttribute,
     DynamicAttribute,
     Component,
+    CloseComponent,
     Text,
     DynamicText,
     RawHtml,
@@ -91,6 +92,7 @@ pub enum SsrStringSegmentKind {
     For,
     CloseFor,
     SlotOutlet,
+    CloseSlot,
     Directive,
 }
 

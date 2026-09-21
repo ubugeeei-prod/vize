@@ -150,8 +150,18 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let mut depth = 0usize;
         while let Some(segment) = self.segments.get(self.pos) {
             match segment.kind {
-                Kind::OpenElement | Kind::If | Kind::Branch | Kind::For => depth += 1,
-                Kind::CloseElement | Kind::CloseIf | Kind::CloseBranch | Kind::CloseFor => {
+                Kind::OpenElement
+                | Kind::If
+                | Kind::Branch
+                | Kind::For
+                | Kind::Component
+                | Kind::SlotOutlet => depth += 1,
+                Kind::CloseElement
+                | Kind::CloseIf
+                | Kind::CloseBranch
+                | Kind::CloseFor
+                | Kind::CloseComponent
+                | Kind::CloseSlot => {
                     if depth == 0 {
                         return Ok(());
                     }

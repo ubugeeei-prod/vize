@@ -8,10 +8,13 @@
 //! region segments) is a rejection, never a guess.
 
 mod attrs;
+mod component;
+mod component_props;
 mod control;
 mod element;
 mod fallthrough;
 mod model;
+mod slot_outlet;
 mod text;
 
 use vize_davinci::side_table::SideTable;
@@ -111,17 +114,27 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         for (offset, segment) in self.segments[from..].iter().enumerate() {
             let top = depth == 0;
             match segment.kind {
-                Kind::OpenElement | Kind::If | Kind::For | Kind::Branch => {
+                Kind::OpenElement
+                | Kind::If
+                | Kind::For
+                | Kind::Branch
+                | Kind::Component
+                | Kind::SlotOutlet => {
                     if top {
                         shape.legacy_children += 1;
                         shape.non_text = true;
-                        if matches!(segment.kind, Kind::OpenElement | Kind::If) {
+                        if !matches!(segment.kind, Kind::For | Kind::Branch) {
                             shape.candidates.push(from + offset);
                         }
                     }
                     depth += 1;
                 }
-                Kind::CloseElement | Kind::CloseIf | Kind::CloseFor | Kind::CloseBranch => {
+                Kind::CloseElement
+                | Kind::CloseIf
+                | Kind::CloseFor
+                | Kind::CloseBranch
+                | Kind::CloseComponent
+                | Kind::CloseSlot => {
                     if top {
                         break;
                     }
@@ -157,8 +170,22 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         while let Some(segment) = self.segments.get(self.pos).copied() {
             let inherit = fallthrough == Some(self.pos);
             match (segment.kind, segment.source) {
-                (Kind::CloseElement | Kind::CloseIf | Kind::CloseFor | Kind::CloseBranch, _) => {
-                    break;
+                (
+                    Kind::CloseElement
+                    | Kind::CloseIf
+                    | Kind::CloseFor
+                    | Kind::CloseBranch
+                    | Kind::CloseComponent
+                    | Kind::CloseSlot,
+                    _,
+                ) => break,
+                (Kind::Component, Source::Component(component)) => {
+                    vize_s0::ensure_sufficient_stack(|| {
+                        self.component(segment, component, inherit)
+                    })?;
+                }
+                (Kind::SlotOutlet, Source::Slot(slot)) => {
+                    vize_s0::ensure_sufficient_stack(|| self.slot_outlet(segment, slot))?;
                 }
                 (Kind::OpenElement, Source::Element(element)) => {
                     vize_s0::ensure_sufficient_stack(|| self.element(segment, element, inherit))?;
@@ -181,9 +208,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                     let disable = flags.disable_nested_fragments;
                     vize_s0::ensure_sufficient_stack(|| self.for_loop(segment, for_op, disable))?;
                 }
-                (Kind::Comment | Kind::Component | Kind::SlotOutlet, _) => {
-                    return Err(LegacyReason::Operation.into());
-                }
+                (Kind::Comment, _) => return Err(LegacyReason::Operation.into()),
                 _ => {
                     return Err(AdmissionFailure::Invalid(
                         "string plan places a segment outside its region",

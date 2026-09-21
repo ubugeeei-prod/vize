@@ -28,6 +28,13 @@ pub(crate) struct VNodePropEntry {
     dynamic: bool,
 }
 
+impl VNodePropEntry {
+    /// Whether the key is a computed (`[key || ""]`) property.
+    pub(crate) const fn dynamic(&self) -> bool {
+        self.dynamic
+    }
+}
+
 /// Borrowed or collected children used by SSR component slot codegen.
 pub(super) enum ComponentSlotChildren<'node, 'a> {
     Slice(&'node [TemplateChildNode<'a>]),

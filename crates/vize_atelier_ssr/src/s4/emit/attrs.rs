@@ -40,7 +40,6 @@ pub(super) fn admit(attached: &Attached<'_, '_>, owner_fact: u32, tag: &str) -> 
         match (segment.kind, segment.source) {
             (Kind::StaticAttribute, Source::Attribute(_)) if segment.fact == owner_fact => {}
             (_, Source::Binding(binding)) => {
-                require_dynamic(segment)?;
                 match binding {
                     s2::BindingOp::Bind(_) => {
                         bind(binding)?;
@@ -52,6 +51,7 @@ pub(super) fn admit(attached: &Attached<'_, '_>, owner_fact: u32, tag: &str) -> 
                     s2::BindingOp::VueText(text) => admit_value(text.value.as_ref())?,
                     _ => return Err(LegacyReason::Binding.into()),
                 }
+                require_dynamic(segment)?;
             }
             _ => {
                 return Err(AdmissionFailure::Invalid(

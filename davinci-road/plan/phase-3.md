@@ -149,9 +149,13 @@ _Fourth slice 2026-09-21:_ `v-if` chains, `v-for` loops, `v-show`, `v-html`,
 segments, legacy fragment and fallthrough rules, `v-for` scope strips).
 _Fifth slice 2026-09-21:_ the feature-gated SSR corpus gate compares both
 emitters on every SFC template (smoke sweep of the checkout in CI: 717
-compared, 274 plan-emitted, 0 divergences). Components, slots, custom
-directives, a canonical Real Project Matrix run, and the legacy walker
-deletion remain before P3-8 closes.
+compared, 274 plan-emitted, 0 divergences).
+_Sixth slice 2026-09-22:_ components without slot content, `<Teleport>`,
+`<Suspense>`, transparent built-ins, and `<slot>` outlets emit from the plan
+(checkout smoke: 494 of 717 plan-emitted, 0 divergences). Component slot
+content and its VNode fallback, dynamic components, custom directives, a
+canonical Real Project Matrix run, and the legacy walker deletion remain
+before P3-8 closes.
 
 **P3-9 S4 emitter + source maps.** Structured span-carrying emission document
 replaces `CodegenContext.code` string appends across dom/vapor/ssr; one

@@ -6,6 +6,7 @@
 //! plan*, so an accidental legacy fallback cannot make the battery vacuous;
 //! refused fixtures pin that the selector keeps them on the legacy lane.
 
+mod component_fixtures;
 mod control_fixtures;
 mod fixtures;
 
@@ -124,7 +125,11 @@ fn selection(
 #[test]
 fn admitted_fixtures_emit_from_the_plan_with_legacy_byte_parity() {
     for (set, options, experimental) in option_sets() {
-        for (name, source) in fixtures::ADMITTED.iter().chain(control_fixtures::ADMITTED) {
+        for (name, source) in fixtures::ADMITTED
+            .iter()
+            .chain(control_fixtures::ADMITTED)
+            .chain(component_fixtures::ADMITTED)
+        {
             let context = std::format!("{set}/{name}: {source}");
             let selected = selection(source, &options, &experimental);
             assert!(
