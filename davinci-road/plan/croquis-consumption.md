@@ -293,7 +293,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `SfcError`                                   | `vize_patina`       |     1 |     2 |
 | `SfcParseOptions`                            | `vize`              |     9 |    12 |
 | `SfcParseOptions`                            | `vize_atelier_sfc`  |    14 |   105 |
-| `SfcParseOptions`                            | `vize_canon`        |    11 |    17 |
+| `SfcParseOptions`                            | `vize_canon`        |    12 |    18 |
 | `SfcParseOptions`                            | `vize_curator`      |     3 |     3 |
 | `SfcParseOptions`                            | `vize_glyph`        |     1 |     1 |
 | `SfcParseOptions`                            | `vize_maestro`      |     1 |     1 |
