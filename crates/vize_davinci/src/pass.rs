@@ -60,8 +60,9 @@ pub use canonical::{Canonical, Raw};
 pub use fusion::{FusionGroup, Pipeline};
 pub use kind::{Fusability, PassKind};
 pub use observer::{
-    AnalysisEvent, BudgetObserver, FailEvent, NoObserver, Pair, PassEvent, PassFailure,
-    PassObserver, TimingObserver, run_pipeline,
+    AnalysisEvent, BudgetObserver, FailEvent, NoObserver, NoRemarks, Pair, PassEvent, PassFailure,
+    PassObserver, PassRemarks, Remark, RemarkArg, RemarkCollector, RemarkCounter, RemarkKind,
+    RemarkSink, RemarkValue, TimingObserver, run_pipeline, run_pipeline_remarked,
 };
 pub use pipeline::{PipelineSyntaxError, parse_pipelines, print_pipelines};
 pub use preserved::{AnalysisId, MAX_ANALYSES, Preserved};

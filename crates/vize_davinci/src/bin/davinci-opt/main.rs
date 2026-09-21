@@ -6,7 +6,7 @@
 //! davinci-opt --roundtrip <file> [--stage croquis]
 //! davinci-opt --pipeline "<syntax>" [--stage <stage>]
 //!             [--folio-dir <dir> [--folio-after-change]]
-//!             [--timing-json <path>] < folio
+//!             [--timing-json <path>] [--remarks <path>] < folio
 //! ```
 //!
 //! `--roundtrip` reads `<file>`, parses it with the selected stage's folio,
@@ -37,9 +37,17 @@
 //! (`davinci-road/plan/spolvero-feed.schema.json`), written even when the
 //! hash gate emitted zero pages.
 //!
-//! Stages: `croquis` (default, the P0-10 page) and `budget-observer` (the
-//! first `#[derive(Folio)]` page, P2-4). The binary is host-side and may use
-//! `std`; the `vize_davinci` library stays `no_std + alloc`.
+//! `--remarks <path>` (P3-13) writes the run's optimization remarks - every
+//! remark a pass emitted through the observer channel, in canonical order -
+//! as the committed JSON document
+//! (`davinci-road/plan/remarks.schema.json`). With today's catalogue-free
+//! no-op bodies the list is empty, and the file says so rather than being
+//! absent (the `--folio-after-change` precedent).
+//!
+//! Stages: `croquis` (default, the P0-10 page), `budget-observer` (the
+//! first `#[derive(Folio)]` page, P2-4) and `remarks` (the P3-13 remark
+//! page). The binary is host-side and may use `std`; the `vize_davinci`
+//! library stays `no_std + alloc`.
 
 mod args;
 mod export;
@@ -49,17 +57,18 @@ use std::process::ExitCode;
 use args::{Args, Mode, parse_args};
 
 use vize_davinci::folio::dump::FolioDump;
+use vize_davinci::folio::remarks::RemarkLog;
 use vize_davinci::folio::{Folio, FolioMode, croquis::CroquisFolio};
 use vize_davinci::pass::{
-    BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, TimingObserver,
-    parse_pipelines, pipeline::PipelineSpec, print_pipelines, run_pipeline,
+    BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, RemarkCollector,
+    TimingObserver, parse_pipelines, pipeline::PipelineSpec, print_pipelines, run_pipeline,
 };
 use vize_s0::String;
 
-const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] < folio";
+const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] [--remarks <path>] < folio";
 
 /// The stage list every stage-related message reports, alphabetical.
-const STAGES: &str = "budget-observer, croquis";
+const STAGES: &str = "budget-observer, croquis, remarks";
 
 /// First line (1-based) at which the two texts differ, for the mismatch
 /// report.
@@ -91,6 +100,7 @@ fn stage_reprint(stage: &str, input: &str) -> Result<String, StageError> {
     match stage {
         "croquis" => reprint::<CroquisFolio>(input),
         "budget-observer" => reprint::<BudgetObserver>(input),
+        "remarks" => reprint::<RemarkLog>(input),
         _ => Err(StageError::UnknownStage),
     }
 }
@@ -208,7 +218,13 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
     if let Some(dump) = dump.as_mut() {
         dump.seed(printed.as_str());
     }
-    let mut observers = Pair(TimingObserver::new(), BudgetObserver::new());
+    // The remark collector rides the same observer composition as timing and
+    // budget: remarks reach it through the pass manager's channel, never a
+    // side table.
+    let mut observers = Pair(
+        Pair(TimingObserver::new(), BudgetObserver::new()),
+        RemarkCollector::new(),
+    );
     for plan in build_plans(&segments) {
         run_pipeline(&plan, &mut observers, |event| {
             if let Some(dump) = dump.as_mut() {
@@ -218,11 +234,12 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
         })
         .expect("a no-op pass body cannot fail");
     }
+    let Pair(Pair(_, budget), remarks) = observers;
     eprintln!(
         "davinci-opt: pipeline {}: walks={} passes={}",
         print_pipelines(&segments),
-        observers.1.walks,
-        observers.1.passes,
+        budget.walks,
+        budget.passes,
     );
     if let (Some(dir), Some(dump)) = (args.folio_dir.as_deref(), dump.as_ref()) {
         if let Err(message) = export::write_dump(dir, dump) {
@@ -242,6 +259,18 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
             eprintln!("davinci-opt: {message}");
             return ExitCode::from(1);
         }
+    }
+    if let Some(path) = args.remarks.as_deref() {
+        let log = RemarkLog::new(remarks.finish());
+        if let Err(message) = export::write_remarks(path, &log) {
+            eprintln!("davinci-opt: {message}");
+            return ExitCode::from(1);
+        }
+        eprintln!(
+            "davinci-opt: remarks {}: {} remark(s)",
+            path.display(),
+            log.remarks.len(),
+        );
     }
     print!("{printed}");
     ExitCode::SUCCESS

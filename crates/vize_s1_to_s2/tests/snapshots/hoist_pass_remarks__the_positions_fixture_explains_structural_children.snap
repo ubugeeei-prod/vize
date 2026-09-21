@@ -1,0 +1,17 @@
+---
+source: crates/vize_s1_to_s2/tests/hoist_pass_remarks.rs
+expression: "$crate :: folio :: Folio ::\nprint_to_string(& run.remarks, $crate :: folio :: FolioMode :: Full,)"
+---
+[remarks]
+
+[remarks.entries]
+s2.hoist-static missed static-props @0:235 tag="article" blocker="binding" op="vue.directive"
+s2.hoist-static missed static-subtree @0:235 tag="article" blocker="binding" op="vue.directive"
+s2.hoist-static applied static-subtree @27:58 tag="header"
+s2.hoist-static applied static-subtree @35:49 tag="em"
+s2.hoist-static applied static-subtree @84:93 tag="p"
+s2.hoist-static applied static-subtree @107:148 tag="li"
+s2.hoist-static applied static-subtree @133:143 tag="u"
+s2.hoist-static missed static-props @157:192 tag="template" blocker="binding" op="ui.slot-content"
+s2.hoist-static missed static-subtree @157:192 tag="template" blocker="binding" op="ui.slot-content"
+s2.hoist-static applied static-subtree @173:181 tag="s"

@@ -1,0 +1,34 @@
+---
+source: crates/vize_s1_to_s2/tests/hoist_pass_remarks.rs
+expression: "$crate :: folio :: Folio ::\nprint_to_string(& run.remarks, $crate :: folio :: FolioMode :: Full,)"
+---
+[remarks]
+
+[remarks.entries]
+s2.hoist-static applied static-props @0:537 tag="main"
+s2.hoist-static missed static-subtree @0:537 tag="main" blocker="child" op="ui.element"
+s2.hoist-static applied static-props @19:67 tag="svg"
+s2.hoist-static missed static-subtree @19:67 tag="svg" blocker="svg-directive"
+s2.hoist-static applied static-subtree @37:61 tag="rect"
+s2.hoist-static missed static-props @70:98 tag="p" blocker="ref-attribute"
+s2.hoist-static missed static-subtree @70:98 tag="p" blocker="ref-attribute"
+s2.hoist-static missed static-props @101:132 tag="button" blocker="binding" op="ui.on"
+s2.hoist-static missed static-subtree @101:132 tag="button" blocker="binding" op="ui.on"
+s2.hoist-static missed static-props @135:166 tag="a" blocker="binding" op="ui.bind" rule="dynamic-name"
+s2.hoist-static missed static-subtree @135:166 tag="a" blocker="binding" op="ui.bind" rule="dynamic-name"
+s2.hoist-static missed static-props @169:206 tag="span" blocker="binding" op="ui.bind" rule="modifier"
+s2.hoist-static missed static-subtree @169:206 tag="span" blocker="binding" op="ui.bind" rule="modifier"
+s2.hoist-static missed static-props @209:241 tag="i" blocker="binding" op="ui.bind" rule="reserved-key"
+s2.hoist-static missed static-subtree @209:241 tag="i" blocker="binding" op="ui.bind" rule="reserved-key"
+s2.hoist-static missed static-props @244:278 tag="em" blocker="binding" op="ui.bind" rule="non-constant"
+s2.hoist-static missed static-subtree @244:278 tag="em" blocker="binding" op="ui.bind" rule="non-constant"
+s2.hoist-static missed static-props @281:313 tag="del" blocker="binding" op="ui.bind" rule="no-value"
+s2.hoist-static missed static-subtree @281:313 tag="del" blocker="binding" op="ui.bind" rule="no-value"
+s2.hoist-static applied static-subtree @316:363 tag="b"
+s2.hoist-static missed static-subtree @366:394 tag="section" blocker="child" op="ui.component"
+s2.hoist-static missed static-subtree @397:440 tag="ul" blocker="child" op="ui.for"
+s2.hoist-static applied static-subtree @401:435 tag="li"
+s2.hoist-static applied static-props @443:475 tag="h2"
+s2.hoist-static missed static-subtree @443:475 tag="h2" blocker="child" op="ui.interpolation"
+s2.hoist-static applied static-props @478:495 component="Card"
+s2.hoist-static missed static-props @498:529 component="Card" blocker="binding" op="ui.on"

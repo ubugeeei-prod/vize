@@ -73,7 +73,7 @@
 //! and ends at the same accounting assertion. Every fact leaves a
 //! provenance record (`pass.hoist-static.fact`).
 
-use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
+use vize_davinci::pass::{Fusability, NoRemarks, PassDesc, PassKind, Preserved, RemarkSink};
 use vize_davinci::side_table::SideTable;
 use vize_s2::op::Namespace;
 
@@ -82,8 +82,10 @@ use crate::lower::Lowered;
 
 mod consts;
 mod lattice;
+mod remarks;
 
 pub use consts::constant_for_hoist;
+pub use remarks::{STATIC_PROPS, STATIC_SUBTREE};
 
 /// The pass name in pipeline strings and folio pages.
 pub const NAME: &str = "hoist-static";
@@ -162,6 +164,22 @@ const _: () = assert!(core::mem::size_of::<StaticFacts>() == 5);
 /// never an input property.
 #[must_use]
 pub fn run(lowered: &mut Lowered<'_>) -> SideTable<StaticFacts> {
+    run_remarked(lowered, &mut NoRemarks)
+}
+
+/// [`run`], explaining each owner's hoist eligibility through `remarks`
+/// (the P3-13 vocabulary in `remarks.rs`). Under a detached sink
+/// ([`NoRemarks`], or a pass-manager channel whose observer consumes no
+/// remarks) this is [`run`] exactly: the remark path is compiled out.
+///
+/// # Panics
+///
+/// As [`run`].
+#[must_use]
+pub fn run_remarked<R: RemarkSink>(
+    lowered: &mut Lowered<'_>,
+    remarks: &mut R,
+) -> SideTable<StaticFacts> {
     let Lowered {
         root,
         op_count,
@@ -176,6 +194,7 @@ pub fn run(lowered: &mut Lowered<'_>) -> SideTable<StaticFacts> {
         Namespace::Html,
         provenance,
         &mut facts,
+        remarks,
     );
     assert_accounting(&walk, *op_count, NAME);
     facts

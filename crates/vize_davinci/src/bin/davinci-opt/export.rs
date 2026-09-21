@@ -1,5 +1,6 @@
-//! Host-side writers for `davinci-opt`'s P2-13 outputs: the `--folio-dir`
-//! page files and the `--timing-json` profile export.
+//! Host-side writers for `davinci-opt`'s P2-13 outputs - the `--folio-dir`
+//! page files and the `--timing-json` profile export - and the P3-13
+//! `--remarks` document.
 //!
 //! IO lives here and only here - the library half ([`FolioDump`], the timing
 //! observer) is `no_std + alloc` and produces data, and this module turns it
@@ -11,6 +12,7 @@ use std::path::Path;
 
 use vize_davinci::folio::dump::FolioDump;
 use vize_davinci::folio::feed::SpolveroFeed;
+use vize_davinci::folio::remarks::RemarkLog;
 use vize_s0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
 use vize_s0::{String, cstr};
 
@@ -63,4 +65,16 @@ pub fn write_timing(path: &Path) -> Result<(), String> {
     });
     std::fs::write(path, export.to_json().as_bytes())
         .map_err(|error| cstr!("--timing-json: cannot write {}: {error}", path.display()))
+}
+
+/// Write the run's remark log as the committed JSON document (P3-13,
+/// `davinci-road/plan/remarks.schema.json`). An empty log still writes a
+/// document with zero remarks, so "nothing was remarked" is observable.
+///
+/// # Errors
+///
+/// Returns a formatted message naming the path that could not be written.
+pub fn write_remarks(path: &Path, log: &RemarkLog) -> Result<(), String> {
+    std::fs::write(path, log.to_json("davinci-opt").as_bytes())
+        .map_err(|error| cstr!("--remarks: cannot write {}: {error}", path.display()))
 }

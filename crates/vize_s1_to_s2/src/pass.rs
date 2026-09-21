@@ -32,9 +32,11 @@
 //! passes in debug builds exactly as its module documents: `note` then
 //! `check` / `check_table` after every pass, so a broken invariant names
 //! the pass that broke it. Release builds make zero verifier calls
-//! (guardrail 5).
+//! (guardrail 5). Passes that make optimization decisions explain them
+//! through the same observer (P3-13 remarks, `hoist-static` first); an
+//! observer that consumes none compiles the explanation away.
 
-use vize_davinci::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline};
+use vize_davinci::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline_remarked};
 use vize_davinci::side_table::SideTable;
 
 use crate::lower::Lowered;
@@ -157,7 +159,7 @@ pub fn run_transform_with_profile<'a, O: PassObserver>(
     let mut verify = vize_s2::verify::VerifyObserver::new();
 
     let pipeline = plan::pipeline_for_profile(lowered.caps, lowered.features, profile);
-    let outcome = run_pipeline(&pipeline, observer, |event| {
+    let outcome = run_pipeline_remarked(&pipeline, observer, |event, remarks| {
         let name = event.desc().name;
         if name == legacy::DESC.name {
             facts.legacy = legacy::run(lowered);
@@ -169,7 +171,7 @@ pub fn run_transform_with_profile<'a, O: PassObserver>(
         } else if name == vmodel::DESC.name {
             facts.model_faults = vmodel::run(lowered);
         } else if name == hoist::DESC.name {
-            facts.static_facts = hoist::run(lowered);
+            facts.static_facts = hoist::run_remarked(lowered, remarks);
         } else {
             return Err(PassFailure::new("pipeline pass has no registered body"));
         }

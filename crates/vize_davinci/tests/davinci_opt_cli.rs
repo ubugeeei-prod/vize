@@ -16,7 +16,7 @@ use std::process::{Command, Output, Stdio};
 
 use vize_davinci::folio::{Folio, FolioMode, croquis::CroquisFolio};
 
-const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] < folio\n";
+const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] [--remarks <path>] < folio\n";
 
 fn run(args: &[&str], stdin: Option<&str>) -> Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_davinci-opt"));
@@ -143,7 +143,7 @@ fn an_unknown_stage_reports_the_available_stages() {
     assert_eq!(output.status.code(), Some(2));
     assert_eq!(
         stderr_of(&output),
-        "davinci-opt: unknown stage: bogus (available: budget-observer, croquis)\n"
+        "davinci-opt: unknown stage: bogus (available: budget-observer, croquis, remarks)\n"
     );
 }
 

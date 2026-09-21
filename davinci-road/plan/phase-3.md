@@ -193,6 +193,12 @@ differential traces remain open.
 **P3-13 Remarks.** `{pass, kind: applied|missed, span, args}` structured
 remarks through the observer; corpus remarks-diff job (TS-32); missed-remarks
 feed C-13. _Accept:_ remarks render in Spolvero (C-5); diff job wired.
+_Substrate slice 2026-09-21:_ see [P3-13 record](./phase-3-records/p3-13.md)
+and [remarks-format.md](./remarks-format.md): the observer's remark hook with
+a compile-time zero-cost gate (0 allocations detached, measured), the
+`[remarks]` page and schema-versioned JSON, `davinci-opt --remarks`, and
+`hoist-static` as the first emitter. The TS-32 corpus diff, feed/Spolvero
+rendering, and emitters outside the pass manager remain open.
 
 **P3-14 `folio-reduce`.** Interestingness-script driver (llvm-reduce model)
 with S1-subtree deletion vocabulary; oracles composable from diagnostics /

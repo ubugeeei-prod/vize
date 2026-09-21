@@ -158,7 +158,7 @@ impl SpolveroFeed {
 /// Append `text` as a JSON string literal: `"` and `\` escaped, control
 /// characters as `\n`/`\r`/`\t` or `\u00XX`, everything else (multi-byte
 /// UTF-8 included) verbatim - the minimal escape set RFC 8259 requires.
-fn push_json_string(out: &mut String, text: &str) {
+pub(crate) fn push_json_string(out: &mut String, text: &str) {
     out.push('"');
     for character in text.chars() {
         match character {

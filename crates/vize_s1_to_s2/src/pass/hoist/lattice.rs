@@ -5,14 +5,13 @@
 
 use alloc::vec::Vec as StdVec;
 
+use vize_davinci::pass::RemarkSink;
 use vize_davinci::side_table::SideTable;
 use vize_s0::{cstr, ensure_sufficient_stack};
-use vize_s2::op::{
-    Attribute, BindingOp, ComponentOp, DynamicName, ElementOp, Namespace, Op, SlotOp,
-};
+use vize_s2::op::{BindingOp, ComponentOp, ElementOp, Namespace, Op};
 use vize_s2::provenance::ProvenanceRecord;
 
-use super::consts::{constant_for_hoist, hoistable_binding};
+use super::consts::{props_all_hoistable, slot_props_static};
 use super::{StaticFacts, StaticLevel};
 use crate::pass::walk::PageWalk;
 
@@ -42,6 +41,11 @@ pub(super) struct RegionSummary {
     all_nested: bool,
     all_native: bool,
     child_count: usize,
+    /// The first child op forcing `NotStatic`, by mnemonic. Recorded only
+    /// when remarks are consumed (the blocker a remark names).
+    pub(super) first_dynamic: Option<&'static str>,
+    /// The first child op forcing `HasDynamicText`, likewise.
+    pub(super) first_dynamic_text: Option<&'static str>,
 }
 
 impl RegionSummary {
@@ -52,6 +56,21 @@ impl RegionSummary {
             all_nested: true,
             all_native: true,
             child_count: 0,
+            first_dynamic: None,
+            first_dynamic_text: None,
+        }
+    }
+
+    /// Remember the first child of each dynamic class, for the remark.
+    fn note_blocker(&mut self, contribution: &Contribution, mnemonic: &'static str) {
+        match contribution.level {
+            ChildLevel::Static => {}
+            ChildLevel::DynamicText => {
+                self.first_dynamic_text.get_or_insert(mnemonic);
+            }
+            ChildLevel::Dynamic => {
+                self.first_dynamic.get_or_insert(mnemonic);
+            }
         }
     }
 
@@ -71,23 +90,26 @@ impl RegionSummary {
 /// ids minted through the one shared arithmetic. `ns` is the region's
 /// markup-namespace context (components inherit it — they carry none
 /// of their own — and element children re-enter through the
-/// integration points, the lowering's own rule mirrored).
-pub(super) fn visit_region(
+/// integration points, the lowering's own rule mirrored). Remarks go to
+/// `remarks` ([`super::remarks`]); under a detached sink none is built.
+pub(super) fn visit_region<R: RemarkSink>(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
     ns: Namespace,
     provenance: &mut StdVec<ProvenanceRecord>,
     facts: &mut SideTable<StaticFacts>,
+    remarks: &mut R,
 ) -> RegionSummary {
-    ensure_sufficient_stack(|| visit_region_guarded(walk, ops, ns, provenance, facts))
+    ensure_sufficient_stack(|| visit_region_guarded(walk, ops, ns, provenance, facts, remarks))
 }
 
-fn visit_region_guarded(
+fn visit_region_guarded<R: RemarkSink>(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
     ns: Namespace,
     provenance: &mut StdVec<ProvenanceRecord>,
     facts: &mut SideTable<StaticFacts>,
+    remarks: &mut R,
 ) -> RegionSummary {
     let mut summary = RegionSummary::empty();
     for op in ops {
@@ -103,18 +125,32 @@ fn visit_region_guarded(
                     children_ns(element.namespace, element.tag),
                     provenance,
                     facts,
+                    remarks,
                 );
                 let fact = element_facts(element, &children);
                 publish(provenance, facts, id, "ui.element", element.span, fact);
+                if R::ENABLED {
+                    super::remarks::element(remarks, element, fact, &children);
+                }
                 element_contribution(element, fact)
             }
             Op::Component(component) => {
                 for _ in component.bindings.iter() {
                     let _ = walk.mint();
                 }
-                let children = visit_region(walk, &component.children.ops, ns, provenance, facts);
+                let children = visit_region(
+                    walk,
+                    &component.children.ops,
+                    ns,
+                    provenance,
+                    facts,
+                    remarks,
+                );
                 let fact = component_facts(component, ns, &children);
                 publish(provenance, facts, id, "ui.component", component.span, fact);
+                if R::ENABLED {
+                    super::remarks::component(remarks, component, fact);
+                }
                 // The legacy lattice: a component child is dynamic, is
                 // never a static nested child, and breaks the
                 // native-descendants predicate.
@@ -141,7 +177,7 @@ fn visit_region_guarded(
             },
             Op::If(if_op) => {
                 for branch in if_op.branches.iter() {
-                    visit_region(walk, &branch.region.ops, ns, provenance, facts);
+                    visit_region(walk, &branch.region.ops, ns, provenance, facts, remarks);
                 }
                 Contribution {
                     level: ChildLevel::Dynamic,
@@ -150,7 +186,7 @@ fn visit_region_guarded(
                 }
             }
             Op::For(for_op) => {
-                visit_region(walk, &for_op.region.ops, ns, provenance, facts);
+                visit_region(walk, &for_op.region.ops, ns, provenance, facts, remarks);
                 Contribution {
                     level: ChildLevel::Dynamic,
                     nested: false,
@@ -161,7 +197,7 @@ fn visit_region_guarded(
                 for _ in slot.bindings.iter() {
                     let _ = walk.mint();
                 }
-                visit_region(walk, &slot.fallback.ops, ns, provenance, facts);
+                visit_region(walk, &slot.fallback.ops, ns, provenance, facts, remarks);
                 // An outlet is dynamic and non-native, but counts as a
                 // static nested child when its whole props surface is
                 // static (the shipped `is_plain_static_nested_element`
@@ -173,6 +209,9 @@ fn visit_region_guarded(
                 }
             }
         };
+        if R::ENABLED {
+            summary.note_blocker(&contribution, op.mnemonic());
+        }
         summary.absorb(&contribution);
     }
     summary
@@ -257,24 +296,6 @@ fn element_contribution(element: &ElementOp<'_>, fact: StaticFacts) -> Contribut
         // still counts native, mirrored.
         native: !slot_carrier && fact.native_descendants,
     }
-}
-
-/// `props_are_static_attrs` / the prop half of `has_static_props`:
-/// every attribute except `ref`, every binding through the mirrored
-/// `is_hoistable_static_prop` rule.
-fn props_all_hoistable(attributes: &[Attribute<'_>], bindings: &[BindingOp<'_>]) -> bool {
-    attributes.iter().all(|attribute| attribute.name != "ref")
-        && bindings.iter().all(hoistable_binding)
-}
-
-/// The outlet's static-nested-child rule: its props surface (the
-/// separated `name` position included) must be fully static.
-fn slot_props_static(slot: &SlotOp<'_>) -> bool {
-    let name_static = match &slot.name {
-        DynamicName::Static(_) => true,
-        DynamicName::Dynamic(expr) => constant_for_hoist(expr),
-    };
-    name_static && props_all_hoistable(&slot.attributes, &slot.bindings)
 }
 
 /// Publish one owner's fact with its provenance record.

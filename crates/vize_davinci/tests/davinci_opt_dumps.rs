@@ -7,7 +7,7 @@ use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
-const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] < folio\n";
+const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] [--remarks <path>] < folio\n";
 
 /// A canonical `[budget-observer]` page - the smallest committed-format
 /// artifact a pipeline can run over.
@@ -141,6 +141,14 @@ fn the_dump_and_timing_flags_are_pipeline_mode_only() {
         (
             &["--roundtrip", "x.folio", "--timing-json", "t.json"][..],
             "--timing-json requires --pipeline",
+        ),
+        (
+            &["--roundtrip", "x.folio", "--remarks", "r.json"][..],
+            "--remarks requires --pipeline",
+        ),
+        (
+            &["--pipeline", "s2()", "--remarks"][..],
+            "--remarks needs a file argument",
         ),
         (
             &["--pipeline", "s2()", "--folio-after-change"][..],

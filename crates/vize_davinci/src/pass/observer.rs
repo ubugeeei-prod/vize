@@ -1,4 +1,5 @@
-//! [`PassObserver`] — the seven hooks a pipeline run reports through.
+//! [`PassObserver`] — the seven hooks a pipeline run reports through, plus
+//! the remark hook passes explain their decisions through (P3-13).
 //!
 //! # Fused groups are reported as one walk
 //!
@@ -25,6 +26,10 @@
 //! per node) — there is no check at all. The `davinci` bench pair pins it:
 //! the observer-absent case is **alloc-identical** to the un-observed one.
 //!
+//! The remark hook keeps the same property: [`PassObserver::REMARKS`] is an
+//! associated const, so a pass under an observer that does not consume
+//! remarks compiles its whole remark path away ([`remark`]'s module docs).
+//!
 //! No `dyn PassObserver` is provided on purpose. A trait object would put a
 //! vtable call on the per-pass path and make the zero-cost claim untestable;
 //! a caller that genuinely needs runtime choice composes with an enum
@@ -37,7 +42,10 @@ pub mod timing;
 
 pub use budget::BudgetObserver;
 pub use folio::FolioObserver;
-pub use remark::{Remark, RemarkSink};
+pub use remark::{
+    NoRemarks, PassRemarks, RecordedArg, RecordedRemark, Remark, RemarkArg, RemarkArgValue,
+    RemarkCollector, RemarkCounter, RemarkKind, RemarkSink, RemarkValue,
+};
 pub use timing::TimingObserver;
 
 use super::{FusionGroup, PassDesc, Pipeline};
@@ -118,11 +126,17 @@ pub struct FailEvent<'a> {
     pub reason: &'static str,
 }
 
-/// The seven hooks a pipeline run reports through.
+/// The seven pipeline hooks (MLIR's instrumentation set) plus the remark
+/// hook (P3-13).
 ///
 /// Every method has an empty default body, so an observer implements only what
 /// it consumes and gaining a hook never breaks an implementation.
 pub trait PassObserver {
+    /// Whether this observer consumes remarks. A constant, so a pass running
+    /// under an observer that leaves it `false` builds no remark at all
+    /// ([`RemarkSink::ENABLED`]).
+    const REMARKS: bool = false;
+
     /// The run is about to start.
     fn before_pipeline(&mut self, _pipeline: &Pipeline) {}
     /// The run finished without failing.
@@ -141,6 +155,10 @@ pub trait PassObserver {
     /// did not finish, and an observer that saw both could not tell the two
     /// apart.
     fn on_fail(&mut self, _event: &FailEvent<'_>) {}
+    /// The running pass emitted a remark about its own decision. Fires
+    /// between that pass's `before_pass` and `after_pass`, and only when
+    /// [`REMARKS`](Self::REMARKS) is `true`.
+    fn on_remark(&mut self, _event: &PassEvent<'_>, _remark: &Remark<'_>) {}
 }
 
 /// The observer that observes nothing.
@@ -161,6 +179,8 @@ impl PassObserver for NoObserver {}
 pub struct Pair<A, B>(pub A, pub B);
 
 impl<A: PassObserver, B: PassObserver> PassObserver for Pair<A, B> {
+    const REMARKS: bool = A::REMARKS || B::REMARKS;
+
     fn before_pipeline(&mut self, pipeline: &Pipeline) {
         self.0.before_pipeline(pipeline);
         self.1.before_pipeline(pipeline);
@@ -189,6 +209,14 @@ impl<A: PassObserver, B: PassObserver> PassObserver for Pair<A, B> {
         self.0.on_fail(event);
         self.1.on_fail(event);
     }
+    fn on_remark(&mut self, event: &PassEvent<'_>, remark: &Remark<'_>) {
+        if A::REMARKS {
+            self.0.on_remark(event, remark);
+        }
+        if B::REMARKS {
+            self.1.on_remark(event, remark);
+        }
+    }
 }
 
 /// Why a pipeline run stopped.
@@ -213,7 +241,9 @@ impl PassFailure {
 /// over until P2-5a, and no catalogue binding a name to an implementation
 /// until P2-9 — so the *plan* is executed here and the bodies are the
 /// caller's. That is also what makes the zero-cost claim measurable before any
-/// real pass exists.
+/// real pass exists. A body that explains its decisions runs under
+/// [`run_pipeline_remarked`] instead; this driver is that one with the remark
+/// channel left unused.
 ///
 /// # Errors
 ///
@@ -227,6 +257,26 @@ pub fn run_pipeline<O, F>(
 where
     O: PassObserver,
     F: FnMut(&PassEvent<'_>) -> Result<(), PassFailure>,
+{
+    run_pipeline_remarked(pipeline, observer, |event, _remarks| step(event))
+}
+
+/// [`run_pipeline`] whose step also receives the running pass's remark
+/// channel ([`PassRemarks`]): a remark emitted there reaches
+/// [`PassObserver::on_remark`] attributed to that pass, between its
+/// `before_pass` and `after_pass`.
+///
+/// # Errors
+///
+/// As [`run_pipeline`].
+pub fn run_pipeline_remarked<O, F>(
+    pipeline: &Pipeline,
+    observer: &mut O,
+    mut step: F,
+) -> Result<(), PassFailure>
+where
+    O: PassObserver,
+    F: FnMut(&PassEvent<'_>, &mut PassRemarks<'_, '_, O>) -> Result<(), PassFailure>,
 {
     observer.before_pipeline(pipeline);
 
@@ -245,7 +295,8 @@ where
                 pass_index,
             };
             observer.before_pass(&event);
-            match step(&event) {
+            let outcome = step(&event, &mut PassRemarks::new(observer, event));
+            match outcome {
                 Ok(()) => observer.after_pass(&event),
                 Err(failure) => {
                     observer.on_fail(&FailEvent {

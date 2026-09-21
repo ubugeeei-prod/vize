@@ -50,7 +50,7 @@ use oxc_ast::ast as js;
 use oxc_ast_visit::Visit;
 use vize_s0::camelize;
 use vize_s2::expr::ExprRef;
-use vize_s2::op::{BindingOp, DynamicName};
+use vize_s2::op::{Attribute, BindingOp, DynamicName, SlotOp};
 
 /// Classify one expression position for hoisting (module docs: the
 /// pessimal law on opaque payloads, the recorded weaker JS rule).
@@ -79,19 +79,31 @@ pub fn constant_for_hoist(expr: &ExprRef<'_>) -> bool {
     }
 }
 
-/// Whether one attached binding survives the legacy
-/// `is_hoistable_static_prop` rule — the `v-bind` shape gates mirrored
-/// (static name, modifiers within `camel`/`prop`/`attr`, the prefixed
-/// key not `ref`/`class`), then the value through
-/// [`constant_for_hoist`]. Every non-`ui.bind` binding is unhoistable,
+/// Why one attached binding fails the legacy `is_hoistable_static_prop`
+/// rule — `None` when it survives it. The `v-bind` shape gates are
+/// mirrored (static name, modifiers within `camel`/`prop`/`attr`, the
+/// prefixed key not `ref`/`class`), then the value goes through
+/// [`constant_for_hoist`]; every non-`ui.bind` binding is unhoistable,
 /// exactly as every non-`bind` legacy directive is.
+///
+/// The answer is `(op mnemonic, ui.bind rule)`: a non-`ui.bind` op is its
+/// own blocker, and a `ui.bind` names the first gate it failed
+/// (`dynamic-name`, `modifier`, `reserved-key`, `no-value`,
+/// `non-constant`). The one implementation of the rule — the fact reads
+/// its `is_none` through [`props_blocker`] — so a remark can never
+/// explain a decision the analysis did not make.
 #[must_use]
-pub(super) fn hoistable_binding(binding: &BindingOp<'_>) -> bool {
+pub(super) fn binding_blocker(
+    binding: &BindingOp<'_>,
+) -> Option<(&'static str, Option<&'static str>)> {
+    const fn bind_rule(rule: &'static str) -> Option<(&'static str, Option<&'static str>)> {
+        Some(("ui.bind", Some(rule)))
+    }
     let BindingOp::Bind(bind) = binding else {
-        return false;
+        return Some((binding.mnemonic(), None));
     };
     let Some(DynamicName::Static(name)) = &bind.name else {
-        return false;
+        return bind_rule("dynamic-name");
     };
     let mut has_camel = false;
     let mut has_prop = false;
@@ -101,7 +113,7 @@ pub(super) fn hoistable_binding(binding: &BindingOp<'_>) -> bool {
             "camel" => has_camel = true,
             "prop" => has_prop = true,
             "attr" => has_attr = true,
-            _ => return false,
+            _ => return bind_rule("modifier"),
         }
     }
     // The legacy precedence chain, mirrored: `camel` wins over `prop`
@@ -117,12 +129,16 @@ pub(super) fn hoistable_binding(binding: &BindingOp<'_>) -> bool {
         vize_s0::ToCompactString::to_compact_string(name)
     };
     if matches!(key.as_str(), "ref" | "class") {
-        return false;
+        return bind_rule("reserved-key");
     }
     let Some(value) = &bind.value else {
-        return false;
+        return bind_rule("no-value");
     };
-    constant_for_hoist(value)
+    if constant_for_hoist(value) {
+        None
+    } else {
+        bind_rule("non-constant")
+    }
 }
 
 fn prefixed(prefix: char, name: &str) -> vize_s0::String {
@@ -166,4 +182,56 @@ impl<'a> Visit<'a> for ConstWalk {
     fn visit_ts_instantiation_expression(&mut self, _expr: &js::TSInstantiationExpression<'a>) {
         self.dynamic = true;
     }
+}
+
+/// `props_are_static_attrs` / the prop half of `has_static_props`:
+/// every attribute except `ref`, every binding through the mirrored
+/// `is_hoistable_static_prop` rule. Defined as [`props_blocker`]'s
+/// `is_none`, so the remark and the fact share one rule.
+#[must_use]
+pub(super) fn props_all_hoistable(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+) -> bool {
+    props_blocker(attributes, bindings).is_none()
+}
+
+/// The first thing failing [`props_all_hoistable`]: a `ref` attribute,
+/// else the first unhoistable binding's [`binding_blocker`].
+#[must_use]
+pub(super) fn props_blocker(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+) -> Option<PropsBlocker> {
+    if attributes.iter().any(|attribute| attribute.name == "ref") {
+        return Some(PropsBlocker::RefAttribute);
+    }
+    bindings
+        .iter()
+        .find_map(binding_blocker)
+        .map(|(op, rule)| PropsBlocker::Binding { op, rule })
+}
+
+/// Why a props surface is not hoistable.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum PropsBlocker {
+    /// A static `ref` attribute.
+    RefAttribute,
+    /// A binding failing the hoist rule: its mnemonic, and for `ui.bind`
+    /// the shape gate it failed.
+    Binding {
+        op: &'static str,
+        rule: Option<&'static str>,
+    },
+}
+
+/// The outlet's static-nested-child rule: its props surface (the
+/// separated `name` position included) must be fully static.
+#[must_use]
+pub(super) fn slot_props_static(slot: &SlotOp<'_>) -> bool {
+    let name_static = match &slot.name {
+        DynamicName::Static(_) => true,
+        DynamicName::Dynamic(expr) => constant_for_hoist(expr),
+    };
+    name_static && props_all_hoistable(&slot.attributes, &slot.bindings)
 }

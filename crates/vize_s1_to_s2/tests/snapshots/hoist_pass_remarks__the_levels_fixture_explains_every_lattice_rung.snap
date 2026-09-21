@@ -1,0 +1,20 @@
+---
+source: crates/vize_s1_to_s2/tests/hoist_pass_remarks.rs
+expression: "$crate :: folio :: Folio ::\nprint_to_string(& run.remarks, $crate :: folio :: FolioMode :: Full,)"
+---
+[remarks]
+
+[remarks.entries]
+s2.hoist-static applied static-props @0:267 tag="section"
+s2.hoist-static missed static-subtree @0:267 tag="section" blocker="child" op="ui.element"
+s2.hoist-static applied static-subtree @35:73 tag="h1"
+s2.hoist-static applied static-subtree @56:68 tag="b"
+s2.hoist-static applied static-props @76:115 tag="p"
+s2.hoist-static missed static-subtree @76:115 tag="p" blocker="child" op="ui.interpolation"
+s2.hoist-static applied static-props @118:166 tag="svg"
+s2.hoist-static missed static-subtree @118:166 tag="svg" blocker="svg-directive"
+s2.hoist-static applied static-subtree @136:160 tag="rect"
+s2.hoist-static missed static-props @169:201 tag="div" blocker="ref-attribute"
+s2.hoist-static missed static-subtree @169:201 tag="div" blocker="ref-attribute"
+s2.hoist-static missed static-props @204:256 tag="i" blocker="binding" op="ui.bind" rule="non-constant"
+s2.hoist-static missed static-subtree @204:256 tag="i" blocker="binding" op="ui.bind" rule="non-constant"
