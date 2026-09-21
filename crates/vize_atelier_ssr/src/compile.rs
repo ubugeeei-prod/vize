@@ -1,6 +1,6 @@
 use crate::{
     SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions,
-    s4::{self, SsrS4BridgeOptions, SsrS4BridgeStatus},
+    s4::{self, SsrS4Request, SsrS4Selection},
 };
 use vize_atelier_core::{
     CompilerError, ErrorCode, Namespace, RootNode,
@@ -137,6 +137,35 @@ fn compile_ssr_inner<'a>(
     custom_elements: CustomElementMatcher,
     experimental_options: SsrCompilerExperimentalOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_on_lane(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        SsrLane::Selected,
+    )
+}
+
+/// Which emitter owns a compile. Production always asks the S4 selector;
+/// the differential battery pins the legacy walker on the same input.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum SsrLane {
+    Selected,
+    #[cfg(test)]
+    LegacyOnly,
+}
+
+pub(crate) fn compile_ssr_on_lane<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    lane: SsrLane,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     let codegen_options = options.clone();
     let parser_opts = crate::stage_options::parser_options(&options);
 
@@ -162,18 +191,20 @@ fn compile_ssr_inner<'a>(
         );
     }
 
-    let s4_bridge_status = s4::lower_source_for_ssr(
-        allocator,
-        source,
-        SsrS4BridgeOptions {
-            comments: options.comments,
-            custom_renderer: options.custom_renderer,
-            experimental_in_tag_comments: options.experimental_in_tag_comments,
-            experimental_patterned_template: options.experimental_patterned_template,
-            template_syntax,
-            has_custom_elements: !custom_elements.is_empty(),
-        },
-    );
+    let selection = match lane {
+        SsrLane::Selected => s4::select_ssr_lane(
+            allocator,
+            source,
+            &SsrS4Request {
+                options: &options,
+                experimental: &experimental_options,
+                template_syntax,
+                has_custom_elements: !custom_elements.is_empty(),
+            },
+        ),
+        #[cfg(test)]
+        SsrLane::LegacyOnly => SsrS4Selection::Legacy(s4::LegacyReason::Options),
+    };
 
     let transform_opts = crate::stage_options::transform_options(&codegen_options);
     let transform_errors = profile!(
@@ -191,18 +222,23 @@ fn compile_ssr_inner<'a>(
 
     let mut errors = errors.to_vec();
     errors.extend(transform_errors);
-    if let SsrS4BridgeStatus::Rejected(diagnostics) = s4_bridge_status {
-        errors.extend(diagnostics.into_iter().map(|diagnostic| {
-            CompilerError::with_message(ErrorCode::ExtendPoint, diagnostic, None)
-        }));
-    }
-    let codegen_ctx = SsrCodegenContext::new_with_experimental_options(
-        allocator,
-        &codegen_options,
-        source,
-        experimental_options,
-    );
-    let codegen_result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
+    let codegen_result = match selection {
+        SsrS4Selection::Emitted(result) => result,
+        other => {
+            if let SsrS4Selection::Rejected(diagnostics) = other {
+                errors.extend(diagnostics.into_iter().map(|diagnostic| {
+                    CompilerError::with_message(ErrorCode::ExtendPoint, diagnostic, None)
+                }));
+            }
+            let codegen_ctx = SsrCodegenContext::new_with_experimental_options(
+                allocator,
+                &codegen_options,
+                source,
+                experimental_options,
+            );
+            profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root))
+        }
+    };
 
     (root, errors, codegen_result)
 }

@@ -6,7 +6,7 @@
 mod component;
 mod component_props;
 mod plain;
-mod props;
+pub(crate) mod props;
 mod slot;
 mod transparent_builtin;
 mod vnode;
@@ -22,7 +22,7 @@ use vize_s0::cstr;
 
 /// One JavaScript property emitted into a generated SSR prop object.
 #[derive(Clone, Debug)]
-pub(super) struct VNodePropEntry {
+pub(crate) struct VNodePropEntry {
     key: String,
     value: String,
     dynamic: bool,

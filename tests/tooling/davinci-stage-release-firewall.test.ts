@@ -174,7 +174,17 @@ test("SSR production selects only published stages for the S4 bridge", () => {
     }))
     .sort((left, right) => left.name.localeCompare(right.name));
 
+  // P3-8 emits from the S4 plan: S2 side tables are keyed by `vize_davinci`
+  // node ids, and the transform expression rewrite erases TypeScript exactly
+  // like the S2 DOM lane.
   assert.deepEqual(stageEdges, [
+    {
+      name: "vize_davinci",
+      req: versionRequirement("vize_davinci"),
+      rename: null,
+      optional: false,
+      features: [],
+    },
     {
       name: "vize_impeto",
       req: versionRequirement("vize_impeto"),
@@ -194,7 +204,7 @@ test("SSR production selects only published stages for the S4 bridge", () => {
       req: versionRequirement("vize_s1_to_s2"),
       rename: null,
       optional: false,
-      features: [],
+      features: ["typescript"],
     },
     {
       name: "vize_s2",

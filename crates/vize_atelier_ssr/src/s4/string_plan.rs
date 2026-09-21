@@ -1,21 +1,21 @@
 //! S2->S4 string-plan lowering for SSR.
 
 mod binding;
+mod lower;
 mod payload;
 
 use vize_s0::{Allocator, Span, Vec};
 use vize_s2::op as s2;
 use vize_s2_to_s3::{PartitionFacts, PartitionKind};
 
-use binding::{binding_kind, binding_payload, binding_span};
 pub use payload::{SsrStringPayload, SsrStringPayloadKind};
 
 /// SSR string plan emitted from S2 before JavaScript text generation.
 #[derive(Debug)]
-pub struct SsrStringPlan<'a> {
+pub struct SsrStringPlan<'r, 'a> {
     /// Ordered plan segments. Control segments own no emitted bytes yet but pin
     /// where future SSR code generation must split runtime control flow.
-    pub segments: Vec<'a, SsrStringSegment<'a>>,
+    pub segments: Vec<'a, SsrStringSegment<'r, 'a>>,
     /// Summary derived from the consumed shared partition facts.
     pub partition: SsrPartitionSummary,
 }
@@ -28,14 +28,45 @@ pub struct SsrPartitionSummary {
 }
 
 /// One planned SSR output/control segment.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SsrStringSegment<'a> {
+///
+/// Segments are in S2 page order, except that an element's static
+/// attributes and attached bindings interleave in authored order (the order
+/// SSR attribute output follows). Binding facts are still consumed in page
+/// order because both lists keep their own relative order in the merge.
+#[derive(Debug, Clone, Copy)]
+pub struct SsrStringSegment<'r, 'a> {
     pub kind: SsrStringSegmentKind,
     pub partition: PartitionKind,
     pub span: Span,
+    /// Index of the partition fact this segment read: the owning op's S2
+    /// page-order id (attributes and close segments read their owner's).
+    pub fact: u32,
     /// Borrowed payload for textual segments, typed before code generation so
     /// callers do not need to infer meaning from [`SsrStringSegmentKind`].
     pub payload: Option<SsrStringPayload<'a>>,
+    /// The S2 construct this segment plans, for emitters that need the whole
+    /// typed operand (attribute values, binding names, retained expressions).
+    pub source: SsrSegmentSource<'r, 'a>,
+}
+
+/// The S2 construct behind one plan segment.
+///
+/// The component, comment, control-flow, and slot operands are planned for
+/// the emitter slices that own those shapes; until then the emitter refuses
+/// them by segment kind without reading the operand.
+#[derive(Debug, Clone, Copy)]
+#[allow(dead_code)]
+pub enum SsrSegmentSource<'r, 'a> {
+    Element(&'r s2::ElementOp<'a>),
+    Component(&'r s2::ComponentOp<'a>),
+    Attribute(&'r s2::Attribute<'a>),
+    Binding(&'r s2::BindingOp<'a>),
+    Text(&'r s2::TextOp<'a>),
+    Interpolation(&'r s2::InterpolationOp<'a>),
+    Comment(&'r s2::CommentOp<'a>),
+    If(&'r s2::IfOp<'a>),
+    For(&'r s2::ForOp<'a>),
+    Slot(&'r s2::SlotOp<'a>),
 }
 
 /// The stable SSR S4 vocabulary for the first string-plan slice.
@@ -59,8 +90,8 @@ pub enum SsrStringSegmentKind {
 
 /// Result of lowering S2 into a string plan.
 #[derive(Debug)]
-pub struct SsrStringPlanLowering<'a> {
-    pub plan: SsrStringPlan<'a>,
+pub struct SsrStringPlanLowering<'r, 'a> {
+    pub plan: SsrStringPlan<'r, 'a>,
     pub errors: Vec<'a, SsrStringPlanError>,
 }
 
@@ -85,253 +116,12 @@ pub enum SsrStringPlanErrorKind {
 /// partition facts. The fact stream is consumed in the S2 page-order that the
 /// S3 lowering uses, so stale or mismatched facts become explicit errors.
 #[must_use]
-pub fn lower_s2_to_string_plan<'a>(
+pub fn lower_s2_to_string_plan<'r, 'a>(
     allocator: &'a Allocator,
-    root: &s2::Region<'a>,
+    root: &'r s2::Region<'a>,
     partition: &PartitionFacts<'_>,
-) -> SsrStringPlanLowering<'a> {
-    let mut cx = Cx {
-        partition,
-        next_fact: 0,
-        plan: SsrStringPlan {
-            segments: Vec::new_in(&allocator),
-            partition: SsrPartitionSummary::default(),
-        },
-        errors: Vec::new_in(&allocator),
-    };
-    cx.lower_region(root);
-    cx.finish()
-}
-
-struct Cx<'facts, 'a> {
-    partition: &'facts PartitionFacts<'facts>,
-    next_fact: usize,
-    plan: SsrStringPlan<'a>,
-    errors: Vec<'a, SsrStringPlanError>,
-}
-
-impl<'facts, 'a> Cx<'facts, 'a> {
-    fn finish(mut self) -> SsrStringPlanLowering<'a> {
-        while let Some(extra) = self.partition.ops.get(self.next_fact) {
-            self.errors.push(SsrStringPlanError {
-                kind: SsrStringPlanErrorKind::ExtraPartitionFact,
-                fact_index: self.next_fact as u32,
-                expected_span: extra.span,
-                actual_span: Some(extra.span),
-            });
-            self.next_fact += 1;
-        }
-        SsrStringPlanLowering {
-            plan: self.plan,
-            errors: self.errors,
-        }
-    }
-
-    fn lower_region(&mut self, region: &s2::Region<'a>) {
-        for op in &region.ops {
-            self.lower_op(op);
-        }
-    }
-
-    fn lower_op(&mut self, op: &s2::Op<'a>) {
-        match op {
-            s2::Op::Element(element) => {
-                let partition = self.consume_fact(element.span);
-                self.push(
-                    SsrStringSegmentKind::OpenElement,
-                    partition,
-                    element.span,
-                    Some(SsrStringPayload::new(
-                        SsrStringPayloadKind::TagName,
-                        element.tag,
-                    )),
-                );
-                for attr in &element.attributes {
-                    self.push(
-                        SsrStringSegmentKind::StaticAttribute,
-                        partition,
-                        attr.span,
-                        Some(SsrStringPayload::new(
-                            SsrStringPayloadKind::AttributeName,
-                            attr.name,
-                        )),
-                    );
-                }
-                self.lower_bindings(&element.bindings);
-                self.lower_region(&element.children);
-                self.push(
-                    SsrStringSegmentKind::CloseElement,
-                    partition,
-                    element.span,
-                    Some(SsrStringPayload::new(
-                        SsrStringPayloadKind::TagName,
-                        element.tag,
-                    )),
-                );
-            }
-            s2::Op::Component(component) => {
-                let partition = self.consume_fact(component.span);
-                self.push(
-                    SsrStringSegmentKind::Component,
-                    partition,
-                    component.span,
-                    Some(SsrStringPayload::new(
-                        SsrStringPayloadKind::ComponentName,
-                        component.name,
-                    )),
-                );
-                for attr in &component.attributes {
-                    self.push(
-                        SsrStringSegmentKind::StaticAttribute,
-                        partition,
-                        attr.span,
-                        Some(SsrStringPayload::new(
-                            SsrStringPayloadKind::AttributeName,
-                            attr.name,
-                        )),
-                    );
-                }
-                self.lower_bindings(&component.bindings);
-                self.lower_region(&component.children);
-            }
-            s2::Op::Text(text) => {
-                let partition = self.consume_fact(text.span);
-                self.push(
-                    SsrStringSegmentKind::Text,
-                    partition,
-                    text.span,
-                    Some(SsrStringPayload::new(
-                        SsrStringPayloadKind::Text,
-                        text.content,
-                    )),
-                );
-            }
-            s2::Op::Interpolation(interpolation) => {
-                let partition = self.consume_fact(interpolation.span);
-                self.push(
-                    SsrStringSegmentKind::DynamicText,
-                    partition,
-                    interpolation.span,
-                    Some(SsrStringPayload::new(
-                        SsrStringPayloadKind::Expression,
-                        interpolation.expression.source(),
-                    )),
-                );
-            }
-            s2::Op::Comment(comment) => {
-                let partition = self.consume_fact(comment.span);
-                self.push(
-                    SsrStringSegmentKind::Comment,
-                    partition,
-                    comment.span,
-                    Some(SsrStringPayload::new(
-                        SsrStringPayloadKind::Comment,
-                        comment.content,
-                    )),
-                );
-            }
-            s2::Op::If(if_op) => {
-                let partition = self.consume_fact(if_op.span);
-                self.push(SsrStringSegmentKind::If, partition, if_op.span, None);
-                for branch in &if_op.branches {
-                    self.lower_region(&branch.region);
-                }
-            }
-            s2::Op::For(for_op) => {
-                let partition = self.consume_fact(for_op.span);
-                self.push(
-                    SsrStringSegmentKind::For,
-                    partition,
-                    for_op.span,
-                    Some(SsrStringPayload::new(
-                        SsrStringPayloadKind::ForBinding,
-                        for_op.binding.source.source(),
-                    )),
-                );
-                self.lower_region(&for_op.region);
-            }
-            s2::Op::Slot(slot) => {
-                let partition = self.consume_fact(slot.span);
-                self.push(
-                    SsrStringSegmentKind::SlotOutlet,
-                    partition,
-                    slot.span,
-                    payload::slot_name_payload(&slot.name),
-                );
-                for attr in &slot.attributes {
-                    self.push(
-                        SsrStringSegmentKind::StaticAttribute,
-                        partition,
-                        attr.span,
-                        Some(SsrStringPayload::new(
-                            SsrStringPayloadKind::AttributeName,
-                            attr.name,
-                        )),
-                    );
-                }
-                self.lower_bindings(&slot.bindings);
-                self.lower_region(&slot.fallback);
-            }
-        }
-    }
-
-    fn lower_bindings(&mut self, bindings: &[s2::BindingOp<'a>]) {
-        for binding in bindings {
-            let span = binding_span(binding);
-            let partition = self.consume_fact(span);
-            self.push(
-                binding_kind(binding),
-                partition,
-                span,
-                binding_payload(binding),
-            );
-        }
-    }
-
-    fn consume_fact(&mut self, expected_span: Span) -> PartitionKind {
-        let fact_index = self.next_fact;
-        self.next_fact += 1;
-        let Some(fact) = self.partition.ops.get(fact_index) else {
-            self.errors.push(SsrStringPlanError {
-                kind: SsrStringPlanErrorKind::MissingPartitionFact,
-                fact_index: fact_index as u32,
-                expected_span,
-                actual_span: None,
-            });
-            return PartitionKind::Dynamic;
-        };
-        if fact.span != expected_span {
-            self.errors.push(SsrStringPlanError {
-                kind: SsrStringPlanErrorKind::PartitionSpanMismatch,
-                fact_index: fact_index as u32,
-                expected_span,
-                actual_span: Some(fact.span),
-            });
-        }
-        fact.kind
-    }
-
-    fn push(
-        &mut self,
-        kind: SsrStringSegmentKind,
-        partition: PartitionKind,
-        span: Span,
-        payload: Option<SsrStringPayload<'a>>,
-    ) {
-        if partition.is_dynamic() {
-            self.plan.partition.dynamic_segments =
-                self.plan.partition.dynamic_segments.saturating_add(1);
-        } else {
-            self.plan.partition.static_segments =
-                self.plan.partition.static_segments.saturating_add(1);
-        }
-        self.plan.segments.push(SsrStringSegment {
-            kind,
-            partition,
-            span,
-            payload,
-        });
-    }
+) -> SsrStringPlanLowering<'r, 'a> {
+    lower::lower(allocator, root, partition)
 }
 
 #[cfg(test)]

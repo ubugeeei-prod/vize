@@ -5,7 +5,7 @@
 
 mod component_binding;
 mod component_resolution;
-mod element;
+pub(crate) mod element;
 pub(crate) mod helpers;
 mod scope_prefix;
 
@@ -139,7 +139,14 @@ impl<'a> SsrCodegenContext<'a> {
                 .iter()
                 .any(|c| !matches!(c, TemplateChildNode::Text(_)));
 
-        // Generate function signature
+        self.begin_render();
+        self.process_root_children(&root.children, is_fragment, false, false);
+        self.finish_render()
+    }
+
+    /// Open `ssrRender`: the signature and the CSS-variable prelude. Shared
+    /// by the legacy walker and the S4 string-plan emitter.
+    pub(crate) fn begin_render(&mut self) {
         self.push("function ssrRender(_ctx, _push, _parent, _attrs");
         if self.options.binding_metadata.is_some() {
             self.push(", $props, $setup, $data, $options");
@@ -150,24 +157,20 @@ impl<'a> SsrCodegenContext<'a> {
         self.push(") {\n");
         self.indent_level += 1;
 
-        // Inject CSS vars if present
         if let Some(css_vars) = &self.options.ssr_css_vars {
             self.push_indent();
             self.push("const _cssVars = { style: ");
             self.push(css_vars);
             self.push(" }\n");
         }
+    }
 
-        // Process children
-        self.process_root_children(&root.children, is_fragment, false, false);
-
-        // Flush any remaining template literal
+    /// Close `ssrRender` and assemble the module parts.
+    pub(crate) fn finish_render(mut self) -> SsrCodegenResult {
         self.flush_push();
-
         self.indent_level -= 1;
         self.push("}\n");
 
-        // Build preamble with imports
         let preamble = self.build_preamble();
 
         // SAFETY: `self.code` is filled exclusively through `push(&str)`,

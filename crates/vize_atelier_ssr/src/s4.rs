@@ -1,150 +1,247 @@
-//! Davinci S4 bridge for the SSR compile path.
+//! Davinci S4 lane for the SSR compile path.
 //!
 //! P3-8 keeps SSR on a thin S2->S4 route: the compile path reads the shared
-//! S2->S3 partition facts, builds a string-plan witness, and only then falls
-//! through to today's payload-rich SSR generator until the plan owns emission.
+//! S2->S3 partition facts, builds the SSR string plan, and emits the
+//! `ssrRender` module from that plan for the admitted surface. Every other
+//! input selects the legacy AST walker explicitly under a typed reason, and a
+//! stale or inconsistent artifact is rejected rather than guessed around.
 
+mod bindings;
+mod emit;
 mod string_plan;
 
-use core::sync::atomic::{AtomicU64, Ordering};
-
 use vize_atelier_core::TemplateSyntaxMode;
+use vize_s0::config::VueVersion;
 use vize_s0::{Allocator, String, cstr, profile, profiler::global_profiler};
 use vize_s1::SurfaceParseOptions;
+use vize_s1_to_s2::TransformExpressions;
 use vize_s3::verify::verify;
 
+use crate::codegen::{SsrCodegenContext, SsrCodegenResult};
+use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use string_plan::lower_s2_to_string_plan;
 
-/// Option subset that decides whether the S4 bridge can mirror this SSR compile.
-#[derive(Debug, Clone, Copy)]
-pub(crate) struct SsrS4BridgeOptions {
-    pub(crate) comments: bool,
-    pub(crate) custom_renderer: bool,
-    pub(crate) experimental_in_tag_comments: bool,
-    pub(crate) experimental_patterned_template: bool,
+/// Everything the SSR S4 lane needs to decide and emit one compile.
+pub(crate) struct SsrS4Request<'o> {
+    pub(crate) options: &'o SsrCompilerOptions,
+    pub(crate) experimental: &'o SsrCompilerExperimentalOptions,
     pub(crate) template_syntax: TemplateSyntaxMode,
     pub(crate) has_custom_elements: bool,
 }
 
-/// Result of attempting the SSR S4 bridge for one compile.
+/// A selected legacy route is distinct from a failed compiler invariant.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum LegacyReason {
+    /// The option surface is outside the S4 lane.
+    Options,
+    /// S2 recorded diagnostics or a lowering rule the lane does not model.
+    SurfaceSemantics,
+    /// An S2 op kind the plan emitter does not own yet.
+    Operation,
+    /// An element whose content model or runtime helpers are not admitted.
+    Element,
+    /// An attached binding the plan emitter does not own yet.
+    Binding,
+    /// An expression without a reproducible transform rewrite.
+    ExpressionOrEncoding,
+    /// A structural shape outside the admitted surface.
+    Structure,
+}
+
+impl LegacyReason {
+    const fn counter(self) -> &'static str {
+        match self {
+            Self::Options => "davinci.s4_ssr.legacy.options",
+            Self::SurfaceSemantics => "davinci.s4_ssr.legacy.surface_semantics",
+            Self::Operation => "davinci.s4_ssr.legacy.operation",
+            Self::Element => "davinci.s4_ssr.legacy.element",
+            Self::Binding => "davinci.s4_ssr.legacy.binding",
+            Self::ExpressionOrEncoding => "davinci.s4_ssr.legacy.expression_or_encoding",
+            Self::Structure => "davinci.s4_ssr.legacy.structure",
+        }
+    }
+}
+
 #[derive(Debug)]
-pub(crate) enum SsrS4BridgeStatus {
-    /// The input uses an option shape this S2->S4 slice does not model yet.
-    Skipped,
-    /// S1->S2->S3 partition facts were read and the string plan was valid.
-    Accepted,
-    /// The bridge was selected but rejected a stale or inconsistent artifact.
+pub(crate) enum AdmissionFailure {
+    Unsupported(LegacyReason),
+    Invalid(&'static str),
+}
+
+impl From<LegacyReason> for AdmissionFailure {
+    fn from(reason: LegacyReason) -> Self {
+        Self::Unsupported(reason)
+    }
+}
+
+/// The lane one SSR compile takes.
+#[derive(Debug)]
+pub(crate) enum SsrS4Selection {
+    /// The module was emitted from the S4 string plan.
+    Emitted(SsrCodegenResult),
+    /// The legacy AST walker owns this compile.
+    Legacy(LegacyReason),
+    /// The artifact broke an invariant; the legacy walker emits and the
+    /// diagnostics surface the broken fact.
     Rejected(std::vec::Vec<String>),
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-#[cfg(test)]
-pub(crate) struct SsrS4BridgeStats {
-    pub(crate) attempts: u64,
-    pub(crate) accepted: u64,
-    pub(crate) skipped: u64,
-    pub(crate) rejected: u64,
-}
+/// S2 lowering rules whose output the plan emitter reproduces byte-for-byte.
+const ADMITTED_RULES: &[&str] = &[
+    "lower.element",
+    "lower.text",
+    "lower.text-run",
+    "lower.text-fact",
+    "lower.interpolation",
+    "lower.compound",
+    "lower.bind",
+    "lower.on",
+    "normalize.bind.same-name",
+    "condense.whitespace",
+    "condense.drop-whitespace",
+    "drop.comment",
+];
 
-static ATTEMPTS: AtomicU64 = AtomicU64::new(0);
-static ACCEPTED: AtomicU64 = AtomicU64::new(0);
-static SKIPPED: AtomicU64 = AtomicU64::new(0);
-static REJECTED: AtomicU64 = AtomicU64::new(0);
-
-/// Lower `source` through S1->S2, read S2->S3 partition facts, and build the
-/// SSR S4 string plan for supported compiles.
-pub(crate) fn lower_source_for_ssr(
+/// Lower `source` through S1->S2->S3, build the SSR string plan from the
+/// shared partition facts, and emit from it when the surface is admitted.
+pub(crate) fn select_ssr_lane(
     allocator: &Allocator,
     source: &str,
-    options: SsrS4BridgeOptions,
-) -> SsrS4BridgeStatus {
-    ATTEMPTS.fetch_add(1, Ordering::Relaxed);
+    request: &SsrS4Request<'_>,
+) -> SsrS4Selection {
+    let selection = if bridge_supported(request) {
+        profile!(
+            "atelier.ssr.template.s4_bridge",
+            lower_and_emit(allocator, source, request)
+        )
+    } else {
+        SsrS4Selection::Legacy(LegacyReason::Options)
+    };
+    record_selection(&selection);
+    selection
+}
 
-    if !options.is_supported() {
-        SKIPPED.fetch_add(1, Ordering::Relaxed);
-        return SsrS4BridgeStatus::Skipped;
-    }
-
-    let status = profile!("atelier.ssr.template.s4_bridge", {
-        let (tree, surface_errors) = vize_s1::parse_with_options(
-            allocator,
-            source,
-            SurfaceParseOptions {
-                experimental_in_tag_comments: options.experimental_in_tag_comments,
-            },
+fn lower_and_emit(
+    allocator: &Allocator,
+    source: &str,
+    request: &SsrS4Request<'_>,
+) -> SsrS4Selection {
+    let (tree, surface_errors) = vize_s1::parse_with_options(
+        allocator,
+        source,
+        SurfaceParseOptions {
+            experimental_in_tag_comments: request.options.experimental_in_tag_comments,
+        },
+    );
+    let s2 = vize_s1_to_s2::lower(allocator, &tree, &surface_errors);
+    let s3 = vize_s2_to_s3::lower(allocator, &s2.root);
+    let violations = verify(&s3.program);
+    if !violations.is_empty() {
+        return SsrS4Selection::Rejected(
+            violations
+                .into_iter()
+                .map(|violation| {
+                    cstr!("Davinci S4 verifier rejected SSR bridge input: {violation}")
+                })
+                .collect(),
         );
-        let s2 = vize_s1_to_s2::lower(allocator, &tree, &surface_errors);
-        let s3 = vize_s2_to_s3::lower(allocator, &s2.root);
-        let violations = verify(&s3.program);
-        if !violations.is_empty() {
-            let mut diagnostics = std::vec::Vec::new();
-            for violation in violations {
-                diagnostics.push(cstr!(
-                    "Davinci S4 verifier rejected SSR bridge input: {violation}"
-                ));
-            }
-            return_rejected(diagnostics)
-        } else if s3.partition.ops.len() != s3.program.ops.len() {
-            return_rejected(std::vec![cstr!(
-                "Davinci S4 verifier rejected SSR bridge input: partition facts {} did not match ops {}",
-                s3.partition.ops.len(),
-                s3.program.ops.len()
-            )])
-        } else {
-            let lowered = lower_s2_to_string_plan(allocator, &s2.root, &s3.partition);
-            if !lowered.errors.is_empty() {
-                return_rejected(
-                    lowered
-                        .errors
-                        .iter()
-                        .map(|error| {
-                            cstr!("Davinci S4 string-plan rejected SSR bridge input: {error:?}")
-                        })
-                        .collect(),
-                )
-            } else {
-                record_bridge_counters(
-                    lowered.plan.segments.len() as u64,
-                    lowered.plan.partition.static_segments as u64,
-                    lowered.plan.partition.dynamic_segments as u64,
-                    s3.partition.ops.len() as u64,
-                    s2.diagnostics.len() as u64,
-                );
-                SsrS4BridgeStatus::Accepted
-            }
-        }
-    });
+    }
+    if s3.partition.ops.len() != s3.program.ops.len() {
+        return SsrS4Selection::Rejected(std::vec![cstr!(
+            "Davinci S4 verifier rejected SSR bridge input: partition facts {} did not match ops {}",
+            s3.partition.ops.len(),
+            s3.program.ops.len()
+        )]);
+    }
+    let lowered = lower_s2_to_string_plan(allocator, &s2.root, &s3.partition);
+    if !lowered.errors.is_empty() {
+        return SsrS4Selection::Rejected(
+            lowered
+                .errors
+                .iter()
+                .map(|error| cstr!("Davinci S4 string-plan rejected SSR bridge input: {error:?}"))
+                .collect(),
+        );
+    }
+    record_bridge_counters(
+        lowered.plan.segments.len() as u64,
+        lowered.plan.partition.static_segments as u64,
+        lowered.plan.partition.dynamic_segments as u64,
+        s3.partition.ops.len() as u64,
+        s2.diagnostics.len() as u64,
+    );
 
-    if matches!(status, SsrS4BridgeStatus::Accepted) {
-        ACCEPTED.fetch_add(1, Ordering::Relaxed);
+    if !emission_supported(request) {
+        return SsrS4Selection::Legacy(LegacyReason::Options);
+    }
+    if !s2.diagnostics.is_empty()
+        || s2
+            .provenance
+            .iter()
+            .any(|record| !ADMITTED_RULES.contains(&record.rule.as_str()))
+    {
+        return SsrS4Selection::Legacy(LegacyReason::SurfaceSemantics);
     }
 
-    status
-}
-
-#[cfg(test)]
-pub(crate) fn stats() -> SsrS4BridgeStats {
-    SsrS4BridgeStats {
-        attempts: ATTEMPTS.load(Ordering::Relaxed),
-        accepted: ACCEPTED.load(Ordering::Relaxed),
-        skipped: SKIPPED.load(Ordering::Relaxed),
-        rejected: REJECTED.load(Ordering::Relaxed),
-    }
-}
-
-impl SsrS4BridgeOptions {
-    fn is_supported(self) -> bool {
-        !self.comments
-            && !self.custom_renderer
-            && !self.experimental_patterned_template
-            && self.template_syntax == TemplateSyntaxMode::Standard
-            && !self.has_custom_elements
+    let table = request
+        .options
+        .binding_metadata
+        .as_ref()
+        .map(bindings::binding_table);
+    let exprs = TransformExpressions::new(
+        source,
+        table.as_ref(),
+        request.options.is_ts,
+        request.options.inline,
+    );
+    let mut ctx = SsrCodegenContext::new_with_experimental_options(
+        allocator,
+        request.options,
+        source,
+        request.experimental.clone(),
+    );
+    ctx.begin_render();
+    match emit::emit_plan(&mut ctx, &lowered.plan, &s2.texts, &exprs) {
+        Ok(()) => SsrS4Selection::Emitted(ctx.finish_render()),
+        Err(AdmissionFailure::Unsupported(reason)) => SsrS4Selection::Legacy(reason),
+        Err(AdmissionFailure::Invalid(message)) => SsrS4Selection::Rejected(std::vec![cstr!(
+            "Davinci S4 string-plan emitter rejected SSR artifact: {message}"
+        )]),
     }
 }
 
-fn return_rejected(diagnostics: std::vec::Vec<String>) -> SsrS4BridgeStatus {
-    REJECTED.fetch_add(1, Ordering::Relaxed);
-    SsrS4BridgeStatus::Rejected(diagnostics)
+/// Options under which S1 and S2 see the same template the SSR parser sees.
+fn bridge_supported(request: &SsrS4Request<'_>) -> bool {
+    let options = request.options;
+    !options.comments
+        && !options.custom_renderer
+        && !options.experimental_patterned_template
+        && request.template_syntax == TemplateSyntaxMode::Standard
+        && !request.has_custom_elements
+}
+
+/// Options whose expression and module semantics the plan emitter owns.
+/// Croquis-informed rewrites, inline render closures, Vue 2 dialect sugar,
+/// and in-tag comments stay with the legacy walker, like the S2 DOM lane.
+fn emission_supported(request: &SsrS4Request<'_>) -> bool {
+    let options = request.options;
+    options.croquis.is_none()
+        && !options.inline
+        && options.dialect == VueVersion::V3
+        && !options.experimental_in_tag_comments
+}
+
+fn record_selection(selection: &SsrS4Selection) {
+    let profiler = global_profiler();
+    if !profiler.is_enabled() {
+        return;
+    }
+    let counter = match selection {
+        SsrS4Selection::Emitted(_) => "davinci.s4_ssr.accepted",
+        SsrS4Selection::Legacy(reason) => reason.counter(),
+        SsrS4Selection::Rejected(_) => "davinci.s4_ssr.rejected",
+    };
+    profiler.record_counter_enabled(counter, 1);
 }
 
 fn record_bridge_counters(
@@ -167,53 +264,6 @@ fn record_bridge_counters(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{SsrS4BridgeOptions, SsrS4BridgeStatus, lower_source_for_ssr, stats};
-    use vize_atelier_core::TemplateSyntaxMode;
-    use vize_s0::Allocator;
-
-    fn supported_options() -> SsrS4BridgeOptions {
-        SsrS4BridgeOptions {
-            comments: false,
-            custom_renderer: false,
-            experimental_in_tag_comments: false,
-            experimental_patterned_template: false,
-            template_syntax: TemplateSyntaxMode::Standard,
-            has_custom_elements: false,
-        }
-    }
-
-    #[test]
-    fn supported_templates_lower_to_s4_string_plan() {
-        let allocator = Allocator::new();
-        let before = stats();
-        let status = lower_source_for_ssr(
-            &allocator,
-            r#"<section><h1>{{ title }}</h1><p>Ready</p></section>"#,
-            supported_options(),
-        );
-        let after = stats();
-
-        assert!(matches!(status, SsrS4BridgeStatus::Accepted));
-        assert!(after.accepted > before.accepted);
-        assert_eq!(after.rejected, before.rejected);
-    }
-
-    #[test]
-    fn unsupported_ssr_options_skip_the_bridge() {
-        let allocator = Allocator::new();
-        let before = stats();
-        let status = lower_source_for_ssr(
-            &allocator,
-            r#"<div><!-- kept --></div>"#,
-            SsrS4BridgeOptions {
-                comments: true,
-                ..supported_options()
-            },
-        );
-        let after = stats();
-
-        assert!(matches!(status, SsrS4BridgeStatus::Skipped));
-        assert!(after.skipped > before.skipped);
-    }
-}
+mod differential_tests;
+#[cfg(test)]
+mod tests;

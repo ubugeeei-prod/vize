@@ -6,7 +6,7 @@ use vize_s0::Allocator;
 use vize_s1::parse;
 use vize_s2_to_s3::{PartitionKind, lower};
 
-fn with_plan(source: &str, check: impl FnOnce(super::SsrStringPlanLowering<'_>)) {
+fn with_plan(source: &str, check: impl FnOnce(super::SsrStringPlanLowering<'_, '_>)) {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let s2 = vize_s1_to_s2::lower(&allocator, &tree, &errors);
@@ -135,7 +135,7 @@ fn stale_partition_facts_are_rejected() {
 }
 
 fn has_payload(
-    segments: &[SsrStringSegment<'_>],
+    segments: &[SsrStringSegment<'_, '_>],
     segment_kind: SsrStringSegmentKind,
     payload_kind: SsrStringPayloadKind,
     source: &str,

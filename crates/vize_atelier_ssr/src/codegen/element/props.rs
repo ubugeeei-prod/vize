@@ -4,7 +4,7 @@ use super::{DirectiveNode, ExpressionNode, PropNode, String, ToCompactString, VN
 use vize_s0::{FxHashMap, is_on};
 
 /// Build an object literal from normalized prop entries.
-pub(super) fn component_props_object(entries: &[VNodePropEntry]) -> String {
+pub(crate) fn component_props_object(entries: &[VNodePropEntry]) -> String {
     let mut out = String::from("{ ");
     for (index, entry) in entries.iter().enumerate() {
         if index > 0 {
@@ -33,7 +33,7 @@ impl crate::codegen::SsrCodegenContext<'_> {
     }
 }
 
-pub(super) fn component_prop_entry(key: &str, value: &str, dynamic: bool) -> VNodePropEntry {
+pub(crate) fn component_prop_entry(key: &str, value: &str, dynamic: bool) -> VNodePropEntry {
     VNodePropEntry {
         key: key.to_compact_string(),
         value: value.to_compact_string(),
@@ -41,7 +41,7 @@ pub(super) fn component_prop_entry(key: &str, value: &str, dynamic: bool) -> VNo
     }
 }
 
-pub(super) fn push_component_prop_entry(out: &mut String, entry: &VNodePropEntry) {
+pub(crate) fn push_component_prop_entry(out: &mut String, entry: &VNodePropEntry) {
     if entry.dynamic {
         out.push('[');
         out.push_str(&entry.key);
@@ -55,7 +55,7 @@ pub(super) fn push_component_prop_entry(out: &mut String, entry: &VNodePropEntry
 }
 
 /// Merge static `class` and `style` entries so Vue sees one canonical value.
-pub(super) fn normalize_prop_entries(
+pub(crate) fn normalize_prop_entries(
     entries: std::vec::Vec<VNodePropEntry>,
 ) -> std::vec::Vec<VNodePropEntry> {
     let mut normalized = std::vec::Vec::with_capacity(entries.len());
@@ -107,7 +107,7 @@ pub(super) fn normalize_prop_entries(
     normalized
 }
 
-pub(super) fn merge_prop_values(values: std::vec::Vec<String>) -> String {
+pub(crate) fn merge_prop_values(values: std::vec::Vec<String>) -> String {
     if values.len() == 1 {
         return values.into_iter().next().unwrap_or_default();
     }
@@ -160,7 +160,7 @@ pub(super) fn transform_slot_outlet_bound_prop_key(key: &str, dir: &DirectiveNod
     base
 }
 
-pub(super) fn push_js_object_key(out: &mut String, key: &str) {
+pub(crate) fn push_js_object_key(out: &mut String, key: &str) {
     if is_valid_js_identifier(key) {
         out.push_str(key);
         return;
@@ -171,7 +171,7 @@ pub(super) fn push_js_object_key(out: &mut String, key: &str) {
     out.push('"');
 }
 
-pub(super) fn is_valid_js_identifier(value: &str) -> bool {
+pub(crate) fn is_valid_js_identifier(value: &str) -> bool {
     let mut chars = value.chars();
     let Some(first) = chars.next() else {
         return false;
@@ -203,14 +203,14 @@ pub(super) fn is_static_named_prop(prop: &PropNode, name: &str) -> bool {
 }
 
 /// Quote a string for generated JavaScript string-literal positions.
-pub(super) fn quoted_js_string(value: &str) -> String {
+pub(crate) fn quoted_js_string(value: &str) -> String {
     let mut out = String::from("\"");
     out.push_str(&escape_js_string(value));
     out.push('"');
     out
 }
 
-pub(super) fn escape_js_string(value: &str) -> String {
+pub(crate) fn escape_js_string(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
     for ch in value.chars() {
         match ch {
@@ -225,7 +225,7 @@ pub(super) fn escape_js_string(value: &str) -> String {
     out
 }
 
-pub(super) fn wrap_call(callee: &str, arg: &str) -> String {
+pub(crate) fn wrap_call(callee: &str, arg: &str) -> String {
     let mut out = String::from(callee);
     out.push('(');
     out.push_str(arg);

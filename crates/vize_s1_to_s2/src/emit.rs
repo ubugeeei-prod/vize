@@ -103,6 +103,7 @@ mod slots;
 mod static_cache;
 mod style;
 mod tpl;
+mod transform_expr;
 mod vfor;
 mod vfor_item;
 mod vif;
@@ -141,6 +142,10 @@ pub use self::entry::{
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
 pub use self::options::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
 pub use self::run::{emit_dom, emit_dom_with_options};
+pub use self::transform_expr::{
+    TransformContent, TransformExpressions, TransformRefusal, TransformScopeMark, TransformedExpr,
+    decode_template_entities,
+};
 
 /// Per-emit numbering + helper buffer. Page-order ids re-derive the
 /// same arithmetic the S2 passes use so compound text facts resolve.
