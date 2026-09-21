@@ -72,7 +72,7 @@ Demo chains that run beside it, all startable now: **P4-11a → P4-11b** cross-c
 
 Each ID links to its contract; the box is checked only in the PR that satisfies the task's acceptance criteria, with a record under `phase-4-records/`.
 
-- [ ] [P4-1a](./phase-4-tasks.md#p4-1a--fact-api-core) Fact API core — lane A · startable now
+- [x] [P4-1a](./phase-4-tasks.md#p4-1a--fact-api-core) Fact API core — lane A · startable now
 - [ ] [P4-1b](./phase-4-tasks.md#p4-1b--fact-preservation-and-recompute-mode) Fact preservation and recompute mode — lane A · startable now
 - [ ] [P4-2](./phase-4-tasks.md#p4-2--fact-group-alpha-beta-split) Fact-group alpha/beta split — lane A · startable now
 - [ ] [P4-3a](./phase-4-tasks.md#p4-3a--bindings-and-undefined-refs-fact-groups) Bindings and undefined-refs fact groups — lane B · startable now

@@ -13,18 +13,20 @@
 
 **Steps:**
 
-- [ ] `crates/vize_davinci/src/fact.rs` + `fact/`: `trait FactGroup { const ID: AnalysisId; const STRATUM: u8; const DEPENDS: Demand; type Key; type Value; }` — group identity **reuses** `pass::preserved::AnalysisId`, so a pass's `Preserved` mask names fact groups directly (one identity space, capped by `MAX_ANALYSES = 64` with its existing const assertion)
-- [ ] `Demand(u64)` built in `const` context (`Demand::NONE.with(G::ID)`); each consumer declares `const DEMAND: Demand`
-- [ ] Stratification as a `const fn` over the registered group descriptors: a group may depend only on strictly lower strata, so a demand cycle is unrepresentable (the Swift anti-lesson); violations are compile errors proved by `compile_fail` doctests
-- [ ] `FactManager` computes the transitive demand closure in stratum order through registered producers, each group at most once per artifact (a process-global counter pins it), and serves `get::<G>()` as a borrowed table
-- [ ] Debug detector: under `debug_assertions` a `FactView` carries its consumer's `Demand`; an undeclared access returns `FactError::Undeclared { consumer, group }` and bumps a counter; the release shape is a zero-sized type, const-asserted
-- [ ] Register the TS-35 command in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test fact_demand`
+- [x] `crates/vize_davinci/src/fact.rs` + `fact/`: `trait FactGroup { const ID: AnalysisId; const STRATUM: u8; const DEPENDS: Demand; type Key; type Value; }` — group identity **reuses** `pass::preserved::AnalysisId`, so a pass's `Preserved` mask names fact groups directly (one identity space, capped by `MAX_ANALYSES = 64` with its existing const assertion)
+- [x] `Demand(u64)` built in `const` context (`Demand::NONE.with(G::ID)`); each consumer declares `const DEMAND: Demand`
+- [x] Stratification as a `const fn` over the registered group descriptors: a group may depend only on strictly lower strata, so a demand cycle is unrepresentable (the Swift anti-lesson); violations are compile errors proved by `compile_fail` doctests
+- [x] `FactManager` computes the transitive demand closure in stratum order through registered producers, each group at most once per artifact (a process-global counter pins it), and serves `get::<G>()` as a borrowed table
+- [x] Debug detector: under `debug_assertions` a `FactView` carries its consumer's `Demand`; an undeclared access returns `FactError::Undeclared { consumer, group }` and bumps a counter; the release shape is a zero-sized type, const-asserted
+- [x] Register the TS-35 command in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test fact_demand`
 
 **Acceptance:** `cargo test -p vize_davinci --test fact_demand --test fact_manager` green; `cargo test -p vize_davinci --doc` runs the two stratification `compile_fail` doctests; an undeclared access is asserted equal to the exact `FactError` value; the once-per-artifact counter is pinned; TS-24 (`--target wasm32-wasip2`, with and without default features) green; TS-1, TS-13; TS-11 empty (nothing consumes the API yet).
 
 **Deps:** none (phase-2 exit).
 
 **Non-goals:** migrating a tracker (P4-3a…P4-3f); α/β serialization (P4-2); pass-manager invalidation (P4-1b); salsa or cross-compile caching (phase 5).
+
+**Landed 2026-09-22:** `vize_davinci::fact` with the TS-35 lane, both stratification `compile_fail` doctests and the pinned once-per-artifact counter — see the [P4-1a record](./phase-4-records/p4-1a.md).
 
 ## P4-1b — Fact preservation and recompute mode
 

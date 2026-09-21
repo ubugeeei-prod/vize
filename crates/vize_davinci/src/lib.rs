@@ -16,6 +16,8 @@
 //!   stored beside the tree rather than on fat nodes.
 //! - [`diagnostic`] — [`Diagnostic`](diagnostic::Diagnostic), the one channel
 //!   every renderer reads.
+//! - [`fact`] — the fact API: fact groups, static demand declarations, the
+//!   stratified registry and the [`FactManager`](fact::FactManager).
 //! - [`pass`] — the pass manager: pipelines as const data, classified and
 //!   fused at build time.
 //! - [`legacy_plan`] — the shipped backends' template traversals, declared as
@@ -41,6 +43,7 @@ extern crate alloc;
 extern crate self as vize_davinci;
 
 pub mod diagnostic;
+pub mod fact;
 pub mod folio;
 pub mod id;
 pub mod legacy_plan;
