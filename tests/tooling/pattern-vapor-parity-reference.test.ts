@@ -55,16 +55,21 @@ async function renderParity(
       // Vapor delegates events to the document, so the root must be attached.
       const root = document.body.appendChild(document.createElement("div"));
       const app = renderer === "vapor" ? vue.createVaporApp(App) : vue.createApp(App);
-      app.use(vue.vaporInteropPlugin).mount(root);
       try {
-        await act(data, root);
-      } catch (error) {
-        throw new Error(`${renderer}: ${(error as Error).message}`, { cause: error });
+        app.use(vue.vaporInteropPlugin).mount(root);
+        try {
+          await act(data, root);
+        } catch (error) {
+          throw new Error(`${renderer}: ${(error as Error).message}`, { cause: error });
+        }
+        await vue.nextTick();
+        results[renderer] = { after: root.innerHTML, text: root.textContent! };
+      } finally {
+        // A failed scenario must not leave its app mounted under `document.body`
+        // for the scenarios that follow.
+        app.unmount();
+        root.remove();
       }
-      await vue.nextTick();
-      results[renderer] = { after: root.innerHTML, text: root.textContent! };
-      app.unmount();
-      root.remove();
     } finally {
       build.dispose();
     }

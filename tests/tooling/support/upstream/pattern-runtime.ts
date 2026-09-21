@@ -50,11 +50,13 @@ export function buildPatternComponents(
   for (const [file, source] of Object.entries(components)) {
     fs.writeFileSync(path.join(directory, "src", file), source);
   }
-  const [binary] = resolveVizeLaunchCommand();
+  // The launch command ends in the `lsp` subcommand; everything before it is
+  // the CLI itself, which is `cargo run … --` when no built binary exists.
+  const [binary, ...cli] = resolveVizeLaunchCommand().slice(0, -1);
   for (const backend of backends) {
     const flags = backendFlags[backend];
     const output = path.join(directory, backend);
-    const built = spawnSync(binary, ["build", "src", "-o", output, ...flags], {
+    const built = spawnSync(binary, [...cli, "build", "src", "-o", output, ...flags], {
       cwd: directory,
       encoding: "utf8",
     });
