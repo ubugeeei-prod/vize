@@ -72,7 +72,8 @@ fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
                     | s2::BindingOp::VueOnce(_)
                     | s2::BindingOp::VueMemo(_)
                     | s2::BindingOp::VueCloak(_) => {}
-                    s2::BindingOp::SlotContent(_) | s2::BindingOp::VueSlotScope(_) => {
+                    s2::BindingOp::SlotContent(_) => {}
+                    s2::BindingOp::VueSlotScope(_) => {
                         return Err(LegacyReason::Operation.into());
                     }
                     s2::BindingOp::VueSync(_) | s2::BindingOp::VueCssBind(_) => {
@@ -99,14 +100,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     ) -> Result<()> {
         let name = plan_source(&open, SsrStringPayloadKind::ComponentName)?;
         self.pos += 1;
-        let segments = self.segments;
-        let len = component.attributes.len() + component.bindings.len();
-        let attached = segments
-            .get(self.pos..self.pos + len)
-            .ok_or(AdmissionFailure::Invalid(
-                "string plan lost attached component segments",
-            ))?;
-        self.pos += len;
+        let attached = self.take_attached(component.attributes.len() + component.bindings.len())?;
+        let attached = attached.as_slice();
         admit(attached, open.fact)?;
         let no_inherit = Flags {
             as_fragment: false,
@@ -121,24 +116,27 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 ..no_inherit
             })?,
             "component" | "Component" => return Err(LegacyReason::Operation.into()),
-            _ if !component.children.ops.is_empty() => {
-                return Err(LegacyReason::Operation.into());
-            }
-            _ => self.render_component(name, attached, inherit)?,
+            _ => self.render_component(name, component, attached, inherit)?,
         }
         self.close(Kind::CloseComponent, |source| {
             matches!(source, Source::Component(closed) if core::ptr::eq(*closed, component))
         })
     }
 
-    /// `_push(_ssrRenderComponent(callee, props, null, _parent))` for a
-    /// component without slot content.
+    /// `_push(_ssrRenderComponent(callee, props, slots, _parent))`.
     fn render_component(
         &mut self,
         name: &str,
+        component: &'r s2::ComponentOp<'a>,
         attached: &Attached<'_, '_>,
         inherit: bool,
     ) -> Result<()> {
+        let content = self.pos;
+        let slots = if component.children.ops.is_empty() {
+            None
+        } else {
+            Some(self.component_slots(component, content)?)
+        };
         let binding = self.ctx.resolve_component_binding_expr(name);
         let props = self.component_props(attached)?;
         let props = self.with_scope_id_prop(props);
@@ -154,11 +152,17 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push(&callee);
         self.ctx.push(", ");
         self.ctx.push(&props);
-        self.ctx.push(", null, _parent");
+        self.ctx.push(", ");
+        match &slots {
+            Some(slots) => self.emit_slots_object(slots)?,
+            None => self.ctx.push("null"),
+        }
+        self.ctx.push(", _parent");
         if self.ctx.with_slot_scope_id {
             self.ctx.push(", _scopeId");
         }
         self.ctx.push("))\n");
+        self.pos = self.region_end(content)?;
         Ok(())
     }
 

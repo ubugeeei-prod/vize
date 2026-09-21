@@ -114,6 +114,7 @@ const ADMITTED_RULES: &[&str] = &[
     "lower.vue-text",
     "lower.component",
     "lower.slot",
+    "lower.slot-content",
     "lower.vue-directive",
     "lower.vue-once",
     "lower.vue-memo",
@@ -226,6 +227,8 @@ fn lower_and_emit(
     let facts = emit::PlanFacts {
         texts: &s2.texts,
         for_wrappers: &s2.for_wrappers,
+        wrappers: &s2.wrappers,
+        if_facts: &s2.if_facts,
     };
     match emit::emit_plan(&mut ctx, &lowered.plan, &facts, &mut exprs) {
         Ok(()) => SsrS4Selection::Emitted(ctx.finish_render()),

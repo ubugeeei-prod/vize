@@ -11,7 +11,7 @@ pub(super) fn binding_kind(binding: &s2::BindingOp<'_>) -> SsrStringSegmentKind 
         s2::BindingOp::VueHtml(_) => SsrStringSegmentKind::RawHtml,
         s2::BindingOp::VueText(_) => SsrStringSegmentKind::DynamicText,
         s2::BindingOp::SlotContent(_) | s2::BindingOp::VueSlotScope(_) => {
-            SsrStringSegmentKind::SlotOutlet
+            SsrStringSegmentKind::SlotContent
         }
         s2::BindingOp::On(_)
         | s2::BindingOp::VueCssBind(_)

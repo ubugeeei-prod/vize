@@ -170,8 +170,11 @@ emitters on every SFC template (smoke sweep of the checkout in CI: 717
 compared, 274 plan-emitted, 0 divergences).
 _Sixth slice 2026-09-22:_ components without slot content, `<Teleport>`,
 `<Suspense>`, transparent built-ins, and `<slot>` outlets emit from the plan
-(checkout smoke: 494 of 717 plan-emitted, 0 divergences). Component slot
-content and its VNode fallback, dynamic components, custom directives, a
+(checkout smoke: 494 of 717 plan-emitted, 0 divergences).
+_Seventh slice 2026-09-22:_ component slot content emits the static slots
+object with push-form slot functions and their VNode fallback (checkout
+smoke: 523 of 717 plan-emitted; vendor sample: 1,034 of 1,279; 0
+divergences). `createSlots` shapes, dynamic components, custom directives, a
 canonical Real Project Matrix run, and the legacy walker deletion remain
 before P3-8 closes.
 

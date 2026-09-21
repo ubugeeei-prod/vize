@@ -23,10 +23,16 @@ use crate::s4::{AdmissionFailure, LegacyReason};
 /// the two disagree, so that text keeps the legacy lane.
 pub(super) fn emit_text(ctx: &mut SsrCodegenContext<'_>, content: &str) -> Result<()> {
     let decoded = decode_template_entities(content);
-    if whitespace_count(&decoded) != whitespace_count(content) {
+    admit_decoded(content, &decoded)?;
+    ctx.push_string_part_static(&escape_html(&decoded));
+    Ok(())
+}
+
+/// Refuse text whose entities decode to whitespace (see [`emit_text`]).
+pub(super) fn admit_decoded(content: &str, decoded: &str) -> Result<()> {
+    if whitespace_count(decoded) != whitespace_count(content) {
         return Err(LegacyReason::ExpressionOrEncoding.into());
     }
-    ctx.push_string_part_static(&escape_html(&decoded));
     Ok(())
 }
 
@@ -79,7 +85,7 @@ fn push_interpolate(em: &mut Emitter<'_, '_, '_, '_, '_, '_>, text: vize_s0::Str
 }
 
 /// The validated parts of a compound interpolation, or `None` for a plain one.
-fn compound_parts<'t>(
+pub(super) fn compound_parts<'t>(
     texts: &'t SideTable<TextParts>,
     segment: &SsrStringSegment<'_, '_>,
     interpolation: &s2::InterpolationOp<'_>,

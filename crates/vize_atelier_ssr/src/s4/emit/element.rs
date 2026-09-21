@@ -8,11 +8,11 @@ use vize_s1_to_s2::TransformContent;
 use vize_s2::op as s2;
 
 use super::{Emitter, Flags, Result, attrs, fallthrough, model, plan_source};
+use crate::s4::LegacyReason;
 use crate::s4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
     SsrStringSegmentKind as Kind,
 };
-use crate::s4::{AdmissionFailure, LegacyReason};
 
 /// Elements whose content model or runtime helpers are outside the plan
 /// emitter: raw-text / RCDATA parents and `<template>`.
@@ -56,15 +56,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             return Err(LegacyReason::Element.into());
         }
         self.pos += 1;
-        let attached_len = element.attributes.len() + element.bindings.len();
-        let end = self.pos + attached_len;
-        let attached = self
-            .segments
-            .get(self.pos..end)
-            .ok_or(AdmissionFailure::Invalid(
-                "string plan lost attached element segments",
-            ))?;
-        self.pos = end;
+        let attached = self.take_attached(element.attributes.len() + element.bindings.len())?;
+        let attached = attached.as_slice();
         attrs::admit(attached, open.fact, tag)?;
         let content = content(attached, tag);
 
@@ -147,33 +140,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// Consume a child list the legacy walker never renders (the element's
     /// directive owns its content), keeping the plan balanced.
     fn skip_children(&mut self) -> Result<()> {
-        let mut depth = 0usize;
-        while let Some(segment) = self.segments.get(self.pos) {
-            match segment.kind {
-                Kind::OpenElement
-                | Kind::If
-                | Kind::Branch
-                | Kind::For
-                | Kind::Component
-                | Kind::SlotOutlet => depth += 1,
-                Kind::CloseElement
-                | Kind::CloseIf
-                | Kind::CloseBranch
-                | Kind::CloseFor
-                | Kind::CloseComponent
-                | Kind::CloseSlot => {
-                    if depth == 0 {
-                        return Ok(());
-                    }
-                    depth -= 1;
-                }
-                _ => {}
-            }
-            self.pos += 1;
-        }
-        Err(AdmissionFailure::Invalid(
-            "string plan element is not closed",
-        ))
+        self.pos = self.region_end(self.pos)?;
+        Ok(())
     }
 }
 

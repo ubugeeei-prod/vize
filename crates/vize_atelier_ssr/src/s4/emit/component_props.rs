@@ -162,15 +162,22 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                 }
             }
             s2::BindingOp::Model(model) => {
+                // The expansion binds the trimmed value and spells the update
+                // handler over the raw (undecoded, padded) attribute text.
                 let value = self.expr(&model.contract.read, TransformContent::Decoded)?;
+                let value = value.trim();
                 let key = match &model.argument {
                     None => "modelValue".to_compact_string(),
                     Some(DynamicName::Static(name)) => camelize(name),
                     Some(DynamicName::Dynamic(_)) => return Err(LegacyReason::Binding.into()),
                 };
                 let update_key = cstr!("onUpdate:{key}");
-                entries.push(component_prop_entry(&key, &value, false));
-                let handler = cstr!("$event => (({value}) = $event)");
+                entries.push(component_prop_entry(&key, value, false));
+                let handler = self
+                    .exprs
+                    .model_update(&model.contract.read, TransformContent::Padded)
+                    .map_err(|_| LegacyReason::ExpressionOrEncoding)?;
+                let handler = self.callable_handler(handler)?;
                 entries.push(component_prop_entry(&update_key, &handler, false));
             }
             s2::BindingOp::VueShow(show) => {
@@ -197,6 +204,12 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             .exprs
             .handler(handler, TransformContent::Decoded)
             .map_err(|_| LegacyReason::ExpressionOrEncoding)?;
+        self.callable_handler(processed)
+    }
+
+    /// `event_handler_to_string`: processed handler text that is not a
+    /// function or a callable reference is wrapped once more.
+    fn callable_handler(&self, processed: vize_s1_to_s2::TransformedExpr) -> Result<String> {
         let rendered = self.consume(processed)?;
         if TransformExpressions::handler_is_callable(&rendered) {
             return Ok(rendered);

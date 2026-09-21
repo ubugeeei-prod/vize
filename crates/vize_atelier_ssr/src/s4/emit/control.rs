@@ -24,6 +24,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         disable_nested_fragments: bool,
         inherit_attrs: bool,
     ) -> Result<()> {
+        let fact = self.segments[self.pos].fact;
         self.pos += 1;
         let mut conditions = std::vec::Vec::with_capacity(if_op.branches.len());
         for (index, branch) in if_op.branches.iter().enumerate() {
@@ -57,11 +58,14 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
             self.ctx.indent_level += 1;
             let shape = self.scan_region(self.pos)?;
-            self.children(Flags {
+            self.branch_key = self.branch_key_span(fact, index)?;
+            let emitted = self.children(Flags {
                 as_fragment: !disable_nested_fragments && shape.legacy_children > 1,
                 disable_nested_fragments,
                 inherit_attrs,
-            })?;
+            });
+            self.branch_key = None;
+            emitted?;
             self.ctx.flush_push();
             self.ctx.indent_level -= 1;
             self.close(

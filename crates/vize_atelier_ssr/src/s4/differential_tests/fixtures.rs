@@ -151,11 +151,18 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
 
 /// Templates the selector must keep on the legacy walker in this slice.
 pub(super) const REFUSED: &[(&str, &str)] = &[
-    ("component", r#"<Foo :a="b">x</Foo>"#),
     ("dynamic-component", r#"<component :is="tag" class="t" />"#),
     (
-        "component-slot-content",
-        r#"<Foo v-slot="{ item }"><b>{{ item }}</b></Foo>"#,
+        "dynamic-slot-name",
+        r#"<Foo><template #[name]>x</template></Foo>"#,
+    ),
+    (
+        "conditional-slot",
+        r#"<Foo><template v-if="a" #a>x</template></Foo>"#,
+    ),
+    (
+        "looped-slot",
+        r#"<Foo><template v-for="n in names" #[n]>x</template></Foo>"#,
     ),
     ("slot-dynamic-prop-key", r#"<div><slot :[k]="v" /></div>"#),
     ("slot-name-twice", r#"<div><slot name :name="n" /></div>"#),
@@ -200,5 +207,9 @@ pub(super) const ADMITTED_TS: &[(&str, &str)] = &[
     (
         "root-ts",
         r#"<div :title="<string>x" :data-y="fn<T>(y)">{{ z as any }}</div>"#,
+    ),
+    (
+        "component-model-ts",
+        r#"<Bar v-model="(m as any)" /><Foo><Bar v-model=" (n as number) " /></Foo>"#,
     ),
 ];
