@@ -85,6 +85,8 @@
 
 ## P6-3 — In-process wasmtime hosting lane
 
+**Landed 2026-09-22** — full record: [phase-6-records/p6-3.md](./phase-6-records/p6-3.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** C
@@ -93,8 +95,8 @@
 
 **Steps:**
 
-- [ ] Host crate; the same guest binary runs out-of-process and in-process
-- [ ] A tooling test: nothing outside `extension-host` features depends on `wasmtime`
+- [x] Host crate; the same guest binary runs out-of-process and in-process
+- [x] A tooling test: nothing outside `extension-host` features depends on `wasmtime` ([`davinci-extension-host-deps.test.ts`](../../tests/tooling/davinci-extension-host-deps.test.ts))
 
 **Acceptance:** the same guest passes TS-48 in both hosting modes; a guest exceeding its fuel budget is stopped with the exact error; the dependency test green and proven to fail on an injected edge; `cargo audit --deny warnings` green.
 

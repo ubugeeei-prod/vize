@@ -159,6 +159,32 @@ pub enum GuestError {
     Trap(String),
     /// The transport to an out-of-process guest failed.
     Transport(String),
+    /// The call used up the guest's per-call fuel budget and was stopped.
+    OutOfFuel { budget: u64 },
+    /// The guest tried to grow its memory past its limit.
+    MemoryLimit { limit: u64 },
+}
+
+/// Per-guest resource limits a wasmtime host enforces in both hosting modes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct GuestLimits {
+    /// Fuel (roughly, executed wasm instructions) granted to each call.
+    pub fuel_per_call: u64,
+    /// The largest linear memory the guest may grow to, in bytes.
+    pub max_memory_bytes: u64,
+}
+
+impl Default for GuestLimits {
+    /// One billion units of fuel per call and 128 MiB of memory: far above
+    /// what lowering one block needs, low enough that a runaway guest is
+    /// stopped in about a second.
+    fn default() -> Self {
+        Self {
+            fuel_per_call: 1_000_000_000,
+            max_memory_bytes: 128 * 1024 * 1024,
+        }
+    }
 }
 
 impl fmt::Display for GuestError {
@@ -167,6 +193,18 @@ impl fmt::Display for GuestError {
             Self::Instantiate(message) => write!(f, "guest instantiation failed: {message}"),
             Self::Trap(message) => write!(f, "guest trapped: {message}"),
             Self::Transport(message) => write!(f, "guest transport failed: {message}"),
+            Self::OutOfFuel { budget } => {
+                write!(
+                    f,
+                    "guest stopped: it used up its fuel budget of {budget} per call"
+                )
+            }
+            Self::MemoryLimit { limit } => {
+                write!(
+                    f,
+                    "guest stopped: it tried to grow its memory past {limit} bytes"
+                )
+            }
         }
     }
 }

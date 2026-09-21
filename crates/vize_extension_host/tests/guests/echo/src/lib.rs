@@ -1,7 +1,8 @@
 //! The TS-48 echo guest: answers `lower-block` with the committed goldens
-//! for the block whose source it recognizes, byte for byte, and traps on
-//! any other block. It imports no host function — no WASI — so it is `no_std` with
-//! its own allocator, `cabi_realloc` and panic handler.
+//! for the block whose source it recognizes, byte for byte, spins or hoards
+//! memory on the two limit probes, and traps on any other block. It imports
+//! no host function — no WASI — so it is `no_std` with its own allocator,
+//! `cabi_realloc` and panic handler.
 
 #![no_std]
 
@@ -70,6 +71,21 @@ impl Handshake for Echo {
 
 impl Lowering for Echo {
     fn lower_block(block: SourceBlock) -> LoweredBlock {
+        // The P6-3 limit probes: a runaway loop and a memory hoard.
+        match block.source.as_str() {
+            "<!-- spin -->" => loop {
+                core::hint::black_box(());
+            },
+            "<!-- hoard -->" => {
+                let mut hoard: Vec<Vec<u8>> = Vec::new();
+                loop {
+                    // Reserve without touching: memory grows, fuel barely moves.
+                    hoard.push(Vec::with_capacity(1 << 20));
+                    core::hint::black_box(&hoard);
+                }
+            }
+            _ => {}
+        }
         let Some(golden) = GOLDENS.iter().find(|golden| golden.source == block.source) else {
             core::arch::wasm32::unreachable()
         };

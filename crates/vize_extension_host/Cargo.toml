@@ -53,3 +53,7 @@ required-features = ["extension-host"]
 [[test]]
 name = "sdk_hello"
 required-features = ["extension-host"]
+
+[[test]]
+name = "guest_limits"
+required-features = ["extension-host"]

@@ -4,16 +4,20 @@
 //! the types-only `vize:contracts/types` instance), so the linker is empty:
 //! a guest that asks for any host capability — WASI included — fails to
 //! instantiate. Guests are pure functions of the block they are given.
+//!
+//! Every call runs under [`GuestLimits`]: a fresh fuel budget (a runaway
+//! guest is stopped with [`GuestError::OutOfFuel`]) and a ceiling on linear
+//! memory (a hoarding guest is stopped with [`GuestError::MemoryLimit`]).
 
 use std::path::Path;
 
 use vize_s0::{String, cstr};
 use wasmtime::component::{Component, Linker};
-use wasmtime::{Config, Engine, Store};
+use wasmtime::{Config, Engine, ResourceLimiter, Store, Trap};
 
 use crate::contract::{
-    Capability, Diagnostic, DiagnosticPart, GuestError, InputDialectGuest, LoweredBlock, Page,
-    PartKind, Severity, SourceBlock, Span, Stage, Witness,
+    Capability, Diagnostic, DiagnosticPart, GuestError, GuestLimits, InputDialectGuest,
+    LoweredBlock, Page, PartKind, Severity, SourceBlock, Span, Stage, Witness,
 };
 
 mod bindings {
@@ -30,8 +34,38 @@ use bindings::vize::contracts::types as wit;
 
 /// A component guest instantiated in this process.
 pub struct WasmGuest {
-    store: Store<()>,
+    store: Store<MemoryCeiling>,
     instance: bindings::InputDialect,
+    limits: GuestLimits,
+}
+
+/// Denies memory growth past the limit and remembers that it did, so the
+/// trap that follows is reported as the limit, not as the guest's own fault.
+struct MemoryCeiling {
+    max_bytes: usize,
+    denied: bool,
+}
+
+impl ResourceLimiter for MemoryCeiling {
+    fn memory_growing(
+        &mut self,
+        _current: usize,
+        desired: usize,
+        _maximum: Option<usize>,
+    ) -> wasmtime::Result<bool> {
+        let allowed = desired <= self.max_bytes;
+        self.denied |= !allowed;
+        Ok(allowed)
+    }
+
+    fn table_growing(
+        &mut self,
+        _current: usize,
+        _desired: usize,
+        _maximum: Option<usize>,
+    ) -> wasmtime::Result<bool> {
+        Ok(true)
+    }
 }
 
 impl core::fmt::Debug for WasmGuest {
@@ -49,13 +83,24 @@ fn trap(error: &wasmtime::Error) -> GuestError {
 }
 
 impl WasmGuest {
-    /// Compile and instantiate the component at `path`.
+    /// Compile and instantiate the component at `path` under the default
+    /// [`GuestLimits`].
     ///
     /// # Errors
     ///
     /// [`GuestError::Instantiate`] with wasmtime's message.
     pub fn load(path: &Path) -> Result<Self, GuestError> {
+        Self::load_with(path, GuestLimits::default())
+    }
+
+    /// Compile and instantiate the component at `path` under `limits`.
+    ///
+    /// # Errors
+    ///
+    /// [`GuestError::Instantiate`] with wasmtime's message.
+    pub fn load_with(path: &Path, limits: GuestLimits) -> Result<Self, GuestError> {
         let mut config = Config::new();
+        config.consume_fuel(true);
         // Trap messages cross the contract verbatim, so they carry no wasm
         // backtrace: its code offsets change with every guest build.
         config.wasm_backtrace_max_frames(None);
@@ -63,20 +108,56 @@ impl WasmGuest {
         let component =
             Component::from_file(&engine, path).map_err(|error| instantiate_error(&error))?;
         let linker = Linker::new(&engine);
-        let mut store = Store::new(&engine, ());
+        let ceiling = MemoryCeiling {
+            max_bytes: usize::try_from(limits.max_memory_bytes).unwrap_or(usize::MAX),
+            denied: false,
+        };
+        let mut store = Store::new(&engine, ceiling);
+        store.limiter(|ceiling| ceiling);
+        store
+            .set_fuel(limits.fuel_per_call)
+            .map_err(|error| instantiate_error(&error))?;
         let instance = bindings::InputDialect::instantiate(&mut store, &component, &linker)
             .map_err(|error| instantiate_error(&error))?;
-        Ok(Self { store, instance })
+        Ok(Self {
+            store,
+            instance,
+            limits,
+        })
+    }
+
+    /// Grant a fresh budget before a call.
+    fn arm(&mut self) -> Result<(), GuestError> {
+        self.store.data_mut().denied = false;
+        self.store
+            .set_fuel(self.limits.fuel_per_call)
+            .map_err(|error| trap(&error))
+    }
+
+    /// Classify a failed call: a limit the host enforced, or a guest trap.
+    fn failure(&self, error: &wasmtime::Error) -> GuestError {
+        if error.downcast_ref::<Trap>() == Some(&Trap::OutOfFuel) {
+            GuestError::OutOfFuel {
+                budget: self.limits.fuel_per_call,
+            }
+        } else if self.store.data().denied {
+            GuestError::MemoryLimit {
+                limit: self.limits.max_memory_bytes,
+            }
+        } else {
+            trap(error)
+        }
     }
 }
 
 impl InputDialectGuest for WasmGuest {
     fn get_capability(&mut self) -> Result<Capability, GuestError> {
+        self.arm()?;
         let offer = self
             .instance
             .vize_contracts_handshake()
-            .call_get_capability(&mut self.store)
-            .map_err(|error| trap(&error))?;
+            .call_get_capability(&mut self.store);
+        let offer = offer.map_err(|error| self.failure(&error))?;
         let wit_handshake::Capability {
             protocol_version,
             features,
@@ -93,15 +174,16 @@ impl InputDialectGuest for WasmGuest {
             base: block.base,
             lang: block.lang.as_ref().map(|lang| lang.as_str().into()),
         };
+        self.arm()?;
+        let answer = self
+            .instance
+            .vize_contracts_input_lowering()
+            .call_lower_block(&mut self.store, &request);
         let wit_lowering::LoweredBlock {
             surface,
             semantic,
             diagnostics,
-        } = self
-            .instance
-            .vize_contracts_input_lowering()
-            .call_lower_block(&mut self.store, &request)
-            .map_err(|error| trap(&error))?;
+        } = answer.map_err(|error| self.failure(&error))?;
         Ok(LoweredBlock {
             surface: page(surface),
             semantic: page(semantic),

@@ -79,5 +79,7 @@ jobs:
         run: cargo test -p vize_extension_host --features extension-host --test wit_golden
       - name: Build the hello dialect from the packed SDK and run it (P6-2)
         run: cargo test -p vize_extension_host --features extension-host --test sdk_hello
+      - name: Stop runaway and hoarding guests at their limits in both modes (P6-3)
+        run: cargo test -p vize_extension_host --features extension-host --test guest_limits
       - name: Classify contract changes and hold released surfaces to the policy (P6-8)
         run: cargo test -p vize_marquette --features wit --test contract_compat --test contract_version && cargo test -p vize_extension_host --test contract_surface

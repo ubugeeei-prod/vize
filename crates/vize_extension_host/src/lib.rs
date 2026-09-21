@@ -42,8 +42,8 @@ pub mod wire;
 
 pub use accept::{Accepted, accept};
 pub use contract::{
-    Capability, Diagnostic, DiagnosticPart, GuestError, InputDialectGuest, LoweredBlock, Page,
-    PartKind, Severity, SourceBlock, Span, Stage, Witness,
+    Capability, Diagnostic, DiagnosticPart, GuestError, GuestLimits, InputDialectGuest,
+    LoweredBlock, Page, PartKind, Severity, SourceBlock, Span, Stage, Witness,
 };
 pub use handshake::{HandshakeError, Negotiated, negotiate};
 pub use session::{ContractError, Session};
