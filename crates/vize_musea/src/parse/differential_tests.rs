@@ -10,7 +10,9 @@
 //! and match its pinned expectation in `divergence_tests.rs` instead.
 //!
 //! Scope proof: the committed corpus count is pinned, so an empty or
-//! half-read fixture directory fails. `VIZE_MUSEA_DIFFERENTIAL_CORPUS=<dir>`
+//! half-read fixture directory fails. The committed files are `*.vue.txt`
+//! (many are malformed by design, so they stay out of the repository's Vue
+//! lint and format lanes). `VIZE_MUSEA_DIFFERENTIAL_CORPUS=<dir>`
 //! widens the lane with every `*.vue` file under `<dir>` (used for the
 //! generated 240-file Musea benchmark corpus; counts are reported, not
 //! pinned).
@@ -33,21 +35,30 @@ const COMMITTED_FIXTURES: usize = 217;
 /// class has an exact expectation in `divergence_tests.rs` (D1–D4).
 const INTENTIONAL_DIVERGENCES: &[&str] = &[
     // D1: `<variant … />` is an empty variant.
-    "content-musea-and-css-1e05f9370f2a.art.vue",
-    "content-musea-and-css-8d88db42666b.art.vue",
-    "content-musea-and-css-9e7833924193.art.vue",
-    "content-musea-and-css-ddb6999a589e.art.vue",
-    "content-musea-and-css-e208bf92b367.art.vue",
+    "content-musea-and-css-1e05f9370f2a.art.vue.txt",
+    "content-musea-and-css-8d88db42666b.art.vue.txt",
+    "content-musea-and-css-9e7833924193.art.vue.txt",
+    "content-musea-and-css-ddb6999a589e.art.vue.txt",
+    "content-musea-and-css-e208bf92b367.art.vue.txt",
     // D3: `<style>` inside `<art>` is not an SFC style block.
-    "vize-maestro-configured-lint-tests-8f44edc047c4.art.vue",
+    "vize-maestro-configured-lint-tests-8f44edc047c4.art.vue.txt",
     // D4: an unsplittable container reports the container error.
-    "vize-patina-html-66050b9db3b6.art.vue",
+    "vize-patina-html-66050b9db3b6.art.vue.txt",
     // D2: `title = "…"` (spaced `=`) is an attribute value.
-    "vize-patina-require-title-45a52dcf3b55.art.vue",
+    "vize-patina-require-title-45a52dcf3b55.art.vue.txt",
 ];
 
 fn fixture_dir() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/differential")
+}
+
+/// Vue sources: `*.vue`, or `*.vue.txt` for the committed corpus — stored as
+/// text because many fixtures are malformed by design and must stay out of
+/// the repository's Vue lint and format lanes.
+fn is_vue_source(path: &Path) -> bool {
+    let name = path.file_name().unwrap_or_default().to_string_lossy();
+    let stem = name.strip_suffix(".txt").unwrap_or(&name);
+    Path::new(stem).extension().is_some_and(|ext| ext == "vue")
 }
 
 fn collect_vue_files(dir: &Path, out: &mut std::vec::Vec<PathBuf>) {
@@ -56,7 +67,7 @@ fn collect_vue_files(dir: &Path, out: &mut std::vec::Vec<PathBuf>) {
         let path = entry.expect("directory entry").path();
         if path.is_dir() {
             collect_vue_files(&path, out);
-        } else if path.extension().is_some_and(|ext| ext == "vue") {
+        } else if is_vue_source(&path) {
             out.push(path);
         }
     }

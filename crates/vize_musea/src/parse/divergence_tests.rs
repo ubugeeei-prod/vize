@@ -27,7 +27,7 @@ fn variant_shape<'a>(desc: &ArtDescriptor<'a>) -> std::vec::Vec<(&'a str, &'a st
 fn d1_self_closing_variants_are_empty_variants() {
     let allocator = Allocator::new();
     let source = include_str!(
-        "../../tests/fixtures/differential/content-musea-and-css-1e05f9370f2a.art.vue"
+        "../../tests/fixtures/differential/content-musea-and-css-1e05f9370f2a.art.vue.txt"
     );
     let desc = parse(&allocator, source).unwrap();
     assert_eq!(variant_shape(&desc), [("primary", ""), ("secondary", "")]);
@@ -46,7 +46,7 @@ fn d1_self_closing_variants_are_empty_variants() {
 fn d2_spaced_equals_is_an_attribute_value() {
     let allocator = Allocator::new();
     let source = include_str!(
-        "../../tests/fixtures/differential/vize-patina-require-title-45a52dcf3b55.art.vue"
+        "../../tests/fixtures/differential/vize-patina-require-title-45a52dcf3b55.art.vue.txt"
     );
     let desc = parse(&allocator, source).unwrap();
     assert_eq!(
@@ -62,7 +62,7 @@ fn d2_spaced_equals_is_an_attribute_value() {
 fn d3_style_inside_art_is_not_an_sfc_style_block() {
     let allocator = Allocator::new();
     let source = include_str!(
-        "../../tests/fixtures/differential/vize-maestro-configured-lint-tests-8f44edc047c4.art.vue"
+        "../../tests/fixtures/differential/vize-maestro-configured-lint-tests-8f44edc047c4.art.vue.txt"
     );
     let desc = parse(&allocator, source).unwrap();
     assert_eq!(desc.metadata.title, "Inline");
@@ -76,7 +76,7 @@ fn d3_style_inside_art_is_not_an_sfc_style_block() {
 fn d4_unsplittable_container_reports_the_container_error() {
     let allocator = Allocator::new();
     let source =
-        include_str!("../../tests/fixtures/differential/vize-patina-html-66050b9db3b6.art.vue");
+        include_str!("../../tests/fixtures/differential/vize-patina-html-66050b9db3b6.art.vue.txt");
     let Err(ArtParseError::ParseError { line, message }) = parse(&allocator, source) else {
         panic!("expected the container error");
     };
