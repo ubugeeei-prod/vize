@@ -1,0 +1,191 @@
+name: Editor conformance
+
+# TS-45 (Davinci P5-12): one LSP scenario with exact expectations, played
+# through Neovim, Helix, Zed and VS Code against the real `vize lsp`, judged
+# from each client's recorded JSON-RPC transcript. Client pins match the
+# editor-host-smoke action (`tests/tooling/editor-conformance.test.ts`
+# rejects drift).
+
+on:
+  push:
+    branches: [main, davinci]
+  pull_request:
+    branches: [main, davinci]
+    paths:
+      - "crates/**"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "editors/**"
+      - "legacy-tools/editor-e2e/**"
+      - "tests/editor-conformance/**"
+      - "tests/tooling/editor-conformance*"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/editor-conformance.yml"
+  schedule:
+    # Daily, offset from the check/native-smoke/e2e crons.
+    - cron: "41 4 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: editor-conformance-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+
+jobs:
+  server:
+    name: Build the real vize server
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: editor-conformance
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Build vize CLI
+        run: cargo build --profile ci -p vize
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vize-server
+          path: target/ci/vize
+          retention-days: 1
+
+  conformance:
+    name: TS-45 ${{ matrix.client }}
+    needs: server
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        client: [neovim, helix, zed, vscode]
+    env:
+      CLIENT: ${{ matrix.client }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: vize-server
+          path: ${{ runner.temp }}/vize-server
+      - name: Make the server executable
+        run: |
+          chmod +x "${RUNNER_TEMP}/vize-server/vize"
+          echo "VIZE_SERVER_PATH=${RUNNER_TEMP}/vize-server/vize" >> "$GITHUB_ENV"
+
+      - name: Install pinned Neovim
+        if: matrix.client == 'neovim'
+        env:
+          NVIM_SHA256: a74740047e73b2b380d63a474282814063d10650cd6cc95efa16d1713c7e616c
+          NVIM_VERSION: v0.11.4
+        run: |
+          set -euo pipefail
+          bash .github/actions/vscode-host-smoke/download-artifact.sh \
+            "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
+            "${RUNNER_TEMP}/nvim.tar.gz" "${NVIM_SHA256}"
+          tar -C "${RUNNER_TEMP}" -xzf "${RUNNER_TEMP}/nvim.tar.gz"
+          echo "VIZE_TEST_NVIM_PATH=${RUNNER_TEMP}/nvim-linux-x86_64/bin/nvim" >> "$GITHUB_ENV"
+          "${RUNNER_TEMP}/nvim-linux-x86_64/bin/nvim" --version | head -1
+
+      - name: Install pinned Helix
+        if: matrix.client == 'helix'
+        env:
+          HELIX_VERSION: 25.07.1
+          HELIX_SHA256: 3f08e63ecd388fff657ad39722f88bb03dcf326f1f2da2700d99e1dc40ab2e8b
+        run: |
+          set -euo pipefail
+          archive="${RUNNER_TEMP}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz"
+          bash .github/actions/vscode-host-smoke/download-artifact.sh \
+            "https://github.com/helix-editor/helix/releases/download/${HELIX_VERSION}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz" \
+            "${archive}" "${HELIX_SHA256}"
+          mkdir -p "${RUNNER_TEMP}/helix"
+          tar -xJf "${archive}" -C "${RUNNER_TEMP}/helix" --strip-components=1
+          {
+            echo "VIZE_TEST_HELIX_PATH=${RUNNER_TEMP}/helix/hx"
+            echo "HELIX_RUNTIME=${RUNNER_TEMP}/helix/runtime"
+          } >> "$GITHUB_ENV"
+          "${RUNNER_TEMP}/helix/hx" --version
+          python3 --version
+
+      - name: Setup Rust for VS Code packaging
+        if: matrix.client == 'vscode'
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - name: Setup Rust Script for VS Code packaging
+        if: matrix.client == 'vscode'
+        uses: ./.github/actions/setup-rust-script
+      - name: Stabilize Ubuntu package archive
+        if: matrix.client == 'vscode'
+        uses: ./.github/actions/setup-ubuntu-archive
+      - name: Prepare pinned VS Code and the packaged extension
+        if: matrix.client == 'vscode'
+        env:
+          VIZE_TEST_VSCODE_VERSION: "1.107.1"
+        run: |
+          set -euo pipefail
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            vize-ci-apt-retry sudo apt-get update
+            vize-ci-apt-retry sudo apt-get install -y xvfb
+          fi
+          timeout --signal=TERM --kill-after=10s 300s vp run --workspace-root test:vscode-extension:download
+          vp run --workspace-root test:vscode-extension:vsix
+
+      - name: Play the TS-45 scenario
+        env:
+          VIZE_TEST_VSCODE_VERSION: "1.107.1"
+        run: |
+          set -euo pipefail
+          if [ "${CLIENT}" = "vscode" ]; then
+            xvfb-run -a node tests/editor-conformance/run.ts "${CLIENT}" --out "${RUNNER_TEMP}/ts45"
+          else
+            node tests/editor-conformance/run.ts "${CLIENT}" --out "${RUNNER_TEMP}/ts45"
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: ts45-${{ matrix.client }}
+          path: ${{ runner.temp }}/ts45
+          retention-days: 14
+
+  report:
+    name: TS-45 results
+    needs: conformance
+    if: always()
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: false
+          run-install: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: ts45-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/ts45
+      - name: Render the multi-client table
+        run: node tests/editor-conformance/report.ts "${RUNNER_TEMP}/ts45" --require helix,neovim,vscode,zed

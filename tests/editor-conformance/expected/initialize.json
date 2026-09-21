@@ -1,0 +1,215 @@
+{
+  "capabilities": {
+    "callHierarchyProvider": true,
+    "codeActionProvider": {
+      "codeActionKinds": ["quickfix"],
+      "resolveProvider": false
+    },
+    "codeLensProvider": {
+      "resolveProvider": false
+    },
+    "colorProvider": true,
+    "completionProvider": {
+      "resolveProvider": true,
+      "triggerCharacters": [
+        "\"",
+        "'",
+        ":",
+        "@",
+        ".",
+        "<",
+        "=",
+        "/",
+        ">",
+        "+",
+        "^",
+        "*",
+        "(",
+        ")",
+        "#",
+        "[",
+        "]",
+        "$",
+        "-",
+        "{",
+        "}"
+      ]
+    },
+    "declarationProvider": true,
+    "definitionProvider": true,
+    "documentFormattingProvider": true,
+    "documentHighlightProvider": true,
+    "documentLinkProvider": {
+      "resolveProvider": false
+    },
+    "documentOnTypeFormattingProvider": {
+      "firstTriggerCharacter": ";",
+      "moreTriggerCharacter": ["}", "\n"]
+    },
+    "documentRangeFormattingProvider": true,
+    "documentSymbolProvider": true,
+    "foldingRangeProvider": true,
+    "hoverProvider": true,
+    "implementationProvider": true,
+    "inlayHintProvider": true,
+    "linkedEditingRangeProvider": true,
+    "referencesProvider": true,
+    "renameProvider": {
+      "prepareProvider": true
+    },
+    "selectionRangeProvider": true,
+    "semanticTokensProvider": {
+      "full": true,
+      "legend": {
+        "tokenModifiers": [
+          "declaration",
+          "definition",
+          "readonly",
+          "static",
+          "deprecated",
+          "abstract",
+          "async",
+          "modification",
+          "documentation",
+          "defaultLibrary"
+        ],
+        "tokenTypes": [
+          "namespace",
+          "type",
+          "class",
+          "enum",
+          "interface",
+          "struct",
+          "typeParameter",
+          "parameter",
+          "variable",
+          "property",
+          "enumMember",
+          "event",
+          "function",
+          "method",
+          "macro",
+          "keyword",
+          "modifier",
+          "comment",
+          "string",
+          "number",
+          "regexp",
+          "operator",
+          "decorator"
+        ]
+      },
+      "range": true
+    },
+    "signatureHelpProvider": {
+      "retriggerCharacters": [")"],
+      "triggerCharacters": ["(", ",", "<"]
+    },
+    "textDocumentSync": {
+      "change": 2,
+      "openClose": true,
+      "save": {
+        "includeText": false
+      },
+      "willSave": false,
+      "willSaveWaitUntil": false
+    },
+    "typeDefinitionProvider": true,
+    "workspace": {
+      "fileOperations": {
+        "didCreate": {
+          "filters": [
+            {
+              "pattern": {
+                "glob": "**/*.d.{ts,mts,cts}",
+                "matches": "file"
+              },
+              "scheme": "file"
+            },
+            {
+              "pattern": {
+                "glob": "**/*.vue",
+                "matches": "file"
+              },
+              "scheme": "file"
+            },
+            {
+              "pattern": {
+                "glob": "**/*",
+                "matches": "folder"
+              },
+              "scheme": "file"
+            }
+          ]
+        },
+        "didDelete": {
+          "filters": [
+            {
+              "pattern": {
+                "glob": "**/*.d.{ts,mts,cts}",
+                "matches": "file"
+              },
+              "scheme": "file"
+            },
+            {
+              "pattern": {
+                "glob": "**/*.vue",
+                "matches": "file"
+              },
+              "scheme": "file"
+            },
+            {
+              "pattern": {
+                "glob": "**/*",
+                "matches": "folder"
+              },
+              "scheme": "file"
+            }
+          ]
+        },
+        "didRename": {
+          "filters": [
+            {
+              "pattern": {
+                "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                "matches": "file"
+              },
+              "scheme": "file"
+            },
+            {
+              "pattern": {
+                "glob": "**/*",
+                "matches": "folder"
+              },
+              "scheme": "file"
+            }
+          ]
+        },
+        "willRename": {
+          "filters": [
+            {
+              "pattern": {
+                "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                "matches": "file"
+              },
+              "scheme": "file"
+            },
+            {
+              "pattern": {
+                "glob": "**/*",
+                "matches": "folder"
+              },
+              "scheme": "file"
+            }
+          ]
+        }
+      },
+      "workspaceFolders": {
+        "changeNotifications": true,
+        "supported": true
+      }
+    },
+    "workspaceSymbolProvider": true
+  },
+  "serverName": "vize-maestro"
+}

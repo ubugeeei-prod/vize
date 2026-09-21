@@ -1,0 +1,16 @@
+{
+  "contents": {
+    "kind": "markdown",
+    "value": "```typescript\nconst total: \"3\"\n```"
+  },
+  "range": {
+    "end": {
+      "character": 11,
+      "line": 3
+    },
+    "start": {
+      "character": 6,
+      "line": 3
+    }
+  }
+}

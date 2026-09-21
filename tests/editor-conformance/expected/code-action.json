@@ -1,0 +1,50 @@
+[
+  {
+    "edit": {
+      "changes": {
+        "${workspace}/src/Scenario.vue": [
+          {
+            "newText": " ",
+            "range": {
+              "end": {
+                "character": 8,
+                "line": 7
+              },
+              "start": {
+                "character": 6,
+                "line": 7
+              }
+            }
+          }
+        ]
+      }
+    },
+    "isPreferred": true,
+    "kind": "quickfix",
+    "title": "Fix: Replace multiple spaces with single space"
+  },
+  {
+    "edit": {
+      "changes": {
+        "${workspace}/src/Scenario.vue": [
+          {
+            "newText": "<!-- @vize:forget vue/no-multi-spaces -->\n",
+            "range": {
+              "end": {
+                "character": 0,
+                "line": 7
+              },
+              "start": {
+                "character": 0,
+                "line": 7
+              }
+            }
+          }
+        ]
+      }
+    },
+    "isPreferred": false,
+    "kind": "quickfix",
+    "title": "Suppress with @vize:forget (vue/no-multi-spaces)"
+  }
+]

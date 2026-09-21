@@ -1,0 +1,28 @@
+[
+  {
+    "detail": " (const)",
+    "documentation": {
+      "kind": "markdown",
+      "value": "**Const**\n\nConstant binding (function, class, or literal)."
+    },
+    "kind": 21,
+    "label": "Child",
+    "labelDetails": {
+      "detail": " (const)"
+    },
+    "sortText": "0Child"
+  },
+  {
+    "detail": " (literal)",
+    "documentation": {
+      "kind": "markdown",
+      "value": "**Literal**\n\nLiteral constant value."
+    },
+    "kind": 21,
+    "label": "total",
+    "labelDetails": {
+      "detail": " (literal)"
+    },
+    "sortText": "0total"
+  }
+]

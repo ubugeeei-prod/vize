@@ -1,0 +1,132 @@
+{
+  "suite": "TS-45",
+  "document": "src/Scenario.vue",
+  "languageId": "vue",
+  "initializationOptions": {
+    "ecosystem": true,
+    "editor": true,
+    "formatting": true,
+    "lint": true,
+    "typecheck": true
+  },
+  "steps": [
+    {
+      "id": "initialize",
+      "label": "initialize",
+      "kind": "initialize",
+      "expect": { "$file": "expected/initialize.json" }
+    },
+    {
+      "id": "open",
+      "label": "open",
+      "kind": "open",
+      "expect": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst total = \"3\";\n</script>\n\n<template>\n<Child  :count=\"total\" />\n</template>\n"
+    },
+    {
+      "id": "diagnostics-open",
+      "label": "diagnostics on open",
+      "kind": "diagnostics",
+      "expect": { "$file": "expected/diagnostics-open.json" }
+    },
+    {
+      "id": "hover",
+      "label": "hover",
+      "kind": "request",
+      "method": "textDocument/hover",
+      "match": { "position": { "line": 3, "character": 8 } },
+      "expect": { "$file": "expected/hover.json" }
+    },
+    {
+      "id": "completion",
+      "label": "completion",
+      "kind": "request",
+      "method": "textDocument/completion",
+      "match": { "position": { "line": 7, "character": 16 } },
+      "expect": { "$file": "expected/completion.json" }
+    },
+    {
+      "id": "definition",
+      "label": "definition",
+      "kind": "request",
+      "method": "textDocument/definition",
+      "match": { "position": { "line": 7, "character": 3 } },
+      "expect": { "$file": "expected/definition.json" }
+    },
+    {
+      "id": "code-action",
+      "label": "code actions",
+      "kind": "request",
+      "method": "textDocument/codeAction",
+      "match": {
+        "range": { "start": { "line": 7, "character": 6 }, "end": { "line": 7, "character": 7 } }
+      },
+      "expect": { "$file": "expected/code-action.json" }
+    },
+    {
+      "id": "apply-quick-fix",
+      "label": "apply quick fix",
+      "kind": "text",
+      "action": {
+        "apply": "code-action",
+        "title": "Fix: Replace multiple spaces with single space"
+      },
+      "expect": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst total = \"3\";\n</script>\n\n<template>\n<Child :count=\"total\" />\n</template>\n"
+    },
+    {
+      "id": "diagnostics-quick-fix",
+      "label": "diagnostics after quick fix",
+      "kind": "diagnostics",
+      "expect": { "$file": "expected/diagnostics-quick-fix.json" }
+    },
+    {
+      "id": "formatting",
+      "label": "formatting",
+      "kind": "request",
+      "method": "textDocument/formatting",
+      "match": { "options": { "insertSpaces": true, "tabSize": 2 } },
+      "expect": { "$file": "expected/formatting.json" }
+    },
+    {
+      "id": "apply-formatting",
+      "label": "apply formatting",
+      "kind": "text",
+      "action": { "apply": "formatting" },
+      "expect": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst total = \"3\";\n</script>\n\n<template>\n  <Child :count=\"total\" />\n</template>\n"
+    },
+    {
+      "id": "edit",
+      "label": "typed edit",
+      "kind": "text",
+      "action": {
+        "replace": {
+          "start": { "line": 3, "character": 14 },
+          "end": { "line": 3, "character": 17 }
+        },
+        "text": "3"
+      },
+      "expect": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst total = 3;\n</script>\n\n<template>\n  <Child :count=\"total\" />\n</template>\n"
+    },
+    {
+      "id": "diagnostics-edit",
+      "label": "diagnostics after edit",
+      "kind": "diagnostics",
+      "expect": { "$file": "expected/diagnostics-edit.json" }
+    },
+    {
+      "id": "rename",
+      "label": "rename",
+      "kind": "request",
+      "method": "textDocument/rename",
+      "match": { "position": { "line": 3, "character": 8 }, "newName": "quantity" },
+      "expect": { "$file": "expected/rename.json" }
+    },
+    {
+      "id": "apply-rename",
+      "label": "apply rename",
+      "kind": "text",
+      "action": { "apply": "rename" },
+      "expect": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst quantity = 3;\n</script>\n\n<template>\n  <Child :count=\"quantity\" />\n</template>\n"
+    },
+    { "id": "shutdown", "label": "shutdown", "kind": "shutdown", "expect": { "exitCode": 0 } }
+  ]
+}

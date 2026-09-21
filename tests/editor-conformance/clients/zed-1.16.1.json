@@ -1,0 +1,161 @@
+{
+  "source": "zed-industries/zed v1.16.1 crates/lsp/src/lsp.rs LanguageServer::default_initialize_params (pull_diagnostics = true, augments_syntax_tokens = true)",
+  "clientInfo": { "name": "Zed", "version": "1.16.1" },
+  "capabilities": {
+    "general": { "positionEncodings": ["utf-16"] },
+    "workspace": {
+      "configuration": true,
+      "didChangeWatchedFiles": { "dynamicRegistration": true, "relativePatternSupport": true },
+      "didChangeConfiguration": { "dynamicRegistration": true },
+      "workspaceFolders": true,
+      "symbol": { "dynamicRegistration": true },
+      "inlayHint": { "refreshSupport": true },
+      "diagnostics": { "refreshSupport": true },
+      "codeLens": { "refreshSupport": true },
+      "workspaceEdit": {
+        "resourceOperations": ["create", "rename", "delete"],
+        "documentChanges": true,
+        "snippetEditSupport": true
+      },
+      "fileOperations": { "dynamicRegistration": true, "didRename": true, "willRename": true },
+      "applyEdit": true,
+      "executeCommand": { "dynamicRegistration": true },
+      "semanticTokens": { "refreshSupport": true }
+    },
+    "textDocument": {
+      "definition": { "linkSupport": true, "dynamicRegistration": true },
+      "codeAction": {
+        "codeActionLiteralSupport": {
+          "codeActionKind": { "valueSet": ["refactor", "quickfix", "source"] }
+        },
+        "dataSupport": true,
+        "resolveSupport": {
+          "properties": ["kind", "diagnostics", "isPreferred", "disabled", "edit", "command"]
+        },
+        "dynamicRegistration": true
+      },
+      "completion": {
+        "completionItem": {
+          "snippetSupport": true,
+          "resolveSupport": {
+            "properties": ["additionalTextEdits", "command", "detail", "documentation"]
+          },
+          "deprecatedSupport": true,
+          "tagSupport": { "valueSet": [1] },
+          "insertReplaceSupport": true,
+          "labelDetailsSupport": true,
+          "insertTextModeSupport": { "valueSet": [1, 2] },
+          "documentationFormat": ["markdown", "plaintext"]
+        },
+        "insertTextMode": 2,
+        "completionList": {
+          "itemDefaults": [
+            "commitCharacters",
+            "editRange",
+            "insertTextMode",
+            "insertTextFormat",
+            "data"
+          ]
+        },
+        "contextSupport": true,
+        "dynamicRegistration": true
+      },
+      "rename": {
+        "prepareSupport": true,
+        "prepareSupportDefaultBehavior": 1,
+        "dynamicRegistration": true
+      },
+      "hover": { "contentFormat": ["markdown"], "dynamicRegistration": true },
+      "inlayHint": {
+        "resolveSupport": {
+          "properties": ["textEdits", "tooltip", "label.tooltip", "label.location", "label.command"]
+        },
+        "dynamicRegistration": true
+      },
+      "semanticTokens": {
+        "dynamicRegistration": true,
+        "requests": { "full": { "delta": true } },
+        "tokenTypes": [
+          "namespace",
+          "class",
+          "enum",
+          "interface",
+          "struct",
+          "typeParameter",
+          "type",
+          "parameter",
+          "variable",
+          "property",
+          "enumMember",
+          "decorator",
+          "function",
+          "method",
+          "macro",
+          "label",
+          "comment",
+          "string",
+          "keyword",
+          "number",
+          "regexp",
+          "operator",
+          "modifier",
+          "event",
+          "lifetime"
+        ],
+        "tokenModifiers": [
+          "declaration",
+          "definition",
+          "readonly",
+          "static",
+          "deprecated",
+          "abstract",
+          "async",
+          "modification",
+          "documentation",
+          "defaultLibrary",
+          "constant"
+        ],
+        "formats": ["relative"],
+        "overlappingTokenSupport": true,
+        "multilineTokenSupport": true,
+        "serverCancelSupport": true,
+        "augmentsSyntaxTokens": true
+      },
+      "publishDiagnostics": {
+        "relatedInformation": true,
+        "versionSupport": true,
+        "dataSupport": true,
+        "tagSupport": { "valueSet": [1, 2] },
+        "codeDescriptionSupport": true
+      },
+      "formatting": { "dynamicRegistration": true },
+      "rangeFormatting": { "dynamicRegistration": true },
+      "onTypeFormatting": { "dynamicRegistration": true },
+      "signatureHelp": {
+        "signatureInformation": {
+          "documentationFormat": ["markdown", "plaintext"],
+          "parameterInformation": { "labelOffsetSupport": true },
+          "activeParameterSupport": true
+        },
+        "dynamicRegistration": true
+      },
+      "synchronization": { "didSave": true, "dynamicRegistration": true },
+      "codeLens": { "dynamicRegistration": true },
+      "documentSymbol": { "hierarchicalDocumentSymbolSupport": true, "dynamicRegistration": true },
+      "diagnostic": { "dynamicRegistration": true, "relatedDocumentSupport": true },
+      "colorProvider": { "dynamicRegistration": true },
+      "documentLink": { "dynamicRegistration": true, "tooltipSupport": true },
+      "foldingRange": {
+        "dynamicRegistration": true,
+        "lineFoldingOnly": false,
+        "foldingRange": { "collapsedText": true },
+        "foldingRangeKind": { "valueSet": ["comment", "region", "imports"] }
+      }
+    },
+    "experimental": { "serverStatusNotification": true, "localDocs": true },
+    "window": {
+      "workDoneProgress": true,
+      "showMessage": { "messageActionItem": { "additionalPropertiesSupport": true } }
+    }
+  }
+}

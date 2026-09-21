@@ -1,0 +1,32 @@
+{
+  "changes": {
+    "${workspace}/src/Scenario.vue": [
+      {
+        "newText": "quantity",
+        "range": {
+          "end": {
+            "character": 11,
+            "line": 3
+          },
+          "start": {
+            "character": 6,
+            "line": 3
+          }
+        }
+      },
+      {
+        "newText": "quantity",
+        "range": {
+          "end": {
+            "character": 22,
+            "line": 7
+          },
+          "start": {
+            "character": 17,
+            "line": 7
+          }
+        }
+      }
+    ]
+  }
+}

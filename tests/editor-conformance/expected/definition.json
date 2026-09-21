@@ -1,0 +1,13 @@
+{
+  "range": {
+    "end": {
+      "character": 0,
+      "line": 0
+    },
+    "start": {
+      "character": 0,
+      "line": 0
+    }
+  },
+  "uri": "${workspace}/src/Child.vue"
+}

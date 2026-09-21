@@ -1,0 +1,15 @@
+[
+  {
+    "newText": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\n\nconst total = \"3\";\n</script>\n\n<template>\n  <Child :count=\"total\" />\n</template>\n",
+    "range": {
+      "end": {
+        "character": 0,
+        "line": 9
+      },
+      "start": {
+        "character": 0,
+        "line": 0
+      }
+    }
+  }
+]
