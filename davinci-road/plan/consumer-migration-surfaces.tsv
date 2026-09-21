@@ -958,7 +958,7 @@ compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/component_binding.r
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/component_resolution.rs	2	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element.rs	20	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/component_props.rs	226	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/plain.rs	63	s0	S0	stage	vize_s0	preferred	4
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/plain.rs	65	s0	S0	stage	vize_s0	preferred	4
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/props.rs	4	s0	S0	stage	vize_s0	preferred	4
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/spanned_props.rs	13	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/helpers.rs	15	s0	S0	stage	vize_s0	preferred	1
