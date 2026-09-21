@@ -8,18 +8,20 @@
 
 mod bindings;
 mod emit;
+mod s2_input;
+mod select;
 mod string_plan;
+
+pub use s2_input::compile_s2_to_ssr;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_s0::config::VueVersion;
-use vize_s0::{Allocator, String, cstr, profile, profiler::global_profiler};
+use vize_s0::{Allocator, String, profile, profiler::global_profiler};
 use vize_s1::SurfaceParseOptions;
 use vize_s1_to_s2::TransformExpressions;
-use vize_s3::verify::verify;
 
-use crate::codegen::{SsrCodegenContext, SsrCodegenResult};
+use crate::codegen::SsrCodegenResult;
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
-use string_plan::lower_s2_to_string_plan;
 
 /// Everything the SSR S4 lane needs to decide and emit one compile.
 pub(crate) struct SsrS4Request<'o> {
@@ -163,88 +165,49 @@ fn lower_and_emit(
         },
     );
     let s2 = vize_s1_to_s2::lower(allocator, &tree, &surface_errors);
-    let s3 = vize_s2_to_s3::lower(allocator, &s2.root);
-    let violations = verify(&s3.program);
-    if !violations.is_empty() {
-        return SsrS4Selection::Rejected(
-            violations
-                .into_iter()
-                .map(|violation| {
-                    cstr!("Davinci S4 verifier rejected SSR bridge input: {violation}")
-                })
-                .collect(),
-        );
-    }
-    if s3.partition.ops.len() != s3.program.ops.len() {
-        return SsrS4Selection::Rejected(std::vec![cstr!(
-            "Davinci S4 verifier rejected SSR bridge input: partition facts {} did not match ops {}",
-            s3.partition.ops.len(),
-            s3.program.ops.len()
-        )]);
-    }
-    let lowered = lower_s2_to_string_plan(allocator, &s2.root, &s3.partition);
-    if !lowered.errors.is_empty() {
-        return SsrS4Selection::Rejected(
-            lowered
-                .errors
-                .iter()
-                .map(|error| cstr!("Davinci S4 string-plan rejected SSR bridge input: {error:?}"))
-                .collect(),
-        );
-    }
-    record_bridge_counters(
-        lowered.plan.segments.len() as u64,
-        lowered.plan.partition.static_segments as u64,
-        lowered.plan.partition.dynamic_segments as u64,
-        s3.partition.ops.len() as u64,
-        s2.diagnostics.len() as u64,
-    );
-
-    if request.options.croquis.is_some() {
-        return SsrS4Selection::Legacy(LegacyReason::Croquis);
-    }
-    if !emission_supported(request) {
-        return SsrS4Selection::Legacy(LegacyReason::Options);
-    }
-    if !s2.diagnostics.is_empty()
-        || s2.provenance.iter().any(|record| {
-            !ADMITTED_RULES.contains(&record.rule.as_str()) || drops_directive(record)
-        })
-    {
-        return SsrS4Selection::Legacy(LegacyReason::SurfaceSemantics);
-    }
-
+    let artifact = select::S2Artifact {
+        source,
+        root: &s2.root,
+        facts: emit::PlanFacts {
+            texts: &s2.texts,
+            for_wrappers: &s2.for_wrappers,
+            wrappers: &s2.wrappers,
+            if_facts: &s2.if_facts,
+        },
+        diagnostics: s2.diagnostics.len() as u64,
+    };
     let table = request
         .options
         .binding_metadata
         .as_ref()
         .map(bindings::binding_table);
-    let mut exprs = TransformExpressions::new(
-        source,
-        table.as_ref(),
-        request.options.is_ts,
-        request.options.inline,
-    );
-    let mut ctx = SsrCodegenContext::new_with_experimental_options(
+    select::select_from_s2(
         allocator,
+        &artifact,
         request.options,
-        source,
-        request.experimental.clone(),
-    );
-    ctx.begin_render();
-    let facts = emit::PlanFacts {
-        texts: &s2.texts,
-        for_wrappers: &s2.for_wrappers,
-        wrappers: &s2.wrappers,
-        if_facts: &s2.if_facts,
-    };
-    match emit::emit_plan(&mut ctx, &lowered.plan, &facts, &mut exprs) {
-        Ok(()) => SsrS4Selection::Emitted(ctx.finish_render()),
-        Err(AdmissionFailure::Unsupported(reason)) => SsrS4Selection::Legacy(reason),
-        Err(AdmissionFailure::Invalid(message)) => SsrS4Selection::Rejected(std::vec![cstr!(
-            "Davinci S4 string-plan emitter rejected SSR artifact: {message}"
-        )]),
-    }
+        request.experimental,
+        || {
+            if request.options.croquis.is_some() {
+                return Err(LegacyReason::Croquis);
+            }
+            if !emission_supported(request) {
+                return Err(LegacyReason::Options);
+            }
+            if !s2.diagnostics.is_empty()
+                || s2.provenance.iter().any(|record| {
+                    !ADMITTED_RULES.contains(&record.rule.as_str()) || drops_directive(record)
+                })
+            {
+                return Err(LegacyReason::SurfaceSemantics);
+            }
+            Ok(TransformExpressions::new(
+                source,
+                table.as_ref(),
+                request.options.is_ts,
+                request.options.inline,
+            ))
+        },
+    )
 }
 
 /// The legacy parser keeps `@vize:` directive comments with `comments` off
@@ -278,7 +241,7 @@ fn emission_supported(request: &SsrS4Request<'_>) -> bool {
     !options.inline && options.dialect == VueVersion::V3 && !options.experimental_in_tag_comments
 }
 
-fn record_selection(selection: &SsrS4Selection) {
+pub(super) fn record_selection(selection: &SsrS4Selection) {
     let profiler = global_profiler();
     if !profiler.is_enabled() {
         return;
@@ -291,7 +254,7 @@ fn record_selection(selection: &SsrS4Selection) {
     profiler.record_counter_enabled(counter, 1);
 }
 
-fn record_bridge_counters(
+pub(super) fn record_bridge_counters(
     segments: u64,
     static_segments: u64,
     dynamic_segments: u64,

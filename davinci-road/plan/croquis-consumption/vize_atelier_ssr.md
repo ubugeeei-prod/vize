@@ -21,7 +21,7 @@ _None._
 | product            | resolved | grep |
 | ------------------ | -------: | ---: |
 | `BindingMetadata`  |        0 |    6 |
-| `Croquis`          |        1 |    5 |
+| `Croquis`          |        1 |   12 |
 | `Scope`            |        0 |    3 |
 | `Span`             |        0 |   13 |
 | `Symbol`           |        0 |    2 |

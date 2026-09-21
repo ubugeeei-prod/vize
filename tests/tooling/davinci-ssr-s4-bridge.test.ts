@@ -27,14 +27,19 @@ test("Davinci SSR compile path imports the S4 string-plan bridge", () => {
 
   const compile = readRepoFile("crates", "vize_atelier_ssr", "src", "compile.rs");
   const bridge = readRepoFile("crates", "vize_atelier_ssr", "src", "s4.rs");
+  const select = readRepoFile("crates", "vize_atelier_ssr", "src", "s4", "select.rs");
   const plan = readRepoFile("crates", "vize_atelier_ssr", "src", "s4", "string_plan.rs");
   assert.match(compile, /select_ssr_lane/u);
   assert.match(compile, /SsrS4Selection::Emitted/u);
   assert.match(bridge, /vize_s1::parse_with_options/u);
   assert.match(bridge, /vize_s1_to_s2::lower/u);
-  assert.match(bridge, /vize_s2_to_s3::lower/u);
-  assert.match(bridge, /vize_s3::verify::verify/u);
+  assert.match(bridge, /select::select_from_s2/u);
+  assert.match(select, /vize_s2_to_s3::lower/u);
+  assert.match(select, /vize_s3::verify::verify/u);
   assert.match(plan, /PartitionFacts/u);
+  // JSX SSR builds S2 itself and enters the same plan lane first.
+  const jsx = readRepoFile("crates", "vize_atelier_jsx", "src", "ssr.rs");
+  assert.match(jsx, /compile_s2_to_ssr\(/u);
 });
 
 test("SSR S4 selection counters name every legacy reason", () => {

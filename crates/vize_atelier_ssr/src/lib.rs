@@ -22,7 +22,7 @@ pub use codegen::{SsrCodegenContext, SsrCodegenResult};
 #[allow(deprecated)]
 pub use compile::compile_ssr_with_vue_parser_quirks;
 pub use compile::{
-    compile_ssr, compile_ssr_with_custom_elements_and_template_syntax,
+    compile_s2_to_ssr, compile_ssr, compile_ssr_with_custom_elements_and_template_syntax,
     compile_ssr_with_custom_elements_template_syntax_and_experimental_options,
     compile_ssr_with_options, compile_ssr_with_template_syntax,
     compile_ssr_with_template_syntax_and_experimental_options,

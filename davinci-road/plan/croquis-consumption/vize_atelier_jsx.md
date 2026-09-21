@@ -11,7 +11,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | product            | kind  | module    | files | sites |
 | ------------------ | ----- | --------- | ----: | ----: |
 | `BindingMetadata`  | type  | `croquis` |     1 |     1 |
-| `Croquis`          | type  | `croquis` |    13 |    24 |
+| `Croquis`          | type  | `croquis` |    13 |    26 |
 | `Drawer`           | type  | `drawer`  |     1 |     1 |
 | `Croquis.bindings` | field | `croquis` |     1 |     1 |
 
@@ -24,7 +24,7 @@ _None._
 | product            | resolved | grep |
 | ------------------ | -------: | ---: |
 | `BindingMetadata`  |        1 |    2 |
-| `Croquis`          |       24 |   43 |
+| `Croquis`          |       26 |   45 |
 | `Drawer`           |        1 |    2 |
 | `Scope`            |        0 |    1 |
 | `ScopeBinding`     |        0 |    4 |

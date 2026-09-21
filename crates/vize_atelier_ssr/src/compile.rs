@@ -10,6 +10,8 @@ use vize_atelier_core::{
 };
 use vize_s0::{Allocator, String, profile};
 
+pub use crate::s4::compile_s2_to_ssr;
+
 /// Compile a Vue template for SSR with default options
 pub fn compile_ssr<'a>(
     allocator: &'a Allocator,

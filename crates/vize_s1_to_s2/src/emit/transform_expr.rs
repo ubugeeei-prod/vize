@@ -70,6 +70,16 @@ impl<'b> TransformExpressions<'b> {
         }
     }
 
+    /// The transform with `prefix_identifiers` off, as JSX render closures
+    /// compile: each expression is only type-erased and consumed.
+    #[must_use]
+    pub fn unprefixed(source: &'b str, is_ts: bool) -> Self {
+        Self {
+            source,
+            scope: PrefixScope::new(None, false, is_ts, false),
+        }
+    }
+
     /// The transform's rewrite of `expr` at its authored position.
     pub fn expr(
         &self,

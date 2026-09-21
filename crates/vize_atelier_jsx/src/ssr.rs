@@ -6,7 +6,9 @@
 
 use vize_atelier_core::lane::transform_with_source_text;
 use vize_atelier_core::options::TransformOptions;
-use vize_atelier_ssr::{SsrCodegenContext, SsrCompilerOptions};
+use vize_atelier_ssr::{
+    SsrCodegenContext, SsrCodegenResult, SsrCompilerOptions, compile_s2_to_ssr,
+};
 use vize_croquis::Croquis;
 use vize_s0::{Allocator, String};
 
@@ -103,9 +105,36 @@ pub(crate) fn compile_lowered_root_to_ssr(
     default_mode: JsxOutputMode,
     source: &str,
 ) -> SsrComponent {
+    compile_root_on_lane(
+        allocator,
+        lowered,
+        analysis,
+        default_mode,
+        source,
+        SsrLane::Plan,
+    )
+}
+
+/// Which emitter owns a JSX SSR compile: the S4 string plan (falling back to
+/// the legacy walker for shapes it does not own), or the walker pinned.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SsrLane {
+    Plan,
+    #[cfg_attr(not(test), allow(dead_code))]
+    Legacy,
+}
+
+fn compile_root_on_lane(
+    allocator: &Allocator,
+    lowered: LoweredRoot,
+    analysis: &Croquis,
+    default_mode: JsxOutputMode,
+    source: &str,
+    lane: SsrLane,
+) -> SsrComponent {
     let LoweredRoot {
         mut root,
-        s2: _,
+        s2,
         mode,
         component_name,
         component_setup,
@@ -116,22 +145,17 @@ pub(crate) fn compile_lowered_root_to_ssr(
     let scoped_style =
         scoped_css.map(|css| build_scoped_style(component_name.as_deref(), css.as_str()));
 
-    let transform_opts = TransformOptions {
-        prefix_identifiers: false,
-        hoist_static: false,
-        cache_handlers: false,
-        ssr: true,
-        binding_metadata: None,
-        ..Default::default()
-    };
-    transform_with_source_text(allocator, &mut root, transform_opts, Some(analysis), source);
-
     let ssr_options = SsrCompilerOptions {
         component_name: component_name.clone(),
         scope_id: scoped_style.as_ref().map(|style| style.scope_id.clone()),
         ..SsrCompilerOptions::default()
     };
-    let generated = SsrCodegenContext::new(allocator, &ssr_options, source).generate(&root);
+    let planned = match (&s2, lane) {
+        (Ok(s2), SsrLane::Plan) => compile_s2_to_ssr(allocator, s2.source, &s2.root, &ssr_options),
+        _ => None,
+    };
+    let generated =
+        planned.unwrap_or_else(|| legacy_ssr(allocator, &mut root, analysis, source, &ssr_options));
 
     let mut code = generated.preamble;
     if !code.is_empty() && !generated.code.is_empty() {
@@ -147,3 +171,27 @@ pub(crate) fn compile_lowered_root_to_ssr(
         scoped_style,
     }
 }
+
+/// The legacy walker: the shipped transform, then the SSR AST codegen.
+fn legacy_ssr<'a>(
+    allocator: &'a Allocator,
+    root: &mut vize_relief::RootNode<'a>,
+    analysis: &'a Croquis,
+    source: &'a str,
+    ssr_options: &SsrCompilerOptions,
+) -> SsrCodegenResult {
+    let transform_opts = TransformOptions {
+        prefix_identifiers: false,
+        hoist_static: false,
+        cache_handlers: false,
+        ssr: true,
+        binding_metadata: None,
+        ..Default::default()
+    };
+    transform_with_source_text(allocator, root, transform_opts, Some(analysis), source);
+    SsrCodegenContext::new(allocator, ssr_options, source).generate(root)
+}
+
+#[cfg(test)]
+#[path = "ssr/s4_differential.rs"]
+mod s4_differential;

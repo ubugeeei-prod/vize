@@ -26,10 +26,10 @@ compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/experimental_tests.rs	6	s
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/lib.rs	48	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/options.rs	5	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_ssr/src/options.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/s4.rs	14	s0	S0	stage	vize_s0	preferred	3
-compiler	Compiler	source	crates/vize_atelier_ssr/src/s4.rs	14	s1	S1	stage	vize_s1	preferred	2
-compiler	Compiler	source	crates/vize_atelier_ssr/src/s4.rs	14	s2	S2	stage	vize_s2	preferred	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/s4.rs	14	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	2
+compiler	Compiler	source	crates/vize_atelier_ssr/src/s4.rs	18	s0	S0	stage	vize_s0	preferred	3
+compiler	Compiler	source	crates/vize_atelier_ssr/src/s4.rs	18	s1	S1	stage	vize_s1	preferred	2
+compiler	Compiler	source	crates/vize_atelier_ssr/src/s4.rs	18	s2	S2	stage	vize_s2	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/s4.rs	18	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	2
 compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/bindings.rs	4	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/s4/differential_tests.rs	16	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/emit.rs	27	davinci	Davinci	stage	vize_davinci	preferred	1
@@ -84,6 +84,13 @@ compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/emit/vnode_props.rs	4	s1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/emit/vnode.rs	6	s0	S0	stage	vize_s0	preferred	7
 compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/emit/vnode.rs	6	s2	S2	stage	vize_s2	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/emit/vnode.rs	6	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/s2_input.rs	6	davinci	Davinci	stage	vize_davinci	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/s2_input.rs	6	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/s2_input.rs	6	s2	S2	stage	vize_s2	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/s2_input.rs	6	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/select.rs	4	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/select.rs	4	s2	S2	stage	vize_s2	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/select.rs	4	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/string_plan.rs	7	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/string_plan.rs	7	s2	S2	stage	vize_s2	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/s4/string_plan/binding.rs	1	s0	S0	stage	vize_s0	preferred	1
@@ -100,7 +107,8 @@ compiler	Compiler	source	crates/vize_atelier_ssr/src/stage_options.rs	14	s0	S0	s
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/steps.rs	93	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/component_spread_props.rs	10	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_expr_reparse_floor.rs	20	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_corpus.rs	91	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_corpus.rs	99	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_corpus/production.rs	53	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_walk_baseline.rs	27	davinci	Davinci	stage	vize_davinci	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_walk_baseline.rs	27	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/event_props.rs	4	s0	S0	stage	vize_s0	preferred	1
