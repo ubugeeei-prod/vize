@@ -124,6 +124,21 @@ impl NamespaceHoistPlan {
         }
 
         let captured = collect_captures(&parsed.program.body, &spans, &hoisted);
+        // Preserve JSDoc used by hover/completion/declaration emit. TypeScript
+        // treats a same-line comment after a statement as trailing trivia even
+        // when Oxc attaches it to the next token: do not promote it to JSDoc.
+        for (start, _) in &mut spans {
+            if let Some(comment) = parsed.program.comments.iter().find(|comment| {
+                comment.is_jsdoc()
+                    && comment.attached_to == *start
+                    && script[super::line_start_at(script, comment.span.start as usize)
+                        ..comment.span.start as usize]
+                        .trim()
+                        .is_empty()
+            }) {
+                *start = comment.span.start;
+            }
+        }
         Self {
             spans: super::include_leading_ts_directive_comments(script, spans),
             hoisted,

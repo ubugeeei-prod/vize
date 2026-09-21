@@ -17,6 +17,8 @@ const greeting = greetVis`;
 const sources = {
   setup: `<script setup lang="ts">\n${script}\n</script>`,
   normal: `<script lang="ts">\n${script}\n</script>`,
+  normalCrlf: `<script lang="ts">\r\n${script.replaceAll("\n", "\r\n")}\r\n</script>`,
+  normalTrailingComment: `<script lang="ts">const marker = "\u{1f600}"; ${script.replaceAll("\n", " ")};</script>`,
   escaped: `<script setup lang="ts">\n${script.replace("function greetVisitor", "function greet\\u0056isitor")}\n</script>`,
   tsx: `<script setup lang="tsx">\n${script.replace("const greeting", "const node = <div />; const greeting")}\n</script>`,
   inline: `<script setup lang="ts">${script.replaceAll("\n", " ").replace("const greeting", 'const marker = "\u{1f600}"; const greeting')};</script>`,
@@ -128,7 +130,9 @@ test("completion resolves authored documentation through the real server", async
         assertResolved(
           item,
           await resolve(item),
-          name === "trailingComment" ? undefined : documentation,
+          name === "trailingComment" || name === "normalTrailingComment"
+            ? undefined
+            : documentation,
           name === "escaped" ? "greet\\u0056isitor" : undefined,
         );
         close();
