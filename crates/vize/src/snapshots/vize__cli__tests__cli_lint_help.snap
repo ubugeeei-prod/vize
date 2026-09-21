@@ -23,9 +23,14 @@ Options:
           Do not load a config file
 
   -f, --format <FORMAT>
-          Output format (text, ansi, plain, json, stylish, markdown, html, agent)
+          Output format (text, rich, ansi, plain, json, stylish, markdown, html, agent)
 
           [default: text]
+
+      --locale <LOCALE>
+          Language of diagnostic messages and the rich renderer: en, ja, zh
+
+          [default: en]
 
       --max-warnings <MAX_WARNINGS>
           Maximum number of warnings before failing
