@@ -1,3 +1,4 @@
+///|
 /// A published benchmark is evidence about the measured binary, not the
 /// next release. Keep marked publication sections byte-for-byte unchanged.
 fn replace_readme_version_references(
@@ -12,9 +13,13 @@ fn replace_readme_version_references(
     if line.contains("<!-- benchmark:readme:start -->") {
       benchmark = true
     }
-    lines.push(if benchmark { line } else {
-      line.replace_all(old=current_version, new=new_version)
-    })
+    lines.push(
+      if benchmark {
+        line
+      } else {
+        line.replace_all(old=current_version, new=new_version)
+      },
+    )
     if line.contains("<!-- benchmark:readme:end -->") {
       benchmark = false
     }
@@ -22,6 +27,7 @@ fn replace_readme_version_references(
   lines.join("\n")
 }
 
+///|
 async fn update_release_readmes(
   current_version : String,
   new_version : String,
@@ -38,9 +44,9 @@ async fn update_release_readmes(
       }
     }
     if !write_string_to_file(
-      root_readme,
-      replace_readme_version_references(content, current_version, new_version),
-    ) {
+        root_readme,
+        replace_readme_version_references(content, current_version, new_version),
+      ) {
       @stdio.stderr.write("Failed to update \{root_readme}\n")
       return false
     }
@@ -73,9 +79,9 @@ async fn update_release_readmes(
       }
     }
     if !write_string_to_file(
-      readme_path,
-      replace_readme_version_references(content, current_version, new_version),
-    ) {
+        readme_path,
+        replace_readme_version_references(content, current_version, new_version),
+      ) {
       @stdio.stderr.write("Failed to update \{readme_path}\n")
       return false
     }

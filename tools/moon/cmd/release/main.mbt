@@ -6,6 +6,7 @@
 /// requested bump kind, updates every tracked manifest that must stay aligned,
 /// and only then creates and pushes the release commit and tag.
 
+///|
 /// Parsed semantic version components used by the release bump logic.
 /// The struct stores only the fields the repository needs today: major / minor /
 /// patch plus an optional prerelease label and numeric suffix.
@@ -17,10 +18,12 @@ struct Version {
   prerelease_num : Int?
 }
 
+///|
 async fn is_git_ignored(path : String) -> Bool {
   @process.run("git", ["check-ignore", "-q", path]) == 0
 }
 
+///|
 /// Writes a text file and converts write failures into a boolean result.
 fn write_string_to_file(path : String, content : String) -> Bool {
   try {
@@ -31,15 +34,15 @@ fn write_string_to_file(path : String, content : String) -> Bool {
   }
 }
 
+///|
 /// Parses an integer but keeps the caller in control of error handling.
 fn parse_int(value : String) -> Int? {
-  try {
-    Some(@string.parse_int(value))
-  } catch {
+  Some(@string.parse_int(value)) catch {
     _ => None
   }
 }
 
+///|
 /// Parses the repository's release version format into structured fields.
 /// Supported inputs are:
 /// - `major.minor.patch`
@@ -48,10 +51,16 @@ fn parse_int(value : String) -> Int? {
 /// The parser is intentionally strict so release automation never guesses when
 /// the current version format has drifted unexpectedly.
 fn parse_version(value : String) -> Version? {
-  let parts : Array[String] = value.split("-").map(view => view.to_owned()).collect()
+  let parts : Array[String] = value
+    .split("-")
+    .map(view => view.to_owned())
+    .collect()
   guard parts.length() >= 1 && parts.length() <= 2 else { return None }
 
-  let base_parts : Array[String] = parts[0].split(".").map(view => view.to_owned()).collect()
+  let base_parts : Array[String] = parts[0]
+    .split(".")
+    .map(view => view.to_owned())
+    .collect()
   guard base_parts.length() == 3 else { return None }
   let major = match parse_int(base_parts[0]) {
     Some(value) => value
@@ -86,15 +95,10 @@ fn parse_version(value : String) -> Version? {
     }
   }
 
-  Some(Version::{
-    major,
-    minor,
-    patch,
-    prerelease,
-    prerelease_num,
-  })
+  Some(Version::{ major, minor, patch, prerelease, prerelease_num })
 }
 
+///|
 /// Formats a structured version back into the repository's release string form.
 fn format_version(
   major : Int,
@@ -114,6 +118,7 @@ fn format_version(
   }
 }
 
+///|
 /// Computes the next release version for a given bump strategy.
 /// Stable bumps (`patch`, `minor`, `major`) reset the numeric suffix, while
 /// prerelease bumps preserve the existing base version and increment the suffix
@@ -135,17 +140,8 @@ fn bump_version(current : String, bump : String) -> String? {
         ),
       )
     "minor" =>
-      Some(
-        format_version(
-          version.major,
-          version.minor + 1,
-          0,
-          None,
-          None,
-        ),
-      )
-    "major" =>
-      Some(format_version(version.major + 1, 0, 0, None, None))
+      Some(format_version(version.major, version.minor + 1, 0, None, None))
+    "major" => Some(format_version(version.major + 1, 0, 0, None, None))
     "alpha" =>
       if version.prerelease == Some("alpha") {
         Some(
@@ -179,16 +175,31 @@ fn bump_version(current : String, bump : String) -> String? {
         ),
       )
     "rc" =>
-      Some(format_version(version.major, version.minor, version.patch, Some("rc"), None))
-    "release" => Some(format_version(version.major, version.minor, version.patch, None, None))
+      Some(
+        format_version(
+          version.major,
+          version.minor,
+          version.patch,
+          Some("rc"),
+          None,
+        ),
+      )
+    "release" =>
+      Some(
+        format_version(version.major, version.minor, version.patch, None, None),
+      )
     _ => None
   }
 }
 
+///|
 /// Extracts the current workspace version from the root `Cargo.toml`.
 fn workspace_version_from_content(content : String) -> String? {
   let mut section = ""
-  let lines : Array[String] = content.split("\n").map(view => view.to_owned()).collect()
+  let lines : Array[String] = content
+    .split("\n")
+    .map(view => view.to_owned())
+    .collect()
   for line in lines {
     let trimmed = line.trim()
     if trimmed.has_prefix("[") && trimmed.has_suffix("]") {
@@ -200,15 +211,16 @@ fn workspace_version_from_content(content : String) -> String? {
       trimmed.has_suffix("\"") {
       return Some(
         trimmed
-          .to_owned()
-          .replace(old="version = \"", new="")
-          .replace_all(old="\"", new=""),
+        .to_owned()
+        .replace(old="version = \"", new="")
+        .replace_all(old="\"", new=""),
       )
     }
   }
   None
 }
 
+///|
 /// Rewrites all workspace-level Rust version pins that must stay aligned.
 /// This updates both `[workspace.package].version` and the exact-version
 /// `vize_*` dependencies inside `[workspace.dependencies]`.
@@ -219,7 +231,10 @@ fn update_workspace_manifest_versions(
 ) -> String {
   let mut section = ""
   let updated : Array[String] = []
-  let lines : Array[String] = content.split("\n").map(view => view.to_owned()).collect()
+  let lines : Array[String] = content
+    .split("\n")
+    .map(view => view.to_owned())
+    .collect()
   for line in lines {
     let trimmed = line.trim()
     if trimmed.has_prefix("[") && trimmed.has_suffix("]") {
@@ -227,7 +242,8 @@ fn update_workspace_manifest_versions(
       updated.push(line)
       continue
     }
-    if section == "[workspace.package]" && trimmed == "version = \"\{current_version}\"" {
+    if section == "[workspace.package]" &&
+      trimmed == "version = \"\{current_version}\"" {
       updated.push(line.replace(old=current_version, new=new_version))
       continue
     }
@@ -235,7 +251,10 @@ fn update_workspace_manifest_versions(
       trimmed.has_prefix("vize_") &&
       line.contains("version = \"=\{current_version}\"") {
       updated.push(
-        line.replace_all(old="version = \"=\{current_version}\"", new="version = \"=\{new_version}\""),
+        line.replace_all(
+          old="version = \"=\{current_version}\"",
+          new="version = \"=\{new_version}\"",
+        ),
       )
       continue
     }
@@ -244,6 +263,7 @@ fn update_workspace_manifest_versions(
   updated.join("\n")
 }
 
+///|
 /// Replaces the first package.json `"version"` field that matches the current release.
 fn replace_package_json_version(
   content : String,
@@ -252,7 +272,10 @@ fn replace_package_json_version(
 ) -> String {
   let updated : Array[String] = []
   let mut replaced = false
-  let lines : Array[String] = content.split("\n").map(view => view.to_owned()).collect()
+  let lines : Array[String] = content
+    .split("\n")
+    .map(view => view.to_owned())
+    .collect()
   for line in lines {
     if !replaced {
       let trimmed = line.trim()
@@ -267,6 +290,7 @@ fn replace_package_json_version(
   updated.join("\n")
 }
 
+///|
 /// Nested npm group directories (npm/builder, npm/framework, npm/compose,
 /// npm/ui, ...) hold their packages one level deeper than the flat
 /// npm/<package> layout. Scanning them keeps every new group aligned with the
@@ -299,10 +323,7 @@ async fn nested_npm_package_dirs() -> Array[String] {
         continue
       }
       match @tool.read_file_to_string(package_json_path) {
-        Some(content) =>
-          if content.contains("\"private\": true") {
-            continue
-          }
+        Some(content) => if content.contains("\"private\": true") { continue }
         None => continue
       }
       package_dirs.push(package_dir)
@@ -312,17 +333,21 @@ async fn nested_npm_package_dirs() -> Array[String] {
   package_dirs
 }
 
+///|
 /// Package manifests that are intentionally outside the npm workspace package
 /// globs but still ship release artifacts and must stay aligned with the
 /// workspace version.
 async fn extra_release_package_json_paths() -> Array[String] {
-  let paths : Array[String] = ["editors/vscode/package.json", "editors/vscode-art/package.json"]
+  let paths : Array[String] = [
+    "editors/vscode/package.json", "editors/vscode-art/package.json",
+  ]
   for package_dir in nested_npm_package_dirs() {
     paths.push(@tool.join_path(package_dir, "package.json"))
   }
   paths
 }
 
+///|
 /// Replaces the first TOML `version = "..."` line in a file.
 /// This is used for the Zed extension manifests where a full TOML parser would
 /// be overkill for the repository's simple version synchronization needs.
@@ -333,7 +358,10 @@ fn replace_first_version_line(
 ) -> String {
   let updated : Array[String] = []
   let mut replaced = false
-  let lines : Array[String] = content.split("\n").map(view => view.to_owned()).collect()
+  let lines : Array[String] = content
+    .split("\n")
+    .map(view => view.to_owned())
+    .collect()
   for line in lines {
     if !replaced {
       let trimmed = line.trim()
@@ -350,6 +378,7 @@ fn replace_first_version_line(
   updated.join("\n")
 }
 
+///|
 /// Detects whether the script can safely prompt the user for confirmation.
 /// The release script is allowed to be interactive when run locally, but CI and
 /// sessions without a controlling terminal must fail explicitly instead of
@@ -358,12 +387,14 @@ async fn has_interactive_terminal() -> Bool {
   @process.run("sh", ["-c", ": </dev/tty >/dev/tty"]) == 0
 }
 
+///|
 /// Prompts through the controlling terminal because task runners keep stdin.
 async fn confirm_release() -> Bool {
   let command = "printf 'Proceed with release? [y/N] ' > /dev/tty; IFS= read -r answer < /dev/tty; case \"$answer\" in y|Y|yes|Yes|YES) exit 0 ;; *) exit 1 ;; esac"
   @process.run("sh", ["-c", command]) == 0
 }
 
+///|
 /// Filters a list of candidate paths down to the ones that currently exist.
 /// The release commit stages files opportunistically because some package
 /// variants are optional in this repository.
@@ -377,12 +408,11 @@ fn stage_files(files : Array[String]) -> Array[String] {
   staged
 }
 
+///|
 /// Runs the shared immutable-tag and current-main guard before any mutation.
 /// Tests may override the script path while exercising isolated repositories.
 async fn run_local_release_guard(tag : String) -> Bool {
-  let script = match @env.get_env_var(
-    "VIZE_RELEASE_GUARD_SCRIPT",
-  ) {
+  let script = match @env.get_env_var("VIZE_RELEASE_GUARD_SCRIPT") {
     Some(value) if value != "" => value
     _ => "tools/commands/ci/github/release-local-guard.rs"
   }
@@ -406,6 +436,7 @@ async fn run_local_release_guard(tag : String) -> Bool {
   true
 }
 
+///|
 /// Main entry point for release preparation and publication kickoff.
 /// The function computes the next version, confirms the operation when running
 /// interactively, verifies the repository is in a publishable state, updates
@@ -426,7 +457,9 @@ async fn run_app() -> Int {
   if args.length() == 4 && args[0] == "--print-readme-version-update" {
     match @tool.read_file_to_string(args[1]) {
       Some(content) => {
-        @stdio.stdout.write(replace_readme_version_references(content, args[2], args[3]))
+        @stdio.stdout.write(
+          replace_readme_version_references(content, args[2], args[3]),
+        )
         return 0
       }
       None => return 1
@@ -541,9 +574,11 @@ async fn run_app() -> Int {
 
   println("Updating Cargo.toml...")
   if !write_string_to_file(
-    cargo_toml_path,
-    update_workspace_manifest_versions(cargo_toml, current_version, new_version),
-  ) {
+      cargo_toml_path,
+      update_workspace_manifest_versions(
+        cargo_toml, current_version, new_version,
+      ),
+    ) {
     @stdio.stderr.write("Failed to update Cargo.toml\n")
     return 1
   }
@@ -571,9 +606,11 @@ async fn run_app() -> Int {
         }
       }
       if !write_string_to_file(
-        package_json_path,
-        replace_package_json_version(package_json, current_version, new_version),
-      ) {
+          package_json_path,
+          replace_package_json_version(
+            package_json, current_version, new_version,
+          ),
+        ) {
         @stdio.stderr.write("Failed to update \{package_json_path}\n")
         return 1
       }
@@ -593,9 +630,9 @@ async fn run_app() -> Int {
       }
     }
     if !write_string_to_file(
-      package_json_path,
-      replace_package_json_version(package_json, current_version, new_version),
-    ) {
+        package_json_path,
+        replace_package_json_version(package_json, current_version, new_version),
+      ) {
       @stdio.stderr.write("Failed to update \{package_json_path}\n")
       return 1
     }
@@ -612,9 +649,7 @@ async fn run_app() -> Int {
     }
   }
   let updated_workspace_yaml = replace_native_binary_workspace_catalog(
-    workspace_yaml,
-    current_version,
-    new_version,
+    workspace_yaml, current_version, new_version,
   )
   if updated_workspace_yaml != workspace_yaml {
     if !write_string_to_file(workspace_yaml_path, updated_workspace_yaml) {
@@ -634,9 +669,7 @@ async fn run_app() -> Int {
     }
   }
   let updated_lockfile = replace_native_binary_lockfile_catalog(
-    lockfile,
-    current_version,
-    new_version,
+    lockfile, current_version, new_version,
   )
   if updated_lockfile != lockfile {
     if !write_string_to_file(lockfile_path, updated_lockfile) {
@@ -659,9 +692,9 @@ async fn run_app() -> Int {
       }
     }
     if !write_string_to_file(
-      zed_cargo_toml,
-      replace_first_version_line(content, current_version, new_version),
-    ) {
+        zed_cargo_toml,
+        replace_first_version_line(content, current_version, new_version),
+      ) {
       @stdio.stderr.write("Failed to update \{zed_cargo_toml}\n")
       return 1
     }
@@ -677,9 +710,9 @@ async fn run_app() -> Int {
       }
     }
     if !write_string_to_file(
-      zed_extension_toml,
-      replace_first_version_line(content, current_version, new_version),
-    ) {
+        zed_extension_toml,
+        replace_first_version_line(content, current_version, new_version),
+      ) {
       @stdio.stderr.write("Failed to update \{zed_extension_toml}\n")
       return 1
     }
@@ -687,10 +720,10 @@ async fn run_app() -> Int {
     files_to_stage.push(zed_extension_toml)
   }
   if @tool.path_exists(zed_cargo_lock) {
-    if @process.run(
-      "cargo",
-      ["update", "--manifest-path", "editors/zed/Cargo.toml", "-p", "vize-zed-extension"],
-    ) != 0 {
+    if @process.run("cargo", [
+        "update", "--manifest-path", "editors/zed/Cargo.toml", "-p", "vize-zed-extension",
+      ]) !=
+      0 {
       @stdio.stderr.write("Failed to update editors/zed/Cargo.lock\n")
       return 1
     }
@@ -712,16 +745,17 @@ async fn run_app() -> Int {
     return 1
   }
 
-  let (staged_exit, staged_output) = @process.collect_stdout(
-    "git",
-    ["diff", "--cached", "--name-only"],
-  )
+  let (staged_exit, staged_output) = @process.collect_stdout("git", [
+    "diff", "--cached", "--name-only",
+  ])
   if staged_exit != 0 {
     @stdio.stderr.write("Failed to inspect staged release files\n")
     return 1
   }
   if staged_output.text().trim() == "" {
-    @stdio.stderr.write("No release changes were staged; refusing to create an empty release.\n")
+    @stdio.stderr.write(
+      "No release changes were staged; refusing to create an empty release.\n",
+    )
     return 1
   }
   let commit_args = ["commit", "--no-verify", "-m", "chore: release \{tag}"]
@@ -742,11 +776,17 @@ async fn run_app() -> Int {
   }
 
   println("Pushing main and tag atomically...")
-  if @process.run(
-    "git",
-    ["push", "--atomic", "origin", "main", "refs/tags/" + tag],
-  ) != 0 {
-    @stdio.stderr.write("Failed to atomically push main and the release tag\nRemote refs were unchanged. Before retrying, run `git tag -d \{tag}`, fetch origin/main, and remove the generated release commit (for example, `git reset --hard origin/main` after confirming there is no work to keep).\n")
+  if @process.run("git", [
+      "push",
+      "--atomic",
+      "origin",
+      "main",
+      "refs/tags/" + tag,
+    ]) !=
+    0 {
+    @stdio.stderr.write(
+      "Failed to atomically push main and the release tag\nRemote refs were unchanged. Before retrying, run `git tag -d \{tag}`, fetch origin/main, and remove the generated release commit (for example, `git reset --hard origin/main` after confirming there is no work to keep).\n",
+    )
     return 1
   }
 
@@ -757,6 +797,7 @@ async fn run_app() -> Int {
   0
 }
 
+///|
 async fn main {
   @sys.exit(run_app())
 }
