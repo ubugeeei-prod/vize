@@ -305,6 +305,7 @@ mod control;
 
 mod attributes;
 mod components;
+mod elements;
 mod parser_agreement;
 mod slots;
 mod templates;

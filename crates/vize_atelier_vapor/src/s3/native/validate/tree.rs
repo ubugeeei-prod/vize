@@ -101,39 +101,90 @@ pub(super) fn assemble(
 /// parser's 4096-element flattening limit (which it reports).
 const MAX_DEPTH: u32 = 1024;
 
-/// HTML tree construction closes an earlier button or list item instead of
-/// nesting a new one. The legacy parser reads authored markup, so the guard
-/// follows authored nesting, not template strings: any open button counts,
-/// and an open list item counts until a list or a component bounds its scope.
-/// Branches and loops are transparent. Parents precede their children.
+/// Open elements whose authored descendants HTML tree construction repairs.
+const BUTTON: u8 = 1;
+const ITEM: u8 = 2;
+const PARAGRAPH: u8 = 4;
+const ANCHOR: u8 = 8;
+const FORM: u8 = 16;
+
+/// Start tags that close an open `<p>` in button scope.
+fn closes_paragraph(tag: &str) -> bool {
+    matches!(
+        tag,
+        "address"
+            | "article"
+            | "aside"
+            | "blockquote"
+            | "div"
+            | "dl"
+            | "fieldset"
+            | "footer"
+            | "form"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "header"
+            | "hr"
+            | "main"
+            | "nav"
+            | "ol"
+            | "p"
+            | "pre"
+            | "section"
+            | "table"
+            | "ul"
+    )
+}
+
+/// HTML tree construction closes an open button, anchor or form-nested form
+/// instead of nesting a new one, closes a list item before another in list
+/// item scope, and closes a paragraph before a block in button scope. The
+/// legacy parser reads authored markup, so the guard follows authored
+/// nesting, not template strings; components and outlets bound the scoped
+/// cases, and branches and loops are transparent. Parents precede children.
 pub(super) fn check_nesting(nodes: &[Node<'_>], parents: &[Option<usize>]) -> Result<()> {
-    let mut open = std::vec![(false, false, 0_u32); nodes.len()];
+    let mut open = std::vec![(0_u8, 0_u32); nodes.len()];
     for (index, node) in nodes.iter().enumerate() {
-        let inherited = parents[index].map_or((false, false, 0), |parent| {
-            let (button, item, depth) = open[parent];
-            let scoped = !matches!(
-                nodes[parent].content,
+        let (mut flags, depth) = parents[index].map_or((0, 0), |parent| open[parent]);
+        if let Some(parent) = parents[index] {
+            match nodes[parent].content {
                 Content::Element {
-                    tag: "ul" | "ol",
-                    ..
-                } | Content::Component { .. }
-                    | Content::Outlet { .. }
-            );
-            (button, item && scoped, depth)
-        });
-        let (button, item) = match node.content {
-            Content::Element { tag: "button", .. } => (true, false),
-            Content::Element { tag: "li", .. } => (false, true),
-            _ => (false, false),
+                    tag: "ul" | "ol", ..
+                } => flags &= !ITEM,
+                Content::Element { tag: "button", .. } => flags &= !PARAGRAPH,
+                Content::Component { .. } | Content::Outlet { .. } => {
+                    flags &= !(ITEM | PARAGRAPH);
+                }
+                _ => {}
+            }
+        }
+        let tag = match node.content {
+            Content::Element { tag, .. } => tag,
+            _ => "",
+        };
+        let own = match tag {
+            "button" => BUTTON,
+            "li" => ITEM,
+            "p" => PARAGRAPH,
+            "a" => ANCHOR,
+            "form" => FORM,
+            _ => 0,
         };
         // Every non-text node counts: a `<template>` carrier is an element
         // for the legacy parser, and double-counting an element carrier only
         // lowers the bound.
-        let depth = inherited.2 + u32::from(!matches!(node.content, Content::Text { .. }));
-        if inherited.0 && button || inherited.1 && item || depth > MAX_DEPTH {
+        let depth = depth + u32::from(!matches!(node.content, Content::Text { .. }));
+        if flags & own & (BUTTON | ITEM | ANCHOR | FORM) != 0
+            || flags & PARAGRAPH != 0 && closes_paragraph(tag)
+            || depth > MAX_DEPTH
+        {
             return Err(LegacyReason::Structure.into());
         }
-        open[index] = (inherited.0 || button, inherited.1 || item, depth);
+        open[index] = (flags | own, depth);
     }
     Ok(())
 }
