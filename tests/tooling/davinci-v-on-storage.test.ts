@@ -185,8 +185,9 @@ test("the natural committed v-on corpus fits the two-entry inline buckets", () =
   // the P3-8 SSR emitter differential's dropped element listener and
   // component `@key-up.enter` prop fixtures, the native expression slice's
   // retained-AST handler fixtures, and the component slice's listener-modifier
-  // refusal.
-  assert.equal(spellings.length, 256, "update the measured corpus evidence intentionally");
+  // refusal, and the playground
+  // Davinci tab (keyboard-activated folio lines, the Todo board preset's @keyup.enter).
+  assert.equal(spellings.length, 259, "update the measured corpus evidence intentionally");
   assert.deepEqual(maxima, { options: 2, event: 2, keys: 2 });
 });
 
