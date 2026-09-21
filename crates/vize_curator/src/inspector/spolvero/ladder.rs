@@ -10,6 +10,8 @@
 //! | `s2` / *each executed pass*    | the artifact-selected S2 transform plan, via the      |
 //! |                                | pass manager and a P2-13 `FolioDump` (ungated: one   |
 //! |                                | page per pass, so "did it change?" is a byte compare) |
+//! | `s2-provenance` / `transform`  | every lowering and pass decision record after the    |
+//! |                                | transform (`[s2-provenance-folio]`)                  |
 //! | `s3` / `lower`                 | `vize_s2_to_s3::lower`, the S3 (Impeto) graph folio  |
 //! | `s3-partition` / `lower`       | the exported static/dynamic partition facts          |
 //! | `s3-values` / `lower`          | the S3 operand values page                           |
@@ -30,7 +32,7 @@ use vize_davinci::folio::{Folio, FolioMode};
 use vize_davinci::pass::{PassEvent, PassObserver};
 use vize_s0::{Allocator, String};
 use vize_s1_to_s2::pass::{TransformProfile, run_transform_with_pass_hook};
-use vize_s2::folio::S2Folio;
+use vize_s2::folio::{S2Folio, S2ProvenanceFolio};
 use vize_s2_to_s3::S3PartitionFolio;
 use vize_s3::folio::S3Folio;
 use vize_s3::values_folio::S3ValuesFolio;
@@ -133,6 +135,14 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
         pass: dumped.pass,
         text: dumped.text,
     }));
+    // Every lowering and pass decision so far, in decision order: the
+    // records answer "why is this op here" (and what was dropped).
+    let provenance = S2ProvenanceFolio::of(&lowered.provenance);
+    pages.push(page(
+        "s2-provenance",
+        "transform",
+        provenance.print_to_string(FolioMode::Full),
+    ));
 
     let started = clock();
     let s3 = vize_s2_to_s3::lower(&allocator, &lowered.root);

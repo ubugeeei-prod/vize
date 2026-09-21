@@ -30,6 +30,20 @@ mod line;
 use frame::{Frame, Phase};
 use line::{Item, err};
 
+/// The page's quoted-string grammar, for sibling pages (the provenance
+/// page) that share its escapes.
+pub(super) fn take_quoted_value(
+    rest: &str,
+    line: usize,
+) -> Result<(vize_s0::String, &str), FolioError> {
+    line::take_quoted(rest, line)
+}
+
+/// The page's ` @start:end` line tail, for sibling pages.
+pub(super) fn tail_span_value(rest: &str, line: usize) -> Result<vize_s0::Span, FolioError> {
+    line::tail_span(rest, line)
+}
+
 /// Where in the page the scan currently is.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Section {

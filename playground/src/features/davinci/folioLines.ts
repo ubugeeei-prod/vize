@@ -5,7 +5,7 @@
 
 import type { Range } from "./offsets";
 
-export type PageKind = "surface" | "disegno" | "impeto" | "partition" | "values";
+export type PageKind = "surface" | "disegno" | "provenance" | "impeto" | "partition" | "values";
 
 export type TokenType =
   | "section"
@@ -39,6 +39,11 @@ export interface FolioLine {
   span: Range | null;
   /** Nesting depth for tree pages (two spaces per level). */
   depth: number;
+  /**
+   * For an S2 op line, the op's dense page-order id (the `ui.*` lines in
+   * document order) - the id provenance records name. Null elsewhere.
+   */
+  node: number | null;
 }
 
 const FOLIO_TOKEN =
@@ -76,6 +81,11 @@ function scan(text: string, pattern: RegExp, groups: TokenType[]): Token[] {
 export function folioTokens(line: string): Token[] {
   if (/^\[[\w.-]+\]$/.test(line)) return [{ type: "section", text: line }];
   const tokens = scan(line, FOLIO_TOKEN, FOLIO_GROUPS);
+  // A provenance rule name reads as a mnemonic.
+  if (tokens[0]?.type === "key" && tokens[0].text === "rule=" && tokens[1]?.type === "text") {
+    const [, rule, rest] = /^(\S+)(.*)$/s.exec(tokens[1].text)!;
+    tokens.splice(1, 1, { type: "mnemonic", text: rule }, { type: "text", text: rest });
+  }
   // The element/component name right after its mnemonic reads as a tag.
   for (let index = 0; index + 1 < tokens.length; index += 1) {
     const [mnemonic, gap] = [tokens[index], tokens[index + 1]];
@@ -113,9 +123,10 @@ function lastMatch(pattern: RegExp, line: string): RegExpExecArray | null {
 /** The authored span a folio line describes, by page kind. */
 export function lineSpan(kind: PageKind, line: string): Range | null {
   switch (kind) {
-    case "disegno": {
-      // An op line ends in its own `@start:end`; inner `@` spans belong to
-      // its expressions.
+    case "disegno":
+    case "provenance": {
+      // An op (or record) line ends in its own `@start:end`; inner `@` spans
+      // belong to its expressions.
       const match = /@(\d+):(\d+)\s*$/.exec(line);
       return match ? { start: Number(match[1]), end: Number(match[2]) } : null;
     }
@@ -141,6 +152,7 @@ function utf8Bytes(text: string): number {
 export function folioLines(kind: PageKind, text: string): FolioLine[] {
   const raw = text.endsWith("\n") ? text.slice(0, -1).split("\n") : text.split("\n");
   let byteCursor = 0;
+  let nextNode = 0;
   return raw.map((line, index) => {
     let span: Range | null;
     if (kind === "surface") {
@@ -156,6 +168,7 @@ export function folioLines(kind: PageKind, text: string): FolioLine[] {
       tokens: kind === "surface" ? surfaceTokens(line) : folioTokens(line),
       span,
       depth: kind === "disegno" ? Math.floor((/^ */.exec(line)?.[0].length ?? 0) / 2) : 0,
+      node: kind === "disegno" && /^\s*ui\./.test(line) ? nextNode++ : null,
     };
   });
 }

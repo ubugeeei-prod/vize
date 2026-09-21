@@ -53,6 +53,7 @@ export interface StageLadder {
 const PAGE_KINDS: Record<string, { rung: RungId; kind: PageKind; label: string }> = {
   s1: { rung: "s1", kind: "surface", label: "Surface" },
   s2: { rung: "s2", kind: "disegno", label: "" },
+  "s2-provenance": { rung: "s2", kind: "provenance", label: "Provenance" },
   s3: { rung: "s3", kind: "impeto", label: "Graph" },
   "s3-partition": { rung: "s3", kind: "partition", label: "Partition" },
   "s3-values": { rung: "s3", kind: "values", label: "Values" },
@@ -86,9 +87,9 @@ function rungFacts(id: RungId, pages: LadderPage[]): string[] {
       return [plural(lines, "line")];
     }
     case "s2": {
-      const lowered = pages[0]?.text ?? "";
-      const ops = /^ops=(\d+)$/m.exec(lowered);
-      const passes = pages.length - 1;
+      const trees = pages.filter((page) => page.kind === "disegno");
+      const ops = /^ops=(\d+)$/m.exec(trees[0]?.text ?? "");
+      const passes = Math.max(trees.length - 1, 0);
       return [plural(Number(ops?.[1] ?? 0), "op"), plural(passes, "pass")];
     }
     case "s3": {
@@ -149,8 +150,11 @@ export function buildLadder(
   for (const rung of rungs) {
     for (const page of rung.pages) {
       // The S3 partition and value pages come from the same lowering step as
-      // the graph; the timeline shows steps, not pages.
-      if (page.kind === "partition" || page.kind === "values") continue;
+      // the graph, and the provenance page records decisions across S2's
+      // steps; the timeline shows steps, not pages.
+      if (page.kind === "partition" || page.kind === "values" || page.kind === "provenance") {
+        continue;
+      }
       const producer = page.pass === "lower" || page.pass === "parse";
       timeline.push({
         key: page.key,

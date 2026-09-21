@@ -35,7 +35,11 @@
       `s3-partition` (the new `[s3-partition-folio]` page) and `s3-values`.
       Provenance navigation landed in the Davinci tab the same day: a stage
       line highlights its authored span in the editor, and the editor cursor
-      marks the narrowest stage line covering it. The remarks panel renders a
+      marks the narrowest stage line covering it. Since 2026-09-22 the feed
+      also carries `s2-provenance` (the new `[s2-provenance-folio]` page:
+      every lowering and pass decision, dropped input included), and a
+      focused S2 op shows why it exists - its lowering rule plus the facts
+      passes attached. The remarks panel renders a
       typed `{pass, message, applied, span}` list with an explicit empty
       state; open: remarks emitted into the feed (P3-13), which the panel
       then renders unchanged._

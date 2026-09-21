@@ -54,11 +54,32 @@
   color: var(--text-muted);
 }
 
+.davinci-keys {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 .davinci-source .davinci-hint {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.davinci-example {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.davinci-select {
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
 }
 
 .davinci-ghost {
@@ -209,6 +230,27 @@
   border: 1px solid var(--dv-ochre-border);
   border-radius: 4px;
   white-space: nowrap;
+}
+
+/* Why the focused op exists: its provenance rules (lowering, then pass facts). */
+.davinci-why {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--hl-keyword);
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.davinci-why.fact {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-teal);
+  background: var(--color-teal-bg);
 }
 
 .davinci-snippet {

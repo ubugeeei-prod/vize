@@ -47,9 +47,11 @@ Mechanical conversion of source-sized buffers is not a goal because it can
 move large payloads onto the stack or add spill bookkeeping without reducing
 allocations.
 
-The S2-to-S3 partition page (`partition/folio.rs`) retains one source-sized
-`Vec` of owned fact records: the same contract storage as the other derived
-Folio pages, while the live `PartitionFacts` stay arena-owned.
+The S2 provenance page (`folio/provenance.rs`) and the S2-to-S3 partition
+page (`partition/folio.rs`) each retain one source-sized `Vec` of owned
+records: the same contract storage as the other derived Folio pages, while
+the live provenance records and the arena-owned `PartitionFacts` stay with
+their stages.
 
 S3 value payloads use an arena-owned operand sequence. The separate owned
 `values_folio.rs` page retains a source-sized `Vec` for serialization and S0

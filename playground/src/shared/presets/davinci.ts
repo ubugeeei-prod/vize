@@ -30,3 +30,37 @@ function add() {
   </section>
 </template>
 `;
+
+// A mostly static page: the hoist-static analysis marks whole subtrees fully
+// static, and S3 partitions almost every op as static.
+const STATIC_ISLANDS = `<script setup lang="ts">
+const year = new Date().getFullYear();
+</script>
+
+<template>
+  <article class="poster">
+    <header>
+      <h1>Vue Fes Japan</h1>
+      <p class="tagline">From <em>disegno</em> to fresco</p>
+    </header>
+    <ul class="talks">
+      <li><strong>Surface</strong> the lossless tree</li>
+      <li><strong>Disegno</strong> the semantic IR</li>
+      <li><strong>Impeto</strong> the reactive graph</li>
+    </ul>
+    <footer>© {{ year }}</footer>
+  </article>
+</template>
+`;
+
+export interface DavinciExample {
+  key: string;
+  label: string;
+  code: string;
+}
+
+/** The tab's examples, in presentation order. */
+export const DAVINCI_EXAMPLES: DavinciExample[] = [
+  { key: "board", label: "Todo board", code: DAVINCI_PRESET },
+  { key: "static", label: "Static islands", code: STATIC_ISLANDS },
+];

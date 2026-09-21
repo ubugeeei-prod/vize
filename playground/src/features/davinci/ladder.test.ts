@@ -142,4 +142,22 @@ describe("buildLadder", () => {
     expect(ladder.unplaced).toEqual(["s4-plan"]);
     expect(ladder.rungs[0].pages).toHaveLength(1);
   });
+
+  it("files the provenance page under S2 without counting it as a pass or step", () => {
+    const provenance = {
+      path: "Component.vue",
+      stage: "s2-provenance",
+      pass: "transform",
+      text: "[s2-provenance-folio]\n\n[s2-provenance-folio.records]\n\n",
+    };
+    const ladder = buildLadder(feed([provenance]));
+    const s2 = ladder.rungs[1];
+    expect(s2.pages.map(({ key, kind, label }) => [key, kind, label])).toEqual([
+      ["s2/lower", "disegno", "Lowered"],
+      ["s2/hoist-static", "disegno", "hoist-static"],
+      ["s2-provenance/transform", "provenance", "Provenance"],
+    ]);
+    expect(s2.facts).toEqual(["2 ops", "1 pass"]);
+    expect(ladder.timeline.map(({ key }) => key)).not.toContain("s2-provenance/transform");
+  });
 });
