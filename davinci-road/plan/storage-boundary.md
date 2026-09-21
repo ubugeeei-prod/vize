@@ -21,8 +21,8 @@ or `collections` modules does not bypass the boundary.
 
 ## Retained `alloc::vec::Vec` inventory
 
-The five library trees in the reviewed inventory contain 85 production files,
-97 direct `alloc::vec::Vec` paths, and 328 bound `Vec`/`StdVec` uses. "Direct"
+The five library trees in the reviewed inventory contain 87 production files,
+99 direct `alloc::vec::Vec` paths, and 333 bound `Vec`/`StdVec` uses. "Direct"
 counts imports and fully-qualified paths; "bound" counts every type,
 constructor, and method path reached through a direct `Vec` import or alias.
 The executable ledger requires strict equality, so both growth and reduction
@@ -30,8 +30,8 @@ must update the file row and aggregate evidence in the same change.
 
 | Category | Files | Direct paths | Bound uses | Reason                                                                                                             |
 | -------- | ----: | -----------: | ---------: | ------------------------------------------------------------------------------------------------------------------ |
-| contract |    18 |           29 |         76 | Owned Folio, S2/S3 serialization data, and stage dumps have input-defined cardinality and form stable contracts.   |
-| analysis |    10 |           11 |         31 | Diagnostics, side tables, filters, and verifier results grow with the input; no inline bound is established.       |
+| contract |    19 |           30 |         79 | Owned Folio, S2/S3 serialization data, and stage dumps have input-defined cardinality and form stable contracts.   |
+| analysis |    11 |           12 |         33 | Diagnostics, side tables, filters, and verifier results grow with the input; no inline bound is established.       |
 | lower    |    13 |           13 |         52 | Lowering worklists and owned results grow with source-tree shape. Bounded substructures may migrate independently. |
 | pass     |    12 |           12 |         42 | Facts, provenance, and traversal worklists grow with the number of operations.                                     |
 | emit     |    32 |           32 |        127 | Ordered output buffers and collected emission inputs grow with the document.                                       |
@@ -62,9 +62,9 @@ or count and fails the gate instead of becoming a `no_std` escape from S0.
 
 | Scope    | Type                    | Files | Direct paths | Bound uses |
 | -------- | ----------------------- | ----: | -----------: | ---------: |
-| infra    | `alloc::vec::Vec`       |    13 |           13 |         48 |
+| infra    | `alloc::vec::Vec`       |    15 |           15 |         53 |
 | infra    | `alloc::string::String` |     0 |            0 |          0 |
-| infra    | `vize_s0::String`       |    15 |           15 |        105 |
+| infra    | `vize_s0::String`       |    17 |           17 |        120 |
 | infra    | `vize_s0::Vec`          |     0 |            0 |          0 |
 | infra    | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s1       | `alloc::vec::Vec`       |     0 |            0 |          0 |
