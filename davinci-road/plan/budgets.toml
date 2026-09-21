@@ -332,6 +332,15 @@ constraint_metrics = ["reactive-edge", "update-path"]
 tie_policy = "reject"
 
 [resource]
-# Resident-tier ceilings: rss_peak_bytes per machine preset, cold_start_ms,
-# idle_cpu_pct (mean over a 60 s idle window), keystroke_p95_ms — with the
-# measurement methodology documented next to each number. Populated by P5-11.
+# TS-44 ceilings (P5-11a); field legend, ratchet rules and the recorded run: phase-5-records/p5-11a.md.
+# Every metric: ceiling <= ceil(baseline * (1 + headroom)); ceilings and headrooms only tighten.
+
+[resource.linux-x64-ci]
+methodology = { machine = "blacksmith-32vcpu-ubuntu-2404 (GitHub Actions reference runner, linux x86_64)", project = "editors/vscode/test-fixtures/extension-host/real-vue, document src/Scenario.vue (the TS-45 fixture); lint, typecheck, editor and ecosystem on", server_build = "cargo build --profile ci-opt -p vize (release, thin LTO, 16 codegen units)", command = "rust-script tools/commands/davinci/resource-budgets.rs --measure --preset linux-x64-ci --runs 3 --keystrokes 20 --idle-seconds 60 --server target/ci-opt/vize", runs = 3, recorded_at = "2026-09-22", recorded_run = "https://github.com/ubugeeei-prod/vize/actions/runs/35640713079" }
+cold_start_ms = { baseline = 4.1, ceiling = 9, headroom = 1.0, unit = "ms", statistic = "median over runs", sampler = "process spawn -> initialize response, monotonic clock" }
+first_diagnostics_ms = { baseline = 1118.4, ceiling = 1398, headroom = 0.25, unit = "ms", statistic = "median over runs", sampler = "didOpen -> first publish carrying the TS 2322 diagnostic" }
+keystroke_p95_ms = { baseline = 30.1, ceiling = 46, headroom = 0.5, unit = "ms", statistic = "nearest-rank p95 over every keystroke of every run (60 samples)", sampler = "didChange -> publish for that version carrying that edit's own TS 2322 message" }
+rss_peak_mib = { baseline = 292.3, ceiling = 337, headroom = 0.15, unit = "MiB", statistic = "maximum over runs", sampler = "/proc/<pid>/stat RSS summed over the server process tree (Corsa children included), every 50 ms" }
+rss_idle_mib = { baseline = 274.5, ceiling = 316, headroom = 0.15, unit = "MiB", statistic = "maximum over runs", sampler = "process-tree RSS at the end of the idle window" }
+idle_cpu_pct = { baseline = 0.217, ceiling = 1, headroom = 1.0, unit = "%", statistic = "maximum over runs", sampler = "process-tree utime+stime+cutime+cstime over a 60 s idle window after the last publish, divided by wall time" }
+server_binary_mib = { baseline = 56.0, ceiling = 59, headroom = 0.05, unit = "MiB", statistic = "file size of the measured server", sampler = "stat size of target/ci-opt/vize (shipped release binaries add fat LTO and one codegen unit)" }

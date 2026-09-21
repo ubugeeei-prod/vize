@@ -80,6 +80,8 @@
 
 ## P5-11a — Resident resource baselines and methodology
 
+**Landed 2026-09-22** — full record: [phase-5-records/p5-11a.md](./phase-5-records/p5-11a.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** I
@@ -88,8 +90,8 @@
 
 **Steps:**
 
-- [ ] `rust-script tools/commands/davinci/resource-budgets.rs --measure` and `--check`
-- [ ] `tests/tooling/davinci-resource-budgets.test.ts` rejects a number without methodology and a loosened number
+- [x] `rust-script tools/commands/davinci/resource-budgets.rs --measure` and `--check`
+- [x] `tests/tooling/davinci-resource-budgets.test.ts` rejects a number without methodology and a loosened number
 
 **Acceptance:** the section populated with numbers, not adjectives; the checker proven to fail on an injected loosening; results reproducible from the recorded command.
 

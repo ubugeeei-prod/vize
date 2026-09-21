@@ -1,0 +1,122 @@
+name: Davinci resource budgets
+
+# TS-44 (Davinci P5-11a): the resident `vize lsp` measured against the
+# `davinci-road/plan/budgets.toml [resource]` ceilings on the reference
+# runner. Every recorded number names this workflow's measure command; the
+# ratchet step rejects a loosened or dropped ceiling against the PR base.
+
+on:
+  push:
+    branches: [main, davinci]
+    paths:
+      - "crates/vize/**"
+      - "crates/vize_canon/**"
+      - "crates/vize_maestro/**"
+      - "Cargo.lock"
+      - "davinci-road/plan/budgets.toml"
+      - "tools/commands/davinci/resource-budgets.rs"
+      - "tools/support/davinci/resource_session.rs"
+      - ".github/workflows/davinci-resource-budgets.yml"
+  pull_request:
+    branches: [main, davinci]
+    paths:
+      - "crates/vize/**"
+      - "crates/vize_canon/**"
+      - "crates/vize_maestro/**"
+      - "Cargo.lock"
+      - "davinci-road/plan/budgets.toml"
+      - "tools/commands/davinci/resource-budgets.rs"
+      - "tools/support/davinci/resource_session.rs"
+      - "tests/tooling/davinci-resource-budgets.test.ts"
+      - ".github/workflows/davinci-resource-budgets.yml"
+  schedule:
+    # Daily, offset from the other nightly lanes.
+    - cron: "53 5 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: davinci-resource-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+  RESOURCE_PRESET: linux-x64-ci
+
+jobs:
+  resource:
+    name: TS-44 resource budgets (linux-x64-ci)
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      # The runner's rustup installs the toolchain pinned in rust-toolchain.toml.
+      - name: Install the repository Rust toolchain
+        run: |
+          rustup toolchain install || rustup show active-toolchain
+          cargo --version
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: davinci-resource
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      # The optimized profile check-bench measures; shipped release binaries
+      # use fat LTO and one codegen unit on top of it.
+      - name: Build the measured server
+        run: >-
+          cargo build --profile ci-opt -p vize
+          --config 'profile.ci-opt.inherits="release"'
+          --config 'profile.ci-opt.lto="thin"'
+          --config 'profile.ci-opt.codegen-units=16'
+
+      - name: Measure the resident server
+        run: >-
+          rust-script tools/commands/davinci/resource-budgets.rs --measure
+          --preset "${RESOURCE_PRESET}" --runs 3 --keystrokes 20 --idle-seconds 60
+          --server target/ci-opt/vize --out "${RUNNER_TEMP}/resource.json"
+      - name: Every number carries its methodology
+        if: ${{ !cancelled() }}
+        run: rust-script tools/commands/davinci/resource-budgets.rs --validate
+      - name: No ceiling is loosened against the base
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "${BASE_SHA}"
+          git show "${BASE_SHA}:davinci-road/plan/budgets.toml" > "${RUNNER_TEMP}/base-budgets.toml"
+          rust-script tools/commands/davinci/resource-budgets.rs --ratchet "${RUNNER_TEMP}/base-budgets.toml"
+      - name: The measurement holds every pinned ceiling
+        if: ${{ !cancelled() }}
+        run: >-
+          rust-script tools/commands/davinci/resource-budgets.rs --check
+          --measurement "${RUNNER_TEMP}/resource.json"
+      - name: Summarize
+        if: ${{ !cancelled() }}
+        run: |
+          {
+            echo "### TS-44 resource measurement (${RESOURCE_PRESET})"
+            echo '```json'
+            cat "${RUNNER_TEMP}/resource.json"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: resource-${{ env.RESOURCE_PRESET }}
+          path: ${{ runner.temp }}/resource.json
+          retention-days: 30
