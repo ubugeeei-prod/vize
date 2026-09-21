@@ -123,6 +123,7 @@ const ADMITTED_RULES: &[&str] = &[
     "condense.whitespace",
     "condense.drop-whitespace",
     "drop.comment",
+    "drop.branch-gap",
 ];
 
 /// Lower `source` through S1->S2->S3, build the SSR string plan from the
@@ -198,10 +199,9 @@ fn lower_and_emit(
         return SsrS4Selection::Legacy(LegacyReason::Options);
     }
     if !s2.diagnostics.is_empty()
-        || s2
-            .provenance
-            .iter()
-            .any(|record| !ADMITTED_RULES.contains(&record.rule.as_str()))
+        || s2.provenance.iter().any(|record| {
+            !ADMITTED_RULES.contains(&record.rule.as_str()) || drops_directive(record)
+        })
     {
         return SsrS4Selection::Legacy(LegacyReason::SurfaceSemantics);
     }
@@ -237,6 +237,18 @@ fn lower_and_emit(
             "Davinci S4 string-plan emitter rejected SSR artifact: {message}"
         )]),
     }
+}
+
+/// The legacy parser keeps `@vize:` directive comments with `comments` off
+/// and its SSR walker renders them, while S2 drops every comment.
+fn drops_directive(record: &vize_s2::provenance::ProvenanceRecord) -> bool {
+    if !matches!(record.rule.as_str(), "drop.comment" | "drop.branch-gap") {
+        return false;
+    }
+    let text = record.before.as_str();
+    let text = text.strip_prefix("<!--").unwrap_or(text);
+    let text = text.strip_suffix("-->").unwrap_or(text);
+    vize_s0::directive::parse_vize_directive(text, 1, 0).is_some()
 }
 
 /// Options under which S1 and S2 see the same template the SSR parser sees.

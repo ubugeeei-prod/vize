@@ -170,4 +170,12 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         "select-plain",
         "<select><option value=\"a\">A</option></select>",
     ),
+    (
+        "if-gap-comment",
+        "<div>\n  <p v-if=\"a\">1</p>\n  <!-- between -->\n  <p v-else-if=\"b\">2</p>\n\n  <p v-else>3</p>\n</div>",
+    ),
+    (
+        "if-gap-root",
+        "<p v-if=\"a\">1</p>\n<!-- x -->\n<Foo v-else />",
+    ),
 ];

@@ -18,6 +18,23 @@ use crate::s4::string_plan::{
 };
 use crate::s4::{AdmissionFailure, LegacyReason};
 
+/// A dynamic component's props leave out the static-name `is` spellings.
+pub(super) fn without_is<'r, 'a>(
+    attached: &Attached<'r, 'a>,
+) -> std::vec::Vec<SsrStringSegment<'r, 'a>> {
+    attached
+        .iter()
+        .copied()
+        .filter(|segment| match segment.source {
+            Source::Attribute(attr) => attr.name != "is",
+            Source::Binding(s2::BindingOp::Bind(bind)) => {
+                !matches!(bind.name, Some(DynamicName::Static("is")))
+            }
+            _ => true,
+        })
+        .collect()
+}
+
 /// Built-ins the server renders as their children.
 fn is_transparent_builtin(name: &str) -> bool {
     matches!(
@@ -56,13 +73,6 @@ fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
                         if let Some(handler) = &on.handler {
                             admit_value(Some(handler))?;
                         }
-                    }
-                    // An argument or modifiers reach the transform's component
-                    // `v-model` expansion, which the plan emitter does not own.
-                    s2::BindingOp::Model(model)
-                        if model.argument.is_some() || model.attributes.len() > 1 =>
-                    {
-                        return Err(LegacyReason::Binding.into());
                     }
                     s2::BindingOp::Model(model) => admit_value(Some(&model.contract.read))?,
                     s2::BindingOp::VueShow(show) => admit_value(Some(&show.value))?,
@@ -115,7 +125,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 inherit_attrs: inherit,
                 ..no_inherit
             })?,
-            "component" | "Component" => return Err(LegacyReason::Operation.into()),
+            "component" | "Component" => self.dynamic_component(component, attached, inherit)?,
             _ => self.render_component(name, component, attached, inherit)?,
         }
         self.close(Kind::CloseComponent, |source| {
@@ -164,6 +174,52 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push("))\n");
         self.pos = self.region_end(content)?;
         Ok(())
+    }
+
+    /// `<component :is>`: `_ssrRenderVNode(_push, _createVNode(
+    /// _resolveDynamicComponent(is), props, vnodeSlots), _parent)`. The
+    /// legacy lane registers `ssrRenderComponent` before it branches.
+    fn dynamic_component(
+        &mut self,
+        component: &'r s2::ComponentOp<'a>,
+        attached: &Attached<'_, '_>,
+        inherit: bool,
+    ) -> Result<()> {
+        let callee = self.dynamic_callee(attached)?;
+        let props = self.component_props(&without_is(attached))?;
+        let props = self.with_scope_id_prop(props);
+        let props = self.with_fallthrough_attrs(props, inherit);
+        let slots = if component.children.ops.is_empty() {
+            "null".to_compact_string()
+        } else {
+            self.vnode_slots(component)?
+        };
+        self.ctx.flush_push();
+        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
+        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderVNode);
+        self.ctx.use_core_helper(RuntimeHelper::CreateVNode);
+        self.ctx.push_indent();
+        self.ctx.push("_ssrRenderVNode(_push, _createVNode(");
+        self.ctx.push(&callee);
+        self.ctx.push(", ");
+        self.ctx.push(&props);
+        self.ctx.push(", ");
+        self.ctx.push(&slots);
+        self.ctx.push("), _parent");
+        if self.ctx.with_slot_scope_id {
+            self.ctx.push(", _scopeId");
+        }
+        self.ctx.push(")\n");
+        Ok(())
+    }
+
+    /// `_resolveDynamicComponent(is)`, with `null` when no `is` is spelled.
+    pub(super) fn dynamic_callee(&mut self, attached: &Attached<'_, '_>) -> Result<String> {
+        self.ctx
+            .use_core_helper(RuntimeHelper::ResolveDynamicComponent);
+        let target = self.static_or_bound(attached, "is")?;
+        let target = target.as_deref().unwrap_or("null");
+        Ok(cstr!("_resolveDynamicComponent({target})"))
     }
 
     fn with_scope_id_prop(&mut self, props: String) -> String {

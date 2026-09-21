@@ -161,18 +161,24 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     fn vnode_component(&mut self, component: &'r s2::ComponentOp<'a>) -> Result<String> {
         let open = self.segments[self.pos];
         let name = plan_source(&open, SsrStringPayloadKind::ComponentName)?;
-        if matches!(name, "component" | "Component") {
-            return Err(LegacyReason::Operation.into());
-        }
         self.pos += 1;
         let attached = self.take_attached(component.attributes.len() + component.bindings.len())?;
         let attached = attached.as_slice();
         self.ctx.use_core_helper(RuntimeHelper::CreateVNode);
-        let callee = match self.ctx.resolve_component_binding_expr(name) {
-            Some(binding) => binding,
-            None => self.ctx.resolved_component_callee(name),
+        let dynamic = matches!(name, "component" | "Component");
+        let callee = if dynamic {
+            self.dynamic_callee(attached)?
+        } else {
+            match self.ctx.resolve_component_binding_expr(name) {
+                Some(binding) => binding,
+                None => self.ctx.resolved_component_callee(name),
+            }
         };
-        let props = self.component_props(attached)?;
+        let props = if dynamic {
+            self.component_props(&super::component::without_is(attached))?
+        } else {
+            self.component_props(attached)?
+        };
         let slots = self.vnode_slots(component)?;
         self.close(Kind::CloseComponent, |source| {
             matches!(source, Source::Component(closed) if core::ptr::eq(*closed, component))
@@ -181,7 +187,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     /// The VNode slots object of the component content at the cursor.
-    fn vnode_slots(&mut self, component: &'r s2::ComponentOp<'a>) -> Result<String> {
+    pub(super) fn vnode_slots(&mut self, component: &'r s2::ComponentOp<'a>) -> Result<String> {
         let start = self.pos;
         let slots = self.component_slots(component, start)?;
         let has_content =

@@ -161,25 +161,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                     }
                 }
             }
-            s2::BindingOp::Model(model) => {
-                // The expansion binds the trimmed value and spells the update
-                // handler over the raw (undecoded, padded) attribute text.
-                let value = self.expr(&model.contract.read, TransformContent::Decoded)?;
-                let value = value.trim();
-                let key = match &model.argument {
-                    None => "modelValue".to_compact_string(),
-                    Some(DynamicName::Static(name)) => camelize(name),
-                    Some(DynamicName::Dynamic(_)) => return Err(LegacyReason::Binding.into()),
-                };
-                let update_key = cstr!("onUpdate:{key}");
-                entries.push(component_prop_entry(&key, value, false));
-                let handler = self
-                    .exprs
-                    .model_update(&model.contract.read, TransformContent::Padded)
-                    .map_err(|_| LegacyReason::ExpressionOrEncoding)?;
-                let handler = self.callable_handler(handler)?;
-                entries.push(component_prop_entry(&update_key, &handler, false));
-            }
+            s2::BindingOp::Model(model) => self.model_props(model, entries)?,
             s2::BindingOp::VueShow(show) => {
                 let exp = self.expr(&show.value, TransformContent::Decoded)?;
                 entries.push(component_prop_entry(
@@ -191,6 +173,55 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             _ => {}
         }
         Ok(None)
+    }
+
+    /// The transform's component `v-model` expansion, in place: the raw
+    /// argument as the prop key over the trimmed value, the
+    /// `onUpdate:<camelized>` handler spelled over the raw attribute text,
+    /// and a `<prop>Modifiers` object when modifiers are authored.
+    fn model_props(
+        &mut self,
+        model: &s2::ModelOp<'_>,
+        entries: &mut std::vec::Vec<VNodePropEntry>,
+    ) -> Result<()> {
+        let value = self.expr(&model.contract.read, TransformContent::Decoded)?;
+        let prop = match &model.argument {
+            None => "modelValue",
+            Some(DynamicName::Static(name)) => name,
+            Some(DynamicName::Dynamic(_)) => return Err(LegacyReason::Binding.into()),
+        };
+        let update_key = vize_atelier_core::steps::create_on_name(&cstr!("update:{prop}"));
+        entries.push(component_prop_entry(prop, value.trim(), false));
+        let handler = self
+            .exprs
+            .model_update(&model.contract.read, TransformContent::Padded)
+            .map_err(|_| LegacyReason::ExpressionOrEncoding)?;
+        let handler = self.callable_handler(handler)?;
+        entries.push(component_prop_entry(&update_key, &handler, false));
+        let modifiers = match model.attributes.split_first() {
+            Some((kind, modifiers)) if kind.name == "element-kind" => modifiers,
+            _ => return Err(LegacyReason::Binding.into()),
+        };
+        if modifiers.is_empty() {
+            return Ok(());
+        }
+        if modifiers
+            .iter()
+            .any(|modifier| !is_valid_js_identifier(modifier.name))
+        {
+            return Err(LegacyReason::Binding.into());
+        }
+        let key = match prop {
+            "modelValue" => "modelModifiers".to_compact_string(),
+            _ => cstr!("{prop}Modifiers"),
+        };
+        let flags = modifiers
+            .iter()
+            .map(|modifier| cstr!("{}: true", modifier.name))
+            .collect::<std::vec::Vec<_>>();
+        let object = cstr!("{{ {} }}", flags.join(", "));
+        entries.push(component_prop_entry(&key, &object, false));
+        Ok(())
     }
 
     fn required_value(&self, value: Option<&ExprRef<'_>>) -> Result<String> {

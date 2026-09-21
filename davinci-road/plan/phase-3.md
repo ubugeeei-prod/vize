@@ -156,9 +156,13 @@ _Sixth slice 2026-09-22:_ components without slot content, `<Teleport>`,
 _Seventh slice 2026-09-22:_ component slot content emits the static slots
 object with push-form slot functions and their VNode fallback (checkout
 smoke: 523 of 717 plan-emitted; vendor sample: 1,034 of 1,279; 0
-divergences). `createSlots` shapes, dynamic components, custom directives, a
-canonical Real Project Matrix run, and the legacy walker deletion remain
-before P3-8 closes.
+divergences).
+_Eighth slice 2026-09-22:_ `<component :is>`, component `v-model`
+arguments and modifiers, and whitespace/comment gaps between `v-if` branches
+emit from the plan (checkout smoke: 643 of 717; vendor sample: 1,207 of
+1,279; 0 divergences). `createSlots` shapes, custom directives, `v-once` /
+`v-cloak`, `@vize:` directive comments, a canonical Real Project Matrix run,
+and the legacy walker deletion remain before P3-8 closes.
 
 **P3-9 S4 emitter + source maps.** Structured span-carrying emission document
 replaces `CodegenContext.code` string appends across dom/vapor/ssr; one

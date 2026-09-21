@@ -45,7 +45,7 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |          1328 |                   930 |               398 |             167 |     407 |            1181 |      721 |           647 |           817 |
+| Compiler                   |          1330 |                   932 |               398 |             167 |     407 |            1183 |      721 |           647 |           817 |
 | Linter                     |           380 |                   380 |                 0 |             300 |     303 |             735 |      248 |           395 |           587 |
 | Typechecker                |          1062 |                   274 |               788 |             502 |     241 |            1049 |      756 |           596 |           847 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            21 |
@@ -61,9 +61,9 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
 | Davinci          |          36 |              16 |       20 |
-| S0               |        1071 |             578 |      493 |
+| S0               |        1072 |             579 |      493 |
 | S1               |          15 |               7 |        8 |
-| S2               |          65 |              45 |       20 |
+| S2               |          66 |              46 |       20 |
 | S1->S2           |         141 |              39 |      102 |
 | old AST/parser   |          95 |              75 |       20 |
 | Croquis analysis |          72 |              56 |       16 |
