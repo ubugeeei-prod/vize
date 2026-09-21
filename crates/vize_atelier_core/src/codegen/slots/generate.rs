@@ -405,7 +405,7 @@ fn generate_slot_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>)
 /// Strip _ctx. prefix from identifiers that are slot parameters
 fn strip_ctx_prefix_for_slot_params(ctx: &CodegenContext, content: &str) -> String {
     let mut result = String::new(content);
-    for param in &ctx.slot_params {
+    for param in ctx.slot_params.keys() {
         // Replace _ctx.paramName with paramName
         let mut prefixed = String::with_capacity(5 + param.len());
         prefixed.push_str("_ctx.");

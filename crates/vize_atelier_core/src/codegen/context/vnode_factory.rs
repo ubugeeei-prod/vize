@@ -1,4 +1,4 @@
-use vize_s0::{FxHashSet, String, ToCompactString};
+use vize_s0::{FxHashMap, String, ToCompactString};
 
 use crate::codegen::helpers::default_helper_alias;
 use crate::codegen::source_map::SourceMapBuilder;
@@ -52,7 +52,7 @@ impl CodegenContext {
             pure: false,
             used_helpers: RuntimeHelpers::default(),
             cache_index: 0,
-            slot_params: FxHashSet::default(),
+            slot_params: FxHashMap::default(),
             skip_is_prop: false,
             skip_scope_id: false,
             skip_normalize: false,

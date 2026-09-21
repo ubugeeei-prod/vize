@@ -413,6 +413,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/dynamic_template_ref.rs
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/element_nesting_depth.rs	26	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/expression_nesting_guard.rs	2	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/invalid_expression_diagnostics.rs	18	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/nested_scope_bindings.rs	8	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/setup_component_unref.rs	3	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/slot_outlet_hoist.rs	2	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/support/bindings.rs	6	s0	S0	stage	vize_s0	preferred	1
