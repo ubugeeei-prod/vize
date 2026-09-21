@@ -53,6 +53,7 @@ pub mod flags;
 pub mod general;
 pub mod hash;
 pub mod i18n;
+mod i18n_render;
 mod i18n_supplemental;
 mod i18n_supplemental_extra;
 mod i18n_supplemental_extra2;

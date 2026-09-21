@@ -104,7 +104,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [ ] [P4-12b](./phase-4-tasks-last.md#p4-12b--glyph-on-s1) Glyph on S1 — lane J · startable now
 - [ ] [P4-12c](./phase-4-tasks-last.md#p4-12c--pug-as-an-s1-dialect) Pug as an S1 dialect — lane K · startable now
 - [x] [P4-13](./phase-4-tasks-last.md#p4-13--musea-onto-s0-and-s1) Musea onto S0 and S1 — lane L · startable now
-- [ ] [P4-14a](./phase-4-tasks-last.md#p4-14a--structured-diagnostic-renderer) Structured diagnostic renderer — lane M · startable now
+- [x] [P4-14a](./phase-4-tasks-last.md#p4-14a--structured-diagnostic-renderer) Structured diagnostic renderer — lane M · startable now
 - [ ] [P4-14b](./phase-4-tasks-last.md#p4-14b--catalog-completeness-for-every-producer) Catalog completeness for every producer — lane M · startable now
 - [ ] [P4-14c](./phase-4-tasks-last.md#p4-14c--explain-pages-and-witness-why) Explain pages and witness why — lane M · startable now
 - [ ] [P4-15a](./phase-4-tasks-last.md#p4-15a--seeded-defect-matrix-at-full-scale) Seeded-defect matrix at full scale — lane N · startable now

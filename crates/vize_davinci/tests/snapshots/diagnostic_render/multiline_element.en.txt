@@ -1,0 +1,14 @@
+error[a11y/img-alt]: `<img>` elements must have an `alt` attribute.
+ --> src/components/AppHeader.vue:3:5
+  |
+3 | /     <img
+4 | |       src="/vize.svg"
+5 | |       class="logo"
+6 | |     >
+  | |_____^ screen readers cannot describe this image
+  |
+  = help: use `alt=""` if the image is purely decorative
+help: describe what the image shows
+  |
+3 |     <img alt="Vize"
+  |         +++++++++++

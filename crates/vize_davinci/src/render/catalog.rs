@@ -1,0 +1,86 @@
+//! Where the renderer's own words come from.
+//!
+//! A diagnostic's headline and labels are the producer's text, already in the
+//! locale the producer was asked for (Patina localizes at report time). What
+//! the renderer adds around them — the severity word in `error[code]:`, the
+//! `help` of a footer, the title of a fix without its own — is vocabulary the
+//! renderer owns, and it is resolved here, through a caller-supplied
+//! [`Catalog`], never hard-coded. The CLI edge implements the trait over
+//! `vize_carton::i18n::Translator`; tests implement it over the same
+//! translator, so a snapshot pins the vocabulary that actually ships.
+//!
+//! The vocabulary is a closed enum rather than free-form keys so a catalog is
+//! total by construction: every [`Phrase`] has a [`Phrase::key`], and
+//! `tests/tooling/davinci-diagnostic-catalog.test.ts` fails when a key is
+//! missing from any of en/ja/zh.
+
+/// A word or phrase the renderer prints around producer text.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Phrase {
+    /// The headline word of an error-severity diagnostic.
+    Error,
+    /// The headline word of a warning-severity diagnostic.
+    Warning,
+    /// The headline word of an info-severity diagnostic.
+    Info,
+    /// The headline word of a hint-severity diagnostic.
+    Hint,
+    /// The word introducing guidance: `= help: …` and `help: <fix title>`.
+    Help,
+    /// The title of a fix that carries no guidance of its own.
+    SuggestedFix,
+}
+
+impl Phrase {
+    /// Every phrase, in declaration order. The catalog checker enumerates
+    /// keys from this list, so adding a variant without a key is caught.
+    pub const ALL: [Self; 6] = [
+        Self::Error,
+        Self::Warning,
+        Self::Info,
+        Self::Hint,
+        Self::Help,
+        Self::SuggestedFix,
+    ];
+
+    /// The catalog key this phrase is stored under.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Self::Error => "render.error",
+            Self::Warning => "render.warning",
+            Self::Info => "render.info",
+            Self::Hint => "render.hint",
+            Self::Help => "render.help",
+            Self::SuggestedFix => "render.suggested_fix",
+        }
+    }
+}
+
+/// A source of renderer vocabulary in one locale.
+///
+/// The renderer is generic over this trait (static dispatch): one
+/// monomorphized renderer per catalog type, no vtable on the per-line path.
+pub trait Catalog {
+    /// The text of `phrase` in this catalog's locale.
+    fn phrase(&self, phrase: Phrase) -> &str;
+}
+
+/// The English vocabulary, for callers with no translator at hand (tools,
+/// tests of producers). It is byte-identical to the `en` catalog entries,
+/// which the catalog checker asserts.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct EnglishCatalog;
+
+impl Catalog for EnglishCatalog {
+    fn phrase(&self, phrase: Phrase) -> &str {
+        match phrase {
+            Phrase::Error => "error",
+            Phrase::Warning => "warning",
+            Phrase::Info => "info",
+            Phrase::Hint => "hint",
+            Phrase::Help => "help",
+            Phrase::SuggestedFix => "suggested fix",
+        }
+    }
+}

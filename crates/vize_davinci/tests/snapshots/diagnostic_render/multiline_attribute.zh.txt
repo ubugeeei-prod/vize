@@ -1,0 +1,11 @@
+警告[vue/no-static-inline-styles]: 不允许使用静态内联样式。
+ --> src/components/Notice.vue:2:6
+  |
+2 |     <p :style="{
+  |  ______^
+3 | |     color: 'crimson',
+4 | |     fontWeight: 700,
+5 | |   }">
+  | |____^ 该绑定中的所有值都是常量
+  |
+  = 帮助: 请将这些声明移到 `<style scoped>` 中的类里

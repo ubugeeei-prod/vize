@@ -1,0 +1,11 @@
+error[vue/valid-v-model]: `v-model` is combined with the prop and listener it expands to.
+ --> src/components/Profile.vue:2:14
+  |
+2 |   <NameInput v-model="form.name" :model-value="name" @update:model-value="setName" />
+  |              ^^^^^^^^^^^^^^^^^^^ ------------------- ----------------------------- …and this listener runs twice
+  |              |                   |
+  |              |                   …so this prop conflicts with it
+  |              `v-model` expands to a `modelValue` prop
+  |              and an `update:modelValue` listener…
+  |
+  = help: keep either `v-model` or the explicit pair, not both

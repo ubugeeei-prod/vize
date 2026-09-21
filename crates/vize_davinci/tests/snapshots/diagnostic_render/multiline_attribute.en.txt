@@ -1,0 +1,11 @@
+warning[vue/no-static-inline-styles]: Static inline styles are not allowed.
+ --> src/components/Notice.vue:2:6
+  |
+2 |     <p :style="{
+  |  ______^
+3 | |     color: 'crimson',
+4 | |     fontWeight: 700,
+5 | |   }">
+  | |____^ every value in this binding is a constant
+  |
+  = help: move the declarations into a class in `<style scoped>`

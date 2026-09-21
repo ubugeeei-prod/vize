@@ -100,6 +100,7 @@ pub fn run(args: ReadyArgs) {
         config: args.config.clone(),
         no_config: args.no_config,
         format: "text".into(),
+        locale: "en".into(),
         max_warnings: None,
         quiet: false,
         help_level: "full".into(),

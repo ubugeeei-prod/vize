@@ -156,19 +156,20 @@ vize lint --help-level short src
 
 主なオプション:
 
-| オプション            | 説明                                                                                     |
-| --------------------- | ---------------------------------------------------------------------------------------- |
-| `--fix`               | テキスト編集を提供するルールから安全な自動修正を適用し、残りの診断を報告します。         |
-| `-f, --format`        | 出力形式: `text`、`ansi`、`plain`、`json`、`stylish`、`markdown`、`html`、または `agent` |
-| `--max-warnings`      | 警告が制限を超えると失敗します。                                                         |
-| `-q, --quiet`         | 概要のみを表示                                                                           |
-| `--help-level`        | `full`、`short`、または `none`                                                           |
-| `--preset`            | `happy-path`、`opinionated`、`essential`、`incremental`、または `nuxt`                   |
-| `--cross-file`        | オプトインのファイル間チェックを有効にする                                               |
-| `--cross-file-tree`   | ファイル間リンティングが有効な場合に提供/注入ツリーを出力します。                        |
-| `--strict-reactivity` | ネイティブ チェッカーによる反応性損失リンティングを有効にする                            |
-| `--profile`           | 印刷タイミング プロファイル                                                              |
-| `--slow-threshold`    | プロファイル出力の低速ファイルしきい値                                                   |
+| オプション            | 説明                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------ |
+| `--fix`               | テキスト編集を提供するルールから安全な自動修正を適用し、残りの診断を報告します。                 |
+| `-f, --format`        | 出力形式: `text`、`rich`、`ansi`、`plain`、`json`、`stylish`、`markdown`、`html`、または `agent` |
+| `--locale`            | 診断メッセージの言語: `en`、`ja`、または `zh`                                                    |
+| `--max-warnings`      | 警告が制限を超えると失敗します。                                                                 |
+| `-q, --quiet`         | 概要のみを表示                                                                                   |
+| `--help-level`        | `full`、`short`、または `none`                                                                   |
+| `--preset`            | `happy-path`、`opinionated`、`essential`、`incremental`、または `nuxt`                           |
+| `--cross-file`        | オプトインのファイル間チェックを有効にする                                                       |
+| `--cross-file-tree`   | ファイル間リンティングが有効な場合に提供/注入ツリーを出力します。                                |
+| `--strict-reactivity` | ネイティブ チェッカーによる反応性損失リンティングを有効にする                                    |
+| `--profile`           | 印刷タイミング プロファイル                                                                      |
+| `--slow-threshold`    | プロファイル出力の低速ファイルしきい値                                                           |
 
 プリセットは段階的な導入を目的としています。
 
@@ -191,6 +192,7 @@ vize lint --format ansi src
 vize lint --format plain src
 vize lint --format agent src
 vize lint --format markdown src
+vize lint --format rich --locale ja src
 ```
 
 ## チェック

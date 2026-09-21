@@ -1,0 +1,11 @@
+警告[vue/no-static-inline-styles]: 静的なインラインスタイルは使用できません。
+ --> src/components/Notice.vue:2:6
+  |
+2 |     <p :style="{
+  |  ______^
+3 | |     color: 'crimson',
+4 | |     fontWeight: 700,
+5 | |   }">
+  | |____^ このバインディングの値はすべて定数です
+  |
+  = ヒント: 宣言は `<style scoped>` のクラスに移してください

@@ -4427,6 +4427,7 @@ dependencies = [
  "davinci_test_support",
  "insta",
  "serde_json",
+ "unicode-width",
  "vize_atelier_core",
  "vize_atelier_sfc",
  "vize_carton",

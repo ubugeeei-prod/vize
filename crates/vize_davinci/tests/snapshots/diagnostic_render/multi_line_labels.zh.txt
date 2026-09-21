@@ -1,0 +1,11 @@
+错误[vue/valid-v-model]: `v-model` 与其展开后的属性和监听器同时使用。
+ --> src/components/Profile.vue:2:14
+  |
+2 |   <NameInput v-model="form.name" :model-value="name" @update:model-value="setName" />
+  |              ^^^^^^^^^^^^^^^^^^^ ------------------- ----------------------------- ……这个监听器也会执行两次
+  |              |                   |
+  |              |                   ……因此与这个属性冲突
+  |              `v-model` 会展开为 `modelValue` 属性
+  |              和 `update:modelValue` 监听器……
+  |
+  = 帮助: `v-model` 与显式的属性和监听器只能保留其一

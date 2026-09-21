@@ -1,0 +1,13 @@
+警告: 属性値に双方向テキストの制御文字が含まれています。
+ --> src/components/Download.vue:2:12
+  |
+2 |     <p title="�fdp.exe">    download</p>
+  |               ^------- 画面上では `exe.pdf` と逆順に表示されます
+  |               |
+  |               右から左への上書き文字があり、後に続く文字の本当の並びが見えなくなっています
+  |
+ヒント: 次のように修正できます
+  |
+2 -     <p title="�fdp.exe">    download</p>
+2 +     <p title="fdp.exe">    download</p>
+  |

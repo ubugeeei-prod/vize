@@ -1,0 +1,27 @@
+[1;93mwarning[a11y/click-events-have-key-events][0m[1m: Visible, non-interactive elements with click handlers must have a keyboard handler.[0m
+ [1;94m-->[0m src/components/Counter.vue:6:9
+  [1;94m|[0m
+[1;94m6[0m [1;94m|[0m   <div  @click="count++">{{ count }}</div>
+  [1;94m|[0m         [1;93m^^^^^^^^^^^^^^^^[0m
+  [1;94m|[0m
+  [1;94m=[0m [1mhelp[0m: keyboard users cannot trigger this handler.
+          prefer a `<button>`, or add `@keydown.enter` and `tabindex="0"`
+
+[1;96mhint[vue/no-multi-spaces][0m[1m: Multiple spaces found before `@click`.[0m
+ [1;94m-->[0m src/components/Counter.vue:6:7
+  [1;94m|[0m
+[1;94m6[0m [1;94m|[0m   <div  @click="count++">{{ count }}</div>
+  [1;94m|[0m       [1;96m^^[0m
+  [1;94m|[0m
+[1;96mhelp[0m: suggested fix
+  [1;94m|[0m
+[1;94m6[0m [31m-[0m   <div[31m  [0m@click="count++">{{ count }}</div>
+[1;94m6[0m [32m+[0m   <div[32m [0m@click="count++">{{ count }}</div>
+  [1;94m|[0m
+
+[1;92minfo[0m[1m: `ref` is used without an import.[0m
+      [1mIt resolves through the auto-import of Vue APIs.[0m
+ [1;94m-->[0m src/components/Counter.vue:2:15
+  [1;94m|[0m
+[1;94m2[0m [1;94m|[0m const count = ref(0)
+  [1;94m|[0m               [1;92m^^^[0m

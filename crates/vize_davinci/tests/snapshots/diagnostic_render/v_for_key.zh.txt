@@ -1,0 +1,11 @@
+错误[vue/require-v-for-key]: 使用 `v-for` 迭代的元素需要 `v-bind:key` 指令。
+ --> src/components/TodoList.vue:9:9
+  |
+9 |     <li v-for="todo in todos">{{ todo.title }}</li>
+  |         ^^^^^^^^^^^^^^^^^^^^^ 此处渲染的每个 `<li>` 都需要稳定的 key
+  |
+  = 帮助: 没有 key 时，Vue 会就地复用 DOM 节点，列表变化时各项的状态可能会错乱
+帮助: 用每一项的 `id` 作为 key
+  |
+9 |     <li v-for="todo in todos" :key="todo.id">{{ todo.title }}</li>
+  |                              +++++++++++++++

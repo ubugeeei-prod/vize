@@ -1,0 +1,11 @@
+error[vue/require-v-for-key]: Elements in iteration expect to have `v-bind:key` directives.
+ --> src/components/TodoList.vue:9:9
+  |
+9 |     <li v-for="todo in todos">{{ todo.title }}</li>
+  |         ^^^^^^^^^^^^^^^^^^^^^ each `<li>` rendered here needs a stable key
+  |
+  = help: without a key, Vue reuses DOM nodes in place and can mix up item state when the list changes
+help: key each item by its id
+  |
+9 |     <li v-for="todo in todos" :key="todo.id">{{ todo.title }}</li>
+  |                              +++++++++++++++

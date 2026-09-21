@@ -1,0 +1,13 @@
+error[vue/no-duplicate-attributes]: Duplicate attribute `class`.
+ --> src/components/SaveButton.vue:2:37
+  |
+2 |   <button class="btn" type="submit" class="btn-primary">Save</button>
+  |           -----------               ^^^^^^^^^^^^^^^^^^^ `class` is set again here
+  |           |
+  |           first set here
+  |
+help: merge the values into one `class`
+  |
+2 -   <button class="btn" type="submit" class="btn-primary">Save</button>
+2 +   <button class="btn btn-primary" type="submit">Save</button>
+  |

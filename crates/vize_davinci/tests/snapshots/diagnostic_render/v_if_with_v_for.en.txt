@@ -1,0 +1,9 @@
+error[vue/no-use-v-if-with-v-for]: `v-if` cannot read `user`: it is evaluated before `v-for` declares it.
+ --> src/components/ActiveUsers.vue:7:31
+  |
+7 |     <li v-for="user in users" v-if="user.active" :key="user.id">
+  |         --------------------- ^^^^^^^^^^^^^^^^^^ …but this `v-if` runs first
+  |         |
+  |         `user` is declared by this `v-for`…
+  |
+  = help: filter the list in a computed property, or wrap the item in `<template v-for>` and put `v-if` inside it

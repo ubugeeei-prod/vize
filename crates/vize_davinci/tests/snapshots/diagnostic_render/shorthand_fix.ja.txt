@@ -1,0 +1,15 @@
+警告[vue/v-on-style]: `v-on:` ではなく `@` を使ってください。
+ --> src/components/TitleForm.vue:2:9
+  |
+2 |   <form v-on:submit.prevent="save">
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^ 省略していない `v-on:` 記法です
+3 |     <input v-model="title" v-on:keydown.enter="save">
+  |                            ------------------------- ここも同様です
+  |
+ヒント: 省略記法の `@` に置き換えます
+  |
+2 -   <form v-on:submit.prevent="save">
+3 -     <input v-model="title" v-on:keydown.enter="save">
+2 +   <form @submit.prevent="save">
+3 +     <input v-model="title" @keydown.enter="save">
+  |

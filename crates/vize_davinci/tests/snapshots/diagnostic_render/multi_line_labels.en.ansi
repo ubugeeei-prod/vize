@@ -1,0 +1,11 @@
+[1;91merror[vue/valid-v-model][0m[1m: `v-model` is combined with the prop and listener it expands to.[0m
+ [1;94m-->[0m src/components/Profile.vue:2:14
+  [1;94m|[0m
+[1;94m2[0m [1;94m|[0m   <NameInput v-model="form.name" :model-value="name" @update:model-value="setName" />
+  [1;94m|[0m              [1;91m^^^^^^^^^^^^^^^^^^^[0m [1;94m-------------------[0m [1;94m-----------------------------[0m [1;94m…and this listener runs twice[0m
+  [1;94m|[0m              [1;91m|[0m                   [1;94m|[0m
+  [1;94m|[0m              [1;91m|[0m                   [1;94m…so this prop conflicts with it[0m
+  [1;94m|[0m              [1;91m`v-model` expands to a `modelValue` prop[0m
+  [1;94m|[0m              [1;91mand an `update:modelValue` listener…[0m
+  [1;94m|[0m
+  [1;94m=[0m [1mhelp[0m: keep either `v-model` or the explicit pair, not both

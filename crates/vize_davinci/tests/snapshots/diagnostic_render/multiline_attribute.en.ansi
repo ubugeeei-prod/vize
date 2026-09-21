@@ -1,0 +1,11 @@
+[1;93mwarning[vue/no-static-inline-styles][0m[1m: Static inline styles are not allowed.[0m
+ [1;94m-->[0m src/components/Notice.vue:2:6
+  [1;94m|[0m
+[1;94m2[0m [1;94m|[0m     <p :style="{
+  [1;94m|[0m  [1;93m______^[0m
+[1;94m3[0m [1;94m|[0m [1;93m|[0m     color: 'crimson',
+[1;94m4[0m [1;94m|[0m [1;93m|[0m     fontWeight: 700,
+[1;94m5[0m [1;94m|[0m [1;93m|[0m   }">
+  [1;94m|[0m [1;93m|____^[0m [1;93mevery value in this binding is a constant[0m
+  [1;94m|[0m
+  [1;94m=[0m [1mhelp[0m: move the declarations into a class in `<style scoped>`

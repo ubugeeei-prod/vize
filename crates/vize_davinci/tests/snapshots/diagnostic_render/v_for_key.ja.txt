@@ -1,0 +1,11 @@
+エラー[vue/require-v-for-key]: `v-for` で繰り返す要素には `v-bind:key` が必要です。
+ --> src/components/TodoList.vue:9:9
+  |
+9 |     <li v-for="todo in todos">{{ todo.title }}</li>
+  |         ^^^^^^^^^^^^^^^^^^^^^ ここで描画される `<li>` にはそれぞれ一意なキーが必要です
+  |
+  = ヒント: キーがないと Vue は DOM をその場で使い回すため、一覧が変わったときに項目の状態が入れ替わることがあります
+ヒント: 各項目の `id` をキーにしてください
+  |
+9 |     <li v-for="todo in todos" :key="todo.id">{{ todo.title }}</li>
+  |                              +++++++++++++++

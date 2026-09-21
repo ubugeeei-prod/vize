@@ -1,0 +1,14 @@
+error[vue/no-undefined-refs]: `ユーザ名` is not defined.
+ --> src/components/あいさつ.vue:8:25
+  |
+4 | const ユーザー名 = ref("うぶげ")
+  |       ---------- a binding with a similar name is declared here
+...
+8 |   <p class="挨拶">ようこそ、{{ ユーザ名 }}さん！🎉</p>
+  |                                ^^^^^^^^ not declared in this component
+  |
+help: did you mean `ユーザー名`?
+  |
+8 -   <p class="挨拶">ようこそ、{{ ユーザ名 }}さん！🎉</p>
+8 +   <p class="挨拶">ようこそ、{{ ユーザー名 }}さん！🎉</p>
+  |

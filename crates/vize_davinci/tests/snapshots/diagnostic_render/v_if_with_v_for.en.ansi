@@ -1,0 +1,9 @@
+[1;91merror[vue/no-use-v-if-with-v-for][0m[1m: `v-if` cannot read `user`: it is evaluated before `v-for` declares it.[0m
+ [1;94m-->[0m src/components/ActiveUsers.vue:7:31
+  [1;94m|[0m
+[1;94m7[0m [1;94m|[0m     <li v-for="user in users" v-if="user.active" :key="user.id">
+  [1;94m|[0m         [1;94m---------------------[0m [1;91m^^^^^^^^^^^^^^^^^^[0m [1;91m…but this `v-if` runs first[0m
+  [1;94m|[0m         [1;94m|[0m
+  [1;94m|[0m         [1;94m`user` is declared by this `v-for`…[0m
+  [1;94m|[0m
+  [1;94m=[0m [1mhelp[0m: filter the list in a computed property, or wrap the item in `<template v-for>` and put `v-if` inside it

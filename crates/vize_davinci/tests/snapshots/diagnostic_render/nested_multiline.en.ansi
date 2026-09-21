@@ -1,0 +1,14 @@
+[1;91merror[vue/require-toggle-inside-transition][0m[1m: The element inside `<Transition>` must toggle with `v-if` or `v-show`.[0m
+ [1;94m-->[0m src/components/Greeting.vue:6:5
+  [1;94m|[0m
+[1;94m2[0m [1;94m|[0m [1;94m/[0m    <Transition name="fade">
+[1;94m3[0m [1;94m|[0m [1;94m|/[0m     <p v-if="show">
+[1;94m4[0m [1;94m|[0m [1;94m||[0m       Hello
+[1;94m5[0m [1;94m|[0m [1;94m||[0m     </p>
+  [1;94m|[0m [1;94m||________-[0m [1;94mthis sibling toggles correctly[0m
+[1;94m6[0m [1;94m|[0m [1;94m|[0m[1;91m/[0m     <span>
+[1;94m7[0m [1;94m|[0m [1;94m|[0m[1;91m|[0m       world
+[1;94m8[0m [1;94m|[0m [1;94m|[0m[1;91m|[0m     </span>
+  [1;94m|[0m [1;94m|[0m[1;91m|___________^[0m [1;91mthis `<span>` never enters or leaves[0m
+[1;94m9[0m [1;94m|[0m [1;94m|[0m    </Transition>
+  [1;94m|[0m [1;94m|________________-[0m [1;94ma transition only animates children that enter or leave[0m

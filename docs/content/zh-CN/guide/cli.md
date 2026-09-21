@@ -156,19 +156,20 @@ vize lint --help-level short src
 
 关键选项：
 
-| 选项                  | 描述                                                                              |
-| --------------------- | --------------------------------------------------------------------------------- |
-| `--fix`               | 从允许文本编辑的规则中应用安全的自动修复，然后报告剩余的诊断                      |
-| `-f, --format`        | 输出格式：`text`、`ansi`、`plain`、`json`、`stylish`、`markdown`、`html`或`agent` |
-| `--max-warnings`      | 警告超过限制时失败                                                                |
-| `-q, --quiet`         | 仅节目摘要                                                                        |
-| `--help-level`        | `full`、`short`或`none`                                                           |
-| `--preset`            | `happy-path`、`opinionated`、`essential`、`incremental`或`nuxt`                   |
-| `--cross-file`        | 启用选择加入的跨文件检查                                                          |
-| `--cross-file-tree`   | 当启用跨文件线条时打印提供/注入树                                                 |
-| `--strict-reactivity` | 启用本地检查器支持的反应性损失线条                                                |
-| `--profile`           | 打印时序配置文件                                                                  |
-| `--slow-threshold`    | 配置文件输出的慢文件阈值                                                          |
+| 选项                  | 描述                                                                                      |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| `--fix`               | 从允许文本编辑的规则中应用安全的自动修复，然后报告剩余的诊断                              |
+| `-f, --format`        | 输出格式：`text`、`rich`、`ansi`、`plain`、`json`、`stylish`、`markdown`、`html`或`agent` |
+| `--locale`            | 诊断消息的语言：`en`、`ja`或`zh`                                                          |
+| `--max-warnings`      | 警告超过限制时失败                                                                        |
+| `-q, --quiet`         | 仅节目摘要                                                                                |
+| `--help-level`        | `full`、`short`或`none`                                                                   |
+| `--preset`            | `happy-path`、`opinionated`、`essential`、`incremental`或`nuxt`                           |
+| `--cross-file`        | 启用选择加入的跨文件检查                                                                  |
+| `--cross-file-tree`   | 当启用跨文件线条时打印提供/注入树                                                         |
+| `--strict-reactivity` | 启用本地检查器支持的反应性损失线条                                                        |
+| `--profile`           | 打印时序配置文件                                                                          |
+| `--slow-threshold`    | 配置文件输出的慢文件阈值                                                                  |
 
 预设旨在分阶段采用：
 
@@ -191,6 +192,7 @@ vize lint --format ansi src
 vize lint --format plain src
 vize lint --format agent src
 vize lint --format markdown src
+vize lint --format rich --locale zh src
 ```
 
 ## 检查

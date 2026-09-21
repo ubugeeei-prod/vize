@@ -1,0 +1,13 @@
+[1;93mwarning[0m[1m: Bidirectional control character in an attribute value.[0m
+ [1;94m-->[0m src/components/Download.vue:2:12
+  [1;94m|[0m
+[1;94m2[0m [1;94m|[0m     <p title="�fdp.exe">    download</p>
+  [1;94m|[0m               [1;93m^[0m[1;94m-------[0m [1;94mshown reversed, as `exe.pdf`[0m
+  [1;94m|[0m               [1;93m|[0m
+  [1;94m|[0m               [1;93ma right-to-left override hides the real order of what follows[0m
+  [1;94m|[0m
+[1;96mhelp[0m: suggested fix
+  [1;94m|[0m
+[1;94m2[0m [31m-[0m     <p title="[31m�[0mfdp.exe">    download</p>
+[1;94m2[0m [32m+[0m     <p title="fdp.exe">    download</p>
+  [1;94m|[0m

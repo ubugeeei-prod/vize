@@ -1,0 +1,13 @@
+warning: Bidirectional control character in an attribute value.
+ --> src/components/Download.vue:2:12
+  |
+2 |     <p title="�fdp.exe">    download</p>
+  |               ^------- shown reversed, as `exe.pdf`
+  |               |
+  |               a right-to-left override hides the real order of what follows
+  |
+help: suggested fix
+  |
+2 -     <p title="�fdp.exe">    download</p>
+2 +     <p title="fdp.exe">    download</p>
+  |
