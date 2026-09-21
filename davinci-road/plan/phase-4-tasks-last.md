@@ -156,6 +156,8 @@
 
 **Non-goals:** new Art features; Musea UI.
 
+_Slice 1 (2026-09-21):_ `parse_art` re-implemented over the splitter and S1; the scanner survives only as the test-only differential oracle until slice 2 deletes it — see the [P4-13 record](./phase-4-records/p4-13.md) for the lane results and the divergence ledger.
+
 ## P4-14a — Structured diagnostic renderer
 
 **Start gate:** startable now — P3-independent.
