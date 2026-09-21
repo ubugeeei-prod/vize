@@ -23,6 +23,11 @@ serde_json = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_sfc = { workspace = true }
 vize_croquis = { workspace = true }
+# TS-43 (`tests/artifact_keys.rs`) keys real S1/S2 artifacts; dev-only, so the
+# library's tier-1 edge set (S0 alone) is untouched.
+vize_s1 = { workspace = true }
+vize_s1_to_s2 = { workspace = true }
+vize_s2 = { workspace = true }
 
 [[bin]]
 name = "davinci-opt"

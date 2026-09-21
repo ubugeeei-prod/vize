@@ -15,12 +15,37 @@ use super::S2Folio;
 use super::owned::{FolioAttribute, FolioBinding, FolioExpr, FolioName, FolioOp};
 use crate::op::Namespace;
 use vize_davinci::folio::FolioMode;
+use vize_davinci::key::rebase;
 
 mod binding;
 
 use binding::{print_attribute, print_binding};
 
-pub(super) fn print<W: Write>(folio: &S2Folio, w: &mut W, mode: FolioMode) -> Result {
+/// How a page prints: the folio mode, plus the offset spans are rebased
+/// to. The public [`Folio`](vize_davinci::folio::Folio) print always uses
+/// base `0` (spans verbatim); only the P5-1a key feed passes a block start.
+#[derive(Debug, Clone, Copy)]
+pub(super) struct Style {
+    mode: FolioMode,
+    base: u32,
+}
+
+impl Style {
+    /// The folio print: spans verbatim.
+    pub(super) const fn folio(mode: FolioMode) -> Self {
+        Self { mode, base: 0 }
+    }
+
+    /// The key feed: the `Full` form with spans rebased to `block_start`.
+    pub(super) const fn keyed(block_start: u32) -> Self {
+        Self {
+            mode: FolioMode::Full,
+            base: block_start,
+        }
+    }
+}
+
+pub(super) fn print<W: Write>(folio: &S2Folio, w: &mut W, mode: Style) -> Result {
     writeln!(w, "[disegno]")?;
     writeln!(w, "ops={}", folio.op_count())?;
     writeln!(w)?;
@@ -44,11 +69,23 @@ pub(super) fn indent<W: Write>(w: &mut W, depth: usize) -> Result {
 
 /// Write the span tail in `Full` mode, nothing in `Display`, then the
 /// newline either way.
-pub(super) fn end_line<W: Write>(w: &mut W, span: Span, mode: FolioMode) -> Result {
-    if mode == FolioMode::Full {
-        write!(w, " @{}:{}", span.start, span.end)?;
-    }
+pub(super) fn end_line<W: Write>(w: &mut W, span: Span, mode: Style) -> Result {
+    span_tail(w, span, mode)?;
     w.write_char('\n')
+}
+
+/// Write ` @start:end` in `Full` mode, nothing in `Display`. Spans are
+/// rebased to the style's base; one reaching before the base (never in a
+/// well-formed page, and impossible at base `0`) prints absolute as
+/// ` @^start:end`, so the key feed stays injective instead of saturating.
+fn span_tail<W: Write>(w: &mut W, span: Span, mode: Style) -> Result {
+    if mode.mode != FolioMode::Full {
+        return Ok(());
+    }
+    match rebase(span, mode.base) {
+        Some(relative) => write!(w, " @{}:{}", relative.start, relative.end),
+        None => write!(w, " @^{}:{}", span.start, span.end),
+    }
 }
 
 /// Write one quoted string with the format's escapes.
@@ -70,7 +107,7 @@ pub(super) fn quoted<W: Write>(w: &mut W, text: &str) -> Result {
 /// Write one expression payload: `js("…" @s:e)` / `opaque(reason "…" @s:e)`
 /// / `foreign(dialect "…" @s:e)`; `Display` elides the inner span tail
 /// exactly as it elides line tails.
-pub(super) fn print_expr<W: Write>(w: &mut W, expr: &FolioExpr, mode: FolioMode) -> Result {
+pub(super) fn print_expr<W: Write>(w: &mut W, expr: &FolioExpr, mode: Style) -> Result {
     let (head, source, span) = match expr {
         FolioExpr::Js { source, span } => {
             w.write_str("js(")?;
@@ -102,24 +139,22 @@ pub(super) fn print_expr<W: Write>(w: &mut W, expr: &FolioExpr, mode: FolioMode)
         w.write_char(' ')?;
     }
     quoted(w, source.as_str())?;
-    if mode == FolioMode::Full {
-        write!(w, " @{}:{}", span.start, span.end)?;
-    }
+    span_tail(w, *span, mode)?;
     w.write_char(')')
 }
 
-pub(super) fn print_name<W: Write>(w: &mut W, name: &FolioName, mode: FolioMode) -> Result {
+pub(super) fn print_name<W: Write>(w: &mut W, name: &FolioName, mode: Style) -> Result {
     match name {
         FolioName::Static(text) => quoted(w, text.as_str()),
         FolioName::Dynamic(expr) => print_expr(w, expr, mode),
     }
 }
 
-fn print_op<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: FolioMode) -> Result {
+fn print_op<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: Style) -> Result {
     ensure_sufficient_stack(|| print_op_guarded(w, op, depth, mode))
 }
 
-fn print_op_guarded<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: FolioMode) -> Result {
+fn print_op_guarded<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: Style) -> Result {
     match op {
         FolioOp::Element(element) => {
             indent(w, depth)?;
@@ -231,7 +266,7 @@ fn print_owner_body<W: Write>(
     bindings: &[FolioBinding],
     children: &[FolioOp],
     depth: usize,
-    mode: FolioMode,
+    mode: Style,
 ) -> Result {
     for attribute in attributes {
         print_attribute(w, attribute, depth, mode)?;

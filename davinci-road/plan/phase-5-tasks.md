@@ -5,6 +5,8 @@
 
 ## P5-1a — Stage artifact keys
 
+**Landed 2026-09-22** — full record: [phase-5-records/p5-1a.md](./phase-5-records/p5-1a.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** A
@@ -13,9 +15,9 @@
 
 **Steps:**
 
-- [ ] `crates/vize_davinci/src/key.rs` + `key/`: `ArtifactKey { stage, schema_version, hash: [u8; 16] }`; the hash walks the folio `Full` form with spans rebased to the block start
-- [ ] Edit-locality fixtures: insert above, inside and below a block; reorder blocks; whitespace-only edits
-- [ ] Register the TS-43 command in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test artifact_keys`
+- [x] `crates/vize_davinci/src/key.rs` + `key/`: `ArtifactKey { stage, schema_version, hash: [u8; 16] }`; the hash walks the folio `Full` form with spans rebased to the block start _(S2: `impl KeyedArtifact for S2Folio`; S1: `vize_s1_to_s2::key::SurfacePage`, the lossless render; S0 source blocks: `source_block_key`)_
+- [x] Edit-locality fixtures: insert above, inside and below a block; reorder blocks; whitespace-only edits _(ten cases over `tests/fixtures/keys/base.vue`, each pinning its exact changed set)_
+- [x] Register the TS-43 command in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test artifact_keys`
 
 **Acceptance:** TS-43 — identical keys for identical block content regardless of offset, zero key changes for edits above a block, exactly the edited block's keys change otherwise; keys equal across two platforms (the Linux and macOS CI lanes print and compare them); TS-24; TS-1, TS-13.
 

@@ -67,6 +67,7 @@ extern crate std;
 
 pub mod emit;
 pub mod exemptions;
+pub mod key;
 pub mod lower;
 pub mod pass;
 

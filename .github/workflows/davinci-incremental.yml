@@ -1,0 +1,74 @@
+name: Davinci Incremental
+
+# Phase 5 incrementality suites (davinci-road/plan/test-suites.md):
+# TS-43 key stability runs on two platforms against one committed golden, so a
+# platform-dependent byte in any key recipe fails on at least one lane.
+
+on:
+  push:
+    branches: [main, davinci]
+    paths:
+      - "crates/vize_carton/src/hash.rs"
+      - "crates/vize_davinci/**"
+      - "crates/vize_s1/**"
+      - "crates/vize_s2/**"
+      - "crates/vize_s1_to_s2/**"
+      - "Cargo.lock"
+      - ".github/workflows/davinci-incremental.yml"
+  pull_request:
+    branches: [main, davinci]
+    paths:
+      - "crates/vize_carton/src/hash.rs"
+      - "crates/vize_davinci/**"
+      - "crates/vize_s1/**"
+      - "crates/vize_s2/**"
+      - "crates/vize_s1_to_s2/**"
+      - "Cargo.lock"
+      - ".github/workflows/davinci-incremental.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: davinci-incremental-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  key-stability:
+    name: Key stability (TS-43, ${{ matrix.platform.target }})
+    runs-on: ${{ matrix.platform.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - runner: blacksmith-32vcpu-ubuntu-2404
+            target: linux-x64-gnu
+          - runner: blacksmith-12vcpu-macos-15
+            target: darwin-arm64
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: runner.os == 'Linux'
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.os == 'Linux'
+        with:
+          key: davinci-incremental
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        if: runner.os != 'Linux'
+        with:
+          shared-key: davinci-incremental-${{ matrix.platform.target }}
+          cache-workspace-crates: "true"
+      - name: Print and compare the TS-43 golden keys
+        run: cargo test -p vize_davinci --test artifact_keys -- --nocapture
