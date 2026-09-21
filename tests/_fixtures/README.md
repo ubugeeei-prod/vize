@@ -37,3 +37,8 @@ remark the S2 transform pipeline emits over the in-repo `.vue` fixtures (`_git` 
 file. `cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_remarks_corpus`
 requires exact equality; re-bless with `UPDATE_REMARKS_BASELINE=1`, which refuses any
 `applied → missed` transition not explained in the baseline's `[remarks-corpus.explained]` section.
+
+`davinci-s3-remarks-baseline.folio` is the same gate for S3 extraction (Davinci P3-10): every
+`s3.extract-placements` remark the `-O3` S3 optimization pipeline emits over the same sweep.
+`cargo test -p vize_s2_to_s3 --test davinci_s3_remarks_corpus` requires exact equality and re-blesses
+under the same `UPDATE_REMARKS_BASELINE=1` rules.

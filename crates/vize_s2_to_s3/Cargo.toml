@@ -16,6 +16,7 @@ vize_s3 = { workspace = true }
 
 [dev-dependencies]
 davinci_test_support = { workspace = true }
+vize_atelier_sfc = { workspace = true }
 insta = { workspace = true }
 serde_json = { workspace = true }
 vize_davinci = { workspace = true }

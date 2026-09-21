@@ -183,3 +183,10 @@ the component's remaining candidate budget. The remarks mirror the
 `[s3-extraction-folio]` decision rows one for one; TS-17 pins both pages
 (`crates/vize_s2_to_s3/tests/extraction_snapshots.rs`), and a detached run
 must return the identical extraction.
+
+TS-32 gates the corpus too: `crates/vize_s2_to_s3/tests/davinci_s3_remarks_corpus.rs`
+runs the `-O3` pipeline over the same sweep as the S2 gate and compares with
+`tests/_fixtures/davinci-s3-remarks-baseline.folio` under the same bless and
+explanation rules. The baseline pins 147 remarks over 433 files: 10 `group`
+and 5 `hoist` applied; 124 `cache` and 8 single-node `hoist` missed as
+`regressed-emitted-size` under the zero epsilons.

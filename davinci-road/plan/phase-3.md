@@ -191,8 +191,9 @@ _Placement slice 2026-09-21:_ hoist/cache/group alternatives are an explicit,
 exported partition stay canonical. _Extraction slice 2026-09-21:_ the
 try-measure-commit pass commits under the pinned rule and per-component budget,
 with `-O` tiers synced to `budgets.toml`, TS-17 decision snapshots, and one
-applied/missed `s3.extract-placements` remark per candidate. Backend
-consumption (TS-11/TS-33) and the TS-32 corpus remarks-diff remain open.
+applied/missed `s3.extract-placements` remark per candidate, gated corpus-wide
+by a TS-32 baseline. Backend consumption of the committed placements
+(TS-11/TS-33) remains open.
 
 **P3-11 IVM oracle.** Incremental-update ≡ from-scratch render on the Lean
 reference for keyed/unkeyed `v-for`, conditional toggles, mixed non-linear

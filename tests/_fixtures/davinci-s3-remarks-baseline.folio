@@ -1,0 +1,586 @@
+[remarks-corpus]
+
+[remarks-corpus.files]
+"tests/_fixtures/_projects/class-component/src/App.vue"
+"tests/_fixtures/_projects/class-component/src/HelloDecorator.vue"
+"tests/_fixtures/_projects/class-component/src/TypeErrorDecorator.vue"
+"tests/_fixtures/_projects/compiler-macros/src/DefineEmitsMethodInterface.vue"
+"tests/_fixtures/_projects/compiler-macros/src/DefineEmitsType.vue"
+"tests/_fixtures/_projects/compiler-macros/src/DefineExposeType.vue"
+"tests/_fixtures/_projects/compiler-macros/src/DefineModelType.vue"
+"tests/_fixtures/_projects/compiler-macros/src/DefinePropsGeneric.vue"
+"tests/_fixtures/_projects/compiler-macros/src/DefinePropsRuntimeDecl.vue"
+"tests/_fixtures/_projects/compiler-macros/src/DefinePropsType.vue"
+"tests/_fixtures/_projects/compiler-macros/src/DefinePropsWithDefaults.vue"
+"tests/_fixtures/_projects/compiler-macros/src/DefineSlotsType.vue"
+"tests/_fixtures/_projects/compiler-macros/src/NonScopedStyleBlock.vue"
+"tests/_fixtures/_projects/compiler-macros/src/PropsDestructure.vue"
+"tests/_fixtures/_projects/compiler-macros/src/ProvideInjectSymbol.vue"
+"tests/_fixtures/_projects/compiler-macros/src/TopLevelAwait.vue"
+"tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue"
+"tests/_fixtures/_projects/ecosystem-products/src/GraphAnd3D.vue"
+"tests/_fixtures/_projects/ecosystem-products/src/MediaAndDataViz.vue"
+"tests/_fixtures/_projects/ecosystem-products/src/NaiveUiOptionsApi.vue"
+"tests/_fixtures/_projects/ecosystem-products/src/PrimeVueOptionsApi.vue"
+"tests/_fixtures/_projects/ecosystem-products/src/UiLibraries.vue"
+"tests/_fixtures/_projects/generic-build/src/BindingPatchFlags.vue"
+"tests/_fixtures/_projects/generic-build/src/DirectiveBuiltins.vue"
+"tests/_fixtures/_projects/generic-build/src/FixturePanel.vue"
+"tests/_fixtures/_projects/generic-build/src/NormalScriptBindings.vue"
+"tests/_fixtures/_projects/generic-build/src/SlotOutlet.vue"
+"tests/_fixtures/_projects/nuxt-i18n-undeclared-globals/pages/index.vue"
+"tests/_fixtures/_projects/nuxt-parity/components/TheGreeting.vue"
+"tests/_fixtures/_projects/nuxt-parity/pages/broken.vue"
+"tests/_fixtures/_projects/nuxt-parity/pages/index.vue"
+"tests/_fixtures/_projects/nuxt-template-globals/pages/index.vue"
+"tests/_fixtures/_projects/nuxt-template-globals/pages/undeclared-global.vue"
+"tests/_fixtures/_projects/nuxt-template-globals/pages/wrong-argument.vue"
+"tests/_fixtures/_projects/nuxt-vue-module-augmentations/pages/index.vue"
+"tests/_fixtures/_projects/nuxt-vue-module-augmentations/pages/undeclared-global.vue"
+"tests/_fixtures/_projects/nuxt-vue-module-augmentations/pages/wrong-argument.vue"
+"tests/_fixtures/_projects/options-api/src/App.vue"
+"tests/_fixtures/_projects/options-api/src/Counter.vue"
+"tests/_fixtures/_projects/options-api/src/TypeErrorCounter.vue"
+"tests/_fixtures/_projects/style-preprocessors/src/CssModuleScss.vue"
+"tests/_fixtures/_projects/style-preprocessors/src/LessStyle.vue"
+"tests/_fixtures/_projects/style-preprocessors/src/ScopedScss.vue"
+"tests/_fixtures/_projects/style-preprocessors/src/ScssStyle.vue"
+"tests/_fixtures/_projects/style-preprocessors/src/StylusStyle.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/DefineEmitsMethodInterfaceError.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/DefineExposeError.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/DefinePropsRuntimeDeclError.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/DefineSlotsError.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/EmitArgsMismatch.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/InlineHandlerError.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/InvalidTemplateExpr.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/MissingRequiredProp.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/NoImplicitAnyError.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/PropsTypeMismatch.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/ProvideInjectSymbolError.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/TemplateInlineFunction.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/TypeMismatch.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/UndefinedVariable.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/UseTemplateRefError.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/VBindWrongType.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/WrongEventHandler.vue"
+"tests/_fixtures/_projects/typecheck-errors/src/WrongFunctionArgs.vue"
+"tests/_fixtures/_projects/typecheck-vue-imports/src/ExistingImport.vue"
+"tests/_fixtures/_projects/typecheck-vue-imports/src/ExistingPanel.vue"
+"tests/_fixtures/_projects/typecheck-vue-imports/src/MissingImport.vue"
+"tests/_fixtures/_projects/vue2-filter-build/src/LegacyFilters.vue"
+"tests/_fixtures/davinci-fpfn/BaselineDrift.vue"
+"tests/_fixtures/davinci-fpfn/HelloCounter.vue"
+"tests/_fixtures/davinci-fpfn/PlainBadge.vue"
+"tests/_fixtures/davinci-fpfn/SuppressedSpaces.vue"
+"tests/_fixtures/davinci-ts40-projection/child-local-import.vue"
+"tests/_fixtures/davinci-ts40-projection/define-model.vue"
+"tests/_fixtures/davinci-ts40-projection/dual-scripts-emits.vue"
+"tests/_fixtures/davinci-ts40-projection/generic-sfc.vue"
+"tests/_fixtures/davinci-ts40-projection/jsx-script.vue"
+"tests/_fixtures/davinci-ts40-projection/options-api-slots.vue"
+"tests/_fixtures/davinci-ts40-projection/parent-local-import.vue"
+"tests/_fixtures/davinci-ts40-projection/parse-recovery.vue"
+"tests/_fixtures/davinci-ts40-projection/static-slot-name.vue"
+"tests/_fixtures/davinci-ts40-projection/tsx-script.vue"
+"tests/_fixtures/davinci-ts40-projection/utf8-crlf-props.vue"
+"tests/_fixtures/davinci-ts40-projection/vue2-native-event.vue"
+"tests/_fixtures/pattern-reference/upstream/language-tools/extensions/vscode/tests/embeddedGrammarFixtures/patterned-templates.vue"
+"tests/_fixtures/pattern-reference/upstream/language-tools/extensions/vscode/tests/embeddedGrammarFixtures/root-patterned-template.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#1855/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#1855/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#1886/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2048/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2157/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2166/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2206/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2225/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2250/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2308/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2370/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2399/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2431/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2468/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2472/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2472/generic.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2472/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2514/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2554/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2586/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2588/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2590/foo.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2617/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2629/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2638/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2639/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2639/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2640/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2646/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2647/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2678/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2683/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2691/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2700/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2709/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2709/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2712/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2720/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2725/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2726/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2730/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2744/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2744/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2754/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2754/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2758/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2758/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3100/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3100/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3102/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3109/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3117/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3121/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3122/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3122/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3123/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3129/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3138/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3140/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3152/MyInput.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3152/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3164/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3171/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3204/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3255/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3257/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3257/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3258/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3258/main2.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3289/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3289/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#329/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3295/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3311/component.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3311/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3318/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3318/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3327/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3327/main2.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3340/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3353/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3371/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3373/NavBar.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3373/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3374/component.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3374/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3379/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3379/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3405/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3414/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3433/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3440/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3476/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3476/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3488/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3518/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3539/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3561/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3561/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3574/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3574/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3592/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3612/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3615/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3615/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3629/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3637/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3643/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3656/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3656/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3671/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3672/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3672/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3688/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3718/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3718/strict.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3732/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3732/child2.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3732/child2_nosetup.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3732/child_nosetup.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3748/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3756/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3779/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3779/named.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3782/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3819/component.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3819/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3820/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3845/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3997/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4050/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4209/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4263/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4326/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4327/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4333/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4353/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4361/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4369/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4386/component.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4386/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4387/comment-2113645943.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4387/component.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4387/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4391/comp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4391/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4433/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4503/globalcomp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4503/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4512/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4512/test1.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4512/test2.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4512/test3.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4537/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4539/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4540/component.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4540/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4600/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4604/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4646/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4646/child2.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4646/parent.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4649/comp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4649/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4668/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4668/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4682/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4699/HelloWorld.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4699/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4785/generic.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4785/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4799/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4812/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4820/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4822/comp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4822/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4826/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4826/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4827/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4827/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4828/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4862/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4878/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4890/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4899/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4972/GenericComp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4972/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4978/comp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4978/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4979/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5027/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5067/comp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5067/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5097/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5097/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5106/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5111/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5120/comp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5120/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5136/src.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5157/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5159/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5159/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5207/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5228/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5262/comp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5262/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5267/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5338/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5428/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5474/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5492/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5592/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5592/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5604/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5617/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5680/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5680/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5729/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5751/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5776/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5780/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5810/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5819/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5840/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5843/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5895/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5899/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5927/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5934/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5986/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6040/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6084/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6094/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#625/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_#3632/both.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_#3632/script.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_#3632/scriptSetup.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_#4569/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_#5071/withScript.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_#5071/withoutScript.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_#5823/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_cssModuleDuplicate/bare.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_cssModuleDuplicate/empty.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_cssModuleDuplicate/kebab.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_cssModuleDuplicate/named.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_directives/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_fragment_props/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/attrs/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/components/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/components/script-setup-default-props.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/components/script-setup-expose.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/components/script-setup-generic.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/components/script-setup-type-only.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/components/script-setup.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/core#9923/comp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/core#9923/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/cssModule/empty.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/cssModule/emptyName.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/cssModule/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/cssModule/strict.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/dataAttributes/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineEmits/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineEmits/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineExpose/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineExpose/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineModel/comp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineModel/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineModel/script-setup.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineModel/strict.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineModelModifiers/comp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineModelModifiers/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineOptions/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/directiveComments/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/directives/arg-modifiers.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/directives/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/directives/option.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/directives/vapor.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/dynamic-component/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/expression.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/union_type.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes/basic.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes/inherit-attrs-false-define-options.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes/inherit-attrs-false-v-bind.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes/inherit-attrs-false.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_checkRequired/basic.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_checkRequired/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_checkRequired/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_duplicateNameEvent/basic.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_duplicateNameEvent/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_duplicateNameEvent/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_duplicateNameProp/basic.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_duplicateNameProp/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_duplicateNameProp/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_generic/basic.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_generic/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_generic/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_unknownTag/basic.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_unknownTag/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/input-radio/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/intrinsicProps/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/macros-alias/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/namespace-component/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/no-script-block/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/noPropertyAccessFromIndexSignature/#2236/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/noPropertyAccessFromIndexSignature/#3106/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/pug/#4774.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/pug/#5099.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/pug/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/pug/shorthand.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/reference-type-in-template/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/rootEl/base.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/rootEl/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/rootEl/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/script-setup-scope/export-order.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/script-setup-scope/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/script_src/javascript.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/script_src/javascriptreact.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/script_src/typescript.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/script_src/typescriptreact.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/slots/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/templateRef/generic.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/templateRef/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/templateRef/missing-import.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/templateRef/template-refs.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/type-helpers/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unknownComponent/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unknownProp/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unknownProp/strict.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unknownTag/basic.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unknownTag/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/useTemplateRef-dynamic-arg/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/useTemplateRef-nullable/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/v-bind-require-object/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/v-bind-shorthand/child.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/v-bind-shorthand/entry.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/v-for/generic.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/v-for/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/v-generic/comp.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/v-generic/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/v-if/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/withDefaults/main.vue"
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/withDotValue/main.vue"
+
+[remarks-corpus.entries]
+"tests/_fixtures/_projects/class-component/src/HelloDecorator.vue" s3.extract-placements missed cache @566:584 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/compiler-macros/src/DefineEmitsMethodInterface.vue" s3.extract-placements missed cache @279:300 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/compiler-macros/src/DefineEmitsType.vue" s3.extract-placements missed cache @241:261 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue" s3.extract-placements missed cache @3443:3469 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue" s3.extract-placements missed cache @3546:3567 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/_projects/ecosystem-products/src/GraphAnd3D.vue" s3.extract-placements missed cache @1520:1544 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/ecosystem-products/src/GraphAnd3D.vue" s3.extract-placements missed cache @1551:1596 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/_projects/ecosystem-products/src/MediaAndDataViz.vue" s3.extract-placements missed cache @2518:2569 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/ecosystem-products/src/MediaAndDataViz.vue" s3.extract-placements missed cache @2614:2667 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/_projects/generic-build/src/BindingPatchFlags.vue" s3.extract-placements applied hoist @1365:1383 reason="committed" emitted-size=-13 reactive-edges=0 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/options-api/src/Counter.vue" s3.extract-placements missed cache @733:751 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/style-preprocessors/src/LessStyle.vue" s3.extract-placements applied hoist @103:186 reason="committed" emitted-size=-34 reactive-edges=0 update-path=-2 budget-left=127
+"tests/_fixtures/_projects/typecheck-errors/src/DefineEmitsMethodInterfaceError.vue" s3.extract-placements missed cache @275:296 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/typecheck-errors/src/EmitArgsMismatch.vue" s3.extract-placements missed cache @300:320 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/typecheck-errors/src/InlineHandlerError.vue" s3.extract-placements missed cache @170:199 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/typecheck-errors/src/NoImplicitAnyError.vue" s3.extract-placements missed cache @301:316 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/typecheck-errors/src/TemplateInlineFunction.vue" s3.extract-placements missed cache @218:309 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/_projects/typecheck-errors/src/VBindWrongType.vue" s3.extract-placements applied group @472:485 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
+"tests/_fixtures/_projects/typecheck-errors/src/VBindWrongType.vue" s3.extract-placements applied group @505:524 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=126
+"tests/_fixtures/_projects/typecheck-errors/src/WrongEventHandler.vue" s3.extract-placements missed cache @173:192 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/davinci-fpfn/HelloCounter.vue" s3.extract-placements missed cache @186:204 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/davinci-ts40-projection/define-model.vue" s3.extract-placements missed cache @228:259 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/davinci-ts40-projection/define-model.vue" s3.extract-placements missed cache @264:300 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/davinci-ts40-projection/dual-scripts-emits.vue" s3.extract-placements missed cache @177:207 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/davinci-ts40-projection/vue2-native-event.vue" s3.extract-placements missed cache @130:169 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#1855/main.vue" s3.extract-placements missed cache @127:171 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#1855/main.vue" s3.extract-placements missed cache @172:213 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2225/main.vue" s3.extract-placements missed cache @292:377 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2225/main.vue" s3.extract-placements missed cache @382:470 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2468/main.vue" s3.extract-placements missed cache @154:170 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2468/main.vue" s3.extract-placements missed cache @184:200 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2640/main.vue" s3.extract-placements missed cache @19:32 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2700/main.vue" s3.extract-placements missed cache @24:73 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3100/child.vue" s3.extract-placements missed cache @155:178 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3100/child.vue" s3.extract-placements missed cache @222:258 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3100/main.vue" s3.extract-placements missed cache @202:230 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3100/main.vue" s3.extract-placements missed cache @329:358 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3100/main.vue" s3.extract-placements applied hoist @389:407 reason="committed" emitted-size=-13 reactive-edges=0 update-path=0 budget-left=125
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3100/main.vue" s3.extract-placements missed cache @474:502 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=124
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3100/main.vue" s3.extract-placements missed cache @666:702 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=123
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3100/main.vue" s3.extract-placements applied hoist @733:757 reason="committed" emitted-size=-13 reactive-edges=0 update-path=0 budget-left=122
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3102/main.vue" s3.extract-placements applied group @210:223 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3122/main.vue" s3.extract-placements missed cache @19:35 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3258/main.vue" s3.extract-placements missed cache @55:93 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3258/main2.vue" s3.extract-placements missed cache @102:140 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3258/main2.vue" s3.extract-placements missed cache @160:211 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3295/main.vue" s3.extract-placements applied hoist @24:56 reason="committed" emitted-size=-13 reactive-edges=0 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3379/main.vue" s3.extract-placements missed cache @127:179 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3476/main.vue" s3.extract-placements missed cache @127:169 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3574/main.vue" s3.extract-placements missed cache @20:59 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3615/main.vue" s3.extract-placements missed cache @143:198 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3718/main.vue" s3.extract-placements missed cache @36:66 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3718/strict.vue" s3.extract-placements missed cache @96:126 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3997/main.vue" s3.extract-placements applied group @165:171 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4209/main.vue" s3.extract-placements missed cache @332:384 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4369/main.vue" s3.extract-placements missed cache @17:41 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4369/main.vue" s3.extract-placements missed cache @42:74 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4387/main.vue" s3.extract-placements missed cache @24:43 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4512/main.vue" s3.extract-placements missed cache @280:333 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4512/main.vue" s3.extract-placements missed cache @366:419 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4539/main.vue" s3.extract-placements missed hoist @60:71 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4600/main.vue" s3.extract-placements missed cache @48:60 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4600/main.vue" s3.extract-placements missed cache @108:122 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4646/parent.vue" s3.extract-placements missed cache @313:365 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4822/main.vue" s3.extract-placements missed cache @274:318 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4862/main.vue" s3.extract-placements missed cache @78:88 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5067/main.vue" s3.extract-placements missed cache @226:264 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5067/main.vue" s3.extract-placements missed cache @285:323 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5067/main.vue" s3.extract-placements missed cache @387:425 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=125
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5067/main.vue" s3.extract-placements missed cache @446:484 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=124
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5067/main.vue" s3.extract-placements missed cache @505:543 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=123
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5067/main.vue" s3.extract-placements missed cache @566:604 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=122
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5067/main.vue" s3.extract-placements missed cache @625:663 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=121
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5067/main.vue" s3.extract-placements missed cache @727:765 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=120
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5067/main.vue" s3.extract-placements missed cache @786:824 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=119
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5067/main.vue" s3.extract-placements missed cache @845:883 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=118
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5157/main.vue" s3.extract-placements missed hoist @152:185 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5428/main.vue" s3.extract-placements missed cache @146:166 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5680/main.vue" s3.extract-placements missed cache @165:209 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5729/main.vue" s3.extract-placements missed hoist @15:34 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#5751/main.vue" s3.extract-placements missed hoist @15:39 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6094/main.vue" s3.extract-placements missed cache @147:164 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6094/main.vue" s3.extract-placements missed cache @165:181 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6094/main.vue" s3.extract-placements missed cache @220:240 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=125
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6094/main.vue" s3.extract-placements missed cache @241:260 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=124
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6094/main.vue" s3.extract-placements missed cache @271:291 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=123
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6094/main.vue" s3.extract-placements missed cache @292:313 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=122
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_directives/main.vue" s3.extract-placements applied group @219:233 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineEmits/main.vue" s3.extract-placements missed cache @127:167 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineModel/main.vue" s3.extract-placements missed cache @671:738 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineModel/main.vue" s3.extract-placements missed cache @741:786 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineModel/main.vue" s3.extract-placements missed cache @787:844 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=125
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineModel/main.vue" s3.extract-placements missed cache @847:892 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=124
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineModel/main.vue" s3.extract-placements missed cache @893:950 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=123
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/defineModel/main.vue" s3.extract-placements missed cache @953:1012 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=122
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/directiveComments/main.vue" s3.extract-placements applied group @93:102 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/directiveComments/main.vue" s3.extract-placements applied group @148:158 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/directiveComments/main.vue" s3.extract-placements applied group @193:202 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=125
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/directiveComments/main.vue" s3.extract-placements applied group @240:250 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=124
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/directiveComments/main.vue" s3.extract-placements applied group @255:264 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=123
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/expression.vue" s3.extract-placements missed cache @254:295 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/expression.vue" s3.extract-placements missed cache @306:336 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/expression.vue" s3.extract-placements missed cache @430:450 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=125
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/expression.vue" s3.extract-placements missed cache @489:558 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=124
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @17:63 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @94:152 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @166:208 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=125
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @209:251 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=124
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @260:302 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=123
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @311:353 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=122
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @372:414 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=121
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @434:476 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=120
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @486:527 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=119
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @528:566 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=118
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @575:616 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=117
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @625:666 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=116
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @685:726 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=115
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @746:787 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=114
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @797:833 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=113
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @981:1021 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=112
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @1030:1070 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=111
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/events/main.vue" s3.extract-placements missed cache @1332:1369 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=110
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes/main.vue" s3.extract-placements missed cache @354:392 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_duplicateNameEvent/child.vue" s3.extract-placements missed cache @185:226 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_duplicateNameEvent/main.vue" s3.extract-placements missed cache @127:168 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/fallthroughAttributes_generic/main.vue" s3.extract-placements missed cache @137:175 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/rootEl/child.vue" s3.extract-placements missed hoist @312:319 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed cache @78:94 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed cache @891:907 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed cache @920:936 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=125
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed hoist @2930:2977 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=124
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed cache @3044:3069 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=123
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed cache @3138:3158 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=122
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed hoist @3467:3501 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=121
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed hoist @3635:3669 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=120
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed cache @5433:5472 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=119
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed cache @9864:9904 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=118
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed cache @10271:10292 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=117
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed cache @10409:10435 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=116
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/unwrapBindingAccess/main.vue" s3.extract-placements missed cache @13696:13711 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=115
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/v-generic/main.vue" s3.extract-placements missed cache @156:200 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/v-generic/main.vue" s3.extract-placements missed cache @252:341 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/withDotValue/main.vue" s3.extract-placements missed cache @20:40 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/withDotValue/main.vue" s3.extract-placements missed cache @90:113 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/withDotValue/main.vue" s3.extract-placements missed cache @133:156 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=125
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/withDotValue/main.vue" s3.extract-placements missed cache @209:229 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=124
+"tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/withDotValue/main.vue" s3.extract-placements missed cache @279:302 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=123
+
