@@ -1,0 +1,22 @@
+---
+source: crates/vize_s2_to_s3/tests/extraction_snapshots.rs
+expression: "decisions(r#\"<ul><li v-for=\"item in items\" @click=\"pick(item)\" :title=\"item.name\">{{ item.name }}</li></ul>\"#,\nOptTier::O1)"
+---
+[s3-placement-folio]
+
+[s3-placement-folio.placements]
+op=5 alternatives=inline,group leader=4 chosen=group
+
+[s3-extraction-folio]
+tier=O1
+candidate_budget=8
+budget_left=7
+emitted_size_before=170
+emitted_size_after=149
+reactive_edges_before=4
+reactive_edges_after=3
+update_path_before=8
+update_path_after=8
+
+[s3-extraction-folio.decisions]
+op=5 placement=group kind=applied reason=committed span=69:84 size=-21 edges=-1 path=0 budget=7

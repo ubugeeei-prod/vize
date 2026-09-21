@@ -1,0 +1,40 @@
+---
+source: crates/vize_s2_to_s3/tests/extraction_snapshots.rs
+expression: "decisions(ELEVEN_TITLES, OptTier::O2)"
+---
+[s3-placement-folio]
+
+[s3-placement-folio.placements]
+op=4 alternatives=inline,group leader=2 chosen=group
+op=6 alternatives=inline,group leader=2 chosen=group
+op=8 alternatives=inline,group leader=2 chosen=group
+op=10 alternatives=inline,group leader=2 chosen=group
+op=12 alternatives=inline,group leader=2 chosen=group
+op=14 alternatives=inline,group leader=2 chosen=group
+op=16 alternatives=inline,group leader=2 chosen=group
+op=18 alternatives=inline,group leader=2 chosen=group
+op=20 alternatives=inline,group leader=2 chosen=group
+op=22 alternatives=inline,group leader=2 chosen=group
+
+[s3-extraction-folio]
+tier=O2
+candidate_budget=32
+budget_left=22
+emitted_size_before=403
+emitted_size_after=193
+reactive_edges_before=11
+reactive_edges_after=1
+update_path_before=11
+update_path_after=11
+
+[s3-extraction-folio.decisions]
+op=4 placement=group kind=applied reason=committed span=26:36 size=-21 edges=-1 path=0 budget=31
+op=6 placement=group kind=applied reason=committed span=44:54 size=-21 edges=-1 path=0 budget=30
+op=8 placement=group kind=applied reason=committed span=62:72 size=-21 edges=-1 path=0 budget=29
+op=10 placement=group kind=applied reason=committed span=80:90 size=-21 edges=-1 path=0 budget=28
+op=12 placement=group kind=applied reason=committed span=98:108 size=-21 edges=-1 path=0 budget=27
+op=14 placement=group kind=applied reason=committed span=116:126 size=-21 edges=-1 path=0 budget=26
+op=16 placement=group kind=applied reason=committed span=134:144 size=-21 edges=-1 path=0 budget=25
+op=18 placement=group kind=applied reason=committed span=152:162 size=-21 edges=-1 path=0 budget=24
+op=20 placement=group kind=applied reason=committed span=170:180 size=-21 edges=-1 path=0 budget=23
+op=22 placement=group kind=applied reason=committed span=188:198 size=-21 edges=-1 path=0 budget=22

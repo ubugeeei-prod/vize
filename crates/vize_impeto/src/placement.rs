@@ -25,7 +25,7 @@
 
 mod annotate;
 pub(crate) mod facts;
-mod folio;
+pub(crate) mod folio;
 mod kind;
 mod record;
 

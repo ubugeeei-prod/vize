@@ -1,0 +1,24 @@
+---
+source: crates/vize_s2_to_s3/tests/extraction_snapshots.rs
+expression: "decisions(BRANCH_AND_HANDLER, OptTier::O1)"
+---
+[s3-placement-folio]
+
+[s3-placement-folio.placements]
+op=2 alternatives=inline,hoist leader=- chosen=hoist
+op=7 alternatives=inline,cache leader=- chosen=inline
+
+[s3-extraction-folio]
+tier=O1
+candidate_budget=8
+budget_left=6
+emitted_size_before=182
+emitted_size_after=127
+reactive_edges_before=2
+reactive_edges_after=2
+update_path_before=6
+update_path_after=3
+
+[s3-extraction-folio.decisions]
+op=2 placement=hoist kind=applied reason=committed span=9:43 size=-55 edges=0 path=-3 budget=7
+op=7 placement=cache kind=missed reason=regressed-emitted-size span=51:64 size=6 edges=-1 path=-1 budget=6

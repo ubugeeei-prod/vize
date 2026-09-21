@@ -6,13 +6,15 @@
 // UTF-8 must produce either a verified S3 program and partition facts or typed
 // diagnostics from earlier stages; it must not panic. When S3 is emitted, the
 // canonical Folio print must re-parse exactly. P3-10 placement annotation must
-// verify, leave the graph page byte-identical, and round-trip its own page.
+// verify, leave the graph page byte-identical, and round-trip its own page;
+// O3 extraction must do the same and keep the partition export current.
 use libfuzzer_sys::fuzz_target;
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_s0::{Allocator, SourceRoot, Span};
 use vize_s1::parse;
 use vize_s1_to_s2::lower as lower_s1_to_s2;
-use vize_s2_to_s3::{Lowered, PartitionKind, lower as lower_s2_to_s3};
+use vize_s2_to_s3::{Lowered, PartitionKind, lower as lower_s2_to_s3, optimize};
+use vize_s3::extract::{OptTier, S3ExtractionFolio};
 use vize_s3::folio::S3Folio;
 use vize_s3::placement::{S3PlacementFolio, annotate};
 use vize_s3::verify::verify;
@@ -47,6 +49,16 @@ fuzz_target!(|data: &[u8]| {
     let placements = S3PlacementFolio::of(&lowered.program);
     let printed = placements.print_to_string(FolioMode::Full);
     assert_eq!(S3PlacementFolio::parse(printed.as_str()), Ok(placements));
+
+    // P3-10 extraction at the largest tier commits a verified plan, keeps the
+    // graph and the partition export exact, and reports a round-tripping page.
+    let extraction = optimize(&mut lowered, OptTier::O3);
+    assert_eq!(verify(&lowered.program), vec![]);
+    assert_eq!(S3Folio::of(&lowered.program), folio);
+    assert_eq!(lowered.partition.stale(&lowered.program), None);
+    let report = S3ExtractionFolio::of(&extraction);
+    let printed = report.print_to_string(FolioMode::Full);
+    assert_eq!(S3ExtractionFolio::parse(printed.as_str()), Ok(report));
 });
 
 fn assert_spans_resolve(root: SourceRoot<'_>, lowered: &Lowered<'_>) {

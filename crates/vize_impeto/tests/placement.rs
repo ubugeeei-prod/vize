@@ -1,13 +1,15 @@
-//! TS-27 placement validator (`S3V010`): the verifier accepts exactly the
-//! well-formed placement alternatives and committed choices.
+//! P3-10 placements: the TS-27 validator (`S3V010`) accepts exactly the
+//! well-formed alternatives and committed choices, and try-measure-commit
+//! extraction chooses among them.
 
-mod placement_validator {
+mod placement {
     mod alternatives;
     mod choices;
+    mod extraction;
     pub mod fixture;
 }
 
-use placement_validator::fixture::{Build, JS, LIT, fixture};
+use placement::fixture::{Build, JS, LIT, fixture};
 use vize_impeto::op::{OpId, OpKind};
 use vize_impeto::placement::{Placement, PlacementRecord, PlacementSet, annotate};
 use vize_impeto::verify::verify;

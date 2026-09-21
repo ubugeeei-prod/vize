@@ -188,8 +188,11 @@ _First slice 2026-09-13:_ see
 zero-epsilon metric policy, and `-O0` through `-O3` candidate budgets.
 _Placement slice 2026-09-21:_ hoist/cache/group alternatives are an explicit,
 `S3V010`-verified overlay on S3 ops with a companion Folio page; the graph and
-exported partition stay canonical. The extraction pass, decision snapshots,
-remarks, and backend consumption remain open.
+exported partition stay canonical. _Extraction slice 2026-09-21:_ the
+try-measure-commit pass commits under the pinned rule and per-component budget,
+with `-O` tiers synced to `budgets.toml`, TS-17 decision snapshots, and one
+applied/missed decision per candidate. Backend consumption (TS-11/TS-33) and
+P3-13 structured remarks remain open.
 
 **P3-11 IVM oracle.** Incremental-update ≡ from-scratch render on the Lean
 reference for keyed/unkeyed `v-for`, conditional toggles, mixed non-linear

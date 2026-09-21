@@ -76,7 +76,7 @@ impl FolioValue for FolioPlacement {
     }
 }
 
-fn field<'a>(
+pub(crate) fn field<'a>(
     fields: &mut SplitWhitespace<'a>,
     name: &str,
     line: usize,
@@ -89,12 +89,12 @@ fn field<'a>(
         .ok_or_else(|| FolioError::new(line, cstr!("expected `{name}=...`, got `{raw}`")))
 }
 
-fn parse_u32(text: &str, name: &str, line: usize) -> Result<u32, FolioError> {
+pub(crate) fn parse_u32(text: &str, name: &str, line: usize) -> Result<u32, FolioError> {
     text.parse()
         .map_err(|_| FolioError::new(line, cstr!("invalid `{name}` integer `{text}`")))
 }
 
-fn parse_placement(text: &str, line: usize) -> Result<Placement, FolioError> {
+pub(crate) fn parse_placement(text: &str, line: usize) -> Result<Placement, FolioError> {
     Placement::from_str(text)
         .ok_or_else(|| FolioError::new(line, cstr!("unknown placement `{text}`")))
 }

@@ -24,6 +24,12 @@ overlay never rewrites the graph, so exported partition facts stay canonical;
 `S3V010` re-derives every recorded alternative and committed choice, and
 `S3PlacementFolio` prints the overlay on its own page.
 
+`extract::extract` is the try-measure-commit pass over that overlay. Each
+candidate is performed on a trial plan, measured (emitted size, reactive-edge
+count, update-path length), and committed only under the `-O` tier's pinned
+rule and candidate budget, which mirror `budgets.toml`. Every candidate yields
+one applied or missed decision, printed on `S3ExtractionFolio`.
+
 Support and deprecation guarantees are defined in the
 [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
 

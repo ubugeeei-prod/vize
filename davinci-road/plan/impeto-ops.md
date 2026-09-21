@@ -124,6 +124,38 @@ with its committed unit, and a chosen `hoist` may not sit inside another. The
 Lean reference does not interpret placements yet; the legality rules above are
 the semantic argument until extraction output reaches a backend under TS-28.
 
+## Try-Measure-Commit Extraction
+
+`vize_impeto::extract::extract` chooses among recorded alternatives, starting
+from the all-inline plan. For each candidate in record order it performs the
+placement on a trial plan, simplifies locally (a hoist removes its subtree's
+effect units, a group merges its unit into the leader's and unions their keys,
+a cache drops its unit), measures, and commits only under the pinned rule.
+
+| metric          | role       | measure                                                                                |
+| --------------- | ---------- | -------------------------------------------------------------------------------------- |
+| `reactive-edge` | constraint | sum over effect units of the distinct keys each reads                                  |
+| `update-path`   | constraint | per unit, members plus live ops an `if`/`for` member re-renders, times the unit's keys |
+| `emitted-size`  | objective  | operand bytes + 21 per effect unit + 29 per hoisted root + 27 per cached handler       |
+
+A key is one distinct reactive-read operand (kind plus source text): the fact
+approximation in scope. The byte constants are the lengths of the Vapor-shaped
+overheads `_renderEffect(() => …)`, `const _hoisted_1 = …` plus its use, and
+`_cache[0] || (_cache[0] = …)`. A candidate commits when no metric exceeds its
+tier epsilon, constraints judged first, and at least `required_improvements_min`
+metrics strictly improve; ties keep the simpler shape. Every measured trial
+spends one unit of the component's candidate budget; a candidate blocked by the
+committed plan (`subsumed`, `not-contiguous`) or reached after the budget is
+spent (`budget-exhausted`) is recorded as missed without measuring. Tiers are
+the `[optimization]` rows of `budgets.toml`, synced field for field by
+`crates/vize_impeto/tests/optimization_budgets.rs`.
+
+The pass writes only `PlacementRecord::chosen` and is described as
+`Preserved::ALL`; `vize_s2_to_s3::optimize` runs annotation plus extraction
+beside the exported facts, and `PartitionFacts::stale` stays `None`. Under the
+pinned zero epsilons a cache always costs 6 bytes more than the effect unit it
+removes, so it is recorded as missed until a budget ratchet decides otherwise.
+
 ## Review Point
 
 P3-5 lands before optional passes. A new Impeto op, a changed mnemonic, or a

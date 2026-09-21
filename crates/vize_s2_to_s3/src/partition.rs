@@ -1,5 +1,5 @@
 use vize_s0::{Allocator, Span, Vec};
-use vize_s3::op::OpId;
+use vize_s3::op::{OpId, Program};
 
 /// Static or dynamic partition assigned to one canonical S3 op.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -69,6 +69,27 @@ impl<'a> PartitionFacts<'a> {
     #[must_use]
     pub fn get(&self, op: OpId) -> Option<&PartitionFact> {
         self.ops.iter().find(|fact| fact.op == op)
+    }
+
+    /// The first position where these facts stop describing `program`
+    /// exactly: one fact per op, in op order, with the op's id and span, and
+    /// `dynamic` exactly when the op owns an effect scope. `None` means the
+    /// export is current. The P3-3 contract requires `None` after every
+    /// optional pass.
+    #[must_use]
+    pub fn stale(&self, program: &Program<'_>) -> Option<usize> {
+        let mismatch = self
+            .ops
+            .iter()
+            .zip(program.ops.iter())
+            .position(|(fact, op)| {
+                fact.op != op.id
+                    || fact.span != op.span
+                    || fact.kind.is_dynamic() != op.effect.is_some()
+            });
+        mismatch.or_else(|| {
+            (self.ops.len() != program.ops.len()).then(|| self.ops.len().min(program.ops.len()))
+        })
     }
 }
 

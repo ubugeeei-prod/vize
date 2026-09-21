@@ -74,3 +74,22 @@ rejects any other order so printing stays injective. Records appear in program
 op order. Parsing checks syntax only: whether a record is legal for its program
 is `S3V010`'s call. `crates/vize_impeto/tests/placement_folio.rs` pins the
 TS-16 laws and the exact parse errors.
+
+## S3 Extraction Folio
+
+P3-10 extraction reports on `vize_impeto::extract::S3ExtractionFolio`, a
+derived page named `[s3-extraction-folio]`. The header carries `tier`,
+`candidate_budget`, `budget_left`, and the before/after value of each metric
+(`emitted_size_*`, `reactive_edges_*`, `update_path_*`).
+
+| section                           | entry grammar                                                                                                      |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `[s3-extraction-folio.decisions]` | `op=<n> placement=<p> kind=<applied\|missed> reason=<r> span=<start>:<end> size=<d> edges=<d> path=<d> budget=<n>` |
+
+Each row is one structured remark: `kind` is `applied` exactly when `reason`
+is `committed`; the other reasons are `regressed-reactive-edge`,
+`regressed-update-path`, `regressed-emitted-size`, `no-improvement`,
+`budget-exhausted`, `not-contiguous`, and `subsumed`. `size`, `edges`, and
+`path` are the signed metric changes the trial measured (zero when the
+candidate was not measured), and `budget` is what the component has left.
+`crates/vize_impeto/tests/extraction_folio.rs` pins the TS-16 laws.
