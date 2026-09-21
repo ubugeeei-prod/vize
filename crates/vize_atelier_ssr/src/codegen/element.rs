@@ -8,6 +8,8 @@ mod component_props;
 mod plain;
 pub(crate) mod props;
 mod slot;
+mod slot_fn;
+mod spanned_props;
 mod transparent_builtin;
 mod vnode;
 
@@ -26,6 +28,8 @@ pub(crate) struct VNodePropEntry {
     key: String,
     value: String,
     dynamic: bool,
+    /// Authored spans, present only for map-requesting compiles.
+    spans: Option<Box<spanned_props::PropEntrySpans>>,
 }
 
 impl VNodePropEntry {
@@ -41,9 +45,18 @@ pub(super) enum ComponentSlotChildren<'node, 'a> {
     Refs(std::vec::Vec<&'node TemplateChildNode<'a>>),
 }
 
+/// Authored anchors of one slot: its name token and the element carrying it.
+#[derive(Clone, Copy, Debug)]
+pub(super) struct SlotAnchor {
+    /// The `v-slot` argument, when the slot name is authored.
+    name: Option<u32>,
+    unit: u32,
+}
+
 /// A `<template v-slot>` payload normalized before slot function emission.
 pub(super) struct ComponentTemplateSlot<'node, 'a> {
     name: String,
+    anchor: SlotAnchor,
     props_pattern: Option<String>,
     params: FxHashSet<String>,
     children: &'node [TemplateChildNode<'a>],

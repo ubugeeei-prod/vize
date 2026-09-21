@@ -83,6 +83,10 @@ pub struct Anchor {
     pub start: usize,
     pub len: usize,
     pub emitted: Emitted,
+    /// Backends that by design emit no code for this authored token (SSR
+    /// drops event listeners). The harness verifies the absence instead of
+    /// measuring a mapping.
+    pub absent: Vec<Backend>,
 }
 
 /// One fixture source and its anchors.
@@ -119,6 +123,8 @@ struct AnchorSpec {
     dom: Option<std::string::String>,
     vapor: Option<std::string::String>,
     ssr: Option<std::string::String>,
+    #[serde(default)]
+    absent: Vec<std::string::String>,
 }
 
 /// Load a battery file relative to the crate's `tests/fixtures/ts31`.
@@ -205,6 +211,16 @@ fn resolve_anchor(fixture: &str, source: &str, spec: &AnchorSpec) -> Anchor {
             "{fixture}: only section boundaries carry per-backend constructs"
         );
     }
+    let absent = spec
+        .absent
+        .iter()
+        .map(|name| match name.as_str() {
+            "dom" => Backend::Dom,
+            "vapor" => Backend::Vapor,
+            "ssr" => Backend::Ssr,
+            other => panic!("{fixture}: unknown backend `{other}` in `absent`"),
+        })
+        .collect();
     let (line, column) = line_column(source, start);
     Anchor {
         id: std::format!("{fixture}:{token}@{line}:{column}"),
@@ -212,6 +228,7 @@ fn resolve_anchor(fixture: &str, source: &str, spec: &AnchorSpec) -> Anchor {
         start,
         len: token.len(),
         emitted,
+        absent,
     }
 }
 

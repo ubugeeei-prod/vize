@@ -12,7 +12,7 @@ use vize_atelier_core::{
 use super::SsrCodegenContext;
 pub(crate) use destructure::{collect_for_scoped_params, extract_destructure_params};
 pub(crate) use escape::{escape_html, escape_html_attr};
-use vize_s0::{String, ToCompactString, cstr};
+use vize_s0::{String, ToCompactString};
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process a list of children nodes
@@ -137,7 +137,7 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Process a text node
     fn process_text(&mut self, text: &TextNode) {
-        self.push_string_part_static(&escape_html(text.content));
+        self.push_string_part_static_mapped(&escape_html(text.content), text.loc.span.start);
     }
 
     /// Process a comment node
@@ -157,8 +157,8 @@ impl<'a> SsrCodegenContext<'a> {
             ExpressionNode::Simple(simple) => self.strip_ctx_for_scoped_params(simple.content),
             ExpressionNode::Compound(_) => "_ctx.value".to_compact_string(), // placeholder
         };
-
-        self.push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
+        let span = interp.content.loc().span;
+        self.push_wrapped_expression_part("_ssrInterpolate(", &exp, ")", span);
     }
 
     /// Process an if node
@@ -176,22 +176,22 @@ impl<'a> SsrCodegenContext<'a> {
             self.push_indent();
 
             if i == 0 {
-                // First branch: if
-                self.push("if (");
+                // First branch: if, anchored at the branch's authored unit
+                self.push_mapped("if (", branch.loc.span.start);
                 if let Some(condition) = &branch.condition {
                     self.push_expression(condition);
                 }
                 self.push(") {\n");
             } else if branch.condition.is_some() {
                 // else-if
-                self.push("} else if (");
+                self.push_then_mapped("} ", "else if (", branch.loc.span.start);
                 if let Some(condition) = &branch.condition {
                     self.push_expression(condition);
                 }
                 self.push(") {\n");
             } else {
                 // else
-                self.push("} else {\n");
+                self.push_then_mapped("} ", "else {\n", branch.loc.span.start);
             }
 
             self.indent_level += 1;
@@ -240,7 +240,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         self.push_indent();
-        self.push("_ssrRenderList(");
+        self.push_mapped("_ssrRenderList(", for_node.loc.span.start);
         self.push_expression(&for_node.source);
         self.push(", (");
 
@@ -291,7 +291,7 @@ impl<'a> SsrCodegenContext<'a> {
         match expr {
             ExpressionNode::Simple(simple) => {
                 let content = self.strip_ctx_for_scoped_params(simple.content);
-                self.push(&content);
+                self.push_expression_text(&content, simple.loc.span);
             }
             ExpressionNode::Compound(compound) => {
                 // Flatten compound expression
@@ -309,7 +309,7 @@ impl<'a> SsrCodegenContext<'a> {
                     }
                 }
                 let content = self.strip_ctx_for_scoped_params(&content);
-                self.push(&content);
+                self.push_expression_text(&content, compound.loc.span);
             }
         }
     }

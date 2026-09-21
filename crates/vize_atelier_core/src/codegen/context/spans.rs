@@ -11,7 +11,7 @@ use vize_s0::Span;
 
 use super::CodegenContext;
 use crate::codegen::helpers::escape_js_string;
-use crate::codegen::rewrite_spans::rewritten_identifier_spans;
+use crate::codegen::spanned::expression_anchors;
 use crate::{DirectiveNode, ElementNode, RootNode, RuntimeHelper, TemplateChildNode, TextNode};
 
 /// Authored offset of the tag name of the first element (document order)
@@ -57,14 +57,13 @@ impl CodegenContext {
     }
 
     /// Push a slot's emitted name anchored at the `v-slot` argument that
-    /// authored it, or at the directive for an argument-less `v-slot`.
+    /// authored it; an argument-less `v-slot` authors no name token.
     #[inline]
     pub(in crate::codegen) fn push_slot_name(&mut self, code: &str, dir: &DirectiveNode<'_>) {
-        let offset = dir
-            .arg
-            .as_ref()
-            .map_or(dir.loc.span.start, |arg| arg.loc().span.start);
-        self.push_mapped(code, offset);
+        match &dir.arg {
+            Some(arg) => self.push_mapped(code, arg.loc().span.start),
+            None => self.push(code),
+        }
     }
 
     /// Push the `_withCtx` helper opening a slot function, anchored at the
@@ -97,38 +96,12 @@ impl CodegenContext {
     /// empty stub location) is emitted unanchored rather than mapped to the
     /// template start.
     pub(in crate::codegen) fn push_expression(&mut self, code: &str, span: Span) {
-        if self.map_builder.is_some()
-            && span.start < span.end
-            && !self.record_rewritten_identifiers(code, span)
-        {
-            self.record_mapping(span.start);
-        }
-        self.push(code);
-    }
-
-    /// Record the rewritten identifiers of `code`; returns whether one of them
-    /// already anchors the expression's first byte to its authored start.
-    fn record_rewritten_identifiers(&mut self, code: &str, span: Span) -> bool {
-        let (start, end) = (span.start as usize, span.end as usize);
-        let Some(authored) = self.source.get(start..end) else {
-            return false;
-        };
-        let Some(identifiers) = rewritten_identifier_spans(authored, code) else {
-            return false;
-        };
-        let base = self.code.len();
-        let Some(builder) = self.map_builder.as_mut() else {
-            return false;
-        };
-        let mut anchors_start = false;
-        for identifier in identifiers {
-            anchors_start |= identifier.emitted == 0 && identifier.authored == 0;
-            builder.add_named(
-                base + identifier.emitted,
-                span.start + identifier.authored as u32,
-                identifier.name,
+        if let Some(builder) = self.map_builder.as_mut() {
+            builder.add_anchors(
+                self.code.len(),
+                &expression_anchors(code, span, &self.source),
             );
         }
-        anchors_start
+        self.push(code);
     }
 }

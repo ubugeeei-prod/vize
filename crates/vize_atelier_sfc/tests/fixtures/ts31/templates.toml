@@ -14,6 +14,9 @@
 # - `section-boundary` anchors carry the construct each backend emits where
 #   the authored structural unit's code begins (`dom`, `vapor`, `ssr`); the
 #   authored token is the unit's opening `<`.
+# - `absent` lists backends that emit no code for the token by design (SSR
+#   drops event listeners); the harness verifies the absence and does not
+#   count the anchor as authored for them.
 
 [[fixture]]
 name = "attributes-and-text"
@@ -138,6 +141,7 @@ token = "em"
 [[fixture.anchor]]
 category = "rewritten-identifier"
 find = "increment"
+absent = ["ssr"]
 
 [[fixture.anchor]]
 category = "rewritten-identifier"

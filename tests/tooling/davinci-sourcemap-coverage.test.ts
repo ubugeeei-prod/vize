@@ -52,7 +52,7 @@ const report = JSON.parse(
 ) as Report;
 const record = fs.readFileSync(path.join(plan, "phase-3-records", "p3-9.md"), "utf8");
 
-const STATUSES = new Set(["exact", "covered", "unmapped"]);
+const STATUSES = new Set(["exact", "covered", "unmapped", "absent"]);
 const SHORTFALL_HEADING = "### TS-31 tracked shortfalls";
 
 function rowKey(budget: Budget): string {
@@ -113,9 +113,10 @@ test("TS-31 report counts agree with the per-anchor statuses", () => {
     }
     const exact = statuses.filter((status) => status === "exact").length;
     const covered = exact + statuses.filter((status) => status === "covered").length;
+    const authored = statuses.filter((status) => status !== "absent").length;
     assert.deepEqual(
       { authored: row.authored, covered: row.covered, exact: row.exact },
-      { authored: statuses.length, covered, exact },
+      { authored, covered, exact },
       `${key}: summary counts must be derived from its anchors`,
     );
   }

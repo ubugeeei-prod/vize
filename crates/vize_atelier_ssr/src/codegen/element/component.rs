@@ -1,12 +1,10 @@
 //! Component, built-in component, and scoped slot SSR emission.
 
-use super::props::{
-    is_dynamic_component_tag, is_simple_identifier, is_valid_js_identifier, quoted_js_string,
-};
+use super::props::{is_dynamic_component_tag, is_simple_identifier, quoted_js_string};
 use super::{
     ComponentSlotChildren, ComponentTemplateSlot, DirectiveNode, ElementNode, ElementType,
-    ExpressionNode, ForNode, FxHashSet, IfNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
-    TemplateChildNode, ToCompactString, extract_destructure_params,
+    ExpressionNode, ForNode, FxHashSet, IfNode, PropNode, RuntimeHelper, SlotAnchor,
+    SsrCodegenContext, String, TemplateChildNode, ToCompactString, extract_destructure_params,
 };
 
 impl<'a> SsrCodegenContext<'a> {
@@ -54,8 +52,8 @@ impl<'a> SsrCodegenContext<'a> {
         if let Some(binding_expr) = setup_binding.as_deref() {
             self.push(binding_expr);
         } else {
-            let callee = self.resolved_component_callee(tag);
-            self.push(&callee);
+            let callee = self.component_callee(tag, Some(el.loc.span.start + 1));
+            self.push_spanned(&callee);
         }
         self.push(", ");
         self.push(&props);
@@ -112,6 +110,7 @@ impl<'a> SsrCodegenContext<'a> {
             self.indent_level += 1;
             self.process_component_slot_property(
                 &slot.name,
+                Some(slot.anchor),
                 slot.props_pattern.as_deref(),
                 &slot.params,
                 ComponentSlotChildren::Slice(slot.children),
@@ -159,6 +158,7 @@ impl<'a> SsrCodegenContext<'a> {
             self.process_component_slot_property(
                 "default",
                 None,
+                None,
                 &FxHashSet::default(),
                 ComponentSlotChildren::Refs(default_children),
             );
@@ -166,6 +166,7 @@ impl<'a> SsrCodegenContext<'a> {
         for slot in named_slots {
             self.process_component_slot_property(
                 &slot.name,
+                Some(slot.anchor),
                 slot.props_pattern.as_deref(),
                 &slot.params,
                 ComponentSlotChildren::Slice(slot.children),
@@ -227,6 +228,7 @@ impl<'a> SsrCodegenContext<'a> {
             self.process_component_slot_property(
                 "default",
                 None,
+                None,
                 &FxHashSet::default(),
                 ComponentSlotChildren::Refs(default_children),
             );
@@ -234,6 +236,7 @@ impl<'a> SsrCodegenContext<'a> {
         for slot in static_slots {
             self.process_component_slot_property(
                 &slot.name,
+                Some(slot.anchor),
                 slot.props_pattern.as_deref(),
                 &slot.params,
                 ComponentSlotChildren::Slice(slot.children),
@@ -384,6 +387,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.push_indent();
         self.push("fn: ");
         self.emit_slot_fn(
+            Some(template_el.loc.span.start),
             props_pattern.as_deref(),
             &params,
             ComponentSlotChildren::Slice(&template_el.children),
@@ -417,80 +421,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    fn process_component_slot_property<'node>(
-        &mut self,
-        name: &str,
-        props_pattern: Option<&str>,
-        params: &FxHashSet<String>,
-        children: ComponentSlotChildren<'node, 'a>,
-    ) {
-        self.push_indent();
-        if is_valid_js_identifier(name) {
-            self.push(name);
-        } else {
-            self.push(&quoted_js_string(name));
-        }
-        self.push(": ");
-        self.emit_slot_fn(props_pattern, params, children);
-        self.push(",\n");
-    }
-
-    /// Emit a `_withCtx((params, _push, _parent, _scopeId) => { if (_push) {...}
-    /// else { return [...] } })` slot function, shared by static slot properties
-    /// and `createSlots` entries.
-    fn emit_slot_fn<'node>(
-        &mut self,
-        props_pattern: Option<&str>,
-        params: &FxHashSet<String>,
-        children: ComponentSlotChildren<'node, 'a>,
-    ) {
-        self.use_core_helper(RuntimeHelper::WithCtx);
-        self.push("_withCtx((");
-        self.push(props_pattern.unwrap_or("_"));
-        self.push(", _push, _parent, _scopeId) => {\n");
-        self.indent_level += 1;
-        self.push_indent();
-        self.push("if (_push) {\n");
-        self.indent_level += 1;
-
-        let old_parts = std::mem::take(&mut self.current_template_parts);
-        let previous_slot_scope = self.with_slot_scope_id;
-        self.with_slot_scope_id = true;
-        if !params.is_empty() {
-            self.push_scoped_params(params.clone());
-        }
-        self.process_component_slot_children(&children);
-        self.flush_push();
-        if !params.is_empty() {
-            self.pop_scoped_params();
-        }
-        self.with_slot_scope_id = previous_slot_scope;
-        self.current_template_parts = old_parts;
-
-        self.indent_level -= 1;
-        self.push_indent();
-        self.push("} else {\n");
-        self.indent_level += 1;
-        if !params.is_empty() {
-            self.push_scoped_params(params.clone());
-        }
-        let fallback = self.vnode_component_slot_children_expression(&children);
-        if !params.is_empty() {
-            self.pop_scoped_params();
-        }
-        self.push_indent();
-        self.push("return ");
-        self.push(&fallback);
-        self.push("\n");
-        self.indent_level -= 1;
-        self.push_indent();
-        self.push("}\n");
-        self.indent_level -= 1;
-        self.push_indent();
-        self.push("})");
-    }
-
-    fn process_component_slot_children<'node>(
+    pub(super) fn process_component_slot_children<'node>(
         &mut self,
         children: &ComponentSlotChildren<'node, 'a>,
     ) {
@@ -544,8 +475,13 @@ impl<'a> SsrCodegenContext<'a> {
             if let Some(pattern) = props_pattern.as_deref() {
                 extract_destructure_params(pattern.trim(), &mut params);
             }
+            let anchor = SlotAnchor {
+                name: dir.arg.as_ref().map(|arg| arg.loc().span.start),
+                unit: el.loc.span.start,
+            };
             return Some(ComponentTemplateSlot {
                 name,
+                anchor,
                 props_pattern,
                 params,
                 children: &el.children,

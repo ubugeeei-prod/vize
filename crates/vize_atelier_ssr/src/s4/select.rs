@@ -77,7 +77,8 @@ pub(super) fn select_from_s2<'a, 'e>(
         artifact.source,
         experimental.clone(),
     );
-    ctx.begin_render();
+    // The S2 program covers the whole template source, which starts at 0.
+    ctx.begin_render(0);
     match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
         Ok(()) => SsrS4Selection::Emitted(ctx.finish_render()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrS4Selection::Legacy(reason),
