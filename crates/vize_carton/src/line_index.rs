@@ -32,7 +32,7 @@ pub struct LineIndex<'a> {
 }
 
 impl<'a> LineIndex<'a> {
-    /// Build a line index in a single pass over `source`.
+    /// Count line breaks before filling the index to avoid excess capacity or growth.
     pub fn new(source: &'a str) -> Self {
         let breaks = memchr::memchr_iter(b'\n', source.as_bytes());
         let mut line_starts = crate::SmallVec::with_capacity(breaks.clone().count() + 1);

@@ -45,12 +45,12 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |          1217 |                   837 |               380 |             167 |     405 |            1080 |      709 |           614 |           773 |
+| Compiler                   |          1219 |                   837 |               382 |             167 |     405 |            1082 |      709 |           614 |           774 |
 | Linter                     |           375 |                   375 |                 0 |             299 |     303 |             731 |      246 |           390 |           573 |
-| Typechecker                |          1058 |                   274 |               784 |             502 |     241 |            1048 |      753 |           596 |           847 |
+| Typechecker                |          1062 |                   274 |               788 |             502 |     241 |            1049 |      756 |           596 |           847 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            21 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            71 |
-| LSP                        |           331 |                   331 |                 0 |             118 |      63 |             384 |      128 |           194 |           448 |
+| LSP                        |           333 |                   333 |                 0 |             118 |      63 |             384 |      130 |           195 |           449 |
 
 ## Consumer details
 
@@ -61,7 +61,7 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
 | Davinci          |          30 |              10 |       20 |
-| S0               |        1012 |             529 |      483 |
+| S0               |        1014 |             531 |      483 |
 | S1               |          13 |               6 |        7 |
 | S2               |          45 |              25 |       20 |
 | S1->S2           |         117 |              16 |      101 |
@@ -134,7 +134,7 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |        1058 |             612 |      446 |
+| S0               |        1062 |             613 |      449 |
 | old AST/parser   |         201 |              61 |      140 |
 | Croquis analysis |         301 |             170 |      131 |
 | raw OXC          |         241 |             205 |       36 |
@@ -226,7 +226,7 @@ Scope: lsp/ide commands plus Maestro editor/server crate. This is a lexical inve
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |         331 |             233 |       98 |
+| S0               |         333 |             233 |      100 |
 | old AST/parser   |          59 |              46 |       13 |
 | Croquis analysis |          59 |              43 |       16 |
 | raw OXC          |          63 |              62 |        1 |
@@ -253,7 +253,7 @@ Additional source/manifest rows are in the TSV: 133 omitted.
 | `crates/vize_maestro/src/server/state.rs:37`                     | test/dev | S0 7                       |     7 |
 | `crates/vize_maestro/src/ide/code_action.rs:602`                 | test/dev | Croquis analysis 5         |     5 |
 
-Additional test/dev rows are in the TSV: 61 omitted.
+Additional test/dev rows are in the TSV: 62 omitted.
 
 ## Independently mergeable no-rollout slices
 
