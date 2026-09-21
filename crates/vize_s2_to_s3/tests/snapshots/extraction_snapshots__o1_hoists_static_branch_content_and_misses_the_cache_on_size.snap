@@ -22,3 +22,9 @@ update_path_after=3
 [s3-extraction-folio.decisions]
 op=2 placement=hoist kind=applied reason=committed span=9:43 size=-55 edges=0 path=-3 budget=7
 op=7 placement=cache kind=missed reason=regressed-emitted-size span=51:64 size=6 edges=-1 path=-1 budget=6
+
+[remarks]
+
+[remarks.entries]
+s3.extract-placements applied hoist @9:43 reason="committed" emitted-size=-55 reactive-edges=0 update-path=-3 budget-left=7
+s3.extract-placements missed cache @51:64 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=6

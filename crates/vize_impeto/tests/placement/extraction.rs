@@ -6,13 +6,17 @@
 //! (5 edges), and update path 1 + 1 + 1 + (1 + 2 re-rendered) + 1 = 7.
 
 use super::fixture::{Build, JS, LIT, fixture};
-use vize_davinci::pass::observer::remark::CountingRemarkSink;
-use vize_davinci::pass::{Fusability, PassKind, Preserved};
+use vize_davinci::folio::remarks::RemarkLog;
+use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::pass::{
+    Fusability, NoObserver, PassKind, Preserved, RemarkCollector, RemarkCounter,
+};
 use vize_impeto::extract::{
     Decision, DecisionKind, Delta, EXTRACT, Extraction, Metric, Metrics, OptTier, Reason, extract,
 };
 use vize_impeto::op::{OpId, OpKind};
-use vize_impeto::placement::{Placement, annotate};
+use vize_impeto::optimize::{OPTIMIZE, optimize};
+use vize_impeto::placement::{ANNOTATE, Placement, annotate};
 use vize_impeto::verify::verify;
 use vize_s0::{Allocator, Span};
 
@@ -196,26 +200,63 @@ fn an_enclosing_hoist_subsumes_an_inner_candidate_without_spending_budget() {
     assert_eq!(verify(&build.program), []);
 }
 
+const REMARKS: &str = "\
+[remarks]
+
+[remarks.entries]
+s3.extract-placements missed cache @5:15 reason=\"regressed-emitted-size\" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=7
+s3.extract-placements applied group @30:40 reason=\"committed\" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=6
+s3.extract-placements applied hoist @45:75 reason=\"committed\" emitted-size=-13 reactive-edges=0 update-path=-1 budget-left=5
+
+";
+
 #[test]
-fn every_decision_becomes_one_remark() {
+fn the_pipeline_attributes_one_structured_remark_per_decision() {
     let arena = Allocator::default();
     let mut build = fixture(&arena, (LIT, "hi"));
-    annotate(&mut build.program);
-    let mut sink = CountingRemarkSink::new();
-    extract(&mut build.program, OptTier::O2).remark(&mut sink);
+    let mut collector = RemarkCollector::new();
+    let extraction =
+        optimize(&mut build.program, OptTier::O1, &mut collector).expect("closed pipeline");
+    let page = RemarkLog::new(collector.finish()).print_to_string(FolioMode::Full);
+    assert_eq!(page.as_str(), REMARKS);
+
+    let mut detached = fixture(&arena, (LIT, "hi"));
     assert_eq!(
-        sink,
-        CountingRemarkSink {
+        optimize(&mut detached.program, OptTier::O1, &mut NoObserver),
+        Ok(extraction)
+    );
+    let mut counted = fixture(&arena, (LIT, "hi"));
+    let mut counter = RemarkCounter::new();
+    optimize(&mut counted.program, OptTier::O1, &mut counter).expect("closed pipeline");
+    assert_eq!(
+        counter,
+        RemarkCounter {
             applied: 2,
-            missed: 1
+            missed: 1,
+            analysis: 0
         }
     );
 }
 
 #[test]
-fn the_pass_is_an_optional_graph_preserving_barrier() {
-    assert_eq!(EXTRACT.name, "impeto-extract");
-    assert_eq!(EXTRACT.kind, PassKind::Optional);
-    assert_eq!(EXTRACT.fusability, Fusability::Barrier);
-    assert_eq!(EXTRACT.preserved, Preserved::ALL);
+fn both_passes_are_optional_graph_preserving_barriers_of_one_s3_pipeline() {
+    for (desc, name) in [
+        (ANNOTATE, "annotate-placements"),
+        (EXTRACT, "extract-placements"),
+    ] {
+        assert_eq!(
+            (desc.name, desc.kind, desc.fusability, desc.preserved),
+            (
+                name,
+                PassKind::Optional,
+                Fusability::Barrier,
+                Preserved::ALL
+            )
+        );
+    }
+    assert_eq!(
+        (OPTIMIZE.stage, OPTIMIZE.passes),
+        ("s3", &[ANNOTATE, EXTRACT][..])
+    );
+    assert_eq!(OPTIMIZE.group_count(), 2);
 }

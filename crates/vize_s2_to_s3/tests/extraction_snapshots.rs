@@ -1,15 +1,19 @@
 //! TS-17 snapshots of P3-10 extraction decisions.
 //!
-//! Each snapshot pins the committed placement page and the extraction page
-//! (tier, budget, plan metrics before and after, one row per decision). Every
-//! run must also leave the graph page byte-identical, keep the exported
-//! partition current, and verify.
+//! Each snapshot pins the committed placement page, the extraction page
+//! (tier, budget, plan metrics before and after, one row per decision), and
+//! the P3-13 `[remarks]` page the pass manager collected. Every run must also
+//! leave the graph page byte-identical, keep the exported partition current,
+//! verify, and match a detached run exactly.
 
+use vize_davinci::folio::remarks::RemarkLog;
 use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::pass::{NoObserver, RemarkCollector};
 use vize_s0::{Allocator, String};
-use vize_s2_to_s3::{lower, optimize};
+use vize_s2_to_s3::lower;
 use vize_s3::extract::{OptTier, S3ExtractionFolio};
 use vize_s3::folio::S3Folio;
+use vize_s3::optimize::optimize;
 use vize_s3::placement::S3PlacementFolio;
 use vize_s3::verify::verify;
 
@@ -29,7 +33,14 @@ fn decisions(source: &str, tier: OptTier) -> String {
     let mut lowered = lower(&allocator, &s2.root);
     let graph = S3Folio::of(&lowered.program).print_to_string(FolioMode::Full);
 
-    let extraction = optimize(&mut lowered, tier);
+    let detached = {
+        let mut copy = lower(&allocator, &s2.root);
+        optimize(&mut copy.program, tier, &mut NoObserver).expect("closed pipeline")
+    };
+    let mut collector = RemarkCollector::new();
+    let extraction = optimize(&mut lowered.program, tier, &mut collector).expect("closed pipeline");
+
+    assert_eq!(extraction, detached);
 
     assert_eq!(verify(&lowered.program), []);
     assert_eq!(lowered.partition.stale(&lowered.program), None);
@@ -40,6 +51,11 @@ fn decisions(source: &str, tier: OptTier) -> String {
     let mut output = S3PlacementFolio::of(&lowered.program).print_to_string(FolioMode::Full);
     output.push_str(
         S3ExtractionFolio::of(&extraction)
+            .print_to_string(FolioMode::Full)
+            .as_str(),
+    );
+    output.push_str(
+        RemarkLog::new(collector.finish())
             .print_to_string(FolioMode::Full)
             .as_str(),
     );

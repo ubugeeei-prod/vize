@@ -12,9 +12,7 @@
 extern crate alloc;
 
 mod lower;
-mod optimize;
 mod partition;
 
 pub use lower::{Lowered, lower};
-pub use optimize::optimize;
 pub use partition::{PartitionFact, PartitionFacts, PartitionKind};

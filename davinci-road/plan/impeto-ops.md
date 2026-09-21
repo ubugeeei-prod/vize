@@ -151,8 +151,10 @@ the `[optimization]` rows of `budgets.toml`, synced field for field by
 `crates/vize_impeto/tests/optimization_budgets.rs`.
 
 The pass writes only `PlacementRecord::chosen` and is described as
-`Preserved::ALL`; `vize_s2_to_s3::optimize` runs annotation plus extraction
-beside the exported facts, and `PartitionFacts::stale` stays `None`. Under the
+`Preserved::ALL`. `vize_impeto::optimize::OPTIMIZE` is the `s3` pipeline
+`annotate-placements` then `extract-placements`; run through the pass manager,
+each decision becomes one `s3.extract-placements` remark (registered in
+`remarks-format.md`), and `PartitionFacts::stale` stays `None`. Under the
 pinned zero epsilons a cache always costs 6 bytes more than the effect unit it
 removes, so it is recorded as missed until a budget ratchet decides otherwise.
 

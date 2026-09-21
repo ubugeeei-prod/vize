@@ -161,3 +161,25 @@ Blockers come from the same functions the facts do
 remark cannot explain a decision the analysis did not make. TS-17 pins the
 full page for the `hoist` fixtures and re-derives every kind from the
 published facts (`crates/vize_s1_to_s2/tests/hoist_pass_remarks.rs`).
+
+### `s3.extract-placements` (`crates/vize_impeto/src/extract/report.rs`)
+
+P3-10 try-measure-commit extraction, run as the second pass of the `s3`
+`OPTIMIZE` pipeline (`crates/vize_impeto/src/optimize.rs`). One remark per
+recorded placement candidate, named after the placement; `applied` exactly
+when the candidate was measured and committed.
+
+| name    | emitted for                                   | applied when | args                                                                     |
+| ------- | --------------------------------------------- | ------------ | ------------------------------------------------------------------------ |
+| `hoist` | every `hoist` alternative `annotate` recorded | committed    | `reason`, `emitted-size`, `reactive-edges`, `update-path`, `budget-left` |
+| `cache` | every `cache` alternative `annotate` recorded | committed    | same                                                                     |
+| `group` | every `group` alternative `annotate` recorded | committed    | same                                                                     |
+
+`reason` is `committed`, `regressed-reactive-edge`, `regressed-update-path`,
+`regressed-emitted-size`, `no-improvement`, `budget-exhausted`,
+`not-contiguous`, or `subsumed`. The three metric args are the signed changes
+the trial measured (0 when the candidate was not measured); `budget-left` is
+the component's remaining candidate budget. The remarks mirror the
+`[s3-extraction-folio]` decision rows one for one; TS-17 pins both pages
+(`crates/vize_s2_to_s3/tests/extraction_snapshots.rs`), and a detached run
+must return the identical extraction.

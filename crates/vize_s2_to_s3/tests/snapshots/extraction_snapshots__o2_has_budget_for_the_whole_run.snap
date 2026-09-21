@@ -38,3 +38,17 @@ op=16 placement=group kind=applied reason=committed span=134:144 size=-21 edges=
 op=18 placement=group kind=applied reason=committed span=152:162 size=-21 edges=-1 path=0 budget=24
 op=20 placement=group kind=applied reason=committed span=170:180 size=-21 edges=-1 path=0 budget=23
 op=22 placement=group kind=applied reason=committed span=188:198 size=-21 edges=-1 path=0 budget=22
+
+[remarks]
+
+[remarks.entries]
+s3.extract-placements applied group @26:36 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=31
+s3.extract-placements applied group @44:54 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=30
+s3.extract-placements applied group @62:72 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=29
+s3.extract-placements applied group @80:90 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=28
+s3.extract-placements applied group @98:108 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=27
+s3.extract-placements applied group @116:126 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=26
+s3.extract-placements applied group @134:144 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=25
+s3.extract-placements applied group @152:162 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=24
+s3.extract-placements applied group @170:180 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=23
+s3.extract-placements applied group @188:198 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=22

@@ -10,9 +10,9 @@ parameters into S3-owned operands. S2 and its source arena can be released after
 lowering. The shared partition facts and graph-only Folio remain unchanged;
 `vize_s3::values_folio::S3ValuesFolio` exports the paired value page.
 
-`optimize` runs the P3-10 placement annotation and try-measure-commit
-extraction on a lowered program. Both passes write only the placement overlay,
-so `PartitionFacts::stale` keeps reporting the export as current.
+`PartitionFacts::stale` names the first fact that stops describing the
+program. The P3-10 `vize_s3::optimize` pipeline writes only the placement
+overlay, so the export stays current after it at every `-O` tier.
 
 Opaque reasons, foreign dialect identifiers and Vue filter classifications are
 preserved without interpreting them. Foreign dialect fact tables and retained

@@ -22,3 +22,9 @@ update_path_after=6
 [s3-extraction-folio.decisions]
 op=2 placement=hoist kind=missed reason=budget-exhausted span=9:43 size=0 edges=0 path=0 budget=0
 op=7 placement=cache kind=missed reason=budget-exhausted span=51:64 size=0 edges=0 path=0 budget=0
+
+[remarks]
+
+[remarks.entries]
+s3.extract-placements missed hoist @9:43 reason="budget-exhausted" emitted-size=0 reactive-edges=0 update-path=0 budget-left=0
+s3.extract-placements missed cache @51:64 reason="budget-exhausted" emitted-size=0 reactive-edges=0 update-path=0 budget-left=0

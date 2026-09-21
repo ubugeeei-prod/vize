@@ -20,3 +20,8 @@ update_path_after=2
 
 [s3-extraction-folio.decisions]
 op=2 placement=group kind=applied reason=committed span=18:27 size=-21 edges=-1 path=0 budget=7
+
+[remarks]
+
+[remarks.entries]
+s3.extract-placements applied group @18:27 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=7

@@ -1,14 +1,15 @@
-//! Extraction decisions, shaped as structured remarks.
+//! Extraction decisions and their structured remarks (P3-13).
 //!
-//! Every candidate yields exactly one [`Decision`]: `{pass, kind, span, args}`
-//! where the args are the placement, the reason, the measured metric deltas,
-//! and the budget left. Until P3-13 lands structured remarks, the decisions
-//! also flow through the existing counting [`RemarkSink`] channel.
+//! Every candidate yields exactly one [`Decision`], and [`Extraction::remark`]
+//! turns each into one remark named after the placement (`hoist`, `cache`,
+//! `group`): `applied` when committed, `missed` otherwise, with the args
+//! `reason`, `emitted-size`, `reactive-edges`, `update-path`, `budget-left`.
+//! The vocabulary is registered in `davinci-road/plan/remarks-format.md`.
 
 use alloc::vec::Vec;
 use core::fmt;
 
-use vize_davinci::pass::observer::{Remark, RemarkSink};
+use vize_davinci::pass::{Remark, RemarkArg, RemarkSink};
 use vize_s0::Span;
 
 use super::measure::{Metric, Metrics};
@@ -17,7 +18,7 @@ use crate::op::OpId;
 use crate::placement::Placement;
 
 /// The pass name decisions and remarks carry.
-pub const EXTRACT_PASS: &str = "impeto-extract";
+pub const EXTRACT_PASS: &str = "extract-placements";
 
 /// Whether the candidate's placement was committed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -145,14 +146,26 @@ pub struct Extraction {
 }
 
 impl Extraction {
-    /// Send one remark per decision through the observer channel.
+    /// Emit one structured remark per decision. Argument construction is
+    /// guarded on the sink, so a detached run builds nothing.
     pub fn remark<S: RemarkSink>(&self, sink: &mut S) {
+        if !S::ENABLED {
+            return;
+        }
         for decision in &self.decisions {
-            sink.remark(Remark {
-                pass: EXTRACT_PASS,
-                message: decision.reason.as_str(),
-                applied: decision.kind == DecisionKind::Applied,
-            });
+            let args = [
+                RemarkArg::str("reason", decision.reason.as_str()),
+                RemarkArg::int("emitted-size", decision.delta.emitted_size),
+                RemarkArg::int("reactive-edges", decision.delta.reactive_edges),
+                RemarkArg::int("update-path", decision.delta.update_path),
+                RemarkArg::int("budget-left", i64::from(decision.budget_left)),
+            ];
+            let name = decision.placement.as_str();
+            let remark = match decision.kind {
+                DecisionKind::Applied => Remark::applied(name, decision.span, &args),
+                DecisionKind::Missed => Remark::missed(name, decision.span, &args),
+            };
+            sink.emit(&remark);
         }
     }
 }

@@ -1,10 +1,12 @@
 //! P3-3 export contract: `PartitionFacts::stale` names the first fact that
 //! stops describing the program, and optional passes never produce one.
 
+use vize_davinci::pass::NoObserver;
 use vize_s0::{Allocator, Span};
-use vize_s2_to_s3::{Lowered, PartitionFact, PartitionKind, lower, optimize};
+use vize_s2_to_s3::{Lowered, PartitionFact, PartitionKind, lower};
 use vize_s3::extract::OptTier;
 use vize_s3::op::{EffectId, OpId};
+use vize_s3::optimize::optimize;
 
 const SOURCE: &str = r#"<section><p v-if="ready"><b>ok</b></p><i :title="n">{{ n }}</i></section>"#;
 
@@ -20,7 +22,7 @@ fn fresh_and_optimized_exports_are_current_at_every_tier() {
     for tier in OptTier::ALL {
         with_lowered(|mut lowered| {
             assert_eq!(lowered.partition.stale(&lowered.program), None);
-            optimize(&mut lowered, tier);
+            optimize(&mut lowered.program, tier, &mut NoObserver).expect("closed pipeline");
             assert_eq!(lowered.partition.stale(&lowered.program), None);
         });
     }
