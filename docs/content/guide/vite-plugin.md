@@ -53,7 +53,7 @@ export default defineConfig({
 });
 ```
 
-That's it. Replace `@vitejs/plugin-vue` with `@vizejs/vite-plugin` and your project compiles through Rust.
+Replace `@vitejs/plugin-vue` with `@vizejs/vite-plugin` to compile through Rust. For combined Vite+ check, lint, format, and build tasks, [use `withVize()`](./vite-plus.md).
 
 ## TypeScript Vue Imports
 

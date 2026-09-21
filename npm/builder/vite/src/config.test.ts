@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -36,7 +37,20 @@ assert.match(
 
 const bundledPath = fileURLToPath(new URL("../dist/index.mjs", import.meta.url));
 if (fs.existsSync(bundledPath)) {
-  const bundledSource = fs.readFileSync(bundledPath, "utf8");
+  // Public entries can share pack chunks. Check the modules reachable from
+  // the ordinary plugin entry, without including the optional Vite+ entry.
+  const visited = new Set<string>();
+  function readBundle(file: string): string {
+    if (visited.has(file)) return "";
+    visited.add(file);
+    const source = fs.readFileSync(file, "utf8");
+    const dependencies = [...source.matchAll(/(?:from\s*|import\s*)["'](\.\/[^"']+\.mjs)["']/g)];
+    return (
+      source +
+      dependencies.map((match) => readBundle(path.resolve(path.dirname(file), match[1]))).join("\n")
+    );
+  }
+  const bundledSource = readBundle(bundledPath);
   assert.doesNotMatch(
     bundledSource,
     /(?:from\s+["']vize["']|import\(["']vize["']\))/,

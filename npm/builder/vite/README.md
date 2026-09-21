@@ -22,6 +22,42 @@ Add `vize` as a direct dependency only if your project imports shared config hel
 
 ## Usage
 
+### Vite+
+
+Install the `vite-plus` version your project uses, then configure the whole toolchain:
+
+```ts
+// vite.config.ts
+import { withVize } from "@vizejs/vite-plugin/vite-plus";
+
+export default withVize();
+```
+
+`vp run check`, `vp run lint`, `vp run fmt`, and `vp run build` now include Vize.
+`lint:fix`, `fmt:check`, `dev`, `preview`, and `test` tasks are also available.
+For configuration, use `withVize(vizeConfig).vp(vitePlusConfig)`:
+
+```ts
+export default withVize({
+  linter: { preset: "essential" },
+  formatter: { singleQuote: true },
+}).vp({
+  server: { port: 3000 },
+  lint: { rules: { "no-debugger": "error" } },
+});
+```
+
+Vize native lint and Oxlint both run. Overlapping Vue rules are disabled by default
+only when the installed Vite+ supports them; explicit `vp` rule settings take precedence.
+Vize formats Vue files while Oxfmt formats the remaining files. The helper uses your
+installed `vite-plus` optional peer and its config types, without pinning or installing a version.
+
+Existing package scripts are preserved: a conflicting generated task uses `vize:<name>`
+(for example, `vp run vize:check`). Existing `run.tasks` take precedence. Built-in `vp check`
+and `vp lint` remain Vite+ commands; use `vp run` for the combined tasks. See the
+[Vite+ guide](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/guide/vite-plus.md)
+for task names, opt-outs, and configuration ownership.
+
 ### Vite
 
 ```ts

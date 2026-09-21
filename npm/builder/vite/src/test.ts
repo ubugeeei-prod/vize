@@ -5,6 +5,8 @@ import "./compiler-src-imports.test.ts";
 import "./compiler-custom-elements.test.ts";
 import "./compile-options.test.ts";
 import "./config.test.ts";
+import "./vite-plus/config.test.ts";
+import "./vite-plus/runner.test.ts";
 import "./internal/config-bridge.test.ts";
 import "./options-api-events.test.ts";
 import "./output-ast.test.ts";

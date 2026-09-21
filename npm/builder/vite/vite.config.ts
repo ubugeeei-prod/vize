@@ -11,7 +11,12 @@ export default defineConfig({
     ignorePatterns: ["dist/**"],
   },
   pack: {
-    entry: ["src/index.ts", "src/internal/config-bridge.ts"],
+    entry: [
+      "src/index.ts",
+      "src/vite-plus.ts",
+      "src/internal/config-bridge.ts",
+      "src/internal/vite-plus-task.ts",
+    ],
     format: "esm",
     dts: true,
     clean: true,
