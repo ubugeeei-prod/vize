@@ -98,7 +98,7 @@ fn generate_v_once_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.use_helper(RuntimeHelper::CreateElementVNode);
         ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
         ctx.push("(\"");
-        ctx.push(el.tag);
+        ctx.push_tag(el);
         ctx.push("\"");
 
         // Generate props (excluding v-once)
@@ -235,7 +235,7 @@ pub fn generate_v_once_child(ctx: &mut CodegenContext, node: &TemplateChildNode<
             ctx.use_helper(RuntimeHelper::CreateText);
             ctx.push(ctx.helper(RuntimeHelper::CreateText));
             ctx.push("(\"");
-            ctx.push(&escape_js_string(text.content));
+            ctx.push_text(text);
             ctx.push("\")");
         }
         TemplateChildNode::Interpolation(interp) => {

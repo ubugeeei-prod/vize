@@ -169,7 +169,7 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
         ctx.push(" = ");
         ctx.push(ctx.helper(RuntimeHelper::ResolveComponent));
         ctx.push("(\"");
-        ctx.push(resolution_name);
+        ctx.push_component_name(resolution_name, root);
         ctx.push("\"");
         if is_self_component {
             ctx.push(", true");

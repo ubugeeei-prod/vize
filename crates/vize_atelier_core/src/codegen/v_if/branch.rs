@@ -22,7 +22,7 @@ use super::{
             is_whitespace_or_comment,
         },
         expression::generate_expression,
-        helpers::{escape_js_string, is_builtin_component, to_valid_asset_identifier},
+        helpers::{is_builtin_component, to_valid_asset_identifier},
         node::generate_node,
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
@@ -180,7 +180,7 @@ fn generate_if_branch_component(
 
     let prev_skip_scope_id = ctx.skip_scope_id;
     ctx.use_helper(RuntimeHelper::CreateBlock);
-    ctx.push("(");
+    ctx.push_mapped("(", el.loc.span.start);
     ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
     ctx.push("(), ");
     ctx.push_vnode_helper(RuntimeHelper::CreateBlock);
@@ -351,12 +351,12 @@ fn generate_if_branch_element(
     }
 
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
-    ctx.push("(");
+    ctx.push_mapped("(", el.loc.span.start);
     ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
     ctx.push("(), ");
     ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
     ctx.push("(\"");
-    ctx.push(el.tag);
+    ctx.push_tag(el);
     ctx.push("\"");
 
     ctx.push(", ");
@@ -368,7 +368,7 @@ fn generate_if_branch_element(
         if el.children.len() == 1 {
             if let TemplateChildNode::Text(text) = &el.children[0] {
                 ctx.push("\"");
-                ctx.push(&escape_js_string(text.content));
+                ctx.push_text(text);
                 ctx.push("\"");
             } else {
                 ctx.with_parent_namespace(child_namespace(el), |ctx| {
@@ -428,7 +428,7 @@ fn generate_if_branch_template_fragment(
 ) {
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
     ctx.use_helper(RuntimeHelper::Fragment);
-    ctx.push("(");
+    ctx.push_mapped("(", branch.loc.span.start);
     ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
     ctx.push("(), ");
     ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
@@ -467,7 +467,7 @@ fn generate_if_branch_children(ctx: &mut CodegenContext, children: &[TemplateChi
                 }
                 TemplateChildNode::Text(text) => {
                     ctx.push("\"");
-                    ctx.push(&escape_js_string(text.content));
+                    ctx.push_text(text);
                     ctx.push("\"");
                 }
                 _ => {}

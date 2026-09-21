@@ -1063,12 +1063,12 @@ fn test_codegen_triple_mustache_escaped_under_default_dialect() {
 /// source line/column it points back to, plus the optional `names`-array index
 /// when the segment carried a 5th VLQ field.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct DecodedSegment {
-    generated_line: u32,
-    generated_column: u32,
-    source_line: u32,
-    source_column: u32,
-    name: Option<u32>,
+pub(super) struct DecodedSegment {
+    pub(super) generated_line: u32,
+    pub(super) generated_column: u32,
+    pub(super) source_line: u32,
+    pub(super) source_column: u32,
+    pub(super) name: Option<u32>,
 }
 
 const VLQ_CHARS: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -1098,7 +1098,7 @@ fn decode_one_vlq(bytes: &[u8]) -> (i64, usize) {
 }
 
 /// Decode a full v3 `mappings` string into absolute decoded segments.
-fn decode_mappings(mappings: &str) -> Vec<DecodedSegment> {
+pub(super) fn decode_mappings(mappings: &str) -> Vec<DecodedSegment> {
     let mut out = Vec::new();
     // Source index/line/column and the name index accumulate across the whole
     // document; generated column resets at each generated line (each `;`). The
@@ -1141,7 +1141,7 @@ fn decode_mappings(mappings: &str) -> Vec<DecodedSegment> {
 
 /// Compile a template with `prefix_identifiers` so dynamic expressions surface
 /// as `_ctx.<name>` in the output (the interesting mapping case).
-fn compile_with_map(src: &str, filename: &str) -> super::CodegenResult {
+pub(super) fn compile_with_map(src: &str, filename: &str) -> super::CodegenResult {
     let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
@@ -1226,17 +1226,17 @@ fn source_map_maps_known_expression_and_tag_positions() {
         "expression should map back to `msg` in the template"
     );
 
-    // The `<div>` tag name is at line 0, column 0; generated as `"div"`.
+    // The `div` tag name is at line 0, column 1 (after `<`); generated as `"div"`.
     let (tag_line, tag_col) = generated_position_of(&result.code, "\"div\"");
-    // The anchor points at the tag name itself (just inside the opening quote).
+    // Byte-exact (TS-31): the generated tag name maps to the authored tag name.
     let tag_seg = segments
         .iter()
         .find(|s| s.generated_line == tag_line && s.generated_column == tag_col + 1)
         .expect("a segment should anchor the generated tag-name string");
     assert_eq!(
         (tag_seg.source_line, tag_seg.source_column),
-        (0, 0),
-        "element tag should map back to the `<div>` open tag"
+        (0, 1),
+        "element tag should map back to the authored `div` tag name"
     );
 }
 
