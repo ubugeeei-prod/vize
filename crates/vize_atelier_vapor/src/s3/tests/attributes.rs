@@ -5,6 +5,35 @@ use crate::s3::{
 use vize_carton::Allocator;
 use vize_s3::operand::OperandRole;
 
+/// A concatenation that starts and ends with a quote is not one string
+/// literal: its references still resolve (the generator once passed it
+/// through, leaving `value` unprefixed on the native lane only).
+#[test]
+fn quote_bounded_concatenations_resolve_their_references() {
+    for source in [
+        r#"<p>{{ '[' + value + ']' }}</p>"#,
+        r#"<p :title="'a' + b + 'c'">x</p>"#,
+        r#"<p>{{ "x" + n + "y" }} {{ 'it\'s' }}</p>"#,
+    ] {
+        for prefix_identifiers in [false, true] {
+            let compile = |davinci_retained_lane| {
+                let allocator = Allocator::new();
+                crate::compile_vapor(
+                    &allocator,
+                    source,
+                    crate::VaporCompilerOptions {
+                        prefix_identifiers,
+                        davinci_retained_lane,
+                        ..Default::default()
+                    },
+                )
+                .code
+            };
+            assert_eq!(compile(false), compile(true), "{source}");
+        }
+    }
+}
+
 #[test]
 fn expression_and_content_directive_shapes_are_admitted() {
     for source in [

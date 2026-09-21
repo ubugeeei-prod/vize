@@ -93,8 +93,28 @@ pub(super) fn apply_rewrites(
 pub(super) fn is_literal_expression(expr: &str) -> bool {
     expr.parse::<f64>().is_ok()
         || matches!(expr, "true" | "false" | "null" | "undefined")
-        || ((expr.starts_with('"') && expr.ends_with('"'))
-            || (expr.starts_with('\'') && expr.ends_with('\'')))
+        || single_string_literal(expr)
+}
+
+/// One quoted string literal. `'[' + a + ']'` starts and ends with a quote
+/// but is a concatenation whose `a` still needs resolving.
+fn single_string_literal(expr: &str) -> bool {
+    let Some(quote) = expr.chars().next().filter(|c| matches!(c, '"' | '\'')) else {
+        return false;
+    };
+    let Some(body) = expr[1..].strip_suffix(quote) else {
+        return false;
+    };
+    let mut escaped = false;
+    for c in body.chars() {
+        match c {
+            _ if escaped => escaped = false,
+            '\\' => escaped = true,
+            c if c == quote => return false,
+            _ => {}
+        }
+    }
+    !escaped
 }
 
 pub(super) fn is_simple_path_expression(expr: &str) -> bool {
