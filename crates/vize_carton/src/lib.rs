@@ -56,6 +56,7 @@ pub mod i18n;
 mod i18n_supplemental;
 mod i18n_supplemental_extra;
 mod i18n_supplemental_extra2;
+mod i18n_supplemental_html;
 pub mod interner;
 pub mod line_index;
 pub mod lsp;

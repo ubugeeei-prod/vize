@@ -66,7 +66,12 @@ mod checker_tests {
             truncated("<p><ul></ul></p>"),
             ["ul@4 paragraph-auto-closed <- p@1"]
         );
-        assert_eq!(truncated("<span><div></div></span>"), Vec::<String>::new());
+        // The mount point decides whether `<div>` closes an outer `<p>`; in
+        // every context where it does not, `<span>` forbids it: proven.
+        assert_eq!(
+            truncated("<span><div></div></span>"),
+            ["div@7 phrasing-content-expected <- span@1"]
+        );
     }
 
     #[test]
@@ -191,7 +196,7 @@ mod checker_tests {
         );
         assert_eq!(
             body("<table><input :type=\"t\"></table>"),
-            Vec::<String>::new()
+            ["input@8 child-not-permitted <- table@1"]
         );
         assert_eq!(truncated("<tr><td></td></tr>"), Vec::<String>::new());
         assert_eq!(
@@ -233,7 +238,11 @@ mod checker_tests {
             body("<iframe><p></p></iframe>"),
             ["p@9 raw-text-content <- iframe@1"]
         );
-        assert_eq!(truncated("<a><a></a></a>"), Vec::<String>::new());
+        // A root `<a>` compiles to HTML: the mount assumption decides it.
+        assert_eq!(
+            truncated("<a><a></a></a>"),
+            ["a@4 formatting-adopted <- a@1"]
+        );
     }
 
     #[test]

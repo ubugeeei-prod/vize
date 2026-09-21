@@ -1,4 +1,4 @@
-use super::{PermittedContents, required_children};
+use super::PermittedContents;
 use crate::linter::Linter;
 use crate::rule::RuleRegistry;
 
@@ -8,187 +8,172 @@ fn create_linter() -> Linter {
     Linter::with_registry(registry)
 }
 
-// ===== Valid cases =====
-
-#[test]
-fn test_valid_inline_in_inline() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(r#"<p><span>text</span></p>"#, "test.vue");
-    assert_eq!(result.error_count, 0);
+/// `start..end message [label start..end label]` per diagnostic.
+fn template(source: &str) -> Vec<String> {
+    let result = create_linter().lint_template_rules_only(source, "test.vue");
+    render(&result.diagnostics)
 }
 
-#[test]
-fn test_valid_block_in_block() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(r#"<div><p>text</p></div>"#, "test.vue");
-    assert_eq!(result.error_count, 0);
+fn render(diagnostics: &[crate::LintDiagnostic]) -> Vec<String> {
+    diagnostics
+        .iter()
+        .map(|diagnostic| {
+            let labels: Vec<String> = diagnostic
+                .labels
+                .iter()
+                .map(|label| format!(" [{}..{} {}]", label.start, label.end, label.message))
+                .collect();
+            format!(
+                "{}..{} {}{}",
+                diagnostic.start,
+                diagnostic.end,
+                diagnostic.message,
+                labels.concat()
+            )
+        })
+        .collect()
 }
 
-#[test]
-fn test_valid_list_with_li() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(r#"<ul><li>item</li></ul>"#, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
+const NONE: [&str; 0] = [];
 
 #[test]
-fn test_valid_list_with_component_child() {
-    // A custom component inside <ul> is exempt: it typically renders an <li>.
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(r#"<ul><MyItem :key="1" /></ul>"#, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_valid_table_with_component_child() {
-    // A custom component inside <table> is exempt: it typically renders a <tr>.
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(r#"<table><MyRow /></table>"#, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_valid_list_with_known_intrinsic_member_component_li() {
-    let linter = create_linter();
-    let result =
-        linter.lint_template_rules_only(r#"<ul><motion.li>item</motion.li></ul>"#, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_valid_table_structure() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(
+fn conforming_templates_stay_silent() {
+    for source in [
+        r#"<p><span>text</span></p>"#,
+        r#"<div><p>text</p></div>"#,
+        r#"<ul><li>item</li><MyItem /><template v-for="i in l"><li>{{ i }}</li></template></ul>"#,
         r#"<table><thead><tr><th>Head</th></tr></thead><tbody><tr><td>Cell</td></tr></tbody></table>"#,
-        "test.vue",
-    );
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_valid_template_wrapper_in_list() {
-    let linter = create_linter();
-    // <template> is allowed as a transparent wrapper inside lists
-    let result = linter.lint_template_rules_only(
-        r#"<ul><template v-for="item in items"><li>{{ item }}</li></template></ul>"#,
-        "test.vue",
-    );
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_valid_component_in_any_context() {
-    let linter = create_linter();
-    // Components are skipped: can render anything
-    let result = linter.lint_template_rules_only(r#"<p><MyComponent /></p>"#, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_valid_nested_non_interactive() {
-    let linter = create_linter();
-    let result =
-        linter.lint_template_rules_only(r##"<a href="#"><span>text</span></a>"##, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_valid_flow_content_in_anchor_when_context_allows_flow() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(
+        r#"<table><MyRow /></table>"#,
+        r#"<p><MyComponent /></p>"#,
+        r#"<ul><motion.li>item</motion.li></ul>"#,
         r##"<main><a href="#"><h2>Documentation</h2><div>Read the guide</div></a></main>"##,
-        "test.vue",
-    );
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_valid_select_with_options() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(
-        r#"<select><option>A</option><option>B</option></select>"#,
-        "test.vue",
-    );
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_valid_select_with_optgroup() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(
-        r#"<select><optgroup label="Group"><option>A</option></optgroup></select>"#,
-        "test.vue",
-    );
-    assert_eq!(result.error_count, 0);
-}
-
-// ===== Invalid: Block in inline =====
-
-#[test]
-fn test_repaired_div_after_p() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(r#"<p><div>block</div></p>"#, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_invalid_div_in_span() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(r#"<span><div>block</div></span>"#, "test.vue");
-    assert_eq!(result.error_count, 1);
-}
-
-#[test]
-fn test_repaired_h1_after_p() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(r#"<p><h1>heading</h1></p>"#, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_invalid_ul_in_span() {
-    let linter = create_linter();
-    let result =
-        linter.lint_template_rules_only(r#"<span><ul><li>item</li></ul></span>"#, "test.vue");
-    // ul in span: block_in_inline error
-    // But li in ul is valid
-    assert_eq!(result.error_count, 1);
-}
-
-#[test]
-fn test_repaired_flow_content_in_anchor_when_outer_context_is_phrasing() {
-    let linter = create_linter();
-    let result =
-        linter.lint_template_rules_only(r##"<p><a href="#"><div>block</div></a></p>"##, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
-
-// ===== Invalid: Interactive nesting =====
-
-#[test]
-fn test_details_permits_interactive_flow_content() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(
+        r#"<select><option>A</option><optgroup label="G"><option>B</option></optgroup></select>"#,
         r#"<details><summary>Options</summary><fieldset><label><input type="checkbox" />Enabled</label><select><option>A</option></select><button>Apply</button></fieldset></details>"#,
-        "test.vue",
-    );
-    assert_eq!(result.error_count, 0, "{:#?}", result.diagnostics);
+    ] {
+        assert_eq!(template(source), NONE, "{source}");
+    }
+}
+
+/// Former false positives (TS-38 triage): each is conforming under the
+/// pinned WHATWG snapshot.
+#[test]
+fn former_false_positives_are_fixed() {
+    for source in [
+        // `select` permits `div` wrappers since the customizable-select change.
+        r#"<select><div>option group</div></select>"#,
+        // A label's first labelable descendant is its labeled control.
+        r#"<label>Pick <select><option>A</option></select></label>"#,
+        r#"<label><textarea></textarea></label>"#,
+        // `hr` separators are select content.
+        r#"<select><option>A</option><hr><option>B</option></select>"#,
+    ] {
+        assert_eq!(template(source), NONE, "{source}");
+    }
 }
 
 #[test]
-fn test_details_does_not_hide_invalid_interactive_nesting() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(
-        r##"<details><summary>Options</summary><a href="#"><button>Apply</button></a></details>"##,
-        "test.vue",
+fn parser_family_reports_name_the_closed_ancestor() {
+    assert_eq!(
+        template(r#"<p><div>block</div></p>"#),
+        [
+            "3..7 <div> closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template [0..2 <p> is open here]"
+        ]
     );
-    assert_eq!(result.error_count, 1);
+    assert_eq!(
+        template(r#"<p><h1>heading</h1></p>"#),
+        [
+            "3..6 <h1> closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template [0..2 <p> is open here]"
+        ]
+    );
+    assert_eq!(
+        template(r##"<p><a href="#"><div>block</div></a></p>"##),
+        [
+            "15..19 <div> closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template [0..2 <p> is open here]"
+        ]
+    );
+    assert_eq!(
+        template(r#"<table><div>not valid</div></table>"#),
+        [
+            "7..11 <div> is moved out of <table>: the HTML parser places content that is not table structure before the table [0..6 <table> is open here]"
+        ]
+    );
+    assert_eq!(
+        template(r#"<table><tr><span>not td/th</span></tr></table>"#),
+        [
+            "7..10 <tr> directly inside <table> gets an implied wrapper (<tbody>, <tr> or <colgroup>) from the HTML parser [0..6 <table> is open here]"
+        ]
+    );
+    assert_eq!(
+        template(r#"<svg><div>html in svg</div></svg>"#),
+        [
+            "5..9 <div> breaks out of <svg>: the HTML parser ends SVG/MathML content at this tag [0..4 <svg> is open here]"
+        ]
+    );
 }
 
 #[test]
-fn test_jsx_details_content_model() {
+fn content_model_family_reports() {
+    assert_eq!(
+        template(r#"<span><div>block</div></span>"#),
+        [
+            "6..10 <div> is not phrasing content, but <span> only permits phrasing content [0..5 <span> is open here]"
+        ]
+    );
+    assert_eq!(
+        template(r#"<span><ul><li>item</li></ul></span>"#),
+        [
+            "6..9 <ul> is not phrasing content, but <span> only permits phrasing content [0..5 <span> is open here]"
+        ]
+    );
+    assert_eq!(
+        template(r##"<a href="#"><button>click</button></a>"##),
+        [
+            "12..19 <button> is interactive content and cannot be nested in <a> [0..2 <a> is open here]"
+        ]
+    );
+    assert_eq!(
+        template(r#"<ul><div>not li</div></ul>"#),
+        ["4..8 <div> is not permitted as a child of <ul> [0..3 <ul> is open here]"]
+    );
+    assert_eq!(
+        template(r#"<ol><span>not li</span></ol>"#),
+        ["4..9 <span> is not permitted as a child of <ol> [0..3 <ol> is open here]"]
+    );
+    assert_eq!(
+        template(r#"<ul><motion.div>item</motion.div></ul>"#),
+        ["4..15 <motion.div> is not permitted as a child of <ul> [0..3 <ul> is open here]"]
+    );
+    assert_eq!(
+        template(
+            r##"<details><summary>Options</summary><a href="#"><button>Apply</button></a></details>"##
+        ),
+        [
+            "47..54 <button> is interactive content and cannot be nested in <a> [35..37 <a> is open here]"
+        ]
+    );
+}
+
+/// A template root is mounted where its compiled namespace holds; beyond
+/// that, whatever depends on the mount point stays unknown and silent.
+#[test]
+fn mount_point_dependent_verdicts_stay_silent() {
+    for source in [
+        // The mount point may be a `<p>` (closing it) or not: unknown.
+        r#"<div>block at the root</div>"#,
+        // `<tr>` is valid inside a `<tbody>` the parent provides.
+        r#"<tr><td>cell</td></tr>"#,
+        // An unknown `foo.li` tag is outside the table's domain.
+        r#"<ul><foo.li>item</foo.li></ul>"#,
+    ] {
+        assert_eq!(template(source), NONE, "{source}");
+    }
+}
+
+#[test]
+fn jsx_lowered_documents_use_the_same_checker() {
     let linter = create_linter();
-    for (source, errors) in [
+    for (source, expected) in [
+        (r#"const view = <span><div>block</div></span>"#, 1),
         (
             r#"const view = <details><summary>Options</summary><label><input />Enabled</label><select><option>A</option></select></details>"#,
             0,
@@ -197,121 +182,9 @@ fn test_jsx_details_content_model() {
             r##"const view = <details><summary>Options</summary><a href="#"><button>Apply</button></a></details>"##,
             1,
         ),
+        (r#"const view = <p><div>block</div></p>"#, 1),
     ] {
         let result = linter.lint_jsx(source, "test.tsx", vize_atelier_jsx::JsxLang::Tsx);
-        assert_eq!(result.error_count, errors, "{:#?}", result.diagnostics);
+        assert_eq!(result.error_count, expected, "{source}");
     }
-}
-
-#[test]
-fn test_repaired_a_in_a() {
-    let linter = create_linter();
-    let result =
-        linter.lint_template_rules_only(r##"<a href="#"><a href="#">nested</a></a>"##, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_repaired_button_in_button() {
-    let linter = create_linter();
-    let result =
-        linter.lint_template_rules_only(r#"<button><button>nested</button></button>"#, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_invalid_button_in_a() {
-    let linter = create_linter();
-    let result =
-        linter.lint_template_rules_only(r##"<a href="#"><button>click</button></a>"##, "test.vue");
-    assert_eq!(result.error_count, 1);
-}
-
-// ===== Invalid: List content model =====
-
-#[test]
-fn test_invalid_div_in_ul() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(r#"<ul><div>not li</div></ul>"#, "test.vue");
-    assert_eq!(result.error_count, 1);
-}
-
-#[test]
-fn test_invalid_span_in_ol() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(r#"<ol><span>not li</span></ol>"#, "test.vue");
-    assert_eq!(result.error_count, 1);
-}
-
-#[test]
-fn test_valid_unknown_component_in_ul() {
-    // Components are skipped: they can render anything, including an <li>
-    // (consistent with `test_valid_component_in_any_context`).
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(r#"<ul><MyItem /></ul>"#, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_invalid_unknown_member_component_in_ul() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(r#"<ul><foo.li>item</foo.li></ul>"#, "test.vue");
-    assert_eq!(result.error_count, 1);
-}
-
-#[test]
-fn test_invalid_known_intrinsic_member_component_div_in_ul() {
-    let linter = create_linter();
-    let result =
-        linter.lint_template_rules_only(r#"<ul><motion.div>item</motion.div></ul>"#, "test.vue");
-    assert_eq!(result.error_count, 1);
-}
-
-// ===== Invalid: Table content model =====
-
-#[test]
-fn test_repaired_div_in_table() {
-    let linter = create_linter();
-    let result =
-        linter.lint_template_rules_only(r#"<table><div>not valid</div></table>"#, "test.vue");
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_repaired_span_in_tr() {
-    let linter = create_linter();
-    let result = linter.lint_template_rules_only(
-        r#"<table><tr><span>not td/th</span></tr></table>"#,
-        "test.vue",
-    );
-    assert_eq!(result.error_count, 0);
-}
-
-// ===== Invalid: Select content model =====
-
-#[test]
-fn test_invalid_div_in_select() {
-    let linter = create_linter();
-    let result =
-        linter.lint_template_rules_only(r#"<select><div>not option</div></select>"#, "test.vue");
-    assert_eq!(result.error_count, 1);
-}
-
-// ===== Helper function tests =====
-
-#[test]
-fn test_required_children_lookup() {
-    assert_eq!(required_children("ul"), Some(["li"].as_slice()));
-    assert_eq!(required_children("ol"), Some(["li"].as_slice()));
-    assert_eq!(
-        required_children("table"),
-        Some(
-            [
-                "thead", "tbody", "tfoot", "tr", "caption", "colgroup", "col"
-            ]
-            .as_slice()
-        )
-    );
-    assert_eq!(required_children("tr"), Some(["td", "th"].as_slice()));
-    assert!(required_children("div").is_none());
 }

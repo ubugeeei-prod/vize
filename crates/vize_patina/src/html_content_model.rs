@@ -44,6 +44,7 @@
 //! checker exists to report.
 
 mod build;
+mod build_helpers;
 mod chain;
 mod check;
 mod class;
@@ -58,7 +59,7 @@ mod tri;
 
 pub use build::{authored_skeleton, skeleton};
 pub use chain::{Base, Chain, Frame, NsSet};
-pub use check::{Context, Report, Verdict, check};
+pub use check::{Context, Report, Verdict, check, check_with};
 pub use class::{Family, ViolationClass};
 pub use facts::{Attr, ElemId, Facts, Ns, WHATWG_TSV, facts};
 pub use skeleton::{AttrFacts, BoundaryKind, Element, Node, NodeKind, Skeleton};

@@ -85,6 +85,12 @@ pub struct Element {
     /// Whether `v-html`/`v-text` (or a bound `innerHTML`/`textContent`)
     /// replaces the children with content this template does not show.
     pub dynamic_content: bool,
+    /// The namespace Vue's compiler creates the element in. The checker
+    /// derives namespaces from the parser's rules wherever the chain is
+    /// known; where it is not (a template root, slot content) this is the
+    /// declared mount assumption: the element sits where its compiled
+    /// namespace holds.
+    pub compiler_ns: Ns,
 }
 
 impl Element {
@@ -102,6 +108,7 @@ impl Element {
             attrs: AttrFacts::default(),
             name_span,
             dynamic_content: false,
+            compiler_ns: Ns::Html,
         }
     }
 
