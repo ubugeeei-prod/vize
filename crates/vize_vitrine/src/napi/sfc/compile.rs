@@ -1,7 +1,7 @@
 use napi::{Result, Status};
 use napi_derive::napi;
 use vize_atelier_sfc::build_sfc_source_map;
-use vize_atelier_sfc::compile_script::typescript::ensure_javascript_output;
+use vize_atelier_sfc::module_shape::finalize_module_output;
 use vize_s0::cstr;
 
 use super::types::ModuleShapeNapi;
@@ -150,14 +150,9 @@ pub fn compile_sfc(
             // crossing this boundary must already be plain JavaScript — the JS
             // plugin no longer re-strips it. `is_ts` callers opted out: they
             // asked for TypeScript in the output and strip it themselves.
-            let code: String = if is_ts {
-                result.code.into()
-            } else {
-                ensure_javascript_output(result.code).into()
-            };
-            // Analyzed from the very bytes that cross the boundary, after every
-            // rewriting pass, so the offsets cannot be stale (#3425).
-            let module_shape = ModuleShapeNapi::of(&code);
+            let (code, shape) = finalize_module_output(result.code, is_ts);
+            let code: String = code.into();
+            let module_shape = shape.map(ModuleShapeNapi::from);
             // Built from those same bytes for the same reason: stripping
             // TypeScript above re-prints the module, so a map produced before
             // that pass would describe code nobody receives (#3399).

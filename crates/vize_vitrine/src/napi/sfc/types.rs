@@ -108,10 +108,9 @@ pub struct ModuleShapeNapi {
     pub default_export_is_sfc_main: bool,
 }
 
-impl ModuleShapeNapi {
-    /// Analyze `code`, or `None` when it does not parse.
-    pub fn of(code: &str) -> Option<Self> {
-        vize_atelier_sfc::module_shape::analyze_module_shape(code).map(|shape| Self {
+impl From<vize_atelier_sfc::module_shape::SfcModuleShape> for ModuleShapeNapi {
+    fn from(shape: vize_atelier_sfc::module_shape::SfcModuleShape) -> Self {
+        Self {
             has_default_export: shape.has_default_export,
             has_sfc_main_defined: shape.has_sfc_main_defined,
             has_named_render_export: shape.has_named_render_export,
@@ -120,7 +119,7 @@ impl ModuleShapeNapi {
             default_export_keyword_end: shape.default_export_keyword_end,
             default_export_end: shape.default_export_end,
             default_export_is_sfc_main: shape.default_export_is_sfc_main,
-        })
+        }
     }
 }
 

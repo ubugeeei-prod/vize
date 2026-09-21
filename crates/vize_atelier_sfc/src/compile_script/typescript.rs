@@ -98,7 +98,7 @@ pub fn is_plain_javascript(code: &str) -> bool {
 ///
 /// Returns `None` when the code does not parse as TypeScript, in which case
 /// there is nothing this can do and the caller keeps the original.
-fn strip_typescript_for_emitter(code: &str) -> Option<String> {
+pub(crate) fn strip_typescript_for_emitter(code: &str) -> Option<String> {
     let allocator = Allocator::default();
     let parse_result = Parser::new(&allocator, code, SourceType::ts()).parse();
     if !parse_result.diagnostics.is_empty() {

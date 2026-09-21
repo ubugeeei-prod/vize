@@ -67,6 +67,10 @@ harness = false
 name = "sfc_compile"
 harness = false
 
+[[bench]]
+name = "output_boundary"
+harness = false
+
 [[test]]
 name = "davinci_differential"
 required-features = ["davinci-differential"]

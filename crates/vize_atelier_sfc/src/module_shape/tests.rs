@@ -122,3 +122,49 @@ fn the_typescript_emit_parses() {
     assert!(shape.has_default_export);
     assert!(shape.default_export_is_sfc_main);
 }
+
+#[test]
+fn finalized_shapes_match_the_exact_output_after_typescript_stripping() {
+    use super::finalize_module_output;
+    use crate::compile_script::typescript::{ensure_javascript_output, is_plain_javascript};
+
+    for source in [
+        "const doc = '😀 export default {}'; const _sfc_main = {}; export default _sfc_main;",
+        "export function render(_ctx, _cache) { return null }",
+        "const _sfc_main: { name: string } = { name: 'X' }; export default _sfc_main;",
+        "enum Kind { X = 1 }; const _sfc_main = { kind: Kind.X }; export default _sfc_main;",
+        "const _sfc_main = {} as const; export default _sfc_main; export function ssrRender() {}",
+        "// export default decoy\nexport default { text: 'é😀' };",
+        "export const value = <number>1; export default { value };",
+    ] {
+        for preserve_typescript in [false, true] {
+            let expected_code = if preserve_typescript {
+                source.into()
+            } else {
+                ensure_javascript_output(source.into())
+            };
+            let expected_shape = analyze_module_shape(&expected_code);
+            let (code, shape) = finalize_module_output(source.into(), preserve_typescript);
+            assert_eq!(code, expected_code);
+            assert_eq!(shape, expected_shape);
+            if !preserve_typescript {
+                assert!(is_plain_javascript(&code));
+            }
+            if let Some(start) = shape.as_ref().and_then(|shape| shape.default_export_start) {
+                assert!(code[start as usize..].starts_with("export default"));
+            }
+        }
+    }
+}
+
+#[test]
+fn invalid_or_jsx_output_keeps_its_original_fallback() {
+    use super::finalize_module_output;
+    for source in ["const = = =", "export default <div />", "return {}"] {
+        for preserve_typescript in [false, true] {
+            let (code, shape) = finalize_module_output(source.into(), preserve_typescript);
+            assert_eq!(code, source);
+            assert_eq!(shape, None);
+        }
+    }
+}

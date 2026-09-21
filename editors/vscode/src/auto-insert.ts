@@ -1,4 +1,5 @@
 import {
+  CancellationTokenSource,
   SnippetString,
   window,
   workspace,
@@ -23,9 +24,11 @@ export function createAutoInsertMiddleware(
   config: VizeConfigurationLike,
 ): Middleware {
   let applyingSnippet = false;
+  let pendingRequest: ReturnType<typeof requestAutoInsert> | undefined;
 
   const middleware: Middleware = {
     async didChange(event, next): Promise<void> {
+      pendingRequest?.cancel();
       const documentVersion = event.document.version;
       const editor = window.activeTextEditor;
       const client = getClient();
@@ -60,18 +63,10 @@ export function createAutoInsertMiddleware(
       ) {
         return;
       }
-      const [change] = event.contentChanges;
-      const snippet = await client
-        .sendRequest<string | null>(AUTO_INSERT_METHOD, {
-          textDocument: { uri: event.document.uri.toString() },
-          selection: { line: selection.line, character: selection.character },
-          change: {
-            rangeOffset: change.rangeOffset,
-            rangeLength: change.rangeLength,
-            text: change.text,
-          },
-        })
-        .catch(() => null);
+      const request = requestAutoInsert(client, event, editor, selection);
+      pendingRequest = request;
+      const snippet = await request.response;
+      if (pendingRequest === request) pendingRequest = undefined;
       if (
         !snippet ||
         getClient() !== client ||
@@ -99,6 +94,66 @@ export function createAutoInsertMiddleware(
     didChange: (event, next) =>
       trackAutoInsertForHostTest(Promise.resolve(middleware.didChange!(event, next))),
   };
+}
+
+function requestAutoInsert(
+  client: LanguageClient,
+  event: TextDocumentChangeEvent,
+  editor: TextEditor,
+  selection: Position,
+) {
+  const source = new CancellationTokenSource();
+  const cancel = () => source.cancel();
+  const subscriptions: Disposable[] = [source];
+  // Resolve locally on cancellation as well: a server may finish a request
+  // after cancellation, and its obsolete response must not hold up typing.
+  const cancelled = new Promise<null>((resolve) => {
+    subscriptions.push(source.token.onCancellationRequested(() => resolve(null)));
+  });
+  subscriptions.push(
+    workspace.onDidChangeTextDocument((change) => {
+      if (change.document === event.document) cancel();
+    }),
+    workspace.onDidCloseTextDocument((document) => {
+      if (document === event.document) cancel();
+    }),
+    window.onDidChangeActiveTextEditor((active) => {
+      if (active !== editor) cancel();
+    }),
+    window.onDidChangeTextEditorSelection((change) => {
+      if (
+        change.textEditor === editor &&
+        (!editor.selection.isEmpty ||
+          editor.selections.length !== 1 ||
+          !editor.selection.active.isEqual(selection))
+      )
+        cancel();
+    }),
+  );
+  const [change] = event.contentChanges;
+  const response = Promise.race([
+    cancelled,
+    client
+      .sendRequest<string | null>(
+        AUTO_INSERT_METHOD,
+        {
+          textDocument: { uri: event.document.uri.toString() },
+          selection: { line: selection.line, character: selection.character },
+          change: {
+            rangeOffset: change.rangeOffset,
+            rangeLength: change.rangeLength,
+            text: change.text,
+          },
+        },
+        source.token,
+      )
+      .catch(() => null),
+  ])
+    .then((snippet) => (source.token.isCancellationRequested ? null : snippet))
+    .finally(() => {
+      for (const subscription of subscriptions) subscription.dispose();
+    });
+  return { cancel, response };
 }
 
 async function waitForAuthoredSelection(

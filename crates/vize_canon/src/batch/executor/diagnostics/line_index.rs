@@ -19,7 +19,7 @@ impl super::DiagnosticMapper<'_> {
 }
 
 pub(super) struct LineIndex {
-    starts: Vec<usize>,
+    starts: vize_carton::SmallVec<[usize; 8]>,
     len: usize,
     backend: bool,
 }
@@ -27,7 +27,7 @@ pub(super) struct LineIndex {
 impl LineIndex {
     #[cfg(test)]
     pub(super) fn new(content: &str) -> Self {
-        let mut starts = vec![0];
+        let mut starts = vize_carton::smallvec![0];
         for (index, byte) in content.bytes().enumerate() {
             if byte == b'\n' {
                 starts.push(index + 1);
@@ -58,26 +58,8 @@ impl LineIndex {
         let line = usize::try_from(line).ok()?;
         let start = *self.starts.get(line)?;
         let end = self.line_end(content, line);
-        let mut current_col = 0u32;
-        let mut offset = start;
-
-        if col == 0 {
-            return u32::try_from(offset).ok();
-        }
-
-        for ch in content[start..end].chars() {
-            offset += ch.len_utf8();
-            current_col += ch.len_utf16() as u32;
-            if current_col >= col {
-                return u32::try_from(offset).ok();
-            }
-        }
-
-        if current_col == col {
-            u32::try_from(offset).ok()
-        } else {
-            None
-        }
+        let offset = vize_carton::line_index::utf16_offset(&content[start..end], col)?;
+        u32::try_from(start + offset).ok()
     }
 
     /// Convert a byte offset to LSP (line, character). `character` is in
@@ -94,16 +76,12 @@ impl LineIndex {
         let line = line.saturating_sub(1);
         let start = *self.starts.get(line)?;
         let end = self.line_end(content, line);
-        let mut col = 0u32;
-        let mut cursor = start;
-        for ch in content[start..end].chars() {
-            if cursor >= offset {
-                break;
-            }
-            col += ch.len_utf16() as u32;
-            cursor += ch.len_utf8();
+        let mut boundary = offset.min(end);
+        while !content.is_char_boundary(boundary) {
+            boundary += 1;
         }
-        Some((u32::try_from(line).ok()?, col))
+        let col = vize_carton::line_index::utf16_len(&content[start..boundary]);
+        Some((u32::try_from(line).ok()?, u32::try_from(col).ok()?))
     }
 
     fn line_end(&self, content: &str, line: usize) -> usize {
@@ -149,6 +127,7 @@ mod tests {
 
         assert_eq!(index.offset_to_line_col(content, 5), Some((0, 3)));
         assert_eq!(index.line_col_to_offset(content, 0, 3), Some(5));
+        assert_eq!(index.line_col_to_offset(content, 0, 1), None);
     }
 
     #[test]

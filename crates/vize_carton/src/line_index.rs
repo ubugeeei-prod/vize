@@ -14,7 +14,9 @@
 use crate::lsp::Position;
 
 mod line_breaks;
+mod utf16;
 pub use line_breaks::LineBreaks;
+pub use utf16::{utf16_len, utf16_offset};
 
 /// Precomputed byte offsets of every line start in a source string.
 ///
@@ -26,19 +28,16 @@ pub use line_breaks::LineBreaks;
 pub struct LineIndex<'a> {
     source: &'a str,
     /// Byte offset of the start of each line. `line_starts[0]` is always `0`.
-    line_starts: Vec<usize>,
+    line_starts: crate::SmallVec<[usize; 8]>,
 }
 
 impl<'a> LineIndex<'a> {
     /// Build a line index in a single pass over `source`.
     pub fn new(source: &'a str) -> Self {
-        let mut line_starts = Vec::with_capacity(source.len() / 32 + 1);
+        let breaks = memchr::memchr_iter(b'\n', source.as_bytes());
+        let mut line_starts = crate::SmallVec::with_capacity(breaks.clone().count() + 1);
         line_starts.push(0);
-        for (idx, byte) in source.bytes().enumerate() {
-            if byte == b'\n' {
-                line_starts.push(idx + 1);
-            }
-        }
+        line_starts.extend(breaks.map(|at| at + 1));
         Self {
             source,
             line_starts,
@@ -66,15 +65,8 @@ impl<'a> LineIndex<'a> {
 
         // Sum UTF-16 code units of every character on this line whose byte
         // start is before `offset`.
-        let mut col = 0u32;
-        for (i, ch) in self.source[line_start..].char_indices() {
-            if line_start + i >= offset {
-                break;
-            }
-            col += ch.len_utf16() as u32;
-        }
-
-        (line as u32, col)
+        let col = utf16::prefix_len(&self.source[line_start..], offset - line_start);
+        (line as u32, col as u32)
     }
 
     /// Convert a byte offset to an LSP [`Position`].
@@ -92,43 +84,61 @@ impl<'a> LineIndex<'a> {
             .get(line + 1)
             .map(|next| next.saturating_sub(1))
             .unwrap_or(self.source.len());
-        let mut current_column = 0u32;
-        let mut offset = start;
-
-        if column == 0 {
-            return Some(offset);
-        }
-
-        for ch in self.source[start..end].chars() {
-            offset += ch.len_utf8();
-            current_column += ch.len_utf16() as u32;
-            if current_column >= column {
-                return (current_column == column).then_some(offset);
-            }
-        }
-
-        (current_column == column).then_some(offset)
+        utf16_offset(&self.source[start..end], column).map(|offset| start + offset)
     }
 }
 
 /// Convert a byte offset to `(line, column)`, both 0-indexed for LSP, with
 /// `column` in UTF-16 code units.
 ///
-/// Thin wrapper over [`LineIndex`] for single-shot callers. Hot paths that map
-/// many offsets against the same content should build a [`LineIndex`] once and
-/// call [`LineIndex::line_col`] instead.
+/// Single-shot conversion without allocating an index. Hot paths that map many
+/// offsets against the same content should build a [`LineIndex`] once and call
+/// [`LineIndex::line_col`] instead.
 pub fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
-    LineIndex::new(source).line_col(offset)
+    let offset = offset.min(source.len());
+    let mut line = 0;
+    let mut start = 0;
+    for at in memchr::memchr_iter(b'\n', &source.as_bytes()[..offset]) {
+        line += 1;
+        start = at + 1;
+    }
+    (
+        line,
+        utf16::prefix_len(&source[start..], offset - start) as u32,
+    )
 }
 
 /// Convert a byte offset to an LSP [`Position`] (single-shot convenience).
 pub fn offset_to_position(source: &str, offset: usize) -> Position {
-    LineIndex::new(source).position(offset)
+    let (line, character) = offset_to_line_col(source, offset);
+    Position { line, character }
 }
 
 #[cfg(test)]
 mod tests {
     use super::{LineIndex, offset_to_line_col};
+
+    #[test]
+    fn indexed_and_allocation_free_positions_match_at_every_byte() {
+        for source in ["", "a\r\nb\n", "é😀x\n€\u{2028}z", "\n\n\r"] {
+            let index = LineIndex::new(source);
+            for offset in 0..=source.len() + 2 {
+                let mut expected = (0, 0);
+                for (at, ch) in source.char_indices() {
+                    if at >= offset {
+                        break;
+                    }
+                    if ch == '\n' {
+                        expected = (expected.0 + 1, 0);
+                    } else {
+                        expected.1 += ch.len_utf16() as u32;
+                    }
+                }
+                assert_eq!(index.line_col(offset), expected, "{source:?} at {offset}");
+                assert_eq!(offset_to_line_col(source, offset), expected);
+            }
+        }
+    }
 
     #[test]
     fn zero_indexed_for_lsp() {

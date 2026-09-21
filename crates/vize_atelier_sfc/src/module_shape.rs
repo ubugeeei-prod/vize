@@ -41,7 +41,9 @@
 //! splicing, so this parses.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Declaration, ExportDefaultDeclarationKind, Statement, VariableDeclaration};
+use oxc_ast::ast::{
+    Declaration, ExportDefaultDeclarationKind, Program, Statement, VariableDeclaration,
+};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::profile;
@@ -88,8 +90,48 @@ pub fn analyze_module_shape(code: &str) -> Option<SfcModuleShape> {
         return None;
     }
 
+    Some(shape_from_program(code, &parsed.program))
+}
+
+/// Finalize compiler output and derive its shape from the same parse.
+///
+/// Most output is already JavaScript. Its validation AST also provides the
+/// module shape, avoiding a second parse for every Vite/Nuxt component. When
+/// TypeScript must be stripped, analyze the rewritten bytes so splice offsets
+/// still describe exactly the module returned to the bundler.
+pub fn finalize_module_output(
+    code: vize_carton::String,
+    preserve_typescript: bool,
+) -> (vize_carton::String, Option<SfcModuleShape>) {
+    if preserve_typescript {
+        let shape = analyze_module_shape(&code);
+        return (code, shape);
+    }
+
+    let shape = {
+        let allocator = Allocator::default();
+        let parsed = profile!(
+            "atelier.script.js.probe",
+            Parser::new(&allocator, &code, SourceType::mjs()).parse()
+        );
+        parsed
+            .diagnostics
+            .is_empty()
+            .then(|| shape_from_program(&code, &parsed.program))
+    };
+    if shape.is_some() {
+        return (code, shape);
+    }
+
+    let code =
+        crate::compile_script::typescript::strip_typescript_for_emitter(&code).unwrap_or(code);
+    let shape = analyze_module_shape(&code);
+    (code, shape)
+}
+
+fn shape_from_program(code: &str, program: &Program<'_>) -> SfcModuleShape {
     let mut shape = SfcModuleShape::default();
-    for statement in &parsed.program.body {
+    for statement in &program.body {
         match statement {
             Statement::ExportDefaultDeclaration(export) => {
                 let span = export.span();
@@ -122,7 +164,7 @@ pub fn analyze_module_shape(code: &str) -> Option<SfcModuleShape> {
             _ => {}
         }
     }
-    Some(shape)
+    shape
 }
 
 /// End of the `export default` keyword pair starting at `start`.
