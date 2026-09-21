@@ -1,4 +1,4 @@
-import Impeto.Iteration
+import Impeto.Model
 import Impeto.View
 
 namespace Impeto.Observation
@@ -19,7 +19,7 @@ def attached (program : Program) (rows : List Operand) (id : Nat) : List Op :=
 
 def staticElement (rows : List Operand) (id : Nat) : Except String (String × List (String × Json)) := do
   let tag <- Values.literal (<- Values.one rows id "tag")
-  if !["main", "section", "div", "span", "p", "button"].contains tag then
+  if !["main", "section", "div", "span", "p", "button", "input", "select", "option"].contains tag then
     throw s!"unsupported HTML tag {tag}"
   if (<- Values.literal (<- Values.one rows id "namespace")) != "html" then
     throw "unsupported namespace"
@@ -27,14 +27,36 @@ def staticElement (rows : List Operand) (id : Nat) : Except String (String × Li
   for row in Values.forOp rows id do
     if row.role == "attribute" then
       let some name := row.name | throw "missing attribute name"
-      if !["class", "id", "title"].contains name || attrs.any (fun pair => pair.1 == name) then
+      if !["class", "id", "title", "type", "value", "multiple"].contains name ||
+          attrs.any (fun pair => pair.1 == name) then
         throw "unsupported or duplicate static attribute"
-      attrs := attrs ++ [(name, .str (<- Values.literal row))]
+      -- Form attributes are admitted only where the model reference defines them.
+      if (name == "type" && tag != "input") || (name == "value" && !["input", "option"].contains tag) ||
+          (name == "multiple" && tag != "select") || ((name == "multiple") != (row.kind == "absent")) then
+        throw "unsupported form attribute"
+      let value <- if row.kind == "absent" then pure "" else Values.literal row
+      attrs := attrs ++ [(name, .str value)]
   pure (tag, attrs)
 
 def validateElementBindings (program : Program) (rows : List Operand) (op : Op)
     (tag : String) : Except String Unit := do
   let bindings := attached program rows op.id
+  let models := bindings.filter (Model.modelRow rows)
+  if ["input", "select"].contains tag then
+    if models.length != 1 || bindings.length != 1 then
+      throw "form controls require exactly one model binding"
+    return
+  if !models.isEmpty then throw "unsupported model target"
+  if tag == "option" then
+    let owner := (program.regions.find? (·.id == op.region)).bind (·.owner)
+    let parent := program.ops.find? (fun parent => some parent.id == owner && parent.kind == .insertNode)
+    let parentTag <- parent.elim (pure "") (fun parent => do
+      Values.literal (<- Values.one rows parent.id "tag"))
+    if parentTag != "select" || !bindings.isEmpty then throw "options must be static select children"
+    for region in program.regions.filter (fun r => r.owner == some op.id) do
+      for child in program.ops.filter (fun child => child.region == region.id) do
+        if child.kind != .setText || (<- Values.one rows child.id "text").kind != "literal" then
+          throw "option labels must be static text"
   for kind in [OpKind.setEvent, .setText] do
     if (bindings.filter (fun binding => binding.kind == kind)).length > 1 then
       throw "unsupported multiple bindings of the same kind"
@@ -89,9 +111,14 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
     let children := program.regions.filter (fun r => r.owner == some op.id)
     if op.kind != .branch && children.length > 1 then throw "duplicate child region"
     let isTextBinding := textBinding rows op
+    let model := Model.modelRow rows op
+    if model then
+      let _ <- Model.control program rows op
     let allowed <- match op.kind with
       | .insertNode => pure ["tag", "namespace", "attribute"]
-      | .setProp | .setEvent => pure ["name", "value", "binding-kind"]
+      | .setProp => pure (if model then ["name", "model-read", "model-write", "model-attribute",
+          "binding-kind"] else ["name", "value", "binding-kind"])
+      | .setEvent => pure ["name", "value", "binding-kind"]
       | .setText => pure (if isTextBinding then ["value", "binding-kind"] else ["text"])
       | .branch => pure ["condition"]
       | .slotOutlet => pure ["name"]
@@ -103,7 +130,8 @@ def validate (program : Program) (rows : List Operand) : Except String Unit := d
       validateElementBindings program rows op tag
     if op.kind == .setText && !isTextBinding then
       validateExpression (<- Values.one rows op.id "text")
-    if [.setProp, .setEvent].contains op.kind || isTextBinding then
+    if model then pure ()
+    else if [.setProp, .setEvent].contains op.kind || isTextBinding then
       if operands.length != (if isTextBinding then 2 else 3) then
         throw "unexpected binding operand count"
       let value <- Values.one rows op.id "value"
@@ -160,7 +188,8 @@ def renderRegion (program : Program) (rows : List Operand) (context : Json)
             let mut attrs := staticAttrs
             let mut disabled := false
             let bindings := attached program rows op.id
-            for binding in bindings.filter (fun binding => binding.kind == .setProp) do
+            for binding in bindings.filter (fun binding => binding.kind == .setProp &&
+                !Model.modelRow rows binding) do
               let name <- Values.literal (<- Values.one rows binding.id "name")
               if name == "disabled" then
                 disabled <- (<- evaluate context (<- Values.one rows binding.id "value")).getBool?

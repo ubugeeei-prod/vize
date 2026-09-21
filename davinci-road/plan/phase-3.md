@@ -79,8 +79,10 @@ Rust-owned S3 values into independent Lean semantics and compares the same full
 JSON observations against both mounted Vue runtimes, including patches, clicks
 and unmount. _Control/slot slice 2026-09-18:_ both Rust-lowered template fixtures
 now share full stateful observations, including boolean condition changes and
-absent-slot fallback `v-text` updates. Supplied slots, native model semantics
-and general iteration remain open; this does not close P3-4.
+absent-slot fallback `v-text` updates. _Model slice 2026-09-22:_ native
+`v-model` (IME, `.lazy`/`.trim`/`.number`, checkbox/radio/select) shares
+twelve full reference observations with both mounted runtimes. Supplied slots
+remain open; this does not close P3-4.
 
 **P3-5 Op reference doc.** `davinci-road/plan/impeto-ops.md`: every op's
 meaning under both interpretations, written **before any optional pass

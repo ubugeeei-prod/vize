@@ -11,6 +11,7 @@ use vize_s3::verify::verify;
 mod lean_reference_fixture {
     mod loops;
     mod matrix;
+    mod models;
     mod schedule;
 }
 
