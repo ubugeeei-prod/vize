@@ -23,10 +23,13 @@ pub(super) fn element<'a>(values: &[Operand<'a>]) -> Result<Content<'a>> {
         // elements (tables, raw text, select, templates, namespaces) require a
         // separate contract before their child indexes can be materialized.
         // List items are admitted with the same nesting guard as buttons.
+        // A `<template>` is admitted only as slot content (checked once its
+        // slot binding attaches), and never carries attributes.
         || !matches!(tag.value.text,
             "div" | "span" | "main" | "section" | "article" | "header" | "footer"
             | "nav" | "aside" | "button" | "strong" | "em" | "b" | "i" | "small"
-            | "label" | "input" | "img" | "br" | "hr" | "ul" | "ol" | "li")
+            | "label" | "input" | "img" | "br" | "hr" | "ul" | "ol" | "li" | "template")
+        || tag.value.text == "template" && values.len() != 2
     {
         return Err(LegacyReason::Element.into());
     }

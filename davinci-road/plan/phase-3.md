@@ -137,6 +137,9 @@ _Template carriers 2026-09-22:_ `<template v-if>`/`<template v-for>` fragment
 bodies (text, components and nested control flow included) and loop-wrapper
 keys are native, byte-identical to the retained lane; branch keys, `v-once`
 chains and other wrapper attributes stay `legacy.control_flow`.
+_Named and scoped slots 2026-09-22:_ static-named `<template #x>` slots and a
+component's own default `v-slot` with identifier or flat destructured params
+are native; `v-slot="p"` now reads `p.x` (not `_slotProps0.p.x`) in both lanes.
 
 **P3-7 VDOM patch flags from facts.** `patch_flag.rs` inference replaced by
 lattice-fact consumption; flags become explicit S3 decisions (or S2→S4

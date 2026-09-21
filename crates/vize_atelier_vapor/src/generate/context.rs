@@ -1,7 +1,7 @@
 //! Code generation context that tracks state during Vapor code emission.
 
 use super::{
-    destructure::{parse_destructure_bindings, parse_destructure_names, resolve_props_binding},
+    destructure::{parse_destructure_bindings, resolve_props_binding},
     expression,
 };
 
@@ -130,7 +130,11 @@ impl<'a> GenerateContext<'a> {
                     .iter()
                     .any(|slot_name| name == slot_name.as_str())
                 {
-                    return Some(cstr!("{}.{}", scope.slot_props_var, name));
+                    return Some(if scope.whole {
+                        scope.slot_props_var.clone()
+                    } else {
+                        cstr!("{}.{}", scope.slot_props_var, name)
+                    });
                 }
                 continue;
             }
@@ -292,28 +296,6 @@ impl<'a> GenerateContext<'a> {
         use std::fmt::Write as _;
         let _ = self.write_fmt(args);
         self.code.push('\n');
-    }
-
-    /// Push a slot scope for scoped slots. Returns the slot props variable name.
-    #[allow(dead_code)]
-    pub(crate) fn push_slot_scope(&mut self, destructure_pattern: &str) -> String {
-        let slot_props_var = cstr!("_slotProps{}", self.slot_scope_count);
-        self.slot_scope_count += 1;
-
-        let names = parse_destructure_names(destructure_pattern);
-
-        self.slot_scopes.push(SlotScope {
-            names,
-            slot_props_var: slot_props_var.clone(),
-            for_depth: self.for_scopes.len(),
-        });
-        slot_props_var
-    }
-
-    /// Pop the current slot scope
-    #[allow(dead_code)]
-    pub(crate) fn pop_slot_scope(&mut self) {
-        self.slot_scopes.pop();
     }
 
     pub(crate) fn next_temp(&mut self) -> String {

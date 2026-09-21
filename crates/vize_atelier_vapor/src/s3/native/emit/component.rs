@@ -4,7 +4,7 @@
 use vize_atelier_core::{SimpleExpressionNode, SourceLocation};
 use vize_carton::{Box, String, Vec};
 
-use super::super::{Content, Expr, Prop};
+use super::super::{BindingKind, Content, Expr, Node, Prop};
 use super::Emitter;
 use crate::ir::{
     BlockIRNode, ComponentKind, CreateComponentIRNode, IRProp, IRSlot, OperationNode,
@@ -26,14 +26,26 @@ impl<'a> Emitter<'a, '_> {
         };
         let props = props.clone();
         let children = self.artifact.nodes[index].children.clone();
+        // Named templates each render their content block and then take the
+        // template's own id; otherwise the children are one slot, `default`
+        // unless the component's own `v-slot` names it.
         let mut slots = Vec::new_in(&self.allocator);
-        if !children.is_empty() {
-            let slot = self.block(&children);
-            slots.push(IRSlot {
-                name: self.expression(Expr::plain("default"), true),
-                fn_exp: None,
-                block: slot,
-            });
+        let own = slot_of(&self.artifact.nodes[index]);
+        let named = children
+            .first()
+            .is_some_and(|child| slot_of(&self.artifact.nodes[*child]).is_some());
+        if named {
+            for child in children {
+                let node = &self.artifact.nodes[child];
+                let slot = slot_of(node).expect("validated slot template");
+                let content = node.children.clone();
+                let block = self.block(&content);
+                self.id();
+                slots.push(self.slot(slot, block));
+            }
+        } else if own.is_some() || !children.is_empty() {
+            let block = self.block(&children);
+            slots.push(self.slot(own.unwrap_or(("default", "")), block));
         }
         let id = existing.unwrap_or_else(|| self.id());
         let props = self.props(&props, true);
@@ -79,6 +91,15 @@ impl<'a> Emitter<'a, '_> {
             }));
     }
 
+    /// One slot function: its static name, parameter pattern and block.
+    fn slot(&self, (name, params): (&'a str, &'a str), block: BlockIRNode<'a>) -> IRSlot<'a> {
+        IRSlot {
+            name: self.expression(Expr::plain(name), true),
+            fn_exp: (!params.is_empty()).then(|| self.expression(Expr::plain(params), false)),
+            block,
+        }
+    }
+
     fn props(&self, props: &[Prop<'a>], component: bool) -> Vec<'a, IRProp<'a>> {
         let mut out = Vec::new_in(&self.allocator);
         for prop in props {
@@ -112,4 +133,12 @@ impl<'a> Emitter<'a, '_> {
         }
         out
     }
+}
+
+/// The slot a template or component binds: its name and parameter pattern.
+fn slot_of<'a>(node: &Node<'a>) -> Option<(&'a str, &'a str)> {
+    node.bindings
+        .iter()
+        .find(|binding| binding.kind == BindingKind::Slot)
+        .map(|binding| (binding.name, binding.value.text))
 }

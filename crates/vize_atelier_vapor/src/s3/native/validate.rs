@@ -7,6 +7,7 @@ mod component;
 mod control;
 mod operands;
 mod order;
+mod slots;
 mod tree;
 
 use std::borrow::Cow;
@@ -63,12 +64,22 @@ pub(super) fn admit<'a>(
             OpKind::SetText if values.iter().all(|value| value.role == Role::Text) => {
                 operands::text(values, retained)?
             }
+            // Slot content shares the outlet op kind; it binds to its template or
+            // component like any other binding.
             OpKind::SetProp
             | OpKind::SetEvent
             | OpKind::SetText
             | OpKind::SetHtml
-            | OpKind::Directive => {
-                let (target, binding) = operands::binding(values, op.kind, retained)?;
+            | OpKind::Directive
+            | OpKind::SlotOutlet
+                if op.kind != OpKind::SlotOutlet
+                    || values.iter().any(|value| value.role == Role::BindingKind) =>
+            {
+                let (target, binding) = if op.kind == OpKind::SlotOutlet {
+                    slots::slot(values)?
+                } else {
+                    operands::binding(values, op.kind, retained)?
+                };
                 if op.effect.is_none() {
                     return Err(AdmissionFailure::Invalid(
                         "binding lacks its dynamic partition",
@@ -92,10 +103,6 @@ pub(super) fn admit<'a>(
                 control::for_loop(values, retained, carrier)?
             }
             OpKind::CreateComponent => component::component(values)?,
-            // Slot-content bindings (named or scoped slots) share the op kind.
-            OpKind::SlotOutlet if values.iter().any(|value| value.role == Role::BindingKind) => {
-                return Err(LegacyReason::Component.into());
-            }
             OpKind::SlotOutlet => component::outlet(values)?,
             _ => return Err(LegacyReason::Operation.into()),
         };
@@ -135,6 +142,7 @@ pub(super) fn admit<'a>(
     order::check(program, edges)?;
     let parents = tree::assemble(program, &mut nodes, &slots, &mut regions)?;
     attach::bindings(&mut nodes, &slots, &parents, bindings)?;
+    slots::check(&nodes, &parents)?;
     tree::check_nesting(&nodes, &parents)?;
     // The root fragment may hold several nodes, text included.
     let roots = std::mem::take(&mut regions[RegionId::ROOT.index() as usize]);

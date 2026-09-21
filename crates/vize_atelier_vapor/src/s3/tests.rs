@@ -201,7 +201,7 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<table><tr><td>{{ value }}</td></tr></table>",
         "<div>&#10; text</div>",
         "<div title=\"&quot;\"></div>",
-        "<Comp v-slot=\"p\">{{ p }}</Comp>",
+        "<Comp v-slot=\"{ p: q }\">{{ q }}</Comp>",
         "<Teleport to=\"body\"><div></div></Teleport>",
         "<div v-bind=\"props\"></div>",
         "<pre> text </pre>",
@@ -306,4 +306,5 @@ mod control;
 mod attributes;
 mod components;
 mod parser_agreement;
+mod slots;
 mod templates;

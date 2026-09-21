@@ -71,6 +71,9 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
         r#"<main data-id="root"><template v-if="open"><b data-id="a">{{ a }}</b><i data-id="b">{{ b }}</i></template><span v-else data-id="c">closed</span><em data-id="tail">t</em></main>"#,
         r#"<main data-id="root"><ul data-id="list"><template v-for="row in rows" :key="row.id"><li :data-id="'l' + row.id">{{ row.label }}</li><li :data-id="'n' + row.id">{{ row.note }}</li></template></ul></main>"#,
         r#"<main data-id="root"><template v-if="on">on {{ n }}</template><template v-else>off</template></main>"#,
+        // The mounted named/scoped slot scenarios.
+        r#"<main data-id="root"><List :rows="rows"><template #row="{ row }"><b :data-id="'b' + row.id">{{ row.label }}</b></template><template #foot>total {{ rows.length }}</template></List></main>"#,
+        r#"<main data-id="root"><Counter :count="n" v-slot="p"><b data-id="v">{{ p.n }}/{{ p.double }}</b></Counter></main>"#,
         // The `vapor_native_pair/templates` bench fixture.
         r#"<main><template v-if="open"><header>{{ title }}</header><section>{{ lead }}</section></template><ul><template v-for="row in rows" :key="row.id"><li>{{ row.label }}</li><li v-if="row.note">{{ row.note }}</li></template></ul></main>"#,
     ];

@@ -30,16 +30,17 @@ fn component_outlet_and_fragment_shapes_are_admitted() {
 
 #[test]
 fn unsupported_component_shapes_select_exact_legacy_reasons() {
-    use LegacyReason::{Binding, Component, Element, Operation};
+    use LegacyReason::{Binding, Component, Operation};
     for (source, reason) in [
+        // Slot shapes beyond static names and flat parameter patterns
+        // (`tests/slots.rs`).
         (
-            r#"<MyComp v-slot="{ item }">{{ item }}</MyComp>"#,
+            r#"<MyComp v-slot="{ item = 1 }">{{ item }}</MyComp>"#,
             Component,
         ),
-        // The slot template element is refused before its slot-content op.
         (
             r#"<MyComp><template #head>H</template>body</MyComp>"#,
-            Element,
+            Component,
         ),
         (r#"<component :is="view" />"#, Component),
         (r#"<Teleport to="body"><div></div></Teleport>"#, Component),

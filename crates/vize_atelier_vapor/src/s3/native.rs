@@ -122,6 +122,9 @@ enum BindingKind {
     Show,
     Html,
     Text,
+    /// Slot content on a `<template #name>` or its component: `name` is the
+    /// slot name, `value` the parameter pattern (empty when there is none).
+    Slot,
 }
 
 impl<'a> NativeArtifact<'a> {

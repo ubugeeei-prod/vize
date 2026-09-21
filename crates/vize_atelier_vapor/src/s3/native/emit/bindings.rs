@@ -114,6 +114,7 @@ impl<'a> Emitter<'a, '_> {
                     block,
                 );
             }
+            BindingKind::Slot => unreachable!("slot content is emitted with its component"),
         }
     }
 }
