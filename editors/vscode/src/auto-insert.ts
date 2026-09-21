@@ -28,7 +28,7 @@ export function createAutoInsertMiddleware(
 
   const middleware: Middleware = {
     async didChange(event, next): Promise<void> {
-      pendingRequest?.cancel();
+      if (pendingRequest?.document === event.document) pendingRequest.cancel();
       const documentVersion = event.document.version;
       const editor = window.activeTextEditor;
       const client = getClient();
@@ -153,7 +153,7 @@ function requestAutoInsert(
     .finally(() => {
       for (const subscription of subscriptions) subscription.dispose();
     });
-  return { cancel, response };
+  return { document: event.document, cancel, response };
 }
 
 async function waitForAuthoredSelection(

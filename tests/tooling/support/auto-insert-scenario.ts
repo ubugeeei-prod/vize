@@ -127,7 +127,8 @@ export function scenario(text = "{}") {
     document,
     contentChanges: [{ rangeOffset: 1, rangeLength: 0, text }],
   } as unknown as TextDocumentChangeEvent;
-  const run = (next: () => Promise<void> = async () => {}) => middleware.didChange!(event, next);
+  const run = (next: () => Promise<void> = async () => {}, changeEvent = event) =>
+    middleware.didChange!(changeEvent, next);
   return {
     run,
     event,

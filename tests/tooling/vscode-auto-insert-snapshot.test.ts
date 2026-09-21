@@ -225,6 +225,21 @@ for (const [name, invalidate] of Object.entries({
   });
 }
 
+test("changes to another document preserve the active authored request", async () => {
+  const s = scenario();
+  const running = s.run();
+  await s.requested.promise;
+  await s.run(async () => {}, {
+    ...s.event,
+    document: { ...s.event.document },
+  });
+  assert.equal(s.tokens[0].isCancellationRequested, false);
+  assert.equal(s.requests.length, 1);
+  s.response.resolve(" $0 ");
+  await running;
+  assert.equal(s.insertions.length, 1);
+});
+
 for (const reason of ["edit", "close", "editor", "selection", "superseded request"]) {
   test(`in-flight auto insertion cancels on ${reason} without waiting for the server`, async () => {
     const s = scenario();
