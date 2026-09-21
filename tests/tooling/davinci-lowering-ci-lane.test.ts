@@ -8,7 +8,7 @@ const s1ToS2LoweringCorpusCommand =
 const s1ToS2DomCorpusCommand =
   "cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_dom_corpus -- --nocapture";
 const ssrS4CorpusCommand =
-  "VIZE_DAVINCI_DIFFERENTIAL_CORPUS=. cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture";
+  'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture';
 const jsxS2VdomParityCommand =
   "cargo test -p vize_atelier_jsx --features davinci-differential --lib vdom::s2_differential::s2_vdom_admitted_cases_match_relief_codegen -- --exact";
 
