@@ -1,0 +1,25 @@
+{
+  "name": "@vizejs/extension-sdk",
+  "version": "0.425.1",
+  "private": true,
+  "description": "Types and handshake constants for Vize extension-contract guests and hosts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
+    "directory": "npm/extension-sdk"
+  },
+  "files": [
+    "index.d.ts",
+    "index.js"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  }
+}

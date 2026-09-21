@@ -12,6 +12,8 @@ on:
     paths:
       - "contracts/**"
       - "crates/vize_extension_host/**"
+      - "crates/vize_extension_sdk/**"
+      - "npm/extension-sdk/**"
       - "crates/vize_marquette/**"
       - "crates/vize_davinci/**"
       - "crates/vize_s1/**"
@@ -26,6 +28,8 @@ on:
     paths:
       - "contracts/**"
       - "crates/vize_extension_host/**"
+      - "crates/vize_extension_sdk/**"
+      - "npm/extension-sdk/**"
       - "crates/vize_marquette/**"
       - "crates/vize_davinci/**"
       - "crates/vize_s1/**"
@@ -69,7 +73,11 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Clippy the wasmtime host lane
         run: cargo clippy -p vize_extension_host --all-targets --features extension-host -- -D warnings -D clippy::wildcard_imports
+      - name: Clippy the SDK's wasm guest runtime
+        run: cargo clippy -p vize_extension_sdk --target wasm32-wasip2 -- -D warnings -D clippy::wildcard_imports
       - name: Run TS-48 (input world, both hosting modes)
         run: cargo test -p vize_extension_host --features extension-host --test wit_golden
+      - name: Build the hello dialect from the packed SDK and run it (P6-2)
+        run: cargo test -p vize_extension_host --features extension-host --test sdk_hello
       - name: Classify contract changes and hold released surfaces to the policy (P6-8)
         run: cargo test -p vize_marquette --features wit --test contract_compat --test contract_version && cargo test -p vize_extension_host --test contract_surface

@@ -64,6 +64,8 @@
 
 ## P6-2 — Prebuilt versioned SDK
 
+**Landed 2026-09-22** — full record: [phase-6-records/p6-2.md](./phase-6-records/p6-2.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** B
@@ -72,8 +74,8 @@
 
 **Steps:**
 
-- [ ] SDK crate with no dependency on any vize implementation crate (a tooling test asserts its dependency set)
-- [ ] A hello-world input dialect built against the SDK tarball alone in CI
+- [x] SDK crate with no dependency on any vize implementation crate (a tooling test asserts its dependency set)
+- [x] A hello-world input dialect built against the SDK tarball alone in CI
 
 **Acceptance:** the hello-world dialect builds from the packed SDK with no path dependency into the workspace; the dependency-set test proven to fail on an injected implementation edge.
 
