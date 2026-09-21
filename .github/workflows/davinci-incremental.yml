@@ -1,8 +1,12 @@
 name: Davinci Incremental
 
 # Phase 5 incrementality suites (davinci-road/plan/test-suites.md):
-# TS-43 key stability runs on two platforms against one committed golden, so a
-# platform-dependent byte in any key recipe fails on at least one lane.
+# - TS-43 key stability runs on two platforms against one committed golden, so
+#   a platform-dependent byte in any key recipe fails on at least one lane.
+# - TS-42 incremental ≡ clean runs the committed edit scripts through the
+#   resident tier over the corpus shard and every committed fixture, and proves
+#   it catches a seeded stale-cache defect. Every PR touching the resident tier
+#   (crates/vize_resident/**) runs it.
 
 on:
   push:
@@ -14,6 +18,9 @@ on:
       - "crates/vize_s2/**"
       - "crates/vize_s1_to_s2/**"
       - "crates/vize_resident/**"
+      - "crates/vize_croquis/src/sfc/**"
+      - "tools/commands/davinci/incremental-equivalence*"
+      - "tools/commands/davinci/incremental-equivalence/**"
       - "Cargo.lock"
       - ".github/workflows/davinci-incremental.yml"
   pull_request:
@@ -25,6 +32,9 @@ on:
       - "crates/vize_s2/**"
       - "crates/vize_s1_to_s2/**"
       - "crates/vize_resident/**"
+      - "crates/vize_croquis/src/sfc/**"
+      - "tools/commands/davinci/incremental-equivalence*"
+      - "tools/commands/davinci/incremental-equivalence/**"
       - "Cargo.lock"
       - ".github/workflows/davinci-incremental.yml"
   workflow_dispatch:
@@ -74,3 +84,31 @@ jobs:
           cache-workspace-crates: "true"
       - name: Print and compare the TS-43 golden keys
         run: cargo test -p vize_davinci --test artifact_keys -- --nocapture
+
+  incremental-equivalence:
+    name: Incremental ≡ clean (TS-42)
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - name: Hydrate the corpus shard
+        run: git submodule update --init --depth 1 -- tests/_fixtures/_git/splitpanes tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/cssgridgenerator
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: davinci-incremental-equivalence
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Resident tier tests (firewall accounting, committed plane)
+        run: cargo test -p vize_resident
+      - name: TS-42 over the corpus shard and the committed fixtures
+        run: rust-script tools/commands/davinci/incremental-equivalence.rs --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools
+      - name: TS-42 catches the seeded stale-cache defect
+        run: |
+          cargo test -p vize_resident --features seeded-stale-cache --test equivalence
+          rust-script tools/commands/davinci/incremental-equivalence.rs --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools --seeded

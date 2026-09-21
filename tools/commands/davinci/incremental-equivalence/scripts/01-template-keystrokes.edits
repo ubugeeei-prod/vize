@@ -1,0 +1,4 @@
+# Keystrokes inside the template: every intermediate state is a partial
+# element, so the error paths of S1 and S2 are compared too.
+type template "<b>{{ x }}</b>"
+revert

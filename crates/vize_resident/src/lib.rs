@@ -13,6 +13,8 @@
 //!   tracked fields), and the `sfc_blocks` → `s1_block` / `s2_page` queries.
 //! - [`accounting`] — cache-hit accounting read from salsa's event stream
 //!   (TS-46).
+//! - [`equivalence`] — TS-42: edit scripts run through the database, every
+//!   served artifact compared with the clean path after every step.
 //!
 //! The one-shot CLI never links this crate: `vize build`/`fmt`/`lint` stay on
 //! the fused non-salsa pipeline, and `tests/tooling/davinci-resident-salsa.test.ts`
@@ -21,6 +23,7 @@
 pub mod accounting;
 pub mod artifact;
 pub mod db;
+pub mod equivalence;
 
 pub use accounting::{Accounting, QueryCounts};
 pub use artifact::{

@@ -1,0 +1,5 @@
+# Script edits sit above the template in most files.
+insert-end script-setup "\nconst ts42 = 1\n"
+insert-end script "\n// ts42\n"
+insert-start script-setup "\n"
+revert

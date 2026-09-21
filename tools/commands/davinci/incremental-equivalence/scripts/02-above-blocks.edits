@@ -1,0 +1,4 @@
+# Edits above every block move positions and nothing else.
+prepend "<!-- ts42 -->\n"
+prepend "\n\n"
+revert

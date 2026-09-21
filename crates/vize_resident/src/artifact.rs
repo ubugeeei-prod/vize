@@ -52,7 +52,15 @@ impl BlockKind {
 /// Everything a stage artifact of one block may read: its kind, header
 /// attributes (sorted — a set) and content, plus the S0 key over them. No
 /// position: equal content at any offset is an equal `BlockSource`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+///
+/// Its equality is the firewall's: salsa compares a re-created block's
+/// `source` with the stored one and keeps the stored value when they are
+/// equal. The `seeded-stale-cache` feature (TS-42's seeded defect, never on
+/// in a real build) weakens it to kind, header and content *length* — a key
+/// covering less than its input — so TS-42 can prove it catches the
+/// resulting stale artifacts.
+#[derive(Debug, Clone)]
+#[cfg_attr(not(feature = "seeded-stale-cache"), derive(PartialEq, Eq))]
 pub struct BlockSource {
     /// The block kind.
     pub kind: BlockKind,
@@ -64,6 +72,16 @@ pub struct BlockSource {
     /// The P5-1a S0 source-block key over the three fields above.
     pub key: ArtifactKey,
 }
+
+#[cfg(feature = "seeded-stale-cache")]
+impl PartialEq for BlockSource {
+    fn eq(&self, other: &Self) -> bool {
+        self.kind == other.kind && self.attrs == other.attrs && self.text.len() == other.text.len()
+    }
+}
+
+#[cfg(feature = "seeded-stale-cache")]
+impl Eq for BlockSource {}
 
 impl BlockSource {
     /// The value of header attribute `name`, if present.

@@ -1,0 +1,4 @@
+# Style edits, including a v-bind() that reaches the S2 style page.
+insert-end style "\n.ts42 { color: v-bind(ts42); }\n"
+bump style
+revert

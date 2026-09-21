@@ -1,0 +1,6 @@
+# Length-preserving edits: same block length, different bytes. A key
+# that covered only lengths would serve stale artifacts here.
+bump template
+bump template
+bump script-setup
+bump style

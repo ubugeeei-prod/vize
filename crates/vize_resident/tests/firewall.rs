@@ -8,6 +8,11 @@
 //! `None` outside a template, `s2_page` outside templates and styles), so
 //! "only the edited block re-executes" is exactly `executed: 1, reused: 3`
 //! on each of them — whichever block was edited.
+//!
+//! Off under `seeded-stale-cache`: that mutation build breaks the firewall on
+//! purpose, and `tests/equivalence.rs` is the test that must see it.
+
+#![cfg(not(feature = "seeded-stale-cache"))]
 
 use vize_resident::{
     Accounting, QueryCounts, ResidentDatabase, SourceFile, StageConfig, compute_file_artifacts,

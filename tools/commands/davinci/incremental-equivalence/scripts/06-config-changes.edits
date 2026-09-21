@@ -1,0 +1,6 @@
+# Project configuration changes interleaved with a template edit.
+configure vue2
+bump template
+configure vue3
+insert-start template "<i>v</i>"
+revert

@@ -14,6 +14,12 @@ description = "Resident tier - salsa query database over Davinci stage artifacts
 publish = false
 metadata.vize.stability = "experimental"
 
+[features]
+# TS-42's seeded defect (P5-9): weakens the block firewall's equality so the
+# equivalence harness proves it catches the stale artifacts that follow.
+# Never enabled in a real build.
+seeded-stale-cache = []
+
 [dependencies]
 salsa = { workspace = true }
 vize_croquis = { workspace = true }

@@ -42,6 +42,8 @@
 
 ## P5-9 — Incremental equals clean in CI
 
+**Landed 2026-09-22** — full record: [phase-5-records/p5-9.md](./phase-5-records/p5-9.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** G
@@ -50,8 +52,8 @@
 
 **Steps:**
 
-- [ ] `rust-script tools/commands/davinci/incremental-equivalence.rs` with committed edit scripts
-- [ ] `.github/workflows/davinci-incremental.yml` required on PRs touching `crates/vize_resident/`
+- [x] `rust-script tools/commands/davinci/incremental-equivalence.rs` with committed edit scripts _(six scripts under `incremental-equivalence/scripts/`; the harness is `vize_resident::equivalence`)_
+- [x] `.github/workflows/davinci-incremental.yml` required on PRs touching `crates/vize_resident/` _(the `incremental-equivalence` job; its shape is pinned by `davinci-incremental-workflow.test.ts`)_
 
 **Acceptance:** TS-42 green with scope proof (edits applied and artifacts compared are counted; a zero-comparison run fails); a seeded stale-cache bug is caught.
 
