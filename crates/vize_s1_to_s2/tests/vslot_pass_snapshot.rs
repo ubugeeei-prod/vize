@@ -41,10 +41,11 @@ fn the_groups_fixture_snapshots_the_post_pass_folio() {
         // Supplements: the planned walk accounting through the budget
         // observer's own derived page. Slot carriers are what this
         // fixture buys; with no `v-if`, no `v-for`, no compound text and
-        // no model the plan is two walks.
+        // no model the plan is two walks (the fused analysis group is
+        // the second, holding two passes).
         assert_eq!(
             budget.print_to_string(FolioMode::Full).as_str(),
-            "[budget-observer]\nwalks=2\npasses=2\nanalyses=0\npipelines=1\nfailures=0\n\n"
+            "[budget-observer]\nwalks=2\npasses=3\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
         // Three components grouped in document order: Card (pattern
         // params slot, modifier-folded slot, implicit default), Panel

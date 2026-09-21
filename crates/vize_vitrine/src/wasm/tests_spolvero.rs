@@ -14,8 +14,9 @@ const SOURCE: &str =
 const TEMPLATE: &str = "\n  <div>{{ msg }}</div>\n";
 
 /// The S2 (Disegno) page for [`TEMPLATE`]: after the lowering and, byte for
-/// byte, after the one transform pass the artifact selects (`hoist-static`
-/// is a fact-producing analysis, so the tree it leaves is the lowering's).
+/// byte, after the two transform passes the artifact selects (`hoist-static`
+/// and `template-complexity` are fact-producing analyses, so the tree they
+/// leave is the lowering's).
 const S2_PAGE: &str = "[disegno]
 ops=2
 
@@ -133,6 +134,7 @@ fn the_analyze_result_carries_the_full_stage_ladder_feed() {
                 { "path": "src/App.vue", "stage": "s1", "pass": "parse", "text": TEMPLATE },
                 { "path": "src/App.vue", "stage": "s2", "pass": "lower", "text": S2_PAGE },
                 { "path": "src/App.vue", "stage": "s2", "pass": "hoist-static", "text": S2_PAGE },
+                { "path": "src/App.vue", "stage": "s2", "pass": "template-complexity", "text": S2_PAGE },
                 {
                     "path": "src/App.vue",
                     "stage": "s2-provenance",

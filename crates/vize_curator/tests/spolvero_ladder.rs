@@ -153,7 +153,7 @@ fn the_ladder_validates_and_pins_every_rung_exactly() {
 
     // The artifact-selected S2 plan: slot carriers and a model binding keep
     // both mandatory barriers, the default profile keeps the optional static
-    // analysis. Every Vue 3 pass preserves the tree, so its page is the
+    // and complexity analyses. Every Vue 3 pass preserves the tree, so its page is the
     // lowering's page byte for byte - "which pass changed the folio" is none.
     let expected = [
         ("s1", "parse", TEMPLATE),
@@ -161,6 +161,7 @@ fn the_ladder_validates_and_pins_every_rung_exactly() {
         ("s2", "v-slot", S2_PAGE),
         ("s2", "v-model", S2_PAGE),
         ("s2", "hoist-static", S2_PAGE),
+        ("s2", "template-complexity", S2_PAGE),
         ("s2-provenance", "transform", S2_PROVENANCE_PAGE),
         ("s3", "lower", S3_PAGE),
         ("s3-partition", "lower", S3_PARTITION_PAGE),
@@ -185,7 +186,7 @@ fn the_ladder_validates_and_pins_every_rung_exactly() {
 
 #[test]
 fn the_s2_pass_pages_follow_the_artifact_selected_plan() {
-    // No slot carrier, no model: only the optional analysis runs.
+    // No slot carrier, no model: only the optional analyses run.
     let plain = ladder_pages("src/Plain.vue", "<p>{{ a }}</p>");
     assert_eq!(
         rungs(&plain),
@@ -193,6 +194,7 @@ fn the_s2_pass_pages_follow_the_artifact_selected_plan() {
             ("s1", "parse"),
             ("s2", "lower"),
             ("s2", "hoist-static"),
+            ("s2", "template-complexity"),
             ("s2-provenance", "transform"),
             ("s3", "lower"),
             ("s3-partition", "lower"),
@@ -240,6 +242,7 @@ fn a_malformed_template_still_climbs_every_rung() {
             ("s1", "parse", template),
             ("s2", "lower", s2),
             ("s2", "hoist-static", s2),
+            ("s2", "template-complexity", s2),
             (
                 "s2-provenance",
                 "transform",

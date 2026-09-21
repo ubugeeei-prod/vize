@@ -63,7 +63,9 @@ pub(super) fn try_emit_s2_vdom<'a>(
     let facts = run_transform_with_profile(
         &mut lowered,
         &mut observer,
-        TransformProfile::DEFAULT.without_static_analysis(),
+        TransformProfile::DEFAULT
+            .without_static_analysis()
+            .without_complexity_analysis(),
     );
     let emit = emit_dom_with_options(
         &lowered,

@@ -175,15 +175,17 @@
 
 **Steps:**
 
-- [ ] `crates/vize_s1_to_s2/src/pass/cfg.rs`: `Optional`/`Fusable`, `Preserved::ALL`; per component **own cyclomatic** = 1 + decisions (each `ui.if` branch beyond the first, plus one for an `ui.if` without `v-else`; each `ui.for`; each `&&`, `||`, `??` and `?:` in a retained expression AST; an `Opaque` expression adds 0 and is counted as unknown) and **own cognitive** (+1 per structure, + nesting depth for nested `ui.if`/`ui.for`/scoped-slot regions, +1 per run of like logical operators)
-- [ ] TS-34 naive evaluator over the same definition
-- [ ] Record the corpus distribution (p50/p90/p95/p99 of both metrics) with its command; pin the default thresholds at the recorded p95 (warn) in the spec
+- [x] `crates/vize_s1_to_s2/src/pass/cfg.rs`: `Optional`/`Fusable`, `Preserved::ALL`; per component **own cyclomatic** = 1 + decisions (each `ui.if` branch beyond the first, plus one for an `ui.if` without `v-else`; each `ui.for`; each `&&`, `||`, `??` and `?:` in a retained expression AST; an `Opaque` expression adds 0 and is counted as unknown) and **own cognitive** (+1 per structure, + nesting depth for nested `ui.if`/`ui.for`/scoped-slot regions, +1 per run of like logical operators)
+- [x] TS-34 naive evaluator over the same definition
+- [x] Record the corpus distribution (p50/p90/p95/p99 of both metrics) with its command; pin the default thresholds at the recorded p95 (warn) in the spec
 
 **Acceptance:** TS-34 agreement over the matrix plane and a corpus shard; TS-17 pass snapshot; TS-22 walk counts unchanged (the pass fuses); pass bench `allocs` recorded (TS-10); the distribution table reproduces from its recorded command.
 
 **Deps:** P4-1a.
 
 **Non-goals:** cross-file attribution and the rule (P4-9b); script-side complexity.
+
+**Progress 2026-09-22:** all three steps landed — the [metric spec](./complexity-metrics.md), the `template-complexity` pass fused beside `hoist-static`, TS-34 exact over the matrix plane, the CI shard and the full corpus (40,724 templates), TS-17 snapshots, the TS-10 probe (3 allocs) and thresholds cyclomatic > 11 / cognitive > 16. Open: the `ComplexityFacts` fact-group registration on P4-1a's API — see the [P4-9a record](./phase-4-records/p4-9a.md).
 
 ## P4-9b — Cross-file complexity rule and Doctor finding
 

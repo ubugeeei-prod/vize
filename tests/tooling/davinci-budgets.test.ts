@@ -35,6 +35,7 @@ const EXPLICIT_STAGE_WINDOWS = new Set([
   "s1_to_s2_lower_vfor_three_aliases",
   "s1_to_s2_emit_von_two_per_bucket",
   "s1_to_s2_emit_p2_11_dom_surface",
+  "s1_to_s2_pass_template_complexity",
 ]);
 
 // --- bench-id enumeration from the bench sources -------------------------

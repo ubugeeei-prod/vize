@@ -37,17 +37,22 @@ fn the_hook_sees_every_executed_pass_in_order_with_the_post_pass_tree() {
 
     // The plan the artifact selected: slot carriers and a model binding
     // keep both mandatory barriers, and the default profile keeps the
-    // optional static analysis - three passes, three walks, in the
-    // selectable table's order.
+    // optional static and complexity analyses, which fuse into one walk -
+    // four passes, three walks, in the selectable table's order.
     let names: Vec<(&str, usize, usize)> = seen
         .iter()
         .map(|(name, group, pass, _)| (name.as_str(), *group, *pass))
         .collect();
     assert_eq!(
         names,
-        vec![("v-slot", 0, 0), ("v-model", 1, 1), ("hoist-static", 2, 2)]
+        vec![
+            ("v-slot", 0, 0),
+            ("v-model", 1, 1),
+            ("hoist-static", 2, 2),
+            ("template-complexity", 2, 3)
+        ]
     );
-    assert_eq!((budget.passes, budget.walks), (3, 3));
+    assert_eq!((budget.passes, budget.walks), (4, 3));
     // Every Vue 3 pass here preserves the tree (facts go to side tables),
     // so each post-pass page is the lowering's page byte for byte.
     for (_, _, _, page) in &seen {

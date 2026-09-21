@@ -51,11 +51,13 @@ fn the_analyze_result_times_every_ladder_step_by_the_host_clock() {
     let clock = squares();
     let result =
         analyze_sfc_json_with_clock(SOURCE, "src/App.vue", false, false, &clock).expect("analysis");
-    // Reads 0..8 bracket parse, S2 lower, the one selected pass, S3 lower.
+    // Reads 0..10 bracket parse, S2 lower, the two selected analyses
+    // (`hoist-static`, `template-complexity`) and S3 lower.
     assert_eq!(
         result["spolveroProfile"],
         profile(vec![
-            span("s3", "lower", 13_000, 16_000),
+            span("s3", "lower", 17_000, 32_000),
+            span("s2", "template-complexity", 13_000, 16_000),
             span("s2", "hoist-static", 9_000, 16_000),
             span("s2", "lower", 5_000, 8_000),
             span("s1", "parse", 1_000, 1_000),

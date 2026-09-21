@@ -44,8 +44,15 @@ describe("Davinci stage ladder from the real compiler", () => {
       ["s1", ["12 lines"], ["s1/parse"]],
       [
         "s2",
-        ["19 ops", "3 passes"],
-        ["s2/lower", "s2/v-slot", "s2/v-model", "s2/hoist-static", "s2-provenance/transform"],
+        ["19 ops", "4 passes"],
+        [
+          "s2/lower",
+          "s2/v-slot",
+          "s2/v-model",
+          "s2/hoist-static",
+          "s2/template-complexity",
+          "s2-provenance/transform",
+        ],
       ],
       ["s3", ["19 ops", "14 dynamic"], ["s3/lower", "s3-partition/lower", "s3-values/lower"]],
     ]);
@@ -59,6 +66,7 @@ describe("Davinci stage ladder from the real compiler", () => {
       ["s2/v-slot", false, false],
       ["s2/v-model", false, false],
       ["s2/hoist-static", false, false],
+      ["s2/template-complexity", false, false],
       ["s3/lower", true, true],
     ]);
   });
@@ -82,6 +90,7 @@ describe("Davinci stage ladder from the real compiler", () => {
       ["s2/v-slot", "number"],
       ["s2/v-model", "number"],
       ["s2/hoist-static", "number"],
+      ["s2/template-complexity", "number"],
       ["s3/lower", "number"],
     ]);
     expect(ladder.timeline.every((step) => step.nanos! >= 0)).toBe(true);

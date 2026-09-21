@@ -190,15 +190,15 @@ davinci_pipeline_no_observer = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0
 davinci_fact_query_unobserved = { wall_p50_ns = 0, allocs = 19, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 davinci_fact_query_observed = { wall_p50_ns = 0, allocs = 19, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
-# Compact-storage probes. Setup is excluded with stage windows so these exact
-# allocation counts localize the v-for split and v-on emit paths. The wall
-# side is report-only (wall_p50_ns = 0): the sub-2us stage windows vary more
-# than the 10% ceiling across CI runners (764-855ns and 1494-1906ns observed
-# within one day, PRs #4857/#4877), so the deterministic alloc and
-# per-platform peak gates carry these probes until a reference-runner
-# recording methodology lands.
+# Compact-storage probes: exact allocation counts over stage windows (setup
+# excluded) for the v-for split, the v-on emit path and the P4-9a
+# template-complexity pass (3 allocs: its breakdown vector grows 4 -> 8 -> 16).
+# The wall side is report-only (wall_p50_ns = 0): sub-2us windows vary more than
+# the 10% ceiling across CI runners (764-855ns and 1494-1906ns in one day, PRs
+# #4857/#4877); alloc and peak gates hold until a reference-runner method lands.
 s1_to_s2_lower_vfor_three_aliases = { wall_p50_ns = 0, allocs = 13, rss_peak_bytes = 0, wall_tolerance = 0.10 }
 s1_to_s2_emit_von_two_per_bucket = { wall_p50_ns = 0, allocs = 18, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+s1_to_s2_pass_template_complexity = { wall_p50_ns = 0, allocs = 3, rss_peak_bytes = 0, wall_tolerance = 0.10 }
 
 # P2-11 S2 DOM emit surface probe. Setup excludes parse/lower/transform; the
 # measured window is emit-only over late DOM surfaces, so exact allocs guard

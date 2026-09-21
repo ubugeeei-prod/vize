@@ -3,7 +3,9 @@
 //! Setup stays outside each measured stage. The `v-for` case therefore
 //! accounts lowering's textual split and alias collection, while the DOM emit
 //! cases account only S2 DOM emission, including modifier classification and
-//! the P2-11 late-surface matrix. Exact `allocs` budgets make the probes
+//! the P2-11 late-surface matrix, and the P4-9a probe accounts only the
+//! template-complexity analysis over an already-lowered component. Exact
+//! `allocs` budgets make the probes
 //! deterministic and machine-independent. Exact peak-byte budgets are
 //! platform-specific; wall time remains report-only until the reference runner
 //! records it.
@@ -37,6 +39,10 @@ const P2_11_DOM_SURFACE: &str = r#"
   </component>
 </div>
 "#;
+
+/// The P4-9a demo component (`tests/fixtures/complexity/dashboard.vue`):
+/// every rule but `unknown`, three nesting levels, fourteen rows.
+const COMPLEXITY_DASHBOARD: &str = include_str!("../tests/fixtures/complexity/dashboard.vue");
 
 fn davinci_storage(criterion: &mut Criterion) {
     let vfor_id = cstr!("s1_to_s2_lower_vfor_three_aliases");
@@ -93,5 +99,23 @@ fn davinci_storage(criterion: &mut Criterion) {
     );
 }
 
-criterion_group!(davinci_storage_group, davinci_storage);
+fn davinci_complexity(criterion: &mut Criterion) {
+    let complexity_id = cstr!("s1_to_s2_pass_template_complexity");
+    bench_stage_with_metrics(
+        criterion,
+        &complexity_id,
+        "fixture:complexity/dashboard.vue",
+        |window| {
+            let allocator = Allocator::new();
+            let (tree, errors) = parse(&allocator, COMPLEXITY_DASHBOARD);
+            let lowered = lower(&allocator, &tree, &errors);
+            window.measure(|| {
+                let facts = vize_s1_to_s2::pass::cfg::run(&lowered);
+                (facts.cyclomatic, facts.contributions.len())
+            })
+        },
+    );
+}
+
+criterion_group!(davinci_storage_group, davinci_storage, davinci_complexity);
 davinci_harness::main!(davinci_storage_group);

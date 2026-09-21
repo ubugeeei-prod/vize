@@ -42,13 +42,15 @@ pub const LEGACY_PASSES: &[PassDesc] = &[
     super::vslot::DESC,
     super::vmodel::DESC,
     super::hoist::DESC,
+    super::cfg::DESC,
 ];
 
 /// The planned pipeline over [`LEGACY_PASSES`].
 pub const LEGACY: Pipeline = Pipeline::new(super::S2_STAGE, LEGACY_PASSES);
 
+// Five passes, four walks: the two optional analyses share the last one.
 const _: () = assert!(LEGACY.group_count() == 4);
-const _: () = assert!(LEGACY.is_fully_serialized());
+const _: () = assert!(!LEGACY.is_fully_serialized());
 
 /// Facts produced by the legacy-sugar pass.
 #[derive(Debug, Default)]
@@ -61,7 +63,7 @@ pub struct LegacyFacts {
     pub filter_helper_precedes_components: bool,
 }
 
-/// Vue 3 is the 3-pass table; every legacy dialect prepends this pass.
+/// Vue 3 is the 4-pass table; every legacy dialect prepends this pass.
 #[must_use]
 pub const fn pipeline_for(caps: LegacyCaps) -> Pipeline {
     if caps.needs_sugar() {
@@ -106,16 +108,16 @@ mod tests {
     use vize_s0::config::VueVersion;
 
     #[test]
-    fn vue3_keeps_the_three_pass_table() {
+    fn vue3_keeps_the_four_pass_table() {
         assert_eq!(pipeline_for(LegacyCaps::VUE3), TRANSFORM);
-        assert_eq!(TRANSFORM_PASSES.len(), 3);
+        assert_eq!(TRANSFORM_PASSES.len(), 4);
     }
 
     #[test]
     fn vue2_prepends_the_legalizing_pass() {
         let caps = LegacyCaps::for_version(VueVersion::V2);
         assert_eq!(pipeline_for(caps), LEGACY);
-        assert_eq!(LEGACY_PASSES.len(), 4);
+        assert_eq!(LEGACY_PASSES.len(), 5);
         assert_eq!(LEGACY_PASSES[0], DESC);
         assert_eq!(DESC.name, "legacy-sugar");
         assert_eq!(DESC.kind, PassKind::MandatoryLowering);

@@ -40,7 +40,7 @@ test("check workflow uploads Davinci allocation bench reports", () => {
   );
   assert.match(
     steps[gateIndex].run ?? "",
-    /rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench patina_jsx_markup_one_root/,
+    /rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root/,
   );
   assert.match(
     steps[gateIndex].run ?? "",

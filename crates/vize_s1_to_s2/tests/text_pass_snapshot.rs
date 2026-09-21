@@ -38,11 +38,11 @@ fn the_merge_fixture_snapshots_the_post_pass_folio() {
         assert_folio_snapshot!(*folio);
 
         // Supplements: the planned walk accounting. Text facts are
-        // lowering-published, so the fixture pays only the analysis
-        // transform walk.
+        // lowering-published, so the fixture pays only the fused
+        // analysis walk (two passes).
         assert_eq!(
             budget.print_to_string(FolioMode::Full).as_str(),
-            "[budget-observer]\nwalks=1\npasses=1\nanalyses=0\npipelines=1\nfailures=0\n\n"
+            "[budget-observer]\nwalks=1\npasses=2\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
         // Two compounds, five and two parts, all validated and published.
         let entries = facts.text_facts.sorted_entries();

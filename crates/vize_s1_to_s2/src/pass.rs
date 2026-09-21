@@ -43,6 +43,7 @@ use vize_davinci::side_table::SideTable;
 
 use crate::lower::Lowered;
 
+pub mod cfg;
 mod dom;
 pub mod hoist;
 pub mod legacy;
@@ -54,6 +55,7 @@ pub mod vmodel;
 pub mod vslot;
 pub(crate) mod walk;
 
+pub use cfg::{ComplexityFacts, Contribution, DecisionKind};
 pub use dom::run_dom_transform_with_profile;
 pub use hoist::{StaticFacts, StaticLevel};
 pub use plan::TransformProfile;
@@ -68,32 +70,31 @@ pub const S2_STAGE: &str = "s2";
 
 /// The S2 transform pipeline as the series has built it so far.
 ///
-/// Three passes ([`vslot::DESC`], [`vmodel::DESC`], then
-/// [`hoist::DESC`]). Text, `v-for`, and `v-if` facts are now
+/// Four passes ([`vslot::DESC`], [`vmodel::DESC`], [`hoist::DESC`], then
+/// [`cfg::DESC`]). Text, `v-for`, and `v-if` facts are now
 /// lowering-published (`pass::text`/`pass::vfor` mirror their tables
 /// without an S2 walk), so the transform table only contains passes
 /// that still need one. Later installments append here, and the `const`
 /// pins below are the grouping regression guard (the P2-2 convention: a
 /// fusion-plan change is a compile error, not a surprise).
-pub const TRANSFORM_PASSES: &[PassDesc] = &[vslot::DESC, vmodel::DESC, hoist::DESC];
+pub const TRANSFORM_PASSES: &[PassDesc] = &[vslot::DESC, vmodel::DESC, hoist::DESC, cfg::DESC];
 
 /// The planned pipeline over [`TRANSFORM_PASSES`].
 pub const TRANSFORM: Pipeline = Pipeline::new(S2_STAGE, TRANSFORM_PASSES);
 
-// The plan's fusion shape, pinned: two mandatory barriers plus the
-// series' first `Optional`/`Fusable` pass (installment 6, the
-// hoist-static analysis). Text, `v-for`, and `v-if` facts no longer
-// cost a transform group. The hoist pass forms the pipeline's first
-// NON-BARRIER group — still a singleton, because grouping starts fresh
-// after a barrier and no fusable neighbour exists yet.
+// The plan's fusion shape, pinned: two mandatory barriers plus one
+// NON-BARRIER group holding both `Optional`/`Fusable` analyses —
+// `hoist-static` (installment 6) and `template-complexity` (P4-9a), the
+// pipeline's first real fusion: four passes, three walks. Text, `v-for`,
+// and `v-if` facts no longer cost a transform group.
 const _: () = assert!(TRANSFORM.group_count() == 3);
-const _: () = assert!(TRANSFORM.is_fully_serialized());
+const _: () = assert!(!TRANSFORM.is_fully_serialized());
 const _: () = {
     let group = match TRANSFORM.group(2) {
         Some(group) => group,
         None => panic!("the third group exists"),
     };
-    assert!(group.start == 2 && group.len == 1 && !group.is_barrier);
+    assert!(group.start == 2 && group.len == 2 && !group.is_barrier);
 };
 
 /// The facts the S2 transform pipeline produces beside the tree.
@@ -125,6 +126,9 @@ pub struct S2Facts {
     /// owner family. The series' first `Optional` product: skipping the
     /// pass loses these and nothing else.
     pub static_facts: SideTable<StaticFacts>,
+    /// The component's own template complexity ([`cfg`], P4-9a); `None`
+    /// when the plan declined the `Optional` analysis.
+    pub complexity: Option<ComplexityFacts>,
 }
 
 /// Run the artifact-selected S2 transform pipeline over `lowered`, firing
@@ -196,6 +200,8 @@ where
             facts.model_faults = vmodel::run(lowered);
         } else if name == hoist::DESC.name {
             facts.static_facts = hoist::run_remarked(lowered, remarks);
+        } else if name == cfg::DESC.name {
+            facts.complexity = Some(cfg::run(lowered));
         } else {
             return Err(PassFailure::new("pipeline pass has no registered body"));
         }
@@ -234,16 +240,17 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{S2_STAGE, TRANSFORM, TRANSFORM_PASSES, hoist, vif, vmodel, vslot};
+    use super::{S2_STAGE, TRANSFORM, TRANSFORM_PASSES, cfg, hoist, vif, vmodel, vslot};
     use vize_davinci::pass::{Fusability, PassKind, Preserved};
 
     #[test]
     fn the_pipeline_holds_exactly_the_landed_passes() {
         assert_eq!(TRANSFORM.stage, S2_STAGE);
-        assert_eq!(TRANSFORM_PASSES.len(), 3);
+        assert_eq!(TRANSFORM_PASSES.len(), 4);
         assert_eq!(TRANSFORM_PASSES[0], vslot::DESC);
         assert_eq!(TRANSFORM_PASSES[1], vmodel::DESC);
         assert_eq!(TRANSFORM_PASSES[2], hoist::DESC);
+        assert_eq!(TRANSFORM_PASSES[3], cfg::DESC);
     }
 
     #[test]
@@ -289,21 +296,33 @@ mod tests {
     }
 
     #[test]
-    fn the_fusion_plan_is_two_lone_barriers_plus_one_fusable_singleton() {
+    fn the_complexity_classification_is_pinned() {
+        // See `cfg::DESC`'s docs: a pure analysis over a shared borrow
+        // that no emitter reads, one pre-order visit.
+        assert_eq!(cfg::DESC.name, "template-complexity");
+        assert_eq!(cfg::DESC.kind, PassKind::Optional);
+        assert_eq!(cfg::DESC.fusability, Fusability::Fusable);
+        assert_eq!(cfg::DESC.preserved, Preserved::ALL);
+    }
+
+    #[test]
+    fn the_fusion_plan_is_two_lone_barriers_plus_one_fused_analysis_group() {
         // The review point's fusion question, answered as data: the
-        // two mandatory passes fuse with nothing (law 1), and the
-        // series' first fusable pass lands in the first NON-barrier
-        // group — a singleton, because its only neighbour is a barrier.
-        // Text, `v-for`, and `v-if` facts are no longer transform passes
-        // at all.
+        // two mandatory passes fuse with nothing (law 1), and the two
+        // fusable analyses share the first NON-barrier group — the
+        // plan's first real fusion (four passes, three walks). Text,
+        // `v-for`, and `v-if` facts are no longer transform passes at
+        // all.
         for index in 0..2 {
             let group = TRANSFORM.group(index).expect("group exists");
             assert!(group.is_barrier && group.len == 1);
         }
         let fusable = TRANSFORM.group(2).expect("the third group exists");
         assert!(!fusable.is_barrier);
-        assert_eq!((fusable.start, fusable.len), (2, 1));
+        assert_eq!((fusable.start, fusable.len), (2, 2));
         assert!(fusable.preserved == Preserved::ALL);
         assert_eq!(TRANSFORM.group(3), None);
+        assert_eq!(TRANSFORM.group_count(), 3);
+        assert!(!TRANSFORM.is_fully_serialized());
     }
 }

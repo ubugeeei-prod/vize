@@ -47,7 +47,8 @@ fn every_step_is_timed_between_its_own_two_clock_reads() {
             step("s2", "v-slot", 9_000),
             step("s2", "v-model", 13_000),
             step("s2", "hoist-static", 17_000),
-            step("s3", "lower", 21_000),
+            step("s2", "template-complexity", 21_000),
+            step("s3", "lower", 25_000),
         ]
     );
     // Timing observes: the pages are exactly the untimed ladder's.
@@ -90,7 +91,8 @@ fn the_timings_export_as_a_schema_valid_profile_document() {
             "budget": { "max_spans": 512, "max_counters": 256 },
             "truncation": { "dropped_spans": 0, "dropped_counters": 0 },
             "spans": [
-                span("lower", "s3", 21_000, 32_000),
+                span("lower", "s3", 25_000, 32_000),
+                span("template-complexity", "s2", 21_000, 32_000),
                 span("hoist-static", "s2", 17_000, 32_000),
                 span("v-model", "s2", 13_000, 16_000),
                 span("v-slot", "s2", 9_000, 16_000),
