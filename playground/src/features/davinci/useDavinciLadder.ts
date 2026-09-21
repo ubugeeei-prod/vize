@@ -28,6 +28,7 @@ import {
   type Range,
 } from "./offsets";
 import type { SpolveroRemark } from "./remarks";
+import { parseProvenance, recordsForNode } from "./provenance";
 
 export type StageId = RungId | "s4";
 export type OutputTarget = "dom" | "vapor" | "ssr";
@@ -95,6 +96,17 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
   );
 
   const focusLine = computed(() => hoveredLine.value ?? selectedLine.value);
+  const provenance = computed(() => {
+    const s2 = ladder.value?.rungs.find((r) => r.id === "s2");
+    const page = s2?.pages.find((p) => p.kind === "provenance");
+    return page ? parseProvenance(page.text) : [];
+  });
+  /** Why the focused S2 op exists: its lowering record, then pass facts. */
+  const focusProvenance = computed(() => {
+    const index = focusLine.value;
+    const node = index === null ? null : (lines.value[index]?.node ?? null);
+    return node === null ? [] : recordsForNode(provenance.value, node);
+  });
   const focusSpan = computed(() => {
     const index = focusLine.value;
     return index === null ? pinnedSpan.value : (lines.value[index]?.span ?? null);
@@ -236,6 +248,7 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
     hoveredLine,
     focusLine,
     focusSource,
+    focusProvenance,
     highlights,
     selectStage,
     selectPage,

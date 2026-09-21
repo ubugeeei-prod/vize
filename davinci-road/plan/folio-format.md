@@ -279,7 +279,10 @@ belong to the S2 verifier (P2-6). The committed reference page is
 `crates/vize_s2/tests/folio_laws.rs` (which also pins every opaque
 reason spelling both directions) and mirrored from a live arena tree in
 `tests/folio_mirror.rs`; the arena-reset replay law is
-`tests/expr_replay.rs`.
+`tests/expr_replay.rs`. Provenance records get their own derived page,
+`[s2-provenance-folio]` (`rule=… node=… before="…" after="…" @s:e`, this
+page's escapes; grammar in `vize_s2::folio::provenance`, TS-16 laws in
+`tests/provenance_folio.rs`).
 
 ## S2 verifier invariants (P2-6)
 

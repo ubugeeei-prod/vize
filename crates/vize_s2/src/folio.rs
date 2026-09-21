@@ -33,6 +33,7 @@ use vize_davinci::folio::{Folio, FolioError, FolioMode};
 mod owned;
 mod parse;
 mod print;
+mod provenance;
 
 pub use owned::{
     FolioAttribute, FolioBind, FolioBinding, FolioBranch, FolioComment, FolioComponent,
@@ -41,6 +42,7 @@ pub use owned::{
     FolioVueCssBind, FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow,
     FolioVueSlotScope, FolioVueSync, FolioVueText,
 };
+pub use provenance::{FolioProvenance, S2ProvenanceFolio};
 
 /// Document model of an S2 op-tree dump.
 ///

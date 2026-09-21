@@ -8,6 +8,7 @@ import { ladderStepTimings, negotiateProfileExport } from "../src/wasm/types/pro
 import { DAVINCI_PRESET } from "../src/shared/presets/davinci";
 import { buildLadder, type StageLadder } from "../src/features/davinci/ladder";
 import { folioLines } from "../src/features/davinci/folioLines";
+import { parseProvenance, recordsForNode } from "../src/features/davinci/provenance";
 import { templateBytesToSfcRange, templateStartInSfc } from "../src/features/davinci/offsets";
 
 const FILENAME = "Component.vue";
@@ -40,7 +41,11 @@ describe("Davinci stage ladder from the real compiler", () => {
       ladder.rungs.map((rung) => [rung.id, rung.facts, rung.pages.map((page) => page.key)]),
     ).toEqual([
       ["s1", ["12 lines"], ["s1/parse"]],
-      ["s2", ["19 ops", "3 passes"], ["s2/lower", "s2/v-slot", "s2/v-model", "s2/hoist-static"]],
+      [
+        "s2",
+        ["19 ops", "3 passes"],
+        ["s2/lower", "s2/v-slot", "s2/v-model", "s2/hoist-static", "s2-provenance/transform"],
+      ],
       ["s3", ["19 ops", "14 dynamic"], ["s3/lower", "s3-partition/lower", "s3-values/lower"]],
     ]);
     expect(ladder.unplaced).toEqual([]);
@@ -86,5 +91,24 @@ describe("Davinci stage ladder from the real compiler", () => {
     const diff = wasm.buildInspectorDiff(lowered.text, vslot.text);
     const lineCount = lowered.text.split("\n").length;
     expect(diff.stats).toEqual({ additions: 0, removals: 0, unchanged: lineCount });
+  });
+
+  it("answers why an S2 op exists from the provenance page", () => {
+    const [lowered] = ladder.rungs[1].pages;
+    const provenance = ladder.rungs[1].pages.find((page) => page.kind === "provenance")!;
+    const records = parseProvenance(provenance.text);
+    const lines = folioLines("disegno", lowered.text);
+    const why = (needle: string) => {
+      const line = lines.find((l) => l.text.includes(needle))!;
+      return recordsForNode(records, line.node!).map(({ rule, after }) => [rule, after]);
+    };
+    expect(why('ui.on name="keyup"')).toEqual([["lower.on", 'ui.on "keyup"']]);
+    expect(why("ui.element h1")).toEqual([
+      ["lower.element", "ui.element h1"],
+      ["pass.hoist-static.fact", "level=fully-static props=false nested=true native=true"],
+    ]);
+    expect(records.filter(({ node }) => node === null).map(({ rule }) => rule)).toContain(
+      "condense.drop-whitespace",
+    );
   });
 });

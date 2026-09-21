@@ -21,8 +21,8 @@ or `collections` modules does not bypass the boundary.
 
 ## Retained `alloc::vec::Vec` inventory
 
-The six library trees in the reviewed inventory contain 92 production files,
-104 direct `alloc::vec::Vec` paths, and 357 bound `Vec`/`StdVec` uses. "Direct"
+The six library trees in the reviewed inventory contain 93 production files,
+105 direct `alloc::vec::Vec` paths, and 358 bound `Vec`/`StdVec` uses. "Direct"
 counts imports and fully-qualified paths; "bound" counts every type,
 constructor, and method path reached through a direct `Vec` import or alias.
 The executable ledger requires strict equality, so both growth and reduction
@@ -30,7 +30,7 @@ must update the file row and aggregate evidence in the same change.
 
 | Category | Files | Direct paths | Bound uses | Reason                                                                                                             |
 | -------- | ----: | -----------: | ---------: | ------------------------------------------------------------------------------------------------------------------ |
-| contract |    21 |           32 |         81 | Owned Folio, S2/S3 serialization data, and stage dumps have input-defined cardinality and form stable contracts.   |
+| contract |    22 |           33 |         82 | Owned Folio, S2/S3 serialization data, and stage dumps have input-defined cardinality and form stable contracts.   |
 | analysis |    13 |           14 |         45 | Diagnostics, side tables, filters, and verifier results grow with the input; no inline bound is established.       |
 | lower    |    13 |           13 |         52 | Lowering worklists and owned results grow with source-tree shape. Bounded substructures may migrate independently. |
 | pass     |    13 |           13 |         52 | Facts, provenance, and traversal worklists grow with the number of operations.                                     |
@@ -43,9 +43,11 @@ Mechanical conversion of source-sized buffers is not a goal because it can
 move large payloads onto the stack or add spill bookkeeping without reducing
 allocations.
 
-The S2-to-S3 partition page (`partition/folio.rs`) retains one source-sized
-`Vec` of owned fact records: the same contract storage as the other derived
-Folio pages, while the live `PartitionFacts` stay arena-owned.
+The S2 provenance page (`folio/provenance.rs`) and the S2-to-S3 partition
+page (`partition/folio.rs`) each retain one source-sized `Vec` of owned
+records: the same contract storage as the other derived Folio pages, while
+the live provenance records and the arena-owned `PartitionFacts` stay with
+their stages.
 
 S3 value payloads use an arena-owned operand sequence. The separate owned
 `values_folio.rs` page retains a source-sized `Vec` for serialization and S0
@@ -76,9 +78,9 @@ or count and fails the gate instead of becoming a `no_std` escape from S0.
 | s1       | `vize_s0::String`       |     0 |            0 |          0 |
 | s1       | `vize_s0::Vec`          |     5 |            5 |         22 |
 | s1       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
-| s2       | `alloc::vec::Vec`       |    10 |           22 |         44 |
+| s2       | `alloc::vec::Vec`       |    11 |           23 |         45 |
 | s2       | `alloc::string::String` |     0 |            0 |          0 |
-| s2       | `vize_s0::String`       |    11 |           11 |         55 |
+| s2       | `vize_s0::String`       |    13 |           13 |         59 |
 | s2       | `vize_s0::Vec`          |     9 |            9 |         17 |
 | s2       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s3       | `alloc::vec::Vec`       |     9 |            9 |         38 |

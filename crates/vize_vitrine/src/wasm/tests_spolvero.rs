@@ -25,6 +25,17 @@ ui.element div @3:23
 
 ";
 
+const S2_PROVENANCE_PAGE: &str = r#"[s2-provenance-folio]
+
+[s2-provenance-folio.records]
+rule=condense.drop-whitespace node=- before="\n  " after="" @0:3
+rule=lower.element node=0 before="<div>" after="ui.element div" @3:23
+rule=lower.interpolation node=1 before=" msg " after="ui.interpolation js" @8:17
+rule=condense.drop-whitespace node=- before="\n" after="" @23:24
+rule=pass.hoist-static.fact node=0 before="ui.element" after="level=dynamic-text props=false nested=true native=true" @3:23
+
+"#;
+
 const S3_PAGE: &str = "[s3-folio]
 phase=built
 
@@ -118,6 +129,12 @@ fn the_analyze_result_carries_the_full_stage_ladder_feed() {
                 { "path": "src/App.vue", "stage": "s1", "pass": "parse", "text": TEMPLATE },
                 { "path": "src/App.vue", "stage": "s2", "pass": "lower", "text": S2_PAGE },
                 { "path": "src/App.vue", "stage": "s2", "pass": "hoist-static", "text": S2_PAGE },
+                {
+                    "path": "src/App.vue",
+                    "stage": "s2-provenance",
+                    "pass": "transform",
+                    "text": S2_PROVENANCE_PAGE,
+                },
                 { "path": "src/App.vue", "stage": "s3", "pass": "lower", "text": S3_PAGE },
                 {
                     "path": "src/App.vue",
