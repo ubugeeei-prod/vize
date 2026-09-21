@@ -10,7 +10,30 @@ use core::fmt;
 
 use serde::{Deserialize, Serialize};
 use vize_davinci::diagnostic as davinci;
-use vize_s0::String;
+use vize_davinci::diagnostic::Exemption;
+use vize_s0::{String, cstr};
+use vize_s1_to_s2::exemptions;
+
+/// An error a guest reports without a witness the host can re-check against
+/// its fact base, or under an exemption the host does not declare: exempt
+/// from the witness law under this one counted row (P4-6a), never silently.
+static GUEST_ERROR: Exemption = Exemption::new("vize_extension_host", "guest-error");
+
+/// The in-tree exemptions a diagnostic may carry across the ABI; a
+/// `legacy-exempt("producer/code")` naming one of them converts back to the
+/// same declaration, so the built-in Vue guest round-trips exactly.
+fn declared_exemption(name: &str) -> Option<&'static Exemption> {
+    let (producer, code) = name.split_once('/')?;
+    [
+        &exemptions::SURFACE_SYNTAX,
+        &exemptions::MISSING_END_TAG,
+        &exemptions::LOWERING,
+        &exemptions::V_SLOT,
+        &exemptions::V_MODEL,
+    ]
+    .into_iter()
+    .find(|exemption| exemption.producer() == producer && exemption.code() == code)
+}
 
 /// The WIT package this host implements.
 pub const PACKAGE: &str = "vize:contracts@0.1.0";
@@ -185,7 +208,7 @@ impl From<Span> for vize_s0::Span {
 impl From<&davinci::Diagnostic> for Diagnostic {
     fn from(diagnostic: &davinci::Diagnostic) -> Self {
         Self {
-            severity: match diagnostic.severity {
+            severity: match diagnostic.severity() {
                 davinci::Severity::Error => Severity::Error,
                 davinci::Severity::Warning => Severity::Warning,
                 davinci::Severity::Info => Severity::Info,
@@ -201,8 +224,10 @@ impl From<&davinci::Diagnostic> for Diagnostic {
             span: diagnostic.span.into(),
             message: diagnostic.message.clone(),
             parts: diagnostic.parts.iter().map(DiagnosticPart::from).collect(),
-            witness: diagnostic.witness.as_ref().map(|witness| match witness {
-                davinci::Witness::LegacyExempt(producer) => Witness::LegacyExempt(producer.clone()),
+            // WIT 0.1 carries exemptions only; a proof chain has no ABI shape
+            // yet, so a proven diagnostic crosses without its witness.
+            witness: diagnostic.exemption().map(|exemption| {
+                Witness::LegacyExempt(cstr!("{}/{}", exemption.producer(), exemption.code()))
             }),
         }
     }
@@ -224,32 +249,40 @@ impl From<&davinci::DiagnosticPart> for DiagnosticPart {
 }
 
 impl From<&Diagnostic> for davinci::Diagnostic {
+    /// A guest diagnostic on the in-tree channel. An error keeps the in-tree
+    /// exemption it names, or reports under [`GUEST_ERROR`]; a warning, note
+    /// or hint is an advisory and carries no witness.
     fn from(diagnostic: &Diagnostic) -> Self {
-        Self {
-            severity: match diagnostic.severity {
-                Severity::Error => davinci::Severity::Error,
-                Severity::Warning => davinci::Severity::Warning,
-                Severity::Info => davinci::Severity::Info,
-                Severity::Hint => davinci::Severity::Hint,
-            },
-            stage: match diagnostic.stage {
-                Stage::Source => davinci::Stage::Source,
-                Stage::Surface => davinci::Stage::Surface,
-                Stage::Semantic => davinci::Stage::Semantic,
-                Stage::Lowered => davinci::Stage::Lowered,
-                Stage::Emit => davinci::Stage::Emit,
-            },
-            span: diagnostic.span.into(),
-            message: diagnostic.message.clone(),
-            parts: diagnostic
-                .parts
-                .iter()
-                .map(davinci::DiagnosticPart::from)
-                .collect(),
-            witness: diagnostic.witness.as_ref().map(|witness| match witness {
-                Witness::LegacyExempt(producer) => davinci::Witness::LegacyExempt(producer.clone()),
-            }),
+        let stage = match diagnostic.stage {
+            Stage::Source => davinci::Stage::Source,
+            Stage::Surface => davinci::Stage::Surface,
+            Stage::Semantic => davinci::Stage::Semantic,
+            Stage::Lowered => davinci::Stage::Lowered,
+            Stage::Emit => davinci::Stage::Emit,
+        };
+        let span = diagnostic.span.into();
+        let message = diagnostic.message.clone();
+        let advisory = match diagnostic.severity {
+            Severity::Error => None,
+            Severity::Warning => Some(davinci::Advisory::Warning),
+            Severity::Info => Some(davinci::Advisory::Info),
+            Severity::Hint => Some(davinci::Advisory::Hint),
+        };
+        let mut converted = match advisory {
+            Some(advisory) => davinci::Diagnostic::new(advisory, stage, span, message),
+            None => {
+                let exemption = diagnostic
+                    .witness
+                    .as_ref()
+                    .and_then(|Witness::LegacyExempt(name)| declared_exemption(name))
+                    .unwrap_or(&GUEST_ERROR);
+                davinci::Diagnostic::legacy_error(exemption, stage, span, message)
+            }
+        };
+        for part in &diagnostic.parts {
+            converted = converted.with_part(davinci::DiagnosticPart::from(part));
         }
+        converted
     }
 }
 

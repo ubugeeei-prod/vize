@@ -1,4 +1,8 @@
 diagnostic error surface 134:134 EOF in tag.
+witness legacy-exempt vize_s1_to_s2/surface-syntax
 diagnostic error surface 67:75 Element is missing end tag.
+witness legacy-exempt vize_s1_to_s2/missing-end-tag
 diagnostic error surface 76:78 Element is missing end tag.
+witness legacy-exempt vize_s1_to_s2/missing-end-tag
 diagnostic error surface 120:122 Element is missing end tag.
+witness legacy-exempt vize_s1_to_s2/missing-end-tag
