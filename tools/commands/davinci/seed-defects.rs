@@ -19,6 +19,12 @@ use std::{
 mod common;
 #[path = "../../support/davinci/fpfn.rs"]
 mod davinci_fpfn;
+#[path = "../../support/davinci/seed_html.rs"]
+mod seed_html;
+#[path = "../../support/davinci/seed_html_run.rs"]
+mod seed_html_run;
+#[path = "../../support/davinci/seed_print.rs"]
+mod seed_print;
 
 use davinci_fpfn::{
     CLASS_A, CLASS_A_RULE, CLASS_B, EditRecord, Identifier, Injection, SeedFile, SeedManifest,
@@ -27,13 +33,14 @@ use davinci_fpfn::{
     resolve_fixture_sources, resolve_vize_cli,
 };
 
-const USAGE: &str = "Usage: rust-script tools/commands/davinci/seed-defects.rs (--fixtures <dir> | --matrix | --corpus-shard) --out <dir> [--assert] [--report <path>]\n\nSeeds the P0-13 defect classes into copies of .vue sources and (with\n--assert) verifies recall by diagnostic identity against the manifest.";
+const USAGE: &str = "Usage: rust-script tools/commands/davinci/seed-defects.rs [--html-nesting] (--fixtures <dir> | --matrix | --corpus-shard) --out <dir> [--assert] [--report <path>]\n\nSeeds the P0-13 defect classes into copies of .vue sources and (with\n--assert) verifies recall by diagnostic identity against the manifest. --html-nesting seeds\nthe P4-11 HTML nesting classes instead (seed_html.rs).";
 
 #[derive(Debug)]
 struct Args {
     fixtures: Option<PathBuf>,
     matrix: bool,
     corpus_shard: bool,
+    html_nesting: bool,
     out: Option<PathBuf>,
     assert: bool,
     report: Option<PathBuf>,
@@ -65,6 +72,11 @@ fn run() -> Result<u8, (u8, String)> {
         .ok_or_else(|| (2, format!("--out <dir> is required\n\n{USAGE}")))?;
     let out_dir = absolute(&out);
     common::mkdir(&out_dir).map_err(|error| (2, error))?;
+    if args.html_nesting {
+        let source = resolve_sources(&repo_root, &args, &out_dir).map_err(|error| (2, error))?;
+        return seed_html_run::run(&repo_root, &source, &out_dir, args.assert)
+            .map_err(|error| (2, error));
+    }
 
     let has_source = args.fixtures.is_some() || args.matrix || args.corpus_shard;
     let manifest = if has_source {
@@ -100,7 +112,7 @@ fn run() -> Result<u8, (u8, String)> {
     if let Some(path) = args.report {
         common::write_json_pretty(absolute(&path), &report).map_err(|error| (2, error))?;
     }
-    print_assert_report(&report);
+    seed_print::print_assert_report(&report);
     Ok(if report.verdict == "pass" { 0 } else { 1 })
 }
 
@@ -109,6 +121,7 @@ fn parse_args(argv: Vec<String>) -> Result<Args, (u8, String)> {
         fixtures: None,
         matrix: false,
         corpus_shard: false,
+        html_nesting: false,
         out: None,
         assert: false,
         report: None,
@@ -125,6 +138,7 @@ fn parse_args(argv: Vec<String>) -> Result<Args, (u8, String)> {
             }
             "--matrix" => args.matrix = true,
             "--corpus-shard" => args.corpus_shard = true,
+            "--html-nesting" => args.html_nesting = true,
             "--out" => {
                 index += 1;
                 args.out = Some(PathBuf::from(value(&argv, index, "--out")?));
@@ -346,46 +360,6 @@ fn map_template_ref(
         ));
     }
     Ok(ref_start)
-}
-
-fn print_assert_report(report: &davinci_fpfn::SeedAssertReport) {
-    println!(
-        "assert: class-a detected={}/{} class-b detected={}/{} baseline mapped={} verdict={}",
-        report.class_a.detected,
-        report.class_a.expected,
-        report.class_b.detected,
-        report.class_b.expected,
-        report.baseline_shift.mapped,
-        report.verdict
-    );
-    for miss in &report.class_a.misses {
-        println!(
-            "MISS class-a {}:{}:{}-{}:{} {} identifier={}",
-            miss.path,
-            miss.line,
-            miss.column,
-            miss.end_line,
-            miss.end_column,
-            miss.rule_id,
-            miss.identifier
-        );
-    }
-    for miss in &report.baseline_shift.misses {
-        println!("MISS baseline {}", describe_row(miss));
-    }
-    for row in &report.baseline_shift.unmappable {
-        println!("UNMAPPABLE baseline {}", describe_row(row));
-    }
-    for row in &report.unexpected {
-        println!("UNEXPECTED {}", describe_row(row));
-    }
-}
-
-fn describe_row(row: &davinci_fpfn::DiagnosticRow) -> String {
-    format!(
-        "{}:{}:{}-{}:{} {}",
-        row.path, row.line, row.column, row.end_line, row.end_column, row.rule_id
-    )
 }
 
 fn absolute(path: &Path) -> PathBuf {
