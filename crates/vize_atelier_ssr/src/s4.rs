@@ -96,6 +96,15 @@ const ADMITTED_RULES: &[&str] = &[
     "lower.compound",
     "lower.bind",
     "lower.on",
+    "lower.if",
+    "lower.if-branch-key",
+    "lower.branch-wrapper-key",
+    "lower.for",
+    "lower.for-fact",
+    "lower.model",
+    "lower.vue-show",
+    "lower.vue-html",
+    "lower.vue-text",
     "normalize.bind.same-name",
     "condense.whitespace",
     "condense.drop-whitespace",
@@ -188,7 +197,7 @@ fn lower_and_emit(
         .binding_metadata
         .as_ref()
         .map(bindings::binding_table);
-    let exprs = TransformExpressions::new(
+    let mut exprs = TransformExpressions::new(
         source,
         table.as_ref(),
         request.options.is_ts,
@@ -201,7 +210,11 @@ fn lower_and_emit(
         request.experimental.clone(),
     );
     ctx.begin_render();
-    match emit::emit_plan(&mut ctx, &lowered.plan, &s2.texts, &exprs) {
+    let facts = emit::PlanFacts {
+        texts: &s2.texts,
+        for_wrappers: &s2.for_wrappers,
+    };
+    match emit::emit_plan(&mut ctx, &lowered.plan, &facts, &mut exprs) {
         Ok(()) => SsrS4Selection::Emitted(ctx.finish_render()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrS4Selection::Legacy(reason),
         Err(AdmissionFailure::Invalid(message)) => SsrS4Selection::Rejected(std::vec![cstr!(

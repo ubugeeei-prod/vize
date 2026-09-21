@@ -144,8 +144,11 @@ _Third slice 2026-09-21:_ the production selector emits plain-element SSR
 (elements, static and bound attributes, text, interpolation, fallthrough
 roots) from the S4 plan, holds byte parity on the snapshot suite and a
 two-emitter differential battery, and counts `accepted` / `legacy.<reason>`.
-Control flow, directives, components, slots, the SSR corpus gate, and the
-legacy walker deletion remain before P3-8 closes.
+_Fourth slice 2026-09-21:_ `v-if` chains, `v-for` loops, `v-show`, `v-html`,
+`v-text`, and native `v-model` also emit from the plan (region boundary
+segments, legacy fragment and fallthrough rules, `v-for` scope strips).
+Components, slots, custom directives, the SSR corpus gate, and the legacy
+walker deletion remain before P3-8 closes.
 
 **P3-9 S4 emitter + source maps.** Structured span-carrying emission document
 replaces `CodegenContext.code` string appends across dom/vapor/ssr; one

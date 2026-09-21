@@ -1,5 +1,5 @@
-//! Element attribute output: the inline `name="value"` string shape and the
-//! fallthrough-root `_ssrRenderAttrs(_mergeProps(...))` object shape.
+//! Attached-segment admission and the inline `name="value"` attribute shape
+//! of non-root elements.
 
 use vize_atelier_core::RuntimeHelper;
 use vize_s0::{String, ToCompactString, cstr};
@@ -7,11 +7,8 @@ use vize_s1_to_s2::{TransformContent, decode_template_entities};
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{self as s2, DynamicName};
 
-use super::{Emitter, Result, plan_source, require_dynamic};
-use crate::codegen::element::props::{
-    component_prop_entry, component_props_object, merge_prop_values, normalize_prop_entries,
-    quoted_js_string, wrap_call,
-};
+use super::{Emitter, Result, model, plan_source, require_dynamic};
+use crate::codegen::element::props::{merge_prop_values, quoted_js_string};
 use crate::codegen::helpers::escape_html_attr;
 use crate::s4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
@@ -19,17 +16,18 @@ use crate::s4::string_plan::{
 };
 use crate::s4::{AdmissionFailure, LegacyReason};
 
-type Attached<'r, 'a> = [SsrStringSegment<'r, 'a>];
+pub(super) type Attached<'r, 'a> = [SsrStringSegment<'r, 'a>];
 
 /// One admitted `v-bind`: a static name or the object spread, never modified.
-struct Bind<'r, 'a> {
-    name: Option<&'a str>,
-    value: &'r ExprRef<'a>,
+pub(super) struct Bind<'r, 'a> {
+    pub(super) name: Option<&'a str>,
+    pub(super) value: &'r ExprRef<'a>,
 }
 
-/// Admit an element's attached segments: static attributes, plain `v-bind`,
-/// and `v-on` (which SSR drops). Anything else keeps the legacy lane.
-pub(super) fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
+/// Admit an element's attached segments. Anything the plan emitter does not
+/// own keeps the legacy lane; a segment that does not belong to its element
+/// is a broken plan.
+pub(super) fn admit(attached: &Attached<'_, '_>, owner_fact: u32, tag: &str) -> Result<()> {
     if attached
         .windows(2)
         .any(|pair| pair[0].span.start > pair[1].span.start)
@@ -48,6 +46,10 @@ pub(super) fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> 
                         bind(binding)?;
                     }
                     s2::BindingOp::On(_) => {}
+                    s2::BindingOp::Model(model) => model::admit(model, tag)?,
+                    s2::BindingOp::VueShow(show) => admit_value(Some(&show.value))?,
+                    s2::BindingOp::VueHtml(html) => admit_value(html.value.as_ref())?,
+                    s2::BindingOp::VueText(text) => admit_value(text.value.as_ref())?,
                     _ => return Err(LegacyReason::Binding.into()),
                 }
             }
@@ -61,7 +63,18 @@ pub(super) fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> 
     Ok(())
 }
 
-fn bind<'r, 'a>(binding: &'r s2::BindingOp<'a>) -> Result<Option<Bind<'r, 'a>>> {
+/// A directive value the transform rewrite can own. An opaque value (the S2
+/// parse refused the raw text) still reaches the rewrite, which re-parses and
+/// refuses exactly where the shipped transform reports it invalid.
+pub(super) fn admit_value(value: Option<&ExprRef<'_>>) -> Result<()> {
+    match value {
+        Some(ExprRef::Js(_) | ExprRef::Opaque(_)) => Ok(()),
+        Some(_) => Err(LegacyReason::ExpressionOrEncoding.into()),
+        None => Err(LegacyReason::Binding.into()),
+    }
+}
+
+pub(super) fn bind<'r, 'a>(binding: &'r s2::BindingOp<'a>) -> Result<Option<Bind<'r, 'a>>> {
     let s2::BindingOp::Bind(bind) = binding else {
         return Ok(None);
     };
@@ -73,37 +86,35 @@ fn bind<'r, 'a>(binding: &'r s2::BindingOp<'a>) -> Result<Option<Bind<'r, 'a>>> 
         Some(DynamicName::Static(name)) => Some(name),
         Some(DynamicName::Dynamic(_)) => return Err(LegacyReason::Binding.into()),
     };
+    admit_value(bind.value.as_ref())?;
     match &bind.value {
-        // An opaque value (entity-encoded source the S2 parse refused) still
-        // reaches the transform rewrite, which re-parses the decoded text and
-        // refuses exactly where the shipped transform reports it invalid.
-        Some(value @ (ExprRef::Js(_) | ExprRef::Opaque(_))) => Ok(Some(Bind { name, value })),
-        Some(_) => Err(LegacyReason::ExpressionOrEncoding.into()),
+        Some(value) => Ok(Some(Bind { name, value })),
         None => Err(LegacyReason::Binding.into()),
     }
 }
 
-impl Emitter<'_, '_, '_, '_, '_> {
-    /// The `v-bind` value exactly as the shipped transform rewrote it.
-    fn bind_value(&self, value: &ExprRef<'_>) -> Result<String> {
-        let rewritten = self
-            .exprs
-            .expr(value, TransformContent::Decoded)
-            .map_err(|_| LegacyReason::ExpressionOrEncoding)?;
-        if rewritten.used_unref {
-            return Err(LegacyReason::ExpressionOrEncoding.into());
-        }
-        Ok(rewritten.text)
-    }
-}
-
-/// The first static attribute named `name`, entity-decoded.
-fn static_value(attached: &Attached<'_, '_>, name: &str) -> Option<String> {
+/// The first static attribute named `name`, entity-decoded (`None` when the
+/// first such attribute is valueless, as the legacy lookup returns).
+pub(super) fn static_value(attached: &Attached<'_, '_>, name: &str) -> Option<String> {
     let attr = attached.iter().find_map(|segment| match segment.source {
         Source::Attribute(attr) if attr.name == name => Some(attr),
         _ => None,
     })?;
     attr.value.map(decode_template_entities)
+}
+
+/// The first static-name `v-bind:name` value.
+pub(super) fn bound_value<'r, 'a>(
+    attached: &Attached<'r, 'a>,
+    name: &str,
+) -> Option<&'r ExprRef<'a>> {
+    attached.iter().find_map(|segment| match segment.source {
+        Source::Binding(s2::BindingOp::Bind(bind)) => match bind.name {
+            Some(DynamicName::Static(bound)) if bound == name => bind.value.as_ref(),
+            _ => None,
+        },
+        _ => None,
+    })
 }
 
 fn has_bound(attached: &Attached<'_, '_>, name: &str) -> bool {
@@ -115,13 +126,37 @@ fn has_bound(attached: &Attached<'_, '_>, name: &str) -> bool {
     })
 }
 
+/// The first `v-show` value.
+fn show_value<'r, 'a>(attached: &Attached<'r, 'a>) -> Option<&'r ExprRef<'a>> {
+    attached.iter().find_map(|segment| match segment.source {
+        Source::Binding(s2::BindingOp::VueShow(show)) => Some(&show.value),
+        _ => None,
+    })
+}
+
+impl Emitter<'_, '_, '_, '_, '_, '_> {
+    /// `(({exp}) ? null : { display: "none" })` for the first `v-show`.
+    pub(super) fn show_style(&self, attached: &Attached<'_, '_>) -> Result<Option<String>> {
+        let Some(value) = show_value(attached) else {
+            return Ok(None);
+        };
+        let exp = self.expr(value, TransformContent::Decoded)?;
+        Ok(Some(cstr!("(({exp}) ? null : {{ display: \"none\" }})")))
+    }
+}
+
 /// Non-root element attributes, in authored order.
 pub(super) fn emit_inline(
-    em: &mut Emitter<'_, '_, '_, '_, '_>,
+    em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
     attached: &Attached<'_, '_>,
+    tag: &str,
 ) -> Result<()> {
     let dynamic_class = has_bound(attached, "class");
     let dynamic_style = has_bound(attached, "style");
+    let explicit_style = dynamic_style
+        || attached.iter().any(
+            |segment| matches!(segment.source, Source::Attribute(attr) if attr.name == "style"),
+        );
     for segment in attached {
         match segment.source {
             Source::Attribute(attr) => {
@@ -130,6 +165,21 @@ pub(super) fn emit_inline(
                     || (name == "style" && dynamic_style)
                     || vize_s0::is_reserved_prop(name)
                 {
+                    continue;
+                }
+                if name == "style"
+                    && let Some(show) = em.show_style(attached)?
+                {
+                    let value = attr
+                        .value
+                        .map(|value| quoted_js_string(&decode_template_entities(value)))
+                        .unwrap_or_else(|| "\"\"".to_compact_string());
+                    let style_exp = merge_prop_values(std::vec![value, show]);
+                    em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderStyle);
+                    em.ctx.push_string_part_static(" style=\"");
+                    em.ctx
+                        .push_string_part_dynamic(&cstr!("_ssrRenderStyle({style_exp})"));
+                    em.ctx.push_string_part_static("\"");
                     continue;
                 }
                 em.ctx.push_string_part_static(" ");
@@ -141,13 +191,23 @@ pub(super) fn emit_inline(
                     em.ctx.push_string_part_static("\"");
                 }
             }
-            Source::Binding(binding) => {
-                let Some(bind) = bind(binding)? else {
-                    continue;
-                };
-                let exp = em.bind_value(bind.value)?;
-                emit_inline_bind(em, attached, bind.name, exp);
-            }
+            Source::Binding(binding) => match binding {
+                s2::BindingOp::Bind(_) => {
+                    let Some(bind) = bind(binding)? else {
+                        continue;
+                    };
+                    let exp = em.expr(bind.value, TransformContent::Decoded)?;
+                    emit_inline_bind(em, attached, bind.name, exp)?;
+                }
+                s2::BindingOp::Model(model) => model::emit_inline(em, attached, model, tag)?,
+                s2::BindingOp::VueShow(show) if !explicit_style => {
+                    let exp = em.expr(&show.value, TransformContent::Decoded)?;
+                    em.ctx.push_string_part_dynamic(&cstr!(
+                        "(({exp}) ? \"\" : \" style=\\\"display: none;\\\"\")"
+                    ));
+                }
+                _ => {}
+            },
             _ => {}
         }
     }
@@ -155,11 +215,11 @@ pub(super) fn emit_inline(
 }
 
 fn emit_inline_bind(
-    em: &mut Emitter<'_, '_, '_, '_, '_>,
+    em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
     attached: &Attached<'_, '_>,
     name: Option<&str>,
     exp: String,
-) {
+) -> Result<()> {
     match name {
         Some(name) if vize_s0::is_reserved_prop(name) => {}
         Some("class") => {
@@ -183,6 +243,9 @@ fn emit_inline_bind(
                 values.push(quoted_js_string(&static_style));
             }
             values.push(exp);
+            if let Some(show) = em.show_style(attached)? {
+                values.push(show);
+            }
             let style_exp = merge_prop_values(values);
             em.ctx
                 .push_string_part_dynamic(&cstr!("_ssrRenderStyle({style_exp})"));
@@ -205,72 +268,5 @@ fn emit_inline_bind(
                 .push_string_part_dynamic(&cstr!("_ssrRenderAttrs({exp})"));
         }
     }
-}
-
-/// The single fallthrough root: every attribute joins one props object that
-/// merges with the component's `_attrs`.
-pub(super) fn emit_fallthrough(
-    em: &mut Emitter<'_, '_, '_, '_, '_>,
-    attached: &Attached<'_, '_>,
-) -> Result<()> {
-    let mut entries = std::vec::Vec::new();
-    let mut spreads = std::vec::Vec::new();
-    for segment in attached {
-        match segment.source {
-            Source::Attribute(attr) => {
-                let value = attr
-                    .value
-                    .map(|value| quoted_js_string(&decode_template_entities(value)))
-                    .unwrap_or_else(|| "\"\"".to_compact_string());
-                let name = plan_source(segment, SsrStringPayloadKind::AttributeName)?;
-                entries.push(component_prop_entry(name, &value, false));
-            }
-            Source::Binding(binding) => {
-                let Some(bind) = bind(binding)? else {
-                    continue;
-                };
-                let value = em.bind_value(bind.value)?;
-                match bind.name {
-                    Some(name) => entries.push(component_prop_entry(name, &value, false)),
-                    None => spreads.push(value),
-                }
-            }
-            _ => {}
-        }
-    }
-
-    let entries = normalize_prop_entries(entries);
-    let mut args: std::vec::Vec<String> = std::vec::Vec::new();
-    if !spreads.is_empty() {
-        em.ctx.use_core_helper(RuntimeHelper::NormalizeProps);
-        em.ctx.use_core_helper(RuntimeHelper::GuardReactiveProps);
-        args.extend(
-            spreads.iter().map(|spread| {
-                wrap_call("_normalizeProps", &wrap_call("_guardReactiveProps", spread))
-            }),
-        );
-    }
-    if !entries.is_empty() {
-        args.push(component_props_object(&entries));
-    }
-    args.push("_attrs".to_compact_string());
-
-    let attrs = if let [only] = args.as_slice() {
-        only.clone()
-    } else {
-        em.ctx.use_core_helper(RuntimeHelper::MergeProps);
-        let mut out = String::from("_mergeProps(");
-        for (index, arg) in args.iter().enumerate() {
-            if index > 0 {
-                out.push_str(", ");
-            }
-            out.push_str(arg);
-        }
-        out.push(')');
-        out
-    };
-    em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttrs);
-    em.ctx
-        .push_string_part_dynamic(&cstr!("_ssrRenderAttrs({attrs})"));
     Ok(())
 }

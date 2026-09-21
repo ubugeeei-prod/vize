@@ -7,7 +7,7 @@ mod component_binding;
 mod component_resolution;
 pub(crate) mod element;
 pub(crate) mod helpers;
-mod scope_prefix;
+pub(crate) mod scope_prefix;
 
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_core::{

@@ -43,7 +43,7 @@ const PRODUCTION_FLOOR: [(&str, u64, u64); 6] = [
     ("small", 1, 8),
     ("medium", 2, 118),
     ("large", 2, 106),
-    ("stress-deep", 2, 144),
+    ("stress-deep", 1, 72),
     ("stress-wide", 1, 2),
     ("stress-interp", 1, 1001),
 ];

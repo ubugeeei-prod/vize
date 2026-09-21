@@ -49,18 +49,15 @@ pub(super) fn legacy_child_count(
 }
 
 pub(super) fn emit_interpolation(
-    em: &mut Emitter<'_, '_, '_, '_, '_>,
+    em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
     segment: &SsrStringSegment<'_, '_>,
     interpolation: &s2::InterpolationOp<'_>,
 ) -> Result<()> {
-    if let Some(parts) = compound_parts(em.texts, segment, interpolation)? {
+    if let Some(parts) = compound_parts(em.facts.texts, segment, interpolation)? {
         for part in parts {
             if part.dynamic {
-                let rewritten = em
-                    .exprs
-                    .text(part.text.as_str())
-                    .map_err(|_| LegacyReason::ExpressionOrEncoding)?;
-                push_interpolate(em, rewritten)?;
+                let rewritten = em.text_expr(part.text.as_str())?;
+                push_interpolate(em, rewritten);
             } else {
                 emit_text(em.ctx, part.text.as_str())?;
             }
@@ -70,25 +67,15 @@ pub(super) fn emit_interpolation(
     if !matches!(interpolation.expression, ExprRef::Js(_)) {
         return Err(LegacyReason::ExpressionOrEncoding.into());
     }
-    let rewritten = em
-        .exprs
-        .expr(&interpolation.expression, TransformContent::Padded)
-        .map_err(|_| LegacyReason::ExpressionOrEncoding)?;
-    push_interpolate(em, rewritten)
+    let rewritten = em.expr(&interpolation.expression, TransformContent::Padded)?;
+    push_interpolate(em, rewritten);
+    Ok(())
 }
 
-fn push_interpolate(
-    em: &mut Emitter<'_, '_, '_, '_, '_>,
-    rewritten: vize_s1_to_s2::TransformedExpr,
-) -> Result<()> {
-    if rewritten.used_unref {
-        return Err(LegacyReason::ExpressionOrEncoding.into());
-    }
+fn push_interpolate(em: &mut Emitter<'_, '_, '_, '_, '_, '_>, text: vize_s0::String) {
     em.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
-    let text = rewritten.text;
     em.ctx
         .push_string_part_dynamic(&cstr!("_ssrInterpolate({text})"));
-    Ok(())
 }
 
 /// The validated parts of a compound interpolation, or `None` for a plain one.

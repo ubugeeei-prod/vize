@@ -65,6 +65,7 @@ pub enum SsrSegmentSource<'r, 'a> {
     Interpolation(&'r s2::InterpolationOp<'a>),
     Comment(&'r s2::CommentOp<'a>),
     If(&'r s2::IfOp<'a>),
+    Branch(&'r s2::IfBranch<'a>),
     For(&'r s2::ForOp<'a>),
     Slot(&'r s2::SlotOp<'a>),
 }
@@ -83,7 +84,12 @@ pub enum SsrStringSegmentKind {
     RawHtml,
     Comment,
     If,
+    /// Opens one `v-if` branch region (branches read their chain's fact).
+    Branch,
+    CloseBranch,
+    CloseIf,
     For,
+    CloseFor,
     SlotOutlet,
     Directive,
 }

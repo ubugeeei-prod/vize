@@ -150,31 +150,51 @@ impl<'facts, 'r, 'a> Cx<'facts, 'r, 'a> {
                 );
             }
             s2::Op::If(if_op) => {
+                let if_op: &'r s2::IfOp<'a> = if_op;
                 let (partition, fact) = self.consume_fact(if_op.span);
-                self.push(
-                    Kind::If,
-                    partition,
-                    if_op.span,
-                    fact,
-                    None,
-                    Source::If(if_op),
-                );
+                let source = Source::If(if_op);
+                self.push(Kind::If, partition, if_op.span, fact, None, source);
+                // Branches are regions, not ops: they read the chain's fact.
                 for branch in &if_op.branches {
+                    let branch_source = Source::Branch(branch);
+                    self.push(
+                        Kind::Branch,
+                        partition,
+                        branch.span,
+                        fact,
+                        None,
+                        branch_source,
+                    );
                     self.lower_region(&branch.region);
+                    self.push(
+                        Kind::CloseBranch,
+                        partition,
+                        branch.span,
+                        fact,
+                        None,
+                        branch_source,
+                    );
                 }
+                self.push(Kind::CloseIf, partition, if_op.span, fact, None, source);
             }
             s2::Op::For(for_op) => {
+                let for_op: &'r s2::ForOp<'a> = for_op;
                 let (partition, fact) = self.consume_fact(for_op.span);
-                let binding = for_op.binding.source.source();
+                let binding = Some(payload(
+                    SsrStringPayloadKind::ForBinding,
+                    for_op.binding.source.source(),
+                ));
+                let source = Source::For(for_op);
+                self.push(Kind::For, partition, for_op.span, fact, binding, source);
+                self.lower_region(&for_op.region);
                 self.push(
-                    Kind::For,
+                    Kind::CloseFor,
                     partition,
                     for_op.span,
                     fact,
-                    Some(payload(SsrStringPayloadKind::ForBinding, binding)),
-                    Source::For(for_op),
+                    binding,
+                    source,
                 );
-                self.lower_region(&for_op.region);
             }
             s2::Op::Slot(slot) => {
                 let slot: &'r s2::SlotOp<'a> = slot;

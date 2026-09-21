@@ -70,10 +70,13 @@ fn unsupported_emission_options_select_legacy_after_the_witness() {
 #[test]
 fn unowned_shapes_name_their_legacy_reason() {
     let cases = [
-        (r#"<div v-if="ok">a</div>"#, LegacyReason::SurfaceSemantics),
         (r#"<Foo />"#, LegacyReason::SurfaceSemantics),
-        (r#"<div v-show="ok"></div>"#, LegacyReason::SurfaceSemantics),
-        (r#"<textarea>x</textarea>"#, LegacyReason::Element),
+        (
+            r#"<div v-focus="ok"></div>"#,
+            LegacyReason::SurfaceSemantics,
+        ),
+        (r#"<script>x</script>"#, LegacyReason::Element),
+        (r#"<input v-model:foo="x">"#, LegacyReason::Binding),
         (r#"<div :id.camel="x"></div>"#, LegacyReason::Binding),
         (r#"<div :[key]="x"></div>"#, LegacyReason::Binding),
         (

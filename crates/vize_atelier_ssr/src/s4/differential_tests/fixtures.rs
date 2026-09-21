@@ -151,25 +151,16 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
 
 /// Templates the selector must keep on the legacy walker in this slice.
 pub(super) const REFUSED: &[(&str, &str)] = &[
-    ("v-if", r#"<div v-if="ok">a</div><p v-else>b</p>"#),
-    (
-        "v-for",
-        r#"<li v-for="item in items" :key="item.id">{{ item.name }}</li>"#,
-    ),
     ("component", r#"<Foo :a="b">x</Foo>"#),
     (
         "slot-outlet",
         r#"<div><slot name="a" :x="y">fb</slot></div>"#,
     ),
-    ("v-show", r#"<div v-show="ok" style="a:b"></div>"#),
-    ("v-html", r#"<div v-html="raw"></div>"#),
-    ("v-text", r#"<div v-text="msg"></div>"#),
-    ("v-model", r#"<input v-model="msg">"#),
     ("custom-directive", r#"<div v-focus="x"></div>"#),
     ("v-once", r#"<div v-once>{{ a }}</div>"#),
     ("v-cloak", r#"<div v-cloak>{{ a }}</div>"#),
-    ("textarea", "<textarea>a &amp; b</textarea>"),
-    ("select", "<select><option value=\"a\">A</option></select>"),
+    ("v-model-argument", r#"<input v-model:foo="msg">"#),
+    ("v-model-div", r#"<div v-model="msg"></div>"#),
     ("template", "<template><div>a</div></template>"),
     ("dynamic-arg", r#"<div><p :[key]="val"></p></div>"#),
     (
@@ -182,6 +173,11 @@ pub(super) const REFUSED: &[(&str, &str)] = &[
     ("script", "<div><script>var a = 1 < 2</script></div>"),
     ("style", "<div><style>.a > b { }</style></div>"),
     ("whitespace-entities", "<p>a&#10;&#32; b</p>"),
+    (
+        "v-if-component-branch",
+        r#"<Foo v-if="a" /><p v-else>b</p>"#,
+    ),
+    ("v-for-slot", r#"<div><slot v-for="n in 3" :n="n" /></div>"#),
 ];
 
 /// TypeScript-only expressions: owned under `is_ts`, refused without it
