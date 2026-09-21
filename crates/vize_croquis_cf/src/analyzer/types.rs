@@ -243,6 +243,10 @@ pub struct CrossFileResult {
     /// Top per-file complexity contributors derived from the same cross-file facts.
     pub complexity_hotspots: Vec<rules::ComplexityHotspot>,
 
+    /// Own and rendered template complexity per component, most complex
+    /// render tree first (S2 `template-complexity` facts).
+    pub template_complexity: Vec<rules::ComponentComplexity>,
+
     /// Statistics.
     pub stats: CrossFileStats,
 }

@@ -23,6 +23,9 @@ vize_croquis_cf = { workspace = true, optional = true }
 [dev-dependencies]
 criterion.workspace = true
 tempfile.workspace = true
+# Real template analyses for the complexity-hotspot fixtures.
+vize_armature.workspace = true
+vize_croquis.workspace = true
 
 [[bench]]
 name = "reporter"

@@ -1,3 +1,4 @@
+use super::complexity_tests::helpers::template_facts;
 use super::{
     ComplexityDimension, CrossFileReactivityIssue, CrossFileReactivityIssueKind, FallthroughInfo,
     ProvideInjectMatch, ReactivityIssue, ReactivityIssueKind,
@@ -7,22 +8,13 @@ use crate::analyzer::CrossFileResult;
 use crate::diagnostics::DiagnosticSeverity;
 use crate::registry::ModuleRegistry;
 use vize_carton::{CompactString, FxHashSet, smallvec};
-use vize_croquis::analysis::{ComponentUsage, PassedProp, SlotUsage, TemplateExpression};
+use vize_croquis::analysis::{ComponentUsage, PassedProp, SlotUsage};
 use vize_croquis::reactivity::ReactiveKind;
-use vize_croquis::{Croquis, EffectGraphSummary, ScopeId, TemplateExpressionKind, VForScopeData};
+use vize_croquis::{Croquis, EffectGraphSummary, ScopeId};
 
 #[test]
 fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
     let mut parent = Croquis::new();
-    parent.template_expressions.push(TemplateExpression {
-        content: CompactString::new("ready && active"),
-        kind: TemplateExpressionKind::VIf,
-        start: 0,
-        end: 15,
-        scope_id: ScopeId::ROOT,
-        vif_guard: None,
-    });
-    parent.scopes.enter_v_for_scope(v_for_data(), 16, 40);
     parent.component_usages.push(ComponentUsage {
         name: CompactString::new("Child"),
         start: 41,
@@ -136,8 +128,18 @@ fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
             },
         ),
     ]);
-    let hotspots =
-        summarize_complexity_hotspots_with_effect_graphs(&registry, &effect_graphs, &result);
+    let templates = vize_carton::FxHashMap::from_iter([(
+        parent_id,
+        template_facts(
+            r#"<div v-if="ready && active"><li v-for="item in items">{{ item }}</li></div>"#,
+        ),
+    )]);
+    let hotspots = summarize_complexity_hotspots_with_effect_graphs(
+        &registry,
+        &templates,
+        &effect_graphs,
+        &result,
+    );
 
     assert_eq!(hotspots.len(), 2);
     assert_eq!(hotspots[0].file_id, child_id);
@@ -150,22 +152,21 @@ fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
     assert_eq!(hotspots[0].input.provide_inject_reference_count, 1);
     assert_eq!(hotspots[0].dimensions.fallthrough_attrs, 8);
     assert_eq!(hotspots[0].dimensions.reactive_graph, 14);
-    assert_eq!(hotspots[0].total_score, 28);
+    assert_eq!(hotspots[0].total_score, 27);
     assert_eq!(
         hotspots[0].dominant_dimension.unwrap().dimension,
         ComplexityDimension::ReactiveGraph
     );
 
     assert_eq!(hotspots[1].file_id, parent_id);
-    assert_eq!(hotspots[1].input.template_if_count, 1);
-    assert_eq!(hotspots[1].input.template_for_count, 1);
-    assert_eq!(hotspots[1].input.template_logical_operator_count, 1);
+    assert_eq!(hotspots[1].input.template_cyclomatic, 4);
+    assert_eq!(hotspots[1].input.template_cognitive, 4);
     assert_eq!(hotspots[1].input.slot_count, 1);
     assert_eq!(hotspots[1].input.prop_drilling_edge_count, 1);
     assert_eq!(hotspots[1].input.provide_inject_reference_count, 1);
     assert_eq!(hotspots[1].input.provide_inject_fanout_count, 1);
-    assert_eq!(hotspots[1].dimensions.template_control_flow, 4);
-    assert_eq!(hotspots[1].total_score, 17);
+    assert_eq!(hotspots[1].dimensions.template_control_flow, 8);
+    assert_eq!(hotspots[1].total_score, 21);
 
     let json = serde_json::to_value(&hotspots[0]).unwrap();
     assert_eq!(json["fileName"], "Child.vue");
@@ -217,15 +218,4 @@ fn analyzer_result_stores_complexity_hotspots() {
     assert!(result.complexity_hotspots.iter().any(
         |hotspot| hotspot.file_name == "Child.vue" && hotspot.input.fallthrough_risk_count >= 1
     ));
-}
-
-fn v_for_data() -> VForScopeData {
-    VForScopeData {
-        value_alias: CompactString::new("item"),
-        value_bindings: smallvec![CompactString::new("item")],
-        key_alias: None,
-        index_alias: None,
-        source: CompactString::new("items"),
-        key_expression: None,
-    }
 }

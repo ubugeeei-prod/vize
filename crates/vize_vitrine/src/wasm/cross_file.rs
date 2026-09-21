@@ -117,6 +117,7 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                 let script_content = analysis.script_content.unwrap_or_default();
                 let file_id =
                     analyzer.add_file_with_analysis(std_path, &script_content, analysis.croquis);
+                analyzer.record_template_complexity(file_id, source);
 
                 // Record the script and template offsets for this file
                 script_offsets.insert(file_id.as_u32(), script_start);
@@ -285,11 +286,9 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
         })
         .collect();
 
-    let output = serde_json::json!({
+    let mut output = serde_json::json!({
         "diagnostics": diagnostics,
         "circularDependencies": circular_deps,
-        "complexityReport": super::cross_file_complexity::complexity_report_json(&result.complexity_report),
-        "complexityHotspots": super::cross_file_complexity::complexity_hotspots_json(&result.complexity_hotspots),
         "stats": {
             "filesAnalyzed": result.stats.files_analyzed,
             "vueComponents": result.stats.vue_components,
@@ -301,6 +300,7 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
         },
         "filePaths": file_paths,
     });
+    super::cross_file_complexity::insert_complexity_json(&mut output, &result);
 
     to_js_value(&output)
 }

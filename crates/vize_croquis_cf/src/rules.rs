@@ -17,6 +17,8 @@ mod complexity_hotspots_tests;
 #[cfg(test)]
 mod complexity_injection_tests;
 #[cfg(test)]
+mod complexity_rendered_tests;
+#[cfg(test)]
 mod complexity_tests;
 mod component_resolution;
 pub(crate) mod cross_file_reactivity;
@@ -33,11 +35,14 @@ mod setup_context;
 // Re-export rule result types
 pub use boundary::{BoundaryInfo, BoundaryKind, analyze_boundaries};
 pub use complexity::{
-    ComplexityBand, ComplexityDimension, ComplexityDimensionBreakdown, ComplexityDimensionScores,
-    ComplexityHotspot, ComplexityInput, ComplexityReport, band_for_score,
+    ComplexityBand, ComplexityContributor, ComplexityDimension, ComplexityDimensionBreakdown,
+    ComplexityDimensionScores, ComplexityHotspot, ComplexityInput, ComplexityReport,
+    ComponentComplexity, TEMPLATE_COGNITIVE_WARN_ABOVE, TEMPLATE_CYCLOMATIC_WARN_ABOVE,
+    TemplateComplexity, TemplateScores, band_for_score,
 };
 pub(crate) use complexity::{
-    summarize_complexity_hotspots_with_effect_graphs, summarize_complexity_with_effect_graphs,
+    TemplateFacts, summarize_complexity_hotspots_with_effect_graphs,
+    summarize_complexity_with_effect_graphs, summarize_template_complexity,
 };
 pub use component_resolution::{ComponentResolutionIssue, analyze_component_resolution};
 pub use element_id::{UniqueIdIssue, analyze_element_ids};

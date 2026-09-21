@@ -371,26 +371,6 @@ const emailId = useId();
 </template>
 ```
 
-## `vue/max-template-complexity`
-
-Warns when a component's own template is harder to follow than 95% of the templates in Vize's
-real-world corpus. The rule checks cyclomatic complexity above 11 and cognitive complexity above
-16. Both numbers come from Davinci's S2 `template-complexity` analysis, not from scanning template
-text. The warning points at the `<template>` tag and labels the constructs that add the most
-complexity. Only the component's own template counts: extracting a branch into a child component
-always lowers the parent's score. The metric definition is in
-[`complexity-metrics.md`](https://github.com/ubugeeei-prod/vize/blob/main/davinci-road/plan/complexity-metrics.md).
-
-Default severity: `warning`. Presets: `opinionated`.
-
-What counts:
-
-- `v-if` and `v-for` add 1 plus their nesting depth.
-- `v-else-if` and `v-else` add 1 each.
-- Each run of `&&`, `||` or `??` adds 1.
-- A `?:` adds 1 plus its nesting depth.
-- A scoped-slot body counts as one level deeper.
-
 ## Syntax And Style Rules
 
 These rules do not need long examples, but they still behave as first-class rules.

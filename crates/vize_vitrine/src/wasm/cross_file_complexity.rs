@@ -1,4 +1,24 @@
-use vize_croquis_cf::{ComplexityHotspot, ComplexityReport};
+use vize_croquis_cf::{ComplexityHotspot, ComplexityReport, ComponentComplexity, CrossFileResult};
+
+/// Add the complexity report, the hotspots and the per-component template
+/// complexity (own and rendered, with contributors) to a result object.
+pub(crate) fn insert_complexity_json(output: &mut serde_json::Value, result: &CrossFileResult) {
+    let Some(object) = output.as_object_mut() else {
+        return;
+    };
+    object.insert(
+        "complexityReport".into(),
+        complexity_report_json(&result.complexity_report),
+    );
+    object.insert(
+        "complexityHotspots".into(),
+        complexity_hotspots_json(&result.complexity_hotspots),
+    );
+    object.insert(
+        "templateComplexity".into(),
+        template_complexity_json(&result.template_complexity),
+    );
+}
 
 pub(crate) fn complexity_report_json(report: &ComplexityReport) -> serde_json::Value {
     serde_json::to_value(report).expect("complexity report should serialize")
@@ -6,6 +26,10 @@ pub(crate) fn complexity_report_json(report: &ComplexityReport) -> serde_json::V
 
 pub(crate) fn complexity_hotspots_json(hotspots: &[ComplexityHotspot]) -> serde_json::Value {
     serde_json::to_value(hotspots).expect("complexity hotspots should serialize")
+}
+
+pub(crate) fn template_complexity_json(components: &[ComponentComplexity]) -> serde_json::Value {
+    serde_json::to_value(components).expect("template complexity should serialize")
 }
 
 #[cfg(test)]
@@ -25,7 +49,7 @@ mod tests {
             component_name: Some("App".into()),
             input: ComplexityInput {
                 component_count: 1,
-                template_if_count: 2,
+                template_cyclomatic: 2,
                 prop_drilling_edge_count: 1,
                 provide_inject_fanout_count: 4,
                 ..ComplexityInput::default()
@@ -51,13 +75,11 @@ mod tests {
                     "componentName": "App",
                     "input": {
                         "componentCount": 1,
-                        "templateIfCount": 2,
-                        "templateForCount": 0,
-                        "templateLogicalOperatorCount": 0,
-                        "componentTreeVIfMaxDepth": 0,
-                        "componentTreeVForMaxDepth": 0,
-                        "componentTreeScopedSlotMaxDepth": 0,
-                        "componentTreeTemplateNestingScore": 0,
+                        "templateCyclomatic": 2,
+                        "templateCognitive": 0,
+                        "templateUnknown": 0,
+                        "templateMaxNesting": 0,
+                        "templateScopedSlotCount": 0,
                         "slotCount": 0,
                         "propDrillingEdgeCount": 1,
                         "globalStateReferenceCount": 0,
@@ -116,13 +138,11 @@ watch(count, () => {})
             json!({
                 "input": {
                     "componentCount": 1,
-                    "templateIfCount": 0,
-                    "templateForCount": 0,
-                    "templateLogicalOperatorCount": 0,
-                    "componentTreeVIfMaxDepth": 0,
-                    "componentTreeVForMaxDepth": 0,
-                    "componentTreeScopedSlotMaxDepth": 0,
-                    "componentTreeTemplateNestingScore": 0,
+                    "templateCyclomatic": 0,
+                    "templateCognitive": 0,
+                    "templateUnknown": 0,
+                    "templateMaxNesting": 0,
+                    "templateScopedSlotCount": 0,
                     "slotCount": 0,
                     "propDrillingEdgeCount": 0,
                     "globalStateReferenceCount": 0,
@@ -135,7 +155,7 @@ watch(count, () => {})
                     "reactiveCycleCount": 0
                 },
                 "dimensions": {
-                    "templateControlFlow": 1,
+                    "templateControlFlow": 0,
                     "slotUsage": 0,
                     "propDrilling": 0,
                     "globalState": 0,
@@ -143,9 +163,9 @@ watch(count, () => {})
                     "fallthroughAttrs": 0,
                     "reactiveGraph": 8
                 },
-                "cyclomaticScore": 1,
+                "cyclomaticScore": 0,
                 "cognitiveScore": 0,
-                "totalScore": 9,
+                "totalScore": 8,
                 "band": "low"
             })
         );
@@ -157,7 +177,7 @@ watch(count, () => {})
                 "componentName": "Reactive",
                 "input": result.complexity_report.input,
                 "dimensions": result.complexity_report.dimensions,
-                "totalScore": 9,
+                "totalScore": 8,
                 "dominantDimension": { "dimension": "reactive-graph", "score": 8 }
             }])
         );

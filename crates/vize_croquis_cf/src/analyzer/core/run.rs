@@ -117,14 +117,20 @@ impl CrossFileAnalyzer {
 
         result.complexity_report = rules::summarize_complexity_with_effect_graphs(
             &self.registry,
-            &self.graph,
+            &self.template_complexity,
             &self.effect_graph_summaries,
             &result,
         );
         result.complexity_hotspots = rules::summarize_complexity_hotspots_with_effect_graphs(
             &self.registry,
+            &self.template_complexity,
             &self.effect_graph_summaries,
             &result,
+        );
+        result.template_complexity = rules::summarize_template_complexity(
+            &self.registry,
+            &self.graph,
+            &self.template_complexity,
         );
 
         dedupe_diagnostics(&mut result.diagnostics);

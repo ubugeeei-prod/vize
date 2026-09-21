@@ -1,10 +1,10 @@
 use super::{ComplexityDimensionBreakdown, ComplexityDimensionScores, ComplexityInput};
-use super::{ComplexityReport, CrossFileReactivityIssueKind};
+use super::{ComplexityReport, CrossFileReactivityIssueKind, TemplateFacts, add_template_facts};
 use crate::analyzer::CrossFileResult;
 use crate::registry::{FileId, ModuleEntry, ModuleRegistry};
 use crate::rules::ReactivityIssueKind;
 use vize_carton::{CompactString, FxHashMap};
-use vize_croquis::{EffectGraphSummary, ScopeKind, TemplateExpressionKind};
+use vize_croquis::EffectGraphSummary;
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,10 +20,11 @@ pub struct ComplexityHotspot {
 
 pub(crate) fn summarize_complexity_hotspots_with_effect_graphs(
     registry: &ModuleRegistry,
+    templates: &TemplateFacts,
     effect_graphs: &FxHashMap<FileId, EffectGraphSummary>,
     result: &CrossFileResult,
 ) -> Vec<ComplexityHotspot> {
-    let mut inputs = local_inputs(registry, effect_graphs);
+    let mut inputs = local_inputs(registry, templates, effect_graphs);
     add_fallthrough_inputs(&mut inputs, result);
     add_reactivity_inputs(&mut inputs, result);
     add_provide_inject_inputs(&mut inputs, result);
@@ -42,13 +43,18 @@ pub(crate) fn summarize_complexity_hotspots_with_effect_graphs(
 
 fn local_inputs(
     registry: &ModuleRegistry,
+    templates: &TemplateFacts,
     effect_graphs: &FxHashMap<FileId, EffectGraphSummary>,
 ) -> FxHashMap<FileId, ComplexityInput> {
     registry
         .vue_components()
         .map(|entry| {
             let effect_graph = effect_graphs.get(&entry.id).copied().unwrap_or_default();
-            (entry.id, local_input(entry, effect_graph))
+            let mut input = local_input(entry, effect_graph);
+            if let Some(template) = templates.get(&entry.id) {
+                add_template_facts(&mut input, template);
+            }
+            (entry.id, input)
         })
         .collect()
 }
@@ -58,22 +64,6 @@ fn local_input(entry: &ModuleEntry, effect_graph: EffectGraphSummary) -> Complex
 
     ComplexityInput {
         component_count: 1,
-        template_if_count: analysis
-            .template_expressions
-            .iter()
-            .filter(|expr| expr.kind == TemplateExpressionKind::VIf)
-            .count(),
-        template_for_count: analysis
-            .scopes
-            .iter()
-            .filter(|scope| scope.kind == ScopeKind::VFor)
-            .count(),
-        template_logical_operator_count: analysis
-            .template_expressions
-            .iter()
-            .filter(|expr| expr.kind == TemplateExpressionKind::VIf)
-            .map(|expr| logical_operator_count(expr.content.as_str()))
-            .fold(0usize, usize::saturating_add),
         slot_count: analysis.macros.slots().len().saturating_add(
             analysis
                 .component_usages
@@ -162,11 +152,4 @@ fn hotspot_for_entry(entry: &ModuleEntry, input: ComplexityInput) -> Option<Comp
         total_score: report.total_score,
         dominant_dimension: report.dominant_dimension(),
     })
-}
-
-fn logical_operator_count(content: &str) -> usize {
-    content
-        .matches("&&")
-        .count()
-        .saturating_add(content.matches("||").count())
 }

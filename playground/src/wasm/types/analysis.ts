@@ -109,13 +109,11 @@ export interface CrossFileStats {
 
 export interface CrossFileComplexityInput {
   componentCount: number;
-  templateIfCount: number;
-  templateForCount: number;
-  templateLogicalOperatorCount: number;
-  componentTreeVIfMaxDepth: number;
-  componentTreeVForMaxDepth: number;
-  componentTreeScopedSlotMaxDepth: number;
-  componentTreeTemplateNestingScore: number;
+  templateCyclomatic: number;
+  templateCognitive: number;
+  templateUnknown: number;
+  templateMaxNesting: number;
+  templateScopedSlotCount: number;
   slotCount: number;
   propDrillingEdgeCount: number;
   globalStateReferenceCount: number;
@@ -171,11 +169,47 @@ export interface CrossFileComplexityHotspot {
   dominantDimension: CrossFileComplexityDimensionBreakdown | null;
 }
 
+/** Cyclomatic and cognitive complexity, own or rendered. */
+export interface CrossFileTemplateScores {
+  cyclomatic: number;
+  cognitive: number;
+}
+
+/** One construct that adds template complexity, at its authored position. */
+export interface CrossFileComplexityContributor {
+  kind: "v-if" | "v-else-if" | "v-else" | "v-for" | "logical" | "conditional";
+  start: number;
+  end: number;
+  line: number;
+  column: number;
+  nesting: number;
+  cyclomatic: number;
+  cognitive: number;
+}
+
+/** One component's own and rendered template complexity (S2 facts). */
+export interface CrossFileComponentComplexity {
+  fileId: number;
+  fileName: string;
+  componentName: string | null;
+  template: {
+    own: CrossFileTemplateScores;
+    unknown: number;
+    maxNesting: number;
+    scopedSlots: number;
+    contributors: CrossFileComplexityContributor[];
+  };
+  rendered: CrossFileTemplateScores;
+  renderedComponents: number;
+  recursive: boolean;
+}
+
 export interface CrossFileResult {
   diagnostics: CrossFileDiagnostic[];
   circularDependencies: string[][];
   complexityReport: CrossFileComplexityReport;
   complexityHotspots: CrossFileComplexityHotspot[];
+  templateComplexity: CrossFileComponentComplexity[];
   stats: CrossFileStats;
   filePaths: string[];
 }

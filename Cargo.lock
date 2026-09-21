@@ -4393,6 +4393,7 @@ dependencies = [
  "vize_armature",
  "vize_carton",
  "vize_croquis",
+ "vize_s1_to_s2",
 ]
 
 [[package]]
@@ -4472,7 +4473,9 @@ dependencies = [
  "serde_json",
  "sha2 0.11.0",
  "tempfile",
+ "vize_armature",
  "vize_carton",
+ "vize_croquis",
  "vize_croquis_cf",
 ]
 

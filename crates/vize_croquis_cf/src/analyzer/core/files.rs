@@ -60,6 +60,12 @@ impl CrossFileAnalyzer {
         // Register in module registry (takes ownership of analysis)
         let (file_id, is_new) = self.registry.register(path, source, analysis);
         self.record_effect_graph_summary(file_id, effect_summary);
+        if path
+            .extension()
+            .is_some_and(|extension| extension.eq_ignore_ascii_case("vue"))
+        {
+            self.record_template_complexity(file_id, source);
+        }
 
         if is_new {
             // Add to dependency graph

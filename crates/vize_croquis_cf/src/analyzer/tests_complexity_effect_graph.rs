@@ -58,13 +58,11 @@ fn parser_effect_graphs_drive_global_and_hotspot_complexity() {
                 "componentName": "Beta",
                 "input": {
                     "componentCount": 1,
-                    "templateIfCount": 0,
-                    "templateForCount": 0,
-                    "templateLogicalOperatorCount": 0,
-                    "componentTreeVIfMaxDepth": 0,
-                    "componentTreeVForMaxDepth": 0,
-                    "componentTreeScopedSlotMaxDepth": 0,
-                    "componentTreeTemplateNestingScore": 0,
+                    "templateCyclomatic": 0,
+                    "templateCognitive": 0,
+                    "templateUnknown": 0,
+                    "templateMaxNesting": 0,
+                    "templateScopedSlotCount": 0,
                     "slotCount": 0,
                     "propDrillingEdgeCount": 0,
                     "globalStateReferenceCount": 0,
@@ -77,7 +75,7 @@ fn parser_effect_graphs_drive_global_and_hotspot_complexity() {
                     "reactiveCycleCount": 0
                 },
                 "dimensions": {
-                    "templateControlFlow": 1,
+                    "templateControlFlow": 0,
                     "slotUsage": 0,
                     "propDrilling": 0,
                     "globalState": 0,
@@ -85,7 +83,7 @@ fn parser_effect_graphs_drive_global_and_hotspot_complexity() {
                     "fallthroughAttrs": 0,
                     "reactiveGraph": 8
                 },
-                "totalScore": 9,
+                "totalScore": 8,
                 "dominantDimension": { "dimension": "reactive-graph", "score": 8 }
             },
             {
@@ -94,13 +92,11 @@ fn parser_effect_graphs_drive_global_and_hotspot_complexity() {
                 "componentName": "Alpha",
                 "input": {
                     "componentCount": 1,
-                    "templateIfCount": 0,
-                    "templateForCount": 0,
-                    "templateLogicalOperatorCount": 0,
-                    "componentTreeVIfMaxDepth": 0,
-                    "componentTreeVForMaxDepth": 0,
-                    "componentTreeScopedSlotMaxDepth": 0,
-                    "componentTreeTemplateNestingScore": 0,
+                    "templateCyclomatic": 0,
+                    "templateCognitive": 0,
+                    "templateUnknown": 0,
+                    "templateMaxNesting": 0,
+                    "templateScopedSlotCount": 0,
                     "slotCount": 0,
                     "propDrillingEdgeCount": 0,
                     "globalStateReferenceCount": 0,
@@ -113,7 +109,7 @@ fn parser_effect_graphs_drive_global_and_hotspot_complexity() {
                     "reactiveCycleCount": 0
                 },
                 "dimensions": {
-                    "templateControlFlow": 1,
+                    "templateControlFlow": 0,
                     "slotUsage": 0,
                     "propDrilling": 0,
                     "globalState": 0,
@@ -121,7 +117,7 @@ fn parser_effect_graphs_drive_global_and_hotspot_complexity() {
                     "fallthroughAttrs": 0,
                     "reactiveGraph": 4
                 },
-                "totalScore": 5,
+                "totalScore": 4,
                 "dominantDimension": { "dimension": "reactive-graph", "score": 4 }
             }
         ])
@@ -164,12 +160,8 @@ const right = computed(() => left.value)
     assert_eq!(plain_result.complexity_report.input.reactive_node_count, 0);
     assert_eq!(plain_result.complexity_report.input.reactive_edge_count, 0);
     assert_eq!(plain_result.complexity_report.input.reactive_cycle_count, 0);
-    assert_eq!(
-        plain_result.complexity_hotspots[0]
-            .dimensions
-            .reactive_graph,
-        0
-    );
+    // No template, no reactive graph: nothing scores, so no hotspot.
+    assert!(plain_result.complexity_hotspots.is_empty());
 }
 
 #[test]
@@ -234,13 +226,11 @@ fn explicit_sfc_effect_summary_drives_complexity_and_replaces_previous_value() {
             "componentName": "Explicit",
             "input": {
                 "componentCount": 1,
-                "templateIfCount": 0,
-                "templateForCount": 0,
-                "templateLogicalOperatorCount": 0,
-                "componentTreeVIfMaxDepth": 0,
-                "componentTreeVForMaxDepth": 0,
-                "componentTreeScopedSlotMaxDepth": 0,
-                "componentTreeTemplateNestingScore": 0,
+                "templateCyclomatic": 1,
+                "templateCognitive": 0,
+                "templateUnknown": 0,
+                "templateMaxNesting": 0,
+                "templateScopedSlotCount": 0,
                 "slotCount": 0,
                 "propDrillingEdgeCount": 0,
                 "globalStateReferenceCount": 0,

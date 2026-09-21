@@ -17,10 +17,3 @@ pub(super) fn fallthrough_risk_count(result: &CrossFileResult) -> usize {
         .filter(|info| info.has_potential_issues())
         .count()
 }
-
-pub(super) fn logical_operator_count(content: &str) -> usize {
-    content
-        .matches("&&")
-        .count()
-        .saturating_add(content.matches("||").count())
-}

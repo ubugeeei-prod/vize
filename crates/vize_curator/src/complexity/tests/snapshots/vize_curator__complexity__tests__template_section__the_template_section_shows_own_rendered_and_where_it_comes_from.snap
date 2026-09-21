@@ -1,0 +1,13 @@
+---
+source: crates/vize_curator/src/complexity/tests/template_section.rs
+expression: section
+---
+
+
+Own: the component's template alone. Rendered: own plus every distinct component it renders, recursion counted once. Own scores above cyclomatic 11 or cognitive 16 exceed the corpus p95.
+
+| Component | Own cyclomatic | Own cognitive | Rendered cyclomatic | Rendered cognitive | Renders | Where it comes from |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Dashboard.vue (over threshold) | 11 | 21 | 18 | 27 | 2 | `v-for` L15:29 +3, `v-if` L16:22 +4, `conditional` L16:52 +5 |
+| DataTable.vue | 4 | 4 | 4 | 4 | 0 | `v-for` L7:23 +1, `v-for` L8:28 +2, `logical` L9:58 +1 |
+| StatusBadge.vue | 3 | 2 | 3 | 2 | 0 | `conditional` L6:17 +1, `conditional` L6:43 +1 |

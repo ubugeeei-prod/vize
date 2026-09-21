@@ -26,6 +26,8 @@ pub struct CrossFileAnalyzer {
     graph: DependencyGraph,
     /// Parser-built local reactive effect summaries by file.
     effect_graph_summaries: FxHashMap<FileId, EffectGraphSummary>,
+    /// Own template complexity facts of each SFC (S2 `template-complexity`).
+    pub(crate) template_complexity: crate::rules::TemplateFacts,
     /// Single-file analyzer options.
     single_file_options: AnalyzerOptions,
 }

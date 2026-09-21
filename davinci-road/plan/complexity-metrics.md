@@ -119,6 +119,38 @@ reachable in the render tree, strongly connected components collapsed so a
 recursive component counts once — is the cross-file number and drives Doctor
 hotspots.
 
+The render tree follows the analyzer's component-usage edges, which resolve
+each tag through the importing file's own bindings first (so an aliased import
+reaches the imported file). Reachability is a set: a child rendered from two
+branches or two parents counts once per root, and a component that reaches
+itself (directly or through mutual recursion) is marked `recursive` and adds
+nothing further.
+
+### Rendered distribution and the Doctor hotspot threshold
+
+Measured 2026-09-22 over the same full corpus, one analyzer per submodule (142
+projects with `.vue` files, 40,724 components, 70,700 render edges, 695
+recursive components). The run also checks two laws on every component:
+rendered ≥ own (equal when nothing is rendered), and rendered never shrinks
+from a child to its parent.
+
+| metric              |      n | p50 | p90 | p95 | p99 |   max |
+| ------------------- | -----: | --: | --: | --: | --: | ----: |
+| rendered cyclomatic | 40,724 |   4 |  52 | 106 | 355 |  6814 |
+| rendered cognitive  | 40,724 |   2 |  60 | 139 | 526 | 13778 |
+| rendered components | 40,724 |   1 |  12 |  24 |  56 |   371 |
+
+```sh
+VIZE_DAVINCI_RENDERED_CORPUS=tests/_fixtures/_git \
+  cargo test -p vize_curator --lib the_rendered_distribution_over_a_corpus_obeys_its_laws \
+  -- --nocapture
+```
+
+**Doctor hotspot, pinned at the recorded p95:** a component whose rendered
+cyclomatic complexity exceeds 106 or whose rendered cognitive complexity
+exceeds 139 gets one `VIZE_DOCTOR_TEMPLATE_COMPLEXITY_HOTSPOT` notice
+(maintainability). Its invalidation inputs are every file in the render tree.
+
 ## Amendments to the recommendation
 
 1. **Scoped slots nest; they do not count.** A scoped-slot body is a render

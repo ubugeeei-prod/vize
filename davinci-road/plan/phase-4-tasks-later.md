@@ -199,8 +199,8 @@
 
 **Steps:**
 
-- [ ] Rule in lane G's own file `crates/vize_patina/src/rules/facts/max_template_complexity.rs`, registered by one line; Doctor and `crates/vize_curator/src/complexity.rs` render facts
-- [ ] Fixtures: a recursive component, a child shared by two parents, an aliased import
+- [x] Rule in lane G's own file `crates/vize_patina/src/rules/facts/max_template_complexity.rs`, registered by one line; Doctor and `crates/vize_curator/src/complexity.rs` render facts
+- [x] Fixtures: a recursive component, a child shared by two parents, an aliased import
 
 **Acceptance:** TS-9 rule fixtures exact; Doctor snapshot churn documented in the PR (analysis surface, charter #23); `grep -rn "logical_operator_count" crates` empty; TS-35; TS-12.
 
@@ -208,4 +208,4 @@
 
 **Non-goals:** error severity for complexity; project-wide bands beyond the existing report.
 
-**Progress 2026-09-22:** slice 1 landed `vue/max-template-complexity` (own complexity, opinionated preset, exact diagnostics with labelled contributors); rendered complexity, the Doctor finding and the facts-fed `ComplexityInput` are open — see the [P4-9b record](./phase-4-records/p4-9b.md).
+**Progress 2026-09-22:** both steps landed. The `vue/max-template-complexity` rule judges own complexity. Rendered complexity counts each component in the render tree once (shared children once, recursion once). The Doctor hotspot fires at the rendered p95 (cyclomatic > 106 or cognitive > 139). The curator shows a per-component breakdown, and `ComplexityInput` is fed from the facts. Still open: TS-35 on the P4-1a fact API, and the P4-3b and P4-6a dependencies. See the [P4-9b record](./phase-4-records/p4-9b.md).

@@ -10,7 +10,7 @@ use vize_croquis_cf::{
     CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,
     DiagnosticSeverity, FileId,
 };
-use vize_curator::complexity::render_complexity_markdown;
+use vize_curator::complexity::render_cross_file_complexity;
 use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
 use vize_s0::{CompactString, FxHashMap, String, ToCompactString, cstr};
 
@@ -142,12 +142,8 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
                 .map(|tree| tree.to_markdown(analyzer.registry()))
         })
         .flatten();
-    let complexity_report = include_complexity.then(|| {
-        render_complexity_markdown(
-            &cross_file_result.complexity_report,
-            &cross_file_result.complexity_hotspots,
-        )
-    });
+    let complexity_report =
+        include_complexity.then(|| render_cross_file_complexity(&cross_file_result));
 
     CrossFileLintOutput {
         results,
@@ -283,7 +279,8 @@ defineProps<{ item: { count: number } }>()
         assert!(report.contains("## Cross-file Complexity"));
         assert!(report.contains("App.vue"));
         assert!(report.contains("template-control-flow"));
-        assert!(report.contains("v-if=2"));
+        assert!(report.contains("template cyclomatic=4"));
+        assert!(report.contains("### Template Complexity"));
         assert!(report.contains("prop edges=2"));
     }
 

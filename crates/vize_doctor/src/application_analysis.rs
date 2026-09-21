@@ -4,6 +4,7 @@
 //! graph without reparsing source. Adapters preserve authored spans, related
 //! files, stable source diagnostic identities, and invalidation inputs.
 
+mod complexity;
 mod profile;
 
 use std::{
@@ -20,6 +21,11 @@ use crate::{
 };
 
 use self::profile::{failure_scenario, profile_for};
+
+pub use self::complexity::{
+    RENDERED_COGNITIVE_HOTSPOT_ABOVE, RENDERED_CYCLOMATIC_HOTSPOT_ABOVE,
+    TEMPLATE_COMPLEXITY_HOTSPOT,
+};
 
 const SOURCE_DIAGNOSTIC_UNAVAILABLE_FIX_REASON: &str =
     "No automatic fix is available because the source diagnostic did not provide a suggestion.";
@@ -87,11 +93,13 @@ pub fn findings_from_application_graph(
     analyzer: &CrossFileAnalyzer,
     result: &CrossFileResult,
 ) -> Result<Vec<DoctorFinding>, ApplicationAnalysisError> {
-    result
+    let mut findings = result
         .diagnostics
         .iter()
         .map(|diagnostic| adapt_diagnostic(analyzer, diagnostic))
-        .collect()
+        .collect::<Result<Vec<_>, _>>()?;
+    findings.extend(complexity::complexity_findings(analyzer, result));
+    Ok(findings)
 }
 
 /// Builds a scored report directly from an existing whole-project analysis.

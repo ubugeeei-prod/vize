@@ -1,33 +1,27 @@
-use super::complexity::{summarize_complexity, summarize_complexity_with_effects};
+use super::complexity::summarize_complexity;
 use super::{
     ComplexityBand, ComplexityDimension, ComplexityInput, ComplexityReport, FallthroughInfo,
     FallthroughSummary, ProvideInjectTreeSummary, ReactivityIssue, ReactivityIssueKind,
     summarize_complexity_with_effect_graphs,
 };
 use crate::analyzer::CrossFileResult;
-use crate::graph::{DependencyEdge, DependencyGraph};
 use crate::registry::ModuleRegistry;
 use vize_carton::{CompactString, FxHashSet, smallvec};
-use vize_croquis::croquis::{
-    ComponentUsage, EventListener, PassedProp, SlotUsage, TemplateExpression,
-    TemplateExpressionKind,
-};
-use vize_croquis::{Croquis, EffectGraphSummary, ScopeId, VSlotScopeData};
+use vize_croquis::croquis::{ComponentUsage, EventListener, PassedProp, SlotUsage};
+use vize_croquis::{Croquis, EffectGraphSummary, ScopeId};
 
-mod helpers;
-use helpers::{component_node, v_for_data};
+pub(crate) mod helpers;
+use helpers::template_facts;
 
 #[test]
 fn scores_each_complexity_dimension() {
     let report = ComplexityReport::from_input(ComplexityInput {
         component_count: 1,
-        template_if_count: 2,
-        template_for_count: 1,
-        template_logical_operator_count: 2,
-        component_tree_v_if_max_depth: 3,
-        component_tree_v_for_max_depth: 2,
-        component_tree_scoped_slot_max_depth: 3,
-        component_tree_template_nesting_score: 9,
+        template_cyclomatic: 6,
+        template_cognitive: 9,
+        template_unknown: 1,
+        template_max_nesting: 3,
+        template_scoped_slot_count: 4,
         slot_count: 3,
         prop_drilling_edge_count: 2,
         global_state_reference_count: 4,
@@ -51,7 +45,8 @@ fn scores_each_complexity_dimension() {
     assert_eq!(report.total_score, 96);
     assert_eq!(report.band, ComplexityBand::Extreme);
     let json = serde_json::to_value(report).expect("complexity report should serialize");
-    assert_eq!(json["input"]["templateIfCount"], 2);
+    assert_eq!(json["input"]["templateCyclomatic"], 6);
+    assert_eq!(json["input"]["templateScopedSlotCount"], 4);
     assert_eq!(json["input"]["provideInjectFanoutCount"], 4);
     assert_eq!(json["input"]["fallthroughRiskCount"], 2);
     assert_eq!(json["dimensions"]["reactiveGraph"], 30);
@@ -77,26 +72,6 @@ fn dominant_dimension_is_none_for_zero_score() {
 #[test]
 fn summarizes_complexity_from_registry_and_result() {
     let mut analysis = Croquis::new();
-    analysis.template_expressions.push(TemplateExpression {
-        content: CompactString::new("ready && active"),
-        kind: TemplateExpressionKind::VIf,
-        start: 0,
-        end: 5,
-        scope_id: ScopeId::ROOT,
-        vif_guard: None,
-    });
-    analysis.scopes.enter_v_for_scope(
-        vize_croquis::VForScopeData {
-            value_alias: CompactString::new("item"),
-            value_bindings: smallvec![CompactString::new("item")],
-            key_alias: None,
-            index_alias: None,
-            source: CompactString::new("items"),
-            key_expression: None,
-        },
-        6,
-        20,
-    );
     analysis.component_usages.push(ComponentUsage {
         name: CompactString::new("Child"),
         start: 21,
@@ -183,13 +158,22 @@ fn summarizes_complexity_from_registry_and_result() {
             ..EffectGraphSummary::default()
         },
     )]);
-    let report = summarize_complexity_with_effects(&registry, &effect_graphs, &result);
+    // `v-if` (+1/+1), its `&&` (+1/+1), the nested `v-for` (+1/+2):
+    // cyclomatic 1 + 3, cognitive 4.
+    let templates = vize_carton::FxHashMap::from_iter([(
+        file_id,
+        template_facts(
+            r#"<div v-if="ready && active"><li v-for="item in items">{{ item }}</li></div>"#,
+        ),
+    )]);
+    let report =
+        summarize_complexity_with_effect_graphs(&registry, &templates, &effect_graphs, &result);
 
-    assert_eq!(report.input.template_if_count, 1);
-    assert_eq!(report.input.template_for_count, 1);
-    assert_eq!(report.input.template_logical_operator_count, 1);
+    assert_eq!(report.input.template_cyclomatic, 4);
+    assert_eq!(report.input.template_cognitive, 4);
+    assert_eq!(report.input.template_max_nesting, 2);
     assert_eq!(report.cyclomatic_score, 4);
-    assert_eq!(report.cognitive_score, 0);
+    assert_eq!(report.cognitive_score, 4);
     assert_eq!(report.input.slot_count, 1);
     assert_eq!(report.input.prop_drilling_edge_count, 1);
     assert_eq!(report.input.global_state_reference_count, 1);
@@ -199,7 +183,7 @@ fn summarizes_complexity_from_registry_and_result() {
     assert_eq!(report.input.fallthrough_risk_count, 1);
     assert_eq!(report.input.reactive_node_count, 1);
     assert_eq!(report.input.reactive_edge_count, 1);
-    assert_eq!(report.total_score, 27);
+    assert_eq!(report.total_score, 31);
     assert_eq!(report.band, ComplexityBand::Moderate);
 }
 
@@ -249,84 +233,6 @@ fn summarizes_fallthrough_risk_from_infos_when_summary_is_absent() {
 
     assert_eq!(report.input.fallthrough_risk_count, 1);
     assert_eq!(report.dimensions.fallthrough_attrs, 4);
-}
-
-#[test]
-fn summarizes_component_tree_template_nesting() {
-    let mut parent = Croquis::new();
-    let parent_loop = parent
-        .scopes
-        .enter_v_for_scope(v_for_data("row", "rows"), 0, 20);
-    parent.component_usages.push(ComponentUsage {
-        name: CompactString::new("Child"),
-        start: 21,
-        end: 60,
-        props: smallvec![],
-        events: smallvec![],
-        slots: smallvec![SlotUsage {
-            name: CompactString::new("default"),
-            name_is_dynamic: false,
-            scope_vars: smallvec![CompactString::new("slotProps")],
-            start: 35,
-            end: 55,
-            has_scope: true,
-        }],
-        has_spread_attrs: false,
-        spread_props: smallvec![],
-        scope_id: parent_loop,
-        vif_guard: Some(CompactString::new("ready")),
-    });
-
-    let mut child = Croquis::new();
-    child.template_expressions.push(TemplateExpression {
-        content: CompactString::new("expanded"),
-        kind: TemplateExpressionKind::VIf,
-        start: 0,
-        end: 8,
-        scope_id: ScopeId::ROOT,
-        vif_guard: None,
-    });
-    child
-        .scopes
-        .enter_v_for_scope(v_for_data("item", "items"), 9, 30);
-    child.scopes.exit_scope();
-    child.scopes.enter_v_slot_scope(
-        VSlotScopeData {
-            name: CompactString::new("default"),
-            props_pattern: None,
-            prop_names: smallvec![CompactString::new("item")],
-            component: Some(CompactString::new("GrandChild")),
-        },
-        31,
-        50,
-    );
-
-    let mut registry = ModuleRegistry::new();
-    let (parent_id, _) = registry.register("Parent.vue", "", parent);
-    let (child_id, _) = registry.register("Child.vue", "", child);
-    let mut graph = DependencyGraph::new();
-    graph.add_node(component_node(parent_id, "Parent.vue", "Parent"));
-    graph.add_node(component_node(child_id, "Child.vue", "Child"));
-    graph.add_edge(parent_id, child_id, DependencyEdge::ComponentUsage);
-
-    let report = summarize_complexity_with_effect_graphs(
-        &registry,
-        &graph,
-        &vize_carton::FxHashMap::default(),
-        &CrossFileResult::default(),
-    );
-
-    assert_eq!(report.input.template_if_count, 1);
-    assert_eq!(report.input.template_for_count, 2);
-    assert_eq!(report.input.slot_count, 1);
-    assert_eq!(report.input.component_tree_v_if_max_depth, 2);
-    assert_eq!(report.input.component_tree_v_for_max_depth, 2);
-    assert_eq!(report.input.component_tree_scoped_slot_max_depth, 2);
-    assert_eq!(report.input.component_tree_template_nesting_score, 17);
-    assert_eq!(report.cyclomatic_score, 5);
-    assert_eq!(report.cognitive_score, 17);
-    assert_eq!(report.dimensions.template_control_flow, 22);
-    assert_eq!(report.dimensions.slot_usage, 6);
 }
 
 #[test]

@@ -1,17 +1,28 @@
 //! Cross-file complexity report rendering.
 
+mod template;
 #[cfg(test)]
 mod tests;
 
 use vize_croquis_cf::{
     ComplexityBand, ComplexityDimension, ComplexityDimensionBreakdown, ComplexityHotspot,
-    ComplexityInput, ComplexityReport,
+    ComplexityInput, ComplexityReport, ComponentComplexity, CrossFileResult,
 };
 use vize_s0::{String, appendln, appends};
+
+/// Render every complexity product of a cross-file analysis.
+pub fn render_cross_file_complexity(result: &CrossFileResult) -> String {
+    render_complexity_markdown(
+        &result.complexity_report,
+        &result.complexity_hotspots,
+        &result.template_complexity,
+    )
+}
 
 pub fn render_complexity_markdown(
     report: &ComplexityReport,
     hotspots: &[ComplexityHotspot],
+    templates: &[ComponentComplexity],
 ) -> String {
     let mut out = String::default();
 
@@ -32,6 +43,8 @@ pub fn render_complexity_markdown(
     for dimension in report.dimensions.breakdown() {
         append_dimension_row(&mut out, dimension);
     }
+
+    template::append_template_section(&mut out, templates);
 
     appendln!(out);
     appendln!(out, "### Top Hotspots");
@@ -110,27 +123,16 @@ fn hotspot_reason(hotspot: &ComplexityHotspot) -> String {
 
 fn input_drivers(input: ComplexityInput) -> String {
     let mut drivers = String::default();
-    push_driver(&mut drivers, "v-if", input.template_if_count);
-    push_driver(&mut drivers, "v-for", input.template_for_count);
     push_driver(
         &mut drivers,
-        "logical ops",
-        input.template_logical_operator_count,
+        "template cyclomatic",
+        input.template_cyclomatic,
     );
+    push_driver(&mut drivers, "template cognitive", input.template_cognitive);
     push_driver(
         &mut drivers,
-        "tree if depth",
-        input.component_tree_v_if_max_depth,
-    );
-    push_driver(
-        &mut drivers,
-        "tree for depth",
-        input.component_tree_v_for_max_depth,
-    );
-    push_driver(
-        &mut drivers,
-        "scoped slot depth",
-        input.component_tree_scoped_slot_max_depth,
+        "scoped slots",
+        input.template_scoped_slot_count,
     );
     push_driver(&mut drivers, "slots", input.slot_count);
     push_driver(&mut drivers, "prop edges", input.prop_drilling_edge_count);
@@ -175,7 +177,7 @@ fn push_driver(drivers: &mut String, label: &'static str, value: usize) {
     appends!(drivers, label, "=", @value);
 }
 
-fn escape_table_cell(value: &str) -> String {
+pub(super) fn escape_table_cell(value: &str) -> String {
     let mut escaped = String::default();
     for ch in value.chars() {
         match ch {

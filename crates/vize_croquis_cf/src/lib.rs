@@ -72,11 +72,12 @@ pub use suppression::{SuppressionDirective, SuppressionError, SuppressionMap};
 
 // Re-export rule result types
 pub use rules::{
-    BoundaryInfo, BoundaryKind, ComplexityBand, ComplexityDimension, ComplexityDimensionBreakdown,
-    ComplexityDimensionScores, ComplexityHotspot, ComplexityInput, ComplexityReport, EmitFlow,
-    EventBubble, FallthroughComponentFact, FallthroughInfo, FallthroughSummary,
-    FallthroughUsageAttrFact, FallthroughUsageAttrKind, FallthroughUsageFact, PropsValidationIssue,
-    PropsValidationIssueKind, ProvideInjectMatch, ProvideInjectTreeSummary, ReactivityIssue,
-    ReactivityIssueKind, UniqueIdIssue, band_for_score, collect_fallthrough_component_facts,
-    collect_fallthrough_usage_facts,
+    BoundaryInfo, BoundaryKind, ComplexityBand, ComplexityContributor, ComplexityDimension,
+    ComplexityDimensionBreakdown, ComplexityDimensionScores, ComplexityHotspot, ComplexityInput,
+    ComplexityReport, ComponentComplexity, EmitFlow, EventBubble, FallthroughComponentFact,
+    FallthroughInfo, FallthroughSummary, FallthroughUsageAttrFact, FallthroughUsageAttrKind,
+    FallthroughUsageFact, PropsValidationIssue, PropsValidationIssueKind, ProvideInjectMatch,
+    ProvideInjectTreeSummary, ReactivityIssue, ReactivityIssueKind, TEMPLATE_COGNITIVE_WARN_ABOVE,
+    TEMPLATE_CYCLOMATIC_WARN_ABOVE, TemplateComplexity, TemplateScores, UniqueIdIssue,
+    band_for_score, collect_fallthrough_component_facts, collect_fallthrough_usage_facts,
 };

@@ -1,32 +1,50 @@
 //! Cross-file complexity scoring.
+//!
+//! The template-control-flow dimension is fed by the S2
+//! `template-complexity` facts (Davinci P4-9a/P4-9b, [`template`]): own
+//! cyclomatic and cognitive complexity per component, summed over the
+//! components in scope. Nothing here scans expression text.
 
 mod counts;
 mod hotspots;
-mod nesting;
+mod record;
+mod rendered;
+mod template;
 
-use counts::{add_count, fallthrough_risk_count, logical_operator_count};
+use counts::{add_count, fallthrough_risk_count};
 
 use crate::analyzer::CrossFileResult;
-use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
 use crate::rules::cross_file_reactivity::CrossFileReactivityIssueKind;
 use vize_carton::FxHashMap;
-use vize_croquis::{EffectGraphSummary, ScopeKind, TemplateExpressionKind};
+use vize_croquis::EffectGraphSummary;
 
 pub use hotspots::ComplexityHotspot;
 pub(crate) use hotspots::summarize_complexity_hotspots_with_effect_graphs;
+pub use rendered::ComponentComplexity;
+pub(crate) use rendered::summarize_template_complexity;
+pub use template::{
+    ComplexityContributor, TEMPLATE_COGNITIVE_WARN_ABOVE, TEMPLATE_CYCLOMATIC_WARN_ABOVE,
+    TemplateComplexity, TemplateScores,
+};
+
+/// Own template facts by file, recorded as files are added.
+pub(crate) type TemplateFacts = FxHashMap<FileId, TemplateComplexity>;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ComplexityInput {
     pub component_count: usize,
-    pub template_if_count: usize,
-    pub template_for_count: usize,
-    pub template_logical_operator_count: usize,
-    pub component_tree_v_if_max_depth: usize,
-    pub component_tree_v_for_max_depth: usize,
-    pub component_tree_scoped_slot_max_depth: usize,
-    pub component_tree_template_nesting_score: usize,
+    /// Σ own template cyclomatic complexity (S2 facts).
+    pub template_cyclomatic: usize,
+    /// Σ own template cognitive complexity (S2 facts).
+    pub template_cognitive: usize,
+    /// Evaluated template positions without a retained expression AST.
+    pub template_unknown: usize,
+    /// Deepest template nesting reached by one component.
+    pub template_max_nesting: usize,
+    /// Scoped-slot regions across the templates.
+    pub template_scoped_slot_count: usize,
     pub slot_count: usize,
     pub prop_drilling_edge_count: usize,
     pub global_state_reference_count: usize,
@@ -150,10 +168,8 @@ impl ComplexityReport {
         let cognitive_score = cognitive_score(input);
         let dimensions = ComplexityDimensionScores {
             template_control_flow: cyclomatic_score.saturating_add(cognitive_score),
-            slot_usage: weighted(input.slot_count, 2).saturating_add(weighted(
-                input.component_tree_scoped_slot_max_depth.saturating_sub(1),
-                4,
-            )),
+            slot_usage: weighted(input.slot_count, 2)
+                .saturating_add(weighted(input.template_scoped_slot_count, 2)),
             prop_drilling: weighted(input.prop_drilling_edge_count, 3),
             global_state: weighted(input.global_state_reference_count, 2),
             provide_inject: weighted(input.provide_inject_max_depth.saturating_sub(1), 2)
@@ -193,37 +209,53 @@ pub fn band_for_score(score: u32) -> ComplexityBand {
     }
 }
 
-/// Summarize complexity from the analyzer's existing cross-file facts.
+/// Summarize complexity without template facts or effect graphs.
 #[cfg(test)]
 pub(super) fn summarize_complexity(
     registry: &ModuleRegistry,
     result: &CrossFileResult,
 ) -> ComplexityReport {
-    ComplexityReport::from_input(complexity_input(registry, &FxHashMap::default(), result))
+    summarize_complexity_with_effect_graphs(
+        registry,
+        &TemplateFacts::default(),
+        &FxHashMap::default(),
+        result,
+    )
 }
 
-#[cfg(test)]
-pub(super) fn summarize_complexity_with_effects(
-    registry: &ModuleRegistry,
-    effect_graphs: &FxHashMap<FileId, EffectGraphSummary>,
-    result: &CrossFileResult,
-) -> ComplexityReport {
-    ComplexityReport::from_input(complexity_input(registry, effect_graphs, result))
-}
-
+/// Summarize complexity from the analyzer's cross-file facts.
 pub(crate) fn summarize_complexity_with_effect_graphs(
     registry: &ModuleRegistry,
-    graph: &DependencyGraph,
+    templates: &TemplateFacts,
     effect_graphs: &FxHashMap<FileId, EffectGraphSummary>,
     result: &CrossFileResult,
 ) -> ComplexityReport {
-    let mut input = complexity_input(registry, effect_graphs, result);
-    nesting::add_component_tree_template_nesting(&mut input, registry, graph);
-    ComplexityReport::from_input(input)
+    ComplexityReport::from_input(complexity_input(registry, templates, effect_graphs, result))
+}
+
+/// Add one component's own template facts to an input.
+pub(super) fn add_template_facts(input: &mut ComplexityInput, template: &TemplateComplexity) {
+    add_count(
+        &mut input.template_cyclomatic,
+        template.own.cyclomatic as usize,
+    );
+    add_count(
+        &mut input.template_cognitive,
+        template.own.cognitive as usize,
+    );
+    add_count(&mut input.template_unknown, template.unknown as usize);
+    add_count(
+        &mut input.template_scoped_slot_count,
+        template.scoped_slots as usize,
+    );
+    input.template_max_nesting = input
+        .template_max_nesting
+        .max(template.max_nesting as usize);
 }
 
 fn complexity_input(
     registry: &ModuleRegistry,
+    templates: &TemplateFacts,
     effect_graphs: &FxHashMap<FileId, EffectGraphSummary>,
     result: &CrossFileResult,
 ) -> ComplexityInput {
@@ -269,32 +301,9 @@ fn complexity_input(
     for entry in registry.vue_components() {
         let analysis = &entry.analysis;
         add_count(&mut input.component_count, 1);
-
-        add_count(
-            &mut input.template_if_count,
-            analysis
-                .template_expressions
-                .iter()
-                .filter(|expr| expr.kind == TemplateExpressionKind::VIf)
-                .count(),
-        );
-        add_count(
-            &mut input.template_logical_operator_count,
-            analysis
-                .template_expressions
-                .iter()
-                .filter(|expr| expr.kind == TemplateExpressionKind::VIf)
-                .map(|expr| logical_operator_count(expr.content.as_str()))
-                .fold(0usize, usize::saturating_add),
-        );
-        add_count(
-            &mut input.template_for_count,
-            analysis
-                .scopes
-                .iter()
-                .filter(|scope| scope.kind == ScopeKind::VFor)
-                .count(),
-        );
+        if let Some(template) = templates.get(&entry.id) {
+            add_template_facts(&mut input, template);
+        }
         add_count(&mut input.slot_count, analysis.macros.slots().len());
         add_count(
             &mut input.slot_count,
@@ -332,16 +341,9 @@ fn provide_inject_fanout_score(count: usize) -> u32 {
 }
 
 fn cyclomatic_score(input: ComplexityInput) -> u32 {
-    weighted(
-        input
-            .component_count
-            .saturating_add(input.template_if_count)
-            .saturating_add(input.template_for_count)
-            .saturating_add(input.template_logical_operator_count),
-        1,
-    )
+    weighted(input.template_cyclomatic, 1)
 }
 
 fn cognitive_score(input: ComplexityInput) -> u32 {
-    weighted(input.component_tree_template_nesting_score, 1)
+    weighted(input.template_cognitive, 1)
 }
