@@ -182,7 +182,7 @@ fn generic_graph_verification_does_not_imply_backend_admission() {
 fn unsupported_source_semantics_have_explicit_legacy_routes() {
     let allocator = Allocator::new();
     for source in [
-        "<Comp />",
+        "<component :is=\"view\" />",
         "<template v-if=\"ok\"><div /><div /></template>",
         "<div v-for=\"x in (xs as any)\" />",
         "<div>{{ one as number }}</div>",
@@ -201,8 +201,8 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<table><tr><td>{{ value }}</td></tr></table>",
         "<div>&#10; text</div>",
         "<div title=\"&quot;\" />",
-        "{{ value }}",
-        "<div /><div />",
+        "<Comp v-slot=\"p\">{{ p }}</Comp>",
+        "<Teleport to=\"body\"><div /></Teleport>",
         "<div v-bind=\"props\" />",
         "<pre> text </pre>",
     ] {
@@ -301,3 +301,4 @@ fn empty_static_text_cannot_shift_materialized_child_addresses() {
 mod control;
 
 mod attributes;
+mod components;

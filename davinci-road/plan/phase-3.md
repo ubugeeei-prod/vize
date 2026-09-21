@@ -123,6 +123,10 @@ _Expression slice 2026-09-22:_ compound props, text, handlers, conditions,
 sources and keys consume S2's retained ASTs (moved, not reparsed); `v-show`,
 `v-html`, `v-text`, static-class merging and unprefixed binding metadata (the
 SFC path) are native, with zero legacy walks and reparses.
+_Component slice 2026-09-22:_ ordinary components with props, listeners and
+default slots, `<slot>` outlets with fallbacks, and root fragments/text are
+native; mounted traces register child components per backend and lane. Named
+and scoped slots, dynamic and built-in components stay `legacy.component`.
 
 **P3-7 VDOM patch flags from facts.** `patch_flag.rs` inference replaced by
 lattice-fact consumption; flags become explicit S3 decisions (or S2→S4

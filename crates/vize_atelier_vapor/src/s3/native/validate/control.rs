@@ -144,9 +144,13 @@ pub(super) fn controlled_regions(
                 return Err(AdmissionFailure::Invalid("region parent cycle"));
             }
             path.push(id);
-            if owner
-                .is_some_and(|owner| matches!(kinds.get(&owner), Some(OpKind::If | OpKind::For)))
-            {
+            // Slot content and outlet fallbacks are partitioned as dynamic too.
+            if owner.is_some_and(|owner| {
+                matches!(
+                    kinds.get(&owner),
+                    Some(OpKind::If | OpKind::For | OpKind::CreateComponent | OpKind::SlotOutlet)
+                )
+            }) {
                 controlled = true;
                 break;
             }

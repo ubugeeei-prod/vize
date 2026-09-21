@@ -55,7 +55,15 @@ impl<'s, 'a> Retained<'s, 'a> {
                         retained.insert(each.binding.source);
                         pending.push(&each.region);
                     }
-                    Op::Component(_) | Op::Slot(_) | Op::Text(_) | Op::Comment(_) => {}
+                    Op::Component(component) => {
+                        retained.bindings(&component.bindings);
+                        pending.push(&component.children);
+                    }
+                    Op::Slot(slot) => {
+                        retained.bindings(&slot.bindings);
+                        pending.push(&slot.fallback);
+                    }
+                    Op::Text(_) | Op::Comment(_) => {}
                 }
             }
         }

@@ -39,6 +39,7 @@ pub(crate) enum LegacyReason {
     ExpressionOrEncoding,
     Structure,
     ControlFlow,
+    Component,
     Selected,
 }
 
@@ -53,6 +54,7 @@ impl LegacyReason {
             Self::ExpressionOrEncoding => "davinci.s3_vapor.legacy.expression_or_encoding",
             Self::Structure => "davinci.s3_vapor.legacy.structure",
             Self::ControlFlow => "davinci.s3_vapor.legacy.control_flow",
+            Self::Component => "davinci.s3_vapor.legacy.component",
             Self::Selected => "davinci.s3_vapor.legacy.selected",
         }
     }

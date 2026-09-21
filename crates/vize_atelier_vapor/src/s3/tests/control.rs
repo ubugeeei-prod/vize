@@ -97,7 +97,7 @@ fn unsupported_control_flow_selects_exact_legacy_reasons() {
             Binding,
         ),
         (r#"<ul><li><span><li>x</li></span></li></ul>"#, Structure),
-        (r#"<div v-if="a">A</div><span>B</span>"#, Structure),
+        (r#"<ul><li><b><li>y</li></b></li></ul>"#, Structure),
     ] {
         let allocator = Allocator::new();
         let status = lower_source_for_vapor(&allocator, source, options());

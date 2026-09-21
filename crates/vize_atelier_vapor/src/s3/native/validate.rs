@@ -2,6 +2,7 @@
 //! Indexes are built once; source order must agree with explicit S3 edges.
 
 mod attach;
+mod component;
 mod control;
 mod operands;
 mod order;
@@ -57,17 +58,26 @@ pub(super) fn admit<'a>(
                     ));
                 }
                 binding_order.entry(target).or_default().push(op.id);
-                bindings.push((target, op.region, binding));
+                bindings.push((target, op.region, op.span.start, binding));
                 continue;
             }
             OpKind::If => control::branches(values, retained)?,
             OpKind::For => control::for_loop(values, retained)?,
+            OpKind::CreateComponent => component::component(values)?,
+            // Slot-content bindings (named or scoped slots) share the op kind.
+            OpKind::SlotOutlet if values.iter().any(|value| value.role == Role::BindingKind) => {
+                return Err(LegacyReason::Component.into());
+            }
+            OpKind::SlotOutlet => component::outlet(values)?,
             _ => return Err(LegacyReason::Operation.into()),
         };
         // Everything inside a branch or loop body is partitioned as dynamic.
         let dynamic = match content {
             Content::Text { dynamic, .. } => dynamic,
-            Content::If { .. } | Content::For(_) => true,
+            Content::If { .. }
+            | Content::For(_)
+            | Content::Component { .. }
+            | Content::Outlet { .. } => true,
             Content::Element { .. } => false,
         } || controlled.contains(&op.region);
         if dynamic != op.effect.is_some() {
@@ -93,12 +103,9 @@ pub(super) fn admit<'a>(
         .flatten()
         .map(|id| indexes[id].0)
         .collect();
-    // Root text and multiple roots need separate template/fragment contracts.
-    if roots.len() != 1 || matches!(nodes[roots[0]].content, Content::Text { .. }) {
+    // The root fragment may hold several nodes, text included.
+    if roots.is_empty() {
         return Err(LegacyReason::Structure.into());
     }
-    Ok(NativeArtifact {
-        nodes,
-        root: roots[0],
-    })
+    Ok(NativeArtifact { nodes, roots })
 }

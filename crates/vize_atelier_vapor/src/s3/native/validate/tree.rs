@@ -59,6 +59,12 @@ pub(super) fn assemble(
                 }
                 body.ok_or(LegacyReason::ControlFlow)?;
             }
+            // Slot content and fallbacks are fragments rendered by their own block.
+            Content::Component { .. } | Content::Outlet { .. } => {
+                if !owners.insert(owner) {
+                    return Err(AdmissionFailure::Invalid("slot owner has several regions"));
+                }
+            }
             Content::Text { .. } => return Err(LegacyReason::Structure.into()),
         }
         for child in &children {
@@ -70,7 +76,9 @@ pub(super) fn assemble(
     }
     for (id, (index, _)) in indexes {
         match &nodes[*index].content {
-            Content::Element { .. } if !owners.contains(id) => {
+            Content::Element { .. } | Content::Component { .. } | Content::Outlet { .. }
+                if !owners.contains(id) =>
+            {
                 return Err(LegacyReason::Structure.into());
             }
             Content::For(_) if !owners.contains(id) => {

@@ -13,6 +13,7 @@ export async function traceMountedBackend({
   steps = [],
   identities = false,
   slots = null,
+  components = {},
 }) {
   assert.ok(backend === "vdom" || backend === "vapor", `unknown backend: ${backend}`);
   if (slots !== null) validateSuppliedSlots(slots);
@@ -76,6 +77,9 @@ export async function traceMountedBackend({
           })
       : { setup: () => () => render(state, cache) };
   const app = (backend === "vapor" ? vue.createVaporApp : vue.createApp)(component);
+  for (const [name, child] of Object.entries(components)) {
+    app.component(name, await childComponent(backend, vue, name, child));
+  }
   const diagnostics = [];
   app.config.warnHandler = (message) => diagnostics.push(message);
   app.config.errorHandler = (error) => diagnostics.push(String(error));
@@ -272,6 +276,39 @@ export function observeChildren(parent) {
     }
   }
   return children;
+}
+
+/**
+ * A child component compiled by the same backend and lane as its parent. The
+ * render context exposes props plus `$emit`/`$slots`, as compiled templates
+ * expect from a component instance.
+ */
+export async function childComponent(backend, vue, name, { code, props = [], emits = [] }) {
+  assert.ok(Array.isArray(props) && Array.isArray(emits), "child props/emits must be arrays");
+  const render = await evaluateCompiledRender(code, vue);
+  const context = (instanceProps, emit, slots) =>
+    new Proxy(instanceProps, {
+      get: (target, key) =>
+        key === "$emit" ? emit : key === "$slots" ? slots : Reflect.get(target, key),
+      has: (target, key) => key === "$emit" || key === "$slots" || Reflect.has(target, key),
+    });
+  if (backend === "vapor") {
+    return vue.defineVaporComponent({
+      name,
+      props,
+      emits,
+      setup: (instanceProps, { emit, slots }) => render(context(instanceProps, emit, slots)),
+    });
+  }
+  return {
+    name,
+    props,
+    emits,
+    setup: (instanceProps, { emit, slots }) => {
+      const cache = [];
+      return () => render(context(instanceProps, emit, slots), cache);
+    },
+  };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

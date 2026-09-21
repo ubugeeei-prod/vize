@@ -102,6 +102,10 @@ fn native_pair(criterion: &mut Criterion) {
             "<main class=\"shell\" :class=\"{ dense, [theme]: true }\"><button @click=\"count++\" :title=\"'n=' + count\">{{ count * 2 }} / {{ label.toUpperCase() }}</button><div v-show=\"open && ready\" v-text=\"items.map(i => i.name).join(', ')\"></div></main>",
         ),
         (
+            "components",
+            "<main><Counter :label=\"title\" :step=\"2\" @bump=\"total += $event\"><b>{{ total }}</b></Counter><slot name=\"aside\" :n=\"total\"><i>none</i></slot></main>",
+        ),
+        (
             "control_flow",
             "<main><section v-if=\"open\"><b>{{ title }}</b><span v-for=\"row in rows\" :key=\"row.id\" :title=\"row.title\">{{ row.label }}</span></section><i v-else>closed</i><ul><li v-for=\"(cell, i) in cells\" @click=\"save\">{{ i }}: {{ cell }}</li></ul></main>",
         ),

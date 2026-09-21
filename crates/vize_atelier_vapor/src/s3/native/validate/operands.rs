@@ -185,7 +185,16 @@ pub(super) fn js<'a>(retained: &Retained<'_, 'a>, operand: &Operand<'a>) -> Resu
         return Err(LegacyReason::ExpressionOrEncoding.into());
     }
     if reference(value.text) {
-        return Ok(Expr::plain(value.text.trim()));
+        // Direct references take the generator's simple-path fast path, but
+        // some sites (component handlers) classify the expression first; the
+        // retained AST, when S2 has one, keeps that classification parse-free.
+        return Ok(match retained.expression(value.text, value.span) {
+            Some(js) => Expr {
+                text: value.text,
+                js: Some(js),
+            },
+            None => Expr::plain(value.text.trim()),
+        });
     }
     // `$event`-rooted paths stay on the legacy lane (see the P3-6 record).
     let root = value.text.trim().split('.').next().unwrap_or_default();

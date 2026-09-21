@@ -1,0 +1,148 @@
+//! Elements and their template strings. Numbering follows upstream (as pinned
+//! by the published fixture corpus): component and outlet children are
+//! numbered before their parent element, which is numbered before its other
+//! dynamic descendants; those follow in document order.
+
+use vize_carton::{String, Vec, ensure_sufficient_stack};
+
+use super::super::Content;
+use super::{Emitter, escape};
+use crate::ir::{BlockIRNode, InsertNodeIRNode, OperationNode};
+
+impl<'a> Emitter<'a, '_> {
+    /// An element that starts a template.
+    pub(super) fn element(&mut self, index: usize, block: &mut BlockIRNode<'a>) {
+        let reserved = self.reserve(index);
+        let id = self.id();
+        let mut template = String::default();
+        self.node(index, Some(id), reserved, &mut template, block);
+        self.register(id, &template);
+        block.returns.push(id);
+    }
+
+    /// Ids for the element's component and outlet children, in order.
+    fn reserve(&mut self, index: usize) -> std::vec::Vec<usize> {
+        let count = self.artifact.nodes[index]
+            .children
+            .iter()
+            .filter(|child| {
+                matches!(
+                    self.artifact.nodes[**child].content,
+                    Content::Component { .. } | Content::Outlet { .. }
+                )
+            })
+            .count();
+        (0..count).map(|_| self.id()).collect()
+    }
+
+    fn node(
+        &mut self,
+        index: usize,
+        id: Option<usize>,
+        reserved: std::vec::Vec<usize>,
+        template: &mut String,
+        block: &mut BlockIRNode<'a>,
+    ) {
+        ensure_sufficient_stack(|| {
+            let Content::Element {
+                tag,
+                ref attributes,
+            } = self.artifact.nodes[index].content
+            else {
+                unreachable!("templates start at elements")
+            };
+            template.push('<');
+            template.push_str(tag);
+            if let Some(scope_id) = self.scope_id {
+                template.push(' ');
+                template.push_str(scope_id);
+            }
+            for (name, value) in attributes {
+                template.push(' ');
+                template.push_str(name);
+                if let Some(value) = value {
+                    template.push_str("=\"");
+                    escape(template, value);
+                    template.push('"');
+                }
+            }
+            template.push('>');
+            if let Some(id) = id {
+                self.bindings(index, id, block);
+            }
+            self.children(index, id, reserved, template, block);
+            if !vize_carton::is_void_tag(tag) {
+                template.push_str("</");
+                template.push_str(tag);
+                template.push('>');
+            }
+        });
+    }
+
+    fn children(
+        &mut self,
+        index: usize,
+        parent: Option<usize>,
+        reserved: std::vec::Vec<usize>,
+        template: &mut String,
+        block: &mut BlockIRNode<'a>,
+    ) {
+        let children = self.artifact.nodes[index].children.clone();
+        // Upstream's fast-remove flag clears the whole parent, so it is sound
+        // only when a loop is the parent's sole child.
+        let only_child = children.len() == 1;
+        let mut reserved = reserved.into_iter();
+        let mut cursor = 0;
+        let mut offset = 0;
+        while cursor < children.len() {
+            let child = children[cursor];
+            cursor += 1;
+            match self.artifact.nodes[child].content {
+                Content::Text { .. } => {
+                    cursor = self.text_run(&children, cursor - 1, parent, offset, template, block);
+                }
+                Content::Element { .. } => {
+                    let (id, nested) = if self.dynamic[child] {
+                        let parent = parent.expect("dynamic ancestry is materialized");
+                        let id = self.child(parent, offset, block);
+                        (Some(id), self.reserve(child))
+                    } else {
+                        (None, std::vec::Vec::new())
+                    };
+                    self.node(child, id, nested, template, block);
+                }
+                Content::If { .. } | Content::For(_) => {
+                    // The placeholder is the authored insertion position.
+                    template.push_str("<!---->");
+                    let parent = parent.expect("control-flow parent is materialized");
+                    let anchor = self.child(parent, offset, block);
+                    self.control(child, Some((parent, anchor, only_child)), block);
+                }
+                Content::Component { .. } => {
+                    template.push_str("<!---->");
+                    let parent = parent.expect("component parent is materialized");
+                    let id = reserved.next().expect("component numbered by its parent");
+                    let anchor = self.child(parent, offset, block);
+                    self.component(child, Some(id), Some((parent, anchor)), block);
+                }
+                Content::Outlet { .. } => {
+                    template.push_str("<!---->");
+                    let parent = parent.expect("outlet parent is materialized");
+                    let id = reserved.next().expect("outlet numbered by its parent");
+                    let anchor = self.child(parent, offset, block);
+                    self.outlet(child, id, block);
+                    let mut elements = Vec::new_in(&self.allocator);
+                    elements.push(id);
+                    block
+                        .operation
+                        .push(OperationNode::InsertNode(InsertNodeIRNode {
+                            elements,
+                            parent,
+                            anchor: Some(anchor),
+                        }));
+                }
+            }
+            offset += 1;
+        }
+    }
+}

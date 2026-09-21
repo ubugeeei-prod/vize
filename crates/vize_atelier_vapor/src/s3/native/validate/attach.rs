@@ -1,40 +1,63 @@
-//! Bindings attach to their native element once the tree is known: each
-//! name/family binds at most once, a loop body's `:key` moves to its loop, and
-//! a static `class` merges into its `:class` exactly as the retained lane does.
+//! Bindings attach to their native owner once the tree is known: each
+//! name/family binds at most once, a loop body's `:key` moves to its loop, a
+//! static `class` merges into its `:class` exactly as the retained lane does,
+//! and component/outlet bindings become props in authored order.
 
 use vize_carton::{FxHashMap, FxHashSet};
 use vize_s3::op::{OpId, RegionId};
 
-use super::super::{Binding, BindingKind, Content, Node};
-use super::Result;
+use super::super::{Binding, BindingKind, Content, Node, Prop};
+use super::{Result, component::component_prop};
 use crate::s3::{AdmissionFailure, LegacyReason};
+
+type Pending<'a> = (OpId, RegionId, u32, Binding<'a>);
 
 pub(super) fn bindings<'a>(
     nodes: &mut [Node<'a>],
     indexes: &FxHashMap<OpId, (usize, RegionId)>,
     parents: &[Option<usize>],
-    bindings: std::vec::Vec<(OpId, RegionId, Binding<'a>)>,
+    bindings: std::vec::Vec<Pending<'a>>,
 ) -> Result<()> {
     let mut names = FxHashSet::default();
     for (id, (index, _)) in indexes {
-        if let Content::Element { attributes, .. } = &nodes[*index].content {
-            names.extend(
-                attributes
-                    .iter()
-                    .map(|(name, _)| (*id, BindingKind::Prop, *name)),
-            );
-        }
+        let keys: std::vec::Vec<&str> = match &nodes[*index].content {
+            Content::Element { attributes, .. } => {
+                attributes.iter().map(|(name, _)| *name).collect()
+            }
+            Content::Component { props, .. } | Content::Outlet { props, .. } => {
+                props.iter().map(|prop| prop.key).collect()
+            }
+            _ => continue,
+        };
+        names.extend(keys.into_iter().map(|name| (*id, BindingKind::Prop, name)));
     }
-    for (target, region, mut binding) in bindings {
+    for (target, region, position, mut binding) in bindings {
         let Some(&(index, target_region)) = indexes.get(&target) else {
             return Err(LegacyReason::Structure.into());
         };
-        if !matches!(nodes[index].content, Content::Element { .. }) || region != target_region {
+        if region != target_region {
             return Err(AdmissionFailure::Invalid(
                 "binding target is outside its native region",
             ));
         }
-        if !names.insert((target, binding.kind, binding.name)) {
+        let fresh = names.insert((target, binding.kind, binding.name));
+        match &mut nodes[index].content {
+            Content::Element { .. } => {}
+            Content::Component { props, .. } => {
+                prop(props, binding, position, fresh, true)?;
+                continue;
+            }
+            Content::Outlet { props, .. } => {
+                prop(props, binding, position, fresh, false)?;
+                continue;
+            }
+            _ => {
+                return Err(AdmissionFailure::Invalid(
+                    "binding target is outside its native region",
+                ));
+            }
+        }
+        if !fresh {
             binding.merge = static_class(&mut nodes[index], &binding);
             if binding.merge.is_none() {
                 return Err(LegacyReason::Binding.into());
@@ -57,6 +80,41 @@ pub(super) fn bindings<'a>(
         }
         nodes[index].bindings.push(binding);
     }
+    for node in nodes.iter_mut() {
+        if let Content::Component { props, .. } | Content::Outlet { props, .. } = &mut node.content
+        {
+            props.sort_by_key(|prop| prop.position);
+        }
+    }
+    Ok(())
+}
+
+/// A component `:prop` or `@event`, or an outlet `:prop`. Repeated names merge
+/// only for `class`/`style`, which the shared generator normalizes together.
+fn prop<'a>(
+    props: &mut std::vec::Vec<Prop<'a>>,
+    binding: Binding<'a>,
+    position: u32,
+    fresh: bool,
+    component: bool,
+) -> Result<()> {
+    let handler = match binding.kind {
+        BindingKind::Prop => false,
+        BindingKind::Event if component && binding.modifiers.is_empty() => true,
+        _ => return Err(LegacyReason::Component.into()),
+    };
+    if !handler && !component_prop(binding.name)
+        || !fresh && !matches!(binding.name, "class" | "style")
+    {
+        return Err(LegacyReason::Component.into());
+    }
+    props.push(Prop {
+        key: binding.name,
+        value: Some(binding.value),
+        dynamic: true,
+        handler,
+        position,
+    });
     Ok(())
 }
 

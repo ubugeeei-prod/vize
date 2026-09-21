@@ -12,7 +12,14 @@ use crate::ir::{
 };
 
 impl<'a> Emitter<'a, '_> {
-    pub(super) fn binding(
+    /// Every binding of an element, in authored order.
+    pub(super) fn bindings(&mut self, index: usize, element: usize, block: &mut BlockIRNode<'a>) {
+        for binding in 0..self.artifact.nodes[index].bindings.len() {
+            self.binding(index, binding, element, block);
+        }
+    }
+
+    fn binding(
         &mut self,
         index: usize,
         binding: usize,

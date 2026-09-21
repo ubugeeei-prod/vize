@@ -13,7 +13,8 @@ use super::{AdmissionFailure, retained::Retained};
 #[derive(Debug)]
 pub(super) struct NativeArtifact<'a> {
     nodes: std::vec::Vec<Node<'a>>,
-    root: usize,
+    /// The template root fragment, in authored order.
+    roots: std::vec::Vec<usize>,
 }
 
 #[derive(Debug)]
@@ -37,6 +38,27 @@ enum Content<'a> {
     If { branches: std::vec::Vec<Branch<'a>> },
     /// One element-carried loop. `children` holds its single body element.
     For(Loop<'a>),
+    /// A resolved component; `children` is its default slot content.
+    Component {
+        tag: &'a str,
+        props: std::vec::Vec<Prop<'a>>,
+    },
+    /// A `<slot>` outlet; `children` is its fallback content.
+    Outlet {
+        name: &'a str,
+        props: std::vec::Vec<Prop<'a>>,
+    },
+}
+
+/// One component or outlet prop in authored order. Static attributes carry a
+/// literal (or no value), bindings an expression, listeners a handler key.
+#[derive(Debug, Clone, Copy)]
+struct Prop<'a> {
+    key: &'a str,
+    value: Option<Expr<'a>>,
+    dynamic: bool,
+    handler: bool,
+    position: u32,
 }
 
 #[derive(Debug)]
@@ -71,7 +93,7 @@ impl<'a> Expr<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct TextPart<'a> {
     value: Expr<'a>,
     dynamic: bool,

@@ -56,7 +56,7 @@ impl<'a> Emitter<'a, '_> {
                 let body = *body;
                 let root = self.artifact.nodes[index].children[0];
                 self.id();
-                let render = self.block(root);
+                let render = self.block(&[root]);
                 let alias = |value: Option<&'a str>| {
                     value.map(|value| self.expression(Expr::plain(value), false))
                 };
@@ -79,9 +79,7 @@ impl<'a> Emitter<'a, '_> {
                 };
                 OperationNode::For(Box::new_in(node, &self.allocator))
             }
-            Content::Element { .. } | Content::Text { .. } => {
-                unreachable!("control payload checked by the caller")
-            }
+            _ => unreachable!("control payload checked by the caller"),
         };
         block.operation.push(operation);
         id
@@ -98,7 +96,7 @@ impl<'a> Emitter<'a, '_> {
         let (condition, root) = branches[0];
         let condition = self.expression(condition.expect("validated leading condition"), false);
         self.id();
-        (condition, self.block(root))
+        (condition, self.block(&[root]))
     }
 
     /// Chained branches share the chain's placement. An inline `v-else-if`
@@ -112,7 +110,7 @@ impl<'a> Emitter<'a, '_> {
         ensure_sufficient_stack(|| match branches.first()? {
             (None, root) => {
                 self.id();
-                Some(NegativeBranch::Block(self.block(*root)))
+                Some(NegativeBranch::Block(self.block(&[*root])))
             }
             (Some(_), _) => {
                 let (condition, positive) = self.branch(branches);

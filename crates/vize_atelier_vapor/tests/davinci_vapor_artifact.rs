@@ -49,6 +49,18 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
         r#"<main><div data-id="card" class="card" :class="{ active: count > 1, [tone]: true }" :style="{ color: color }" :title="'n=' + count">{{ count * 2 }} / {{ label.toUpperCase() }}</div></main>"#,
         r#"<main><button data-id="inc" @click="count++">+</button><button data-id="add" @click="count = count + step">add</button><button data-id="rec" @click="record(label + ':' + count)">rec</button><button data-id="arrow" @click="() => record('arrow')">arrow</button><button data-id="evt" @click="record($event.type)">evt</button><span data-id="out">{{ count }}</span></main>"#,
         r#"<main><div v-show="visible && ready">shown</div><span v-text="message + '!'"></span><i v-html="markup"></i></main>"#,
+        // Components, slot outlets, root fragments and the mounted parents.
+        r#"<div><MyComp :foo="a" bar="b" @update="save">text {{ x }}</MyComp></div>"#,
+        r#"<MyComp>hello {{ name }}<b>x</b></MyComp>"#,
+        r#"<div><slot name="x" :item="it">fallback {{ y }}</slot><b>{{ z }}</b></div>"#,
+        r#"<b>{{ a }}</b><i :title="c">x</i><span>{{ a }}-{{ c }}</span>"#,
+        "{{ a }} and {{ c }}",
+        r#"<main data-id="root"><Counter :label="title" :step="2" @bump="total += $event"><b data-id="slot">{{ total }}</b></Counter><span data-id="out">{{ total }}</span></main>"#,
+        r#"<main><Frame :count="n"><b>body {{ n }}</b></Frame></main>"#,
+        r#"<section><slot name="head"><i>default head</i></slot><slot :n="count"><i>fallback {{ count }}</i></slot></section>"#,
+        r#"<ul><li v-for="item in items" :key="item.id"><Tag :label="item.label" /></li></ul>"#,
+        // The `vapor_native_pair/components` bench fixture.
+        r#"<main><Counter :label="title" :step="2" @bump="total += $event"><b>{{ total }}</b></Counter><slot name="aside" :n="total"><i>none</i></slot></main>"#,
         // The `vapor_native_pair/expressions` and `control_flow` bench fixtures.
         r#"<main class="shell" :class="{ dense, [theme]: true }"><button @click="count++" :title="'n=' + count">{{ count * 2 }} / {{ label.toUpperCase() }}</button><div v-show="open && ready" v-text="items.map(i => i.name).join(', ')"></div></main>"#,
         r#"<main><section v-if="open"><b>{{ title }}</b><span v-for="row in rows" :key="row.id" :title="row.title">{{ row.label }}</span></section><i v-else>closed</i><ul><li v-for="(cell, i) in cells" @click="save">{{ i }}: {{ cell }}</li></ul></main>"#,
