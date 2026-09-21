@@ -21,6 +21,10 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
         "@resolveStyleClassNames",
         "@resolveStyleImports",
         "@jsxSlots",
+        "@strictVModel",
+        "@vapor",
+        // The `vapor` attribute of `<script setup>` / `<template>`.
+        " vapor",
     ]
     .iter()
     .any(|option| source.contains(option))
@@ -43,7 +47,16 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
     let mut unknown_props = None;
     let mut unknown_components = None;
     let mut unknown_events = None;
+    let mut strict_v_model = None;
     for child in &root.children {
+        if let TemplateChildNode::Element(block) = child
+            && matches!(block.tag, "script" | "template")
+            && block.props.iter().any(|prop| {
+                matches!(prop, vize_relief::PropNode::Attribute(attribute) if attribute.name == "vapor")
+            })
+        {
+            options.vapor = true;
+        }
         let TemplateChildNode::Comment(comment) = child else {
             continue;
         };
@@ -64,6 +77,8 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
             "checkUnknownProps" => unknown_props = Some(value),
             "checkUnknownComponents" => unknown_components = Some(value),
             "checkUnknownEvents" => unknown_events = Some(value),
+            "strictVModel" => strict_v_model = Some(value),
+            "vapor" => options.vapor = value,
             "strictCssModules" => options.strict_css_modules = value,
             "inferComponentDollarEl" => options.infer_component_dollar_el = value,
             "inferTemplateDollarEl" => options.infer_template_dollar_el = value,
@@ -93,6 +108,9 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
     }
     if let Some(value) = unknown_events.or(strict) {
         options.check_unknown_events = value;
+    }
+    if let Some(value) = strict_v_model.or(strict) {
+        options.strict_v_model = value;
     }
     options
 }

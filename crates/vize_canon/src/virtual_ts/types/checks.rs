@@ -21,6 +21,8 @@ pub(crate) struct VirtualTsCheckOptions {
     pub(crate) check_unknown_events: bool,
     /// Check the value a component `v-model` writes back (`strictVModel`).
     pub(crate) strict_v_model: bool,
+    /// The component is compiled in Vapor mode (`vapor`).
+    pub(crate) vapor: bool,
     pub(crate) infer_component_dollar_el: bool,
     pub(crate) infer_template_dollar_el: bool,
     pub(crate) infer_template_dollar_slots: bool,
@@ -61,6 +63,7 @@ impl Default for VirtualTsCheckOptions {
             check_unknown_components: false,
             check_unknown_events: false,
             strict_v_model: false,
+            vapor: false,
             infer_component_dollar_el: false,
             infer_template_dollar_el: false,
             infer_template_dollar_slots: false,

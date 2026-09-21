@@ -51,6 +51,7 @@ impl TemplateValueCheckTables {
             directive_values: collect_directive_value_bindings(
                 options.template_ast,
                 &summary.bindings,
+                (options.has_default_alias, options.check_options.vapor),
                 options.check_options.check_template_bindings && !legacy_vue2,
             ),
             component_ref_callbacks: collect_component_ref_callback_bindings(

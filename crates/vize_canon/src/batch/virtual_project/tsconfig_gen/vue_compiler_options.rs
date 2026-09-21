@@ -69,6 +69,10 @@ impl VirtualProject {
                     .and_then(Value::as_bool)
             })
             .unwrap_or(false);
+        self.virtual_ts_check_options.vapor = options
+            .as_ref()
+            .and_then(|options| options.get("vapor").and_then(Value::as_bool))
+            .unwrap_or(false);
         self.virtual_ts_check_options.infer_component_dollar_el = options
             .as_ref()
             .and_then(|options| {

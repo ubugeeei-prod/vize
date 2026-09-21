@@ -33,6 +33,7 @@ mod statement_guard;
 mod statements;
 mod ts_suppression_comments;
 mod value_checks;
+mod vapor_directive;
 mod vif_chain;
 
 #[cfg(test)]

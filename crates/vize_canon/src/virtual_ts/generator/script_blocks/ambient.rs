@@ -51,15 +51,21 @@ pub(super) fn extend_module_spans(
         .body
         .iter()
         .filter_map(|statement| {
-            let ambient = match statement {
-                Statement::VariableDeclaration(declaration) => declaration.declare,
-                Statement::FunctionDeclaration(declaration) => declaration.declare,
-                Statement::ClassDeclaration(declaration) => declaration.declare,
-                _ => false,
+            // A module augmentation is already a module statement. It is a
+            // candidate only for its captures: `typeof` a setup value inside
+            // `declare module 'vue' { … }` must be evaluated in setup scope.
+            let (ambient, hoisted) = match statement {
+                Statement::VariableDeclaration(declaration) => (declaration.declare, false),
+                Statement::FunctionDeclaration(declaration) => (declaration.declare, false),
+                Statement::ClassDeclaration(declaration) => (declaration.declare, false),
+                Statement::TSModuleDeclaration(declaration) => (declaration.declare, true),
+                _ => (false, false),
             };
             let span = statement.span();
-            (ambient && !covered(module_spans, span) && relocatable_line(script, span, &comments))
-                .then_some(span)
+            (ambient
+                && (hoisted || !covered(module_spans, span))
+                && relocatable_line(script, span, &comments))
+            .then_some(span)
         })
         .collect();
     if candidates.is_empty() {
