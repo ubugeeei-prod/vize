@@ -298,9 +298,9 @@ void bar
 
     assert!(
         snapshot.iter().any(|(file, code, message)| {
-            file == "src/App.vue" && *code == Some(2304) && message.contains("foo")
+            file == "src/App.vue" && *code == Some(2339) && message.contains("foo")
         }),
-        "expected original prop key to report TS2304, got: {snapshot:#?}"
+        "expected original prop key to report TS2339, got: {snapshot:#?}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -339,9 +339,9 @@ defineProps<Props>()
 
     assert!(
         snapshot.iter().any(|(file, code, message)| {
-            file == "src/App.vue" && *code == Some(2304) && message.contains("inner")
+            file == "src/App.vue" && *code == Some(2339) && message.contains("inner")
         }),
-        "expected nested object member to report TS2304, got: {snapshot:#?}"
+        "expected nested object member to report TS2339, got: {snapshot:#?}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

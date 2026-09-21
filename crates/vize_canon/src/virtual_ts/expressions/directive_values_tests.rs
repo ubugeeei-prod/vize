@@ -56,27 +56,32 @@ const vFocus: Directive<HTMLElement, number> = () => {}"#;
 }
 
 /// `v-focus` resolves to `vFocus` by Vue's own convention, and a directive that
-/// has no such setup binding is registered globally — through
-/// `app.directive('focus', …)`, a plugin, or an Options API `directives` block.
-/// Naming `vFocus` anyway would report `TS2304: Cannot find name` on every
-/// globally registered directive in the ecosystem, so an unbound directive stays
-/// unchecked.
+/// has no such setup binding is registered elsewhere: through
+/// `app.directive('focus', …)` / a plugin (`GlobalDirectives`), or an Options API
+/// `directives` block. Naming `vFocus` as a value would report `TS2304: Cannot
+/// find name` on every such directive in the ecosystem, so the name only ever
+/// appears as a key into those registries, and an unregistered one is unchecked.
 #[test]
-fn globally_registered_directive_emits_no_check() {
+fn a_directive_without_a_setup_binding_resolves_through_the_registries() {
     let script = "const unrelated = 1";
-    let template = r#"<div v-focus="'nope'" />"#;
+    let template = r#"<div v-focus:target.once="'nope'" />"#;
     let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, script, template);
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-    assert!(
-        !output.code.contains("__vize_directive_check_"),
-        "a directive with no setup binding must not be named:\n{}",
-        output.code
-    );
-    assert!(
-        !output.code.contains("typeof vFocus"),
-        "an unbound directive name must never reach the generated program:\n{}",
+    let check: Vec<&str> = output
+        .code
+        .lines()
+        .filter(|line| line.contains("__vize_directive_check_"))
+        .map(str::trim)
+        .collect();
+    assert_eq!(
+        check,
+        [
+            r#"const __vize_directive_check_26 = __vizeDirective(__vizeRegisteredDirective<unknown, "vFocus">());"#,
+            r#"__vize_directive_check_26(null!, { ...__vizeDirectiveBindingRest, arg: "target", modifiers: { "once": true, }, value: ('nope') }, ...__vizeDirectiveTail(__vize_directive_check_26)); // CustomDirective"#,
+        ],
+        "{}",
         output.code
     );
 }

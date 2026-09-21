@@ -113,17 +113,21 @@ const take = (value: string) => value
     );
 }
 
-/// vue-tsc 3.3.4:
+/// vue-tsc 3.3.11, whose `strictTemplates` includes `strictVModel`:
 ///
 /// ```text
 /// src/ModelParent.vue(10,10): error TS2322: Type 'string' is not assignable to type 'number'.
+/// src/ModelParent.vue(10,19): error TS2322: Type 'number | undefined' is not assignable to type 'string'.
 /// src/ModelParent.vue(10,33): error TS2322: Type 'number' is not assignable to type 'string'.
+/// src/ModelParent.vue(10,40): error TS2322: Type 'string | undefined' is not assignable to type 'number'.
 /// ```
 ///
 /// Column 10 is the `v` of `v-model` and column 33 the `title` of
-/// `v-model:title`. The named form already agreed; the argument-less one binds
-/// `modelValue`, a name that appears nowhere in the source, so before the fix
-/// it fell back to the bound expression at column 19.
+/// `v-model:title`: what each binding passes in. The named form already
+/// agreed; the argument-less one binds `modelValue`, a name that appears
+/// nowhere in the source, so before the fix it fell back to the bound
+/// expression at column 19. Columns 19 and 40 are the bound expressions
+/// themselves: what each binding writes back.
 #[test]
 fn argument_less_v_model_anchors_at_the_directive() {
     if resolve_test_tsgo_binary().is_none() {
@@ -177,7 +181,23 @@ const num = ref(1)
             (
                 String::from("src/ModelParent.vue"),
                 Some(2322),
+                String::from(
+                    "10:19:error Type 'number | undefined' is not assignable to type 'string'.\n\
+                     Type 'undefined' is not assignable to type 'string'."
+                ),
+            ),
+            (
+                String::from("src/ModelParent.vue"),
+                Some(2322),
                 String::from("10:33:error Type 'number' is not assignable to type 'string'."),
+            ),
+            (
+                String::from("src/ModelParent.vue"),
+                Some(2322),
+                String::from(
+                    "10:40:error Type 'string | undefined' is not assignable to type 'number'.\n\
+                     Type 'undefined' is not assignable to type 'number'."
+                ),
             ),
         ]
     );

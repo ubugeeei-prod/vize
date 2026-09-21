@@ -61,8 +61,8 @@ const menuList = [{ attributes: ["size"] }];
         diagnostics,
         vec![(
             cstr!("src/App.vue"),
-            Some(2304),
-            cstr!("Cannot find name 'attribute'."),
+            Some(2339),
+            cstr!("Property 'attribute' does not exist on the component instance."),
             4,
             17,
             Some(SfcBlockType::Template),

@@ -247,7 +247,7 @@ mod tests {
             "the duplicated template diagnostic must be deduplicated: {mapped:#?}"
         );
         assert_eq!(mapped[0].file, app_path);
-        assert_eq!(mapped[0].code, Some(2304));
+        assert_eq!(mapped[0].code, Some(2339));
     }
 
     #[test]

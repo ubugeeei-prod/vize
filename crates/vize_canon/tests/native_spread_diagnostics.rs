@@ -39,6 +39,8 @@ fn nullable_dynamic_listener_names_disable_events_without_key_errors() {
     let diagnostics = project::check(&[("src/App.vue", &invalid)]);
     assert_eq!(
         diagnostics,
-        ["src/App.vue(1,109): error TS2304: Cannot find name 'missing'."]
+        [
+            "src/App.vue(1,109): error TS2339: Property 'missing' does not exist on the component instance."
+        ]
     );
 }

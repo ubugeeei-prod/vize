@@ -22,9 +22,9 @@ fn in_memory_checks_own_directives_from_the_current_document() {
     let unguarded = source.replace("<!-- @vue-expect-error -->", "");
     let diagnostics = checker.check_file(&path, &unguarded).unwrap();
     assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
-    assert_eq!(diagnostics[0].code, Some(2304));
+    assert_eq!(diagnostics[0].code, Some(2339));
     std::fs::remove_file(&path).unwrap();
     let diagnostics = checker.check_file(&path, &unguarded).unwrap();
     assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
-    assert_eq!(diagnostics[0].code, Some(2304));
+    assert_eq!(diagnostics[0].code, Some(2339));
 }

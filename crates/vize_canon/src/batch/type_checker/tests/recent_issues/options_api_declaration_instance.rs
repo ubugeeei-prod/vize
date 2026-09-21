@@ -285,11 +285,11 @@ fn options_api_setting_moves_template_participation_only() {
         project_diagnostics(&template_root, false),
         [(
             "src/Options.vue".to_string(),
-            Some(2304),
+            Some(2339),
             9,
             14,
             1,
-            "Cannot find name 'count'.".to_string(),
+            "Property 'count' does not exist on the component instance.".to_string(),
         )],
         "a disabled Options API leaves the template binding unresolved"
     );

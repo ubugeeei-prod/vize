@@ -85,6 +85,13 @@ declare function __vizeComponentGlobalHtmlAttrs(value: __VizeComponentGlobalHtml
 declare function __vForList<const T>(source: T): T extends number ? [item: number, key: number][] : T extends string ? [item: string, key: number][] : T extends readonly any[] ? (T extends readonly (infer U)[] ? [item: U, key: number] : never)[] : T extends Iterable<any> ? (T extends Iterable<infer U> ? [item: U, key: number] : never)[] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number][];type __VizeDirectiveHook<D, H = Extract<D[keyof D & ('created' | 'beforeMount' | 'mounted' | 'beforeUpdate' | 'updated' | 'beforeUnmount' | 'unmounted')], (...args: any[]) => any>> = D extends (...args: any[]) => any ? D : [H] extends [never] ? (el: unknown, binding: { value?: unknown }, ...args: any[]) => void : H;
 type __VizeDirectiveCall<H> = H extends (...args: any[]) => any ? Parameters<H>['length'] extends 0 | 1 ? (el: unknown, binding: { value?: unknown }) => void : H : never;
 declare function __vizeDirective<D>(directive: D): __VizeDirectiveCall<__VizeDirectiveHook<D>>;
+// @ts-ignore TS2694/TS2307: a `vue` without `GlobalDirectives` must degrade registered directives to unchecked, never error.
+type __VizeGlobalDirectives = import('vue').GlobalDirectives;
+// @ts-ignore TS2694/TS2307: a `vue` without `Directive` must degrade registered directives to unchecked, never error.
+type __VizeOwnDirectives<D> = D extends infer L & Record<string, import('vue').Directive> ? L : D;
+type __VizeLocalDirectives<C> = C extends { directives?: infer D } ? { [K in keyof __VizeOwnDirectives<NonNullable<D>> & string as string extends K ? never : `v${Capitalize<K>}`]: __VizeOwnDirectives<NonNullable<D>>[K] } : {};
+declare function __vizeRegisteredDirective<C, K extends string>(): K extends keyof __VizeLocalDirectives<C> ? __VizeLocalDirectives<C>[K] : K extends keyof __VizeGlobalDirectives ? __VizeGlobalDirectives[K] : unknown;
+declare function __vizeVaporDirective<D>(directive: D): D extends (...args: any[]) => any ? D : (node: unknown, value?: () => unknown, argument?: unknown, modifiers?: unknown) => void;
 declare const __vizeDirectiveBindingRest: { instance: null; oldValue: null; modifiers: any; dir: any };
 declare function __vizeDirectiveTail<F extends (...args: any[]) => any>(hook: F): 4 extends Parameters<F>['length'] ? [never, never] : 3 extends Parameters<F>['length'] ? [never] : [];
 
@@ -117,7 +124,7 @@ function __setup() {
   
   const items = ref([1, 2, 3])
   
-  // @vize-map: 13310:13350 -> 0:57
+  // @vize-map: 14346:14386 -> 0:57
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
