@@ -6,6 +6,9 @@
 #![cfg_attr(test, allow(clippy::disallowed_macros))]
 pub mod codegen;
 mod compile;
+#[cfg(feature = "davinci-differential")]
+#[doc(hidden)]
+pub mod differential;
 pub mod errors;
 #[cfg(test)]
 mod experimental_tests;

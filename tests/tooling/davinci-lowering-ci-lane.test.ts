@@ -7,6 +7,8 @@ const s1ToS2LoweringCorpusCommand =
   "cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_lowering_corpus -- --nocapture";
 const s1ToS2DomCorpusCommand =
   "cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_dom_corpus -- --nocapture";
+const ssrS4CorpusCommand =
+  "VIZE_DAVINCI_DIFFERENTIAL_CORPUS=. cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture";
 const jsxS2VdomParityCommand =
   "cargo test -p vize_atelier_jsx --features davinci-differential --lib vdom::s2_differential::s2_vdom_admitted_cases_match_relief_codegen -- --exact";
 
@@ -46,6 +48,14 @@ test("feature-gated S1-to-S2 corpus lanes ride the required clippy-and-test job"
   assert.ok(
     clippyJob.includes(s1ToS2DomCorpusCommand),
     "the feature-gated DOM corpus entry must run explicitly after cargo test --workspace",
+  );
+  assert.match(
+    readRepoFile("crates", "vize_atelier_ssr", "Cargo.toml"),
+    /^\[\[test\]\]\nname = "davinci_ssr_corpus"\nrequired-features = \["davinci-differential"\]$/m,
+  );
+  assert.ok(
+    clippyJob.includes(ssrS4CorpusCommand),
+    "the feature-gated SSR S4 corpus gate must sweep the checkout after cargo test --workspace",
   );
   assert.match(
     readRepoFile("crates", "vize_atelier_jsx", "Cargo.toml"),

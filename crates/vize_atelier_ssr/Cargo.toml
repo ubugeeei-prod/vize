@@ -11,6 +11,8 @@ metadata.vize.stability = "compatibility-preview"
 [features]
 default = []
 legacy = ["vize_armature/legacy", "vize_atelier_core/legacy"]
+# Exposes the two-lane comparison entry the SSR corpus gate drives.
+davinci-differential = []
 
 [dependencies]
 vize_s0 = { workspace = true }
@@ -30,7 +32,9 @@ serde = { workspace = true }
 [dev-dependencies]
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
+davinci_test_support.workspace = true
 insta = { workspace = true }
+vize_atelier_sfc = { workspace = true }
 
 [lints.clippy]
 all = "warn"
@@ -38,6 +42,10 @@ all = "warn"
 [[bench]]
 name = "davinci"
 harness = false
+
+[[test]]
+name = "davinci_ssr_corpus"
+required-features = ["davinci-differential"]
 
 [package.metadata.cargo-semver-checks.lints]
 # SSR codegen result/options are a compatibility-preview compiler boundary.
