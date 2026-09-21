@@ -18,6 +18,8 @@ use vize_s0::String;
 
 use crate::artifact::{BlockArtifacts, StageConfig, compute_file_artifacts};
 use crate::db::{ResidentDatabase, SourceFile};
+use crate::snapshot::cancel::CancelToken;
+use crate::snapshot::{SnapshotStats, SnapshotTree, Stages};
 
 mod script;
 
@@ -51,6 +53,9 @@ pub struct EquivalenceReport {
     pub comparisons: u32,
     /// Blocks compared across all states.
     pub blocks_compared: u32,
+    /// The snapshot tree's accounting summed over every update (P5-5): the
+    /// snapshot path runs beside the database and is compared too.
+    pub snapshot: SnapshotStats,
     /// Every state whose incremental artifacts differed.
     pub mismatches: Vec<Mismatch>,
 }
@@ -66,17 +71,22 @@ impl EquivalenceReport {
             path,
             text: String::from(text),
             config: StageConfig::default(),
+            snapshot: None,
         };
+        self.advance_snapshot(&mut state);
         self.compare(&db, file, &state, "open", 0);
         for script in scripts {
             self.script_runs += 1;
-            if state.text != text {
-                state.text = String::from(text);
-                db.edit(file, text);
-            }
-            if state.config != StageConfig::default() {
-                state.config = StageConfig::default();
-                db.configure(state.config);
+            if state.text != text || state.config != StageConfig::default() {
+                if state.text != text {
+                    state.text = String::from(text);
+                    db.edit(file, text);
+                }
+                if state.config != StageConfig::default() {
+                    state.config = StageConfig::default();
+                    db.configure(state.config);
+                }
+                self.advance_snapshot(&mut state);
             }
             self.compare(&db, file, &state, &script.name, 0);
             let mut step_number = 0;
@@ -96,6 +106,7 @@ impl EquivalenceReport {
                             db.configure(state.config);
                         }
                     }
+                    self.advance_snapshot(&mut state);
                     step_number += 1;
                     self.steps_applied += 1;
                     self.compare(&db, file, &state, &script.name, step_number);
@@ -116,14 +127,37 @@ impl EquivalenceReport {
         let clean = compute_file_artifacts(state.text.as_str(), state.config);
         self.comparisons += 1;
         self.blocks_compared += clean.len() as u32;
-        if served != clean {
-            self.mismatches.push(Mismatch {
-                file: String::from(state.path),
-                script: String::from(script),
-                step,
-                detail: describe(&served, &clean),
-            });
+        let snapshot = state
+            .snapshot
+            .as_ref()
+            .map(SnapshotTree::artifacts)
+            .unwrap_or_default();
+        for (path, artifacts) in [("", served), ("snapshot ", snapshot)] {
+            if artifacts != clean {
+                let mut detail = String::from(path);
+                detail.push_str(&describe(&artifacts, &clean));
+                self.mismatches.push(Mismatch {
+                    file: String::from(state.path),
+                    script: String::from(script),
+                    step,
+                    detail,
+                });
+            }
         }
+    }
+
+    /// Update the state's snapshot tree to its current text and config.
+    fn advance_snapshot(&mut self, state: &mut State<'_>) {
+        let (tree, stats) = SnapshotTree::update(
+            state.snapshot.as_ref(),
+            state.text.as_str(),
+            state.config,
+            &Stages::DEFAULT,
+            CancelToken::root(),
+        )
+        .expect("an uncancelled update completes");
+        self.snapshot += stats;
+        state.snapshot = Some(tree);
     }
 
     /// `Ok` only when something was compared and nothing differed.
@@ -159,6 +193,10 @@ impl EquivalenceReport {
             ("ops_skipped", self.ops_skipped),
             ("comparisons", self.comparisons),
             ("blocks_compared", self.blocks_compared),
+            ("snapshot_blocks_adopted", self.snapshot.blocks.adopted),
+            ("snapshot_blocks_computed", self.snapshot.blocks.computed),
+            ("snapshot_regions_adopted", self.snapshot.regions.adopted),
+            ("snapshot_regions_computed", self.snapshot.regions.computed),
             ("mismatches", self.mismatches.len() as u32),
         ] {
             writeln!(out, "{key}={value}").expect("string write");
@@ -179,6 +217,7 @@ struct State<'a> {
     path: &'a str,
     text: String,
     config: StageConfig,
+    snapshot: Option<SnapshotTree>,
 }
 
 /// The first differing block and field.

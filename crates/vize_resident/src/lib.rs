@@ -24,6 +24,7 @@ pub mod accounting;
 pub mod artifact;
 pub mod db;
 pub mod equivalence;
+pub mod snapshot;
 
 pub use accounting::{Accounting, QueryCounts};
 pub use artifact::{

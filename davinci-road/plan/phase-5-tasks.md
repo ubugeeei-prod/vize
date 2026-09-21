@@ -124,6 +124,8 @@
 
 ## P5-5 — Snapshot tree under salsa
 
+**Landed 2026-09-22** — full record: [phase-5-records/p5-5.md](./phase-5-records/p5-5.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** C
@@ -132,8 +134,8 @@
 
 **Steps:**
 
-- [ ] Snapshot adoption and cancellation in `crates/vize_resident/src/snapshot*`
-- [ ] A fault-isolation scenario: a stage task that panics is caught, its file degrades per TS-47, and the server keeps answering for every other file
+- [x] Snapshot adoption and cancellation in `crates/vize_resident/src/snapshot*` _(region joint = a template's root regions; TS-42 runs the snapshot path beside the database)_
+- [x] A fault-isolation scenario: a stage task that panics is caught, its file degrades per TS-47, and the server keeps answering for every other file
 
 **Acceptance:** TS-46 adoption and cancellation scenarios with exact cache-hit accounting; the fault-isolation scenario green (extends TS-47).
 
