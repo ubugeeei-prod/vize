@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const table = JSON.parse(
@@ -13,10 +14,9 @@ const table = JSON.parse(
 };
 
 function evaluate(expr: string): unknown {
-  const names = Object.keys(table.context);
   // The oracle is the JavaScript engine itself, not a second hand-written evaluator.
-  const run = new Function(...names, `"use strict"; return (${expr});`);
-  return run(...names.map((name) => structuredClone(table.context[name])));
+  // Supported results are primitives, so values compare across the vm realm.
+  return vm.runInNewContext(`"use strict"; (${expr});`, structuredClone(table.context));
 }
 
 test("TS-29 expression subset agrees with the JavaScript engine", () => {
