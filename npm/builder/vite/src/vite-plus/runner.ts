@@ -65,7 +65,7 @@ export async function runTools(
     if (options.fmt !== false) {
       const files = await glob(patterns.length ? patterns : ["**/*.vue"], {
         expandDirectories: true,
-        ignore: ["**/node_modules/**", "**/.git/**"],
+        ignore: ["**/node_modules/**", "**/.git/**", "**/.vize/**"],
       });
       const vue = files.filter((file) => file.endsWith(".vue"));
       // An empty pattern list would make native fmt format every file again.

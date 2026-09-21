@@ -40,6 +40,14 @@ export const VIZE_LOCAL_PACKAGES = [
     linkIntoFixture: true,
   },
   {
+    packageName: "@vizejs/unplugin",
+    filter: "@vizejs/unplugin",
+    dir: path.join(NPM_DIR, "builder/unplugin"),
+    outputs: ["dist/index.mjs", "dist/rolldown.mjs"],
+    buildInFixtureSetup: true,
+    linkIntoFixture: true,
+  },
+  {
     packageName: "@vizejs/vite-plugin",
     filter: "@vizejs/vite-plugin",
     dir: path.join(NPM_DIR, "builder/vite"),

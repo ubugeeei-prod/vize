@@ -111,8 +111,15 @@ export default defineConfig({
     );
     assert.equal(settings["[vue]"]["editor.defaultFormatter"], "ubugeeei.vize");
     assert.equal(settings["editor.defaultFormatter"], undefined);
+    fs.mkdirSync(path.join(directory, ".vize/canon"), { recursive: true });
+    const generated = "export const generated=1;\n";
+    write(".vize/canon/generated.ts", generated);
     run(directory, ["run", "fmt"]);
     run(directory, ["run", "check"]);
+    assert.equal(
+      fs.readFileSync(path.join(directory, ".vize/canon/generated.ts"), "utf8"),
+      generated,
+    );
     assert.ok(!fs.readdirSync(directory).some((name) => name.startsWith(".vize-vp-")));
     write("entry.ts", 'export { default as App } from "./App.vue";');
     fs.appendFileSync(path.join(directory, "vite.config.ts"), "\n");

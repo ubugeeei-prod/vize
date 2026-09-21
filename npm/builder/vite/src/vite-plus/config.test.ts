@@ -34,7 +34,13 @@ void test("defineConfig composes async Vite+ and native config without mutating 
   assert.equal(result.lint?.rules?.["vue/no-export-in-script-setup"], "off");
   assert.equal(result.lint?.jsPlugins, undefined);
   assert.ok(result.lint?.plugins?.includes("typescript"));
-  assert.deepEqual(result.fmt?.ignorePatterns, ["generated/**", "**/node_modules/**", "**/*.vue"]);
+  assert.deepEqual(result.fmt?.ignorePatterns, [
+    "generated/**",
+    "**/node_modules/**",
+    "**/.vize/**",
+    "**/*.vue",
+  ]);
+  assert.ok(result.lint?.ignorePatterns?.includes("**/.vize/**"));
   assert.deepEqual(source.fmt.ignorePatterns, ["generated/**"]);
   assert.deepEqual(source.lint.rules, rules);
   assert.deepEqual(Object.keys(config), ["linter"]);

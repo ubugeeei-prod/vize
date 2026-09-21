@@ -49,7 +49,11 @@ export function configureTools(config: UserConfig, options: VizePlusOptions): Us
         : {
             ...config.lint,
             ignorePatterns: [
-              ...new Set([...(config.lint?.ignorePatterns ?? []), "**/node_modules/**"]),
+              ...new Set([
+                ...(config.lint?.ignorePatterns ?? []),
+                "**/node_modules/**",
+                "**/.vize/**",
+              ]),
             ],
             plugins: [
               ...new Set([
@@ -72,7 +76,12 @@ export function configureTools(config: UserConfig, options: VizePlusOptions): Us
         : {
             ...config.fmt,
             ignorePatterns: [
-              ...new Set([...(config.fmt?.ignorePatterns ?? []), "**/node_modules/**", "**/*.vue"]),
+              ...new Set([
+                ...(config.fmt?.ignorePatterns ?? []),
+                "**/node_modules/**",
+                "**/.vize/**",
+                "**/*.vue",
+              ]),
             ],
           },
   };
