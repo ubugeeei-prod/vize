@@ -41,7 +41,15 @@ def main() -> int:
     if child_pid == 0:
         size = struct.pack("HHHH", args.rows, args.cols, 0, 0)
         fcntl.ioctl(sys.stdin.fileno(), termios.TIOCSWINSZ, size)
-        os.execvp(command[0], command)
+        # A shell is the session leader, as in a real terminal: when the
+        # editor itself led the session, its exit hung up the terminal and
+        # SIGHUP killed the language server it had just asked to `exit`
+        # before the server could. The shell outlives the editor by a grace
+        # period, the way a terminal stays open after the editor quits.
+        os.execvp(
+            "/bin/sh",
+            ["/bin/sh", "-c", '"$@"; status=$?; sleep 5; exit "$status"', "sh", *command],
+        )
 
     screen = open(args.screen, "ab", buffering=0)
     keys = sys.stdin.fileno()
