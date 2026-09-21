@@ -10,6 +10,7 @@ import CroquisPlayground from "./features/croquis/CroquisPlayground.vue";
 import CrossFilePlayground from "./features/cross-file/CrossFilePlayground.vue";
 import TypeCheckPlayground from "./features/canon/TypeCheckPlayground.vue";
 import InspectorPlayground from "./features/inspector/InspectorPlayground.vue";
+import DavinciPlayground from "./features/davinci/DavinciPlayground.vue";
 import { getPlaygroundEnvironmentInfo } from "./utils/environment";
 import { useClipboard } from "./utils/useClipboard";
 
@@ -34,7 +35,8 @@ type MainTab =
   | "croquis"
   | "cross-file"
   | "musea"
-  | "glyph";
+  | "glyph"
+  | "davinci";
 const validTabs: MainTab[] = [
   "atelier",
   "inspector",
@@ -44,6 +46,7 @@ const validTabs: MainTab[] = [
   "cross-file",
   "musea",
   "glyph",
+  "davinci",
 ];
 
 function getInitialTab(): MainTab {
@@ -167,6 +170,13 @@ onMounted(async () => {
           <span class="tab-name">Musea</span>
           <span class="tab-desc">story</span>
         </button>
+        <button
+          :class="['main-tab', { active: mainTab === 'davinci' }]"
+          @click="mainTab = 'davinci'"
+        >
+          <span class="tab-name">Davinci</span>
+          <span class="tab-desc">stages</span>
+        </button>
       </div>
 
       <div class="options">
@@ -259,6 +269,9 @@ onMounted(async () => {
       </template>
       <template v-else-if="mainTab === 'glyph'">
         <GlyphPlayground :compiler />
+      </template>
+      <template v-else-if="mainTab === 'davinci'">
+        <DavinciPlayground :compiler />
       </template>
       <template v-else>
         <AtelierPlayground :compiler />

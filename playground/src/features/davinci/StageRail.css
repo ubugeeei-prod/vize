@@ -1,0 +1,169 @@
+/* The stage rail (stations joined by the pounce line) and the pass timeline. */
+
+/* Stage rail */
+.davinci-rail {
+  display: flex;
+  align-items: stretch;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border-primary);
+  flex-shrink: 0;
+}
+
+.davinci-station {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: baseline;
+  padding: 8px 12px;
+  min-width: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.davinci-station:hover {
+  background: var(--bg-secondary);
+}
+
+.davinci-station:focus-visible,
+.davinci-step:focus-visible,
+.davinci-subtab:focus-visible,
+.davinci-line:focus-visible {
+  outline: 2px solid var(--dv-ochre);
+  outline-offset: 2px;
+}
+
+.davinci-station.active {
+  background: var(--bg-secondary);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+.davinci-station.empty {
+  opacity: 0.55;
+}
+
+.davinci-station-ordinal {
+  grid-row: 1 / span 2;
+  align-self: center;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.davinci-station.active .davinci-station-ordinal {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.davinci-station-name {
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.davinci-station-facts {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.davinci-pounce {
+  flex: 1;
+  min-width: 16px;
+  align-self: center;
+  height: 4px;
+  margin: 0 2px;
+  background-image: radial-gradient(circle, var(--text-muted) 1.1px, transparent 1.6px);
+  background-size: 7px 4px;
+  background-repeat: repeat-x;
+  background-position: center;
+}
+
+/* Pass timeline */
+.davinci-timeline {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-primary);
+  flex-shrink: 0;
+}
+
+.davinci-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.davinci-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px 5px 9px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.davinci-step:hover {
+  background: var(--bg-secondary);
+}
+
+.davinci-step.current {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.davinci-step-mark {
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--dv-ochre);
+  border-radius: 50%;
+}
+
+.davinci-step.changed .davinci-step-mark {
+  background: var(--dv-ochre);
+}
+
+.davinci-step.producer .davinci-step-mark {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  border-radius: 2px;
+}
+
+.davinci-step-rung {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.davinci-timeline-summary {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}

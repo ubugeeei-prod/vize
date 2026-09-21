@@ -7,19 +7,29 @@
 ## Spolvero (DevTool)
 
 - [ ] C-1 Protocol spike (starts: P2, alongside the observer API)
-- [ ] C-2 S1/S2 folio pages in the inspector (starts: P2-18)
-      _Feed half landed 2026-09-21: the wasm `analyzeSfc` feed carries the S1
-      page, the S2 lowering page and one S2 page per executed transform pass
-      (`vize_curator::inspector::ladder_pages`, TS-52 `spolvero_ladder`). The
-      `vize inspector` payload stays S1-only on purpose (it rides in share
-      URLs; the playground recomputes the ladder from the same sources).
-      Open: the playground view that renders the ladder._
+- [x] C-2 S1/S2 folio pages in the inspector (starts: P2-18)
+      _Landed 2026-09-21: the wasm `analyzeSfc` feed carries the S1 page, the
+      S2 lowering page and one S2 page per executed transform pass
+      (`vize_curator::inspector::ladder_pages`, TS-52 `spolvero_ladder`), and
+      the playground's Davinci tab (`playground/src/features/davinci/`)
+      renders them after negotiating `schema_version`; the P2-18 rendering
+      review point is now a VRT baseline (`davinci-{light,dark}.png`) plus
+      the real-wasm `e2e/davinci-ladder.test.ts`. The `vize inspector`
+      payload stays S1-only on purpose (it rides in share URLs; the playground
+      recomputes the ladder from the same sources)._
 - [ ] C-3 Pass timeline + fusion-group view from timing JSON (starts: P2-13)
+      _Partial 2026-09-21: the Davinci tab shows every executed step in run
+      order and marks which passes changed the folio (exact page compare).
+      Open: per-pass timing and fusion groups (the profiler clock is
+      `std::time::Instant`, which wasm32-unknown-unknown lacks)._
 - [ ] C-4 Flame views from profiler export (starts: P0-11 data available)
 - [ ] C-5 S3 pages, provenance navigation, remarks rendering (starts: P3-13)
       _S3 pages landed 2026-09-21 in the same feed: `s3` (graph),
       `s3-partition` (the new `[s3-partition-folio]` page) and `s3-values`.
-      Open: provenance navigation in a view, remarks rendering (P3-13)._
+      Provenance navigation landed in the Davinci tab the same day: a stage
+      line highlights its authored span in the editor, and the editor cursor
+      marks the narrowest stage line covering it. Open: remarks rendering
+      (P3-13)._
 - [ ] C-6 Fact browser incl. reactivity-lattice overlay (starts: P4-1)
       _Constraint recorded 2026-09-21: the lattice has no per-SFC producer
       yet (P3-7 evaluates it per binding kind inside DOM patch emission), so

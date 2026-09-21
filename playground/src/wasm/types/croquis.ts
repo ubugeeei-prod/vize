@@ -287,4 +287,10 @@ export interface CroquisResult {
   diagnostics: CroquisDiagnostic[];
   /** VIR (Vize Intermediate Representation) text format */
   vir?: string;
+  /**
+   * The raw Spolvero feed (stage ladder pages). Kept `unknown` on purpose:
+   * consumers negotiate its `schema_version` through `negotiateSpolveroFeed`
+   * before reading any page.
+   */
+  spolvero?: unknown;
 }

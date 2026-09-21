@@ -1,0 +1,131 @@
+/* Stage page listing: projector-legible mono text, a quiet gutter, and one
+   ochre wash for the line that is linked to the source. */
+
+.davinci-folio {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--code-foreground);
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: 8px;
+  tab-size: 2;
+}
+
+.davinci-line {
+  display: flex;
+  min-width: max-content;
+  padding-right: 20px;
+  border-left: 3px solid transparent;
+}
+
+.davinci-line.linkable {
+  cursor: pointer;
+}
+
+.davinci-line.linkable:hover {
+  background: var(--bg-tertiary);
+}
+
+.davinci-line.linked {
+  border-left-color: var(--color-notice);
+  background: var(--color-notice-bg);
+}
+
+.davinci-line.selected,
+.davinci-line.selected:hover {
+  border-left-color: var(--color-notice);
+  background: var(--color-notice-bg);
+  box-shadow: inset 0 0 0 1px var(--color-notice-border);
+}
+
+.davinci-line.section {
+  margin-top: 4px;
+}
+
+.davinci-ln {
+  flex-shrink: 0;
+  width: 3.5em;
+  padding-right: 1.25em;
+  text-align: right;
+  color: var(--code-line-number);
+  opacity: 0.7;
+  user-select: none;
+}
+
+.davinci-code {
+  white-space: pre;
+}
+
+/* Tokens */
+.tk-section {
+  color: var(--hl-type);
+  font-weight: 600;
+}
+
+.tk-key {
+  color: var(--hl-property);
+}
+
+.tk-mnemonic {
+  color: var(--hl-keyword);
+  font-weight: 600;
+}
+
+.tk-tag {
+  color: var(--hl-tag);
+}
+
+.tk-string {
+  color: var(--hl-string);
+}
+
+.tk-span {
+  color: var(--code-line-number);
+}
+
+.tk-number {
+  color: var(--hl-number);
+}
+
+.tk-call {
+  color: var(--hl-function);
+}
+
+.tk-absent,
+.tk-punct {
+  color: var(--hl-delimiter);
+}
+
+.tk-attr {
+  color: var(--hl-property);
+}
+
+.tk-directive {
+  color: var(--hl-directive);
+}
+
+.tk-mustache {
+  color: var(--hl-function);
+}
+
+.tk-static,
+.tk-dynamic {
+  padding: 0 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.tk-static {
+  color: var(--color-teal);
+  background: var(--color-teal-bg);
+}
+
+.tk-dynamic {
+  color: var(--color-notice);
+  background: var(--color-notice-bg);
+}

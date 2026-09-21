@@ -1,6 +1,15 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const TABS = ["atelier", "patina", "glyph", "canon", "croquis", "cross-file", "musea"] as const;
+const TABS = [
+  "atelier",
+  "patina",
+  "glyph",
+  "canon",
+  "croquis",
+  "cross-file",
+  "musea",
+  "davinci",
+] as const;
 
 /**
  * Selectors that confirm the tab's output has fully rendered.
@@ -15,6 +24,7 @@ const OUTPUT_READY: Record<(typeof TABS)[number], string> = {
   croquis: ".perf-badge",
   "cross-file": ".status-time",
   musea: ".perf-badge",
+  davinci: ".davinci-rail",
 };
 
 async function waitForReady(page: Page, tab: (typeof TABS)[number]) {

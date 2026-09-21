@@ -111,4 +111,11 @@ describe("createTransformAnalyzeSfc", () => {
     expect(result.croquis.reactivityOverlay.summary.sourceCount).toBe(1);
     expect(result.croquis.reactivityOverlay.losses[0]?.targetName).toBe("plain");
   });
+
+  it("passes the Spolvero feed through un-interpreted for negotiation downstream", () => {
+    const spolvero = { schema_version: 99, command: "analyze-sfc", pages: "opaque" };
+    const analyze = createTransformAnalyzeSfc(() => ({ croquis: {}, spolvero }));
+    expect(analyze("", {}).spolvero).toBe(spolvero);
+    expect(createTransformAnalyzeSfc(() => ({ croquis: {} }))("", {}).spolvero).toBeUndefined();
+  });
 });
