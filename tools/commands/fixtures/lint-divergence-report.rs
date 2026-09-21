@@ -408,8 +408,22 @@ fn compare_lint_findings(
 
     let mut comparable_patina = Vec::new();
     let mut patina_only_rule_findings = Vec::new();
+    // The baseline cannot see inside `<template lang="pug">` (vue-eslint-parser
+    // does not parse pug; Patina lints it through the Davinci pug dialect), so
+    // findings there are outside the comparable surface: reported, not scored.
+    let mut patina_outside_baseline_surface = Vec::new();
+    let mut pug_bodies = BTreeMap::<String, Option<(u64, u64)>>::new();
     for finding in patina {
-        if index.patina_targets.contains(&finding.rule_id) {
+        let pug_body = pug_bodies
+            .entry(finding.file.clone())
+            .or_insert_with(|| {
+                fs::read_to_string(cwd.join(&finding.file))
+                    .ok()
+                    .and_then(|source| pug_template_lines(&source))
+            });
+        if pug_body.is_some_and(|(start, end)| (start..=end).contains(&finding.line)) {
+            patina_outside_baseline_surface.push(finding.to_value());
+        } else if index.patina_targets.contains(&finding.rule_id) {
             comparable_patina.push(finding);
         } else {
             patina_only_rule_findings.push(finding.to_value());
@@ -473,9 +487,10 @@ fn compare_lint_findings(
     sort_values(&mut unimplemented);
     sort_values(&mut intentional_divergences);
     sort_values(&mut patina_only_rule_findings);
+    sort_values(&mut patina_outside_baseline_surface);
 
     let summary = json!({
-        "patinaFindingCount": comparable_patina.len() + patina_only_rule_findings.len(),
+        "patinaFindingCount": comparable_patina.len() + patina_only_rule_findings.len() + patina_outside_baseline_surface.len(),
         "baselineFindingCount": comparable_baseline.len() + unimplemented.len() + intentional_divergences.len(),
         "comparableBaselineCount": comparable_baseline.len(),
         "sharedCount": shared.len(),
@@ -487,6 +502,7 @@ fn compare_lint_findings(
         "unimplementedCount": unimplemented.len(),
         "intentionalDivergenceCount": intentional_divergences.len(),
         "patinaOnlyRuleFindingCount": patina_only_rule_findings.len(),
+        "patinaOutsideBaselineSurfaceCount": patina_outside_baseline_surface.len(),
         "baselineParseErrorCount": baseline_input.parse_error_count,
         "baselineExcludedNonVueCount": baseline_input.excluded_non_vue_count,
         "baselineInvalidRangeCount": baseline_input.invalid_range_count,
@@ -502,6 +518,7 @@ fn compare_lint_findings(
         "unimplemented": unimplemented,
         "intentionalDivergences": intentional_divergences,
         "patinaOnlyRuleFindings": patina_only_rule_findings,
+        "patinaOutsideBaselineSurface": patina_outside_baseline_surface,
         "documentedDivergences": documented_divergences,
     });
     let hash_input = json!({
@@ -514,6 +531,7 @@ fn compare_lint_findings(
         "unimplemented": classified["unimplemented"],
         "intentionalDivergences": classified["intentionalDivergences"],
         "patinaOnlyRuleFindings": classified["patinaOnlyRuleFindings"],
+        "patinaOutsideBaselineSurface": classified["patinaOutsideBaselineSurface"],
         "documentedDivergences": classified["documentedDivergences"],
     });
     Ok(json!({
@@ -533,9 +551,34 @@ fn compare_lint_findings(
         "unimplemented": classified["unimplemented"],
         "intentionalDivergences": classified["intentionalDivergences"],
         "patinaOnlyRuleFindings": classified["patinaOnlyRuleFindings"],
+        "patinaOutsideBaselineSurface": classified["patinaOutsideBaselineSurface"],
         "documentedDivergences": classified["documentedDivergences"],
         "sha256": sha256(&hash_input.to_string()),
     }))
+}
+
+/// The 1-based line range of an inline `<template lang="pug">` body — the
+/// first top-level template, no `src` — or `None`. A body that starts on
+/// the tag's line starts there; otherwise on the next line.
+fn pug_template_lines(source: &str) -> Option<(u64, u64)> {
+    let tag_start = source.find("<template")?;
+    let tag_end = tag_start + source[tag_start..].find('>')?;
+    let tag = &source[tag_start..tag_end];
+    let pug = ["lang=\"pug\"", "lang='pug'", "lang=pug"]
+        .iter()
+        .any(|spelling| tag.contains(spelling));
+    if !pug || tag.contains("src=") {
+        return None;
+    }
+    let body_start = tag_end + 1;
+    let body_end = body_start + source[body_start..].find("</template>")?;
+    let line_of = |offset: usize| source[..offset].matches('\n').count() as u64 + 1;
+    let first = if source[body_start..].starts_with(['\n', '\r']) {
+        line_of(body_start) + 1
+    } else {
+        line_of(body_start)
+    };
+    Some((first, line_of(body_end)))
 }
 
 struct BaselineInput {
@@ -1841,6 +1884,15 @@ fn sha256(value: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn pug_template_bodies_are_located_by_line() {
+        let sfc = "<script setup>\nconst a = 1\n</script>\n<template lang=\"pug\">\ndiv\n  p x\n</template>\n";
+        assert_eq!(pug_template_lines(sfc), Some((5, 7)));
+        assert_eq!(pug_template_lines("<template lang='pug'>div</template>"), Some((1, 1)));
+        assert_eq!(pug_template_lines("<template>\n<div/>\n</template>"), None);
+        assert_eq!(pug_template_lines("<template lang=\"pug\" src=\"./a.pug\"></template>"), None);
+    }
 
     #[test]
     fn baseline_zero_column_is_counted_as_invalid_range() {

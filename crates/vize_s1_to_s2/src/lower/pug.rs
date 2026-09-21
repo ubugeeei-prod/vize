@@ -32,6 +32,7 @@ mod emit;
 mod literal;
 mod map;
 mod refusal;
+mod view;
 
 use alloc::vec::Vec as StdVec;
 
@@ -40,6 +41,7 @@ use vize_s0::{Allocator, Span, String};
 use vize_s1::pug::{PugError, PugTree, parse_pug};
 
 pub use map::PugSourceMap;
+pub use view::PugBlockView;
 
 use crate::Lowered;
 
@@ -68,10 +70,33 @@ impl PugTemplate {
     }
 }
 
+/// Which derived template to produce.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum PugRendering {
+    /// Byte-identical to the pinned `pug` rendering — what compiles.
+    #[default]
+    Pug,
+    /// The same elements, attributes, values and text, with the merged
+    /// `class` attribute at its authored position instead of hoisted to
+    /// the front as pug does. Compile semantics are unchanged; tools that
+    /// judge authored attribute order (lint) read this view.
+    AuthoredOrder,
+}
+
 /// Desugar a parsed pug tree into its Vue template.
 #[must_use]
 pub fn derive_template(tree: &PugTree<'_>, errors: &[PugError]) -> PugTemplate {
-    let mut emitter = emit::Emitter::new(tree);
+    derive_template_with(tree, errors, PugRendering::Pug)
+}
+
+/// [`derive_template`] with an explicit [`PugRendering`].
+#[must_use]
+pub fn derive_template_with(
+    tree: &PugTree<'_>,
+    errors: &[PugError],
+    rendering: PugRendering,
+) -> PugTemplate {
+    let mut emitter = emit::Emitter::new(tree, rendering);
     for error in errors {
         emitter.diagnostics.push(crate::exemptions::surface_syntax(
             Span::new(error.offset, error.offset),
@@ -92,9 +117,15 @@ pub fn derive_template(tree: &PugTree<'_>, errors: &[PugError]) -> PugTemplate {
 /// Parse and desugar pug template content in one call.
 #[must_use]
 pub fn derive_template_source(source: &str) -> PugTemplate {
+    derive_template_source_with(source, PugRendering::Pug)
+}
+
+/// [`derive_template_source`] with an explicit [`PugRendering`].
+#[must_use]
+pub fn derive_template_source_with(source: &str, rendering: PugRendering) -> PugTemplate {
     let allocator = Allocator::default();
     let (tree, errors) = parse_pug(&allocator, source);
-    derive_template(&tree, &errors)
+    derive_template_with(&tree, &errors, rendering)
 }
 
 /// A pug template lowered to S2 through its derived Vue template.

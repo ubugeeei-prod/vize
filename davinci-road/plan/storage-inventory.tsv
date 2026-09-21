@@ -163,6 +163,7 @@ s1_to_s2	analysis	crates/vize_s1_to_s2/src/lower/pug/emit.rs	1	2	1	8	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/lower/pug/literal.rs	0	0	1	10	0	0	0	0
 s1_to_s2	lower	crates/vize_s1_to_s2/src/lower/pug/map.rs	1	1	0	0	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/lower/pug/refusal.rs	0	0	1	1	0	0	0	0
+s1_to_s2	-	crates/vize_s1_to_s2/src/lower/pug/view.rs	0	0	1	2	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/lower/show.rs	0	0	1	2	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/lower/slot.rs	0	0	1	4	1	4	0	0
 s1_to_s2	lower	crates/vize_s1_to_s2/src/lower/structural.rs	1	14	1	4	1	14	0	0

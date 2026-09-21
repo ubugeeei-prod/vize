@@ -15,6 +15,8 @@ vize_armature.workspace = true
 vize_s0.workspace = true
 vize_croquis.workspace = true
 vize_atelier_sfc.workspace = true
+# The Davinci pug dialect: `<template lang="pug">` lints through S1.
+vize_s1_to_s2.workspace = true
 vize_atelier_jsx.workspace = true
 vize_davinci.workspace = true
 

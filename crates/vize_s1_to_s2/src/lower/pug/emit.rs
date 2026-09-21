@@ -28,11 +28,13 @@ pub(super) struct Emitter<'t> {
     pub(super) map: PugSourceMap,
     pub(super) diagnostics: StdVec<Diagnostic>,
     compiled_tag: bool,
+    pub(super) rendering: super::PugRendering,
 }
 
 impl<'t> Emitter<'t> {
-    pub(super) fn new(tree: &PugTree<'t>) -> Self {
+    pub(super) fn new(tree: &PugTree<'t>, rendering: super::PugRendering) -> Self {
         Self {
+            rendering,
             source: tree.source,
             html: String::with_capacity(tree.source.len()),
             map: PugSourceMap::default(),

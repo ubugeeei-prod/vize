@@ -140,7 +140,7 @@
 
 **Non-goals:** pug-specific lint rules; pug mixins beyond Vue's documented support.
 
-_Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle):_ see [P4-12c record](./phase-4-records/p4-12c.md)
+_Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lint):_ see [P4-12c record](./phase-4-records/p4-12c.md)
 
 ## P4-13 — Musea onto S0 and S1
 

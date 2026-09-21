@@ -71,6 +71,15 @@ impl Linter {
     /// Uses ultra-fast template extraction optimized for linting.
     #[inline]
     pub fn lint_sfc(&self, source: &str, filename: &str) -> LintResult {
+        // `<template lang="pug">` lints through its derived Vue template.
+        if let Some(result) = self.lint_pug_sfc(source, filename) {
+            return result;
+        }
+        self.lint_sfc_unrouted(source, filename)
+    }
+
+    /// [`Self::lint_sfc`] without the template-dialect selector.
+    pub(crate) fn lint_sfc_unrouted(&self, source: &str, filename: &str) -> LintResult {
         let shared_descriptor_result = if self.needs_sfc_descriptor_for_lint() {
             profile!(
                 "patina.sfc.shared_parse_sfc",

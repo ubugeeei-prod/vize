@@ -4648,6 +4648,7 @@ dependencies = [
  "vize_davinci",
  "vize_glyph",
  "vize_relief",
+ "vize_s1_to_s2",
 ]
 
 [[package]]
