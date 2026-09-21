@@ -1,0 +1,175 @@
+# Phase 6 — Task contracts, P6-1a through P6-6
+
+> [!NOTE]
+> Full contracts for [Phase 6 — Extension Contracts GA](./phase-6.md), early re-cut 2026-09-21; [phase-6-tasks-later.md](./phase-6-tasks-later.md) continues them under the 350-line source budget. Charter #15's two tiers govern: first-party dialects stay compiled in behind traits and features, external ones cross the serialized WIT contract with coarse-grained interfaces only; charter #39 governs new runtime dependencies (pin, audit, feature isolation).
+
+## P6-1a — Input-dialect WIT world and capability handshake
+
+**Start gate:** startable now — no open earlier-phase dependency.
+
+**Lane:** A
+
+**Deliverable:** `contracts/wit/input-dialect.wit`: block in → S1 surface tree and S2 page out, as coarse-grained calls (one call per block, canonical-ABI copy cost paid once), plus the `get-capability` handshake — integer protocol version and feature strings (the Swift import) — shared by every world.
+
+**Steps:**
+
+- [ ] WIT package `vize:contracts@0.1.0` with the handshake interface and the input world; serialized payloads are the S1/S2 folio `Full` forms (schema-versioned per P2-17)
+- [ ] A host-side golden exchange: a guest stub echoing a committed S1/S2 payload
+- [ ] Register the TS-48 command in [test-suites.md](./test-suites.md): `cargo test -p vize_extension_host --test wit_golden`
+
+**Acceptance:** TS-48 for the input world: capability negotiation including rejection of a mismatched version with its exact error, and byte-equal serialized payloads in the golden exchange.
+
+**Deps:** none (phase-2 exit).
+
+**Non-goals:** the expression and output worlds (P6-1b, P6-1c); in-process hosting (P6-3).
+
+## P6-1b — Expression-dialect WIT world
+
+**Start gate:** gated on P4-5a — the world exports projection mapping rows in the unified model.
+
+**Lane:** A
+
+**Deliverable:** `contracts/wit/expression-dialect.wit`: environment + expression body in → analysis facts (referenced bindings, const-ness, spans — P2-5b's capability contract) and a checkable projection with span links out (charter #14).
+
+**Steps:**
+
+- [ ] World definition; fact payloads as P4-2 α pages, projection rows as P4-5a `ProjectionMapping`
+- [ ] Golden exchange with a stub expression guest
+
+**Acceptance:** TS-48 for the expression world: negotiation and byte-equal payloads.
+
+**Deps:** P6-1a, P4-1a, P4-5a.
+
+**Non-goals:** MoonBit itself (P6-4b).
+
+## P6-1c — Output-target WIT world
+
+**Start gate:** gated on P3-9 — the world carries the S4 structured emission document.
+
+**Lane:** A
+
+**Deliverable:** `contracts/wit/output-target.wit`: canonical S3/S2 in → emitted document (P3-9's span-carrying S4 document) out.
+
+**Steps:**
+
+- [ ] World definition; golden exchange with a stub target emitting a fixed document
+
+**Acceptance:** TS-48 for the output world: negotiation and byte-equal payloads.
+
+**Deps:** P6-1a, P3-9.
+
+**Non-goals:** Volt itself (P6-6).
+
+## P6-2 — Prebuilt versioned SDK
+
+**Start gate:** startable now — no open earlier-phase dependency.
+
+**Lane:** B
+
+**Deliverable:** versioned, prebuilt contract artifacts published per release — WIT bindings, a Rust SDK crate `crates/vize_extension_sdk/`, JS/TS types in `npm/extension-sdk/` — so no consumer ever compiles vize internals (the Swift macro-crisis countermeasure).
+
+**Steps:**
+
+- [ ] SDK crate with no dependency on any vize implementation crate (a tooling test asserts its dependency set)
+- [ ] A hello-world input dialect built against the SDK tarball alone in CI
+
+**Acceptance:** the hello-world dialect builds from the packed SDK with no path dependency into the workspace; the dependency-set test proven to fail on an injected implementation edge.
+
+**Deps:** P6-1a.
+
+**Non-goals:** publishing automation beyond the existing release pipeline.
+
+## P6-3 — In-process wasmtime hosting lane
+
+**Start gate:** startable now — no open earlier-phase dependency.
+
+**Lane:** C
+
+**Deliverable:** `crates/vize_extension_host/`: feature-gated (`extension-host`) in-process hosting of contract guests under wasmtime, sharing the WIT contract with the out-of-process transport, with per-guest fuel and memory limits. wasmtime is admitted under charter #39 (pinned, audited, only behind this feature).
+
+**Steps:**
+
+- [ ] Host crate; the same guest binary runs out-of-process and in-process
+- [ ] A tooling test: nothing outside `extension-host` features depends on `wasmtime`
+
+**Acceptance:** the same guest passes TS-48 in both hosting modes; a guest exceeding its fuel budget is stopped with the exact error; the dependency test green and proven to fail on an injected edge; `cargo audit --deny warnings` green.
+
+**Deps:** P6-1a.
+
+**Non-goals:** sandboxing JS plugins (P6-7).
+
+## P6-4a — MoonBit hosting spike
+
+**Start gate:** startable now — no open earlier-phase dependency.
+
+**Lane:** D
+
+**Deliverable:** the hosting decision for `moonc`, measured: whether a vendored, pinned wasm build of `moonc` with a virtual filesystem runs under wasmtime (artifact, imports, wasm-gc support), or falls back to a Node sidecar behind the same capability boundary. MoonBit's documented launchers are Node-based, which is why this is a spike first.
+
+**Steps:**
+
+- [ ] Try the wasm artifact under wasmtime; record the imports and failures exactly
+- [ ] Record the decision and its measurements in the task record
+
+**Acceptance:** decision recorded with reproduction commands; the spike code kept with tests or deleted, and the PR says which. **Review point:** the maintainer accepts the hosting choice.
+
+**Deps:** none (phase-2 exit).
+
+**Non-goals:** the dialect (P6-4b).
+
+## P6-4b — MoonBit expression dialect
+
+**Start gate:** gated on P4-5b — the dialect's projection is an instance of the single projection.
+
+**Lane:** D
+
+**Deliverable:** charter #28's MoonBit dialect: a generated `.mbti` binding environment from S2 scope facts (props, refs, composables as MoonBit signatures), template expressions projected to `.mbt` bodies, `moonc build-package` check-only, diagnostics span-mapped back, and the `moonc` version inside the fact cache key.
+
+**Steps:**
+
+- [ ] `crates/vize_dialect_moonbit/` over the P6-1b world and the P6-4a hosting choice
+- [ ] Matrix fixtures with MoonBit expressions compiled and checked end to end
+- [ ] Register the TS-49 command in [test-suites.md](./test-suites.md)
+
+**Acceptance:** TS-49 — span-mapped diagnostics exact over the `.mbti`/`.mbt` fixtures, with the `moonc` version in the cache key.
+
+**Deps:** P6-4a, P6-1b, P4-5b.
+
+**Non-goals:** MoonBit outside template expressions.
+
+## P6-5 — ExprRef validation report
+
+**Start gate:** startable now — no open earlier-phase dependency (waits behind P6-4b).
+
+**Lane:** D
+
+**Deliverable:** `davinci-road/plan/exprref-validation.md`: what the second expression implementation revealed about `ExprRef` — capability-set gaps, span-model fit, projection-contract adequacy — with the fixes merged or explicitly deferred with rationale (charter #28's accepted late-validation risk gets its bill here).
+
+**Steps:**
+
+- [ ] Write the report from P6-4b's findings; land or defer each fix
+
+**Acceptance:** the report committed; every finding marked `fixed` (with its PR) or `deferred` (with its rationale).
+
+**Deps:** P6-4b.
+
+**Non-goals:** a third dialect.
+
+## P6-6 — Volt output-target exercise
+
+**Start gate:** startable now — no open earlier-phase dependency (waits behind P6-1c).
+
+**Lane:** E
+
+**Deliverable:** with the Volt (Elixir) maintainer, an output-target guest emitting for the Elixir host through the P6-1c world, run end to end in `examples/volt-target/`; findings feed the contract before the GA freeze.
+
+**Steps:**
+
+- [ ] Guest and host harness; a documented end-to-end run
+- [ ] Contract-change list, each item resolved or deferred
+
+**Acceptance:** the end-to-end run reproduces from its recorded command; the change list resolved. **Review point:** requires the Volt maintainer's participation and sign-off.
+
+**Deps:** P6-1c, P6-3.
+
+**Non-goals:** maintaining Volt.

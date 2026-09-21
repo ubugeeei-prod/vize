@@ -237,6 +237,10 @@ or is demand-gated off**.
   first salsa-backed release (the rustc 1.52.1 lesson: verification on from
   day one, not retrofitted).
 
+**Early re-cut (2026-09-21):** re-cut into full contracts alongside phase 4;
+11 of its 19 tasks are startable now and 8 are gated on named phase-4 tasks
+([phase-5.md](./plan/phase-5.md)). The phase still exits after phase 4.
+
 **Exit gate:** measured LSP latency budgets (keystroke → diagnostics, hover,
 completion) on large corpus projects; RSS / cold-start / idle-CPU ceilings
 hold; cache-hit accounting in perf tests; **LSP conformance + multi-client
@@ -256,6 +260,11 @@ smoke suite passes (Neovim headless, Helix, Zed alongside VS Code)**.
   the S2 neutral-core view and fact query API (napi batched execution,
   per-plugin cost attribution, content-keyed caching), validated by real
   user-land rules; spiked earlier during phase 4/5 consumer work.
+
+**Early re-cut (2026-09-21):** re-cut into full contracts alongside phases 4
+and 5; 10 of its 16 tasks are startable now and 6 are gated on named
+earlier-phase tasks ([phase-6.md](./plan/phase-6.md)). The phase still exits
+after phase 5.
 
 **Exit gate:** contracts documented with semver policy; at least one external
 consumer builds against a tagged release without patching vize internals; one

@@ -1,102 +1,88 @@
-# Phase 6 — Extension Contracts GA (provisional decomposition)
+# Phase 6 — Extension Contracts GA
 
-> [!WARNING]
-> Provisional; re-cut at phase-5 exit. Suites referenced as TS-n from
-> [test-suites.md](./test-suites.md).
+> [!NOTE]
+> **Early re-cut 2026-09-21, while phases 3–5 are still live**, under the plan README's [early re-cut rule](./README.md#task-format), in the same shape as [phase 4](./phase-4.md) and [phase 5](./phase-5.md). The maintainer's completion target (**2026-09-23**) and the public presentation at Vue Fes Japan 2026 (**2026-10-24**) make the contract work that needs no later substrate worth starting now: the input-dialect WIT world, the versioning policy, the wasmtime lane, the MoonBit hosting spike and the communications decision. Every task states its **start gate**: _startable now_ or _gated on_ a named earlier-phase task. The exit gate is unchanged and still follows the phase-5 exit (P6-13 depends on P5-14). Tasks whose acceptance needs people outside the repository (the Volt maintainer, a third-party dialect author, the maintainer's own decisions) say so as **review points**, never as green checks.
+
+**The per-task contracts live in [phase-6-tasks.md](./phase-6-tasks.md) (P6-1a…P6-6) and [phase-6-tasks-later.md](./phase-6-tasks-later.md) (P6-7…P6-13)** — Start gate / Lane / Deliverable / Steps / Acceptance / Deps / Non-goals for all 16 tasks. [`davinci-phase6-contract-status.test.ts`](../../tests/tooling/davinci-phase6-contract-status.test.ts) enforces the structure through the shared re-cut checker.
+
+## What the re-cut changed
+
+Measured on `origin/main` (2026-09-21):
+
+1. **Nothing of the contract layer exists yet**: no `contracts/` directory, no WIT files, no `wasmtime` or `wit-bindgen` in the workspace. P6-1 therefore **splits by world**: the input-dialect world needs only S1/S2 (startable now); the expression world needs the fact API and the mapping model (gated on P4-5a); the output-target world needs P3-9's structured emission document (gated on P3-9).
+2. **Marquette already classifies compatibility** (`crates/vize_marquette/src/compatibility*`, `canonical.rs`), so P6-8 extends its canonical serialization and additive/breaking classification to contract payloads instead of inventing a second classifier.
+3. **The repository already builds MoonBit tooling** (`tools/moon/cmd/*`, with a MoonBit toolchain cached in CI), which makes the P6-4 hosting spike cheap to start now: whether a pinned `moonc` wasm runs under wasmtime with wasm-gc, or needs a Node sidecar behind the same capability boundary. **P6-4 splits**: spike (P6-4a, startable now) and dialect (P6-4b, gated on P4-5b's projection).
+4. **The v1 go/no-go document exists** (`docs/release/v1-alpha-go-no-go.md`), so P6-11 wires evidence into its checklist rather than creating one.
+5. **Charter #45 is live now, not at phase 6.** The maintainer set a public presentation target; P6-12's decision point has arrived early and is startable now (see [open questions](../open-questions.md#communications-charter-45-and-the-vue-fes-japan-2026-presentation)).
+
+## Carried from earlier phases
+
+| Earlier task | Phase-6 tasks gated | Why                                                                  |
+| ------------ | ------------------- | -------------------------------------------------------------------- |
+| P4-5a        | P6-1b               | The expression world exports facts and projection mapping rows.      |
+| P3-9         | P6-1c               | The output-target world carries the S4 structured emission document. |
+| P4-5b        | P6-4b               | MoonBit's projection is an instance of the single projection.        |
+| P5-13        | P6-7                | GA hardens the cached plugin path.                                   |
+| P5-14        | P6-10, P6-13        | Metrics are reviewed against the finished incrementality substrate.  |
+
+## Start gates and parallel lanes
+
+**Startable now, 10 of 16 tasks:** P6-1a, P6-2, P6-3, P6-4a, P6-5 (behind P6-4b), P6-6 (behind P6-1c), P6-8, P6-9 (behind P6-2, P6-4b, P6-6), P6-11 (behind P6-10), P6-12. **Gated on earlier phases, 6 tasks:** P6-1b, P6-1c, P6-4b, P6-7, P6-10, P6-13.
+
+Lanes own disjoint paths within this phase; registration touchpoints (`Cargo.toml`, workspace members, `test-suites.md`) are the expected rebase conflicts. Lane F follows phase-4 lane O (`crates/vize_vitrine/src/napi/plugin*`) sequentially — P6-7 is gated behind P4-16 through P5-13.
+
+| Lane | Tasks               | Owns (only this lane edits)                                                       |
+| ---- | ------------------- | --------------------------------------------------------------------------------- |
+| A    | P6-1a, P6-1b, P6-1c | `contracts/wit/`                                                                  |
+| B    | P6-2                | `crates/vize_extension_sdk/`, `npm/extension-sdk/`                                |
+| C    | P6-3                | `crates/vize_extension_host/`                                                     |
+| D    | P6-4a, P6-4b, P6-5  | `crates/vize_dialect_moonbit/`, `davinci-road/plan/exprref-validation.md`         |
+| E    | P6-6                | `examples/volt-target/`                                                           |
+| F    | P6-7                | `npm/plugin-sdk/`, `crates/vize_vitrine/src/napi/plugin_sdk*`                     |
+| G    | P6-8                | `crates/vize_marquette/src/contracts*`, `davinci-road/contracts-compat-policy.md` |
+| H    | P6-9                | `tests/external-consumers/`                                                       |
+| I    | P6-10, P6-11        | `davinci-road/completion-metrics.md`, `docs/release/v1-alpha-go-no-go.md`         |
+| J    | P6-12               | `davinci-road/communications.md`                                                  |
+| X    | P6-13               | `davinci-road/plan/phase-6-records/`                                              |
+
+## Critical path
+
+Ordered for the 2026-09-23 completion target; **bold** tasks carry the most presentation value.
+
+1. **P6-12** communications decision and P6-4a MoonBit hosting spike start at once (no dependencies)
+2. P6-1a input-dialect world → P6-8 versioning policy → P6-2 prebuilt SDK → P6-3 wasmtime lane
+3. P6-1b expression world (at P4-5a) → **P6-4b** MoonBit expressions in templates (at P4-5b) → P6-5 `ExprRef` report
+4. P6-1c output world (at P3-9) → P6-6 Volt exercise → P6-9 external validation → P6-10 metrics review (at P5-14) → P6-11 v1 package → P6-13 exit
 
 ## TODO index
 
-- [ ] P6-1 WIT worlds + capability handshake + compat policy
-- [ ] P6-2 Prebuilt versioned extension SDK
-- [ ] P6-3 In-process wasmtime hosting lane
-- [ ] P6-4 MoonBit expression dialect
-- [ ] P6-5 `ExprRef` validation report
-- [ ] P6-6 Volt non-JS host exercise
-- [ ] P6-7 JS plugin SDK GA
-- [ ] P6-8 Contract versioning + semver policy
-- [ ] P6-9 External-consumer validation
-- [ ] P6-10 Completion-metrics review
-- [ ] P6-11 v1 go/no-go input package
-- [ ] P6-12 Communications revisit
-- [ ] P6-13 Phase exit
+Each ID links to its contract; the box is checked only in the PR that satisfies its acceptance criteria, with a record under `phase-6-records/`.
+
+- [ ] [P6-1a](./phase-6-tasks.md#p6-1a--input-dialect-wit-world-and-capability-handshake) Input-dialect WIT world and capability handshake — lane A · startable now
+- [ ] [P6-1b](./phase-6-tasks.md#p6-1b--expression-dialect-wit-world) Expression-dialect WIT world — lane A · gated on P4-5a
+- [ ] [P6-1c](./phase-6-tasks.md#p6-1c--output-target-wit-world) Output-target WIT world — lane A · gated on P3-9
+- [ ] [P6-2](./phase-6-tasks.md#p6-2--prebuilt-versioned-sdk) Prebuilt versioned SDK — lane B · startable now
+- [ ] [P6-3](./phase-6-tasks.md#p6-3--in-process-wasmtime-hosting-lane) In-process wasmtime hosting lane — lane C · startable now
+- [ ] [P6-4a](./phase-6-tasks.md#p6-4a--moonbit-hosting-spike) MoonBit hosting spike — lane D · startable now
+- [ ] [P6-4b](./phase-6-tasks.md#p6-4b--moonbit-expression-dialect) MoonBit expression dialect — lane D · gated on P4-5b
+- [ ] [P6-5](./phase-6-tasks.md#p6-5--exprref-validation-report) ExprRef validation report — lane D · startable now (behind P6-4b)
+- [ ] [P6-6](./phase-6-tasks.md#p6-6--volt-output-target-exercise) Volt output-target exercise — lane E · startable now (behind P6-1c)
+- [ ] [P6-7](./phase-6-tasks-later.md#p6-7--js-plugin-sdk-ga) JS plugin SDK GA — lane F · gated on P5-13
+- [ ] [P6-8](./phase-6-tasks-later.md#p6-8--contract-versioning-and-semver-policy) Contract versioning and semver policy — lane G · startable now
+- [ ] [P6-9](./phase-6-tasks-later.md#p6-9--external-consumer-validation) External-consumer validation — lane H · startable now (behind P6-2, P6-4b, P6-6)
+- [ ] [P6-10](./phase-6-tasks-later.md#p6-10--completion-metrics-review) Completion-metrics review — lane I · gated on P5-14
+- [ ] [P6-11](./phase-6-tasks-later.md#p6-11--v1-go-no-go-input-package) v1 go-no-go input package — lane I · startable now (behind P6-10)
+- [ ] [P6-12](./phase-6-tasks-later.md#p6-12--communications-decision) Communications decision — lane J · startable now
+- [ ] [P6-13](./phase-6-tasks-later.md#p6-13--phase-exit) Phase exit — lane X · gated on P5-14
 
 ---
 
-**P6-1 WIT worlds.** `contracts/wit/` defining three worlds (input dialect:
-block in → S1/S2 surface tree out; expression dialect: env + body in →
-analysis facts + projection out; output target: canonical S3/S2 in → emitted
-document out) — coarse-grained interfaces only (canonical-ABI copy cost);
-`get-capability` handshake with integer protocol version + feature strings
-(Swift import); `davinci-road/contracts-compat-policy.md` written before GA.
-_Accept:_ TS-48 golden exchanges; policy reviewed.
+## Exit gate (machine-checkable)
 
-**P6-2 Prebuilt SDK.** Versioned, prebuilt artifacts of the contract types
-(WIT bindings + Rust SDK crate + JS/TS types) published per release — no
-consumer ever compiles vize internals (the Swift macro crisis
-countermeasure). _Accept:_ a hello-world dialect builds against the SDK
-tarball alone.
-
-**P6-3 wasmtime lane.** Feature-gated (`extension-host`, charter #39)
-in-process hosting of contract guests under wasmtime, sharing the WIT
-contract with out-of-process transport; resource limits (fuel/memory) per
-guest. _Accept:_ same guest binary passes TS-48 in both hosting modes.
-
-**P6-4 MoonBit dialect.** Vendored pinned wasm build of `moonc` with a
-virtual FS — **spike first**: MoonBit's documented launchers are Node-based
-and require a wasm-gc-capable runtime, so verify the artifact/imports/wasm-gc
-under wasmtime, else fall back to a Node sidecar behind the same capability
-boundary. Generated `.mbti` binding environment from S2 scope facts
-(props/refs/composables as MoonBit signatures); template expressions
-projected to `.mbt` bodies; `moonc build-package` check-only; diagnostics
-span-mapped back; moonc version inside the fact cache key. _Accept:_ TS-49;
-matrix fixtures for MoonBit expressions compile/check end-to-end; hosting
-decision documented.
-
-**P6-5 `ExprRef` validation report.** What the second expression
-implementation revealed about the abstraction (capability set gaps, span
-model fit, projection contract adequacy) — budgeted fix time included
-(charter #28's accepted late-validation risk gets its bill here). _Accept:_
-report committed; abstraction fixes merged or explicitly deferred with
-rationale.
-
-**P6-6 Volt exercise.** With the Volt (Elixir) maintainer: an output-target
-guest emitting for the Elixir host through the WIT contract; findings feed
-the contract before GA freeze. _Accept:_ documented end-to-end run;
-contract-change list resolved.
-
-**P6-7 JS plugin GA.** The P4-16 spike hardened per charter #29: four hook
-families, batched napi visits, per-plugin cost attribution in lint output,
-content-keyed caching (P5-13); authoring docs + `@vizejs/plugin-sdk` package;
-transform hooks locked to the pre-canonical S2 point with determinism checks
-(same input twice ⇒ same output, CI-enforced). _Accept:_ TS-51 with ≥2
-real-world rules and 1 transform hook; parity bar unbroken (TS-11).
-
-**P6-8 Versioning.** Marquette-style canonical serialization + additive/
-breaking classification for contract payloads; semver policy doc; contract
-conformance suite versioned alongside. _Accept:_ a deliberately-breaking
-change is flagged by the classification tooling.
-
-**P6-9 External validation.** **Each of the three contracts** is validated
-externally: expression dialect by MoonBit (P6-4), output target by Volt
-(P6-6), and the **input-dialect contract by a third-party guest** (e.g. a
-community Svelte/Astro prototype built against the P6-2 SDK by someone other
-than the maintainer). _Accept:_ TS-50 covers all three; friction lists
-triaged.
-
-**P6-10 Metrics review.** Charter #35's pinned numbers vs achieved (compile
-throughput, peak memory, keystroke p95, fact adoption, source-map coverage);
-misses explained or remediated. _Accept:_ review doc committed.
-
-**P6-11 v1 package.** Go/no-go input assembled: parity matrices, budgets
-history, waiver/FP/FN ledgers, conformance results, corpus coverage — wired
-into `docs/release/v1-alpha-go-no-go.md`'s checklist (charter #24).
-_Accept:_ review point — maintainer accepts the package.
-
-**P6-12 Communications revisit.** Charter #45 decision point: publish the
-architecture docs / blog note or stay internal. _Accept:_ decision recorded.
-
-**P6-13 Phase exit.**
+The three provisional lines are normative and kept verbatim; the re-cut only adds lines.
 
 - [ ] TS-48..51 green; contracts documented with semver policy
 - [ ] MoonBit + Volt + JS-rule validations complete; `ExprRef` report closed
 - [ ] Completion metrics reconciled; v1 package delivered
+- [ ] Charter #45 decision recorded by the maintainer (P6-12); every review-point task names its reviewer and sign-off in its record
+- [ ] Standing gates held: TS-1..9, TS-11 empty for every surface the phase touches, TS-10 ratchets tightened only
