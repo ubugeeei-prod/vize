@@ -27,7 +27,7 @@ fn token_end(source: &str, token: &Token<'_>) -> u32 {
     offset_in(source, token.text) + token.text.len() as u32
 }
 
-fn child_start(source: &str, child: &SurfaceChild<'_>) -> u32 {
+pub(in crate::markup) fn child_start(source: &str, child: &SurfaceChild<'_>) -> u32 {
     match child {
         SurfaceChild::Element(element) => offset_in(source, element.open.lt_name.text),
         SurfaceChild::Interpolation(node) => offset_in(source, node.open.text),
@@ -44,6 +44,20 @@ pub(in crate::markup) fn element_at<'a>(
     tree: &'a SurfaceTree<'a>,
     start: u32,
 ) -> Option<&'a Element<'a>> {
+    let siblings = siblings_at(tree, start)?;
+    let index = siblings.partition_point(|child| child_start(tree.source, child) < start);
+    match siblings.get(index)? {
+        SurfaceChild::Element(element) => Some(element),
+        _ => None,
+    }
+}
+
+/// The S1 sibling list holding the element whose `<tag` token starts at
+/// `start`.
+pub(in crate::markup) fn siblings_at<'a>(
+    tree: &'a SurfaceTree<'a>,
+    start: u32,
+) -> Option<&'a [SurfaceChild<'a>]> {
     let source = tree.source;
     let mut children: &'a [SurfaceChild<'a>] = &tree.children;
     loop {
@@ -54,10 +68,16 @@ pub(in crate::markup) fn element_at<'a>(
             return None;
         };
         if offset_in(source, element.open.lt_name.text) == start {
-            return Some(element);
+            return Some(children);
         }
         children = &element.children;
     }
+}
+
+/// The range a token covers.
+pub(in crate::markup) fn token_range(source: &str, token: &Token<'_>) -> crate::ir::ByteRange {
+    let start = offset_in(source, token.text);
+    crate::ir::ByteRange::new(start, start + token.text.len() as u32)
 }
 
 /// One authored attribute's extent: name through the end of its value

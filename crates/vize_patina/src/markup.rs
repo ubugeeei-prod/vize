@@ -32,7 +32,10 @@
 //! surfaces as one [`MarkupConditional`], a `v-for` as one [`MarkupList`], and
 //! an unslotted `<template v-if>` / `<template v-for>` wrapper is unwrapped
 //! into its scope. The structural directives themselves are consumed: they are
-//! never reported as bindings or directives. The Relief backend synthesizes
+//! never reported as bindings or directives. [`MarkupElement::walk_children`]
+//! stays the *authored* child list — a template's `v-if` / `v-for` carrier is
+//! the child element, a JSX conditional or list expression one scope node —
+//! so rule bodies that read content see what was written. The Relief backend synthesizes
 //! the same scopes from a raw template parse ([`relief_scopes`]) so every
 //! backend answers identically; the `davinci-differential` lane
 //! ([`differential`]) proves it by comparing full hook traces exactly.
