@@ -67,6 +67,9 @@ enum Commands {
     /// Replay a Davinci crash repro (repro.folio) and verify it reproduces
     Repro(crate::commands::repro::ReproArgs),
 
+    /// Shrink a failing SFC or crash repro while it keeps failing the same way
+    Reduce(crate::commands::reduce::ReduceArgs),
+
     /// Update the installed Vize package
     #[command(visible_alias = "self-update")]
     Upgrade(crate::commands::upgrade::UpgradeArgs),
@@ -106,6 +109,7 @@ fn run(cli: Cli) {
         #[cfg(feature = "maestro")]
         Some(Commands::Ide(args)) => crate::commands::ide::run(args),
         Some(Commands::Repro(args)) => crate::commands::repro::run(args),
+        Some(Commands::Reduce(args)) => crate::commands::reduce::run(args),
         Some(Commands::Upgrade(args)) => crate::commands::upgrade::run(args),
         #[cfg(feature = "glyph")]
         Some(Commands::Ready(args)) => crate::commands::ready::run(args),

@@ -19,7 +19,7 @@
 - [ ] P3-11 IVM oracle
 - [ ] P3-12 Behavioral (sprout) runner incl. IME scripts
 - [ ] P3-13 Optimization remarks + corpus remarks-diff
-- [ ] P3-14 `folio-reduce`
+- [x] P3-14 `folio-reduce` _(`vize reduce`; see [record](./phase-3-records/p3-14.md))_
 - [x] P3-15 Lean theorems (lattice / grouping / IVM linearity)
 - [ ] P3-16 Phase exit
 
@@ -217,7 +217,10 @@ outside the pass manager remain open.
 **P3-14 `folio-reduce`.** Interestingness-script driver (llvm-reduce model)
 with S1-subtree deletion vocabulary; oracles composable from diagnostics /
 remarks / folio content / budget breaches. _Accept:_ reduces a seeded crash
-fixture to ≤ 20% size while preserving the oracle.
+fixture to ≤ 20% size while preserving the oracle. **Landed 2026-09-22:**
+`vize reduce` (see [P3-14 record](./phase-3-records/p3-14.md)) reduces the
+content-seeded crash repro from 3733 to 117 bytes (3.1%, 1-minimal), and the
+reduced repro still replays through `vize repro`.
 
 **P3-15 Lean theorems.** Lattice laws (classification monotonicity, join),
 effect-grouping preserves dependency edges, keyed-`v-for` IVM linearity —

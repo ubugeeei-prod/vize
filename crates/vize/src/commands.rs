@@ -21,5 +21,6 @@ pub mod musea;
 pub mod profile_export;
 #[cfg(feature = "glyph")]
 pub mod ready;
+pub mod reduce;
 pub mod repro;
 pub mod upgrade;

@@ -79,18 +79,19 @@ pub(super) struct DavinciBuildSettings {
     pub(super) stage: &'static str,
     /// Mode name recorded in `[repro.config]`.
     pub(super) mode: &'static str,
-    /// Parsed `--davinci-inject-panic` spec: `(file stem, pass name)`.
-    pub(super) inject: Option<(String, String)>,
+    /// Parsed `--davinci-inject-panic` spec: `(file stem, injection)`.
+    pub(super) inject: Option<(String, davinci_ice::Injection)>,
     /// Where a failing file's `repro.folio` is written (the output dir).
     pub(super) repro_dir: PathBuf,
 }
 
 impl DavinciBuildSettings {
-    /// The pass to panic in when compiling `path`, if injection targets it.
-    pub(super) fn injected_pass_for(&self, path: &Path) -> Option<&str> {
-        let (stem, pass) = self.inject.as_ref()?;
+    /// The injection targeting `path`, if any (its trigger, when set, is
+    /// checked against the source by the caller).
+    pub(super) fn injection_for(&self, path: &Path) -> Option<&davinci_ice::Injection> {
+        let (stem, injection) = self.inject.as_ref()?;
         (path.file_stem().and_then(|name| name.to_str()) == Some(stem.as_str()))
-            .then_some(pass.as_str())
+            .then_some(injection)
     }
 }
 

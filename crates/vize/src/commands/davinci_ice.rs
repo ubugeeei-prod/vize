@@ -46,8 +46,10 @@ use vize_davinci::pass::{
 use vize_s0::{FxHashMap, String, cstr};
 
 mod budget;
+mod replay;
 
 pub(crate) use budget::plan_budget;
+pub(crate) use replay::{compile_source, replay};
 
 /// `artifact-stage` value for an embedded authored source.
 pub(crate) const ARTIFACT_STAGE_SOURCE: &str = "source";
@@ -112,22 +114,53 @@ pub(crate) fn plan_string(plan: &Pipeline) -> String {
     out
 }
 
-/// Validate a `--davinci-inject-panic <file-stem>:<pass>` spec against the
-/// plan the build will run, so an injection that could never fire is an
-/// argument error rather than a silently green run.
-pub(crate) fn parse_inject_spec(spec: &str, plan: &Pipeline) -> Result<(String, String), String> {
-    let split = spec.split_once(':');
-    let Some((stem, pass)) = split.filter(|(stem, pass)| !stem.is_empty() && !pass.is_empty())
-    else {
-        return Err(cstr!("expected `<file-stem>:<pass>`, got `{spec}`"));
+/// A TS-23 injected panic: the pass it fires in and, for a content-seeded
+/// crash (P3-14), the element tag whose presence in the source it needs.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Injection {
+    pub(crate) pass: String,
+    pub(crate) when: Option<String>,
+}
+
+impl Injection {
+    /// Whether the injection fires for `source`: always without a trigger,
+    /// otherwise only while the source holds the trigger element.
+    pub(crate) fn fires_on(&self, source: &str) -> bool {
+        self.when
+            .as_deref()
+            .is_none_or(|tag| replay::has_element(source, tag))
+    }
+}
+
+/// Validate a `--davinci-inject-panic <file-stem>:<pass>[:<tag>]` spec
+/// against the plan the build will run, so an injection that could never
+/// fire is an argument error rather than a silently green run.
+pub(crate) fn parse_inject_spec(
+    spec: &str,
+    plan: &Pipeline,
+) -> Result<(String, Injection), String> {
+    let parts: Vec<&str> = spec.split(':').collect();
+    let (stem, pass, when) = match parts.as_slice() {
+        [stem, pass] => (*stem, *pass, None),
+        [stem, pass, tag] if !tag.is_empty() => (*stem, *pass, Some(String::from(*tag))),
+        _ => return Err(cstr!("expected `<file-stem>:<pass>[:<tag>]`, got `{spec}`")),
     };
+    if stem.is_empty() || pass.is_empty() {
+        return Err(cstr!("expected `<file-stem>:<pass>[:<tag>]`, got `{spec}`"));
+    }
     if !plan.passes.iter().any(|desc| desc.name == pass) {
         return Err(cstr!(
             "pass `{pass}` is not in the compile plan {}",
             plan_string(plan)
         ));
     }
-    Ok((String::from(stem), String::from(pass)))
+    Ok((
+        String::from(stem),
+        Injection {
+            pass: String::from(pass),
+            when,
+        },
+    ))
 }
 
 /// Suppress the default panic printer for guarded runs (unwind builds only -
@@ -231,14 +264,17 @@ pub(crate) fn run_injected(pipeline: &str, inject_pass: &str) -> Result<(), IceF
 pub(crate) fn source_repro(
     plan_str: &str,
     mode: &'static str,
-    inject: Option<&str>,
+    inject: Option<&Injection>,
     failure: &IceFailure,
     source: String,
 ) -> ReproFolio {
     let mut config: FxHashMap<String, String> = FxHashMap::default();
     config.insert(String::from(CONFIG_MODE), String::from(mode));
-    if let Some(pass) = inject {
-        config.insert(String::from(CONFIG_INJECT), String::from(pass));
+    if let Some(injection) = inject {
+        config.insert(String::from(CONFIG_INJECT), injection.pass.clone());
+        if let Some(tag) = &injection.when {
+            config.insert(String::from(replay::CONFIG_INJECT_WHEN), tag.clone());
+        }
     }
     let mut folio = ReproFolio {
         pipeline: String::from(plan_str),
@@ -266,83 +302,4 @@ pub(crate) fn write_repro(dir: &Path, stem: &str, folio: &ReproFolio) -> Result<
     std::fs::write(&path, folio.print_to_string(FolioMode::Full).as_bytes())
         .map_err(|error| cstr!("cannot write {}: {error}", path.display()))?;
     Ok(path)
-}
-
-/// Replay a parsed repro: `Ok(Some(_))` reproduced a failure, `Ok(None)`
-/// completed without one, `Err` means this repro cannot be replayed at all.
-pub(crate) fn replay(folio: &ReproFolio) -> Result<Option<IceFailure>, String> {
-    if let Some(pass) = folio.config.get(CONFIG_INJECT) {
-        return Ok(run_injected(folio.pipeline.as_str(), pass.as_str()).err());
-    }
-    if folio.artifact_stage.as_str() != ARTIFACT_STAGE_SOURCE {
-        return Err(cstr!(
-            "cannot replay artifact stage `{}`; only `{ARTIFACT_STAGE_SOURCE}` replays today",
-            folio.artifact_stage
-        ));
-    }
-    let mode = folio.config.get(CONFIG_MODE).map_or("dom", |m| m.as_str());
-    let Some((ssr, vapor)) = mode_flags(mode) else {
-        return Err(cstr!("unknown mode `{mode}` in [repro.config]"));
-    };
-    silence_panics();
-    let segments = parse_pipelines(folio.pipeline.as_str())
-        .expect("repro pipeline strings are validated at folio parse time");
-    let stage = segments.first().map_or("", |segment| segment.stage);
-    match catch_unwind(AssertUnwindSafe(|| {
-        compile_source(folio.artifact.as_str(), ssr, vapor);
-    })) {
-        Ok(()) => Ok(None),
-        // The same attribution rule the record side used for a real-compile
-        // panic: the plan's stage, no pass.
-        Err(payload) => Ok(Some(IceFailure {
-            stage: String::from(stage),
-            pass: String::default(),
-            reason: panic_reason(payload),
-        })),
-    }
-}
-
-/// Compile an embedded source with the recorded mode's defaults. Diagnostics
-/// are irrelevant to a replay - only a panic matters - so results and errors
-/// are discarded alike.
-fn compile_source(source: &str, ssr: bool, vapor: bool) {
-    use vize_atelier_core::{CodegenOptions, options::CustomElementMatcher};
-    use vize_atelier_sfc::{
-        ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-        TemplateCompileOptions,
-        compile_sfc_with_custom_elements_template_syntax_and_codegen_options, parse_sfc,
-    };
-
-    let parse_options = || SfcParseOptions {
-        filename: "repro.vue".into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = parse_sfc(source, parse_options()) else {
-        return;
-    };
-    let has_scoped = descriptor.styles.iter().any(|style| style.scoped);
-    let options = SfcCompileOptions {
-        parse: parse_options(),
-        script: ScriptCompileOptions::default(),
-        template: TemplateCompileOptions {
-            id: Some("repro.vue".into()),
-            scoped: has_scoped,
-            ssr,
-            ..Default::default()
-        },
-        style: StyleCompileOptions {
-            id: "repro.vue".into(),
-            scoped: has_scoped,
-            ..Default::default()
-        },
-        vapor,
-        scope_id: None,
-    };
-    let _ = compile_sfc_with_custom_elements_template_syntax_and_codegen_options(
-        &descriptor,
-        options,
-        vize_atelier_core::TemplateSyntaxMode::Standard,
-        CustomElementMatcher::from_patterns(Vec::new()),
-        CodegenOptions::default(),
-    );
 }

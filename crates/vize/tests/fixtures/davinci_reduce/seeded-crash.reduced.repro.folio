@@ -1,0 +1,14 @@
+[repro]
+pipeline=template(transform,codegen)
+failed-stage=template
+failed-pass=transform
+reason=injected davinci panic in pass `transform`
+artifact-stage=source
+
+[repro.config]
+inject-panic=transform
+inject-when=seed-crash
+mode=dom
+
+[repro.artifact]
+<template><section><Swiper><SwiperSlide><article><seed-crash /></article></SwiperSlide></Swiper></section></template>

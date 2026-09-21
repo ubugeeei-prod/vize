@@ -67,10 +67,14 @@ pub(super) fn compile_file_with_profile(
     settings: &CompileFileSettings,
     stats: &CompileStats,
 ) -> Result<(CompileOutput, FileProfile), CompileError> {
-    if let Some(pass) = settings.davinci.injected_pass_for(path) {
-        let failure = davinci_ice::run_injected(settings.davinci.plan_string.as_str(), pass)
-            .expect_err("the injected pass was validated to be in the plan");
-        return Err(ice_error(path, settings, &failure, Some(pass)));
+    if let Some(injection) = settings.davinci.injection_for(path)
+        && (injection.when.is_none()
+            || injection.fires_on(&fs::read_to_string(path).unwrap_or_default()))
+    {
+        let failure =
+            davinci_ice::run_injected(settings.davinci.plan_string.as_str(), &injection.pass)
+                .expect_err("the injected pass was validated to be in the plan");
+        return Err(ice_error(path, settings, &failure, Some(injection)));
     }
     davinci_ice::silence_panics();
     match catch_unwind(AssertUnwindSafe(|| {
@@ -97,7 +101,7 @@ fn ice_error(
     path: &PathBuf,
     settings: &CompileFileSettings,
     failure: &davinci_ice::IceFailure,
-    inject: Option<&str>,
+    inject: Option<&davinci_ice::Injection>,
 ) -> CompileError {
     let source = fs::read_to_string(path).unwrap_or_default();
     let folio = davinci_ice::source_repro(
