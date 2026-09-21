@@ -15,6 +15,7 @@ import RemarksPanel from "./RemarksPanel.vue";
 import type { TimelineStep } from "./ladder";
 import { useDavinciLadder, type StageId } from "./useDavinciLadder";
 import { stepKeyAction } from "./keys";
+import { formatArg } from "./remarks";
 
 const props = defineProps<{
   compiler: WasmModule | null;
@@ -32,6 +33,7 @@ const {
   rung,
   page,
   lines,
+  lineMarks,
   previousPage,
   diff,
   pageView,
@@ -42,6 +44,7 @@ const {
   hoveredLine,
   focusSource,
   focusProvenance,
+  focusRemarks,
   highlights,
   selectStage,
   selectPage,
@@ -168,6 +171,7 @@ function snippet(text: string): string {
           <FolioView
             v-else-if="page"
             :lines
+            :marks="lineMarks"
             :kind="page.kind"
             :selected="selectedLine"
             :linked="linkedLines"
@@ -192,6 +196,13 @@ function snippet(text: string): string {
               }}<template v-if="record.rule.startsWith('pass.')">
                 {{ snippet(record.after) }}</template
               ></span
+            >
+            <span
+              v-for="(remark, index) in focusRemarks"
+              :key="`remark-${index}`"
+              :class="['davinci-why', 'remark', remark.kind]"
+              :title="remark.args.map(formatArg).join(' ')"
+              >{{ remark.kind }} {{ remark.name }}</span
             >
           </template>
           <span v-else-if="stage !== 's4'" class="davinci-hint"

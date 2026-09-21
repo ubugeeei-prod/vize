@@ -8,8 +8,24 @@ import type { SpolveroRemark } from "./remarks";
 
 describe("PassTimeline timings", () => {
   const steps: TimelineStep[] = [
-    { key: "s1/parse", rung: "s1", pass: "parse", changed: true, producer: true, nanos: 5_000 },
-    { key: "s2/lower", rung: "s2", pass: "lower", changed: true, producer: true, nanos: 15_000 },
+    {
+      key: "s1/parse",
+      rung: "s1",
+      pass: "parse",
+      changed: true,
+      producer: true,
+      nanos: 5_000,
+      remarks: 0,
+    },
+    {
+      key: "s2/lower",
+      rung: "s2",
+      pass: "lower",
+      changed: true,
+      producer: true,
+      nanos: 15_000,
+      remarks: 0,
+    },
     {
       key: "s2/hoist-static",
       rung: "s2",
@@ -17,8 +33,17 @@ describe("PassTimeline timings", () => {
       changed: false,
       producer: false,
       nanos: 0,
+      remarks: 5,
     },
-    { key: "s3/lower", rung: "s3", pass: "lower", changed: true, producer: true, nanos: 20_000 },
+    {
+      key: "s3/lower",
+      rung: "s3",
+      pass: "lower",
+      changed: true,
+      producer: true,
+      nanos: 20_000,
+      remarks: 0,
+    },
   ];
 
   it("labels each step and splits the strip by measured share", () => {
@@ -37,6 +62,8 @@ describe("PassTimeline timings", () => {
       "width: 50%;",
     ]);
     expect(segments[1].classes()).toContain("current");
+    const badge = wrapper.find(".davinci-step-remarks");
+    expect([badge.text(), badge.attributes("title")]).toEqual(["5", "5 optimization remarks"]);
     expect(wrapper.find(".davinci-time-strip").attributes("aria-label")).toBe(
       "Measured compiler work: 40 µs in total",
     );
@@ -56,27 +83,50 @@ describe("PassTimeline timings", () => {
 });
 
 describe("RemarksPanel", () => {
-  it("states plainly that this build emits no remarks", () => {
+  it("says so when the passes had nothing to explain", () => {
     const wrapper = mount(RemarksPanel, { props: { remarks: [] } });
     expect(wrapper.find(".davinci-remarks-title").text()).toBe(
-      "No optimization remarks in this build",
+      "No optimization remarks for this source",
     );
     expect(wrapper.find(".davinci-remark-list").exists()).toBe(false);
     wrapper.unmount();
   });
 
-  it("lists remarks by outcome and locates the ones that name a site", async () => {
+  it("lists remarks by kind with their arguments and locates each site", async () => {
     const remarks: SpolveroRemark[] = [
-      { pass: "hoist-static", message: "hoisted <h1>", applied: true, span: { start: 3, end: 9 } },
-      { pass: "hoist-static", message: "<p> reads msg", applied: false, span: null },
+      {
+        stage: "s2",
+        pass: "hoist-static",
+        kind: "applied",
+        name: "static-subtree",
+        span: { start: 3, end: 9 },
+        args: [{ key: "tag", value: "h1" }],
+      },
+      {
+        stage: "s2",
+        pass: "hoist-static",
+        kind: "missed",
+        name: "static-props",
+        span: { start: 10, end: 30 },
+        args: [
+          { key: "tag", value: "p" },
+          { key: "blocker", value: "binding" },
+        ],
+      },
     ];
     const wrapper = mount(RemarksPanel, { props: { remarks } });
     expect(wrapper.find(".davinci-remarks-title").text()).toBe("1 applied, 1 missed");
     const rows = wrapper.findAll(".davinci-remark");
-    expect(rows.map((row) => row.classes().includes("applied"))).toEqual([true, false]);
-    expect(rows.map((row) => row.find("button").exists())).toEqual([true, false]);
-    await rows[0].find("button").trigger("click");
-    expect(wrapper.emitted("locate")).toEqual([[remarks[0]]]);
+    expect(rows.map((row) => row.classes())).toEqual([
+      ["davinci-remark", "applied"],
+      ["davinci-remark", "missed"],
+    ]);
+    expect(rows[1].findAll(".davinci-remark-arg").map((arg) => arg.text())).toEqual([
+      "tag=p",
+      "blocker=binding",
+    ]);
+    await rows[1].find("button").trigger("click");
+    expect(wrapper.emitted("locate")).toEqual([[remarks[1]]]);
     wrapper.unmount();
   });
 });

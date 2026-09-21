@@ -19,10 +19,24 @@ export interface SpolveroPage {
   text: string;
 }
 
+/** One optimization remark (P3-13) for the file at `path`. */
+export interface SpolveroFeedRemark {
+  path: string | null;
+  stage: string;
+  pass: string;
+  kind: "applied" | "missed" | "analysis";
+  name: string;
+  /** Byte offsets in the same frame as that file's pages. */
+  span: { start: number; end: number };
+  args: { key: string; value: string | number | boolean }[];
+}
+
 export interface SpolveroFeed {
   schema_version: number;
   command: string;
   pages: SpolveroPage[];
+  /** Additive to v1: absent means no remarks. */
+  remarks?: SpolveroFeedRemark[];
 }
 
 export type SpolveroNegotiation = { ok: true; feed: SpolveroFeed } | { ok: false; error: string };
@@ -38,6 +52,30 @@ function isPage(value: unknown): value is SpolveroPage {
     typeof value.stage === "string" &&
     typeof value.pass === "string" &&
     typeof value.text === "string"
+  );
+}
+
+const REMARK_KINDS = new Set(["applied", "missed", "analysis"]);
+
+function isRemark(value: unknown): value is SpolveroFeedRemark {
+  return (
+    isRecord(value) &&
+    (value.path === null || typeof value.path === "string") &&
+    typeof value.stage === "string" &&
+    typeof value.pass === "string" &&
+    typeof value.kind === "string" &&
+    REMARK_KINDS.has(value.kind) &&
+    typeof value.name === "string" &&
+    isRecord(value.span) &&
+    typeof value.span.start === "number" &&
+    typeof value.span.end === "number" &&
+    Array.isArray(value.args) &&
+    value.args.every(
+      (arg) =>
+        isRecord(arg) &&
+        typeof arg.key === "string" &&
+        ["string", "number", "boolean"].includes(typeof arg.value),
+    )
   );
 }
 
@@ -66,8 +104,18 @@ export function negotiateSpolveroFeed(raw: unknown): SpolveroNegotiation {
   if (invalid !== -1) {
     return { ok: false, error: `Spolvero feed page ${invalid} does not match the schema.` };
   }
-  return {
-    ok: true,
-    feed: { schema_version: version, command: raw.command, pages: raw.pages as SpolveroPage[] },
+  const remarks = raw.remarks;
+  if (remarks !== undefined) {
+    const bad = Array.isArray(remarks) ? remarks.findIndex((remark) => !isRemark(remark)) : 0;
+    if (bad !== -1) {
+      return { ok: false, error: `Spolvero feed remark ${bad} does not match the schema.` };
+    }
+  }
+  const feed: SpolveroFeed = {
+    schema_version: version,
+    command: raw.command,
+    pages: raw.pages as SpolveroPage[],
   };
+  if (remarks !== undefined) feed.remarks = remarks as SpolveroFeedRemark[];
+  return { ok: true, feed };
 }

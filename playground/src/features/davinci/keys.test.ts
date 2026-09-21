@@ -9,6 +9,7 @@ const step = (key: string): TimelineStep => ({
   changed: false,
   producer: false,
   nanos: null,
+  remarks: 0,
 });
 const timeline = [step("s1/parse"), step("s2/lower"), step("s3/lower")];
 const press = (key: string, target: EventTarget | null = document.body, modifiers = {}) => ({

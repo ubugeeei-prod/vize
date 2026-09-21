@@ -9,6 +9,7 @@ import { DAVINCI_PRESET } from "../src/shared/presets/davinci";
 import { buildLadder, type StageLadder } from "../src/features/davinci/ladder";
 import { folioLines } from "../src/features/davinci/folioLines";
 import { parseProvenance, recordsForNode } from "../src/features/davinci/provenance";
+import { remarksAt, summarizeRemarks } from "../src/features/davinci/remarks";
 import { templateBytesToSfcRange, templateStartInSfc } from "../src/features/davinci/offsets";
 
 const FILENAME = "Component.vue";
@@ -110,5 +111,25 @@ describe("Davinci stage ladder from the real compiler", () => {
     expect(records.filter(({ node }) => node === null).map(({ rule }) => rule)).toContain(
       "condense.drop-whitespace",
     );
+  });
+
+  it("carries hoist-static's optimization remarks and ties them to ops", () => {
+    expect(summarizeRemarks(ladder.remarks)).toEqual({ applied: 3, missed: 8, analysis: 0 });
+    expect(ladder.timeline.find(({ key }) => key === "s2/hoist-static")!.remarks).toBe(11);
+    const lowered = ladder.rungs[1].pages[0];
+    const lines = folioLines("disegno", lowered.text);
+    const about = (needle: string) => {
+      const line = lines.find((l) => l.text.includes(needle))!;
+      return remarksAt(ladder.remarks, line.span!).map(({ kind, name, args }) => [
+        kind,
+        name,
+        args.map(({ key, value }) => `${key}=${String(value)}`).join(" "),
+      ]);
+    };
+    expect(about("ui.element h1")).toEqual([["applied", "static-subtree", "tag=h1"]]);
+    expect(about("ui.element input")).toEqual([
+      ["missed", "static-props", "tag=input blocker=binding op=ui.model"],
+      ["missed", "static-subtree", "tag=input blocker=binding op=ui.model"],
+    ]);
   });
 });

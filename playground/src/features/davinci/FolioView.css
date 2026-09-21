@@ -47,6 +47,24 @@
   margin-top: 4px;
 }
 
+/* S3 partition overlay: teal static, ochre dynamic. */
+.davinci-mark {
+  flex-shrink: 0;
+  align-self: center;
+  width: 8px;
+  height: 8px;
+  margin-left: 10px;
+  border-radius: 50%;
+}
+
+.davinci-mark.static {
+  background: var(--color-teal);
+}
+
+.davinci-mark.dynamic {
+  background: var(--color-notice);
+}
+
 .davinci-ln {
   flex-shrink: 0;
   width: 3.5em;
@@ -221,7 +239,25 @@
   background: var(--color-notice-bg);
 }
 
+.davinci-remark.analysis .davinci-remark-outcome {
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+}
+
 .davinci-remark-pass {
   font-family: var(--font-mono);
   color: var(--text-secondary);
+}
+
+.davinci-remark-message {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: baseline;
+}
+
+.davinci-remark-arg {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
 }

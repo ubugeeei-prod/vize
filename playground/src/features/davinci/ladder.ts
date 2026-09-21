@@ -5,6 +5,7 @@
 
 import type { SpolveroFeed, SpolveroPage } from "../../wasm/types/spolvero";
 import type { PageKind } from "./folioLines";
+import type { SpolveroRemark } from "./remarks";
 
 export type RungId = "s1" | "s2" | "s3";
 
@@ -39,6 +40,8 @@ export interface TimelineStep {
   producer: boolean;
   /** Measured wall time in nanoseconds, when the run was profiled. */
   nanos: number | null;
+  /** How many optimization remarks this step's pass emitted. */
+  remarks: number;
 }
 
 export interface StageLadder {
@@ -48,6 +51,8 @@ export interface StageLadder {
   template: string;
   /** Stage names the view does not know how to place, kept visible. */
   unplaced: string[];
+  /** The passes' optimization remarks for this file, in canonical order. */
+  remarks: SpolveroRemark[];
 }
 
 const PAGE_KINDS: Record<string, { rung: RungId; kind: PageKind; label: string }> = {
@@ -122,6 +127,9 @@ export function buildLadder(
   );
   const grouped: Record<RungId, LadderPage[]> = { s1: [], s2: [], s3: [] };
   const unplaced: string[] = [];
+  const remarks: SpolveroRemark[] = (feed.remarks ?? [])
+    .filter((remark) => path === undefined || remark.path === path)
+    .map(({ stage, pass, kind, name, span, args }) => ({ stage, pass, kind, name, span, args }));
   for (const page of pages) {
     const placement = PAGE_KINDS[page.stage];
     if (!placement) {
@@ -163,6 +171,7 @@ export function buildLadder(
         changed: producer || previous[rung.id] !== page.text,
         producer,
         nanos: timings.get(page.key) ?? null,
+        remarks: remarks.filter((remark) => `${remark.stage}/${remark.pass}` === page.key).length,
       });
       previous[rung.id] = page.text;
     }
@@ -173,5 +182,6 @@ export function buildLadder(
     timeline,
     template: grouped.s1[0]?.text ?? "",
     unplaced,
+    remarks,
   };
 }

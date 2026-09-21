@@ -27,8 +27,9 @@ import {
   templateStartInSfc,
   type Range,
 } from "./offsets";
-import type { SpolveroRemark } from "./remarks";
+import { remarksAt, type SpolveroRemark } from "./remarks";
 import { parseProvenance, recordsForNode } from "./provenance";
+import { graphLineKinds, partitionKinds } from "./partition";
 
 export type StageId = RungId | "s4";
 export type OutputTarget = "dom" | "vapor" | "ssr";
@@ -63,9 +64,7 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
   const cursorBytes = ref<number | null>(null);
   const pageView = ref<PageView>("page");
   const pinnedSpan = ref<Range | null>(null);
-  // The feed carries no remark pages yet (the pass manager's remark channel
-  // exists; nothing emits into the feed), so the panel shows its empty state.
-  const remarks = computed<SpolveroRemark[]>(() => []);
+  const remarks = computed<SpolveroRemark[]>(() => ladder.value?.remarks ?? []);
 
   const rung = computed(() =>
     stage.value === "s4" ? null : (ladder.value?.rungs.find((r) => r.id === stage.value) ?? null),
@@ -77,6 +76,13 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
     return current.pages.find((p) => p.key === key) ?? current.pages[0];
   });
   const lines = computed(() => (page.value ? folioLines(page.value.kind, page.value.text) : []));
+  /** On the S3 graph page, each op line's exported static/dynamic partition. */
+  const lineMarks = computed(() => {
+    const shown = page.value;
+    const partition = rung.value?.pages.find((p) => p.kind === "partition");
+    if (!shown || shown.kind !== "impeto" || !partition) return new Map<number, string>();
+    return graphLineKinds(shown.text, partitionKinds(partition.text));
+  });
   /** The page this one is compared against: the previous page of its stage. */
   const previousPage = computed(() => {
     const current = rung.value;
@@ -106,6 +112,12 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
     const index = focusLine.value;
     const node = index === null ? null : (lines.value[index]?.node ?? null);
     return node === null ? [] : recordsForNode(provenance.value, node);
+  });
+  /** What the passes said about the focused S2 op (remarks at its span). */
+  const focusRemarks = computed(() => {
+    const index = focusLine.value;
+    const line = index === null ? null : lines.value[index];
+    return line?.node === null || !line?.span ? [] : remarksAt(remarks.value, line.span);
   });
   const focusSpan = computed(() => {
     const index = focusLine.value;
@@ -238,6 +250,7 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
     rung,
     page,
     lines,
+    lineMarks,
     previousPage,
     diff,
     pageView,
@@ -249,6 +262,7 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
     focusLine,
     focusSource,
     focusProvenance,
+    focusRemarks,
     highlights,
     selectStage,
     selectPage,

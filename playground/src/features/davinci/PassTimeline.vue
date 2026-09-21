@@ -79,6 +79,12 @@ function describe(step: TimelineStep): string {
           <span v-if="step.nanos !== null" class="davinci-step-time">{{
             formatNanos(step.nanos)
           }}</span>
+          <span
+            v-if="step.remarks > 0"
+            class="davinci-step-remarks"
+            :title="`${step.remarks} optimization ${step.remarks === 1 ? 'remark' : 'remarks'}`"
+            >{{ step.remarks }}</span
+          >
         </button>
       </li>
     </ol>

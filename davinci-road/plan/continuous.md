@@ -30,7 +30,7 @@
       clock). Open: fusion groups (no group index reaches the feed or the
       export yet)._
 - [ ] C-4 Flame views from profiler export (starts: P0-11 data available)
-- [ ] C-5 S3 pages, provenance navigation, remarks rendering (starts: P3-13)
+- [x] C-5 S3 pages, provenance navigation, remarks rendering (starts: P3-13)
       _S3 pages landed 2026-09-21 in the same feed: `s3` (graph),
       `s3-partition` (the new `[s3-partition-folio]` page) and `s3-values`.
       Provenance navigation landed in the Davinci tab the same day: a stage
@@ -39,10 +39,10 @@
       also carries `s2-provenance` (the new `[s2-provenance-folio]` page:
       every lowering and pass decision, dropped input included), and a
       focused S2 op shows why it exists - its lowering rule plus the facts
-      passes attached. The remarks panel renders a
-      typed `{pass, message, applied, span}` list with an explicit empty
-      state; open: remarks emitted into the feed (P3-13), which the panel
-      then renders unchanged._
+      passes attached. Remarks rendering landed the same day on P3-13's
+      feed `remarks` member: the tab lists every remark by kind with its
+      arguments and source site, a focused S2 op shows the remarks about
+      its construct, and each timeline step counts its pass's remarks._
 - [ ] C-6 Fact browser incl. reactivity-lattice overlay (starts: P4-1)
       _Constraint recorded 2026-09-21: the lattice has no per-SFC producer
       yet (P3-7 evaluates it per binding kind inside DOM patch emission), so

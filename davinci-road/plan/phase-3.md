@@ -18,7 +18,7 @@
 - [ ] P3-10 Try-measure-commit extraction _(slice 1 pins optimization budgets before extraction; see [record](./phase-3-records/p3-10.md))_
 - [x] P3-11 IVM oracle
 - [x] P3-12 Behavioral (sprout) runner incl. IME scripts
-- [ ] P3-13 Optimization remarks + corpus remarks-diff
+- [x] P3-13 Optimization remarks + corpus remarks-diff
 - [x] P3-14 `folio-reduce` _(`vize reduce`; see [record](./phase-3-records/p3-14.md))_
 - [x] P3-15 Lean theorems (lattice / grouping / IVM linearity)
 - [ ] P3-16 Phase exit
@@ -282,8 +282,10 @@ remarks-diff over the 433 in-repo fixtures is wired into `clippy-and-test`
 against a committed baseline whose bless refuses unexplained
 `applied → missed` transitions. _Feed slice 2026-09-21:_ the Spolvero feed
 (inspector, `analyzeSfc`, `davinci-opt`) carries the remarks, and the C-13
-backlog is mined from the TS-32 corpus. Playground rendering (C-5) and
-emitters outside the pass manager remain open.
+backlog is mined from the TS-32 corpus. _Rendering slice 2026-09-22:_ the
+playground's Davinci tab renders them (C-5). **Landed** 2026-09-22: both
+acceptance items hold; emitters for decisions made outside the pass manager
+are follow-ups in the record.
 
 **P3-14 `folio-reduce`.** Interestingness-script driver (llvm-reduce model)
 with S1-subtree deletion vocabulary; oracles composable from diagnostics /

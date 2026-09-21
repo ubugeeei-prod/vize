@@ -198,6 +198,24 @@
   color: var(--text-muted);
 }
 
+/* A fixed slot so live timings never reflow the steps while typing. */
+.davinci-step-time {
+  min-width: 6ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.davinci-step-remarks {
+  min-width: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--color-notice);
+  background: var(--color-notice-bg);
+  border-radius: 8px;
+}
+
 .davinci-timeline-summary {
   margin: 0 0 0 auto;
   font-size: 12px;

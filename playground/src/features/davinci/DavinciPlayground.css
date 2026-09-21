@@ -253,6 +253,16 @@
   background: var(--color-teal-bg);
 }
 
+.davinci-why.remark.applied {
+  color: var(--color-teal);
+  background: var(--color-teal-bg);
+}
+
+.davinci-why.remark.missed {
+  color: var(--color-notice);
+  background: var(--color-notice-bg);
+}
+
 .davinci-snippet {
   font-family: var(--font-mono);
   font-size: 13px;

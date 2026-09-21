@@ -40,4 +40,25 @@ describe("negotiateSpolveroFeed", () => {
       error: "The Spolvero feed is missing its command or pages.",
     });
   });
+
+  it("accepts the additive remarks member and refuses a malformed remark", () => {
+    const remark = {
+      path: "Component.vue",
+      stage: "s2",
+      pass: "hoist-static",
+      kind: "applied",
+      name: "static-subtree",
+      span: { start: 3, end: 9 },
+      args: [{ key: "tag", value: "h1" }],
+    };
+    const raw = { schema_version: 1, command: "analyze-sfc", pages: [page], remarks: [remark] };
+    expect(negotiateSpolveroFeed(raw)).toEqual({ ok: true, feed: raw });
+    expect(
+      negotiateSpolveroFeed({ ...raw, remarks: [remark, { ...remark, kind: "maybe" }] }),
+    ).toEqual({ ok: false, error: "Spolvero feed remark 1 does not match the schema." });
+    expect(negotiateSpolveroFeed({ ...raw, remarks: "none" })).toEqual({
+      ok: false,
+      error: "Spolvero feed remark 0 does not match the schema.",
+    });
+  });
 });
