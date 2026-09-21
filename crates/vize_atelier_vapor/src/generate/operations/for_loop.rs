@@ -1,4 +1,5 @@
 use crate::ir::ForIRNode;
+use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{FxHashMap, String, ToCompactString, cstr};
 
 use super::{
@@ -24,12 +25,13 @@ pub(super) fn generate_for(
     emit_insertion_state(ctx, for_node.parent, for_node.anchor);
 
     let depth = ctx.for_scopes.len();
-    let source = if for_node.source.is_static {
-        ["(", for_node.source.content, ")"].concat()
+    let mut source = EmitDocument::plain("(");
+    if for_node.source.is_static {
+        source.push_str(for_node.source.content);
     } else {
-        let resolved = ctx.resolve_expression_node(&for_node.source);
-        ["(", &resolved, ")"].concat()
-    };
+        source.push_spanned(&ctx.spanned_expression_node(&for_node.source));
+    }
+    source.push_str(")");
 
     let value_alias = for_node.value.as_ref().map(|v| v.content);
     let key_alias = for_node.key.as_ref().map(|k| k.content);
@@ -62,19 +64,14 @@ pub(super) fn generate_for(
     let was_fragment = ctx.is_fragment;
     ctx.is_fragment = true;
 
+    // `_createFor(` opens at the authored element carrying `v-for`.
     let for_id_str = for_node.id.to_compact_string();
-    ctx.push_line(
-        &[
-            "const n",
-            &for_id_str,
-            " = _createFor(() => ",
-            &source,
-            ", (",
-            &params,
-            ") => {",
-        ]
-        .concat(),
-    );
+    let mut head = EmitDocument::plain(&["const n", &for_id_str, " = "].concat());
+    head.push_spanned(&ctx.spanned_at("_createFor(", ctx.unit_of(&for_node.source)));
+    head.push_str("() => ");
+    head.push_spanned(&source);
+    head.push_str(&[", (", &params, ") => {"].concat());
+    ctx.push_line_spanned(&head);
     ctx.indent();
     if block_requires_parent_insertion_state(&for_node.render) {
         emit_insertion_state(ctx, for_node.parent, for_node.anchor);

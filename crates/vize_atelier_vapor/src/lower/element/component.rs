@@ -232,8 +232,12 @@ pub(super) fn transform_component<'a>(
                             let slot_block = transform_children(ctx, &child_el.children);
                             let _template_id = ctx.next_id(); // consume ID for template wrapper
                             let n = ctx.allocator.alloc_str(&slot_name);
-                            let name_exp =
-                                SimpleExpressionNode::new(n, is_static_name, SourceLocation::STUB);
+                            // The name keeps the authored `v-slot` argument span.
+                            let name_loc = dir
+                                .arg
+                                .as_ref()
+                                .map_or(SourceLocation::STUB, |a| a.loc().clone());
+                            let name_exp = SimpleExpressionNode::new(n, is_static_name, name_loc);
                             slots.push(IRSlot {
                                 name: Box::new_in(name_exp, &ctx.allocator),
                                 fn_exp,

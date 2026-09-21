@@ -22,9 +22,8 @@ pub(super) fn bindings<'a>(
     let mut names = FxHashSet::default();
     for (index, node) in nodes.iter().enumerate() {
         match &node.content {
-            Content::Element { attributes, .. } => {
-                names.extend((attributes.iter()).map(|(name, _)| (index, BindingKind::Prop, *name)))
-            }
+            Content::Element { attributes, .. } => names
+                .extend((attributes.iter()).map(|(name, ..)| (index, BindingKind::Prop, *name))),
             Content::Component { props, .. } | Content::Outlet { props, .. } => {
                 names.extend(
                     props
@@ -74,6 +73,7 @@ pub(super) fn bindings<'a>(
                 return Err(LegacyReason::Binding.into());
             };
             owner.key_prop = Some(binding.value);
+            owner.spans.key_prop = Some(binding.spans[1]);
             continue;
         }
         // Content directives replace the element's children at runtime.
@@ -133,6 +133,6 @@ fn static_class<'a>(node: &mut Node<'a>, binding: &Binding<'a>) -> Option<&'a st
     };
     let position = attributes
         .iter()
-        .position(|(name, value)| *name == "class" && value.is_some())?;
+        .position(|(name, value, _)| *name == "class" && value.is_some())?;
     attributes.remove(position).1
 }

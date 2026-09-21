@@ -3,10 +3,12 @@
 //! numbered before their parent element, which is numbered before its other
 //! dynamic descendants; those follow in document order.
 
-use vize_carton::{String, Vec, ensure_sufficient_stack};
+use vize_atelier_core::codegen::document::EmitDocument;
+use vize_carton::{Vec, ensure_sufficient_stack};
 
 use super::super::Content;
-use super::{Emitter, escape};
+use super::spans::{tag_offset, value_offset};
+use super::{Emitter, escaped};
 use crate::ir::{BlockIRNode, InsertNodeIRNode, OperationNode};
 
 impl<'a> Emitter<'a, '_> {
@@ -14,7 +16,7 @@ impl<'a> Emitter<'a, '_> {
     pub(super) fn element(&mut self, index: usize, block: &mut BlockIRNode<'a>) {
         let reserved = self.reserve(index);
         let id = self.id();
-        let mut template = String::default();
+        let mut template = EmitDocument::new(self.source.is_some());
         self.node(index, Some(id), reserved, &mut template, block);
         self.register(id, &template);
         block.returns.push(id);
@@ -40,33 +42,39 @@ impl<'a> Emitter<'a, '_> {
         index: usize,
         id: Option<usize>,
         reserved: std::vec::Vec<usize>,
-        template: &mut String,
+        template: &mut EmitDocument,
         block: &mut BlockIRNode<'a>,
     ) {
         ensure_sufficient_stack(|| {
             let Content::Element {
                 tag,
+                tag_span,
                 ref attributes,
             } = self.artifact.nodes[index].content
             else {
                 unreachable!("templates start at elements")
             };
-            template.push('<');
-            template.push_str(tag);
+            template.push_char('<');
+            // S3 keeps element and attribute spans; the tokens inside them
+            // are located by the HTML syntax of that authored text (P3-9).
+            let tag_token = self.token(tag_span, |raw| tag_offset(raw, tag));
+            self.link(template, tag, tag_token, tag.len());
             if let Some(scope_id) = self.scope_id {
-                template.push(' ');
+                template.push_char(' ');
                 template.push_str(scope_id);
             }
-            for (name, value) in attributes {
-                template.push(' ');
-                template.push_str(name);
+            for &(name, value, span) in attributes {
+                template.push_char(' ');
+                let name_token = self.token(span, |raw| raw.starts_with(name).then_some(0));
+                self.link(template, name, name_token, name.len());
                 if let Some(value) = value {
                     template.push_str("=\"");
-                    escape(template, value);
-                    template.push('"');
+                    let value_token = self.token(span, |raw| value_offset(raw, name, value));
+                    self.link(template, &escaped(value), value_token, value.len());
+                    template.push_char('"');
                 }
             }
-            template.push('>');
+            template.push_char('>');
             if let Some(id) = id {
                 self.bindings(index, id, block);
             }
@@ -74,7 +82,7 @@ impl<'a> Emitter<'a, '_> {
             if !vize_carton::is_void_tag(tag) {
                 template.push_str("</");
                 template.push_str(tag);
-                template.push('>');
+                template.push_char('>');
             }
         });
     }
@@ -84,7 +92,7 @@ impl<'a> Emitter<'a, '_> {
         index: usize,
         parent: Option<usize>,
         reserved: std::vec::Vec<usize>,
-        template: &mut String,
+        template: &mut EmitDocument,
         block: &mut BlockIRNode<'a>,
     ) {
         let children = self.artifact.nodes[index].children.clone();

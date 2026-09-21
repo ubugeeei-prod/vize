@@ -221,7 +221,10 @@ and direct writes via the shared `SpannedText` primitive and meets every TS-31
 SSR budget. _Sixth slice 2026-09-22:_ DOM and SSR write into one
 target-neutral `EmitDocument` whose generated↔authored range links serialize
 as v3 segments and convert to P4-5a `ProjectionMapping` rows; maps and bytes
-unchanged. Vapor token-level emission onto the document and legacy recovery
+unchanged. _Seventh slice 2026-09-22:_ both Vapor lanes (legacy lowering and
+native S3) emit token-level maps through the same document and meet every
+TS-31 Vapor budget, so no backend row remains below budget. The structured
+SFC path and legacy recovery
 removal remain open.
 
 **P3-10 Try-measure-commit.** Placement alternatives (hoist/cache/inline/

@@ -127,6 +127,16 @@ impl EmitDocument {
         (self.text, self.links)
     }
 
+    /// A recording fragment from text and links over it, the inverse of
+    /// [`Self::into_parts`].
+    pub fn from_parts(text: String, links: Vec<SpanLink>) -> Self {
+        Self {
+            text,
+            links,
+            recording: true,
+        }
+    }
+
     /// Append unlinked text.
     #[inline]
     pub fn push_str(&mut self, text: &str) {
