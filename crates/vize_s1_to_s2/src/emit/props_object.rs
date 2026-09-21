@@ -1,7 +1,9 @@
 mod bind_pair;
+mod hoist_gap;
 mod pieces;
 
 use alloc::vec::Vec as StdVec;
+pub(in crate::emit) use hoist_gap::check as check_hoist_gap;
 use vize_s2::expr::{ExprRef, OpaqueReason};
 use vize_s2::op::DynamicName;
 

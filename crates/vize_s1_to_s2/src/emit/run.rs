@@ -91,6 +91,8 @@ pub(super) fn emit_dom_observed<'f>(
         template_for_item_single_root: false,
         template_for_item_root_id: None,
         template_if_branch_root: false,
+        slot_if_branch_root: false,
+        reordered_slots: false,
         template_if_for_branch_root: false,
         suppress_template_for_child_key: false,
         skip_memo: false,
@@ -162,6 +164,16 @@ pub(super) fn emit_dom_observed<'f>(
     // preferred helpers, at the op whose expression needed it - ahead of a
     // structural helper that op registers later (`renderList`).
     let unref_visit = cx.used_unref.get();
+    // The `_unref` registration point is the first *emitted* use; the shipped
+    // transform registers it at the first *authored* one. They differ only
+    // when slot objects print named templates ahead of earlier default
+    // content, so that combination is refused rather than guessed (P3-17).
+    if unref_visit != u32::MAX && cx.reordered_slots {
+        return Err(EmitError::unsupported_at(
+            super::error::UnsupportedReason::UnrefAcrossReorderedSlots,
+            vize_s0::Span::new(0, 0),
+        ));
+    }
     if unref_visit != u32::MAX {
         cx.buf.prefer_at_visit(Helper::Unref, unref_visit);
         cx.buf.use_helper(Helper::Unref);

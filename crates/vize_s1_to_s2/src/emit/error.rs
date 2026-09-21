@@ -30,6 +30,9 @@ pub enum UnsupportedReason {
     ForAliasNotEmittable,
     ForItemShape,
     ForSourceNotJs,
+    /// A props surface the shipped `has_static_props` hoists but the S2
+    /// hoist pass's narrower constant rule does not (P3-17).
+    HoistConstantGap,
     HtmlExpressionNotJs,
     IfBranchShape,
     IfConditionNotJs,
@@ -67,6 +70,10 @@ pub enum UnsupportedReason {
     /// `is_ts` was requested from a build without the `typescript`
     /// feature, whose type erasure needs `std`.
     TypeScriptLaneUnavailable,
+    /// An inline render reads `_unref` and prints named slot templates ahead
+    /// of earlier default content: the helper's registration point differs
+    /// from the shipped transform's (P3-17).
+    UnrefAcrossReorderedSlots,
     UnsupportedBindingKind,
     WalkIdOverflow,
 }
@@ -90,6 +97,7 @@ impl UnsupportedReason {
         Self::ForAliasNotEmittable,
         Self::ForItemShape,
         Self::ForSourceNotJs,
+        Self::HoistConstantGap,
         Self::HtmlExpressionNotJs,
         Self::IfBranchShape,
         Self::IfConditionNotJs,
@@ -121,6 +129,7 @@ impl UnsupportedReason {
         Self::TextExpressionNotEmittable,
         Self::TextRunContainsNonText,
         Self::TypeScriptLaneUnavailable,
+        Self::UnrefAcrossReorderedSlots,
         Self::UnsupportedBindingKind,
         Self::WalkIdOverflow,
     ];
@@ -145,6 +154,7 @@ impl UnsupportedReason {
             Self::ForAliasNotEmittable => "for_alias_not_emittable",
             Self::ForItemShape => "for_item_shape",
             Self::ForSourceNotJs => "for_source_not_js",
+            Self::HoistConstantGap => "hoist_constant_gap",
             Self::HtmlExpressionNotJs => "html_expression_not_js",
             Self::IfBranchShape => "if_branch_shape",
             Self::IfConditionNotJs => "if_condition_not_js",
@@ -177,6 +187,7 @@ impl UnsupportedReason {
             Self::TextExpressionNotEmittable => "text_expression_not_emittable",
             Self::TextRunContainsNonText => "text_run_contains_non_text",
             Self::UnsupportedBindingKind => "unsupported_binding_kind",
+            Self::UnrefAcrossReorderedSlots => "unref_across_reordered_slots",
             Self::WalkIdOverflow => "walk_id_overflow",
         }
     }

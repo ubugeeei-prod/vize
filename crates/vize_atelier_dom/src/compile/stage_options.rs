@@ -134,6 +134,16 @@ pub(super) fn source_may_contain_patterned_template_syntax(source: &str) -> bool
     source.contains("v-match") || source.contains("v-when") || source.contains("v-case")
 }
 
+/// Whether the source may carry an `@vize:` directive comment. The shipped
+/// parser keeps those comments as children even with `comments` off (codegen
+/// and the linter read them), so an element holding one keeps its children
+/// slot (`createElementBlock("div", null, null)`); the S2 lowering drops them.
+/// A cheap superset scan keeps such templates on the lane that owns them
+/// (P3-17, found by the SFC snapshot oracle).
+pub(super) fn source_may_contain_vize_directive_comment(source: &str) -> bool {
+    source.contains("@vize:")
+}
+
 /// The published DOM option surface projected onto the S2 emitter.
 ///
 /// Keep this conversion beside the legacy parse/transform wiring: the public
@@ -147,6 +157,7 @@ pub(super) fn s2_emit_options<'a>(
     custom_elements: &'a CustomElementMatcher,
     bindings: Option<&'a BindingTable>,
     hoisted_scope_id: Option<&'a str>,
+    experimental_component_name: Option<&'a str>,
 ) -> Option<DomEmitOptions<'a>> {
     Some(DomEmitOptions {
         mode: match options.mode {
@@ -158,7 +169,10 @@ pub(super) fn s2_emit_options<'a>(
         prefix_identifiers: options.prefix_identifiers,
         hoist_static: options.hoist_static,
         inline: options.inline,
-        component_name: options.component_name.as_deref(),
+        // The shipped codegen reads the experimental context's name first
+        // (`CodegenContext::new`: `experimental.component_name.or(options…)`);
+        // SFC compiles carry the file stem only there.
+        component_name: experimental_component_name.or(options.component_name.as_deref()),
         cache_handlers: options.cache_handlers,
         hoisted_scope_id,
         scope_id: options.scope_id.as_deref(),
@@ -170,6 +184,8 @@ pub(super) fn s2_emit_options<'a>(
         bindings,
     })
 }
+
+pub(super) use super::croquis_facts::{s2_binding_table_for, unprojectable_croquis};
 
 pub(super) fn s2_binding_table(metadata: Option<&BindingMetadata>) -> Option<BindingTable> {
     metadata.map(|metadata| {
@@ -187,6 +203,7 @@ pub(super) fn s2_binding_table(metadata: Option<&BindingMetadata>) -> Option<Bin
     })
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn try_emit_s2(
     allocator: &Allocator,
     source: &str,
@@ -194,15 +211,17 @@ pub(super) fn try_emit_s2(
     codegen: &CodegenOptions,
     custom_elements: &CustomElementMatcher,
     hoisted_scope_id: Option<&str>,
+    experimental_component_name: Option<&str>,
     pre_s2_walks: Option<WalkCounts>,
 ) -> Option<CodegenResultWithSections> {
-    let binding_table = s2_binding_table(options.binding_metadata.as_ref());
+    let binding_table = s2_binding_table_for(options);
     let emit_options = s2_emit_options(
         options,
         codegen,
         custom_elements,
         binding_table.as_ref(),
         hoisted_scope_id,
+        experimental_component_name,
     )?;
     profile!(
         "atelier.dom.template.s2_codegen",
