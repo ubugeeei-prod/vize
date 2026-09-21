@@ -66,8 +66,11 @@ const vFocus: Directive<HTMLElement, number> = () => {}
 ///   the bound value is knowable.
 /// * `vNotADirective = 42` does not match `Directive<any, infer V>` at all and
 ///   resolves to `unknown`, which accepts any value.
+/// * An argument and modifiers on any of them (`v-access:code="[…]"`, the
+///   vue-vben-admin shape) are as unknowable as the value: a binding nobody
+///   declared must accept `arg` and `modifiers` too, not only `value`.
 ///
-/// vue-tsc 3.3.4 reports nothing on this file.
+/// vue-tsc 3.3.4 and 3.3.11 report nothing on this file.
 #[test]
 fn unresolvable_and_untyped_directives_stay_silent() {
     if resolve_test_tsgo_binary().is_none() {
@@ -87,6 +90,9 @@ const vNotADirective = 42
   <div v-global="'anything'" />
   <div v-untyped="'anything'" />
   <div v-not-a-directive="'anything'" />
+  <div v-global:code.once="['anything']" />
+  <div v-untyped:code.once="['anything']" />
+  <div v-not-a-directive:code.once="['anything']" />
 </template>
 "#,
         )],

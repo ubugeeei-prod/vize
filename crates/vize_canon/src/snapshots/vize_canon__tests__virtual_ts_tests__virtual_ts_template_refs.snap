@@ -82,8 +82,8 @@ type __VizeComponentNativeAttrNames = { [K in keyof __VizeNativeElements & strin
 type __VizeComponentDataAttrs = { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };
 type __VizeComponentGlobalHtmlAttrs = __VizeIsAny<__VizeNativeElements> extends true ? {} : { [K in __VizeComponentNativeAttrNames as K | __VizeComponentAttrCamel<K>]?: unknown } & __VizeComponentDataAttrs;
 declare function __vizeComponentGlobalHtmlAttrs(value: __VizeComponentGlobalHtmlAttrs): void;
-declare function __vForList<const T>(source: T): T extends number ? [item: number, key: number][] : T extends string ? [item: string, key: number][] : T extends readonly any[] ? (T extends readonly (infer U)[] ? [item: U, key: number] : never)[] : T extends Iterable<any> ? (T extends Iterable<infer U> ? [item: U, key: number] : never)[] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number][];type __VizeDirectiveHook<D, H = Extract<D[keyof D & ('created' | 'beforeMount' | 'mounted' | 'beforeUpdate' | 'updated' | 'beforeUnmount' | 'unmounted')], (...args: any[]) => any>> = D extends (...args: any[]) => any ? D : [H] extends [never] ? (el: unknown, binding: { value?: unknown }, ...args: any[]) => void : H;
-type __VizeDirectiveCall<H> = H extends (...args: any[]) => any ? Parameters<H>['length'] extends 0 | 1 ? (el: unknown, binding: { value?: unknown }) => void : H : never;
+declare function __vForList<const T>(source: T): T extends number ? [item: number, key: number][] : T extends string ? [item: string, key: number][] : T extends readonly any[] ? (T extends readonly (infer U)[] ? [item: U, key: number] : never)[] : T extends Iterable<any> ? (T extends Iterable<infer U> ? [item: U, key: number] : never)[] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number][];type __VizeDirectiveHook<D, H = Extract<D[keyof D & ('created' | 'beforeMount' | 'mounted' | 'beforeUpdate' | 'updated' | 'beforeUnmount' | 'unmounted')], (...args: any[]) => any>> = D extends (...args: any[]) => any ? D : [H] extends [never] ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }, ...args: any[]) => void : H;
+type __VizeDirectiveCall<H> = H extends (...args: any[]) => any ? Parameters<H>['length'] extends 0 | 1 ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }) => void : H : never;
 declare function __vizeDirective<D>(directive: D): __VizeDirectiveCall<__VizeDirectiveHook<D>>;
 // @ts-ignore TS2694/TS2307: a `vue` without `GlobalDirectives` must degrade registered directives to unchecked, never error.
 type __VizeGlobalDirectives = import('vue').GlobalDirectives;
@@ -130,7 +130,7 @@ function __setup() {
   const inputRef = ref<HTMLInputElement | null>(null)
 void (null! as __VizeTemplateRefs["btn"]);   const buttonEl = useTemplateRef('btn')
   
-  // @vize-map: 15035:15182 -> 0:135
+  // @vize-map: 15107:15254 -> 0:135
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
