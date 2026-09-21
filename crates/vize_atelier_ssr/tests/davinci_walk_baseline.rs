@@ -41,7 +41,7 @@ const BASELINE: [(&str, u64, u64); 6] = [
 /// production selector emits admitted templates from the S4 string plan.
 const PRODUCTION_FLOOR: [(&str, u64, u64); 6] = [
     ("small", 1, 8),
-    ("medium", 2, 118),
+    ("medium", 1, 33),
     ("large", 2, 106),
     ("stress-deep", 1, 72),
     ("stress-wide", 1, 2),

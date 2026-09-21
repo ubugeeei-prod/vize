@@ -93,6 +93,8 @@ pub enum SsrStringSegmentKind {
     CloseFor,
     SlotOutlet,
     CloseSlot,
+    /// A `v-slot` spelling attached to its carrier (never a region opener).
+    SlotContent,
     Directive,
 }
 

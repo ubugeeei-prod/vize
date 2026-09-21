@@ -47,6 +47,10 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
     ),
     ("component-model", r#"<Foo v-model="value" />"#),
     (
+        "component-model-padded",
+        "<Foo v-model=\" value \" /><Foo v-model=\"\n  a.b\n\" /><Foo v-model=\"x[0]\" />",
+    ),
+    (
         "component-show",
         r#"<MyComp style="color: red;" v-show="ok" />"#,
     ),

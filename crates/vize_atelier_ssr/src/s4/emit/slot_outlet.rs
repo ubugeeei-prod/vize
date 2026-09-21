@@ -63,20 +63,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     ) -> Result<()> {
         plan_source(&open, SsrStringPayloadKind::SlotName)?;
         self.pos += 1;
-        let segments = self.segments;
-        let len = slot.attributes.len() + slot.bindings.len();
-        let attached = segments
-            .get(self.pos..self.pos + len)
-            .ok_or(AdmissionFailure::Invalid(
-                "string plan lost attached outlet segments",
-            ))?;
-        self.pos += len;
+        let attached = self.take_attached(slot.attributes.len() + slot.bindings.len())?;
+        let attached = attached.as_slice();
         admit(attached, open.fact)?;
 
-        let name = match &slot.name {
-            DynamicName::Static(name) => quoted_js_string(&decode_template_entities(name)),
-            DynamicName::Dynamic(expr) => self.expr(expr, TransformContent::Decoded)?,
-        };
+        let name = self.outlet_name(slot)?;
         let props = self.slot_props(attached)?;
         self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSlot);
@@ -115,9 +106,17 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         )
     }
 
+    /// The outlet name: a quoted static name or the rewritten `:name`.
+    pub(super) fn outlet_name(&self, slot: &s2::SlotOp<'_>) -> Result<String> {
+        match &slot.name {
+            DynamicName::Static(name) => Ok(quoted_js_string(&decode_template_entities(name))),
+            DynamicName::Dynamic(expr) => self.expr(expr, TransformContent::Decoded),
+        }
+    }
+
     /// The outlet's slot props: camelized static props and bound props,
     /// merged after any object spreads.
-    fn slot_props(&mut self, attached: &Attached<'_, '_>) -> Result<String> {
+    pub(super) fn slot_props(&mut self, attached: &Attached<'_, '_>) -> Result<String> {
         let mut entries = std::vec::Vec::new();
         let mut spreads = std::vec::Vec::new();
         for segment in attached {

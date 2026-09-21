@@ -14,12 +14,17 @@ mod control;
 mod element;
 mod fallthrough;
 mod model;
+mod region;
 mod slot_outlet;
+mod slots;
 mod text;
+mod vnode;
+mod vnode_control;
+mod vnode_props;
 
 use vize_davinci::side_table::SideTable;
 use vize_s0::{FxHashSet, String};
-use vize_s1_to_s2::lower::{ForWrapper, TextParts};
+use vize_s1_to_s2::lower::{ForWrapper, IfFacts, TextParts, WrapperKeys};
 use vize_s1_to_s2::{TransformContent, TransformExpressions};
 use vize_s2::expr::ExprRef;
 use vize_s2_to_s3::PartitionKind;
@@ -31,6 +36,7 @@ use super::string_plan::{
 use super::{AdmissionFailure, LegacyReason};
 use crate::codegen::SsrCodegenContext;
 use crate::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params;
+use region::is_close;
 
 type Result<T> = core::result::Result<T, AdmissionFailure>;
 
@@ -38,6 +44,8 @@ type Result<T> = core::result::Result<T, AdmissionFailure>;
 pub(super) struct PlanFacts<'s> {
     pub(super) texts: &'s SideTable<TextParts>,
     pub(super) for_wrappers: &'s SideTable<ForWrapper>,
+    pub(super) wrappers: &'s SideTable<WrapperKeys>,
+    pub(super) if_facts: &'s SideTable<IfFacts>,
 }
 
 /// Write the render body for `plan` into `ctx`.
@@ -55,6 +63,7 @@ pub(super) fn emit_plan(
         exprs,
         scoped_params: std::vec::Vec::new(),
         select_models: std::vec::Vec::new(),
+        branch_key: None,
     };
     let root = emitter.scan_region(0)?;
     let fragment = root.legacy_children > 1 && root.non_text;
@@ -77,11 +86,14 @@ struct Emitter<'p, 'r, 'a, 'c, 'x, 'e> {
     ctx: &'c mut SsrCodegenContext<'x>,
     facts: &'p PlanFacts<'p>,
     exprs: &'p mut TransformExpressions<'e>,
-    /// The legacy walker's codegen scope: `v-for` destructure params whose
-    /// transform-applied prefixes are stripped at emission.
+    /// The legacy walker's codegen scope: `v-for` / slot destructure params
+    /// whose transform-applied prefixes are stripped at emission.
     scoped_params: std::vec::Vec<FxHashSet<String>>,
     /// `v-model` reads of the open `<select>` ancestors.
     select_models: std::vec::Vec<String>,
+    /// The `v-if` branch key the legacy transform moved off the branch root:
+    /// the next element or component skips the attribute at this span.
+    branch_key: Option<vize_s0::Span>,
 }
 
 /// How the legacy walker visits one child list.
@@ -92,70 +104,13 @@ struct Flags {
     inherit_attrs: bool,
 }
 
-/// A region's direct children as the legacy AST lists them.
-struct RegionShape {
-    /// Legacy child count: a merged S2 text run counts one child per part,
-    /// since the legacy lane never merges SSR text.
-    legacy_children: usize,
-    non_text: bool,
-    /// Plan positions of the children that may inherit `_attrs`.
-    candidates: std::vec::Vec<usize>,
-}
+const PLAIN: Flags = Flags {
+    as_fragment: false,
+    disable_nested_fragments: false,
+    inherit_attrs: false,
+};
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
-    /// Describe the child list starting at `from`, up to its closing segment.
-    fn scan_region(&self, from: usize) -> Result<RegionShape> {
-        let mut shape = RegionShape {
-            legacy_children: 0,
-            non_text: false,
-            candidates: std::vec::Vec::new(),
-        };
-        let mut depth = 0usize;
-        for (offset, segment) in self.segments[from..].iter().enumerate() {
-            let top = depth == 0;
-            match segment.kind {
-                Kind::OpenElement
-                | Kind::If
-                | Kind::For
-                | Kind::Branch
-                | Kind::Component
-                | Kind::SlotOutlet => {
-                    if top {
-                        shape.legacy_children += 1;
-                        shape.non_text = true;
-                        if !matches!(segment.kind, Kind::For | Kind::Branch) {
-                            shape.candidates.push(from + offset);
-                        }
-                    }
-                    depth += 1;
-                }
-                Kind::CloseElement
-                | Kind::CloseIf
-                | Kind::CloseFor
-                | Kind::CloseBranch
-                | Kind::CloseComponent
-                | Kind::CloseSlot => {
-                    if top {
-                        break;
-                    }
-                    depth -= 1;
-                }
-                Kind::Text if top => shape.legacy_children += 1,
-                Kind::DynamicText if top => {
-                    let Source::Interpolation(interpolation) = segment.source else {
-                        return Err(LegacyReason::Operation.into());
-                    };
-                    shape.legacy_children +=
-                        text::legacy_child_count(self.facts.texts, segment, interpolation)?;
-                    shape.non_text = true;
-                }
-                _ if top => return Err(LegacyReason::Operation.into()),
-                _ => {}
-            }
-        }
-        Ok(shape)
-    }
-
     /// `process_children_with_fallthrough_attrs` over the plan: emit the
     /// child list at the cursor up to (not including) its closing segment.
     fn children(&mut self, flags: Flags) -> Result<()> {
@@ -168,53 +123,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.ctx.push_string_part_static("<!--[-->");
         }
         while let Some(segment) = self.segments.get(self.pos).copied() {
-            let inherit = fallthrough == Some(self.pos);
-            match (segment.kind, segment.source) {
-                (
-                    Kind::CloseElement
-                    | Kind::CloseIf
-                    | Kind::CloseFor
-                    | Kind::CloseBranch
-                    | Kind::CloseComponent
-                    | Kind::CloseSlot,
-                    _,
-                ) => break,
-                (Kind::Component, Source::Component(component)) => {
-                    vize_s0::ensure_sufficient_stack(|| {
-                        self.component(segment, component, inherit)
-                    })?;
-                }
-                (Kind::SlotOutlet, Source::Slot(slot)) => {
-                    vize_s0::ensure_sufficient_stack(|| self.slot_outlet(segment, slot))?;
-                }
-                (Kind::OpenElement, Source::Element(element)) => {
-                    vize_s0::ensure_sufficient_stack(|| self.element(segment, element, inherit))?;
-                }
-                (Kind::Text, Source::Text(_)) => {
-                    self.pos += 1;
-                    let content = plan_source(&segment, SsrStringPayloadKind::Text)?;
-                    text::emit_text(self.ctx, content)?;
-                }
-                (Kind::DynamicText, Source::Interpolation(interpolation)) => {
-                    self.pos += 1;
-                    require_dynamic(&segment)?;
-                    text::emit_interpolation(self, &segment, interpolation)?;
-                }
-                (Kind::If, Source::If(if_op)) => {
-                    let disable = flags.disable_nested_fragments;
-                    vize_s0::ensure_sufficient_stack(|| self.if_chain(if_op, disable, inherit))?;
-                }
-                (Kind::For, Source::For(for_op)) => {
-                    let disable = flags.disable_nested_fragments;
-                    vize_s0::ensure_sufficient_stack(|| self.for_loop(segment, for_op, disable))?;
-                }
-                (Kind::Comment, _) => return Err(LegacyReason::Operation.into()),
-                _ => {
-                    return Err(AdmissionFailure::Invalid(
-                        "string plan places a segment outside its region",
-                    ));
-                }
+            if is_close(segment.kind) {
+                break;
             }
+            let inherit = fallthrough == Some(self.pos);
+            self.child(segment, flags, inherit)?;
         }
         if flags.as_fragment {
             self.ctx.push_string_part_static("<!--]-->");
@@ -222,21 +135,49 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         Ok(())
     }
 
-    /// Consume the closing segment `kind` whose operand is `owner`.
-    fn close(&mut self, kind: Kind, owner: impl Fn(&Source<'r, 'a>) -> bool) -> Result<()> {
-        match self.segments.get(self.pos) {
-            Some(close) if close.kind == kind && owner(&close.source) => {
-                self.pos += 1;
-                Ok(())
+    /// `process_child` for the child at the cursor.
+    fn child(
+        &mut self,
+        segment: SsrStringSegment<'r, 'a>,
+        flags: Flags,
+        inherit: bool,
+    ) -> Result<()> {
+        let disable = flags.disable_nested_fragments;
+        match (segment.kind, segment.source) {
+            (Kind::OpenElement, Source::Element(element)) => {
+                vize_s0::ensure_sufficient_stack(|| self.element(segment, element, inherit))
             }
+            (Kind::Component, Source::Component(component)) => {
+                vize_s0::ensure_sufficient_stack(|| self.component(segment, component, inherit))
+            }
+            (Kind::SlotOutlet, Source::Slot(slot)) => {
+                vize_s0::ensure_sufficient_stack(|| self.slot_outlet(segment, slot))
+            }
+            (Kind::Text, Source::Text(_)) => {
+                self.pos += 1;
+                let content = plan_source(&segment, SsrStringPayloadKind::Text)?;
+                text::emit_text(self.ctx, content)
+            }
+            (Kind::DynamicText, Source::Interpolation(interpolation)) => {
+                self.pos += 1;
+                require_dynamic(&segment)?;
+                text::emit_interpolation(self, &segment, interpolation)
+            }
+            (Kind::If, Source::If(if_op)) => {
+                vize_s0::ensure_sufficient_stack(|| self.if_chain(if_op, disable, inherit))
+            }
+            (Kind::For, Source::For(for_op)) => {
+                vize_s0::ensure_sufficient_stack(|| self.for_loop(segment, for_op, disable))
+            }
+            (Kind::Comment, _) => Err(LegacyReason::Operation.into()),
             _ => Err(AdmissionFailure::Invalid(
-                "string plan region is not closed by its owner",
+                "string plan places a segment outside its region",
             )),
         }
     }
 
     /// An expression exactly as the legacy walker printed it: the shipped
-    /// transform's rewrite, then its codegen strip for `v-for` params.
+    /// transform's rewrite, then its codegen strip for scoped params.
     fn expr(&self, expr: &ExprRef<'_>, content: TransformContent) -> Result<String> {
         let rewritten = self
             .exprs
