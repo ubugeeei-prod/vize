@@ -160,3 +160,54 @@ ${expression}`,
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+// The instance of a generic component is a function of the props bound next
+// to its ref, so props computed from that very ref are circular, in vue-tsc
+// as well. Every other component's instance is declared, and reading its ref
+// must not depend on those props: vue-tsc reports the same circularity there
+// (and leaks `__VLS_*` names at the tags), an artifact of its own codegen that
+// Vize does not reproduce.
+test("props computed from a component's own ref only constrain a generic instance", async () => {
+  const identity = (d: { file: string; line: number; column: number; code: number }) =>
+    `${d.file}:${d.line}:${d.column} TS${d.code}`;
+  const app = (imported: string, tag: string) => `<script setup lang="ts">
+import { computed, useTemplateRef } from 'vue';
+${imported}
+const target = useTemplateRef('target');
+const config = computed(() => (target.value?.size ?? 0) + 1);
+</script>
+<template><${tag} ref="target" :foo="config" /></template>`;
+  const directory = project({
+    "Generic.vue": generic.replace("defineExpose({ foo });", "defineExpose({ foo, size: 1 });"),
+    "Plain.vue": `<script setup lang="ts">
+defineProps<{ foo: number }>();
+defineExpose({ size: 1 });
+</script>
+<template><div /></template>`,
+  });
+  const diagnostics = async (source: string) => {
+    fs.writeFileSync(path.join(directory, "App.vue"), source);
+    return {
+      vize: (await check(directory)).map(diagnosticIdentity).sort(compareIdentity).map(identity),
+      vueTsc: vueTscDiagnostics(directory).sort(compareIdentity).map(identity),
+    };
+  };
+  try {
+    const circular = ["App.vue:4:7 TS7022", "App.vue:5:25 TS7024", "App.vue:5:7 TS7022"];
+    const leaked = "App.vue:7:11 TS7022";
+    assert.deepEqual(await diagnostics(app("import Plain from './Plain.vue';", "Plain")), {
+      vize: [],
+      vueTsc: [...circular, leaked],
+    });
+    assert.deepEqual(
+      await diagnostics(app("import { Missing } from 'not-installed';", "Missing")),
+      { vize: ["App.vue:3:25 TS2307"], vueTsc: ["App.vue:3:25 TS2307", ...circular, leaked] },
+    );
+    assert.deepEqual(await diagnostics(app("import Generic from './Generic.vue';", "Generic")), {
+      vize: circular,
+      vueTsc: [...circular, leaked],
+    });
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});

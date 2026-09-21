@@ -28,8 +28,13 @@ use super::emit::emit_v_for_loop_open;
 pub(crate) const REFS_RETURN_KEY: &str = "__vizeRefs";
 
 /// A component that is not callable has no type parameters to choose, and its
-/// declared instance is already exact.
-pub(crate) const REF_INSTANCE_HELPERS: &str = "  type __VizeRefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\n  type __VizeTemplateRefInstance<_R, _C> = [_R] extends [never] ? __VizeTemplateComponentRef<_C> : _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : __VizeTemplateComponentRef<_C> : __VizeTemplateComponentRef<_C>;\n";
+/// declared instance is already exact. The registry decides that from the
+/// component alone and only then reads the probe: the probe depends on the
+/// props bound next to the ref, and `<Chart ref="chart" :config="config" />`
+/// with a `config` computed from `chart.value` would otherwise make `chart`
+/// depend on itself for every component, not only for the generic ones whose
+/// instance really is a function of their props.
+pub(crate) const REF_INSTANCE_HELPERS: &str = "  type __VizeRefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\n  type __VizeTemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? __VizeTemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : __VizeTemplateComponentRef<_C> : __VizeTemplateComponentRef<_C> : __VizeTemplateComponentRef<_C> : __VizeTemplateComponentRef<_C>;\n";
 
 /// Template-relative starts of the component usages whose ref is instantiated:
 /// a static `ref` next to at least one bound prop, outside every slot scope.

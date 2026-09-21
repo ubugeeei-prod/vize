@@ -98,7 +98,7 @@ impl TemplateRecord {
         let mut instance = String::default();
         append!(
             instance,
-            "__VizeTemplateRefInstance<ReturnType<typeof __vize_template.{REFS_RETURN_KEY}[\"{start}\"]>, typeof {component}>"
+            "__VizeTemplateRefInstance<typeof __vize_template.{REFS_RETURN_KEY}, \"{start}\", typeof {component}>"
         );
         instance
     }

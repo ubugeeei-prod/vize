@@ -104,7 +104,7 @@ fn an_instantiated_component_ref_reads_the_template_record() {
     .unwrap();
     assert_eq!(
         registry.body.as_str(),
-        r#" "declared": __VizeTemplateComponentRef<typeof Child>; "child": __VizeTemplateRefInstance<ReturnType<typeof __vize_template.__vizeRefs["24"]>, typeof Child>; "#
+        r#" "declared": __VizeTemplateComponentRef<typeof Child>; "child": __VizeTemplateRefInstance<typeof __vize_template.__vizeRefs, "24", typeof Child>; "#
     );
     assert!(registry.includes_instantiated);
 }
