@@ -8,6 +8,7 @@ import {
   block,
   catalogEntries,
   compilerProblems,
+  legacyEntries,
   legacyTranslations,
   locales,
   parseCompilerCodes,
@@ -51,6 +52,15 @@ function edited(
 
 test("TS-53: every catalog entry is complete and well-formed in en, ja and zh", () => {
   assert.deepEqual(tableProblems(catalogEntries()), []);
+  const legacy = legacyEntries();
+  assert.equal(legacy.length, 564, "the parser reads every message and supplemental table");
+  assert.deepEqual(tableProblems(legacy), []);
+  const diagnostic = new Set(catalogEntries().map(([key]) => key));
+  assert.deepEqual(
+    legacy.map(([key]) => key).filter((key) => diagnostic.has(key)),
+    [],
+    "a key lives in exactly one table family",
+  );
 });
 
 test("TS-53: every renderer phrase is catalogued", () => {

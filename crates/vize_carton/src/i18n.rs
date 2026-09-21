@@ -278,142 +278,12 @@ static GLOBAL_TRANSLATOR: Lazy<Translator> = Lazy::new(|| {
         FxHashMap::default(),
     ];
 
-    // Load embedded translations (JSON + Rust-side supplemental entries)
-    load_json(&mut messages[0], include_str!("i18n/en.json"));
-    load_json(&mut messages[1], include_str!("i18n/ja.json"));
-    load_json(&mut messages[2], include_str!("i18n/zh.json"));
+    // Load the embedded catalogue: the per-producer tables, then the
+    // Rust-side supplemental entries (which win on a shared key).
+    crate::i18n_messages::register(&mut messages);
     crate::i18n_supplemental::register(&mut messages);
     Translator { messages }
 });
-
-/// Parse JSON and load into message map
-fn load_json(map: &mut FxHashMap<&'static str, &'static str>, json: &'static str) {
-    // Fast JSON parsing for flat key-value objects
-    // Format: { "key": "value", "key2": "value2", ... }
-    let json = json.trim();
-    if json.len() < 2 || !json.starts_with('{') || !json.ends_with('}') {
-        return;
-    }
-
-    let content = &json[1..json.len() - 1];
-    let mut idx = 0;
-
-    while idx < content.len() {
-        // Skip whitespace
-        while idx < content.len() && content.as_bytes()[idx].is_ascii_whitespace() {
-            idx += 1;
-        }
-
-        if idx >= content.len() {
-            break;
-        }
-
-        // Expect opening quote for key
-        if content.as_bytes()[idx] != b'"' {
-            idx += 1;
-            continue;
-        }
-        idx += 1;
-
-        // Parse key
-        let key_start = idx;
-        while idx < content.len() && content.as_bytes()[idx] != b'"' {
-            if content.as_bytes()[idx] == b'\\' {
-                idx += 2;
-            } else {
-                idx += 1;
-            }
-        }
-        let key_end = idx;
-        idx += 1; // Skip closing quote
-
-        // Skip to colon
-        while idx < content.len() && content.as_bytes()[idx] != b':' {
-            idx += 1;
-        }
-        idx += 1; // Skip colon
-
-        // Skip whitespace
-        while idx < content.len() && content.as_bytes()[idx].is_ascii_whitespace() {
-            idx += 1;
-        }
-
-        // Expect opening quote for value
-        if idx >= content.len() || content.as_bytes()[idx] != b'"' {
-            continue;
-        }
-        idx += 1;
-
-        // Parse value (handle escaped quotes)
-        let value_start = idx;
-        while idx < content.len() {
-            if content.as_bytes()[idx] == b'\\' {
-                idx += 2;
-            } else if content.as_bytes()[idx] == b'"' {
-                break;
-            } else {
-                idx += 1;
-            }
-        }
-        let value_end = idx;
-        idx += 1; // Skip closing quote
-
-        // Skip to comma or end
-        while idx < content.len() && content.as_bytes()[idx] != b',' {
-            idx += 1;
-        }
-        idx += 1; // Skip comma
-
-        // Extract key and value
-        let key = &content[key_start..key_end];
-        let value = &content[value_start..value_end];
-
-        // Unescape and leak to get 'static lifetime
-        // This is safe because we only load once at startup
-        let key: &'static str = Box::leak(key.to_string().into_boxed_str());
-        let value: &'static str = Box::leak(unescape_json_string(value).into_boxed_str());
-
-        map.insert(key, value);
-    }
-}
-
-/// Unescape JSON string escape sequences
-#[inline]
-fn unescape_json_string(s: &str) -> String {
-    let mut result = String::with_capacity(s.len());
-    let mut chars = s.chars();
-
-    while let Some(c) = chars.next() {
-        if c == '\\' {
-            match chars.next() {
-                Some('n') => result.push('\n'),
-                Some('r') => result.push('\r'),
-                Some('t') => result.push('\t'),
-                Some('"') => result.push('"'),
-                Some('\\') => result.push('\\'),
-                Some('/') => result.push('/'),
-                Some('u') => {
-                    // Unicode escape: \uXXXX
-                    let hex: String = chars.by_ref().take(4).collect();
-                    if let Ok(cp) = u32::from_str_radix(&hex, 16)
-                        && let Some(c) = char::from_u32(cp)
-                    {
-                        result.push(c);
-                    }
-                }
-                Some(other) => {
-                    result.push('\\');
-                    result.push(other);
-                }
-                None => result.push('\\'),
-            }
-        } else {
-            result.push(c);
-        }
-    }
-
-    result
-}
 
 /// Convenience function to get the global translator
 #[inline]
@@ -435,7 +305,7 @@ pub fn t_fmt(locale: Locale, key: &str, vars: &[(&str, &str)]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{Locale, Translator, unescape_json_string};
+    use super::{Locale, Translator};
 
     #[test]
     fn test_locale_from_str() {
@@ -485,14 +355,5 @@ mod tests {
         let msg = t.format(Locale::En, "test.greeting", &[("name", "World")]);
         // Either contains the substitution or is the key
         assert!(!msg.is_empty());
-    }
-
-    #[test]
-    fn test_unescape_json_string() {
-        assert_eq!(unescape_json_string("hello"), "hello");
-        assert_eq!(unescape_json_string("hello\\nworld"), "hello\nworld");
-        assert_eq!(unescape_json_string("hello\\tworld"), "hello\tworld");
-        assert_eq!(unescape_json_string("he said \\\"hi\\\""), "he said \"hi\"");
-        assert_eq!(unescape_json_string("path\\\\to\\\\file"), "path\\to\\file");
     }
 }

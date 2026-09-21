@@ -1,10 +1,6 @@
-//! Supplemental i18n entries that live in Rust source rather than the
-//! per-locale `i18n/*.json` files.
-//!
-//! The `i18n/*.json` files are already past the repository's source-length
-//! guard baseline, so new keys cannot grow them. Lint rules whose messages
-//! were introduced after that baseline register their translations here and
-//! the `i18n` module merges them into the global translator at startup.
+//! Supplemental i18n entries: lint-rule messages registered after the main
+//! catalogue (`crate::i18n_messages`), merged into the global translator at
+//! startup and winning on a shared key.
 
 use rustc_hash::FxHashMap;
 

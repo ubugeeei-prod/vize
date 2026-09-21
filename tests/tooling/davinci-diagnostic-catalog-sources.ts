@@ -56,26 +56,23 @@ export function catalogEntries(): Array<[string, Entry]> {
   ].flatMap((file) => parseEntries(read("crates", "vize_carton", "src", file)));
 }
 
-/** Every translation shipped by the older sources: the per-locale JSON files
- * and the `i18n_supplemental*.rs` tables, as `key → partial entry`. */
-export function legacyTranslations(): Map<string, Partial<Entry>> {
-  const merged = new Map<string, Partial<Entry>>();
-  for (const locale of locales) {
-    const json = JSON.parse(read("crates", "vize_carton", "src", "i18n", `${locale}.json`));
-    for (const [key, value] of Object.entries(json as Record<string, string>)) {
-      merged.set(key, { ...merged.get(key), [locale]: value });
-    }
-  }
-  for (const file of [
+/** The message catalogue that predates the per-producer diagnostic tables:
+ * `i18n_messages_*.rs` (moved from the old per-locale JSON files) and the
+ * `i18n_supplemental*.rs` tables, in registration order. */
+export function legacyEntries(): Array<[string, Entry]> {
+  const src = path.join(repoRoot, "crates", "vize_carton", "src");
+  const tables = fs.readdirSync(src).filter((file) => /^i18n_messages_\w+\.rs$/u.test(file));
+  return [
+    ...tables.sort(),
     "i18n_supplemental.rs",
     "i18n_supplemental_extra.rs",
     "i18n_supplemental_extra2.rs",
-  ]) {
-    for (const [key, entry] of parseEntries(read("crates", "vize_carton", "src", file))) {
-      merged.set(key, entry);
-    }
-  }
-  return merged;
+  ].flatMap((file) => parseEntries(read("crates", "vize_carton", "src", file)));
+}
+
+/** {@link legacyEntries} as `key → entry`, a later table winning a key. */
+export function legacyTranslations(): Map<string, Partial<Entry>> {
+  return new Map(legacyEntries());
 }
 
 export function rustFiles(dir: string): string[] {
