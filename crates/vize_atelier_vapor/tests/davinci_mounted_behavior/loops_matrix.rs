@@ -75,13 +75,18 @@ fn run_family(prefix: &str) {
     };
     let mut recorded = String::new();
     assert_eq!(cases.len(), behaviors.len());
-    for gap in &gaps {
-        let name = gap["name"].as_str().unwrap();
-        assert!(
-            name.starts_with(GAP_FAMILY),
-            "{name} is not a known gap class"
+    if !record {
+        // Exactly the pinned class, in matrix order: every unkeyed object case.
+        let pinned: Vec<&Value> = cases
+            .iter()
+            .map(|case| &case["name"])
+            .filter(|name| name.as_str().unwrap().starts_with(GAP_FAMILY))
+            .collect();
+        let listed: Vec<&Value> = gaps.iter().map(|gap| &gap["name"]).collect();
+        assert_eq!(
+            listed, pinned,
+            "gap entries must be exactly the pinned class"
         );
-        assert!(cases.iter().any(|case| case["name"] == gap["name"]));
     }
     let mut checked = 0;
     for (case, behavior) in cases.iter().zip(&behaviors) {
