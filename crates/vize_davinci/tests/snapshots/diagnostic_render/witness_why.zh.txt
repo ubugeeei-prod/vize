@@ -1,0 +1,9 @@
+错误[vue/no-unused-vars]: `total` 已声明但从未被读取。
+ --> src/components/Totals.vue:4:7
+  |
+4 | const total = ref(0)
+  |       ^^^^^ 在此处声明
+  |
+  = 依据: 事实组 3 对 `total` 成立
+  = 依据: 事实组 7 对 `total` 成立
+  = 帮助: 请删除该绑定；如确实有意不使用，请在名称前加上 `_`

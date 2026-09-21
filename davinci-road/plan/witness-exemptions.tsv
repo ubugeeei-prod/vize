@@ -1,4 +1,6 @@
 producer	code	exempt
+vize	patina-lint	1
+vize_relief	compiler-error	3
 vize_s1_to_s2	lowering	1
 vize_s1_to_s2	missing-end-tag	1
 vize_s1_to_s2	surface-syntax	1

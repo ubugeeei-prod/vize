@@ -9,8 +9,11 @@
 mod layout;
 mod markup;
 mod text;
+mod witness;
 
-use vize_davinci::diagnostic::{Diagnostic, DiagnosticPart, PartKind, Severity, Stage};
+use vize_davinci::diagnostic::{
+    Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Severity, Stage,
+};
 use vize_s0::Span;
 use vize_s0::i18n::Locale;
 
@@ -39,6 +42,7 @@ pub const ALL: &[&Case] = &[
     &layout::LONG_SPAN,
     &layout::MULTI_LINE_LABELS,
     &text::EDGE_CASES,
+    &witness::WITNESS_WHY,
 ];
 
 /// The text for `locale`.
@@ -77,8 +81,15 @@ pub const fn after(span: Span) -> Span {
     Span::new(span.end, span.end)
 }
 
+/// The fixtures' errors stand for producers that predate witnesses; the
+/// renderer shows what a producer reports, proven or exempt alike.
+static FIXTURE: Exemption = Exemption::new("diagnostic_render", "fixture");
+
 pub fn diagnostic(severity: Severity, span: Span, message: &str) -> Diagnostic {
-    Diagnostic::new(severity, Stage::Semantic, span, message)
+    match Advisory::from_severity(severity) {
+        Some(advisory) => Diagnostic::new(advisory, Stage::Semantic, span, message),
+        None => Diagnostic::legacy_error(&FIXTURE, Stage::Semantic, span, message),
+    }
 }
 
 pub fn primary(span: Span, label: &str) -> DiagnosticPart {

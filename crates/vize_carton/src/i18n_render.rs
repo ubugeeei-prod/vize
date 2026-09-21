@@ -39,6 +39,16 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "次のように修正できます",
         "可以这样修复",
     ),
+    // Witness-derived "why" notes: `= note: because <fact>`. Japanese and
+    // Chinese label the footer as the grounds and state the fact plainly.
+    ("render.why", "note", "根拠", "依据"),
+    ("render.because", "because {fact}", "{fact}", "{fact}"),
+    (
+        "render.fact_fallback",
+        "fact group {group} holds for {subject}",
+        "{subject} についてファクトグループ {group} が成立",
+        "事实组 {group} 对 {subject} 成立",
+    ),
     // The closing line of a `vize lint --format rich` report.
     (
         "render.summary",

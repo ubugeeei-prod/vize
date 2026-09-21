@@ -50,6 +50,7 @@ mod paint;
 mod row;
 mod source;
 mod text;
+mod why;
 
 use alloc::vec::Vec;
 
@@ -110,7 +111,7 @@ impl<'c, C: Catalog> Renderer<'c, C> {
         diagnostic: &Diagnostic,
     ) {
         let painter = Painter::new(self.color);
-        let severity = diagnostic.severity;
+        let severity = diagnostic.severity();
         let primary_style = Style::Primary(severity);
 
         let (start, end) = file.range(diagnostic.span);
@@ -184,8 +185,13 @@ impl<'c, C: Catalog> Renderer<'c, C> {
         excerpt.write(out, file, &frame);
 
         let help = self.catalog.phrase(Phrase::Help);
-        if !footers.is_empty() || !fixes.is_empty() {
+        let notes = why::notes(file, self.catalog, diagnostic);
+        if !footers.is_empty() || !notes.is_empty() || !fixes.is_empty() {
             frame.blank(out);
+        }
+        let because = self.catalog.phrase(Phrase::Why);
+        for note in &notes {
+            frame.footer(out, because, note);
         }
         for message in footers {
             frame.footer(out, help, message);

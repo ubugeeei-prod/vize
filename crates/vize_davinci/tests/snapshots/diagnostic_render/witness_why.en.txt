@@ -1,0 +1,9 @@
+error[vue/no-unused-vars]: `total` is declared but never read.
+ --> src/components/Totals.vue:4:7
+  |
+4 | const total = ref(0)
+  |       ^^^^^ declared here
+  |
+  = note: because fact group 3 holds for `total`
+  = note: because fact group 7 holds for `total`
+  = help: remove the binding, or prefix it with `_` if it is intentionally unused

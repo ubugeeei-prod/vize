@@ -62,6 +62,9 @@ test("TS-53: every renderer phrase is catalogued", () => {
     "Hint",
     "Help",
     "SuggestedFix",
+    "Why",
+    "Because",
+    "FactFallback",
   ]);
   assert.deepEqual(vocabularyProblems(vocabulary, catalogEntries()), []);
 });
@@ -199,7 +202,7 @@ export function renderCaseNames(): string[] {
   const list = cases.slice(listStart, cases.indexOf("];", listStart));
   return [...list.matchAll(/&(\w+)::(\w+),/gu)].map(([, module, constant]) => {
     const source = read(dir, "cases", `${module}.rs`);
-    const body = block(source, `pub const ${constant}: Case = Case`);
+    const body = block(source, `pub const ${constant}: Case =`);
     const name = /name: ("[^"]+"),/u.exec(body);
     assert.ok(name, `${module}::${constant} has a name`);
     return rustString(name[1]);
@@ -209,7 +212,7 @@ export function renderCaseNames(): string[] {
 test("TS-53: every renderer case is committed in every locale, and nothing else is", () => {
   const names = renderCaseNames();
   assert.equal(new Set(names).size, names.length, "case names are unique");
-  assert.equal(names.length, 14, "the parser reads the whole TS-53 case list");
+  assert.equal(names.length, 15, "the parser reads the whole TS-53 case list");
   const expected = names
     .flatMap((name) => [...locales.map((locale) => `${name}.${locale}.txt`), `${name}.en.ansi`])
     .sort();

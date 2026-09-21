@@ -14,6 +14,9 @@
 //! `tests/tooling/davinci-diagnostic-catalog.test.ts` fails when a key is
 //! missing from any of en/ja/zh.
 
+use crate::diagnostic::WitnessLink;
+use vize_s0::String;
+
 /// A word or phrase the renderer prints around producer text.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Phrase {
@@ -29,18 +32,28 @@ pub enum Phrase {
     Help,
     /// The title of a fix that carries no guidance of its own.
     SuggestedFix,
+    /// The word introducing a witness-derived note: `= note: because …`.
+    Why,
+    /// A witness note's sentence around its fact; `{fact}` is replaced.
+    Because,
+    /// A fact the catalog has no sentence for; `{group}` and `{subject}` are
+    /// replaced.
+    FactFallback,
 }
 
 impl Phrase {
     /// Every phrase, in declaration order. The catalog checker enumerates
     /// keys from this list, so adding a variant without a key is caught.
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 9] = [
         Self::Error,
         Self::Warning,
         Self::Info,
         Self::Hint,
         Self::Help,
         Self::SuggestedFix,
+        Self::Why,
+        Self::Because,
+        Self::FactFallback,
     ];
 
     /// The catalog key this phrase is stored under.
@@ -53,6 +66,9 @@ impl Phrase {
             Self::Hint => "render.hint",
             Self::Help => "render.help",
             Self::SuggestedFix => "render.suggested_fix",
+            Self::Why => "render.why",
+            Self::Because => "render.because",
+            Self::FactFallback => "render.fact_fallback",
         }
     }
 }
@@ -64,6 +80,16 @@ impl Phrase {
 pub trait Catalog {
     /// The text of `phrase` in this catalog's locale.
     fn phrase(&self, phrase: Phrase) -> &str;
+
+    /// The sentence stating the fact `link` names, about `subject` (the
+    /// fact's quoted source text, or its key), in this catalog's locale —
+    /// e.g. "`count` is declared but never read". `None` falls back to
+    /// [`Phrase::FactFallback`]. A catalog learns fact groups from the build
+    /// that registers them, so the default knows none.
+    fn witness(&self, link: &WitnessLink, subject: &str) -> Option<String> {
+        let _ = (link, subject);
+        None
+    }
 }
 
 /// The English vocabulary, for callers with no translator at hand (tools,
@@ -81,6 +107,9 @@ impl Catalog for EnglishCatalog {
             Phrase::Hint => "hint",
             Phrase::Help => "help",
             Phrase::SuggestedFix => "suggested fix",
+            Phrase::Why => "note",
+            Phrase::Because => "because {fact}",
+            Phrase::FactFallback => "fact group {group} holds for {subject}",
         }
     }
 }
