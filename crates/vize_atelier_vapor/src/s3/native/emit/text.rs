@@ -1,6 +1,7 @@
 //! Adjacent S3 text ops coalesce into one DOM text node, as HTML parsing does.
 
-use vize_carton::{String, Vec};
+use vize_atelier_core::codegen::spanned::SpannedText;
+use vize_carton::Vec;
 
 use super::super::Content;
 use super::{Emitter, escape};
@@ -14,7 +15,7 @@ impl<'a> Emitter<'a, '_> {
         start: usize,
         parent: Option<usize>,
         offset: usize,
-        template: &mut String,
+        template: &mut SpannedText,
         block: &mut BlockIRNode<'a>,
     ) -> usize {
         let children = &self.artifact.nodes[index].children;
@@ -38,11 +39,12 @@ impl<'a> Emitter<'a, '_> {
             };
             for part in parts {
                 if dynamic {
-                    values.push(self.expression(part.value, !part.dynamic));
+                    values.push(self.expression(part.value, !part.dynamic, Some(part.span)));
                 }
                 if part.dynamic {
-                    template.push(' ');
+                    template.push_str(" ");
                 } else {
+                    self.mark(template, Some(part.span));
                     escape(template, part.value);
                 }
             }

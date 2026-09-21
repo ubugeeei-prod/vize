@@ -22,11 +22,15 @@ pub(super) fn generate_slot_fn(
             .unwrap_or_else(|| String::from(" _withVaporCtx(() => {\n"));
         ctx.push(&param);
     } else {
+        // The slot function opens at the authored `<template #slot>`.
         let param: String = slot_props_var
             .as_ref()
-            .map(|v| cstr!(" ({}) => {{\n", v))
-            .unwrap_or_else(|| String::from(" () => {\n"));
-        ctx.push(&param);
+            .map(|v| cstr!("({}) => {{\n", v))
+            .unwrap_or_else(|| String::from("() => {\n"));
+        ctx.push(" ");
+        let unit = ctx.unit_of(&slot.name);
+        let opened = ctx.spanned_at(&param, unit);
+        ctx.push_spanned(&opened);
     }
     ctx.indent();
     ctx.push_component_scope();

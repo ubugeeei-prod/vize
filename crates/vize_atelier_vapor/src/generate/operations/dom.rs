@@ -1,5 +1,6 @@
 use crate::ir::{SetDynamicPropsIRNode, SetHtmlIRNode, SetPropIRNode, SetTextIRNode};
-use vize_carton::{String, cstr};
+use vize_atelier_core::{SimpleExpressionNode, codegen::spanned::SpannedText};
+use vize_carton::cstr;
 
 use super::super::{
     context::GenerateContext,
@@ -8,62 +9,78 @@ use super::super::{
 
 /// Generate SetProp
 pub(super) fn generate_set_prop(ctx: &mut GenerateContext, set_prop: &SetPropIRNode<'_>) {
+    let line = set_prop_call(ctx, set_prop);
+    ctx.push_line_spanned(&line);
+}
+
+/// The `_setProp(...)`-family call for a SetProp, with its anchors; shared by
+/// statement and inline-effect emission.
+pub(crate) fn set_prop_call(
+    ctx: &mut GenerateContext,
+    set_prop: &SetPropIRNode<'_>,
+) -> SpannedText {
     let element = cstr!("n{}", set_prop.element);
     let key = &set_prop.prop.key.content;
     let is_svg = is_svg_tag(set_prop.tag);
 
     // Build value handling multiple values (static+dynamic merge)
     let value = if set_prop.prop.values.len() > 1 {
-        let parts: Vec<vize_carton::String> = set_prop
-            .prop
-            .values
-            .iter()
-            .map(|v| {
-                if v.is_static {
-                    cstr!("\"{}\"", escape_js_string_literal(v.content))
-                } else {
-                    ctx.resolve_expression_node(v)
-                }
-            })
-            .collect();
-        cstr!("[{}]", parts.join(", "))
-    } else if let Some(first) = set_prop.prop.values.first() {
-        if first.is_static {
-            cstr!("\"{}\"", escape_js_string_literal(first.content))
-        } else {
-            ctx.resolve_expression_node(first)
+        let mut list = SpannedText::plain("[");
+        for (index, v) in set_prop.prop.values.iter().enumerate() {
+            if index > 0 {
+                list.push_str(", ");
+            }
+            list.push_spanned(&prop_value(ctx, v));
         }
+        list.push_str("]");
+        list
+    } else if let Some(first) = set_prop.prop.values.first() {
+        prop_value(ctx, first)
     } else {
-        vize_carton::CompactString::from("undefined")
+        SpannedText::plain("undefined")
+    };
+    // The key maps to the authored `v-bind` argument it copies.
+    let key_loc = set_prop.prop.key.loc.span;
+    let named = ctx.spanned_at(key, (key_loc.start < key_loc.end).then_some(key_loc.start));
+    let call = |callee: &str, key: Option<&SpannedText>, suffix: &str| {
+        let mut line = SpannedText::plain(callee);
+        line.push_str("(");
+        line.push_str(&element);
+        if let Some(key) = key {
+            line.push_str(", \"");
+            line.push_spanned(key);
+            line.push_str("\"");
+        }
+        line.push_str(", ");
+        line.push_spanned(&value);
+        line.push_str(suffix);
+        line.push_str(")");
+        line
     };
 
-    if *key == "class" {
-        if is_svg {
-            ctx.use_helper("setAttr");
-            ctx.push_line_fmt(format_args!("_setAttr({element}, \"class\", {value})"));
-        } else {
-            ctx.use_helper("setClass");
-            ctx.push_line_fmt(format_args!("_setClass({element}, {value})"));
-        }
+    let (helper, line) = if (*key == "class" || *key == "style") && is_svg {
+        ("setAttr", call("_setAttr", Some(&named), ""))
+    } else if *key == "class" {
+        ("setClass", call("_setClass", None, ""))
     } else if *key == "style" {
-        if is_svg {
-            ctx.use_helper("setAttr");
-            ctx.push_line_fmt(format_args!("_setAttr({element}, \"style\", {value})"));
-        } else {
-            ctx.use_helper("setStyle");
-            ctx.push_line_fmt(format_args!("_setStyle({element}, {value})"));
-        }
+        ("setStyle", call("_setStyle", None, ""))
     } else if set_prop.prop_modifier {
-        ctx.use_helper("setDOMProp");
-        ctx.push_line_fmt(format_args!("_setDOMProp({element}, \"{key}\", {value})"));
+        ("setDOMProp", call("_setDOMProp", Some(&named), ""))
     } else if set_prop.camel && is_svg {
-        ctx.use_helper("setAttr");
-        ctx.push_line_fmt(format_args!(
-            "_setAttr({element}, \"{key}\", {value}, true)"
-        ));
+        ("setAttr", call("_setAttr", Some(&named), ", true"))
     } else {
-        ctx.use_helper("setProp");
-        ctx.push_line_fmt(format_args!("_setProp({element}, \"{key}\", {value})"));
+        ("setProp", call("_setProp", Some(&named), ""))
+    };
+    ctx.use_helper(helper);
+    line
+}
+
+/// One bound value: a static literal, or an expression with its anchors.
+fn prop_value(ctx: &GenerateContext, value: &SimpleExpressionNode<'_>) -> SpannedText {
+    if value.is_static {
+        SpannedText::plain(&cstr!("\"{}\"", escape_js_string_literal(value.content)))
+    } else {
+        ctx.spanned_expression_node(value)
     }
 }
 
@@ -104,6 +121,16 @@ pub(super) fn generate_set_dynamic_props(
 
 /// Generate SetText
 pub(super) fn generate_set_text(ctx: &mut GenerateContext, set_text: &SetTextIRNode<'_>) {
+    let line = set_text_call(ctx, set_text);
+    ctx.push_line_spanned(&line);
+}
+
+/// The `_setText(...)` call for a SetText, with its anchors; shared by
+/// statement and inline-effect emission.
+pub(crate) fn set_text_call(
+    ctx: &mut GenerateContext,
+    set_text: &SetTextIRNode<'_>,
+) -> SpannedText {
     let helper = if set_text.is_element {
         "setElementText"
     } else {
@@ -120,29 +147,32 @@ pub(super) fn generate_set_text(ctx: &mut GenerateContext, set_text: &SetTextIRN
         cstr!("n{}", set_text.element)
     };
 
-    let values: Vec<String> = set_text
-        .values
-        .iter()
-        .map(|v| {
-            if v.is_static {
-                cstr!("\"{}\"", escape_js_string_literal(v.content))
-            } else {
-                ctx.use_helper("toDisplayString");
-                let resolved = ctx.resolve_expression_node(v);
-                cstr!("_toDisplayString({})", resolved)
-            }
-        })
-        .collect();
-
-    if values.len() == 1 {
-        ctx.push_line_fmt(format_args!("_{helper}({}, {})", text_ref, values[0]));
-    } else {
-        ctx.push_line_fmt(format_args!(
-            "_{helper}({}, {})",
-            text_ref,
-            values.join(" + ")
-        ));
+    let mut line = SpannedText::plain("_");
+    line.push_str(helper);
+    line.push_str("(");
+    line.push_str(&text_ref);
+    line.push_str(", ");
+    for (index, v) in set_text.values.iter().enumerate() {
+        if index > 0 {
+            line.push_str(" + ");
+        }
+        if v.is_static {
+            let span = v.loc.span;
+            line.push_str("\"");
+            let text = escape_js_string_literal(v.content);
+            line.push_spanned(
+                &ctx.spanned_at(&text, (span.start < span.end).then_some(span.start)),
+            );
+            line.push_str("\"");
+        } else {
+            ctx.use_helper("toDisplayString");
+            line.push_str("_toDisplayString(");
+            line.push_spanned(&ctx.spanned_expression_node(v));
+            line.push_str(")");
+        }
     }
+    line.push_str(")");
+    line
 }
 
 /// Generate SetHtml

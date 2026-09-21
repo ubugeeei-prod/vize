@@ -309,3 +309,66 @@ find = "Title"
 [[fixture.anchor]]
 category = "rewritten-identifier"
 find = "body"
+
+# Single-line native HTML with direct-reference bindings: the Vapor compile is
+# admitted by the native S3 slice, so this fixture measures that emitter.
+[[fixture]]
+name = "native-direct-bindings"
+source = '''
+<main class="shell"><button @click="save">Save</button><span :title="hint">{{ status }}</span></main>'''
+
+[[fixture.anchor]]
+category = "section-boundary"
+find = "<main"
+token = "<"
+dom = "export function render("
+vapor = "export function render("
+ssr = "function ssrRender("
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<main"
+token = "main"
+
+[[fixture.anchor]]
+category = "static-template"
+find = 'class="shell"'
+token = "class"
+
+[[fixture.anchor]]
+category = "static-template"
+find = '"shell"'
+token = "shell"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<button"
+token = "button"
+
+[[fixture.anchor]]
+category = "static-template"
+find = ">Save<"
+token = "Save"
+
+[[fixture.anchor]]
+category = "static-template"
+find = "<span"
+token = "span"
+
+[[fixture.anchor]]
+category = "static-template"
+find = ":title"
+token = "title"
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "save"
+absent = ["ssr"]
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "hint"
+
+[[fixture.anchor]]
+category = "rewritten-identifier"
+find = "status"

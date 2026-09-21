@@ -160,7 +160,10 @@ record's tracked-shortfall ledger. _Fourth slice 2026-09-21:_ the DOM codegen
 emits through span-carrying context methods and meets every TS-31 DOM budget.
 _Fifth slice 2026-09-21:_ SSR carries spans through template-literal parts
 and direct writes via the shared `SpannedText` primitive and meets every TS-31
-SSR budget. Vapor token-level emission and legacy recovery removal remain open.
+SSR budget. _Sixth slice 2026-09-22:_ both Vapor lanes (legacy lowering and
+native S3) emit token-level maps and meet every TS-31 Vapor budget, so no
+backend row remains below budget. The structured SFC path and legacy recovery
+removal remain open.
 
 **P3-10 Try-measure-commit.** Placement alternatives (hoist/cache/inline/
 group) kept explicit on S3 nodes; extraction pass performs candidates,

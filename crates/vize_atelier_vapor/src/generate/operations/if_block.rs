@@ -1,4 +1,5 @@
 use crate::ir::{IfIRNode, NegativeBranch};
+use vize_atelier_core::codegen::spanned::SpannedText;
 use vize_carton::{FxHashMap, ToCompactString};
 
 use super::{
@@ -24,23 +25,10 @@ fn generate_if_inner(
     ctx.use_helper("createIf");
     emit_insertion_state(ctx, if_node.parent, if_node.anchor);
 
-    let condition = if if_node.condition.is_static {
-        ["\"", if_node.condition.content, "\""].concat()
-    } else {
-        let resolved = ctx.resolve_expression_node(&if_node.condition);
-        ["(", &resolved, ")"].concat()
-    };
-
-    ctx.push_line(
-        &[
-            "const n",
-            &if_node.id.to_compact_string(),
-            " = _createIf(() => ",
-            &condition,
-            ", () => {",
-        ]
-        .concat(),
-    );
+    let mut head =
+        SpannedText::plain(&["const n", &if_node.id.to_compact_string(), " = "].concat());
+    head.push_spanned(&ctx.if_head(if_node));
+    ctx.push_line_spanned(&head);
 
     let was_fragment = ctx.is_fragment;
     ctx.is_fragment = true;
@@ -56,7 +44,8 @@ fn generate_if_inner(
     if let Some(ref negative) = if_node.negative {
         match negative {
             NegativeBranch::Block(block) => {
-                ctx.push_line("}, () => {");
+                let else_head = ctx.else_head(if_node);
+                ctx.push_line_spanned(&else_head);
                 ctx.indent();
                 if block_requires_parent_insertion_state(block) {
                     emit_insertion_state(ctx, if_node.parent, if_node.anchor);
@@ -100,15 +89,10 @@ fn generate_nested_if(
 ) {
     ctx.use_helper("createIf");
 
-    let condition = if if_node.condition.is_static {
-        ["\"", if_node.condition.content, "\""].concat()
-    } else {
-        let resolved = ctx.resolve_expression_node(&if_node.condition);
-        ["(", &resolved, ")"].concat()
-    };
-
     // Start inline - no leading indent or newline
-    ctx.push(&["_createIf(() => ", &condition, ", () => {\n"].concat());
+    let head = ctx.if_head(if_node);
+    ctx.push_spanned(&head);
+    ctx.push("\n");
 
     ctx.indent();
     if block_requires_parent_insertion_state(&if_node.positive) {
@@ -122,7 +106,8 @@ fn generate_nested_if(
     if let Some(ref negative) = if_node.negative {
         match negative {
             NegativeBranch::Block(block) => {
-                ctx.push_line("}, () => {");
+                let else_head = ctx.else_head(if_node);
+                ctx.push_line_spanned(&else_head);
                 ctx.indent();
                 if block_requires_parent_insertion_state(block) {
                     emit_insertion_state(ctx, if_node.parent, if_node.anchor);

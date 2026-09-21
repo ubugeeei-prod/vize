@@ -1,4 +1,5 @@
 use crate::ir::{ComponentKind, CreateComponentIRNode, IRSlot, OperationNode};
+use vize_atelier_core::codegen::spanned::SpannedText;
 use vize_carton::{FxHashMap, String, ToCompactString, cstr};
 
 use super::{
@@ -34,11 +35,14 @@ pub(super) fn emit_component_resolution(ctx: &mut GenerateContext, component_var
             resolution_name
         ));
     } else {
-        ctx.push_line(&cstr!(
-            "const {} = _resolveComponent(\"{}\")",
-            component_var,
-            resolution_name
-        ));
+        // The resolved name maps to the first element authoring the tag.
+        let source = (resolution_name == tag)
+            .then(|| ctx.tag_start(tag))
+            .flatten();
+        let mut line = SpannedText::plain(&cstr!("const {} = _resolveComponent(\"", component_var));
+        line.push_spanned(&ctx.spanned_at(&resolution_name, source));
+        line.push_str("\")");
+        ctx.push_line_spanned(&line);
     }
 }
 
@@ -161,7 +165,12 @@ pub(super) fn generate_create_component(
 
         for (i, slot) in static_slots.iter().enumerate() {
             ctx.push_indent();
-            ctx.push(&cstr!("\"{}\":", slot.name.content));
+            let name_span = slot.name.loc.span;
+            let name_source = (name_span.start < name_span.end).then_some(name_span.start);
+            let mut name = SpannedText::plain("\"");
+            name.push_spanned(&ctx.spanned_at(slot.name.content, name_source));
+            name.push_str("\":");
+            ctx.push_spanned(&name);
             generate_slot_fn(ctx, slot, element_template_map, use_with_vapor_ctx);
             if i < static_slots.len() - 1 || !dynamic_slots.is_empty() {
                 ctx.push(",");

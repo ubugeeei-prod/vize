@@ -2,23 +2,29 @@
 //! The legacy template AST is neither an input nor a source of payloads.
 
 mod control;
+mod spans;
 mod text;
 
-use vize_atelier_core::{RootNode, SimpleExpressionNode, SourceLocation};
-use vize_carton::{Allocator, Box, String, Vec, ensure_sufficient_stack};
+use vize_atelier_core::{
+    RootNode, SimpleExpressionNode, SourceLocation, codegen::spanned::SpannedText,
+};
+use vize_carton::{Allocator, Box, FxHashMap, Vec, ensure_sufficient_stack};
 
-use super::{Content, NativeArtifact};
+use super::{AuthoredSpan, Content, NativeArtifact};
+use crate::generate::spans::{TemplateSpans, VaporSourceSpans};
 use crate::ir::{
     BlockIRNode, ChildRefIRNode, EventModifiers, IREffect, IRProp, OperationNode, RootIRNode,
     SetEventIRNode, SetPropIRNode,
 };
+use spans::{argument_offset, tag_offset, value_offset};
 
 pub(super) fn emit<'a>(
     artifact: NativeArtifact<'a>,
     allocator: &'a Allocator,
     source: &'a str,
     scope_id: Option<&str>,
-) -> RootIRNode<'a> {
+    spans: bool,
+) -> (RootIRNode<'a>, Option<VaporSourceSpans>) {
     let mut ir = RootIRNode {
         node: RootNode::new(allocator, ""),
         source,
@@ -53,10 +59,21 @@ pub(super) fn emit<'a>(
         ir: &mut ir,
         next_id: 0,
         scope_id,
+        source: spans.then_some(source),
+        template_spans: TemplateSpans::default(),
+        units: FxHashMap::default(),
+        else_units: FxHashMap::default(),
     };
     let block = emitter.block(root);
+    let spans = spans.then(|| {
+        VaporSourceSpans::native(
+            std::mem::take(&mut emitter.template_spans),
+            std::mem::take(&mut emitter.units),
+            std::mem::take(&mut emitter.else_units),
+        )
+    });
     ir.block = block;
-    ir
+    (ir, spans)
 }
 
 struct Emitter<'a, 'b> {
@@ -66,6 +83,14 @@ struct Emitter<'a, 'b> {
     ir: &'b mut RootIRNode<'a>,
     next_id: usize,
     scope_id: Option<&'b str>,
+    /// The authored source, only for map-requesting compiles.
+    source: Option<&'a str>,
+    /// Anchors of each emitted template, by template index (P3-9).
+    template_spans: TemplateSpans,
+    /// Condition / loop-source start -> authored start of its element.
+    units: FxHashMap<u32, u32>,
+    /// Condition start -> authored start of the following `v-else` element.
+    else_units: FxHashMap<u32, u32>,
 }
 
 impl<'a> Emitter<'a, '_> {
@@ -76,13 +101,18 @@ impl<'a> Emitter<'a, '_> {
             let mut block = BlockIRNode::new(self.allocator);
             let id = if matches!(self.artifact.nodes[root].content, Content::Element { .. }) {
                 let id = self.id();
-                let mut template = String::default();
+                let mut template = SpannedText::default();
                 self.element(root, Some(id), &mut template, &mut block);
                 // Nested blocks registered their templates first.
+                let index = self.ir.templates.len();
+                self.ir.element_template_map.insert(id, index);
                 self.ir
-                    .element_template_map
-                    .insert(id, self.ir.templates.len());
-                self.ir.templates.push(self.allocator.alloc_str(&template));
+                    .templates
+                    .push(self.allocator.alloc_str(template.as_str()));
+                if self.source.is_some() {
+                    self.template_spans
+                        .insert(index, template.anchors().to_vec());
+                }
                 id
             } else {
                 self.control(root, None, &mut block)
@@ -96,7 +126,7 @@ impl<'a> Emitter<'a, '_> {
         &mut self,
         index: usize,
         id: Option<usize>,
-        template: &mut String,
+        template: &mut SpannedText,
         block: &mut BlockIRNode<'a>,
     ) {
         ensure_sufficient_stack(|| self.element_inner(index, id, template, block));
@@ -106,36 +136,51 @@ impl<'a> Emitter<'a, '_> {
         &mut self,
         index: usize,
         id: Option<usize>,
-        template: &mut String,
+        template: &mut SpannedText,
         block: &mut BlockIRNode<'a>,
     ) {
         let Content::Element {
             tag,
+            tag_span,
             ref attributes,
         } = self.artifact.nodes[index].content
         else {
             unreachable!("element payload checked by the caller")
         };
-        template.push('<');
+        template.push_str("<");
+        // S3 keeps element and attribute spans; the tokens inside them are
+        // located by the HTML syntax of that authored text (P3-9).
+        self.mark(template, self.token(tag_span, |raw| tag_offset(raw, tag)));
         template.push_str(tag);
-        for (name, value) in attributes {
-            template.push(' ');
+        for (name, value, span) in attributes {
+            template.push_str(" ");
+            self.mark(
+                template,
+                self.token(*span, |raw| raw.starts_with(name).then_some(0)),
+            );
             template.push_str(name);
             if let Some(value) = value {
                 template.push_str("=\"");
+                self.mark(
+                    template,
+                    self.token(*span, |raw| value_offset(raw, name, value)),
+                );
                 escape(template, value);
-                template.push('"');
+                template.push_str("\"");
             }
         }
         if let Some(scope_id) = self.scope_id {
-            template.push(' ');
+            template.push_str(" ");
             template.push_str(scope_id);
         }
-        template.push('>');
+        template.push_str(">");
         for binding_index in 0..self.artifact.nodes[index].bindings.len() {
             let binding = &self.artifact.nodes[index].bindings[binding_index];
             let element = id.expect("binding target is materialized");
-            let key = self.expression(binding.name, true);
+            let [name_span, value_span] = binding.spans;
+            let value_span = self.trimmed(value_span);
+            let name_span = self.token(name_span, |raw| argument_offset(raw, binding.name));
+            let key = self.expression(binding.name, true, name_span);
             if binding.event {
                 let modifiers = EventModifiers::from_names(
                     self.allocator,
@@ -144,8 +189,8 @@ impl<'a> Emitter<'a, '_> {
                 );
                 let name = modifiers.event_name(binding.name);
                 let delegate = modifiers.can_delegate(name);
-                let key = self.expression(name, true);
-                let value = Some(self.expression(binding.value, false));
+                let key = self.expression(name, true, None);
+                let value = Some(self.expression(binding.value, false, Some(value_span)));
                 block
                     .operation
                     .push(OperationNode::SetEvent(SetEventIRNode {
@@ -157,7 +202,7 @@ impl<'a> Emitter<'a, '_> {
                         effect: false,
                     }));
             } else {
-                let values = self.values(binding.value);
+                let values = self.values(binding.value, value_span);
                 self.effect(
                     OperationNode::SetProp(SetPropIRNode {
                         element,
@@ -178,7 +223,7 @@ impl<'a> Emitter<'a, '_> {
         if !vize_carton::is_void_tag(tag) {
             template.push_str("</");
             template.push_str(tag);
-            template.push('>');
+            template.push_str(">");
         }
     }
 
@@ -186,7 +231,7 @@ impl<'a> Emitter<'a, '_> {
         &mut self,
         index: usize,
         parent: Option<usize>,
-        template: &mut String,
+        template: &mut SpannedText,
         block: &mut BlockIRNode<'a>,
     ) {
         let only_child = self.artifact.nodes[index].children.len() == 1;
@@ -241,16 +286,31 @@ impl<'a> Emitter<'a, '_> {
         child_id
     }
 
-    fn expression(&self, value: &'a str, is_static: bool) -> Box<'a, SimpleExpressionNode<'a>> {
+    fn expression(
+        &self,
+        value: &'a str,
+        is_static: bool,
+        span: Option<AuthoredSpan>,
+    ) -> Box<'a, SimpleExpressionNode<'a>> {
+        // Map-requesting compiles keep the payload's authored span.
+        let loc = span
+            .filter(|_| self.source.is_some())
+            .map_or(SourceLocation::STUB, |(start, end)| {
+                SourceLocation::new(start, end)
+            });
         Box::new_in(
-            SimpleExpressionNode::new(value, is_static, SourceLocation::STUB),
+            SimpleExpressionNode::new(value, is_static, loc),
             &self.allocator,
         )
     }
 
-    fn values(&self, value: &'a str) -> Vec<'a, Box<'a, SimpleExpressionNode<'a>>> {
+    fn values(
+        &self,
+        value: &'a str,
+        span: AuthoredSpan,
+    ) -> Vec<'a, Box<'a, SimpleExpressionNode<'a>>> {
         let mut values = Vec::new_in(&self.allocator);
-        values.push(self.expression(value, false));
+        values.push(self.expression(value, false, Some(span)));
         values
     }
 
@@ -261,7 +321,7 @@ impl<'a> Emitter<'a, '_> {
     }
 }
 
-fn escape(output: &mut String, value: &str) {
+fn escape(output: &mut SpannedText, value: &str) {
     for ch in value.chars() {
         match ch {
             '&' => output.push_str("&amp;"),
@@ -269,7 +329,7 @@ fn escape(output: &mut String, value: &str) {
             '>' => output.push_str("&gt;"),
             '"' => output.push_str("&quot;"),
             '\'' => output.push_str("&#39;"),
-            ch => output.push(ch),
+            ch => output.push_str(ch.encode_utf8(&mut [0; 4])),
         }
     }
 }

@@ -1,7 +1,11 @@
 //! Transform context for tracking state during AST-to-IR transformation.
 
 use crate::ir::{BlockIRNode, IREffect, OperationNode};
+use vize_atelier_core::{ElementNode, TextNode, codegen::spanned::SpannedText};
 use vize_carton::{Allocator, FxHashMap, FxHashSet, String, Vec, interner::Interner};
+
+/// Template anchors, collected only for map-requesting compiles (P3-9).
+pub(crate) use crate::generate::spans::TemplateSpans;
 
 /// Transform context
 pub(crate) struct TransformContext<'a> {
@@ -19,6 +23,8 @@ pub(crate) struct TransformContext<'a> {
     pub(crate) standalone_text_elements: FxHashSet<usize>,
     non_reactive_scopes: usize,
     pub(crate) diagnostics: std::vec::Vec<String>,
+    /// `Some` when a source map is requested.
+    pub(crate) template_spans: Option<TemplateSpans>,
 }
 
 impl<'a> TransformContext<'a> {
@@ -34,6 +40,7 @@ impl<'a> TransformContext<'a> {
             standalone_text_elements: FxHashSet::default(),
             non_reactive_scopes: 0,
             diagnostics: std::vec::Vec::new(),
+            template_spans: None,
         }
     }
 
@@ -43,13 +50,42 @@ impl<'a> TransformContext<'a> {
         id
     }
 
-    pub(crate) fn add_template(&mut self, element_id: usize, template: String) -> usize {
+    pub(crate) fn add_template(
+        &mut self,
+        element_id: usize,
+        template: impl Into<SpannedText>,
+    ) -> usize {
+        let template: SpannedText = template.into();
         let template_index = self.templates.len();
+        if let Some(spans) = self.template_spans.as_mut()
+            && !template.anchors().is_empty()
+        {
+            spans.insert(template_index, template.anchors().to_vec());
+        }
         // Template strings are assembled per element and effectively unique,
         // so they are frozen with a single arena copy rather than interned.
-        self.templates.push(self.allocator.alloc_str(&template));
+        self.templates
+            .push(self.allocator.alloc_str(template.as_str()));
         self.element_template_map.insert(element_id, template_index);
         template_index
+    }
+
+    /// An element's template string, anchored when a map is requested.
+    pub(crate) fn element_template(&self, el: &ElementNode<'_>) -> SpannedText {
+        let scope_id = self.scope_id.as_deref();
+        if self.template_spans.is_some() {
+            super::element::template::generate_element_template_spanned(el, scope_id)
+        } else {
+            super::element::template::generate_element_template(el, scope_id).into()
+        }
+    }
+
+    /// A standalone text node's template string, anchored when requested.
+    pub(crate) fn text_template(&self, text: &TextNode<'_>) -> SpannedText {
+        match self.template_spans {
+            Some(_) => SpannedText::mapped(text.content, text.loc.span.start),
+            None => SpannedText::plain(text.content),
+        }
     }
 
     pub(crate) fn enter_non_reactive_scope(&mut self) {

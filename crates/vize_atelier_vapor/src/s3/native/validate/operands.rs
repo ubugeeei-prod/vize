@@ -49,13 +49,14 @@ pub(super) fn element<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
                     ValueKind::Literal if !value.value.text.contains('&') => Some(value.value.text),
                     _ => return Err(LegacyReason::ExpressionOrEncoding.into()),
                 };
-                attributes.push((name, text));
+                attributes.push((name, text, (value.value.span.start, value.value.span.end)));
             }
             _ => return Err(LegacyReason::Structure.into()),
         }
     }
     Ok(Content::Element {
         tag: tag.value.text,
+        tag_span: (tag.value.span.start, tag.value.span.end),
         attributes,
     })
 }
@@ -107,6 +108,7 @@ pub(super) fn binding<'a>(values: &[&Operand<'a>], kind: OpKind) -> Result<(OpId
             value: value.value.text.trim(),
             event,
             modifiers,
+            spans: [name.value.span, value.value.span].map(|span| (span.start, span.end)),
         },
     ))
 }
@@ -136,6 +138,7 @@ pub(super) fn text<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
         parts.push(TextPart {
             value: value.text,
             dynamic,
+            span: (value.span.start, value.span.end),
         });
     }
     let dynamic = parts.iter().any(|part| part.dynamic);

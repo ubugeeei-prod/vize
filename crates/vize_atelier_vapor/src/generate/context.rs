@@ -59,6 +59,10 @@ pub(crate) struct GenerateContext<'a> {
     pub(crate) component_name: Option<&'a str>,
     /// Treat the reserved `<Self>` tag as a reference to the current SFC.
     pub(crate) experimental_self_component: bool,
+    /// Authored anchors beyond the IR; `Some` only for map-requesting compiles.
+    pub(crate) spans: Option<&'a super::spans::VaporSourceSpans>,
+    /// Anchors recorded against `code`; `Some` exactly when `spans` is.
+    pub(crate) anchors: Option<std::vec::Vec<vize_atelier_core::codegen::spanned::SpanAnchor>>,
 }
 
 impl<'a> GenerateContext<'a> {
@@ -89,6 +93,8 @@ impl<'a> GenerateContext<'a> {
             jsx_closure: false,
             component_name: None,
             experimental_self_component: false,
+            spans: None,
+            anchors: None,
         }
     }
 

@@ -7,7 +7,7 @@
 
 use vize_carton::{Box, ensure_sufficient_stack};
 
-use super::super::Content;
+use super::super::{AuthoredSpan, Content};
 use super::Emitter;
 use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, NegativeBranch, OperationNode};
 
@@ -15,7 +15,7 @@ use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, NegativeBranch, OperationNode}
 /// parent's only child.
 pub(super) type Placement = (usize, usize, bool);
 
-type Branches<'s, 'a> = &'s [(Option<&'a str>, usize)];
+type Branches<'s, 'a> = &'s [(Option<&'a str>, AuthoredSpan, usize)];
 
 impl<'a> Emitter<'a, '_> {
     pub(super) fn control(
@@ -35,6 +35,7 @@ impl<'a> Emitter<'a, '_> {
                     .map(|branch| {
                         (
                             branch.condition,
+                            branch.span,
                             branch.root.expect("validated branch root"),
                         )
                     })
@@ -57,15 +58,18 @@ impl<'a> Emitter<'a, '_> {
                 let root = self.artifact.nodes[index].children[0];
                 self.id();
                 let render = self.block(root);
-                let alias =
-                    |value: Option<&'a str>| value.map(|value| self.expression(value, false));
+                let spans = body.spans;
+                self.unit(Some(self.trimmed(spans.source)), Some(root));
+                let alias = |value: Option<&'a str>, span: Option<AuthoredSpan>| {
+                    value.map(|value| self.expression(value, false, span.map(|s| self.trimmed(s))))
+                };
                 let node = ForIRNode {
                     id,
-                    source: self.expression(body.source, false),
-                    value: alias(Some(body.value)),
-                    key: alias(body.key),
-                    index: alias(body.index),
-                    key_prop: alias(body.key_prop),
+                    source: alias(Some(body.source), Some(spans.source)).expect("loop source"),
+                    value: alias(Some(body.value), spans.aliases[0]),
+                    key: alias(body.key, spans.aliases[1]),
+                    index: alias(body.index, spans.aliases[2]),
+                    key_prop: alias(body.key_prop, spans.key_prop),
                     render,
                     once: false,
                     component: false,
@@ -86,6 +90,25 @@ impl<'a> Emitter<'a, '_> {
         id
     }
 
+    /// Key the authored element `root` by the expression span `key`, so
+    /// generation opens the construct at that element (P3-9 source maps).
+    fn unit(&mut self, key: Option<AuthoredSpan>, root: Option<usize>) {
+        if self.source.is_none() {
+            return;
+        }
+        if let (Some(key), Some(start)) = (key, root.and_then(|root| self.element_start(root))) {
+            self.units.insert(key.0, start);
+        }
+    }
+
+    /// Authored start (`<`) of the element payload at `index`.
+    fn element_start(&self, index: usize) -> Option<u32> {
+        match self.artifact.nodes[index].content {
+            Content::Element { tag_span, .. } => Some(tag_span.0),
+            _ => None,
+        }
+    }
+
     /// The leading conditional branch of `branches` and its block.
     fn branch(
         &mut self,
@@ -94,8 +117,20 @@ impl<'a> Emitter<'a, '_> {
         vize_carton::Box<'a, vize_atelier_core::SimpleExpressionNode<'a>>,
         BlockIRNode<'a>,
     ) {
-        let (condition, root) = branches[0];
-        let condition = self.expression(condition.expect("validated leading condition"), false);
+        let (condition, span, root) = branches[0];
+        let key = self.trimmed(span);
+        self.unit(Some(key), Some(root));
+        if let [_, (None, _, otherwise), ..] = branches {
+            let start = self.element_start(*otherwise);
+            if let (Some(start), true) = (start, self.source.is_some()) {
+                self.else_units.insert(key.0, start);
+            }
+        }
+        let condition = self.expression(
+            condition.expect("validated leading condition"),
+            false,
+            Some(self.trimmed(span)),
+        );
         self.id();
         (condition, self.block(root))
     }
@@ -109,11 +144,11 @@ impl<'a> Emitter<'a, '_> {
         anchor: Option<usize>,
     ) -> Option<NegativeBranch<'a>> {
         ensure_sufficient_stack(|| match branches.first()? {
-            (None, root) => {
+            (None, _, root) => {
                 self.id();
                 Some(NegativeBranch::Block(self.block(*root)))
             }
-            (Some(_), _) => {
+            (Some(_), ..) => {
                 let (condition, positive) = self.branch(branches);
                 let negative = if branches.len() > 1 {
                     self.id();

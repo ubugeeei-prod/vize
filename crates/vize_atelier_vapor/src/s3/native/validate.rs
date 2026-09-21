@@ -80,7 +80,7 @@ pub(super) fn admit<'a>(program: &Program<'a>) -> Result<NativeArtifact<'a>> {
     let mut names = FxHashSet::default();
     for (id, (index, _)) in &indexes {
         if let Content::Element { attributes, .. } = &nodes[*index].content {
-            names.extend(attributes.iter().map(|(name, _)| (*id, false, *name)));
+            names.extend(attributes.iter().map(|(name, ..)| (*id, false, *name)));
         }
     }
     for (target, region, binding) in bindings {
@@ -102,6 +102,7 @@ pub(super) fn admit<'a>(program: &Program<'a>) -> Result<NativeArtifact<'a>> {
                 return Err(LegacyReason::Binding.into());
             };
             owner.key_prop = Some(binding.value);
+            owner.spans.key_prop = Some(binding.spans[1]);
             continue;
         }
         nodes[index].bindings.push(binding);

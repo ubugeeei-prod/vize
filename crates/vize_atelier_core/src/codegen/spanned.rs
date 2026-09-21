@@ -104,6 +104,42 @@ impl SpannedText {
     }
 }
 
+/// A text sink that may record authored anchors.
+///
+/// Emitters write through this trait once: a plain [`String`] sink ignores the
+/// anchors (the no-map path pays nothing), and a [`SpannedText`] sink keeps
+/// them, so both produce the same bytes by construction.
+pub trait SpanSink {
+    /// Append unanchored text.
+    fn push_plain(&mut self, text: &str);
+    /// Append text whose first byte comes from the authored byte `source`.
+    fn push_at(&mut self, text: &str, source: u32);
+}
+
+impl SpanSink for String {
+    #[inline]
+    fn push_plain(&mut self, text: &str) {
+        self.push_str(text);
+    }
+
+    #[inline]
+    fn push_at(&mut self, text: &str, _source: u32) {
+        self.push_str(text);
+    }
+}
+
+impl SpanSink for SpannedText {
+    #[inline]
+    fn push_plain(&mut self, text: &str) {
+        self.push_str(text);
+    }
+
+    #[inline]
+    fn push_at(&mut self, text: &str, source: u32) {
+        self.push_mapped(text, source);
+    }
+}
+
 impl From<String> for SpannedText {
     fn from(text: String) -> Self {
         Self {

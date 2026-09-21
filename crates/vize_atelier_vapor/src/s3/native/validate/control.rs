@@ -9,10 +9,10 @@ use vize_atelier_core::steps::expression::is_template_global;
 use vize_carton::{FxHashMap, FxHashSet};
 use vize_s3::{
     op::{OpId, OpKind, Program, RegionId},
-    operand::{Operand, OperandRole as Role, ValueKind},
+    operand::{Operand, OperandRole as Role, OperandValue, ValueKind},
 };
 
-use super::super::{Branch, Content, Loop};
+use super::super::{Branch, Content, Loop, LoopSpans};
 use super::{Result, operands::one, operands::reference};
 use crate::s3::{AdmissionFailure, LegacyReason};
 
@@ -42,6 +42,7 @@ pub(super) fn branches<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
         };
         branches.push(Branch {
             condition,
+            span: (value.value.span.start, value.value.span.end),
             region,
             root: None,
         });
@@ -71,6 +72,13 @@ pub(super) fn for_loop<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
     if source.kind != ValueKind::Js || !(reference(source.text) || range) {
         return Err(LegacyReason::ExpressionOrEncoding.into());
     }
+    let span = |value: OperandValue<'_>| (value.span.start, value.span.end);
+    let alias_spans = [
+        Some(span(value)),
+        (key.kind != ValueKind::Absent).then(|| span(key)),
+        (index.kind != ValueKind::Absent).then(|| span(index)),
+    ];
+    let source_span = span(source);
     let value = alias(value.kind, value.text)?.ok_or(LegacyReason::ControlFlow)?;
     let key = alias(key.kind, key.text)?;
     let index = alias(index.kind, index.text)?;
@@ -87,6 +95,11 @@ pub(super) fn for_loop<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
         key,
         index,
         key_prop: None,
+        spans: LoopSpans {
+            source: source_span,
+            aliases: alias_spans,
+            key_prop: None,
+        },
     }))
 }
 

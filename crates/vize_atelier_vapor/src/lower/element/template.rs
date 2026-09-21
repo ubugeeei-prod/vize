@@ -3,15 +3,38 @@
 use super::{
     BlockIRNode, Box, ElementNode, ElementType, ExpressionNode, OperationNode, PropNode,
     SetTemplateRefIRNode, SimpleExpressionNode, String, TemplateChildNode, TransformContext,
-    append, cstr,
 };
+use vize_atelier_core::codegen::spanned::{SpanSink, SpannedText};
 use vize_carton::ensure_sufficient_stack;
 
 /// Generate element template string (recursively includes static children)
 pub(crate) fn generate_element_template(el: &ElementNode<'_>, scope_id: Option<&str>) -> String {
-    let mut template = cstr!("<{}", el.tag);
+    let mut template = String::default();
+    write_element_template(&mut template, el, scope_id);
+    template
+}
+
+/// [`generate_element_template`] with the authored spans of the tag names,
+/// static attributes and text it copies (Davinci P3-9); identical bytes.
+pub(crate) fn generate_element_template_spanned(
+    el: &ElementNode<'_>,
+    scope_id: Option<&str>,
+) -> SpannedText {
+    let mut template = SpannedText::default();
+    write_element_template(&mut template, el, scope_id);
+    template
+}
+
+fn write_element_template<S: SpanSink>(
+    template: &mut S,
+    el: &ElementNode<'_>,
+    scope_id: Option<&str>,
+) {
+    template.push_plain("<");
+    template.push_at(el.tag, el.loc.span.start + 1);
     if let Some(scope_id) = scope_id {
-        append!(template, " {}", scope_id);
+        template.push_plain(" ");
+        template.push_plain(scope_id);
     }
 
     // Collect dynamic binding names to skip their static counterparts
@@ -39,45 +62,49 @@ pub(crate) fn generate_element_template(el: &ElementNode<'_>, scope_id: Option<&
             if dynamic_attrs.contains(attr.name) {
                 continue;
             }
+            template.push_plain(" ");
+            template.push_at(attr.name, attr.name_loc.span.start);
             if let Some(ref value) = attr.value {
-                append!(template, " {}=\"{}\"", attr.name, value.content);
-            } else {
-                append!(template, " {}", attr.name);
+                template.push_plain("=\"");
+                template.push_at(value.content, value.loc.span.start);
+                template.push_plain("\"");
             }
         }
     }
 
     if is_void_element(el.tag) {
-        template.push('>');
+        template.push_plain(">");
     } else if el.is_self_closing {
-        append!(template, "></{}>", el.tag);
+        template.push_plain("></");
+        template.push_plain(el.tag);
+        template.push_plain(">");
     } else {
-        template.push('>');
+        template.push_plain(">");
 
         // Recursively add template-backed children. `<template>` is a
         // transparent wrapper in Vapor just as it is in the main element
         // dispatcher, so its children contribute directly to the enclosing
         // element's static template instead of producing a component lookup.
-        append_child_templates(&mut template, &el.children, scope_id);
+        append_child_templates(template, &el.children, scope_id);
 
-        append!(template, "</{}>", el.tag);
+        template.push_plain("</");
+        template.push_plain(el.tag);
+        template.push_plain(">");
     }
-
-    template
 }
 
-fn append_child_templates(
-    template: &mut String,
+fn append_child_templates<S: SpanSink>(
+    template: &mut S,
     children: &[TemplateChildNode<'_>],
     scope_id: Option<&str>,
 ) {
     for child in children {
         match child {
             TemplateChildNode::Text(text) => {
-                template.push_str(&escape_html_text(text.content));
+                template.push_at(&escape_html_text(text.content), text.loc.span.start);
             }
             TemplateChildNode::Interpolation(_) => {
-                template.push(' ');
+                template.push_plain(" ");
             }
             TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Template => {
                 ensure_sufficient_stack(|| {
@@ -85,14 +112,12 @@ fn append_child_templates(
                 });
             }
             TemplateChildNode::Element(child_el) if is_template_backed_element(child_el) => {
-                let child_template =
-                    ensure_sufficient_stack(|| generate_element_template(child_el, scope_id));
-                template.push_str(&child_template);
+                ensure_sufficient_stack(|| write_element_template(template, child_el, scope_id));
             }
             TemplateChildNode::Element(_)
             | TemplateChildNode::If(_)
             | TemplateChildNode::For(_) => {
-                template.push_str("<!---->");
+                template.push_plain("<!---->");
             }
             _ => {}
         }

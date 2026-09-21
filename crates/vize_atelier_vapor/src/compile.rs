@@ -5,6 +5,7 @@
 
 mod entry;
 
+use crate::generate::spans::VaporSourceSpans;
 use crate::lower as vapor_lower;
 use crate::s3::{self, VaporS3BridgeOptions, VaporS3BridgeStatus};
 use vize_atelier_core::{
@@ -180,9 +181,20 @@ fn compile_vapor_inner_with_stack<'a>(
     s3::record_selection(&s3_bridge_status);
     match s3_bridge_status {
         VaporS3BridgeStatus::Accepted(artifact) => {
-            let ir = artifact.into_ir(allocator, source, scope_id);
+            let (ir, spans) = artifact.into_ir_with_spans(
+                allocator,
+                source,
+                scope_id,
+                experimental_options.source_map,
+            );
             return (
-                generate(&ir, &options, &experimental_options, Vec::new()),
+                generate(
+                    &ir,
+                    &options,
+                    &experimental_options,
+                    Vec::new(),
+                    spans.as_ref(),
+                ),
                 parser_diagnostics,
             );
         }
@@ -240,11 +252,20 @@ fn compile_vapor_inner_with_stack<'a>(
         );
     }
 
-    // Lower to Vapor IR
-    let (ir, transform_diagnostics) =
-        vapor_lower::transform_to_ir_with_scope_id(allocator, &root, source, scope_id);
+    // Lower to Vapor IR; a map-requesting compile also collects the authored
+    // anchors generation needs beyond the IR (Davinci P3-9).
+    let source_map = experimental_options.source_map;
+    let (ir, transform_diagnostics, template_spans) =
+        vapor_lower::transform_to_ir_with_spans(allocator, &root, source, scope_id, source_map);
+    let spans = template_spans.map(|templates| VaporSourceSpans::collect(&root, templates));
     (
-        generate(&ir, &options, &experimental_options, transform_diagnostics),
+        generate(
+            &ir,
+            &options,
+            &experimental_options,
+            transform_diagnostics,
+            spans.as_ref(),
+        ),
         parser_diagnostics,
     )
 }
@@ -254,8 +275,9 @@ fn generate(
     options: &VaporCompilerOptions,
     experimental_options: &VaporCompilerExperimentalOptions,
     error_messages: Vec<String>,
+    spans: Option<&VaporSourceSpans>,
 ) -> VaporCompileResult {
-    let result = crate::generate::generate_vapor_with_options_and_experimentals(
+    let result = crate::generate::generate_vapor_with_spans(
         ir,
         options.binding_metadata.as_ref(),
         crate::generate::VaporGenerateOptions::default(),
@@ -265,6 +287,7 @@ fn generate(
             source_map: experimental_options.source_map,
             source_map_filename: experimental_options.source_map_filename.as_deref(),
         },
+        spans,
     );
 
     VaporCompileResult {

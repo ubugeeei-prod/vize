@@ -22,11 +22,16 @@ struct Node<'a> {
     bindings: std::vec::Vec<Binding<'a>>,
 }
 
+/// Authored `[start, end)` byte span of a payload value (P3-9 source maps).
+type AuthoredSpan = (u32, u32);
+
 #[derive(Debug)]
 enum Content<'a> {
     Element {
         tag: &'a str,
-        attributes: std::vec::Vec<(&'a str, Option<&'a str>)>,
+        tag_span: AuthoredSpan,
+        /// Name, literal value, and the authored span of that value.
+        attributes: std::vec::Vec<(&'a str, Option<&'a str>, AuthoredSpan)>,
     },
     Text {
         parts: std::vec::Vec<TextPart<'a>>,
@@ -42,6 +47,8 @@ enum Content<'a> {
 struct Branch<'a> {
     /// `None` only for a trailing unconditional (`v-else`) branch.
     condition: Option<&'a str>,
+    /// Authored span of the untrimmed condition value.
+    span: AuthoredSpan,
     region: vize_s3::op::RegionId,
     root: Option<usize>,
 }
@@ -54,12 +61,23 @@ struct Loop<'a> {
     index: Option<&'a str>,
     /// The body element's `:key`, lifted out of its ordinary bindings.
     key_prop: Option<&'a str>,
+    /// Authored spans of the untrimmed source, the value/key/index aliases,
+    /// and the `:key` value (P3-9 source maps).
+    spans: LoopSpans,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+struct LoopSpans {
+    source: AuthoredSpan,
+    aliases: [Option<AuthoredSpan>; 3],
+    key_prop: Option<AuthoredSpan>,
 }
 
 #[derive(Debug)]
 struct TextPart<'a> {
     value: &'a str,
     dynamic: bool,
+    span: AuthoredSpan,
 }
 
 #[derive(Debug)]
@@ -68,6 +86,8 @@ struct Binding<'a> {
     value: &'a str,
     event: bool,
     modifiers: std::vec::Vec<&'a str>,
+    /// Authored spans of the name and of the untrimmed value.
+    spans: [AuthoredSpan; 2],
 }
 
 impl<'a> NativeArtifact<'a> {
@@ -77,12 +97,19 @@ impl<'a> NativeArtifact<'a> {
 
     /// Consuming the checked projection is the only production generation path
     /// for an accepted artifact. No source parsing or AST lowering occurs here.
-    pub(super) fn into_ir(
+    /// With `spans`, payload slices borrowed from `source` keep their authored
+    /// spans and the template and control-flow anchors are returned (Davinci
+    /// P3-9).
+    pub(super) fn into_ir_with_spans(
         self,
         allocator: &'a Allocator,
         source: &'a str,
         scope_id: Option<&str>,
-    ) -> crate::ir::RootIRNode<'a> {
-        emit::emit(self, allocator, source, scope_id)
+        spans: bool,
+    ) -> (
+        crate::ir::RootIRNode<'a>,
+        Option<crate::generate::spans::VaporSourceSpans>,
+    ) {
+        emit::emit(self, allocator, source, scope_id, spans)
     }
 }
