@@ -164,9 +164,14 @@ emit from the plan (checkout smoke: 643 of 717; vendor sample: 1,207 of
 _Ninth slice 2026-09-22:_ `createSlots` shapes (conditional, looped, and
 dynamically named slot templates) emit from the plan, and every traversal
 ladder fixture now skips the legacy SSR codegen walk (checkout smoke: 650 of
-717; vendor sample: 1,242 of 1,279; 0 divergences). Custom directives,
-`v-once` / `v-cloak`, `@vize:` directive comments, a canonical Real Project
-Matrix run, and the legacy walker deletion remain before P3-8 closes.
+717; vendor sample: 1,242 of 1,279; 0 divergences).
+_Tenth slice 2026-09-22:_ plain `<template>` and the non-raw-text legacy
+content tags (`iframe`, `noscript`, ...) emit from the plan (checkout smoke:
+663 of 717, 0 divergences). Element directives stay refused pending a
+decision: the legacy lane renders them through an unbound `_directives`
+(see the record). That fix, `@vize:` directive comments, element bind
+modifiers, a canonical Real Project Matrix run, and the legacy walker
+deletion remain before P3-8 closes.
 
 **P3-9 S4 emitter + source maps.** Structured span-carrying emission document
 replaces `CodegenContext.code` string appends across dom/vapor/ssr; one

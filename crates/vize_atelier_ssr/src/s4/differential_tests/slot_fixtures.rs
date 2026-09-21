@@ -165,6 +165,10 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         r#"<component :is="c"><template v-if="a" #head>h</template>body</component>"#,
     ),
     (
+        "slot-template-plain",
+        r#"<Foo><template><b>{{ x }}</b></template><iframe :src="u"></iframe></Foo>"#,
+    ),
+    (
         "root-if-keyed",
         r#"<div v-if="a" :key="k" :id="i">x</div><Bar v-else :key="k2" :y="2" />"#,
     ),
