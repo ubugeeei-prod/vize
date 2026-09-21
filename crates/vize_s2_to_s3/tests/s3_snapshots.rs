@@ -5,8 +5,8 @@
 //! snapshot is the oracle for the whole lowered artifact.
 
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_s0::{Allocator, String, appendln};
-use vize_s2_to_s3::{Lowered, lower};
+use vize_s0::{Allocator, String};
+use vize_s2_to_s3::{S3PartitionFolio, lower};
 use vize_s3::folio::S3Folio;
 use vize_s3::verify::verify;
 
@@ -27,26 +27,11 @@ fn snapshot(source: &str) -> String {
     assert_eq!(verify(&lowered.program), []);
 
     let mut output = S3Folio::of(&lowered.program).print_to_string(FolioMode::Full);
-    output.push_str(partition_page(&lowered).as_str());
-    output
-}
-
-fn partition_page(lowered: &Lowered<'_>) -> String {
-    let mut output = String::from("[s3-partition-facts]\n");
-    for fact in lowered.partition.ops.iter() {
-        appendln!(
-            output,
-            "op=",
-            @fact.op.index(),
-            " kind=",
-            fact.kind.as_str(),
-            " span=",
-            @fact.span.start,
-            #':',
-            @fact.span.end
-        );
-    }
-    output.push('\n');
+    output.push_str(
+        S3PartitionFolio::of(&lowered.partition)
+            .print_to_string(FolioMode::Full)
+            .as_str(),
+    );
     output
 }
 

@@ -228,15 +228,14 @@ pub(super) fn analyze_sfc_json_with_options(
         })
         .collect();
 
-    // The Spolvero feed (P2-18): the S1 surface-tree page for the template,
-    // through the one producer/serializer pair in `vize_curator`. S2 pages
-    // join the same feed once the S1→S2 lowering (P2-8) has a producer.
+    // The Spolvero feed (P2-18, C-2/C-5): the template's full stage ladder -
+    // S1, the S2 lowering and per-pass pages, the S3 graph/partition/value
+    // pages - through the one producer/serializer pair in `vize_curator`.
     let spolvero_pages: Vec<vize_curator::inspector::SpolveroPage> = descriptor
         .template
         .as_ref()
-        .map(|template| vize_curator::inspector::s1_page(filename, &template.content))
-        .into_iter()
-        .collect();
+        .map(|template| vize_curator::inspector::ladder_pages(filename, &template.content))
+        .unwrap_or_default();
     // P3-13: the inline HTML template's optimization remarks ride beside the
     // pages, spans in the template's byte frame (the pages' frame).
     let spolvero_remarks = descriptor

@@ -23,6 +23,6 @@ pub use payload::{
     serialize_agent_report, serialize_payload,
 };
 pub use spolvero::{
-    SpolveroFeed, SpolveroPage, SpolveroRemark, s1_page, spolvero_value,
+    SpolveroFeed, SpolveroPage, SpolveroRemark, ladder_pages, s1_page, spolvero_value,
     spolvero_value_with_remarks, template_remarks,
 };

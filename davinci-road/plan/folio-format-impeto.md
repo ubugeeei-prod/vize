@@ -37,6 +37,26 @@ TS-27 (`crates/vize_impeto/tests/phase_validator.rs`) separately pins exact
 rejections for unresolved state edges, malformed region nesting, effect-scope
 leaks, and scheduled-phase back edges.
 
+## S3 Partition Folio
+
+`vize_s2_to_s3::S3PartitionFolio` is the derived page `[s3-partition-folio]`
+for the static/dynamic partition facts P3-3 exports beside the program. The
+facts are their own artifact (SSR reads them without S3), so they are not a
+column of the graph-only `[s3-folio]`; the page lives in the conversion crate
+that owns `PartitionKind`, which is why `vize_s2_to_s3` depends on the tier-1
+`vize_davinci` Folio contract.
+
+| section                    | entry grammar                                      |
+| -------------------------- | -------------------------------------------------- |
+| `[s3-partition-folio.ops]` | `op=<n> kind=<static\|dynamic> span=<start>:<end>` |
+
+One record per canonical S3 op, in export order. The TS-17 S2-to-S3 snapshots
+(`crates/vize_s2_to_s3/tests/s3_snapshots.rs`) print this page instead of the
+former test-local `[s3-partition-facts]` helper, and
+`crates/vize_s2_to_s3/tests/partition_folio.rs` pins the TS-16 round-trip laws
+and the exact rejections. The Spolvero stage ladder feeds it as the
+`s3-partition` page.
+
 ## S3 Reactivity Folio
 
 P3-2 adds `vize_impeto::lattice::S3ReactivityFolio`, a derived Folio page

@@ -26,9 +26,13 @@ vize_croquis_cf = { workspace = true }
 # (`vize_vitrine --features wasm`) is untouched.
 vize_davinci = { workspace = true }
 vize_s1 = { workspace = true }
-# The S1->S2 lowering and transform pipeline whose optimization remarks
-# (P3-13) the feed carries; already in the graph through the DOM backend.
+# The full stage ladder (S1 -> S2 -> S3) the Spolvero feed pages, produced by
+# the real lowerings and the S2 transform pass manager rather than re-derived,
+# and the transform pipeline whose optimization remarks (P3-13) it carries.
 vize_s1_to_s2 = { workspace = true }
+vize_s2 = { workspace = true }
+vize_s2_to_s3 = { workspace = true }
+vize_s3 = { workspace = true }
 
 [dev-dependencies]
 davinci_test_support.workspace = true

@@ -38,7 +38,9 @@ id=3 owner=4 region=1 span=34:85
 id=4 owner=5 region=4 span=52:78
 id=5 owner=6 region=4 span=58:75
 
-[s3-partition-facts]
+[s3-partition-folio]
+
+[s3-partition-folio.ops]
 op=0 kind=static span=0:95
 op=1 kind=dynamic span=9:34
 op=2 kind=dynamic span=9:34

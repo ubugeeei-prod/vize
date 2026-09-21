@@ -27,7 +27,9 @@ id=0 owner=2 region=1 span=28:46
 id=1 owner=3 region=1 span=47:60
 id=2 owner=4 region=2 span=61:72
 
-[s3-partition-facts]
+[s3-partition-folio]
+
+[s3-partition-folio.ops]
 op=0 kind=static span=0:88
 op=1 kind=static span=20:81
 op=2 kind=dynamic span=28:46
