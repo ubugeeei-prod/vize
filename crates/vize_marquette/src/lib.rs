@@ -45,6 +45,7 @@
 mod adapter;
 mod canonical;
 mod compatibility;
+pub mod contracts;
 mod model;
 mod test_run;
 mod validate;
@@ -65,6 +66,11 @@ pub use canonical::{CanonicalContractError, canonical_json, contract_fingerprint
 pub use compatibility::{
     CompatibilityChange, CompatibilityChangeKind, CompatibilityInputDiagnostic,
     CompatibilityReport, compare_contracts,
+};
+pub use contracts::{
+    CONTRACT_SURFACE_FORMAT, CONTRACT_SURFACE_FORMAT_VERSION, ContractSurface,
+    ContractSurfaceReport, ContractVersion, VersionPolicyViolation, canonical_surface_json,
+    check_version_policy, compare_surfaces, surface_fingerprint,
 };
 pub use model::{
     ApplicationContract, Backend, BackendFamily, CONTRACT_FORMAT_VERSION, CapabilityDefinition,

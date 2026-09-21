@@ -35,6 +35,9 @@ wasmtime = { workspace = true, optional = true }
 
 [dev-dependencies]
 davinci_test_support = { workspace = true }
+# P6-8: the released contract surfaces are classified with marquette's
+# `wit` reader (test tooling only; no runtime edge).
+vize_marquette = { workspace = true, features = ["wit"] }
 
 [[bin]]
 name = "vize-extension-host"

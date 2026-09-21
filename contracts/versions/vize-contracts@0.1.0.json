@@ -1,0 +1,203 @@
+{
+  "format": "vize.contract-surface",
+  "formatVersion": 1,
+  "package": "vize:contracts",
+  "version": "0.1.0",
+  "protocolVersion": 1,
+  "pages": {
+    "s1-page": 1,
+    "s2-page": 1
+  },
+  "interfaces": {
+    "handshake": {
+      "types": {
+        "capability": {
+          "record": [
+            {
+              "name": "protocol-version",
+              "type": "u32"
+            },
+            {
+              "name": "features",
+              "type": "list<string>"
+            }
+          ]
+        }
+      },
+      "functions": {
+        "get-capability": {
+          "params": [],
+          "result": "handshake.capability"
+        }
+      }
+    },
+    "input-lowering": {
+      "types": {
+        "lowered-block": {
+          "record": [
+            {
+              "name": "surface",
+              "type": "types.page"
+            },
+            {
+              "name": "semantic",
+              "type": "types.page"
+            },
+            {
+              "name": "diagnostics",
+              "type": "list<types.diagnostic>"
+            }
+          ]
+        },
+        "source-block": {
+          "record": [
+            {
+              "name": "source",
+              "type": "string"
+            },
+            {
+              "name": "base",
+              "type": "u32"
+            },
+            {
+              "name": "lang",
+              "type": "option<string>"
+            }
+          ]
+        }
+      },
+      "functions": {
+        "lower-block": {
+          "params": [
+            {
+              "name": "block",
+              "type": "input-lowering.source-block"
+            }
+          ],
+          "result": "input-lowering.lowered-block"
+        }
+      }
+    },
+    "types": {
+      "types": {
+        "diagnostic": {
+          "record": [
+            {
+              "name": "severity",
+              "type": "types.severity"
+            },
+            {
+              "name": "stage",
+              "type": "types.stage"
+            },
+            {
+              "name": "span",
+              "type": "types.span"
+            },
+            {
+              "name": "message",
+              "type": "string"
+            },
+            {
+              "name": "parts",
+              "type": "list<types.diagnostic-part>"
+            },
+            {
+              "name": "witness",
+              "type": "option<types.witness>"
+            }
+          ]
+        },
+        "diagnostic-part": {
+          "record": [
+            {
+              "name": "kind",
+              "type": "types.part-kind"
+            },
+            {
+              "name": "span",
+              "type": "types.span"
+            },
+            {
+              "name": "message",
+              "type": "string"
+            }
+          ]
+        },
+        "page": {
+          "record": [
+            {
+              "name": "schema-version",
+              "type": "u32"
+            },
+            {
+              "name": "text",
+              "type": "string"
+            }
+          ]
+        },
+        "part-kind": {
+          "enum": [
+            "primary",
+            "secondary",
+            "help",
+            "suggestion"
+          ]
+        },
+        "severity": {
+          "enum": [
+            "error",
+            "warning",
+            "info",
+            "hint"
+          ]
+        },
+        "span": {
+          "record": [
+            {
+              "name": "start",
+              "type": "u32"
+            },
+            {
+              "name": "end",
+              "type": "u32"
+            }
+          ]
+        },
+        "stage": {
+          "enum": [
+            "source",
+            "surface",
+            "semantic",
+            "lowered",
+            "emit"
+          ]
+        },
+        "witness": {
+          "variant": [
+            {
+              "name": "legacy-exempt",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "functions": {}
+    }
+  },
+  "worlds": {
+    "input-dialect": {
+      "imports": [
+        "types"
+      ],
+      "exports": [
+        "handshake",
+        "input-lowering"
+      ],
+      "requiredFeatures": [
+        "s1-page@1",
+        "s2-page@1"
+      ]
+    }
+  }
+}

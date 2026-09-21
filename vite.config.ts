@@ -42,6 +42,9 @@ const vscodeExtensionLintIgnorePatterns = [
  */
 const formatterSensitiveContentIgnorePatterns = [
   "benchmarks/davinci_harness/fixtures/**",
+  // Released extension-contract surfaces are canonical bytes checked by
+  // `vize_extension_host`'s `contract_surface` test (P6-8).
+  "contracts/versions/**",
   "crates/**/tests/fixtures/**",
   "docs/content/**/*.md",
   "examples/vite-musea/playwright-report/**",

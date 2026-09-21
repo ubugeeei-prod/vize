@@ -4336,6 +4336,7 @@ dependencies = [
  "serde_json",
  "vize_carton",
  "vize_davinci",
+ "vize_marquette",
  "vize_s1",
  "vize_s1_to_s2",
  "vize_s2",
@@ -4444,6 +4445,7 @@ dependencies = [
  "serde_json",
  "sha2 0.11.0",
  "vize_carton",
+ "wit-parser 0.259.0",
 ]
 
 [[package]]
@@ -4835,7 +4837,7 @@ dependencies = [
  "syn 2.0.117",
  "wasmtime-internal-component-util",
  "wasmtime-internal-wit-bindgen",
- "wit-parser",
+ "wit-parser 0.254.0",
 ]
 
 [[package]]
@@ -4950,7 +4952,7 @@ dependencies = [
  "heck",
  "indexmap",
  "wit-component",
- "wit-parser",
+ "wit-parser 0.254.0",
 ]
 
 [[package]]
@@ -5049,7 +5051,7 @@ dependencies = [
  "wasm-encoder",
  "wasm-metadata",
  "wasmparser",
- "wit-parser",
+ "wit-parser 0.254.0",
 ]
 
 [[package]]
@@ -5069,6 +5071,21 @@ dependencies = [
  "serde_json",
  "unicode-ident",
  "wasmparser",
+]
+
+[[package]]
+name = "wit-parser"
+version = "0.259.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6390f4f02493ce678d509c859cf1698e38929fb75c8012a6ee2f7d6b6cb66cd7"
+dependencies = [
+ "anyhow",
+ "hashbrown 0.17.1",
+ "id-arena",
+ "indexmap",
+ "log",
+ "semver",
+ "unicode-ident",
 ]
 
 [[package]]

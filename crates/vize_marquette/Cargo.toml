@@ -8,11 +8,20 @@ repository.workspace = true
 description = "Versioned application blueprints for Vize"
 metadata.vize.stability = "experimental"
 
+[features]
+# Reads contract surfaces from WIT sources (`contracts::wit`, Davinci P6-8).
+wit = ["dep:wit-parser"]
+
 [dependencies]
 vize_s0.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
+wit-parser = { workspace = true, optional = true }
 
 [dev-dependencies]
 insta.workspace = true
+
+[[test]]
+name = "contract_compat"
+required-features = ["wit"]

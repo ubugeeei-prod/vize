@@ -1,3 +1,7 @@
+/// The Vize extension contracts (Davinci phase 6).
+///
+/// Versioning and compatibility policy: `davinci-road/contracts-compat-policy.md`.
+/// Every released version's canonical surface: `contracts/versions/`.
 package vize:contracts@0.1.0;
 
 /// Values every vize contract world shares.

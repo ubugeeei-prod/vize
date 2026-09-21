@@ -68,7 +68,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [ ] [P6-5](./phase-6-tasks.md#p6-5--exprref-validation-report) ExprRef validation report — lane D · startable now (behind P6-4b)
 - [ ] [P6-6](./phase-6-tasks.md#p6-6--volt-output-target-exercise) Volt output-target exercise — lane E · startable now (behind P6-1c)
 - [ ] [P6-7](./phase-6-tasks-later.md#p6-7--js-plugin-sdk-ga) JS plugin SDK GA — lane F · gated on P5-13
-- [ ] [P6-8](./phase-6-tasks-later.md#p6-8--contract-versioning-and-semver-policy) Contract versioning and semver policy — lane G · startable now
+- [x] [P6-8](./phase-6-tasks-later.md#p6-8--contract-versioning-and-semver-policy) Contract versioning and semver policy — lane G · startable now
 - [ ] [P6-9](./phase-6-tasks-later.md#p6-9--external-consumer-validation) External-consumer validation — lane H · startable now (behind P6-2, P6-4b, P6-6)
 - [ ] [P6-10](./phase-6-tasks-later.md#p6-10--completion-metrics-review) Completion-metrics review — lane I · gated on P5-14
 - [ ] [P6-11](./phase-6-tasks-later.md#p6-11--v1-go-no-go-input-package) v1 go-no-go input package — lane I · startable now (behind P6-10)

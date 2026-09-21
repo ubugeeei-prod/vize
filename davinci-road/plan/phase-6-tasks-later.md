@@ -24,6 +24,8 @@
 
 ## P6-8 — Contract versioning and semver policy
 
+**Landed 2026-09-22** — full record: [phase-6-records/p6-8.md](./phase-6-records/p6-8.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** G
@@ -32,8 +34,8 @@
 
 **Steps:**
 
-- [ ] Classification for WIT world changes and payload schema changes in `crates/vize_marquette/src/contracts*`
-- [ ] Policy doc: what is additive, what is breaking, how versions move
+- [x] Classification for WIT world changes and payload schema changes in `crates/vize_marquette/src/contracts*`
+- [x] Policy doc: what is additive, what is breaking, how versions move ([contracts-compat-policy.md](../contracts-compat-policy.md))
 
 **Acceptance:** a deliberately breaking contract change is flagged by the classification tooling and a purely additive one is not (both as tests); the policy committed and linked from the WIT package.
 

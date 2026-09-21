@@ -1,0 +1,112 @@
+{
+  "format": "vize.contract-surface",
+  "formatVersion": 1,
+  "package": "fixture:contracts",
+  "version": "0.1.0",
+  "protocolVersion": 1,
+  "pages": {
+    "s1-page": 1
+  },
+  "interfaces": {
+    "host-log": {
+      "types": {},
+      "functions": {
+        "log": {
+          "params": [
+            {
+              "name": "message",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    "lowering": {
+      "types": {
+        "answer": {
+          "record": [
+            {
+              "name": "span",
+              "type": "types.span"
+            },
+            {
+              "name": "severity",
+              "type": "types.severity"
+            },
+            {
+              "name": "witness",
+              "type": "option<types.witness>"
+            },
+            {
+              "name": "notes",
+              "type": "list<string>"
+            }
+          ]
+        }
+      },
+      "functions": {
+        "lower": {
+          "params": [
+            {
+              "name": "source",
+              "type": "string"
+            },
+            {
+              "name": "base",
+              "type": "u32"
+            }
+          ],
+          "result": "lowering.answer"
+        }
+      }
+    },
+    "types": {
+      "types": {
+        "severity": {
+          "enum": [
+            "error",
+            "warning"
+          ]
+        },
+        "span": {
+          "record": [
+            {
+              "name": "start",
+              "type": "u32"
+            },
+            {
+              "name": "end",
+              "type": "u32"
+            }
+          ]
+        },
+        "witness": {
+          "variant": [
+            {
+              "name": "exempt",
+              "type": "string"
+            },
+            {
+              "name": "none"
+            }
+          ]
+        }
+      },
+      "functions": {}
+    }
+  },
+  "worlds": {
+    "dialect": {
+      "imports": [
+        "host-log",
+        "types"
+      ],
+      "exports": [
+        "lowering"
+      ],
+      "requiredFeatures": [
+        "s1-page@1"
+      ]
+    }
+  }
+}

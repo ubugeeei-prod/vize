@@ -179,6 +179,9 @@ wasmtime = { version = "=48.0.2", default-features = false, features = [
   "runtime",
   "std",
 ] }
+# Reads WIT sources for contract-surface classification (P6-8), behind
+# `vize_marquette`'s `wit` feature.
+wit-parser = { version = "=0.259.0", default-features = false, features = ["std"] }
 
 # Allocator
 mimalloc = "=0.1.52"

@@ -1,0 +1,42 @@
+package fixture:contracts@0.1.1;
+
+// Deliberately breaking over `base`, under an additive-sized version bump:
+// a record field, an enum case, a function guests must now implement, a
+// changed signature, and a removed host import.
+
+interface types {
+  record span {
+    start: u32,
+    end: u32,
+  }
+
+  enum severity {
+    error,
+    warning,
+    note,
+  }
+
+  variant witness {
+    exempt(string),
+    none,
+  }
+}
+
+interface lowering {
+  use types.{span, severity, witness};
+
+  record answer {
+    span: span,
+    severity: severity,
+    witness: option<witness>,
+    notes: list<string>,
+    fixes: list<string>,
+  }
+
+  lower: func(source: string, base: u64) -> answer;
+  reset: func();
+}
+
+world dialect {
+  export lowering;
+}
