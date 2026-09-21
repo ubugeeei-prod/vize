@@ -24,6 +24,29 @@ async function run(context: DriverContext): Promise<void> {
   const profile = fs.mkdtempSync(path.join(path.dirname(context.workspace), "vsc-"));
   const extensionsPath = path.join(profile, "extensions");
   const shim = context.env.PATH!.split(path.delimiter)[0];
+  // Configure the workspace the way a user does before opening it: what
+  // `Vize: Enable Recommended Profile` writes, plus the formatting opt-in every
+  // client makes. Changing settings after activation restarts the client, and
+  // a document opened during a restart reaches two server sessions.
+  const settingsFile = path.join(context.workspace, ".vscode", "settings.json");
+  const settings = JSON.parse(fs.readFileSync(settingsFile, "utf8")) as Record<string, unknown>;
+  fs.writeFileSync(
+    settingsFile,
+    `${JSON.stringify(
+      {
+        ...settings,
+        "vize.enable": true,
+        "vize.lint.enable": true,
+        "vize.typecheck.enable": true,
+        "vize.editor.enable": true,
+        "vize.ecosystem.enable": true,
+        "vize.formatting.enable": true,
+        "vize.serverPath": path.join(shim, "vize"),
+      },
+      null,
+      2,
+    )}\n`,
+  );
   const cachePath = path.join(extensionRoot, ".vscode-test");
   await host.runPackagedExtensionHost(
     (args: string[], options: object) => runVSCodeCommand(args, { ...options, cachePath }),

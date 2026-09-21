@@ -9,7 +9,8 @@ import { applyContentChange, type ContentChange } from "./support/document.ts";
 
 export type Entry = {
   session: number;
-  t: number;
+  /** Milliseconds since the tap started; `null` on the exit recorder's line. */
+  t: number | null;
   dir?: "c2s" | "s2c";
   msg?: Message;
   event?: string;
@@ -168,7 +169,7 @@ export function evaluate(scenario: Scenario, entries: Entry[], roots: string[]):
     ),
   ];
   if (openers.length !== 1) {
-    const detail = `expected exactly one server session to open ${uri}, found ${openers.length}`;
+    const detail = `expected exactly one server session to open ${uri}, found ${openers.length} (tap sessions: ${openers.join(", ")})`;
     return {
       session: null,
       messages: 0,

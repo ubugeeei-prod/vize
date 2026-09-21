@@ -20,7 +20,7 @@ import {
 import { evaluate, WORKSPACE } from "./conformance.ts";
 import { negativeControl } from "./negative-control.ts";
 import { loadScenario, suiteRoot, type Driver, type DriverContext } from "./support/context.ts";
-import { readTranscript } from "./support/transcript.ts";
+import { readTranscript, waitForTranscript } from "./support/transcript.ts";
 import { renderTable, type ClientResult } from "./report.ts";
 
 const drivers: Record<string, () => Promise<{ driver: Driver }>> = {
@@ -78,6 +78,20 @@ async function main(argv: string[]): Promise<number> {
     driverError = error instanceof Error ? (error.stack ?? error.message) : String(error);
     console.error(`[ts-45] ${driver.client} driver failed: ${driverError}`);
   }
+  // Every server the editor started must have exited (the tap's exit
+  // recorder appends that record, possibly after the editor itself is gone).
+  await waitForTranscript(
+    transcript,
+    "every server session to exit",
+    (seen) => {
+      const spawned = seen.filter((entry) => entry.event === "spawn").map((entry) => entry.session);
+      const exited = new Set(
+        seen.filter((entry) => entry.event === "exit").map((entry) => entry.session),
+      );
+      return spawned.every((session) => exited.has(session)) ? true : undefined;
+    },
+    30_000,
+  ).catch((error: unknown) => console.error(`[ts-45] ${String(error)}`));
   const entries = readTranscript(transcript);
   const evaluation = evaluate(scenario, entries, context.roots);
   const result: ClientResult = {

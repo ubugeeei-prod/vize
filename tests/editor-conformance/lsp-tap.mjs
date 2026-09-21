@@ -55,9 +55,22 @@ function frameReader(direction) {
   };
 }
 
-// stderr is inherited, not piped: the server logs into the editor's own
-// stderr handle exactly as it would without the tap.
-const child = spawn(server, serverArgs, { stdio: ["pipe", "pipe", "inherit"] });
+// The server's exit is recorded by a `/bin/sh` wrapper, not by this process:
+// editors may SIGKILL their language-server child right after sending `exit`
+// (Helix drops it with `kill_on_drop`), which would lose an in-process record.
+// The wrapper outlives the tap, sees the server's real status, and appends
+// `{"event":"exit","code":…}` for this session. stderr is inherited, not
+// piped: the server logs into the editor's own stderr handle as it would
+// without the tap.
+const exitRecorder = [
+  'code=0; "$0" "$@" || code=$?',
+  `printf '{"session":%s,"t":null,"event":"exit","code":%s}\\n' "$VIZE_TAP_SESSION" "$code" >> "$VIZE_CONFORMANCE_TRANSCRIPT"`,
+  'exit "$code"',
+].join("; ");
+const child = spawn("/bin/sh", ["-c", exitRecorder, server, ...serverArgs], {
+  env: { ...process.env, VIZE_TAP_SESSION: String(session) },
+  stdio: ["pipe", "pipe", "inherit"],
+});
 record({ event: "spawn", argv: [server, ...serverArgs], cwd: process.cwd() });
 
 const clientToServer = frameReader("c2s");
@@ -87,8 +100,7 @@ child.on("error", (error) => {
   process.exit(127);
 });
 // `close` (not `exit`) fires after the server's stdout drained through the tap.
-child.on("close", (code, signal) => {
-  record({ event: "exit", code, signal });
+child.on("close", (code) => {
   fs.closeSync(transcript);
   process.exitCode = code ?? 1;
   // Let the last server frame drain to the editor before exiting.

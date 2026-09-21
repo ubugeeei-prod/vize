@@ -1,8 +1,9 @@
 // TS-45 VS Code driver, loaded by the extension host as --extensionTestsPath.
-// It configures the packaged extension the way a user does (settings plus the
-// `vize.enableRecommendedProfile` command) and then plays the scenario through
-// VS Code's provider commands, so vscode-languageclient builds every request
-// and every edit reaches the server through VS Code's own document sync.
+// The workspace settings (written by `vscode.ts` before launch) are what the
+// recommended profile writes plus the formatting opt-in; the suite plays the
+// scenario through VS Code's provider commands, so vscode-languageclient
+// builds every request and every edit reaches the server through VS Code's
+// own document sync.
 const fs = require("node:fs");
 const path = require("node:path");
 const vscode = require("vscode");
@@ -50,13 +51,16 @@ async function apply(uri, edits) {
 }
 
 exports.run = async function run() {
-  const extension = vscode.extensions.getExtension("ubugeeei.vize");
-  await extension.activate();
   const settings = vscode.workspace.getConfiguration("vize");
-  const target = vscode.ConfigurationTarget.Workspace;
-  await settings.update("serverPath", process.env.VIZE_TS45_SERVER, target);
-  await settings.update("formatting.enable", true, target); // the opt-in every client makes
-  await vscode.commands.executeCommand("vize.enableRecommendedProfile");
+  for (const [key, value] of [
+    ["enable", true],
+    ["formatting.enable", true],
+    ["serverPath", process.env.VIZE_TS45_SERVER],
+  ]) {
+    if (settings.get(key) !== value)
+      throw new Error(`workspace setting vize.${key} is not ${value}`);
+  }
+  await vscode.extensions.getExtension("ubugeeei.vize").activate();
 
   const folder = vscode.workspace.workspaceFolders[0].uri.fsPath;
   const document = await vscode.workspace.openTextDocument(path.join(folder, scenario.document));
