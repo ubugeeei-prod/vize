@@ -38,6 +38,7 @@ pub(super) fn component_prop_entry(key: &str, value: &str, dynamic: bool) -> VNo
         key: key.to_compact_string(),
         value: value.to_compact_string(),
         dynamic,
+        spans: None,
     }
 }
 
@@ -59,15 +60,15 @@ pub(super) fn normalize_prop_entries(
     entries: std::vec::Vec<VNodePropEntry>,
 ) -> std::vec::Vec<VNodePropEntry> {
     let mut normalized = std::vec::Vec::with_capacity(entries.len());
-    let mut class_values = std::vec::Vec::new();
-    let mut style_values = std::vec::Vec::new();
+    let mut class_entries = std::vec::Vec::new();
+    let mut style_entries = std::vec::Vec::new();
     let mut event_values: FxHashMap<String, std::vec::Vec<String>> = FxHashMap::default();
 
     for entry in entries {
         if !entry.dynamic && entry.key == "class" {
-            class_values.push(entry.value);
+            class_entries.push(entry);
         } else if !entry.dynamic && entry.key == "style" {
-            style_values.push(entry.value);
+            style_entries.push(entry);
         } else if !entry.dynamic && is_on(&entry.key) {
             if let Some(values) = event_values.get_mut(&entry.key) {
                 values.push(entry.value);
@@ -89,22 +90,19 @@ pub(super) fn normalize_prop_entries(
         }
     }
 
-    if !class_values.is_empty() {
-        normalized.push(component_prop_entry(
-            "class",
-            &merge_prop_values(class_values),
-            false,
-        ));
-    }
-    if !style_values.is_empty() {
-        normalized.push(component_prop_entry(
-            "style",
-            &merge_prop_values(style_values),
-            false,
-        ));
-    }
-
+    normalized.extend(merged_entry("class", class_entries));
+    normalized.extend(merged_entry("style", style_entries));
     normalized
+}
+
+/// One entry for `key`: a lone entry is kept whole (with its spans); several
+/// merge into an array value.
+fn merged_entry(key: &str, mut entries: std::vec::Vec<VNodePropEntry>) -> Option<VNodePropEntry> {
+    if entries.len() <= 1 {
+        return entries.pop();
+    }
+    let values = entries.into_iter().map(|entry| entry.value).collect();
+    Some(component_prop_entry(key, &merge_prop_values(values), false))
 }
 
 pub(super) fn merge_prop_values(values: std::vec::Vec<String>) -> String {

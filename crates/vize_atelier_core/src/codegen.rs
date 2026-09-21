@@ -19,6 +19,7 @@ mod root;
 mod slots;
 pub mod source_map;
 pub mod source_map_anchor;
+pub mod spanned;
 mod v_for;
 mod v_if;
 

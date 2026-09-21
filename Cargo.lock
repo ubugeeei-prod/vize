@@ -3669,6 +3669,7 @@ dependencies = [
  "davinci_harness",
  "insta",
  "serde",
+ "serde_json",
  "vize_armature",
  "vize_atelier_core",
  "vize_carton",

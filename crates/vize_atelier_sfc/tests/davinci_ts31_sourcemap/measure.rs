@@ -9,7 +9,9 @@
 //!
 //! Coverage is `(exact + covered) / authored`; span accuracy is
 //! `exact / (exact + covered)`, so a map that lands near the right token but
-//! not on it counts as covered yet inaccurate.
+//! not on it counts as covered yet inaccurate. An anchor a backend emits no
+//! code for by design is `absent` once the harness has verified the absence,
+//! and is not counted as authored for that backend.
 
 use std::collections::BTreeMap;
 
@@ -33,6 +35,7 @@ pub enum Status {
     Exact,
     Covered,
     Unmapped,
+    Absent,
 }
 
 impl Status {
@@ -41,6 +44,7 @@ impl Status {
             Status::Exact => "exact",
             Status::Covered => "covered",
             Status::Unmapped => "unmapped",
+            Status::Absent => "absent",
         }
     }
 }
@@ -52,6 +56,18 @@ pub fn classify(
     generated: &str,
     segments: &[Segment],
 ) -> Status {
+    if anchor.absent.contains(&backend) {
+        let emitted_anywhere = generated
+            .char_indices()
+            .any(|(offset, _)| emits(&generated[offset..], &anchor.emitted, backend));
+        assert!(
+            !emitted_anywhere,
+            "{}: declared absent for {} but its emitted form is present",
+            anchor.id,
+            backend.as_str()
+        );
+        return Status::Absent;
+    }
     let exact = segments.iter().any(|segment| {
         segment.source == Some(anchor.start)
             && segment
@@ -105,13 +121,14 @@ impl Row {
     pub fn to_json(&self) -> serde_json::Value {
         let exact = self.count(Status::Exact);
         let covered = exact + self.count(Status::Covered);
+        let authored = self.anchors.len() - self.count(Status::Absent);
         let anchors = self
             .anchors
             .iter()
             .map(|(id, status)| (id.clone(), serde_json::json!(status.as_str())))
             .collect::<serde_json::Map<_, _>>();
         serde_json::json!({
-            "authored": self.anchors.len(),
+            "authored": authored,
             "covered": covered,
             "exact": exact,
             "anchors": anchors,
@@ -147,6 +164,7 @@ mod tests {
             start,
             len,
             emitted,
+            absent: std::vec::Vec::new(),
         }
     }
 
@@ -203,5 +221,23 @@ mod tests {
                 .map(|backend| classify(&boundary, backend, GENERATED, &map)),
             [Status::Exact, Status::Exact, Status::Covered]
         );
+    }
+
+    #[test]
+    fn absent_anchors_are_verified_instead_of_measured() {
+        let mut handler = anchor(Emitted::Identifier("inc".into()), 0, 3);
+        handler.absent = std::vec![Backend::Ssr];
+        assert_eq!(
+            classify(&handler, Backend::Ssr, "_push(`<b>incr</b>`)", &[]),
+            Status::Absent
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "declared absent for ssr but its emitted form is present")]
+    fn absent_anchors_fail_when_the_backend_emits_the_token() {
+        let mut handler = anchor(Emitted::Identifier("inc".into()), 0, 3);
+        handler.absent = std::vec![Backend::Ssr];
+        classify(&handler, Backend::Ssr, "onClick: _ctx.inc", &[]);
     }
 }

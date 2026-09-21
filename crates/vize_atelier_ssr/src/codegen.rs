@@ -8,13 +8,14 @@ mod component_resolution;
 mod element;
 pub(crate) mod helpers;
 mod scope_prefix;
+mod spans;
 
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_core::{
     RootNode, RuntimeHelper, TemplateChildNode,
-    codegen::source_map_anchor::build_single_anchor_source_map,
+    codegen::{source_map::SourceMapBuilder, spanned::SpannedText},
 };
-use vize_s0::{Allocator, FxHashSet, SmallVec, String, ToCompactString};
+use vize_s0::{Allocator, FxHashSet, SmallVec, String};
 
 /// SSR codegen result
 #[derive(Debug, Default)]
@@ -27,13 +28,13 @@ pub struct SsrCodegenResult {
     pub map: Option<String>,
 }
 
-/// A part of a template literal
+/// A part of a template literal, carrying the authored spans it copies.
 #[derive(Debug)]
 pub(crate) enum TemplatePart {
     /// Static string content
-    Static(String),
+    Static(SpannedText),
     /// Dynamic expression
-    Dynamic(String),
+    Dynamic(SpannedText),
 }
 
 /// SSR codegen context
@@ -71,8 +72,8 @@ pub struct SsrCodegenContext<'a> {
     /// The source string node-loc spans index into, used to recover covered
     /// text from a `SourceLocation`.
     pub(crate) source: &'a str,
-    /// Whether to attach a Source Map v3 document to the result.
-    source_map: bool,
+    /// Span accumulator; `Some` only when a Source Map v3 document is requested.
+    map: Option<SourceMapBuilder>,
     /// Filename recorded in the Source Map v3 `file` and `sources` fields.
     source_map_filename: String,
 }
@@ -96,7 +97,7 @@ impl<'a> SsrCodegenContext<'a> {
         let component_name = experimental_options
             .component_name
             .or_else(|| options.component_name.clone());
-        let source_map = experimental_options.source_map;
+        let map = experimental_options.source_map.then(SourceMapBuilder::new);
         let source_map_filename = experimental_options
             .source_map_filename
             .unwrap_or_else(|| "template.vue".into());
@@ -115,7 +116,7 @@ impl<'a> SsrCodegenContext<'a> {
             with_slot_scope_id: false,
             scoped_params: std::vec::Vec::new(),
             select_v_model_stack: std::vec::Vec::new(),
-            source_map,
+            map,
             source_map_filename,
         }
     }
@@ -139,8 +140,11 @@ impl<'a> SsrCodegenContext<'a> {
                 .iter()
                 .any(|c| !matches!(c, TemplateChildNode::Text(_)));
 
-        // Generate function signature
-        self.push("function ssrRender(_ctx, _push, _parent, _attrs");
+        // Generate function signature, anchored at the template section start.
+        self.push_mapped(
+            "function ssrRender(_ctx, _push, _parent, _attrs",
+            root.loc.span.start,
+        );
         if self.options.binding_metadata.is_some() {
             self.push(", $props, $setup, $data, $options");
         }
@@ -177,9 +181,8 @@ impl<'a> SsrCodegenContext<'a> {
         // UTF-8". Keeping this unchecked conversion avoids validating the
         // complete generated SSR module after every compile.
         let code = unsafe { String::from_utf8_unchecked(self.code) };
-        let map = self.source_map.then(|| {
-            build_single_anchor_source_map(&code, self.source_map_filename.as_str(), self.source)
-        });
+        let filename = self.source_map_filename.as_str();
+        let map = self.map.map(|map| map.finish(&code, filename, self.source));
 
         SsrCodegenResult {
             code,
@@ -198,14 +201,14 @@ impl<'a> SsrCodegenContext<'a> {
             last.push_str(s);
         } else {
             self.current_template_parts
-                .push(TemplatePart::Static(s.to_compact_string()));
+                .push(TemplatePart::Static(SpannedText::plain(s)));
         }
     }
 
     /// Push dynamic expression to the current template literal
     pub(crate) fn push_string_part_dynamic(&mut self, expr: &str) {
         self.current_template_parts
-            .push(TemplatePart::Dynamic(expr.to_compact_string()));
+            .push(TemplatePart::Dynamic(SpannedText::plain(expr)));
     }
 
     /// Flush the current template literal as a _push() call.
@@ -232,41 +235,13 @@ impl<'a> SsrCodegenContext<'a> {
                 }
                 TemplatePart::Dynamic(expr) => {
                     self.push("${");
-                    self.push(expr);
+                    self.push_spanned(expr);
                     self.push("}");
                 }
             }
         }
 
         self.push("`)\n");
-    }
-
-    fn push_template_static(&mut self, value: &str) {
-        let bytes = value.as_bytes();
-        let mut start = 0;
-        let mut index = 0;
-
-        while index < bytes.len() {
-            match bytes[index] {
-                b'`' => {
-                    self.code.extend_from_slice(&bytes[start..index]);
-                    self.code.extend_from_slice(b"\\`");
-                    index += 1;
-                    start = index;
-                }
-                b'$' if index + 1 < bytes.len() && bytes[index + 1] == b'{' => {
-                    self.code.extend_from_slice(&bytes[start..index]);
-                    self.code.extend_from_slice(b"\\${");
-                    index += 2;
-                    start = index;
-                }
-                _ => {
-                    index += 1;
-                }
-            }
-        }
-
-        self.code.extend_from_slice(&bytes[start..]);
     }
 
     /// Use an SSR helper

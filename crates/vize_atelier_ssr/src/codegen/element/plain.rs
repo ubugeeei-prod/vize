@@ -1,13 +1,15 @@
 //! Plain HTML element SSR emission and element-only directives.
 
 use super::props::{
-    component_prop_entry, component_props_object, is_static_named_prop, merge_prop_values,
-    normalize_prop_entries, quoted_js_string, transform_bound_prop_key, wrap_call,
+    component_prop_entry, is_static_named_prop, merge_prop_values, normalize_prop_entries,
+    quoted_js_string, transform_bound_prop_key, wrap_call,
 };
+use super::spanned_props::{attribute_entry, component_props_object_spanned, wrap_spanned};
 use super::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     ToCompactString, VNodePropEntry, cstr, escape_html_attr,
 };
+use vize_atelier_core::codegen::spanned::SpannedText;
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process a plain HTML element
@@ -16,14 +18,14 @@ impl<'a> SsrCodegenContext<'a> {
 
         // Start tag
         self.push_string_part_static("<");
-        self.push_string_part_static(tag);
+        self.push_string_part_static_mapped(tag, el.loc.span.start + 1);
 
         // Process attributes
         if inherit_attrs {
             let attrs = self.build_element_attrs_expression(el, true);
-            if attrs != "null" {
+            if attrs.as_str() != "null" {
                 self.use_ssr_helper(RuntimeHelper::SsrRenderAttrs);
-                self.push_string_part_dynamic(&cstr!("_ssrRenderAttrs({attrs})"));
+                self.push_string_part_dynamic_spanned(wrap_spanned("_ssrRenderAttrs", &attrs));
             }
         } else {
             self.process_element_attrs(el);
@@ -128,10 +130,11 @@ impl<'a> SsrCodegenContext<'a> {
                         continue;
                     }
                     self.push_string_part_static(" ");
-                    self.push_string_part_static(attr.name);
+                    self.push_string_part_static_mapped(attr.name, attr.name_loc.span.start);
                     if let Some(value) = &attr.value {
                         self.push_string_part_static("=\"");
-                        self.push_string_part_static(&escape_html_attr(value.content));
+                        let text = escape_html_attr(value.content);
+                        self.push_string_part_static_mapped(&text, value.loc.span.start);
                         self.push_string_part_static("\"");
                     }
                 }
@@ -142,7 +145,11 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    fn build_element_attrs_expression(&mut self, el: &ElementNode, inherit_attrs: bool) -> String {
+    fn build_element_attrs_expression(
+        &mut self,
+        el: &ElementNode,
+        inherit_attrs: bool,
+    ) -> SpannedText {
         let mut entries: std::vec::Vec<VNodePropEntry> = std::vec::Vec::new();
         let mut spreads: std::vec::Vec<String> = std::vec::Vec::new();
         let mut needs_normalize = false;
@@ -156,7 +163,7 @@ impl<'a> SsrCodegenContext<'a> {
                         .as_ref()
                         .map(|value| quoted_js_string(value.content))
                         .unwrap_or_else(|| "\"\"".to_compact_string());
-                    entries.push(component_prop_entry(attr.name, &value, false));
+                    entries.push(attribute_entry(attr, &value, self.spans_enabled()));
                 }
                 PropNode::Directive(dir) => {
                     self.collect_element_directive_attr(
@@ -172,43 +179,40 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         let entries = normalize_prop_entries(entries);
-        let mut args: std::vec::Vec<String> = std::vec::Vec::new();
+        let mut args: std::vec::Vec<SpannedText> = std::vec::Vec::new();
 
         if !spreads.is_empty() {
             self.use_core_helper(RuntimeHelper::NormalizeProps);
             self.use_core_helper(RuntimeHelper::GuardReactiveProps);
             args.extend(spreads.into_iter().map(|spread| {
-                wrap_call(
-                    "_normalizeProps",
-                    &wrap_call("_guardReactiveProps", &spread),
-                )
+                let guarded = wrap_call("_guardReactiveProps", &spread);
+                SpannedText::from(wrap_call("_normalizeProps", &guarded))
             }));
         }
 
         if !entries.is_empty() {
-            let object = component_props_object(&entries);
+            let object = component_props_object_spanned(&entries);
             if needs_normalize {
                 self.use_core_helper(RuntimeHelper::NormalizeProps);
-                args.push(wrap_call("_normalizeProps", &object));
+                args.push(wrap_spanned("_normalizeProps", &object));
             } else {
                 args.push(object);
             }
         }
 
         if inherit_attrs {
-            args.push("_attrs".to_compact_string());
+            args.push(SpannedText::plain("_attrs"));
         }
 
         if let Some(model_exp) = dynamic_model_exp {
             self.use_ssr_helper(RuntimeHelper::SsrGetDynamicModelProps);
             let existing_props = self.merge_props_args_expression(&args);
-            args.push(cstr!(
-                "_ssrGetDynamicModelProps({existing_props}, {model_exp})"
-            ));
+            let model_props = cstr!("_ssrGetDynamicModelProps({existing_props}, {model_exp})");
+            args.push(SpannedText::from(model_props));
         }
 
         if args.is_empty() {
-            return "null".to_compact_string();
+            return SpannedText::plain("null");
         }
 
         if args.len() == 1 {
@@ -217,21 +221,21 @@ impl<'a> SsrCodegenContext<'a> {
 
         self.use_core_helper(RuntimeHelper::MergeProps);
 
-        let mut out = String::from("_mergeProps(");
+        let mut out = SpannedText::plain("_mergeProps(");
         for (index, arg) in args.iter().enumerate() {
             if index > 0 {
                 out.push_str(", ");
             }
-            out.push_str(arg);
+            out.push_spanned(arg);
         }
-        out.push(')');
+        out.push_str(")");
         out
     }
 
-    fn merge_props_args_expression(&mut self, args: &[String]) -> String {
+    fn merge_props_args_expression(&mut self, args: &[SpannedText]) -> String {
         match args {
             [] => "{}".to_compact_string(),
-            [arg] => arg.clone(),
+            [arg] => arg.as_str().into(),
             _ => {
                 self.use_core_helper(RuntimeHelper::MergeProps);
                 let mut out = String::from("_mergeProps(");
@@ -239,7 +243,7 @@ impl<'a> SsrCodegenContext<'a> {
                     if index > 0 {
                         out.push_str(", ");
                     }
-                    out.push_str(arg);
+                    out.push_str(arg.as_str());
                 }
                 out.push(')');
                 out
@@ -273,7 +277,7 @@ impl<'a> SsrCodegenContext<'a> {
                     matches!(arg, ExpressionNode::Simple(simple) if simple.is_static);
                 if arg_is_static {
                     let key = transform_bound_prop_key(&self.expression_to_string(arg), dir);
-                    entries.push(component_prop_entry(&key, &value, false));
+                    entries.push(self.bound_prop_entry(&key, arg, dir, &value));
                 } else {
                     *needs_normalize = true;
                     let key = self.dynamic_arg_to_string(arg);
@@ -437,7 +441,7 @@ impl<'a> SsrCodegenContext<'a> {
             }
             Some(name) => {
                 self.use_ssr_helper(RuntimeHelper::SsrRenderAttr);
-                self.push_string_part_dynamic(&cstr!("_ssrRenderAttr(\"{name}\", {exp})"));
+                self.push_bound_attr_part(name, dir, &exp);
             }
             None => {
                 // v-bind without argument - spread attributes

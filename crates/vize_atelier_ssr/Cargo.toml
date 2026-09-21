@@ -31,6 +31,7 @@ criterion = { workspace = true }
 davinci_harness = { workspace = true }
 vize_davinci = { workspace = true }
 insta = { workspace = true }
+serde_json = { workspace = true }
 
 [lints.clippy]
 all = "warn"

@@ -158,7 +158,9 @@ is measured by an independent-decoder harness over a committed fixture battery
 ([report](./ts31-sourcemap-coverage.json)); rows below budget are listed in the
 record's tracked-shortfall ledger. _Fourth slice 2026-09-21:_ the DOM codegen
 emits through span-carrying context methods and meets every TS-31 DOM budget.
-Vapor/SSR token-level emission and legacy recovery removal remain open.
+_Fifth slice 2026-09-21:_ SSR carries spans through template-literal parts
+and direct writes via the shared `SpannedText` primitive and meets every TS-31
+SSR budget. Vapor token-level emission and legacy recovery removal remain open.
 
 **P3-10 Try-measure-commit.** Placement alternatives (hoist/cache/inline/
 group) kept explicit on S3 nodes; extraction pass performs candidates,
