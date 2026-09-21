@@ -143,12 +143,51 @@
 .davinci-steps {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start;
   gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
   flex: 1;
   min-width: 0;
+}
+
+/* One pass-manager walk: its passes above a bracket naming the walk. */
+.davinci-walk {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.davinci-walk-steps {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.davinci-walk-label {
+  display: flex;
+  gap: 8px;
+  padding: 3px 10px 0;
+  border-top: 1.5px solid var(--border-primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.davinci-walk.fusable .davinci-walk-label {
+  border-top-color: var(--hl-directive);
+}
+
+/* Fixed like the step times, so a live walk time never reflows the row. */
+.davinci-walk-time {
+  min-width: 6ch;
+  margin-left: auto;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .davinci-step {

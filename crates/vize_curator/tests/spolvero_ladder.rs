@@ -1,7 +1,7 @@
-//! TS-52 for the Spolvero stage ladder (C-2/C-5): `ladder_pages` feeds every
-//! rung the Davinci pipeline has today - S1, the S2 lowering plus one page per
-//! executed transform pass, and the S3 graph / partition / value pages - from
-//! the real stages. The feed validates against the committed schema, every
+//! TS-52 for the Spolvero stage ladder (C-2/C-3/C-5): `ladder_pages` feeds
+//! every rung the Davinci pipeline has today - S1, the S2 lowering, the
+//! transform plan's walks, one page per executed transform pass, and the S3
+//! graph / partition / value pages - from the real stages. The feed validates against the committed schema, every
 //! page is pinned by exact equality, and the S2/S3 spans index the S1 page
 //! (the provenance property the playground's source highlighting relies on).
 
@@ -27,6 +27,19 @@ ui.component Comp @39:90
     ui.text "hi" @70:72
 
 "#;
+
+/// The executed transform plan: the two mandatory barriers own a walk each,
+/// and the optional analysis, having no fusable neighbour, owns the third.
+const S2_PLAN_PAGE: &str = "[fusion-plan-folio]
+stage=s2
+walks=3
+
+[fusion-plan-folio.passes]
+walk=0 pass=v-slot kind=mandatory-lowering fusability=barrier
+walk=1 pass=v-model kind=mandatory-diagnostic fusability=barrier
+walk=2 pass=hoist-static kind=optional fusability=fusable
+
+";
 
 const S2_PROVENANCE_PAGE: &str = r##"[s2-provenance-folio]
 
@@ -158,6 +171,7 @@ fn the_ladder_validates_and_pins_every_rung_exactly() {
     let expected = [
         ("s1", "parse", TEMPLATE),
         ("s2", "lower", S2_PAGE),
+        ("s2-plan", "transform", S2_PLAN_PAGE),
         ("s2", "v-slot", S2_PAGE),
         ("s2", "v-model", S2_PAGE),
         ("s2", "hoist-static", S2_PAGE),
@@ -192,6 +206,7 @@ fn the_s2_pass_pages_follow_the_artifact_selected_plan() {
         vec![
             ("s1", "parse"),
             ("s2", "lower"),
+            ("s2-plan", "transform"),
             ("s2", "hoist-static"),
             ("s2-provenance", "transform"),
             ("s3", "lower"),
@@ -202,8 +217,13 @@ fn the_s2_pass_pages_follow_the_artifact_selected_plan() {
     // A slot carrier alone adds exactly its barrier.
     let slotted = ladder_pages("src/Slot.vue", "<Card><template #head>h</template></Card>");
     assert_eq!(
-        rungs(&slotted)[1..4],
-        [("s2", "lower"), ("s2", "v-slot"), ("s2", "hoist-static")]
+        rungs(&slotted)[1..5],
+        [
+            ("s2", "lower"),
+            ("s2-plan", "transform"),
+            ("s2", "v-slot"),
+            ("s2", "hoist-static")
+        ]
     );
 }
 
@@ -239,6 +259,11 @@ fn a_malformed_template_still_climbs_every_rung() {
         vec![
             ("s1", "parse", template),
             ("s2", "lower", s2),
+            (
+                "s2-plan",
+                "transform",
+                "[fusion-plan-folio]\nstage=s2\nwalks=1\n\n[fusion-plan-folio.passes]\nwalk=0 pass=hoist-static kind=optional fusability=fusable\n\n",
+            ),
             ("s2", "hoist-static", s2),
             (
                 "s2-provenance",

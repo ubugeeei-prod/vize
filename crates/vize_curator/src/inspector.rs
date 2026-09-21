@@ -23,7 +23,7 @@ pub use payload::{
     serialize_agent_report, serialize_payload,
 };
 pub use spolvero::{
-    LADDER_STEP_KEY, LadderClock, LadderRun, LadderStep, SpolveroFeed, SpolveroPage,
-    SpolveroRemark, ladder_pages, ladder_profile, ladder_run, s1_page, spolvero_value,
-    spolvero_value_with_remarks, template_remarks,
+    LADDER_STEP_KEY, LADDER_WALK_KEY, LadderClock, LadderRun, LadderStep, SpolveroFeed,
+    SpolveroPage, SpolveroRemark, ladder_pages, ladder_profile, ladder_run, s1_page,
+    spolvero_value, spolvero_value_with_remarks, template_remarks,
 };

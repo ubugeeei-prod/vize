@@ -16,6 +16,7 @@ describe("PassTimeline timings", () => {
       producer: true,
       nanos: 5_000,
       remarks: 0,
+      walk: null,
     },
     {
       key: "s2/lower",
@@ -25,6 +26,7 @@ describe("PassTimeline timings", () => {
       producer: true,
       nanos: 15_000,
       remarks: 0,
+      walk: null,
     },
     {
       key: "s2/hoist-static",
@@ -34,6 +36,7 @@ describe("PassTimeline timings", () => {
       producer: false,
       nanos: 0,
       remarks: 5,
+      walk: null,
     },
     {
       key: "s3/lower",
@@ -43,11 +46,12 @@ describe("PassTimeline timings", () => {
       producer: true,
       nanos: 20_000,
       remarks: 0,
+      walk: null,
     },
   ];
 
   it("labels each step and splits the strip by measured share", () => {
-    const wrapper = mount(PassTimeline, { props: { steps, current: "s2/lower" } });
+    const wrapper = mount(PassTimeline, { props: { steps, walks: [], current: "s2/lower" } });
     expect(wrapper.findAll(".davinci-step-time").map((label) => label.text())).toEqual([
       "5 µs",
       "15 µs",
@@ -75,7 +79,7 @@ describe("PassTimeline timings", () => {
 
   it("draws no strip when nothing was measured", () => {
     const unmeasured = steps.map((step) => ({ ...step, nanos: null }));
-    const wrapper = mount(PassTimeline, { props: { steps: unmeasured, current: null } });
+    const wrapper = mount(PassTimeline, { props: { steps: unmeasured, walks: [], current: null } });
     expect(wrapper.find(".davinci-time-strip").exists()).toBe(false);
     expect(wrapper.findAll(".davinci-step-time")).toHaveLength(0);
     wrapper.unmount();

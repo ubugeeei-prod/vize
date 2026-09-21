@@ -1,6 +1,7 @@
 //! The `analyzeSfc` `spolveroProfile` member (C-3): the ladder run behind the
-//! `spolvero` feed, timed by the host clock the entry passes, exported as a
-//! P0-11 profile document. A deterministic clock pins it exactly; schema
+//! `spolvero` feed, timed by the host clock the entry passes (every step,
+//! and every walk of the transform plan), exported as a P0-11 profile
+//! document. A deterministic clock pins it exactly; schema
 //! validation of the same exporter output is `vize_curator`'s
 //! `spolvero_timing` suite.
 
@@ -19,9 +20,9 @@ fn squares() -> impl Fn() -> u64 {
     }
 }
 
-fn span(stage: &str, pass: &str, nanos: u64, bucket: u64) -> serde_json::Value {
+fn span(key: &str, stage: &str, pass: &str, nanos: u64, bucket: u64) -> serde_json::Value {
     serde_json::json!({
-        "key": "davinci.spolvero.step",
+        "key": key,
         "count": 1,
         "wall_ns": {
             "total": nanos, "self": nanos, "min": nanos, "max": nanos,
@@ -51,14 +52,18 @@ fn the_analyze_result_times_every_ladder_step_by_the_host_clock() {
     let clock = squares();
     let result =
         analyze_sfc_json_with_clock(SOURCE, "src/App.vue", false, false, &clock).expect("analysis");
-    // Reads 0..8 bracket parse, S2 lower, the one selected pass, S3 lower.
+    // Reads 0..8 bracket parse, S2 lower, the one selected pass, S3 lower;
+    // the pass owns its walk, so the walk is the same two reads.
+    let step =
+        |stage, pass, nanos, bucket| span("davinci.spolvero.step", stage, pass, nanos, bucket);
     assert_eq!(
         result["spolveroProfile"],
         profile(vec![
-            span("s3", "lower", 13_000, 16_000),
-            span("s2", "hoist-static", 9_000, 16_000),
-            span("s2", "lower", 5_000, 8_000),
-            span("s1", "parse", 1_000, 1_000),
+            step("s3", "lower", 13_000, 16_000),
+            span("davinci.pass.walk", "s2", "hoist-static", 9_000, 16_000),
+            step("s2", "hoist-static", 9_000, 16_000),
+            step("s2", "lower", 5_000, 8_000),
+            step("s1", "parse", 1_000, 1_000),
         ])
     );
 }

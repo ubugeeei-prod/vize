@@ -33,6 +33,7 @@ const MASKED: Partial<Record<(typeof TABS)[number], string[]>> = {
     ".davinci-badge",
     ".davinci-time-strip",
     ".davinci-step-time",
+    ".davinci-walk-time",
     ".davinci-timeline-summary",
   ],
 };

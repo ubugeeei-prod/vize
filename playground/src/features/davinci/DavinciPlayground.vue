@@ -125,7 +125,12 @@ function snippet(text: string): string {
       <div v-if="error" class="davinci-message error" role="alert">{{ error }}</div>
       <template v-else-if="ladder">
         <StageRail :rungs="ladder.rungs" :selected="stage" @select="selectStage" />
-        <PassTimeline :steps="ladder.timeline" :current="page?.key ?? null" @select="selectStep" />
+        <PassTimeline
+          :steps="ladder.timeline"
+          :walks="ladder.walks"
+          :current="page?.key ?? null"
+          @select="selectStep"
+        />
 
         <div v-if="showTabs && rung" class="davinci-subtabs" role="tablist" aria-label="Pages">
           <button

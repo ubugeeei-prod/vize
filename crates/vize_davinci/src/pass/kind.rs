@@ -55,6 +55,17 @@ impl PassKind {
             PassKind::Optional => "optional",
         }
     }
+
+    /// The kind [`PassKind::as_str`] spells `text`, or `None`.
+    #[must_use]
+    pub const fn from_str(text: &str) -> Option<Self> {
+        match text.as_bytes() {
+            b"mandatory-diagnostic" => Some(PassKind::MandatoryDiagnostic),
+            b"mandatory-lowering" => Some(PassKind::MandatoryLowering),
+            b"optional" => Some(PassKind::Optional),
+            _ => None,
+        }
+    }
 }
 
 /// Whether a pass can share a walk with its neighbours.
@@ -95,6 +106,16 @@ impl Fusability {
             Fusability::Barrier => "barrier",
         }
     }
+
+    /// The fusability [`Fusability::as_str`] spells `text`, or `None`.
+    #[must_use]
+    pub const fn from_str(text: &str) -> Option<Self> {
+        match text.as_bytes() {
+            b"fusable" => Some(Fusability::Fusable),
+            b"barrier" => Some(Fusability::Barrier),
+            _ => None,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -124,5 +145,23 @@ mod tests {
         assert!(!Fusability::Barrier.is_fusable());
         assert_eq!(Fusability::Fusable.as_str(), "fusable");
         assert_eq!(Fusability::Barrier.as_str(), "barrier");
+    }
+
+    #[test]
+    fn identifiers_parse_back_and_nothing_else_does() {
+        for kind in [
+            PassKind::MandatoryDiagnostic,
+            PassKind::MandatoryLowering,
+            PassKind::Optional,
+        ] {
+            assert_eq!(PassKind::from_str(kind.as_str()), Some(kind));
+        }
+        for fusability in [Fusability::Fusable, Fusability::Barrier] {
+            assert_eq!(Fusability::from_str(fusability.as_str()), Some(fusability));
+        }
+        assert_eq!(PassKind::from_str("Optional"), None);
+        assert_eq!(PassKind::from_str("mandatory"), None);
+        assert_eq!(Fusability::from_str("fused"), None);
+        assert_eq!(Fusability::from_str(""), None);
     }
 }

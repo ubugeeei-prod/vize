@@ -6,6 +6,7 @@
 import type { SpolveroFeed, SpolveroPage } from "../../wasm/types/spolvero";
 import type { PageKind } from "./folioLines";
 import type { SpolveroRemark } from "./remarks";
+import { parseFusionPlan, planWalks, type TimelineWalk } from "./fusion";
 
 export type RungId = "s1" | "s2" | "s3";
 
@@ -42,6 +43,8 @@ export interface TimelineStep {
   nanos: number | null;
   /** How many optimization remarks this step's pass emitted. */
   remarks: number;
+  /** For a pass, the walk (fusion group) it ran in, from the plan page. */
+  walk: number | null;
 }
 
 export interface StageLadder {
@@ -53,11 +56,14 @@ export interface StageLadder {
   unplaced: string[];
   /** The passes' optimization remarks for this file, in canonical order. */
   remarks: SpolveroRemark[];
+  /** The S2 transform plan's walks, in run order (empty without a plan page). */
+  walks: TimelineWalk[];
 }
 
 const PAGE_KINDS: Record<string, { rung: RungId; kind: PageKind; label: string }> = {
   s1: { rung: "s1", kind: "surface", label: "Surface" },
   s2: { rung: "s2", kind: "disegno", label: "" },
+  "s2-plan": { rung: "s2", kind: "plan", label: "Plan" },
   "s2-provenance": { rung: "s2", kind: "provenance", label: "Provenance" },
   s3: { rung: "s3", kind: "impeto", label: "Graph" },
   "s3-partition": { rung: "s3", kind: "partition", label: "Partition" },
@@ -115,12 +121,14 @@ function pageLabel(stage: string, pass: string): string {
 
 /**
  * Shape a negotiated feed's pages (for one file) into the ladder; `timings`
- * (from the profile export, keyed `stage/pass`) fills each step's wall time.
+ * (from the profile export, keyed `stage/pass`) fills each step's wall time
+ * and `walkTimings` (keyed `stage/lead-pass`) each walk's.
  */
 export function buildLadder(
   feed: SpolveroFeed,
   path?: string,
   timings: ReadonlyMap<string, number> = new Map(),
+  walkTimings: ReadonlyMap<string, number> = new Map(),
 ): StageLadder {
   const pages: SpolveroPage[] = feed.pages.filter(
     (page) => path === undefined || page.path === path,
@@ -153,16 +161,18 @@ export function buildLadder(
     facts: grouped[id].length > 0 ? rungFacts(id, grouped[id]) : [],
   }));
 
+  const planPage = grouped.s2.find((page) => page.kind === "plan");
+  const plan = planPage ? parseFusionPlan(planPage.text) : null;
+  const walkOf = new Map(plan?.passes.map(({ pass, walk }) => [pass, walk] as const));
+
   const timeline: TimelineStep[] = [];
   const previous: Partial<Record<RungId, string>> = {};
   for (const rung of rungs) {
     for (const page of rung.pages) {
       // The S3 partition and value pages come from the same lowering step as
-      // the graph, and the provenance page records decisions across S2's
-      // steps; the timeline shows steps, not pages.
-      if (page.kind === "partition" || page.kind === "values" || page.kind === "provenance") {
-        continue;
-      }
+      // the graph; the plan and provenance pages describe S2's steps rather
+      // than being one. The timeline shows steps, not pages.
+      if (["partition", "values", "provenance", "plan"].includes(page.kind)) continue;
       const producer = page.pass === "lower" || page.pass === "parse";
       timeline.push({
         key: page.key,
@@ -172,6 +182,7 @@ export function buildLadder(
         producer,
         nanos: timings.get(page.key) ?? null,
         remarks: remarks.filter((remark) => `${remark.stage}/${remark.pass}` === page.key).length,
+        walk: producer || page.stage !== plan?.stage ? null : (walkOf.get(page.pass) ?? null),
       });
       previous[rung.id] = page.text;
     }
@@ -183,5 +194,6 @@ export function buildLadder(
     template: grouped.s1[0]?.text ?? "",
     unplaced,
     remarks,
+    walks: plan ? planWalks(plan, walkTimings) : [],
   };
 }

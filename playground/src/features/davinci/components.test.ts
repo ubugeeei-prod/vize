@@ -46,6 +46,7 @@ describe("PassTimeline", () => {
       producer: true,
       nanos: null,
       remarks: 0,
+      walk: null,
     },
     {
       key: "s2/v-slot",
@@ -55,6 +56,7 @@ describe("PassTimeline", () => {
       producer: false,
       nanos: null,
       remarks: 0,
+      walk: null,
     },
     {
       key: "s2/legacy",
@@ -64,11 +66,12 @@ describe("PassTimeline", () => {
       producer: false,
       nanos: null,
       remarks: 0,
+      walk: null,
     },
   ];
 
   it("marks producers and changed passes and summarizes them", async () => {
-    const wrapper = mount(PassTimeline, { props: { steps, current: "s2/v-slot" } });
+    const wrapper = mount(PassTimeline, { props: { steps, walks: [], current: "s2/v-slot" } });
     const buttons = wrapper.findAll(".davinci-step");
     expect(buttons.map((button) => button.classes().filter((c) => c !== "davinci-step"))).toEqual([
       ["rung-s2", "producer", "changed"],

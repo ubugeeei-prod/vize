@@ -126,6 +126,7 @@ describe("buildLadder", () => {
       producer,
       nanos,
       remarks: 0,
+      walk: null,
     });
     expect(ladder.timeline).toEqual([
       step("parse", "s1", true, true),
@@ -160,6 +161,41 @@ describe("buildLadder", () => {
     ]);
     expect(s2.facts).toEqual(["2 ops", "1 pass"]);
     expect(ladder.timeline.map(({ key }) => key)).not.toContain("s2-provenance/transform");
+  });
+
+  it("reads the transform plan's walks off the plan page and times them", () => {
+    const plan = {
+      path: "Component.vue",
+      stage: "s2-plan",
+      pass: "transform",
+      text: "[fusion-plan-folio]\nstage=s2\nwalks=1\n\n[fusion-plan-folio.passes]\nwalk=0 pass=hoist-static kind=optional fusability=fusable\n\n",
+    };
+    const pages = feed().pages;
+    const ladder = buildLadder(
+      { ...feed(), pages: [...pages.slice(0, 2), plan, ...pages.slice(2)] },
+      "Component.vue",
+      new Map([["s2/hoist-static", 4_000]]),
+      new Map([["s2/hoist-static", 4_000]]),
+    );
+    const s2 = ladder.rungs[1];
+    expect(s2.pages.map(({ key, kind, label }) => [key, kind, label])).toEqual([
+      ["s2/lower", "disegno", "Lowered"],
+      ["s2-plan/transform", "plan", "Plan"],
+      ["s2/hoist-static", "disegno", "hoist-static"],
+    ]);
+    // The rail keeps two facts; the walk count is the timeline summary's.
+    expect(s2.facts).toEqual(["2 ops", "1 pass"]);
+    // The plan describes steps; it is not one. Only passes carry a walk.
+    expect(ladder.timeline.map(({ key, walk }) => [key, walk])).toEqual([
+      ["s1/parse", null],
+      ["s2/lower", null],
+      ["s2/hoist-static", 0],
+      ["s3/lower", null],
+    ]);
+    expect(ladder.walks).toEqual([
+      { index: 0, passes: ["hoist-static"], fusable: true, nanos: 4_000 },
+    ]);
+    expect(buildLadder(feed()).walks).toEqual([]);
   });
 
   it("takes this file's remarks from the feed and counts them per step", () => {

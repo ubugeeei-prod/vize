@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
-import { LADDER_STEP_KEY, ladderStepTimings, negotiateProfileExport } from "./profile";
+import {
+  LADDER_STEP_KEY,
+  LADDER_WALK_KEY,
+  ladderStepTimings,
+  ladderWalkTimings,
+  negotiateProfileExport,
+} from "./profile";
 
 const wall = (total: number) => ({
   total,
@@ -29,6 +35,12 @@ const profile = {
       wall_ns: wall(9000),
       attribution: { stage: "s2", pass: "hoist-static", block: "template" },
     },
+    {
+      key: LADDER_WALK_KEY,
+      count: 1,
+      wall_ns: wall(9500),
+      attribution: { stage: "s2", pass: "hoist-static", block: "template" },
+    },
     // Other keys and unattributed buckets are not ladder steps.
     { key: "atelier.dom.template.parse", count: 1, wall_ns: wall(50) },
     { key: LADDER_STEP_KEY, count: 1, wall_ns: wall(7) },
@@ -44,6 +56,13 @@ describe("negotiateProfileExport", () => {
       ["s3/lower", 21000],
       ["s2/hoist-static", 9000],
     ]);
+  });
+
+  it("reads walks under the timing observer's key, by lead pass", () => {
+    const negotiated = negotiateProfileExport(profile);
+    if (!negotiated.ok) throw new Error(negotiated.error);
+    expect(LADDER_WALK_KEY).toBe("davinci.pass.walk");
+    expect([...ladderWalkTimings(negotiated.profile)]).toEqual([["s2/hoist-static", 9500]]);
   });
 
   it("refuses other versions, missing profiles and malformed spans", () => {

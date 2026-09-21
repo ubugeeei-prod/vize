@@ -5,7 +5,14 @@
 
 import type { Range } from "./offsets";
 
-export type PageKind = "surface" | "disegno" | "provenance" | "impeto" | "partition" | "values";
+export type PageKind =
+  | "surface"
+  | "disegno"
+  | "plan"
+  | "provenance"
+  | "impeto"
+  | "partition"
+  | "values";
 
 export type TokenType =
   | "section"
@@ -81,10 +88,14 @@ function scan(text: string, pattern: RegExp, groups: TokenType[]): Token[] {
 export function folioTokens(line: string): Token[] {
   if (/^\[[\w.-]+\]$/.test(line)) return [{ type: "section", text: line }];
   const tokens = scan(line, FOLIO_TOKEN, FOLIO_GROUPS);
-  // A provenance rule name reads as a mnemonic.
-  if (tokens[0]?.type === "key" && tokens[0].text === "rule=" && tokens[1]?.type === "text") {
-    const [, rule, rest] = /^(\S+)(.*)$/s.exec(tokens[1].text)!;
-    tokens.splice(1, 1, { type: "mnemonic", text: rule }, { type: "text", text: rest });
+  // A provenance rule name, or a plan's pass name, reads as a mnemonic.
+  for (let index = 0; index + 1 < tokens.length; index += 1) {
+    const [key, value] = [tokens[index], tokens[index + 1]];
+    if (key.type !== "key" || (key.text !== "rule=" && key.text !== "pass=")) continue;
+    if (value.type !== "text" || !/^\S/.test(value.text)) continue;
+    const [, name, rest] = /^(\S+)(.*)$/s.exec(value.text)!;
+    tokens.splice(index + 1, 1, { type: "mnemonic", text: name });
+    if (rest) tokens.splice(index + 2, 0, { type: "text", text: rest });
   }
   // The element/component name right after its mnemonic reads as a tag.
   for (let index = 0; index + 1 < tokens.length; index += 1) {
@@ -140,6 +151,7 @@ export function lineSpan(kind: PageKind, line: string): Range | null {
       return match ? { start: Number(match[1]), end: Number(match[2]) } : null;
     }
     case "surface":
+    case "plan":
       return null;
   }
 }

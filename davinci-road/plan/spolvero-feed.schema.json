@@ -34,7 +34,7 @@
             "type": "string",
             "minLength": 1,
             "pattern": "^[a-z][a-z0-9-]*$",
-            "description": "Stage (or stage page family) that produced the page: the ladder emits `s1`, `s2`, `s2-provenance`, `s3`, `s3-partition` and `s3-values`; `davinci-opt` pages use the dumped stage (`croquis`, `budget-observer`, ...)."
+            "description": "Stage (or stage page family) that produced the page: the ladder emits `s1`, `s2`, `s2-plan` (the transform plan's walks), `s2-provenance`, `s3`, `s3-partition` and `s3-values`; `davinci-opt` pages use the dumped stage (`croquis`, `budget-observer`, ...)."
           },
           "pass": {
             "type": "string",

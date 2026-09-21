@@ -7,6 +7,8 @@
 //! | ------------------------------ | ----------------------------------------------------- |
 //! | `s1` / `parse`                 | S1 surface tree, rendered back (TS-19 fidelity)       |
 //! | `s2` / `lower`                 | `vize_s1_to_s2::lower`, the S2 (Disegno) folio        |
+//! | `s2-plan` / `transform`        | the executed transform plan's walks                  |
+//! |                                | (`[fusion-plan-folio]`: which passes share a walk)   |
 //! | `s2` / *each executed pass*    | the artifact-selected S2 transform plan, via the      |
 //! |                                | pass manager and a P2-13 `FolioDump` (ungated: one   |
 //! |                                | page per pass, so "did it change?" is a byte compare) |
@@ -15,6 +17,12 @@
 //! | `s3` / `lower`                 | `vize_s2_to_s3::lower`, the S3 (Impeto) graph folio  |
 //! | `s3-partition` / `lower`       | the exported static/dynamic partition facts          |
 //! | `s3-values` / `lower`          | the S3 operand values page                           |
+//!
+//! Besides one step per parse, lowering and pass, the run times every
+//! **walk** of the transform plan the way the timing observer does: the
+//! window opens at the group's entry and closes at its exit, and the walk is
+//! attributed to its lead pass. The plan page says which passes each walk
+//! carried, so a fused walk is never read as one pass's cost.
 //!
 //! S3 lowers from the post-transform S2 root. On the Vue 3 path the
 //! transform passes preserve the tree (their products are side tables), so
@@ -28,8 +36,9 @@
 use core::cell::Cell;
 
 use vize_davinci::folio::dump::FolioDump;
+use vize_davinci::folio::plan::FusionPlanFolio;
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_davinci::pass::{PassEvent, PassObserver};
+use vize_davinci::pass::{PassEvent, PassObserver, Pipeline};
 use vize_s0::{Allocator, String};
 use vize_s1_to_s2::pass::{TransformProfile, run_transform_with_pass_hook};
 use vize_s2::folio::{S2Folio, S2ProvenanceFolio};
@@ -65,6 +74,9 @@ pub struct LadderRun {
     pub pages: Vec<SpolveroPage>,
     /// Every step, in run order.
     pub steps: Vec<LadderStep>,
+    /// Every walk of the transform plan, in run order; `pass` names the
+    /// walk's lead pass (the timing observer's attribution).
+    pub walks: Vec<LadderStep>,
 }
 
 /// Every stage page for `template`, in pipeline order (see the module
@@ -74,15 +86,59 @@ pub fn ladder_pages(path: &str, template: &str) -> Vec<SpolveroPage> {
     ladder_run(path, template, &|| 0).pages
 }
 
-/// Opens a pass's window at `before_pass`; the pass hook closes it.
+fn step(stage: &'static str, pass: &'static str, started: u64, now: u64) -> LadderStep {
+    LadderStep {
+        stage,
+        pass,
+        nanos: now.saturating_sub(started),
+    }
+}
+
+/// The open pass window and the open walk window. `before_pass` opens them
+/// and the pass hook closes them, each with one clock reading - the timing
+/// observer's walk rule (open at the group entry, close at its exit,
+/// attribute the lead pass) on a host clock.
+#[derive(Debug, Default)]
+struct PassWindows {
+    pass: Cell<u64>,
+    walk: Cell<u64>,
+}
+
+impl PassWindows {
+    fn open(&self, event: &PassEvent<'_>, now: u64) {
+        self.pass.set(now);
+        if event.is_group_entry() {
+            self.walk.set(now);
+        }
+    }
+
+    /// The pass's step, and its walk's when the pass ends one.
+    fn close(&self, event: &PassEvent<'_>, now: u64) -> (LadderStep, Option<LadderStep>) {
+        let stage = event.pipeline.stage;
+        let lead = event.pipeline.passes[event.group.start].name;
+        (
+            step(stage, event.desc().name, self.pass.get(), now),
+            event
+                .is_group_exit()
+                .then(|| step(stage, lead, self.walk.get(), now)),
+        )
+    }
+}
+
+/// Opens the windows at `before_pass`, and keeps the plan the run executed.
 struct PassStart<'a> {
     clock: LadderClock<'a>,
-    started: &'a Cell<u64>,
+    windows: &'a PassWindows,
+    pipeline: Option<Pipeline>,
 }
 
 impl PassObserver for PassStart<'_> {
-    fn before_pass(&mut self, _event: &PassEvent<'_>) {
-        self.started.set((self.clock)());
+    fn before_pipeline(&mut self, pipeline: &Pipeline) {
+        self.pipeline = Some(*pipeline);
+    }
+
+    fn before_pass(&mut self, event: &PassEvent<'_>) {
+        self.windows.open(event, (self.clock)());
     }
 }
 
@@ -96,39 +152,46 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
         text,
     };
     let mut steps = Vec::new();
-    let mut timed = |stage: &'static str, pass: &'static str, started: u64| {
-        let nanos = clock().saturating_sub(started);
-        steps.push(LadderStep { stage, pass, nanos });
-    };
-
     let allocator = Allocator::default();
     let started = clock();
     let (tree, errors) = vize_s1::parse(&allocator, template);
-    timed("s1", "parse", started);
+    steps.push(step("s1", "parse", started, clock()));
     let mut s1 = String::default();
     vize_s1::render::render(&tree, &mut |slice| s1.push_str(slice));
     let mut pages = vec![page("s1", "parse", s1)];
 
     let started = clock();
     let mut lowered = vize_s1_to_s2::lower(&allocator, &tree, &errors);
-    timed("s2", "lower", started);
+    steps.push(step("s2", "lower", started, clock()));
     pages.push(page("s2", "lower", s2_text(&lowered.root.ops)));
 
     let mut dump = FolioDump::new(false);
-    let pass_started = Cell::new(0);
+    let mut walks = Vec::new();
+    let windows = PassWindows::default();
     let mut observer = PassStart {
         clock,
-        started: &pass_started,
+        windows: &windows,
+        pipeline: None,
     };
     run_transform_with_pass_hook(
         &mut lowered,
         &mut observer,
         TransformProfile::DEFAULT,
         |event, lowered| {
-            timed(event.pipeline.stage, event.desc().name, pass_started.get());
+            let (pass, walk) = windows.close(event, clock());
+            steps.push(pass);
+            walks.extend(walk);
             dump.after_pass(event, s2_text(&lowered.root.ops).as_str());
         },
     );
+    if let Some(pipeline) = observer.pipeline {
+        let plan = FusionPlanFolio::of(&pipeline);
+        pages.push(page(
+            "s2-plan",
+            "transform",
+            plan.print_to_string(FolioMode::Full),
+        ));
+    }
     pages.extend(dump.pages.into_iter().map(|dumped| SpolveroPage {
         path: Some(String::from(path)),
         stage: dumped.stage,
@@ -146,7 +209,7 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
 
     let started = clock();
     let s3 = vize_s2_to_s3::lower(&allocator, &lowered.root);
-    timed("s3", "lower", started);
+    steps.push(step("s3", "lower", started, clock()));
     let program = S3Folio::of(&s3.program);
     pages.push(page(
         "s3",
@@ -165,9 +228,74 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
         "lower",
         values.print_to_string(FolioMode::Full),
     ));
-    LadderRun { pages, steps }
+    LadderRun {
+        pages,
+        steps,
+        walks,
+    }
 }
 
 fn s2_text(ops: &[vize_s2::op::Op<'_>]) -> String {
     S2Folio::of(ops).print_to_string(FolioMode::Full)
+}
+
+#[cfg(test)]
+mod tests {
+    use core::cell::Cell;
+
+    use vize_davinci::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved, run_pipeline};
+
+    use super::{PassStart, PassWindows, step};
+
+    const fn optional(name: &'static str, fusability: Fusability) -> PassDesc {
+        PassDesc::new(name, PassKind::Optional, fusability, Preserved::ALL)
+    }
+
+    /// `a` and `b` share one walk; `c` owns the next.
+    const PLAN: Pipeline = Pipeline::new(
+        "s2",
+        &[
+            optional("a", Fusability::Fusable),
+            optional("b", Fusability::Fusable),
+            optional("c", Fusability::Barrier),
+        ],
+    );
+
+    #[test]
+    fn a_fused_walk_spans_its_passes_and_is_attributed_to_its_lead() {
+        // Reads 0, 10, 20, ... - every window's width counts its reads.
+        let reads = Cell::new(0_u64);
+        let clock = || {
+            let k = reads.get();
+            reads.set(k + 1);
+            k * 10
+        };
+        let windows = PassWindows::default();
+        let mut observer = PassStart {
+            clock: &clock,
+            windows: &windows,
+            pipeline: None,
+        };
+        let (mut steps, mut walks) = (Vec::new(), Vec::new());
+        run_pipeline(&PLAN, &mut observer, |event| {
+            let (pass, walk) = windows.close(event, clock());
+            steps.push(pass);
+            walks.extend(walk);
+            Ok(())
+        })
+        .expect("no-op bodies cannot fail");
+
+        assert_eq!(
+            steps,
+            vec![
+                step("s2", "a", 0, 10),
+                step("s2", "b", 20, 30),
+                step("s2", "c", 40, 50),
+            ]
+        );
+        // The fused walk opens with `a` and closes with `b`, the gap between
+        // them included: one walk, not two passes' worth.
+        assert_eq!(walks, vec![step("s2", "a", 0, 30), step("s2", "c", 40, 50)]);
+        assert_eq!(observer.pipeline, Some(PLAN));
+    }
 }

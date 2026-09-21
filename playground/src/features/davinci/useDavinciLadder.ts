@@ -10,7 +10,11 @@ import {
 } from "vue";
 import type { WasmModule } from "../../wasm/index";
 import { negotiateSpolveroFeed } from "../../wasm/types/spolvero";
-import { ladderStepTimings, negotiateProfileExport } from "../../wasm/types/profile";
+import {
+  ladderStepTimings,
+  ladderWalkTimings,
+  negotiateProfileExport,
+} from "../../wasm/types/profile";
 import type { InspectorDiff } from "../../wasm/types/inspector";
 import { DAVINCI_PRESET } from "../../shared/presets/davinci";
 import type { EditorHighlight } from "../../shared/MonacoEditor.vue";
@@ -83,13 +87,14 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
     if (!shown || shown.kind !== "impeto" || !partition) return new Map<number, string>();
     return graphLineKinds(shown.text, partitionKinds(partition.text));
   });
-  /** The page this one is compared against: the previous page of its stage. */
+  /** The page this one is compared against: the previous tree page of its stage. */
   const previousPage = computed(() => {
     const current = rung.value;
     const shown = page.value;
     if (!current || !shown || shown.kind !== "disegno") return null;
-    const index = current.pages.indexOf(shown);
-    return index > 0 ? current.pages[index - 1] : null;
+    const trees = current.pages.filter((p) => p.kind === "disegno");
+    const index = trees.indexOf(shown);
+    return index > 0 ? trees[index - 1] : null;
   });
   const diff = computed<InspectorDiff | null>(() => {
     const before = previousPage.value;
@@ -187,8 +192,13 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
       templateStart.value = start === undefined ? 0 : templateStartInSfc(source.value, start);
       const profile = negotiateProfileExport(analysis.spolveroProfile);
       profileNote.value = profile.ok ? null : profile.error;
-      const timings = profile.ok ? ladderStepTimings(profile.profile) : new Map<string, number>();
-      ladder.value = buildLadder(negotiated.feed, FILENAME, timings);
+      const none = new Map<string, number>();
+      ladder.value = buildLadder(
+        negotiated.feed,
+        FILENAME,
+        profile.ok ? ladderStepTimings(profile.profile) : none,
+        profile.ok ? ladderWalkTimings(profile.profile) : none,
+      );
       error.value = null;
       const compiled = await compileCodeOutputs({
         compiler,

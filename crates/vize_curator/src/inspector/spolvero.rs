@@ -17,7 +17,8 @@
 //!   is exactly what the ladder's S1 rung shows, proven through the tree
 //!   rather than copied from the source.
 //! - **The full ladder** ([`ladder_pages`]): S1, the S2 (Disegno) lowering
-//!   page, one S2 page per executed transform pass, and the S3 (Impeto)
+//!   page, the transform plan's walks (`[fusion-plan-folio]`), one S2 page
+//!   per executed transform pass, and the S3 (Impeto)
 //!   graph, partition-fact and value pages - all from one S1 parse through
 //!   the real lowerings and pass manager. The wasm `analyzeSfc` result (the
 //!   playground's Davinci view) carries it. The inspector payload keeps its
@@ -27,9 +28,9 @@
 //!   from the S2 transform pipeline ([`template_remarks`]), spans in the
 //!   template's byte frame (the pages' frame) - the decision explanations
 //!   Spolvero renders (C-5).
-//! - **Step timings** ([`ladder_run`], [`ladder_profile`]): the same run
-//!   timed by a host-supplied clock and exported as a P0-11 profile document
-//!   (C-3), since the feed schema carries no timing.
+//! - **Step and walk timings** ([`ladder_run`], [`ladder_profile`]): the
+//!   same run timed by a host-supplied clock and exported as a P0-11 profile
+//!   document (C-3), since the feed schema carries no timing.
 //!
 //! Files that are not `.vue`, fail SFC parsing, or have no template block
 //! contribute no page: the feed is a stage-dump channel, not a diagnostics
@@ -39,7 +40,7 @@ mod ladder;
 mod profile;
 
 pub use ladder::{LadderClock, LadderRun, LadderStep, ladder_pages, ladder_run};
-pub use profile::{LADDER_STEP_KEY, ladder_profile};
+pub use profile::{LADDER_STEP_KEY, LADDER_WALK_KEY, ladder_profile};
 pub use vize_davinci::folio::feed::{SpolveroFeed, SpolveroPage, SpolveroRemark};
 use vize_davinci::pass::RemarkCollector;
 use vize_s0::{Allocator, String, cstr};

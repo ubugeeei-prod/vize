@@ -4,7 +4,11 @@
 import { beforeAll, describe, expect, it } from "vite-plus/test";
 import { loadWasm, type WasmModule } from "../src/wasm";
 import { negotiateSpolveroFeed } from "../src/wasm/types/spolvero";
-import { ladderStepTimings, negotiateProfileExport } from "../src/wasm/types/profile";
+import {
+  ladderStepTimings,
+  ladderWalkTimings,
+  negotiateProfileExport,
+} from "../src/wasm/types/profile";
 import { DAVINCI_PRESET } from "../src/shared/presets/davinci";
 import { buildLadder, type StageLadder } from "../src/features/davinci/ladder";
 import { folioLines } from "../src/features/davinci/folioLines";
@@ -24,7 +28,12 @@ beforeAll(async () => {
   if (!negotiated.ok) throw new Error(negotiated.error);
   const profile = negotiateProfileExport(analysis.spolveroProfile);
   if (!profile.ok) throw new Error(profile.error);
-  ladder = buildLadder(negotiated.feed, FILENAME, ladderStepTimings(profile.profile));
+  ladder = buildLadder(
+    negotiated.feed,
+    FILENAME,
+    ladderStepTimings(profile.profile),
+    ladderWalkTimings(profile.profile),
+  );
   const sfc = wasm.compileSfc(DAVINCI_PRESET, { filename: FILENAME });
   templateStart = templateStartInSfc(DAVINCI_PRESET, sfc.descriptor.template!.loc.start);
 });
@@ -45,7 +54,14 @@ describe("Davinci stage ladder from the real compiler", () => {
       [
         "s2",
         ["19 ops", "3 passes"],
-        ["s2/lower", "s2/v-slot", "s2/v-model", "s2/hoist-static", "s2-provenance/transform"],
+        [
+          "s2/lower",
+          "s2-plan/transform",
+          "s2/v-slot",
+          "s2/v-model",
+          "s2/hoist-static",
+          "s2-provenance/transform",
+        ],
       ],
       ["s3", ["19 ops", "14 dynamic"], ["s3/lower", "s3-partition/lower", "s3-values/lower"]],
     ]);
@@ -87,8 +103,28 @@ describe("Davinci stage ladder from the real compiler", () => {
     expect(ladder.timeline.every((step) => step.nanos! >= 0)).toBe(true);
   });
 
+  it("runs each pass in its own walk, per the compiler's plan page", () => {
+    // Two mandatory barriers and an optional analysis with no fusable
+    // neighbour: three walks, each timed once, attributed to its lead pass.
+    expect(ladder.walks.map(({ index, passes, fusable }) => [index, passes, fusable])).toEqual([
+      [0, ["v-slot"], false],
+      [1, ["v-model"], false],
+      [2, ["hoist-static"], true],
+    ]);
+    expect(ladder.walks.every(({ nanos }) => typeof nanos === "number" && nanos >= 0)).toBe(true);
+    expect(ladder.timeline.map(({ key, walk }) => [key, walk])).toEqual([
+      ["s1/parse", null],
+      ["s2/lower", null],
+      ["s2/v-slot", 0],
+      ["s2/v-model", 1],
+      ["s2/hoist-static", 2],
+      ["s3/lower", null],
+    ]);
+  });
+
   it("diffs consecutive S2 pages through the inspector's line diff", () => {
-    const [lowered, vslot] = ladder.rungs[1].pages;
+    const page = (key: string) => ladder.rungs[1].pages.find((p) => p.key === key)!;
+    const [lowered, vslot] = [page("s2/lower"), page("s2/v-slot")];
     const diff = wasm.buildInspectorDiff(lowered.text, vslot.text);
     const lineCount = lowered.text.split("\n").length;
     expect(diff.stats).toEqual({ additions: 0, removals: 0, unchanged: lineCount });

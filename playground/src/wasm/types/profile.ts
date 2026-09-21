@@ -8,6 +8,12 @@ export const PROFILE_EXPORT_SCHEMA_VERSION = 1;
 /** The dotted key the compiler records each ladder step under. */
 export const LADDER_STEP_KEY = "davinci.spolvero.step";
 
+/**
+ * The dotted key every pass-manager walk records under (the timing
+ * observer's), attributed to the walk's lead pass.
+ */
+export const LADDER_WALK_KEY = "davinci.pass.walk";
+
 export interface ProfileWallNs {
   total: number;
   self: number;
@@ -75,13 +81,22 @@ export function negotiateProfileExport(raw: unknown): ProfileNegotiation {
   return { ok: true, profile: raw as unknown as ProfileExport };
 }
 
-/** Ladder step wall time in nanoseconds, keyed `stage/pass` like the pages. */
-export function ladderStepTimings(profile: ProfileExport): Map<string, number> {
+function timingsUnder(profile: ProfileExport, key: string): Map<string, number> {
   const timings = new Map<string, number>();
   for (const span of profile.spans) {
     const { stage, pass } = span.attribution ?? {};
-    if (span.key !== LADDER_STEP_KEY || !stage || !pass) continue;
+    if (span.key !== key || !stage || !pass) continue;
     timings.set(`${stage}/${pass}`, span.wall_ns.total);
   }
   return timings;
+}
+
+/** Ladder step wall time in nanoseconds, keyed `stage/pass` like the pages. */
+export function ladderStepTimings(profile: ProfileExport): Map<string, number> {
+  return timingsUnder(profile, LADDER_STEP_KEY);
+}
+
+/** Walk wall time in nanoseconds, keyed `stage/lead-pass`. */
+export function ladderWalkTimings(profile: ProfileExport): Map<string, number> {
+  return timingsUnder(profile, LADDER_WALK_KEY);
 }

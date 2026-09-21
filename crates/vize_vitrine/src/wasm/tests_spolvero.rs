@@ -69,6 +69,17 @@ operand=[1,"text",null,null,null,"js","msg","",11,14]
 
 "#;
 
+/// The executed transform plan for [`TEMPLATE`]: the one selected pass in
+/// its own walk.
+const S2_PLAN_PAGE: &str = "[fusion-plan-folio]
+stage=s2
+walks=1
+
+[fusion-plan-folio.passes]
+walk=0 pass=hoist-static kind=optional fusability=fusable
+
+";
+
 /// The croquis folio text for [`SOURCE`], the exact bytes both alias keys
 /// must carry.
 const CROQUIS_FOLIO: &str = r"[vir]
@@ -132,6 +143,12 @@ fn the_analyze_result_carries_the_full_stage_ladder_feed() {
             "pages": [
                 { "path": "src/App.vue", "stage": "s1", "pass": "parse", "text": TEMPLATE },
                 { "path": "src/App.vue", "stage": "s2", "pass": "lower", "text": S2_PAGE },
+                {
+                    "path": "src/App.vue",
+                    "stage": "s2-plan",
+                    "pass": "transform",
+                    "text": S2_PLAN_PAGE,
+                },
                 { "path": "src/App.vue", "stage": "s2", "pass": "hoist-static", "text": S2_PAGE },
                 {
                     "path": "src/App.vue",

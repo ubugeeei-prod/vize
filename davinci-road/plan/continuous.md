@@ -17,8 +17,8 @@
       the real-wasm `e2e/davinci-ladder.test.ts`. The `vize inspector`
       payload stays S1-only on purpose (it rides in share URLs; the playground
       recomputes the ladder from the same sources)._
-- [ ] C-3 Pass timeline + fusion-group view from timing JSON (starts: P2-13)
-      _Partial 2026-09-21: the Davinci tab shows every executed step in run
+- [x] C-3 Pass timeline + fusion-group view from timing JSON (starts: P2-13)
+      _Landed 2026-09-21/22: the Davinci tab shows every executed step in run
       order, marks which passes changed the folio (exact page compare), diffs
       consecutive S2 pages through the inspector's line diff, and shows each
       step's wall time. The timing is the P0-11 profile export (`analyzeSfc`
@@ -27,8 +27,13 @@
       host clock measured (`vize_curator::inspector::ladder_run`; the browser
       passes `performance.now()`, since `std::time::Instant` is absent on
       wasm32-unknown-unknown; `spolvero_timing` pins it with a deterministic
-      clock). Open: fusion groups (no group index reaches the feed or the
-      export yet)._
+      clock). Fusion groups: the feed carries the executed plan as the
+      `s2-plan` page (`[fusion-plan-folio]`, `vize_davinci::folio::plan`,
+      TS-16 laws in `tests/fusion_plan_folio.rs`), the export carries one
+      `davinci.pass.walk` span per walk attributed to its lead pass (the
+      timing observer's rule), and the timeline brackets each walk's passes
+      with the walk's time. Today's S2 plans fuse nothing (barriers and one
+      optional analysis), so every walk holds one pass._
 - [ ] C-4 Flame views from profiler export (starts: P0-11 data available)
 - [x] C-5 S3 pages, provenance navigation, remarks rendering (starts: P3-13)
       _S3 pages landed 2026-09-21 in the same feed: `s3` (graph),
