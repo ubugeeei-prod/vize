@@ -23,14 +23,19 @@
 //!   playground's Davinci view) carries it. The inspector payload keeps its
 //!   S1-only pages: it rides inside share URLs (the P2-18 growth note), and
 //!   the playground recomputes the ladder from the same sources.
+//! - **Step timings** ([`ladder_run`], [`ladder_profile`]): the same run
+//!   timed by a host-supplied clock and exported as a P0-11 profile document
+//!   (C-3), since the feed schema carries no timing.
 //!
 //! Files that are not `.vue`, fail SFC parsing, or have no template block
 //! contribute no page: the feed is a stage-dump channel, not a diagnostics
 //! channel (diagnostics stay on their own surfaces).
 
 mod ladder;
+mod profile;
 
-pub use ladder::ladder_pages;
+pub use ladder::{LadderClock, LadderRun, LadderStep, ladder_pages, ladder_run};
+pub use profile::{LADDER_STEP_KEY, ladder_profile};
 pub use vize_davinci::folio::feed::{SpolveroFeed, SpolveroPage};
 use vize_s0::{Allocator, String, cstr};
 

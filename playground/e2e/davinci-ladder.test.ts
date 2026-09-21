@@ -4,6 +4,7 @@
 import { beforeAll, describe, expect, it } from "vite-plus/test";
 import { loadWasm, type WasmModule } from "../src/wasm";
 import { negotiateSpolveroFeed } from "../src/wasm/types/spolvero";
+import { ladderStepTimings, negotiateProfileExport } from "../src/wasm/types/profile";
 import { DAVINCI_PRESET } from "../src/shared/presets/davinci";
 import { buildLadder, type StageLadder } from "../src/features/davinci/ladder";
 import { folioLines } from "../src/features/davinci/folioLines";
@@ -16,11 +17,12 @@ let templateStart: number;
 
 beforeAll(async () => {
   wasm = await loadWasm();
-  const negotiated = negotiateSpolveroFeed(
-    wasm.analyzeSfc(DAVINCI_PRESET, { filename: FILENAME }).spolvero,
-  );
+  const analysis = wasm.analyzeSfc(DAVINCI_PRESET, { filename: FILENAME });
+  const negotiated = negotiateSpolveroFeed(analysis.spolvero);
   if (!negotiated.ok) throw new Error(negotiated.error);
-  ladder = buildLadder(negotiated.feed, FILENAME);
+  const profile = negotiateProfileExport(analysis.spolveroProfile);
+  if (!profile.ok) throw new Error(profile.error);
+  ladder = buildLadder(negotiated.feed, FILENAME, ladderStepTimings(profile.profile));
   const sfc = wasm.compileSfc(DAVINCI_PRESET, { filename: FILENAME });
   templateStart = templateStartInSfc(DAVINCI_PRESET, sfc.descriptor.template!.loc.start);
 });
@@ -64,5 +66,25 @@ describe("Davinci stage ladder from the real compiler", () => {
     expect(authored("s3/lower", "kind=impeto.for")).toMatch(/^<TodoItem v-for="todo in todos"/);
     expect(authored("s3-partition/lower", "op=17 ")).toBe("<footer>{{ remaining }} left</footer>");
     expect(authored("s3-values/lower", '"model-read",3')).toBe("draft");
+  });
+
+  it("times every step through the browser clock, in the profile export", () => {
+    // Values depend on the machine; which steps were measured does not.
+    expect(ladder.timeline.map((step) => [step.key, typeof step.nanos])).toEqual([
+      ["s1/parse", "number"],
+      ["s2/lower", "number"],
+      ["s2/v-slot", "number"],
+      ["s2/v-model", "number"],
+      ["s2/hoist-static", "number"],
+      ["s3/lower", "number"],
+    ]);
+    expect(ladder.timeline.every((step) => step.nanos! >= 0)).toBe(true);
+  });
+
+  it("diffs consecutive S2 pages through the inspector's line diff", () => {
+    const [lowered, vslot] = ladder.rungs[1].pages;
+    const diff = wasm.buildInspectorDiff(lowered.text, vslot.text);
+    const lineCount = lowered.text.split("\n").length;
+    expect(diff.stats).toEqual({ additions: 0, removals: 0, unchanged: lineCount });
   });
 });

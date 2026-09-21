@@ -107,13 +107,31 @@ describe("buildLadder", () => {
 
   it("lists steps in run order and marks which passes changed the folio", () => {
     const changed = { path: "Component.vue", stage: "s2", pass: "legacy", text: `${S2}x` };
-    const ladder = buildLadder(feed([changed]));
+    const timings = new Map([
+      ["s2/lower", 5000],
+      ["s2/legacy", 9000],
+    ]);
+    const ladder = buildLadder(feed([changed]), undefined, timings);
+    const step = (
+      pass: string,
+      rung: string,
+      changed: boolean,
+      producer: boolean,
+      nanos = null,
+    ) => ({
+      key: `${rung}/${pass}`,
+      rung,
+      pass,
+      changed,
+      producer,
+      nanos,
+    });
     expect(ladder.timeline).toEqual([
-      { key: "s1/parse", rung: "s1", pass: "parse", changed: true, producer: true },
-      { key: "s2/lower", rung: "s2", pass: "lower", changed: true, producer: true },
-      { key: "s2/hoist-static", rung: "s2", pass: "hoist-static", changed: false, producer: false },
-      { key: "s2/legacy", rung: "s2", pass: "legacy", changed: true, producer: false },
-      { key: "s3/lower", rung: "s3", pass: "lower", changed: true, producer: true },
+      step("parse", "s1", true, true),
+      { ...step("lower", "s2", true, true), nanos: 5000 },
+      step("hoist-static", "s2", false, false),
+      { ...step("legacy", "s2", true, false), nanos: 9000 },
+      step("lower", "s3", true, true),
     ]);
   });
 

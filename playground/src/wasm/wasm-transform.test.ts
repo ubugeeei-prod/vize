@@ -114,8 +114,10 @@ describe("createTransformAnalyzeSfc", () => {
 
   it("passes the Spolvero feed through un-interpreted for negotiation downstream", () => {
     const spolvero = { schema_version: 99, command: "analyze-sfc", pages: "opaque" };
-    const analyze = createTransformAnalyzeSfc(() => ({ croquis: {}, spolvero }));
+    const spolveroProfile = { schema_version: 99, spans: "opaque" };
+    const analyze = createTransformAnalyzeSfc(() => ({ croquis: {}, spolvero, spolveroProfile }));
     expect(analyze("", {}).spolvero).toBe(spolvero);
+    expect(analyze("", {}).spolveroProfile).toBe(spolveroProfile);
     expect(createTransformAnalyzeSfc(() => ({ croquis: {} }))("", {}).spolvero).toBeUndefined();
   });
 });

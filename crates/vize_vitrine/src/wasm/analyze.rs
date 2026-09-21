@@ -10,7 +10,9 @@
 use super::source_offsets::{ScriptOffsetMapper, to_sfc_utf16_range};
 mod entry;
 mod input;
+mod spolvero;
 pub use entry::analyze_sfc_wasm;
+pub(crate) use spolvero::HostClock;
 
 /// The `analyzeSfc` result as a plain `serde_json::Value` - the whole
 /// analysis short of the FFI conversion, so native tests can pin the
@@ -20,11 +22,24 @@ pub(super) fn analyze_sfc_json(source: &str, filename: &str) -> Result<serde_jso
     analyze_sfc_json_with_options(source, filename, false, false)
 }
 
+#[cfg(test)]
 pub(super) fn analyze_sfc_json_with_options(
     source: &str,
     filename: &str,
     in_tag_comments: bool,
     patterned_template: bool,
+) -> Result<serde_json::Value, String> {
+    analyze_sfc_json_with_clock(source, filename, in_tag_comments, patterned_template, &|| 0)
+}
+
+/// [`analyze_sfc_json_with_options`] with the host clock that times the
+/// Spolvero ladder steps (`spolveroProfile`).
+pub(super) fn analyze_sfc_json_with_clock(
+    source: &str,
+    filename: &str,
+    in_tag_comments: bool,
+    patterned_template: bool,
+    clock: HostClock<'_>,
 ) -> Result<serde_json::Value, String> {
     let (descriptor, template_offset, analysis) =
         input::analyze(source, filename, in_tag_comments, patterned_template)?;
@@ -228,15 +243,17 @@ pub(super) fn analyze_sfc_json_with_options(
         })
         .collect();
 
-    // The Spolvero feed (P2-18, C-2/C-5): the template's full stage ladder -
-    // S1, the S2 lowering and per-pass pages, the S3 graph/partition/value
-    // pages - through the one producer/serializer pair in `vize_curator`.
-    let spolvero_pages: Vec<vize_curator::inspector::SpolveroPage> = descriptor
-        .template
-        .as_ref()
-        .map(|template| vize_curator::inspector::ladder_pages(filename, &template.content))
-        .unwrap_or_default();
-    let spolvero = vize_curator::inspector::spolvero_value("analyze-sfc", spolvero_pages);
+    // The Spolvero feed (P2-18, C-2/C-5) - S1, the S2 lowering and per-pass
+    // pages, the S3 graph/partition/value pages - and the same run's step
+    // timings as a P0-11 profile document (C-3), from `vize_curator`.
+    let (spolvero, spolvero_profile) = spolvero::spolvero_members(
+        filename,
+        descriptor
+            .template
+            .as_ref()
+            .map(|template| template.content.as_ref()),
+        clock,
+    );
 
     let diagnostics = input::diagnostics(source, template_offset, &summary);
     let warnings = summary
@@ -310,6 +327,7 @@ pub(super) fn analyze_sfc_json_with_options(
             "croquis": vir.as_str(),
         },
         "spolvero": spolvero,
+        "spolveroProfile": spolvero_profile,
     });
 
     Ok(result)
