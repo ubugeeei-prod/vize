@@ -27,6 +27,8 @@
 
 ## P5-1b — Ambient key manifests
 
+**Landed 2026-09-22** — full record: [phase-5-records/p5-1b.md](./phase-5-records/p5-1b.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** A
@@ -35,8 +37,8 @@
 
 **Steps:**
 
-- [ ] `KeyManifest` in `crates/vize_davinci/src/key/manifest.rs`, folded into `ArtifactKey`
-- [ ] A test flips each declared input and asserts the key changes, and asserts an unchanged manifest keeps the key
+- [x] `KeyManifest` in `crates/vize_davinci/src/key/manifest.rs`, folded into `ArtifactKey` _(`ArtifactKey::with_manifest`; `KeyManifest::fingerprint` for the content-less Corsa session; both refuse a manifest that sets a missing or extra input)_
+- [x] A test flips each declared input and asserts the key changes, and asserts an unchanged manifest keeps the key
 
 **Acceptance:** `cargo test -p vize_davinci --test key_manifests` — every declared input changes the key, nothing else does; the manifest doc lists every artifact (a test reads it via `include_str!`); TS-43.
 

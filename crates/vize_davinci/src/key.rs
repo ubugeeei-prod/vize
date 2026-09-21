@@ -37,11 +37,13 @@ use vize_s0::Span;
 use crate::stage::Stage;
 
 mod block;
+pub mod manifest;
 mod sink;
 #[cfg(test)]
 mod tests;
 
 pub use block::source_block_key;
+pub use manifest::{AmbientInput, CachedArtifact, KeyManifest, ManifestError};
 pub use sink::KeySink;
 
 /// Key-recipe versions, one per keyed stage artifact.

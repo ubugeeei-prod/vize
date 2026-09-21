@@ -15,8 +15,10 @@ use vize_s0::hash::StableHasher128;
 use super::{ArtifactKey, rebase};
 use crate::stage::Stage;
 
-/// The domain tag every artifact key hash starts with.
+/// The domain tag every artifact content key hash starts with.
 const DOMAIN: &[u8] = b"vize.davinci.artifact-key\0";
+/// The domain tag every manifest-folded key hash starts with (P5-1b).
+pub(super) const MANIFEST_DOMAIN: &[u8] = b"vize.davinci.key-manifest\0";
 
 /// Field tags: a span inside its block, and one reaching outside it.
 const SPAN_RELATIVE: u8 = 0;
@@ -40,8 +42,18 @@ impl KeySink {
     /// spans are rebased to `block_start`.
     #[must_use]
     pub fn new(stage: Stage, schema_version: u32, block_start: u32) -> Self {
+        Self::in_domain(DOMAIN, stage, schema_version, block_start)
+    }
+
+    /// A sink under another domain tag (the manifest fold).
+    pub(super) fn in_domain(
+        domain: &[u8],
+        stage: Stage,
+        schema_version: u32,
+        block_start: u32,
+    ) -> Self {
         let mut hasher = StableHasher128::new();
-        hasher.update(DOMAIN);
+        hasher.update(domain);
         let id = stage.physical_id().as_bytes();
         hasher.update(&(id.len() as u32).to_le_bytes());
         hasher.update(id);
@@ -58,6 +70,11 @@ impl KeySink {
     #[must_use]
     pub const fn block_start(&self) -> u32 {
         self.block_start
+    }
+
+    /// Feed fixed-width raw bytes (a digest being folded).
+    pub(super) fn feed_digest(&mut self, digest: &[u8; 16]) {
+        self.hasher.update(digest);
     }
 
     /// Feed one tag byte (an enum discriminant or a presence marker).

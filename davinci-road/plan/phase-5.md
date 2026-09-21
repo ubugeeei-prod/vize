@@ -67,7 +67,7 @@ Ordered for the 2026-09-23 completion target; **bold** tasks carry the most demo
 Each ID links to its contract; the box is checked only in the PR that satisfies its acceptance criteria, with a record under `phase-5-records/`.
 
 - [x] [P5-1a](./phase-5-tasks.md#p5-1a--stage-artifact-keys) Stage artifact keys — lane A · startable now
-- [ ] [P5-1b](./phase-5-tasks.md#p5-1b--ambient-key-manifests) Ambient key manifests — lane A · startable now
+- [x] [P5-1b](./phase-5-tasks.md#p5-1b--ambient-key-manifests) Ambient key manifests — lane A · startable now
 - [ ] [P5-2](./phase-5-tasks.md#p5-2--per-sfc-summary) Per-SFC summary — lane B · gated on P4-2
 - [ ] [P5-3](./phase-5-tasks.md#p5-3--global-summary) Global summary — lane B · gated on P4-3b
 - [ ] [P5-4a](./phase-5-tasks.md#p5-4a--salsa-resident-database-skeleton) Salsa resident database skeleton — lane C · startable now
