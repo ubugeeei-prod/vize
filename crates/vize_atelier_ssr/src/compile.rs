@@ -153,7 +153,7 @@ fn compile_ssr_inner<'a>(
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum SsrLane {
     Selected,
-    #[cfg(test)]
+    #[cfg(any(test, feature = "davinci-differential"))]
     LegacyOnly,
 }
 
@@ -202,7 +202,7 @@ pub(crate) fn compile_ssr_on_lane<'a>(
                 has_custom_elements: !custom_elements.is_empty(),
             },
         ),
-        #[cfg(test)]
+        #[cfg(any(test, feature = "davinci-differential"))]
         SsrLane::LegacyOnly => SsrS4Selection::Legacy(s4::LegacyReason::Options),
     };
 

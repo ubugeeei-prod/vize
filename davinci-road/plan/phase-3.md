@@ -152,8 +152,11 @@ two-emitter differential battery, and counts `accepted` / `legacy.<reason>`.
 _Fourth slice 2026-09-21:_ `v-if` chains, `v-for` loops, `v-show`, `v-html`,
 `v-text`, and native `v-model` also emit from the plan (region boundary
 segments, legacy fragment and fallthrough rules, `v-for` scope strips).
-Components, slots, custom directives, the SSR corpus gate, and the legacy
-walker deletion remain before P3-8 closes.
+_Fifth slice 2026-09-21:_ the feature-gated SSR corpus gate compares both
+emitters on every SFC template (smoke sweep of the checkout in CI: 717
+compared, 274 plan-emitted, 0 divergences). Components, slots, custom
+directives, a canonical Real Project Matrix run, and the legacy walker
+deletion remain before P3-8 closes.
 
 **P3-9 S4 emitter + source maps.** Structured span-carrying emission document
 replaces `CodegenContext.code` string appends across dom/vapor/ssr; one

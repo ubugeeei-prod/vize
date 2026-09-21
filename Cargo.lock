@@ -4100,10 +4100,12 @@ version = "0.425.1"
 dependencies = [
  "criterion",
  "davinci_harness",
+ "davinci_test_support",
  "insta",
  "serde",
  "vize_armature",
  "vize_atelier_core",
+ "vize_atelier_sfc",
  "vize_carton",
  "vize_croquis",
  "vize_davinci",

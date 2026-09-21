@@ -335,6 +335,10 @@ jobs:
         id: davinci_dom_corpus
         continue-on-error: true
         run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run
+      - name: Run S4 SSR differential corpus
+        env:
+          VIZE_DAVINCI_DIFFERENTIAL_CORPUS: tests/_fixtures/_git
+        run: cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture
       - name: Finalize S2 DOM corpus evidence
         if: ${{ always() }}
         env:
