@@ -219,7 +219,12 @@ record's tracked-shortfall ledger. _Fourth slice 2026-09-21:_ the DOM codegen
 emits through span-carrying context methods and meets every TS-31 DOM budget.
 _Fifth slice 2026-09-21:_ SSR carries spans through template-literal parts
 and direct writes via the shared `SpannedText` primitive and meets every TS-31
-SSR budget. Vapor token-level emission and legacy recovery removal remain open.
+SSR budget. _Eighth slice 2026-09-22:_ `compile_sfc` attaches a structured
+SFC module map. It carries byte runs and point anchors through every script
+stage and oxc re-print, and napi uses it. TS-31 measures it at 11/11 exact on
+the legacy battery, no worse than the legacy on any anchor, and 19/19 on
+rewritten statements. Vapor token-level emission and legacy recovery removal
+remain open.
 
 **P3-10 Try-measure-commit.** Placement alternatives (hoist/cache/inline/
 group) kept explicit on S3 nodes; extraction pass performs candidates,

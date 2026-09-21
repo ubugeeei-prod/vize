@@ -10,7 +10,8 @@ use crate::script::ScriptCompileContext;
 
 /// Separate hoisted consts (literal consts that can be module-level) from
 /// setup code. Returns (hoisted_segments, setup_body_segments); a segment may
-/// span multiple lines.
+/// span multiple lines and is paired with its byte offset in
+/// `transformed_setup` (every segment is a verbatim slice of it).
 ///
 /// Selection is span-based on the parsed setup program: only a TOP-LEVEL
 /// single-declarator `const` with an identifier binding, a literal
@@ -19,16 +20,18 @@ use crate::script::ScriptCompileContext;
 /// `const max = …` shadowing a hoistable top-level `const max = 7` was ripped
 /// out of its function into module scope — a duplicate declaration referencing
 /// setup bindings that do not exist there (#3944).
+#[allow(clippy::type_complexity)]
 pub(super) fn separate_hoisted_consts(
     transformed_setup: &str,
     ctx: &ScriptCompileContext,
-) -> (Vec<String>, Vec<String>) {
+) -> (Vec<(String, usize)>, Vec<(String, usize)>) {
+    let base = transformed_setup.as_ptr() as usize;
     let keep_everything = || {
         (
             Vec::new(),
             transformed_setup
                 .lines()
-                .map(|line| line.to_compact_string())
+                .map(|line| (line.to_compact_string(), line.as_ptr() as usize - base))
                 .collect(),
         )
     };
@@ -45,8 +48,8 @@ pub(super) fn separate_hoisted_consts(
         return keep_everything();
     }
 
-    let mut hoisted: Vec<String> = Vec::new();
-    let mut body: Vec<String> = Vec::new();
+    let mut hoisted: Vec<(String, usize)> = Vec::new();
+    let mut body: Vec<(String, usize)> = Vec::new();
     let mut prev_end = 0usize;
 
     for statement in &parsed.program.body {
@@ -58,22 +61,28 @@ pub(super) fn separate_hoisted_consts(
         // Gaps (blank lines, comments) stay with the setup body in order.
         let gap = &transformed_setup[prev_end..start];
         if !gap.trim().is_empty() {
-            body.push(gap.trim_matches('\n').into());
+            body.push(trimmed_newlines(gap, prev_end));
         }
         let slice: String = transformed_setup[start..end].into();
         if is_hoistable_literal_const(statement, ctx) {
-            hoisted.push(slice);
+            hoisted.push((slice, start));
         } else {
-            body.push(slice);
+            body.push((slice, start));
         }
         prev_end = end;
     }
     let tail = &transformed_setup[prev_end..];
     if !tail.trim().is_empty() {
-        body.push(tail.trim_matches('\n').into());
+        body.push(trimmed_newlines(tail, prev_end));
     }
 
     (hoisted, body)
+}
+
+/// `text.trim_matches('\n')` and its offset, given `text`'s own offset.
+fn trimmed_newlines(text: &str, offset: usize) -> (String, usize) {
+    let lead = text.len() - text.trim_start_matches('\n').len();
+    (text.trim_matches('\n').into(), offset + lead)
 }
 
 /// A top-level `const <ident> = <literal>` whose name croquis classified as

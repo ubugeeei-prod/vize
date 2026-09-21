@@ -9,6 +9,7 @@ mod diagnostics;
 mod empty_component;
 mod entry;
 mod helpers;
+mod module_trace;
 mod normal_script;
 pub(crate) mod output_module;
 mod styles;
@@ -16,15 +17,12 @@ mod template_only;
 #[cfg(test)]
 mod tests;
 
-use crate::compile_script::artifacts::erase_artifact_macro_statements;
-use crate::compile_script::lazy_hydration::transform_lazy_hydration_macros;
 use crate::compile_script::props::{is_valid_identifier, validate_macro_scope_for_descriptor};
-use crate::compile_script::{TemplateParts, compile_script_setup_inline_with_context};
+use crate::compile_script::{SetupTrace, TemplateParts, compile_script_setup_inline_with_context};
 use crate::compile_template::{
     TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
     extract_template_parts, extract_template_parts_full, slice_template_parts,
 };
-use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
 use crate::types::{
     BindingMetadata, BindingType, SfcCompileExperimentalOptions, SfcCompileOptions,
@@ -41,7 +39,6 @@ use self::helpers::{
     demote_v_model_reactive_const_bindings, extract_component_name,
     extract_descriptor_macro_artifacts, generate_scope_id, trim_trailing_newlines,
 };
-use self::normal_script::extract_normal_script_content;
 use self::output_module::{
     RenderFunctionName, append_component_render_export, append_css_modules_assignment,
     finalize_output_mode, rewrite_client_render_for_sfc_main,
@@ -176,34 +173,20 @@ fn compile_sfc_inner(
     // Case 2: Script (non-setup) + Template - rewrite default and compile template
     if has_script && !has_script_setup {
         let script = descriptor.script.as_ref().unwrap();
-        let lazy_hydration_transform = transform_lazy_hydration_macros(&script.content);
-        let script_source = lazy_hydration_transform
-            .as_ref()
-            .map(|result| result.code.as_str())
-            .unwrap_or(&script.content);
-        let script_content = erase_artifact_macro_statements(script_source)
-            .unwrap_or_else(|| script_source.to_compact_string());
+        let (lazy_hydration_transform, script_content, script_runs) =
+            module_trace::prepared_script(script, codegen_options.source_map);
 
         // Check if source script is TypeScript
         let source_is_ts = is_ts_lang(script.lang.as_deref());
 
-        // Rewrite `export default` to `const _sfc_main = ...`
-        // Parse as TypeScript if source is TypeScript
-        let (rewritten_script, _has_default) = profile!(
-            "atelier.sfc.normal_script.rewrite_default",
-            rewrite_default(&script_content, "_sfc_main", source_is_ts)
-        );
-
-        // Transpile TypeScript to JavaScript if needed
-        let mut final_script = if source_is_ts && !is_ts {
-            profile!(
-                "atelier.sfc.normal_script.ts_to_js",
-                crate::compile_script::typescript::transform_typescript_to_js(&rewritten_script)
-            )
-        } else {
-            rewritten_script
-        };
+        // Rewrite `export default` to `const _sfc_main = ...` (parsed as
+        // TypeScript if the source is), then transpile TypeScript if needed.
+        let (mut final_script, script_runs) =
+            module_trace::script_module(&script_content, script_runs, source_is_ts, is_ts);
+        // The script's position in the module, for its source-map provenance.
+        let mut script_at = 0;
         if let Some(transform) = lazy_hydration_transform {
+            script_at = transform.preamble.len();
             let mut script_with_preamble = transform.preamble;
             script_with_preamble.push_str(&final_script);
             final_script = script_with_preamble;
@@ -337,6 +320,7 @@ fn compile_sfc_inner(
                     // 4. export default _sfc_main
                     if is_vapor || options.template.ssr {
                         // Vapor / SSR keep the render block first, then the script.
+                        script_at += template_code.len();
                         code.push_str(&template_code);
                         code.push_str(&final_script);
                         code.push('\n');
@@ -392,11 +376,18 @@ fn compile_sfc_inner(
             code.push_str("\nexport default _sfc_main\n");
         }
 
-        finalize_output_mode(&mut code, &mut warnings, &options, &codegen_options);
+        let rewrite = finalize_output_mode(&mut code, &mut warnings, &options, &codegen_options);
         trim_trailing_newlines(&mut code);
 
         return Ok(SfcCompileResult {
-            map: crate::source_map::sfc_source_map(&code, descriptor, filename, &codegen_options),
+            map: module_trace::module_map(
+                &code,
+                script_runs,
+                script_at,
+                rewrite,
+                descriptor,
+                filename,
+            ),
             code,
             css,
             errors,
@@ -425,25 +416,11 @@ fn compile_sfc_inner(
     // Extract normal script content if present (for type definitions, imports, etc.)
     // When both <script> and <script setup> exist, normal script content should be preserved
     // (except for export default which is handled by script setup)
-    let normal_script_content = if has_script {
-        let script = descriptor.script.as_ref().unwrap();
-        // Check if source is TypeScript
-        let source_is_ts = is_ts_lang(script.lang.as_deref());
-        Some(profile!(
-            "atelier.sfc.normal_script.extract",
-            extract_normal_script_content(&script.content, source_is_ts, is_ts)
-        ))
-    } else {
-        None
-    };
-
-    let lazy_hydration_transform = transform_lazy_hydration_macros(&script_setup.content);
-    let script_setup_source = lazy_hydration_transform
-        .as_ref()
-        .map(|result| result.code.clone())
-        .unwrap_or_else(|| script_setup.content.to_compact_string());
-    let script_setup_content = erase_artifact_macro_statements(&script_setup_source)
-        .unwrap_or_else(|| script_setup_source);
+    // With a source map requested, each piece also carries its `.vue` provenance.
+    let (normal_script_content, normal_runs) =
+        normal_script::extract_for_setup(descriptor, is_ts, codegen_options.source_map);
+    let (lazy_hydration_transform, script_setup_content, mut setup_runs) =
+        module_trace::prepared_script(script_setup, codegen_options.source_map);
 
     // Parse the script setup once. Croquis binding analysis, the macro
     // context analysis, and (unless v-model demotion rewrites the content
@@ -591,7 +568,8 @@ fn compile_sfc_inner(
             )
         );
 
-        if let Some((rewritten, demoted_ids)) = demote_result {
+        if let Some((rewritten, demoted_ids, starts)) = demote_result {
+            setup_runs = module_trace::demoted(setup_runs, script_setup_content.len(), &starts);
             for binding_name in demoted_ids {
                 warnings.push(create_v_model_reactive_const_warning(
                     script_setup,
@@ -739,6 +717,7 @@ fn compile_sfc_inner(
     // Assemble script setup with either an inline render (`inline_template`) or
     // a separate render function plus a marked setup-state object (module mode),
     // sharing the same analyzed script context, macro lowering, and runtime props.
+    let mut setup_trace = setup_runs.map(|runs| SetupTrace::new(runs, normal_runs));
     let script_result = profile!(
         "atelier.sfc.script_setup.inline_compile",
         compile_script_setup_inline_with_context(
@@ -765,6 +744,7 @@ fn compile_sfc_inner(
             &scope_id,
             filename,
             options.template.is_prod,
+            setup_trace.as_mut(),
         )
     )?;
 
@@ -773,13 +753,14 @@ fn compile_sfc_inner(
     if let Some(transform) = lazy_hydration_transform {
         code.push_str(&transform.preamble);
     }
+    let (script_at, output) = (code.len(), setup_trace.map(|trace| trace.output));
     code.push_str(&script_result.code);
 
-    finalize_output_mode(&mut code, &mut warnings, &options, &codegen_options);
+    let rewrite = finalize_output_mode(&mut code, &mut warnings, &options, &codegen_options);
     trim_trailing_newlines(&mut code);
 
     Ok(SfcCompileResult {
-        map: crate::source_map::sfc_source_map(&code, descriptor, filename, &codegen_options),
+        map: module_trace::module_map(&code, output, script_at, rewrite, descriptor, filename),
         code,
         css,
         errors,

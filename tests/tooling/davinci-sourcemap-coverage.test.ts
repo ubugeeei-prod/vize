@@ -150,3 +150,26 @@ test("the legacy SFC recovery stays until the structured path is measured", () =
   );
   assert.equal(meetsBudget(report.rows[rowKey(legacy[0])], legacy[0]), true);
 });
+
+// Deleting the legacy recovery requires the structured map to reach at least
+// the legacy's measured coverage over the same battery: anchor by anchor, the
+// structured status is never worse, and its budget is never looser.
+test("the structured SFC map covers every anchor the legacy recovery does", () => {
+  const rank = (status: string) => ["unmapped", "covered", "exact"].indexOf(status);
+  const legacyBudget = budgets.legacy_sfc_text_matching_recovery;
+  const structuredBudget = budgets.sfc_text_matching_recovery;
+  assert.equal(rowKey(structuredBudget), "sfc/text-matching-recovery");
+  const legacyRow = report.rows[rowKey(legacyBudget)];
+  const structuredRow = report.rows[rowKey(structuredBudget)];
+  assert.deepEqual(Object.keys(structuredRow.anchors).sort(), Object.keys(legacyRow.anchors).sort());
+  for (const [anchor, status] of Object.entries(legacyRow.anchors)) {
+    assert.ok(
+      rank(structuredRow.anchors[anchor]) >= rank(status),
+      `${anchor}: structured ${structuredRow.anchors[anchor]} is worse than legacy ${status}`,
+    );
+  }
+  assert.ok(structuredBudget.anchors_min >= legacyRow.exact);
+  assert.ok(structuredBudget.coverage_pct_min >= legacyBudget.coverage_pct_min);
+  assert.ok(structuredBudget.span_accuracy_pct_min >= legacyBudget.span_accuracy_pct_min);
+  assert.equal(meetsBudget(structuredRow, structuredBudget), true);
+});

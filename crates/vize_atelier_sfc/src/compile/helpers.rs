@@ -71,8 +71,9 @@ pub(super) fn trim_trailing_newlines(code: &mut String) {
 /// at least one `SetupReactiveConst` binding. After resolving concrete v-model
 /// identifiers, the script parse runs only when such a binding is affected.
 ///
-/// Returns `Some((rewritten_content, demoted_binding_names))` when at least one
-/// binding was demoted, `None` otherwise. The caller swaps in the rewritten
+/// Returns `Some((rewritten_content, demoted_binding_names, rewrite_starts))`
+/// when at least one binding was demoted (each start is a `const` rewritten to
+/// `let`), `None` otherwise. The caller swaps in the rewritten
 /// content; taking `script_content` by shared reference lets the parse-once
 /// pipeline keep its oxc AST borrowed from the original content alive.
 pub(super) fn demote_v_model_reactive_const_bindings(
@@ -82,7 +83,7 @@ pub(super) fn demote_v_model_reactive_const_bindings(
     ctx: &mut ScriptCompileContext,
     script_bindings: &mut BindingMetadata,
     croquis: &mut vize_croquis::croquis::Croquis,
-) -> Option<(String, Vec<String>)> {
+) -> Option<(String, Vec<String>, Vec<usize>)> {
     if !template_content.contains("v-model") {
         return None;
     }
@@ -124,6 +125,7 @@ pub(super) fn demote_v_model_reactive_const_bindings(
     let mut rewritten = String::default();
     let mut last_end = 0usize;
     let mut demoted_ids = Vec::new();
+    let mut starts = Vec::new();
 
     for stmt in ret.program.body.iter() {
         let Statement::VariableDeclaration(var_decl) = stmt else {
@@ -169,6 +171,7 @@ pub(super) fn demote_v_model_reactive_const_bindings(
         let decl_start = var_decl.span.start as usize;
         let decl_end = var_decl.span.end as usize;
         let after_const = decl_start + "const".len();
+        starts.push(decl_start);
 
         rewritten.push_str(&script_content[last_end..decl_start]);
         rewritten.push_str("let");
@@ -182,7 +185,7 @@ pub(super) fn demote_v_model_reactive_const_bindings(
 
     rewritten.push_str(&script_content[last_end..]);
 
-    Some((rewritten, demoted_ids))
+    Some((rewritten, demoted_ids, starts))
 }
 
 fn source_type_for_script_lang(lang: Option<&str>) -> SourceType {

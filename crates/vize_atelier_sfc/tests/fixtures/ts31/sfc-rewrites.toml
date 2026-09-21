@@ -1,0 +1,198 @@
+# TS-31 source-map coverage battery: rewritten SFC script statements (Davinci P3-9).
+#
+# Measured on the structured SFC module map only. Every anchor is an authored
+# statement or token that the SFC pipeline does not copy verbatim: a
+# TypeScript re-print into JavaScript, a destructured-prop rewrite, a
+# top-level `await` expansion, the `export default` rewrite, and synthesized
+# macro bindings. `generated` is the emitted form that must start at the
+# mapping; anchor fields otherwise follow `templates.toml`.
+
+[[fixture]]
+name = "ts-setup-reprint"
+source = '''
+<script setup lang="ts">
+import { ref } from 'vue'
+interface Item { id: number; label: string }
+const props = defineProps<{ items: Item[] }>()
+const selected = ref<Item | null>(null)
+const pick = (item: Item): void => {
+  selected.value = item
+}
+</script>
+
+<template>
+  <ul><li v-for="item in props.items" :key="item.id" @click="pick(item)">{{ item.label }}</li></ul>
+</template>
+'''
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "import { ref } from 'vue'"
+generated = 'import { ref } from "vue"'
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "const props = defineProps<{ items: Item[] }>()"
+token = "const"
+generated = "const props = __props"
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "const selected = ref<Item | null>(null)"
+token = "const"
+generated = "const selected = ref(null)"
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "const pick = (item: Item): void => {"
+token = "const"
+generated = "const pick = (item) => {"
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "selected.value = item"
+generated = "selected.value = item;"
+
+[[fixture]]
+name = "props-destructure"
+source = '''
+<script setup>
+const { size = 2, title } = defineProps({ size: Number, title: String })
+const doubled = size * 2
+const MAX = 10
+function describe() {
+  return `${title}: ${doubled}`
+}
+</script>
+
+<template>
+  <p>{{ describe() }} / {{ MAX }}</p>
+</template>
+'''
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "const doubled = size * 2"
+token = "size"
+generated = "__props.size"
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "return `${title}: ${doubled}`"
+token = "return"
+generated = "return `${__props.title}"
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "${title}"
+token = "title"
+generated = "__props.title"
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "const MAX = 10"
+
+[[fixture]]
+name = "async-setup"
+source = '''
+<script setup>
+import { ref } from 'vue'
+const data = await fetch('/api').then((r) => r.json())
+const count = ref(data.count)
+</script>
+
+<template>
+  <span>{{ count }}</span>
+</template>
+'''
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "const data = await fetch('/api')"
+token = "const"
+generated = "const data =  (\n  ([__temp,__restore] = _withAsyncContext("
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "const count = ref(data.count)"
+
+[[fixture]]
+name = "options-ts"
+source = '''
+<script lang="ts">
+import { defineComponent } from 'vue'
+export default defineComponent({
+  name: 'Legacy',
+  data() {
+    return { total: 0 as number }
+  },
+})
+</script>
+
+<template>
+  <b>{{ total }}</b>
+</template>
+'''
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "import { defineComponent } from 'vue'"
+generated = 'import { defineComponent } from "vue"'
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "export default defineComponent({"
+token = "export default"
+generated = "const _sfc_main = defineComponent({"
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "name: 'Legacy'"
+generated = 'name: "Legacy"'
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "return { total: 0 as number }"
+generated = "return { total: 0 }"
+
+[[fixture]]
+name = "ts-script-and-setup"
+source = '''
+<script lang="ts">
+export const LIMIT: number = 3
+</script>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+const emit = defineEmits<{ (e: 'change', value: number): void }>()
+const limit = computed(() => LIMIT)
+function notify(value: number) {
+  emit('change', value)
+}
+</script>
+
+<template>
+  <button @click="notify(limit)">{{ limit }}</button>
+</template>
+'''
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "export const LIMIT: number = 3"
+generated = "export const LIMIT = 3;"
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "const emit = defineEmits"
+token = "const"
+generated = "const emit = __emit;"
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "function notify(value: number) {"
+generated = "function notify(value) {"
+
+[[fixture.anchor]]
+category = "rewritten-statement"
+find = "emit('change', value)"
+generated = 'emit("change", value);'

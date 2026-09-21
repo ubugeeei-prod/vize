@@ -53,19 +53,21 @@ fn measure_fixture(rows: &mut Rows, backend: Backend, fixture: &Fixture, filenam
 fn measure_battery() -> serde_json::Value {
     let templates = battery::load("templates.toml");
     let sfcs = battery::load("sfc.toml");
+    let sfc_rewrites = battery::load("sfc-rewrites.toml");
     let mut rows = Rows::default();
     for backend in TEMPLATE_BACKENDS {
         for fixture in &templates {
             measure_fixture(&mut rows, backend, fixture, compile::TEMPLATE_FILENAME);
         }
     }
-    for fixture in &sfcs {
-        measure_fixture(
-            &mut rows,
-            Backend::LegacySfc,
-            fixture,
-            compile::SFC_FILENAME,
-        );
+    for backend in [Backend::Sfc, Backend::LegacySfc] {
+        for fixture in &sfcs {
+            measure_fixture(&mut rows, backend, fixture, compile::SFC_FILENAME);
+        }
+    }
+    // Rewritten statements are measured on the structured SFC map only.
+    for fixture in &sfc_rewrites {
+        measure_fixture(&mut rows, Backend::Sfc, fixture, compile::SFC_FILENAME);
     }
     let rows = rows
         .0
@@ -78,6 +80,7 @@ fn measure_battery() -> serde_json::Value {
         "battery": {
             "templates": templates.len(),
             "sfcs": sfcs.len(),
+            "sfc_rewrites": sfc_rewrites.len(),
         },
         "rows": rows,
     })

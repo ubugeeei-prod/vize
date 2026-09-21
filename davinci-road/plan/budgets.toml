@@ -333,6 +333,10 @@ ssr_static_template = { backend = "ssr", category = "static-template", anchors_m
 ssr_rewritten_identifier = { backend = "ssr", category = "rewritten-identifier", anchors_min = 7, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
 ssr_section_boundary = { backend = "ssr", category = "section-boundary", anchors_min = 3, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
 legacy_sfc_text_matching_recovery = { backend = "legacy-sfc", category = "text-matching-recovery", anchors_min = 7, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
+# The structured SFC module map: over the legacy row's battery (at least the
+# legacy's measured 11/11 exact), and over statements the pipeline rewrites.
+sfc_text_matching_recovery = { backend = "sfc", category = "text-matching-recovery", anchors_min = 11, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
+sfc_rewritten_statement = { backend = "sfc", category = "rewritten-statement", anchors_min = 19, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
 
 [optimization]
 # P3-10 Try-measure-commit extraction tiers. Each `candidate_budget` is the

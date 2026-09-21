@@ -30,6 +30,7 @@ pub use define_emits::{
 pub(crate) use define_model_metadata::{
     add_model_to_croquis, define_model_metadata, define_model_name, define_model_prop_option_spans,
 };
+pub(crate) use define_props_destructure::transform_destructured_props_with_edits;
 pub use define_props_destructure::{
     PropsDestructureBinding, PropsDestructuredBindings, gen_props_access_exp,
     process_props_destructure, transform_destructured_props,

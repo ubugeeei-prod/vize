@@ -1,5 +1,6 @@
 {
   "battery": {
+    "sfc_rewrites": 5,
     "sfcs": 2,
     "templates": 4
   },
@@ -75,6 +76,50 @@
       "exact": 28
     },
     "legacy-sfc/text-matching-recovery": {
+      "anchors": {
+        "script-and-setup:const title = ref('Hello')@7:1": "exact",
+        "script-and-setup:export const version = '1.0.0'@2:1": "exact",
+        "script-and-setup:function rename(next) {@8:1": "exact",
+        "script-and-setup:import { ref } from 'vue'@6:1": "exact",
+        "script-and-setup:title.value = next@9:3": "exact",
+        "setup-counter:const count = ref(0)@8:1": "exact",
+        "setup-counter:const label = computed(() => `Count: ${count.value}`)@10:1": "exact",
+        "setup-counter:const step = ref(2)@9:1": "exact",
+        "setup-counter:count.value += step.value@12:3": "exact",
+        "setup-counter:function bump() {@11:1": "exact",
+        "setup-counter:import { computed, ref } from 'vue'@6:1": "exact"
+      },
+      "authored": 11,
+      "covered": 11,
+      "exact": 11
+    },
+    "sfc/rewritten-statement": {
+      "anchors": {
+        "async-setup:const count = ref(data.count)@4:1": "exact",
+        "async-setup:const@3:1": "exact",
+        "options-ts:export default@3:1": "exact",
+        "options-ts:import { defineComponent } from 'vue'@2:1": "exact",
+        "options-ts:name: 'Legacy'@4:3": "exact",
+        "options-ts:return { total: 0 as number }@6:5": "exact",
+        "props-destructure:const MAX = 10@4:1": "exact",
+        "props-destructure:return@6:3": "exact",
+        "props-destructure:size@3:17": "exact",
+        "props-destructure:title@6:13": "exact",
+        "ts-script-and-setup:const@7:1": "exact",
+        "ts-script-and-setup:emit('change', value)@10:3": "exact",
+        "ts-script-and-setup:export const LIMIT: number = 3@2:1": "exact",
+        "ts-script-and-setup:function notify(value: number) {@9:1": "exact",
+        "ts-setup-reprint:const@4:1": "exact",
+        "ts-setup-reprint:const@5:1": "exact",
+        "ts-setup-reprint:const@6:1": "exact",
+        "ts-setup-reprint:import { ref } from 'vue'@2:1": "exact",
+        "ts-setup-reprint:selected.value = item@7:3": "exact"
+      },
+      "authored": 19,
+      "covered": 19,
+      "exact": 19
+    },
+    "sfc/text-matching-recovery": {
       "anchors": {
         "script-and-setup:const title = ref('Hello')@7:1": "exact",
         "script-and-setup:export const version = '1.0.0'@2:1": "exact",

@@ -15,6 +15,7 @@ pub enum Category {
     RewrittenIdentifier,
     SectionBoundary,
     TextMatchingRecovery,
+    RewrittenStatement,
 }
 
 impl Category {
@@ -24,6 +25,7 @@ impl Category {
             "rewritten-identifier" => Category::RewrittenIdentifier,
             "section-boundary" => Category::SectionBoundary,
             "text-matching-recovery" => Category::TextMatchingRecovery,
+            "rewritten-statement" => Category::RewrittenStatement,
             other => panic!("unknown TS-31 category `{other}`"),
         }
     }
@@ -34,6 +36,7 @@ impl Category {
             Category::RewrittenIdentifier => "rewritten-identifier",
             Category::SectionBoundary => "section-boundary",
             Category::TextMatchingRecovery => "text-matching-recovery",
+            Category::RewrittenStatement => "rewritten-statement",
         }
     }
 }
@@ -44,6 +47,9 @@ pub enum Backend {
     Dom,
     Vapor,
     Ssr,
+    /// The structured SFC module map `compile_sfc` attaches.
+    Sfc,
+    /// The legacy text-matching recovery over the same compiled module.
     LegacySfc,
 }
 
@@ -53,6 +59,7 @@ impl Backend {
             Backend::Dom => "dom",
             Backend::Vapor => "vapor",
             Backend::Ssr => "ssr",
+            Backend::Sfc => "sfc",
             Backend::LegacySfc => "legacy-sfc",
         }
     }
@@ -176,7 +183,9 @@ fn resolve_anchor(fixture: &str, source: &str, spec: &AnchorSpec) -> Anchor {
             .find(token)
             .unwrap_or_else(|| panic!("{fixture}: token `{token}` not inside `{}`", spec.find));
     let emitted = match category {
-        Category::StaticTemplate | Category::TextMatchingRecovery => {
+        Category::StaticTemplate
+        | Category::TextMatchingRecovery
+        | Category::RewrittenStatement => {
             Emitted::Verbatim(spec.generated.clone().unwrap_or_else(|| token.into()))
         }
         Category::RewrittenIdentifier => {

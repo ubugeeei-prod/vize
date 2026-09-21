@@ -7,8 +7,8 @@
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CodegenMode};
 use vize_atelier_dom::DomCompilerOptions;
 use vize_atelier_sfc::{
-    SfcCompileOptions, SfcParseOptions, compile_sfc_with_template_syntax_and_codegen_options,
-    parse_sfc, types::ScriptCompileOptions,
+    SfcCompileOptions, SfcParseOptions, build_sfc_source_map,
+    compile_sfc_with_template_syntax_and_codegen_options, parse_sfc, types::ScriptCompileOptions,
 };
 use vize_atelier_ssr::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_vapor::{VaporCompilerExperimentalOptions, VaporCompilerOptions};
@@ -32,7 +32,8 @@ pub fn compile(backend: Backend, fixture: &Fixture) -> Compiled {
         Backend::Dom => compile_dom(fixture),
         Backend::Vapor => compile_vapor(fixture),
         Backend::Ssr => compile_ssr(fixture),
-        Backend::LegacySfc => compile_sfc(fixture),
+        Backend::Sfc => compile_sfc(fixture, false),
+        Backend::LegacySfc => compile_sfc(fixture, true),
     }
 }
 
@@ -144,7 +145,9 @@ fn compile_ssr(fixture: &Fixture) -> Compiled {
     }
 }
 
-fn compile_sfc(fixture: &Fixture) -> Compiled {
+/// The SFC module and its structured map, or (`legacy`) the text-matching
+/// recovery's map of that same module.
+fn compile_sfc(fixture: &Fixture, legacy: bool) -> Compiled {
     let parse = || SfcParseOptions {
         filename: SFC_FILENAME.into(),
         ..Default::default()
@@ -178,8 +181,14 @@ fn compile_sfc(fixture: &Fixture) -> Compiled {
         "{}: SFC source maps must be additive (TS-11)",
         fixture.name
     );
+    let map = if legacy {
+        build_sfc_source_map(&on.code, &descriptor, SFC_FILENAME)
+            .map(|json| serde_json::from_str(json.as_str()).expect("map is valid JSON"))
+    } else {
+        on.map
+    };
     Compiled {
         generated: on.code.as_str().into(),
-        map: on.map,
+        map,
     }
 }

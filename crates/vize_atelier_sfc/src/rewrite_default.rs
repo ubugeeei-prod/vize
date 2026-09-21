@@ -9,9 +9,23 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{String, ToCompactString, profile};
 
+use crate::module_map::{Runs, TracedText};
+
 /// Rewrite `export default` to a const declaration with the given name.
 /// Returns (rewritten_code, has_default_export)
 pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool) {
+    let (code, has_default, _) = rewrite_default_traced(input, as_name, is_ts);
+    (code, has_default)
+}
+
+/// [`rewrite_default`] plus the rewritten code's provenance in `input`: text
+/// outside the rewritten statements is copied, and each rewrite is anchored at
+/// the statement it replaced (Davinci P3-9 source maps).
+pub(crate) fn rewrite_default_traced(
+    input: &str,
+    as_name: &str,
+    is_ts: bool,
+) -> (String, bool, Runs) {
     let source_type = if is_ts {
         SourceType::ts()
     } else {
@@ -26,7 +40,11 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
 
     if !ret.diagnostics.is_empty() {
         // If parsing fails, return original code
-        return (input.to_compact_string(), false);
+        return (
+            input.to_compact_string(),
+            false,
+            Runs::identity(input.len()),
+        );
     }
 
     let program = ret.program;
@@ -47,25 +65,26 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
         output.push_str("\nconst ");
         output.push_str(as_name);
         output.push_str(" = {}");
-        return (output, false);
+        return (output, false, Runs::identity(input.len()));
     }
 
     // Find and rewrite the default export
-    let mut output = String::with_capacity(input.len() + as_name.len() + 32);
+    let mut output = TracedText::with_capacity(input, input.len() + as_name.len() + 32);
     let mut last_end = 0;
 
     for stmt in program.body.iter() {
         match stmt {
             Statement::ExportDefaultDeclaration(decl) => {
                 // Copy everything before this statement
-                output.push_str(&input[last_end..decl.span.start as usize]);
+                output.copy(last_end, decl.span.start as usize);
+                output.mark(decl.span.start as usize);
 
                 match &decl.declaration {
                     ExportDefaultDeclarationKind::ClassDeclaration(class_decl) => {
                         // export default class Foo {} -> class Foo {} \n const as_name = Foo
                         if let Some(id) = &class_decl.id {
                             let class_start = class_decl.span.start as usize;
-                            output.push_str(&input[class_start..decl.span.end as usize]);
+                            output.copy(class_start, decl.span.end as usize);
                             output.push_str("\nconst ");
                             output.push_str(as_name);
                             output.push_str(" = ");
@@ -76,14 +95,14 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
                             output.push_str(as_name);
                             output.push_str(" = ");
                             let class_start = class_decl.span.start as usize;
-                            output.push_str(&input[class_start..decl.span.end as usize]);
+                            output.copy(class_start, decl.span.end as usize);
                         }
                     }
                     ExportDefaultDeclarationKind::FunctionDeclaration(func_decl) => {
                         // export default function foo() {} -> function foo() {} \n const as_name = foo
                         if let Some(id) = &func_decl.id {
                             let func_start = func_decl.span.start as usize;
-                            output.push_str(&input[func_start..decl.span.end as usize]);
+                            output.copy(func_start, decl.span.end as usize);
                             output.push_str("\nconst ");
                             output.push_str(as_name);
                             output.push_str(" = ");
@@ -94,7 +113,7 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
                             output.push_str(as_name);
                             output.push_str(" = ");
                             let func_start = func_decl.span.start as usize;
-                            output.push_str(&input[func_start..decl.span.end as usize]);
+                            output.copy(func_start, decl.span.end as usize);
                         }
                     }
                     _ => {
@@ -104,7 +123,7 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
                         output.push_str(" = ");
                         let expr_start = decl.declaration.span().start as usize;
                         let expr_end = decl.declaration.span().end as usize;
-                        output.push_str(&input[expr_start..expr_end]);
+                        output.copy(expr_start, expr_end);
                     }
                 }
 
@@ -119,7 +138,8 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
 
                 if has_default_specifier {
                     // Copy everything before this statement
-                    output.push_str(&input[last_end..named_decl.span.start as usize]);
+                    output.copy(last_end, named_decl.span.start as usize);
+                    output.mark(named_decl.span.start as usize);
 
                     if let Some(source) = &named_decl.source {
                         // export { default } from '...' or export { foo as default } from '...'
@@ -285,70 +305,12 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
 
     // Copy remaining content
     if last_end < input.len() {
-        output.push_str(&input[last_end..]);
+        output.copy(last_end, input.len());
     }
 
-    (output, has_default)
+    let (output, runs) = output.into_parts();
+    (output, has_default, runs)
 }
 
 #[cfg(test)]
-mod tests {
-    use super::rewrite_default;
-
-    #[test]
-    fn test_rewrite_default_object() {
-        let (result, has_default) = rewrite_default("export default {}", "_sfc_main", false);
-        assert!(has_default);
-        insta::assert_snapshot!(result.as_str());
-    }
-
-    #[test]
-    fn test_rewrite_default_with_other_code() {
-        let input = r#"
-import { ref } from 'vue'
-
-const count = ref(0)
-
-export default {
-  name: 'MyComponent'
-}
-"#;
-        let (result, has_default) = rewrite_default(input, "_sfc_main", false);
-        assert!(has_default);
-        insta::assert_snapshot!(result.as_str());
-    }
-
-    #[test]
-    fn test_rewrite_default_class() {
-        let (result, has_default) =
-            rewrite_default("export default class Foo {}", "_sfc_main", false);
-        assert!(has_default);
-        insta::assert_snapshot!(result.as_str());
-    }
-
-    #[test]
-    fn test_rewrite_default_async_generator_function() {
-        let (result, has_default) = rewrite_default(
-            "export default async function* load() { yield await next() }",
-            "_sfc_main",
-            false,
-        );
-        assert!(has_default);
-        insta::assert_snapshot!(result.as_str());
-    }
-
-    #[test]
-    fn test_no_default_export() {
-        let (result, has_default) = rewrite_default("export const a = {}", "_sfc_main", false);
-        assert!(!has_default);
-        insta::assert_snapshot!(result.as_str());
-    }
-
-    #[test]
-    fn test_named_default_export() {
-        let input = "const a = 1\nexport { a as default }";
-        let (result, has_default) = rewrite_default(input, "_sfc_main", false);
-        assert!(has_default);
-        insta::assert_snapshot!(result.as_str());
-    }
-}
+mod tests;

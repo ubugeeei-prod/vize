@@ -13,6 +13,7 @@ mod preamble;
 mod props;
 mod render;
 mod setup_emit;
+mod trace;
 
 use std::borrow::Cow;
 
@@ -33,6 +34,8 @@ use super::super::{ScriptCompileResult, TemplateParts};
 use body::compile_script_setup_inline_body;
 use parser::parse_script_content;
 use render::build_vapor_render_alias;
+pub(crate) use trace::SetupTrace;
+use trace::traced_sections;
 
 /// Compile script setup with inline template (Vue's inline template mode)
 #[allow(clippy::too_many_arguments)]
@@ -75,6 +78,7 @@ pub fn compile_script_setup_inline(
         scope_id,
         scope_id,
         false,
+        None,
     )?;
     if let Some(transformed) = transformed {
         let mut code = transformed.preamble;
@@ -101,6 +105,7 @@ pub(crate) fn compile_script_setup_inline_with_context(
     scope_id: &str,
     css_vars_id: &str,
     is_prod: bool,
+    mut trace: Option<&mut SetupTrace>,
 ) -> Result<ScriptCompileResult, SfcError> {
     // Extract user imports and setup lines from script content once; await detection
     // and output assembly share the same split. `setup_program` (when provided
@@ -108,14 +113,28 @@ pub(crate) fn compile_script_setup_inline_with_context(
     let preserve_runtime_erased_macros = css_vars_id.ends_with(".art.vue");
     let (user_imports, setup_lines, ts_declarations) = profile!(
         "atelier.script_inline.parse_sections",
-        if preserve_runtime_erased_macros {
-            setup_program
+        match trace.as_deref_mut() {
+            // A source-map compile cuts the same sections with their provenance;
+            // when the AST path does not apply, nothing is attributed.
+            Some(trace) => {
+                let traced = setup_program
+                    .filter(|_| preserve_runtime_erased_macros)
+                    .and_then(|program| traced_sections(content, is_ts, Some(program), true))
+                    .or_else(|| traced_sections(content, is_ts, setup_program, false));
+                match traced {
+                    Some((sections, section_trace)) => {
+                        trace.record_sections(section_trace, &sections.1);
+                        sections
+                    }
+                    None => parse_script_content(content, is_ts, setup_program),
+                }
+            }
+            None if preserve_runtime_erased_macros => setup_program
                 .and_then(|program| {
                     extract_script_sections_from_program_with_options(program, content, is_ts, true)
                 })
-                .unwrap_or_else(|| parse_script_content(content, is_ts, setup_program))
-        } else {
-            parse_script_content(content, is_ts, setup_program)
+                .unwrap_or_else(|| parse_script_content(content, is_ts, setup_program)),
+            None => parse_script_content(content, is_ts, setup_program),
         }
     );
     let setup_code: String = setup_lines.join("\n").into();
@@ -223,6 +242,7 @@ pub(crate) fn compile_script_setup_inline_with_context(
         needs_vapor_setup_context,
         vapor_render_alias,
         is_async,
+        trace,
     )
 }
 

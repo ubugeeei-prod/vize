@@ -50,6 +50,7 @@ pub mod compile_script;
 pub mod compile_template;
 pub mod croquis;
 pub mod css;
+pub(crate) mod module_map;
 pub mod module_shape;
 pub mod rewrite_default;
 pub mod script;

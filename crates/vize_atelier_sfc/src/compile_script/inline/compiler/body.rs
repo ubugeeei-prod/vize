@@ -2,14 +2,16 @@ use std::borrow::Cow;
 
 use vize_carton::{String, profile};
 
-use crate::script::{ScriptCompileContext, transform_destructured_props};
+use crate::module_map::{Runs, edit_runs, replace_traced};
+use crate::script::{ScriptCompileContext, transform_destructured_props_with_edits};
 use crate::types::{CssModuleMapping, SfcError};
 
 use super::super::super::props::WithDefaultsValues;
 use super::super::super::{
     ScriptCompileResult, TemplateParts,
     function_mode::helpers::collect_runtime_identifier_references,
-    import_utils::import_block_has_local_from, typescript::transform_typescript_to_js,
+    import_utils::import_block_has_local_from,
+    typescript::{transform_typescript_to_js, transform_typescript_to_js_traced},
 };
 use super::{
     component_output::emit_component_definition,
@@ -19,6 +21,7 @@ use super::{
     props::build_props_emits,
     render::{SetupBindingInputs, emit_render_return},
     setup_emit::emit_setup_body,
+    trace::{SetupTrace, Tracer},
 };
 
 #[allow(clippy::too_many_arguments)]
@@ -48,7 +51,9 @@ pub(super) fn compile_script_setup_inline_body(
     needs_vapor_setup_context: bool,
     vapor_render_alias: Option<String>,
     is_async: bool,
+    trace: Option<&mut SetupTrace>,
 ) -> Result<ScriptCompileResult, SfcError> {
+    let mut tracer = Tracer(trace);
     let has_css_vars = !css_vars.is_empty();
     let has_css_modules = !setup_css_module_names.is_empty();
     let needs_prop_type = false;
@@ -69,6 +74,7 @@ pub(super) fn compile_script_setup_inline_body(
         is_vapor,
         is_ts,
         is_async,
+        &mut tracer,
     );
 
     let props_emits_buf = profile!(
@@ -109,23 +115,41 @@ pub(super) fn compile_script_setup_inline_body(
     );
 
     let transformed_setup: String = if let Some(ref destructure) = ctx.macros.props_destructure {
-        profile!(
+        let (code, edits) = profile!(
             "atelier.script_inline.transform_props_destructure",
-            transform_destructured_props(&setup_code, destructure)
-        )?
+            transform_destructured_props_with_edits(&setup_code, destructure)
+        )?;
+        if let Some(trace) = tracer.trace() {
+            trace.setup_code = edits.map_or_else(Runs::default, |edits| {
+                edit_runs(setup_code.len(), &edits).compose(&trace.setup_code)
+            });
+        }
+        code
     } else {
         setup_code
     };
 
-    let (hoisted_lines, setup_body_lines) = profile!(
+    let (hoisted, body) = profile!(
         "atelier.script_inline.separate_hoisted",
         separate_hoisted_consts(&transformed_setup, &ctx)
     );
+    let segment_runs = |trace: &SetupTrace, segments: &[(String, usize)]| -> Vec<Runs> {
+        let slice = |(text, offset): &(String, usize)| trace.setup_code.slice(*offset, text.len());
+        segments.iter().map(slice).collect()
+    };
+    let mut hoisted_runs = Vec::new();
+    if let Some(trace) = tracer.trace() {
+        hoisted_runs = segment_runs(trace, &hoisted);
+        trace.body = segment_runs(trace, &body);
+    }
+    let hoisted_lines: Vec<String> = hoisted.into_iter().map(|(text, _)| text).collect();
+    let setup_body_lines: Vec<String> = body.into_iter().map(|(text, _)| text).collect();
 
     if !hoisted_lines.is_empty() {
         ensure_blank_line(&mut output);
     }
-    for line in &hoisted_lines {
+    for (index, line) in hoisted_lines.iter().enumerate() {
+        tracer.copy(output.len(), hoisted_runs.get(index));
         output.extend_from_slice(line.as_bytes());
         output.push(b'\n');
     }
@@ -161,6 +185,7 @@ pub(super) fn compile_script_setup_inline_body(
         is_prod,
         has_css_vars,
         setup_css_module_names,
+        &mut tracer,
     );
 
     output.push(b'\n');
@@ -204,13 +229,10 @@ pub(super) fn compile_script_setup_inline_body(
     let output_str: std::string::String =
         unsafe { std::string::String::from_utf8_unchecked(output.into_iter().collect()) };
 
-    let final_code: String = if is_ts || !source_is_ts {
-        let mut code = output_str;
-        if is_ts {
-            code = code.replace("$event => (", "($event: any) => (");
-            code = code.replace("$event => {", "($event: any) => {");
-        }
-        code.into()
+    let final_code: String = if is_ts {
+        annotate_event_params(&output_str, &mut tracer)
+    } else if !source_is_ts {
+        output_str.into()
     } else {
         let mut code = output_str;
         if should_preserve_nuxt_use_head_import(&code) {
@@ -218,7 +240,14 @@ pub(super) fn compile_script_setup_inline_body(
         }
         profile!(
             "atelier.script_inline.ts_to_js",
-            transform_typescript_to_js(&code)
+            match tracer.trace() {
+                Some(trace) => {
+                    let (js, runs) = transform_typescript_to_js_traced(&code);
+                    trace.output = runs.compose(&trace.output);
+                    js
+                }
+                None => transform_typescript_to_js(&code),
+            }
         )
     };
 
@@ -226,6 +255,20 @@ pub(super) fn compile_script_setup_inline_body(
         code: final_code,
         bindings: Some(ctx.bindings),
     })
+}
+
+/// TypeScript output types the `$event` parameter of inline handlers.
+fn annotate_event_params(code: &str, tracer: &mut Tracer<'_>) -> String {
+    const EXPRESSION: (&str, &str) = ("$event => (", "($event: any) => (");
+    const BLOCK: (&str, &str) = ("$event => {", "($event: any) => {");
+    let Some(trace) = tracer.trace() else {
+        let code = code.replace(EXPRESSION.0, EXPRESSION.1);
+        return code.replace(BLOCK.0, BLOCK.1).into();
+    };
+    let (first, first_runs) = replace_traced(code, EXPRESSION.0, EXPRESSION.1);
+    let (second, second_runs) = replace_traced(&first, BLOCK.0, BLOCK.1);
+    trace.output = second_runs.compose(&first_runs.compose(&trace.output));
+    second
 }
 
 fn should_preserve_nuxt_use_head_import(code: &str) -> bool {

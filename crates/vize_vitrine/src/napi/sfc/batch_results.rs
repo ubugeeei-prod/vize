@@ -5,8 +5,7 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
     time::Instant,
 };
-use vize_atelier_sfc::build_sfc_source_map;
-use vize_atelier_sfc::module_shape::finalize_module_output;
+use vize_atelier_sfc::module_shape::finalize_module_output_with_map;
 use vize_s0::cstr;
 
 use super::types::ModuleShapeNapi;
@@ -184,7 +183,11 @@ fn compile_sfc_batch_with_results_inner(
                 compile_opts,
                 template_syntax,
                 custom_elements.clone(),
-                vize_atelier_core::CodegenOptions::default(),
+                // A requested map is the compiler's structured SFC module map.
+                vize_atelier_core::CodegenOptions {
+                    source_map: include_source_map,
+                    ..Default::default()
+                },
                 script_output,
                 experimentals.sfc_options(),
             );
@@ -223,15 +226,14 @@ fn compile_sfc_batch_with_results_inner(
                     // JavaScript — the JS plugin no longer re-strips it.
                     // `is_ts` callers opted out: they asked for TypeScript in
                     // the output and strip it themselves.
-                    let (code, shape) = finalize_module_output(result.code, is_ts);
+                    // Same reason as `module_shape`: the map is carried
+                    // through the strip to describe the post-strip bytes the
+                    // bundler receives (#3399).
+                    let (code, shape, map) =
+                        finalize_module_output_with_map(result.code, is_ts, result.map);
                     let code: String = code.into();
                     let module_shape = shape.map(ModuleShapeNapi::from);
-                    // Same reason as `module_shape`: the map has to describe
-                    // the post-strip bytes the bundler receives (#3399).
-                    let map = include_source_map
-                        .then(|| build_sfc_source_map(&code, &descriptor, &file.path))
-                        .flatten()
-                        .map(Into::into);
+                    let map = map.and_then(|map| serde_json::to_string(&map).ok());
                     BatchFileResultNapi {
                         path: file.path,
                         module_shape,

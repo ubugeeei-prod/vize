@@ -103,9 +103,39 @@ pub fn finalize_module_output(
     code: vize_carton::String,
     preserve_typescript: bool,
 ) -> (vize_carton::String, Option<SfcModuleShape>) {
+    let (code, shape, _) = finalize(code, preserve_typescript, None);
+    (code, shape)
+}
+
+/// [`finalize_module_output`] that also carries `map` (the module's source
+/// map, as `SfcCompileResult::map` holds it) through a TypeScript strip, so the
+/// returned map describes the returned bytes (Davinci P3-9).
+pub fn finalize_module_output_with_map(
+    code: vize_carton::String,
+    preserve_typescript: bool,
+    map: Option<serde_json::Value>,
+) -> (
+    vize_carton::String,
+    Option<SfcModuleShape>,
+    Option<serde_json::Value>,
+) {
+    finalize(code, preserve_typescript, map)
+}
+
+type Finalized = (
+    vize_carton::String,
+    Option<SfcModuleShape>,
+    Option<serde_json::Value>,
+);
+
+fn finalize(
+    code: vize_carton::String,
+    preserve_typescript: bool,
+    map: Option<serde_json::Value>,
+) -> Finalized {
     if preserve_typescript {
         let shape = analyze_module_shape(&code);
-        return (code, shape);
+        return (code, shape, map);
     }
 
     let shape = {
@@ -120,13 +150,22 @@ pub fn finalize_module_output(
             .then(|| shape_from_program(&code, &parsed.program))
     };
     if shape.is_some() {
-        return (code, shape);
+        return (code, shape, map);
     }
 
-    let code =
-        crate::compile_script::typescript::strip_typescript_for_emitter(&code).unwrap_or(code);
-    let shape = analyze_module_shape(&code);
-    (code, shape)
+    let stripped = crate::compile_script::typescript::strip_typescript_for_emitter_traced(
+        &code,
+        map.is_some(),
+    );
+    let Some((stripped, reprint)) = stripped else {
+        let shape = analyze_module_shape(&code);
+        return (code, shape, map);
+    };
+    let map = map.zip(reprint).and_then(|(map, reprint)| {
+        crate::module_map::remap_reprinted(&map, &code, &stripped, &reprint)
+    });
+    let shape = analyze_module_shape(&stripped);
+    (stripped, shape, map)
 }
 
 fn shape_from_program(code: &str, program: &Program<'_>) -> SfcModuleShape {

@@ -1,7 +1,6 @@
 use napi::{Result, Status};
 use napi_derive::napi;
-use vize_atelier_sfc::build_sfc_source_map;
-use vize_atelier_sfc::module_shape::finalize_module_output;
+use vize_atelier_sfc::module_shape::finalize_module_output_with_map;
 use vize_s0::cstr;
 
 use super::types::ModuleShapeNapi;
@@ -135,7 +134,11 @@ pub fn compile_sfc(
         compile_opts,
         template_syntax,
         custom_elements,
-        vize_atelier_core::CodegenOptions::default(),
+        // A requested map is the compiler's structured SFC module map.
+        vize_atelier_core::CodegenOptions {
+            source_map,
+            ..Default::default()
+        },
         if standalone {
             SfcScriptOutputMode::InlineTemplate
         } else {
@@ -150,19 +153,14 @@ pub fn compile_sfc(
             // crossing this boundary must already be plain JavaScript — the JS
             // plugin no longer re-strips it. `is_ts` callers opted out: they
             // asked for TypeScript in the output and strip it themselves.
-            let (code, shape) = finalize_module_output(result.code, is_ts);
+            // Stripping TypeScript re-prints the module, so the map is carried
+            // through that pass to describe the bytes the bundler receives
+            // (#3399).
+            let (code, shape, map) =
+                finalize_module_output_with_map(result.code, is_ts, result.map);
             let code: String = code.into();
             let module_shape = shape.map(ModuleShapeNapi::from);
-            // Built from those same bytes for the same reason: stripping
-            // TypeScript above re-prints the module, so a map produced before
-            // that pass would describe code nobody receives (#3399).
-            let map = source_map
-                .then(|| {
-                    let path = opts.filename.as_deref().unwrap_or("anonymous.vue");
-                    build_sfc_source_map(&code, &descriptor, path)
-                })
-                .flatten()
-                .map(Into::into);
+            let map = map.and_then(|map| serde_json::to_string(&map).ok());
             Ok(SfcCompileResultNapi {
                 code,
                 map,

@@ -15,10 +15,34 @@ use super::super::import_utils::process_import_for_types;
 /// Deduplicate imports by removing duplicate specifiers from the same source.
 /// This avoids "Identifier has already been declared" errors.
 pub fn dedupe_imports(imports: &[String], is_ts: bool) -> Vec<String> {
-    let mut result: Vec<String> = Vec::new();
-    let mut seen_specifiers: FxHashSet<String> = FxHashSet::default();
+    dedupe_imports_with_origins(imports, is_ts)
+        .into_iter()
+        .map(|import| import.text)
+        .collect()
+}
 
-    for import in imports {
+/// One import [`dedupe_imports_with_origins`] keeps.
+pub(crate) struct DedupedImport {
+    pub(crate) text: String,
+    /// The input import this one was kept from.
+    pub(crate) index: usize,
+    /// Whether `text` is that input's trimmed text plus a newline, rather than
+    /// an import rebuilt from its specifiers.
+    pub(crate) verbatim: bool,
+}
+
+/// [`dedupe_imports`] that also says which input each kept import came from
+/// and whether it was copied or rebuilt (Davinci P3-9 source maps).
+pub(crate) fn dedupe_imports_with_origins(imports: &[String], is_ts: bool) -> Vec<DedupedImport> {
+    let mut result: Vec<DedupedImport> = Vec::new();
+    let mut seen_specifiers: FxHashSet<String> = FxHashSet::default();
+    let kept = |text, index, verbatim| DedupedImport {
+        text,
+        index,
+        verbatim,
+    };
+
+    for (index, import) in imports.iter().enumerate() {
         let processed = if is_ts {
             // In TS mode, preserve type imports as-is (TypeScript handles them)
             let mut s = import.trim().to_compact_string();
@@ -43,7 +67,7 @@ pub fn dedupe_imports(imports: &[String], is_ts: bool) -> Vec<String> {
             if seen_specifiers.insert(trimmed.to_compact_string()) {
                 let mut s = trimmed.to_compact_string();
                 s.push('\n');
-                result.push(s);
+                result.push(kept(s, index, is_ts));
             }
             continue;
         }
@@ -65,13 +89,13 @@ pub fn dedupe_imports(imports: &[String], is_ts: bool) -> Vec<String> {
                         if is_ts {
                             let mut line = trimmed.to_compact_string();
                             line.push('\n');
-                            result.push(line);
+                            result.push(kept(line, index, true));
                         } else {
                             let mut line = String::with_capacity(source.len() + 12);
                             line.push_str("import '");
                             line.push_str(source);
                             line.push_str("'\n");
-                            result.push(line);
+                            result.push(kept(line, index, false));
                         }
                     }
                     handled = true;
@@ -151,7 +175,7 @@ pub fn dedupe_imports(imports: &[String], is_ts: bool) -> Vec<String> {
                 if is_ts && !dropped_specifier {
                     let mut line = trimmed.to_compact_string();
                     line.push('\n');
-                    result.push(line);
+                    result.push(kept(line, index, true));
                     handled = true;
                     break;
                 }
@@ -199,7 +223,7 @@ pub fn dedupe_imports(imports: &[String], is_ts: bool) -> Vec<String> {
                 line.push_str(" from '");
                 line.push_str(source);
                 line.push_str("'\n");
-                result.push(line);
+                result.push(kept(line, index, false));
                 handled = true;
                 break;
             }
@@ -208,7 +232,7 @@ pub fn dedupe_imports(imports: &[String], is_ts: bool) -> Vec<String> {
         if !handled && seen_specifiers.insert(trimmed.to_compact_string()) {
             let mut s = trimmed.to_compact_string();
             s.push('\n');
-            result.push(s);
+            result.push(kept(s, index, is_ts));
         }
     }
 

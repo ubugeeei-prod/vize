@@ -127,8 +127,9 @@ impl From<vize_atelier_sfc::module_shape::SfcModuleShape> for ModuleShapeNapi {
 pub struct SfcCompileResultNapi {
     pub code: String,
     /// Source Map v3 document (JSON) describing `code`, present only when
-    /// `sourceMap` was requested and at least one authored line could be
-    /// anchored (#3399). Its single `sources` entry is the authored `.vue` path.
+    /// `sourceMap` was requested and at least one emitted token maps to the
+    /// authored file (#3399). It is the compiler's structured SFC module map;
+    /// its single `sources` entry is the authored `.vue` path.
     pub map: Option<String>,
     pub css: Option<String>,
     pub errors: Vec<String>,
@@ -213,7 +214,8 @@ pub struct BatchFileResultNapi {
     pub path: String,
     pub code: String,
     /// Source Map v3 document (JSON) describing `code`, present only when
-    /// `includeSourceMap` was requested and a line could be anchored (#3399).
+    /// `includeSourceMap` was requested and an emitted token maps to the
+    /// authored file (#3399).
     pub map: Option<String>,
     pub css: Option<String>,
     pub scope_id: String,

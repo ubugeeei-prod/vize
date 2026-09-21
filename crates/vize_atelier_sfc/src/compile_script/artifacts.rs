@@ -11,6 +11,7 @@ use oxc_span::{GetSpan, SourceType};
 use vize_carton::{FxHashSet, String, ToCompactString};
 use vize_croquis::macros::{artifact_macro_names, macro_artifact_kind};
 
+use crate::module_map::{Runs, apply_edits};
 use crate::types::SfcMacroArtifact;
 
 use super::runtime_bindings::collect_runtime_bindings;
@@ -82,6 +83,12 @@ pub(crate) fn extract_macro_artifacts(
 }
 
 pub(crate) fn erase_artifact_macro_statements(content: &str) -> Option<String> {
+    erase_artifact_macro_statements_traced(content).map(|(erased, _)| erased)
+}
+
+/// [`erase_artifact_macro_statements`] with the erased text's provenance in
+/// `content` (Davinci P3-9 source maps).
+pub(crate) fn erase_artifact_macro_statements_traced(content: &str) -> Option<(String, Runs)> {
     if !contains_artifact_macro_candidate(content) {
         return None;
     }
@@ -134,18 +141,8 @@ pub(crate) fn erase_artifact_macro_statements(content: &str) -> Option<String> {
     if ranges.is_empty() {
         return None;
     }
-
-    let mut erased = String::with_capacity(content.len());
-    let mut cursor = 0usize;
-    for (start, end) in ranges {
-        if start < cursor {
-            continue;
-        }
-        erased.push_str(&content[cursor..start]);
-        cursor = end;
-    }
-    erased.push_str(&content[cursor..]);
-    Some(erased)
+    let edits = ranges.into_iter().map(|(start, end)| (start, end, ""));
+    Some(apply_edits(content, edits))
 }
 
 fn contains_artifact_macro_candidate(content: &str) -> bool {

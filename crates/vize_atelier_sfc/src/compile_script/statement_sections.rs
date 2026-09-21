@@ -11,9 +11,24 @@ use oxc_span::{GetSpan, SourceType};
 use vize_carton::{FxHashSet, String, ToCompactString};
 use vize_croquis::macros::{is_builtin_macro, is_runtime_erased_macro};
 
+use crate::module_map::Runs;
 use crate::script::is_static_enum;
 
 use super::runtime_bindings::collect_runtime_bindings;
+
+/// Where each extracted section came from, in `content` offsets (Davinci P3-9).
+#[derive(Debug, Default)]
+pub(crate) struct SectionTrace {
+    /// The provenance of each setup line, parallel to the setup lines.
+    pub(crate) setup_lines: Vec<Runs>,
+    /// The provenance of each user import's text, and the offset of the
+    /// import statement it came from, parallel to the imports.
+    pub(crate) imports: Vec<(Runs, usize)>,
+    /// The provenance of each preserved declaration, parallel to them.
+    pub(crate) ts_declarations: Vec<Runs>,
+    /// The `start..end` of every macro statement the sections drop.
+    pub(crate) macros: Vec<(usize, usize)>,
+}
 
 enum StatementBucket {
     Import,
@@ -55,12 +70,50 @@ pub(crate) fn extract_script_sections_from_program_with_options(
     is_ts: bool,
     preserve_runtime_erased_macros: bool,
 ) -> Option<(Vec<String>, Vec<String>, Vec<String>)> {
+    extract_sections(
+        program,
+        content,
+        is_ts,
+        preserve_runtime_erased_macros,
+        None,
+    )
+}
+
+/// [`extract_script_sections_from_program_with_options`] that also records
+/// where every section came from. The sections are byte-identical to the
+/// untraced call's.
+pub(crate) fn extract_script_sections_traced(
+    program: &Program<'_>,
+    content: &str,
+    is_ts: bool,
+    preserve_runtime_erased_macros: bool,
+    trace: &mut SectionTrace,
+) -> Option<(Vec<String>, Vec<String>, Vec<String>)> {
+    extract_sections(
+        program,
+        content,
+        is_ts,
+        preserve_runtime_erased_macros,
+        Some(trace),
+    )
+}
+
+fn extract_sections(
+    program: &Program<'_>,
+    content: &str,
+    is_ts: bool,
+    preserve_runtime_erased_macros: bool,
+    mut trace: Option<&mut SectionTrace>,
+) -> Option<(Vec<String>, Vec<String>, Vec<String>)> {
     let mut user_imports = Vec::new();
     let mut setup_lines = Vec::new();
     let mut ts_declarations = Vec::new();
 
     let mut prev_end = 0usize;
     let mut pending_gap = String::default();
+    // The gap accumulates across dropped macro statements, so it is not one
+    // contiguous slice of `content`; its provenance is kept beside it.
+    let mut pending_gap_runs = Runs::default();
     let runtime_bindings = collect_runtime_bindings(program.body.iter());
 
     for stmt in program.body.iter() {
@@ -72,46 +125,63 @@ pub(crate) fn extract_script_sections_from_program_with_options(
             return None;
         }
 
+        pending_gap_runs.copy(pending_gap.len(), prev_end, start - prev_end);
         pending_gap.push_str(&content[prev_end..start]);
 
         let slice = &content[start..end];
-        match classify_statement(
+        let bucket = classify_statement(
             stmt,
             slice,
             &runtime_bindings,
             preserve_runtime_erased_macros,
-        ) {
-            StatementBucket::Import => {
-                let mut segment = std::mem::take(&mut pending_gap);
-                segment.push_str(slice);
-                user_imports.push(normalize_statement_segment(&segment));
+        );
+        if matches!(bucket, StatementBucket::Macro) {
+            if let Some(trace) = trace.as_deref_mut() {
+                trace.macros.push((start, end));
             }
-            StatementBucket::TypeDeclaration => {
-                let mut segment = std::mem::take(&mut pending_gap);
-                segment.push_str(slice);
-                if is_ts {
-                    ts_declarations.push(normalize_preserved_segment(&segment));
+            prev_end = end;
+            continue;
+        }
+        let mut segment = std::mem::take(&mut pending_gap);
+        let mut segment_runs = std::mem::take(&mut pending_gap_runs);
+        segment_runs.copy(segment.len(), start, slice.len());
+        segment.push_str(slice);
+        match bucket {
+            StatementBucket::Import => {
+                user_imports.push(normalize_statement_segment(&segment));
+                if let Some(trace) = trace.as_deref_mut() {
+                    let runs = preserved_segment_runs(&segment, &segment_runs);
+                    trace.imports.push((runs, start));
                 }
             }
-            StatementBucket::HoistedRuntime => {
-                let mut segment = std::mem::take(&mut pending_gap);
-                segment.push_str(slice);
-                ts_declarations.push(normalize_preserved_segment(&segment));
+            StatementBucket::TypeDeclaration | StatementBucket::HoistedRuntime => {
+                if is_ts || matches!(bucket, StatementBucket::HoistedRuntime) {
+                    ts_declarations.push(normalize_preserved_segment(&segment));
+                    if let Some(trace) = trace.as_deref_mut() {
+                        let runs = preserved_segment_runs(&segment, &segment_runs);
+                        trace.ts_declarations.push(runs);
+                    }
+                }
             }
             StatementBucket::Setup => {
-                let mut segment = std::mem::take(&mut pending_gap);
-                segment.push_str(slice);
                 push_non_empty_lines(&mut setup_lines, &segment);
+                if let Some(trace) = trace.as_deref_mut() {
+                    trace_non_empty_lines(&mut trace.setup_lines, &segment, &segment_runs);
+                }
             }
-            StatementBucket::Macro => {}
+            StatementBucket::Macro => unreachable!("macro statements are skipped above"),
         }
 
         prev_end = end;
     }
 
+    pending_gap_runs.copy(pending_gap.len(), prev_end, content.len() - prev_end);
     pending_gap.push_str(&content[prev_end..]);
     if !pending_gap.trim().is_empty() {
         push_non_empty_lines(&mut setup_lines, &pending_gap);
+        if let Some(trace) = trace {
+            trace_non_empty_lines(&mut trace.setup_lines, &pending_gap, &pending_gap_runs);
+        }
     }
 
     Some((user_imports, setup_lines, ts_declarations))
@@ -233,6 +303,24 @@ fn push_non_empty_lines(lines: &mut Vec<String>, segment: &str) {
     for line in segment.lines() {
         if !line.trim().is_empty() {
             lines.push(line.to_compact_string());
+        }
+    }
+}
+
+/// The provenance of [`normalize_preserved_segment`]'s result (the newline
+/// [`normalize_statement_segment`] appends is not a copy).
+fn preserved_segment_runs(segment: &str, runs: &Runs) -> Runs {
+    let lead = segment.len() - segment.trim_start_matches(['\n', '\r']).len();
+    let kept = segment[lead..].trim_end_matches(['\n', '\r']).len();
+    runs.slice(lead, kept)
+}
+
+/// The provenance of each line [`push_non_empty_lines`] keeps, in order.
+fn trace_non_empty_lines(lines: &mut Vec<Runs>, segment: &str, runs: &Runs) {
+    for line in segment.lines() {
+        if !line.trim().is_empty() {
+            let offset = line.as_ptr() as usize - segment.as_ptr() as usize;
+            lines.push(runs.slice(offset, line.len()));
         }
     }
 }

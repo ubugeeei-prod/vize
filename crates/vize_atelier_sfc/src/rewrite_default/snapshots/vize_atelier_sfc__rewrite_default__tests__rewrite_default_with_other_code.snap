@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_sfc/src/rewrite_default.rs
+source: crates/vize_atelier_sfc/src/rewrite_default/tests.rs
 expression: result.as_str()
 ---
 

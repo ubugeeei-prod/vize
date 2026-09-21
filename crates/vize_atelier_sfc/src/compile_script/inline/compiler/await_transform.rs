@@ -4,32 +4,71 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{String, ToCompactString};
 
+use crate::module_map::Runs;
+
 /// Transform top-level await expressions to use `_withAsyncContext`.
 ///
 /// Handles two patterns:
 /// 1. `const x = await expr` → `const x = (\n  ([__temp,__restore] = _withAsyncContext(() => expr)),\n  __temp = await __temp,\n  __restore(),\n  __temp\n)`
 /// 2. `await expr` (statement) → `;(\n  ([__temp,__restore] = _withAsyncContext(() => expr)),\n  await __temp,\n  __restore()\n)`
-pub(super) fn transform_await_expressions(lines: &[String], is_ts: bool) -> Vec<String> {
+///
+/// Given each input line's provenance (parallel to `lines`), each output
+/// line's provenance is returned too (Davinci P3-9 source maps); a rewritten
+/// await statement is anchored at the statement it replaced.
+pub(super) fn transform_await_expressions(
+    lines: &[String],
+    line_runs: Option<&[Runs]>,
+    is_ts: bool,
+) -> (Vec<String>, Vec<Runs>) {
     let mut source = String::default();
+    let mut source_runs = Runs::default();
     for (idx, line) in lines.iter().enumerate() {
         if idx > 0 {
             source.push('\n');
         }
+        if let Some(runs) = line_runs.and_then(|runs| runs.get(idx)) {
+            source_runs.append(source.len(), runs);
+        }
         source.push_str(line);
     }
 
-    transform_await_source(&source, is_ts)
+    let mut runs = Runs::default();
+    let transformed = transform_await_source(&source, is_ts, &mut runs);
+    let composed = runs.compose(&source_runs);
+    let base = transformed.as_ptr() as usize;
+    let mut output_runs = Vec::new();
+    let output = transformed
         .lines()
-        .map(|line| line.to_compact_string())
-        .collect()
+        .map(|line| {
+            if line_runs.is_some() {
+                let offset = line.as_ptr() as usize - base;
+                output_runs.push(composed.slice(offset, line.len()));
+            }
+            line.to_compact_string()
+        })
+        .collect();
+    (output, output_runs)
 }
 
 const AWAIT_WRAP_PREFIX: &str = "async function __vize_async_setup__() {\n";
 const AWAIT_WRAP_SUFFIX: &str = "\n}";
 
-fn transform_await_source(source: &str, is_ts: bool) -> String {
+/// Rewrite the top-level awaits of `source`, recording the result's
+/// provenance in `source` offsets into `runs`.
+fn transform_await_source(source: &str, is_ts: bool, runs: &mut Runs) -> String {
+    match rewrite_awaits(source, is_ts, runs) {
+        Some(transformed) => transformed,
+        None => {
+            *runs = Runs::identity(source.len());
+            source.to_compact_string()
+        }
+    }
+}
+
+/// The rewritten source, or `None` when `source` is kept as it is.
+fn rewrite_awaits(source: &str, is_ts: bool, runs: &mut Runs) -> Option<String> {
     if source.trim().is_empty() {
-        return source.to_compact_string();
+        return None;
     }
 
     let mut wrapped =
@@ -42,14 +81,14 @@ fn transform_await_source(source: &str, is_ts: bool) -> String {
     let source_type = SourceType::default().with_typescript(is_ts);
     let parse_result = Parser::new(&allocator, &wrapped, source_type).parse();
     if !parse_result.diagnostics.is_empty() {
-        return source.to_compact_string();
+        return None;
     }
 
     let Some(Statement::FunctionDeclaration(func)) = parse_result.program.body.first() else {
-        return source.to_compact_string();
+        return None;
     };
     let Some(body) = &func.body else {
-        return source.to_compact_string();
+        return None;
     };
 
     let offset = AWAIT_WRAP_PREFIX.len();
@@ -58,39 +97,37 @@ fn transform_await_source(source: &str, is_ts: bool) -> String {
 
     for stmt in body.statements.iter() {
         let stmt_span = stmt.span();
-        let Some(stmt_start) = stmt_span.start.try_into().ok().and_then(|start: usize| {
+        let stmt_start = stmt_span.start.try_into().ok().and_then(|start: usize| {
             start
                 .checked_sub(offset)
                 .filter(|start| *start <= source.len())
-        }) else {
-            return source.to_compact_string();
-        };
-        let Some(stmt_end) = stmt_span
-            .end
-            .try_into()
-            .ok()
-            .and_then(|end: usize| end.checked_sub(offset).filter(|end| *end <= source.len()))
-        else {
-            return source.to_compact_string();
-        };
+        })?;
+        let stmt_end =
+            stmt_span.end.try_into().ok().and_then(|end: usize| {
+                end.checked_sub(offset).filter(|end| *end <= source.len())
+            })?;
 
         if stmt_start < cursor || stmt_start > stmt_end {
-            return source.to_compact_string();
+            return None;
         }
 
+        runs.copy(transformed.len(), cursor, stmt_start - cursor);
         transformed.push_str(&source[cursor..stmt_start]);
 
         if let Some(replacement) = transform_await_statement(source, stmt, offset) {
+            runs.point(transformed.len(), stmt_start);
             transformed.push_str(&replacement);
         } else {
+            runs.copy(transformed.len(), stmt_start, stmt_end - stmt_start);
             transformed.push_str(&source[stmt_start..stmt_end]);
         }
 
         cursor = stmt_end;
     }
 
+    runs.copy(transformed.len(), cursor, source.len() - cursor);
     transformed.push_str(&source[cursor..]);
-    transformed
+    Some(transformed)
 }
 
 fn transform_await_statement(source: &str, stmt: &Statement<'_>, offset: usize) -> Option<String> {

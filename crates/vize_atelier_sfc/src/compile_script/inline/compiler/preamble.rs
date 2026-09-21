@@ -1,9 +1,15 @@
 use vize_carton::{String, profile};
 
+use crate::module_map::Runs;
+
 use super::super::super::TemplateParts;
-use super::super::super::function_mode::dedupe_imports;
+use super::super::super::function_mode::imports::dedupe_imports_with_origins;
 use super::super::super::import_utils::import_block_has_local_from;
 use super::parser::parse_script_content;
+use super::trace::{Tracer, traced_sections};
+
+/// Per import: its text's provenance and its statement's `.vue` start.
+type ImportOrigin = (Runs, Option<usize>);
 
 pub(super) struct PreambleState {
     pub(super) setup_return_imports: Vec<String>,
@@ -28,6 +34,7 @@ pub(super) fn emit_preamble(
     is_vapor: bool,
     is_ts: bool,
     is_async: bool,
+    tracer: &mut Tracer<'_>,
 ) -> PreambleState {
     // mergeDefaults import comes first if needed
     if needs_merge_defaults {
@@ -123,21 +130,38 @@ pub(super) fn emit_preamble(
     // script's own `import` statements are stripped from its preserved body below, so this is
     // the single emission point for every user import. See #993 (side-effect imports running
     // twice when an SFC has both `<script>` and `<script setup>`).
-    let normal_script_imports = preserved_normal_script
-        .map(|script| parse_script_content(script, is_ts, None).0)
+    let (normal_script_imports, mut origins) = preserved_normal_script
+        .map(|script| normal_script_imports(script, is_ts, tracer))
         .unwrap_or_default();
+    origins.resize(normal_script_imports.len(), (Runs::default(), None));
     let mut combined_imports: Vec<String> = normal_script_imports;
     combined_imports.extend_from_slice(user_imports);
+    if let Some(trace) = tracer.trace() {
+        origins.append(&mut trace.imports);
+    }
     let deduped_imports = profile!(
         "atelier.script_inline.dedupe_imports",
-        dedupe_imports(&combined_imports, is_ts)
+        dedupe_imports_with_origins(&combined_imports, is_ts)
     );
-    let setup_return_imports = deduped_imports.clone();
+    let setup_return_imports: Vec<String> = deduped_imports
+        .iter()
+        .map(|import| import.text.clone())
+        .collect();
     if !deduped_imports.is_empty() && !template.hoisted.is_empty() {
         ensure_blank_line(output);
     }
+    let traced = origins.len() == combined_imports.len();
     for import in &deduped_imports {
-        output.extend_from_slice(import.as_bytes());
+        if let Some((runs, statement)) = origins.get(import.index).filter(|_| traced) {
+            let authored = combined_imports[import.index].as_str();
+            if import.verbatim {
+                let lead = authored.len() - authored.trim_start().len();
+                tracer.copy(output.len(), Some(&runs.slice(lead, authored.trim().len())));
+            } else {
+                tracer.point(output.len(), *statement);
+            }
+        }
+        output.extend_from_slice(import.text.as_bytes());
     }
     if !deduped_imports.is_empty()
         && ts_declarations.is_empty()
@@ -149,7 +173,12 @@ pub(super) fn emit_preamble(
     // Output TypeScript declarations (interfaces, types) after user imports, before export default
     if !ts_declarations.is_empty() {
         output.push(b'\n');
-        for decl in ts_declarations {
+        let declaration_runs = tracer
+            .trace()
+            .map(|trace| std::mem::take(&mut trace.ts_declarations))
+            .unwrap_or_default();
+        for (index, decl) in ts_declarations.iter().enumerate() {
+            tracer.copy(output.len(), declaration_runs.get(index));
             output.extend_from_slice(decl.as_bytes());
             output.push(b'\n');
         }
@@ -162,8 +191,13 @@ pub(super) fn emit_preamble(
         // Strip the block's own `import` statements: they were already merged into the
         // deduplicated import emission above. Leaving them here would emit each import twice,
         // re-running any top-level side effects in the imported module (#993).
-        let body = strip_import_statements(normal_script);
+        let (body, body_runs) = strip_import_statements(normal_script);
         output.push(b'\n');
+        let normal = tracer.trace().and_then(|trace| trace.normal.clone());
+        tracer.copy(
+            output.len(),
+            normal.map(|normal| body_runs.compose(&normal)).as_ref(),
+        );
         output.extend_from_slice(body.as_bytes());
         output.push(b'\n');
         normal_script.contains("const __default__")
@@ -182,8 +216,10 @@ pub(super) fn emit_preamble(
 /// mirrors the logic in [`parse_script_content`]; surrounding blank lines left behind by a
 /// removed leading/trailing import are trimmed so the emitted body keeps the same spacing
 /// the verbatim block had (the caller frames the body with its own newlines).
-fn strip_import_statements(content: &str) -> String {
+/// The kept lines' provenance in `content` is returned beside the body.
+fn strip_import_statements(content: &str) -> (String, Runs) {
     let mut out = String::with_capacity(content.len());
+    let mut runs = Runs::default();
     let mut in_import = false;
     for line in content.lines() {
         let trimmed = line.trim();
@@ -211,11 +247,40 @@ fn strip_import_statements(content: &str) -> String {
             continue;
         }
 
+        runs.copy(
+            out.len(),
+            line.as_ptr() as usize - content.as_ptr() as usize,
+            line.len(),
+        );
         out.push_str(line);
         out.push('\n');
     }
 
-    out.trim_matches('\n').into()
+    let lead = out.len() - out.trim_start_matches('\n').len();
+    let body: String = out.trim_matches('\n').into();
+    let body_runs = runs.slice(lead, body.len());
+    (body, body_runs)
+}
+
+/// The normal `<script>`'s imports, with their provenance in `.vue` offsets
+/// when the compile traces one (empty otherwise).
+fn normal_script_imports(
+    script: &str,
+    is_ts: bool,
+    tracer: &mut Tracer<'_>,
+) -> (Vec<String>, Vec<ImportOrigin>) {
+    let normal = tracer.trace().and_then(|trace| trace.normal.clone());
+    if let Some(normal) = normal
+        && let Some(((imports, _, _), sections)) = traced_sections(script, is_ts, None, false)
+    {
+        let origins = sections
+            .imports
+            .into_iter()
+            .map(|(runs, statement)| (runs.compose(&normal), normal.lookup(statement)))
+            .collect();
+        return (imports, origins);
+    }
+    (parse_script_content(script, is_ts, None).0, Vec::new())
 }
 
 fn ensure_blank_line(output: &mut vize_carton::Vec<u8>) {

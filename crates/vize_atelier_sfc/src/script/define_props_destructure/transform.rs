@@ -28,8 +28,21 @@ pub fn transform_destructured_props(
     source: &str,
     destructured: &PropsDestructuredBindings,
 ) -> Result<String, SfcError> {
+    transform_destructured_props_with_edits(source, destructured).map(|(code, _)| code)
+}
+
+/// [`transform_destructured_props`] that also reports the rewrites it applied
+/// as sorted, disjoint `(start, end, replacement length)` edits of `source`,
+/// so a caller can carry source-map provenance through the rewrite (Davinci
+/// P3-9). The edits are `None` when rewrites overlap and no such list
+/// describes the result.
+#[allow(clippy::type_complexity)]
+pub(crate) fn transform_destructured_props_with_edits(
+    source: &str,
+    destructured: &PropsDestructuredBindings,
+) -> Result<(String, Option<Vec<(usize, usize, usize)>>), SfcError> {
     if destructured.is_empty() {
-        return Ok(source.to_compact_string());
+        return Ok((source.to_compact_string(), Some(Vec::new())));
     }
 
     // Build map of local name -> prop key
@@ -79,15 +92,24 @@ pub fn transform_destructured_props(
     // Apply rewrites if any found (empty rewrites means all props are shadowed
     // or unused).
     if rewrites.is_empty() {
-        return Ok(source.to_compact_string());
+        return Ok((source.to_compact_string(), Some(Vec::new())));
     }
 
     // Apply rewrites in reverse order to preserve positions
     rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
+    let mut edits: Vec<(usize, usize, usize)> = rewrites
+        .iter()
+        .rev()
+        .map(|(start, end, replacement)| (*start, *end, replacement.len()))
+        .collect();
+    let disjoint = edits.windows(2).all(|pair| pair[0].1 <= pair[1].0);
     let mut result = source.to_compact_string();
     for (start, end, replacement) in rewrites {
         result.replace_range(start..end, &replacement);
     }
-    Ok(result)
+    if !disjoint {
+        edits.clear();
+    }
+    Ok((result, disjoint.then_some(edits)))
 }

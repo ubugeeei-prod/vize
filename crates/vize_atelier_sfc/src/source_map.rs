@@ -304,18 +304,3 @@ pub fn build_sfc_source_map(
     }
     Some(builder.finish(generated, filename, source))
 }
-
-/// [`build_sfc_source_map`] gated on the codegen `source_map` flag, as the
-/// `SfcCompileResult.map` field wants it.
-pub(crate) fn sfc_source_map(
-    generated: &str,
-    descriptor: &SfcDescriptor<'_>,
-    filename: &str,
-    codegen_options: &vize_atelier_core::CodegenOptions,
-) -> Option<serde_json::Value> {
-    if !codegen_options.source_map {
-        return None;
-    }
-    let json = build_sfc_source_map(generated, descriptor, filename)?;
-    serde_json::from_str(&json).ok()
-}

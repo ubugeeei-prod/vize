@@ -52,3 +52,4 @@ impl PropsDestructuredBindings {
 pub use helpers::gen_props_access_exp;
 pub use process::process_props_destructure;
 pub use transform::transform_destructured_props;
+pub(crate) use transform::transform_destructured_props_with_edits;

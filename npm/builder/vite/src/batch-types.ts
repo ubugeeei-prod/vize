@@ -17,7 +17,8 @@ export interface BatchFileResult {
   code: string;
   /**
    * Source Map v3 document (JSON) describing `code`, present only when
-   * `includeSourceMap` was requested and a line could be anchored (#3399).
+   * `includeSourceMap` was requested and an emitted token maps to the
+   * authored file (#3399).
    */
   map?: string;
   css?: string;

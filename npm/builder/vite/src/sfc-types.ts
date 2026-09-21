@@ -52,8 +52,8 @@ export interface SfcCompileResultNapi {
   code: string;
   /**
    * Source Map v3 document (JSON) describing `code`, present only when
-   * `sourceMap` was requested and a line could be anchored (#3399). Its single
-   * `sources` entry is the authored `.vue` path.
+   * `sourceMap` was requested and an emitted token maps to the authored file
+   * (#3399). Its single `sources` entry is the authored `.vue` path.
    */
   map?: string;
   css?: string;

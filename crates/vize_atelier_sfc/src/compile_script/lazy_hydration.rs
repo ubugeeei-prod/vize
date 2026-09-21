@@ -13,11 +13,15 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{String, ToCompactString};
 
+use crate::module_map::{Runs, apply_edits};
+
 /// A rewritten script and the module preamble it needs.
 #[derive(Debug, Clone)]
 pub(crate) struct LazyHydrationTransform {
     pub code: String,
     pub preamble: String,
+    /// Provenance of `code` in the transformed content (P3-9 source maps).
+    pub runs: Runs,
 }
 
 #[derive(Debug)]
@@ -102,23 +106,15 @@ pub(crate) fn transform_lazy_hydration_macros(content: &str) -> Option<LazyHydra
     }
 
     edits.sort_by_key(|edit| edit.start);
-    let mut code = String::with_capacity(
-        content.len() + edits.iter().map(|e| e.replacement.len()).sum::<usize>(),
-    );
-    let mut cursor = 0usize;
-    for edit in edits {
-        if edit.start < cursor {
-            continue;
-        }
-        code.push_str(&content[cursor..edit.start]);
-        code.push_str(&edit.replacement);
-        cursor = edit.end;
-    }
-    code.push_str(&content[cursor..]);
+    let applied = edits
+        .iter()
+        .map(|edit| (edit.start, edit.end, edit.replacement.as_str()));
+    let (code, runs) = apply_edits(content, applied);
 
     Some(LazyHydrationTransform {
         code,
         preamble: build_lazy_hydration_preamble(&strategies),
+        runs,
     })
 }
 

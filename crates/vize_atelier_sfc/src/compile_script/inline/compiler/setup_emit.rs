@@ -9,6 +9,7 @@ use vize_carton::{Box as CoreBox, String, profile};
 use crate::script::{ScriptCompileContext, gen_props_access_exp};
 
 use super::await_transform::transform_await_expressions;
+use super::trace::Tracer;
 
 fn is_identifier_continue(c: char) -> bool {
     c.is_alphanumeric() || c == '_' || c == '$'
@@ -110,11 +111,13 @@ pub(super) fn emit_setup_body(
     is_prod: bool,
     has_css_vars: bool,
     setup_css_module_names: &[String],
+    tracer: &mut Tracer<'_>,
 ) {
     // Emit binding: const emit = __emit
     if let Some(ref emits_macro) = ctx.macros.define_emits
         && let Some(ref binding_name) = emits_macro.binding_name
     {
+        tracer.macro_binding(output.len(), emits_macro.start);
         output.extend_from_slice(b"const ");
         output.extend_from_slice(binding_name.as_bytes());
         output.extend_from_slice(b" = __emit\n");
@@ -127,6 +130,7 @@ pub(super) fn emit_setup_body(
     if let Some(ref props_macro) = ctx.macros.define_props
         && let Some(ref binding_name) = props_macro.binding_name
     {
+        tracer.macro_binding(output.len(), props_macro.start);
         output.extend_from_slice(b"const ");
         output.extend_from_slice(binding_name.as_bytes());
         output.extend_from_slice(b" = __props");
@@ -177,6 +181,7 @@ pub(super) fn emit_setup_body(
     if let Some(ref slots_macro) = ctx.macros.define_slots
         && let Some(ref binding_name) = slots_macro.binding_name
     {
+        tracer.macro_binding(output.len(), slots_macro.start);
         output.extend_from_slice(b"const ");
         output.extend_from_slice(binding_name.as_bytes());
         output.extend_from_slice(b" = _useSlots()\n");
@@ -219,17 +224,23 @@ pub(super) fn emit_setup_body(
     }
 
     // Output setup code lines (non-hoisted), transforming await expressions for async setup
+    let body_runs = tracer.trace().map(|trace| std::mem::take(&mut trace.body));
     if is_async {
-        let transformed_async = profile!(
+        let (transformed_async, async_runs) = profile!(
             "atelier.script_inline.transform_await",
-            transform_await_expressions(setup_body_lines, source_is_ts)
+            transform_await_expressions(setup_body_lines, body_runs.as_deref(), source_is_ts)
         );
-        for line in &transformed_async {
+        for (index, line) in transformed_async.iter().enumerate() {
+            tracer.copy(output.len(), async_runs.get(index));
             output.extend_from_slice(line.as_bytes());
             output.push(b'\n');
         }
     } else {
-        for line in setup_body_lines {
+        for (index, line) in setup_body_lines.iter().enumerate() {
+            tracer.copy(
+                output.len(),
+                body_runs.as_ref().and_then(|runs| runs.get(index)),
+            );
             output.extend_from_slice(line.as_bytes());
             output.push(b'\n');
         }
@@ -237,6 +248,7 @@ pub(super) fn emit_setup_body(
 
     // defineExpose: transform to __expose(...)
     if let Some(ref expose_macro) = ctx.macros.define_expose {
+        tracer.macro_binding(output.len(), expose_macro.start);
         let args = expose_macro.args.trim();
         output.extend_from_slice(b"__expose(");
         output.extend_from_slice(args.as_bytes());
@@ -292,38 +304,4 @@ fn has_semicolon_after_macro(source: &str, macro_end: usize) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{has_blank_line_after_macro, has_semicolon_after_macro};
-
-    #[test]
-    fn detects_blank_line_after_macro_call() {
-        let source = "const emit = defineEmits<{ change: [] }>();\n\nfunction call() {}";
-        let macro_end = source.find(";\n").unwrap();
-
-        assert!(has_blank_line_after_macro(source, macro_end));
-    }
-
-    #[test]
-    fn ignores_single_newline_after_macro_call() {
-        let source = "const emit = defineEmits(['change'])\nfunction call() {}";
-        let macro_end = source.find('\n').unwrap();
-
-        assert!(!has_blank_line_after_macro(source, macro_end));
-    }
-
-    #[test]
-    fn ignores_non_whitespace_after_macro_call() {
-        let source = "const emit = defineEmits(['change']); // comment\nfunction call() {}";
-        let macro_end = source.find(';').unwrap();
-
-        assert!(!has_blank_line_after_macro(source, macro_end));
-    }
-
-    #[test]
-    fn detects_semicolon_after_macro_call() {
-        let source = "const props = defineProps<Props>();\n";
-        let macro_end = source.find(';').unwrap();
-
-        assert!(has_semicolon_after_macro(source, macro_end));
-    }
-}
+mod tests;

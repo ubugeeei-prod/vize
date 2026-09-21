@@ -1,5 +1,6 @@
 //! Shared SFC render output assembly.
 
+use crate::module_map::Runs;
 use crate::types::{CssModuleMapping, SfcCompileOptions, SfcError, css_modules_object_literal};
 use vize_atelier_core::CodegenOptions;
 use vize_carton::{String, ToCompactString, cstr};
@@ -121,21 +122,29 @@ fn rewrite_runtime_import_line(
     Some(cstr!("const {{ {} }} = {}", joined, runtime_global_name))
 }
 
+/// The standalone module, whether it keeps external imports, and (with a
+/// `runs` to fill) its provenance in `code`: kept lines are copies and a
+/// rewritten line is anchored at the line it replaced (P3-9 source maps).
 fn rewrite_module_sfc_to_standalone(
     code: &str,
     runtime_module_name: &str,
     runtime_global_name: &str,
+    mut runs: Option<&mut Runs>,
 ) -> (String, bool) {
     let mut output = String::with_capacity(code.len());
     let mut has_external_imports = false;
 
     for line in code.lines() {
+        let start = line.as_ptr() as usize - code.as_ptr() as usize;
         let trimmed = line.trim();
         if trimmed.starts_with("import ") {
             if let Some(rewritten) =
                 rewrite_runtime_import_line(trimmed, runtime_module_name, runtime_global_name)
             {
                 if !rewritten.is_empty() {
+                    if let Some(runs) = runs.as_deref_mut() {
+                        runs.point(output.len(), start);
+                    }
                     output.push_str(&rewritten);
                     output.push('\n');
                 }
@@ -152,6 +161,13 @@ fn rewrite_module_sfc_to_standalone(
         {
             rewritten.replace_range(index..index + "export default".len(), "return");
         }
+        if let Some(runs) = runs.as_deref_mut() {
+            if rewritten == line {
+                runs.copy(output.len(), start, line.len());
+            } else {
+                runs.point(output.len(), start);
+            }
+        }
         output.push_str(&rewritten);
         output.push('\n');
     }
@@ -159,26 +175,31 @@ fn rewrite_module_sfc_to_standalone(
     (output, has_external_imports)
 }
 
+/// Rewrite the module for the standalone output mode. With a source map
+/// requested, a rewrite returns its provenance in the module it replaced.
 pub(super) fn finalize_output_mode(
     code: &mut String,
     warnings: &mut Vec<SfcError>,
     options: &SfcCompileOptions,
     codegen_options: &CodegenOptions,
-) {
+) -> Option<Runs> {
     if !options.script.inline_template {
-        return;
+        return None;
     }
 
+    let mut runs = codegen_options.source_map.then(Runs::default);
     let (rewritten, has_external_imports) = rewrite_module_sfc_to_standalone(
         code,
         codegen_options.runtime_module_name.as_str(),
         codegen_options.runtime_global_name.as_str(),
+        runs.as_mut(),
     );
     *code = rewritten;
 
     if has_external_imports {
         warnings.push(create_standalone_import_warning());
     }
+    runs
 }
 
 pub(crate) fn rewrite_client_render_for_sfc_main(template_code: &str) -> String {

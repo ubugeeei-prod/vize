@@ -102,7 +102,9 @@ fn emits(rest: &str, emitted: &Emitted, backend: Backend) -> bool {
             Backend::Dom => dom.as_str(),
             Backend::Vapor => vapor.as_str(),
             Backend::Ssr => ssr.as_str(),
-            Backend::LegacySfc => panic!("section boundaries are template-backend anchors"),
+            Backend::Sfc | Backend::LegacySfc => {
+                panic!("section boundaries are template-backend anchors")
+            }
         }),
     }
 }

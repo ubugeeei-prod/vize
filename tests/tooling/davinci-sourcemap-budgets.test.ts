@@ -2,8 +2,8 @@
 //
 // P3-9 replaces string appends with structured, span-carrying emission across
 // DOM, Vapor and SSR. This test pins the numeric coverage contract before the
-// emitter work lands, and keeps the legacy SFC text-matching recovery visible
-// as the deletion floor.
+// emitter work lands, keeps the legacy SFC text-matching recovery visible
+// as the deletion floor, and pins the structured SFC module map's rows.
 
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -35,6 +35,13 @@ const REQUIRED_CATEGORIES = [
   "section-boundary",
 ] as const;
 
+/// The structured SFC module map's rows: the legacy recovery's battery and
+/// the statements the SFC pipeline rewrites.
+const SFC_ROWS = [
+  "sfc_rewritten_statement/rewritten-statement",
+  "sfc_text_matching_recovery/text-matching-recovery",
+] as const;
+
 function inlineTableLines(section: string): string[] {
   const lines = budgetsText.split("\n");
   const start = lines.indexOf(`[${section}]`);
@@ -63,6 +70,7 @@ test("source-map budgets cover every P3-9 backend/category cell", () => {
   );
   const seenCells = new Set<string>();
   const legacyRows: string[] = [];
+  const sfcRows: string[] = [];
 
   for (const [id, entry] of entries) {
     assert.deepEqual(
@@ -76,6 +84,10 @@ test("source-map budgets cover every P3-9 backend/category cell", () => {
 
     if (entry.backend === "legacy-sfc") {
       legacyRows.push(`${id}/${entry.category}`);
+      continue;
+    }
+    if (entry.backend === "sfc") {
+      sfcRows.push(`${id}/${entry.category}`);
       continue;
     }
 
@@ -95,6 +107,7 @@ test("source-map budgets cover every P3-9 backend/category cell", () => {
   const missingCells = [...requiredCells].filter((cell) => !seenCells.has(cell)).sort();
   assert.deepEqual(missingCells, [], "P3-9 must pin every backend/category cell");
   assert.deepEqual(legacyRows, ["legacy_sfc_text_matching_recovery/text-matching-recovery"]);
+  assert.deepEqual(sfcRows.sort(), [...SFC_ROWS]);
 });
 
 test("source-map budget entries are one-line inline tables with real thresholds", () => {
@@ -109,9 +122,13 @@ test("source-map budget entries are one-line inline tables with real thresholds"
   }
 });
 
-test("rewritten identifiers and legacy recovery keep exact span accuracy floors", () => {
+test("rewritten identifiers and the SFC maps keep exact span accuracy floors", () => {
   for (const [id, entry] of Object.entries(budgets.sourcemap)) {
-    if (entry.category === "rewritten-identifier" || entry.backend === "legacy-sfc") {
+    if (
+      entry.category === "rewritten-identifier" ||
+      entry.backend === "legacy-sfc" ||
+      entry.backend === "sfc"
+    ) {
       assert.equal(
         entry.coverage_pct_min,
         100,
