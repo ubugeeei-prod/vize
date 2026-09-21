@@ -43,6 +43,11 @@ const matrices = [
       "davinci-road/plan/consumer-migration-surfaces.md + consumer-migration-surfaces/<consumer>/<crate>.tsv",
   },
   {
+    name: "storage summary (aggregates of the per-file storage ledger)",
+    generator: "tools/commands/davinci/storage-summary.rs",
+    artifact: "davinci-road/plan/storage-summary.md",
+  },
+  {
     name: "construct-matrix fixture plane (element kind × directive)",
     generator: "tools/commands/davinci/matrix-gen.rs",
     artifact: "tests/fixtures/davinci-matrix/",

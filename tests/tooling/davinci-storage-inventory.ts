@@ -41,12 +41,6 @@ export const categoryReasons: Record<VecCategory, string> = {
   emit: "ordered emitter buffers whose size follows the document",
 };
 
-export const expectedProductionAllocVec: StorageSummary = {
-  files: 99,
-  directPaths: 111,
-  boundUses: 391,
-};
-
 function count(value: string, line: number): number {
   if (!/^\d+$/u.test(value)) throw new Error(`line ${line}: invalid count ${value}`);
   return Number(value);

@@ -6,21 +6,12 @@ import { fileURLToPath } from "node:url";
 
 import {
   categoryReasons,
-  expectedProductionAllocVec,
   parseStorageInventory,
-  summarizeAllocVecCategories,
   summarizeKind,
-  summarizeScopes,
   type InventoryRow,
   type StorageScope,
 } from "./davinci-storage-inventory.ts";
-import {
-  hasStorage,
-  scanStorage,
-  storageKinds,
-  type FileStorage,
-  type StorageKind,
-} from "./davinci-storage-scan.ts";
+import { hasStorage, scanStorage, storageKinds, type FileStorage } from "./davinci-storage-scan.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const libraryRoots = [
@@ -125,7 +116,6 @@ test("all owned storage equals the reviewed per-file inventory", () => {
     [],
     "update storage-inventory.tsv only after reviewing every changed count",
   );
-  assert.deepEqual(summarizeKind(expectedRows, "allocVec"), expectedProductionAllocVec);
   assert.deepEqual(summarizeKind(expectedRows, "allocString"), {
     files: 0,
     directPaths: 0,
@@ -150,59 +140,6 @@ test("alloc Vec categories cover module-bound uses without a direct path", () =>
   const uncategorized = `${header}\ninfra\t-\tfixture.rs\t0\t1\t0\t0\t0\t0\t0\t0\n`;
   assert.throws(() => parseStorageInventory(uncategorized), /alloc Vec category mismatch/u);
 });
-
-test("the plan summaries are generated from the exact inventory", () => {
-  const plan = fs.readFileSync(
-    path.join(repoRoot, "davinci-road/plan/storage-boundary.md"),
-    "utf8",
-  );
-  const headline = plan.match(
-    /contain (\d+) production files,\s+(\d+) direct[^,]+, and (\d+) bound/iu,
-  );
-  assert.deepEqual(headline?.slice(1).map(Number), [
-    expectedProductionAllocVec.files,
-    expectedProductionAllocVec.directPaths,
-    expectedProductionAllocVec.boundUses,
-  ]);
-  const categoryRows = tableRows(plan, /^(contract|analysis|lower|pass|emit)$/u);
-  assert.deepEqual(categoryRows, summarizeAllocVecCategories(expectedRows));
-
-  const scopeSummary = summarizeScopes(expectedRows);
-  const scopeRows = new Map(
-    [
-      ...plan.matchAll(
-        /^\|\s*(infra|s1|s2|s3|s1_to_s2|s2_to_s3)\s*\|\s*`([^`]+)`\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|/gmu,
-      ),
-    ].map(([, scope, type, files, directPaths, boundUses]) => [
-      `${scope}:${type}`,
-      { files: Number(files), directPaths: Number(directPaths), boundUses: Number(boundUses) },
-    ]),
-  );
-  const names: Record<StorageKind, string> = {
-    allocVec: "alloc::vec::Vec",
-    allocString: "alloc::string::String",
-    s0String: "vize_s0::String",
-    arenaVec: "vize_s0::Vec",
-    smallVec: "vize_s0::SmallVec",
-  };
-  for (const [scope, kinds] of Object.entries(scopeSummary)) {
-    for (const kind of storageKinds) {
-      assert.deepEqual(scopeRows.get(`${scope}:${names[kind]}`), kinds[kind]);
-    }
-  }
-  assert.equal(scopeRows.size, 30);
-});
-
-function tableRows(source: string, keyPattern: RegExp): Record<string, unknown> {
-  return Object.fromEntries(
-    [...source.matchAll(/^\|\s*([^|]+?)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|/gmu)]
-      .filter(([, key]) => keyPattern.test(key))
-      .map(([, key, files, directPaths, boundUses]) => [
-        key,
-        { files: Number(files), directPaths: Number(directPaths), boundUses: Number(boundUses) },
-      ]),
-  );
-}
 
 test("scanner resolves root, self, group, module, and raw aliases", () => {
   const cases: Array<[string, number, number]> = [
