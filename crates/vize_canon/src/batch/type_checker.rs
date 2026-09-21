@@ -10,6 +10,7 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 mod declarations;
 mod diagnostic_paths;
+mod generic_private_names;
 mod incremental;
 mod metrics;
 mod paths;
@@ -325,6 +326,7 @@ impl BatchTypeChecker {
             .diagnostics
             .extend(project.diagnostics().iter().cloned());
         let had_errors = result.has_errors();
+        generic_private_names::apply(&mut result.diagnostics, project);
         template_directives::apply(&mut result.diagnostics, project);
         if result.has_errors() {
             result.success = false;

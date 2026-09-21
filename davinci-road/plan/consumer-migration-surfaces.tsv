@@ -1941,8 +1941,12 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/materialize_fs.rs	5	s
 typechecker	Typechecker	source	crates/vize_canon/src/batch/materialize_lock.rs	9	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/runtime_deps.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/runtime_deps.rs	58	s0	S0	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker.rs	196	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker.rs	197	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/declarations.rs	5	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/generic_private_names.rs	13	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/generic_private_names.rs	13	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/generic_private_names.rs	13	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/generic_private_names.rs	13	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/incremental.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/paths.rs	6	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/paths.rs	59	s0	S0	stage	vize_carton	compat	8

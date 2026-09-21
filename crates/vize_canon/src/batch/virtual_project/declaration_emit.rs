@@ -13,6 +13,20 @@ use super::{VirtualFile, VirtualProject};
 use tsx_shims::{is_script_path, rewrite_tsx_vue_shim_specifiers};
 
 impl VirtualProject {
+    /// Whether the authored configuration makes TypeScript emit declarations:
+    /// only then are declaration errors part of what a project check reports.
+    pub(crate) fn authored_config_emits_declarations(&self) -> bool {
+        let Some(tsconfig_path) = self.resolved_tsconfig_path() else {
+            return false;
+        };
+        let Ok(options) = self.load_compiler_options(Some(tsconfig_path.as_path())) else {
+            return false;
+        };
+        let enabled =
+            |name: &str| options.get(name).and_then(serde_json::Value::as_bool) == Some(true);
+        (enabled("declaration") || enabled("composite")) && !enabled("noEmit")
+    }
+
     pub(super) fn rewrite_tsx_vue_declaration_inputs(&self) -> CorsaResult<()> {
         for file in self.virtual_files_sorted() {
             let path = file.virtual_path.as_path();
