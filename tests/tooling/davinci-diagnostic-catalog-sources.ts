@@ -37,14 +37,90 @@ export function parseEntries(source: string): Array<[string, Entry]> {
   ]);
 }
 
-/** The shipped Rust-side catalog tables this lane owns, in registration order. */
+/** The per-producer Rust catalog tables, in registration order. */
 export function catalogEntries(): Array<[string, Entry]> {
   return [
     "i18n_render.rs",
     "i18n_compiler.rs",
     "i18n_compiler_template.rs",
     "i18n_compiler_directive.rs",
+    "i18n_rules_markup.rs",
+    "i18n_rules_script.rs",
+    "i18n_rules_script_more.rs",
+    "i18n_rules_ecosystem.rs",
   ].flatMap((file) => parseEntries(read("crates", "vize_carton", "src", file)));
+}
+
+/** Every translation shipped by the older sources: the per-locale JSON files
+ * and the `i18n_supplemental*.rs` tables, as `key → partial entry`. */
+export function legacyTranslations(): Map<string, Partial<Entry>> {
+  const merged = new Map<string, Partial<Entry>>();
+  for (const locale of locales) {
+    const json = JSON.parse(read("crates", "vize_carton", "src", "i18n", `${locale}.json`));
+    for (const [key, value] of Object.entries(json as Record<string, string>)) {
+      merged.set(key, { ...merged.get(key), [locale]: value });
+    }
+  }
+  for (const file of [
+    "i18n_supplemental.rs",
+    "i18n_supplemental_extra.rs",
+    "i18n_supplemental_extra2.rs",
+  ]) {
+    for (const [key, entry] of parseEntries(read("crates", "vize_carton", "src", file))) {
+      merged.set(key, entry);
+    }
+  }
+  return merged;
+}
+
+function rustFiles(dir: string): string[] {
+  return fs.readdirSync(path.join(repoRoot, dir), { withFileTypes: true }).flatMap((entry) => {
+    const child = path.join(dir, entry.name);
+    if (entry.isDirectory()) return rustFiles(child);
+    return entry.name.endsWith(".rs") ? [child] : [];
+  });
+}
+
+/** Every lint rule's name and `RuleMeta`-family English description. */
+export function parseRules(): Map<string, string> {
+  const meta = new RegExp(
+    String.raw`\b(?:RuleMeta|ScriptRuleMeta|CssRuleMeta|MuseaRuleMeta)\s*\{\s*name:\s*(${stringLiteral})\s*,\s*description:\s*(${stringLiteral})`,
+    "gsu",
+  );
+  const rules = new Map<string, string>();
+  for (const file of rustFiles(path.join("crates", "vize_patina", "src", "rules")).sort()) {
+    for (const match of read(file).matchAll(meta)) {
+      rules.set(rustString(match[1]), rustString(match[2]));
+    }
+  }
+  return rules;
+}
+
+/** Every rule without a description in some locale, and every catalogue
+ * description whose English drifts from its rule or names no rule. */
+export function ruleProblems(
+  rules: Map<string, string>,
+  legacy: Map<string, Partial<Entry>>,
+  entries: Array<[string, Entry]>,
+): string[] {
+  const problems: string[] = [];
+  const owned = new Map(entries.filter(([key]) => key.endsWith(".description")));
+  for (const [key, entry] of owned) {
+    const rule = key.slice(0, -".description".length);
+    if (!rules.has(rule)) problems.push(`\`${key}\` describes no registered rule`);
+    else if (entry.en !== rules.get(rule)) problems.push(`\`${key}\` en differs from its RuleMeta`);
+    if (legacy.has(key)) problems.push(`\`${key}\` is catalogued twice`);
+  }
+  for (const rule of rules.keys()) {
+    const entry: Partial<Entry> =
+      owned.get(`${rule}.description`) ?? legacy.get(`${rule}.description`) ?? {};
+    for (const locale of locales) {
+      if ((entry[locale] ?? "").trim() === "") {
+        problems.push(`\`${rule}\` has no description in ${locale}`);
+      }
+    }
+  }
+  return problems;
 }
 
 /** The body of the first `{ … }` block after `anchor`. */

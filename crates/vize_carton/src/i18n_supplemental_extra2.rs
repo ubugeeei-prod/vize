@@ -14,6 +14,7 @@ pub(crate) fn register(messages: &mut [MessageMap; 3]) {
     crate::i18n_supplemental_html::register(messages);
     crate::i18n_render::register(messages);
     crate::i18n_compiler::register(messages);
+    crate::i18n_rules_markup::register(messages);
 }
 
 /// Extra supplemental translation entries: `(key, en, ja, zh)`.
