@@ -15,7 +15,7 @@ use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, NegativeBranch, OperationNode}
 /// parent's only child.
 pub(super) type Placement = (usize, usize, bool);
 
-type Branches<'s, 'a> = &'s [(Option<Expr<'a>>, usize)];
+type Branches<'s, 'a> = &'s [(Option<Expr<'a>>, &'s [usize])];
 
 impl<'a> Emitter<'a, '_> {
     pub(super) fn control(
@@ -32,12 +32,11 @@ impl<'a> Emitter<'a, '_> {
             Content::If { branches } => {
                 let branches: std::vec::Vec<_> = branches
                     .iter()
-                    .map(|branch| {
-                        (
-                            branch.condition,
-                            branch.root.expect("validated branch root"),
-                        )
-                    })
+                    .map(|branch| (branch.condition, branch.roots.clone()))
+                    .collect();
+                let branches: std::vec::Vec<_> = branches
+                    .iter()
+                    .map(|(condition, roots)| (*condition, roots.as_slice()))
                     .collect();
                 let (condition, positive) = self.branch(&branches);
                 let negative = self.remaining(&branches[1..], parent, anchor);
@@ -54,9 +53,9 @@ impl<'a> Emitter<'a, '_> {
             }
             Content::For(body) => {
                 let body = *body;
-                let root = self.artifact.nodes[index].children[0];
+                let members = self.artifact.nodes[index].children.clone();
                 self.id();
-                let render = self.block(&[root]);
+                let render = self.body(&members);
                 let alias = |value: Option<&'a str>| {
                     value.map(|value| self.expression(Expr::plain(value), false))
                 };
@@ -93,10 +92,10 @@ impl<'a> Emitter<'a, '_> {
         vize_carton::Box<'a, vize_atelier_core::SimpleExpressionNode<'a>>,
         BlockIRNode<'a>,
     ) {
-        let (condition, root) = branches[0];
+        let (condition, roots) = branches[0];
         let condition = self.expression(condition.expect("validated leading condition"), false);
         self.id();
-        (condition, self.block(&[root]))
+        (condition, self.body(roots))
     }
 
     /// Chained branches share the chain's placement. An inline `v-else-if`
@@ -108,9 +107,9 @@ impl<'a> Emitter<'a, '_> {
         anchor: Option<usize>,
     ) -> Option<NegativeBranch<'a>> {
         ensure_sufficient_stack(|| match branches.first()? {
-            (None, root) => {
+            (None, roots) => {
                 self.id();
-                Some(NegativeBranch::Block(self.block(&[*root])))
+                Some(NegativeBranch::Block(self.body(roots)))
             }
             (Some(_), _) => {
                 let (condition, positive) = self.branch(branches);

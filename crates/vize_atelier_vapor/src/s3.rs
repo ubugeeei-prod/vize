@@ -6,6 +6,7 @@
 mod markup;
 mod native;
 mod retained;
+mod templates;
 mod text;
 
 use vize_atelier_core::TemplateSyntaxMode;
@@ -137,22 +138,16 @@ pub(crate) fn lower_source_for_vapor<'a>(
         {
             return VaporS3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
         }
-        // Template wrappers and carrier branch keys live in S2 side facts that
-        // S3 does not carry. Admitting their unwrapped regions would drop them.
-        if !s2.wrappers.is_empty()
-            || !s2.for_wrappers.is_empty()
-            || s2
-                .if_facts
-                .iter()
-                .any(|(_, facts)| facts.branches.iter().any(Option::is_some))
-        {
-            return VaporS3BridgeStatus::Legacy(LegacyReason::ControlFlow);
-        }
         let mut s3 = vize_s2_to_s3::lower(allocator, &s2.root);
         if markup::legacy_diagnosed(source, &s3.program) {
             return VaporS3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
         }
         let mut retained = retained::Retained::collect(allocator, &s2.root);
+        // Template carriers keep their wrapper facts in S2 side tables.
+        let loops = match templates::collect(allocator, source, &s2, &s3.program, &mut retained) {
+            Ok(loops) => loops,
+            Err(reason) => return VaporS3BridgeStatus::Legacy(reason),
+        };
         if let Err(failure) = text::capture(allocator, &s2, &mut s3, &mut retained) {
             return match failure {
                 AdmissionFailure::Unsupported(reason) => VaporS3BridgeStatus::Legacy(reason),
@@ -163,11 +158,20 @@ pub(crate) fn lower_source_for_vapor<'a>(
                 }
             };
         }
-        admit(s3, &retained)
+        admit_with(s3, &retained, &loops)
     })
 }
 
+#[cfg(test)]
 fn admit<'a>(s3: Lowered<'a>, retained: &retained::Retained<'_, 'a>) -> VaporS3BridgeStatus<'a> {
+    admit_with(s3, retained, &[])
+}
+
+fn admit_with<'a>(
+    s3: Lowered<'a>,
+    retained: &retained::Retained<'_, 'a>,
+    loops: &[templates::TemplateLoop<'a>],
+) -> VaporS3BridgeStatus<'a> {
     let violations = verify(&s3.program);
     if !violations.is_empty() {
         return VaporS3BridgeStatus::Rejected(
@@ -195,7 +199,7 @@ fn admit<'a>(s3: Lowered<'a>, retained: &retained::Retained<'_, 'a>) -> VaporS3B
             "Davinci S3 verifier rejected Vapor artifact: partition identity/classification mismatch",
         )]);
     }
-    match NativeArtifact::admit(&s3, retained) {
+    match NativeArtifact::admit(&s3, retained, loops) {
         Ok(artifact) => VaporS3BridgeStatus::Accepted(VaporS3Artifact(artifact)),
         Err(AdmissionFailure::Unsupported(reason)) => VaporS3BridgeStatus::Legacy(reason),
         Err(AdmissionFailure::Invalid(message)) => VaporS3BridgeStatus::Rejected(std::vec![cstr!(

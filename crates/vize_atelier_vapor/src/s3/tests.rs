@@ -183,7 +183,7 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
     let allocator = Allocator::new();
     for source in [
         "<component :is=\"view\" />",
-        "<template v-if=\"ok\"><div></div><div></div></template>",
+        "<template v-if=\"ok\" :key=\"k\"><div></div><div></div></template>",
         "<div v-for=\"x in (xs as any)\"></div>",
         "<div>{{ one as number }}</div>",
         "<div v-pre>{{ literal }}</div>",
@@ -306,3 +306,4 @@ mod control;
 mod attributes;
 mod components;
 mod parser_agreement;
+mod templates;

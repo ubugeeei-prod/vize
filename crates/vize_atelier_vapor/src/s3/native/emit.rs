@@ -84,9 +84,19 @@ impl<'a> Emitter<'a, '_> {
     /// `transform_children` order: a pure text run becomes one text node,
     /// otherwise every child is instantiated or created in turn.
     fn block(&mut self, children: &[usize]) -> BlockIRNode<'a> {
+        self.block_with(children, true)
+    }
+
+    /// A branch or loop body. The retained lane transforms a `<template>`
+    /// carrier's children one by one, so its text parts are never combined.
+    fn body(&mut self, children: &[usize]) -> BlockIRNode<'a> {
+        self.block_with(children, false)
+    }
+
+    fn block_with(&mut self, children: &[usize], combine: bool) -> BlockIRNode<'a> {
         ensure_sufficient_stack(|| {
             let mut block = BlockIRNode::new(self.allocator);
-            if self.combined_text(children, &mut block) {
+            if combine && self.combined_text(children, &mut block) {
                 return block;
             }
             for &child in children {

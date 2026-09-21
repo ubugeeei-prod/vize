@@ -106,6 +106,10 @@ fn native_pair(criterion: &mut Criterion) {
             "<main><Counter :label=\"title\" :step=\"2\" @bump=\"total += $event\"><b>{{ total }}</b></Counter><slot name=\"aside\" :n=\"total\"><i>none</i></slot></main>",
         ),
         (
+            "templates",
+            "<main><template v-if=\"open\"><header>{{ title }}</header><section>{{ lead }}</section></template><ul><template v-for=\"row in rows\" :key=\"row.id\"><li>{{ row.label }}</li><li v-if=\"row.note\">{{ row.note }}</li></template></ul></main>",
+        ),
+        (
             "control_flow",
             "<main><section v-if=\"open\"><b>{{ title }}</b><span v-for=\"row in rows\" :key=\"row.id\" :title=\"row.title\">{{ row.label }}</span></section><i v-else>closed</i><ul><li v-for=\"(cell, i) in cells\" @click=\"save\">{{ i }}: {{ cell }}</li></ul></main>",
         ),

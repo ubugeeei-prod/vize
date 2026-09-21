@@ -6,13 +6,14 @@
 //! those keep the legacy lane rather than being re-derived from text here.
 
 use vize_atelier_core::steps::expression::is_template_global;
+use vize_carton::Span;
 use vize_s3::{
     op::{OpId, OpKind, Program, RegionId},
     operand::{Operand, OperandRole as Role, ValueKind},
 };
 
 use super::super::{Branch, Content, Expr, Loop};
-use super::{Result, operands::js, operands::one};
+use super::{Result, operands::js, operands::one, operands::reference};
 use crate::s3::{AdmissionFailure, LegacyReason, retained::Retained};
 
 pub(super) fn branches<'a>(
@@ -44,7 +45,7 @@ pub(super) fn branches<'a>(
         branches.push(Branch {
             condition,
             region,
-            root: None,
+            roots: std::vec::Vec::new(),
         });
     }
     if branches.is_empty() {
@@ -53,9 +54,11 @@ pub(super) fn branches<'a>(
     Ok(Content::If { branches })
 }
 
+/// `carrier` is `Some` for a `<template v-for>`, holding its wrapper key.
 pub(super) fn for_loop<'a>(
     values: &[Operand<'a>],
     retained: &Retained<'_, 'a>,
+    carrier: Option<Option<(&'a str, Span)>>,
 ) -> Result<Content<'a>> {
     if values.iter().any(|value| {
         !matches!(
@@ -90,12 +93,25 @@ pub(super) fn for_loop<'a>(
     {
         return Err(LegacyReason::ControlFlow.into());
     }
+    let key_prop = match carrier.flatten() {
+        Some((text, _)) if reference(text) => Some(Expr::plain(text)),
+        Some((text, span)) => Some(Expr {
+            text,
+            js: Some(
+                retained
+                    .expression(text, span)
+                    .ok_or(LegacyReason::ExpressionOrEncoding)?,
+            ),
+        }),
+        None => None,
+    };
     Ok(Content::For(Loop {
         source,
         value,
         key,
         index,
-        key_prop: None,
+        key_prop,
+        template: carrier.is_some(),
     }))
 }
 

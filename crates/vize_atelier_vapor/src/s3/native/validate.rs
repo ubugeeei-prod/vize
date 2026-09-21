@@ -17,7 +17,7 @@ use vize_s3::{
 };
 
 use super::{Content, NativeArtifact, Node};
-use crate::s3::{AdmissionFailure, LegacyReason, retained::Retained};
+use crate::s3::{AdmissionFailure, LegacyReason, retained::Retained, templates::TemplateLoop};
 
 pub(in crate::s3) use operands::reference;
 
@@ -29,6 +29,7 @@ type Slots = [Option<(usize, RegionId)>];
 pub(super) fn admit<'a>(
     program: &Program<'a>,
     retained: &Retained<'_, 'a>,
+    loops: &[TemplateLoop<'a>],
 ) -> Result<NativeArtifact<'a>> {
     if program.phase != Phase::Built {
         return Err(LegacyReason::Operation.into());
@@ -83,7 +84,13 @@ pub(super) fn admit<'a>(
                 continue;
             }
             OpKind::If => control::branches(values, retained)?,
-            OpKind::For => control::for_loop(values, retained)?,
+            OpKind::For => {
+                let carrier = loops
+                    .iter()
+                    .find(|(id, _)| *id == op.id)
+                    .map(|(_, key)| *key);
+                control::for_loop(values, retained, carrier)?
+            }
             OpKind::CreateComponent => component::component(values)?,
             // Slot-content bindings (named or scoped slots) share the op kind.
             OpKind::SlotOutlet if values.iter().any(|value| value.role == Role::BindingKind) => {

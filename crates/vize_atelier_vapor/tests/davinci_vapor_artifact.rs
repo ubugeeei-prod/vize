@@ -64,6 +64,15 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
         // The `vapor_native_pair/expressions` and `control_flow` bench fixtures.
         r#"<main class="shell" :class="{ dense, [theme]: true }"><button @click="count++" :title="'n=' + count">{{ count * 2 }} / {{ label.toUpperCase() }}</button><div v-show="open && ready" v-text="items.map(i => i.name).join(', ')"></div></main>"#,
         r#"<main><section v-if="open"><b>{{ title }}</b><span v-for="row in rows" :key="row.id" :title="row.title">{{ row.label }}</span></section><i v-else>closed</i><ul><li v-for="(cell, i) in cells" @click="save">{{ i }}: {{ cell }}</li></ul></main>"#,
+        // Template carriers: fragment bodies and a compound wrapper key.
+        r#"<div><template v-if="ok"><b>{{ a }}</b>tail</template><i v-else>x</i></div>"#,
+        r#"<ul><template v-for="(x, i) in xs" :key="x.id + i"><li>{{ x.a }}</li><li v-if="x.b">{{ i }}</li></template></ul>"#,
+        // The mounted template scenarios.
+        r#"<main data-id="root"><template v-if="open"><b data-id="a">{{ a }}</b><i data-id="b">{{ b }}</i></template><span v-else data-id="c">closed</span><em data-id="tail">t</em></main>"#,
+        r#"<main data-id="root"><ul data-id="list"><template v-for="row in rows" :key="row.id"><li :data-id="'l' + row.id">{{ row.label }}</li><li :data-id="'n' + row.id">{{ row.note }}</li></template></ul></main>"#,
+        r#"<main data-id="root"><template v-if="on">on {{ n }}</template><template v-else>off</template></main>"#,
+        // The `vapor_native_pair/templates` bench fixture.
+        r#"<main><template v-if="open"><header>{{ title }}</header><section>{{ lead }}</section></template><ul><template v-for="row in rows" :key="row.id"><li>{{ row.label }}</li><li v-if="row.note">{{ row.note }}</li></template></ul></main>"#,
     ];
     for source in accepted {
         for prefix_identifiers in [false, true] {
@@ -189,7 +198,7 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
     }
     for source in [
         "<div>{{ value as number }}</div>",
-        "<template v-if=\"ok\"><b>{{ value }}</b></template>",
+        "<template v-if=\"ok\" :key=\"k\"><b>{{ value }}</b></template>",
         "<button @click=\"a++; b++\">{{ label }}</button>",
         "<div v-pre>{{ raw }}</div>",
     ] {

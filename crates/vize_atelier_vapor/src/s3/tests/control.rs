@@ -38,25 +38,10 @@ fn control_flow_shapes_are_admitted() {
 fn unsupported_control_flow_selects_exact_legacy_reasons() {
     use LegacyReason::{Binding, ControlFlow, ExpressionOrEncoding, Structure};
     for (source, reason) in [
-        // S2 keeps template wrappers and carrier branch keys as side facts.
-        (
-            r#"<div><template v-if="a"><span>x</span></template></div>"#,
-            ControlFlow,
-        ),
-        (
-            r#"<div><template v-for="x in xs"><span>{{ x }}</span></template></div>"#,
-            ControlFlow,
-        ),
-        (
-            r#"<div><template v-for="x in xs" :key="x.id"><span>{{ x }}</span></template></div>"#,
-            ControlFlow,
-        ),
+        // S2 keeps carrier branch keys as side facts (template wrappers:
+        // `tests/templates.rs`).
         (
             r#"<div><span v-if="a" :key="k">x</span></div>"#,
-            ControlFlow,
-        ),
-        (
-            r#"<ul><li v-if="ok" v-for="x in xs">{{ x }}</li></ul>"#,
             ControlFlow,
         ),
         (

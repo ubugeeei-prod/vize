@@ -70,7 +70,10 @@ pub(super) fn bindings<'a>(
         if binding.kind == BindingKind::Prop && binding.name == "key" {
             // Only the body element of an element-carried loop owns a key.
             let owner = parents[index].map(|parent| &mut nodes[parent].content);
-            let Some(Content::For(owner)) = owner else {
+            // A `<template v-for>` keys the loop on its wrapper.
+            let Some(Content::For(owner)) =
+                owner.filter(|owner| !matches!(owner, Content::For(looped) if looped.template))
+            else {
                 return Err(LegacyReason::Binding.into());
             };
             owner.key_prop = Some(binding.value);

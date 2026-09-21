@@ -6,22 +6,22 @@ import { resolveComponent as _resolveComponent, createComponentWithFallback as _
 const t0 = _template("<span>a</span>", true)
 const t1 = _template("<div><button><!----></button><main><!----></main></div>", true)
 export function render(_ctx) {
-const n2 = t1()
-const n0 = _child(n2)
-const n3 = _child(n0)
-const n1 = _next(n0, 1)
-const n7 = _child(n1)
-_setInsertionState(n0, n3, true)
-const n4 = _createIf(() => (_ctx.dark), () => {
-const n6 = t0()
-return n6
+const n0 = t1()
+const n1 = _child(n0)
+const n2 = _child(n1)
+const n6 = _next(_child(n0), 1)
+const n7 = _child(n6)
+_setInsertionState(n1, n2, true)
+const n3 = _createIf(() => (_ctx.dark), () => {
+const n5 = t0()
+return n5
 })
-_setInsertionState(n1, n7, true)
+_setInsertionState(n6, n7, true)
 const n8 = _createIf(() => (_ctx.tab), () => {
-_setInsertionState(n1, n7, true)
+_setInsertionState(n6, n7, true)
 const _component_MyComp = _resolveComponent("MyComp")
 const n10 = _createComponentWithFallback(_component_MyComp, null, null, true)
 return n10
 })
-return n2
+return n0
 }

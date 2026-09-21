@@ -34,9 +34,9 @@ enum Content<'a> {
         parts: std::vec::Vec<TextPart<'a>>,
         dynamic: bool,
     },
-    /// Authored branch order. Each branch renders exactly one native element.
+    /// Authored branch order; each branch body is its own block.
     If { branches: std::vec::Vec<Branch<'a>> },
-    /// One element-carried loop. `children` holds its single body element.
+    /// One loop; `children` is its body (one element, or a template fragment).
     For(Loop<'a>),
     /// A resolved component; `children` is its default slot content.
     Component {
@@ -66,7 +66,8 @@ struct Branch<'a> {
     /// `None` only for a trailing unconditional (`v-else`) branch.
     condition: Option<Expr<'a>>,
     region: vize_s3::op::RegionId,
-    root: Option<usize>,
+    /// The branch body in authored order: one element, or a template fragment.
+    roots: std::vec::Vec<usize>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -75,8 +76,11 @@ struct Loop<'a> {
     value: &'a str,
     key: Option<&'a str>,
     index: Option<&'a str>,
-    /// The body element's `:key`, lifted out of its ordinary bindings.
+    /// The body element's `:key`, lifted out of its ordinary bindings, or
+    /// a template carrier's wrapper key.
     key_prop: Option<Expr<'a>>,
+    /// Carried by `<template v-for>`: the body is a fragment.
+    template: bool,
 }
 
 /// One admitted operand. A direct reference or static text needs no AST; any
@@ -124,8 +128,9 @@ impl<'a> NativeArtifact<'a> {
     pub(super) fn admit(
         s3: &Lowered<'a>,
         retained: &Retained<'_, 'a>,
+        loops: &[super::templates::TemplateLoop<'a>],
     ) -> Result<Self, AdmissionFailure> {
-        validate::admit(&s3.program, retained)
+        validate::admit(&s3.program, retained, loops)
     }
 
     /// Consuming the checked projection is the only production generation path
