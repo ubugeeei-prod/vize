@@ -1,0 +1,8 @@
+[disegno]
+ops=2
+
+[disegno.ops]
+ui.element p @1003:1080
+  attr title="日本語の見出し" @1006:1035
+  ui.interpolation opaque(compound "こんにちは、{{ name }} さん 👋" @1036:1076) @1036:1076
+

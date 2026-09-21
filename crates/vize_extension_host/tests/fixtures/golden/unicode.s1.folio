@@ -1,0 +1,25 @@
+[s1]
+bytes=81
+
+[s1.tree]
+text 0:0:3
+element
+  lt-name 3:3:5
+  attr
+    name 5:6:11
+    eq 11:11:12
+    open-quote 12:12:13
+    value 13:13:34
+    close-quote 34:34:35
+  gt 35:35:36
+  text 36:36:54
+  interpolation
+    open 54:54:56
+    content 56:56:62
+    close 62:62:64
+  text 64:64:76
+  close-tag
+    lt-slash-name 76:76:79
+    gt 79:79:80
+text 80:80:81
+

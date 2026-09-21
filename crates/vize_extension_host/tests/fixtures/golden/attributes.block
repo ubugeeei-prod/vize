@@ -1,0 +1,4 @@
+
+  <div id="app" class='card' data-mode=raw :title="heading" @click="open(1)" disabled>
+    {{ message }}
+  </div>

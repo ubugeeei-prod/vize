@@ -5,6 +5,8 @@
 
 ## P6-1a — Input-dialect WIT world and capability handshake
 
+**Landed 2026-09-22** — full record: [phase-6-records/p6-1a.md](./phase-6-records/p6-1a.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** A
@@ -13,9 +15,9 @@
 
 **Steps:**
 
-- [ ] WIT package `vize:contracts@0.1.0` with the handshake interface and the input world; serialized payloads are the S1/S2 folio `Full` forms (schema-versioned per P2-17)
-- [ ] A host-side golden exchange: a guest stub echoing a committed S1/S2 payload
-- [ ] Register the TS-48 command in [test-suites.md](./test-suites.md): `cargo test -p vize_extension_host --test wit_golden`
+- [x] WIT package `vize:contracts@0.1.0` with the handshake interface and the input world; serialized payloads are the S1/S2 folio `Full` forms (schema-versioned per P2-17; the S1 page is new, [folio-format-s1.md](./folio-format-s1.md))
+- [x] A host-side golden exchange: a guest stub echoing a committed S1/S2 payload
+- [x] Register the TS-48 command in [test-suites.md](./test-suites.md): `cargo test -p vize_extension_host --features extension-host --test wit_golden` (wasmtime stays behind the feature, charter #39)
 
 **Acceptance:** TS-48 for the input world: capability negotiation including rejection of a mismatched version with its exact error, and byte-equal serialized payloads in the golden exchange.
 

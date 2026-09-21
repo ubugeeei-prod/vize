@@ -1,0 +1,13 @@
+[disegno]
+ops=4
+
+[disegno.ops]
+ui.element div @13:124
+  attr id="app" @18:26
+  attr class="card" @27:39
+  attr data-mode="raw" @40:53
+  attr disabled @88:96
+  ui.bind name="title" value=js("heading" @62:69) @54:70
+  ui.on name="click" handler=js("open(1)" @79:86) @71:87
+  ui.interpolation js("message" @105:112) @102:115
+

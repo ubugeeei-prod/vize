@@ -1,0 +1,12 @@
+[disegno]
+ops=5
+
+[disegno.ops]
+ui.element section @67:134
+  ui.element p @76:134
+    ui.text "unclosed " @79:90
+    ui.element img @99:117
+      attr src="a.png" @104:115
+    ui.element b @120:134
+      attr title="open" @123:134
+

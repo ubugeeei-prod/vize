@@ -1,0 +1,39 @@
+[s1]
+bytes=70
+
+[s1.tree]
+text 0:0:3
+element
+  lt-name 3:3:11
+  gt 11:11:12
+  element
+    lt-name 12:12:14
+    gt 14:14:15
+    text 15:15:26
+    unexpected 26:26:32
+    text 32:32:35
+    element
+      lt-name 35:35:39
+      attr
+        name 39:40:43
+        eq 43:43:44
+        open-quote 44:44:45
+        value 45:45:50
+        close-quote 50:50:51
+      slash 51:51:52
+      gt 52:52:53
+      close not-expected
+    text 53:53:56
+    element
+      lt-name 56:56:58
+      attr
+        name 58:59:64
+        eq 64:64:65
+        open-quote 65:65:66
+        value 66:66:70
+        close-quote 70:70:70 missing
+      gt 70:70:70 missing
+      close missing
+    close missing
+  close missing
+

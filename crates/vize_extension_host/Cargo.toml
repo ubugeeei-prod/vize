@@ -1,0 +1,46 @@
+# The extension-contract host (Davinci phase 6, P6-1a / P6-3).
+#
+# Hosts input-dialect guests over the `vize:contracts` WIT package in
+# `contracts/wit/`: the capability handshake, host-side acceptance of the
+# serialized S1/S2 pages, the in-tree Vue dialect behind the same trait
+# (charter #15's first-party tier), and the external tier's transports.
+#
+# wasmtime is admitted under charter #39 only behind the `extension-host`
+# feature: nothing else in the workspace links it.
+[package]
+name = "vize_extension_host"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Davinci extension-contract host: WIT handshake, page acceptance and guest transports"
+publish = false
+metadata.vize.stability = "experimental"
+
+[features]
+# Hosts contract guests under wasmtime (charter #39: pinned, audited, and
+# linked only through this feature).
+extension-host = ["dep:wasmtime"]
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+vize_davinci = { workspace = true }
+vize_s0 = { workspace = true }
+vize_s1 = { workspace = true }
+vize_s1_to_s2 = { workspace = true }
+vize_s2 = { workspace = true }
+wasmtime = { workspace = true, optional = true }
+
+[dev-dependencies]
+davinci_test_support = { workspace = true }
+
+[[bin]]
+name = "vize-extension-host"
+path = "src/bin/vize-extension-host.rs"
+required-features = ["extension-host"]
+
+[[test]]
+name = "wit_golden"
+required-features = ["extension-host"]

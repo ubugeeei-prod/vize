@@ -1,0 +1,31 @@
+# TS-48's golden-exchange guest stub: a `vize:contracts` input-dialect
+# component that echoes the committed Vue goldens byte for byte.
+#
+# Built by `tests/wit_golden.rs` for `wasm32-wasip2` with `--locked`; it is
+# its own workspace so the vize workspace never compiles it for the host.
+[package]
+name = "vize-contract-echo-guest"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[features]
+# Offer protocol version 2, which this host does not speak: the handshake's
+# version-mismatch refusal is exercised against a real guest binary.
+offer-protocol-2 = []
+
+[dependencies]
+dlmalloc = { version = "=0.2.14", features = ["global"] }
+wit-bindgen = { version = "=0.62.0", default-features = false, features = ["macros", "realloc"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
+
+[workspace]

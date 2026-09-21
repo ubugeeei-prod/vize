@@ -58,7 +58,7 @@ Ordered for the 2026-09-23 completion target; **bold** tasks carry the most pres
 
 Each ID links to its contract; the box is checked only in the PR that satisfies its acceptance criteria, with a record under `phase-6-records/`.
 
-- [ ] [P6-1a](./phase-6-tasks.md#p6-1a--input-dialect-wit-world-and-capability-handshake) Input-dialect WIT world and capability handshake — lane A · startable now
+- [x] [P6-1a](./phase-6-tasks.md#p6-1a--input-dialect-wit-world-and-capability-handshake) Input-dialect WIT world and capability handshake — lane A · startable now
 - [ ] [P6-1b](./phase-6-tasks.md#p6-1b--expression-dialect-wit-world) Expression-dialect WIT world — lane A · gated on P4-5a
 - [ ] [P6-1c](./phase-6-tasks.md#p6-1c--output-target-wit-world) Output-target WIT world — lane A · gated on P3-9
 - [ ] [P6-2](./phase-6-tasks.md#p6-2--prebuilt-versioned-sdk) Prebuilt versioned SDK — lane B · startable now

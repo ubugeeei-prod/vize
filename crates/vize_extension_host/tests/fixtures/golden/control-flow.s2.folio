@@ -1,0 +1,21 @@
+[disegno]
+ops=13
+
+[disegno.ops]
+ui.element ul @23:123
+  ui.for source=js("items" @60:65) value=js("item" @44:48) key=js("index" @50:55) @32:115
+    ui.element li @32:115
+      ui.bind name="key" value=js("item.id" @73:80) @67:81
+      ui.interpolation opaque(compound "{{ index }}: {{ item.name }}" @82:110) @82:110
+ui.if @126:165
+  branch js("ok" @135:137) @126:146
+    ui.element p @126:146
+      ui.text "yes" @139:142
+  branch @149:165
+    ui.element p @149:165
+      ui.text "no" @159:161
+ui.slot name="footer" @168:220
+  ui.element input @188:213
+    ui.model read=js("draft" @204:209) write=js("draft" @204:209) @195:210
+      attr element-kind="input" @195:210
+

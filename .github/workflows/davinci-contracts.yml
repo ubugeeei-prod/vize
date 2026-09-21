@@ -1,0 +1,71 @@
+name: Davinci Contracts
+
+# TS-48: the `vize:contracts` WIT worlds round-trip through real component
+# guests, out of process and in process under wasmtime. wasmtime is reachable
+# only through `vize_extension_host`'s `extension-host` feature (charter #39),
+# so this lane is the one place CI compiles it; `check.yml` runs the crate's
+# feature-free contract tests with the workspace and audits the lockfile.
+
+on:
+  push:
+    branches: [main, davinci]
+    paths:
+      - "contracts/**"
+      - "crates/vize_extension_host/**"
+      - "crates/vize_davinci/**"
+      - "crates/vize_s1/**"
+      - "crates/vize_s1_to_s2/**"
+      - "crates/vize_s2/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "davinci-road/plan/test-suites.md"
+      - ".github/workflows/davinci-contracts.yml"
+  pull_request:
+    branches: [main, davinci]
+    paths:
+      - "contracts/**"
+      - "crates/vize_extension_host/**"
+      - "crates/vize_davinci/**"
+      - "crates/vize_s1/**"
+      - "crates/vize_s1_to_s2/**"
+      - "crates/vize_s2/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "davinci-road/plan/test-suites.md"
+      - ".github/workflows/davinci-contracts.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: davinci-contracts-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  wit-contract:
+    name: WIT contract round trip (TS-48)
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          components: clippy
+          targets: wasm32-wasip2
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: davinci-contracts
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Clippy the wasmtime host lane
+        run: cargo clippy -p vize_extension_host --all-targets --features extension-host -- -D warnings -D clippy::wildcard_imports
+      - name: Run TS-48 (input world, both hosting modes)
+        run: cargo test -p vize_extension_host --features extension-host --test wit_golden

@@ -1,0 +1,10 @@
+diagnostic error surface 5:5 every severity, stage, part kind and the witness cross the ABI
+part primary 5:5 the primary label
+part secondary 5:5 a secondary label
+part help 5:5 help text
+part suggestion 5:5 replacement text
+witness legacy-exempt vize_extension_host::probe
+diagnostic warning source 5:5 a warning from S0
+diagnostic info semantic 5:5 information from S2
+diagnostic hint lowered 5:5 a hint from S3
+diagnostic error emit 5:5 unicode — 日本語 👋 "quoted" \backslash

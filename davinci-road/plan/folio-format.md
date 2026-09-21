@@ -340,3 +340,8 @@ exact oracles in `tests/verifier_observer.rs`.
 The S3 stage dump is documented in
 [`folio-format-impeto.md`](./folio-format-impeto.md). That page owns the flat
 Impeto grammar and the TS-27 validator contract.
+
+## S1 page (P6-1a)
+
+The lossless surface page the input-dialect contract carries is documented in
+[`folio-format-s1.md`](./folio-format-s1.md).

@@ -1,0 +1,8 @@
+
+  <!-- the list -->
+  <ul>
+    <li v-for="(item, index) in items" :key="item.id">{{ index }}: {{ item.name }}</li>
+  </ul>
+  <p v-if="ok">yes</p>
+  <p v-else>no</p>
+  <slot name="footer"><input v-model="draft" /></slot>
