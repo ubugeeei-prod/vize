@@ -34,7 +34,16 @@
       timing observer's rule), and the timeline brackets each walk's passes
       with the walk's time. Today's S2 plans fuse nothing (barriers and one
       optional analysis), so every walk holds one pass._
-- [ ] C-4 Flame views from profiler export (starts: P0-11 data available)
+- [x] C-4 Flame views from profiler export (starts: P0-11 data available)
+      _Landed 2026-09-22: the Davinci tab's Flame view folds the P0-11
+      export's attributed spans (key `davinci.spolvero.step`) into a stage >
+      pass > block flame graph - width is the exporter's `wall_ns.total`,
+      siblings sort by name (the export carries no run order) - and diffs it
+      frame by frame against a pinned earlier run (slower / faster / within
+      10% / new). A frame opens the step page it names. Walk spans overlap
+      their steps and are never added in. A CLI `--profile-json` export
+      (`vize build`, `davinci-opt --timing-json`) opens in the same view,
+      negotiated on `schema_version`, on any of its span keys._
 - [x] C-5 S3 pages, provenance navigation, remarks rendering (starts: P3-13)
       _S3 pages landed 2026-09-21 in the same feed: `s3` (graph),
       `s3-partition` (the new `[s3-partition-folio]` page) and `s3-values`.

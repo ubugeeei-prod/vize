@@ -5,9 +5,11 @@ import { beforeAll, describe, expect, it } from "vite-plus/test";
 import { loadWasm, type WasmModule } from "../src/wasm";
 import { negotiateSpolveroFeed } from "../src/wasm/types/spolvero";
 import {
+  LADDER_STEP_KEY,
   ladderStepTimings,
   ladderWalkTimings,
   negotiateProfileExport,
+  type ProfileExport,
 } from "../src/wasm/types/profile";
 import { DAVINCI_PRESET } from "../src/shared/presets/davinci";
 import { buildLadder, type StageLadder } from "../src/features/davinci/ladder";
@@ -15,11 +17,13 @@ import { folioLines } from "../src/features/davinci/folioLines";
 import { parseProvenance, recordsForNode } from "../src/features/davinci/provenance";
 import { remarksAt, summarizeRemarks } from "../src/features/davinci/remarks";
 import { templateBytesToSfcRange, templateStartInSfc } from "../src/features/davinci/offsets";
+import { flameGraph } from "../src/features/davinci/flame";
 
 const FILENAME = "Component.vue";
 let wasm: WasmModule;
 let ladder: StageLadder;
 let templateStart: number;
+let exported: ProfileExport;
 
 beforeAll(async () => {
   wasm = await loadWasm();
@@ -28,6 +32,7 @@ beforeAll(async () => {
   if (!negotiated.ok) throw new Error(negotiated.error);
   const profile = negotiateProfileExport(analysis.spolveroProfile);
   if (!profile.ok) throw new Error(profile.error);
+  exported = profile.profile;
   ladder = buildLadder(
     negotiated.feed,
     FILENAME,
@@ -120,6 +125,25 @@ describe("Davinci stage ladder from the real compiler", () => {
       ["s2/hoist-static", 2],
       ["s3/lower", null],
     ]);
+  });
+
+  it("draws the flame view from the export's attributed step spans", () => {
+    const flame = flameGraph(exported, LADDER_STEP_KEY);
+    const at = (depth: number) =>
+      flame.frames.filter((frame) => frame.depth === depth).map((f) => f.path.join("/"));
+    expect(at(0)).toEqual(["s1", "s2", "s3"]);
+    expect(at(1)).toEqual([
+      "s1/parse",
+      "s2/hoist-static",
+      "s2/lower",
+      "s2/v-model",
+      "s2/v-slot",
+      "s3/lower",
+    ]);
+    expect(at(2)).toEqual(at(1).map((path) => `${path}/template`));
+    // Every step is one frame, so the graph's width is the steps' sum.
+    const steps = ladder.timeline.reduce((sum, step) => sum + step.nanos!, 0);
+    expect(flame.total).toBe(steps);
   });
 
   it("diffs consecutive S2 pages through the inspector's line diff", () => {

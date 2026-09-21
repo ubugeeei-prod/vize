@@ -1,0 +1,141 @@
+/* Flame view: one lane per attribution level (stage, pass, block), frames
+   placed by their share of the run. Stage colours match the time strip;
+   against a pinned baseline the colour switches to the trend instead. */
+
+.davinci-flame {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 20px;
+}
+
+.davinci-flame-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.davinci-flame-bar p.davinci-hint {
+  margin: 0 auto 0 0;
+}
+
+/* The file picker is its label; the input stays focusable but unseen. */
+.davinci-flame-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.davinci-flame-file:focus-visible + label {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+.davinci-flame-graph {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.davinci-flame-row {
+  display: grid;
+  grid-template-columns: 5ch 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.davinci-flame-level {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.davinci-flame-lane {
+  position: relative;
+  height: 30px;
+}
+
+.davinci-flame-frame {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 2px;
+  padding: 0 7px;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--bg-primary);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.davinci-flame-frame:hover,
+.davinci-flame-frame:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.davinci-flame-frame.rung-s1 {
+  background: color-mix(in srgb, var(--hl-tag) 28%, var(--bg-primary));
+}
+
+.davinci-flame-frame.rung-s2 {
+  background: color-mix(in srgb, var(--hl-directive) 28%, var(--bg-primary));
+}
+
+.davinci-flame-frame.rung-s3 {
+  background: color-mix(in srgb, var(--dv-ochre) 28%, var(--bg-primary));
+}
+
+.davinci-flame-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.davinci-flame-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Against a baseline: ochre slower, teal faster, quiet within noise. */
+.davinci-flame .trend-slower,
+.davinci-flame-frame.trend-slower {
+  background: color-mix(in srgb, var(--dv-ochre) 45%, var(--bg-primary));
+}
+
+.davinci-flame .trend-faster,
+.davinci-flame-frame.trend-faster {
+  background: color-mix(in srgb, var(--dv-static) 40%, var(--bg-primary));
+}
+
+.davinci-flame .trend-same,
+.davinci-flame-frame.trend-same {
+  background: var(--bg-tertiary);
+}
+
+.davinci-flame .trend-new,
+.davinci-flame-frame.trend-new {
+  background: transparent;
+  border: 1px dashed var(--text-muted);
+}
+
+.davinci-flame-legend {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.davinci-flame-legend span {
+  padding: 1px 7px;
+  border-radius: 4px;
+  color: var(--text-primary);
+}
