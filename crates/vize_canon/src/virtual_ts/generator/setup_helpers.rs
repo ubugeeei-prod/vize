@@ -69,7 +69,7 @@ pub(super) fn emit_setup_helpers(
     generic_param: Option<&str>,
     hoist_shared_preamble: bool,
     template_ast: Option<&RootNode<'_>>,
-) {
+) -> bool {
     // Static `ref="name"` attributes on plain elements, keyed for
     // `useTemplateRef` (#3896): the registry exists only to retype this
     // scope's shim, so it is collected here rather than by the caller.
@@ -108,7 +108,7 @@ pub(super) fn emit_setup_helpers(
         let registry_body = registry.body.as_str();
         append!(
             *ts,
-            "{dom_ref_helper}{component_ref_helper}  type __VizeTemplateRefs = {{{registry_body}}};\n  type __VizeUseTemplateRef = {{ <_K extends string>(_key: _K): Readonly<import('vue').ShallowRef<(_K extends keyof __VizeTemplateRefs ? __VizeTemplateRefs[_K] : any) | null>>; <_T>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; }};\n"
+            "{dom_ref_helper}{component_ref_helper}  type __VizeTemplateRefs = {{{registry_body}}};\n  type __VizeUseTemplateRef = {{ <_K extends keyof __VizeTemplateRefs>(_key: _K): Readonly<import('vue').ShallowRef<__VizeTemplateRefs[_K] | null>>; <_T = unknown>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; }};\n"
         );
     }
     let boolean_keys =
@@ -123,6 +123,8 @@ pub(super) fn emit_setup_helpers(
         boolean_keys.is_some(),
         template_refs.is_some(),
     );
+    // Whether the template's ref registry is declared in this scope.
+    template_refs.is_some()
 }
 
 fn emit_define_props_boolean_keys_type(ts: &mut String, collection: &DefinePropsBooleanKeys) {

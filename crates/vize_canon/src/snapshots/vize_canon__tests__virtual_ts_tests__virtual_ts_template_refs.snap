@@ -106,7 +106,7 @@ export type Props = {};
 function __setup() {
   type __VizeDomElement<_Tag extends string, _Svg extends boolean = false> = _Svg extends true ? (_Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element) : (_Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : Element);
   type __VizeTemplateRefs = { "inputRef": __VizeDomElement<"input">; "btn": __VizeDomElement<"button">; };
-  type __VizeUseTemplateRef = { <_K extends string>(_key: _K): Readonly<import('vue').ShallowRef<(_K extends keyof __VizeTemplateRefs ? __VizeTemplateRefs[_K] : any) | null>>; <_T>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; };
+  type __VizeUseTemplateRef = { <_K extends keyof __VizeTemplateRefs>(_key: _K): Readonly<import('vue').ShallowRef<__VizeTemplateRefs[_K] | null>>; <_T = unknown>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; };
   // Compiler macros (only valid in setup scope, not global)
   function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeBooleanKey<_T>, keyof __LooseRequired<_T>>>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
@@ -128,9 +128,9 @@ function __setup() {
   
   
   const inputRef = ref<HTMLInputElement | null>(null)
-  const buttonEl = useTemplateRef('btn')
+void (null! as __VizeTemplateRefs["btn"]);   const buttonEl = useTemplateRef('btn')
   
-  // @vize-map: 15053:15157 -> 0:135
+  // @vize-map: 15035:15182 -> 0:135
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

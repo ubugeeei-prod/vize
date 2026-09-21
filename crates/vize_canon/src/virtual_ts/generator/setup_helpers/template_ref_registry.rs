@@ -5,9 +5,11 @@
 //! `<div ref="box">`, or the child's public instance for
 //! `<Child ref="box">`. Otherwise dereferencing before mount, or reading a
 //! private child setup binding, is silently approved where vue-tsc reports.
-//! Everything the registry cannot pin keeps today's `any`, so nothing new is
-//! reported for dynamic `:ref` bindings or refs declared inside `v-for` (where
-//! the runtime value is an array).
+//!
+//! The registry follows the Vue toolchain: a ref inside `v-for` holds an array
+//! of its targets, a name registered more than once holds the union of them,
+//! and a literal name the template never registers is an error. Only a dynamic
+//! `:ref` binding stays outside it.
 
 use vize_carton::{FxHashSet, String, append, is_native_tag};
 use vize_croquis::Croquis;
@@ -24,6 +26,8 @@ use super::push_ts_string_literal;
 struct RegisteredRef {
     name: String,
     kind: RegisteredRefKind,
+    /// Declared inside `v-for`: the ref holds one target per iteration.
+    in_v_for: bool,
 }
 
 pub(super) struct TemplateRefRegistry {
@@ -79,49 +83,55 @@ pub(super) fn template_ref_registry(
         return None;
     }
 
-    // A name registered twice stays out: Vue keeps the last mounted element,
-    // conditional branches make that order type-invisible, and a wrong pin is
-    // worse than the `any` it replaces.
-    let mut seen = FxHashSet::default();
-    let mut duplicated = FxHashSet::default();
+    // A name registered more than once holds whichever target is mounted, so
+    // its type is the union of them, in template order.
+    let mut names: Vec<&str> = Vec::new();
     for entry in &refs {
-        if !seen.insert(entry.name.clone()) {
-            duplicated.insert(entry.name.clone());
+        if !names.contains(&entry.name.as_str()) {
+            names.push(entry.name.as_str());
         }
     }
 
     let mut body = String::default();
     let mut includes_dom_element = false;
     let mut includes_component = false;
-    for entry in refs
-        .iter()
-        .filter(|entry| !duplicated.contains(&entry.name))
-    {
+    for name in names {
         // Both values are authored text, so they are escaped as TypeScript
         // string literals: a raw `\` in `ref="path\name"` would otherwise open
         // an escape sequence and silently key the registry under a different
         // name, and a trailing one would invalidate the whole virtual file.
         let mut name_literal = String::default();
-        push_ts_string_literal(&mut name_literal, entry.name.as_str());
-        match &entry.kind {
-            RegisteredRefKind::Element { tag, is_svg } => {
-                includes_dom_element = true;
-                let mut tag_literal = String::default();
-                push_ts_string_literal(&mut tag_literal, tag.as_str());
-                let svg_argument = if *is_svg { ", true" } else { "" };
-                append!(
-                    body,
-                    " {name_literal}: __VizeDomElement<{tag_literal}{svg_argument}>;"
-                );
+        push_ts_string_literal(&mut name_literal, name);
+        append!(body, " {name_literal}: ");
+        for (index, entry) in refs.iter().filter(|entry| entry.name == name).enumerate() {
+            if index > 0 {
+                body.push_str(" | ");
             }
-            RegisteredRefKind::Component { reference } => {
-                includes_component = true;
-                append!(
-                    body,
-                    " {name_literal}: __VizeTemplateComponentRef<typeof {reference}>;"
-                );
+            match &entry.kind {
+                RegisteredRefKind::Element { tag, is_svg } => {
+                    includes_dom_element = true;
+                    let mut tag_literal = String::default();
+                    push_ts_string_literal(&mut tag_literal, tag.as_str());
+                    let svg_argument = if *is_svg { ", true" } else { "" };
+                    append!(body, "__VizeDomElement<{tag_literal}{svg_argument}>");
+                    if entry.in_v_for {
+                        body.push_str("[]");
+                    }
+                }
+                RegisteredRefKind::Component { reference } => {
+                    includes_component = true;
+                    if entry.in_v_for {
+                        append!(
+                            body,
+                            "(__VizeTemplateComponentRef<typeof {reference}> | null)[]"
+                        );
+                    } else {
+                        append!(body, "__VizeTemplateComponentRef<typeof {reference}>");
+                    }
+                }
             }
         }
+        body.push(';');
     }
     if body.is_empty() {
         return None;
@@ -196,7 +206,7 @@ fn collect_element(
             .props
             .iter()
             .any(|prop| matches!(prop, PropNode::Directive(directive) if directive.name == "for"));
-    if !in_v_for {
+    {
         for prop in element.props.iter() {
             let PropNode::Attribute(attribute) = prop else {
                 continue;
@@ -234,6 +244,7 @@ fn collect_element(
                 refs.push(RegisteredRef {
                     name: String::from(name),
                     kind,
+                    in_v_for,
                 });
             }
         }

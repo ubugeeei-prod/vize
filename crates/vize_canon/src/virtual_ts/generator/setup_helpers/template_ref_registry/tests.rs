@@ -75,17 +75,26 @@ fn ref_names_are_escaped_as_typescript_string_literals() {
 }
 
 #[test]
-fn unpinnable_refs_stay_out_of_the_registry() {
+fn a_dynamic_ref_binding_stays_out_of_the_registry() {
     assert_eq!(registry_of(r#"<div :ref="target" />"#), None);
+}
+
+/// Inside `v-for` the ref holds one target per iteration, and a name the
+/// template registers more than once holds whichever of them is mounted.
+#[test]
+fn looped_refs_are_arrays_and_repeated_names_are_unions() {
     assert_eq!(
-        registry_of(r#"<li v-for="it in xs" :key="it" ref="rows" />"#),
-        None
+        registry_of(r#"<li v-for="it in xs" :key="it" ref="rows" />"#).as_deref(),
+        Some(r#" "rows": __VizeDomElement<"li">[]; "#)
     );
     assert_eq!(
-        registry_of(r#"<Child v-for="it in xs" :key="it.id" ref="child" />"#),
-        None
+        registry_of(r#"<ul><li v-for="it in xs" :key="it"><a ref="links" /></li></ul>"#).as_deref(),
+        Some(r#" "links": __VizeDomElement<"a">[]; "#)
     );
-    assert_eq!(registry_of(r#"<div ref="dup" /><span ref="dup" />"#), None);
+    assert_eq!(
+        registry_of(r#"<div ref="dup" /><span ref="dup" />"#).as_deref(),
+        Some(r#" "dup": __VizeDomElement<"div"> | __VizeDomElement<"span">; "#)
+    );
 }
 
 #[test]

@@ -29,6 +29,7 @@ mod setup_props;
 pub(super) mod setup_scope;
 mod setup_type_exports;
 mod spans;
+mod template_ref_keys;
 mod template_refs;
 mod type_only_imports;
 mod unresolved_components;
@@ -381,7 +382,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         &mut semantic_links,
         source_offset,
     );
-    emit_setup_helpers(
+    let has_ref_registry = emit_setup_helpers(
         &mut ts,
         SetupHelperComponentContext {
             helpers: &setup_helpers,
@@ -406,6 +407,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             let named_value_export_starts =
                 self::script_module::collect_named_value_export_starts(script);
             let mut props_const_assertions = PropsConstAssertions::new(script, options_api);
+            let mut ref_keys =
+                template_ref_keys::TemplateRefKeyChecks::collect(Some(script), has_ref_registry);
             let mut pending_wrap_close: Option<usize> = None;
             // Deferred class-component alias: `(class_end, name)`.
             let mut pending_class_alias: Option<(usize, &str)> = None;
@@ -439,6 +442,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     &named_value_export_starts,
                 );
                 let line = setup_line.as_ref();
+                ref_keys.emit_for_line(
+                    &mut ts,
+                    &mut mappings,
+                    (line_start, line_end),
+                    source_offset,
+                );
                 ts.push_str("  "); // indentation (not in source)
                 let gen_content_start = ts.len();
 

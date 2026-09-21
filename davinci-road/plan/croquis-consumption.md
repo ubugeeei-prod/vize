@@ -347,7 +347,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `is_vue_builtin`                             | `vize_canon`        |     1 |     1 |
 | `macro_artifact_kind`                        | `vize_atelier_sfc`  |     1 |     3 |
 | `names_match`                                | `vize_patina`       |     3 |     3 |
-| `parse_program_for_analysis`                 | `vize_canon`        |     3 |     6 |
+| `parse_program_for_analysis`                 | `vize_canon`        |     4 |     7 |
 | `parse_script_setup`                         | `vize_atelier_sfc`  |     1 |     2 |
 | `parse_script_setup`                         | `vize_maestro`      |     2 |     4 |
 | `parse_script_setup`                         | `vize_musea`        |     2 |     2 |
