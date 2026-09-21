@@ -72,14 +72,21 @@ fn children_end(children: &[TemplateChildNode<'_>], start: u32, source: &str) ->
                 {
                     return None;
                 }
-                if element.is_self_closing || vize_s0::is_void_tag(element.tag) {
-                    if !element.children.is_empty() {
-                        return None;
-                    }
-                    span.end
+                if element.is_self_closing {
+                    element.children.is_empty().then_some(span.end)?
                 } else {
                     let content_end = children_end(&element.children, span.end, source)?;
-                    end_tag_end(bytes, content_end, tag)?
+                    // A void element's end tag is ignored by both parses; the
+                    // void test is the slow path, so it runs only without one.
+                    match end_tag_end(bytes, content_end, tag) {
+                        Some(end) => end,
+                        None if element.children.is_empty()
+                            && vize_s0::is_void_tag(element.tag) =>
+                        {
+                            span.end
+                        }
+                        None => return None,
+                    }
                 }
             }
             TemplateChildNode::Text(_)

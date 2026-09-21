@@ -38,11 +38,15 @@ pub fn authored_skeleton(allocator: &Allocator, source: &str) -> Skeleton {
 /// Build the skeleton of a markup document.
 pub fn skeleton(document: &MarkupDocument<'_>) -> Skeleton {
     // `walk_tree` takes two callbacks; the builder is shared between them.
+    // Capacities sized for a typical template: the builder runs on every
+    // linted template, and regrowing these is a measurable share of it.
     let builder = RefCell::new(Builder {
-        skeleton: Skeleton::default(),
-        open: Vec::new(),
-        exits: Vec::new(),
-        namespaces: Vec::new(),
+        skeleton: Skeleton {
+            nodes: Vec::with_capacity(128),
+        },
+        open: Vec::with_capacity(32),
+        exits: Vec::with_capacity(32),
+        namespaces: Vec::with_capacity(32),
     });
     document.walk_tree(
         &mut |element| {
@@ -53,10 +57,10 @@ pub fn skeleton(document: &MarkupDocument<'_>) -> Skeleton {
         &mut |_| {
             let mut builder = builder.borrow_mut();
             builder.namespaces.pop();
-            if let Some(opened) = builder.exits.pop() {
-                for index in opened.into_iter().rev() {
+            let opened = builder.exits.pop().unwrap_or(0);
+            for _ in 0..opened {
+                if let Some(index) = builder.open.pop() {
                     builder.skeleton.close(index);
-                    builder.open.pop();
                 }
             }
         },
@@ -68,18 +72,20 @@ struct Builder {
     skeleton: Skeleton,
     /// Currently open skeleton nodes, innermost last.
     open: Vec<u32>,
-    /// Per entered element, the nodes it opened (closed on exit).
-    exits: Vec<Vec<u32>>,
+    /// Per entered element, how many nodes it opened (the innermost
+    /// entries of `open`, closed on exit).
+    exits: Vec<u8>,
     /// Per entered element: its compiler namespace, tag, and whether it is an
     /// `annotation-xml` with an HTML encoding.
     namespaces: Vec<(Ns, CompactString, bool)>,
 }
 
 impl Builder {
-    fn push_open(&mut self, kind: NodeKind, span: Span) -> u32 {
+    /// Open a node; returns the count it adds to the element's `opened`.
+    fn push_open(&mut self, kind: NodeKind, span: Span) -> u8 {
         let index = self.skeleton.open(kind, span);
         self.open.push(index);
-        index
+        1
     }
 
     fn in_component(&self) -> bool {
@@ -88,8 +94,8 @@ impl Builder {
         })
     }
 
-    /// Open the nodes an element contributes; returns them, outermost first.
-    fn enter(&mut self, element: MarkupElement<'_>) -> Vec<u32> {
+    /// Open the nodes an element contributes; returns how many.
+    fn enter(&mut self, element: MarkupElement<'_>) -> u8 {
         let range = element.range();
         let span = Span::new(range.start, range.end);
         let tag = element.tag();
@@ -98,21 +104,22 @@ impl Builder {
             .last()
             .map(|(ns, parent_tag, html)| (*ns, parent_tag.as_str(), *html));
         let ns = compiler_ns(tag, parent);
-        let encoding_html = element
-            .static_attribute("encoding")
-            .and_then(|attr| attr.value())
-            .is_some_and(|value| {
-                value.eq_ignore_ascii_case("text/html")
-                    || value.eq_ignore_ascii_case("application/xhtml+xml")
-            });
+        let encoding_html = tag.eq_ignore_ascii_case("annotation-xml")
+            && element
+                .static_attribute("encoding")
+                .and_then(|attr| attr.value())
+                .is_some_and(|value| {
+                    value.eq_ignore_ascii_case("text/html")
+                        || value.eq_ignore_ascii_case("application/xhtml+xml")
+                });
         self.namespaces
             .push((ns, CompactString::new(tag), encoding_html));
-        let mut opened = Vec::new();
+        let mut opened = 0u8;
         // A direct child of a component is slot content: named for
         // `<template #name>`, the default slot otherwise.
         if self.in_component() {
             let name = slot_template_name(&element).unwrap_or_else(|| Some("default".into()));
-            opened.push(self.push_open(NodeKind::SlotContent { name }, span));
+            opened += self.push_open(NodeKind::SlotContent { name }, span);
             if slot_template_name(&element).is_some() {
                 self.text_children(&element);
                 return opened;
@@ -122,27 +129,25 @@ impl Builder {
             MarkupElementKind::Template => {}
             MarkupElementKind::Slot => {
                 let name = static_name(&element, "name").unwrap_or_else(|| Some("default".into()));
-                opened.push(self.push_open(NodeKind::SlotOutlet { name }, span));
+                opened += self.push_open(NodeKind::SlotOutlet { name }, span);
             }
             MarkupElementKind::Component => {
                 if let Some(intrinsic) = intrinsic_member_tag(tag) {
                     let node = intrinsic_node(&element, intrinsic, range.start, ns);
-                    opened.push(self.push_open(NodeKind::Element(node), span));
+                    opened += self.push_open(NodeKind::Element(node), span);
                 } else if let Some(kind) = component_kind(&element) {
-                    opened.push(self.push_open(kind, span));
+                    opened += self.push_open(kind, span);
                 } else if matches!(tag, "TransitionGroup" | "transition-group") {
                     match static_name(&element, "tag") {
                         Some(Some(group_tag)) => {
                             let mut node =
                                 Element::new(group_tag.as_str(), name_span(range.start, tag));
                             node.compiler_ns = ns;
-                            opened.push(self.push_open(NodeKind::Element(node), span));
+                            opened += self.push_open(NodeKind::Element(node), span);
                         }
                         Some(None) => {
-                            opened.push(self.push_open(
-                                NodeKind::Boundary(BoundaryKind::DynamicComponent),
-                                span,
-                            ))
+                            opened += self
+                                .push_open(NodeKind::Boundary(BoundaryKind::DynamicComponent), span)
                         }
                         None => {}
                     }
@@ -151,16 +156,16 @@ impl Builder {
             MarkupElementKind::Element if intrinsic_member_tag(tag).is_some() => {
                 let intrinsic = intrinsic_member_tag(tag).unwrap_or(tag);
                 let node = intrinsic_node(&element, intrinsic, range.start, ns);
-                opened.push(self.push_open(NodeKind::Element(node), span));
+                opened += self.push_open(NodeKind::Element(node), span);
             }
             MarkupElementKind::Element => {
                 if is_dynamic_is(&element) {
                     let kind = NodeKind::Boundary(BoundaryKind::DynamicComponent);
-                    opened.push(self.push_open(kind, span));
+                    opened += self.push_open(kind, span);
                 } else {
                     let mut node = element_node(&element, tag, range.start);
                     node.compiler_ns = ns;
-                    opened.push(self.push_open(NodeKind::Element(node), span));
+                    opened += self.push_open(NodeKind::Element(node), span);
                     let boundary = match tag {
                         "template" => Some(BoundaryKind::TemplateContents),
                         "noscript" => Some(BoundaryKind::ScriptingDependent),
@@ -170,7 +175,7 @@ impl Builder {
                         _ => None,
                     };
                     if let Some(boundary) = boundary {
-                        opened.push(self.push_open(NodeKind::Boundary(boundary), span));
+                        opened += self.push_open(NodeKind::Boundary(boundary), span);
                     }
                 }
             }

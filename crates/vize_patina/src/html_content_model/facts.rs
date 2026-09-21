@@ -142,6 +142,9 @@ impl Members {
 pub struct Facts {
     names: Vec<(Ns, &'static str)>,
     ids: FxHashMap<(Ns, &'static str), ElemId>,
+    /// Names with ASCII uppercase (SVG camelCase): the only names a
+    /// lowercase tag can match without matching exactly.
+    cased: Vec<(Ns, &'static str, ElemId)>,
     rows: Vec<Members>,
     children: FxHashMap<ElemId, Members>,
 }
@@ -161,6 +164,7 @@ impl Facts {
         let mut facts = Self {
             names: Vec::new(),
             ids: FxHashMap::default(),
+            cased: Vec::new(),
             rows: vec![Members::default(); ROWS.len()],
             children: FxHashMap::default(),
         };
@@ -261,6 +265,9 @@ impl Facts {
         );
         self.names.push((ns, local));
         self.ids.insert((ns, local), id);
+        if local.bytes().any(|byte| byte.is_ascii_uppercase()) {
+            self.cased.push((ns, local, id));
+        }
         id
     }
 
@@ -271,6 +278,15 @@ impl Facts {
     pub fn id(&self, ns: Ns, tag: &str) -> Option<ElemId> {
         if let Some(id) = self.ids.get(&(ns, tag)) {
             return Some(*id);
+        }
+        // A tag without uppercase that missed the exact lookup can only match
+        // a name that has uppercase (the hot path: one short scan).
+        if !tag.bytes().any(|byte| byte.is_ascii_uppercase()) {
+            return self
+                .cased
+                .iter()
+                .find(|(name_ns, name, _)| *name_ns == ns && name.eq_ignore_ascii_case(tag))
+                .map(|(_, _, id)| *id);
         }
         self.names
             .iter()

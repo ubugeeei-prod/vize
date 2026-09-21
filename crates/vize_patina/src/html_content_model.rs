@@ -56,6 +56,7 @@ mod parser_rules;
 mod rows;
 mod skeleton;
 mod table_rules;
+mod tag_ids;
 mod tests;
 mod tri;
 

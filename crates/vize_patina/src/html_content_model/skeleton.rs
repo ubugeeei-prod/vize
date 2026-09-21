@@ -11,7 +11,7 @@
 
 use vize_s0::{CompactString, Span};
 
-use super::facts::{Attr, ElemId, Ns, facts};
+use super::facts::{Attr, ElemId, Ns};
 use super::tri::Tri;
 
 /// Why a subtree's rendered context is not determined by this template.
@@ -96,15 +96,14 @@ pub struct Element {
 impl Element {
     /// A new element with the given tag, looking up its fact-table ids.
     pub fn new(tag: &str, name_span: Span) -> Self {
-        let table = facts();
         Self {
             tag: CompactString::new(tag),
-            name: CompactString::new(tag.to_ascii_lowercase()),
-            ids: [
-                table.id(Ns::Html, tag),
-                table.id(Ns::Svg, tag),
-                table.id(Ns::MathMl, tag),
-            ],
+            name: if tag.bytes().any(|byte| byte.is_ascii_uppercase()) {
+                CompactString::new(tag.to_ascii_lowercase())
+            } else {
+                CompactString::new(tag)
+            },
+            ids: super::tag_ids::tag_ids(tag),
             attrs: AttrFacts::default(),
             name_span,
             dynamic_content: false,

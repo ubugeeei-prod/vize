@@ -112,8 +112,13 @@ fn interactive(chain: &Chain, subject: &Subject<'_>, ns: NsSet) -> Finding {
         |_| Tri::Maybe,
     );
     let forbidden_in_button = category.or(element.attrs.get(Attr::Tabindex));
-    let is_anchor = Tri::from_bool(element.id(Ns::Html) == facts().id(Ns::Html, "a"));
+    let is_anchor = Tri::from_bool(element.name.as_str() == "a" && element.id(Ns::Html).is_some());
     let forbidden_in_anchor = forbidden_in_button.or(is_anchor);
+    // Neither an anchor nor interactive: no ancestor can forbid it (the hot
+    // path — most elements stop here without walking the chain).
+    if forbidden_in_anchor == Tri::No {
+        return (Tri::No, V::InteractiveContentNested, None);
+    }
     let mut maybe = false;
     for (index, frame) in chain.frames.iter().enumerate().rev() {
         let forbidden = frame

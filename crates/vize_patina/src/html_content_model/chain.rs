@@ -203,7 +203,7 @@ impl Chain {
     /// An unknown context with no known frames.
     pub fn truncated() -> Self {
         Self {
-            frames: Vec::new(),
+            frames: Vec::with_capacity(32),
             base: Base::Truncated,
         }
     }

@@ -234,8 +234,7 @@ impl Walker<'_, '_> {
         let last = chain.frames.len() - 1;
         let mut outcome: Option<Tri> = None;
         let mut proven = None;
-        let dispatches: Vec<(Dispatch, Ns)> = top.dispatches().collect();
-        for (dispatch, ns) in dispatches {
+        for (dispatch, ns) in top.dispatches() {
             chain.frames[last].ns = NsSet::one(ns);
             let tri = match dispatch {
                 Dispatch::Html => match html_text(chain, whitespace_only, dynamic) {
@@ -299,8 +298,7 @@ pub fn evaluate_element(chain: &mut Chain, subject: &Subject<'_>) -> (ParserVerd
     let mut diverged = None;
     let (mut all_diverge, mut all_stable) = (true, true);
     let mut ns = NsSet::EMPTY;
-    let dispatches: Vec<(Dispatch, Ns)> = top.dispatches().collect();
-    for (dispatch, parent_ns) in dispatches {
+    for (dispatch, parent_ns) in top.dispatches() {
         chain.frames[last].ns = NsSet::one(parent_ns);
         let name = subject.element.id(Ns::Html).map(|id| facts().name(id).1);
         let outcome = match dispatch {
