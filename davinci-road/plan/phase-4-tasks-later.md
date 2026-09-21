@@ -70,6 +70,8 @@
 
 ## P4-7a — S2-backed markup facade
 
+**Landed 2026-09-22** — full record: [phase-4-records/p4-7a.md](./phase-4-records/p4-7a.md).
+
 **Start gate:** startable now — P3-independent.
 
 **Lane:** E
@@ -78,9 +80,9 @@
 
 **Steps:**
 
-- [ ] `crates/vize_patina/src/markup/s2.rs`; Patina gains `vize_s1`, `vize_s2`, `vize_s1_to_s2` dependencies (publishable per the release firewall)
-- [ ] `crates/vize_patina/src/markup/differential.rs` behind `davinci-differential`: the full `MarkupRule` hook trace (hook, spans, names, values, modifiers) compared exactly between the Relief/OXC and S2 projections
-- [ ] Corpus-runnable entry and a plain-suite witness pinning the comparison count
+- [x] `crates/vize_patina/src/markup/s2.rs`; Patina gains `vize_s1`, `vize_s2`, `vize_s1_to_s2` dependencies (publishable per the release firewall)
+- [x] `crates/vize_patina/src/markup/differential.rs` behind `davinci-differential`: the full `MarkupRule` hook trace (hook, spans, names, values, modifiers) compared exactly between the Relief/OXC and S2 projections
+- [x] Corpus-runnable entry and a plain-suite witness pinning the comparison count
 
 **Acceptance:** `cargo test -p vize_patina --features davinci-differential --test davinci_markup_differential` zero divergence over the rule fixtures and a corpus shard with scope proof; `cargo bench -p vize_patina --bench davinci_markup` S2 variant `allocs` recorded in `budgets.toml` (TS-10); TS-9 unchanged (no lane switched); TS-13.
 

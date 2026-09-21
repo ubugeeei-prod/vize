@@ -4631,6 +4631,7 @@ dependencies = [
  "corsa",
  "criterion",
  "davinci_harness",
+ "davinci_test_support",
  "insta",
  "libc",
  "lightningcss",
@@ -4654,7 +4655,9 @@ dependencies = [
  "vize_davinci",
  "vize_glyph",
  "vize_relief",
+ "vize_s1",
  "vize_s1_to_s2",
+ "vize_s2",
 ]
 
 [[package]]

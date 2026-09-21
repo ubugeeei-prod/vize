@@ -1,5 +1,5 @@
 // Trait hook inventories and the dispatch model, parsed from the real sources
-// (rule.rs / markup.rs / linter/engine.rs), never hardcoded. Every anchor this
+// (rule.rs / markup/rule.rs / linter/engine.rs), never hardcoded. Every anchor this
 // stage asserts is a claim the artifact makes about path membership, so drift
 // in the dispatch code fails the generator instead of silently skewing counts.
 
@@ -34,7 +34,7 @@ export function traitFnNames(stripped, traitName) {
 
 export function loadDispatchModel() {
   const ruleRs = stripRust(readFileSync(path.join(PATINA_SRC, "rule.rs"), "utf8"));
-  const markupRs = stripRust(readFileSync(path.join(PATINA_SRC, "markup.rs"), "utf8"));
+  const markupRs = stripRust(readFileSync(path.join(PATINA_SRC, "markup", "rule.rs"), "utf8"));
   const engineRs = readFileSync(path.join(PATINA_SRC, "linter", "engine.rs"), "utf8");
   const engineStripped = stripRust(engineRs);
 

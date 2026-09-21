@@ -8,6 +8,12 @@ repository.workspace = true
 description = "Patina - The quality checker for Vize code linting"
 metadata.vize.stability = "compatibility-preview"
 
+[features]
+# Arms the TS-25 markup lane (`tests/davinci_markup_differential.rs`): the
+# facade's full hook trace over Relief vs over S2, exact, on the committed
+# battery plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
+davinci-differential = []
+
 [dependencies]
 # Internal crates
 vize_relief.workspace = true
@@ -18,7 +24,12 @@ vize_atelier_sfc.workspace = true
 # The Davinci pug dialect: `<template lang="pug">` lints through S1.
 vize_s1_to_s2.workspace = true
 vize_atelier_jsx.workspace = true
+# Davinci stages: the markup facade views S2 (P4-7), reading S1 for the
+# authored surface S2 normalizes away.
 vize_davinci.workspace = true
+vize_s1.workspace = true
+vize_s2.workspace = true
+vize_s1_to_s2.workspace = true
 
 # OXC for JS/TS parsing and diagnostics
 oxc_allocator.workspace = true
@@ -56,6 +67,7 @@ vize_glyph.workspace = true
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion.workspace = true
 davinci_harness.workspace = true
+davinci_test_support.workspace = true
 
 [[bench]]
 name = "lint_bench"
@@ -68,3 +80,7 @@ harness = false
 [[bench]]
 name = "davinci_markup"
 harness = false
+
+[[test]]
+name = "davinci_markup_differential"
+required-features = ["davinci-differential"]

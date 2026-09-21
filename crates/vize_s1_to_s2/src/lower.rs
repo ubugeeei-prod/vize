@@ -68,6 +68,7 @@ pub use css::{lower_style_block, lower_style_block_in};
 pub(crate) use expr::simple_identifier;
 pub use forop::{ForName, ForParts};
 pub use structural::{ForWrapper, WrapperAttr, WrapperClass, WrapperKey, WrapperKeys};
+pub use vfor::split_v_for_value;
 // The one-rebuild rule (the same discipline): compound text facts and
 // their opaque display spelling share one construction rule.
 pub use text::{TextPart, TextParts, rebuild_source};
@@ -152,6 +153,23 @@ pub fn lower_with_caps<'a>(
 ) -> Lowered<'a> {
     let root = SourceRoot::new(tree.source).expect("vize_s1 accepted a u32-addressable source");
     lower_source_block_with_caps(allocator, tree, errors, root.whole_block(), caps)
+}
+
+/// [`lower`] with authored comments kept as `ui.comment` ops.
+///
+/// The consumer-facing lowering for surfaces that must see comments: the
+/// lint facade (suppression comments, comment-aware sibling rules) reads
+/// the same child list the Relief parser keeps under its default
+/// `comments: true`. Comments then act as real children for whitespace
+/// condensing and as hard boundaries for text-run merging (see
+/// [`lower::text`](text)).
+#[must_use]
+pub fn lower_preserving_comments<'a>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+) -> Lowered<'a> {
+    lower_with_caps_and_comment_policy(allocator, tree, errors, LegacyCaps::VUE3, true, &[], None)
 }
 
 pub(crate) fn lower_with_caps_and_comment_policy<'a>(
