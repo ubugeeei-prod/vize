@@ -56,7 +56,7 @@
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "pnpm --dir ../../native build:debug && node src/test.ts"
+    "test": "pnpm --dir ../../native build:debug && node src/test.ts && node --test src/vite-plus/config.test.ts src/vite-plus/runner.test.ts"
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",

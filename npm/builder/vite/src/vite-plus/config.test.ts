@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -43,9 +43,13 @@ void test("tool ownership and conflict defaults can be disabled independently", 
 });
 
 void test("bare withVize installs its compiler and preserves caller plugins", async () => {
-  const config = await withVize({}, { tasks: false }).vp({ plugins: [{ name: "consumer" }] })(env);
+  const previousCompiler = { name: "vite:vue" };
+  const config = await withVize({}, { tasks: false }).vp({
+    plugins: [Promise.resolve([previousCompiler]), { name: "consumer" }],
+  })(env);
   const plugins = (config.plugins ?? []).flat(Infinity) as { name: string }[];
   assert.ok(plugins.some((plugin) => plugin.name === "vite-plugin-vize"));
+  assert.ok(!plugins.includes(previousCompiler));
   assert.equal(plugins.at(-1)?.name, "consumer");
 });
 
@@ -71,5 +75,34 @@ void test("generated tasks preserve existing scripts and tasks, and reject ambig
   } finally {
     process.chdir(cwd);
     rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+void test("each consumer's Vite+ selects the available overlap rules", async () => {
+  const cwd = process.cwd();
+  for (const rule of ["no-export-in-script-setup", "valid-define-props"]) {
+    const directory = mkdtempSync(path.join(os.tmpdir(), "vize-consumer-peer-"));
+    try {
+      const peer = path.join(directory, "node_modules/vite-plus");
+      mkdirSync(peer, { recursive: true });
+      writeFileSync(
+        path.join(peer, "package.json"),
+        JSON.stringify({
+          name: "vite-plus",
+          exports: { "./package.json": "./package.json" },
+          bin: { vp: "cli.cjs" },
+        }),
+      );
+      writeFileSync(
+        path.join(peer, "cli.cjs"),
+        `console.log(${JSON.stringify(JSON.stringify([{ scope: "vue", value: rule }]))});`,
+      );
+      process.chdir(directory);
+      const config = await withVize({}, { plugin: false, tasks: false })(env);
+      assert.deepEqual(config.lint?.rules, { [`vue/${rule}`]: "off" });
+    } finally {
+      process.chdir(cwd);
+      rmSync(directory, { recursive: true, force: true });
+    }
   }
 });

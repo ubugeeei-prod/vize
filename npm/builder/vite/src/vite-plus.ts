@@ -1,4 +1,5 @@
 import type { UserConfigExport } from "./types.ts";
+import type { PluginOption } from "vite-plus";
 import type { VitePlusConfig, VizePlusConfigFactory, VizePlusOptions } from "./vite-plus/types.ts";
 import { taskConfigKey } from "./vite-plus/types.ts";
 import { configureTools } from "./vite-plus/conflicts.ts";
@@ -20,7 +21,10 @@ export function withVize(
     const factory: VizePlusConfigFactory = Object.assign(
       async (env: Parameters<VizePlusConfigFactory>[0]) => {
         const resolved = await (typeof vpConfig === "function" ? vpConfig(env) : vpConfig);
-        const plugins = [...(resolved.plugins ?? [])];
+        const plugins =
+          options.plugin === false
+            ? [...(resolved.plugins ?? [])]
+            : await withoutVueCompiler(resolved.plugins ?? []);
         if (options.plugin !== false) {
           const { vize } = await import("./plugin/index.ts");
           plugins.unshift(vize({ ...options.plugin, config }));
@@ -46,4 +50,14 @@ export function withVize(
     return factory;
   }
   return create();
+}
+
+async function withoutVueCompiler(plugins: PluginOption[]): Promise<PluginOption[]> {
+  const result: PluginOption[] = [];
+  for (const option of plugins) {
+    const plugin = await option;
+    if (Array.isArray(plugin)) result.push(...(await withoutVueCompiler(plugin)));
+    else if (plugin && plugin.name !== "vite:vue") result.push(plugin);
+  }
+  return result;
 }

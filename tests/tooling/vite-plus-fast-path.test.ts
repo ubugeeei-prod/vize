@@ -54,6 +54,7 @@ test("packed withVize runs native and Vite+ tools using the consumer's installed
       "vite.config.ts",
       `import { withVize } from "@vizejs/vite-plugin/vite-plus";
 export default withVize({ linter: { preset: "essential", rules: { "vue/no-v-html": "error" } } }).vp({
+  plugins: [{ name: "vite:vue", transform() { throw new Error("Old Vue compiler must be replaced"); } }],
   lint: { rules: { "no-debugger": "error" } },
   fmt: { ignorePatterns: ["dist/**"] },
 });
@@ -113,7 +114,19 @@ export default withVize({ linter: { preset: "essential", rules: { "vue/no-v-html
 });
 
 function checkConsumerTypes(directory: string, write: (name: string, value: string) => void) {
-  write("tsconfig.consumer.json", JSON.stringify({ compilerOptions: { noEmit: true, strict: true, skipLibCheck: true, target: "ES2022", module: "NodeNext" }, files: ["consumer.mts"] }));
+  write(
+    "tsconfig.consumer.json",
+    JSON.stringify({
+      compilerOptions: {
+        noEmit: true,
+        strict: true,
+        skipLibCheck: true,
+        target: "ES2022",
+        module: "NodeNext",
+      },
+      files: ["consumer.mts"],
+    }),
+  );
   write(
     "consumer.mts",
     `import { defineConfig } from "vite-plus";
@@ -125,14 +138,9 @@ withVize().vp({ futureOption: { enabled: "wrong" } });
 `,
   );
   const tsc = path.join(path.dirname(require.resolve("typescript/package.json")), "bin/tsc");
-  const result = spawnSync(
-    process.execPath,
-    [
-      tsc,
-      "-p",
-      "tsconfig.consumer.json",
-    ],
-    { cwd: directory, encoding: "utf8" },
-  );
+  const result = spawnSync(process.execPath, [tsc, "-p", "tsconfig.consumer.json"], {
+    cwd: directory,
+    encoding: "utf8",
+  });
   assert.equal(result.status, 0, result.stdout + result.stderr);
 }

@@ -101,3 +101,8 @@ export default withVize(
 Direct Vize CLI commands and editors still discover `vize.config.*`. To share the
 same config with those consumers, keep it in that file and use `withVize()` or
 import the config into `withVize(config)`.
+
+When compilation is enabled, the helper replaces an existing `vite:vue` plugin
+from `@vitejs/plugin-vue`, including nested and async plugin lists, to prevent
+double compilation. Move custom compiler options to the `plugin` option above.
+Use `plugin: false` to keep an existing compiler in charge.
