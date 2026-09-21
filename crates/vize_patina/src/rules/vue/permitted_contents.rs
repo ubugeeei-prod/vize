@@ -1,20 +1,32 @@
 //! vue/permitted-contents
 //!
-//! Detect HTML content model violations. Based on markuplint's `permitted-contents` rule.
+//! Report nesting the HTML standard forbids, as proven by the exact checker in
+//! [`crate::html_content_model`] (Davinci P4-11a, precision tier `exact`).
 //!
-//! Checks for:
-//! 1. **Block in inline**: Block elements inside phrasing-only parents (e.g., `<div>` in `<p>`)
-//! 2. **Interactive nesting**: Interactive elements nested inside other interactive elements
-//! 3. **List content model**: Direct children of `<ul>`/`<ol>` must be `<li>`
-//! 4. **Table content model**: `<table>` children must be valid table elements
+//! Two families of violations:
+//!
+//! 1. **Parser** — the HTML parser would not build the element where the
+//!    template puts it, so the browser's DOM differs from the virtual DOM
+//!    (SSR hydration mismatches, `innerHTML`-built static content renders
+//!    differently): `<div>` closes an open `<p>`, `<tr>` gets an implied
+//!    `<tbody>`, a `<div>` in a `<table>` is foster-parented, `<span>` breaks
+//!    out of `<svg>`, a nested `<a>` or `<form>` is adopted or dropped.
+//! 2. **Content model** — the DOM is built as written but a content model
+//!    forbids it: `<div>` in `<span>`, `<button>` in `<a>`, `<div>` in `<ul>`.
+//!
+//! Every report is a proven fact: an unresolved component, a slot, a dynamic
+//! binding or the unknown place a component is mounted makes a verdict
+//! unknown, and unknown is silence. The composed cross-component check
+//! (P4-11b) resolves what a single file cannot see.
 //!
 //! ## Examples
 //!
 //! ### Invalid
 //! ```vue
 //! <template>
-//!   <p><div>block in inline</div></p>
-//!   <a href="#"><a href="#">nested link</a></a>
+//!   <p><div>block in a paragraph</div></p>
+//!   <table><tr><td>row without tbody</td></tr></table>
+//!   <a href="#"><button>nested control</button></a>
 //!   <ul><div>not a list item</div></ul>
 //! </template>
 //! ```
@@ -22,17 +34,21 @@
 //! ### Valid
 //! ```vue
 //! <template>
-//!   <p><span>inline in inline</span></p>
-//!   <ul><li>list item</li></ul>
+//!   <p><span>inline in a paragraph</span></p>
+//!   <table><tbody><tr><td>cell</td></tr></tbody></table>
+//!   <ul><li>list item</li><MyItem /></ul>
 //! </template>
 //! ```
 
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
-use crate::markup::{MarkupContext, MarkupElement, MarkupElementKind, MarkupRule};
+use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::html_content_model::{
+    Context, Family, NodeKind, Skeleton, ViolationClass, authored_skeleton, check, skeleton,
+};
+use crate::markup::{MarkupContext, MarkupDocument, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ElementType};
-use vize_s0::is_html_tag;
+use vize_relief::RootNode;
+use vize_s0::{CompactString, cstr};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/permitted-contents",
@@ -42,186 +58,57 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Error,
 };
 
-/// Elements that only permit phrasing (inline) content
-const PHRASING_ONLY_PARENTS: &[&str] = &[
-    "p", "span", "em", "strong", "small", "s", "cite", "q", "dfn", "abbr", "ruby", "rt", "rp",
-    "data", "time", "code", "var", "samp", "kbd", "sub", "sup", "i", "b", "u", "mark", "bdi",
-    "bdo", "label",
-];
-
-/// Block-level / flow-only elements that cannot appear inside phrasing parents
-const BLOCK_ELEMENTS: &[&str] = &[
-    "div",
-    "p",
-    "section",
-    "article",
-    "aside",
-    "header",
-    "footer",
-    "nav",
-    "main",
-    "h1",
-    "h2",
-    "h3",
-    "h4",
-    "h5",
-    "h6",
-    "ul",
-    "ol",
-    "dl",
-    "table",
-    "form",
-    "fieldset",
-    "figure",
-    "figcaption",
-    "blockquote",
-    "pre",
-    "hr",
-    "address",
-    "details",
-    "summary",
-    "hgroup",
-    "search",
-];
-
-/// Interactive elements that must not be nested
-const INTERACTIVE_ELEMENTS: &[&str] = &["a", "button", "details", "label", "select", "textarea"];
-
-/// Component namespaces that expose intrinsic HTML wrappers as `namespace.tag`.
-const INTRINSIC_MEMBER_COMPONENT_NAMESPACES: &[&str] = &["motion"];
-
-/// Check if an element is a phrasing-only parent
-#[inline]
-fn is_phrasing_only_parent(tag: &str) -> bool {
-    PHRASING_ONLY_PARENTS.contains(&tag)
-}
-
-/// Check if an element is a block element
-#[inline]
-fn is_block_element(tag: &str) -> bool {
-    BLOCK_ELEMENTS.contains(&tag)
-}
-
-/// Check if an element is interactive
-#[inline]
-fn is_interactive_element(tag: &str) -> bool {
-    INTERACTIVE_ELEMENTS.contains(&tag)
-}
-
-fn forbids_interactive_descendants(tag: &str) -> bool {
-    // Details is interactive, but its content model explicitly permits flow controls.
-    tag != "details" && is_interactive_element(tag)
-}
-
-/// Check if an element has a transparent content model.
-#[inline]
-fn is_transparent_parent(tag: &str) -> bool {
-    tag == "a"
-}
-
-/// Get required direct children for a parent element (if constrained)
-fn required_children(parent: &str) -> Option<&'static [&'static str]> {
-    match parent {
-        "ul" | "ol" | "menu" => Some(&["li"]),
-        "dl" => Some(&["dt", "dd", "div"]),
-        "table" => Some(&[
-            "thead", "tbody", "tfoot", "tr", "caption", "colgroup", "col",
-        ]),
-        "thead" | "tbody" | "tfoot" => Some(&["tr"]),
-        "tr" => Some(&["td", "th"]),
-        "colgroup" => Some(&["col"]),
-        "select" => Some(&["option", "optgroup"]),
-        "optgroup" => Some(&["option"]),
-        _ => None,
-    }
-}
-
-fn intrinsic_member_component_tag(tag: &str) -> Option<&str> {
-    let (namespace, member) = tag.split_once('.')?;
-    if INTRINSIC_MEMBER_COMPONENT_NAMESPACES.contains(&namespace) && is_html_tag(member) {
-        Some(member)
-    } else {
-        None
-    }
-}
-
-fn content_model_tag(tag: &str) -> &str {
-    intrinsic_member_component_tag(tag).unwrap_or(tag)
-}
-
-fn nearest_non_transparent_parent<'ctx, 'a>(
-    ctx: &'ctx LintContext<'a>,
-) -> Option<(&'ctx str, &'ctx str)> {
-    ctx.element_stack.iter().rev().skip(1).find_map(|ancestor| {
-        let raw_tag = ancestor.tag.as_str();
-        let tag = content_model_tag(raw_tag);
-        (!is_transparent_parent(tag)).then_some((raw_tag, tag))
-    })
-}
-
-fn nearest_non_transparent_markup_parent<'a>(
-    ctx: &MarkupContext<'_, 'a>,
-) -> Option<MarkupElement<'a>> {
-    ctx.ancestor_elements()
-        .rev()
-        .find(|ancestor| !is_transparent_parent(content_model_tag(ancestor.tag())))
-}
-
 #[derive(Default)]
 pub struct PermittedContents;
 
-impl PermittedContents {
-    fn check_markup_element<'a>(ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        match element.kind() {
-            MarkupElementKind::Template | MarkupElementKind::Slot => return,
-            MarkupElementKind::Element | MarkupElementKind::Component => {}
-        }
+/// `<tag>` for an element, `text` for text, with the span a diagnostic
+/// points at (an element's start tag up to the end of its name).
+fn describe(skeleton: &Skeleton, index: u32) -> (CompactString, u32, u32) {
+    let node = skeleton.node(index);
+    match &node.kind {
+        NodeKind::Element(element) => (
+            cstr!("<{}>", element.tag),
+            node.span.start,
+            element.name_span.end,
+        ),
+        _ => (CompactString::new("text"), node.span.start, node.span.end),
+    }
+}
 
-        let raw_tag = element.tag();
-        let tag = content_model_tag(raw_tag);
-        let has_intrinsic_mapping = tag != raw_tag;
-        let is_unknown_component = element.is_component() && !has_intrinsic_mapping;
-
-        if !is_unknown_component
-            && is_block_element(tag)
-            && let Some(parent) = nearest_non_transparent_markup_parent(ctx)
-        {
-            let parent_raw_tag = parent.tag();
-            let parent_tag = content_model_tag(parent_raw_tag);
-            if is_phrasing_only_parent(parent_tag) {
-                let message = ctx.lint().t_fmt(
-                    "vue/permitted-contents.block_in_inline",
-                    &[("child", raw_tag), ("parent", parent_raw_tag)],
-                );
-                ctx.lint().error_at(message, element.range());
-            }
-        }
-
-        if !is_unknown_component
-            && is_interactive_element(tag)
-            && ctx.has_ancestor(|ancestor| {
-                forbids_interactive_descendants(content_model_tag(ancestor.tag()))
-            })
-        {
-            let message = ctx.lint().t_fmt(
-                "vue/permitted-contents.interactive_nesting",
-                &[("tag", raw_tag)],
+/// Report every proven violation of a skeleton checked with an unknown
+/// mount point.
+fn report_skeleton(ctx: &mut LintContext<'_>, skeleton: &Skeleton) {
+    let report = check(skeleton, 0, &Context::Truncated);
+    for (node, class, evidence) in report.findings() {
+        let (child, start, end) = describe(skeleton, node);
+        let parent = evidence.map(|(_, index)| describe(skeleton, index));
+        let parent_name = parent
+            .as_ref()
+            .map_or(CompactString::new(""), |(name, ..)| name.clone());
+        let message = ctx.t_fmt(
+            &cstr!("vue/permitted-contents.{}", class.id()),
+            &[("child", child.as_str()), ("parent", parent_name.as_str())],
+        );
+        let mut diagnostic = LintDiagnostic::error(ctx.current_rule, message, start, end);
+        if let Some((name, label_start, label_end)) = parent {
+            let label = ctx.t_fmt(
+                "vue/permitted-contents.evidence",
+                &[("parent", name.as_str())],
             );
-            ctx.lint().error_at(message, element.range());
+            diagnostic = diagnostic.with_label(label, label_start, label_end);
         }
+        let help = ctx.t(help_key(class));
+        if let Some(help) = ctx.help_level().process(help.as_ref()) {
+            diagnostic = diagnostic.with_help(help);
+        }
+        ctx.report(diagnostic);
+    }
+}
 
-        if !is_unknown_component && let Some(parent) = ctx.parent_element() {
-            let parent_tag = content_model_tag(parent.tag());
-            if let Some(allowed) = required_children(parent_tag)
-                && !allowed.contains(&tag)
-            {
-                let message = ctx.lint().t_fmt(
-                    "vue/permitted-contents.invalid_child",
-                    &[("child", raw_tag), ("parent", parent.tag())],
-                );
-                ctx.lint().error_at(message, element.range());
-            }
-        }
+fn help_key(class: ViolationClass) -> &'static str {
+    match class.family() {
+        Family::Parser => "vue/permitted-contents.help.parser",
+        Family::ContentModel => "vue/permitted-contents.help.content-model",
     }
 }
 
@@ -230,8 +117,11 @@ impl MarkupRule for PermittedContents {
         META.name
     }
 
-    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        Self::check_markup_element(ctx, element);
+    /// The markup lane (lowered JSX): JSX is lowered without tree
+    /// construction repair, so the document already is the authored tree.
+    fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
+        let skeleton = skeleton(document);
+        report_skeleton(ctx.lint(), &skeleton);
     }
 }
 
@@ -248,65 +138,11 @@ impl Rule for PermittedContents {
         true
     }
 
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Allow <template> as a transparent wrapper (v-for, v-if, v-slot)
-        if element.tag_type == ElementType::Template {
-            return;
-        }
-
-        // Skip <slot> elements
-        if element.tag_type == ElementType::Slot {
-            return;
-        }
-
-        let raw_tag = element.tag;
-        let tag = content_model_tag(raw_tag);
-        let has_intrinsic_mapping = tag != raw_tag;
-        let is_unknown_component =
-            element.tag_type == ElementType::Component && !has_intrinsic_mapping;
-
-        // 1. Block in inline: check if this block element has a phrasing-only ancestor
-        if !is_unknown_component
-            && is_block_element(tag)
-            && let Some((parent_raw_tag, parent_tag)) = nearest_non_transparent_parent(ctx)
-            && is_phrasing_only_parent(parent_tag)
-        {
-            let message = ctx.t_fmt(
-                "vue/permitted-contents.block_in_inline",
-                &[("child", raw_tag), ("parent", parent_raw_tag)],
-            );
-            ctx.error(message, &element.loc);
-        }
-
-        // 2. Interactive nesting: check if this interactive element is inside another
-        if !is_unknown_component
-            && is_interactive_element(tag)
-            && ctx.has_ancestor(|ancestor| {
-                forbids_interactive_descendants(content_model_tag(ancestor.tag.as_str()))
-            })
-        {
-            let message = ctx.t_fmt(
-                "vue/permitted-contents.interactive_nesting",
-                &[("tag", raw_tag)],
-            );
-            ctx.error(message, &element.loc);
-        }
-
-        // 3 & 4. Required children: check if parent constrains direct children.
-        // A custom component is exempt: its rendered root element is unknown, so
-        // `<ul><MyItem /></ul>` (where `MyItem` renders an `<li>`) is valid.
-        if !is_unknown_component && let Some(parent) = ctx.parent_element() {
-            let parent_tag = content_model_tag(parent.tag.as_str());
-            if let Some(allowed) = required_children(parent_tag)
-                && !allowed.contains(&tag)
-            {
-                let message = ctx.t_fmt(
-                    "vue/permitted-contents.invalid_child",
-                    &[("child", raw_tag), ("parent", parent.tag.as_str())],
-                );
-                ctx.error(message, &element.loc);
-            }
-        }
+    /// The template lane: the linter's parse repairs part of the tree
+    /// construction, so the checker re-reads the template as authored.
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
+        let skeleton = authored_skeleton(ctx.allocator(), ctx.source);
+        report_skeleton(ctx, &skeleton);
     }
 }
 

@@ -6793,21 +6793,23 @@
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
-        "message": "[vize:vue/permitted-contents] <h4> is not allowed as a direct child of <ul>",
+        "message": "[vize:vue/permitted-contents] <h4> is not permitted as a child of <ul>",
         "line": 37,
         "column": 19,
         "endLine": 37,
-        "endColumn": 23
+        "endColumn": 22,
+        "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
       },
       {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
-        "message": "[vize:vue/permitted-contents] <p> is not allowed as a direct child of <ul>",
+        "message": "[vize:vue/permitted-contents] <p> is not permitted as a child of <ul>",
         "line": 38,
         "column": 19,
         "endLine": 38,
-        "endColumn": 22
+        "endColumn": 21,
+        "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
       }
     ],
     "errorCount": 2,

@@ -24,8 +24,57 @@ use std::fmt::Write as _;
 use std::path::PathBuf;
 
 use vize_patina::html_content_model::{
-    Context, Element, Family, NodeKind, Skeleton, Verdict, check, facts,
+    Context, Element, Family, NodeKind, Ns, Skeleton, Verdict, check, facts,
 };
+
+/// The foreign-content breakout start tags (§13.2.6.5; `font` only with
+/// presentational attributes, which the universe never carries).
+const BREAKOUT: [&str; 44] = [
+    "b",
+    "big",
+    "blockquote",
+    "body",
+    "br",
+    "center",
+    "code",
+    "dd",
+    "div",
+    "dl",
+    "dt",
+    "em",
+    "embed",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "head",
+    "hr",
+    "i",
+    "img",
+    "li",
+    "listing",
+    "menu",
+    "meta",
+    "nobr",
+    "ol",
+    "p",
+    "pre",
+    "ruby",
+    "s",
+    "small",
+    "span",
+    "strong",
+    "strike",
+    "sub",
+    "sup",
+    "table",
+    "tt",
+    "u",
+    "ul",
+    "var",
+];
 use vize_s0::Span;
 
 const EXTRA: [&str; 9] = [
@@ -207,15 +256,24 @@ fn node_verdicts(chain: &[&str], context: &Context) -> Vec<Option<bool>> {
     for index in opened.into_iter().rev() {
         skeleton.close(index);
     }
-    check(&skeleton, 0, context)
-        .verdicts
-        .iter()
-        .map(|verdict| match verdict {
-            Verdict::Proven { class, .. } => Some(class.family() == Family::Parser),
-            Verdict::Refuted | Verdict::ContentUnknown => Some(false),
-            Verdict::Unknown | Verdict::Skipped => None,
-        })
-        .collect()
+    check(&skeleton, 0, context).parser
+}
+
+/// The namespace the parser gives `b` directly under `a` in a body context
+/// (a breakout keeps it HTML): the mount assumption holds for the pair iff
+/// this is the namespace Vue's compiler gives `b` as a template root.
+fn compiled_namespace_holds(a: &str, b: &str) -> bool {
+    let root = Element::new(b, Span::new(0, 1)).compiler_ns;
+    let parsed = match a {
+        "svg" if !BREAKOUT.contains(&b) => Ns::Svg,
+        "math" if !BREAKOUT.contains(&b) => Ns::MathMl,
+        _ => match b {
+            "svg" => Ns::Svg,
+            "math" => Ns::MathMl,
+            _ => Ns::Html,
+        },
+    };
+    b == "#text" || root == parsed
 }
 
 /// Soundness of `unknown`: a verdict proven for `B > C` with the context
@@ -240,6 +298,9 @@ fn truncated_verdicts_hold_in_every_faithful_context() {
                 refuted += 1
             }
             for a in TRIPLE.iter().filter(|tag| !LEAF_ONLY.contains(tag)) {
+                if !compiled_namespace_holds(a, b) {
+                    continue;
+                }
                 let body = node_verdicts(&[a, b, c], &Context::Body);
                 if body[0] != Some(false) || body[1] != Some(false) {
                     continue;
@@ -254,7 +315,7 @@ fn truncated_verdicts_hold_in_every_faithful_context() {
         }
     }
     assert_eq!(violations, Vec::<String>::new());
-    assert_eq!((proven, refuted, undecided), (285, 595, 920));
+    assert_eq!((proven, refuted, undecided), (561, 670, 569));
 }
 
 #[test]

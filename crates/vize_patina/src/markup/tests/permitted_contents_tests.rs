@@ -127,9 +127,9 @@ fn permitted_contents_jsx_lowered_matches_legacy_fallback_boundaries() {
             "unknown component can render a table row",
         ),
         (
-            r#"const A = () => <select><div>bad</div></select>;"#,
-            1,
-            "constrained select parent rejects non-option child",
+            r#"const A = () => <select><div>group</div></select>;"#,
+            0,
+            "select permits div wrappers (customizable select, P4-11a TS-38 triage)",
         ),
         (
             r#"const A = () => <ul><motion.div>item</motion.div></ul>;"#,

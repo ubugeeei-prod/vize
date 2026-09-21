@@ -1149,6 +1149,17 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
+        "line": 399,
+        "column": 23,
+        "endLine": 399,
+        "endColumn": 27,
+        "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
+      },
+      {
         "ruleId": "vue/no-v-html",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1160,7 +1171,7 @@
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 6
   },
   {
@@ -2306,31 +2317,34 @@
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
-        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <span> (phrasing content only)",
+        "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <span> only permits phrasing content",
         "line": 341,
         "column": 13,
-        "endLine": 344,
-        "endColumn": 15
+        "endLine": 341,
+        "endColumn": 17,
+        "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
       },
       {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
-        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <span> (phrasing content only)",
+        "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <span> only permits phrasing content",
         "line": 349,
         "column": 13,
-        "endLine": 352,
-        "endColumn": 15
+        "endLine": 349,
+        "endColumn": 17,
+        "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
       },
       {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
-        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <span> (phrasing content only)",
+        "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <span> only permits phrasing content",
         "line": 357,
         "column": 13,
-        "endLine": 360,
-        "endColumn": 15
+        "endLine": 357,
+        "endColumn": 17,
+        "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
       },
       {
         "ruleId": "a11y/alt-text",
@@ -3915,6 +3929,17 @@
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
       {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
+        "line": 1772,
+        "column": 21,
+        "endLine": 1772,
+        "endColumn": 25,
+        "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3992,7 +4017,7 @@
         "help": "Add scoped attribute: <style scoped>"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 23
   },
   {
@@ -4479,8 +4504,31 @@
   },
   {
     "file": "app/components/SearchProviderToggle.client.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
+        "line": 66,
+        "column": 13,
+        "endLine": 66,
+        "endColumn": 17,
+        "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
+        "line": 98,
+        "column": 13,
+        "endLine": 98,
+        "endColumn": 17,
+        "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
+      }
+    ],
+    "errorCount": 2,
     "warningCount": 0
   },
   {

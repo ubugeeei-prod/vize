@@ -69,3 +69,30 @@ the unified diagnostic-channel work (plan P4-6, witness-carrying
 diagnostics); tracked there rather than patched ad hoc in one rule, since
 `type/require-typed-props` shares the pattern. The miniature CI set is
 unaffected (no `defineEmits` usage), so the pilot gate stays exact.
+
+## FP-2 — `vue/permitted-contents` flagged conforming label and select content
+
+Surfaced by the P4-11a upgrade, which re-derived the rule from the pinned
+WHATWG snapshot (`crates/vize_patina/src/html_content_model/whatwg.tsv`).
+The hand-written rule treated `label`, `select` and `textarea` as containers
+that forbid interactive descendants, and restricted `select`/`optgroup`
+children to `option`.
+
+**Witnesses:**
+
+- `elk/app/components/account/AccountHeader.vue:236:11` and
+  `elk/app/pages/settings/profile/appearance.vue:180:11`: a `<textarea>` inside
+  a `<label>` is that label's labeled control; the label content model forbids
+  only other labelable descendants and nested labels (`forms.html#the-label-element`).
+- `<select><div>` and `<select><hr>`: both are select element inner content
+  since the customizable-select change (index "List of elements", `select`
+  children column).
+
+**Disposition:** `fixed` — the rule now reports only proven violations of the
+spec-derived content models; the corpus lint snapshots (elk, misskey,
+npmx.dev, nuxt-ui, reka-ui) carry 24 of the 26 prior reports at the same spans
+and drop exactly the two witnesses above. The 107 new reports are triaged
+`justified-with-witness`: 106 flow content inside `<button>` (content model
+phrasing, `form-elements.html#the-button-element`) and one `<tr>` directly in
+`<table>` (`elk/app/components/report/ReportModal.vue:190:9`; the parser
+inserts an implied `<tbody>`, `parsing.html#parsing-main-intable`).
