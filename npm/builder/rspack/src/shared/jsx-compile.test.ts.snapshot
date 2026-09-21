@@ -3,5 +3,5 @@ exports[`compileJsxModule includes the runtime-helper preamble in the emitted mo
 `;
 
 exports[`compileJsxModule surfaces a v3 source map when sourceMap is requested 1`] = `
-"{\\"file\\":\\"template.vue\\",\\"mappings\\":\\";6CAAkB,6BAAE\\",\\"names\\":[],\\"sources\\":[\\"template.vue\\"],\\"sourcesContent\\":[\\"<div>{message}</div>\\"],\\"version\\":3}"
+"{\\"file\\":\\"template.vue\\",\\"mappings\\":\\"AAAkB;SAAA,oCAAC,6BAAC\\",\\"names\\":[],\\"sources\\":[\\"template.vue\\"],\\"sourcesContent\\":[\\"<div>{message}</div>\\"],\\"version\\":3}"
 `;
