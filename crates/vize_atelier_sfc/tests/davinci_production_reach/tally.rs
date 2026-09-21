@@ -121,18 +121,18 @@ pub struct Floor {
     pub templates_min: u64,
 }
 
-/// Read the `[reach]` section of `davinci-road/plan/budgets.toml`.
+/// Read the `[reach]` section of `davinci-road/plan/reach-budgets.toml`.
 pub fn floors() -> BTreeMap<String, Floor> {
     let path = concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/../../davinci-road/plan/budgets.toml"
+        "/../../davinci-road/plan/reach-budgets.toml"
     );
-    let text = std::fs::read_to_string(path).expect("read davinci-road/plan/budgets.toml");
-    let budgets: toml::Table = text.parse().expect("parse budgets.toml");
+    let text = std::fs::read_to_string(path).expect("read davinci-road/plan/reach-budgets.toml");
+    let budgets: toml::Table = text.parse().expect("parse reach-budgets.toml");
     let reach = budgets
         .get("reach")
         .and_then(toml::Value::as_table)
-        .expect("budgets.toml must carry a [reach] section");
+        .expect("reach-budgets.toml must carry a [reach] section");
     let field = |entry: &toml::Table, id: &str, key: &str| -> u64 {
         let value = entry
             .get(key)

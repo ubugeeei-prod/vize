@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 // P3-17: the production-reach gate rides the required clippy-and-test job,
-// its floors live in budgets.toml [reach] for exactly the measured shapes,
+// its floors live in reach-budgets.toml [reach] for exactly the measured shapes,
 // and the plan record names every shape the Rust gate measures.
 const reachCommand =
   "cargo test -p vize_atelier_sfc --features davinci-dom-differential --test davinci_production_reach -- --nocapture";
@@ -12,7 +12,7 @@ const shapes = ["dom_inline", "dom_module", "ssr", "vapor"];
 
 function reachSection(budgets: string): string {
   const start = budgets.indexOf("\n[reach]\n");
-  assert.notEqual(start, -1, "budgets.toml must carry a [reach] section");
+  assert.notEqual(start, -1, "reach-budgets.toml must carry a [reach] section");
   const rest = budgets.slice(start + "\n[reach]\n".length);
   const next = rest.search(/^\[/mu);
   return next === -1 ? rest : rest.slice(0, next);
@@ -22,7 +22,7 @@ test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const clippyJob = workflowJobBody(workflow, "clippy-and-test");
   const manifest = readRepoFile("crates", "vize_atelier_sfc", "Cargo.toml");
-  const budgets = readRepoFile("davinci-road", "plan", "budgets.toml");
+  const budgets = readRepoFile("davinci-road", "plan", "reach-budgets.toml");
   const record = readRepoFile("davinci-road", "plan", "phase-3-records", "p3-17.md");
   const shapesSource = readRepoFile(
     "crates",
@@ -52,6 +52,14 @@ test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
     entries.map((entry) => entry.groups!.id),
     shapes,
     "[reach] must list exactly the measured shapes, in gate order",
+  );
+  assert.ok(
+    budgets
+      .split("\n")
+      .includes(
+        "# ratchet: numbers may only tighten; loosening requires budget-loosen: <charter ref> in the commit body",
+      ),
+    "reach-budgets.toml must carry the ratchet header",
   );
   for (const entry of entries) {
     assert.ok(Number(entry.groups!.templates) > 0, `${entry.groups!.id} templates_min`);

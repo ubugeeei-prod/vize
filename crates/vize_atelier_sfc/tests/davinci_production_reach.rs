@@ -15,7 +15,7 @@
 //!
 //! Two gates ride on the measurement:
 //!
-//! - **Reach floors.** `davinci-road/plan/budgets.toml` `[reach]` pins, per
+//! - **Reach floors.** `davinci-road/plan/reach-budgets.toml` `[reach]` pins, per
 //!   shape, the accepted-template count on the committed fixtures. Floors
 //!   only rise (the ratchet); a regression fails here.
 //! - **Production parity.** Every DOM template the S2 emitter accepted is
@@ -308,7 +308,7 @@ fn assert_floors(sweep: &Sweep) {
     let recorded: Vec<&str> = floors.keys().map(String::as_str).collect();
     assert_eq!(
         recorded, ids,
-        "budgets.toml [reach] ids must be exactly the measured shapes"
+        "reach-budgets.toml [reach] ids must be exactly the measured shapes"
     );
     let mut failures = Vec::new();
     for (shape, tally) in sweep.tallies.values() {

@@ -317,7 +317,7 @@ by the compiles users actually run: `compile_sfc` with a Croquis summary,
 inline render closures, binding metadata, scoped styles and module-mode
 hoisting, not only the bare template entry points the stage corpora compare.
 _Accept:_ the production-reach gate reports per-shape reach from the backends'
-selection counters with `budgets.toml [reach]` floors only rising; the
+selection counters with `reach-reach-budgets.toml [reach]` floors only rising; the
 production-path parity oracle (forced legacy DOM lane, whole-module byte
 equality) is empty; the Croquis refusal is lifted from the DOM selector on
 that oracle. _First slice 2026-09-22:_ see
