@@ -326,9 +326,7 @@ jobs:
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: davinci-dom-corpus
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: davinci-dom-corpus, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Select and hydrate full fixture corpus
         run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs hydrate
       - name: Run S2 DOM differential corpus
@@ -336,9 +334,7 @@ jobs:
         continue-on-error: true
         run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run
       - name: Run S4 SSR differential corpus
-        env:
-          VIZE_DAVINCI_DIFFERENTIAL_CORPUS: tests/_fixtures/_git
-        run: cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture
+        run: VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture
       - name: Finalize S2 DOM corpus evidence
         if: ${{ always() }}
         env:

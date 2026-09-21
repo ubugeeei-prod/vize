@@ -7,7 +7,6 @@
 pub mod codegen;
 mod compile;
 #[cfg(feature = "davinci-differential")]
-#[doc(hidden)]
 pub mod differential;
 pub mod errors;
 #[cfg(test)]
@@ -34,8 +33,6 @@ pub use steps::{
     get_v_html_exp, get_v_model_exp, get_v_show_exp, get_v_text_exp, has_v_html, has_v_model,
     has_v_show, has_v_text,
 };
-
-// Re-export core types
 pub use vize_atelier_core::{
     Allocator, CompilerError, Namespace, RootNode, RuntimeHelper, TemplateChildNode,
     codegen as core_codegen, errors as core_errors, lane, parser, runtime_helpers, tokenizer,

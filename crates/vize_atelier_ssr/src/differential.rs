@@ -5,6 +5,8 @@
 //! selector's verdict, so an admitted template that diverges from the legacy
 //! bytes is a measurable failure rather than an unobserved fallback.
 
+#![doc(hidden)]
+
 use vize_atelier_core::CompilerError;
 use vize_atelier_core::options::{CustomElementMatcher, TemplateSyntaxMode};
 use vize_s0::Allocator;
