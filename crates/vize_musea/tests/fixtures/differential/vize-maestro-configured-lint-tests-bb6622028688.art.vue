@@ -1,0 +1,1 @@
+configured Musea design tokens must run through inline <art> blocks

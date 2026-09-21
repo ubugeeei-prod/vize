@@ -1,0 +1,1 @@
+Add a title attribute: <art title="Component Name">

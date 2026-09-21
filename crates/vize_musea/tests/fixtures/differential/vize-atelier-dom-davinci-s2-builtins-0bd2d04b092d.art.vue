@@ -1,0 +1,1 @@
+<Transition><article v-memo="[path]" :key="path" class="docs-article"><h1>{{ pageTitle }}</h1></article></Transition>

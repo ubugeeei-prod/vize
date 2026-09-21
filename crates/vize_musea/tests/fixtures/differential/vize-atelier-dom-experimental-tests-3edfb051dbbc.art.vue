@@ -1,0 +1,1 @@
+<template v-match="entry"><article v-when="{ kind: 'article', const data, ... } as article">{{ article.kind }}:{{ data.title }}</article><p v-when="NaN">NaN</p></template>

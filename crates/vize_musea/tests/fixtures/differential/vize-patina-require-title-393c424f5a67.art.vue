@@ -1,0 +1,1 @@
+Require title attribute in <art> block

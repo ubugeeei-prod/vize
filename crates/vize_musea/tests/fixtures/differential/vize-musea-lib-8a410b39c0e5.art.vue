@@ -1,0 +1,1 @@
+<art title="B"><variant name="V2"><div>2</div></variant></art>

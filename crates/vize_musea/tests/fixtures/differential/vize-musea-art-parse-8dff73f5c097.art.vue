@@ -1,0 +1,1 @@
+<art title="Stress Test" description="Performance stress test with many variants" component="./Component.vue" category="test" tags="stress,performance,benchmark">

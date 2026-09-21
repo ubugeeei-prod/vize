@@ -1,0 +1,1 @@
+<section><article v-html="state.label"/><input/></section>

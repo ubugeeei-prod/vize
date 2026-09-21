@@ -1,0 +1,1 @@
+<BaseTransition mode="out-in"><article :key="path" class="docs-article"><h1>{{ pageTitle }}</h1><Content /></article></BaseTransition>

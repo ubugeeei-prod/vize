@@ -1,0 +1,1 @@
+Missing 'component' attribute in <art> block

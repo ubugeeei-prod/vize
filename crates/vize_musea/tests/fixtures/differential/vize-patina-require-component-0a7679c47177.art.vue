@@ -1,0 +1,1 @@
+Require component attribute in <art> block

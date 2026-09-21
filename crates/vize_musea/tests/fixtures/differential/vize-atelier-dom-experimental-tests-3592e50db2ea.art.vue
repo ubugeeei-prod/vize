@@ -1,0 +1,1 @@
+<template v-match="entry"><article v-when="{ kind: 'article', data: const article } if (article.published)">{{ article.title }}</article></template>

@@ -4008,10 +4008,9 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.20",
- "vize_atelier_sfc",
  "vize_carton",
  "vize_croquis",
- "vize_relief",
+ "vize_s1",
 ]
 
 [[package]]

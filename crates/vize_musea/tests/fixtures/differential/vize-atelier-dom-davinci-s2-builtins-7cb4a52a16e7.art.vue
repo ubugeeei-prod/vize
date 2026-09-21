@@ -1,0 +1,1 @@
+<Transition><article key="docs" class="docs-article"><h1>{{ pageTitle }}</h1></article></Transition>

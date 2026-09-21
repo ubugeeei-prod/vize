@@ -1,0 +1,1 @@
+<article v-memo="[a]"><p><b>y</b></p></article>

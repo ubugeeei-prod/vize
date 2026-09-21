@@ -1,94 +1,53 @@
-//! Parser for the `<art>` block.
+//! The `<art>` custom block as an S1 surface tree.
 //!
-//! High-performance parser for extracting the `<art>` block and its metadata.
+//! S0 hands over the block's whole element extent; S1 parses it into one
+//! lossless tree whose root is the `<art>` element. Metadata reads the open
+//! tag's attribute tokens, and variants are the tree's `<variant>` elements
+//! (see [`super::variant`]) — no byte re-scan of the block.
 
 use super::DefineArtMetadata;
+use super::attrs::{attr_value, has_attr};
 use super::status::{classify_status, is_unknown_status, unknown_status_warning};
-use super::{BlockInfo, extract_attr, has_attr};
 use crate::types::{ArtMetadata, ArtParseError, ArtStatus};
-use memchr::{memchr, memmem};
 use vize_s0::Allocator;
+use vize_s1::{Element, OpenTag, SurfaceChild, SurfaceTree};
 
-/// Find the `<art>` block in the source.
-/// Returns the block info with attributes and content.
-#[inline]
-pub(crate) fn find_art_block<'a>(
-    bytes: &[u8],
-    source: &'a str,
-) -> Result<BlockInfo<'a>, ArtParseError> {
-    // Use memmem for fast substring search
-    let art_finder = memmem::Finder::new(b"<art");
-
-    let Some(art_start) = art_finder.find(bytes) else {
-        return Err(ArtParseError::NoArtBlock);
-    };
-
-    // Verify it's actually <art and not <article etc
-    let after_art = art_start + 4;
-    if after_art < bytes.len() {
-        let next_char = bytes[after_art];
-        if next_char != b' ' && next_char != b'>' && next_char != b'\n' && next_char != b'\t' {
-            // Not <art, keep searching
-            // For simplicity, return NoArtBlock - could recurse for robustness
-            return Err(ArtParseError::NoArtBlock);
-        }
+/// The `<art>` element at the root of the block's S1 tree.
+///
+/// The S0 frame starts at `<art`, so the first root child is the element in
+/// every case S1 can build one; a frame S1 reads differently (the splitter's
+/// tag-name alphabet is wider than HTML's, e.g. `<art:x>`) has no `<art>`.
+pub(crate) fn art_element<'t, 'a>(tree: &'t SurfaceTree<'a>) -> Option<&'t Element<'a>> {
+    match tree.children.first()? {
+        SurfaceChild::Element(element) if element.tag() == "art" => Some(element),
+        _ => None,
     }
-
-    // Find '>' that closes the opening tag
-    let Some(tag_close_offset) = memchr(b'>', &bytes[art_start..]) else {
-        return Err(ArtParseError::NoArtBlock);
-    };
-    let tag_end = art_start + tag_close_offset;
-
-    // Extract attributes (skip "<art")
-    let attrs_start = art_start + 4;
-    let attrs_str = source[attrs_start..tag_end].trim();
-
-    // Find </art>
-    let content_start = tag_end + 1;
-    let close_finder = memmem::Finder::new(b"</art>");
-    let Some(close_offset) = close_finder.find(&bytes[content_start..]) else {
-        return Err(ArtParseError::NoArtBlock);
-    };
-    let close_pos = content_start + close_offset;
-
-    let content = &source[content_start..close_pos];
-
-    Ok(BlockInfo {
-        attrs_str,
-        content,
-        content_start,
-    })
 }
 
-/// Parse metadata from `<art>` block attributes.
-/// Uses arena allocation for tags vector.
-#[inline]
+/// Parse metadata from the `<art>` open tag, with `defineArt()` as the
+/// fallback source for every field.
 pub(crate) fn parse_metadata<'a>(
     allocator: &'a Allocator,
-    block: &BlockInfo<'a>,
+    open: &OpenTag<'a>,
     define_art: Option<&DefineArtMetadata<'a>>,
     filename: &str,
 ) -> Result<(ArtMetadata<'a>, vize_s0::Vec<'a, &'a str>), ArtParseError> {
-    let attrs = block.attrs_str;
-
-    let title = extract_attr(attrs, "title")
+    let title = attr_value(open, "title")
         .or_else(|| define_art.and_then(|metadata| metadata.title))
         .or_else(|| define_art.and_then(|metadata| metadata.component_name))
         .ok_or(ArtParseError::MissingTitle)?;
 
     // Optional attributes - all borrowed from source
-    let description = extract_attr(attrs, "description")
+    let description = attr_value(open, "description")
         .or_else(|| define_art.and_then(|metadata| metadata.description));
-    let component = extract_attr(attrs, "component")
+    let component = attr_value(open, "component")
         .or_else(|| define_art.and_then(|metadata| metadata.component));
-    let category = extract_attr(attrs, "category")
-        .or_else(|| define_art.and_then(|metadata| metadata.category));
+    let category =
+        attr_value(open, "category").or_else(|| define_art.and_then(|metadata| metadata.category));
 
-    // Parse tags (comma-separated) into arena-allocated vec
+    // Tags are comma-separated slices of the attribute value.
     let mut tags = vize_s0::Vec::new_in(&allocator);
-    if let Some(tags_str) = extract_attr(attrs, "tags") {
-        // Split by comma, trim each tag - no allocations, just slices
+    if let Some(tags_str) = attr_value(open, "tags") {
         for tag in tags_str.split(',') {
             let trimmed = tag.trim();
             if !trimmed.is_empty() {
@@ -99,13 +58,13 @@ pub(crate) fn parse_metadata<'a>(
         tags.extend(define_art.tags.iter().copied());
     }
 
-    let attr_status = parse_status(attrs);
+    let attr_status = parse_status(open);
     let status = attr_status
         .or_else(|| define_art.and_then(|metadata| metadata.status.map(classify_status)))
         .unwrap_or_default();
 
     let mut warnings = vize_s0::Vec::new_in(&allocator);
-    if let Some(value) = extract_attr(attrs, "status").filter(|value| is_unknown_status(value)) {
+    if let Some(value) = attr_value(open, "status").filter(|value| is_unknown_status(value)) {
         warnings.push(unknown_status_warning(allocator, filename, value));
     } else if attr_status.is_none()
         && let Some(value) = define_art
@@ -115,8 +74,7 @@ pub(crate) fn parse_metadata<'a>(
         warnings.push(unknown_status_warning(allocator, filename, value));
     }
 
-    // Parse order
-    let order = extract_attr(attrs, "order")
+    let order = attr_value(open, "order")
         .and_then(|s| s.parse::<u32>().ok())
         .or_else(|| define_art.and_then(|metadata| metadata.order));
 
@@ -134,14 +92,13 @@ pub(crate) fn parse_metadata<'a>(
     ))
 }
 
-/// Parse the status attribute value.
-#[inline]
-fn parse_status(attrs: &str) -> Option<ArtStatus> {
-    if let Some(status_str) = extract_attr(attrs, "status") {
+/// The `status` attribute, or the `draft` / `deprecated` shorthands.
+fn parse_status(open: &OpenTag<'_>) -> Option<ArtStatus> {
+    if let Some(status_str) = attr_value(open, "status") {
         Some(classify_status(status_str))
-    } else if has_attr(attrs, "draft") {
+    } else if has_attr(open, "draft") {
         Some(ArtStatus::Draft)
-    } else if has_attr(attrs, "deprecated") {
+    } else if has_attr(open, "deprecated") {
         Some(ArtStatus::Deprecated)
     } else {
         None
@@ -150,77 +107,121 @@ fn parse_status(attrs: &str) -> Option<ArtStatus> {
 
 #[cfg(test)]
 mod tests {
-    use super::{find_art_block, parse_metadata, parse_status};
+    use super::{art_element, parse_metadata, parse_status};
     use crate::types::ArtStatus;
     use vize_s0::Allocator;
+    use vize_s1::parse;
+
+    fn with_art<R>(source: &str, check: impl FnOnce(&Allocator, &vize_s1::Element<'_>) -> R) -> R {
+        let allocator = Allocator::new();
+        let (tree, _) = parse(&allocator, source);
+        let art = art_element(&tree).expect("an <art> root element");
+        check(&allocator, art)
+    }
+
+    /// The block geometry the pre-S1 snapshot pinned — the open tag's
+    /// attribute text, the contents between the tags and their offset —
+    /// now read off the S1 tree's tokens.
+    #[derive(Debug)]
+    #[allow(dead_code, reason = "read through the Debug snapshot")]
+    struct BlockInfo<'a> {
+        attrs_str: &'a str,
+        content: &'a str,
+        content_start: usize,
+    }
 
     #[test]
     fn test_find_art_block() {
+        let allocator = Allocator::new();
         let source = r#"<art title="Test"><variant name="A"></variant></art>"#;
-        let result = find_art_block(source.as_bytes(), source);
-        assert!(result.is_ok());
-
-        let block = result.unwrap();
+        let (tree, _) = parse(&allocator, source);
+        let art = art_element(&tree).expect("art");
+        let frame = vize_s0::SourceRoot::new(source).unwrap().whole_block();
+        let at = |slice: &str| frame.offset_of(slice).unwrap() as usize;
+        let vize_s1::ElementClose::Present(close) = &art.close else {
+            panic!("closed <art>");
+        };
+        let name_end = at(art.open.lt_name.text) + art.open.lt_name.text.len();
+        let content_start = at(art.open.gt.text) + 1;
+        let block = BlockInfo {
+            attrs_str: source[name_end..at(art.open.gt.text)].trim(),
+            content: &source[content_start..at(close.lt_slash_name.text)],
+            content_start,
+        };
         insta::assert_debug_snapshot!(block);
     }
 
     #[test]
-    fn test_parse_metadata_minimal() {
+    fn art_element_is_the_root_art_tag_only() {
         let allocator = Allocator::new();
-        let source = r#"<art title="Button"></art>"#;
-        let block = find_art_block(source.as_bytes(), source).unwrap();
-        let (metadata, warnings) = parse_metadata(&allocator, &block, None, "").unwrap();
+        let (tree, _) = parse(
+            &allocator,
+            r#"<art title="Test"><variant name="A"></variant></art>"#,
+        );
+        let art = art_element(&tree).expect("art");
+        assert_eq!(art.tag(), "art");
+        assert_eq!(art.children.len(), 1);
+        let (tree, _) = parse(&allocator, "<article></article>");
+        assert!(art_element(&tree).is_none());
+    }
 
-        assert_eq!(metadata.title, "Button");
-        assert_eq!(metadata.description, None);
-        assert_eq!(metadata.status, ArtStatus::Ready);
-        assert_eq!(warnings.len(), 0);
+    #[test]
+    fn test_parse_metadata_minimal() {
+        with_art(r#"<art title="Button"></art>"#, |allocator, art| {
+            let (metadata, warnings) = parse_metadata(allocator, &art.open, None, "").unwrap();
+            assert_eq!(metadata.title, "Button");
+            assert_eq!(metadata.description, None);
+            assert_eq!(metadata.status, ArtStatus::Ready);
+            assert_eq!(warnings.len(), 0);
+        });
     }
 
     #[test]
     fn test_parse_metadata_full() {
-        let allocator = Allocator::new();
         let source = r#"<art title="Button" description="A button" category="atoms" tags="ui,input" status="draft"></art>"#;
-        let block = find_art_block(source.as_bytes(), source).unwrap();
-        let (metadata, warnings) = parse_metadata(&allocator, &block, None, "").unwrap();
-
-        assert_eq!(metadata.title, "Button");
-        assert_eq!(metadata.description, Some("A button"));
-        assert_eq!(metadata.category, Some("atoms"));
-        assert_eq!(metadata.tags.len(), 2);
-        assert_eq!(metadata.tags[0], "ui");
-        assert_eq!(metadata.tags[1], "input");
-        assert_eq!(metadata.status, ArtStatus::Draft);
-        assert_eq!(warnings.len(), 0);
+        with_art(source, |allocator, art| {
+            let (metadata, warnings) = parse_metadata(allocator, &art.open, None, "").unwrap();
+            assert_eq!(metadata.title, "Button");
+            assert_eq!(metadata.description, Some("A button"));
+            assert_eq!(metadata.category, Some("atoms"));
+            assert_eq!(metadata.tags.as_slice(), ["ui", "input"]);
+            assert_eq!(metadata.status, ArtStatus::Draft);
+            assert_eq!(warnings.len(), 0);
+        });
     }
 
     #[test]
     fn test_parse_status() {
-        assert_eq!(parse_status(r#"status="draft""#), Some(ArtStatus::Draft));
-        assert_eq!(parse_status(r#"status="ready""#), Some(ArtStatus::Ready));
-        assert_eq!(
-            parse_status(r#"status="deprecated""#),
-            Some(ArtStatus::Deprecated)
-        );
-        assert_eq!(parse_status(r#"status="wip""#), Some(ArtStatus::Draft));
-        assert_eq!(parse_status(r#"draft"#), Some(ArtStatus::Draft));
-        assert_eq!(parse_status(r#"deprecated"#), Some(ArtStatus::Deprecated));
-        assert_eq!(parse_status(r#""#), None);
+        let cases = [
+            (r#"<art status="draft">"#, Some(ArtStatus::Draft)),
+            (r#"<art status="ready">"#, Some(ArtStatus::Ready)),
+            (r#"<art status="deprecated">"#, Some(ArtStatus::Deprecated)),
+            (r#"<art status="wip">"#, Some(ArtStatus::Draft)),
+            ("<art draft>", Some(ArtStatus::Draft)),
+            ("<art deprecated>", Some(ArtStatus::Deprecated)),
+            ("<art>", None),
+        ];
+        for (source, expected) in cases {
+            let status = with_art(source, |_, art| parse_status(&art.open));
+            assert_eq!(status, expected, "{source}");
+        }
     }
 
     #[test]
     fn test_parse_metadata_unknown_status_warns() {
-        let allocator = Allocator::new();
-        let source = r#"<art title="Button" status="wip"></art>"#;
-        let block = find_art_block(source.as_bytes(), source).unwrap();
-        let (metadata, warnings) =
-            parse_metadata(&allocator, &block, None, "button.art.vue").unwrap();
-        assert_eq!(metadata.status, ArtStatus::Draft);
-        assert_eq!(
-            warnings.as_slice(),
-            [
-                "button.art.vue: unknown status \"wip\"; falling back to \"draft\" (expected \"draft\" | \"ready\" | \"deprecated\")"
-            ]
+        with_art(
+            r#"<art title="Button" status="wip"></art>"#,
+            |allocator, art| {
+                let (metadata, warnings) =
+                    parse_metadata(allocator, &art.open, None, "button.art.vue").unwrap();
+                assert_eq!(metadata.status, ArtStatus::Draft);
+                assert_eq!(
+                    warnings.as_slice(),
+                    [
+                        "button.art.vue: unknown status \"wip\"; falling back to \"draft\" (expected \"draft\" | \"ready\" | \"deprecated\")"
+                    ]
+                );
+            },
         );
     }
 }

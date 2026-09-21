@@ -1,0 +1,1 @@
+[vize:musea/require-title] Missing required 'title' attribute in <art> block

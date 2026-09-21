@@ -1,0 +1,1 @@
+<art component="./Button.vue"></art>

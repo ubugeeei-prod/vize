@@ -1,0 +1,1 @@
+<art><variant name="Test"></variant></art>

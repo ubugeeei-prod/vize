@@ -27,7 +27,9 @@
 //! - **Zero-copy parsing**: All strings are borrowed from source
 //! - **Arena allocation**: Uses `vize_s0::Allocator` for fast allocation
 //! - **Minimal allocations**: Only allocates when absolutely necessary
-//! - **Fast byte-level parsing**: Uses `memchr` and `memmem` for O(n) search
+//! - **Shared parse stages**: Art files split through the shared SFC block
+//!   splitter (Davinci S0) and the `<art>` block parses as a lossless S1
+//!   surface tree — no private byte scanner
 //!
 //! ## Usage
 //!

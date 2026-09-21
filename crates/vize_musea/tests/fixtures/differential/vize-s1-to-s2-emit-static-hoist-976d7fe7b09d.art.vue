@@ -1,0 +1,1 @@
+<section><article class="chart-card"><h2>{{ title }}</h2><svg viewBox="0 0 100 40"><polyline :points="points" /></svg></article></section>

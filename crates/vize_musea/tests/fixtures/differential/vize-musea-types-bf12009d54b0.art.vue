@@ -1,0 +1,1 @@
+Missing required 'title' attribute in <art> block

@@ -10,18 +10,19 @@ metadata.vize.stability = "experimental"
 
 [dependencies]
 vize_s0.workspace = true
-vize_relief.workspace = true
-vize_atelier_sfc.workspace = true
+vize_s1.workspace = true
 vize_croquis.workspace = true
 
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
-memchr.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
 insta.workspace = true
 criterion.workspace = true
+# Only the retained P4-13 differential oracle (`src/parse/legacy*`, test-only)
+# still scans bytes; it leaves with that oracle.
+memchr.workspace = true
 
 [[bench]]
 name = "art_parse"

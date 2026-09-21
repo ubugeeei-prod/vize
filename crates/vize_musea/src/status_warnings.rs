@@ -3,7 +3,6 @@
 //! `parse_art` keeps `ArtDescriptor` field-stable, so these warnings are
 //! collected through a separate entry rather than a new descriptor field.
 
-use crate::parse::art_block::{find_art_block, parse_metadata};
 use vize_s0::{Allocator, Vec};
 
 /// Return unknown-status warnings for `source`, or an empty list if the Art
@@ -13,13 +12,7 @@ pub fn parse_art_status_warnings<'a>(
     source: &'a str,
     filename: &str,
 ) -> Vec<'a, &'a str> {
-    let Ok(block) = find_art_block(source.as_bytes(), source) else {
-        return Vec::new_in(&allocator);
-    };
-    match parse_metadata(allocator, &block, None, filename) {
-        Ok((_, warnings)) => warnings,
-        Err(_) => Vec::new_in(&allocator),
-    }
+    crate::parse::art_status_warnings(allocator, source, filename)
 }
 
 #[cfg(test)]
