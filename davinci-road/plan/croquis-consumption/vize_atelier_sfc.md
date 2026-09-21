@@ -26,7 +26,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | item                                      | files | sites |
 | ----------------------------------------- | ----: | ----: |
 | `BindingType`                             |    17 |   131 |
-| `BlockLocation`                           |     4 |     5 |
+| `BlockLocation`                           |     5 |     7 |
 | `DEFINE_EMITS`                            |     1 |     2 |
 | `DEFINE_EXPOSE`                           |     1 |     2 |
 | `DEFINE_MODEL`                            |     1 |     2 |
@@ -40,8 +40,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScriptParseResult`                       |     1 |     1 |
 | `ScriptParserOptions`                     |     1 |     1 |
 | `SfcCustomBlock`                          |     2 |     2 |
-| `SfcDescriptor`                           |    15 |    38 |
-| `SfcError`                                |    20 |    57 |
+| `SfcDescriptor`                           |    16 |    40 |
+| `SfcError`                                |    21 |    59 |
 | `SfcParseOptions`                         |    14 |   105 |
 | `SfcScriptBlock`                          |     1 |     1 |
 | `SfcStyleBlock`                           |     5 |     7 |

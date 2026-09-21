@@ -1,5 +1,6 @@
 consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	25	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	25	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	25	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	25	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	25	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -139,6 +140,8 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/bindings.rs	6	raw_o
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/bindings.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/diagnostics.rs	3	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/empty_component.rs	3	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/entry/pug.rs	28	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/entry/pug.rs	28	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/entry/root_match.rs	14	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/helpers.rs	4	s0	S0	stage	vize_carton	compat	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/helpers.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	2
