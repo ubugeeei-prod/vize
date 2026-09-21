@@ -1,17 +1,15 @@
 //! Projection of the admitted native payload to the shared emitter IR.
 //! The legacy template AST is neither an input nor a source of payloads.
 
+mod bindings;
 mod control;
 mod text;
 
 use vize_atelier_core::{RootNode, SimpleExpressionNode, SourceLocation};
 use vize_carton::{Allocator, Box, String, Vec, ensure_sufficient_stack};
 
-use super::{Content, NativeArtifact};
-use crate::ir::{
-    BlockIRNode, ChildRefIRNode, EventModifiers, IREffect, IRProp, OperationNode, RootIRNode,
-    SetEventIRNode, SetPropIRNode,
-};
+use super::{Content, Expr, NativeArtifact};
+use crate::ir::{BlockIRNode, ChildRefIRNode, IREffect, OperationNode, RootIRNode};
 
 pub(super) fn emit<'a>(
     artifact: NativeArtifact<'a>,
@@ -132,47 +130,9 @@ impl<'a> Emitter<'a, '_> {
             template.push_str(scope_id);
         }
         template.push('>');
-        for binding_index in 0..self.artifact.nodes[index].bindings.len() {
-            let binding = &self.artifact.nodes[index].bindings[binding_index];
+        for binding in 0..self.artifact.nodes[index].bindings.len() {
             let element = id.expect("binding target is materialized");
-            let key = self.expression(binding.name, true);
-            if binding.event {
-                let modifiers = EventModifiers::from_names(
-                    self.allocator,
-                    Some(binding.name),
-                    binding.modifiers.iter().copied(),
-                );
-                let name = modifiers.event_name(binding.name);
-                let delegate = modifiers.can_delegate(name);
-                let key = self.expression(name, true);
-                let value = Some(self.expression(binding.value, false));
-                block
-                    .operation
-                    .push(OperationNode::SetEvent(SetEventIRNode {
-                        element,
-                        key,
-                        value,
-                        modifiers,
-                        delegate,
-                        effect: false,
-                    }));
-            } else {
-                let values = self.values(binding.value);
-                self.effect(
-                    OperationNode::SetProp(SetPropIRNode {
-                        element,
-                        tag,
-                        camel: false,
-                        prop_modifier: false,
-                        prop: IRProp {
-                            key,
-                            values,
-                            is_component: false,
-                        },
-                    }),
-                    block,
-                );
-            }
+            self.binding(index, binding, element, block);
         }
         self.children(index, id, template, block);
         if !vize_carton::is_void_tag(tag) {
@@ -241,14 +201,15 @@ impl<'a> Emitter<'a, '_> {
         child_id
     }
 
-    fn expression(&self, value: &'a str, is_static: bool) -> Box<'a, SimpleExpressionNode<'a>> {
-        Box::new_in(
-            SimpleExpressionNode::new(value, is_static, SourceLocation::STUB),
-            &self.allocator,
-        )
+    /// A generator expression node; a retained AST lets the shared resolver
+    /// consume it without reparsing the text.
+    fn expression(&self, value: Expr<'a>, is_static: bool) -> Box<'a, SimpleExpressionNode<'a>> {
+        let mut node = SimpleExpressionNode::new(value.text, is_static, SourceLocation::STUB);
+        node.js_ast = value.js;
+        Box::new_in(node, &self.allocator)
     }
 
-    fn values(&self, value: &'a str) -> Vec<'a, Box<'a, SimpleExpressionNode<'a>>> {
+    fn values(&self, value: Expr<'a>) -> Vec<'a, Box<'a, SimpleExpressionNode<'a>>> {
         let mut values = Vec::new_in(&self.allocator);
         values.push(self.expression(value, false));
         values

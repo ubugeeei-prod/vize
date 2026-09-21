@@ -1,5 +1,7 @@
 use super::{generated, lowered_source, options};
-use crate::s3::{LegacyReason, VaporS3BridgeStatus, admit, lower_source_for_vapor};
+use crate::s3::{
+    LegacyReason, VaporS3BridgeStatus, admit, lower_source_for_vapor, retained::Retained,
+};
 use vize_carton::Allocator;
 use vize_s3::operand::{OperandRole, ValueKind};
 
@@ -19,6 +21,9 @@ fn control_flow_shapes_are_admitted() {
         r#"<main><button v-for="item in items" :key="item" @click="save">{{ item }}</button></main>"#,
         // A loop body is its own template; DOM insertion never reparses it.
         r#"<ul><li v-for="group in groups"><ul><li v-for="item in group.items">{{ item }}</li></ul></li></ul>"#,
+        // Compound conditions, sources and keys consume retained ASTs.
+        r#"<div><span v-if="a.b() && !c">x</span><i v-else-if="n > 1">y</i></div>"#,
+        r#"<ul><li v-for="x in xs.slice(1)" :key="x.id + 1">{{ x.a + x.b }}</li></ul>"#,
     ] {
         let allocator = Allocator::new();
         let status = lower_source_for_vapor(&allocator, source, options());
@@ -71,19 +76,19 @@ fn unsupported_control_flow_selects_exact_legacy_reasons() {
             ControlFlow,
         ),
         (
-            r#"<div><span v-if="a.b()">x</span></div>"#,
+            r#"<div><span v-if="a as boolean">x</span></div>"#,
             ExpressionOrEncoding,
         ),
         (
-            r#"<div><span v-if="!a">x</span></div>"#,
+            r#"<div><span v-if="$props.a">x</span></div>"#,
             ExpressionOrEncoding,
         ),
         (
-            r#"<ul><li v-for="x in xs.slice(1)">{{ x }}</li></ul>"#,
+            r#"<ul><li v-for="x in (xs as any[])">{{ x }}</li></ul>"#,
             ExpressionOrEncoding,
         ),
         (
-            r#"<ul><li v-for="x in xs" :key="x.id + 1">{{ x }}</li></ul>"#,
+            r#"<ul><li v-for="x in xs" :key="x.id as string">{{ x }}</li></ul>"#,
             ExpressionOrEncoding,
         ),
         (r#"<div><span :key="k">x</span></div>"#, Binding),
@@ -114,7 +119,7 @@ fn control_flow_payload_mutations_drive_generation() {
             _ => {}
         }
     }
-    let code = generated(admit(s3), &allocator);
+    let code = generated(admit(s3, &Retained::new(&allocator)), &allocator);
     for expected in [
         "_createFor(() => (_ctx.rows), (_for_item0, _for_key0, _for_index0) => {",
         "}, (item, name, position) => (item.uid))",
@@ -134,7 +139,7 @@ fn control_flow_payload_mutations_drive_generation() {
             operand.value.text = "changed";
         }
     }
-    let code = generated(admit(s3), &allocator);
+    let code = generated(admit(s3, &Retained::new(&allocator)), &allocator);
     assert!(
         code.contains("_createIf(() => (_ctx.a)")
             && code.contains("_createIf(() => (_ctx.changed)")
@@ -193,7 +198,7 @@ fn corrupt_control_flow_graphs_are_rejected_instead_of_falling_back() {
             vize_s3::verify::verify(&s3.program).is_empty(),
             "mutation {mutation} must pass the generic verifier"
         );
-        let status = admit(s3);
+        let status = admit(s3, &Retained::new(&allocator));
         assert!(
             matches!(status, VaporS3BridgeStatus::Rejected(_)),
             "mutation {mutation}: {status:?}"

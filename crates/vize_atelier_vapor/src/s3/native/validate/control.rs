@@ -12,11 +12,14 @@ use vize_s3::{
     operand::{Operand, OperandRole as Role, ValueKind},
 };
 
-use super::super::{Branch, Content, Loop};
-use super::{Result, operands::one, operands::reference};
-use crate::s3::{AdmissionFailure, LegacyReason};
+use super::super::{Branch, Content, Expr, Loop};
+use super::{Result, operands::js, operands::one};
+use crate::s3::{AdmissionFailure, LegacyReason, retained::Retained};
 
-pub(super) fn branches<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
+pub(super) fn branches<'a>(
+    values: &[&Operand<'a>],
+    retained: &Retained<'_, 'a>,
+) -> Result<Content<'a>> {
     let mut branches: std::vec::Vec<Branch<'a>> = std::vec::Vec::with_capacity(values.len());
     for (position, value) in values.iter().enumerate() {
         let Some(region) = value.region else {
@@ -37,8 +40,7 @@ pub(super) fn branches<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
                     "unconditional branch is not trailing",
                 ));
             }
-            ValueKind::Js if reference(value.value.text) => Some(value.value.text.trim()),
-            _ => return Err(LegacyReason::ExpressionOrEncoding.into()),
+            _ => Some(js(retained, value)?),
         };
         branches.push(Branch {
             condition,
@@ -52,7 +54,10 @@ pub(super) fn branches<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
     Ok(Content::If { branches })
 }
 
-pub(super) fn for_loop<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
+pub(super) fn for_loop<'a>(
+    values: &[&Operand<'a>],
+    retained: &Retained<'_, 'a>,
+) -> Result<Content<'a>> {
     if values.iter().any(|value| {
         !matches!(
             value.role,
@@ -63,14 +68,19 @@ pub(super) fn for_loop<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
     }) {
         return Err(AdmissionFailure::Invalid("invalid native loop operand"));
     }
-    let source = one(values, Role::ForSource)?.value;
+    let source = one(values, Role::ForSource)?;
     let value = one(values, Role::ForValue)?.value;
     let key = one(values, Role::ForKey)?.value;
     let index = one(values, Role::ForIndex)?.value;
-    let range = !source.text.is_empty() && source.text.bytes().all(|b| b.is_ascii_digit());
-    if source.kind != ValueKind::Js || !(reference(source.text) || range) {
-        return Err(LegacyReason::ExpressionOrEncoding.into());
-    }
+    let text = source.value.text;
+    let source = if source.value.kind == ValueKind::Js
+        && !text.is_empty()
+        && text.bytes().all(|b| b.is_ascii_digit())
+    {
+        Expr::plain(text)
+    } else {
+        js(retained, source)?
+    };
     let value = alias(value.kind, value.text)?.ok_or(LegacyReason::ControlFlow)?;
     let key = alias(key.kind, key.text)?;
     let index = alias(index.kind, index.text)?;
@@ -82,7 +92,7 @@ pub(super) fn for_loop<'a>(values: &[&Operand<'a>]) -> Result<Content<'a>> {
         return Err(LegacyReason::ControlFlow.into());
     }
     Ok(Content::For(Loop {
-        source: source.text.trim(),
+        source,
         value,
         key,
         index,

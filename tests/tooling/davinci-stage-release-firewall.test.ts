@@ -150,6 +150,14 @@ test("Vapor production selects only published stages for the S3 bridge", () => {
       optional: false,
       features: [],
     },
+    // Retained S2 expression ASTs move into the Vapor output arena.
+    {
+      name: "vize_s2",
+      req: versionRequirement("vize_s2"),
+      rename: null,
+      optional: false,
+      features: [],
+    },
     {
       name: "vize_s2_to_s3",
       req: versionRequirement("vize_s2_to_s3"),

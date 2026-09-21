@@ -7,23 +7,23 @@ const t0 = _template("<button> Bindings </button>", true)
 const t1 = _template("<section><div class=\"tabs\"><button> Code </button><!----><button> Helpers </button></div></section>", true)
 _delegateEvents("click")
 export function render(_ctx) {
-const n1 = t1()
-const n0 = _child(n1)
-const n2 = _child(n0)
-const n4 = _next(_child(n0), 1)
-const n3 = _nthChild(n0, 2)
+const n0 = t1()
+const n1 = _child(n0)
+const n2 = _child(n1)
+const n3 = _next(_child(n1), 1)
+const n7 = _nthChild(n1, 2)
 n2.$evtclick = _createInvoker($event => (_ctx.activeTab = 'code'))
-_setInsertionState(n0, n4, true)
-const n5 = _createIf(() => (_ctx.inputMode === 'sfc'), () => {
-const n7 = t0()
-n7.$evtclick = _createInvoker($event => (_ctx.activeTab = 'bindings'))
-_renderEffect(() => _setClass(n7, ['tab', { active: _ctx.activeTab === 'bindings' }]))
-return n7
+_setInsertionState(n1, n3, true)
+const n4 = _createIf(() => (_ctx.inputMode === 'sfc'), () => {
+const n6 = t0()
+n6.$evtclick = _createInvoker($event => (_ctx.activeTab = 'bindings'))
+_renderEffect(() => _setClass(n6, ['tab', { active: _ctx.activeTab === 'bindings' }]))
+return n6
 })
-n3.$evtclick = _createInvoker($event => (_ctx.activeTab = 'helpers'))
+n7.$evtclick = _createInvoker($event => (_ctx.activeTab = 'helpers'))
 _renderEffect(() => {
 _setClass(n2, ['tab', { active: _ctx.activeTab === 'code' }])
-_setClass(n3, ['tab', { active: _ctx.activeTab === 'helpers' }])
+_setClass(n7, ['tab', { active: _ctx.activeTab === 'helpers' }])
 })
-return n1
+return n0
 }

@@ -47,6 +47,10 @@ pub struct VaporCompilerOptions {
     pub experimental_in_tag_comments: bool,
     /// Enable experimental `v-match` / `v-when` patterned template desugaring.
     pub experimental_patterned_template: bool,
+    /// Davinci A/B and baseline instrumentation: always select the retained
+    /// (pre-S3) lane. Not a user option; production callers leave it unset.
+    #[doc(hidden)]
+    pub davinci_retained_lane: bool,
 }
 
 /// Experimental Vapor compiler options kept separate from
@@ -170,7 +174,11 @@ fn compile_vapor_inner_with_stack<'a>(
                 experimental_patterned_template: options.experimental_patterned_template,
                 template_syntax,
                 has_custom_elements: !custom_elements.is_empty(),
-                has_binding_metadata: options.binding_metadata.is_some(),
+                // Without prefixing, the retained lane keeps expression text as
+                // authored and binding metadata only steers the shared generator.
+                prefixed_binding_metadata: options.binding_metadata.is_some()
+                    && options.prefix_identifiers,
+                retained_lane: options.davinci_retained_lane,
                 inline: options.inline,
             },
         )

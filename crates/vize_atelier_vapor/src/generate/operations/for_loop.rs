@@ -120,7 +120,7 @@ fn generate_for_key_function(
     for_node: &ForIRNode<'_>,
 ) -> Option<String> {
     if let Some(ref key_prop) = for_node.key_prop {
-        let key_expr = resolve_key_expression(ctx, for_node, key_prop.content);
+        let key_expr = resolve_key_expression(ctx, for_node, key_prop);
         // Build params: (value_alias) or (value_alias, key_alias)
         let value_name = for_node
             .value
@@ -149,9 +149,10 @@ fn generate_for_key_function(
 fn resolve_key_expression(
     ctx: &GenerateContext<'_>,
     for_node: &ForIRNode<'_>,
-    key_expr: &str,
+    key_prop: &vize_atelier_core::SimpleExpressionNode<'_>,
 ) -> String {
-    let mut resolved = ctx.resolve_expression(key_expr);
+    // Node-aware: a retained key AST is consumed instead of reparsed.
+    let mut resolved = ctx.resolve_expression_node(key_prop);
     let Some(current_scope) = ctx.for_scopes.last() else {
         return resolved;
     };

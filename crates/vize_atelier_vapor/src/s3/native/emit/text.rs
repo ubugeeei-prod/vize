@@ -43,7 +43,7 @@ impl<'a> Emitter<'a, '_> {
                 if part.dynamic {
                     template.push(' ');
                 } else {
-                    escape(template, part.value);
+                    escape(template, part.value.text);
                 }
             }
         }

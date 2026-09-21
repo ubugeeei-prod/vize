@@ -7,7 +7,7 @@
 
 use vize_carton::{Box, ensure_sufficient_stack};
 
-use super::super::Content;
+use super::super::{Content, Expr};
 use super::Emitter;
 use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, NegativeBranch, OperationNode};
 
@@ -15,7 +15,7 @@ use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, NegativeBranch, OperationNode}
 /// parent's only child.
 pub(super) type Placement = (usize, usize, bool);
 
-type Branches<'s, 'a> = &'s [(Option<&'a str>, usize)];
+type Branches<'s, 'a> = &'s [(Option<Expr<'a>>, usize)];
 
 impl<'a> Emitter<'a, '_> {
     pub(super) fn control(
@@ -57,15 +57,16 @@ impl<'a> Emitter<'a, '_> {
                 let root = self.artifact.nodes[index].children[0];
                 self.id();
                 let render = self.block(root);
-                let alias =
-                    |value: Option<&'a str>| value.map(|value| self.expression(value, false));
+                let alias = |value: Option<&'a str>| {
+                    value.map(|value| self.expression(Expr::plain(value), false))
+                };
                 let node = ForIRNode {
                     id,
                     source: self.expression(body.source, false),
                     value: alias(Some(body.value)),
                     key: alias(body.key),
                     index: alias(body.index),
-                    key_prop: alias(body.key_prop),
+                    key_prop: body.key_prop.map(|key| self.expression(key, false)),
                     render,
                     once: false,
                     component: false,

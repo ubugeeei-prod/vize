@@ -85,7 +85,7 @@ fn davinci(criterion: &mut Criterion) {
 }
 
 /// Compare the admitted production route and explicitly retained legacy route
-/// in the same process. Empty metadata selects legacy without changing bindings.
+/// in the same process. The explicit retained-lane selector changes no binding.
 fn native_pair(criterion: &mut Criterion) {
     let mut group = criterion.benchmark_group("vapor_native_pair");
     for (name, source) in [
@@ -96,6 +96,10 @@ fn native_pair(criterion: &mut Criterion) {
         (
             "events",
             "<main @keydown=\"save\"><button @click.stop=\"save\" @keydown.enter.stop=\"save\">{{ label }}</button><input @focus=\"save\" @change.once=\"save\"></main>",
+        ),
+        (
+            "expressions",
+            "<main class=\"shell\" :class=\"{ dense, [theme]: true }\"><button @click=\"count++\" :title=\"'n=' + count\">{{ count * 2 }} / {{ label.toUpperCase() }}</button><div v-show=\"open && ready\" v-text=\"items.map(i => i.name).join(', ')\"></div></main>",
         ),
         (
             "control_flow",
@@ -111,7 +115,7 @@ fn native_pair(criterion: &mut Criterion) {
                         source,
                         VaporCompilerOptions {
                             prefix_identifiers: true,
-                            binding_metadata: legacy.then(Default::default),
+                            davinci_retained_lane: legacy,
                             ..Default::default()
                         },
                     ))

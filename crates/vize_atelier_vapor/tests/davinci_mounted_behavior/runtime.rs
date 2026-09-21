@@ -69,7 +69,7 @@ fn run_mounted(
     experimental_patterned_template: bool,
 ) -> Value {
     // `vapor-legacy` runs the Vapor runtime over the explicitly retained lane:
-    // an empty binding-metadata map selects it without changing any binding.
+    // the explicit selector changes no binding or expression.
     let legacy = backend == "vapor-legacy";
     let backend = if legacy { "vapor" } else { backend };
     let allocator = Allocator::new();
@@ -92,7 +92,7 @@ fn run_mounted(
             VaporCompilerOptions {
                 prefix_identifiers: true,
                 experimental_patterned_template,
-                binding_metadata: legacy.then(Default::default),
+                davinci_retained_lane: legacy,
                 ..Default::default()
             },
         );

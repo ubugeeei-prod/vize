@@ -4,12 +4,13 @@
 use vize_carton::{Allocator, FxHashMap};
 use vize_s3::operand::{OperandRole, OperandValue, ValueKind};
 
-use super::{AdmissionFailure, LegacyReason, native::validate::reference};
+use super::{AdmissionFailure, LegacyReason, native::validate::reference, retained::Retained};
 
 pub(super) fn capture<'a>(
     allocator: &'a Allocator,
     s2: &vize_s1_to_s2::Lowered<'_>,
     s3: &mut vize_s2_to_s3::Lowered<'a>,
+    retained: &mut Retained<'_, 'a>,
 ) -> Result<(), AdmissionFailure> {
     let facts: FxHashMap<_, _> = s2
         .provenance
@@ -69,7 +70,10 @@ pub(super) fn capture<'a>(
             return Err(AdmissionFailure::Invalid("compound text parts are stale"));
         }
         for part in &parts.parts {
-            if part.dynamic && !reference(&part.text) {
+            let text = allocator.alloc_str(&part.text);
+            // S2 never parsed compound parts; a non-reference part takes its
+            // single parse here, with S2's own admission rule.
+            if part.dynamic && !reference(text) && !retained.parse(text, part.span) {
                 return Err(LegacyReason::ExpressionOrEncoding.into());
             }
             operands.push(vize_s3::operand::Operand {
@@ -79,7 +83,7 @@ pub(super) fn capture<'a>(
                     } else {
                         ValueKind::Literal
                     },
-                    text: allocator.alloc_str(&part.text),
+                    text,
                     qualifier: "",
                     span: part.span,
                 },

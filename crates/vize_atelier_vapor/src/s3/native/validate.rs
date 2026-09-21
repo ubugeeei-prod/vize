@@ -1,25 +1,29 @@
 //! Validate the supported backend shape after the generic graph verifier.
 //! Indexes are built once; source order must agree with explicit S3 edges.
 
+mod attach;
 mod control;
 mod operands;
 mod order;
 mod tree;
 
-use vize_carton::{FxHashMap, FxHashSet};
+use vize_carton::FxHashMap;
 use vize_s3::{
     op::{OpId, OpKind, Phase, Program, RegionId},
     operand::{Operand, OperandRole as Role},
 };
 
 use super::{Content, NativeArtifact, Node};
-use crate::s3::{AdmissionFailure, LegacyReason};
+use crate::s3::{AdmissionFailure, LegacyReason, retained::Retained};
 
 pub(in crate::s3) use operands::reference;
 
 type Result<T> = core::result::Result<T, AdmissionFailure>;
 
-pub(super) fn admit<'a>(program: &Program<'a>) -> Result<NativeArtifact<'a>> {
+pub(super) fn admit<'a>(
+    program: &Program<'a>,
+    retained: &Retained<'_, 'a>,
+) -> Result<NativeArtifact<'a>> {
     if program.phase != Phase::Built {
         return Err(LegacyReason::Operation.into());
     }
@@ -39,10 +43,14 @@ pub(super) fn admit<'a>(program: &Program<'a>) -> Result<NativeArtifact<'a>> {
         let content = match op.kind {
             OpKind::InsertNode => operands::element(values)?,
             OpKind::SetText if values.iter().all(|value| value.role == Role::Text) => {
-                operands::text(values)?
+                operands::text(values, retained)?
             }
-            OpKind::SetProp | OpKind::SetEvent => {
-                let (target, binding) = operands::binding(values, op.kind)?;
+            OpKind::SetProp
+            | OpKind::SetEvent
+            | OpKind::SetText
+            | OpKind::SetHtml
+            | OpKind::Directive => {
+                let (target, binding) = operands::binding(values, op.kind, retained)?;
                 if op.effect.is_none() {
                     return Err(AdmissionFailure::Invalid(
                         "binding lacks its dynamic partition",
@@ -52,8 +60,8 @@ pub(super) fn admit<'a>(program: &Program<'a>) -> Result<NativeArtifact<'a>> {
                 bindings.push((target, op.region, binding));
                 continue;
             }
-            OpKind::If => control::branches(values)?,
-            OpKind::For => control::for_loop(values)?,
+            OpKind::If => control::branches(values, retained)?,
+            OpKind::For => control::for_loop(values, retained)?,
             _ => return Err(LegacyReason::Operation.into()),
         };
         // Everything inside a branch or loop body is partitioned as dynamic.
@@ -77,35 +85,7 @@ pub(super) fn admit<'a>(program: &Program<'a>) -> Result<NativeArtifact<'a>> {
     }
     order::check(program, &regions, &binding_order)?;
     let parents = tree::assemble(program, &mut nodes, &indexes, &regions)?;
-    let mut names = FxHashSet::default();
-    for (id, (index, _)) in &indexes {
-        if let Content::Element { attributes, .. } = &nodes[*index].content {
-            names.extend(attributes.iter().map(|(name, _)| (*id, false, *name)));
-        }
-    }
-    for (target, region, binding) in bindings {
-        let Some(&(index, target_region)) = indexes.get(&target) else {
-            return Err(LegacyReason::Structure.into());
-        };
-        if !matches!(nodes[index].content, Content::Element { .. }) || region != target_region {
-            return Err(AdmissionFailure::Invalid(
-                "binding target is outside its native region",
-            ));
-        }
-        if !names.insert((target, binding.event, binding.name)) {
-            return Err(LegacyReason::Binding.into());
-        }
-        if !binding.event && binding.name == "key" {
-            // Only the body element of an element-carried loop owns a key.
-            let owner = parents[index].map(|parent| &mut nodes[parent].content);
-            let Some(Content::For(owner)) = owner else {
-                return Err(LegacyReason::Binding.into());
-            };
-            owner.key_prop = Some(binding.value);
-            continue;
-        }
-        nodes[index].bindings.push(binding);
-    }
+    attach::bindings(&mut nodes, &indexes, &parents, bindings)?;
     tree::check_nesting(&nodes, &parents)?;
     let roots: std::vec::Vec<_> = regions
         .get(&RegionId::ROOT)
