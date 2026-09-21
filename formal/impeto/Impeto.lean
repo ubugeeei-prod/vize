@@ -6,3 +6,6 @@ import Impeto.Lattice
 import Impeto.LatticeLaws
 import Impeto.LatticeFixture
 import Impeto.Theorems
+import Impeto.Schedule
+import Impeto.ScheduleLaws
+import Impeto.ScheduleFixture

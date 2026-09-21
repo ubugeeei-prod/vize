@@ -68,6 +68,7 @@ function assertLeanWorkflow(workflow: Workflow): void {
       ["formal/impeto", "lake exe impetoRef --check-stateful-fixtures"],
       ["formal/impeto", proofEscapeScan],
       ["formal/impeto", "lake exe impetoRef --check-lattice-fixtures"],
+      ["formal/impeto", "lake exe impetoRef --check-schedule-fixtures"],
       [".", "cargo test -p vize_impeto --test lattice_reference_fixture"],
       [".", "cargo test -p vize_s2_to_s3 --test lean_reference_fixture"],
       [".", "cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace"],
@@ -156,6 +157,7 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
   }
   const theorems = readRepoFile("formal", "impeto", "Impeto", "Theorems.lean");
   assert.match(theorems, /^import Impeto\.LatticeLaws$/mu);
+  assert.match(theorems, /^import Impeto\.ScheduleLaws$/mu);
   assert.match(theorems, /^#audit_impeto_theorems \d+$/mu);
   const main = readRepoFile("formal", "impeto", "Main.lean");
   assert.match(main, /^import Impeto\.Theorems$/mu);
@@ -174,6 +176,19 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
   ]) {
     assert.match(laws, new RegExp(`^theorem ${name}\\b`, "mu"), `missing theorem ${name}`);
   }
+  const schedule = readRepoFile("formal", "impeto", "Impeto", "ScheduleLaws.lean");
+  for (const name of [
+    "accepted_schedule_orders_edges",
+    "accepted_edges_stay_in_scope",
+    "accepted_regrouping_preserves_edges",
+  ]) {
+    assert.match(schedule, new RegExp(`^theorem ${name}\\b`, "mu"), `missing theorem ${name}`);
+  }
+  assert.match(main, /"--check-schedule-fixtures"\] => ScheduleFixture\.check/u);
+  assert.match(
+    readRepoFile("crates", "vize_s2_to_s3", "tests", "lean_reference_fixture.rs"),
+    /^    mod schedule;$/mu,
+  );
   const bridge = readRepoFile("crates", "vize_impeto", "tests", "lattice_reference_fixture.rs");
   assert.match(bridge, /formal\/impeto\/fixtures\/reactivity-lattice\.folio/u);
   assert.match(bridge, /ReactivityFolio::of\(&facts\)\.print_to_string\(FolioMode::Full\)/u);

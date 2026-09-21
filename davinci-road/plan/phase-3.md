@@ -208,7 +208,11 @@ _Lattice slice 2026-09-21:_ the [P3-15 record](./phase-3-records/p3-15.md)
 proves the lattice order, least-upper-bound join, declarative-spec minimality
 and classification monotonicity in Lean, audits every theorem's foundations
 during `lake build`, and checks the Rust evaluator's 400-row fact page against
-the proved classifier. Effect-grouping and IVM linearity theorems remain open.
+the proved classifier. _Grouping slice 2026-09-21:_ acceptance by the TS-27
+scheduled-phase edge contract is proved to order every state edge in the P3-4
+VDOM and Vapor traces, and to keep scoped edges in scope. Any accepted
+regrouping therefore preserves the edge set; 45 Rust validator verdicts match
+the Lean contract. The keyed `v-for` IVM linearity theorem remains open.
 
 **P3-16 Phase exit.**
 

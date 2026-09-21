@@ -3,6 +3,7 @@ import Impeto.BehaviorTests
 import Impeto.ControlTests
 import Impeto.LoopTests
 import Impeto.LatticeFixture
+import Impeto.ScheduleFixture
 import Impeto.Theorems
 
 open Impeto
@@ -149,7 +150,7 @@ def printBackendTrace (backend : Backend) (folioPath : String) : IO UInt32 := do
 
 def usage : String :=
   "usage: impetoRef --check-fixtures | --check-backend-fixtures | --check-stateful-fixtures | " ++
-    "--check-lattice-fixtures | " ++
+    "--check-lattice-fixtures | --check-schedule-fixtures | " ++
     "--check <s3.folio> <trace> | --trace <s3.folio> | " ++
     "--trace-vdom <s3.folio> | --trace-vapor <s3.folio>"
 
@@ -169,6 +170,7 @@ def main (args : List String) : IO UInt32 := do
           let code <- Behavior.check "fixtures/rust-lowered-control-slots"
           if code != 0 then pure code else LoopTests.check
   | ["--check-lattice-fixtures"] => LatticeFixture.checkFile "fixtures/reactivity-lattice.folio"
+  | ["--check-schedule-fixtures"] => ScheduleFixture.check
   | ["--check", folioPath, tracePath] => checkPair folioPath tracePath
   | ["--trace", folioPath] => printTrace folioPath
   | ["--trace-vdom", folioPath] => printBackendTrace .vdom folioPath

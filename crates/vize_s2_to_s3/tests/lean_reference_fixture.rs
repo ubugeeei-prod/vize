@@ -10,6 +10,7 @@ use vize_s3::verify::verify;
 
 mod lean_reference_fixture {
     mod loops;
+    mod schedule;
 }
 
 const STATIC_DYNAMIC_SOURCE: &str =
