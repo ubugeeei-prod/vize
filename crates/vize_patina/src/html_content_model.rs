@@ -43,6 +43,8 @@
 //! tree construction while parsing, which would hide exactly the nesting this
 //! checker exists to report.
 
+mod authored;
+mod authored_tests;
 mod build;
 mod build_helpers;
 mod chain;
@@ -57,6 +59,7 @@ mod table_rules;
 mod tests;
 mod tri;
 
+pub use authored::{built_as_authored, template_skeleton};
 pub use build::{authored_skeleton, skeleton};
 pub use chain::{Base, Chain, Frame, NsSet};
 pub use check::{Context, Report, Verdict, check, check_with};

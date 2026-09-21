@@ -43,7 +43,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::html_content_model::{
-    Context, Family, NodeKind, Skeleton, ViolationClass, authored_skeleton, check, skeleton,
+    Context, Family, NodeKind, Skeleton, ViolationClass, check, skeleton, template_skeleton,
 };
 use crate::markup::{MarkupContext, MarkupDocument, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
@@ -138,10 +138,11 @@ impl Rule for PermittedContents {
         true
     }
 
-    /// The template lane: the linter's parse repairs part of the tree
-    /// construction, so the checker re-reads the template as authored.
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
-        let skeleton = authored_skeleton(ctx.allocator(), ctx.source);
+    /// The template lane: the checker reads the template as authored —
+    /// the linter's own parse when it repaired nothing, a re-read with the
+    /// non-repairing syntax otherwise.
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
+        let skeleton = template_skeleton(ctx.allocator(), ctx.source, root);
         report_skeleton(ctx, &skeleton);
     }
 }
