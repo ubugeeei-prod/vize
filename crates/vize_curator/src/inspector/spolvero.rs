@@ -16,15 +16,21 @@
 //!   equals the authored template bytes, malformed input included - which
 //!   is exactly what the ladder's S1 rung shows, proven through the tree
 //!   rather than copied from the source.
-//! - **S2**: not emitted by the inspector yet. `vize_s2` (codename Disegno)
-//!   has a Vue producer in the S1→S2 lowering, and the feed shape is
-//!   stage-agnostic, so S2 pages join by pushing more [`SpolveroPage`]s here,
-//!   with no schema change.
+//! - **The full ladder** ([`ladder_pages`]): S1, the S2 (Disegno) lowering
+//!   page, one S2 page per executed transform pass, and the S3 (Impeto)
+//!   graph, partition-fact and value pages - all from one S1 parse through
+//!   the real lowerings and pass manager. The wasm `analyzeSfc` result (the
+//!   playground's Davinci view) carries it. The inspector payload keeps its
+//!   S1-only pages: it rides inside share URLs (the P2-18 growth note), and
+//!   the playground recomputes the ladder from the same sources.
 //!
 //! Files that are not `.vue`, fail SFC parsing, or have no template block
 //! contribute no page: the feed is a stage-dump channel, not a diagnostics
 //! channel (diagnostics stay on their own surfaces).
 
+mod ladder;
+
+pub use ladder::ladder_pages;
 pub use vize_davinci::folio::feed::{SpolveroFeed, SpolveroPage};
 use vize_s0::{Allocator, String, cstr};
 
@@ -64,7 +70,8 @@ pub fn spolvero_value(command: &str, pages: Vec<SpolveroPage>) -> serde_json::Va
 }
 
 /// The inspector payload's feed: S1 pages for every parseable `.vue` file
-/// with a template, in payload file order (S2 joins with P2-8).
+/// with a template, in payload file order (see the module docs for why the
+/// payload stays S1-only).
 pub(super) fn payload_spolvero(files: &[InspectorSourceFile]) -> serde_json::Value {
     let mut pages = Vec::new();
     for file in files {

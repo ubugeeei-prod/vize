@@ -30,7 +30,7 @@ may point only to an earlier tier:
 | 2          | `vize_s2`       | `vize_s0`, `vize_davinci`                       |
 | 3          | `vize_s3`       | `vize_s0`, `vize_davinci`                       |
 | 3          | `vize_s1_to_s2` | `vize_s0`, `vize_davinci`, `vize_s1`, `vize_s2` |
-| 4          | `vize_s2_to_s3` | `vize_s0`, `vize_s2`, `vize_s3`                 |
+| 4          | `vize_s2_to_s3` | `vize_s0`, `vize_davinci`, `vize_s2`, `vize_s3` |
 
 S0 must never depend on a later tier. Conversion crates are the only current
 crates that join artifact stages.

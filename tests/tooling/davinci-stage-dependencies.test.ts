@@ -89,7 +89,7 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_s2", ["vize_carton", "vize_davinci"]],
     ["vize_impeto", ["vize_carton", "vize_davinci"]],
     ["vize_s1_to_s2", ["vize_carton", "vize_davinci", "vize_impeto", "vize_s1", "vize_s2"]],
-    ["vize_s2_to_s3", ["vize_carton", "vize_impeto", "vize_s2"]],
+    ["vize_s2_to_s3", ["vize_carton", "vize_davinci", "vize_impeto", "vize_s2"]],
   ]);
 
   for (const [packageName, packageTier] of tiers) {

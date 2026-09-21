@@ -11,12 +11,14 @@ readme = "README.md"
 
 [dependencies]
 vize_s0 = { workspace = true }
+# The Folio contract the partition page (`S3PartitionFolio`) derives; shared
+# infrastructure at tier 1, so the one-way stage graph is unchanged.
+vize_davinci = { workspace = true }
 vize_s2 = { workspace = true }
 vize_s3 = { workspace = true }
 
 [dev-dependencies]
 davinci_test_support = { workspace = true }
 insta = { workspace = true }
-vize_davinci = { workspace = true }
 vize_s1 = { workspace = true }
 vize_s1_to_s2 = { workspace = true }

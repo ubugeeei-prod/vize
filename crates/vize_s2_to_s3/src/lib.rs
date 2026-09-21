@@ -15,4 +15,6 @@ mod lower;
 mod partition;
 
 pub use lower::{Lowered, lower};
-pub use partition::{PartitionFact, PartitionFacts, PartitionKind};
+pub use partition::{
+    FolioPartitionFact, PartitionFact, PartitionFacts, PartitionKind, S3PartitionFolio,
+};

@@ -1,6 +1,10 @@
 use vize_s0::{Allocator, Span, Vec};
 use vize_s3::op::OpId;
 
+mod folio;
+
+pub use folio::{FolioPartitionFact, S3PartitionFolio};
+
 /// Static or dynamic partition assigned to one canonical S3 op.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(u8)]
@@ -13,12 +17,22 @@ pub enum PartitionKind {
 }
 
 impl PartitionKind {
-    /// Stable spelling used by records and future folio output.
+    /// Stable spelling used by records and the [`S3PartitionFolio`] page.
     #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Static => "static",
             Self::Dynamic => "dynamic",
+        }
+    }
+
+    /// Parse the [`as_str`](Self::as_str) spelling back.
+    #[must_use]
+    pub const fn from_str(text: &str) -> Option<Self> {
+        match text.as_bytes() {
+            b"static" => Some(Self::Static),
+            b"dynamic" => Some(Self::Dynamic),
+            _ => None,
         }
     }
 

@@ -1,5 +1,5 @@
 //! The croquis alias byte-identity pin and the `analyzeSfc` Spolvero feed
-//! (P2-18).
+//! (P2-18; the full S1 -> S2 -> S3 stage ladder since C-2/C-5).
 //!
 //! The alias contract (Davinci P0-10): the wasm `analyzeSfc` result carries
 //! the croquis folio text under both the deprecated `vir` key and the
@@ -12,6 +12,51 @@ use super::analyze::analyze_sfc_json;
 const SOURCE: &str =
     "<script setup>\nconst msg = 1\n</script>\n\n<template>\n  <div>{{ msg }}</div>\n</template>\n";
 const TEMPLATE: &str = "\n  <div>{{ msg }}</div>\n";
+
+/// The S2 (Disegno) page for [`TEMPLATE`]: after the lowering and, byte for
+/// byte, after the one transform pass the artifact selects (`hoist-static`
+/// is a fact-producing analysis, so the tree it leaves is the lowering's).
+const S2_PAGE: &str = "[disegno]
+ops=2
+
+[disegno.ops]
+ui.element div @3:23
+  ui.interpolation js(\"msg\" @11:14) @8:17
+
+";
+
+const S3_PAGE: &str = "[s3-folio]
+phase=built
+
+[s3-folio.regions]
+id=0 parent=- owner=- span=3:23
+id=1 parent=0 owner=0 span=8:17
+
+[s3-folio.ops]
+id=0 kind=impeto.insert-node region=0 effect=- span=3:23
+id=1 kind=impeto.set-text region=1 effect=0 span=8:17
+
+[s3-folio.effects]
+id=0 owner=1 region=1 span=8:17
+
+";
+
+const S3_PARTITION_PAGE: &str = "[s3-partition-folio]
+
+[s3-partition-folio.ops]
+op=0 kind=static span=3:23
+op=1 kind=dynamic span=8:17
+
+";
+
+const S3_VALUES_PAGE: &str = r#"[s3-values-folio]
+
+[s3-values-folio.operands]
+operand=[0,"tag",null,null,null,"literal","div","",3,23]
+operand=[0,"namespace",null,null,null,"literal","html","",3,23]
+operand=[1,"text",null,null,null,"js","msg","",11,14]
+
+"#;
 
 /// The croquis folio text for [`SOURCE`], the exact bytes both alias keys
 /// must carry.
@@ -57,12 +102,13 @@ fn the_croquis_alias_keys_stay_byte_identical() {
 }
 
 #[test]
-fn the_analyze_result_carries_the_s1_spolvero_feed() {
+fn the_analyze_result_carries_the_full_stage_ladder_feed() {
     let result = analyze_sfc_json(SOURCE, "src/App.vue").expect("analysis succeeds");
 
     // The S1 page's text equals the authored template bytes (the TS-19
     // fidelity law observed at this consumer), proven through the surface
-    // tree rather than copied from the source.
+    // tree rather than copied from the source. The S2/S3 pages are the real
+    // lowerings' canonical folios, in pipeline order.
     assert_eq!(
         result["spolvero"],
         serde_json::json!({
@@ -70,6 +116,21 @@ fn the_analyze_result_carries_the_s1_spolvero_feed() {
             "command": "analyze-sfc",
             "pages": [
                 { "path": "src/App.vue", "stage": "s1", "pass": "parse", "text": TEMPLATE },
+                { "path": "src/App.vue", "stage": "s2", "pass": "lower", "text": S2_PAGE },
+                { "path": "src/App.vue", "stage": "s2", "pass": "hoist-static", "text": S2_PAGE },
+                { "path": "src/App.vue", "stage": "s3", "pass": "lower", "text": S3_PAGE },
+                {
+                    "path": "src/App.vue",
+                    "stage": "s3-partition",
+                    "pass": "lower",
+                    "text": S3_PARTITION_PAGE,
+                },
+                {
+                    "path": "src/App.vue",
+                    "stage": "s3-values",
+                    "pass": "lower",
+                    "text": S3_VALUES_PAGE,
+                },
             ],
         })
     );

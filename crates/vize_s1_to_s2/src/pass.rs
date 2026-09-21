@@ -36,7 +36,9 @@
 //! through the same observer (P3-13 remarks, `hoist-static` first); an
 //! observer that consumes none compiles the explanation away.
 
-use vize_davinci::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline_remarked};
+use vize_davinci::pass::{
+    PassDesc, PassEvent, PassFailure, PassObserver, Pipeline, run_pipeline_remarked,
+};
 use vize_davinci::side_table::SideTable;
 
 use crate::lower::Lowered;
@@ -149,6 +151,28 @@ pub fn run_transform_with_profile<'a, O: PassObserver>(
     observer: &mut O,
     profile: TransformProfile,
 ) -> S2Facts {
+    run_transform_with_pass_hook(lowered, observer, profile, |_, _| {})
+}
+
+/// [`run_transform_with_profile`] with an artifact hook after every pass.
+///
+/// Observer hooks carry no artifact (`FolioObserver`'s contract: whoever
+/// holds the artifact prints it), so a consumer that pages the S2 tree
+/// per pass - a `FolioDump`, the Spolvero stage ladder - receives each
+/// [`PassEvent`] here together with the post-pass lowering, after the pass
+/// body and (debug builds) the between-pass verifier ran. The hook only
+/// observes: the plan, the pass bodies and the returned facts are those of
+/// [`run_transform_with_profile`], which is this function with a no-op hook.
+pub fn run_transform_with_pass_hook<'a, O, H>(
+    lowered: &mut Lowered<'a>,
+    observer: &mut O,
+    profile: TransformProfile,
+    mut after_pass: H,
+) -> S2Facts
+where
+    O: PassObserver,
+    H: FnMut(&PassEvent<'_>, &Lowered<'a>),
+{
     let mut facts = S2Facts {
         if_facts: vif::facts_from_lowering(lowered),
         for_facts: vfor::facts_from_lowering(lowered),
@@ -197,6 +221,7 @@ pub fn run_transform_with_profile<'a, O: PassObserver>(
             verify.check_table(event, &folio, &facts.model_faults);
             verify.check_table(event, &folio, &facts.static_facts);
         }
+        after_pass(event, lowered);
         Ok(())
     });
     // The catalogue above is closed over the const pipeline, so a failure

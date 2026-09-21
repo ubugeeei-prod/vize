@@ -3852,7 +3852,11 @@ dependencies = [
  "vize_croquis",
  "vize_croquis_cf",
  "vize_davinci",
+ "vize_impeto",
  "vize_s1",
+ "vize_s1_to_s2",
+ "vize_s2",
+ "vize_s2_to_s3",
 ]
 
 [[package]]

@@ -8,10 +8,22 @@
 
 - [ ] C-1 Protocol spike (starts: P2, alongside the observer API)
 - [ ] C-2 S1/S2 folio pages in the inspector (starts: P2-18)
+      _Feed half landed 2026-09-21: the wasm `analyzeSfc` feed carries the S1
+      page, the S2 lowering page and one S2 page per executed transform pass
+      (`vize_curator::inspector::ladder_pages`, TS-52 `spolvero_ladder`). The
+      `vize inspector` payload stays S1-only on purpose (it rides in share
+      URLs; the playground recomputes the ladder from the same sources).
+      Open: the playground view that renders the ladder._
 - [ ] C-3 Pass timeline + fusion-group view from timing JSON (starts: P2-13)
 - [ ] C-4 Flame views from profiler export (starts: P0-11 data available)
 - [ ] C-5 S3 pages, provenance navigation, remarks rendering (starts: P3-13)
+      _S3 pages landed 2026-09-21 in the same feed: `s3` (graph),
+      `s3-partition` (the new `[s3-partition-folio]` page) and `s3-values`.
+      Open: provenance navigation in a view, remarks rendering (P3-13)._
 - [ ] C-6 Fact browser incl. reactivity-lattice overlay (starts: P4-1)
+      _Constraint recorded 2026-09-21: the lattice has no per-SFC producer
+      yet (P3-7 evaluates it per binding kind inside DOM patch emission), so
+      no `[s3-reactivity-folio]` page can be fed for a template today._
 - [ ] C-7 `vize devtool` local server, editor-agnostic (starts: after C-5)
 - [ ] C-8 Fresco TUI view for pass timeline/diagnostics (starts: opportunistic; Fresco itself is frozen, consuming it is allowed)
 - [ ] C-9 Standing gate enforcement: every landed stage ships its folio page + Spolvero view (from P2 on)
