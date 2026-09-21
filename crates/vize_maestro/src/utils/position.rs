@@ -12,6 +12,9 @@ pub fn offset_to_position(rope: &Rope, offset: usize) -> Option<Position> {
     // Find the line containing this offset
     let line = rope.byte_to_line(offset);
     let line_offset = offset - rope.line_to_byte(line);
+    if line_offset == 0 {
+        return Some(Position::new(line as u32, 0));
+    }
     let text = rope.line(line);
     let char_idx = text.byte_to_char(line_offset);
     // Rope nodes already store UTF-16 lengths. Use those measures instead of
@@ -31,6 +34,9 @@ pub fn position_to_offset(rope: &Rope, position: Position) -> Option<usize> {
 
     if line >= rope.len_lines() {
         return None;
+    }
+    if character == 0 {
+        return Some(rope.line_to_byte(line));
     }
 
     let text = rope.line(line);
