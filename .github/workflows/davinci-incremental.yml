@@ -22,6 +22,7 @@ on:
       - "tools/commands/davinci/incremental-equivalence*"
       - "tools/commands/davinci/incremental-equivalence/**"
       - "Cargo.lock"
+      - "davinci-road/plan/key-manifests.md"
       - ".github/workflows/davinci-incremental.yml"
   pull_request:
     branches: [main, davinci]
@@ -36,6 +37,7 @@ on:
       - "tools/commands/davinci/incremental-equivalence*"
       - "tools/commands/davinci/incremental-equivalence/**"
       - "Cargo.lock"
+      - "davinci-road/plan/key-manifests.md"
       - ".github/workflows/davinci-incremental.yml"
   workflow_dispatch:
 
@@ -83,7 +85,7 @@ jobs:
           shared-key: davinci-incremental-${{ matrix.platform.target }}
           cache-workspace-crates: "true"
       - name: Print and compare the TS-43 golden keys
-        run: cargo test -p vize_davinci --test artifact_keys -- --nocapture
+        run: cargo test -p vize_davinci --test artifact_keys --test key_manifests -- --nocapture
 
   incremental-equivalence:
     name: Incremental ≡ clean (TS-42)
