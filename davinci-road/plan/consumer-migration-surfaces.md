@@ -50,7 +50,7 @@ observational guard for planning only. It does not change rollout state.
 | Typechecker                |          1058 |                   274 |               784 |             502 |     241 |            1048 |      753 |           596 |           847 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            21 |
 | Formatter                  |            40 |                    40 |                 0 |               0 |      21 |              42 |       19 |            32 |            71 |
-| LSP                        |           329 |                   329 |                 0 |             118 |      63 |             382 |      128 |           192 |           446 |
+| LSP                        |           331 |                   331 |                 0 |             118 |      63 |             384 |      128 |           194 |           448 |
 
 ## Consumer details
 
@@ -226,7 +226,7 @@ Scope: lsp/ide commands plus Maestro editor/server crate. This is a lexical inve
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |         329 |             231 |       98 |
+| S0               |         331 |             233 |       98 |
 | old AST/parser   |          59 |              46 |       13 |
 | Croquis analysis |          59 |              43 |       16 |
 | raw OXC          |          63 |              62 |        1 |
@@ -241,7 +241,7 @@ Scope: lsp/ide commands plus Maestro editor/server crate. This is a lexical inve
 | `crates/vize_maestro/Cargo.toml:44`                             | manifest | S0 1<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 6 |    10 |
 | `crates/vize_maestro/src/ide/corsa_support/html_attribute.rs:2` | source   | S0 10                                                       |    10 |
 
-Additional source/manifest rows are in the TSV: 131 omitted.
+Additional source/manifest rows are in the TSV: 133 omitted.
 
 #### Top test/dev files
 
