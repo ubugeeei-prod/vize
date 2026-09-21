@@ -47,7 +47,7 @@ void test("bare withVize installs its compiler and preserves caller plugins", as
   const config = await withVize({}, { tasks: false }).vp({
     plugins: [Promise.resolve([previousCompiler]), { name: "consumer" }],
   })(env);
-  const plugins = (config.plugins ?? []).flat(Infinity) as { name: string }[];
+  const plugins = ((config.plugins ?? []) as unknown[]).flat(Infinity) as { name: string }[];
   assert.ok(plugins.some((plugin) => plugin.name === "vite-plugin-vize"));
   assert.ok(!plugins.includes(previousCompiler));
   assert.equal(plugins.at(-1)?.name, "consumer");
