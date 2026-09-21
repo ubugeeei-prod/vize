@@ -25,7 +25,7 @@ pub type Words = [&'static str];
 
 pub struct Lengths;
 impl FactGroup for Lengths {
-    const ID: AnalysisId = AnalysisId::new(20);
+    const ID: AnalysisId = AnalysisId::new(50);
     const NAME: &'static str = "lengths";
     const STRATUM: u8 = 0;
     const DEPENDS: Demand = Demand::NONE;
@@ -40,7 +40,7 @@ impl FactProducer<Words> for Lengths {
 
 pub struct Vowels;
 impl FactGroup for Vowels {
-    const ID: AnalysisId = AnalysisId::new(21);
+    const ID: AnalysisId = AnalysisId::new(51);
     const NAME: &'static str = "vowels";
     const STRATUM: u8 = 0;
     const DEPENDS: Demand = Demand::NONE;
@@ -58,7 +58,7 @@ impl FactProducer<Words> for Vowels {
 
 pub struct Longest;
 impl FactGroup for Longest {
-    const ID: AnalysisId = AnalysisId::new(22);
+    const ID: AnalysisId = AnalysisId::new(52);
     const NAME: &'static str = "longest";
     const STRATUM: u8 = 1;
     const DEPENDS: Demand = Demand::NONE.with(Lengths::ID);
@@ -76,7 +76,7 @@ impl FactProducer<Words> for Longest {
 /// Declares `Lengths` but reads `Vowels`; records what its view answered.
 pub struct Leaky;
 impl FactGroup for Leaky {
-    const ID: AnalysisId = AnalysisId::new(23);
+    const ID: AnalysisId = AnalysisId::new(53);
     const NAME: &'static str = "leaky";
     const STRATUM: u8 = 1;
     const DEPENDS: Demand = Demand::NONE.with(Lengths::ID);

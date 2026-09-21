@@ -52,20 +52,20 @@ macro_rules! group {
     };
 }
 
-group!(Values, 10, "values", 0, Demand::NONE, u32);
-group!(Unused, 11, "unused", 0, Demand::NONE, u32);
+group!(Values, 40, "values", 0, Demand::NONE, u32);
+group!(Unused, 41, "unused", 0, Demand::NONE, u32);
 group!(
     Squares,
-    12,
+    42,
     "squares",
     1,
     Demand::NONE.with(Values::ID),
     u64
 );
-group!(Parity, 13, "parity", 1, Demand::NONE.with(Values::ID), bool);
+group!(Parity, 43, "parity", 1, Demand::NONE.with(Values::ID), bool);
 group!(
     Summary,
-    14,
+    44,
     "summary",
     2,
     Demand::NONE.with(Squares::ID).with(Parity::ID),
@@ -73,7 +73,7 @@ group!(
 );
 
 // A group sharing `Squares`' id with another value type (never registered).
-group!(Impostor, 12, "impostor", 1, Demand::NONE, i8);
+group!(Impostor, 42, "impostor", 1, Demand::NONE, i8);
 
 impl FactProducer<[u32]> for Values {
     fn produce(artifact: &[u32], _: &FactView<'_>) -> FactTable<Self> {

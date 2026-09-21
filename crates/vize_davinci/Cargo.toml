@@ -31,3 +31,7 @@ path = "src/bin/davinci-opt/main.rs"
 [[bench]]
 name = "davinci"
 harness = false
+
+[[bench]]
+name = "davinci_fact"
+harness = false

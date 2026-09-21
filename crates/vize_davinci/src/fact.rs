@@ -44,7 +44,7 @@
 //! /// Stratum 0: the length of every word.
 //! struct Lengths;
 //! impl FactGroup for Lengths {
-//!     const ID: AnalysisId = AnalysisId::new(0);
+//!     const ID: AnalysisId = AnalysisId::new(32);
 //!     const NAME: &'static str = "lengths";
 //!     const STRATUM: u8 = 0;
 //!     const DEPENDS: Demand = Demand::NONE;
@@ -60,7 +60,7 @@
 //! /// Stratum 1: the longest word, read off `Lengths`.
 //! struct Longest;
 //! impl FactGroup for Longest {
-//!     const ID: AnalysisId = AnalysisId::new(1);
+//!     const ID: AnalysisId = AnalysisId::new(33);
 //!     const NAME: &'static str = "longest";
 //!     const STRATUM: u8 = 1;
 //!     const DEPENDS: Demand = Demand::NONE.with(Lengths::ID);
@@ -85,8 +85,8 @@
 //! }
 //!
 //! let words: &[&str] = &["fact", "demand", "view"];
-//! let mut manager = FactManager::new(&REGISTRY, words);
-//! let view = manager.prepare::<LongestWordRule>().unwrap();
+//! let mut manager = FactManager::new(&REGISTRY);
+//! let view = manager.prepare::<LongestWordRule>(words).unwrap();
 //! assert_eq!(view.get::<Longest>().unwrap().get(&()), Some(&1));
 //! ```
 //!
@@ -96,18 +96,28 @@
 //! - [`registry`] — [`GroupDesc`], [`FactRegistry`] and the stratification
 //!   check
 //! - [`table`] — [`FactTable`], the borrowed table a query returns
-//! - [`manager`] — [`FactManager`], [`FactView`], [`FactError`] and the
-//!   process-global counters
+//! - [`manager`] — [`FactManager`]
+//! - [`view`] — [`FactView`], [`FactError`] and the process-global counters
+//! - [`preserve`] — facts across passes: [`FactManager::after_pass`], the
+//!   named preservation groups and the verify mode (P4-1b)
+//! - [`ids`] — the production fact-group identity table
 
 pub mod demand;
+pub mod ids;
 pub mod manager;
+pub mod preserve;
 pub mod registry;
 pub mod table;
+pub mod view;
 
 pub use demand::Demand;
-pub use manager::{FactError, FactManager, FactView, produced_count, undeclared_accesses};
+pub use manager::FactManager;
+pub use preserve::{
+    FactVerify, FactVerifyObserver, NoFactVerify, PRESERVE_BINDINGS, PRESERVE_STRUCTURE,
+};
 pub use registry::{FactRegistry, GroupDesc, ProducerEntry, StrataError, check_strata};
 pub use table::{FactTable, FactTableBuilder};
+pub use view::{FactError, FactView, produced_count, undeclared_accesses};
 
 use crate::pass::AnalysisId;
 
@@ -129,8 +139,9 @@ pub trait FactGroup: Sized + 'static {
     const DEPENDS: Demand;
     /// The key facts are stored under (`NodeId`, `SymbolId`, an artifact key).
     type Key: Ord + Send + Sync + 'static;
-    /// One fact.
-    type Value: Send + Sync + 'static;
+    /// One fact. Comparable, because every fact oracle is exact equality
+    /// (P4-1b's recompute-and-compare mode reads it).
+    type Value: PartialEq + Send + Sync + 'static;
 
     /// This group as const registry data.
     const DESC: GroupDesc = GroupDesc {

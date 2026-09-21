@@ -38,15 +38,17 @@
 
 **Steps:**
 
-- [ ] `crates/vize_davinci/src/fact/preserve.rs`: `FactManager::after_pass(&PassDesc)` drops every group outside `desc.preserved`; named groups (`PRESERVE_STRUCTURE`, `PRESERVE_BINDINGS`) are `const Preserved` values
-- [ ] `FactVerifyObserver` (P2-3 static dispatch, release ZST): after each pass, recompute every group the pass claims to preserve and compare by exact equality
-- [ ] A fixture pass that claims `Preserved::ALL` while mutating is rejected with the exact `FactError::StalePreserved { pass, group }`
+- [x] `crates/vize_davinci/src/fact/preserve.rs`: `FactManager::after_pass(&PassDesc)` drops every group outside `desc.preserved`; named groups (`PRESERVE_STRUCTURE`, `PRESERVE_BINDINGS`) are `const Preserved` values
+- [x] `FactVerifyObserver` (P2-3 static dispatch, release ZST): after each pass, recompute every group the pass claims to preserve and compare by exact equality
+- [x] A fixture pass that claims `Preserved::ALL` while mutating is rejected with the exact `FactError::StalePreserved { pass, group }`
 
 **Acceptance:** `cargo test -p vize_davinci --test fact_preserve` green including the lying-pass fixture; bench pair `davinci_fact_query_observed` / `davinci_fact_query_unobserved` registered in `budgets.toml [bench]` with measured, identical `allocs` (TS-10 — the P2-3 zero-cost shape); TS-22 walk counts unchanged; TS-1, TS-13.
 
 **Deps:** P4-1a.
 
 **Non-goals:** caching facts across compiles (P5-1); S3 phase ordering (phase 3).
+
+**Landed 2026-09-22:** `after_pass` invalidation, `PRESERVE_STRUCTURE` / `PRESERVE_BINDINGS` over the new `fact::ids` table, the `FactVerifyObserver` recompute-and-compare mode with the lying-pass fixture, and the 19/19-alloc bench pair — see the [P4-1b record](./phase-4-records/p4-1b.md).
 
 ## P4-2 — Fact-group alpha beta split
 

@@ -3,8 +3,8 @@
 use alloc::boxed::Box;
 use core::any::Any;
 
-use super::manager::FactView;
-use super::{Demand, FactProducer};
+use super::view::FactView;
+use super::{Demand, FactProducer, FactTable};
 use crate::pass::{AnalysisId, MAX_ANALYSES};
 
 /// One fact group as const data — what the stratification check reads.
@@ -106,6 +106,8 @@ pub struct ProducerEntry<A: ?Sized> {
     /// The group this entry computes.
     pub desc: GroupDesc,
     pub(crate) run: fn(&A, &FactView<'_>) -> ErasedTable,
+    /// Exact equality of two of this group's tables (P4-1b verify mode).
+    pub(crate) eq: fn(&(dyn Any + Send + Sync), &(dyn Any + Send + Sync)) -> bool,
 }
 
 impl<A: ?Sized> Clone for ProducerEntry<A> {
@@ -131,12 +133,26 @@ impl<A: ?Sized> ProducerEntry<A> {
         Self {
             desc: G::DESC,
             run: run_erased::<A, G>,
+            eq: eq_erased::<A, G>,
         }
     }
 }
 
 fn run_erased<A: ?Sized, G: FactProducer<A>>(artifact: &A, inputs: &FactView<'_>) -> ErasedTable {
     Box::new(G::produce(artifact, inputs))
+}
+
+fn eq_erased<A: ?Sized, G: FactProducer<A>>(
+    left: &(dyn Any + Send + Sync),
+    right: &(dyn Any + Send + Sync),
+) -> bool {
+    match (
+        left.downcast_ref::<FactTable<G>>(),
+        right.downcast_ref::<FactTable<G>>(),
+    ) {
+        (Some(left), Some(right)) => left == right,
+        _ => false,
+    }
 }
 
 /// Every producer a manager may run over artifacts of type `A`, checked for

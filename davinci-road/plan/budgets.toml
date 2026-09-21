@@ -179,6 +179,17 @@ atelier_ssr_compile_stress-interp = { wall_p50_ns = 0, allocs = 2637, rss_peak_b
 davinci_pipeline_unobserved = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 davinci_pipeline_no_observer = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
+# Fact verify zero-cost pair (P4-1b), the same shape one layer up: compute a
+# demand, run three passes through `FactManager::after_pass` (keep all / keep
+# one / keep none), recompute and query. `unobserved` trusts every
+# `Preserved` claim (`NoFactVerify`); `observed` hands in
+# `FactVerifyObserver`, whose recompute-and-compare mode exists only under
+# `debug_assertions`. Both are a *measured* 19 allocations in the release
+# bench profile — tables and their boxes, nothing from the observer — and the
+# exact alloc gate fails either one that drifts.
+davinci_fact_query_unobserved = { wall_p50_ns = 0, allocs = 19, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+davinci_fact_query_observed = { wall_p50_ns = 0, allocs = 19, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+
 # Compact-storage probes. Setup is excluded with stage windows so these exact
 # allocation counts localize the v-for split and v-on emit paths. The wall
 # side is report-only (wall_p50_ns = 0): the sub-2us stage windows vary more
