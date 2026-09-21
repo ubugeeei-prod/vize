@@ -31,6 +31,24 @@ pub(in crate::virtual_ts::generator) struct FallthroughComponentScope<'a> {
     pub(in crate::virtual_ts::generator) check_required: bool,
 }
 
+impl<'a> FallthroughComponentScope<'a> {
+    pub(in crate::virtual_ts::generator) fn new(
+        summary: &'a Croquis,
+        options: &'a VirtualTsOptions,
+        syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
+        checks: crate::virtual_ts::types::VirtualTsCheckOptions,
+    ) -> Self {
+        Self {
+            summary,
+            options,
+            syntactic_type_only_imported_names,
+            resolve_component_roots: checks.fallthrough_attributes,
+            check_required: checks.fallthrough_attributes
+                && checks.check_required_fallthrough_attributes,
+        }
+    }
+}
+
 /// Template-relative starts of the component roots whose props the component
 /// forwards. Empty unless fallthrough resolves to at least one component.
 pub(crate) fn fallthrough_component_root_starts(
@@ -50,7 +68,7 @@ pub(crate) fn fallthrough_component_root_starts(
         .collect()
 }
 
-fn fallthrough_targets(
+pub(super) fn fallthrough_targets(
     summary: &Croquis,
     template_ast: &RootNode<'_>,
 ) -> Option<Vec<FallthroughRootTarget>> {
@@ -155,16 +173,21 @@ fn targets_type_ref(
             ty.push_str("Omit<");
             ty.push_str(surface.as_str());
             ty.push_str(", ");
-            for (key_index, key) in root.authored_keys.iter().enumerate() {
-                if key_index > 0 {
-                    ty.push_str(" | ");
-                }
-                push_ts_string_literal(&mut ty, key.as_str());
-            }
+            push_omitted_keys(&mut ty, &root.authored_keys);
             ty.push('>');
         }
     }
     ty
+}
+
+/// The union of string literal keys an `Omit` removes.
+pub(super) fn push_omitted_keys(ty: &mut String, keys: &[String]) {
+    for (index, key) in keys.iter().enumerate() {
+        if index > 0 {
+            ty.push_str(" | ");
+        }
+        push_ts_string_literal(ty, key.as_str());
+    }
 }
 
 fn native_target_surface(tag: &str, public_types: bool) -> String {

@@ -138,6 +138,12 @@ impl SetupImportPlan {
         }
     }
 
+    pub(super) fn read_template_slots_from(&mut self, value: &str) {
+        if let Some(slots) = &mut self.slots_type {
+            slots.read_template_value(value);
+        }
+    }
+
     pub(super) fn has_own_slots(&self) -> bool {
         self.slots_type.is_some()
     }

@@ -61,9 +61,7 @@ use self::setup_imports::SetupImportPlan;
 use self::setup_props::{generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
 use self::spans::{DEFINE_COMPONENT_REF, rewrite_export_default_for_module_scope, template_usage};
-use self::type_only_imports::{
-    collect_syntactic_type_only_imported_names, should_collect_syntactic_type_only_imported_names,
-};
+use self::type_only_imports::syntactic_type_only_imported_names;
 use self::unresolved_components::emit_unresolved_components;
 use super::{
     helpers::generate_template_context,
@@ -113,7 +111,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         template_usage(summary, template_ast, generation_options);
     let template_referenced_names = preserve_unused_diagnostics.then_some(&template_usage_names);
     let inferred_slots = component_public_types::infers_slots(summary, template_ast, check_options);
-    let setup_imports = SetupImportPlan::new(
+    let mut setup_imports = SetupImportPlan::new(
         script_content,
         summary,
         template_ast,
@@ -324,30 +322,19 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     } else {
         FxHashSet::default()
     };
-    let syntactic_type_only_imported_names = if should_collect_syntactic_type_only_imported_names(
+    let syntactic_type_only_imported_names = syntactic_type_only_imported_names(
         summary,
         &global_components,
         options_api_props.is_some(),
-    ) {
-        profile!(
-            "canon.virtual_ts.extract_syntactic_type_only_imported_names",
-            collect_syntactic_type_only_imported_names(summary, script_content)
-        )
-    } else {
-        FxHashSet::default()
-    };
-    if !options.auto_import_stubs.is_empty() {
-        profile!(
-            "canon.virtual_ts.emit_auto_import_stubs",
-            emit_auto_import_stubs(
-                &mut ts,
-                summary,
-                options,
-                &imported_names,
-                &syntactic_type_only_imported_names,
-            )
-        );
-    }
+        script_content,
+    );
+    emit_auto_import_stubs(
+        &mut ts,
+        summary,
+        options,
+        &imported_names,
+        &syntactic_type_only_imported_names,
+    );
     global_components.emit(
         &mut ts,
         summary,
@@ -367,6 +354,18 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         &syntactic_type_only_imported_names,
         setup_type_exports.exports_public_type("Props"),
     );
+    let fallthrough_scope = self::fallthrough::FallthroughComponentScope::new(
+        summary,
+        options,
+        &syntactic_type_only_imported_names,
+        check_options,
+    );
+    let forwarded_roots = self::fallthrough::ForwardedRoots::plan(
+        &fallthrough_scope,
+        template_ast.filter(|_| has_template_scope && check_options.check_template_bindings),
+        generic_param.is_some() && !legacy_vue2,
+    );
+    setup_imports.read_template_slots_from(forwarded_roots.template_slots_value().as_str());
     ts.push_str("// ========== Setup Scope ==========\n");
     let async_prefix = if is_async { "async " } else { "" };
     let generic_params = generic_param.map(|g| cstr!("<{g}>")).unwrap_or_default();
@@ -647,7 +646,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 options,
                 generation_options,
                 generic_param.is_some(),
-                inferred_slots,
+                inferred_slots || forwarded_roots.any(),
                 &mut semantic_links,
             );
 
@@ -711,6 +710,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             script_content,
                             experimental_strict_slot_children: generation_options
                                 .experimental_strict_slot_children,
+                            forwarded_root_starts: forwarded_roots.starts(),
                         },
                     )
                 );
@@ -757,7 +757,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
     let define_emits_runtime_args = setup_helpers::define_emits_runtime_args(summary);
     let mut setup_return_fields: Vec<String> = Vec::new();
-    push_template_return(&mut setup_return_fields, inferred_slots, has_root_el);
+    push_template_return(
+        &mut setup_return_fields,
+        inferred_slots,
+        has_root_el,
+        &forwarded_roots,
+    );
     self::script_module::push_setup_return_fields(&named_value_exports, &mut setup_return_fields);
     namespace_hoist.push_captured_return_fields(&named_value_exports, &mut setup_return_fields);
     setup_type_exports.emit_setup_artifacts(&mut ts, &mut setup_return_fields);
@@ -787,7 +792,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         script_offset,
     ));
     setup_type_exports.emit_module_exports(&mut ts);
-    setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref(), generic_param);
+    setup_props_plan.emit_module_export(
+        &mut ts,
+        options_api_props.as_ref(),
+        generic_param,
+        &forwarded_roots,
+    );
     emit_authored_component_aliases(&mut ts, authored_default);
     let emits_info = emit_emits_type(
         &mut ts,
@@ -807,7 +817,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let (has_exposed_type, exposed_is_generic) =
         emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
     ts.push('\n');
-    let event_inference = super::scope::emit_event_inference_helpers(&mut ts, summary);
+    let event_inference =
+        super::scope::emit_event_inference_helpers(&mut ts, summary, forwarded_roots.any());
+    forwarded_roots.emit_helpers(&mut ts);
     emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble, event_inference);
 
     let generic_component_params = setup_props_plan.generic_component_params(authored_generic);
@@ -840,14 +852,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         ((summary.macros.define_slots().is_some() || inferred_slots) && !slots_is_generic)
             .then_some("__VizeSlots"),
         self::fallthrough::fallthrough_props_type_ref(
-            &self::fallthrough::FallthroughComponentScope {
-                summary,
-                options,
-                syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
-                resolve_component_roots: check_options.fallthrough_attributes,
-                check_required: check_options.fallthrough_attributes
-                    && check_options.check_required_fallthrough_attributes,
-            },
+            &fallthrough_scope,
             template_ast,
             legacy_vue2,
         )

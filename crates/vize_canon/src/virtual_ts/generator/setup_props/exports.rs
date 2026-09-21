@@ -7,6 +7,7 @@ impl SetupPropsPlan {
         ts: &mut String,
         options_api_props: Option<&OptionsApiPropsSource>,
         generic_param: Option<&str>,
+        forwarded_roots: &super::super::fallthrough::ForwardedRoots,
     ) {
         if self.has_inferred_model_defaults {
             crate::virtual_ts::model_types::emit_defaults_type(ts, generic_param);
@@ -22,10 +23,13 @@ impl SetupPropsPlan {
             } else {
                 ("export ", "Props")
             };
+            let setup = cstr!("Awaited<ReturnType<typeof __setup{arguments}>>");
             append!(
                 *ts,
-                "{export}type {name}{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>[\"__vize_setup_props\"];\n\n"
+                "{export}type {name}{declaration} = {setup}[\"__vize_setup_props\"]"
             );
+            forwarded_roots.push_props_tail(ts, setup.as_str());
+            ts.push_str(";\n\n");
         } else if self.defer_options_api_props {
             let Some(source) =
                 options_api_props.filter(|source| source.deferred_object_source().is_some())

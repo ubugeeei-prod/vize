@@ -8,10 +8,17 @@ type __VizeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit
 type __VizeEmitPropsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : __VizeNativeEmitPropsFactory<C>;
 "#;
 
-pub(crate) fn emit_event_inference_helpers(ts: &mut String, summary: &Croquis) -> bool {
-    let needed = summary.scopes.iter().any(|scope| {
-        matches!(scope.data(), ScopeData::EventHandler(data) if data.target_component.is_some())
-    });
+/// `forwards_roots`: a generic component instantiates the listeners its root
+/// forwards the same way, whether or not its own template listens to anything.
+pub(crate) fn emit_event_inference_helpers(
+    ts: &mut String,
+    summary: &Croquis,
+    forwards_roots: bool,
+) -> bool {
+    let needed = forwards_roots
+        || summary.scopes.iter().any(|scope| {
+            matches!(scope.data(), ScopeData::EventHandler(data) if data.target_component.is_some())
+        });
     if needed {
         ts.push_str(EMIT_INFERENCE_HELPERS);
     }

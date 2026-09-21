@@ -72,6 +72,47 @@ impl SlotOutletChecks {
         if !self.infers_slots() {
             return;
         }
+        let ty = self.result_type(summary, scope_id);
+        if scope_id.is_some_and(|id| {
+            summary
+                .scopes
+                .get_scope(id)
+                .is_some_and(|scope| scope.kind == ScopeKind::VFor)
+        }) {
+            append!(*ts, "{indent}return [{{}} as {ty}];\n");
+        } else {
+            append!(*ts, "{indent}return {{}} as {ty};\n");
+        }
+    }
+
+    /// The template scope returns what a generic component forwards to its
+    /// root next to the slots it infers, each under its own key.
+    pub(in crate::virtual_ts::scope) fn emit_root_result(
+        &self,
+        ts: &mut String,
+        summary: &Croquis,
+        forwarded: Option<&str>,
+    ) {
+        let Some(forwarded) = forwarded else {
+            return self.emit_result(ts, summary, None, "  ");
+        };
+        ts.push_str("  return { ");
+        if self.infers_slots() {
+            append!(
+                *ts,
+                "{}: {{}} as {}, ",
+                crate::virtual_ts::scope::SLOTS_RETURN_KEY,
+                self.result_type(summary, None)
+            );
+        }
+        append!(
+            *ts,
+            "{}: {{}} as {forwarded} }};\n",
+            crate::virtual_ts::scope::FORWARDED_RETURN_KEY
+        );
+    }
+
+    fn result_type(&self, summary: &Croquis, scope_id: Option<ScopeId>) -> String {
         let mut types = Vec::new();
         let mut outlets: Vec<_> = self.by_scope.values().flatten().collect();
         outlets.sort_by_key(|outlet| outlet.start);
@@ -112,20 +153,10 @@ impl SlotOutletChecks {
                 cstr!("ReturnType<typeof __vize_slot_scope_{id}>")
             });
         }
-        let ty = if types.is_empty() {
+        if types.is_empty() {
             String::from("{}")
         } else {
             types.join(" & ").into()
-        };
-        if scope_id.is_some_and(|id| {
-            summary
-                .scopes
-                .get_scope(id)
-                .is_some_and(|scope| scope.kind == ScopeKind::VFor)
-        }) {
-            append!(*ts, "{indent}return [{{}} as {ty}];\n");
-        } else {
-            append!(*ts, "{indent}return {{}} as {ty};\n");
         }
     }
 }

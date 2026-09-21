@@ -266,5 +266,18 @@ pub(crate) fn generate_scope_closures(
             generate_component_props(ts, mappings, semantic_links, &props_ctx, usages)
         );
     }
-    slot_outlets.emit_result(ts, summary, None, "  ");
+    let forwarded = (!options.forwarded_root_starts.is_empty()).then(|| {
+        super::forwarded_roots::emit_forwarded_root_probes(
+            ts,
+            &super::forwarded_roots::ForwardedRootContext {
+                summary,
+                options: virtual_ts_options,
+                syntactic_type_only_imported_names: options.syntactic_type_only_imported_names,
+                template_binding_access,
+            },
+            options.forwarded_root_starts,
+        )
+        .unwrap_or_else(|| String::from("{}"))
+    });
+    slot_outlets.emit_root_result(ts, summary, forwarded.as_deref());
 }

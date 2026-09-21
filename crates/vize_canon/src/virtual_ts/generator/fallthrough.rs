@@ -21,7 +21,9 @@ struct FallthroughRoot {
     authored_keys: Vec<String>,
 }
 
+mod forwarded;
 mod types;
+pub(super) use forwarded::ForwardedRoots;
 pub(crate) use types::fallthrough_component_root_starts;
 pub(super) use types::{
     FallthroughComponentScope, fallthrough_attrs_type_ref, fallthrough_props_type_ref,

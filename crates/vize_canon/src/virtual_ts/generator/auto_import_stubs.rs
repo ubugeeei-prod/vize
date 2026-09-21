@@ -21,6 +21,28 @@ pub(super) fn emit_auto_import_stubs(
     imported_names: &FxHashSet<&str>,
     syntactic_type_only_imported_names: &FxHashSet<CompactString>,
 ) {
+    if options.auto_import_stubs.is_empty() {
+        return;
+    }
+    vize_carton::profile!(
+        "canon.virtual_ts.emit_auto_import_stubs",
+        emit_stubs(
+            ts,
+            summary,
+            options,
+            imported_names,
+            syntactic_type_only_imported_names
+        )
+    );
+}
+
+fn emit_stubs(
+    ts: &mut String,
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+    imported_names: &FxHashSet<&str>,
+    syntactic_type_only_imported_names: &FxHashSet<CompactString>,
+) {
     let mut has_header = false;
     for stub in &options.auto_import_stubs {
         let name = extract_declared_name(stub);

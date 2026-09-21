@@ -9,7 +9,27 @@ use vize_croquis::Croquis;
 
 use super::global_components::GlobalComponentPlan;
 
-pub(super) fn should_collect_syntactic_type_only_imported_names(
+/// The names every `import type` declares, when anything reads them.
+pub(super) fn syntactic_type_only_imported_names(
+    summary: &Croquis,
+    global_components: &GlobalComponentPlan<'_>,
+    has_options_api_props: bool,
+    script_content: Option<&str>,
+) -> FxHashSet<CompactString> {
+    if !should_collect_syntactic_type_only_imported_names(
+        summary,
+        global_components,
+        has_options_api_props,
+    ) {
+        return FxHashSet::default();
+    }
+    vize_carton::profile!(
+        "canon.virtual_ts.extract_syntactic_type_only_imported_names",
+        collect_syntactic_type_only_imported_names(summary, script_content)
+    )
+}
+
+fn should_collect_syntactic_type_only_imported_names(
     summary: &Croquis,
     global_components: &GlobalComponentPlan<'_>,
     has_options_api_props: bool,
@@ -21,7 +41,7 @@ pub(super) fn should_collect_syntactic_type_only_imported_names(
         || has_options_api_props
 }
 
-pub(super) fn collect_syntactic_type_only_imported_names(
+fn collect_syntactic_type_only_imported_names(
     summary: &Croquis,
     script_content: Option<&str>,
 ) -> FxHashSet<CompactString> {

@@ -101,6 +101,9 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     /// public-instance property access.
     pub(crate) script_content: Option<&'a str>,
     pub(crate) experimental_strict_slot_children: bool,
+    /// Template-relative starts of the component roots a generic component
+    /// forwards to. Non-empty, the template scope returns what they forward.
+    pub(crate) forwarded_root_starts: &'a [u32],
 }
 
 /// Context for recursive component prop checks inside v-for scopes.
