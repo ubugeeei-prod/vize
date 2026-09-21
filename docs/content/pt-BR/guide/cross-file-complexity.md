@@ -6,62 +6,112 @@ title: Complexidade entre arquivos
 
 # Complexidade entre arquivos
 
-O relatório de complexidade entre arquivos da Vize é um resumo de grafo de projeto produzido pela Croquis. Não é uma regra diagnóstica
-por si só; é uma pontuação explicável que ferramentas posteriores podem mostrar em relatórios,
-Playground e futuras verificações baseadas em limiares.
+O relatório de complexidade entre arquivos da Vize é um resumo do grafo do projeto produzido pela
+Croquis. Ele não é uma regra de diagnóstico por si só: é uma pontuação explicável que ferramentas
+posteriores podem mostrar em relatórios, no Playground e em futuras verificações baseadas em limites.
 
 O modelo mapeia três sinais de complexidade para o Vue:
 
-- Contagem de caminhos do modelo: um ponto base por componente, mais `v-if`, `v-for`, e
-  operadores booleanos em `v-if` expressões.
-- Fluxo de controle aninhado: fluxo de templates mais profundo custa mais, incluindo o aninhamento que
-  continua através dos componentes filhos.
-- Fluxo de dados componente-fronteira: props, fornecer/injetar e arestas reativas permanecem
-  visíveis como sinais transfronteiriços em vez de serem achatados em um único arquivo.
+- Contagem de caminhos do template: a complexidade ciclomática própria de cada componente, calculada
+  pela análise S2 `template-complexity` da Davinci. Ela conta cada condição `v-if` / `v-else-if`, cada
+  `v-for` e cada `&&`, `||`, `??` e `?:` nas expressões que o template avalia.
+- Fluxo de controle aninhado: a complexidade cognitiva própria de cada componente. Ramos e laços
+  custam mais quanto mais fundo estão aninhados em regiões `v-if`, `v-for` e de slots com escopo.
+- Fluxo de dados nas fronteiras dos componentes: arestas de props, provide/inject e reativas continuam
+  visíveis como sinais entre fronteiras, em vez de serem achatadas em um único arquivo.
+
+A definição das métricas e os limites fixados no corpus estão em
+[`complexity-metrics.md`](https://github.com/ubugeeei-prod/vize/blob/main/davinci-road/plan/complexity-metrics.md).
 
 ## Pontuações
 
-O relatório expõe tanto sinais brutos quanto pontuações derivadas.
+O relatório expõe tanto os sinais brutos quanto as pontuações derivadas.
 
-| Campo             | Significado                                                                                                                                       |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cyclomaticScore` | Contagem de base de componentes + `v-if` + `v-for` + operadores booleanos em `v-if`.                                                              |
-| `cognitiveScore`  | Pontuação de aninhamento de templates de árvore de componentes entre `v-if`, `v-for`, e slots com escopo.                                         |
-| `totalScore`      | Soma dos escorações dimensionais: fluxo do modelo, slots, perfuração de prop, estado global, fornecer/injeção, atrações de falha e grafo reativo. |
-| `band`            | Balde voltado para humanos: `low`, `moderate`, `high`ou `extreme`.                                                                                |
+| Campo             | Significado                                                                                                                                  |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cyclomaticScore` | Soma da complexidade ciclomática própria do template de cada componente.                                                                     |
+| `cognitiveScore`  | Soma da complexidade cognitiva própria do template de cada componente.                                                                       |
+| `totalScore`      | Soma das pontuações por dimensão: fluxo do template, slots, prop drilling, estado global, provide/inject, atributos fallthrough e grafo reativo. |
+| `band`            | Faixa legível: `low`, `moderate`, `high` ou `extreme`.                                                                                       |
 
-A entrada bruta também mantém os números atrás da pontuação, incluindo:
+A entrada bruta também guarda os números por trás da pontuação, incluindo:
 
-| Sinal                                                          | Por que isso importa                                                                                                                 |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `componentTreeVIfMaxDepth`                                     | Caminhos condicionais longos entre componentes pai e filho precisam de mais estados para serem testados.                             |
-| `componentTreeVForMaxDepth`                                    | Loops aninhados entre os limites dos componentes amplificam a complexidade de renderização e forma dos dados.                        |
-| `componentTreeScopedSlotMaxDepth`                              | Slots com escopo combinam modelos de pai e filho, então a profundidade deles é acompanhada separadamente da contagem comum de slots. |
-| `propDrillingEdgeCount`                                        | As arestas de prop indicam fluxo de dados transfronteiriço.                                                                          |
-| `provideInjectMaxDepth` e `provideInjectReferenceCount`        | Árvores DI profundas ou amplas dificultam a inspeção local da propriedade.                                                           |
-| `reactiveNodeCount`, `reactiveEdgeCount`e `reactiveCycleCount` | Grafos reativos capturam estados em nível de declaração, efeitos e ciclos propensos a perdas.                                        |
+| Sinal                                                           | Por que importa                                                                                                  |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `templateCyclomatic` e `templateCognitive`                      | As pontuações próprias dos templates, somadas entre os componentes.                                              |
+| `templateMaxNesting`                                            | O aninhamento mais profundo de ramos, laços e slots com escopo dentro de um único template.                      |
+| `templateScopedSlotCount`                                       | Slots com escopo acoplam os templates pai e filho, por isso são contados separadamente dos slots comuns.         |
+| `templateUnknown`                                               | Expressões sem AST analisada (handlers com várias instruções, por exemplo). Elas não somam em nenhuma pontuação. |
+| `propDrillingEdgeCount`                                         | Arestas de props indicam fluxo de dados que cruza fronteiras.                                                    |
+| `provideInjectMaxDepth` e `provideInjectReferenceCount`         | Árvores de DI profundas ou amplas dificultam inspecionar a posse localmente.                                     |
+| `reactiveNodeCount`, `reactiveEdgeCount` e `reactiveCycleCount` | Grafos reativos capturam estado em nível de declaração, efeitos e ciclos propensos a perdas.                     |
 
-## Limites Componentes
+## Fronteiras dos componentes
 
-A complexidade do template não se limita a um único SFC. O Croquis constrói primeiro um registro de módulos e um grafo de
-de uso de componentes, depois percorre as arestas dos componentes com proteção de ciclo. Um pai `v-if` ao redor de uma criança, um pai
-`v-for` ao redor de uma criança, e um slot com escopo filho contribuem todos para a mesma árvore de componentes
-caminho de aninhamento.
+A complexidade do template tem duas visões, e ambas vêm dos mesmos fatos:
 
-Isso significa que um componente com aparência rasa ainda pode produzir uma pontuação alta quando avança em slots com escopo,
-exerce props ou depende de um caminho profundo de fornecimento ou injeção. O modo Cross-file do Playground mostra a pontuação
-ao lado dos diagnósticos, para que esses sinais fiquem visíveis durante a edição dos dispositivos.
+- A complexidade **própria** (own) considera só o template do componente. A regra de lint
+  `vue/max-template-complexity` julga essa visão, então extrair um ramo para um componente filho sempre
+  reduz a pontuação do pai.
+- A complexidade **renderizada** (rendered) é a pontuação própria do componente mais a pontuação
+  própria de cada componente distinto que ele renderiza, seguindo o grafo de uso de componentes que a
+  Croquis resolve pelos imports. Um filho renderizado em dois lugares conta uma vez. Um componente
+  recursivo, e um grupo de componentes que renderizam uns aos outros, também contam uma vez.
 
-## Pontos de interesse
+`CrossFileResult.templateComplexity` lista todos os componentes com as duas visões, começando pela
+árvore de renderização mais complexa. Para cada componente, também traz as construções que adicionam
+complexidade, com linha e coluna.
 
-O relatório também expõe hotspots ranqueados para que as ferramentas possam apontar para os arquivos/componentes que criam a pontuação
-, em vez de mostrar apenas um número em nível de projeto. Cada hotspot carrega a entrada local de pontuação,
-pontuações de dimensão, pontuação total e dimensão dominante. Use `dominantDimension` para explicar por que a entrada
-está alta, depois use `input` para mostrar o sinal bruto que a impulsionou.
+Assim, um componente de aparência rasa ainda pode ter uma pontuação alta quando repassa slots com
+escopo, faz prop drilling ou depende de um caminho profundo de provide/inject. O modo Cross-file do
+Playground mostra a pontuação ao lado dos diagnósticos, para que esses sinais fiquem visíveis enquanto
+você edita as fixtures.
 
-## Superfície Atual
+## Regra de lint e achado do Doctor
 
-A forma JSON pública está disponível na vinculação cross-file WASM como
-`CrossFileResult.complexityReport` e `CrossFileResult.complexityHotspots`. O CLI não falha
-ainda se baseia nesse ponto. Use o relatório como um sinal exploratório e depois promova limiares estáveis
-somente após existirem referências específicas de cada projeto.
+`vue/max-template-complexity` reporta um `warning` quando o template próprio de um componente tem
+complexidade ciclomática acima de 11 ou complexidade cognitiva acima de 16. Esses limites são o p95 do
+corpus real da Vize, com 40.724 templates. O aviso aponta para a tag `<template>` e rotula as cinco
+construções que mais adicionam complexidade.
+
+Como os limites são um p95, cerca de um componente real em cada vinte os ultrapassa. Nenhum preset
+ativa a regra, então ativá-la é uma decisão do projeto. Declare-a em `linter.rules` para ativá-la:
+
+```ts
+export default defineConfig({
+  linter: {
+    rules: {
+      "vue/max-template-complexity": "warn",
+    },
+  },
+});
+```
+
+`vize doctor` reporta um ponto crítico de complexidade de template, como notice, quando a
+complexidade renderizada de um componente fica acima do p95 do corpus: 106 ciclomática ou 139
+cognitiva.
+
+A complexidade ciclomática soma 1 para cada decisão: cada condição `v-if` / `v-else-if`, cada
+`v-for` e cada operador lógico e `?:`. A complexidade cognitiva conta assim:
+
+- `v-if` e `v-for` somam 1 mais a profundidade de aninhamento.
+- `v-else-if` e `v-else` somam 1 cada.
+- Cada sequência de `&&`, `||` ou `??` soma 1.
+- Um `?:` soma 1 mais a profundidade de aninhamento.
+- O corpo de um slot com escopo conta como um nível mais profundo.
+
+## Pontos críticos
+
+O relatório também expõe pontos críticos ordenados, para que as ferramentas apontem os arquivos e
+componentes que geram a pontuação em vez de mostrar só um número para o projeto inteiro. Cada ponto
+crítico traz a entrada local da pontuação, as pontuações por dimensão, a pontuação total e a dimensão
+dominante. Use `dominantDimension` para explicar por que a entrada é alta e depois `input` para
+mostrar o sinal bruto que a gerou.
+
+## Superfície atual
+
+O formato JSON público está disponível na ligação WASM de análise entre arquivos como
+`CrossFileResult.complexityReport`, `CrossFileResult.complexityHotspots` e
+`CrossFileResult.templateComplexity`. A CLI ainda não falha builds por causa dessa pontuação. Use o
+relatório como um sinal exploratório e só promova limites estáveis depois que existirem referências
+específicas do projeto.
