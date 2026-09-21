@@ -46,6 +46,35 @@ impl<'a> LintContext<'a> {
         self.report_at_line(diagnostic, line, DirectiveDomain::Sfc, 0);
     }
 
+    /// Report a diagnostic whose range addresses croquis' script-analysis
+    /// frame — where macro calls and bindings are measured.
+    ///
+    /// The ranges move into the complete file through
+    /// [`ScriptFrame`](crate::output::frame::ScriptFrame), which validates
+    /// them against the S0 frame the Davinci stages key spans on, and are
+    /// then reported like any SFC-absolute range. This is FP-1's root fix: a
+    /// script-analysis range reported through [`LintContext::report`] was
+    /// shifted by the *template's* offset and rendered on unrelated lines.
+    ///
+    /// Without an SFC descriptor there is no script frame, and a range
+    /// outside the script blocks cannot be located honestly; neither is
+    /// reported, and a debug build treats both as a caller bug.
+    pub fn report_in_script(&mut self, diagnostic: LintDiagnostic) {
+        let reframed = self
+            .sfc_descriptor
+            .and_then(crate::output::frame::ScriptFrame::for_lint)
+            .and_then(|frame| frame.reframe(&diagnostic));
+        let Some(reframed) = reframed else {
+            debug_assert!(
+                false,
+                "{}: a script-analysis range needs an SFC script block that contains it",
+                diagnostic.rule_name
+            );
+            return;
+        };
+        self.report_in_sfc(reframed);
+    }
+
     fn sfc_directives(&mut self) -> Option<&SfcDirectiveState> {
         if !self.sfc_directives_scanned {
             self.sfc_directives_scanned = true;

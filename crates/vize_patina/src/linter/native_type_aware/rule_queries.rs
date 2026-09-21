@@ -2,7 +2,7 @@ use super::{
     LintResult, Linter, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
     markers::{MacroQuery, QueryKind, push_emit_validator_markers, push_prop_type_markers},
     parsing::is_runtime_array_macro,
-    push_warning,
+    push_script_warning, push_warning,
 };
 use crate::diagnostic::LintDiagnostic;
 use vize_croquis::{Croquis, virtual_ts::VirtualTsOutput};
@@ -20,7 +20,7 @@ pub(super) fn collect_prop_queries(
     linter: &Linter,
     analysis: &Croquis,
     result: &mut LintResult,
-    script_block: &vize_atelier_sfc::SfcScriptBlock<'_>,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
     virtual_ts: &mut VirtualTsOutput,
     macro_queries: &mut Vec<MacroQuery>,
 ) {
@@ -34,14 +34,10 @@ pub(super) fn collect_prop_queries(
         && call.type_args.is_none()
     {
         if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
-            push_warning(
+            push_script_warning(
                     result,
-                    LintDiagnostic::warn(
-                        RULE_REQUIRE_TYPED_PROPS,
-                        "Prop should have a type definition",
-                        script_block.loc.start as u32 + call.start,
-                        script_block.loc.start as u32 + call.end,
-                    )
+                    descriptor,
+                    LintDiagnostic::warn(RULE_REQUIRE_TYPED_PROPS, "Prop should have a type definition", call.start, call.end)
                     .with_help(
                         "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
                     ),
@@ -67,7 +63,7 @@ pub(super) fn collect_emit_queries(
     linter: &Linter,
     analysis: &Croquis,
     result: &mut LintResult,
-    script_block: &vize_atelier_sfc::SfcScriptBlock<'_>,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
     virtual_ts: &mut VirtualTsOutput,
     macro_queries: &mut Vec<MacroQuery>,
 ) {
@@ -81,13 +77,14 @@ pub(super) fn collect_emit_queries(
         && call.type_args.is_none()
     {
         if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
-            push_warning(
+            push_script_warning(
                 result,
+                descriptor,
                 LintDiagnostic::warn(
                     RULE_REQUIRE_TYPED_EMITS,
                     "Emit should have a type definition",
-                    script_block.loc.start as u32 + call.start,
-                    script_block.loc.start as u32 + call.end,
+                    call.start,
+                    call.end,
                 )
                 .with_help(
                     "Use `defineEmits<...>()` or a validator object with typed payload parameters.",

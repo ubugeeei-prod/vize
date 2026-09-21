@@ -109,6 +109,27 @@ pub(super) fn push_warning(result: &mut LintResult, diagnostic: LintDiagnostic) 
     result.diagnostics.push(diagnostic);
 }
 
+/// Push a warning whose ranges are in croquis' script-analysis frame, moved
+/// into the file through [`ScriptFrame`](crate::output::frame::ScriptFrame)
+/// (FP-1). A range the frame cannot locate is not reported; a debug build
+/// treats it as a caller bug.
+pub(super) fn push_script_warning(
+    result: &mut LintResult,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    diagnostic: LintDiagnostic,
+) {
+    let reframed = crate::output::frame::ScriptFrame::for_lint(descriptor)
+        .and_then(|frame| frame.reframe(&diagnostic));
+    match reframed {
+        Some(reframed) => push_warning(result, reframed),
+        None => debug_assert!(
+            false,
+            "{}: a script-analysis range needs an SFC script block that contains it",
+            diagnostic.rule_name
+        ),
+    }
+}
+
 pub(super) fn with_corsa_session<T>(
     linter: &Linter,
     filename: &str,

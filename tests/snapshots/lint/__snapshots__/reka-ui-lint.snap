@@ -4600,6 +4600,28 @@
     "file": "packages/core/src/Presence/story/_Toggle.vue",
     "messages": [
       {
+        "ruleId": "type/require-typed-props",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/require-typed-props] Prop should have a type definition",
+        "line": 2,
+        "column": 15,
+        "endLine": 5,
+        "endColumn": 3,
+        "help": "Use TypeScript type parameter: defineProps<{ msg: string }>()"
+      },
+      {
+        "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+        "line": 7,
+        "column": 15,
+        "endLine": 7,
+        "endColumn": 43,
+        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
+      },
+      {
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4609,28 +4631,6 @@
         "endLine": 19,
         "endColumn": 11,
         "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
-      {
-        "ruleId": "type/require-typed-props",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
-        "severity": 1,
-        "message": "[vize:type/require-typed-props] Prop should have a type definition",
-        "line": 20,
-        "column": 15,
-        "endLine": 22,
-        "endColumn": 15,
-        "help": "Use TypeScript type parameter: defineProps<{ msg: string }>()"
-      },
-      {
-        "ruleId": "type/require-typed-emits",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
-        "severity": 1,
-        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 23,
-        "column": 2,
-        "endLine": 24,
-        "endColumn": 16,
-        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
       }
     ],
     "errorCount": 0,

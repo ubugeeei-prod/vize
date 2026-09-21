@@ -126,9 +126,11 @@ impl Rule for RequireTypedEmits {
                 continue;
             }
 
+            // The call span is script-relative (croquis macro analysis): report
+            // it through the script frame, not the template one (FP-1).
             // Get position from the defineEmits call if available
             if let Some(call) = define_emits_call {
-                ctx.report(
+                ctx.report_in_script(
                     crate::diagnostic::LintDiagnostic::warn(
                         ctx.current_rule,
                         "Emit should have a type definition",

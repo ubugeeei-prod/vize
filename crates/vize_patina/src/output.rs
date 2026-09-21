@@ -1,6 +1,7 @@
 //! Output formatters for lint diagnostics.
 
 mod agent;
+pub(crate) mod frame;
 mod html;
 mod json;
 mod markdown;

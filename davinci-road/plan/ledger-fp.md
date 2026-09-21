@@ -64,11 +64,28 @@ macro analysis are script-block offsets
 the output layer converts them against the full-SFC line index
 (`crates/vize_patina/src/output/shared.rs`).
 
-**Disposition:** `deferred-with-issue` — offset canonicalization belongs to
-the unified diagnostic-channel work (plan P4-6, witness-carrying
-diagnostics); tracked there rather than patched ad hoc in one rule, since
-`type/require-typed-props` shares the pattern. The miniature CI set is
-unaffected (no `defineEmits` usage), so the pilot gate stays exact.
+**Disposition:** `fixed` (P4-6c, 2026-09-22). The root cause was one
+frame confusion shared by both rules: croquis' lint analysis measures macro
+calls in its script frame (`<script>` content, `\n`, `<script setup>`
+content when both exist), and the rules reported those offsets through the
+template frame. `vize_patina::output::frame::ScriptFrame` now maps the
+script-analysis frame to the file block by block, validated through
+`vize_s0::{SourceRoot, SourceBlock}`, and both the rule path
+(`LintContext::report_in_script`) and the native type-aware static warnings
+report through it; a range no block contains is refused, never guessed.
+
+Re-measured on the same corpus shard (130 files, 49 class-a and 130 class-b
+injections, `seed-defects.rs --fixtures <shard> --assert` fed by a
+`vize_patina` library harness in place of the CLI, identical before and after
+the fix): **baseline-shift pairs 17 → 0** (16 layoutit-grid + 1 splitpanes,
+all `type/require-typed-emits`, including both witnesses above — `AreaBox.vue`
+now reports 41:1–41:22 and `AreaButtons.vue` 63:1–63:22, exactly the
+`defineEmits(['edit'])` calls).
+Permanent tests: `crates/vize_patina/tests/script_frame_spans.rs`
+(template-first, script-first, `<script>` + `<script setup>`, multibyte +
+CRLF, rendered line/column). TS-9 lint snapshots changed exactly the eight
+FP-1 spans they carried (elk ×4, npmx.dev ×1, reka-ui ×2, ant-design-vue ×1),
+each re-derived from the pinned fixture source.
 
 ## FP-2 — `vue/permitted-contents` flagged conforming label and select content
 

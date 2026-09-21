@@ -817,6 +817,17 @@
     "file": "app/components/common/dropdown/DropdownItem.vue",
     "messages": [
       {
+        "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+        "line": 17,
+        "column": 14,
+        "endLine": 17,
+        "endColumn": 36,
+        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
+      },
+      {
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
@@ -826,17 +837,6 @@
         "endLine": 53,
         "endColumn": 20,
         "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
-      },
-      {
-        "ruleId": "type/require-typed-emits",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
-        "severity": 1,
-        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 62,
-        "column": 14,
-        "endLine": 64,
-        "endColumn": 7,
-        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
       }
     ],
     "errorCount": 0,
@@ -1030,9 +1030,9 @@
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 134,
+        "line": 2,
         "column": 14,
-        "endLine": 134,
+        "endLine": 2,
         "endColumn": 36,
         "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
       },
@@ -1222,6 +1222,17 @@
     "file": "app/components/modal/ModalMediaPreview.vue",
     "messages": [
       {
+        "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+        "line": 2,
+        "column": 14,
+        "endLine": 2,
+        "endColumn": 36,
+        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
+      },
+      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -1242,17 +1253,6 @@
         "endLine": 40,
         "endColumn": 59,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "type/require-typed-emits",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
-        "severity": 1,
-        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 40,
-        "column": 14,
-        "endLine": 40,
-        "endColumn": 36,
-        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
       },
       {
         "ruleId": "vue/permitted-contents",
@@ -1559,10 +1559,10 @@
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 27,
-        "column": 35,
-        "endLine": 28,
-        "endColumn": 3,
+        "line": 10,
+        "column": 1,
+        "endLine": 10,
+        "endColumn": 35,
         "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
       }
     ],

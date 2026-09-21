@@ -129,9 +129,11 @@ impl Rule for RequireTypedProps {
                 continue;
             }
 
+            // The call span is script-relative (croquis macro analysis): report
+            // it through the script frame, not the template one (FP-1).
             // Get position from the defineProps call if available
             if let Some(call) = define_props_call {
-                ctx.report(
+                ctx.report_in_script(
                     crate::diagnostic::LintDiagnostic::warn(
                         ctx.current_rule,
                         "Prop should have a type definition",

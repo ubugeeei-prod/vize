@@ -2,7 +2,7 @@ use super::super::engine::{SfcTemplateLintInput, TemplateAnalysis};
 use super::{
     LintResult, Linter, RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS,
     RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
-    has_promise_like_return, has_unsafe_template_type, push_warning,
+    has_promise_like_return, has_unsafe_template_type, push_script_warning, push_warning,
     should_warn_for_emit_validator, should_warn_for_prop_access, should_warn_for_reactivity_loss,
     source_path::absolute_source_file, with_corsa_session,
 };
@@ -102,10 +102,10 @@ pub(super) fn lint_with_descriptor<'a>(
     // rule needs Corsa, returning here avoids virtual project creation and the
     // expensive type-probe round trip entirely.
     let needs_prop_probe = profile!("patina.type_aware.plan_prop_queries", {
-        collect_prop_static_warning_or_probe_need(linter, &analysis, &mut result, script_block)
+        collect_prop_static_warning_or_probe_need(linter, &analysis, &mut result, descriptor)
     });
     let needs_emit_probe = profile!("patina.type_aware.plan_emit_queries", {
-        collect_emit_static_warning_or_probe_need(linter, &analysis, &mut result, script_block)
+        collect_emit_static_warning_or_probe_need(linter, &analysis, &mut result, descriptor)
     });
     let include_template_queries = !template_has_fatal_parse_errors
         && is_type_rule_active(linter, RULE_NO_UNSAFE_TEMPLATE_BINDING);
@@ -166,7 +166,7 @@ pub(super) fn lint_with_descriptor<'a>(
                 linter,
                 &analysis,
                 &mut result,
-                script_block,
+                descriptor,
                 &mut virtual_ts,
                 &mut macro_queries,
             )
@@ -179,7 +179,7 @@ pub(super) fn lint_with_descriptor<'a>(
                 linter,
                 &analysis,
                 &mut result,
-                script_block,
+                descriptor,
                 &mut virtual_ts,
                 &mut macro_queries,
             )
@@ -420,7 +420,7 @@ fn collect_prop_static_warning_or_probe_need(
     linter: &Linter,
     analysis: &Croquis,
     result: &mut LintResult,
-    script_block: &vize_atelier_sfc::SfcScriptBlock<'_>,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
 ) -> bool {
     if !is_type_rule_active(linter, RULE_REQUIRE_TYPED_PROPS) {
         return false;
@@ -434,14 +434,10 @@ fn collect_prop_static_warning_or_probe_need(
     }
 
     if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
-        push_warning(
+        push_script_warning(
             result,
-            LintDiagnostic::warn(
-                RULE_REQUIRE_TYPED_PROPS,
-                "Prop should have a type definition",
-                script_block.loc.start as u32 + call.start,
-                script_block.loc.start as u32 + call.end,
-            )
+            descriptor,
+            LintDiagnostic::warn(RULE_REQUIRE_TYPED_PROPS, "Prop should have a type definition", call.start, call.end)
             .with_help(
                 "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
             ),
@@ -460,7 +456,7 @@ fn collect_emit_static_warning_or_probe_need(
     linter: &Linter,
     analysis: &Croquis,
     result: &mut LintResult,
-    script_block: &vize_atelier_sfc::SfcScriptBlock<'_>,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
 ) -> bool {
     if !is_type_rule_active(linter, RULE_REQUIRE_TYPED_EMITS) {
         return false;
@@ -474,13 +470,14 @@ fn collect_emit_static_warning_or_probe_need(
     }
 
     if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
-        push_warning(
+        push_script_warning(
             result,
+            descriptor,
             LintDiagnostic::warn(
                 RULE_REQUIRE_TYPED_EMITS,
                 "Emit should have a type definition",
-                script_block.loc.start as u32 + call.start,
-                script_block.loc.start as u32 + call.end,
+                call.start,
+                call.end,
             )
             .with_help(
                 "Use `defineEmits<...>()` or a validator object with typed payload parameters.",

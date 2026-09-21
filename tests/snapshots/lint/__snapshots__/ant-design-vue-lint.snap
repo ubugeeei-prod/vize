@@ -2645,10 +2645,10 @@
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 8,
-        "column": 5,
-        "endLine": 8,
-        "endColumn": 34,
+        "line": 26,
+        "column": 14,
+        "endLine": 26,
+        "endColumn": 43,
         "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
       }
     ],
