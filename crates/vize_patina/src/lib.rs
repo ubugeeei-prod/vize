@@ -106,6 +106,7 @@ pub mod markup;
 pub mod output;
 mod preset;
 mod rule;
+pub mod rule_contracts;
 pub mod rules;
 pub mod style;
 pub mod telegraph;

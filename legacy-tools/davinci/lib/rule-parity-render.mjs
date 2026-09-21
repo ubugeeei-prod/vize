@@ -5,6 +5,7 @@
 import { byKey } from "./ordering.mjs";
 import { derivationSection, preambleSection } from "./rule-parity-derivation.mjs";
 import { CLASSIFICATIONS } from "./rule-parity-paths.mjs";
+import { TIER_TABLE_REL, TIERS } from "./rule-parity-tiers.mjs";
 import { summarize } from "./rule-parity-summary.mjs";
 import { crossChecksSection, fullTableSection, overridesSection } from "./rule-parity-tables.mjs";
 
@@ -79,6 +80,10 @@ function summarySection(stats) {
     `- classification: ` +
       CLASSIFICATIONS.map((c) => `${c} **${classCounts.get(c)}**`).join(" · ") +
       ` (${overriddenRows.length} overridden)`,
+  );
+  lines.push(
+    `- precision tiers (\`${TIER_TABLE_REL}\`): ` +
+      TIERS.map((t) => `${t} **${stats.tierCounts.get(t)}**`).join(" · "),
   );
   lines.push(
     `- croquis adoption: **${croquisUsers.length}** rules touch vize_croquis` +

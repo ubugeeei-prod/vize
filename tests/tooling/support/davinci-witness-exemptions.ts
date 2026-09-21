@@ -25,6 +25,29 @@ const declaration =
 
 const key = (row: { producer: string; code: string }): string => `${row.producer}\t${row.code}`;
 
+/**
+ * A contract table: one const constructor builds each row's exemption
+ * (`Exemption::new(PRODUCER, name)`, the only non-static `Exemption::new` the
+ * scan accepts, exactly once), and every `row!(name, Tier, DOMAIN, Error)`
+ * line is one exempt rule — one construction site each.
+ */
+export interface ContractTable {
+  producer: string;
+  constructor: string;
+  rows: string;
+}
+
+export const contractTables: readonly ContractTable[] = [
+  {
+    producer: "vize_patina",
+    constructor: "crates/vize_patina/src/rule_contracts.rs",
+    rows: "crates/vize_patina/src/rule_contracts/table.rs",
+  },
+];
+
+const tableRow =
+  /^\s*row!\("(?<code>[^"]+)",\s*(?:Exact|Sound|Complete|Heuristic),\s*[A-Z0-9_]+,\s*(?<severity>Error|Warning)\),\s*$/u;
+
 function compareRows(left: ExemptionRow, right: ExemptionRow): number {
   if (left.producer !== right.producer) return left.producer < right.producer ? -1 : 1;
   if (left.code === right.code) return 0;
@@ -86,9 +109,28 @@ function codeLines(file: string): Array<{ line: number; text: string }> {
  * `Exemption::new` must be a named-static declaration whose producer is its
  * crate, and each declaration's row counts its `&NAME` construction sites.
  */
-export function deriveInventory(root: string): Derived {
+export function deriveInventory(
+  root: string,
+  tables: readonly ContractTable[] = contractTables,
+): Derived {
   const rows: ExemptionRow[] = [];
   const issues: string[] = [];
+  const constructors = new Map(tables.map((table) => [table.constructor, 0]));
+  for (const table of tables) {
+    const file = path.join(root, table.rows);
+    if (!fs.existsSync(file)) {
+      issues.push(`${table.rows}: contract table is missing`);
+      continue;
+    }
+    for (const { line, text } of codeLines(file)) {
+      if (!text.trimStart().startsWith("row!(")) continue;
+      const match = tableRow.exec(text);
+      if (!match) issues.push(`${table.rows}:${line}: a table row must be one row!(..) line`);
+      else if (match.groups!.severity === "Error") {
+        rows.push({ producer: table.producer, code: match.groups!.code, exempt: 1 });
+      }
+    }
+  }
   const cratesDir = path.join(root, "crates");
   for (const crate of fs.readdirSync(cratesDir).sort()) {
     const files = rustFiles(path.join(cratesDir, crate, "src"));
@@ -98,6 +140,10 @@ export function deriveInventory(root: string): Derived {
       for (const { line, text } of codeLines(file)) {
         if (!text.includes("Exemption::new(")) continue;
         const at = `${relative}:${line}`;
+        if (constructors.has(relative) && /Exemption::new\(PRODUCER, name\)/u.test(text)) {
+          constructors.set(relative, constructors.get(relative)! + 1);
+          continue;
+        }
         const match = declaration.exec(text);
         if (!match) {
           issues.push(`${at}: an Exemption must be declared as one named static`);
@@ -121,6 +167,9 @@ export function deriveInventory(root: string): Derived {
       if (entry.exempt === 0) issues.push(`${entry.at}: ${entry.ident} is declared but unused`);
       else rows.push({ producer: entry.producer, code: entry.code, exempt: entry.exempt });
     }
+  }
+  for (const [constructor, count] of constructors) {
+    if (count !== 1) issues.push(`${constructor}: expected one table constructor, found ${count}`);
   }
   rows.sort(compareRows);
   for (let index = 1; index < rows.length; index += 1) {

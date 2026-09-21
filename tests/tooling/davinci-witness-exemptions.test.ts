@@ -117,13 +117,42 @@ test("exemptions are derived from named statics and counted by construction site
   );
   write(root, "crates/producer_a/tests/t.rs", "fn t() { let _ = &KIND; }\n");
   write(root, "crates/producer_c/src/lib.rs", "pub fn nothing() {}\n");
-  assert.deepEqual(deriveInventory(root), {
+  assert.deepEqual(deriveInventory(root, []), {
     rows: [row("producer_a", "kind", 2)],
     issues: [
       "crates/producer_a/src/lib.rs:4: producer producer_b must be its crate producer_a",
       "crates/producer_a/src/lib.rs:8: an Exemption must be declared as one named static",
       "crates/producer_a/src/lib.rs:3: UNUSED is declared but unused",
     ],
+  });
+});
+
+test("a contract table contributes one row per error rule", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-witness-table-"));
+  const table = {
+    producer: "producer_t",
+    constructor: "crates/producer_t/src/contracts.rs",
+    rows: "crates/producer_t/src/contracts/table.rs",
+  };
+  write(
+    root,
+    table.constructor,
+    "const fn entry(name: &'static str) -> Entry {\n    Entry { exemption: Exemption::new(PRODUCER, name) }\n}\n",
+  );
+  write(
+    root,
+    table.rows,
+    [
+      '    row!("vue/a", Exact, DIRECTIVES, Error),',
+      '    row!("vue/b", Heuristic, STYLE, Warning),',
+      '    row!("vue/c", Complete, BINDINGS, Error),',
+      '    row!("vue/d" , Exact, STYLE, Error),',
+      "",
+    ].join("\n"),
+  );
+  assert.deepEqual(deriveInventory(root, [table]), {
+    rows: [row("producer_t", "vue/a", 1), row("producer_t", "vue/c", 1)],
+    issues: ["crates/producer_t/src/contracts/table.rs:4: a table row must be one row!(..) line"],
   });
 });
 

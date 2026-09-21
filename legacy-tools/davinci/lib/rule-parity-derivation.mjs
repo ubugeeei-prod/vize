@@ -4,6 +4,7 @@
 
 import { OVERRIDES_REL, REGEN_COMMAND } from "./rule-parity-paths.mjs";
 import { DIALECT_NAME_PREFIXES } from "./rule-parity-rules.mjs";
+import { TIER_TABLE_REL } from "./rule-parity-tiers.mjs";
 
 export function preambleSection() {
   const lines = [];
@@ -88,6 +89,12 @@ export function derivationSection(model) {
       " calls on receivers typed `LintContext` / `MarkupContext` /" +
       " `MarkupDocument` — the lane croquis facts reach rules through" +
       " (`ctx N`). No raw text matching.",
+  );
+  lines.push(
+    "- **tier** — the rule's precision tier (`exact` / `sound` / `complete` /" +
+      " `heuristic`, assurance.md) from its `RuleContract` row in" +
+      ` \`${TIER_TABLE_REL}\`; a rule without a row, or a row without a rule,` +
+      " fails generation.",
   );
   lines.push(
     "- **classification** — heuristic, precedence container > dialect >" +

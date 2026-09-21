@@ -36,6 +36,7 @@ export function fullTableSection(stats) {
       [
         "rule",
         "family",
+        "tier",
         "file",
         "surfaces",
         "lint() (SFC)",
@@ -43,10 +44,11 @@ export function fullTableSection(stats) {
         "croquis",
         "classification",
       ],
-      ["left", "left", "left", "left", "left", "left", "left", "left"],
+      ["left", "left", "left", "left", "left", "left", "left", "left", "left"],
       stats.rows.map((r) => [
         `\`${r.name}\``,
         r.family,
+        r.tier,
         `\`${r.file}\``,
         r.surfaces.join(", "),
         sfcCell(r),

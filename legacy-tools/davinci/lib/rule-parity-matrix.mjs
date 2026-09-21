@@ -14,6 +14,7 @@ import {
   collectScriptRegistryNames,
 } from "./rule-parity-registry.mjs";
 import { DIALECT_NAME_PREFIXES, parseRuleFile } from "./rule-parity-rules.mjs";
+import { applyTiers } from "./rule-parity-tiers.mjs";
 
 export function buildMatrix() {
   const model = loadDispatchModel();
@@ -139,6 +140,7 @@ export function buildMatrix() {
     rule.classification = o.classification;
     rule.overrideReason = o.reason;
   }
+  applyTiers(rules);
 
   return { model, files, ruleFiles, nonRuleFiles, rules, scriptRegistry, cssRegistry, overrides };
 }

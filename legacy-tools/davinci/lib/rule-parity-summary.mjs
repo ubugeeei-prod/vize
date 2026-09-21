@@ -3,6 +3,7 @@
 
 import { byKey } from "./ordering.mjs";
 import { CLASSIFICATIONS, META_KINDS } from "./rule-parity-paths.mjs";
+import { TIERS } from "./rule-parity-tiers.mjs";
 
 export function summarize(matrix) {
   const { nonRuleFiles, rules } = matrix;
@@ -31,8 +32,11 @@ export function summarize(matrix) {
       count((r) => r.classification === c),
     );
 
+  const tierCounts = new Map(TIERS.map((tier) => [tier, count((r) => r.tier === tier)]));
+
   return {
     rows,
+    tierCounts,
     count,
     familyCounts,
     surfaceCounts,

@@ -16,6 +16,7 @@ vize_s0.workspace = true
 vize_croquis.workspace = true
 vize_atelier_sfc.workspace = true
 vize_atelier_jsx.workspace = true
+vize_davinci.workspace = true
 
 # OXC for JS/TS parsing and diagnostics
 oxc_allocator.workspace = true

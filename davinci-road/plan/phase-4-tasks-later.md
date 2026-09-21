@@ -56,8 +56,8 @@
 
 **Steps:**
 
-- [ ] Table keys == registered rule names, asserted by a test; `tools/davinci/rule-parity.mjs` gains a `tier` column and fails on a rule without one
-- [ ] Error-default rules (99 today) without witnesses enter `witness-exemptions.tsv`; that list is the P4-8 waves' drain queue
+- [x] Table keys == registered rule names, asserted by a test; `tools/davinci/rule-parity.mjs` gains a `tier` column and fails on a rule without one
+- [x] Error-default rules (99 today) without witnesses enter `witness-exemptions.tsv`; that list is the P4-8 waves' drain queue (98 rows: `script/no-potential-component-option-typo` is heuristic, so its contract declares warning — the one `DEMOTED` rule)
 - [x] Offsets canonicalized through the S0 frame — in `crates/vize_patina/src/output/frame.rs` (`ScriptFrame`) rather than `output/shared.rs`, because the formatters only ever see file-absolute offsets: the frame is applied where a range's frame is known (the rule path and the native type-aware warnings). FP-1 [fixed](./ledger-fp.md), 17 → 0 baseline-shift pairs
 
 **Acceptance:** [ledger-fp.md](./ledger-fp.md) FP-1 flipped to `fixed` with the layoutit-grid pairs re-measured at 0 of 17; `rust-script tools/commands/davinci/rule-parity.rs --check` green with the tier column (TS-12); TS-9 snapshots unchanged except the FP-1 spans, each changed line listed in the PR; exemption inventory ≤ 99 rule entries; TS-13.
@@ -65,6 +65,8 @@
 **Deps:** P4-6a.
 
 **Non-goals:** migrating rule bodies (P4-8a…P4-8c); compiler and Canon producers (P4-14b).
+
+**Landed 2026-09-22:** all 248 rules carry a `RuleContract` (exact 199, complete 32, heuristic 17), the rule-parity matrix renders the tier, Patina converts to `vize_davinci::Diagnostic` through `to_unified`, 98 error rules report under counted exemptions (≤ 99), and FP-1 is fixed at 0 of 17 pairs — see the [P4-6c record](./phase-4-records/p4-6c.md).
 
 ## P4-7a — S2-backed markup facade
 

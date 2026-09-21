@@ -9,6 +9,7 @@ mod plain;
 mod shared;
 mod stylish;
 mod text;
+pub mod unified;
 
 #[cfg(test)]
 mod tests;
