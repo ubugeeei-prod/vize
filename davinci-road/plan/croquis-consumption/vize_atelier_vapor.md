@@ -19,5 +19,5 @@ _None._
 | product            | resolved | grep |
 | ------------------ | -------: | ---: |
 | `BindingMetadata`  |        0 |   15 |
-| `Span`             |        0 |    1 |
-| `Croquis.bindings` |        0 |    8 |
+| `Span`             |        0 |    4 |
+| `Croquis.bindings` |        0 |   15 |
