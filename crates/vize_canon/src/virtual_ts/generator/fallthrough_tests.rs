@@ -29,6 +29,7 @@ fn fallthrough_type_with(
         syntactic_type_only_imported_names: &Default::default(),
         resolve_component_roots: true,
         check_required,
+        checks: Default::default(),
     };
     fallthrough_props_type_ref(&scope, Some(&root), false)
 }
@@ -50,6 +51,7 @@ fn component_roots_stay_open_without_fallthrough_attributes() {
         syntactic_type_only_imported_names: &Default::default(),
         resolve_component_roots: false,
         check_required: false,
+        checks: Default::default(),
     };
 
     assert_eq!(

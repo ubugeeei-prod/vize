@@ -24,7 +24,7 @@ mod template_ref_unwrap;
 mod unused_refs;
 mod vif_chain;
 fn template_context(options: &VirtualTsOptions, dialect: VueVersion) -> vize_carton::String {
-    generate_template_context(options, dialect, false, false, None)
+    generate_template_context(options, dialect, false, false, (None, None))
 }
 fn assert_virtual_ts_snapshot(name: &str, value: &str) {
     insta::with_settings!({ snapshot_path => "../../snapshots" }, {

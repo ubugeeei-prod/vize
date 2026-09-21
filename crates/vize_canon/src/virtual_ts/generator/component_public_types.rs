@@ -159,24 +159,6 @@ pub(super) fn template_slots_type(
     }
 }
 
-pub(super) fn push_template_return(
-    fields: &mut Vec<String>,
-    inferred_slots: bool,
-    has_root_el: bool,
-    forwarded_roots: &super::fallthrough::ForwardedRoots,
-) {
-    if has_root_el {
-        fields.push("__vize_root_el".into());
-    }
-    if inferred_slots {
-        fields.push(cstr!(
-            "__vize_template_slots: {}",
-            forwarded_roots.template_slots_value()
-        ));
-    }
-    forwarded_roots.push_return_field(fields);
-}
-
 impl TemplateSlotsType {
     /// Read the inferred slots from `value` instead of the whole template value.
     pub(super) fn read_template_value(&mut self, value: &str) {

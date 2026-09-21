@@ -31,7 +31,7 @@ pub(in crate::virtual_ts::generator) fn generic_instance_suffix(
             legacy_vue2,
             dialect,
             has_exposed_type,
-            false,
+            (false, false),
         ));
     };
 
@@ -42,17 +42,35 @@ pub(in crate::virtual_ts::generator) fn generic_instance_suffix(
     }
 }
 
+/// `(has_root_el, has_refs)`: the instance members the setup scope infers
+/// (`inferComponentDollarEl`, `inferComponentDollarRefs`) replace the ones
+/// `ComponentPublicInstance` declares.
 pub(in crate::virtual_ts::generator) fn instance_suffix(
     legacy_vue2: bool,
     dialect: VueVersion,
     has_exposed_type: bool,
-    has_root_el: bool,
+    (has_root_el, has_refs): (bool, bool),
 ) -> &'static str {
-    if has_root_el && !needs_legacy_vue2_helpers(legacy_vue2, dialect) {
-        return if has_exposed_type {
-            "} & Omit<__VizeComponentPublicBase, '$el'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el'] } & __VizeShallowUnwrapRef<Exposed>;\n"
-        } else {
-            "} & Omit<__VizeComponentPublicBase, '$el'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el'] };\n"
+    if (has_root_el || has_refs) && !needs_legacy_vue2_helpers(legacy_vue2, dialect) {
+        return match (has_root_el, has_refs, has_exposed_type) {
+            (true, false, true) => {
+                "} & Omit<__VizeComponentPublicBase, '$el'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el'] } & __VizeShallowUnwrapRef<Exposed>;\n"
+            }
+            (true, false, false) => {
+                "} & Omit<__VizeComponentPublicBase, '$el'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el'] };\n"
+            }
+            (false, _, true) => {
+                "} & Omit<__VizeComponentPublicBase, '$refs'> & { $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] } & __VizeShallowUnwrapRef<Exposed>;\n"
+            }
+            (false, _, false) => {
+                "} & Omit<__VizeComponentPublicBase, '$refs'> & { $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] };\n"
+            }
+            (true, true, true) => {
+                "} & Omit<__VizeComponentPublicBase, '$el' | '$refs'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el']; $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] } & __VizeShallowUnwrapRef<Exposed>;\n"
+            }
+            (true, true, false) => {
+                "} & Omit<__VizeComponentPublicBase, '$el' | '$refs'> & { $el: Awaited<ReturnType<typeof __setup>>['__vize_root_el']; $refs: Awaited<ReturnType<typeof __setup>>['__vize_refs'] };\n"
+            }
         };
     }
     match (

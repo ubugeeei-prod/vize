@@ -6,7 +6,7 @@
 //! the parsed OXC type AST to pass only concrete local boolean keys for generic
 //! setup scopes.
 
-use vize_carton::{CompactString, FxHashSet, String, append};
+use vize_carton::{String, append};
 use vize_croquis::Croquis;
 use vize_relief::RootNode;
 
@@ -17,13 +17,13 @@ pub(super) use declarations::SetupHelperPlan;
 mod template_ref_registry;
 
 use boolean_keys::{DefinePropsBooleanKeys, collect_define_props_boolean_keys};
+pub(super) use template_ref_registry::registers_template_refs;
 use template_ref_registry::template_ref_registry;
 
 pub(super) struct SetupHelperComponentContext<'a> {
     pub(super) helpers: &'a SetupHelperPlan,
-    pub(super) summary: &'a Croquis,
-    pub(super) options: &'a crate::virtual_ts::types::VirtualTsOptions,
-    pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
+    pub(super) scope: &'a super::fallthrough::FallthroughComponentScope<'a>,
+    pub(super) template_record: &'a super::template_record::TemplateRecord,
 }
 
 pub(super) fn define_emits_runtime_args(summary: &Croquis) -> Option<&String> {
@@ -73,12 +73,15 @@ pub(super) fn emit_setup_helpers(
     // Static `ref="name"` attributes on plain elements, keyed for
     // `useTemplateRef` (#3896): the registry exists only to retype this
     // scope's shim, so it is collected here rather than by the caller.
+    let scope = component_context.scope;
+    let record = component_context.template_record;
     let registry = template_ref_registry(
-        component_context.summary,
-        component_context.options,
+        scope.summary,
+        scope.options,
         script_content,
         template_ast,
-        component_context.syntactic_type_only_imported_names,
+        scope.syntactic_type_only_imported_names,
+        (scope.checks, record),
     );
     let template_refs = registry.as_ref().map(|registry| registry.body.as_str());
     if let Some(registry) = registry.as_ref() {
@@ -106,10 +109,24 @@ pub(super) fn emit_setup_helpers(
         // HTML even for SVG tag names). A tag missing from its own map stops at
         // `Element`, which is what a custom element resolves to.
         let registry_body = registry.body.as_str();
+        let instance_helpers = if registry.includes_instantiated {
+            crate::virtual_ts::scope::REF_INSTANCE_HELPERS
+        } else {
+            ""
+        };
         append!(
             *ts,
-            "{dom_ref_helper}{component_ref_helper}  type __VizeTemplateRefs = {{{registry_body}}};\n  type __VizeUseTemplateRef = {{ <_K extends keyof __VizeTemplateRefs>(_key: _K): Readonly<import('vue').ShallowRef<__VizeTemplateRefs[_K] | null>>; <_T = unknown>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; }};\n"
+            "{dom_ref_helper}{component_ref_helper}{instance_helpers}  type __VizeTemplateRefs = {{{registry_body}}};\n  type __VizeUseTemplateRef = {{ <_K extends keyof __VizeTemplateRefs>(_key: _K): Readonly<import('vue').ShallowRef<__VizeTemplateRefs[_K] | null>>; <_T = unknown>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; }};\n"
         );
+    }
+    if record.types_dollar_refs() {
+        let dollar_body = registry
+            .as_ref()
+            .map_or("", |registry| registry.dollar_body.as_str());
+        append!(*ts, "  type __VizeDollarRefs = {{{dollar_body}}};\n");
+        if record.has_instance_refs() {
+            ts.push_str("  const __vize_refs = undefined as unknown as __VizeDollarRefs;\n");
+        }
     }
     let boolean_keys =
         generic_param.and_then(|_| script_content.and_then(collect_define_props_boolean_keys));

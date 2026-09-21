@@ -266,8 +266,9 @@ pub(crate) fn generate_scope_closures(
             generate_component_props(ts, mappings, semantic_links, &props_ctx, usages)
         );
     }
-    let forwarded = (!options.forwarded_root_starts.is_empty()).then(|| {
-        super::forwarded_roots::emit_forwarded_root_probes(
+    let mut record = Vec::new();
+    if !options.forwarded_root_starts.is_empty() {
+        let forwarded = super::forwarded_roots::emit_forwarded_root_probes(
             ts,
             &super::forwarded_roots::ForwardedRootContext {
                 summary,
@@ -276,8 +277,27 @@ pub(crate) fn generate_scope_closures(
                 template_binding_access,
             },
             options.forwarded_root_starts,
-        )
-        .unwrap_or_else(|| String::from("{}"))
-    });
-    slot_outlets.emit_root_result(ts, summary, forwarded.as_deref());
+        );
+        let forwarded = forwarded.unwrap_or_else(|| String::from("{}"));
+        record.push((
+            super::FORWARDED_RETURN_KEY,
+            vize_carton::cstr!("{{}} as {forwarded}"),
+        ));
+    }
+    if !options.instantiated_ref_starts.is_empty() {
+        let refs = super::ref_instances::emit_ref_instance_probes(
+            ts,
+            &super::ref_instances::RefInstanceContext {
+                summary,
+                options: virtual_ts_options,
+                syntactic_type_only_imported_names: options.syntactic_type_only_imported_names,
+                template_binding_access,
+                template_offset,
+                vfor_enclosing_guards: &vfor_enclosing_guards,
+            },
+            options.instantiated_ref_starts,
+        );
+        record.push((super::REFS_RETURN_KEY, refs));
+    }
+    slot_outlets.emit_root_result(ts, summary, &record);
 }

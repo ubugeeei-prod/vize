@@ -25,6 +25,10 @@ pub(crate) struct VirtualTsCheckOptions {
     pub(crate) vapor: bool,
     pub(crate) infer_component_dollar_el: bool,
     pub(crate) infer_template_dollar_el: bool,
+    /// `inferComponentDollarRefs`: the public instance holds the template's refs.
+    pub(crate) infer_component_dollar_refs: bool,
+    /// `inferTemplateDollarRefs`: the template's own `$refs` holds them.
+    pub(crate) infer_template_dollar_refs: bool,
     pub(crate) infer_template_dollar_slots: bool,
     pub(crate) infer_template_dollar_attrs: bool,
     pub(crate) fallthrough_attributes: bool,
@@ -66,6 +70,8 @@ impl Default for VirtualTsCheckOptions {
             vapor: false,
             infer_component_dollar_el: false,
             infer_template_dollar_el: false,
+            infer_component_dollar_refs: false,
+            infer_template_dollar_refs: false,
             infer_template_dollar_slots: false,
             infer_template_dollar_attrs: false,
             fallthrough_attributes: false,

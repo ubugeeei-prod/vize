@@ -2,7 +2,8 @@ use vize_croquis::Croquis;
 use vize_relief::BindingType;
 use vize_s0::{CompactString, FxHashSet};
 
-use crate::virtual_ts::types::VirtualTsOptions;
+use super::super::super::template_record::TemplateRecord;
+use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions};
 
 fn registry_of(template: &str) -> Option<vize_s0::String> {
     registry_for("const box = useTemplateRef('box')", template).map(|registry| registry.body)
@@ -26,6 +27,20 @@ fn registry_with_summary_and_options(
     summary: &Croquis,
     options: &VirtualTsOptions,
 ) -> Option<super::TemplateRefRegistry> {
+    registry_checked(
+        script,
+        template,
+        (summary, options),
+        (VirtualTsCheckOptions::default(), &TemplateRecord::default()),
+    )
+}
+
+fn registry_checked(
+    script: &str,
+    template: &str,
+    (summary, options): (&Croquis, &VirtualTsOptions),
+    checked: (VirtualTsCheckOptions, &TemplateRecord),
+) -> Option<super::TemplateRefRegistry> {
     let allocator = vize_s0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     super::template_ref_registry(
@@ -34,7 +49,64 @@ fn registry_with_summary_and_options(
         Some(script),
         Some(&root),
         &FxHashSet::<CompactString>::default(),
+        checked,
     )
+}
+
+// `$refs` reads the registry too, so a project that asks for it to be typed
+// registers refs whether or not the script names `useTemplateRef`. A component
+// ref is `null` there until its component is mounted; `useTemplateRef` adds
+// that itself, and a ref in `v-for` holds it per target either way.
+#[test]
+fn dollar_refs_read_the_registry_with_unmounted_components() {
+    let template = r#"<a ref="link" /><Child ref="child" /><Child v-for="i in 2" ref="many" />"#;
+    for checks in [
+        VirtualTsCheckOptions {
+            infer_template_dollar_refs: true,
+            ..Default::default()
+        },
+        VirtualTsCheckOptions {
+            infer_component_dollar_refs: true,
+            ..Default::default()
+        },
+    ] {
+        let registry = registry_checked(
+            "const label = 'hi'",
+            template,
+            (&Croquis::default(), &VirtualTsOptions::default()),
+            (checks, &TemplateRecord::default()),
+        )
+        .unwrap();
+        assert_eq!(
+            (registry.body.as_str(), registry.dollar_body.as_str()),
+            (
+                r#" "link": __VizeDomElement<"a">; "child": __VizeTemplateComponentRef<typeof Child>; "many": (__VizeTemplateComponentRef<typeof Child> | null)[]; "#,
+                r#" "link": __VizeDomElement<"a">; "child": __VizeTemplateComponentRef<typeof Child> | null; "many": (__VizeTemplateComponentRef<typeof Child> | null)[]; "#,
+            )
+        );
+        assert!(!registry.includes_instantiated);
+    }
+}
+
+// The usage the template instantiates is read back from the record the
+// template scope returns, by the start of its element.
+#[test]
+fn an_instantiated_component_ref_reads_the_template_record() {
+    let registry = registry_checked(
+        "const child = useTemplateRef('child')",
+        r#"<Child ref="declared" /><Child ref="child" :foo="1" />"#,
+        (&Croquis::default(), &VirtualTsOptions::default()),
+        (
+            VirtualTsCheckOptions::default(),
+            &TemplateRecord::instantiating(vec![24]),
+        ),
+    )
+    .unwrap();
+    assert_eq!(
+        registry.body.as_str(),
+        r#" "declared": __VizeTemplateComponentRef<typeof Child>; "child": __VizeTemplateRefInstance<ReturnType<typeof __vize_template.__vizeRefs["24"]>, typeof Child>; "#
+    );
+    assert!(registry.includes_instantiated);
 }
 
 #[test]

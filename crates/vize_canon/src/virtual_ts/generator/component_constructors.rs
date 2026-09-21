@@ -27,6 +27,8 @@ pub(super) struct ComponentInstanceAliases<'a> {
     pub(super) has_emits_for_props: bool,
     pub(super) has_exposed_type: bool,
     pub(super) has_root_el: bool,
+    /// `inferComponentDollarRefs`: the instance holds the template's refs.
+    pub(super) has_refs: bool,
     pub(super) jsx_slots: bool,
     pub(super) has_authored_default: bool,
 }
@@ -122,7 +124,7 @@ pub(super) fn emit_component_constructors<'a>(
         legacy_vue2,
         dialect,
         aliases.has_exposed_type,
-        aliases.has_root_el,
+        (aliases.has_root_el, aliases.has_refs),
     ));
     if legacy_component {
         ts.push_str(LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS);

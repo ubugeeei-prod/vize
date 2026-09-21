@@ -13,7 +13,7 @@ fn test_strict_template_context_keeps_router_but_not_unknown_plugin_globals() {
         VueVersion::V3,
         false,
         false,
-        None,
+        (None, None),
     );
 
     assert!(ctx.contains("type __VizeStrictPublicInstanceGlobals = {"));

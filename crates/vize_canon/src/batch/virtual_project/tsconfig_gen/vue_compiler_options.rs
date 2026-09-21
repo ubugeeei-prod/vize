@@ -89,6 +89,15 @@ impl VirtualProject {
                     .and_then(Value::as_bool)
             })
             .unwrap_or(false);
+        let flag = |name: &str| {
+            options
+                .as_ref()
+                .and_then(|options| options.get(name).and_then(Value::as_bool))
+                .unwrap_or(false)
+        };
+        self.virtual_ts_check_options.infer_component_dollar_refs =
+            flag("inferComponentDollarRefs");
+        self.virtual_ts_check_options.infer_template_dollar_refs = flag("inferTemplateDollarRefs");
         self.virtual_ts_check_options.jsx_slots = options
             .as_ref()
             .and_then(|options| options.get("jsxSlots").and_then(Value::as_bool))

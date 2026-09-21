@@ -85,17 +85,18 @@ impl SlotOutletChecks {
         }
     }
 
-    /// The template scope returns what a generic component forwards to its
-    /// root next to the slots it infers, each under its own key.
+    /// The template scope returns the values of `record` (what a generic
+    /// component forwards to its root, the ref instances it instantiates) next
+    /// to the slots it infers, each under its own key.
     pub(in crate::virtual_ts::scope) fn emit_root_result(
         &self,
         ts: &mut String,
         summary: &Croquis,
-        forwarded: Option<&str>,
+        record: &[(&str, String)],
     ) {
-        let Some(forwarded) = forwarded else {
+        if record.is_empty() {
             return self.emit_result(ts, summary, None, "  ");
-        };
+        }
         ts.push_str("  return { ");
         if self.infers_slots() {
             append!(
@@ -105,11 +106,10 @@ impl SlotOutletChecks {
                 self.result_type(summary, None)
             );
         }
-        append!(
-            *ts,
-            "{}: {{}} as {forwarded} }};\n",
-            crate::virtual_ts::scope::FORWARDED_RETURN_KEY
-        );
+        for (key, value) in record {
+            append!(*ts, "{key}: {value}, ");
+        }
+        ts.push_str("};\n");
     }
 
     fn result_type(&self, summary: &Croquis, scope_id: Option<ScopeId>) -> String {

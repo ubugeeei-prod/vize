@@ -30,6 +30,12 @@ pub(super) fn emit(
             " & {{ $el: Awaited<ReturnType<typeof __setup{arguments}>>['__vize_root_el'] }}"
         );
     }
+    if aliases.has_refs {
+        append!(
+            expose,
+            " & {{ $refs: Awaited<ReturnType<typeof __setup{arguments}>>['__vize_refs'] }}"
+        );
+    }
     let mut listeners = if aliases.has_emits_for_props {
         cstr!(" & __EmitProps<{emits}>")
     } else {

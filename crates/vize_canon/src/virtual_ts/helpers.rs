@@ -26,12 +26,15 @@ use vize_carton::{String, append};
 ///
 /// Uses Vue's `ComponentPublicInstance` for Vue 3. In legacy Vue 2 mode, emits
 /// a structural fallback because Vue 2.6 does not export that Vue 3 helper type.
+///
+/// `refs_type` is the type of the component's own `$refs`, when the template's
+/// ref registry types it (`inferTemplateDollarRefs`).
 pub(crate) fn generate_template_context(
     options: &VirtualTsOptions,
     dialect: VueVersion,
     legacy_vue2: bool,
     has_own_slots: bool,
-    attrs_type: Option<&str>,
+    (attrs_type, refs_type): (Option<&str>, Option<&str>),
 ) -> String {
     let mut ctx = String::default();
 
@@ -67,7 +70,14 @@ pub(crate) fn generate_template_context(
     if !has_own_slots {
         ctx.push_str("    const $slots = __ctx.$slots;\n");
     }
-    ctx.push_str("    const $refs = __ctx.$refs;\n");
+    if let Some(refs_type) = refs_type {
+        append!(
+            ctx,
+            "    const $refs = undefined as unknown as {refs_type};\n"
+        );
+    } else {
+        ctx.push_str("    const $refs = __ctx.$refs;\n");
+    }
     ctx.push_str("    const $emit = __ctx.$emit;\n");
 
     // Vue 2-only instance members (absent from Vue 3's ComponentPublicInstance).

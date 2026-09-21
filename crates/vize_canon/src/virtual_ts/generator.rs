@@ -29,6 +29,7 @@ mod setup_props;
 pub(super) mod setup_scope;
 mod setup_type_exports;
 mod spans;
+mod template_record;
 mod template_ref_keys;
 mod template_refs;
 mod type_only_imports;
@@ -37,7 +38,7 @@ use self::anchors::emit_setup_binding_anchors;
 use self::auto_import_stubs::emit_auto_import_stubs;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
 use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
-use self::component_public_types::{emit_exposed_type, emit_slots_type, push_template_return};
+use self::component_public_types::{emit_exposed_type, emit_slots_type};
 use self::emits::{emit_emit_props_helper, emit_emits_type};
 pub use self::entry::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
@@ -360,12 +361,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         &syntactic_type_only_imported_names,
         check_options,
     );
-    let forwarded_roots = self::fallthrough::ForwardedRoots::plan(
+    let template_record = self::template_record::TemplateRecord::plan(
         &fallthrough_scope,
         template_ast.filter(|_| has_template_scope && check_options.check_template_bindings),
         generic_param.is_some() && !legacy_vue2,
+        script_content,
     );
-    setup_imports.read_template_slots_from(forwarded_roots.template_slots_value().as_str());
+    setup_imports.read_template_slots_from(template_record.slots_value().as_str());
     ts.push_str("// ========== Setup Scope ==========\n");
     let async_prefix = if is_async { "async " } else { "" };
     let generic_params = generic_param.map(|g| cstr!("<{g}>")).unwrap_or_default();
@@ -385,9 +387,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         &mut ts,
         SetupHelperComponentContext {
             helpers: &setup_helpers,
-            summary,
-            options,
-            syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
+            scope: &fallthrough_scope,
+            template_record: &template_record,
         },
         script_content,
         generic_param,
@@ -646,7 +647,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 options,
                 generation_options,
                 generic_param.is_some(),
-                inferred_slots || forwarded_roots.any(),
+                inferred_slots || template_record.any(),
                 &mut semantic_links,
             );
 
@@ -659,7 +660,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     dialect,
                     legacy_vue2,
                     setup_imports.has_own_slots(),
-                    setup_imports.attrs_type(),
+                    (
+                        setup_imports.attrs_type(),
+                        template_record.template_refs_type()
+                    ),
                 )
             );
             ts.push_str(&template_context);
@@ -710,7 +714,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             script_content,
                             experimental_strict_slot_children: generation_options
                                 .experimental_strict_slot_children,
-                            forwarded_root_starts: forwarded_roots.starts(),
+                            forwarded_root_starts: template_record.forwarded.starts(),
+                            instantiated_ref_starts: template_record.ref_starts(),
                         },
                     )
                 );
@@ -757,12 +762,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
     let define_emits_runtime_args = setup_helpers::define_emits_runtime_args(summary);
     let mut setup_return_fields: Vec<String> = Vec::new();
-    push_template_return(
-        &mut setup_return_fields,
-        inferred_slots,
-        has_root_el,
-        &forwarded_roots,
-    );
+    template_record.push_template_return(&mut setup_return_fields, inferred_slots, has_root_el);
     self::script_module::push_setup_return_fields(&named_value_exports, &mut setup_return_fields);
     namespace_hoist.push_captured_return_fields(&named_value_exports, &mut setup_return_fields);
     setup_type_exports.emit_setup_artifacts(&mut ts, &mut setup_return_fields);
@@ -796,7 +796,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         &mut ts,
         options_api_props.as_ref(),
         generic_param,
-        &forwarded_roots,
+        &template_record.forwarded,
     );
     emit_authored_component_aliases(&mut ts, authored_default);
     let emits_info = emit_emits_type(
@@ -817,9 +817,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let (has_exposed_type, exposed_is_generic) =
         emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
     ts.push('\n');
-    let event_inference =
-        super::scope::emit_event_inference_helpers(&mut ts, summary, forwarded_roots.any());
-    forwarded_roots.emit_helpers(&mut ts);
+    let forwards = template_record.forwarded.emit_helpers(&mut ts);
+    let event_inference = super::scope::emit_event_inference_helpers(&mut ts, summary, forwards);
     emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble, event_inference);
 
     let generic_component_params = setup_props_plan.generic_component_params(authored_generic);
@@ -834,6 +833,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             has_emits_for_props: emits_info.has_emits_for_props,
             has_exposed_type,
             has_root_el,
+            has_refs: template_record.has_instance_refs(),
             jsx_slots: check_options.jsx_slots,
             has_authored_default: authored_default == super::types::AuthoredDefaultKind::Component,
         },

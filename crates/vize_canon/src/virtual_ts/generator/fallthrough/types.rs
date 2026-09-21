@@ -29,6 +29,7 @@ pub(in crate::virtual_ts::generator) struct FallthroughComponentScope<'a> {
     /// are declared, minus the ones the root binds itself, instead of making
     /// every forwarded prop optional.
     pub(in crate::virtual_ts::generator) check_required: bool,
+    pub(in crate::virtual_ts::generator) checks: crate::virtual_ts::types::VirtualTsCheckOptions,
 }
 
 impl<'a> FallthroughComponentScope<'a> {
@@ -45,6 +46,7 @@ impl<'a> FallthroughComponentScope<'a> {
             resolve_component_roots: checks.fallthrough_attributes,
             check_required: checks.fallthrough_attributes
                 && checks.check_required_fallthrough_attributes,
+            checks,
         }
     }
 }

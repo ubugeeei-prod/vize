@@ -17,9 +17,10 @@ use vize_relief::{ElementNode, ElementType, Namespace, PropNode, RootNode, Templ
 
 use crate::virtual_ts::{
     component_reference::{component_binding_reference, resolved_component_binding_reference},
-    types::VirtualTsOptions,
+    types::{VirtualTsCheckOptions, VirtualTsOptions},
 };
 
+use super::super::template_record::TemplateRecord;
 use super::push_ts_string_literal;
 
 /// One registry entry: the authored ref name and the element tag it names.
@@ -32,8 +33,24 @@ struct RegisteredRef {
 
 pub(super) struct TemplateRefRegistry {
     pub(super) body: String,
+    /// The same registry as `$refs` holds it: a component ref is `null` until
+    /// its component is mounted, where `useTemplateRef` adds that itself.
+    pub(super) dollar_body: String,
     pub(super) includes_dom_element: bool,
     pub(super) includes_component: bool,
+    /// Whether a component ref holds the instance the template instantiates.
+    pub(super) includes_instantiated: bool,
+}
+
+/// Whether anything reads the registry: `useTemplateRef` in the script, or a
+/// `$refs` the project asked to be typed by it.
+pub(in crate::virtual_ts::generator) fn registers_template_refs(
+    script: Option<&str>,
+    checks: VirtualTsCheckOptions,
+) -> bool {
+    checks.infer_template_dollar_refs
+        || checks.infer_component_dollar_refs
+        || script.is_some_and(|script| script.contains("useTemplateRef"))
 }
 
 enum RegisteredRefKind {
@@ -47,15 +64,17 @@ enum RegisteredRefKind {
     },
     Component {
         reference: String,
+        /// Template-relative start of the element, the identity of its usage.
+        start: u32,
     },
 }
 
 /// The rendered `__VizeTemplateRefs` object-type body, or `None` when no
 /// static plain-element ref exists (generation then keeps the untyped shim).
 ///
-/// Retyping the shim is the registry's only route to a diagnostic, so a setup
-/// scope that never names `useTemplateRef` cannot observe it: skip both the
-/// collection walk and the extra type declarations there rather than make
+/// Retyping the shim and typing `$refs` are the registry's only routes to a
+/// diagnostic, so a component that does neither cannot observe it: skip both
+/// the collection walk and the extra type declarations there rather than make
 /// every SFC with a `ref="name"` attribute pay for them.
 pub(super) fn template_ref_registry(
     summary: &Croquis,
@@ -63,8 +82,9 @@ pub(super) fn template_ref_registry(
     script_content: Option<&str>,
     template_ast: Option<&RootNode<'_>>,
     syntactic_type_only_imported_names: &FxHashSet<vize_carton::CompactString>,
+    (checks, record): (VirtualTsCheckOptions, &TemplateRecord),
 ) -> Option<TemplateRefRegistry> {
-    if !script_content.is_some_and(|script| script.contains("useTemplateRef")) {
+    if !registers_template_refs(script_content, checks) {
         return None;
     }
     let root = template_ast?;
@@ -93,8 +113,10 @@ pub(super) fn template_ref_registry(
     }
 
     let mut body = String::default();
+    let mut dollar_body = String::default();
     let mut includes_dom_element = false;
     let mut includes_component = false;
+    let mut includes_instantiated = false;
     for name in names {
         // Both values are authored text, so they are escaped as TypeScript
         // string literals: a raw `\` in `ref="path\name"` would otherwise open
@@ -103,44 +125,63 @@ pub(super) fn template_ref_registry(
         let mut name_literal = String::default();
         push_ts_string_literal(&mut name_literal, name);
         append!(body, " {name_literal}: ");
+        append!(dollar_body, " {name_literal}: ");
         for (index, entry) in refs.iter().filter(|entry| entry.name == name).enumerate() {
             if index > 0 {
                 body.push_str(" | ");
+                dollar_body.push_str(" | ");
             }
-            match &entry.kind {
+            let mut target = String::default();
+            let nullable = match &entry.kind {
                 RegisteredRefKind::Element { tag, is_svg } => {
                     includes_dom_element = true;
                     let mut tag_literal = String::default();
                     push_ts_string_literal(&mut tag_literal, tag.as_str());
                     let svg_argument = if *is_svg { ", true" } else { "" };
-                    append!(body, "__VizeDomElement<{tag_literal}{svg_argument}>");
-                    if entry.in_v_for {
-                        body.push_str("[]");
-                    }
+                    append!(target, "__VizeDomElement<{tag_literal}{svg_argument}>");
+                    false
                 }
-                RegisteredRefKind::Component { reference } => {
+                RegisteredRefKind::Component { reference, start } => {
                     includes_component = true;
-                    if entry.in_v_for {
-                        append!(
-                            body,
-                            "(__VizeTemplateComponentRef<typeof {reference}> | null)[]"
-                        );
-                    } else {
-                        append!(body, "__VizeTemplateComponentRef<typeof {reference}>");
+                    let declared =
+                        vize_carton::cstr!("__VizeTemplateComponentRef<typeof {reference}>");
+                    target = record.ref_instance(*start, declared.as_str(), reference.as_str());
+                    includes_instantiated |= target != declared;
+                    true
+                }
+            };
+            match (entry.in_v_for, nullable) {
+                (true, true) => {
+                    append!(body, "({target} | null)[]");
+                    append!(dollar_body, "({target} | null)[]");
+                }
+                (true, false) => {
+                    append!(body, "{target}[]");
+                    append!(dollar_body, "{target}[]");
+                }
+                (false, nullable) => {
+                    body.push_str(target.as_str());
+                    dollar_body.push_str(target.as_str());
+                    if nullable {
+                        dollar_body.push_str(" | null");
                     }
                 }
             }
         }
         body.push(';');
+        dollar_body.push(';');
     }
     if body.is_empty() {
         return None;
     }
     body.push(' ');
+    dollar_body.push(' ');
     Some(TemplateRefRegistry {
         body,
+        dollar_body,
         includes_dom_element,
         includes_component,
+        includes_instantiated,
     })
 }
 
@@ -227,6 +268,10 @@ fn collect_element(
                         element.ns,
                         element.tag,
                     )
+                    .map(|reference| RegisteredRefKind::Component {
+                        reference,
+                        start: element.loc.span.start,
+                    })
                     .unwrap_or_else(|| RegisteredRefKind::Element {
                         tag: String::from(element.tag),
                         is_svg: matches!(element.ns, Namespace::Svg),
@@ -238,6 +283,7 @@ fn collect_element(
                             syntactic_type_only_imported_names,
                             element.tag,
                         ),
+                        start: element.loc.span.start,
                     },
                     _ => continue,
                 };
@@ -267,7 +313,7 @@ fn component_ref_kind_for_element_tag(
     syntactic_type_only_imported_names: &FxHashSet<vize_carton::CompactString>,
     namespace: Namespace,
     tag: &str,
-) -> Option<RegisteredRefKind> {
+) -> Option<String> {
     if namespace != Namespace::Html {
         return None;
     }
@@ -275,7 +321,6 @@ fn component_ref_kind_for_element_tag(
         return None;
     }
     resolved_component_binding_reference(summary, options, syntactic_type_only_imported_names, tag)
-        .map(|reference| RegisteredRefKind::Component { reference })
 }
 
 #[cfg(test)]
