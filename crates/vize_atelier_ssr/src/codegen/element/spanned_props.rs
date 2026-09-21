@@ -125,3 +125,16 @@ pub(super) fn component_props_object_spanned(entries: &[VNodePropEntry]) -> Span
     out.push_str(" }");
     out
 }
+
+/// `_mergeProps(a, b, ...)` over spanned arguments.
+pub(super) fn merge_props_call(args: &[SpannedText]) -> SpannedText {
+    let mut out = SpannedText::plain("_mergeProps(");
+    for (index, arg) in args.iter().enumerate() {
+        if index > 0 {
+            out.push_str(", ");
+        }
+        out.push_spanned(arg);
+    }
+    out.push_str(")");
+    out
+}
