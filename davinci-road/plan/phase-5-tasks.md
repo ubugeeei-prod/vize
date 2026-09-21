@@ -83,6 +83,8 @@
 
 ## P5-4a — Salsa resident database skeleton
 
+**Landed 2026-09-22** — full record: [phase-5-records/p5-4a.md](./phase-5-records/p5-4a.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** C
@@ -91,9 +93,9 @@
 
 **Steps:**
 
-- [ ] Crate + `salsa` pinned in the workspace; a `tests/tooling` check that no crate outside the resident tier depends on `salsa`
-- [ ] Queries: `source_text` (input) → `sfc_blocks` → `s1_block` / `s2_page` keyed by block key, with backdating when the key is unchanged
-- [ ] Cache-hit accounting counters exposed for TS-46
+- [x] Crate + `salsa` pinned in the workspace; a `tests/tooling` check that no crate outside the resident tier depends on `salsa` _(`salsa =0.28.4`, `rayon` off; `davinci-resident-salsa.test.ts`)_
+- [x] Queries: `source_text` (input) → `sfc_blocks` → `s1_block` / `s2_page` keyed by block key, with backdating when the key is unchanged _(the firewall is the `Block` tracked struct: content with its S0 key and position are separate tracked fields)_
+- [x] Cache-hit accounting counters exposed for TS-46 _(`ResidentDatabase::take_accounting`, read from salsa's event stream)_
 
 **Acceptance:** `cargo test -p vize_resident` — editing one block re-executes only that block's queries (counters pinned exactly); the dependency check green and proven to fail on an injected `salsa` edge in `vize_atelier_sfc`; `cargo audit --deny warnings` green; the one-shot `vize build` binary has no `salsa` in `cargo tree -p vize --no-default-features`.
 

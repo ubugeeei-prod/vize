@@ -1,0 +1,25 @@
+# The resident tier (Davinci P5-4a): long-lived processes — Maestro,
+# `check-server`, watch modes — run the stages as salsa queries keyed by the
+# P5-1a stage artifact keys. The one-shot CLI never links this crate
+# (charter #10); `tests/tooling/davinci-resident-salsa.test.ts` proves no
+# crate outside the resident tier depends on `salsa`.
+[package]
+name = "vize_resident"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Resident tier - salsa query database over Davinci stage artifacts (P5-4a)"
+publish = false
+metadata.vize.stability = "experimental"
+
+[dependencies]
+salsa = { workspace = true }
+vize_croquis = { workspace = true }
+vize_davinci = { workspace = true }
+vize_relief = { workspace = true }
+vize_s0 = { workspace = true }
+vize_s1 = { workspace = true }
+vize_s1_to_s2 = { workspace = true }
+vize_s2 = { workspace = true }

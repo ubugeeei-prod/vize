@@ -70,7 +70,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [ ] [P5-1b](./phase-5-tasks.md#p5-1b--ambient-key-manifests) Ambient key manifests — lane A · startable now
 - [ ] [P5-2](./phase-5-tasks.md#p5-2--per-sfc-summary) Per-SFC summary — lane B · gated on P4-2
 - [ ] [P5-3](./phase-5-tasks.md#p5-3--global-summary) Global summary — lane B · gated on P4-3b
-- [ ] [P5-4a](./phase-5-tasks.md#p5-4a--salsa-resident-database-skeleton) Salsa resident database skeleton — lane C · startable now
+- [x] [P5-4a](./phase-5-tasks.md#p5-4a--salsa-resident-database-skeleton) Salsa resident database skeleton — lane C · startable now
 - [ ] [P5-4b](./phase-5-tasks.md#p5-4b--summary-firewalls-durability-and-memory-bounds) Summary firewalls, durability and memory bounds — lane C · startable now (behind P5-2)
 - [ ] [P5-5](./phase-5-tasks.md#p5-5--snapshot-tree-under-salsa) Snapshot tree under salsa — lane C · startable now
 - [ ] [P5-6a](./phase-5-tasks.md#p5-6a--maestro-hover-completion-and-definition-wave) Maestro hover, completion and definition wave — lane D · startable now

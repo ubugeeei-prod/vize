@@ -35,6 +35,12 @@ may point only to an earlier tier:
 S0 must never depend on a later tier. Conversion crates are the only current
 crates that join artifact stages.
 
+The resident tier (`vize_resident`, P5-4a) is a consumer above every stage
+tier: it runs the stage functions as salsa queries for long-lived processes
+and is the only crate allowed to depend on `salsa`
+(`tests/tooling/davinci-resident-salsa.test.ts`). No stage crate may depend
+on it, and the one-shot CLI never links it.
+
 The [storage boundary](./storage-boundary.md) defines how every stage consumes
 S0 strings and collections, inventories retained `alloc::vec::Vec` sites, and
 keeps `std` confined to the explicit `davinci-opt` host edge.

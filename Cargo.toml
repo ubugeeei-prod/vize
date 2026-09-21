@@ -31,6 +31,7 @@ members = [
   "crates/vize_marquette",
   "crates/vize_doctor",
   "crates/vize_extension_host",
+  "crates/vize_resident",
   "tools/benchmarks/crates/davinci_harness",
   "tools/benchmarks/crates/vize",
   "tests/davinci_test_support",
@@ -163,6 +164,12 @@ regex = "=1.13.1"
 smallvec = { version = "=1.15.2", features = ["union"] }
 dashmap = "=6.2.1"
 xxhash-rust = { version = "=0.8.18", features = ["xxh3"] }
+# Incremental query engine for the resident tier only (charter #10 and #39):
+# `vize_resident` is its sole dependent, the one-shot CLI stays on the fused
+# pipeline, and `tests/tooling/davinci-resident-salsa.test.ts` enforces both.
+# Pinned exactly; the default `rayon` feature stays off (file-parallelism is
+# the caller's, charter #33).
+salsa = { version = "=0.28.4", default-features = false, features = ["macros", "inventory"] }
 sha2 = "=0.11.0"
 htmlize = { version = "=1.1.0", features = ["unescape"] }
 libc = "=0.2.189"
