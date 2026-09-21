@@ -1,6 +1,6 @@
-use core::fmt::Write as _;
+use core::fmt::{self, Write as _};
 
-use vize_s0::{Span, String};
+use vize_s0::Span;
 
 use super::{ArtifactKey, KeySink, KeyedArtifact, rebase, schema, source_block_key};
 use crate::stage::Stage;
@@ -21,10 +21,35 @@ impl KeyedArtifact for Page {
     }
 }
 
-fn display(key: ArtifactKey) -> String {
-    let mut out = String::default();
-    write!(out, "{key}").expect("string write");
-    out
+/// A fixed-capacity line buffer, so the key module's tests own no storage.
+struct Line {
+    bytes: [u8; 64],
+    len: usize,
+}
+
+impl Line {
+    const fn new() -> Self {
+        Self {
+            bytes: [0; 64],
+            len: 0,
+        }
+    }
+
+    fn as_str(&self) -> &str {
+        core::str::from_utf8(&self.bytes[..self.len]).expect("ASCII line")
+    }
+}
+
+impl fmt::Write for Line {
+    fn write_str(&mut self, text: &str) -> fmt::Result {
+        let end = self.len + text.len();
+        self.bytes
+            .get_mut(self.len..end)
+            .ok_or(fmt::Error)?
+            .copy_from_slice(text.as_bytes());
+        self.len = end;
+        Ok(())
+    }
 }
 
 #[test]
@@ -36,11 +61,14 @@ fn keys_print_stage_version_and_the_full_digest() {
         },
         10,
     );
-    let mut expected = String::from("s2.v7:");
+    let mut printed = Line::new();
+    write!(printed, "{key}").expect("line write");
+    let mut expected = Line::new();
+    expected.write_str("s2.v7:").expect("line write");
     for byte in key.hash() {
-        write!(expected, "{byte:02x}").expect("string write");
+        write!(expected, "{byte:02x}").expect("line write");
     }
-    assert_eq!(display(key), expected);
+    assert_eq!(printed.as_str(), expected.as_str());
     assert_eq!((key.stage(), key.schema_version()), (Stage::Semantic, 7));
 }
 
