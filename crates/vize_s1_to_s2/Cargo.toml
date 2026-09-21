@@ -85,3 +85,7 @@ required-features = ["davinci-differential"]
 [[test]]
 name = "davinci_dom_corpus_bindings"
 required-features = ["davinci-differential"]
+
+[[test]]
+name = "davinci_remarks_corpus"
+required-features = ["davinci-differential"]

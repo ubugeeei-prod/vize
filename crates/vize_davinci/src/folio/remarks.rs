@@ -26,6 +26,8 @@
 //! it in canonical order. `Display` drops the spans and carries no
 //! round-trip law.
 
+pub mod corpus;
+pub mod diff;
 mod parse;
 
 use alloc::vec::Vec;
@@ -145,6 +147,24 @@ pub(crate) fn push_remark_json(out: &mut String, remark: &RecordedRemark) {
         out.push('}');
     }
     out.push_str("]}");
+}
+
+/// One remark as its canonical `[remarks]` entry line, without the newline
+/// (the unit the corpus baseline and the remarks-diff report share).
+#[must_use]
+pub fn entry_line(remark: &RecordedRemark) -> String {
+    let mut out = String::default();
+    print_entry(&mut out, remark, FolioMode::Full).expect("printing into a string cannot fail");
+    out
+}
+
+/// Parse one `[remarks]` entry line; `line_no` attributes the error.
+///
+/// # Errors
+///
+/// The page parser's entry rejections, verbatim.
+pub fn parse_entry_line(line: &str, line_no: usize) -> Result<RecordedRemark, FolioError> {
+    parse::entry(line, line_no)
 }
 
 /// Print one entry line (without its newline).

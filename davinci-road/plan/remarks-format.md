@@ -85,6 +85,30 @@ checks canonicity.
 `schema_version` (`RemarkLog::negotiate_schema_version`) before reading
 anything else. `davinci-opt --remarks <path>` writes it for a pipeline run.
 
+## TS-32 — the corpus remarks-diff
+
+`crates/vize_s1_to_s2/tests/davinci_remarks_corpus.rs` (feature
+`davinci-differential`, run by the required `clippy-and-test` job) sweeps
+every `.vue` file under `tests/_fixtures` (the `_git` submodules and
+`node_modules` excluded, so every checkout sweeps the same set), lowers each
+inline HTML template and runs the S2 transform pipeline under a
+`RemarkCollector`. Spans are shifted to file offsets. The result is a
+`[remarks-corpus]` page — `files`, `entries` (`"path" <entry line>`),
+`explained` — that must equal the committed
+`tests/_fixtures/davinci-remarks-baseline.folio` byte for byte.
+
+A difference fails with the keyed remarks-diff
+(`vize_davinci::folio::remarks::diff`): identity is
+`(path, stage, pass, name, span, occurrence)`, and a changed identity is
+`regressed` (`applied → missed`), `improved`, `rekinded`, `reargued`
+(same kind, blocker moved), `added` or `removed`. Re-bless with
+`UPDATE_REMARKS_BASELINE=1`; **the bless refuses every `regressed`
+identity not listed in `[remarks-corpus.explained]`** as
+`"path" stage.pass missed name @s:e reason="..."`, which makes "no
+unexplained applied → missed transitions" a machine check rather than a
+review convention. A plain run also rejects an explanation that names no
+baseline `missed` remark, so the ledger cannot rot.
+
 ## Vocabulary registry
 
 Every remark name a pass may emit, with its arguments in emission order.

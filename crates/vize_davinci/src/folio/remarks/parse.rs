@@ -141,7 +141,7 @@ fn parse_value(text: &str, line_no: usize) -> Result<(RemarkArgValue, &str), Fol
 
 /// Parse a JSON string literal at the start of `text`; returns the decoded
 /// value and the byte length consumed (quotes included).
-fn parse_string(text: &str, line_no: usize) -> Result<(String, usize), FolioError> {
+pub(super) fn parse_string(text: &str, line_no: usize) -> Result<(String, usize), FolioError> {
     let fail = |message: &str| FolioError::new(line_no, String::from(message));
     let mut out = String::default();
     let mut chars = text.char_indices().skip(1);

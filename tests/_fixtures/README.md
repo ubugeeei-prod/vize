@@ -31,3 +31,9 @@ oracles. Capability presence, exercised behavior, and runtime verification are i
 finding source text never promotes a project to runtime coverage. Run
 `rust-script tools/commands/fixtures/fixture-compatibility-report.rs` for the deterministic coverage report. Any
 unknown, unverified, or excluded compatibility dimension must retain a reason and tracking Issue.
+
+`davinci-remarks-baseline.folio` is the TS-32 optimization-remarks baseline (Davinci P3-13): every
+remark the S2 transform pipeline emits over the in-repo `.vue` fixtures (`_git` excluded), keyed by
+file. `cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_remarks_corpus`
+requires exact equality; re-bless with `UPDATE_REMARKS_BASELINE=1`, which refuses any
+`applied → missed` transition not explained in the baseline's `[remarks-corpus.explained]` section.

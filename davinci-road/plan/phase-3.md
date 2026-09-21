@@ -200,8 +200,11 @@ _Substrate slice 2026-09-21:_ see [P3-13 record](./phase-3-records/p3-13.md)
 and [remarks-format.md](./remarks-format.md): the observer's remark hook with
 a compile-time zero-cost gate (0 allocations detached, measured), the
 `[remarks]` page and schema-versioned JSON, `davinci-opt --remarks`, and
-`hoist-static` as the first emitter. The TS-32 corpus diff, feed/Spolvero
-rendering, and emitters outside the pass manager remain open.
+`hoist-static` as the first emitter. _TS-32 slice 2026-09-21:_ the corpus
+remarks-diff over the 433 in-repo fixtures is wired into `clippy-and-test`
+against a committed baseline whose bless refuses unexplained
+`applied → missed` transitions. Feed/Spolvero rendering and emitters
+outside the pass manager remain open.
 
 **P3-14 `folio-reduce`.** Interestingness-script driver (llvm-reduce model)
 with S1-subtree deletion vocabulary; oracles composable from diagnostics /
