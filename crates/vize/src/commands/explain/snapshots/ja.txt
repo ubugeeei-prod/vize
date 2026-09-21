@@ -3005,3 +3005,348 @@ vue/warn-custom-directive · lint ルール
 既定の重大度: 警告
 自動修正: なし
 ドキュメント: docs/content/rules/vue.md
+=== S2V001
+S2V001 · ステージ検証器の不変条件
+S2 のスパンが逆向きです。開始位置が終了位置より後ろにあります
+=== S2V002
+S2V002 · ステージ検証器の不変条件
+入れ子になった S2 の行のスパンが、所有者のスパンからはみ出しています
+=== S2V003
+S2V003 · ステージ検証器の不変条件
+S2 のサイドテーブルが、成果物に番号の振られていないノードを参照しています
+=== S2V004
+S2V004 · ステージ検証器の不変条件
+`ui.if` が分岐を 1 つも持っていません
+=== S2V005
+S2V005 · ステージ検証器の不変条件
+`ui.if` の先頭の分岐が無条件になっています
+=== S2V006
+S2V006 · ステージ検証器の不変条件
+無条件の `ui.if` 分岐が最後の分岐になっていません
+=== S3V001
+S3V001 · ステージ検証器の不変条件
+S3 の op・リージョン・エフェクトの ID が重複しています
+=== S3V002
+S3V002 · ステージ検証器の不変条件
+S3 のルートリージョン `r#0` がないか、親や所有者を持っています
+=== S3V003
+S3V003 · ステージ検証器の不変条件
+S3 の op が存在しないリージョンを参照しています
+=== S3V004
+S3V004 · ステージ検証器の不変条件
+S3 の状態エッジの始点か終点を解決できません
+=== S3V005
+S3V005 · ステージ検証器の不変条件
+S3 のリージョンの親か所有者を解決できないか、ルート以外のリージョンにそれがありません
+=== S3V006
+S3V006 · ステージ検証器の不変条件
+S3 のリージョンや op が親・所有者・所属リージョンからはみ出しているか、リージョンの親子関係が循環しています
+=== S3V007
+S3V007 · ステージ検証器の不変条件
+S3 のエフェクトや状態エッジがエフェクトスコープから外れているか、存在しないスコープを参照しています
+=== S3V008
+S3V008 · ステージ検証器の不変条件
+S3 のスケジュール済みエッジが後方か自分自身を指しています
+=== S3V009
+S3V009 · ステージ検証器の不変条件
+S3 の op に不正なオペランドがあります
+=== vize:croquis/cf/array-mutation
+vize:croquis/cf/array-mutation · ファイル横断の診断
+リアクティブな更新を起こさない配列の変更を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/async-boundary
+vize:croquis/cf/async-boundary · ファイル横断の診断
+`await` をまたいでリアクティブな状態を使っていることを報告する（その間にコンポーネントがアンマウントされたり、値が変わったりしうるため）
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/async-no-suspense
+vize:croquis/cf/async-no-suspense · ファイル横断の診断
+`<Suspense>` 境界なしで描画される非同期コンポーネントを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/browser-api-ssr
+vize:croquis/cf/browser-api-ssr · ファイル横断の診断
+SSR 中に実行されうる箇所でのブラウザー専用 API の使用を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/circular-dep
+vize:croquis/cf/circular-dep · ファイル横断の診断
+モジュール間の循環依存を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/circular-reactive-dependency
+vize:croquis/cf/circular-reactive-dependency · ファイル横断の診断
+更新が無限に繰り返されうる、リアクティブな依存の循環を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/closure-captures-reactive
+vize:croquis/cf/closure-captures-reactive · ファイル横断の診断
+クロージャーがリアクティブな状態を暗黙に捕捉していることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/composable-outside-setup
+vize:croquis/cf/composable-outside-setup · ファイル横断の診断
+Vue の API を使うコンポーザブルが setup の外で呼ばれていることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/computed-side-effects
+vize:croquis/cf/computed-side-effects · ファイル横断の診断
+computed ゲッター内の副作用を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/deep-import
+vize:croquis/cf/deep-import · ファイル横断の診断
+読み込みを遅くするほど深いインポートの連鎖を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/destructuring-breaks-reactivity
+vize:croquis/cf/destructuring-breaks-reactivity · ファイル横断の診断
+`toRefs` を使わずにリアクティブオブジェクトや props を分割代入していることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/di-outside-setup
+vize:croquis/cf/di-outside-setup · ファイル横断の診断
+setup の外での `provide`・`inject` の呼び出しを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/dom-access-without-next-tick
+vize:croquis/cf/dom-access-without-next-tick · ファイル横断の診断
+ライフサイクルフックや `nextTick` の外で、DOM ができる前にアクセスしていることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/duplicate-id
+vize:croquis/cf/duplicate-id · ファイル横断の診断
+複数のコンポーネントが同じ要素 `id` を描画していることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/event-listener-leak
+vize:croquis/cf/event-listener-leak · ファイル横断の診断
+対応する解除処理のないイベントリスナーの登録を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/event-modifier
+vize:croquis/cf/event-modifier · ファイル横断の診断
+`.stop` や `.prevent` などのイベント修飾子がコンポーネントをまたいで挙動を変えるおそれを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/hydration-risk
+vize:croquis/cf/hydration-risk · ファイル横断の診断
+ハイドレーションの不一致を招くおそれのあるクライアント専用の内容を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/inherit-attrs-unused
+vize:croquis/cf/inherit-attrs-unused · ファイル横断の診断
+`inheritAttrs: false` なのに `$attrs` を使っていないコンポーネントを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/inject-without-symbol
+vize:croquis/cf/inject-without-symbol · ファイル横断の診断
+`Symbol` や `InjectionKey` ではなく文字列キーで `inject()` していることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/injected-async-mutation-race
+vize:croquis/cf/injected-async-mutation-race · ファイル横断の診断
+注入されたプロバイダーの状態を利用側が非同期に書き換えていることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/lifecycle-outside-setup
+vize:croquis/cf/lifecycle-outside-setup · ファイル横断の診断
+setup の同期的な処理の外で登録されるライフサイクルフックを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/lifecycle-without-cleanup
+vize:croquis/cf/lifecycle-without-cleanup · ファイル横断の診断
+リソースを確保しているのに対応する後始末のフックがないライフサイクルフックを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/missing-required-prop
+vize:croquis/cf/missing-required-prop · ファイル横断の診断
+必須の props が渡されていないことを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/missing-suspense
+vize:croquis/cf/missing-suspense · ファイル横断の診断
+上位に `<Suspense>` 境界がないまま `setup` で行われる非同期処理を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/module-scope-reactive
+vize:croquis/cf/module-scope-reactive · ファイル横断の診断
+SSR ではリクエスト間で共有されてしまう、モジュールスコープのリアクティブな状態を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/multi-root-attrs
+vize:croquis/cf/multi-root-attrs · ファイル横断の診断
+ルート要素が複数あるのに `v-bind="$attrs"` を指定していないコンポーネントを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/mutated-after-escape
+vize:croquis/cf/mutated-after-escape · ファイル横断の診断
+外部の関数に渡した後で変更されるリアクティブオブジェクトを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/non-reactive-provide
+vize:croquis/cf/non-reactive-provide · ファイル横断の診断
+利用側が更新を期待しうる非リアクティブな値を `provide()` していることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/non-unique-id
+vize:croquis/cf/non-unique-id · ファイル横断の診断
+`v-for` の中で項目ごとに重複しうる `id` を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/object-identity-comparison
+vize:croquis/cf/object-identity-comparison · ファイル横断の診断
+同一性の異なるリアクティブプロキシと元のオブジェクトを `===` で比較していることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/pinia-getter
+vize:croquis/cf/pinia-getter · ファイル横断の診断
+`storeToRefs` を使わずに setup で読み取っている Pinia のゲッターを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/prop-type-mismatch
+vize:croquis/cf/prop-type-mismatch · ファイル横断の診断
+宣言された型と合わないリテラルの props の値を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/provide-inject-type
+vize:croquis/cf/provide-inject-type · ファイル横断の診断
+`provide()` した値と `inject()` 側の型の不一致を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/provide-without-symbol
+vize:croquis/cf/provide-without-symbol · ファイル横断の診断
+`Symbol` や `InjectionKey` ではなく文字列キーで `provide()` していることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/reactive-export
+vize:croquis/cf/reactive-export · ファイル横断の診断
+グローバルな可変状態としてモジュールからエクスポートされるリアクティブな状態を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/reactivity-outside-setup
+vize:croquis/cf/reactivity-outside-setup · ファイル横断の診断
+setup コンテキストの外での `ref`・`reactive`・`computed` の呼び出しを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/reassignment-breaks-reactivity
+vize:croquis/cf/reassignment-breaks-reactivity · ファイル横断の診断
+既存の参照との繋がりを断ってしまう、リアクティブな変数の再代入を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/reference-escapes-scope
+vize:croquis/cf/reference-escapes-scope · ファイル横断の診断
+関数の引数を通じて、リアクティブな参照が暗黙にスコープの外へ出ていくことを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/setup-context-violation
+vize:croquis/cf/setup-context-violation · ファイル横断の診断
+setup ではない script で、setup コンテキストの外から Vue の API を呼んでいることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/shallow-deep-access
+vize:croquis/cf/shallow-deep-access · ファイル横断の診断
+ネストした変更が更新を起こさない `shallowRef`・`shallowReactive` への深いアクセスを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/spread-breaks-reactivity
+vize:croquis/cf/spread-breaks-reactivity · ファイル横断の診断
+値をコピーしてリアクティビティを失わせる、リアクティブオブジェクトのスプレッドを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/suspense-no-fallback
+vize:croquis/cf/suspense-no-fallback · ファイル横断の診断
+fallback を持たない入れ子の `<Suspense>` を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/template-ref-timing
+vize:croquis/cf/template-ref-timing · ファイル横断の診断
+マウントで値が入る前の setup 中にテンプレート参照を読み取っていることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/toraw-mutation
+vize:croquis/cf/toraw-mutation · ファイル横断の診断
+リアクティビティを素通りする `toRaw()` の値の変更を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/uncaught-error
+vize:croquis/cf/uncaught-error · ファイル横断の診断
+どの祖先にも `onErrorCaptured` がないまま投げられるエラーを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/undeclared-emit
+vize:croquis/cf/undeclared-emit · ファイル横断の診断
+`defineEmits` で宣言せずに発行しているイベントを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/undeclared-prop
+vize:croquis/cf/undeclared-prop · ファイル横断の診断
+`defineProps` で宣言されていない props をコンポーネントに渡していることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/undefined-slot
+vize:croquis/cf/undefined-slot · ファイル横断の診断
+子コンポーネントが `defineSlots` で定義していないスロットの使用を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unhandled-event
+vize:croquis/cf/unhandled-event · ファイル横断の診断
+発行したイベントを購読している祖先コンポーネントがないことを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unmatched-inject
+vize:croquis/cf/unmatched-inject · ファイル横断の診断
+どの祖先でも `provide()` されていない `inject()` のキーを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unmatched-listener
+vize:croquis/cf/unmatched-listener · ファイル横断の診断
+子コンポーネントが発行しないイベントを親が購読していることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unregistered-component
+vize:croquis/cf/unregistered-component · ファイル横断の診断
+テンプレートで使われているのにインポートも登録もされていないコンポーネントを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unresolved-import
+vize:croquis/cf/unresolved-import · ファイル横断の診断
+どのファイルにも解決できないインポート指定子を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unused-attrs
+vize:croquis/cf/unused-attrs · ファイル横断の診断
+props として宣言も `$attrs` での描画もされない属性をコンポーネントに渡していることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unused-emit
+vize:croquis/cf/unused-emit · ファイル横断の診断
+宣言したのに一度も発行されないイベントを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unused-provide
+vize:croquis/cf/unused-provide · ファイル横断の診断
+どの子孫でも `inject()` されない `provide()` のキーを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/value-extraction-breaks-reactivity
+vize:croquis/cf/value-extraction-breaks-reactivity · ファイル横断の診断
+リアクティブな値をただの変数に取り出していることを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/watch-can-be-computed
+vize:croquis/cf/watch-can-be-computed · ファイル横断の診断
+リアクティブな値を 1 つ導出するだけで `computed` に置き換えられるウォッチャーを報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/watcheffect-async
+vize:croquis/cf/watcheffect-async · ファイル横断の診断
+競合を起こしうる、`watchEffect` 内の非同期処理を報告する
+
+ドキュメント: docs/content/rules/cross-file.md
+=== vize:croquis/cf/watcher-outside-setup
+vize:croquis/cf/watcher-outside-setup · ファイル横断の診断
+自動では停止されない、setup の外での `watch`・`watchEffect` の呼び出しを報告する
+
+ドキュメント: docs/content/rules/cross-file.md

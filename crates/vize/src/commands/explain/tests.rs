@@ -10,7 +10,7 @@
 use std::path::{Path, PathBuf};
 
 use super::catalog::LocaleCatalog;
-use super::subjects::{self, Subject};
+use super::subjects::{self, Described, Subject};
 use super::{all_pages, distance, nearest};
 use vize_s0::i18n::Locale;
 
@@ -37,13 +37,18 @@ fn every_page_in_every_locale_equals_its_committed_snapshot() {
 }
 
 #[test]
-fn the_generated_list_covers_every_rule_and_compiler_code_once() {
+fn the_generated_list_covers_every_code_once() {
     let all = subjects::all();
-    let rules = all
-        .iter()
-        .filter(|subject| matches!(subject, Subject::Rule(_)))
-        .count();
-    assert_eq!((all.len() - rules, rules), (56, 248));
+    let count = |kind: fn(&Subject) -> bool| all.iter().filter(|subject| kind(subject)).count();
+    assert_eq!(
+        (
+            count(|subject| matches!(subject, Subject::Compiler(_))),
+            count(|subject| matches!(subject, Subject::Rule(_))),
+            count(|subject| matches!(subject, Subject::Described(Described::CrossFile(_)))),
+            count(|subject| matches!(subject, Subject::Described(Described::Verifier(_)))),
+        ),
+        (56, 248, 60, 15)
+    );
     let mut codes: Vec<&str> = all.iter().map(Subject::code).collect();
     codes.sort_unstable();
     codes.dedup();

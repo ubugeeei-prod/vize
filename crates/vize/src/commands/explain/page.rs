@@ -13,7 +13,7 @@ use vize_s0::i18n::Locale;
 use vize_s0::{String, cstr};
 
 use super::catalog::LocaleCatalog;
-use super::subjects::{Rule, Subject};
+use super::subjects::{Described, Rule, Subject};
 
 /// ANSI styling for a page, or none.
 #[derive(Clone, Copy)]
@@ -79,6 +79,26 @@ pub(crate) fn page(subject: &Subject, catalog: &LocaleCatalog, color: bool) -> S
             }
         }
         Subject::Rule(rule) => rule_page(&mut out, paint, catalog, rule, color),
+        Subject::Described(described) => {
+            let code = subject.code();
+            let kind = match described {
+                Described::CrossFile(_) => "explain.kind.cross_file",
+                Described::Verifier(_) => "explain.kind.verifier",
+            };
+            heading(&mut out, paint, code, &catalog.format(kind, &[]));
+            let description = catalog.format(&cstr!("{code}.description"), &[]);
+            line(&mut out, paint, &description);
+            if let Described::CrossFile(_) = described {
+                out.push('\n');
+                field(
+                    &mut out,
+                    paint,
+                    catalog,
+                    "explain.docs",
+                    rule_docs_path(code),
+                );
+            }
+        }
     }
     out
 }

@@ -3352,3 +3352,348 @@ vue/warn-custom-directive · lint 规则
 默认严重级别: 警告
 自动修复: 不支持
 文档: docs/content/rules/vue.md
+=== S2V001
+S2V001 · 阶段校验器不变量
+S2 的区间方向颠倒：起点位于终点之后
+=== S2V002
+S2V002 · 阶段校验器不变量
+嵌套的 S2 行的区间超出了其所有者的区间
+=== S2V003
+S2V003 · 阶段校验器不变量
+S2 旁表引用了产物中未编号的节点
+=== S2V004
+S2V004 · 阶段校验器不变量
+`ui.if` 没有任何分支
+=== S2V005
+S2V005 · 阶段校验器不变量
+`ui.if` 的首个分支是无条件的
+=== S2V006
+S2V006 · 阶段校验器不变量
+无条件的 `ui.if` 分支不是最后一个分支
+=== S3V001
+S3V001 · 阶段校验器不变量
+S3 的 op、区域或 effect 的 id 重复
+=== S3V002
+S3V002 · 阶段校验器不变量
+S3 根区域 `r#0` 缺失，或带有父级或所有者
+=== S3V003
+S3V003 · 阶段校验器不变量
+S3 的 op 引用了不存在的区域
+=== S3V004
+S3V004 · 阶段校验器不变量
+S3 状态边的起点或终点无法解析
+=== S3V005
+S3V005 · 阶段校验器不变量
+S3 区域的父级或所有者无法解析，或非根区域缺少它们
+=== S3V006
+S3V006 · 阶段校验器不变量
+S3 的区域或 op 超出了其父级、所有者或所在区域，或区域的父子关系形成了循环
+=== S3V007
+S3V007 · 阶段校验器不变量
+S3 的 effect 或状态边离开了其 effect 作用域，或引用了不存在的作用域
+=== S3V008
+S3V008 · 阶段校验器不变量
+S3 的调度边指向前面或指向自身
+=== S3V009
+S3V009 · 阶段校验器不变量
+S3 的 op 含有无效的操作数
+=== vize:croquis/cf/array-mutation
+vize:croquis/cf/array-mutation · 跨文件诊断
+报告不会触发响应式更新的数组修改
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/async-boundary
+vize:croquis/cf/async-boundary · 跨文件诊断
+报告跨越 `await` 使用响应式状态（期间组件可能已卸载或值已改变）
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/async-no-suspense
+vize:croquis/cf/async-no-suspense · 跨文件诊断
+报告在没有 `<Suspense>` 边界的情况下渲染的异步组件
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/browser-api-ssr
+vize:croquis/cf/browser-api-ssr · 跨文件诊断
+报告在可能于 SSR 期间运行的代码中使用仅限浏览器的 API
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/circular-dep
+vize:croquis/cf/circular-dep · 跨文件诊断
+报告模块之间的循环依赖
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/circular-reactive-dependency
+vize:croquis/cf/circular-reactive-dependency · 跨文件诊断
+报告可能导致无限更新循环的响应式循环依赖
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/closure-captures-reactive
+vize:croquis/cf/closure-captures-reactive · 跨文件诊断
+报告闭包隐式捕获响应式状态
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/composable-outside-setup
+vize:croquis/cf/composable-outside-setup · 跨文件诊断
+报告在 setup 之外调用了使用 Vue API 的组合式函数
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/computed-side-effects
+vize:croquis/cf/computed-side-effects · 跨文件诊断
+报告计算属性 getter 中的副作用
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/deep-import
+vize:croquis/cf/deep-import · 跨文件诊断
+报告深到足以拖慢加载的导入链
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/destructuring-breaks-reactivity
+vize:croquis/cf/destructuring-breaks-reactivity · 跨文件诊断
+报告未使用 `toRefs` 就解构响应式对象或 props
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/di-outside-setup
+vize:croquis/cf/di-outside-setup · 跨文件诊断
+报告在 setup 之外调用 `provide` 或 `inject`
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/dom-access-without-next-tick
+vize:croquis/cf/dom-access-without-next-tick · 跨文件诊断
+报告在生命周期钩子或 `nextTick` 之外、DOM 尚不存在时访问 DOM
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/duplicate-id
+vize:croquis/cf/duplicate-id · 跨文件诊断
+报告多个组件渲染了相同的元素 `id`
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/event-listener-leak
+vize:croquis/cf/event-listener-leak · 跨文件诊断
+报告添加了事件监听器却没有对应的移除
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/event-modifier
+vize:croquis/cf/event-modifier · 跨文件诊断
+报告 `.stop`、`.prevent` 等事件修饰符可能跨组件改变行为
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/hydration-risk
+vize:croquis/cf/hydration-risk · 跨文件诊断
+报告可能导致水合不匹配的仅客户端内容
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/inherit-attrs-unused
+vize:croquis/cf/inherit-attrs-unused · 跨文件诊断
+报告设置了 `inheritAttrs: false` 却从未使用 `$attrs` 的组件
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/inject-without-symbol
+vize:croquis/cf/inject-without-symbol · 跨文件诊断
+报告使用字符串键而不是 `Symbol` 或 `InjectionKey` 调用 `inject()`
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/injected-async-mutation-race
+vize:croquis/cf/injected-async-mutation-race · 跨文件诊断
+报告使用方异步修改注入的提供方状态
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/lifecycle-outside-setup
+vize:croquis/cf/lifecycle-outside-setup · 跨文件诊断
+报告在同步 setup 之外注册的生命周期钩子
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/lifecycle-without-cleanup
+vize:croquis/cf/lifecycle-without-cleanup · 跨文件诊断
+报告获取了资源却没有对应清理钩子的生命周期钩子
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/missing-required-prop
+vize:croquis/cf/missing-required-prop · 跨文件诊断
+报告未传入必需的 prop
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/missing-suspense
+vize:croquis/cf/missing-suspense · 跨文件诊断
+报告上方没有 `<Suspense>` 边界时在 `setup` 中进行的异步操作
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/module-scope-reactive
+vize:croquis/cf/module-scope-reactive · 跨文件诊断
+报告位于模块作用域、在 SSR 中会被多个请求共享的响应式状态
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/multi-root-attrs
+vize:croquis/cf/multi-root-attrs · 跨文件诊断
+报告有多个根元素却没有绑定 `v-bind="$attrs"` 的组件
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/mutated-after-escape
+vize:croquis/cf/mutated-after-escape · 跨文件诊断
+报告传给外部函数后又被修改的响应式对象
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/non-reactive-provide
+vize:croquis/cf/non-reactive-provide · 跨文件诊断
+报告 `provide()` 了使用方可能期望会更新的非响应式值
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/non-unique-id
+vize:croquis/cf/non-unique-id · 跨文件诊断
+报告 `v-for` 中可能在各项之间重复的 `id`
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/object-identity-comparison
+vize:croquis/cf/object-identity-comparison · 跨文件诊断
+报告用 `===` 比较身份不同的响应式代理与原始对象
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/pinia-getter
+vize:croquis/cf/pinia-getter · 跨文件诊断
+报告在 setup 中未经 `storeToRefs` 读取 Pinia getter
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/prop-type-mismatch
+vize:croquis/cf/prop-type-mismatch · 跨文件诊断
+报告与声明类型不符的字面量 prop 值
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/provide-inject-type
+vize:croquis/cf/provide-inject-type · 跨文件诊断
+报告 `provide()` 的值与 `inject()` 端的类型不一致
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/provide-without-symbol
+vize:croquis/cf/provide-without-symbol · 跨文件诊断
+报告使用字符串键而不是 `Symbol` 或 `InjectionKey` 调用 `provide()`
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/reactive-export
+vize:croquis/cf/reactive-export · 跨文件诊断
+报告作为全局可变状态从模块导出的响应式状态
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/reactivity-outside-setup
+vize:croquis/cf/reactivity-outside-setup · 跨文件诊断
+报告在 setup 上下文之外调用 `ref`、`reactive` 或 `computed`
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/reassignment-breaks-reactivity
+vize:croquis/cf/reassignment-breaks-reactivity · 跨文件诊断
+报告重新赋值响应式变量（会断开已有的引用）
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/reference-escapes-scope
+vize:croquis/cf/reference-escapes-scope · 跨文件诊断
+报告响应式引用通过函数参数隐式逃逸出其作用域
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/setup-context-violation
+vize:croquis/cf/setup-context-violation · 跨文件诊断
+报告在非 setup 的 script 中于 setup 上下文之外调用 Vue API
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/shallow-deep-access
+vize:croquis/cf/shallow-deep-access · 跨文件诊断
+报告对 `shallowRef` 或 `shallowReactive` 的深层访问（嵌套修改不会触发更新）
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/spread-breaks-reactivity
+vize:croquis/cf/spread-breaks-reactivity · 跨文件诊断
+报告展开响应式对象（会复制其值并丢失响应性）
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/suspense-no-fallback
+vize:croquis/cf/suspense-no-fallback · 跨文件诊断
+报告没有 fallback 的嵌套 `<Suspense>`
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/template-ref-timing
+vize:croquis/cf/template-ref-timing · 跨文件诊断
+报告在挂载赋值之前、于 setup 期间读取模板引用
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/toraw-mutation
+vize:croquis/cf/toraw-mutation · 跨文件诊断
+报告修改 `toRaw()` 的值（会绕过响应性）
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/uncaught-error
+vize:croquis/cf/uncaught-error · 跨文件诊断
+报告在任何祖先中都没有 `onErrorCaptured` 的情况下抛出的错误
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/undeclared-emit
+vize:croquis/cf/undeclared-emit · 跨文件诊断
+报告未在 `defineEmits` 中声明就触发的事件
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/undeclared-prop
+vize:croquis/cf/undeclared-prop · 跨文件诊断
+报告向组件传入其 `defineProps` 中未声明的 prop
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/undefined-slot
+vize:croquis/cf/undefined-slot · 跨文件诊断
+报告使用了子组件未在 `defineSlots` 中定义的插槽
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unhandled-event
+vize:croquis/cf/unhandled-event · 跨文件诊断
+报告触发的事件没有任何祖先组件监听
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unmatched-inject
+vize:croquis/cf/unmatched-inject · 跨文件诊断
+报告没有任何祖先 `provide()` 的 `inject()` 键
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unmatched-listener
+vize:croquis/cf/unmatched-listener · 跨文件诊断
+报告父组件监听了子组件从不触发的事件
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unregistered-component
+vize:croquis/cf/unregistered-component · 跨文件诊断
+报告在模板中使用却既未导入也未注册的组件
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unresolved-import
+vize:croquis/cf/unresolved-import · 跨文件诊断
+报告无法解析到任何文件的导入说明符
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unused-attrs
+vize:croquis/cf/unused-attrs · 跨文件诊断
+报告传给组件、但既未声明为 prop 也未通过 `$attrs` 渲染的属性
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unused-emit
+vize:croquis/cf/unused-emit · 跨文件诊断
+报告已声明却从未触发的事件
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unused-provide
+vize:croquis/cf/unused-provide · 跨文件诊断
+报告没有任何后代 `inject()` 的 `provide()` 键
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/value-extraction-breaks-reactivity
+vize:croquis/cf/value-extraction-breaks-reactivity · 跨文件诊断
+报告把响应式值提取到普通变量中
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/watch-can-be-computed
+vize:croquis/cf/watch-can-be-computed · 跨文件诊断
+报告只派生一个响应式值、可以改用 `computed` 的侦听器
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/watcheffect-async
+vize:croquis/cf/watcheffect-async · 跨文件诊断
+报告 `watchEffect` 中可能产生竞态的异步操作
+
+文档: docs/content/rules/cross-file.md
+=== vize:croquis/cf/watcher-outside-setup
+vize:croquis/cf/watcher-outside-setup · 跨文件诊断
+报告在 setup 之外调用、不会被自动停止的 `watch` 或 `watchEffect`
+
+文档: docs/content/rules/cross-file.md

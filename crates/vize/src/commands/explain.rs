@@ -1,8 +1,9 @@
 //! `vize explain <code>` (P4-14c): the page behind a diagnostic code, in
 //! English, Japanese or Chinese.
 //!
-//! Every lint rule and every template compiler code has a page, generated
-//! from the producer's own metadata and the diagnostic catalogue
+//! Every lint rule, template compiler code, cross-file diagnostic code and
+//! stage-verifier code has a page, generated from the producer's own metadata
+//! and the diagnostic catalogue
 //! (`vize_s0::i18n`). `vize --explain <code>` is the same command, spelled the
 //! way rustc spells it.
 

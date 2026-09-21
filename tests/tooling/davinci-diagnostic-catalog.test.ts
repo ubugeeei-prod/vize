@@ -8,6 +8,8 @@ import {
   block,
   catalogEntries,
   compilerProblems,
+  describedCodes,
+  describedProblems,
   legacyTranslations,
   locales,
   parseCompilerCodes,
@@ -73,6 +75,24 @@ test("TS-53: every one of the 248 lint rules has a description in every locale",
   assert.deepEqual(ruleProblems(rules, legacyTranslations(), catalogEntries()), []);
 });
 
+test("TS-53: every cross-file and stage-verifier code is described in every locale", () => {
+  const codes = describedCodes();
+  assert.deepEqual(
+    [...codes].map(([producer, list]) => [producer, list.length]),
+    [
+      ["croquis_cf", 60],
+      ["s2 verifier", 6],
+      ["s3 verifier", 9],
+    ],
+    "the parser reads every producer's code table",
+  );
+  assert.deepEqual(describedProblems(codes, catalogEntries()), []);
+  const entries = edited(catalogEntries(), "vize:croquis/cf/pinia-getter.description", null);
+  assert.deepEqual(describedProblems(codes, entries), [
+    "`vize:croquis/cf/pinia-getter` has no description",
+  ]);
+});
+
 test("TS-53: the catalog check fails on a removed, emptied or drifted entry", () => {
   const vocabulary = parseVocabulary(vocabularySource);
   const compiler = parseCompilerCodes();
@@ -135,7 +155,11 @@ test("TS-53: the catalog check fails on a removed, emptied or drifted entry", ()
 
 test("TS-53: `vize explain` has a committed page for every code in every locale", () => {
   const compiler = parseCompilerCodes();
-  const expected = [...[...compiler.codes.values()].sort(), ...[...parseRules().keys()].sort()];
+  const expected = [
+    ...[...compiler.codes.values()].sort(),
+    ...[...parseRules().keys()].sort(),
+    ...[...describedCodes().values()].flat().sort(),
+  ];
   for (const locale of locales) {
     const pages = read(
       "crates",

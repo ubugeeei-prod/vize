@@ -3166,3 +3166,348 @@ category: recommended
 default severity: warning
 autofix: no
 docs: docs/content/rules/vue.md
+=== S2V001
+S2V001 · stage verifier invariant
+An S2 span runs backwards: it starts after it ends
+=== S2V002
+S2V002 · stage verifier invariant
+A nested S2 line's span escapes its owner's span
+=== S2V003
+S2V003 · stage verifier invariant
+An S2 side table references a node the artifact does not number
+=== S2V004
+S2V004 · stage verifier invariant
+A `ui.if` owns no branch
+=== S2V005
+S2V005 · stage verifier invariant
+The leading branch of a `ui.if` is unconditional
+=== S2V006
+S2V006 · stage verifier invariant
+An unconditional `ui.if` branch is not the last branch
+=== S3V001
+S3V001 · stage verifier invariant
+Two S3 ops, regions or effects share an id
+=== S3V002
+S3V002 · stage verifier invariant
+The S3 root region `r#0` is missing, or has a parent or owner
+=== S3V003
+S3V003 · stage verifier invariant
+An S3 op references a missing region
+=== S3V004
+S3V004 · stage verifier invariant
+An S3 state edge's source or target does not resolve
+=== S3V005
+S3V005 · stage verifier invariant
+An S3 region's parent or owner does not resolve, or a non-root region lacks one
+=== S3V006
+S3V006 · stage verifier invariant
+An S3 region or op escapes its parent, owner or containing region, or regions nest in a cycle
+=== S3V007
+S3V007 · stage verifier invariant
+An S3 effect or state edge leaves its effect scope, or references a missing one
+=== S3V008
+S3V008 · stage verifier invariant
+An S3 scheduled edge points backward or to itself
+=== S3V009
+S3V009 · stage verifier invariant
+An S3 op has an invalid operand
+=== vize:croquis/cf/array-mutation
+vize:croquis/cf/array-mutation · cross-file diagnostic
+Report array mutations that do not trigger reactive updates
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/async-boundary
+vize:croquis/cf/async-boundary · cross-file diagnostic
+Report reactive state used across an `await`, after which the component may have unmounted or the value changed
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/async-no-suspense
+vize:croquis/cf/async-no-suspense · cross-file diagnostic
+Report an async component rendered without a `<Suspense>` boundary
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/browser-api-ssr
+vize:croquis/cf/browser-api-ssr · cross-file diagnostic
+Report browser-only APIs used where the code may run during SSR
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/circular-dep
+vize:croquis/cf/circular-dep · cross-file diagnostic
+Report a circular dependency between modules
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/circular-reactive-dependency
+vize:croquis/cf/circular-reactive-dependency · cross-file diagnostic
+Report a circular reactive dependency that can loop updates forever
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/closure-captures-reactive
+vize:croquis/cf/closure-captures-reactive · cross-file diagnostic
+Report a closure capturing reactive state implicitly
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/composable-outside-setup
+vize:croquis/cf/composable-outside-setup · cross-file diagnostic
+Report a composable that uses Vue APIs called outside setup
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/computed-side-effects
+vize:croquis/cf/computed-side-effects · cross-file diagnostic
+Report side effects inside a computed getter
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/deep-import
+vize:croquis/cf/deep-import · cross-file diagnostic
+Report import chains deep enough to slow loading
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/destructuring-breaks-reactivity
+vize:croquis/cf/destructuring-breaks-reactivity · cross-file diagnostic
+Report destructuring a reactive object or props without `toRefs`
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/di-outside-setup
+vize:croquis/cf/di-outside-setup · cross-file diagnostic
+Report `provide` or `inject` called outside setup
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/dom-access-without-next-tick
+vize:croquis/cf/dom-access-without-next-tick · cross-file diagnostic
+Report DOM access outside lifecycle hooks or `nextTick`, before the DOM exists
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/duplicate-id
+vize:croquis/cf/duplicate-id · cross-file diagnostic
+Report the same element `id` rendered by more than one component
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/event-listener-leak
+vize:croquis/cf/event-listener-leak · cross-file diagnostic
+Report an event listener added without a matching removal
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/event-modifier
+vize:croquis/cf/event-modifier · cross-file diagnostic
+Report event modifiers such as `.stop` or `.prevent` that may change behavior across components
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/hydration-risk
+vize:croquis/cf/hydration-risk · cross-file diagnostic
+Report client-only content that risks a hydration mismatch
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/inherit-attrs-unused
+vize:croquis/cf/inherit-attrs-unused · cross-file diagnostic
+Report `inheritAttrs: false` on a component that never uses `$attrs`
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/inject-without-symbol
+vize:croquis/cf/inject-without-symbol · cross-file diagnostic
+Report `inject()` with a string key instead of a `Symbol` or `InjectionKey`
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/injected-async-mutation-race
+vize:croquis/cf/injected-async-mutation-race · cross-file diagnostic
+Report a consumer asynchronously mutating injected provider state
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/lifecycle-outside-setup
+vize:croquis/cf/lifecycle-outside-setup · cross-file diagnostic
+Report lifecycle hooks registered outside synchronous setup
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/lifecycle-without-cleanup
+vize:croquis/cf/lifecycle-without-cleanup · cross-file diagnostic
+Report a lifecycle hook that acquires resources without a matching cleanup hook
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/missing-required-prop
+vize:croquis/cf/missing-required-prop · cross-file diagnostic
+Report a required prop that is not passed
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/missing-suspense
+vize:croquis/cf/missing-suspense · cross-file diagnostic
+Report async work in `setup` with no `<Suspense>` boundary above it
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/module-scope-reactive
+vize:croquis/cf/module-scope-reactive · cross-file diagnostic
+Report reactive state at module scope, which SSR shares across requests
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/multi-root-attrs
+vize:croquis/cf/multi-root-attrs · cross-file diagnostic
+Report a multi-root component that receives attributes without `v-bind="$attrs"`
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/mutated-after-escape
+vize:croquis/cf/mutated-after-escape · cross-file diagnostic
+Report a reactive object mutated after being passed to an external function
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/non-reactive-provide
+vize:croquis/cf/non-reactive-provide · cross-file diagnostic
+Report a `provide()` of a non-reactive value that consumers may expect to update
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/non-unique-id
+vize:croquis/cf/non-unique-id · cross-file diagnostic
+Report an `id` inside `v-for` that may repeat across items
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/object-identity-comparison
+vize:croquis/cf/object-identity-comparison · cross-file diagnostic
+Report `===` between a reactive proxy and a raw object, whose identities differ
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/pinia-getter
+vize:croquis/cf/pinia-getter · cross-file diagnostic
+Report a Pinia getter read in setup without `storeToRefs`
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/prop-type-mismatch
+vize:croquis/cf/prop-type-mismatch · cross-file diagnostic
+Report a literal prop value whose type does not match the declaration
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/provide-inject-type
+vize:croquis/cf/provide-inject-type · cross-file diagnostic
+Report a type mismatch between a provided value and its injection
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/provide-without-symbol
+vize:croquis/cf/provide-without-symbol · cross-file diagnostic
+Report `provide()` with a string key instead of a `Symbol` or `InjectionKey`
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/reactive-export
+vize:croquis/cf/reactive-export · cross-file diagnostic
+Report reactive state exported from a module as global mutable state
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/reactivity-outside-setup
+vize:croquis/cf/reactivity-outside-setup · cross-file diagnostic
+Report `ref`, `reactive` or `computed` called outside the setup context
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/reassignment-breaks-reactivity
+vize:croquis/cf/reassignment-breaks-reactivity · cross-file diagnostic
+Report reassigning a reactive variable, which disconnects existing references
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/reference-escapes-scope
+vize:croquis/cf/reference-escapes-scope · cross-file diagnostic
+Report a reactive reference escaping its scope implicitly through a function parameter
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/setup-context-violation
+vize:croquis/cf/setup-context-violation · cross-file diagnostic
+Report a Vue API called outside the setup context in a non-setup script
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/shallow-deep-access
+vize:croquis/cf/shallow-deep-access · cross-file diagnostic
+Report deep access on `shallowRef` or `shallowReactive`, whose nested changes do not trigger updates
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/spread-breaks-reactivity
+vize:croquis/cf/spread-breaks-reactivity · cross-file diagnostic
+Report spreading a reactive object, which copies its values and drops reactivity
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/suspense-no-fallback
+vize:croquis/cf/suspense-no-fallback · cross-file diagnostic
+Report a nested `<Suspense>` without a fallback
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/template-ref-timing
+vize:croquis/cf/template-ref-timing · cross-file diagnostic
+Report a template ref read during setup, before mounting fills it
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/toraw-mutation
+vize:croquis/cf/toraw-mutation · cross-file diagnostic
+Report mutating a `toRaw()` value, which bypasses reactivity
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/uncaught-error
+vize:croquis/cf/uncaught-error · cross-file diagnostic
+Report errors thrown with no `onErrorCaptured` in any ancestor
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/undeclared-emit
+vize:croquis/cf/undeclared-emit · cross-file diagnostic
+Report events emitted without being declared in `defineEmits`
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/undeclared-prop
+vize:croquis/cf/undeclared-prop · cross-file diagnostic
+Report a prop passed to a component that does not declare it in `defineProps`
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/undefined-slot
+vize:croquis/cf/undefined-slot · cross-file diagnostic
+Report a slot the child component does not define in `defineSlots`
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unhandled-event
+vize:croquis/cf/unhandled-event · cross-file diagnostic
+Report an emitted event that no ancestor listens for
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unmatched-inject
+vize:croquis/cf/unmatched-inject · cross-file diagnostic
+Report an `inject()` key that no ancestor provides
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unmatched-listener
+vize:croquis/cf/unmatched-listener · cross-file diagnostic
+Report a parent listening for an event the child never emits
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unregistered-component
+vize:croquis/cf/unregistered-component · cross-file diagnostic
+Report a component used in a template but neither imported nor registered
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unresolved-import
+vize:croquis/cf/unresolved-import · cross-file diagnostic
+Report an import specifier that resolves to no file
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unused-attrs
+vize:croquis/cf/unused-attrs · cross-file diagnostic
+Report attributes passed to a component that neither declares them nor renders `$attrs`
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unused-emit
+vize:croquis/cf/unused-emit · cross-file diagnostic
+Report declared events that are never emitted
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/unused-provide
+vize:croquis/cf/unused-provide · cross-file diagnostic
+Report a `provide()` key that no descendant injects
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/value-extraction-breaks-reactivity
+vize:croquis/cf/value-extraction-breaks-reactivity · cross-file diagnostic
+Report extracting a reactive value into a plain variable
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/watch-can-be-computed
+vize:croquis/cf/watch-can-be-computed · cross-file diagnostic
+Report a watcher that only derives one reactive value and could be a `computed`
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/watcheffect-async
+vize:croquis/cf/watcheffect-async · cross-file diagnostic
+Report async work inside `watchEffect`, which can race
+
+docs: docs/content/rules/cross-file.md
+=== vize:croquis/cf/watcher-outside-setup
+vize:croquis/cf/watcher-outside-setup · cross-file diagnostic
+Report `watch` or `watchEffect` called outside setup, where it is never stopped automatically
+
+docs: docs/content/rules/cross-file.md

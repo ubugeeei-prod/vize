@@ -12,6 +12,18 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "コンパイラーエラー",
         "编译器错误",
     ),
+    (
+        "explain.kind.cross_file",
+        "cross-file diagnostic",
+        "ファイル横断の診断",
+        "跨文件诊断",
+    ),
+    (
+        "explain.kind.verifier",
+        "stage verifier invariant",
+        "ステージ検証器の不変条件",
+        "阶段校验器不变量",
+    ),
     ("explain.category", "category", "カテゴリー", "类别"),
     ("explain.severity", "severity", "重大度", "严重级别"),
     (
