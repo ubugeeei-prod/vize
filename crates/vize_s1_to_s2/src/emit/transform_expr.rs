@@ -112,6 +112,41 @@ impl<'b> TransformExpressions<'b> {
             .map_err(|_| TransformRefusal::InvalidExpression)
     }
 
+    /// The transform's `process_inline_handler` over a `v-on` value: prefixed,
+    /// and wrapped as `$event => (...)` unless it is a function or a callable
+    /// reference.
+    pub fn handler(
+        &mut self,
+        expr: &ExprRef<'_>,
+        content: TransformContent,
+    ) -> Result<TransformedExpr, TransformRefusal> {
+        let (source, js) = match expr {
+            ExprRef::Js(js) => (js.source, Some(*js)),
+            ExprRef::Opaque(opaque) => (opaque.source, None),
+            ExprRef::Foreign(_) | ExprRef::Filter(_) => {
+                return Err(TransformRefusal::ExpressionKind);
+            }
+        };
+        let content = match content {
+            TransformContent::Padded => prefix::node_content(self.source, source, expr.span()),
+            TransformContent::Decoded => {
+                prefix::node_content_decoded(self.source, source, expr.span())
+            }
+        };
+        prefix::prefix_inline_handler(&mut self.scope, &content, js)
+            .map(|prefixed| TransformedExpr {
+                text: prefixed.text,
+                used_unref: prefixed.used_unref,
+            })
+            .map_err(|_| TransformRefusal::InvalidExpression)
+    }
+
+    /// Whether processed handler text is a function or a callable reference.
+    #[must_use]
+    pub fn handler_is_callable(text: &str) -> bool {
+        prefix::handler_text_is_callable(text)
+    }
+
     /// Enter a `v-for` scope: the aliases stop being prefixed.
     pub fn enter_for(&mut self, aliases: [Option<&str>; 3]) -> TransformScopeMark {
         let mark = TransformScopeMark(self.scope.mark());

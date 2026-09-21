@@ -111,6 +111,14 @@ impl<'facts, 'r, 'a> Cx<'facts, 'r, 'a> {
                 );
                 self.lower_attached(&component.attributes, &component.bindings, partition, fact);
                 self.lower_region(&component.children);
+                self.push(
+                    Kind::CloseComponent,
+                    partition,
+                    component.span,
+                    fact,
+                    name,
+                    source,
+                );
             }
             s2::Op::Text(text) => {
                 let (partition, fact) = self.consume_fact(text.span);
@@ -204,6 +212,7 @@ impl<'facts, 'r, 'a> Cx<'facts, 'r, 'a> {
                 self.push(Kind::SlotOutlet, partition, slot.span, fact, name, source);
                 self.lower_attached(&slot.attributes, &slot.bindings, partition, fact);
                 self.lower_region(&slot.fallback);
+                self.push(Kind::CloseSlot, partition, slot.span, fact, name, source);
             }
         }
     }

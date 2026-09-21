@@ -226,6 +226,30 @@ pub(super) fn prefix_handler(
     })
 }
 
+/// `process_inline_handler` alone: the transform's handler text, before any
+/// backend's codegen consumption.
+pub(super) fn prefix_inline_handler(
+    scope: &mut PrefixScope<'_>,
+    content: &Content<'_>,
+    js: Option<&JsExpr<'_>>,
+) -> Result<Prefixed, Refused> {
+    let retained = content.retained(js);
+    let processed = handler::process_inline_handler(content.text.as_str(), retained, scope);
+    if processed.parse_error {
+        return Err(Refused);
+    }
+    Ok(Prefixed {
+        text: processed.code,
+        used_unref: processed.used_unref,
+    })
+}
+
+/// Whether processed handler text is already a function or a callable
+/// reference (the codegen passes such text through unwrapped).
+pub(super) fn handler_text_is_callable(text: &str) -> bool {
+    shape::is_function_expression(text) || shape::is_event_handler_reference_expression(text)
+}
+
 /// `emit_dynamic_directive_arg` under `prefix_identifiers`.
 pub(super) fn prefix_dynamic_arg(scope: &PrefixScope<'_>, js: &JsExpr<'_>) -> String {
     let content = js.source;

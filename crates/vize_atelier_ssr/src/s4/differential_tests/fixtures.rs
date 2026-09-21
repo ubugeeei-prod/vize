@@ -152,10 +152,13 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
 /// Templates the selector must keep on the legacy walker in this slice.
 pub(super) const REFUSED: &[(&str, &str)] = &[
     ("component", r#"<Foo :a="b">x</Foo>"#),
+    ("dynamic-component", r#"<component :is="tag" class="t" />"#),
     (
-        "slot-outlet",
-        r#"<div><slot name="a" :x="y">fb</slot></div>"#,
+        "component-slot-content",
+        r#"<Foo v-slot="{ item }"><b>{{ item }}</b></Foo>"#,
     ),
+    ("slot-dynamic-prop-key", r#"<div><slot :[k]="v" /></div>"#),
+    ("slot-name-twice", r#"<div><slot name :name="n" /></div>"#),
     ("custom-directive", r#"<div v-focus="x"></div>"#),
     ("v-once", r#"<div v-once>{{ a }}</div>"#),
     ("v-cloak", r#"<div v-cloak>{{ a }}</div>"#),
@@ -174,10 +177,13 @@ pub(super) const REFUSED: &[(&str, &str)] = &[
     ("style", "<div><style>.a > b { }</style></div>"),
     ("whitespace-entities", "<p>a&#10;&#32; b</p>"),
     (
-        "v-if-component-branch",
-        r#"<Foo v-if="a" /><p v-else>b</p>"#,
+        "component-model-arg",
+        r#"<div><Foo v-model:sort-option="sort" /></div>"#,
     ),
-    ("v-for-slot", r#"<div><slot v-for="n in 3" :n="n" /></div>"#),
+    (
+        "component-model-modifier",
+        r#"<div><Foo v-model.trim="t" /></div>"#,
+    ),
 ];
 
 /// TypeScript-only expressions: owned under `is_ts`, refused without it
