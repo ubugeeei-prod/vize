@@ -79,7 +79,10 @@ fn an_unknown_locale_is_a_usage_error() {
     let root = project();
     let output = lint(root.path(), &["--locale", "fr", "src/TodoList.vue"]);
     assert_eq!(output.status.code(), Some(2));
-    assert_eq!(std::str::from_utf8(&output.stdout).expect("UTF-8 stdout"), "");
+    assert_eq!(
+        std::str::from_utf8(&output.stdout).expect("UTF-8 stdout"),
+        ""
+    );
     assert_eq!(
         std::str::from_utf8(&output.stderr).expect("UTF-8 stderr"),
         "Unknown locale 'fr'. Expected one of: en, ja, zh\n"
