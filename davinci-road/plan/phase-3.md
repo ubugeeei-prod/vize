@@ -20,7 +20,7 @@
 - [ ] P3-12 Behavioral (sprout) runner incl. IME scripts
 - [ ] P3-13 Optimization remarks + corpus remarks-diff
 - [ ] P3-14 `folio-reduce`
-- [ ] P3-15 Lean theorems (lattice / grouping / IVM linearity)
+- [x] P3-15 Lean theorems (lattice / grouping / IVM linearity)
 - [ ] P3-16 Phase exit
 
 ---
@@ -79,8 +79,8 @@ Rust-owned S3 values into independent Lean semantics and compares the same full
 JSON observations against both mounted Vue runtimes, including patches, clicks
 and unmount. _Control/slot slice 2026-09-18:_ both Rust-lowered template fixtures
 now share full stateful observations, including boolean condition changes and
-absent-slot fallback `v-text` updates. Keyed lists, supplied slots, native model
-semantics and scheduling proofs remain open; this does not close P3-4.
+absent-slot fallback `v-text` updates. Supplied slots, native model semantics
+and general iteration remain open; this does not close P3-4.
 
 **P3-5 Op reference doc.** `davinci-road/plan/impeto-ops.md`: every op's
 meaning under both interpretations, written **before any optional pass
@@ -215,7 +215,10 @@ the proved classifier. _Grouping slice 2026-09-21:_ acceptance by the TS-27
 scheduled-phase edge contract is proved to order every state edge in the P3-4
 VDOM and Vapor traces, and to keep scoped edges in scope. Any accepted
 regrouping therefore preserves the edge set; 45 Rust validator verdicts match
-the Lean contract. The keyed `v-for` IVM linearity theorem remains open.
+the Lean contract. _Closed 2026-09-21:_ the reference update machine is proved
+to equal recompute-from-scratch, retain keyed identities and allocate exactly
+the inserted delta, completing the three theorem families in the CI-lenient
+lane (see the record).
 
 **P3-16 Phase exit.**
 

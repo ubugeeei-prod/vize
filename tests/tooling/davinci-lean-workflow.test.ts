@@ -158,6 +158,7 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
   const theorems = readRepoFile("formal", "impeto", "Impeto", "Theorems.lean");
   assert.match(theorems, /^import Impeto\.LatticeLaws$/mu);
   assert.match(theorems, /^import Impeto\.ScheduleLaws$/mu);
+  assert.match(theorems, /^import Impeto\.IncrementalLaws$/mu);
   assert.match(theorems, /^#audit_impeto_theorems \d+$/mu);
   const main = readRepoFile("formal", "impeto", "Main.lean");
   assert.match(main, /^import Impeto\.Theorems$/mu);
@@ -185,6 +186,16 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
     assert.match(schedule, new RegExp(`^theorem ${name}\\b`, "mu"), `missing theorem ${name}`);
   }
   assert.match(main, /"--check-schedule-fixtures"\] => ScheduleFixture\.check/u);
+  const incremental = readRepoFile("formal", "impeto", "Impeto", "IncrementalLaws.lean");
+  for (const name of [
+    "reconcile_erase",
+    "update_tree",
+    "siblings_identity",
+    "reconcile_allocations",
+    "update_without_insertions",
+  ]) {
+    assert.match(incremental, new RegExp(`^theorem ${name}\\b`, "mu"), `missing theorem ${name}`);
+  }
   assert.match(
     readRepoFile("crates", "vize_s2_to_s3", "tests", "lean_reference_fixture.rs"),
     /^    mod schedule;$/mu,

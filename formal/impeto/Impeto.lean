@@ -9,3 +9,4 @@ import Impeto.Theorems
 import Impeto.Schedule
 import Impeto.ScheduleLaws
 import Impeto.ScheduleFixture
+import Impeto.IncrementalLaws
