@@ -101,7 +101,9 @@
 //! - [`preserve`] — facts across passes: [`FactManager::after_pass`], the
 //!   named preservation groups and the verify mode (P4-1b)
 //! - [`ids`] — the production fact-group identity table
+//! - [`alpha`] — the α (exported, versioned) form of a group (P4-2)
 
+pub mod alpha;
 pub mod demand;
 pub mod ids;
 pub mod manager;
@@ -110,6 +112,9 @@ pub mod registry;
 pub mod table;
 pub mod view;
 
+pub use alpha::{
+    ALPHA_GROUPS, AlphaDesc, AlphaDocError, AlphaDocument, AlphaExport, check_alpha_schema_doc,
+};
 pub use demand::Demand;
 pub use manager::FactManager;
 pub use preserve::{

@@ -60,15 +60,17 @@
 
 **Steps:**
 
-- [ ] `trait AlphaExport: FactGroup { const ALPHA_SCHEMA: u16; type Alpha: Folio; fn export(..) -> Self::Alpha; fn import(Self::Alpha) -> FactTable<Self>; }` in `crates/vize_davinci/src/fact/alpha.rs`
-- [ ] α values are owned and `'static`-asserted (the P1-11 arena/cache contract); each α page prints `schema_version` (the P2-17 rule)
-- [ ] `davinci-road/plan/fact-alpha-schemas.md` documents every α group's key, value and version; a Rust test reads it via `include_str!` and fails on an undocumented group
+- [x] `trait AlphaExport: FactGroup { const ALPHA_SCHEMA: u16; type Alpha: Folio; fn export(..) -> Self::Alpha; fn import(Self::Alpha) -> FactTable<Self>; }` in `crates/vize_davinci/src/fact/alpha.rs`
+- [x] α values are owned and `'static`-asserted (the P1-11 arena/cache contract); each α page prints `schema_version` (the P2-17 rule)
+- [x] `davinci-road/plan/fact-alpha-schemas.md` documents every α group's key, value and version; a Rust test reads it via `include_str!` and fails on an undocumented group
 
 **Acceptance:** `cargo test -p vize_davinci --test fact_alpha` — `import(export(t)) == t` exactly for every group registered at merge time, TS-16 `Full`-mode byte round trip per α page, the schema-doc test proven to fail on an injected undocumented group; TS-24; TS-1, TS-13.
 
 **Deps:** P4-1a.
 
 **Non-goals:** persistence and fingerprints (P5-1, P5-2); a cross-file store (P4-3b, P4-3f own the project groups).
+
+**Landed 2026-09-22:** `AlphaExport`, the versioned `AlphaDocument`, `fact-alpha-schemas.md` with its executable check (proven to fail on an undocumented group) and exact α/β round trips — see the [P4-2 record](./phase-4-records/p4-2.md).
 
 ## P4-3a — Bindings and undefined-refs fact groups
 
