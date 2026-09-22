@@ -6,6 +6,9 @@
 //! every projected document, and render what it returns.
 
 pub mod assemble;
+pub mod target;
+
+pub use target::{ExprClassCounts, S2Projection, project_sfc};
 
 pub use assemble::{
     AssembledDiagnostic, AssembledOrigin, AssemblyPolicy, AuthoredSource, FinishedDiagnostic,

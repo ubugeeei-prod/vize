@@ -9,6 +9,8 @@ description = "Canon - The standard of correctness for Vize type checking"
 metadata.vize.stability = "compatibility-preview"
 
 [features]
+# TS-25 differential lanes (P4-5b S2 projection vs the current generator).
+davinci-differential = []
 default = ["native"]
 native = [
   "dep:oxc_sourcemap",
@@ -32,6 +34,9 @@ vize_armature.workspace = true
 vize_atelier_core.workspace = true
 vize_atelier_jsx.workspace = true
 vize_atelier_sfc.workspace = true
+vize_s1.workspace = true
+vize_s1_to_s2.workspace = true
+vize_s2.workspace = true
 
 # OXC for parsing and AST manipulation (import rewriting)
 oxc_parser.workspace = true
