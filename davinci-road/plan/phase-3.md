@@ -203,7 +203,7 @@ SSR snapshot and a 34-case differential; only `v-once` / `v-memo` on a JSX
 element still use the walker. _Vue 3.5 alignment (`fix(ssr)!`):_ legacy
 directives, binds, spreads, and dynamic keys match `@vue/compiler-ssr` 3.5
 ([waivers](./compile-waivers.md) W-SSR-1..16) and the plan emits them (checkout
-709 of 736, vendor 1,279 of 1,279). Croquis-informed rewrites, a canonical Real
+smoke 764 of 779, vendor 1,279 of 1,279). Croquis-informed rewrites, a canonical Real
 Project Matrix run, and the legacy walker deletion remain before P3-8 closes.
 
 **P3-9 S4 emitter + source maps.** Structured span-carrying emission document

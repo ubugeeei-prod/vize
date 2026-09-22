@@ -12,9 +12,14 @@ use crate::codegen::element::VNodePropEntry;
 use crate::codegen::element::props::{component_prop_entry, quoted_js_string};
 use crate::s4::LegacyReason;
 
-/// Form elements whose SSR model realization the plan emitter owns.
-pub(super) fn admit(model: &s2::ModelOp<'_>, tag: &str) -> Result<()> {
-    if model.argument.is_some() || !matches!(tag, "input" | "textarea" | "select") {
+/// `v-model` reads the plan emitter can own.
+///
+/// An argument stays on the legacy walker (`<input v-model:foo>`). On a
+/// non-form tag the legacy walker emits no attribute
+/// (`process_v_model_on_element`'s empty arm); admitting the read lets the
+/// plan do the same, and form tags still realize the read later.
+pub(super) fn admit(model: &s2::ModelOp<'_>, _tag: &str) -> Result<()> {
+    if model.argument.is_some() {
         return Err(LegacyReason::Binding.into());
     }
     admit_value(Some(&model.contract.read))

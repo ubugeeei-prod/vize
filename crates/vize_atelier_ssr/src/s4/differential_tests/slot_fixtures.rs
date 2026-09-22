@@ -172,4 +172,7 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         "root-if-keyed",
         r#"<div v-if="a" :key="k" :id="i">x</div><Bar v-else :key="k2" :y="2" />"#,
     ),
+    ("outlet-v-html", r#"<slot v-html="rawHtml"></slot>"#),
+    ("outlet-v-text", r#"<slot v-text="textContent"></slot>"#),
+    ("outlet-v-cloak", "<slot v-cloak></slot>"),
 ];
