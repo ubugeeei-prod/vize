@@ -1,3 +1,6 @@
+import { rmSync } from "node:fs";
+import { resolve } from "node:path";
+
 export function critcmpExportArgs({ targetDir, baseline }) {
   return ["--target-dir", targetDir, "--export", baseline];
 }
@@ -108,5 +111,3 @@ function medianPointEstimate(benchmark, label) {
 function isRecord(value) {
   return typeof value === "object" && value != null && !Array.isArray(value);
 }
-import { rmSync } from "node:fs";
-import { resolve } from "node:path";
