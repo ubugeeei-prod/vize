@@ -33,12 +33,15 @@ pub const RACE_CONDITIONS: AnalysisId = AnalysisId::new(9);
 pub const HTML_ELEMENTS: AnalysisId = AnalysisId::new(10);
 /// `HtmlComposedNesting` — nesting proven only in a parent's context (P4-11b).
 pub const HTML_COMPOSED_NESTING: AnalysisId = AnalysisId::new(11);
+/// `ExpressionFacts` — foreign-dialect expression facts over the P6-1b
+/// contract world.
+pub const EXPRESSION_FACTS: AnalysisId = AnalysisId::new(12);
 
 /// The first id tests and bench fixtures may use.
 pub const FIXTURE_BASE: u8 = 32;
 
 /// Every allocated production id, in id order.
-pub const PRODUCTION: [AnalysisId; 11] = [
+pub const PRODUCTION: [AnalysisId; 12] = [
     BINDINGS,
     UNDEFINED_REFS,
     UNUSED_BINDINGS,
@@ -50,6 +53,7 @@ pub const PRODUCTION: [AnalysisId; 11] = [
     RACE_CONDITIONS,
     HTML_ELEMENTS,
     HTML_COMPOSED_NESTING,
+    EXPRESSION_FACTS,
 ];
 
 // Unique, ascending, and below the fixture range.

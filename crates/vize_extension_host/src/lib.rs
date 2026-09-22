@@ -31,6 +31,7 @@
 
 pub mod accept;
 pub mod contract;
+pub mod expression;
 pub mod handshake;
 pub mod outproc;
 pub mod session;
@@ -45,6 +46,6 @@ pub use contract::{
     Capability, Diagnostic, DiagnosticPart, GuestError, GuestLimits, InputDialectGuest,
     LoweredBlock, Page, PartKind, Severity, SourceBlock, Span, Stage, Witness,
 };
-pub use handshake::{HandshakeError, Negotiated, negotiate};
+pub use handshake::{HandshakeError, Negotiated, negotiate, negotiate_for};
 pub use session::{ContractError, Session};
 pub use surface_page::{SurfacePage, TileError};

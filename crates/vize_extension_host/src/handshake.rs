@@ -15,10 +15,7 @@ use core::fmt;
 
 use vize_s0::String;
 
-use crate::contract::{
-    Capability, LANG_FEATURE_PREFIX, PROTOCOL_VERSION, REQUIRED_FEATURES, S1_PAGE_FEATURE,
-    S2_PAGE_FEATURE,
-};
+use crate::contract::{Capability, LANG_FEATURE_PREFIX, PROTOCOL_VERSION, REQUIRED_FEATURES};
 
 /// Why a capability offer was refused.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -82,6 +79,18 @@ impl Negotiated {
 ///
 /// The first rule the offer breaks, as a [`HandshakeError`].
 pub fn negotiate(offer: &Capability) -> Result<Negotiated, HandshakeError> {
+    negotiate_for(offer, REQUIRED_FEATURES)
+}
+
+/// Negotiate an offer for a world that requires `required` (sorted).
+///
+/// # Errors
+///
+/// The first rule the offer breaks, as a [`HandshakeError`].
+pub fn negotiate_for(
+    offer: &Capability,
+    required: &'static [&'static str],
+) -> Result<Negotiated, HandshakeError> {
     if offer.protocol_version != PROTOCOL_VERSION {
         return Err(HandshakeError::ProtocolMismatch {
             host: PROTOCOL_VERSION,
@@ -97,9 +106,9 @@ pub fn negotiate(offer: &Capability) -> Result<Negotiated, HandshakeError> {
             });
         }
     }
-    for required in REQUIRED_FEATURES {
-        if !offer.features.iter().any(|feature| feature == required) {
-            return Err(HandshakeError::MissingFeature(required));
+    for feature in required {
+        if !offer.features.iter().any(|offered| offered == feature) {
+            return Err(HandshakeError::MissingFeature(feature));
         }
     }
     let mut langs = Vec::new();
@@ -107,7 +116,7 @@ pub fn negotiate(offer: &Capability) -> Result<Negotiated, HandshakeError> {
     for feature in &offer.features {
         if let Some(lang) = feature.strip_prefix(LANG_FEATURE_PREFIX) {
             langs.push(String::from(lang));
-        } else if feature != S1_PAGE_FEATURE && feature != S2_PAGE_FEATURE {
+        } else if !required.contains(&feature.as_str()) {
             ignored.push(feature.clone());
         }
     }

@@ -2,7 +2,7 @@
 ///
 /// Versioning and compatibility policy: `davinci-road/contracts-compat-policy.md`.
 /// Every released version's canonical surface: `contracts/versions/`.
-package vize:contracts@0.1.0;
+package vize:contracts@0.1.1;
 
 /// Values every vize contract world shares.
 interface types {

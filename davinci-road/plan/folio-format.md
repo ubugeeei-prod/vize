@@ -344,7 +344,7 @@ The S3 stage dump is documented in
 [`folio-format-impeto.md`](./folio-format-impeto.md). That page owns the flat
 Impeto grammar and the TS-27 validator contract.
 
-## S1 page (P6-1a)
+## Contract pages (P6-1a, P6-1b)
 
-The lossless surface page the input-dialect contract carries is documented in
-[`folio-format-s1.md`](./folio-format-s1.md).
+The input world's lossless surface page is documented in [`folio-format-s1.md`](./folio-format-s1.md),
+the expression world's projection page in [`folio-format-projection.md`](./folio-format-projection.md).

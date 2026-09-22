@@ -27,6 +27,8 @@
 
 ## P6-1b — Expression-dialect WIT world
 
+**Landed 2026-09-22** — full record: [phase-6-records/p6-1b.md](./phase-6-records/p6-1b.md).
+
 **Start gate:** gated on P4-5a — the world exports projection mapping rows in the unified model.
 
 **Lane:** A
@@ -35,8 +37,8 @@
 
 **Steps:**
 
-- [ ] World definition; fact payloads as P4-2 α pages, projection rows as P4-5a `ProjectionMapping`
-- [ ] Golden exchange with a stub expression guest
+- [x] World definition; fact payloads as P4-2 α pages, projection rows as P4-5a `ProjectionMapping`
+- [x] Golden exchange with a stub expression guest
 
 **Acceptance:** TS-48 for the expression world: negotiation and byte-equal payloads.
 

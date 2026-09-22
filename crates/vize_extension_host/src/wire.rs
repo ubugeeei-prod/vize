@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 use vize_s0::{String, cstr};
 
 use crate::contract::{Capability, GuestError, InputDialectGuest, LoweredBlock, SourceBlock};
+use crate::expression::{Analysis, ExpressionBatch, ExpressionDialectGuest};
 
 /// A call from the parent host.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -20,6 +21,7 @@ use crate::contract::{Capability, GuestError, InputDialectGuest, LoweredBlock, S
 pub enum Request {
     GetCapability,
     LowerBlock { block: SourceBlock },
+    Analyze { batch: ExpressionBatch },
 }
 
 /// The child's answer.
@@ -32,6 +34,7 @@ pub enum Response {
     LoadError(String),
     Capability(Capability),
     LoweredBlock(LoweredBlock),
+    Analysis(Analysis),
     /// The call reached the guest and failed there.
     Guest(GuestError),
 }
@@ -62,30 +65,57 @@ pub fn read_message<R: BufRead, T: DeserializeOwned>(input: &mut R) -> io::Resul
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))
 }
 
-/// Answer requests from `input` with `guest` until end of input.
+/// Answer requests from `input` with `answer` until end of input.
 ///
 /// # Errors
 ///
 /// The first I/O failure on either stream.
-pub fn serve<G, R, W>(guest: &mut G, mut input: R, mut output: W) -> io::Result<()>
+pub fn serve<R, W>(
+    mut answer: impl FnMut(Request) -> Response,
+    mut input: R,
+    mut output: W,
+) -> io::Result<()>
 where
-    G: InputDialectGuest,
     R: BufRead,
     W: Write,
 {
     write_message(&mut output, &Response::Ready)?;
     while let Some(request) = read_message::<_, Request>(&mut input)? {
-        let response = match request {
-            Request::GetCapability => guest
-                .get_capability()
-                .map_or_else(Response::Guest, Response::Capability),
-            Request::LowerBlock { block } => guest
-                .lower_block(&block)
-                .map_or_else(Response::Guest, Response::LoweredBlock),
-        };
-        write_message(&mut output, &response)?;
+        write_message(&mut output, &answer(request))?;
     }
     Ok(())
+}
+
+fn wrong_world(world: &str) -> Response {
+    Response::Guest(GuestError::Trap(cstr!(
+        "the guest implements the {world} world"
+    )))
+}
+
+/// Answer one request with an input-dialect guest.
+pub fn answer_input<G: InputDialectGuest>(guest: &mut G, request: Request) -> Response {
+    match request {
+        Request::GetCapability => guest
+            .get_capability()
+            .map_or_else(Response::Guest, Response::Capability),
+        Request::LowerBlock { block } => guest
+            .lower_block(&block)
+            .map_or_else(Response::Guest, Response::LoweredBlock),
+        Request::Analyze { .. } => wrong_world("input-dialect"),
+    }
+}
+
+/// Answer one request with an expression-dialect guest.
+pub fn answer_expression<G: ExpressionDialectGuest>(guest: &mut G, request: Request) -> Response {
+    match request {
+        Request::GetCapability => guest
+            .get_capability()
+            .map_or_else(Response::Guest, Response::Capability),
+        Request::Analyze { batch } => guest
+            .analyze(&batch)
+            .map_or_else(Response::Guest, Response::Analysis),
+        Request::LowerBlock { .. } => wrong_world("expression-dialect"),
+    }
 }
 
 pub(crate) fn transport(error: &io::Error) -> GuestError {

@@ -4481,6 +4481,7 @@ dependencies = [
  "davinci_test_support",
  "serde",
  "serde_json",
+ "vize_canon",
  "vize_carton",
  "vize_davinci",
  "vize_extension_sdk",

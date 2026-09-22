@@ -105,6 +105,7 @@
 
 pub mod alpha;
 pub mod demand;
+pub mod expression;
 pub mod ids;
 pub mod manager;
 pub mod preserve;
@@ -116,6 +117,7 @@ pub use alpha::{
     ALPHA_GROUPS, AlphaDesc, AlphaDocError, AlphaDocument, AlphaExport, check_alpha_schema_doc,
 };
 pub use demand::Demand;
+pub use expression::{ExpressionFact, ExpressionFacts, ExpressionFactsAlpha};
 pub use manager::FactManager;
 pub use preserve::{
     FactVerify, FactVerifyObserver, NoFactVerify, PRESERVE_BINDINGS, PRESERVE_STRUCTURE,

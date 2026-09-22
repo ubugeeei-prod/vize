@@ -15,6 +15,7 @@ use std::path::{Path, PathBuf};
 use vize_extension_host::contract::{
     PROTOCOL_VERSION, REQUIRED_FEATURES, S1_PAGE_SCHEMA, S2_PAGE_SCHEMA,
 };
+use vize_extension_host::expression::{self, FACTS_PAGE_SCHEMA, PROJECTION_PAGE_SCHEMA};
 use vize_marquette::contracts::wit::{Protocol, surface_from_wit};
 use vize_marquette::{
     ContractSurface, ContractVersion, canonical_surface_json, check_version_policy,
@@ -28,22 +29,27 @@ fn contracts() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts")
 }
 
+fn features(required: &[&str]) -> BTreeSet<String> {
+    required.iter().copied().map(String::from).collect()
+}
+
 /// What this host implements beside the WIT.
 fn host_protocol() -> Protocol {
     Protocol {
         protocol_version: PROTOCOL_VERSION,
         pages: BTreeMap::from([
+            (String::from("facts-page"), FACTS_PAGE_SCHEMA),
+            (String::from("projection-page"), PROJECTION_PAGE_SCHEMA),
             (String::from("s1-page"), S1_PAGE_SCHEMA),
             (String::from("s2-page"), S2_PAGE_SCHEMA),
         ]),
-        required_features: BTreeMap::from([(
-            String::from("input-dialect"),
-            REQUIRED_FEATURES
-                .iter()
-                .copied()
-                .map(String::from)
-                .collect::<BTreeSet<_>>(),
-        )]),
+        required_features: BTreeMap::from([
+            (
+                String::from("expression-dialect"),
+                features(expression::REQUIRED_FEATURES),
+            ),
+            (String::from("input-dialect"), features(REQUIRED_FEATURES)),
+        ]),
     }
 }
 
@@ -85,7 +91,7 @@ fn released_surfaces_are_canonical_and_follow_the_policy() {
             .iter()
             .map(|(version, ..)| cstr!("{version}"))
             .collect::<Vec<_>>(),
-        ["0.1.0"]
+        ["0.1.0", "0.1.1"]
     );
     for (_, surface, bytes) in &released {
         assert_eq!(

@@ -25,10 +25,11 @@ per-SFC summary serializes, so this table is the summary's contract.
 
 ## Groups
 
-| group            | id  | alpha_schema | key                                                                          | value                                                      | status          |
-| ---------------- | --- | ------------ | ---------------------------------------------------------------------------- | ---------------------------------------------------------- | --------------- |
-| `bindings`       | 1   | 1            | binding name as authored (`String`); `SymbolId` once S2 carries script scope | binding kind (`BindingType` spelling) and declaration span | planned — P4-3a |
-| `undefined-refs` | 2   | 1            | identifier name (`String`)                                                   | reference count and first-reference span                   | planned — P4-3a |
+| group              | id  | alpha_schema | key                                                                          | value                                                                      | status             |
+| ------------------ | --- | ------------ | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------ |
+| `bindings`         | 1   | 1            | binding name as authored (`String`); `SymbolId` once S2 carries script scope | binding kind (`BindingType` spelling) and declaration span                 | planned — P4-3a    |
+| `undefined-refs`   | 2   | 1            | identifier name (`String`)                                                   | reference count and first-reference span                                   | planned — P4-3a    |
+| `expression-facts` | 12  | 1            | expression id the host assigned in the batch (`u32`)                         | referenced bindings (comma-separated, source order), exactness, const-ness | registered — P6-1b |
 
 A `planned` row fixes the key and value shape a wave implements; the wave
 flips it to `registered` in the change that adds the group to

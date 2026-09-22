@@ -1,4 +1,4 @@
-package vize:contracts@0.1.0;
+package vize:contracts@0.1.1;
 
 /// The capability handshake every contract world exports.
 ///
