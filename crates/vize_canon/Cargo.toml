@@ -19,6 +19,9 @@ native = [
   "dep:lsp-types",
   "dep:tempfile",
   "dep:futures",
+  "dep:vize_s1",
+  "dep:vize_s2",
+  "dep:vize_s1_to_s2",
 ]
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) type-checking surface. Not enabled by the
 # default Vue 3 build; turns on the parser-side legacy feature too.
@@ -34,6 +37,10 @@ vize_armature.workspace = true
 vize_atelier_core.workspace = true
 vize_atelier_jsx.workspace = true
 vize_atelier_sfc.workspace = true
+# S2 template expressions, projected through the S4 document (P4-5b).
+vize_s1 = { workspace = true, optional = true }
+vize_s2 = { workspace = true, optional = true }
+vize_s1_to_s2 = { workspace = true, optional = true }
 
 # OXC for parsing and AST manipulation (import rewriting)
 oxc_parser.workspace = true
