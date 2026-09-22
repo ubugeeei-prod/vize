@@ -30,6 +30,10 @@ mod production;
 
 const BATTERY: &[(&str, &str)] = &[
     (
+        "Title.vue",
+        "<template><title>{{ pageTitle }} — A &amp; B</title></template>",
+    ),
+    (
         "Template.vue",
         r#"<template><div class="x">{{ msg }}</div></template>"#,
     ),

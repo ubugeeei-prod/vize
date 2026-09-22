@@ -15,10 +15,10 @@ use crate::s4::string_plan::{
 };
 
 /// Elements whose content model or runtime helpers are outside the plan
-/// emitter: the raw-text parents both parsers special-case (`textarea`
-/// renders through its own content rule), and the outlet / dynamic
-/// component tags, which never lower to plain elements.
-const REFUSED_TAGS: &[&str] = &["slot", "component", "script", "style", "title"];
+/// emitter: script/style raw text and the outlet / dynamic component tags.
+/// `textarea` renders through its own content rule; title text, entities and
+/// interpolations already agree through the shared text facts.
+const REFUSED_TAGS: &[&str] = &["slot", "component", "script", "style"];
 
 /// What renders between the start and end tags.
 enum Content<'r, 'a> {
