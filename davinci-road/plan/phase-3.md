@@ -15,7 +15,7 @@
 - [x] P3-7 VDOM patch flags from lattice facts _(owner-keyed table and hydrated DOM corpus gate; see [record](./phase-3-records/p3-7.md))_
 - [x] P3-8 SSR thin path
 - [x] P3-9 S4 structured emitter + universal source maps _(slice 1 pins TS-31 source-map budgets before emitter migration; see [record](./phase-3-records/p3-9.md))_
-- [ ] P3-10 Try-measure-commit extraction _(slice 1 pins optimization budgets before extraction; see [record](./phase-3-records/p3-10.md))_
+- [x] P3-10 Try-measure-commit extraction _(slice 1 pins optimization budgets before extraction; see [record](./phase-3-records/p3-10.md))_
 - [x] P3-11 IVM oracle
 - [x] P3-12 Behavioral (sprout) runner incl. IME scripts
 - [x] P3-13 Optimization remarks + corpus remarks-diff
@@ -243,8 +243,8 @@ exported partition stay canonical. _Extraction slice 2026-09-21:_ the
 try-measure-commit pass commits under the pinned rule and per-component budget,
 with `-O` tiers synced to `budgets.toml`, TS-17 decision snapshots, and one
 applied/missed `s3.extract-placements` remark per candidate, gated corpus-wide
-by a TS-32 baseline. Backend consumption of the committed placements
-(TS-11/TS-33) remains open.
+by a TS-32 baseline. _Closed 2026-09-23:_ TS-17 and TS-32 exit 0 and
+emitted output is unchanged. Vapor still does not read `chosen` (P3-6).
 
 **P3-11 IVM oracle.** Incremental-update ≡ from-scratch render on the Lean
 reference for keyed/unkeyed `v-for`, conditional toggles, mixed non-linear
