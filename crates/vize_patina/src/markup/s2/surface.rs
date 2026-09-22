@@ -22,6 +22,18 @@ pub(in crate::markup) fn offset_in(source: &str, slice: &str) -> u32 {
     u32::try_from(at.saturating_sub(base)).unwrap_or(u32::MAX)
 }
 
+/// The range of `slice` when it is a slice of `source` (synthesized text,
+/// such as a camelized same-name expansion, is not).
+pub(in crate::markup) fn slice_range(source: &str, slice: &str) -> Option<crate::ir::ByteRange> {
+    let base = source.as_ptr() as usize;
+    let at = slice.as_ptr() as usize;
+    if at < base || at + slice.len() > base + source.len() {
+        return None;
+    }
+    let start = u32::try_from(at - base).ok()?;
+    Some(crate::ir::ByteRange::new(start, start + slice.len() as u32))
+}
+
 #[inline]
 fn token_end(source: &str, token: &Token<'_>) -> u32 {
     offset_in(source, token.text) + token.text.len() as u32

@@ -3,6 +3,7 @@
 use super::binding::MarkupBinding;
 use super::directive::MarkupDirective;
 use super::element::MarkupElement;
+use super::hooks::MarkupHooks;
 use super::node::MarkupText;
 use super::scope::{MarkupConditional, MarkupList};
 use super::{MarkupContext, MarkupDocument};
@@ -22,6 +23,15 @@ pub trait MarkupRule {
     /// The rule name, used to set [`LintContext::current_rule`] before each
     /// callback so diagnostics are attributed and rule-level suppression works.
     fn name(&self) -> &'static str;
+
+    /// The hooks this rule implements. A fused lint pass calls the rule only
+    /// at these, and skips a binding / directive walk no rule subscribes to.
+    /// The default subscribes to every hook — always correct; a rule narrows
+    /// it to exactly the hooks it overrides (the switch oracle and the rule's
+    /// own tests catch a hook left out).
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::ALL
+    }
 
     /// Called once before traversal begins.
     #[allow(unused_variables)]

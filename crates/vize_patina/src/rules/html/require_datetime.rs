@@ -24,7 +24,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule};
+use crate::markup::{
+    MarkupBindingKind, MarkupContext, MarkupElement, MarkupHooks, MarkupNode, MarkupRule,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
@@ -97,6 +99,10 @@ impl RequireDatetime {
 impl MarkupRule for RequireDatetime {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::ELEMENT
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {

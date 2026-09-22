@@ -20,7 +20,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{MarkupContext, MarkupDocument, MarkupElement, MarkupHooks, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, RootNode, TemplateChildNode};
 use vize_s0::FxHashSet;
@@ -129,8 +129,28 @@ impl MarkupRule for InteractiveSupportsFocus {
         META.name
     }
 
-    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        Self::check_element(ctx.lint(), element, None);
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::DOCUMENT
+    }
+
+    /// Document-level, like the directive lane's `run_on_template`: a listbox
+    /// whose id some `aria-activedescendant` owner's `aria-controls` names is
+    /// focus-managed by that owner, so the whole element set is read first.
+    fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
+        let mut controlled = FxHashSet::default();
+        document.walk_elements(&mut |element| {
+            if markup_helpers::has_named_markup_prop(&element, "aria-activedescendant")
+                && let Some(id) = markup_helpers::get_static_or_bound_literal_markup_value(
+                    &element,
+                    "aria-controls",
+                )
+            {
+                controlled.insert(id);
+            }
+        });
+        document.walk_elements(&mut |element| {
+            Self::check_element(ctx.lint(), &element, Some(&controlled));
+        });
     }
 }
 

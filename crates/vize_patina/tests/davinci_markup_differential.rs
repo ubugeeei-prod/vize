@@ -46,11 +46,13 @@ fn markup_facade_observes_one_document() {
         "corpus sweep found no .vue files under {}",
         sweep.root.display()
     );
+    let registry = differential::markup_registry();
     let mut compared = 0u64;
     let mut lines = 0u64;
     let mut without_template = 0u64;
     let mut unreadable = 0u64;
     let mut restructured = 0u64;
+    let mut switch_agreed = 0u64;
     for file in files {
         let Ok(source) = fs::read_to_string(file) else {
             unreadable += 1;
@@ -64,6 +66,14 @@ fn markup_facade_observes_one_document() {
             without_template += 1;
             continue;
         };
+        let switch = differential::sfc_rule_lanes(&registry, &source);
+        if let Some(divergence) = switch.divergences.first() {
+            panic!(
+                "{}: markup body diverged from its legacy hooks: {divergence:#?}",
+                file.display()
+            );
+        }
+        switch_agreed += switch.agreed as u64;
         match compare_template(&template.content) {
             Ok(TemplateComparison::Compared(count)) => lines += count as u64,
             Ok(TemplateComparison::Restructured) => restructured += 1,
@@ -80,13 +90,15 @@ fn markup_facade_observes_one_document() {
     assert!(compared > 0, "corpus sweep compared no template");
     eprintln!(
         "davinci markup differential corpus sweep: scope={} closure_evidence={} files={} \
-         compared={} trace_lines={} restructured={} without_template={} unreadable={}",
+         compared={} trace_lines={} restructured={} switch_agreed={} without_template={} \
+         unreadable={}",
         sweep.scope_label(),
         sweep.closure_evidence(),
         files.len(),
         compared,
         lines,
         restructured,
+        switch_agreed,
         without_template,
         unreadable
     );

@@ -26,7 +26,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupHooks, MarkupRule,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::html::helpers::BOOLEAN_ATTRIBUTES;
 use vize_relief::ElementNode;
@@ -81,6 +83,10 @@ impl NoBooleanAttrValue {
 impl MarkupRule for NoBooleanAttrValue {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::ELEMENT
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {

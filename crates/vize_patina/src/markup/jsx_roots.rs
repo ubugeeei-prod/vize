@@ -1,4 +1,5 @@
-use super::{MarkupDocumentVisitor, MarkupElement, MarkupRule};
+use super::dispatch::MarkupRules;
+use super::{MarkupDocumentVisitor, MarkupElement};
 use oxc_ast::ast::{
     Expression, JSXAttributeItem, JSXAttributeValue, JSXElement, JSXExpressionContainer,
     JSXFragment, Program,
@@ -83,7 +84,7 @@ pub(super) fn walk_jsx_program<'a>(
     walk_program(&mut walker, program);
 }
 
-pub(super) fn visit_expression_container_roots<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized>(
+pub(super) fn visit_expression_container_roots<'rule, 'ctx, 'mc, 'a, R: MarkupRules + ?Sized>(
     visitor: &mut MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R>,
     container: &'a JSXExpressionContainer<'a>,
     offset: u32,
@@ -144,7 +145,7 @@ fn walk_attribute_value_roots<'a>(
     }
 }
 
-pub(super) fn visit_attribute_roots<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized>(
+pub(super) fn visit_attribute_roots<'rule, 'ctx, 'mc, 'a, R: MarkupRules + ?Sized>(
     visitor: &mut MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R>,
     element: &'a JSXElement<'a>,
     offset: u32,

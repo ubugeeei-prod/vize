@@ -88,6 +88,15 @@ pub(super) fn jsx_attribute_name<'a>(name: &'a JSXAttributeName<'a>) -> &'a str 
     }
 }
 
+/// The span of a JSX attribute's name.
+#[inline]
+pub(super) fn jsx_attribute_name_span(attr: &JSXAttribute<'_>) -> oxc_span::Span {
+    match &attr.name {
+        JSXAttributeName::Identifier(identifier) => identifier.span,
+        JSXAttributeName::NamespacedName(name) => name.span,
+    }
+}
+
 /// Whether a JSX attribute value is an expression rather than a static string.
 #[inline]
 pub(super) fn jsx_value_is_dynamic(value: Option<&JSXAttributeValue<'_>>) -> bool {

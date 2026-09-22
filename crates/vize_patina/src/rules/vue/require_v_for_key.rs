@@ -20,8 +20,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
 use crate::markup::{
-    MarkupBindingKind, MarkupContext, MarkupElement, MarkupList, MarkupNode, MarkupRule,
+    MarkupBindingKind, MarkupContext, MarkupElement, MarkupHooks, MarkupList, MarkupNode,
+    MarkupRule,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_allocator::Allocator;
@@ -42,16 +44,21 @@ static META: RuleMeta = RuleMeta {
 pub struct RequireVForKey;
 
 impl RequireVForKey {
-    /// Report when `element` (the repeated node of a `v-for`) lacks a key.
-    fn check_keyed_element<'a>(ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+    /// Report when `element` (the repeated node of a `v-for`) lacks a key, at
+    /// `at` — the `v-for` directive when one was authored.
+    fn check_keyed_element<'a>(
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        at: ByteRange,
+    ) {
         // petite-vue does not require a `:key` on `v-for`.
         if ctx.lint().is_petite_vue() {
             return;
         }
-        if element.is_tag("slot") {
+        if element.is_unqualified_tag_exact("slot") {
             return;
         }
-        if element.is_tag("template") {
+        if element.is_unqualified_tag_exact("template") {
             if has_markup_template_v_for_key(element) {
                 return;
             }
@@ -64,8 +71,7 @@ impl RequireVForKey {
             .lint()
             .t_fmt("vue/require-v-for-key.message", &[("tag", tag)]);
         let help = ctx.lint().t("vue/require-v-for-key.help");
-        ctx.lint()
-            .error_at_with_help(message, element.range(), help);
+        ctx.lint().error_at_with_help(message, at, help);
     }
 }
 
@@ -229,17 +235,30 @@ impl MarkupRule for RequireVForKey {
         META.name
     }
 
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::ELEMENT | MarkupHooks::LIST
+    }
+
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        // Pre-transform shape: the element itself carries the `v-for` directive.
-        if element.has_directive("for") {
-            Self::check_keyed_element(ctx, element);
+        // A blank `v-for` builds no list; it stays a visible directive on
+        // its element and is still reported there.
+        let mut blank_for = None;
+        element.walk_directives(&mut |directive| {
+            if blank_for.is_none() && directive.name_eq("for") {
+                blank_for = Some(directive.range());
+            }
+        });
+        if let Some(at) = blank_for {
+            Self::check_keyed_element(ctx, element, at);
         }
     }
 
     fn enter_list<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, list: &MarkupList<'a>) {
-        // Post-transform shape: the list scope wraps the repeated element(s).
+        // The list scope carries the repeated element(s); a template reports
+        // at the authored `v-for`, a lowered JSX `.map()` at the element.
+        let directive = list.directive_range();
         list.walk_elements(&mut |element| {
-            Self::check_keyed_element(ctx, &element);
+            Self::check_keyed_element(ctx, &element, directive.unwrap_or(element.range()));
         });
     }
 }

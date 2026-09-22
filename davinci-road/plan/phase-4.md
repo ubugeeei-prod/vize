@@ -90,7 +90,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [x] [P4-6b](./phase-4-tasks-later.md#p4-6b--witness-verifier) Witness verifier — lane D · startable now
 - [x] [P4-6c](./phase-4-tasks-later.md#p4-6c--patina-on-the-unified-channel) Patina on the unified channel — lane D · startable now
 - [x] [P4-7a](./phase-4-tasks-later.md#p4-7a--s2-backed-markup-facade) S2-backed markup facade — lane E · startable now
-- [ ] [P4-7b](./phase-4-tasks-later.md#p4-7b--facade-switch-and-relief-projection-deleted) Facade switch and Relief projection deleted — lane E · startable now
+- [ ] [P4-7b](./phase-4-tasks-later.md#p4-7b--facade-switch) Facade switch — lane E · startable now
 - [ ] [P4-8a](./phase-4-tasks-later.md#p4-8a--neutral-core-rule-wave) Neutral-core rule wave — lane F · startable now
 - [ ] [P4-8b](./phase-4-tasks-later.md#p4-8b--dialect-bound-rule-wave) Dialect-bound rule wave — lane F · startable now
 - [ ] [P4-8c](./phase-4-tasks-later.md#p4-8c--container-bound-wave-and-legacy-visitor-retirement) Container-bound wave and legacy visitor retirement — lane F · startable now

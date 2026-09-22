@@ -119,6 +119,7 @@ pub(super) fn binding(out: &mut String, binding: &MarkupBinding<'_>) {
         binding.is_key()
     );
     range(out, binding.range());
+    append!(*out, " arg_at={:?}", binding.arg_range());
     out.push_str(" mods=[");
     binding.walk_modifiers(&mut |name| modifier(out, name));
     out.push(']');
@@ -228,6 +229,7 @@ impl MarkupRule for TraceRecorder {
             list.value_alias()
         );
         range(&mut out, list.range());
+        append!(out, " directive={:?}", list.directive_range());
         out.push_str(" repeats=[");
         list.walk_elements(&mut |repeated| {
             append!(out, "{}@", repeated.tag());

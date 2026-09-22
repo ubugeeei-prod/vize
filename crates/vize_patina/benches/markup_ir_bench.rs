@@ -40,7 +40,7 @@ fn sample_template() -> String {
 }
 
 /// Template-only baseline: a `Linter` with just `a11y/img-alt` registered,
-/// driven through the existing `lint_template` path (parse + `LintVisitor`).
+/// driven through the production `lint_template` path (parse + both lanes).
 fn lint_template_only(linter: &Linter, source: &str) -> usize {
     linter.lint_template(source, "bench.vue").warning_count
 }

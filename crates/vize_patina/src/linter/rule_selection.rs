@@ -14,6 +14,7 @@ impl Linter {
                 self.registry = crate::RuleRegistry::with_preset(LintPreset::Opinionated);
             }
             self.registry.register_opt_in_rules();
+            self.lane_plan = std::sync::OnceLock::new();
             self.script_rules = super::script_rules::all_builtin_script_rule_names();
             self.css_rules = super::css_rules::all_builtin_css_rule_names();
             self.musea_rules = super::musea_rules::all_builtin_musea_rule_names();
@@ -52,6 +53,7 @@ impl Linter {
             self.type_aware_enabled = true;
         }
         self.registry.register_opt_in_rules();
+        self.lane_plan = std::sync::OnceLock::new();
         self.script_rules = super::script_rules::all_builtin_script_rule_names();
         self.css_rules = super::css_rules::all_builtin_css_rule_names();
         self.musea_rules = super::musea_rules::all_builtin_musea_rule_names();

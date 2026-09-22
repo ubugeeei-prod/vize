@@ -29,7 +29,9 @@ use std::cell::Cell;
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupContext, MarkupDocument, MarkupElement, MarkupNode, MarkupRule};
+use crate::markup::{
+    MarkupContext, MarkupDocument, MarkupElement, MarkupHooks, MarkupNode, MarkupRule,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, TemplateChildNode};
 
@@ -145,6 +147,10 @@ impl UseList {
 impl MarkupRule for UseList {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::DOCUMENT
     }
 
     fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {

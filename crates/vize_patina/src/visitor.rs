@@ -10,26 +10,34 @@ use vize_relief::{
 use vize_s0::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
 use vize_s0::{CompactString, cstr, profile};
 
+/// Dispatch one hook to every active rule, in registration order, with the
+/// reporting rule set on the context before each call.
+macro_rules! each_rule {
+    ($visitor:ident, $rule:ident => $call:expr) => {
+        for &($rule, name) in $visitor.active.iter() {
+            $visitor.ctx.current_rule = name;
+            $call;
+        }
+    };
+}
+
 pub use crate::visitor_scope::{parse_slot_scope_variables, parse_v_for_variables};
 
 /// Visit the AST and run all rules
 pub struct LintVisitor<'a, 'ctx, 'rules> {
     ctx: &'ctx mut LintContext<'a>,
-    rules: &'rules [Box<dyn Rule>],
-    rule_names: &'rules [&'static str],
     run_exit_element_rules: bool,
     /// When true, suppress all diagnostics for the next element
     forget_next_element: bool,
-    /// Optional per-rule keep mask, parallel to `rules`. When `Some`, a rule is
-    /// dispatched only where its entry is `true`. Used by the JSX/TSX fallback
-    /// lowering pass to skip rules already handled by the zero-cost markup IR
-    /// pass, so a migrated rule never reports twice. `None` (the common
-    /// template path) runs every rule with no extra work.
-    keep_mask: Option<&'rules [bool]>,
+    /// The rules this visitor dispatches, with their names, in registration
+    /// order: every rule, or the rules a keep mask leaves in (a rule another
+    /// lane already runs is never visited here, not even to be skipped).
+    active: Vec<(&'rules dyn Rule, &'static str)>,
 }
 
 impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     /// Create a new visitor
+    #[cfg(any(test, feature = "davinci-differential"))]
     #[inline]
     pub fn new(
         ctx: &'ctx mut LintContext<'a>,
@@ -37,14 +45,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         rule_names: &'rules [&'static str],
         run_exit_element_rules: bool,
     ) -> Self {
-        Self {
-            ctx,
-            rules,
-            rule_names,
-            run_exit_element_rules,
-            forget_next_element: false,
-            keep_mask: None,
-        }
+        Self::with_active(ctx, rules, rule_names, run_exit_element_rules, |_| true)
     }
 
     /// Create a visitor that dispatches only the rules whose `keep_mask` entry
@@ -61,27 +62,43 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         run_exit_element_rules: bool,
         keep_mask: &'rules [bool],
     ) -> Self {
-        Self {
-            ctx,
-            rules,
-            rule_names,
-            run_exit_element_rules,
-            forget_next_element: false,
-            keep_mask: Some(keep_mask),
-        }
+        Self::with_active(ctx, rules, rule_names, run_exit_element_rules, |index| {
+            keep_mask[index]
+        })
     }
 
-    /// Whether the rule at `index` is active under the current [`Self::keep_mask`].
-    ///
-    /// Hot path: with no mask (the common template path) this is a constant
-    /// `true`; the JSX fallback pass uses it to skip rules the markup IR pass
-    /// already handled. Reads only `keep_mask`, so it does not conflict with the
-    /// `&mut self.ctx` the dispatch loops hold.
+    fn with_active(
+        ctx: &'ctx mut LintContext<'a>,
+        rules: &'rules [Box<dyn Rule>],
+        rule_names: &'rules [&'static str],
+        run_exit_element_rules: bool,
+        keep: impl Fn(usize) -> bool,
+    ) -> Self {
+        let mut active = Vec::with_capacity(rules.len());
+        active.extend(
+            rules
+                .iter()
+                .zip(rule_names.iter().copied())
+                .enumerate()
+                .filter(|&(index, _)| keep(index))
+                .map(|(_, (rule, name))| (&**rule, name)),
+        );
+        Self::with_active_rules(ctx, active, run_exit_element_rules)
+    }
+
+    /// Create a visitor over a prepared rule list (a lint pass's cached lane
+    /// plan), dispatched in the list's order.
     #[inline]
-    fn rule_active(keep_mask: Option<&[bool]>, index: usize) -> bool {
-        match keep_mask {
-            Some(mask) => mask[index],
-            None => true,
+    pub(crate) fn with_active_rules(
+        ctx: &'ctx mut LintContext<'a>,
+        active: Vec<(&'rules dyn Rule, &'static str)>,
+        run_exit_element_rules: bool,
+    ) -> Self {
+        Self {
+            ctx,
+            run_exit_element_rules,
+            forget_next_element: false,
+            active,
         }
     }
 
@@ -99,20 +116,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Run template-level checks under one profiling span. Rule dispatch
         // happens for every file, so profiling once around the callback batch is
         // cheaper than creating a span for every individual rule callback.
-        let keep_mask = self.keep_mask;
         profile!("patina.rules.run_on_template", {
-            for (index, (rule, rule_name)) in self
-                .rules
-                .iter()
-                .zip(self.rule_names.iter().copied())
-                .enumerate()
-            {
-                if !Self::rule_active(keep_mask, index) {
-                    continue;
-                }
-                self.ctx.current_rule = rule_name;
-                rule.run_on_template(self.ctx, root);
-            }
+            each_rule!(self, rule => rule.run_on_template(self.ctx, root));
         });
 
         // Visit children
@@ -252,20 +257,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 // Coalesce all interpolation rule callbacks into one span for
                 // the same reason as template-level checks: callback dispatch is
                 // hot and individual rule spans add measurable overhead.
-                let keep_mask = self.keep_mask;
                 profile!("patina.rules.check_interpolation", {
-                    for (index, (rule, rule_name)) in self
-                        .rules
-                        .iter()
-                        .zip(self.rule_names.iter().copied())
-                        .enumerate()
-                    {
-                        if !Self::rule_active(keep_mask, index) {
-                            continue;
-                        }
-                        self.ctx.current_rule = rule_name;
-                        rule.check_interpolation(self.ctx, interp);
-                    }
+                    each_rule!(self, rule => rule.check_interpolation(self.ctx, interp));
                 });
             }
             TemplateChildNode::If(if_node) => {
@@ -368,6 +361,15 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     }
 
     fn visit_element(&mut self, el: &ElementNode<'a>) {
+        // With every rule in another lane, the walk only serves the comment
+        // directives below: no element context is built for nobody to read.
+        if self.active.is_empty() {
+            for child in el.children.iter() {
+                self.visit_child(child);
+            }
+            return;
+        }
+
         // Check for v-for, v-if, and v-slot directives using iterators (no allocation)
         let has_v_for = el
             .props
@@ -405,38 +407,15 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Enter element - run rules. Element/directive/exit/branch callbacks
         // follow the same coalesced-span pattern as root/interpolation checks:
         // one guard around the rule batch, not one guard per rule.
-        let keep_mask = self.keep_mask;
         profile!("patina.rules.enter_element", {
-            for (index, (rule, rule_name)) in self
-                .rules
-                .iter()
-                .zip(self.rule_names.iter().copied())
-                .enumerate()
-            {
-                if !Self::rule_active(keep_mask, index) {
-                    continue;
-                }
-                self.ctx.current_rule = rule_name;
-                rule.enter_element(self.ctx, el);
-            }
+            each_rule!(self, rule => rule.enter_element(self.ctx, el));
         });
 
         // Check directives
         for prop in el.props.iter() {
             if let PropNode::Directive(dir) = prop {
                 profile!("patina.rules.check_directive", {
-                    for (index, (rule, rule_name)) in self
-                        .rules
-                        .iter()
-                        .zip(self.rule_names.iter().copied())
-                        .enumerate()
-                    {
-                        if !Self::rule_active(keep_mask, index) {
-                            continue;
-                        }
-                        self.ctx.current_rule = rule_name;
-                        rule.check_directive(self.ctx, el, dir);
-                    }
+                    each_rule!(self, rule => rule.check_directive(self.ctx, el, dir));
                 });
             }
         }
@@ -449,18 +428,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         if self.run_exit_element_rules {
             // Exit element - run rules
             profile!("patina.rules.exit_element", {
-                for (index, (rule, rule_name)) in self
-                    .rules
-                    .iter()
-                    .zip(self.rule_names.iter().copied())
-                    .enumerate()
-                {
-                    if !Self::rule_active(keep_mask, index) {
-                        continue;
-                    }
-                    self.ctx.current_rule = rule_name;
-                    rule.exit_element(self.ctx, el);
-                }
+                each_rule!(self, rule => rule.exit_element(self.ctx, el));
             });
         }
 
@@ -470,20 +438,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     #[inline]
     fn visit_if(&mut self, if_node: &vize_relief::IfNode<'a>) {
         // Run if checks
-        let keep_mask = self.keep_mask;
         profile!("patina.rules.check_if", {
-            for (index, (rule, rule_name)) in self
-                .rules
-                .iter()
-                .zip(self.rule_names.iter().copied())
-                .enumerate()
-            {
-                if !Self::rule_active(keep_mask, index) {
-                    continue;
-                }
-                self.ctx.current_rule = rule_name;
-                rule.check_if(self.ctx, if_node);
-            }
+            each_rule!(self, rule => rule.check_if(self.ctx, if_node));
         });
 
         // Visit branches
@@ -497,20 +453,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     #[inline]
     fn visit_for(&mut self, for_node: &vize_relief::ForNode<'a>) {
         // Run for checks
-        let keep_mask = self.keep_mask;
         profile!("patina.rules.check_for", {
-            for (index, (rule, rule_name)) in self
-                .rules
-                .iter()
-                .zip(self.rule_names.iter().copied())
-                .enumerate()
-            {
-                if !Self::rule_active(keep_mask, index) {
-                    continue;
-                }
-                self.ctx.current_rule = rule_name;
-                rule.check_for(self.ctx, for_node);
-            }
+            each_rule!(self, rule => rule.check_for(self.ctx, for_node));
         });
 
         // Visit children

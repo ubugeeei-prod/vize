@@ -3,18 +3,37 @@
 //!
 //! The rules' own fixtures are the templates rule authors chose to exercise
 //! their rule, so they are the densest sample of what the facade must answer
-//! for. Each `lint_template(<literal>` call and each
+//! for. Each `lint_template` / `lint_template_rules_only` /
+//! `lint_standalone_html(<literal>` call and each
 //! `run_over_template(<rule>, <literal>` call under `src/rules/` and
-//! `src/markup/tests/` contributes its literal; calls whose argument is not a
-//! literal are skipped (the literal census is pinned, so the plane cannot
-//! shrink silently).
+//! `src/markup/tests/` contributes its literal as a template; each
+//! `lint_sfc(<literal>` call contributes a whole SFC. Calls whose argument is
+//! not a literal are skipped (the literal census is pinned, so the plane
+//! cannot shrink silently).
 
 use std::path::{Path, PathBuf};
 use vize_s0::{String, cstr};
 
+const TEMPLATE_CALLS: &[(&str, bool)] = &[
+    ("lint_template(", false),
+    ("lint_template_rules_only(", false),
+    ("lint_standalone_html(", false),
+    ("run_over_template(", true),
+];
+
 /// `(file:line, template)` for every literal template, deduplicated by source
 /// and sorted by it.
 pub fn rule_fixture_templates() -> std::vec::Vec<(String, String)> {
+    literals(TEMPLATE_CALLS)
+}
+
+/// `(file:line, sfc)` for every literal `lint_sfc` source, deduplicated and
+/// sorted.
+pub fn rule_fixture_sfcs() -> std::vec::Vec<(String, String)> {
+    literals(&[("lint_sfc(", false)])
+}
+
+fn literals(calls: &[(&str, bool)]) -> std::vec::Vec<(String, String)> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
     let mut files = std::vec::Vec::new();
     collect_rs(&root.join("rules"), &mut files);
@@ -24,7 +43,7 @@ pub fn rule_fixture_templates() -> std::vec::Vec<(String, String)> {
     for file in files {
         let text = std::fs::read_to_string(&file).expect("rule source is readable");
         let label = file.strip_prefix(&root).unwrap_or(&file).display();
-        for (marker, skip_first_arg) in [("lint_template(", false), ("run_over_template(", true)] {
+        for &(marker, skip_first_arg) in calls {
             let mut from = 0;
             while let Some(found) = text[from..].find(marker) {
                 let mut at = from + found + marker.len();

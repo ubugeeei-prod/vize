@@ -32,7 +32,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{MarkupContext, MarkupElement, MarkupHooks, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
@@ -60,8 +60,13 @@ impl MarkupRule for HtmlButtonHasType {
         META.name
     }
 
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        if !element.is_tag("button") {
+        // Exact, as the directive lane matched it: `<Button>` is a component.
+        if !element.is_unqualified_tag_exact("button") {
             return;
         }
 

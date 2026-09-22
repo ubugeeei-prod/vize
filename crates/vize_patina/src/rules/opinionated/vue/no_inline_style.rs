@@ -26,7 +26,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupHooks, MarkupRule,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
@@ -65,6 +67,10 @@ impl NoInlineStyle {
 impl MarkupRule for NoInlineStyle {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::BINDING
     }
 
     fn enter_binding<'a>(

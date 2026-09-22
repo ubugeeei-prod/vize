@@ -42,6 +42,7 @@ impl<'a> MarkupElement<'a> {
     }
 
     /// Get a static attribute by name.
+    #[inline]
     pub fn static_attribute(&self, name: &str) -> Option<MarkupAttribute<'a>> {
         let mut matched = None;
         self.walk_attributes(&mut |attr| {

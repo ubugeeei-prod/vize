@@ -3,23 +3,21 @@
 use super::attribute::MarkupAttribute;
 use super::binding::MarkupBinding;
 use super::directive::MarkupDirective;
-use super::jsx_names::{
-    jsx_attribute_directive_kind, jsx_element_kind, jsx_element_name, jsx_element_ref,
-    jsx_fragment_ref,
-};
+use super::jsx_names::{jsx_attribute_directive_kind, jsx_element_ref, jsx_fragment_ref};
 use super::node::MarkupNode;
 use super::s2::binding::{S2Item, walk_items};
 use super::s2::surface::element_at;
 use super::s2::{S2ElementOp, S2Markup};
-use super::{MarkupElementKind, relief_scopes, span_to_range};
+use super::{MarkupElementKind, relief_scopes};
 use crate::ir::ByteRange;
 use oxc_ast::ast::{JSXAttributeItem, JSXElement, JSXFragment};
 use std::marker::PhantomData;
-use vize_relief::{ElementNode, ElementType, PropNode};
+use vize_relief::{ElementNode, PropNode};
 
+mod projected;
 mod queries;
 
-use queries::{is_lint_component, s2_template_is_special};
+use projected::relief_kind;
 
 #[derive(Clone, Copy)]
 pub(super) enum MarkupElementInner<'a> {
@@ -101,79 +99,35 @@ impl<'a> MarkupElement<'a> {
     }
 
     /// Tag name.
+    #[inline]
     pub fn tag(&self) -> &str {
         match self.inner {
             MarkupElementInner::Relief(node) => node.tag,
-            MarkupElementInner::JsxElement { node, .. } => {
-                jsx_element_name(&jsx_element_ref(node).opening_element.name)
-            }
-            MarkupElementInner::JsxFragment { .. } => "",
-            MarkupElementInner::S2 { op, .. } => op.tag(),
-            MarkupElementInner::S2Carrier { element, .. } => element.tag(),
+            _ => self.projected_tag(),
         }
     }
 
     /// Element classification.
+    #[inline]
     pub fn kind(&self) -> MarkupElementKind {
         match self.inner {
-            MarkupElementInner::Relief(node) => match node.tag_type {
-                ElementType::Element => MarkupElementKind::Element,
-                ElementType::Component => MarkupElementKind::Component,
-                ElementType::Slot => MarkupElementKind::Slot,
-                ElementType::Template => MarkupElementKind::Template,
-            },
-            MarkupElementInner::JsxElement { node, .. } => {
-                jsx_element_kind(&jsx_element_ref(node).opening_element.name)
-            }
-            MarkupElementInner::JsxFragment { .. } => MarkupElementKind::Template,
-            MarkupElementInner::S2 { op, surface, .. } => match op {
-                S2ElementOp::Slot(_) => MarkupElementKind::Slot,
-                _ if op.tag() == "template" && s2_template_is_special(op, surface) => {
-                    MarkupElementKind::Template
-                }
-                // A template classifies the way the lint-mode parse does: a
-                // component is a core built-in or a capitalized tag. S2's
-                // element/component split is DOM resolution (`is_native_tag`),
-                // which the lint lane's rules and snapshots are not written
-                // against.
-                _ if surface.is_some() => {
-                    if is_lint_component(op.tag()) {
-                        MarkupElementKind::Component
-                    } else {
-                        MarkupElementKind::Element
-                    }
-                }
-                S2ElementOp::Component(_) => MarkupElementKind::Component,
-                S2ElementOp::Element(_) => MarkupElementKind::Element,
-            },
-            MarkupElementInner::S2Carrier { .. } => MarkupElementKind::Template,
+            MarkupElementInner::Relief(node) => relief_kind(node.tag_type),
+            _ => self.projected_kind(),
         }
     }
 
     /// Whether this node is a framework component.
+    #[inline]
     pub fn is_component(&self) -> bool {
         matches!(self.kind(), MarkupElementKind::Component)
     }
 
     /// Byte range in the original source.
+    #[inline]
     pub fn range(&self) -> ByteRange {
         match self.inner {
             MarkupElementInner::Relief(node) => relief_scopes::carrier_range(node),
-            MarkupElementInner::JsxElement { node, offset } => {
-                span_to_range(jsx_element_ref(node).span, offset)
-            }
-            MarkupElementInner::JsxFragment { node, offset } => {
-                span_to_range(jsx_fragment_ref(node).span, offset)
-            }
-            // An implicit table owner (`tbody` / `tr`) is zero-width at the
-            // tag name of the row or cell that opened it, as the parser's
-            // tree construction records it.
-            MarkupElementInner::S2 { op, doc, .. } if op.is_synthesized(doc) => {
-                let at = op.span().start + 1;
-                ByteRange::new(at, at)
-            }
-            MarkupElementInner::S2 { op, doc, .. } => doc.open_tag_range(op.span()),
-            MarkupElementInner::S2Carrier { span, doc, .. } => doc.open_tag_range(span),
+            _ => self.projected_range(),
         }
     }
 
@@ -250,6 +204,7 @@ impl<'a> MarkupElement<'a> {
     /// over [`MarkupDirective`] behaves consistently across backends. Plain
     /// static JSX attributes (`id="x"`) are *not* directives; use
     /// [`Self::walk_attributes`] or [`Self::walk_bindings`] for those.
+    #[inline]
     pub fn walk_directives(&self, visitor: &mut impl FnMut(MarkupDirective<'a>)) {
         match self.inner {
             MarkupElementInner::Relief(node) => {
@@ -289,6 +244,7 @@ impl<'a> MarkupElement<'a> {
     /// `:key` shorthand), events (`v-on` / `onClick`), `v-model`, and custom
     /// directives. This is the projection most rules should target, because the
     /// same closure then runs unchanged over Vue templates and JSX/TSX.
+    #[inline]
     pub fn walk_bindings(&self, visitor: &mut impl FnMut(MarkupBinding<'a>)) {
         match self.inner {
             MarkupElementInner::Relief(node) => {

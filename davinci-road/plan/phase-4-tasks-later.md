@@ -90,20 +90,23 @@
 
 **Non-goals:** switching the lint lanes (P4-7b); porting rules (P4-8a…P4-8c).
 
-## P4-7b — Facade switch and Relief projection deleted
+## P4-7b — Facade switch
+
+**Slice 1 landed 2026-09-22** — the SFC lane's markup rules run on the facade; record: [phase-4-records/p4-7b.md](./phase-4-records/p4-7b.md).
 
 **Start gate:** startable now — P3-independent.
 
 **Lane:** E
 
-**Deliverable:** `lint_sfc` and `lint_jsx` drive markup rules over the S2 facade only; `MarkupDocumentInner::{Relief, Jsx}` and `MarkupDocument::from_jsx` are deleted; `ir.rs`'s `LintDocumentKind` maps to S1 input dialects.
+**Deliverable:** `lint_sfc` and `lint_jsx` drive markup rules through their `MarkupRule` bodies only — the SFC lane over the facade of its lint parse, `lint_jsx` over the P2-16 S2 projection; `ir.rs`'s `LintDocumentKind` maps to S1 input dialects. **Re-cut 2026-09-22:** moving the SFC lane onto the S2 backend and deleting `MarkupDocumentInner::{Relief, Jsx}` moved to P4-8c — while the directive lane reads the Relief parse, an S2 lowering per template is a second parse costlier than the first (199 µs vs 117 µs on `lint_large`; [record](./phase-4-records/p4-7b.md#re-cut-why-the-s2-backend-waits-for-p4-8c)).
 
 **Steps:**
 
-- [ ] Switch both lanes in `crates/vize_patina/src/linter/engine*`, then delete the old variants
+- [x] Slice 1: the SFC lane in `crates/vize_patina/src/linter/engine*` runs each markup rule's body instead of its hooks — one fused facade walk, per-hook subscriptions, a lane plan cached per `Linter`; the switch oracle (`markup::differential::switch`) exact on the Relief and S2 backends
+- [ ] Switch `lint_jsx` onto the P2-16 projection (closing its one named refusal, custom JSX directives)
 - [ ] Re-record `patina_jsx_markup_one_root` and the markup bench `allocs` (tightened or held)
 
-**Acceptance:** TS-9 lint snapshots unchanged; TS-39 SFC/JSX agreement for the 40 markup-facade rules; `grep -rn "MarkupDocumentInner::Relief\|fn from_jsx" crates/vize_patina/src` empty; TS-10 ratchet held; TS-11 lint surface empty with scope proof.
+**Acceptance:** TS-9 lint snapshots unchanged; TS-39 SFC/JSX agreement for the 40 markup-facade rules; TS-10 ratchet held; TS-11 lint surface empty with scope proof.
 
 **Deps:** P4-7a.
 
@@ -154,14 +157,15 @@
 
 **Lane:** F
 
-**Deliverable:** the 23 container-bound rules (17 template, 6 Musea) migrated, then the legacy `Rule` template-visitor hooks (`run_on_template`, `enter_element`, `exit_element`, `check_directive`, `check_for`, `check_if`, `check_interpolation`) and the JSX `fallback` lane (`legacy_keep_mask`) deleted — charter #7's litmus closed and fact adoption raised from 23 rules to the neutral-core majority (charter #35).
+**Deliverable:** the 23 container-bound rules (17 template, 6 Musea) migrated, then the legacy `Rule` template-visitor hooks (`run_on_template`, `enter_element`, `exit_element`, `check_directive`, `check_for`, `check_if`, `check_interpolation`) and the JSX `fallback` lane (`legacy_keep_mask`) deleted; with the directive lane gone, the SFC markup lane moves onto the S2 backend and `MarkupDocumentInner::{Relief, Jsx}` and `MarkupDocument::from_jsx` are deleted (moved here from P4-7b) — charter #7's litmus closed and fact adoption raised from 23 rules to the neutral-core majority (charter #35).
 
 **Steps:**
 
 - [ ] Migrate, then delete the hooks and the fallback lane
+- [ ] Move the SFC markup lane onto `MarkupDocument::from_s2` (the P4-7b switch oracle already proves it exact outside the restructured bucket), then delete the Relief and JSX variants
 - [ ] Final TS-39 run across all waves
 
-**Acceptance:** the matrix shows JSX `fallback` 0, `no-jsx-hooks` only on container-bound rules, every neutral-core rule in SFC∩JSX, direct Croquis imports 0; the exemption inventory has no rule entries; TS-9; TS-11 lint surface empty with scope proof.
+**Acceptance:** `grep -rn "MarkupDocumentInner::Relief\|fn from_jsx" crates/vize_patina/src` empty; the matrix shows JSX `fallback` 0, `no-jsx-hooks` only on container-bound rules, every neutral-core rule in SFC∩JSX, direct Croquis imports 0; the exemption inventory has no rule entries; TS-9; TS-11 lint surface empty with scope proof.
 
 **Deps:** P4-8b, P4-11a, P4-6b.
 

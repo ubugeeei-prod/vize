@@ -57,6 +57,8 @@ pub struct Linter {
     /// Preset used to seed the rule registry, when applicable.
     pub(crate) preset: Option<LintPreset>,
     pub(crate) registry: RuleRegistry,
+    /// The template lanes' dispatch plan over `registry`, built on first use.
+    pub(crate) lane_plan: std::sync::OnceLock<super::engine::LanePlan>,
     /// Estimated initial allocator capacity (in bytes).
     pub(crate) initial_capacity: usize,
     /// Locale for i18n messages.
@@ -104,6 +106,7 @@ impl Linter {
         Self {
             preset: Some(preset),
             registry: RuleRegistry::with_preset(preset),
+            lane_plan: std::sync::OnceLock::new(),
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
@@ -129,6 +132,7 @@ impl Linter {
         Self {
             preset: Some(preset),
             registry: RuleRegistry::with_preset(preset),
+            lane_plan: std::sync::OnceLock::new(),
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
@@ -154,6 +158,7 @@ impl Linter {
         Self {
             preset: None,
             registry: RuleRegistry::with_ecosystem(),
+            lane_plan: std::sync::OnceLock::new(),
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
@@ -179,6 +184,7 @@ impl Linter {
         Self {
             preset: None,
             registry,
+            lane_plan: std::sync::OnceLock::new(),
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
@@ -236,6 +242,7 @@ impl Linter {
         if !self.registry.has_rule(rule_name) {
             self.registry.register(rule);
             self.registry.mark_has_exit_element_rules();
+            self.lane_plan = std::sync::OnceLock::new();
         }
         self
     }

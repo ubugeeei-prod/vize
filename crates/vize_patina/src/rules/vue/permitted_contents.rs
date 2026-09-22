@@ -138,6 +138,12 @@ impl Rule for PermittedContents {
         true
     }
 
+    /// Templates keep `run_on_template`: it re-reads the template as
+    /// authored, which the facade over the repaired lint parse is not.
+    fn markup_on_templates(&self) -> bool {
+        false
+    }
+
     /// The template lane: the checker reads the template as authored —
     /// the linter's own parse when it repaired nothing, a re-read with the
     /// non-repairing syntax otherwise.

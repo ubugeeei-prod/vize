@@ -8,21 +8,22 @@
 //! - [`ecosystem_hint`]: source heuristics for ecosystem template rules
 //! - [`tag_scan`]: shared byte-oriented tag scanning primitives
 //! - [`rule_sets`]: rule-name sets gating shared analysis work
+//! - [`template`]: the template rule lanes (directive visitor + markup facade)
 
 mod ecosystem_hint;
+mod lane_plan;
 mod offset;
 mod parse_diagnostics;
 mod rule_sets;
 mod script;
 mod sfc;
 mod tag_scan;
+mod template;
 mod template_extract;
 
 pub(crate) use template_extract::extract_template_fast;
 
-use crate::{
-    context::LintContext, diagnostic::LintSummary, preset::LintPreset, visitor::LintVisitor,
-};
+use crate::{context::LintContext, diagnostic::LintSummary, visitor::LintVisitor};
 use vize_armature::Parser;
 use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
@@ -36,7 +37,7 @@ use vize_s0::profile;
 
 use super::config::{LintResult, Linter};
 
-use ecosystem_hint::source_may_contain_ecosystem_template_rule;
+pub(crate) use lane_plan::LanePlan;
 pub(crate) use offset::offset_result;
 use rule_sets::{SEMANTIC_TEMPLATE_RULES, SHARED_SFC_DESCRIPTOR_RULES};
 
@@ -74,25 +75,6 @@ pub(crate) fn analyze_descriptor_for_lint(
 }
 
 impl Linter {
-    fn template_rule_count_for_source(
-        &self,
-        template_source: &str,
-        sfc_source: Option<&str>,
-    ) -> usize {
-        if !matches!(self.preset, Some(LintPreset::Ecosystem))
-            || self.enabled_rules.is_some()
-            || !self.disabled_rules.is_empty()
-            || source_may_contain_ecosystem_template_rule(template_source, sfc_source)
-        {
-            return self.registry.rules().len();
-        }
-
-        self.registry
-            .rules()
-            .len()
-            .saturating_sub(crate::rules::ecosystem::TEMPLATE_RULE_COUNT)
-    }
-
     fn lint_sfc_level<'a>(
         &self,
         source: &'a str,
@@ -214,59 +196,6 @@ impl Linter {
                     false
                 }
             }
-    }
-
-    fn run_template_rules<'a>(
-        &self,
-        allocator: &'a Allocator,
-        source: &'a str,
-        filename: &'a str,
-        root: &RootNode<'a>,
-        analysis: Option<&'a Croquis>,
-        env: TemplateRuleEnv<'a>,
-    ) -> LintResult {
-        let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
-        ctx.set_enabled_rules(self.enabled_rules.clone());
-        ctx.set_config_disabled_rules(self.disabled_rules.clone());
-        ctx.set_config_rule_severities(self.severity_overrides.clone());
-        ctx.set_help_level(self.help_level);
-        ctx.set_dialect(env.dialect);
-        if let Some(descriptor) = env.sfc_descriptor {
-            ctx.set_sfc_template_descriptor(descriptor);
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        let has_analysis = analysis.is_some();
-        if let Some(analysis) = analysis {
-            ctx.set_analysis(analysis);
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        if has_analysis && super::native_type_aware::has_active_type_aware_rules(self) {
-            ctx.set_analysis_excluded_rules(super::native_type_aware::TYPE_AWARE_RULES);
-        }
-
-        let rule_count = self.template_rule_count_for_source(
-            source,
-            env.sfc_descriptor
-                .map(|descriptor| descriptor.source.as_ref()),
-        );
-        let mut visitor = LintVisitor::new(
-            &mut ctx,
-            &self.registry.rules()[..rule_count],
-            &self.rule_names()[..rule_count],
-            self.registry.has_exit_element_rules(),
-        );
-        profile!("patina.template.visit", visitor.visit_root(root));
-
-        let error_count = ctx.error_count();
-        let warning_count = ctx.warning_count();
-        let diagnostics = ctx.into_diagnostics();
-
-        LintResult {
-            filename: filename.to_compact_string(),
-            diagnostics,
-            error_count,
-            warning_count,
-        }
     }
 
     fn lint_template_root<'a>(

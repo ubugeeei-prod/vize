@@ -16,9 +16,16 @@
 mod battery;
 mod nesting;
 mod rule_fixtures;
+mod switch;
 mod trace;
 
-pub use battery::{BatteryCensus, JSX, PINNED_BATTERY_CENSUS, TEMPLATES, run_battery};
+pub use battery::{
+    BatteryCensus, JSX, PINNED_BATTERY_CENSUS, TEMPLATES, run_battery, template_planes,
+};
+pub use rule_fixtures::rule_fixture_sfcs;
+pub use switch::{
+    LaneDivergence, SwitchLane, SwitchReport, markup_registry, rule_lanes, sfc_rule_lanes,
+};
 pub use trace::TraceRecorder;
 
 use crate::context::LintContext;

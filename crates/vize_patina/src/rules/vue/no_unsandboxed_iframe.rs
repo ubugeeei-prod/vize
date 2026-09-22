@@ -25,7 +25,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{MarkupContext, MarkupElement, MarkupHooks, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
@@ -46,8 +46,12 @@ impl MarkupRule for NoUnsandboxedIframe {
         META.name
     }
 
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        if !element.is_tag("iframe") {
+        if !element.is_unqualified_tag_exact("iframe") {
             return;
         }
         if element.has_static_attribute("sandbox") || element.has_bound_attribute("sandbox") {

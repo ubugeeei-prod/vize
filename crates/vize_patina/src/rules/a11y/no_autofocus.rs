@@ -8,9 +8,10 @@
 //!
 //! Based on eslint-plugin-vuejs-accessibility no-autofocus rule.
 
+use super::markup_helpers;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{MarkupBinding, MarkupContext, MarkupElement, MarkupHooks, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
@@ -38,6 +39,10 @@ impl MarkupRule for NoAutofocus {
         META.name
     }
 
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::BINDING
+    }
+
     fn enter_binding<'a>(
         &self,
         ctx: &mut MarkupContext<'_, 'a>,
@@ -47,11 +52,7 @@ impl MarkupRule for NoAutofocus {
         if element.is_component() {
             return;
         }
-        if !matches!(
-            binding.kind(),
-            MarkupBindingKind::Attribute | MarkupBindingKind::Bind
-        ) || !binding.arg_name_eq("autofocus")
-        {
+        if !markup_helpers::binding_names_html_attribute(ctx, binding, "autofocus") {
             return;
         }
         let message = ctx.lint().t("a11y/no-autofocus.message");

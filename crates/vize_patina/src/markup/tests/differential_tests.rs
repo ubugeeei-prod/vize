@@ -28,4 +28,41 @@ mod differential_battery {
             .collect();
         assert_eq!(refused, ["directives"]);
     }
+
+    /// The P4-7b switch oracle over the committed planes and every rule's
+    /// fixture SFC: each markup body reproduces its legacy hooks exactly on
+    /// the Relief facade (the production lane) and on the S2 facade (outside
+    /// the restructured bucket). The census pins that the oracle compared
+    /// real diagnostics, not an empty set.
+    #[test]
+    fn markup_bodies_reproduce_their_legacy_hooks() {
+        use crate::markup::differential::{
+            SwitchReport, markup_registry, rule_fixture_sfcs, rule_lanes, sfc_rule_lanes,
+            template_planes,
+        };
+        let registry = markup_registry();
+        let mut census = [0usize; 4];
+        let mut tally = |name: &str, report: SwitchReport| {
+            if let Some(divergence) = report.divergences.first() {
+                panic!("{name}: {divergence:#?}");
+            }
+            census[0] += 1;
+            census[1] += usize::from(report.restructured);
+            census[2] += report.agreed;
+            census[3] += report.s2_agreed;
+        };
+        for plane in template_planes() {
+            for (name, source) in plane {
+                tally(&name, rule_lanes(&registry, &source));
+            }
+        }
+        for (name, sfc) in rule_fixture_sfcs() {
+            tally(&name, sfc_rule_lanes(&registry, &sfc));
+        }
+        // The 40 markup rules less `vue/permitted-contents`, which keeps its
+        // template hooks (`Rule::markup_on_templates`).
+        assert_eq!(registry.rules().len(), 39);
+        // [templates, restructured, relief-agreed, s2-agreed diagnostics]
+        assert_eq!(census, [1068, 0, 825, 825]);
+    }
 }

@@ -5,11 +5,12 @@
 //! the chains [`super::relief_scopes`] synthesizes over a raw template parse.
 
 use super::element::MarkupElement;
-use super::loc_to_range;
 use super::relief_scopes::ReliefChain;
 use super::s2::children::if_range;
+use super::s2::surface::{SurfaceDirective, attr_span, element_at};
 use super::s2::walk::{S2Step, scope_region};
 use super::s2::{S2ElementOp, S2Markup};
+use super::{loc_to_range, s2_range};
 use crate::ir::ByteRange;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, ForNode, IfNode, TemplateChildNode};
 use vize_s2::expr::{ExprRef, OpaqueReason};
@@ -177,6 +178,25 @@ impl<'a> MarkupList<'a> {
                     }
                 }
             },
+        }
+    }
+
+    /// The range of the authored `v-for` directive that built this list, when
+    /// there is one (a lowered JSX `.map()` has none).
+    pub fn directive_range(&self) -> Option<ByteRange> {
+        match self.inner {
+            MarkupListInner::Relief(_) => None,
+            MarkupListInner::ReliefDirective { directive, .. } => {
+                Some(loc_to_range(&directive.loc))
+            }
+            MarkupListInner::S2 { op, doc } => {
+                let carrier = element_at(doc.surface?, op.span.start)?;
+                let attr = carrier.open.attrs.iter().find(|attr| {
+                    SurfaceDirective::parse(attr.name.text)
+                        .is_some_and(|directive| directive.name == "for")
+                })?;
+                Some(s2_range(attr_span(doc.source, attr)))
+            }
         }
     }
 

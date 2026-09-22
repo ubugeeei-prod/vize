@@ -81,6 +81,7 @@ impl<'a> MarkupAttribute<'a> {
     }
 
     /// Attribute value when statically present.
+    #[inline]
     pub fn value(&self) -> Option<&'a str> {
         match self.inner {
             MarkupAttributeInner::Relief(node) => node.value.as_ref().map(|value| value.content),

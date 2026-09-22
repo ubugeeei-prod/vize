@@ -1,13 +1,13 @@
 //! [`MarkupBinding`]: the normalized view of anything written on an opening tag.
 
 use super::jsx_names::{
-    jsx_attribute_arg_name, jsx_attribute_binding_kind, jsx_attribute_name, jsx_attribute_ref,
-    jsx_static_value, jsx_value_is_dynamic,
+    jsx_attribute_arg_name, jsx_attribute_binding_kind, jsx_attribute_name,
+    jsx_attribute_name_span, jsx_attribute_ref, jsx_static_value, jsx_value_is_dynamic,
 };
 use super::s2::S2Markup;
 use super::s2::binding::{S2Item, kind_of_directive, surface_expression};
 use super::s2::bound::S2Bound;
-use super::s2::surface::{SurfaceDirective, attr_span, attr_value};
+use super::s2::surface::{SurfaceDirective, attr_span, attr_value, slice_range};
 use super::{loc_to_range, s2_range, span_to_range};
 use crate::ir::ByteRange;
 use oxc_ast::ast::JSXAttribute;
@@ -106,6 +106,7 @@ impl<'a> MarkupBinding<'a> {
     }
 
     /// The normalized class of this binding.
+    #[inline]
     pub fn kind(&self) -> MarkupBindingKind {
         match self.inner {
             MarkupBindingInner::ReliefAttribute(_) | MarkupBindingInner::S2Attribute { .. } => {
@@ -130,6 +131,7 @@ impl<'a> MarkupBinding<'a> {
     /// - `On`: the event name (`click` for `@click` / `onClick`).
     /// - `Model`: the model argument (`foo` for `v-model:foo`), when authored.
     /// - `Custom`: the directive name (`show` for `v-show`).
+    #[inline]
     pub fn arg_name(&self) -> Option<&'a str> {
         match self.inner {
             MarkupBindingInner::ReliefAttribute(node) => Some(node.name),
@@ -270,6 +272,29 @@ impl<'a> MarkupBinding<'a> {
             }
         });
         found
+    }
+
+    /// The byte range of a directive-like binding's authored argument
+    /// (`class` in `:class`, `click` in `@click`, the prop name of a dynamic
+    /// JSX attribute); `None` for a plain attribute or an argument-less
+    /// directive.
+    pub fn arg_range(&self) -> Option<ByteRange> {
+        match self.inner {
+            MarkupBindingInner::ReliefAttribute(_) | MarkupBindingInner::S2Attribute { .. } => None,
+            MarkupBindingInner::ReliefDirective(node) => match node.arg.as_ref() {
+                Some(ExpressionNode::Simple(arg)) => Some(loc_to_range(&arg.loc)),
+                _ => None,
+            },
+            MarkupBindingInner::Jsx { node, offset } => {
+                let attr = jsx_attribute_ref(node);
+                (jsx_attribute_binding_kind(attr) != MarkupBindingKind::Attribute)
+                    .then(|| span_to_range(jsx_attribute_name_span(attr), offset))
+            }
+            MarkupBindingInner::S2Binding(binding) => binding.arg_range(),
+            MarkupBindingInner::Surface { attr, doc } => {
+                slice_range(doc.source, SurfaceDirective::parse(attr.name.text)?.arg?)
+            }
+        }
     }
 
     /// The byte range of this binding in the original source.

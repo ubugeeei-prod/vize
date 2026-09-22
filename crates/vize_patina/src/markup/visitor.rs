@@ -1,6 +1,8 @@
-//! [`MarkupDocumentVisitor`]: drives a [`MarkupRule`] from any backend.
+//! [`MarkupDocumentVisitor`]: drives markup rules from any backend.
 
+use super::dispatch::MarkupRules;
 use super::element::{MarkupElement, MarkupElementInner};
+use super::hooks::MarkupHooks;
 use super::jsx_names::{jsx_element_ref, jsx_fragment_ref};
 use super::loc_to_range;
 use super::node::{MarkupNode, MarkupText};
@@ -8,37 +10,46 @@ use super::relief_scopes::{BranchKind, ReliefChain, branch_of, list_of};
 use super::s2::walk::{S2Step, scope_region};
 use super::s2::{S2ElementOp, S2Markup, children};
 use super::scope::{MarkupConditional, MarkupList};
-use super::{MarkupContext, MarkupDocument, MarkupDocumentInner, MarkupRule, jsx_roots};
+use super::{MarkupContext, MarkupDocument, MarkupDocumentInner, jsx_roots};
 use oxc_ast::ast::{JSXChild, JSXElement, JSXFragment, Program};
 use oxc_ast_visit::{Visit, walk::walk_program};
 use vize_relief::{ElementNode, TemplateChildNode};
 use vize_s0::profile;
 use vize_s2::op::Op;
 
-/// Projection visitor that drives a [`MarkupRule`] from any backend.
+/// Projection visitor that drives markup rules — one rule, or a fused set
+/// ([`MarkupRules`]) — from any backend.
 ///
-/// Walks the backing tree in source order, firing the rule's hooks. It never
+/// Walks the backing tree in source order, firing the rules' hooks. It never
 /// materializes a synthetic template AST: the hooks receive borrow-based
 /// facades over the live nodes. Profiling spans (`patina.markup.*`) mirror the
 /// template visitor so the adapter's overhead stays visible in benchmarks.
 pub struct MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R: ?Sized> {
-    rule: &'rule R,
+    rules: &'rule R,
     ctx: &'ctx mut MarkupContext<'mc, 'a>,
+    /// Whether a rule listens to scopes or text: only then does a Relief
+    /// sibling list group its raw `v-if` chains (the element order is the
+    /// same either way).
+    scopes: bool,
+    /// Whether a rule listens to text.
+    text: bool,
 }
 
-impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R> {
-    pub(super) fn new(rule: &'rule R, ctx: &'ctx mut MarkupContext<'mc, 'a>) -> Self {
-        Self { rule, ctx }
-    }
-
-    #[inline]
-    fn set_rule(&mut self) {
-        self.ctx.lint.current_rule = self.rule.name();
+impl<'rule, 'ctx, 'mc, 'a, R: MarkupRules + ?Sized> MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R> {
+    pub(super) fn new(rules: &'rule R, ctx: &'ctx mut MarkupContext<'mc, 'a>) -> Self {
+        let scopes =
+            rules.subscribes(MarkupHooks::CONDITIONAL) || rules.subscribes(MarkupHooks::TEXT);
+        let text = rules.subscribes(MarkupHooks::TEXT);
+        Self {
+            rules,
+            ctx,
+            scopes,
+            text,
+        }
     }
 
     pub(super) fn run(&mut self, document: &MarkupDocument<'a>) {
-        self.set_rule();
-        self.rule.enter_document(self.ctx, document);
+        self.rules.enter_document(self.ctx, document);
 
         profile!("patina.markup.visit", {
             match document.inner {
@@ -52,23 +63,19 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     }
 
     fn text(&mut self, text: MarkupText<'a>) {
-        self.set_rule();
-        self.rule.enter_text(self.ctx, &text);
+        self.rules.enter_text(self.ctx, &text);
     }
 
     fn interpolation(&mut self, range: crate::ir::ByteRange) {
-        self.set_rule();
-        self.rule.enter_interpolation(self.ctx, range);
+        self.rules.enter_interpolation(self.ctx, range);
     }
 
     fn conditional(&mut self, conditional: MarkupConditional<'a>) {
-        self.set_rule();
-        self.rule.enter_conditional(self.ctx, &conditional);
+        self.rules.enter_conditional(self.ctx, &conditional);
     }
 
     fn list(&mut self, list: MarkupList<'a>) {
-        self.set_rule();
-        self.rule.enter_list(self.ctx, &list);
+        self.rules.enter_list(self.ctx, &list);
     }
 
     /// A Relief sibling list. Raw directive chains are grouped into scopes
@@ -78,7 +85,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
         while let Some(child) = children.get(index) {
             match child {
                 TemplateChildNode::Element(element)
-                    if matches!(branch_of(element), Some((BranchKind::If, _))) =>
+                    if self.scopes && matches!(branch_of(element), Some((BranchKind::If, _))) =>
                 {
                     let chain = ReliefChain::scan(children, index);
                     self.conditional(MarkupConditional::from_chain(chain));
@@ -88,7 +95,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                     continue;
                 }
                 TemplateChildNode::Element(element) => self.visit_relief_listed(element),
-                TemplateChildNode::Text(text) => self.text(MarkupText::from_relief(text)),
+                TemplateChildNode::Text(text) if self.text => {
+                    self.text(MarkupText::from_relief(text));
+                }
                 TemplateChildNode::Interpolation(interpolation) => {
                     self.interpolation(loc_to_range(&interpolation.loc));
                 }
@@ -110,7 +119,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
 
     /// A raw element, inside its `v-for` list scope when it carries one.
     fn visit_relief_listed(&mut self, element: &'a ElementNode<'a>) {
-        if let Some(directive) = list_of(element) {
+        if self.rules.subscribes(MarkupHooks::LIST)
+            && let Some(directive) = list_of(element)
+        {
             self.list(MarkupList::from_relief_directive(element, directive));
         }
         self.visit_element(MarkupElement::new(element));
@@ -159,17 +170,18 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     pub(super) fn visit_element(&mut self, element: MarkupElement<'a>) {
         self.ctx.push_element(element);
 
-        self.set_rule();
-        self.rule.enter_element(self.ctx, &element);
+        self.rules.enter_element(self.ctx, &element);
 
-        element.walk_bindings(&mut |binding| {
-            self.ctx.lint.current_rule = self.rule.name();
-            self.rule.enter_binding(self.ctx, &element, &binding);
-        });
-        element.walk_directives(&mut |directive| {
-            self.ctx.lint.current_rule = self.rule.name();
-            self.rule.enter_directive(self.ctx, &element, &directive);
-        });
+        if self.rules.subscribes(MarkupHooks::BINDING) {
+            element.walk_bindings(&mut |binding| {
+                self.rules.enter_binding(self.ctx, &element, &binding);
+            });
+        }
+        if self.rules.subscribes(MarkupHooks::DIRECTIVE) {
+            element.walk_directives(&mut |directive| {
+                self.rules.enter_directive(self.ctx, &element, &directive);
+            });
+        }
 
         match element.inner {
             MarkupElementInner::Relief(node) => self.visit_relief_children(&node.children),
@@ -188,8 +200,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             }
         }
 
-        self.set_rule();
-        self.rule.exit_element(self.ctx, &element);
+        self.rules.exit_element(self.ctx, &element);
 
         let popped = self.ctx.pop_element();
         debug_assert!(
@@ -207,7 +218,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             offset: u32,
         }
 
-        impl<'a, R: MarkupRule + ?Sized> Visit<'a> for RootDriver<'_, '_, '_, '_, 'a, R> {
+        impl<'a, R: MarkupRules + ?Sized> Visit<'a> for RootDriver<'_, '_, '_, '_, 'a, R> {
             fn visit_jsx_element(&mut self, it: &JSXElement<'a>) {
                 self.visitor
                     .visit_element(MarkupElement::from_jsx_element(it as *const _, self.offset));

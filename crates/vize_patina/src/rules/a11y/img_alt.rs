@@ -9,7 +9,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupHooks, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
@@ -37,8 +37,12 @@ impl MarkupRule for ImgAlt {
         META.name
     }
 
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        if !element.is_tag("img") {
+        if !element.is_unqualified_tag_exact("img") {
             return;
         }
 

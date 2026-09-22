@@ -18,6 +18,7 @@ use super::{JsxComparison, TemplateComparison, compare_jsx, compare_template};
 use std::path::Path;
 use vize_atelier_jsx::JsxLang;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+use vize_s0::{String, cstr};
 
 /// Hand-written Vue templates, `(name, source)`.
 pub const TEMPLATES: &[(&str, &str)] = &[
@@ -247,9 +248,9 @@ pub struct BatteryCensus {
 /// The committed census. Re-pinned deliberately, in both lanes at once.
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
-    rule_fixtures: 851,
+    rule_fixtures: 864,
     matrix: 90,
-    template_lines: 6103,
+    template_lines: 6214,
     restructured: 0,
     jsx: JsxComparison {
         roots: 13,
@@ -262,43 +263,56 @@ fn matrix_dir() -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/davinci-matrix")
 }
 
-fn tally(census: &mut BatteryCensus, comparison: TemplateComparison) {
-    match comparison {
-        TemplateComparison::Compared(lines) => census.template_lines += lines,
-        TemplateComparison::Restructured => census.restructured += 1,
-    }
-}
-
-/// Run the whole battery, panicking with the exact divergence on the first
-/// disagreement.
-pub fn run_battery() -> BatteryCensus {
-    let mut census = BatteryCensus::default();
-    for (name, source) in TEMPLATES {
-        tally(&mut census, expect_same(name, compare_template(source)));
-        census.templates += 1;
-    }
-    for (name, source) in super::rule_fixtures::rule_fixture_templates() {
-        tally(&mut census, expect_same(&name, compare_template(&source)));
-        census.rule_fixtures += 1;
-    }
+/// The three committed template planes, `(name, source)` each: hand-written,
+/// rule fixtures, construct matrix.
+pub fn template_planes() -> [std::vec::Vec<(String, String)>; 3] {
+    let hand = TEMPLATES
+        .iter()
+        .map(|(name, source)| (String::from(*name), String::from(*source)))
+        .collect();
     let mut matrix: std::vec::Vec<_> = std::fs::read_dir(matrix_dir())
         .expect("the P2-15 construct matrix is committed")
         .map(|entry| entry.expect("matrix entry").path())
         .filter(|path| path.extension().is_some_and(|ext| ext == "vue"))
         .collect();
     matrix.sort();
-    for path in &matrix {
-        let source = std::fs::read_to_string(path).expect("matrix fixture is readable");
-        let descriptor =
-            parse_sfc(&source, SfcParseOptions::default()).expect("matrix fixture parses");
-        let template = descriptor.template.expect("matrix fixture has a template");
-        let name = vize_s0::cstr!("{}", path.display());
-        tally(
-            &mut census,
-            expect_same(&name, compare_template(&template.content)),
-        );
-        census.matrix += 1;
+    let matrix = matrix
+        .iter()
+        .map(|path| {
+            let source = std::fs::read_to_string(path).expect("matrix fixture is readable");
+            let descriptor =
+                parse_sfc(&source, SfcParseOptions::default()).expect("matrix fixture parses");
+            let template = descriptor.template.expect("matrix fixture has a template");
+            (
+                cstr!("{}", path.display()),
+                String::from(template.content.as_ref()),
+            )
+        })
+        .collect();
+    [hand, super::rule_fixtures::rule_fixture_templates(), matrix]
+}
+
+/// Run the whole battery, panicking with the exact divergence on the first
+/// disagreement.
+pub fn run_battery() -> BatteryCensus {
+    let mut census = BatteryCensus::default();
+    let [hand, rule_fixtures, matrix] = template_planes();
+    let mut compare = |name: &str, source: &str| match expect_same(name, compare_template(source)) {
+        TemplateComparison::Compared(lines) => census.template_lines += lines,
+        TemplateComparison::Restructured => census.restructured += 1,
+    };
+    for (name, source) in &hand {
+        compare(name, source);
     }
+    for (name, source) in &rule_fixtures {
+        compare(name, source);
+    }
+    for (name, source) in &matrix {
+        compare(name, source);
+    }
+    census.templates = hand.len();
+    census.rule_fixtures = rule_fixtures.len();
+    census.matrix = matrix.len();
     for (name, lang, source) in JSX {
         let comparison = expect_same(name, compare_jsx(source, *lang));
         census.jsx.roots += comparison.roots;

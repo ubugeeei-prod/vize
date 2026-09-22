@@ -15,6 +15,8 @@ use vize_s2::op::{BindingOp, DynamicName};
 pub(in crate::markup) struct S2Bound<'a> {
     pub(in crate::markup) op: &'a BindingOp<'a>,
     pub(in crate::markup) surface: Option<&'a vize_s1::Attribute<'a>>,
+    /// The artifact's source, where every authored slice lives.
+    pub(in crate::markup) source: &'a str,
 }
 
 fn dynamic_name<'a>(name: Option<&DynamicName<'a>>) -> Option<(&'a str, bool)> {
@@ -73,6 +75,23 @@ impl<'a> S2Bound<'a> {
                 spelling.arg.map(|arg| (arg, spelling.arg_static))
             }
         }
+    }
+
+    /// The authored argument's range, when the op carries an authored
+    /// argument slice (read off S1 when the artifact has a surface).
+    pub(in crate::markup) fn arg_range(self) -> Option<crate::ir::ByteRange> {
+        let arg = match self.spelling() {
+            Some(spelling) => spelling.arg?,
+            None => self.arg()?.0,
+        };
+        super::surface::slice_range(self.source, arg).or_else(|| {
+            // A JSX projection carries the argument as a name, not a source
+            // slice; it is authored inside the op's own span.
+            let span = self.span();
+            let text = self.source.get(span.start as usize..span.end as usize)?;
+            let at = span.start + u32::try_from(text.find(arg)?).ok()?;
+            Some(crate::ir::ByteRange::new(at, at + arg.len() as u32))
+        })
     }
 
     /// Visit the authored modifiers. `ui.model` carries its dialect modifiers

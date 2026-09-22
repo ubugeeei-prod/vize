@@ -23,7 +23,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, Severity, TextEdit};
-use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupHooks, MarkupRule,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 use vize_s0::String;
@@ -45,12 +47,15 @@ pub struct PreferStaticClass;
 /// `:class="'a'"` and a JSX `class={'a'}` both project to a
 /// [`MarkupBindingKind::Bind`] whose argument is `class` and whose
 /// [`MarkupBinding::expression`] is the string literal `'a'`. The rule warns
-/// when that literal could be a plain static `class` instead. (The auto-fix
-/// stays on the legacy [`Rule`] path; the IR entry point reports through
-/// `ByteRange`s that map to the original syntax.)
+/// when that literal could be a plain static `class` instead, and on a
+/// template offers the fix that rewrites the binding to that attribute.
 impl MarkupRule for PreferStaticClass {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::BINDING
     }
 
     fn enter_binding<'a>(
@@ -59,13 +64,23 @@ impl MarkupRule for PreferStaticClass {
         element: &MarkupElement<'a>,
         binding: &MarkupBinding<'a>,
     ) {
-        if binding.kind() != MarkupBindingKind::Bind || !binding.arg_name_eq("class") {
+        if binding.kind() != MarkupBindingKind::Bind {
+            return;
+        }
+        // Templates match the written argument exactly (dynamic `:[class]`
+        // included, as the directive lane did); JSX `class` / `Class` alike.
+        let is_class = if ctx.is_template() {
+            binding.is_unqualified_arg_exact("class")
+        } else {
+            binding.arg_name_eq("class")
+        };
+        if !is_class {
             return;
         }
         let Some(expression) = binding.expression() else {
             return;
         };
-        if !is_string_literal(expression.trim()) {
+        if !is_string_literal(expression) {
             return;
         }
         // If a static `class` attribute is already present, the dynamic one is
@@ -78,11 +93,34 @@ impl MarkupRule for PreferStaticClass {
         });
 
         let message = ctx.lint().t("vapor/prefer-static-class.message");
+        let range = binding.range();
         if has_static_class {
             let help = ctx.lint().t("vapor/prefer-static-class.help");
-            ctx.lint().warn_at_with_help(message, binding.range(), help);
+            ctx.lint().warn_at_with_help(message, range, help);
+        } else if ctx.is_template()
+            && let Some(arg) = binding.arg_range()
+        {
+            // Replace `:class="'value'"` with `class="value"`; the binding's
+            // range covers the whole attribute, closing quote included.
+            let inner = &expression[1..expression.len() - 1];
+            let mut replacement = String::from("class=\"");
+            replacement.push_str(inner);
+            replacement.push('"');
+            let fix = Fix::new(
+                "Replace with static class attribute",
+                TextEdit::replace(range.start, range.end, replacement),
+            );
+            ctx.lint().report(
+                crate::diagnostic::LintDiagnostic::warn(
+                    META.name,
+                    message.as_ref(),
+                    arg.start,
+                    range.end,
+                )
+                .with_fix(fix),
+            );
         } else {
-            ctx.lint().warn_at(message, binding.range());
+            ctx.lint().warn_at(message, range);
         }
     }
 }
@@ -144,7 +182,7 @@ impl Rule for PreferStaticClass {
                     "Replace with static class attribute",
                     TextEdit::replace(
                         directive.loc.span.start,
-                        directive.loc.span.end + 1, // Include closing quote
+                        directive.loc.span.end,
                         replacement,
                     ),
                 );

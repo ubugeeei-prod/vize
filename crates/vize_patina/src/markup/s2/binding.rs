@@ -70,6 +70,7 @@ pub(in crate::markup) fn walk_items<'a>(
                 visitor(S2Item::Binding(S2Bound {
                     op,
                     surface: Some(attr),
+                    source: doc.source,
                 }));
             } else if !is_consumed_spelling(attr) {
                 visitor(S2Item::Surface { attr, doc });
@@ -90,6 +91,7 @@ pub(in crate::markup) fn walk_items<'a>(
                 visitor(S2Item::Binding(S2Bound {
                     op: binding,
                     surface: None,
+                    source: doc.source,
                 }));
                 binding_index += 1;
             }
@@ -103,13 +105,20 @@ pub(in crate::markup) fn walk_items<'a>(
 }
 
 /// Whether an authored attribute S2 left without an op is a spelling the
-/// facade consumes rather than restores: a structural directive (it became a
-/// scope), or the `v-pre` that opened a raw subtree (the parser drops it; a
-/// nested `v-pre` inside the subtree is a frozen attribute S2 keeps).
+/// facade consumes rather than restores: a structural directive that became a
+/// scope (every `v-if` / `v-else-if` / `v-else`; a `v-for` with a value), or
+/// the `v-pre` that opened a raw subtree (the parser drops it; a nested
+/// `v-pre` inside the subtree is a frozen attribute S2 keeps).
 pub(in crate::markup) fn is_consumed_spelling(attr: &vize_s1::Attribute<'_>) -> bool {
-    attr.name.text == "v-pre"
-        || SurfaceDirective::parse(attr.name.text)
-            .is_some_and(|directive| directive.is_structural())
+    if attr.name.text == "v-pre" {
+        return true;
+    }
+    match SurfaceDirective::parse(attr.name.text).map(|directive| directive.name) {
+        Some("if" | "else-if" | "else") => true,
+        // A blank `v-for` builds no `ui.for`: it stays a visible directive.
+        Some("for") => attr_value(attr).is_some_and(|value| !value.trim().is_empty()),
+        _ => false,
+    }
 }
 
 pub(in crate::markup) fn op_span(binding: &BindingOp<'_>) -> Span {
@@ -132,6 +141,7 @@ pub(in crate::markup) fn op_span(binding: &BindingOp<'_>) -> Span {
 }
 
 /// The normalized binding class for a directive name.
+#[inline]
 pub(in crate::markup) fn kind_of_directive(name: &str) -> MarkupBindingKind {
     match name {
         "bind" => MarkupBindingKind::Bind,

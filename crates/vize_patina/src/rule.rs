@@ -84,6 +84,18 @@ pub trait Rule: Send + Sync {
         false
     }
 
+    /// Whether a Vue template runs this rule's [`MarkupRule`] body (the
+    /// template lint lane's markup lane, P4-7b) rather than its template
+    /// hooks. A rule whose template entry deliberately reads something the
+    /// facade does not present — the template as authored, before the lint
+    /// parse's tree construction repaired it — returns `false` and keeps its
+    /// hooks on templates.
+    ///
+    /// Ignored unless [`Self::as_markup_rule`] is `Some`.
+    fn markup_on_templates(&self) -> bool {
+        true
+    }
+
     /// Run on the full SFC source before template extraction.
     #[allow(unused_variables)]
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {}
@@ -130,7 +142,7 @@ pub trait Rule: Send + Sync {
 
 /// Registry holding all enabled lint rules
 pub struct RuleRegistry {
-    rules: Vec<Box<dyn Rule>>,
+    pub(crate) rules: Vec<Box<dyn Rule>>,
     rule_names: Vec<&'static str>,
     has_exit_element_rules: bool,
 }

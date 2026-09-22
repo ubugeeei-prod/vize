@@ -73,8 +73,10 @@ mod context;
 #[cfg(any(test, feature = "davinci-differential"))]
 pub mod differential;
 mod directive;
+mod dispatch;
 mod element;
 mod exact;
+mod hooks;
 mod jsx_child;
 mod jsx_names;
 mod jsx_roots;
@@ -93,7 +95,9 @@ pub use attribute::MarkupAttribute;
 pub use binding::{MarkupBinding, MarkupBindingKind};
 pub use context::MarkupContext;
 pub use directive::MarkupDirective;
+pub use dispatch::{MarkupRuleLayout, MarkupRuleSet, MarkupRules};
 pub use element::MarkupElement;
+pub use hooks::MarkupHooks;
 pub use node::{MarkupNode, MarkupText};
 pub use rule::MarkupRule;
 pub use s2::{S2Markup, S2Template};
@@ -237,7 +241,15 @@ impl<'a> MarkupDocument<'a> {
     /// interpolation/expression nodes — without ever allocating a synthetic
     /// template AST.
     pub fn visit_with<R: MarkupRule + ?Sized>(&self, rule: &R, ctx: &mut MarkupContext<'_, 'a>) {
-        MarkupDocumentVisitor::new(rule, ctx).run(self);
+        MarkupDocumentVisitor::new(&dispatch::One::new(rule), ctx).run(self);
+    }
+
+    /// Drive a fused rule set over this document in one walk: at every node,
+    /// each subscribed rule's hook fires in registration order (the template
+    /// visitor's dispatch shape), so the document is walked once, not once
+    /// per rule.
+    pub fn visit_rules(&self, rules: &MarkupRuleSet<'_>, ctx: &mut MarkupContext<'_, 'a>) {
+        MarkupDocumentVisitor::new(rules, ctx).run(self);
     }
 }
 

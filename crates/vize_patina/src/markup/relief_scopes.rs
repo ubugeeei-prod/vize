@@ -14,9 +14,26 @@ use super::node::MarkupText;
 use crate::ir::ByteRange;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
-/// Whether a Relief directive is structural (consumed into a scope).
+/// Whether a Relief directive is structural and consumed: every `v-if` /
+/// `v-else-if` / `v-else` (into a chain, or — orphaned — dropped by the
+/// lowering), and a `v-for` with a value (into its list). A blank `v-for`
+/// builds no list and stays a visible directive.
+#[inline]
 pub(super) fn is_structural_directive(directive: &DirectiveNode<'_>) -> bool {
-    matches!(directive.name, "if" | "else-if" | "else" | "for")
+    match directive.name {
+        "if" | "else-if" | "else" => true,
+        "for" => !is_blank(directive),
+        _ => false,
+    }
+}
+
+#[inline]
+fn is_blank(directive: &DirectiveNode<'_>) -> bool {
+    match directive.exp.as_ref() {
+        Some(ExpressionNode::Simple(value)) => value.content.trim().is_empty(),
+        Some(ExpressionNode::Compound(_)) => false,
+        None => true,
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -49,11 +66,7 @@ pub(super) fn list_of<'a>(element: &'a ElementNode<'a>) -> Option<&'a DirectiveN
         PropNode::Directive(directive) if directive.name == "for" => Some(&**directive),
         _ => None,
     })?;
-    match directive.exp.as_ref() {
-        Some(ExpressionNode::Simple(value)) if !value.content.trim().is_empty() => Some(directive),
-        Some(ExpressionNode::Compound(_)) => Some(directive),
-        _ => None,
-    }
+    (!is_blank(directive)).then_some(directive)
 }
 
 fn is_gap(child: &TemplateChildNode<'_>) -> bool {

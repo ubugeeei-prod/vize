@@ -21,7 +21,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupHooks, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use lightningcss::declaration::DeclarationBlock;
 use lightningcss::properties::list::ListStyleType;
@@ -32,10 +32,8 @@ use lightningcss::stylesheet::{ParserOptions, StyleSheet};
 use vize_relief::{ElementNode, ElementType};
 use vize_s0::FxHashSet;
 
-use super::helpers::{
-    get_implicit_role, get_implicit_role_by_attr, get_static_attribute_value,
-    get_static_or_bound_literal_attribute_value,
-};
+use super::helpers::{get_implicit_role, get_implicit_role_by_attr, get_static_attribute_value};
+use super::markup_helpers;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/no-redundant-roles",
@@ -79,16 +77,20 @@ impl NoRedundantRoles {
         })
     }
 
+    /// A `role="list"` on a list whose class removes the list markers in the
+    /// SFC's own CSS restores list semantics Safari drops, so it is kept.
     fn keeps_markerless_list_role(
         ctx: &LintContext<'_>,
-        element: &ElementNode<'_>,
+        element: &MarkupElement<'_>,
         role: &str,
     ) -> bool {
-        if role != "list" || !matches!(element.tag, "ol" | "ul") {
+        if role != "list" || !matches!(element.tag(), "ol" | "ul") {
             return false;
         }
 
-        let Some(class) = get_static_or_bound_literal_attribute_value(element, "class") else {
+        let Some(class) =
+            markup_helpers::get_static_or_bound_literal_markup_value(element, "class")
+        else {
             return false;
         };
         let classes = class
@@ -183,6 +185,10 @@ impl MarkupRule for NoRedundantRoles {
         META.name
     }
 
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         if element.is_component() {
             return;
@@ -196,7 +202,9 @@ impl MarkupRule for NoRedundantRoles {
             return;
         };
 
-        if implicit != role_value {
+        if implicit != role_value
+            || Self::keeps_markerless_list_role(ctx.lint(), element, role_value)
+        {
             return;
         }
 
@@ -232,7 +240,7 @@ impl Rule for NoRedundantRoles {
 
         if let Some(implicit) = implicit_role
             && implicit == role_value
-            && !Self::keeps_markerless_list_role(ctx, element, role_value)
+            && !Self::keeps_markerless_list_role(ctx, &MarkupElement::new(element), role_value)
         {
             ctx.warn_with_help(
                 ctx.t_fmt(

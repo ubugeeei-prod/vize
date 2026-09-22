@@ -16,7 +16,16 @@ impl<'a> MarkupElement<'a> {
     ///
     /// This deliberately does not match JSX member or namespaced tags, even when
     /// their local/property name equals `expected`.
+    #[inline]
     pub fn is_unqualified_tag_exact(&self, expected: &str) -> bool {
+        match self.inner {
+            MarkupElementInner::Relief(node) => node.tag == expected,
+            _ => self.projected_tag_exact(expected),
+        }
+    }
+
+    #[inline(never)]
+    fn projected_tag_exact(&self, expected: &str) -> bool {
         match self.inner {
             MarkupElementInner::Relief(node) => node.tag == expected,
             MarkupElementInner::JsxElement { node, .. } => {
@@ -50,6 +59,7 @@ enum ArgMatch {
 }
 
 impl ArgMatch {
+    #[inline]
     fn matches(self, actual: &str, is_static: bool, expected: &str) -> bool {
         match self {
             Self::Exact => actual == expected,
@@ -64,6 +74,7 @@ impl<'a> MarkupBinding<'a> {
     ///
     /// Unlike [`Self::arg_name_eq`], this is case-sensitive and does not collapse
     /// JSX namespace attributes such as `foo:class` into their local name.
+    #[inline]
     pub fn is_unqualified_arg_exact(&self, expected: &str) -> bool {
         self.unqualified_arg_matches(expected, ArgMatch::Exact)
     }
@@ -74,6 +85,7 @@ impl<'a> MarkupBinding<'a> {
     /// Keeps namespaced JSX attributes such as `foo:alt` out of HTML-attribute
     /// rules while preserving legacy template rules that compared written
     /// attribute names with ASCII-insensitive semantics.
+    #[inline]
     pub fn is_unqualified_arg_eq_ignore_ascii_case(&self, expected: &str) -> bool {
         self.unqualified_arg_matches(expected, ArgMatch::IgnoreAsciiCase)
     }
@@ -83,10 +95,12 @@ impl<'a> MarkupBinding<'a> {
     ///
     /// Vue dynamic directive arguments such as `@[click]` are not static and
     /// must not match legacy event rules that only saw `arg.is_static`.
+    #[inline]
     pub fn is_static_unqualified_arg_exact(&self, expected: &str) -> bool {
         self.unqualified_arg_matches(expected, ArgMatch::StaticExact)
     }
 
+    #[inline]
     fn unqualified_arg_matches(&self, expected: &str, mode: ArgMatch) -> bool {
         match self.inner {
             MarkupBindingInner::ReliefAttribute(node) => mode.matches(node.name, true, expected),

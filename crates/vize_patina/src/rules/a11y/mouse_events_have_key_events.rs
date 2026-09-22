@@ -20,7 +20,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupHooks, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType};
 
@@ -38,17 +38,29 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct MouseEventsHaveKeyEvents;
 
+/// The static event handlers an element carries, read in one binding pass.
+#[derive(Default)]
+struct Handlers {
+    mouse_enter: bool,
+    mouse_leave: bool,
+    focus: bool,
+    blur: bool,
+}
+
 impl MouseEventsHaveKeyEvents {
-    fn has_static_event_handler(element: &MarkupElement<'_>, event_name: &str) -> bool {
-        let mut found = false;
+    fn handlers(element: &MarkupElement<'_>) -> Handlers {
+        let mut handlers = Handlers::default();
         element.walk_bindings(&mut |binding| {
-            if binding.kind() == MarkupBindingKind::On
-                && binding.is_static_unqualified_arg_exact(event_name)
-            {
-                found = true;
+            if binding.kind() != MarkupBindingKind::On {
+                return;
             }
+            let is = |event: &str| binding.is_static_unqualified_arg_exact(event);
+            handlers.mouse_enter |= is("mouseenter") || is("mouseover");
+            handlers.mouse_leave |= is("mouseleave") || is("mouseout");
+            handlers.focus |= is("focus");
+            handlers.blur |= is("blur");
         });
-        found
+        handlers
     }
 }
 
@@ -57,14 +69,17 @@ impl MarkupRule for MouseEventsHaveKeyEvents {
         META.name
     }
 
+    fn hooks(&self) -> MarkupHooks {
+        MarkupHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         if element.is_component() {
             return;
         }
 
-        let has_mouse_enter = Self::has_static_event_handler(element, "mouseenter")
-            || Self::has_static_event_handler(element, "mouseover");
-        if has_mouse_enter && !Self::has_static_event_handler(element, "focus") {
+        let handlers = Self::handlers(element);
+        if handlers.mouse_enter && !handlers.focus {
             let message = ctx
                 .lint()
                 .t("a11y/mouse-events-have-key-events.message_enter");
@@ -72,9 +87,7 @@ impl MarkupRule for MouseEventsHaveKeyEvents {
             ctx.lint().warn_at_with_help(message, element.range(), help);
         }
 
-        let has_mouse_leave = Self::has_static_event_handler(element, "mouseleave")
-            || Self::has_static_event_handler(element, "mouseout");
-        if has_mouse_leave && !Self::has_static_event_handler(element, "blur") {
+        if handlers.mouse_leave && !handlers.blur {
             let message = ctx
                 .lint()
                 .t("a11y/mouse-events-have-key-events.message_leave");
