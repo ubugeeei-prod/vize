@@ -1,9 +1,18 @@
+import { rmSync } from "node:fs";
+import { resolve } from "node:path";
+
 export function critcmpExportArgs({ targetDir, baseline }) {
   return ["--target-dir", targetDir, "--export", baseline];
 }
 
 export function criterionEnvironment(targetDir) {
-  return { CARGO_TARGET_DIR: targetDir };
+  return { CARGO_TARGET_DIR: targetDir, CRITERION_HOME: resolve(targetDir, "criterion") };
+}
+
+export function resetCriterionResults(targetDir) {
+  // Cargo artifacts stay cached, but deleted or unselected benchmarks must not
+  // survive into this run's critcmp export or satisfy an absolute budget.
+  rmSync(criterionEnvironment(targetDir).CRITERION_HOME, { recursive: true, force: true });
 }
 
 export function critcmpArgs({ targetDir, baselinePaths }) {

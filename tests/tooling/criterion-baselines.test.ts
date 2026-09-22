@@ -29,12 +29,16 @@ test("Criterion driver snapshots both baselines before comparing them", () => {
     }),
     {
       cwd: "/work/head",
-      env: { CARGO_TARGET_DIR: "/work/head/target/head-target" },
+      env: {
+        CARGO_TARGET_DIR: "/work/head/target/head-target",
+        CRITERION_HOME: "/work/head/target/head-target/criterion",
+      },
       capture: false,
     },
   );
   assert.deepEqual(criterionEnvironment("/work/head/target"), {
     CARGO_TARGET_DIR: "/work/head/target",
+    CRITERION_HOME: "/work/head/target/criterion",
   });
   assert.deepEqual(critcmpExportArgs({ targetDir: "/work/head/target", baseline: "base" }), [
     "--target-dir",
