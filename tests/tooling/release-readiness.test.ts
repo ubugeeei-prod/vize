@@ -16,7 +16,7 @@ test("v1 alpha go/no-go checklist covers release gates and rollback", () => {
   for (const heading of [
     "## Owners",
     "## Pre-Tag Gate",
-    "## Tag Gate",
+    "## Release PR and Promotion Gate",
     "## Publish Gate",
     "## Post-Publish Gate",
     "## Rollback Plan",
