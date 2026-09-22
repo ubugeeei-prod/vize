@@ -24,7 +24,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.pattern_diagnostics` | field | `croquis`    |     2 |     3 |
 | `Croquis.provide_inject`      | field | `croquis`    |     1 |     2 |
 | `Croquis.reactivity`          | field | `croquis`    |     1 |     1 |
-| `Croquis.scopes`              | field | `croquis`    |     1 |     2 |
+| `Croquis.scopes`              | field | `croquis`    |     2 |     3 |
 | `Croquis.type_exports`        | field | `croquis`    |     1 |     2 |
 | `Croquis.unused_bindings`     | field | `croquis`    |     1 |     1 |
 
@@ -35,9 +35,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `InjectPattern`                              |     1 |     8 |
 | `ProvideKey`                                 |     1 |     4 |
 | `SfcDescriptor`                              |     3 |     3 |
-| `SfcParseOptions`                            |     9 |    14 |
+| `SfcParseOptions`                            |    10 |    15 |
 | `generate_declaration_ts`                    |     1 |     2 |
 | `generate_declaration_ts_with_split_scripts` |     1 |     1 |
+| `parse_sfc`                                  |     1 |     1 |
 
 ## Naive grep disagreements (resolved/grep)
 
@@ -49,5 +50,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ReactivityTracker` |        1 |    2 |
 | `Scope`             |        0 |    2 |
 | `ScopeId`           |        0 |    2 |
+| `Span`              |        0 |    3 |
 | `Symbol`            |        0 |    3 |
-| `Croquis.bindings`  |        2 |    7 |
+| `Croquis.bindings`  |        2 |   14 |
+| `Croquis.scopes`    |        3 |    8 |
