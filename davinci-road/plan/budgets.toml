@@ -206,10 +206,10 @@ s1_to_s2_emit_von_two_per_bucket = { wall_p50_ns = 0, allocs = 18, rss_peak_byte
 s1_to_s2_emit_p2_11_dom_surface = { wall_p50_ns = 0, allocs = 60, rss_peak_bytes = 0, wall_tolerance = 0.10 }
 
 # Patina markup probes: the per-rule `visit_with` window over one diagnostic-free
-# root, as JSX and (P4-7a) as a Vue template through the S2 facade, parse and
-# lowering as setup. Measured zeros: zero-copy views, no root vector or spill.
+# root, as JSX and (P4-7a) as a Vue template via S2; parse/lowering are setup.
+# Views are zero-copy; the S2 row's 7 are permitted-contents' skeleton (P4-11a).
 patina_jsx_markup_one_root = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-patina_s2_markup_one_root = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+patina_s2_markup_one_root = { wall_p50_ns = 0, allocs = 7, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
 # Musea `parse_art` on the S0/S1 reader (P4-13). Each window is one whole
 # parse over a pinned Art file: the corpus's `defineArt()` shape, the legacy
