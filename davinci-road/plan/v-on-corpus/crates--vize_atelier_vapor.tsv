@@ -14,3 +14,6 @@ crates/vize_atelier_vapor/tests/davinci_vapor_artifact.rs	@click.stop
 crates/vize_atelier_vapor/tests/davinci_vapor_artifact.rs	@change.once
 crates/vize_atelier_vapor/tests/davinci_vapor_artifact.rs	@custom-event.capture
 crates/vize_atelier_vapor/tests/davinci_vapor_artifact.rs	@keydown.enter
+crates/vize_atelier_vapor/tests/davinci_vapor_native_budget.rs	@click.stop
+crates/vize_atelier_vapor/tests/davinci_vapor_native_budget.rs	@keydown.enter.stop
+crates/vize_atelier_vapor/tests/davinci_vapor_native_budget.rs	@change.once
