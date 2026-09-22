@@ -73,9 +73,11 @@ const ONE_ROOT_TEMPLATE: &str = r#"<section class="gallery">
 
 /// P4-7a: the per-rule `visit_with` loop over the S2-backed facade. Parse and
 /// the S1→S2 lowering stay in setup; the measured window is the traversal
-/// only, so the exact `allocs` budget witnesses that the view is zero-copy —
-/// element, binding and text projection borrow the op tree, the S1 surface
-/// and the side tables, and allocate nothing.
+/// only. The view is zero-copy — element, binding and text projection borrow
+/// the op tree, the S1 surface and the side tables, and allocate nothing; the
+/// window's whole exact `allocs` budget (7) is `vue/permitted-contents`
+/// building its owned content-model skeleton (P4-11a), measured by skipping
+/// that one rule, which leaves 0.
 fn davinci_s2_markup(criterion: &mut Criterion) {
     let registry = RuleRegistry::default();
     let id = cstr!("patina_s2_markup_one_root");
