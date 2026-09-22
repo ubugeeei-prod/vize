@@ -1,8 +1,8 @@
 //! Template-expression projection through the S4 emission document (P4-5b).
 //!
-//! Each interpolation is emitted by the JS [`ExprDialect`] into one
-//! [`EmitDocument`]. The document's links are the [`ProjectionMapping`] rows,
-//! so the projection has no mapping model of its own. [`ExprRef::Opaque`]
+//! Each interpolation and `v-bind` value is emitted by the JS [`ExprDialect`]
+//! into one [`EmitDocument`]. The document's links are the [`ProjectionMapping`]
+//! rows, so the projection has no mapping model of its own. [`ExprRef::Opaque`]
 //! keeps the pessimal answers: nothing is enumerated, it is not constant, it
 //! is emitted verbatim, and every inner range maps to the whole expression.
 
@@ -14,11 +14,11 @@ use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{Allocator, Span, String};
 use vize_s1_to_s2::lower;
 use vize_s2::expr::{ExprDialect, ExprRef};
-use vize_s2::op::{Op, Region};
+use vize_s2::op::{BindingOp, Op, Region};
 
 use crate::virtual_ts::ProjectionMapping;
 
-/// Project `source`'s template interpolations into mapping rows.
+/// Project `source`'s template expressions into mapping rows.
 pub fn project_template_expressions(source: &str) -> ProjectionMapping {
     let allocator = Allocator::new();
     let (tree, errors) = vize_s1::parse(&allocator, source);
@@ -36,8 +36,14 @@ fn project_region<D: ExprDialect>(document: &mut EmitDocument, dialect: &D, regi
 
 fn project_op<D: ExprDialect>(document: &mut EmitDocument, dialect: &D, op: &Op<'_>) {
     match op {
-        Op::Element(element) => project_region(document, dialect, &element.children),
-        Op::Component(component) => project_region(document, dialect, &component.children),
+        Op::Element(element) => {
+            project_bindings(document, dialect, &element.bindings);
+            project_region(document, dialect, &element.children);
+        }
+        Op::Component(component) => {
+            project_bindings(document, dialect, &component.bindings);
+            project_region(document, dialect, &component.children);
+        }
         Op::Interpolation(interpolation) => {
             project_expr(document, dialect, interpolation.expression);
         }
@@ -47,8 +53,27 @@ fn project_op<D: ExprDialect>(document: &mut EmitDocument, dialect: &D, op: &Op<
             }
         }
         Op::For(for_op) => project_region(document, dialect, &for_op.region),
-        Op::Slot(slot) => project_region(document, dialect, &slot.fallback),
+        Op::Slot(slot) => {
+            project_bindings(document, dialect, &slot.bindings);
+            project_region(document, dialect, &slot.fallback);
+        }
         Op::Text(_) | Op::Comment(_) => {}
+    }
+}
+
+/// `ui.bind` values (`:title="name"`). The row is the expression, not the
+/// directive.
+fn project_bindings<D: ExprDialect>(
+    document: &mut EmitDocument,
+    dialect: &D,
+    bindings: &[BindingOp<'_>],
+) {
+    for binding in bindings {
+        if let BindingOp::Bind(bind) = binding
+            && let Some(value) = bind.value
+        {
+            project_expr(document, dialect, value);
+        }
     }
 }
 
@@ -209,6 +234,19 @@ mod tests {
         assert_eq!(mapping.spans(), &[VizeMapping::new(0..5, start..end)]);
         assert_eq!(
             mapping.diagnostic_range_to_authored(0, 5),
+            Some((start, end))
+        );
+    }
+
+    #[test]
+    fn projects_title_bind_onto_its_expression_span() {
+        let source = r#"<div :title="name"></div>"#;
+        let start = source.find("name").unwrap();
+        let end = start + "name".len();
+        let mapping = project_template_expressions(source);
+        assert_eq!(mapping.spans(), &[VizeMapping::new(0..4, start..end)]);
+        assert_eq!(
+            mapping.diagnostic_range_to_authored(0, 4),
             Some((start, end))
         );
     }
