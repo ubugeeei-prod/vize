@@ -109,7 +109,9 @@ test("P3-12 keyed model interactions route in-flight commits by identity", () =>
     const walk = (nodes: Array<Node | string>) => {
       for (const node of nodes) {
         if (typeof node === "string") continue;
-        if (node.tag === "span") out.push(node.children.join(""));
+        if (node.tag === "span") {
+          out.push(node.children.filter((child) => typeof child === "string").join(""));
+        }
         walk(node.children);
       }
     };
