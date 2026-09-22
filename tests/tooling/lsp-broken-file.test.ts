@@ -114,7 +114,7 @@ test("hover and completion stay live beside a missing end tag", async () => {
       diagnostics
         .filter((diagnostic) => diagnostic.severity === 1)
         .map((diagnostic) => diagnostic.message)
-        .sort(),
+        .sort((left, right) => String(left).localeCompare(String(right))),
       [
         "Element is missing end tag.",
         "Unexpected end of input inside a tag; inferred the missing tag close so parsing can continue.",
