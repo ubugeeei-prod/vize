@@ -3,7 +3,7 @@ use crate::server::ServerState;
 use crate::virtual_code::BlockType;
 use tower_lsp::lsp_types::Url;
 
-const CONTEXT_SFC: &str = "<script setup>\r\nconst count = 1\r\n</script>\r\n<template><div title=\"雪😀\"  class=\"a\">{{count}}</div></template>";
+const CONTEXT_SFC: &str = "<script setup>\r\nconst count = 1\r\n</script>\r\n<template><div title=\"雪😀\"  class=\"a\">{{ count }}</div></template>";
 
 fn context_responses(ctx: &IdeContext<'_>) -> serde_json::Value {
     use crate::ide::{CodeActionService, TypeService, ecosystem, offset_to_position};
@@ -24,7 +24,10 @@ fn context_responses(ctx: &IdeContext<'_>) -> serde_json::Value {
 }
 
 fn context_at_count<'a>(state: &'a ServerState, uri: &'a Url, text: &str) -> IdeContext<'a> {
-    IdeContext::with_content(state, uri, text.rfind("count").unwrap_or(0), text.into())
+    let offset = text
+        .rfind("count")
+        .map_or(0, |start| start + "count".len() - 1);
+    IdeContext::with_content(state, uri, offset, text.into())
 }
 
 #[test]

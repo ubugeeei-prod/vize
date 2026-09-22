@@ -22,7 +22,7 @@ impl TypeChecker {
 
         // Check if we're in an interpolation
         if let Some((expr, expr_start)) = self.find_expression_at(template, offset) {
-            let relative_offset = offset - expr_start;
+            let relative_offset = offset.checked_sub(expr_start)?;
             return self.get_type_in_expression(&expr, relative_offset, ctx);
         }
 
@@ -40,7 +40,9 @@ impl TypeChecker {
                 let expr_end = abs_start + end;
 
                 if offset >= expr_start && offset <= expr_end {
-                    return Some((template[expr_start..expr_end].trim().into(), expr_start));
+                    let source = &template[expr_start..expr_end];
+                    let leading = source.len() - source.trim_start().len();
+                    return Some((source.trim().into(), expr_start + leading));
                 }
 
                 pos = abs_start + end + 2;
