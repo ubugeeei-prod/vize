@@ -5,10 +5,69 @@
 //! Map v3 segments (in `vize_atelier_core`) and, here, as
 //! [`ProjectionMapping`] rows, so a projection emitted through the document
 //! needs no mapping model of its own.
+//!
+//! [`virtual_ts_document`] is the checker's virtual TypeScript module in that
+//! same document. The text is the generator's code, moved unchanged.
+
+use std::ops::Range;
 
 use vize_atelier_core::codegen::document::{EmitDocument, SpanLink};
+use vize_s0::Span;
 
 use super::{ProjectionMapping, VizeMapping, VizeSubSpan};
+
+/// The checker's virtual TypeScript module as an S4 emission document.
+///
+/// `code` moves into the document unchanged, so snapshots and the
+/// content-mapper protocol keep the generator's bytes. Each non-empty row
+/// and sub-span becomes a link. [`ProjectionMapping::from_emit_document`]
+/// nests a link inside the previous row when its generated range sits inside
+/// that row. The generator also emits those overlaps as their own rows, so
+/// the checker keeps that mapping and does not replace it with the nested
+/// reading.
+pub fn virtual_ts_document(code: vize_s0::String, spans: &[VizeMapping]) -> EmitDocument {
+    let mut links = Vec::new();
+    for span in spans {
+        push_link(&mut links, &span.gen_range, &span.src_range);
+        for sub in &span.sub_spans {
+            push_link(&mut links, &sub.gen_range, &sub.src_range);
+        }
+    }
+    EmitDocument::from_parts(code, links)
+}
+
+/// Move `output`'s code through [`virtual_ts_document`] and return it.
+///
+/// The mapping stays the generator's. Nested generated ranges are links on
+/// the document, and folding those links would merge rows the generator
+/// keeps separate.
+pub(crate) fn publish_virtual_ts(
+    mut output: super::super::types::VirtualTsOutput,
+) -> super::super::types::VirtualTsOutput {
+    let code = std::mem::take(&mut output.code);
+    output.code = virtual_ts_document(code, output.mapping.spans()).into_string();
+    output
+}
+
+fn push_link(links: &mut Vec<SpanLink>, generated: &Range<usize>, authored: &Range<usize>) {
+    let (Ok(generated_start), Ok(generated_end), Ok(authored_start), Ok(authored_end)) = (
+        u32::try_from(generated.start),
+        u32::try_from(generated.end),
+        u32::try_from(authored.start),
+        u32::try_from(authored.end),
+    ) else {
+        return;
+    };
+    if generated_start >= generated_end || authored_start >= authored_end {
+        return;
+    }
+    links.push(SpanLink {
+        generated: Span::new(generated_start, generated_end),
+        authored: Span::new(authored_start, authored_end),
+        name: None,
+        segment: true,
+    });
+}
 
 impl ProjectionMapping {
     /// Rows for the range links of an S4 emission document, in emission
@@ -49,9 +108,77 @@ impl ProjectionMapping {
 
 #[cfg(test)]
 mod tests {
-    use super::{ProjectionMapping, VizeMapping, VizeSubSpan};
+    use super::{ProjectionMapping, VizeMapping, VizeSubSpan, virtual_ts_document};
     use vize_atelier_core::codegen::document::EmitDocument;
     use vize_s0::Span;
+
+    #[test]
+    fn virtual_ts_document_keeps_the_code_and_the_rows() {
+        let code = "return _ctx.a + _ctx.b;";
+        let mut expression = VizeMapping::new(7..22, 13..18);
+        expression.sub_spans = vec![
+            VizeSubSpan {
+                gen_range: 7..13,
+                src_range: 13..14,
+            },
+            VizeSubSpan {
+                gen_range: 16..22,
+                src_range: 17..18,
+            },
+        ];
+        let spans = vec![VizeMapping::new(0..6, 0..6), expression];
+        let document = virtual_ts_document(vize_s0::String::new(code), &spans);
+        assert_eq!(document.as_str(), code);
+        assert_eq!(
+            ProjectionMapping::from_emit_document(&document).spans(),
+            spans.as_slice()
+        );
+    }
+
+    #[test]
+    fn checker_document_matches_the_generator_on_an_sfc() {
+        let source = r#"<script setup lang="ts">
+import { ref } from 'vue'
+const message = ref('Hello')
+</script>
+<template>
+  <p>{{ message }}</p>
+  <button @click="message = 'x'">ok</button>
+</template>
+"#;
+        let descriptor =
+            vize_atelier_sfc::parse_sfc(source, vize_atelier_sfc::SfcParseOptions::default())
+                .expect("sfc");
+        let template = descriptor.template.as_ref().expect("template");
+        let allocator = vize_carton::Allocator::new();
+        let (root, _) = vize_armature::parse(&allocator, &template.content);
+        let summary = vize_atelier_sfc::croquis::analyze_sfc_descriptor(
+            &descriptor,
+            Some(&root),
+            vize_atelier_sfc::croquis::SfcCroquisOptions::full(),
+        );
+        let script = descriptor
+            .script_setup
+            .as_ref()
+            .map(|block| block.content.as_ref());
+        let output = crate::virtual_ts::generate_virtual_ts(
+            &summary,
+            script,
+            Some(&root),
+            template.loc.start as u32,
+        );
+        let document = virtual_ts_document(output.code.clone(), output.mapping.spans());
+        assert_eq!(document.as_str(), output.code.as_str());
+        // This fixture's generated ranges do not nest, so the document's
+        // reading matches the generator row for row. Overlapping rows stay
+        // on the generator mapping the checker stores.
+        assert_eq!(
+            ProjectionMapping::from_emit_document(&document).spans(),
+            output.mapping.spans()
+        );
+        assert!(!output.code.is_empty());
+        assert!(!output.mapping.is_empty());
+    }
 
     #[test]
     fn document_links_become_rows_with_identifier_sub_spans() {

@@ -22,7 +22,7 @@ Support and deprecation guarantees are defined in the
 - `TypeContext`
 - `BatchTypeChecker` with the `native` feature
 - `SourceMap`
-- `VirtualTsGenerator` with the `native` feature
+- `generate_virtual_ts` with the `native` feature
 
 ## Related Crates
 

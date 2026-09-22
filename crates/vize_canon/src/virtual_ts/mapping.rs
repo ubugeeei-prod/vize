@@ -16,6 +16,8 @@ mod document;
 mod model;
 mod rows;
 
+pub(crate) use document::publish_virtual_ts;
+pub use document::virtual_ts_document;
 pub use model::ProjectionMapping;
 pub use rows::{
     ProjectionFeatures, ProjectionMeta, ProjectionRow, ProjectionSpanKind, VizeMapping, VizeSubSpan,

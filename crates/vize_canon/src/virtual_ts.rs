@@ -63,7 +63,7 @@ pub use helpers::{
 pub(crate) use helpers::{push_ts_string_literal, to_safe_identifier};
 pub use mapping::{
     ProjectionFeatures, ProjectionMapping, ProjectionMeta, ProjectionRow, ProjectionSpanKind,
-    VizeMapping, VizeSubSpan,
+    VizeMapping, VizeSubSpan, virtual_ts_document,
 };
 pub use pattern_diagnostics::is_unreachable_pattern_diagnostic;
 pub use semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};

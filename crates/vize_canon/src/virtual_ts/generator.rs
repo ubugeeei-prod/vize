@@ -860,8 +860,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     component_export::emit_component_default_export(&mut ts, generation_options.component_name);
 
-    VirtualTsOutput {
+    super::mapping::publish_virtual_ts(VirtualTsOutput {
         code: ts,
         mapping: super::mapping::ProjectionMapping::from_parts(mappings, semantic_links),
-    }
+    })
 }

@@ -32,7 +32,6 @@ mod source_policy;
 mod type_checker;
 pub(crate) mod virtual_project;
 pub(crate) mod virtual_specifier_message;
-mod virtual_ts;
 
 pub use error::{CorsaError, CorsaNotFoundError, CorsaResult, PackageManager};
 pub use executor::CorsaExecutor;
@@ -58,7 +57,6 @@ pub use virtual_project::{
     scan_package_route_reachability, snapshot_tsconfig_compiler_options,
 };
 pub use virtual_specifier_message::{AUTHORED_VUE_TS_SENTINEL, restore_virtual_vue_specifiers};
-pub use virtual_ts::VirtualTsGenerator;
 
 pub(crate) use virtual_specifier_message::AUTHORED_VUE_TS_ALIAS_SENTINEL;
 

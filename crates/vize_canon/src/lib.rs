@@ -144,7 +144,7 @@ pub use batch::{
     CorsaError, CorsaExecutor, CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult,
     DeclarationOutput, Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap,
     IncrementalCheckMetrics, PackageManager, TypeCheckResult as BatchTypeCheckResult,
-    TypeChecker as BatchTypeCheckerTrait, VirtualFile, VirtualProject, VirtualTsGenerator,
+    TypeChecker as BatchTypeCheckerTrait, VirtualFile, VirtualProject,
     generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
     project_virtual_lock_paths, project_virtual_root, snapshot_tsconfig_compiler_options,
 };
