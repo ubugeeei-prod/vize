@@ -66,8 +66,9 @@ const PREFIX_LANE: &[Reason] = &[
 ];
 
 /// Inline render-function refusals (P3-17), covered by `emit_hoist_gap.rs`
-/// under the production SFC option shape.
-const INLINE_LANE: &[Reason] = &[Reason::HoistConstantGap, Reason::UnrefAcrossReorderedSlots];
+/// under the production SFC option shape. `_unref` across reordered slots
+/// now registers at the authored read, so that bucket is retired.
+const INLINE_LANE: &[Reason] = &[Reason::HoistConstantGap];
 
 /// Build-shape refusals: the option is real but this build cannot honour
 /// it (`--no-default-features` drops the `std`-only TS lane).
@@ -79,6 +80,7 @@ const RETIRED: &[Reason] = &[
     Reason::DynamicOnHasModifiers,
     Reason::ObjectBindHasModifiers,
     Reason::ObjectOnHasModifiers,
+    Reason::UnrefAcrossReorderedSlots,
 ];
 
 #[test]

@@ -136,12 +136,12 @@ fn surfaces_outside_the_gap_keep_emitting_with_shipped_parity() {
 }
 
 #[test]
-fn unref_across_reordered_slot_objects_is_refused_on_the_inline_lane() {
+fn unref_across_reordered_slot_objects_matches_the_shipped_lane() {
     // Named slot templates print ahead of the default content they follow
-    // in source; `_unref`'s registration point then differs from the
-    // shipped transform's, so the inline lane refuses the template.
+    // in source. `_unref` still registers at the first authored read.
     let source = r#"<Card><p v-if="items">{{ draft }}</p><template #footer><i>{{ draft }}</i></template></Card>"#;
-    assert_eq!(refused(source), Reason::UnrefAcrossReorderedSlots);
+    let emitted = s2(source, true).unwrap_or_else(|error| panic!("{source:?}: {error:?}"));
+    assert_eq!(emitted, shipped(source, true), "{source:?}");
     // Without `_unref`, or without a named template, the order is shared.
     for source in [
         r#"<Card><p v-if="items">{{ items }}</p><template #footer><i>{{ items }}</i></template></Card>"#,

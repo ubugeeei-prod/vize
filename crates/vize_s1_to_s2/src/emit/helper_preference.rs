@@ -1,6 +1,7 @@
 //! Transform-analogue helper pre-registration for the DOM emitter.
 
 mod slot_order;
+mod unref;
 
 use vize_davinci::side_table::SideTable;
 use vize_s0::ensure_sufficient_stack;
@@ -28,6 +29,10 @@ pub(super) struct PreferCx<'a> {
     /// during the transform (`lane::element`, which matches the tag
     /// verbatim — the camelize/PascalCase widening is codegen's alone).
     pub(super) bindings: Option<&'a BindingTable>,
+    /// Inline render closures wrap setup `let` reads in `_unref`.
+    pub(super) inline: bool,
+    /// Preference-walk visit of the first authored `_unref`, if any.
+    pub(super) authored_unref: core::cell::Cell<u32>,
 }
 
 impl PreferCx<'_> {
@@ -102,6 +107,7 @@ fn prefer_op_helpers(
 ) {
     let id = walk.mint();
     let visit = walk.visits();
+    unref::note_op(cx, op, visit);
     buf.set_prefer_visit(visit);
     match op {
         Op::Element(element) if sfc_style::is_carrier_element(element) => {

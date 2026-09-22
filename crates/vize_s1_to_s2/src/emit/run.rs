@@ -127,8 +127,11 @@ pub(super) fn emit_dom_observed<'f>(
         facts,
         for_wrappers: &lowered.for_wrappers,
         bindings: options.bindings,
+        inline: options.inline,
+        authored_unref: core::cell::Cell::new(u32::MAX),
     };
     helper_preference::prefer_helpers(&mut cx.buf, &prefer_cx, &mut helper_walk, &lowered.root);
+    let authored_unref = prefer_cx.authored_unref.get();
     fragment::prefer_root_fragment(&mut cx.buf, &lowered.root);
     cx.buf
         .push(options.mode.render_signature(options.bindings.is_some()));
@@ -162,18 +165,15 @@ pub(super) fn emit_dom_observed<'f>(
     cx.buf.push("}");
     // `_unref` is a *transform* registration: it lists with the pre-walk's
     // preferred helpers, at the op whose expression needed it - ahead of a
-    // structural helper that op registers later (`renderList`).
-    let unref_visit = cx.used_unref.get();
-    // The `_unref` registration point is the first *emitted* use; the shipped
-    // transform registers it at the first *authored* one. They differ only
-    // when slot objects print named templates ahead of earlier default
-    // content, so that combination is refused rather than guessed (P3-17).
-    if unref_visit != u32::MAX && cx.reordered_slots {
-        return Err(EmitError::unsupported_at(
-            super::error::UnsupportedReason::UnrefAcrossReorderedSlots,
-            vize_s0::Span::new(0, 0),
-        ));
-    }
+    // structural helper that op registers later (`renderList`). Named slot
+    // templates print ahead of earlier default content, so the emit walk's
+    // first use is not the authored one; the pre-walk recorded that visit.
+    let emitted_unref = cx.used_unref.get();
+    let unref_visit = if cx.reordered_slots && authored_unref != u32::MAX {
+        authored_unref
+    } else {
+        emitted_unref
+    };
     if unref_visit != u32::MAX {
         cx.buf.prefer_at_visit(Helper::Unref, unref_visit);
         cx.buf.use_helper(Helper::Unref);
