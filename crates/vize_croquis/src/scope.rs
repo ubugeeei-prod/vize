@@ -22,8 +22,8 @@ mod types;
 pub use chain::{Scope, ScopeChain};
 pub use types::{
     BindingFlags, BlockKind, BlockScopeData, CallbackScopeData, ClientOnlyScopeData,
-    ClosureScopeData, EventHandlerScopeData, ExternalModuleScopeData, JsGlobalScopeData, JsRuntime,
-    NonScriptSetupScopeData, PARAM_INLINE_CAP, ParamNames, ParentScopes, ScopeBinding, ScopeData,
-    ScopeId, ScopeKind, ScriptSetupScopeData, Span, UniversalScopeData, VForScopeData,
-    VSlotScopeData, VueGlobalScopeData,
+    ClosureScopeData, EventHandlerScopeData, ExternalModuleScopeData, ImportedExport,
+    JsGlobalScopeData, JsRuntime, NonScriptSetupScopeData, PARAM_INLINE_CAP, ParamNames,
+    ParentScopes, ScopeBinding, ScopeData, ScopeId, ScopeKind, ScriptSetupScopeData, Span,
+    UniversalScopeData, VForScopeData, VSlotScopeData, VueGlobalScopeData,
 };

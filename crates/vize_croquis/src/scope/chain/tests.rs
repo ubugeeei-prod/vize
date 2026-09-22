@@ -528,6 +528,7 @@ fn test_external_module_scope() {
         ExternalModuleScopeData {
             source: CompactString::new("vue"),
             is_type_only: false,
+            exports: Vec::new(),
         },
         0,
         50,

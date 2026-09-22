@@ -18,6 +18,7 @@
 //! | ----- | --- | ---- |
 //! | [`Bindings`] | [`BindingKey`] — the script-setup marker, then binding names | P4-3a |
 //! | [`UndefinedRefs`] | walk-order ordinal | P4-3a |
+//! | [`ComponentUsages`] | [`ComponentIdentity`] — module plus exported name | P4-3b |
 //!
 //! Every group carries a declarative specification and a naive evaluator in
 //! [`spec`] (TS-34, the Polonius discipline).
@@ -46,10 +47,12 @@
 //! ```
 
 pub mod bindings;
+pub mod components;
 pub mod spec;
 pub mod undefined_refs;
 
 pub use bindings::{BindingFact, BindingKey, Bindings, BindingsTable};
+pub use components::{ComponentIdentity, ComponentUsageSite, ComponentUsages};
 pub use undefined_refs::UndefinedRefs;
 pub use vize_davinci::fact::{
     Demand, FactConsumer, FactError, FactGroup, FactManager, FactRegistry, FactTable, FactView,
@@ -62,6 +65,7 @@ use crate::Croquis;
 pub const CROQUIS_FACTS: FactRegistry<Croquis> = FactRegistry::new(&[
     ProducerEntry::of::<Bindings>(),
     ProducerEntry::of::<UndefinedRefs>(),
+    ProducerEntry::of::<ComponentUsages>(),
 ]);
 
 /// One drawn [`Croquis`] and the facts computed over it.
@@ -111,7 +115,7 @@ impl<'c> CroquisFacts<'c> {
 #[cfg(test)]
 mod tests {
     use super::{Bindings, CROQUIS_FACTS, CroquisFacts, Demand, FactConsumer, FactGroup};
-    use super::{FactError, UndefinedRefs};
+    use super::{ComponentUsages, FactError, UndefinedRefs};
     use crate::Croquis;
     use vize_davinci::fact::ids;
 
@@ -125,11 +129,14 @@ mod tests {
     fn the_registry_holds_the_allocated_ids() {
         assert_eq!(
             CROQUIS_FACTS.registered(),
-            Demand::NONE.with(ids::BINDINGS).with(ids::UNDEFINED_REFS)
+            Demand::NONE
+                .with(ids::BINDINGS)
+                .with(ids::UNDEFINED_REFS)
+                .with(ids::COMPONENT_USAGES)
         );
         assert_eq!(
-            (Bindings::ID, UndefinedRefs::ID),
-            (ids::BINDINGS, ids::UNDEFINED_REFS)
+            (Bindings::ID, UndefinedRefs::ID, ComponentUsages::ID),
+            (ids::BINDINGS, ids::UNDEFINED_REFS, ids::COMPONENT_USAGES)
         );
     }
 

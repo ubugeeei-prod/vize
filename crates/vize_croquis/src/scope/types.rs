@@ -6,7 +6,7 @@ mod scope_data;
 pub use binding::{BindingFlags, ScopeBinding, Span};
 pub use scope_data::{
     BlockKind, BlockScopeData, CallbackScopeData, ClientOnlyScopeData, ClosureScopeData,
-    EventHandlerScopeData, ExternalModuleScopeData, JsGlobalScopeData, JsRuntime,
+    EventHandlerScopeData, ExternalModuleScopeData, ImportedExport, JsGlobalScopeData, JsRuntime,
     NonScriptSetupScopeData, ScopeData, ScriptSetupScopeData, UniversalScopeData, VForScopeData,
     VSlotScopeData, VueGlobalScopeData,
 };
