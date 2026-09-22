@@ -143,6 +143,7 @@ are native; `v-slot="p"` now reads `p.x` (not `_slotProps0.p.x`) in both lanes.
 _Inputs and element vocabulary 2026-09-22:_ `v-model` on inputs (text,
 checkbox, radio, `.lazy`/`.number`/`.trim`) and `p`, `a`, `form`, `h1`-`h6` are
 native; the P3-4 mounted model references now run through the native lane.
+`<component :is>` is native too (`createDynamicComponent`).
 
 **P3-7 VDOM patch flags from facts.** `patch_flag.rs` inference replaced by
 lattice-fact consumption; flags become explicit S3 decisions (or S2→S4

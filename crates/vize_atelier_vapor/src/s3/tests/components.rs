@@ -5,6 +5,39 @@ use crate::s3::{
 use vize_carton::Allocator;
 use vize_s3::operand::OperandRole;
 
+/// `<component :is>` is created dynamically with its props and slots, byte
+/// for byte as the retained lane creates it at the template root.
+#[test]
+fn dynamic_components_match_the_retained_lane() {
+    for source in [
+        r#"<component :is="view" :msg="m" />"#,
+        r#"<component :is="ok ? A : B" @done="save">slot {{ x }}</component>"#,
+        r#"<component :is="'div'"><template #head>h</template></component>"#,
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporS3BridgeStatus::Accepted(_)),
+            "{source}: {status:?}"
+        );
+        for prefix_identifiers in [false, true] {
+            let compile = |davinci_retained_lane| {
+                crate::compile_vapor(
+                    &allocator,
+                    source,
+                    crate::VaporCompilerOptions {
+                        prefix_identifiers,
+                        davinci_retained_lane,
+                        ..Default::default()
+                    },
+                )
+                .code
+            };
+            assert_eq!(compile(false), compile(true), "{source}");
+        }
+    }
+}
+
 #[test]
 fn component_outlet_and_fragment_shapes_are_admitted() {
     for source in [
@@ -42,7 +75,9 @@ fn unsupported_component_shapes_select_exact_legacy_reasons() {
             r#"<MyComp><template #head>H</template>body</MyComp>"#,
             Component,
         ),
-        (r#"<component :is="view" />"#, Component),
+        (r#"<component is="view" />"#, Component),
+        (r#"<component />"#, Component),
+        (r#"<div :is="view"></div>"#, Binding),
         (r#"<Teleport to="body"><div></div></Teleport>"#, Component),
         (r#"<KeepAlive><MyComp /></KeepAlive>"#, Component),
         (r#"<MyComp @change.once="save" />"#, Component),

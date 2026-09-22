@@ -182,7 +182,7 @@ fn generic_graph_verification_does_not_imply_backend_admission() {
 fn unsupported_source_semantics_have_explicit_legacy_routes() {
     let allocator = Allocator::new();
     for source in [
-        "<component :is=\"view\" />",
+        "<component is=\"view\" />",
         "<template v-if=\"ok\" :key=\"k\"><div></div><div></div></template>",
         "<div v-for=\"x in (xs as any)\"></div>",
         "<div>{{ one as number }}</div>",

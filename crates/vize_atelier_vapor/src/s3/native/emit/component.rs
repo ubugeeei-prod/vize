@@ -21,7 +21,7 @@ impl<'a> Emitter<'a, '_> {
         placement: Option<(usize, usize)>,
         block: &mut BlockIRNode<'a>,
     ) {
-        let Content::Component { tag, ref props } = self.artifact.nodes[index].content else {
+        let Content::Component { tag, ref props, is } = self.artifact.nodes[index].content else {
             unreachable!("component payload checked by the caller")
         };
         let props = props.clone();
@@ -56,11 +56,15 @@ impl<'a> Emitter<'a, '_> {
                 tag,
                 props,
                 slots,
-                asset: true,
+                asset: is.is_none(),
                 once: false,
                 dynamic_slots: false,
-                kind: ComponentKind::Regular,
-                is_expr: None,
+                kind: if is.is_some() {
+                    ComponentKind::Dynamic
+                } else {
+                    ComponentKind::Regular
+                },
+                is_expr: is.map(|is| self.expression(is, false)),
                 v_show: None,
                 parent: placement.map(|(parent, _)| parent),
                 anchor: placement.map(|(_, anchor)| anchor),

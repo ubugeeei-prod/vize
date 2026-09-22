@@ -135,14 +135,14 @@ fn named<'a>(
         }
         modifiers.push(value.value.text);
     }
-    // `key` is admitted only as a loop key; its owner is checked once the
-    // region tree is known.
+    // `key` is admitted only as a loop key and `is` only on `<component>`;
+    // their owners are checked once the region tree is known.
     if values.len() != 3 + modifiers.len()
         || name.value.kind != ValueKind::Literal
         || if event {
             !event_name(name.value.text)
         } else {
-            name.value.text != "key" && !attribute_name(name.value.text)
+            !matches!(name.value.text, "key" | "is") && !attribute_name(name.value.text)
         }
     {
         return Err(LegacyReason::Binding.into());

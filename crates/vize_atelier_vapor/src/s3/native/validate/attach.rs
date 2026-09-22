@@ -68,6 +68,17 @@ pub(super) fn bindings<'a>(
         }
         match &mut nodes[index].content {
             Content::Element { .. } => {}
+            // A `<component>` takes its `:is` once; everything else is a prop.
+            Content::Component {
+                tag: "component",
+                is,
+                ..
+            } if binding.kind == BindingKind::Prop && binding.name == "is" => {
+                if is.replace(binding.value).is_some() {
+                    return Err(LegacyReason::Component.into());
+                }
+                continue;
+            }
             Content::Component { props, .. } => {
                 prop(props, binding, position, fresh, true)?;
                 continue;
@@ -87,6 +98,9 @@ pub(super) fn bindings<'a>(
             if binding.merge.is_none() {
                 return Err(LegacyReason::Binding.into());
             }
+        }
+        if binding.kind == BindingKind::Prop && binding.name == "is" {
+            return Err(LegacyReason::Binding.into());
         }
         if binding.kind == BindingKind::Prop && binding.name == "key" {
             // Only the body element of an element-carried loop owns a key.
@@ -109,6 +123,14 @@ pub(super) fn bindings<'a>(
         nodes[index].bindings.push(binding);
     }
     for node in nodes.iter_mut() {
+        if let Content::Component {
+            tag: "component",
+            is: None,
+            ..
+        } = node.content
+        {
+            return Err(LegacyReason::Component.into());
+        }
         if let Content::Component { props, .. } | Content::Outlet { props, .. } = &mut node.content
         {
             props.sort_by_key(|prop| prop.position);

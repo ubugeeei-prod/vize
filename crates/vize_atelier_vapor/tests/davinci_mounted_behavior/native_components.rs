@@ -205,3 +205,44 @@ fn native_root_fragments_and_text_update_each_node() {
         );
     }
 }
+
+#[test]
+fn native_dynamic_component_switches_between_registered_children() {
+    // Nested child roots: the VDOM runner leaves a text-only component root
+    // stale after a prop patch, with or without `<component>`.
+    let a: Child<'_> = (
+        "PanelA",
+        r#"<p data-id="a"><b>A {{ label }}</b></p>"#,
+        &["label"],
+        &[],
+    );
+    let b: Child<'_> = (
+        "PanelB",
+        r#"<p data-id="b"><i>B {{ label }}</i></p>"#,
+        &["label"],
+        &[],
+    );
+    let view = |tag: &str, id: &str, text: &str, identity: usize| {
+        json!({
+            "tree": [element("main", json!({"data-id": "root"}), json!([
+                element("p", json!({"data-id": id}), json!([element(tag, json!({}), json!([text]))]))
+            ]))],
+            "events": [],
+            "identities": [["root", 0], [id, identity]]
+        })
+    };
+    assert_components(
+        r#"<main data-id="root"><component :is="kind" :label="label"></component></main>"#,
+        &[a, b],
+        json!({"kind": "PanelA", "label": "x"}),
+        json!([{"patch": {"label": "y"}}, {"patch": {"kind": "PanelB"}}, {"patch": {"kind": "PanelA"}}]),
+        true,
+        &json!([
+            view("b", "a", "A x", 1),
+            view("b", "a", "A y", 1),
+            view("i", "b", "B y", 3),
+            view("b", "a", "A y", 5),
+            {"tree": [], "events": [], "identities": []}
+        ]),
+    );
+}

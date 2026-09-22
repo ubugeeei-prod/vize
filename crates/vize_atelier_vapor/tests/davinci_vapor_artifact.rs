@@ -74,6 +74,8 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
         // The mounted named/scoped slot scenarios.
         r#"<main data-id="root"><List :rows="rows"><template #row="{ row }"><b :data-id="'b' + row.id">{{ row.label }}</b></template><template #foot>total {{ rows.length }}</template></List></main>"#,
         r#"<main data-id="root"><Counter :count="n" v-slot="p"><b data-id="v">{{ p.n }}/{{ p.double }}</b></Counter></main>"#,
+        // The mounted dynamic-component scenario.
+        r#"<main data-id="root"><component :is="kind" :label="label"></component></main>"#,
         // The `vapor_native_pair/templates` bench fixture.
         r#"<main><template v-if="open"><header>{{ title }}</header><section>{{ lead }}</section></template><ul><template v-for="row in rows" :key="row.id"><li>{{ row.label }}</li><li v-if="row.note">{{ row.note }}</li></template></ul></main>"#,
     ];

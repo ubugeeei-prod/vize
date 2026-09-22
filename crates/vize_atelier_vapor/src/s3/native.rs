@@ -38,10 +38,12 @@ enum Content<'a> {
     If { branches: std::vec::Vec<Branch<'a>> },
     /// One loop; `children` is its body (one element, or a template fragment).
     For(Loop<'a>),
-    /// A resolved component; `children` is its default slot content.
+    /// A resolved component; `children` is its slot content. `is` is the
+    /// `:is` expression of a `<component>`, which is created dynamically.
     Component {
         tag: &'a str,
         props: std::vec::Vec<Prop<'a>>,
+        is: Option<Expr<'a>>,
     },
     /// A `<slot>` outlet; `children` is its fallback content.
     Outlet {

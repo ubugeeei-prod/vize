@@ -17,6 +17,7 @@ pub(super) fn component<'a>(values: &[Operand<'a>]) -> Result<Content<'a>> {
     Ok(Content::Component {
         tag: tag.value.text,
         props,
+        is: None,
     })
 }
 
@@ -72,13 +73,13 @@ fn static_props<'a>(values: &[Operand<'a>], head: Role) -> Result<std::vec::Vec<
     Ok(props)
 }
 
-/// Ordinary user components. Built-ins, dynamic components and self
-/// references have their own runtime contracts and stay on the legacy lane.
+/// Ordinary user components and `<component :is>` (its `:is` checked once
+/// bindings attach). Built-ins and self references have their own runtime
+/// contracts and stay on the legacy lane.
 fn component_tag(tag: &str) -> bool {
     !matches!(
         tag,
-        "component"
-            | "Component"
+        "Component"
             | "Teleport"
             | "teleport"
             | "KeepAlive"
