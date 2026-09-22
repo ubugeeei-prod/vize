@@ -19,7 +19,9 @@ _None._
 
 ## Naive grep disagreements (resolved/grep)
 
-| product     | resolved | grep |
-| ----------- | -------: | ---: |
-| `BlockKind` |        0 |   23 |
-| `Scope`     |        0 |    1 |
+| product            | resolved | grep |
+| ------------------ | -------: | ---: |
+| `BlockKind`        |        0 |   27 |
+| `Scope`            |        0 |    1 |
+| `Span`             |        0 |    3 |
+| `Croquis.bindings` |        0 |    3 |
