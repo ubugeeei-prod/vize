@@ -25,11 +25,11 @@ use crate::codegen::element::spanned_props::{
 use crate::s4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegmentKind as Kind,
 };
-use vize_atelier_core::codegen::spanned::SpannedText;
+use vize_atelier_core::codegen::document::EmitDocument;
 
 /// The merged attributes of one element and the content a temp owns.
 pub(super) struct Merged {
-    pub(super) attrs: SpannedText,
+    pub(super) attrs: EmitDocument,
     pub(super) content: Option<String>,
 }
 
@@ -77,7 +77,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         for segment in attached {
             if let Source::Binding(s2::BindingOp::VueDirective(directive)) = segment.source {
                 let props = self.directive_props(directive)?;
-                args.push(SpannedText::from(props));
+                args.push(EmitDocument::from(props));
                 directives += 1;
             }
         }
@@ -138,7 +138,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         } else {
             String::default()
         };
-        let mut attrs = SpannedText::plain("_ssrRenderAttrs(");
+        let mut attrs = EmitDocument::plain("_ssrRenderAttrs(");
         attrs.push_spanned(&merged);
         attrs.push_str(&tag_arg);
         attrs.push_str(")");
@@ -150,7 +150,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         attached: &Attached<'_, '_>,
         tag: &str,
         inherit: bool,
-    ) -> Result<std::vec::Vec<SpannedText>> {
+    ) -> Result<std::vec::Vec<EmitDocument>> {
         let spans = self.ctx.spans_enabled();
         let mut args = std::vec::Vec::new();
         let mut entries: std::vec::Vec<VNodePropEntry> = std::vec::Vec::new();
@@ -185,7 +185,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                         match bind.name {
                             BindName::Spread => {
                                 self.flush(&mut entries, &mut args);
-                                args.push(SpannedText::from(value));
+                                args.push(EmitDocument::from(value));
                             }
                             BindName::Static(name) => {
                                 let key = if bind.camel {
@@ -236,11 +236,11 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         }
         self.flush(&mut entries, &mut args);
         if inherit {
-            args.push(SpannedText::plain("_attrs"));
+            args.push(EmitDocument::plain("_attrs"));
         }
         if let Some(exp) = show {
             let style = cstr!("(({exp}) ? null : {{ display: \"none\" }})");
-            args.push(SpannedText::from(component_props_object(&[
+            args.push(EmitDocument::from(component_props_object(&[
                 component_prop_entry("style", &style, false),
             ])));
         }
@@ -252,7 +252,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             } else {
                 self.merge(&args).as_str().into()
             };
-            args.push(SpannedText::from(cstr!(
+            args.push(EmitDocument::from(cstr!(
                 "_ssrGetDynamicModelProps({existing}, {model})"
             )));
         }
@@ -262,7 +262,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
     fn flush(
         &mut self,
         entries: &mut std::vec::Vec<VNodePropEntry>,
-        args: &mut std::vec::Vec<SpannedText>,
+        args: &mut std::vec::Vec<EmitDocument>,
     ) {
         if entries.is_empty() {
             return;
@@ -272,7 +272,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
     }
 
     /// One argument stays itself; several merge through `_mergeProps`.
-    pub(super) fn merge(&mut self, args: &[SpannedText]) -> SpannedText {
+    pub(super) fn merge(&mut self, args: &[EmitDocument]) -> EmitDocument {
         if let [only] = args {
             return only.clone();
         }
@@ -282,8 +282,8 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
 }
 
 /// `temp = merged`, keeping `merged`'s anchors.
-fn assigned(temp: &str, merged: &SpannedText) -> SpannedText {
-    let mut out = SpannedText::plain(temp);
+fn assigned(temp: &str, merged: &EmitDocument) -> EmitDocument {
+    let mut out = EmitDocument::plain(temp);
     out.push_str(" = ");
     out.push_spanned(merged);
     out
@@ -302,12 +302,12 @@ fn static_entry(
         .and_then(|_| attribute_value_start(em.ctx.source, attr.span, name));
     let spanned = match start {
         Some(start) if value.len() >= 2 => {
-            let mut spanned = SpannedText::plain("\"");
+            let mut spanned = EmitDocument::plain("\"");
             spanned.push_mapped(&value[1..value.len() - 1], start);
             spanned.push_str("\"");
             spanned
         }
-        _ => SpannedText::plain(value),
+        _ => EmitDocument::plain(value),
     };
     bound_entry(name, Some(attr.span.start), spanned)
 }

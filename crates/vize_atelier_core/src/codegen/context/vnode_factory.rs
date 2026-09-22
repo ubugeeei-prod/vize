@@ -1,7 +1,7 @@
 use vize_s0::{FxHashMap, String, ToCompactString};
 
+use crate::codegen::document::EmitDocument;
 use crate::codegen::helpers::default_helper_alias;
-use crate::codegen::source_map::SourceMapBuilder;
 use crate::options::{CodegenExperimentalOptions, CodegenOptions};
 use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, RuntimeHelper};
@@ -36,9 +36,8 @@ impl CodegenContext {
         let component_name = experimental_options
             .component_name
             .or_else(|| options.component_name.clone());
-        let map_builder = options.source_map.then(SourceMapBuilder::new);
         Self {
-            code: String::with_capacity(4096),
+            out: EmitDocument::with_capacity(4096, options.source_map),
             indent_level: 0,
             ssr: options.ssr,
             helper_alias: default_helper_alias,
@@ -64,7 +63,6 @@ impl CodegenContext {
             static_cache: false,
             in_cached_static: false,
             v_if_branch_counter: 0,
-            map_builder,
             source: String::default(),
         }
     }
@@ -87,13 +85,13 @@ impl CodegenContext {
         debug_assert!(is_vnode_factory_helper(helper));
         if let Some(factory) = &self.vnode_factory {
             if helper == RuntimeHelper::OpenBlock {
-                self.code.push_str("_openBlock");
+                self.out.push_str("_openBlock");
             } else {
-                self.code.push_str(factory);
+                self.out.push_str(factory);
             }
         } else {
             self.used_helpers.add(helper);
-            self.code.push_str((self.helper_alias)(helper));
+            self.out.push_str((self.helper_alias)(helper));
         }
     }
 

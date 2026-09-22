@@ -3,15 +3,43 @@
 use super::{
     BlockIRNode, Box, ElementNode, ElementType, ExpressionNode, OperationNode, PropNode,
     SetTemplateRefIRNode, SimpleExpressionNode, String, TemplateChildNode, TransformContext,
-    append, cstr,
 };
+use vize_atelier_core::codegen::document::EmitDocument;
+use vize_carton::Span;
 use vize_carton::ensure_sufficient_stack;
 
 /// Generate element template string (recursively includes static children)
 pub(crate) fn generate_element_template(el: &ElementNode<'_>, scope_id: Option<&str>) -> String {
-    let mut template = cstr!("<{}", el.tag);
+    let mut template = EmitDocument::new(false);
+    write_element_template(&mut template, el, scope_id);
+    template.into_string()
+}
+
+/// [`generate_element_template`] linking the tag names, static attributes and
+/// text it copies to their authored ranges (Davinci P3-9); identical bytes.
+pub(crate) fn generate_element_template_spanned(
+    el: &ElementNode<'_>,
+    scope_id: Option<&str>,
+) -> EmitDocument {
+    let mut template = EmitDocument::default();
+    write_element_template(&mut template, el, scope_id);
+    template
+}
+
+fn write_element_template(
+    template: &mut EmitDocument,
+    el: &ElementNode<'_>,
+    scope_id: Option<&str>,
+) {
+    template.push_str("<");
+    let tag_start = el.loc.span.start + 1;
+    template.push_linked(
+        el.tag,
+        Span::new(tag_start, tag_start + el.tag.len() as u32),
+    );
     if let Some(scope_id) = scope_id {
-        append!(template, " {}", scope_id);
+        template.push_str(" ");
+        template.push_str(scope_id);
     }
 
     // Collect dynamic binding names to skip their static counterparts
@@ -39,45 +67,49 @@ pub(crate) fn generate_element_template(el: &ElementNode<'_>, scope_id: Option<&
             if dynamic_attrs.contains(attr.name) {
                 continue;
             }
+            template.push_str(" ");
+            template.push_linked(attr.name, attr.name_loc.span);
             if let Some(ref value) = attr.value {
-                append!(template, " {}=\"{}\"", attr.name, value.content);
-            } else {
-                append!(template, " {}", attr.name);
+                template.push_str("=\"");
+                template.push_linked(value.content, value.loc.span);
+                template.push_str("\"");
             }
         }
     }
 
     if is_void_element(el.tag) {
-        template.push('>');
+        template.push_str(">");
     } else if el.is_self_closing {
-        append!(template, "></{}>", el.tag);
+        template.push_str("></");
+        template.push_str(el.tag);
+        template.push_str(">");
     } else {
-        template.push('>');
+        template.push_str(">");
 
         // Recursively add template-backed children. `<template>` is a
         // transparent wrapper in Vapor just as it is in the main element
         // dispatcher, so its children contribute directly to the enclosing
         // element's static template instead of producing a component lookup.
-        append_child_templates(&mut template, &el.children, scope_id);
+        append_child_templates(template, &el.children, scope_id);
 
-        append!(template, "</{}>", el.tag);
+        template.push_str("</");
+        template.push_str(el.tag);
+        template.push_str(">");
     }
-
-    template
 }
 
 fn append_child_templates(
-    template: &mut String,
+    template: &mut EmitDocument,
     children: &[TemplateChildNode<'_>],
     scope_id: Option<&str>,
 ) {
     for child in children {
         match child {
             TemplateChildNode::Text(text) => {
-                template.push_str(&escape_html_text(text.content));
+                template.push_linked(&escape_html_text(text.content), text.loc.span);
             }
             TemplateChildNode::Interpolation(_) => {
-                template.push(' ');
+                template.push_str(" ");
             }
             TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Template => {
                 ensure_sufficient_stack(|| {
@@ -85,9 +117,7 @@ fn append_child_templates(
                 });
             }
             TemplateChildNode::Element(child_el) if is_template_backed_element(child_el) => {
-                let child_template =
-                    ensure_sufficient_stack(|| generate_element_template(child_el, scope_id));
-                template.push_str(&child_template);
+                ensure_sufficient_stack(|| write_element_template(template, child_el, scope_id));
             }
             TemplateChildNode::Element(_)
             | TemplateChildNode::If(_)

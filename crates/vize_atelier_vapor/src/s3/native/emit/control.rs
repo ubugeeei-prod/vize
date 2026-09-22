@@ -7,7 +7,7 @@
 
 use vize_carton::{Box, Vec, ensure_sufficient_stack};
 
-use super::super::{Content, Expr};
+use super::super::{AuthoredSpan, Content, Expr};
 use super::{Emitter, take};
 use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, NegativeBranch, OperationNode};
 
@@ -15,7 +15,7 @@ use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, NegativeBranch, OperationNode}
 /// parent's only child.
 pub(super) type Placement = (usize, usize, bool);
 
-type Branches<'s, 'a> = &'s [(Option<Expr<'a>>, &'s [usize])];
+type Branches<'s, 'a> = &'s [(Option<Expr<'a>>, AuthoredSpan, &'s [usize])];
 
 impl<'a> Emitter<'a, '_> {
     pub(super) fn control(
@@ -33,7 +33,9 @@ impl<'a> Emitter<'a, '_> {
             Content::If { branches } => {
                 let branches = take(self.allocator, branches);
                 let branches = Vec::from_iter_in(
-                    (branches.iter()).map(|branch| (branch.condition, branch.roots.as_slice())),
+                    branches
+                        .iter()
+                        .map(|branch| (branch.condition, branch.span, branch.roots.as_slice())),
                     &self.allocator,
                 );
                 let (condition, positive) = self.branch(&branches);
@@ -54,16 +56,27 @@ impl<'a> Emitter<'a, '_> {
                 let members = take(self.allocator, &mut self.artifact.nodes[index].children);
                 self.id();
                 let render = self.body(&members);
-                let alias = |value: Option<&'a str>| {
-                    value.map(|value| self.expression(Expr::plain(value), false))
+                let spans = body.spans;
+                let source_span = self.trimmed(spans.source);
+                // The legacy walk keys the loop by its carrier element (`<li`
+                // or `<template`), which the S3 op span still records.
+                if self.source.is_some() {
+                    self.units.insert(source_span.0, body.carrier_start);
+                }
+                let alias = |value: Option<&'a str>, span: Option<AuthoredSpan>| {
+                    value.map(|value| {
+                        self.spanned(Expr::plain(value), false, span.map(|s| self.trimmed(s)))
+                    })
                 };
                 let node = ForIRNode {
                     id,
-                    source: self.expression(body.source, false),
-                    value: alias(Some(body.value)),
-                    key: alias(body.key),
-                    index: alias(body.index),
-                    key_prop: body.key_prop.map(|key| self.expression(key, false)),
+                    source: self.spanned(body.source, false, Some(source_span)),
+                    value: alias(Some(body.value), spans.aliases[0]),
+                    key: alias(body.key, spans.aliases[1]),
+                    index: alias(body.index, spans.aliases[2]),
+                    key_prop: body.key_prop.map(|key| {
+                        self.spanned(key, false, spans.key_prop.map(|s| self.trimmed(s)))
+                    }),
                     render,
                     once: false,
                     component: false,
@@ -90,8 +103,25 @@ impl<'a> Emitter<'a, '_> {
         vize_carton::Box<'a, vize_atelier_core::SimpleExpressionNode<'a>>,
         BlockIRNode<'a>,
     ) {
-        let (condition, roots) = branches[0];
-        let condition = self.expression(condition.expect("validated leading condition"), false);
+        let (condition, span, roots) = branches[0];
+        let key = self.trimmed(span);
+        if self.source.is_some()
+            && let Some(start) = self.branch_anchor(key, roots)
+        {
+            self.units.insert(key.0, start);
+        }
+        // A trailing `v-else` keeps the carrier element span, so its `<` is
+        // the anchor even when the body is an unwrapped template fragment.
+        if let [_, (None, else_span, _), ..] = branches
+            && self.source.is_some()
+        {
+            self.else_units.insert(key.0, else_span.0);
+        }
+        let condition = self.spanned(
+            condition.expect("validated leading condition"),
+            false,
+            Some(key),
+        );
         self.id();
         (condition, self.body(roots))
     }
@@ -105,11 +135,11 @@ impl<'a> Emitter<'a, '_> {
         anchor: Option<usize>,
     ) -> Option<NegativeBranch<'a>> {
         ensure_sufficient_stack(|| match branches.first()? {
-            (None, roots) => {
+            (None, _, roots) => {
                 self.id();
                 Some(NegativeBranch::Block(self.body(roots)))
             }
-            (Some(_), _) => {
+            (Some(_), ..) => {
                 let (condition, positive) = self.branch(branches);
                 let negative = if branches.len() > 1 {
                     self.id();
@@ -129,5 +159,61 @@ impl<'a> Emitter<'a, '_> {
                 Some(NegativeBranch::If(Box::new_in(node, &self.allocator)))
             }
         })
+    }
+
+    /// Authored `<` of the branch carrier. The condition sits in that open
+    /// tag, so the tag's `<` is the same anchor the legacy branch loc uses
+    /// for both an element carrier and an unwrapped `<template>`.
+    fn branch_anchor(&self, condition: AuthoredSpan, roots: &[usize]) -> Option<u32> {
+        self.carrier_lt(condition.0)
+            .or_else(|| self.element_start_of(roots))
+    }
+
+    /// `<` of a single element root, when the carrier scan cannot see source.
+    fn element_start_of(&self, roots: &[usize]) -> Option<u32> {
+        let [root] = roots else {
+            return None;
+        };
+        match self.artifact.nodes[*root].content {
+            Content::Element { tag_span, .. } => Some(tag_span.0),
+            _ => None,
+        }
+    }
+
+    /// Start of the open tag that contains the authored byte `inside`.
+    fn carrier_lt(&self, inside: u32) -> Option<u32> {
+        let bytes = self.source?.as_bytes();
+        let mut i = inside as usize;
+        if i > bytes.len() {
+            return None;
+        }
+        while i > 0 && bytes[i - 1].is_ascii_whitespace() {
+            i -= 1;
+        }
+        if i == 0 {
+            return None;
+        }
+        i -= 1;
+        if matches!(bytes[i], b'"' | b'\'') {
+            if i == 0 {
+                return None;
+            }
+            i -= 1;
+        }
+        let mut quote = None;
+        loop {
+            let byte = bytes[i];
+            match quote {
+                Some(q) if byte == q => quote = None,
+                Some(_) => {}
+                None if byte == b'"' || byte == b'\'' => quote = Some(byte),
+                None if byte == b'<' => return Some(i as u32),
+                _ => {}
+            }
+            if i == 0 {
+                return None;
+            }
+            i -= 1;
+        }
     }
 }

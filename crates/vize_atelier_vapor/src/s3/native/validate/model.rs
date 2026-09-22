@@ -64,6 +64,10 @@ pub(super) fn model<'a>(
             modifiers,
             merge: None,
             position: 0,
+            spans: [
+                (read.span.start, read.span.end),
+                (read.span.start, read.span.end),
+            ],
         },
     ))
 }

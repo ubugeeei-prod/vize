@@ -87,13 +87,31 @@ pub(crate) enum VaporS3BridgeStatus<'a> {
 pub(crate) struct VaporS3Artifact<'a>(NativeArtifact<'a>);
 
 impl<'a> VaporS3Artifact<'a> {
+    #[cfg(test)]
     pub(crate) fn into_ir(
         self,
         allocator: &'a Allocator,
         source: &'a str,
         scope_id: Option<&str>,
     ) -> crate::ir::RootIRNode<'a> {
-        self.0.into_ir(allocator, source, scope_id)
+        self.into_ir_with_spans(allocator, source, scope_id, false)
+            .0
+    }
+
+    /// [`Self::into_ir`] that also returns the authored anchors when `spans`
+    /// is set (Davinci P3-9).
+    pub(crate) fn into_ir_with_spans(
+        self,
+        allocator: &'a Allocator,
+        source: &'a str,
+        scope_id: Option<&str>,
+        spans: bool,
+    ) -> (
+        crate::ir::RootIRNode<'a>,
+        Option<crate::generate::spans::VaporSourceSpans>,
+    ) {
+        self.0
+            .into_ir_with_spans(allocator, source, scope_id, spans)
     }
 }
 

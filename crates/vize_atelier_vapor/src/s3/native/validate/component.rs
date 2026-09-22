@@ -18,6 +18,7 @@ pub(super) fn component<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Res
     let props = static_props(values, Role::Tag, alloc)?;
     Ok(Content::Component {
         tag: tag.value.text,
+        tag_span: (tag.value.span.start, tag.value.span.end),
         props,
         is: None,
     })

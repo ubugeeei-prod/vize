@@ -19,12 +19,12 @@ use super::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     TemplateChildNode, ToCompactString, VNodePropEntry, cstr,
 };
-use vize_atelier_core::codegen::spanned::SpannedText;
+use vize_atelier_core::codegen::document::EmitDocument;
 use vize_s0::{camelize, is_builtin_directive};
 
 /// The merged attributes of one element and the content a temp owns.
 pub(super) struct MergedAttrs {
-    pub(super) attrs: SpannedText,
+    pub(super) attrs: EmitDocument,
     pub(super) content: Option<String>,
 }
 
@@ -112,7 +112,7 @@ impl<'a> SsrCodegenContext<'a> {
         let has_directives = custom_directives(el).next().is_some();
         for dir in custom_directives(el) {
             let props = self.directive_props(dir);
-            args.push(SpannedText::from(props));
+            args.push(EmitDocument::from(props));
         }
         if args.is_empty() {
             return None;
@@ -151,7 +151,7 @@ impl<'a> SsrCodegenContext<'a> {
         } else {
             String::default()
         };
-        let mut attrs = SpannedText::plain("_ssrRenderAttrs(");
+        let mut attrs = EmitDocument::plain("_ssrRenderAttrs(");
         attrs.push_spanned(&merged);
         attrs.push_str(&tag_arg);
         attrs.push_str(")");
@@ -166,7 +166,7 @@ impl<'a> SsrCodegenContext<'a> {
         &mut self,
         el: &ElementNode,
         inherit_attrs: bool,
-    ) -> std::vec::Vec<SpannedText> {
+    ) -> std::vec::Vec<EmitDocument> {
         let mut args = std::vec::Vec::new();
         let mut entries: std::vec::Vec<VNodePropEntry> = std::vec::Vec::new();
         let mut show = None;
@@ -192,7 +192,7 @@ impl<'a> SsrCodegenContext<'a> {
                         match &dir.arg {
                             None => {
                                 self.flush_entries(&mut entries, &mut args);
-                                args.push(SpannedText::from(value));
+                                args.push(EmitDocument::from(value));
                             }
                             Some(arg @ ExpressionNode::Simple(simple)) if simple.is_static => {
                                 // SSR keys take `.camel` but never the client
@@ -236,11 +236,11 @@ impl<'a> SsrCodegenContext<'a> {
         }
         self.flush_entries(&mut entries, &mut args);
         if inherit_attrs {
-            args.push(SpannedText::plain("_attrs"));
+            args.push(EmitDocument::plain("_attrs"));
         }
         if let Some(exp) = show {
             let style = cstr!("(({exp}) ? null : {{ display: \"none\" }})");
-            args.push(SpannedText::from(component_props_object(&[
+            args.push(EmitDocument::from(component_props_object(&[
                 component_prop_entry("style", &style, false),
             ])));
         }
@@ -251,7 +251,7 @@ impl<'a> SsrCodegenContext<'a> {
             } else {
                 self.merge_args(&args).as_str().into()
             };
-            args.push(SpannedText::from(cstr!(
+            args.push(EmitDocument::from(cstr!(
                 "_ssrGetDynamicModelProps({existing}, {model})"
             )));
         }
@@ -261,7 +261,7 @@ impl<'a> SsrCodegenContext<'a> {
     fn flush_entries(
         &mut self,
         entries: &mut std::vec::Vec<VNodePropEntry>,
-        args: &mut std::vec::Vec<SpannedText>,
+        args: &mut std::vec::Vec<EmitDocument>,
     ) {
         if entries.is_empty() {
             return;
@@ -271,7 +271,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// One argument stays itself; several merge through `_mergeProps`.
-    pub(super) fn merge_args(&mut self, args: &[SpannedText]) -> SpannedText {
+    pub(super) fn merge_args(&mut self, args: &[EmitDocument]) -> EmitDocument {
         if let [only] = args {
             return only.clone();
         }
@@ -281,8 +281,8 @@ impl<'a> SsrCodegenContext<'a> {
 }
 
 /// `temp = merged`, keeping `merged`'s anchors.
-fn assigned(temp: &str, merged: &SpannedText) -> SpannedText {
-    let mut out = SpannedText::plain(temp);
+fn assigned(temp: &str, merged: &EmitDocument) -> EmitDocument {
+    let mut out = EmitDocument::plain(temp);
     out.push_str(" = ");
     out.push_spanned(merged);
     out
