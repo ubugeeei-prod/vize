@@ -238,3 +238,32 @@ fn workspace_moonbit_paths_survive_the_isolated_worktree() {
     let command = super::pr_start::preparation_command(root, Some("moon"), None);
     assert_eq!(command.get_program(), "moon");
 }
+
+#[test]
+fn required_checks_include_uncreated_jobs_and_the_configured_app() {
+    let rules = json!([{"type": "required_status_checks", "parameters": {
+        "required_status_checks": [{"context": "test-report", "integration_id": 15368}]
+    }}]);
+    let check = json!({"id": 1, "name": "test-report", "head_sha": HEAD,
+        "app": {"id": 15368}, "status": "completed", "conclusion": "success"});
+    let ready = |checks: &[Value]| super::pr_checks::required_checks(&rules, checks, HEAD);
+    assert!(
+        !ready(&[]).unwrap(),
+        "a job absent from the PR rollup still blocks promotion"
+    );
+    assert!(ready(&[check.clone()]).unwrap());
+    for (pointer, value) in [("/app/id", json!(999)), ("/head_sha", json!(BASE))] {
+        let mut wrong = check.clone();
+        *wrong.pointer_mut(pointer).unwrap() = value;
+        assert!(!ready(&[wrong]).unwrap());
+    }
+    let mut newer = check.clone();
+    newer["id"] = json!(2);
+    newer["status"] = json!("queued");
+    newer["conclusion"] = Value::Null;
+    assert!(!ready(&[check.clone(), newer.clone()]).unwrap());
+    newer["status"] = json!("completed");
+    newer["conclusion"] = json!("failure");
+    assert!(ready(&[check, newer]).is_err());
+    assert!(super::pr_checks::required_checks(&json!([]), &[], HEAD).is_err());
+}

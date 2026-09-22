@@ -1,4 +1,5 @@
 use super::{
+    pr_checks,
     pr_contract::{self, Candidate},
     pr_github as github, pr_start,
 };
@@ -38,9 +39,10 @@ pub fn checks_pass(candidate: &Candidate, root: &Path) -> Result<bool, String> {
     }) {
         return Err("A required PR check failed; no tag was created.".into());
     }
-    Ok(checks
+    let reported_pass = checks
         .iter()
-        .all(|c| c.get("bucket").and_then(Value::as_str) == Some("pass")))
+        .all(|c| c.get("bucket").and_then(Value::as_str) == Some("pass"));
+    Ok(reported_pass && pr_checks::ready(candidate, root)?)
 }
 
 pub fn refresh(

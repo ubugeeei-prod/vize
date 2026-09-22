@@ -7,6 +7,8 @@
 //! edition = "2024"
 //! ```
 
+#[path = "../../support/release/pr_checks.rs"]
+mod pr_checks;
 #[path = "../../support/release/pr_ci.rs"]
 mod pr_ci;
 #[path = "../../support/release/pr_contract.rs"]
