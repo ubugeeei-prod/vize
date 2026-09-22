@@ -139,7 +139,8 @@ mod tests {
             assert!(reserved_keyword(word), "{word}");
         }
         for word in ["undefined", "NaN", "row", "Let", "lets", "", "of", "async"] {
-            assert_eq!(reserved_keyword(word), oxc.contains(word), "{word}");
+            let listed = oxc.contains(word);
+            assert_eq!(reserved_keyword(word), listed, "{word}");
         }
     }
 
