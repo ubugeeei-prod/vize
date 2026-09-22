@@ -21,6 +21,7 @@
 
 use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_croquis::Croquis;
+use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
 use vize_s1_to_s2::{BindingTable, ReactiveRead};
 
 use crate::options::DomCompilerOptions;
@@ -49,16 +50,31 @@ pub(in crate::compile) fn s2_binding_table_for(
     })
 }
 
+/// DOM projection reads script bindings through the declared fact.
+struct DomCroquisProjection;
+
+impl FactConsumer for DomCroquisProjection {
+    const NAME: &'static str = "dom/croquis-projection";
+    const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
+}
+
 /// Whether every legacy consumption of `croquis` is reproducible from
 /// `metadata` plus the projected reactivity facts.
 pub(super) fn projectable(croquis: &Croquis, metadata: Option<&BindingMetadata>) -> bool {
     let Some(metadata) = metadata else {
         return false;
     };
-    croquis.used_components.is_empty()
-        && croquis.bindings.iter().all(|(name, kind)| {
-            kind != BindingType::SetupConst || metadata.bindings.contains_key(name)
-        })
+    if !croquis.used_components.is_empty() {
+        return false;
+    }
+    let mut facts = CroquisFacts::new(croquis);
+    let bindings = facts
+        .prepare::<DomCroquisProjection>()
+        .get::<Bindings>()
+        .expect("declared demand");
+    bindings
+        .typed()
+        .all(|(name, kind)| kind != BindingType::SetupConst || metadata.bindings.contains_key(name))
 }
 
 /// Attach the reactivity tracker's `lookup(name)` answers to `table`.

@@ -25,6 +25,13 @@ const message = ref('hello')
     assert!(docs.template.is_some());
     assert!(docs.script_setup.is_some());
     assert_eq!(docs.styles.len(), 1);
+    for document in docs.all() {
+        let published = vize_canon::virtual_ts::virtual_ts_document(
+            document.content.clone().into(),
+            document.source_map.spans(),
+        );
+        assert_eq!(published.as_str(), document.content.as_str());
+    }
 
     // Check template virtual code
     let template = docs.template.unwrap();

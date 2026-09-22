@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 /// Virtual TypeScript generation resolves relative imports against the parent
 /// of this path, so callers must provide the file itself rather than its parent
 /// directory.
+#[cfg(test)]
 pub(super) fn absolute_source_file(filename: &str) -> PathBuf {
     let path = Path::new(filename);
     if path.is_absolute() {

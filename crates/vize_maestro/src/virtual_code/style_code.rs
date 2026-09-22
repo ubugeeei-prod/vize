@@ -46,12 +46,12 @@ impl StyleCodeGenerator {
         // Determine the language based on the lang attribute
         let extension = style.lang.as_ref().map(|l| l.as_ref()).unwrap_or("css");
 
-        VirtualDocument {
-            uri: cstr!("__style_{index}.{extension}").to_string(),
-            content: content.to_string(),
-            language: VirtualLanguage::Style,
+        VirtualDocument::from_emission(
+            cstr!("__style_{index}.{extension}").to_string(),
+            content.into(),
+            VirtualLanguage::Style,
             source_map,
-        }
+        )
     }
 
     /// Generate with scoped CSS transformation info.

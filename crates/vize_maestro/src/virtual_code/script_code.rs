@@ -80,16 +80,13 @@ impl ScriptCodeGenerator {
         source_map.sort_by_authored();
         source_map.set_authored_base(self.block_offset as usize);
 
-        VirtualDocument {
-            uri: String::new(), // Will be set by generator
-            content: self.output.clone(),
-            language: if is_setup {
-                VirtualLanguage::ScriptSetup
-            } else {
-                VirtualLanguage::Script
-            },
-            source_map,
-        }
+        let content = std::mem::take(&mut self.output);
+        let language = if is_setup {
+            VirtualLanguage::ScriptSetup
+        } else {
+            VirtualLanguage::Script
+        };
+        VirtualDocument::from_emission(String::new(), content, language, source_map)
     }
 
     /// Generate with binding exports for template usage.
@@ -152,16 +149,13 @@ impl ScriptCodeGenerator {
         source_map.sort_by_authored();
         source_map.set_authored_base(self.block_offset as usize);
 
-        VirtualDocument {
-            uri: String::new(),
-            content: self.output.clone(),
-            language: if is_setup {
-                VirtualLanguage::ScriptSetup
-            } else {
-                VirtualLanguage::Script
-            },
-            source_map,
-        }
+        let content = std::mem::take(&mut self.output);
+        let language = if is_setup {
+            VirtualLanguage::ScriptSetup
+        } else {
+            VirtualLanguage::Script
+        };
+        VirtualDocument::from_emission(String::new(), content, language, source_map)
     }
 
     fn write(&mut self, s: &str) {

@@ -74,12 +74,13 @@ impl TemplateCodeGenerator {
         source_map.sort_by_authored();
         source_map.set_authored_base(self.block_offset as usize);
 
-        VirtualDocument {
-            uri: String::new(), // Will be set by generator
-            content: self.output.clone(),
-            language: VirtualLanguage::Template,
+        let content = std::mem::take(&mut self.output);
+        VirtualDocument::from_emission(
+            String::new(),
+            content,
+            VirtualLanguage::Template,
             source_map,
-        }
+        )
     }
 
     /// Visit child nodes.

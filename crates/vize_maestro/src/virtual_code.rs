@@ -126,6 +126,25 @@ impl VirtualDocument {
             source_map,
         }
     }
+
+    /// Publish `content` as the S4 emission document. The text is unchanged.
+    /// The mapping stays the one the editor recorded: a generated range that
+    /// sits inside the previous row is not folded into a sub-span.
+    pub(crate) fn from_emission(
+        uri: String,
+        content: String,
+        language: VirtualLanguage,
+        source_map: ProjectionMapping,
+    ) -> Self {
+        let content = vize_canon::virtual_ts::virtual_ts_document(content.into(), source_map.spans())
+            .into_string();
+        Self {
+            uri,
+            content: content.to_string(),
+            language,
+            source_map,
+        }
+    }
 }
 
 /// Collection of virtual documents for an SFC.
