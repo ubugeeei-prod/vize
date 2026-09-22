@@ -29,7 +29,7 @@ function jobNeeds(job: ReleaseJob): string[] {
 function publicationJobNames(jobs: Record<string, ReleaseJob>): string[] {
   return Object.entries(jobs)
     .filter(([, job]) => {
-      if (job.if === "github.event_name == 'workflow_dispatch'") return false;
+      if (job.if === "inputs.release_pr == ''") return false;
       const serialized = JSON.stringify(job);
       return (
         ["npm", "crates-io", "vscode-marketplace"].includes(job.environment ?? "") ||
@@ -80,13 +80,12 @@ test("every publication edge waits for credential-free release preflight", () =>
 
   const preflight = jobs["release-preflight"];
   assert.ok(preflight);
-  assert.equal(preflight.uses, "./.github/workflows/release-preflight.yml");
+  assert.equal(preflight.uses, "./.github/workflows/release-promotion.yml");
   assert.deepEqual(preflight.permissions, {
-    actions: "write",
     contents: "read",
-    issues: "read",
+    "pull-requests": "read",
   });
-  assert.deepEqual(jobNeeds(preflight), []);
+  assert.deepEqual(jobNeeds(preflight), ["candidate-ready"]);
   assert.doesNotMatch(JSON.stringify(preflight), /environment|id-token|secrets\./);
 });
 

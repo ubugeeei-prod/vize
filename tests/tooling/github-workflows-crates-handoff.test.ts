@@ -43,18 +43,15 @@ test("crates.io handoff workflow recovers the JSX and Patina release set", () =>
     "build-editor-extensions",
     "build-release-packages",
     "build-wasm-package",
-    "release-preflight",
+    "candidate",
   ]) {
-    assert.equal(workflow.jobs?.[jobName]?.if, "github.event_name == 'push'", jobName);
+    assert.equal(workflow.jobs?.[jobName]?.if, "inputs.release_pr != ''", jobName);
   }
-  assert.match(
-    workflow.jobs?.["rollback-unpublished-tag"]?.if ?? "",
-    /github\.event_name == 'push'/,
-  );
+  assert.equal(workflow.jobs?.["rollback-unpublished-tag"], undefined);
 
   const job = workflow.jobs?.["release-crates-handoff"];
   assert.ok(job);
-  assert.equal(job.if, "github.event_name == 'workflow_dispatch'");
+  assert.equal(job.if, "inputs.release_pr == ''");
   assert.equal(job.environment, "crates-io");
   assert.deepEqual(job.permissions, { contents: "read", "id-token": "write" });
   assert.match(job["runs-on"] ?? "", /^blacksmith-32vcpu-ubuntu-2404$/);

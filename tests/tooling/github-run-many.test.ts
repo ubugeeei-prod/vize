@@ -74,6 +74,10 @@ test("github/run-many stops at the first failing command group", () => {
 test("docs and release workflows run command groups with Rust Script", () => {
   const docsWorkflow = readRepoFile(".github", "workflows", "build-docs.yml");
   const releaseWorkflow = readRepoFile(".github", "workflows", "release.yml");
+  assert.match(
+    workflowJobBody(releaseWorkflow, "build-release-packages"),
+    /uses: \.\/\.github\/actions\/release-build-packages/,
+  );
 
   for (const [workflowName, jobBody, command] of [
     [
@@ -88,7 +92,7 @@ test("docs and release workflows run command groups with Rust Script", () => {
     ],
     [
       "release.yml:build-release-packages",
-      workflowJobBody(releaseWorkflow, "build-release-packages"),
+      readRepoFile(".github", "actions", "release-build-packages", "action.yml"),
       "rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/cli' build",
     ],
   ] as const) {

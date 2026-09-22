@@ -1,6 +1,7 @@
 # Vize v1 Alpha Go/No-Go Checklist
 
-Use this checklist for every v1 alpha release candidate before creating the release tag. The
+Use this checklist for every v1 alpha release candidate before creating the release tag. Start
+the [release PR workflow](./pr-workflow.md) with `vp run release alpha -y`. The
 release captain owns the final go/no-go decision; each surface owner signs off only on the section
 they operate.
 

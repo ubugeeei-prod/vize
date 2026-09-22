@@ -84,8 +84,8 @@ crates.io settings can be repaired from a CLI using authenticated owner access.
 
 npm only allows Trusted Publishing to be configured after a package exists. Do
 not use an older failed release for recovery. Merge the bootstrap workflow,
-create a fresh release tag at the current default-branch tip, and let the normal
-Release workflow reach a terminal failure at the new package's OIDC publish
+start a [release PR](./pr-workflow.md) with `vp run release patch -y`, and let its
+validated Release workflow reach a terminal failure at the new package's OIDC publish
 job. Record that Release run ID, then send the fixed `npm-bootstrap` repository
 dispatch:
 

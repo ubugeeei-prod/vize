@@ -2,11 +2,15 @@ name: Release Preflight
 
 on:
   workflow_call:
+    inputs:
+      release_pr: { type: string, required: false, default: "" }
+      tag_name: { type: string, required: false, default: "" }
 
 permissions:
   actions: write
   contents: read
   issues: read
+  pull-requests: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -20,6 +24,7 @@ jobs:
       actions: write
       contents: read
       issues: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -36,9 +41,12 @@ jobs:
 
       - uses: ./.github/actions/setup-rust-script
 
-      - name: Verify immutable tag, metadata, required gates, and release blockers
+      - name: Verify release identity, metadata, required gates, and release blockers
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_PR_NUMBER: ${{ inputs.release_pr }}
+          RELEASE_TAG_NAME: ${{ inputs.tag_name }}
         run: rust-script tools/commands/ci/github/release-preflight.rs
 
   validate-crates:
