@@ -23,6 +23,6 @@ _None._
 | `BindingMetadata`  |        0 |    6 |
 | `Croquis`          |        1 |   12 |
 | `Scope`            |        0 |    3 |
-| `Span`             |        0 |   13 |
+| `Span`             |        0 |   44 |
 | `Symbol`           |        0 |    2 |
 | `Croquis.bindings` |        0 |   21 |
