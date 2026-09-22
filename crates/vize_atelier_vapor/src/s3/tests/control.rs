@@ -190,3 +190,50 @@ fn corrupt_control_flow_graphs_are_rejected_instead_of_falling_back() {
         );
     }
 }
+
+/// Whitespace-only text between `v-if` branches is dropped exactly as the
+/// retained lane drops it; a comment in the gap stays on the legacy lane.
+#[test]
+fn branch_gaps_match_the_retained_lane_and_comment_gaps_stay_legacy() {
+    for source in [
+        "<div v-if=\"a\">A</div>\n  <div v-else>B</div>",
+        "<p><b v-if=\"a\">A</b> <i v-else-if=\"b\">B</i>\n\t<em v-else>C</em></p>",
+        "<ul><li v-for=\"x in xs\" :key=\"x\"><b v-if=\"x.a\">a</b>\n<i v-else>{{ x.b }}</i></li></ul>",
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporS3BridgeStatus::Accepted(_)),
+            "{source}: {status:?}"
+        );
+        for prefix_identifiers in [false, true] {
+            let compile = |davinci_retained_lane| {
+                crate::compile_vapor(
+                    &allocator,
+                    source,
+                    crate::VaporCompilerOptions {
+                        prefix_identifiers,
+                        davinci_retained_lane,
+                        ..Default::default()
+                    },
+                )
+                .code
+            };
+            assert_eq!(compile(false), compile(true), "{source}");
+        }
+    }
+    for source in [
+        "<div v-if=\"a\">A</div><!-- c --><div v-else>B</div>",
+        "<div><p v-if=\"a\">A</p>  <!-- x -->  <p v-else>C</p></div>",
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(
+                status,
+                VaporS3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics)
+            ),
+            "{source}: {status:?}"
+        );
+    }
+}
