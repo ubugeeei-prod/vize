@@ -1,13 +1,13 @@
 use alloc::vec::Vec;
 use vize_s0::cstr;
 
-use crate::op::{OpKind, Program};
+use crate::op::OpKind;
 use crate::operand::{Operand, OperandRole};
 
-use super::lookup::{contains, op, region};
+use super::lookup::{Tables, contains, op, region};
 use super::{Violation, ViolationCode};
 
-pub(super) fn check(program: &Program<'_>, out: &mut Vec<Violation>) {
+pub(super) fn check(program: &Tables<'_, '_>, out: &mut Vec<Violation>) {
     for operand in &program.operands {
         if let Some(message) = invalid(program, operand) {
             out.push(Violation {
@@ -23,7 +23,7 @@ pub(super) fn check(program: &Program<'_>, out: &mut Vec<Violation>) {
     }
 }
 
-fn invalid(program: &Program<'_>, operand: &Operand<'_>) -> Option<&'static str> {
+fn invalid(program: &Tables<'_, '_>, operand: &Operand<'_>) -> Option<&'static str> {
     let Some(owner) = op(program, operand.op) else {
         return Some("owner does not resolve");
     };

@@ -10,7 +10,7 @@ use vize_s0::{Span, cstr};
 
 use crate::op::{Phase, Program, RegionId};
 use lookup::{
-    contains, effect_scope, op, op_index, op_inside_region, region, region_has_cycle,
+    Tables, contains, effect_scope, op, op_index, op_inside_region, region, region_has_cycle,
     region_is_or_descendant,
 };
 
@@ -24,6 +24,7 @@ pub use violation::{Violation, ViolationCode};
 /// Validate all invariants required by the artifact's current phase.
 #[must_use]
 pub fn verify(program: &Program<'_>) -> Vec<Violation> {
+    let program = &Tables::new(program);
     let mut out = Vec::new();
     check_duplicates(program, &mut out);
     check_root(program, &mut out);
@@ -36,8 +37,9 @@ pub fn verify(program: &Program<'_>) -> Vec<Violation> {
     out
 }
 
-fn check_duplicates(program: &Program<'_>, out: &mut Vec<Violation>) {
-    for (index, op) in program.ops.iter().enumerate() {
+fn check_duplicates(program: &Tables<'_, '_>, out: &mut Vec<Violation>) {
+    // Dense tables cannot repeat an id, so only the others are scanned.
+    for (index, op) in (program.ops.iter().enumerate()).filter(|_| !program.dense_ops) {
         if program.ops[..index].iter().any(|other| other.id == op.id) {
             out.push(Violation {
                 code: ViolationCode::DuplicateId,
@@ -46,7 +48,7 @@ fn check_duplicates(program: &Program<'_>, out: &mut Vec<Violation>) {
             });
         }
     }
-    for (index, region) in program.regions.iter().enumerate() {
+    for (index, region) in (program.regions.iter().enumerate()).filter(|_| !program.dense_regions) {
         if program.regions[..index]
             .iter()
             .any(|other| other.id == region.id)
@@ -58,7 +60,7 @@ fn check_duplicates(program: &Program<'_>, out: &mut Vec<Violation>) {
             });
         }
     }
-    for (index, effect) in program.effects.iter().enumerate() {
+    for (index, effect) in (program.effects.iter().enumerate()).filter(|_| !program.dense_effects) {
         if program.effects[..index]
             .iter()
             .any(|other| other.id == effect.id)
@@ -72,7 +74,7 @@ fn check_duplicates(program: &Program<'_>, out: &mut Vec<Violation>) {
     }
 }
 
-fn check_root(program: &Program<'_>, out: &mut Vec<Violation>) {
+fn check_root(program: &Tables<'_, '_>, out: &mut Vec<Violation>) {
     let Some(root) = region(program, RegionId::ROOT) else {
         out.push(Violation {
             code: ViolationCode::RootRegion,
@@ -90,7 +92,7 @@ fn check_root(program: &Program<'_>, out: &mut Vec<Violation>) {
     }
 }
 
-fn check_regions(program: &Program<'_>, out: &mut Vec<Violation>) {
+fn check_regions(program: &Tables<'_, '_>, out: &mut Vec<Violation>) {
     for item in &program.regions {
         if item.id != RegionId::ROOT && (item.parent.is_none() || item.owner.is_none()) {
             out.push(Violation {
@@ -158,7 +160,7 @@ fn check_regions(program: &Program<'_>, out: &mut Vec<Violation>) {
     }
 }
 
-fn check_ops(program: &Program<'_>, out: &mut Vec<Violation>) {
+fn check_ops(program: &Tables<'_, '_>, out: &mut Vec<Violation>) {
     for item in &program.ops {
         match region(program, item.region) {
             Some(owner) if !contains(owner.span, item.span) => {
@@ -187,7 +189,7 @@ fn check_ops(program: &Program<'_>, out: &mut Vec<Violation>) {
     }
 }
 
-fn check_effects(program: &Program<'_>, out: &mut Vec<Violation>) {
+fn check_effects(program: &Tables<'_, '_>, out: &mut Vec<Violation>) {
     for item in &program.effects {
         let owner = op(program, item.owner);
         let scope_region = region(program, item.region);
@@ -231,7 +233,7 @@ fn check_effects(program: &Program<'_>, out: &mut Vec<Violation>) {
     }
 }
 
-fn check_edges(program: &Program<'_>, out: &mut Vec<Violation>) {
+fn check_edges(program: &Tables<'_, '_>, out: &mut Vec<Violation>) {
     for edge in &program.edges {
         let from = op(program, edge.from);
         let to = op(program, edge.to);
