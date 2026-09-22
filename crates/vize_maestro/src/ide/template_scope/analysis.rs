@@ -138,7 +138,7 @@ const result = {} as { kind: 'ok'; rows: number[]; marker: number } | { kind: 'e
   </template>
   <p v-when="_"/>
 </template>"#;
-        let ctx = IdeContext::with_content(
+        let ctx = IdeContext::testing(
             &state,
             &uri,
             source.find("rows.length >").unwrap(),

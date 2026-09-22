@@ -47,7 +47,7 @@ fn repeated_lenses_share_a_parse_with_links_and_hover() {
     assert_stats(&state, 1, 0);
     let _links = DocumentLinkService::get_links(&state, SFC, &uri);
     assert_stats(&state, 1, 0);
-    let ctx = IdeContext::with_content(&state, &uri, SFC.find("{{ count").unwrap() + 4, SFC.into());
+    let ctx = IdeContext::testing(&state, &uri, SFC.find("{{ count").unwrap() + 4, SFC.into());
     let _hover = HoverService::hover(&ctx);
     assert_stats(&state, 1, 0);
 }

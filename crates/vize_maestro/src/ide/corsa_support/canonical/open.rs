@@ -168,7 +168,7 @@ mod tests {
         let state = crate::server::ServerState::new();
         state.set_workspace_root(logical.clone());
         let uri = Url::from_file_path(logical.join("App.vue")).unwrap();
-        let ctx = IdeContext::with_content(&state, &uri, 0, "<template />".into());
+        let ctx = IdeContext::testing(&state, &uri, 0, "<template />".into());
         assert_eq!(
             authored_uri(&ctx, &path),
             Some(Url::from_file_path(logical.join("shared.ts")).unwrap())

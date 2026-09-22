@@ -38,12 +38,12 @@ fn uri() -> Url {
 /// Hover, completion and definition at the `{{ count }}` interpolation.
 fn request_wave(state: &ServerState, uri: &Url, text: &str) {
     let offset = text.find("{{ count").unwrap() + "{{ co".len();
-    let hover = IdeContext::with_content(state, uri, offset, String::from(text));
+    let hover = IdeContext::testing(state, uri, offset, String::from(text));
     let _hover = HoverService::hover(&hover);
     let completion =
-        IdeContext::with_content_for_completion(state, uri, offset, String::from(text));
+        IdeContext::testing_completion(state, uri, offset, String::from(text));
     let _completion = CompletionService::complete(&completion);
-    let definition = IdeContext::with_content(state, uri, offset, String::from(text));
+    let definition = IdeContext::testing(state, uri, offset, String::from(text));
     let _definition = DefinitionService::definition(&definition);
 }
 
@@ -87,7 +87,7 @@ fn the_served_descriptor_is_the_clean_parse() {
     let uri = uri();
     for k in 0..3 {
         let text = after_keystroke(k);
-        let ctx = IdeContext::with_content(&state, &uri, 0, text.clone());
+        let ctx = IdeContext::testing(&state, &uri, 0, text.clone());
         let served = ctx.descriptor().expect("the SFC parses");
         let clean = vize_resident::descriptor::parse_descriptor(uri.path(), &text).unwrap();
         assert!(served == &clean, "keystroke {k}: served equals clean");

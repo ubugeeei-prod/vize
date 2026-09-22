@@ -26,7 +26,7 @@ fn resident_ecosystem_diagnostics_keep_authored_ranges_and_retained_snapshots() 
     let state = state();
     let uri = Url::parse("file:///workspace/Route.vue").unwrap();
     open(&state, &uri, SOURCE);
-    let original = IdeContext::with_content(&state, &uri, 0, SOURCE.into());
+    let original = IdeContext::testing(&state, &uri, 0, SOURCE.into());
     let first = super::diagnostics(&uri, original.descriptor().unwrap());
     assert_eq!(first.len(), 1);
     assert_eq!(
@@ -71,7 +71,7 @@ fn resident_ecosystem_diagnostics_keep_authored_ranges_and_retained_snapshots() 
 
     let edited = SOURCE.replace("/users/:id", "/users/:slug");
     open(&state, &uri, &edited);
-    let updated = IdeContext::with_content(&state, &uri, 0, edited.clone());
+    let updated = IdeContext::testing(&state, &uri, 0, edited.clone());
     assert!(super::diagnostics(&uri, updated.descriptor().unwrap()).is_empty());
     assert_eq!(
         state.resident.take_stats(),

@@ -233,7 +233,7 @@ fn collect_style_locations(
     if !seeds.insert((uri.clone(), word.clone().into())) {
         return;
     }
-    let ctx = IdeContext::with_content(query.state, uri, offset, source.to_owned());
+    let ctx = IdeContext::for_unopened(query.state, uri, offset, source.to_owned());
     if !crate::ide::template_scope::may_reference_style_binding(&ctx, &word) {
         return;
     }

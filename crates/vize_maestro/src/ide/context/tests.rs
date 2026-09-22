@@ -27,7 +27,7 @@ fn context_at_count<'a>(state: &'a ServerState, uri: &'a Url, text: &str) -> Ide
     let offset = text
         .rfind("count")
         .map_or(0, |start| start + "count".len() - 1);
-    IdeContext::with_content(state, uri, offset, text.into())
+    IdeContext::testing(state, uri, offset, text.into())
 }
 
 #[test]
@@ -175,33 +175,24 @@ fn script_insertion_points_do_not_change_byte_or_neighbor_classification() {
             for body in ["", "\r\n", "const label = '\u{96ea}\u{1f600}';"] {
                 let source = [opening, body, "</script>"].concat();
                 let end = opening.len() + body.len();
-                let point = IdeContext::with_content(&state, &uri, end, source.clone());
-                let insertion =
-                    IdeContext::with_content_for_completion(&state, &uri, end, source.clone());
+                let point = IdeContext::testing(&state, &uri, end, source.clone());
+                let insertion = IdeContext::testing_completion(&state, &uri, end, source.clone());
                 assert_eq!(point.block_type, None);
                 assert_eq!(insertion.block_type, Some(expected));
                 assert_eq!(insertion.offset, end);
                 assert_eq!(insertion.content, source);
                 for offset in [opening.len() - 1, end + 1, source.len()] {
-                    let point = IdeContext::with_content(&state, &uri, offset, source.clone());
-                    let insertion = IdeContext::with_content_for_completion(
-                        &state,
-                        &uri,
-                        offset,
-                        source.clone(),
-                    );
+                    let point = IdeContext::testing(&state, &uri, offset, source.clone());
+                    let insertion =
+                        IdeContext::testing_completion(&state, &uri, offset, source.clone());
                     assert_eq!(point.block_type, None);
                     assert_eq!(insertion.block_type, None);
                 }
                 if !body.is_empty() {
                     let offset = opening.len();
-                    let point = IdeContext::with_content(&state, &uri, offset, source.clone());
-                    let insertion = IdeContext::with_content_for_completion(
-                        &state,
-                        &uri,
-                        offset,
-                        source.clone(),
-                    );
+                    let point = IdeContext::testing(&state, &uri, offset, source.clone());
+                    let insertion =
+                        IdeContext::testing_completion(&state, &uri, offset, source.clone());
                     assert_eq!(point.block_type, Some(expected));
                     assert_eq!(insertion.block_type, Some(expected));
                 }
@@ -220,7 +211,7 @@ fn self_closing_scripts_have_no_body_insertion_point() {
         let uri = Url::parse(uri).unwrap();
         for source in ["<script lang=\"ts\"/>", "<script setup lang=\"ts\"/>"] {
             let insertion =
-                IdeContext::with_content_for_completion(&state, &uri, source.len(), source.into());
+                IdeContext::testing_completion(&state, &uri, source.len(), source.into());
             assert_eq!(insertion.block_type, None);
         }
     }
@@ -239,9 +230,8 @@ fn non_script_blocks_keep_their_existing_boundaries() {
         ("<style>x</style>", "<style>x".len(), BlockType::Style(0)),
     ] {
         for (offset, expected) in [(end - 1, Some(expected)), (end, None), (end + 1, None)] {
-            let point = IdeContext::with_content(&state, &uri, offset, source.into());
-            let insertion =
-                IdeContext::with_content_for_completion(&state, &uri, offset, source.into());
+            let point = IdeContext::testing(&state, &uri, offset, source.into());
+            let insertion = IdeContext::testing_completion(&state, &uri, offset, source.into());
             assert_eq!(point.block_type, expected);
             assert_eq!(insertion.block_type, expected);
         }
@@ -268,20 +258,18 @@ fn root_pattern_requests_share_subject_classification_and_completion_insertion_p
             .contains(&offset)
             .then_some(BlockType::Template);
         assert_eq!(
-            IdeContext::with_content_for_completion(&enabled, &uri, offset, source.into())
-                .block_type,
+            IdeContext::testing_completion(&enabled, &uri, offset, source.into()).block_type,
             expected,
             "offset {offset}"
         );
         assert_eq!(
-            IdeContext::with_content(&enabled, &uri, offset, source.into()).block_type,
+            IdeContext::testing(&enabled, &uri, offset, source.into()).block_type,
             (start..end)
                 .contains(&offset)
                 .then_some(BlockType::Template)
         );
         assert_eq!(
-            IdeContext::with_content_for_completion(&disabled, &uri, offset, source.into())
-                .block_type,
+            IdeContext::testing_completion(&disabled, &uri, offset, source.into()).block_type,
             None
         );
     }
@@ -293,8 +281,7 @@ fn root_pattern_requests_share_subject_classification_and_completion_insertion_p
     ] {
         let offset = source.find("result").unwrap();
         assert_eq!(
-            IdeContext::with_content_for_completion(&enabled, &uri, offset, source.into())
-                .block_type,
+            IdeContext::testing_completion(&enabled, &uri, offset, source.into()).block_type,
             None,
             "{source}"
         );

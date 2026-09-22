@@ -274,7 +274,7 @@ import DescriptionItem from "./exact.vue";
         let state = ServerState::new();
         let uri = Url::from_file_path(importer_path).expect("importer URI");
         let offset = source.rfind("DescriptionItem").expect("component tag");
-        let ctx = IdeContext::with_content(&state, &uri, offset, source.to_owned());
+        let ctx = IdeContext::testing(&state, &uri, offset, source.to_owned());
         let resolved = resolve_component_file(&ctx, "DescriptionItem").expect("component file");
 
         assert_eq!(

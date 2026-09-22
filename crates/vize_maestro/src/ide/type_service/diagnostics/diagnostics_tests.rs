@@ -154,7 +154,7 @@ fn resident_legacy_diagnostics_share_cached_success_rejection_and_recovery() {
     state
         .documents
         .open(uri.clone(), source.into(), 1, "vue".into());
-    let _context = IdeContext::with_content(&state, &uri, 0, source.into());
+    let _context = IdeContext::testing(&state, &uri, 0, source.into());
     let first = TypeService::collect_diagnostics_legacy(&state, &uri);
     assert!(!first.is_empty());
     assert!(first.iter().any(|diag| diag.message.contains("missing")));

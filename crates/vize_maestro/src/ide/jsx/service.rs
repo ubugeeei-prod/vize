@@ -262,7 +262,7 @@ mod tests {
         marker: &str,
     ) -> IdeContext<'a> {
         let offset = source.find(marker).expect("marker present") + marker.len();
-        IdeContext::with_content(state, uri, offset, source.to_string())
+        IdeContext::testing(state, uri, offset, source.to_string())
     }
 
     #[test]

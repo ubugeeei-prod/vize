@@ -70,7 +70,7 @@ mod tests {
         let source = "<template><p>{{ message }}</p></template>";
         let state = ServerState::new();
         let uri = Url::parse("file:///workspace/App.vue").unwrap();
-        let ctx = IdeContext::with_content(&state, &uri, 0, source.into());
+        let ctx = IdeContext::testing(&state, &uri, 0, source.into());
 
         assert!(state.lsp_features().typecheck);
         assert_eq!(backend_owns_type_hovers(&ctx), cfg!(feature = "native"));

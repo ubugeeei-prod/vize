@@ -64,7 +64,7 @@ impl MaestroServer {
             return Ok(None);
         }
 
-        let ctx = IdeContext::with_content(&self.state, uri, selection_offset, content);
+        let ctx = IdeContext::new(&self.state, uri, selection_offset).expect("document is open");
         Ok(
             AutoInsertService::snippet(&ctx, selection_offset, range_offset, &params.change.text)
                 .await,

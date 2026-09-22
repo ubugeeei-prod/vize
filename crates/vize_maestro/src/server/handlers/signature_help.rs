@@ -33,7 +33,7 @@ pub(super) async fn signature_help(
             return Ok(None);
         };
 
-        let ctx = IdeContext::with_content(&server.state, uri, offset, content);
+        let ctx = IdeContext::new(&server.state, uri, offset).expect("document is open");
         let corsa_bridge = server.state.get_corsa_bridge().await;
 
         if crate::utils::is_jsx_path(uri.path()) {

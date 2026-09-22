@@ -136,7 +136,7 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
+        let ctx = IdeContext::new(&self.state, uri, offset).expect("document is open");
 
         // Type-aware hover for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
         // Routed before the SFC path since JSX documents never produce an SFC
@@ -182,7 +182,7 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        let ctx = IdeContext::with_content_for_completion(&self.state, uri, offset, content);
+        let ctx = IdeContext::at_completion(&self.state, uri, offset).expect("document is open");
         // JSX completion is opt-in so React remains untouched.
         #[cfg(feature = "native")]
         if crate::utils::is_jsx_path(uri.path()) {
@@ -285,7 +285,7 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
+        let ctx = IdeContext::new(&self.state, uri, offset).expect("document is open");
 
         Ok(DocumentHighlightService::highlights(&ctx))
     }
@@ -325,7 +325,7 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
+        let ctx = IdeContext::new(&self.state, uri, offset).expect("document is open");
 
         // Type-aware prepare-rename for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
         #[cfg(feature = "native")]
@@ -365,7 +365,7 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
+        let ctx = IdeContext::new(&self.state, uri, offset).expect("document is open");
 
         // Type-aware rename for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
         #[cfg(feature = "native")]

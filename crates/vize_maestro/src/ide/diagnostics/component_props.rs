@@ -65,7 +65,7 @@ impl DiagnosticService {
         }
 
         let metadata_ctx =
-            IdeContext::with_content(state, uri, template.loc.start, content.to_string());
+            IdeContext::new(state, uri, template.loc.start).expect("document is open");
         let mut diagnostics = Vec::new();
 
         for usage in croquis.component_usages {

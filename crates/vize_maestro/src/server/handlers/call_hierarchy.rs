@@ -37,7 +37,7 @@ pub(super) async fn prepare(
             return Ok(None);
         };
 
-        let ctx = IdeContext::with_content(&server.state, uri, offset, content);
+        let ctx = IdeContext::new(&server.state, uri, offset).expect("document is open");
         if crate::utils::is_jsx_path(uri.path()) && !server.state.jsx_typecheck_enabled() {
             return Ok(None);
         }
@@ -129,7 +129,7 @@ fn context_for_item<'a>(
         item.selection_range.start.line,
         item.selection_range.start.character,
     )?;
-    Some(IdeContext::with_content(
+    Some(IdeContext::for_unopened(
         &server.state,
         &item.uri,
         offset,
