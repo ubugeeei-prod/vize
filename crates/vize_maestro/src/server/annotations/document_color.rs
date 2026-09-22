@@ -26,9 +26,12 @@ pub(super) struct DocumentColorService;
 
 impl DocumentColorService {
     /// Every colour literal in the document's CSS, in document order.
-    pub(super) fn colors(content: &str, filename: &str) -> Vec<ColorInformation> {
+    pub(super) fn colors(
+        content: &str,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    ) -> Vec<ColorInformation> {
         let mut colors = Vec::new();
-        for region in css_regions(content, filename) {
+        for region in css_regions(content, descriptor) {
             for literal in scan::colors_in(content, region.range, region.mode) {
                 colors.push(ColorInformation {
                     range: Range {
@@ -107,15 +110,7 @@ struct CssRegion {
 }
 
 /// Byte regions of the document that hold CSS.
-fn css_regions(content: &str, filename: &str) -> Vec<CssRegion> {
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: filename.into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-        return Vec::new();
-    };
-
+fn css_regions(content: &str, descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) -> Vec<CssRegion> {
     let mut regions: Vec<CssRegion> = descriptor
         .styles
         .iter()

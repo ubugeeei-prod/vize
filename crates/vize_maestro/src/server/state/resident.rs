@@ -1,8 +1,9 @@
 //! The resident tier behind the request paths (Davinci P5-6a, diagnostics in
-//! P5-6b, semantic tokens, inlay hints and document links in P5-6c).
+//! P5-6b, annotations and document structure in P5-6c).
 //!
 //! Hover, completion, definition, diagnostics, semantic tokens, inlay hints
-//! and document links read the SFC parse through [`ResidentCache`] instead of
+//! document links, lenses, colours, symbols and folding read the SFC parse
+//! through [`ResidentCache`] instead of
 //! calling `parse_sfc` per request. The cache holds each document as an input
 //! of a `vize_resident` salsa database, so every request between two
 //! keystrokes shares one parse.
@@ -65,3 +66,6 @@ impl ServerState {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod request_tests;

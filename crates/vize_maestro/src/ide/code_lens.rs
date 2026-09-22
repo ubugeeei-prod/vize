@@ -6,31 +6,34 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 //! - Event handler references
 
+use crate::server::ServerState;
+
+#[cfg(test)]
+mod resident_tests;
+
 use tower_lsp::lsp_types::{CodeLens, Command, Position, Range, Url};
 
 /// Code lens service.
 pub struct CodeLensService;
 
 impl CodeLensService {
-    /// Get code lenses for a document.
-    pub fn get_lenses(content: &str, uri: &Url) -> Vec<CodeLens> {
+    /// Code lenses share the resident descriptor with other request paths.
+    pub fn get_lenses(state: &ServerState, content: &str, uri: &Url) -> Vec<CodeLens> {
+        let Some(descriptor) = state.sfc_descriptor(uri, content) else {
+            return Vec::new();
+        };
+        Self::lenses_from_descriptor(&descriptor)
+    }
+
+    fn lenses_from_descriptor(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) -> Vec<CodeLens> {
         let mut lenses = Vec::new();
-
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-            return lenses;
-        };
 
         // Add lenses for script setup bindings
         if let Some(ref script_setup) = descriptor.script_setup {
             Self::collect_binding_lenses(
                 &script_setup.content,
                 script_setup.loc.start_line as u32,
-                &descriptor,
+                descriptor,
                 &mut lenses,
             );
         }
@@ -40,7 +43,7 @@ impl CodeLensService {
             Self::collect_binding_lenses(
                 &script.content,
                 script.loc.start_line as u32,
-                &descriptor,
+                descriptor,
                 &mut lenses,
             );
         }

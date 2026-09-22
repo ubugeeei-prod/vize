@@ -6,24 +6,27 @@ use super::DocumentColorService;
 type FlatColor = (u32, u32, u32, u32, u32, u32, u32);
 
 fn colors(source: &str) -> Vec<FlatColor> {
-    DocumentColorService::colors(source, "/App.vue")
-        .into_iter()
-        .map(|info| {
-            assert_eq!(
-                info.range.start.line, info.range.end.line,
-                "a colour literal never spans lines: {info:?}"
-            );
-            (
-                info.range.start.line,
-                info.range.start.character,
-                info.range.end.character,
-                byte(info.color.red),
-                byte(info.color.green),
-                byte(info.color.blue),
-                percent(info.color.alpha),
-            )
-        })
-        .collect()
+    DocumentColorService::colors(
+        source,
+        &vize_resident::descriptor::parse_descriptor("/App.vue", source).unwrap(),
+    )
+    .into_iter()
+    .map(|info| {
+        assert_eq!(
+            info.range.start.line, info.range.end.line,
+            "a colour literal never spans lines: {info:?}"
+        );
+        (
+            info.range.start.line,
+            info.range.start.character,
+            info.range.end.character,
+            byte(info.color.red),
+            byte(info.color.green),
+            byte(info.color.blue),
+            percent(info.color.alpha),
+        )
+    })
+    .collect()
 }
 
 fn byte(channel: f32) -> u32 {
@@ -170,7 +173,10 @@ fn indented_sass_keeps_named_and_existing_colour_forms() {
 fn css_escape_whitespace_follows_css_input_preprocessing() {
     let source = "<style>\r\n.a { color: r\\65\r\nd; outline: r\\65\u{000b}d }\r\n</style>\r\n";
     assert_eq!(
-        DocumentColorService::colors(source, "/App.vue"),
+        DocumentColorService::colors(
+            source,
+            &vize_resident::descriptor::parse_descriptor("/App.vue", source).unwrap(),
+        ),
         vec![ColorInformation {
             range: Range {
                 start: Position {

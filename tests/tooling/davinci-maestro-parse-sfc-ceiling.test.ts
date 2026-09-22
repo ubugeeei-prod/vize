@@ -2,14 +2,14 @@
 // memoized SFC parse instead of calling `parse_sfc` per request.
 //
 // Hover, completion, definition, template scope, references, diagnostics,
-// semantic tokens, inlay hints and document links have no `parse_sfc` call
+// semantic tokens, inlay hints, document links, code lenses, colours, symbols and folding have no `parse_sfc` call
 // left. The crate-wide count is pinned exactly: a new call site fails, and a
 // removed one fails until this ceiling is lowered to match, so the count only
 // falls.
 //
-// P5-6c acceptance is not met. After the document-links slice, 29 request-path
-// sites remain (document structure, ecosystem, code actions, rename, lenses,
-// colors, formatting, virtual documents, importers, the type service, musea,
+// P5-6c acceptance is not met. After the annotations/structure slice, 25 request-path
+// sites remain (ecosystem, code actions, rename,
+// formatting, virtual documents, importers, the type service, musea,
 // template refs and SFC regions) plus 15 test-only sites.
 // `with_content` is not deleted.
 
@@ -22,14 +22,14 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const maestroSrc = path.join(repoRoot, "crates/vize_maestro/src");
 
-/** `parse_sfc` call sites left in `crates/vize_maestro/src` (81 before P5-6a, 50 before P5-6b, 47 before semantic tokens, 46 before inlay hints, 45 before document links). */
-const CEILING = 44;
+/** `parse_sfc` call sites left in `crates/vize_maestro/src` (81 before P5-6a, 50 before P5-6b, 47 before semantic tokens, 46 before inlay hints, 45 before document links, 44 before annotations and structure). */
+const CEILING = 40;
 
 /**
- * Request-path `parse_sfc(` sites after document links moved onto the resident
+ * Request-path `parse_sfc(` sites after annotations and structure moved onto the resident
  * descriptor. The other `CEILING - REQUEST_PATH` sites are tests.
  */
-const REQUEST_PATH = 29;
+const REQUEST_PATH = 25;
 
 /** Files whose every `parse_sfc(` is a test, including inline `#[cfg(test)]` modules. */
 function isTestOnly(file: string): boolean {
@@ -107,7 +107,19 @@ test("the P5-6c document-links slice calls parse_sfc nowhere", () => {
   assert.deepEqual(inWave, []);
 });
 
-test("request-path parse_sfc sites remaining after document links", () => {
+test("the P5-6c code-lens slice calls parse_sfc nowhere", () => {
+  const inWave = sites.filter(
+    (site) => site.startsWith("ide/code_lens.rs:") || site.startsWith("ide/code_lens/"),
+  );
+  assert.deepEqual(inWave, []);
+});
+
+test("the P5-6c annotation and structure request paths call parse_sfc nowhere", () => {
+  const migrated = ["server/annotations/document_color.rs:", "server/document_structure/symbols.rs:", "server/document_structure/folding.rs:"];
+  assert.deepEqual(sites.filter((site) => migrated.some((prefix) => site.startsWith(prefix))), []);
+});
+
+test("request-path parse_sfc sites remaining after annotations and structure", () => {
   const requestPath = sites.filter((site) => !isTestOnly(site.slice(0, site.lastIndexOf(":"))));
   assert.equal(
     requestPath.length,
