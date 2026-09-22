@@ -281,11 +281,6 @@ reason spelling both directions) and mirrored from a live arena tree in
 `tests/folio_mirror.rs`; the arena-reset replay law is
 `tests/expr_replay.rs`.
 
-**Key feed (P5-1a).** The S2 page key hashes this `Full` form with every
-`@s:e` rebased to the block start; a span reaching before the block (never
-in a well-formed page) feeds absolute as `@^s:e`. The public print keeps
-base `0`, so no committed page changed.
-
 ## S2 verifier invariants (P2-6)
 
 The semantic invariants the disegno grammar deliberately does not encode,
