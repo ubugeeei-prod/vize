@@ -4385,7 +4385,9 @@ dependencies = [
  "insta",
  "oxc_allocator",
  "oxc_ast",
+ "oxc_ast_visit",
  "oxc_parser",
+ "oxc_semantic",
  "oxc_span",
  "rustc-hash",
  "serde",
@@ -4394,6 +4396,7 @@ dependencies = [
  "vize_carton",
  "vize_croquis",
  "vize_davinci",
+ "vize_s1",
  "vize_s1_to_s2",
 ]
 
@@ -4594,6 +4597,8 @@ dependencies = [
  "vize_canon",
  "vize_carton",
  "vize_croquis",
+ "vize_croquis_cf",
+ "vize_davinci",
  "vize_glyph",
  "vize_musea",
  "vize_patina",
