@@ -706,6 +706,97 @@ export interface LintResultNapi {
   timeMs: number;
 }
 
+/** A plugin as the SDK's `definePlugin` hands it to the host. */
+export interface JsPluginNapi {
+  name: string;
+  version: string;
+  /** The SDK's digest of the plugin's rule sources. */
+  fingerprint: string;
+  visit?: Array<string>;
+  demands?: Array<string>;
+  /** `(batchJson) => reportsJson` — one call per document. */
+  run: (arg: string) => string;
+}
+
+export interface PluginLintOptionsNapi {
+  filename?: string;
+  /** Reuse a result whose content key this process has already seen. */
+  cache?: boolean;
+}
+
+export interface PluginDiagnosticNapi {
+  ruleId: string;
+  plugin: string;
+  severity: string;
+  message: string;
+  start: number;
+  end: number;
+  line: number;
+  column: number;
+  endLine: number;
+  endColumn: number;
+}
+
+/** One plugin's cost in this lint run. */
+export interface PluginCostNapi {
+  name: string;
+  version: string;
+  contentKey: string;
+  /** Nodes in the plugin's batch (0 when served from the cache). */
+  nodes: number;
+  batchBytes: number;
+  reports: number;
+  cached: boolean;
+  /** Host time for this plugin: batch build, the JS call, report mapping. */
+  elapsedNs: number;
+  /** The JS call alone. */
+  jsNs: number;
+}
+
+export interface PluginLintOutputNapi {
+  filename: string;
+  diagnostics: Array<PluginDiagnosticNapi>;
+  plugins: Array<PluginCostNapi>;
+}
+
+/**
+ * Lint one SFC with JS plugins: one batch and one call per plugin, every
+ * plugin's cost attributed, diagnostics in the host's one order.
+ */
+export declare function lintWithPlugins(
+  source: string,
+  plugins: Array<JsPluginNapi>,
+  options?: PluginLintOptionsNapi | undefined | null,
+): PluginLintOutputNapi;
+
+/**
+ * The proxy arm the spike measured and rejected: the same document behind
+ * a handle whose every read is one napi call.
+ */
+export declare class PluginDocumentHandle {
+  /** How many nodes the document has (ids are `0..count`). */
+  count(): number;
+  kind(id: number): string | null;
+  /** The owning node, or -1. */
+  parent(id: number): number;
+  /** `name`, `value`, `alias.value`, `alias.key` or `alias.index`. */
+  field(id: number, key: string): string | null;
+  /** The names scope `id` binds (`templateScopes`), or `null`. */
+  scope(id: number): Array<ScopeEntryNapi> | null;
+}
+
+/** Open the proxy-arm handle over one SFC, computing `templateScopes`. */
+export declare function openPluginDocument(
+  source: string,
+  filename?: string | undefined | null,
+): PluginDocumentHandle;
+
+/** One `templateScopes` entry on the proxy arm. */
+export interface ScopeEntryNapi {
+  name: string;
+  position: string;
+}
+
 export interface MacroArtifactNapi {
   kind: string;
   name: string;

@@ -5,6 +5,7 @@
 const nativeBinding = require("./native-binding");
 
 module.exports = nativeBinding;
+module.exports.PluginDocumentHandle = nativeBinding.PluginDocumentHandle;
 module.exports.applyViteDefineReplacements = nativeBinding.applyViteDefineReplacements;
 module.exports.artToCsf = nativeBinding.artToCsf;
 module.exports.buildDesignTokenMap = nativeBinding.buildDesignTokenMap;
@@ -52,6 +53,7 @@ module.exports.isSfcImportableAssetUrl = nativeBinding.isSfcImportableAssetUrl;
 module.exports.isViteBareSpecifier = nativeBinding.isViteBareSpecifier;
 module.exports.lint = nativeBinding.lint;
 module.exports.lintPatinaSfc = nativeBinding.lintPatinaSfc;
+module.exports.lintWithPlugins = nativeBinding.lintWithPlugins;
 module.exports.normalizeViteCssModuleFilename = nativeBinding.normalizeViteCssModuleFilename;
 module.exports.normalizeViteDevMiddlewareUrl = nativeBinding.normalizeViteDevMiddlewareUrl;
 module.exports.normalizeViteFsIdForBuild = nativeBinding.normalizeViteFsIdForBuild;
@@ -60,6 +62,7 @@ module.exports.normalizeViteRequireBase = nativeBinding.normalizeViteRequireBase
 module.exports.normalizeViteResolvedVuePath = nativeBinding.normalizeViteResolvedVuePath;
 module.exports.normalizeViteVirtualVueModuleId = nativeBinding.normalizeViteVirtualVueModuleId;
 module.exports.normalizeVizeConfig = nativeBinding.normalizeVizeConfig;
+module.exports.openPluginDocument = nativeBinding.openPluginDocument;
 module.exports.parseArt = nativeBinding.parseArt;
 module.exports.parseArtStatusWarnings = nativeBinding.parseArtStatusWarnings;
 module.exports.parseCssAst = nativeBinding.parseCssAst;

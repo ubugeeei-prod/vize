@@ -13,6 +13,18 @@ pub mod napi;
 #[path = "napi/lint_fix.rs"]
 mod lint_fix_tests;
 
+// The P4-16 JS plugin host's pure half (document, facts, batch), tested the
+// same way.
+#[cfg(all(test, not(feature = "napi")))]
+#[path = "napi/plugin_sdk"]
+mod plugin_sdk_host {
+    mod batch;
+    mod document;
+    mod error;
+    mod facts;
+    mod tests;
+}
+
 #[cfg(feature = "wasm")]
 pub mod wasm;
 
