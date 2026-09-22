@@ -13,14 +13,14 @@ strict equality with the sources and this page to byte equality with the rows.
 
 ## Retained `alloc::vec::Vec`
 
-The library trees in the reviewed inventory contain 100 production files,
-112 direct `alloc::vec::Vec` paths, and 392 bound `Vec`/`StdVec` uses.
+The library trees in the reviewed inventory contain 104 production files,
+116 direct `alloc::vec::Vec` paths, and 403 bound `Vec`/`StdVec` uses.
 
 | Category | Files | Direct paths | Bound uses |
 | -------- | ----: | -----------: | ---------: |
 | contract |    22 |           33 |         85 |
-| analysis |    17 |           18 |         58 |
-| lower    |    13 |           13 |         52 |
+| analysis |    19 |           20 |         62 |
+| lower    |    15 |           15 |         59 |
 | pass     |    16 |           16 |         70 |
 | emit     |    32 |           32 |        127 |
 
@@ -36,7 +36,7 @@ The library trees in the reviewed inventory contain 100 production files,
 | s1       | `alloc::vec::Vec`       |     0 |            0 |          0 |
 | s1       | `alloc::string::String` |     0 |            0 |          0 |
 | s1       | `vize_s0::String`       |     0 |            0 |          0 |
-| s1       | `vize_s0::Vec`          |     5 |            5 |         22 |
+| s1       | `vize_s0::Vec`          |    14 |           14 |         74 |
 | s1       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s2       | `alloc::vec::Vec`       |    10 |           22 |         44 |
 | s2       | `alloc::string::String` |     0 |            0 |          0 |
@@ -48,9 +48,9 @@ The library trees in the reviewed inventory contain 100 production files,
 | s3       | `vize_s0::String`       |     6 |            6 |         27 |
 | s3       | `vize_s0::Vec`          |     2 |            2 |         14 |
 | s3       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
-| s1_to_s2 | `alloc::vec::Vec`       |    57 |           57 |        221 |
+| s1_to_s2 | `alloc::vec::Vec`       |    61 |           61 |        232 |
 | s1_to_s2 | `alloc::string::String` |     0 |            0 |          0 |
-| s1_to_s2 | `vize_s0::String`       |    84 |           88 |        430 |
+| s1_to_s2 | `vize_s0::String`       |    89 |           93 |        461 |
 | s1_to_s2 | `vize_s0::Vec`          |    16 |           17 |         69 |
 | s1_to_s2 | `vize_s0::SmallVec`     |     5 |            5 |         10 |
 | s2_to_s3 | `alloc::vec::Vec`       |     1 |            1 |          1 |
