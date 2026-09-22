@@ -2,24 +2,25 @@
 //! renderer (P4-14a), in the locale `--locale` selects.
 //!
 //! This is the CLI edge the renderer's contract names: the one place a
-//! `vize_carton` translator becomes a [`Catalog`], and the interim mapping
-//! from Patina's `LintDiagnostic` onto the unified `vize_davinci::Diagnostic`.
-//! The mapping is deliberately mechanical — a label becomes a secondary
-//! part, a fix becomes a titled run of suggestions, help becomes a footer —
-//! and P4-6c's canonical Patina conversion replaces it, taking the
-//! file-absolute span fix for FP-1 with it.
+//! `vize_carton` translator becomes a [`Catalog`]. Patina diagnostics join the
+//! unified channel through P4-6c's canonical conversion
+//! ([`vize_patina::output::unified::to_unified`]: contract-clamped severity,
+//! counted exemptions, ranges checked against the authored file); this module
+//! only arranges the result for the terminal — the fix's own message titles
+//! its suggestions and Markdown help becomes a plain-text footer.
 
 use std::borrow::Cow;
 use std::io::IsTerminal;
 
-use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Stage};
+use vize_davinci::diagnostic::{Diagnostic, DiagnosticPart, PartKind};
 use vize_davinci::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
 use vize_fresco::{
     ColorSupport, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
 };
+use vize_patina::output::unified::{UnifiedError, to_unified};
 use vize_patina::{HelpRenderTarget, LintDiagnostic, LintResult, OutputFormat, render_help};
 use vize_s0::i18n::{Locale, Translator, translator};
-use vize_s0::{FxHashMap, Span, String, cstr};
+use vize_s0::{FxHashMap, SourceRoot, String, cstr};
 
 /// The `--format` value selecting this renderer.
 const RICH: &str = "rich";
@@ -132,7 +133,12 @@ pub(crate) fn render(
         let text = texts.get(result.filename.as_str()).copied().unwrap_or("");
         let file = SourceFile::new(result.filename.as_str(), text);
         for lint in &result.diagnostics {
-            renderer.render_into(&mut out, &file, Some(lint.rule_name), &unify(lint));
+            match unify(lint, text) {
+                Ok(diagnostic) => {
+                    renderer.render_into(&mut out, &file, Some(lint.rule_name), &diagnostic);
+                }
+                Err(_) => refused(&mut out, &catalog, lint),
+            }
             out.push('\n');
         }
     }
@@ -160,48 +166,74 @@ pub(crate) fn render(
     out
 }
 
-/// Patina's error-severity findings reach the unified channel without
-/// witnesses until P4-6c's conversion; they are exempt by inventory
-/// (`davinci-road/plan/witness-exemptions.tsv`), never silently.
-static PATINA_LINT: Exemption = Exemption::new("vize", "patina-lint");
+/// A diagnostic the unified channel refuses (an unknown rule, or a range
+/// outside the file — a producer defect) still reaches the reader, as a bare
+/// headline rather than an excerpt drawn on the wrong line.
+fn refused(out: &mut String, catalog: &LocaleCatalog, lint: &LintDiagnostic) {
+    let word = catalog.phrase(match lint.severity {
+        vize_patina::Severity::Error => Phrase::Error,
+        vize_patina::Severity::Warning => Phrase::Warning,
+    });
+    out.push_str(&cstr!("{word}[{}]: {}\n", lint.rule_name, lint.message));
+}
 
-/// A Patina diagnostic on the unified channel. Fix parts come before the
-/// general help so the help stays a footer rather than titling the fix.
-pub(crate) fn unify(lint: &LintDiagnostic) -> Diagnostic {
-    let span = Span::new(lint.start, lint.end);
-    let message = lint.message.as_str();
-    let mut diagnostic = match lint.severity {
-        vize_patina::Severity::Error => {
-            Diagnostic::legacy_error(&PATINA_LINT, Stage::Semantic, span, message)
+/// `lint` on the unified channel, arranged for the terminal: the fix's
+/// message titles its suggestions (a help part directly before a suggestion
+/// run), and Markdown help follows as a plain-text footer.
+pub(crate) fn unify(lint: &LintDiagnostic, source: &str) -> Result<Diagnostic, UnifiedError> {
+    let root = SourceRoot::new(source).map_err(|_| UnifiedError::SpanOutsideSource {
+        rule: lint.rule_name,
+        span: vize_s0::Span::new(lint.start, lint.end),
+    })?;
+    let mut diagnostic = to_unified(lint, root)?;
+    let parts = core::mem::take(&mut diagnostic.parts);
+    let (fixes, rest): (Vec<_>, Vec<_>) = parts
+        .into_iter()
+        .partition(|part| part.kind == PartKind::Suggestion);
+    let mut footers = Vec::new();
+    for part in rest {
+        if part.kind == PartKind::Help {
+            let help = render_help(&part.message, HelpRenderTarget::PlainText);
+            if !help.trim().is_empty() {
+                footers.push(DiagnosticPart::new(
+                    PartKind::Help,
+                    part.span,
+                    help.as_str(),
+                ));
+            }
+        } else {
+            diagnostic.parts.push(part);
         }
-        vize_patina::Severity::Warning => {
-            Diagnostic::new(Advisory::Warning, Stage::Semantic, span, message)
-        }
-    };
-    for label in &lint.labels {
-        let label_span = Span::new(label.start, label.end);
-        let part = DiagnosticPart::new(PartKind::Secondary, label_span, label.message.as_str());
-        diagnostic = diagnostic.with_part(part);
     }
-    if let Some(fix) = &lint.fix
-        && !fix.edits.is_empty()
+    if let Some(fix) = lint.fix.as_ref().filter(|_| !fixes.is_empty())
+        && !fix.message.trim().is_empty()
     {
-        if !fix.message.trim().is_empty() {
-            let title = DiagnosticPart::new(PartKind::Help, span, fix.message.as_str());
-            diagnostic = diagnostic.with_part(title);
-        }
-        for edit in &fix.edits {
-            let edit_span = Span::new(edit.start, edit.end);
-            let part = DiagnosticPart::new(PartKind::Suggestion, edit_span, edit.new_text.as_str());
-            diagnostic = diagnostic.with_part(part);
-        }
+        let title = DiagnosticPart::new(PartKind::Help, diagnostic.span, fix.message.as_str());
+        diagnostic.parts.push(title);
     }
-    if let Some(help) = &lint.help {
-        let help = render_help(help, HelpRenderTarget::PlainText);
-        if !help.trim().is_empty() {
-            let part = DiagnosticPart::new(PartKind::Help, span, help.as_str());
-            diagnostic = diagnostic.with_part(part);
-        }
+    diagnostic.parts.extend(fixes);
+    diagnostic.parts.extend(footers);
+    Ok(diagnostic)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{LocaleCatalog, refused, unify};
+    use vize_patina::LintDiagnostic;
+    use vize_patina::output::unified::UnifiedError;
+    use vize_s0::i18n::Locale;
+    use vize_s0::{Span, String};
+
+    #[test]
+    fn a_range_outside_the_file_is_refused_yet_still_reported() {
+        let lint = LintDiagnostic::warn("vue/no-v-html", "v-html", 3, 40);
+        let outside = UnifiedError::SpanOutsideSource {
+            rule: "vue/no-v-html",
+            span: Span::new(3, 40),
+        };
+        assert_eq!(unify(&lint, "<p/>").err(), Some(outside));
+        let mut out = String::default();
+        refused(&mut out, &LocaleCatalog::new(Locale::Ja), &lint);
+        assert_eq!(out, "警告[vue/no-v-html]: v-html\n");
     }
-    diagnostic
 }
