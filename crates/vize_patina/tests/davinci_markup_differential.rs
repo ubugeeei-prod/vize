@@ -7,10 +7,12 @@
 //! loudly in both lanes), then, with `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>`,
 //! sweeps every `.vue` file under `<dir>`: each SFC's `<template>` block is
 //! projected through Relief and through S1→S2 and the facade's full hook
-//! traces must be identical. Every file compares or has no template; none may
-//! diverge. The canonical fixture root fails closed unless its submodule
-//! inventory reconciles; other roots sweep in smoke scope with
-//! `closure_evidence=false` (see `davinci_test_support::corpus`).
+//! traces must be identical. Every file is readable and parses; it then
+//! compares, is counted as restructured, or has no template. An unreadable
+//! file or an SFC parse error fails the sweep at that path — a parse error is
+//! not a missing template. None may diverge. The canonical fixture root fails
+//! closed unless its submodule inventory reconciles; other roots sweep in
+//! smoke scope with `closure_evidence=false` (see `davinci_test_support::corpus`).
 //!
 //! Run:
 //!
@@ -49,23 +51,28 @@ fn markup_facade_observes_one_document() {
     let mut compared = 0u64;
     let mut lines = 0u64;
     let mut without_template = 0u64;
-    let mut unreadable = 0u64;
     let mut restructured = 0u64;
     for file in files {
-        let Ok(source) = fs::read_to_string(file) else {
-            unreadable += 1;
-            continue;
-        };
-        let Ok(descriptor) = parse_sfc(&source, SfcParseOptions::default()) else {
-            without_template += 1;
-            continue;
-        };
+        let source = fs::read_to_string(file).unwrap_or_else(|error| {
+            panic!("{}: unreadable corpus file: {error}", file.display());
+        });
+        let descriptor = parse_sfc(&source, SfcParseOptions::default()).unwrap_or_else(|error| {
+            panic!(
+                "{}: SFC parse error (not a missing template): {} ({:?})",
+                file.display(),
+                error.message,
+                error.code
+            );
+        });
         let Some(template) = descriptor.template.as_ref() else {
             without_template += 1;
             continue;
         };
         match compare_template(&template.content) {
-            Ok(TemplateComparison::Compared(count)) => lines += count as u64,
+            Ok(TemplateComparison::Compared(count)) => {
+                lines += count as u64;
+                compared += 1;
+            }
             Ok(TemplateComparison::Restructured) => restructured += 1,
             Err(divergence) => panic!(
                 "{}: markup facade diverged at trace line {}\n  relief: {:?}\n  s2:     {:?}",
@@ -75,19 +82,18 @@ fn markup_facade_observes_one_document() {
                 divergence.s2
             ),
         }
-        compared += 1;
     }
     assert!(compared > 0, "corpus sweep compared no template");
+    // Unreadable files and SFC parse errors abort above, so both are zero here.
     eprintln!(
         "davinci markup differential corpus sweep: scope={} closure_evidence={} files={} \
-         compared={} trace_lines={} restructured={} without_template={} unreadable={}",
+         compared={} trace_lines={} restructured={} without_template={} unreadable=0 parse_errors=0",
         sweep.scope_label(),
         sweep.closure_evidence(),
         files.len(),
         compared,
         lines,
         restructured,
-        without_template,
-        unreadable
+        without_template
     );
 }

@@ -8,8 +8,9 @@
 //! outlet's `name`, a `v-if` carrier's static `key`) and the `<template>`
 //! carriers S2 unwraps into their `ui.if` / `ui.for` regions.
 //!
-//! Nothing is copied: every facade value borrows the op tree or a side-table
-//! entry for the artifact's lifetime.
+//! Facade values borrow the op tree or a side-table entry. Merged-run lookup
+//! uses one span index of the text side table's page-order ids, built when
+//! the view is built, so a walk does not scan that table per interpolation.
 
 use vize_atelier_jsx::s2::JsxS2Root;
 use vize_davinci::side_table::SideTable;
@@ -23,6 +24,7 @@ pub(super) mod binding;
 pub(super) mod bound;
 pub(super) mod children;
 pub(super) mod surface;
+pub(super) mod texts;
 pub(super) mod walk;
 
 /// Which input dialect an S2 artifact was lowered from.
@@ -42,6 +44,8 @@ pub struct S2Markup<'a> {
     pub(super) op_count: u32,
     origin: S2Origin,
     pub(super) texts: Option<&'a SideTable<TextParts>>,
+    /// Span index of [`texts`](Self::texts), one entry per compound run.
+    text_index: &'a [texts::TextSpan],
     /// The artifact's compile arena, where a merged run's entity-bearing static
     /// part is decoded on demand (the one S2 decoder, never a second reading).
     allocator: Option<&'a Allocator>,
@@ -57,6 +61,7 @@ impl<'a> S2Markup<'a> {
             op_count: lowered.op_count,
             origin: S2Origin::Template,
             texts: Some(&lowered.texts),
+            text_index: texts::index(lowered.allocator, &lowered.texts),
             allocator: Some(lowered.allocator),
             surface: Some(surface),
         }
@@ -70,6 +75,7 @@ impl<'a> S2Markup<'a> {
             op_count: root.op_count,
             origin: S2Origin::Jsx,
             texts: None,
+            text_index: texts::EMPTY,
             allocator: None,
             surface: None,
         }
@@ -85,16 +91,13 @@ impl<'a> S2Markup<'a> {
         self.op_count
     }
 
-    /// The recorded parts of a merged text/interpolation run, keyed by the
-    /// compound op's span (unique per op, so no page-order id is needed).
+    /// The recorded parts of a merged text/interpolation run.
+    ///
+    /// The side table is keyed by the compound op's page-order id. The view
+    /// resolves that id through the span index built in [`Self::from_lowered`].
     pub(super) fn text_parts(&self, span: vize_s0::Span) -> Option<&'a TextParts> {
         let texts = self.texts?;
-        texts.iter().map(|(_, parts)| parts).find(|parts| {
-            matches!(
-                (parts.parts.first(), parts.parts.last()),
-                (Some(first), Some(last)) if first.span.start == span.start && last.span.end == span.end
-            )
-        })
+        texts::lookup(self.text_index, texts, span)
     }
 
     /// A merged run's static part as rendered text: the recorded part text,

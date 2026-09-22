@@ -13,10 +13,8 @@ mod differential_battery {
     }
 
     /// The JSX roots the P2-16 projection refuses are named, so the refused
-    /// count in the census cannot hide a newly refused construct. Today that
-    /// is one module: a custom JSX directive (`v-custom={c}`) is the
-    /// projection's explicit `S2Refusal::Directive`, which P4-7b must close
-    /// before the JSX lane can run on S2 alone.
+    /// count in the census cannot hide a newly refused construct. The custom
+    /// directive module (`v-custom={c}`) is admitted: main projects it.
     #[test]
     fn refused_jsx_roots_are_the_named_ones() {
         let refused: std::vec::Vec<&str> = JSX
@@ -26,6 +24,6 @@ mod differential_battery {
             })
             .map(|(name, ..)| *name)
             .collect();
-        assert_eq!(refused, ["directives"]);
+        assert_eq!(refused, [] as [&str; 0]);
     }
 }

@@ -233,6 +233,11 @@ pub struct BatteryCensus {
     pub templates: usize,
     /// Rule-fixture templates compared (see [`super::rule_fixtures`]).
     pub rule_fixtures: usize,
+    /// `lint_template` / `run_over_template` calls the scanner discovered.
+    pub rule_fixture_calls: usize,
+    /// Calls whose template argument is not a string literal. A newly skipped
+    /// call moves this pin even when dedup keeps [`Self::rule_fixtures`] put.
+    pub rule_fixture_skipped: usize,
     /// Construct-matrix templates compared.
     pub matrix: usize,
     /// Trace lines compared over the template planes.
@@ -248,13 +253,15 @@ pub struct BatteryCensus {
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
     rule_fixtures: 851,
+    rule_fixture_calls: 1009,
+    rule_fixture_skipped: 60,
     matrix: 90,
     template_lines: 6103,
     restructured: 0,
     jsx: JsxComparison {
         roots: 13,
-        refused: 1,
-        lines: 110,
+        refused: 0,
+        lines: 118,
     },
 };
 
@@ -277,7 +284,10 @@ pub fn run_battery() -> BatteryCensus {
         tally(&mut census, expect_same(name, compare_template(source)));
         census.templates += 1;
     }
-    for (name, source) in super::rule_fixtures::rule_fixture_templates() {
+    let fixtures = super::rule_fixtures::scan_rule_fixtures();
+    census.rule_fixture_calls = fixtures.calls;
+    census.rule_fixture_skipped = fixtures.skipped;
+    for (name, source) in fixtures.templates {
         tally(&mut census, expect_same(&name, compare_template(&source)));
         census.rule_fixtures += 1;
     }

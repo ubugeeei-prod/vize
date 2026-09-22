@@ -14,6 +14,9 @@
 //! `tests/davinci_markup_differential.rs`).
 
 mod battery;
+mod fixture_cursor;
+mod fixture_escape;
+mod fixture_syntax;
 mod nesting;
 mod rule_fixtures;
 mod trace;
