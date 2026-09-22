@@ -111,6 +111,9 @@ jobs:
       - name: Run P3-15 scheduling contract differential
         working-directory: formal/impeto
         run: lake exe impetoRef --check-schedule-fixtures
+      - name: Run C-23 independent S3 folio checker
+        working-directory: formal/impeto
+        run: lake exe impetoRef --check-folios
       - name: Check Rust reactivity lattice fact provenance
         run: cargo test -p vize_impeto --test lattice_reference_fixture
       - name: Check Rust S3 graph and value fixture provenance

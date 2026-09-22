@@ -3,7 +3,7 @@ phase=built
 
 [s3-folio.regions]
 id=0 parent=- owner=- span=0:57
-id=1 parent=0 owner=0 span=41:52
+id=1 parent=0 owner=0 span=8:52
 
 [s3-folio.ops]
 id=0 kind=impeto.insert-node region=0 effect=- span=0:57

@@ -41,7 +41,16 @@
 
 - [ ] C-22 Lean CI lane maintenance (CI-lenient dependency lane per charter #39)
 - [ ] C-23 Independent Lean folio checker, expanded stage-by-stage (starts: P2 folios stable)
+  - _S3 stage 2026-09-22:_ `Impeto.Checker` re-checks the TS-27 graph contract
+    (unique ids, root, region resolution, span nesting, finite parent chains,
+    effect scoping, edge resolution, scheduled order) over all 60 committed S3
+    graphs. The checker is total and proved exact against its declarative
+    specification (`violations_nil_iff`), and 7 damages each yield exactly their
+    codes. It found the hand-written `dynamic-button` fixture violating span
+    nesting, which the Rust validator never saw; the fixture is fixed. S1/S2
+    stages remain.
 - [ ] C-24 Theorem backlog: lattice laws → effect-grouping edge preservation → IVM linearity (starts: P3-4)
+  - _2026-09-21:_ all three landed with P3-15; later S3 semantics extend them in the same lane.
 
 ## Documentation truth (charter #45 pending)
 

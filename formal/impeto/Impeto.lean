@@ -17,3 +17,6 @@ import Impeto.Model
 import Impeto.ModelBehavior
 import Impeto.ModelTests
 import Impeto.SlotTests
+import Impeto.Checker
+import Impeto.CheckerLaws
+import Impeto.CheckerTests

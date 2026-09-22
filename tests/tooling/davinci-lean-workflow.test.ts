@@ -69,6 +69,7 @@ function assertLeanWorkflow(workflow: Workflow): void {
       ["formal/impeto", proofEscapeScan],
       ["formal/impeto", "lake exe impetoRef --check-lattice-fixtures"],
       ["formal/impeto", "lake exe impetoRef --check-schedule-fixtures"],
+      ["formal/impeto", "lake exe impetoRef --check-folios"],
       [".", "cargo test -p vize_impeto --test lattice_reference_fixture"],
       [".", "cargo test -p vize_s2_to_s3 --test lean_reference_fixture"],
       [".", "cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace"],
@@ -186,6 +187,13 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
     assert.match(schedule, new RegExp(`^theorem ${name}\\b`, "mu"), `missing theorem ${name}`);
   }
   assert.match(main, /"--check-schedule-fixtures"\] => ScheduleFixture\.check/u);
+  assert.match(main, /"--check-folios"\] => CheckerTests\.check/u);
+  const checker = readRepoFile("formal", "impeto", "Impeto", "Checker.lean");
+  assert.doesNotMatch(checker, /\bpartial\b|\bunsafe\b/u, "the folio checker must stay total");
+  assert.match(
+    readRepoFile("formal", "impeto", "Impeto", "CheckerLaws.lean"),
+    /^theorem violations_nil_iff\b/mu,
+  );
   const incremental = readRepoFile("formal", "impeto", "Impeto", "IncrementalLaws.lean");
   for (const name of [
     "reconcile_erase",

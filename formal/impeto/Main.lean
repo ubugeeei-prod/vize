@@ -10,6 +10,7 @@ import Impeto.SlotTests
 import Impeto.LatticeFixture
 import Impeto.ScheduleFixture
 import Impeto.Theorems
+import Impeto.CheckerTests
 
 open Impeto
 
@@ -190,6 +191,7 @@ def main (args : List String) : IO UInt32 := do
             if code != 0 then pure code else SlotTests.check
   | ["--check-lattice-fixtures"] => LatticeFixture.checkFile "fixtures/reactivity-lattice.folio"
   | ["--check-schedule-fixtures"] => ScheduleFixture.check
+  | ["--check-folios"] => CheckerTests.check
   | ["--write-ivm-matrix"] => IvmMatrix.run true
   | ["--write-model-reference"] => IvmMatrix.runMatrix "model-reference" ModelBehavior.run 10 true
   | ["--write-slot-reference"] => IvmMatrix.runMatrix "slot-reference" LoopBehavior.run 8 true
