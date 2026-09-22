@@ -30,6 +30,8 @@ use super::props::{
 use storage::StoredPatchFacts;
 
 pub(super) struct PatchFactsTable {
+    // Keep owner IDs ordered so every emitted VNode does not scan all earlier
+    // facts. Small components still use the inline allocation.
     entries: SmallVec<[(NodeId, StoredPatchFacts); 16]>,
 }
 
@@ -45,10 +47,9 @@ impl PatchFactsTable {
             return facts;
         };
         let stored = StoredPatchFacts::from_patch(&facts);
-        if let Some((_, entry)) = self.entries.iter_mut().find(|(id, _)| *id == owner) {
-            *entry = stored;
-        } else {
-            self.entries.push((owner, stored));
+        match self.entries.binary_search_by_key(&owner, |(id, _)| *id) {
+            Ok(index) => self.entries[index].1 = stored,
+            Err(index) => self.entries.insert(index, (owner, stored)),
         }
         facts
     }
@@ -61,8 +62,9 @@ impl PatchFactsTable {
     #[cfg(test)]
     fn get(&self, owner: NodeId) -> Option<&StoredPatchFacts> {
         self.entries
-            .iter()
-            .find_map(|(id, facts)| (*id == owner).then_some(facts))
+            .binary_search_by_key(&owner, |(id, _)| *id)
+            .ok()
+            .map(|index| &self.entries[index].1)
     }
 
     #[cfg(test)]

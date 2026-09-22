@@ -15,6 +15,34 @@ fn helper_preamble_uses_final_body_order_within_one_rank() {
 }
 
 #[test]
+fn helper_order_recomputes_after_body_changes() {
+    let mut buf = Buf::new(false);
+    for helper in [
+        Helper::MergeProps,
+        Helper::GuardReactiveProps,
+        Helper::NormalizeProps,
+    ] {
+        buf.use_helper(helper);
+    }
+    buf.push("_mergeProps(_guardReactiveProps(props), extra)");
+    assert_eq!(
+        buf.ordered_helpers()
+            .into_iter()
+            .map(Helper::alias)
+            .collect::<alloc::vec::Vec<_>>(),
+        ["_mergeProps", "_guardReactiveProps", "_normalizeProps"]
+    );
+    buf.push_hoist("_normalizeProps(props)".into());
+    assert_eq!(
+        buf.ordered_helpers()
+            .into_iter()
+            .map(Helper::alias)
+            .collect::<alloc::vec::Vec<_>>(),
+        ["_normalizeProps", "_guardReactiveProps", "_mergeProps"]
+    );
+}
+
+#[test]
 fn helper_preamble_uses_final_hoist_order_within_one_rank() {
     let mut buf = Buf::new(false);
     buf.use_helper(Helper::NormalizeStyle);

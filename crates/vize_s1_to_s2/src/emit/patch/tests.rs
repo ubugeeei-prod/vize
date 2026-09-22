@@ -92,6 +92,44 @@ fn patch_facts_table_retains_owner_keyed_entries() {
 }
 
 #[test]
+fn patch_facts_table_replaces_owners_after_out_of_order_spill() {
+    let mut table = PatchFactsTable::new();
+    for index in (0..40).rev() {
+        let owner = NodeId::from_index(index * 3).expect("test owner id exists");
+        table.materialize(
+            Some(owner),
+            PatchFacts {
+                flag: index as i32,
+                dynamic_props: StdVec::new(),
+            },
+        );
+    }
+    let owner = NodeId::from_index(21).unwrap();
+    let replacement = PatchFacts {
+        flag: 8,
+        dynamic_props: StdVec::from([String::from("title")]),
+    };
+    table.materialize(Some(owner), replacement.clone());
+    assert_eq!(table.len(), 40);
+    assert_eq!(
+        table.get(owner),
+        Some(&StoredPatchFacts::from_patch(&replacement))
+    );
+    assert!(table.get(NodeId::from_index(1).unwrap()).is_none());
+    for index in (0..40).filter(|index| *index != 7) {
+        let owner = NodeId::from_index(index * 3).unwrap();
+        let expected = PatchFacts {
+            flag: index as i32,
+            dynamic_props: StdVec::new(),
+        };
+        assert_eq!(
+            table.get(owner),
+            Some(&StoredPatchFacts::from_patch(&expected))
+        );
+    }
+}
+
+#[test]
 fn dom_emit_observes_materialized_table_for_patch_equivalence_fixtures() {
     let cases = [
         (
