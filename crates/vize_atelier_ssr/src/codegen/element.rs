@@ -9,7 +9,7 @@ mod plain;
 pub(crate) mod props;
 mod slot;
 mod slot_fn;
-mod spanned_props;
+pub(crate) mod spanned_props;
 mod transparent_builtin;
 mod vnode;
 

@@ -86,6 +86,10 @@ pub(crate) fn normalize_prop_entries(
             && is_on(&entry.key)
             && let Some(values) = event_values.remove(&entry.key)
         {
+            // A merged value no longer is the first entry's authored value.
+            if values.len() > 1 {
+                entry.spans = None;
+            }
             entry.value = merge_prop_values(values);
         }
     }

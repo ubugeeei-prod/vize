@@ -3,6 +3,7 @@
 //! `<Transition>` / `<KeepAlive>` wrappers.
 
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::spanned::SpannedText;
 use vize_s0::{String, ToCompactString, cstr};
 use vize_s1_to_s2::{TransformContent, decode_template_entities};
 use vize_s2::op::{self as s2, DynamicName};
@@ -153,13 +154,16 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let props = self.with_fallthrough_attrs(props, inherit);
         self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
+        // The resolved name maps to the authored tag, as the AST walker's does.
         let callee = match binding {
-            Some(binding) => binding,
-            None => self.ctx.resolved_component_callee(name),
+            Some(binding) => SpannedText::from(binding),
+            None => self
+                .ctx
+                .component_callee(name, Some(component.span.start + 1)),
         };
         self.ctx.push_indent();
         self.ctx.push("_push(_ssrRenderComponent(");
-        self.ctx.push(&callee);
+        self.ctx.push_spanned(&callee);
         self.ctx.push(", ");
         self.ctx.push(&props);
         self.ctx.push(", ");

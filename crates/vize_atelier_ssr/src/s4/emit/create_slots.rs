@@ -14,6 +14,7 @@ use vize_s2::op::{self as s2, DynamicName};
 
 use super::control::alias;
 use super::slots::{ComponentSlots, SlotSpec, slot_pattern};
+use super::spans::expression_span;
 use super::{Emitter, Result};
 use crate::codegen::element::props::{is_valid_js_identifier, quoted_js_string};
 use crate::codegen::helpers::extract_destructure_params;
@@ -122,6 +123,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 name: String::default(),
                 pattern,
                 ranges,
+                anchor: (None, Some(element.span.start)),
             },
         })
     }
@@ -186,6 +188,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 name: "default".to_compact_string(),
                 pattern: None,
                 ranges: slots.default.clone(),
+                anchor: (None, None),
             })?;
         }
         for named in &slots.named {
@@ -260,8 +263,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             ))?;
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderList);
         let (source, aliases, mark) = self.enter_loop(at)?;
+        let span = match self.segments[at].source {
+            Source::For(for_op) => expression_span(&for_op.binding.source),
+            _ => None,
+        };
         self.ctx.push("_renderList(");
-        self.ctx.push(&source);
+        self.push_expression(&source, span);
         self.ctx.push(", (");
         self.ctx.push(&aliases);
         self.ctx.push(") => {\n");

@@ -9,6 +9,9 @@ use vize_s2::op::{self as s2, DynamicName};
 
 use super::{Emitter, Result, model, plan_source, require_dynamic};
 use crate::codegen::element::props::{merge_prop_values, quoted_js_string};
+use vize_atelier_core::codegen::spanned::SpannedText;
+
+use super::spans::{argument_start, attribute_value_start, directive_value, expression_span};
 use crate::codegen::helpers::escape_html_attr;
 use crate::s4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
@@ -22,6 +25,8 @@ pub(super) type Attached<'r, 'a> = [SsrStringSegment<'r, 'a>];
 pub(super) struct Bind<'r, 'a> {
     pub(super) name: Option<&'a str>,
     pub(super) value: &'r ExprRef<'a>,
+    /// The whole directive's authored range.
+    pub(super) span: vize_s0::Span,
 }
 
 /// Admit an element's attached segments. Anything the plan emitter does not
@@ -88,7 +93,11 @@ pub(super) fn bind<'r, 'a>(binding: &'r s2::BindingOp<'a>) -> Result<Option<Bind
     };
     admit_value(bind.value.as_ref())?;
     match &bind.value {
-        Some(value) => Ok(Some(Bind { name, value })),
+        Some(value) => Ok(Some(Bind {
+            name,
+            value,
+            span: bind.span,
+        })),
         None => Err(LegacyReason::Binding.into()),
     }
 }
@@ -135,6 +144,15 @@ fn show_value<'r, 'a>(attached: &Attached<'r, 'a>) -> Option<&'r ExprRef<'a>> {
 }
 
 impl Emitter<'_, '_, '_, '_, '_, '_> {
+    /// A rewritten `v-bind` value anchored at its authored expression: the
+    /// directive's quoted value, or the expanded shorthand's expression.
+    pub(super) fn bound_expression(&self, code: &str, bind: &Bind<'_, '_>) -> SpannedText {
+        match directive_value(self.ctx.source, bind.span).or_else(|| expression_span(bind.value)) {
+            Some(span) => self.ctx.spanned_expression(code, span),
+            None => SpannedText::plain(code),
+        }
+    }
+
     /// `(({exp}) ? null : { display: "none" })` for the first `v-show`.
     pub(super) fn show_style(&self, attached: &Attached<'_, '_>) -> Result<Option<String>> {
         let Some(value) = show_value(attached) else {
@@ -183,11 +201,14 @@ pub(super) fn emit_inline(
                     continue;
                 }
                 em.ctx.push_string_part_static(" ");
-                em.ctx.push_string_part_static(name);
+                em.ctx.push_string_part_static_mapped(name, attr.span.start);
                 if let Some(value) = attr.value {
                     em.ctx.push_string_part_static("=\"");
-                    let decoded = decode_template_entities(value);
-                    em.ctx.push_string_part_static(&escape_html_attr(&decoded));
+                    let decoded = escape_html_attr(&decode_template_entities(value));
+                    match attribute_value_start(em.ctx.source, attr.span, name) {
+                        Some(start) => em.ctx.push_string_part_static_mapped(&decoded, start),
+                        None => em.ctx.push_string_part_static(&decoded),
+                    }
                     em.ctx.push_string_part_static("\"");
                 }
             }
@@ -197,7 +218,7 @@ pub(super) fn emit_inline(
                         continue;
                     };
                     let exp = em.expr(bind.value, TransformContent::Decoded)?;
-                    emit_inline_bind(em, attached, bind.name, exp)?;
+                    emit_inline_bind(em, attached, &bind, exp)?;
                 }
                 s2::BindingOp::Model(model) => model::emit_inline(em, attached, model, tag)?,
                 s2::BindingOp::VueShow(show) if !explicit_style => {
@@ -217,10 +238,10 @@ pub(super) fn emit_inline(
 fn emit_inline_bind(
     em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
     attached: &Attached<'_, '_>,
-    name: Option<&str>,
+    bind: &Bind<'_, '_>,
     exp: String,
 ) -> Result<()> {
-    match name {
+    match bind.name {
         Some(name) if vize_s0::is_reserved_prop(name) => {}
         Some("class") => {
             em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderClass);
@@ -259,8 +280,17 @@ fn emit_inline_bind(
         }
         Some(name) => {
             em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttr);
-            em.ctx
-                .push_string_part_dynamic(&cstr!("_ssrRenderAttr(\"{name}\", {exp})"));
+            // The name maps to the authored argument and the value to its
+            // expression, as the AST walker writes `_ssrRenderAttr`.
+            let mut piece = SpannedText::plain("_ssrRenderAttr(\"");
+            match argument_start(em.ctx.source, bind.span, name) {
+                Some(start) if em.ctx.spans_enabled() => piece.push_mapped(name, start),
+                _ => piece.push_str(name),
+            }
+            piece.push_str("\", ");
+            piece.push_spanned(&em.bound_expression(&exp, bind));
+            piece.push_str(")");
+            em.ctx.push_string_part_dynamic_spanned(piece);
         }
         None => {
             em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttrs);

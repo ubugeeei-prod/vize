@@ -18,6 +18,7 @@ mod model;
 mod region;
 mod slot_outlet;
 mod slots;
+mod spans;
 mod text;
 mod vnode;
 mod vnode_control;
@@ -155,10 +156,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             (Kind::SlotOutlet, Source::Slot(slot)) => {
                 vize_s0::ensure_sufficient_stack(|| self.slot_outlet(segment, slot))
             }
-            (Kind::Text, Source::Text(_)) => {
+            (Kind::Text, Source::Text(op)) => {
                 self.pos += 1;
                 let content = plan_source(&segment, SsrStringPayloadKind::Text)?;
-                text::emit_text(self.ctx, content)
+                text::emit_text(self.ctx, content, op.span.start)
             }
             (Kind::DynamicText, Source::Interpolation(interpolation)) => {
                 self.pos += 1;

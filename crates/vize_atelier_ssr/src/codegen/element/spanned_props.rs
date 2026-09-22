@@ -17,7 +17,7 @@ use super::{SsrCodegenContext, VNodePropEntry};
 
 /// Authored spans of one generated prop entry.
 #[derive(Clone, Debug)]
-pub(super) struct PropEntrySpans {
+pub(crate) struct PropEntrySpans {
     /// Authored start of the key token (attribute name or `v-bind` argument),
     /// when the key is emitted verbatim.
     key: Option<u32>,
@@ -48,7 +48,7 @@ pub(super) fn attribute_entry(attr: &AttributeNode, value: &str, spans: bool) ->
 }
 
 /// A statically keyed entry whose value is an already spanned expression.
-pub(super) fn bound_entry(key: &str, key_start: Option<u32>, value: SpannedText) -> VNodePropEntry {
+pub(crate) fn bound_entry(key: &str, key_start: Option<u32>, value: SpannedText) -> VNodePropEntry {
     let mut entry = component_prop_entry(key, value.as_str(), false);
     entry.spans = Some(Box::new(PropEntrySpans {
         key: key_start,
@@ -85,7 +85,7 @@ impl SsrCodegenContext<'_> {
 }
 
 /// `callee(arg)` keeping `arg`'s anchors.
-pub(super) fn wrap_spanned(callee: &str, arg: &SpannedText) -> SpannedText {
+pub(crate) fn wrap_spanned(callee: &str, arg: &SpannedText) -> SpannedText {
     let mut out = SpannedText::plain(callee);
     out.push_str("(");
     out.push_spanned(arg);
@@ -95,7 +95,7 @@ pub(super) fn wrap_spanned(callee: &str, arg: &SpannedText) -> SpannedText {
 
 /// The object literal [`component_props_object`](super::props::component_props_object)
 /// emits, with entry anchors kept.
-pub(super) fn component_props_object_spanned(entries: &[VNodePropEntry]) -> SpannedText {
+pub(crate) fn component_props_object_spanned(entries: &[VNodePropEntry]) -> SpannedText {
     let mut out = SpannedText::plain("{ ");
     for (index, entry) in entries.iter().enumerate() {
         if index > 0 {
@@ -127,7 +127,7 @@ pub(super) fn component_props_object_spanned(entries: &[VNodePropEntry]) -> Span
 }
 
 /// `_mergeProps(a, b, ...)` over spanned arguments.
-pub(super) fn merge_props_call(args: &[SpannedText]) -> SpannedText {
+pub(crate) fn merge_props_call(args: &[SpannedText]) -> SpannedText {
     let mut out = SpannedText::plain("_mergeProps(");
     for (index, arg) in args.iter().enumerate() {
         if index > 0 {

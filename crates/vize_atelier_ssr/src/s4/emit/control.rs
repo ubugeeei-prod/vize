@@ -8,6 +8,7 @@ use vize_s1_to_s2::TransformContent;
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{self as s2, Op};
 
+use super::spans::{expression_span, quoted_value};
 use super::{Emitter, Flags, Result};
 use crate::codegen::helpers::extract_destructure_params;
 use crate::s4::string_plan::{
@@ -30,7 +31,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         for (index, branch) in if_op.branches.iter().enumerate() {
             match (index, &branch.condition) {
                 (_, Some(condition)) => {
-                    conditions.push(Some(self.expr(condition, TransformContent::Decoded)?));
+                    let text = self.expr(condition, TransformContent::Decoded)?;
+                    let span =
+                        expression_span(condition).map(|span| quoted_value(self.ctx.source, span));
+                    conditions.push(Some((text, span)));
                 }
                 (0, None) => return Err(LegacyReason::Structure.into()),
                 (_, None) => conditions.push(None),
@@ -43,18 +47,20 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 |source| matches!(source, Source::Branch(open) if core::ptr::eq(*open, branch)),
             )?;
             self.ctx.push_indent();
+            // Each branch opens at its authored unit, as the AST walker's does.
+            let unit = branch.span.start;
             match (index, condition) {
-                (0, Some(condition)) => {
-                    self.ctx.push("if (");
-                    self.ctx.push(&condition);
+                (0, Some((condition, span))) => {
+                    self.ctx.push_mapped("if (", unit);
+                    self.push_expression(&condition, span);
                     self.ctx.push(") {\n");
                 }
-                (_, Some(condition)) => {
-                    self.ctx.push("} else if (");
-                    self.ctx.push(&condition);
+                (_, Some((condition, span))) => {
+                    self.ctx.push_then_mapped("} ", "else if (", unit);
+                    self.push_expression(&condition, span);
                     self.ctx.push(") {\n");
                 }
-                (_, None) => self.ctx.push("} else {\n"),
+                (_, None) => self.ctx.push_then_mapped("} ", "else {\n", unit),
             }
             self.ctx.indent_level += 1;
             let shape = self.scan_region(self.pos)?;
@@ -116,9 +122,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.ctx.push("_push(`<!--[-->`)\n");
         }
         self.ctx.push_indent();
-        self.ctx.push("_ssrRenderList(");
-        self.ctx.push(&source);
+        self.ctx.push_mapped("_ssrRenderList(", for_op.span.start);
+        self.push_expression(&source, expression_span(&binding.source));
         self.ctx.push(", (");
+        // The walker anchors the loop source but not the aliases it binds.
         self.ctx.push(value);
         for alias in [key, index].into_iter().flatten() {
             self.ctx.push(", ");
@@ -157,6 +164,14 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             Kind::CloseFor,
             |source| matches!(source, Source::For(open) if core::ptr::eq(*open, for_op)),
         )
+    }
+
+    /// Write an emitted expression, anchored at its authored `span`.
+    pub(super) fn push_expression(&mut self, code: &str, span: Option<vize_s0::Span>) {
+        match span {
+            Some(span) => self.ctx.push_expression_text(code, span),
+            None => self.ctx.push(code),
+        }
     }
 
     /// A keyed `<template v-for>` whose content is not one plain element

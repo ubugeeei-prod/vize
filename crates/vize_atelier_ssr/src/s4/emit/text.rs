@@ -4,13 +4,13 @@
 use vize_atelier_core::RuntimeHelper;
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
-use vize_s0::cstr;
+use vize_s0::Span;
 use vize_s1_to_s2::lower::{TextPart, TextParts, rebuild_source};
 use vize_s1_to_s2::{TransformContent, decode_template_entities};
 use vize_s2::expr::{ExprRef, OpaqueReason};
 use vize_s2::op as s2;
 
-use super::{Emitter, Result};
+use super::{Emitter, Result, spans};
 use crate::codegen::SsrCodegenContext;
 use crate::codegen::helpers::escape_html;
 use crate::s4::string_plan::SsrStringSegment;
@@ -21,10 +21,11 @@ use crate::s4::{AdmissionFailure, LegacyReason};
 /// The shipped parser condenses whitespace *after* decoding, while S2
 /// condenses the raw text; an entity that decodes to whitespace would make
 /// the two disagree, so that text keeps the legacy lane.
-pub(super) fn emit_text(ctx: &mut SsrCodegenContext<'_>, content: &str) -> Result<()> {
+pub(super) fn emit_text(ctx: &mut SsrCodegenContext<'_>, content: &str, start: u32) -> Result<()> {
     let decoded = decode_template_entities(content);
     admit_decoded(content, &decoded)?;
-    ctx.push_string_part_static(&escape_html(&decoded));
+    // Anchored at the authored text, as the AST walker anchors a text node.
+    ctx.push_string_part_static_mapped(&escape_html(&decoded), start);
     Ok(())
 }
 
@@ -63,25 +64,29 @@ pub(super) fn emit_interpolation(
         for part in parts {
             if part.dynamic {
                 let rewritten = em.text_expr(part.text.as_str())?;
-                push_interpolate(em, rewritten);
+                let content = spans::interpolation_content(em.ctx.source, part.span);
+                push_interpolate(em, rewritten, content.unwrap_or(part.span));
             } else {
-                emit_text(em.ctx, part.text.as_str())?;
+                emit_text(em.ctx, part.text.as_str(), part.span.start)?;
             }
         }
         return Ok(());
     }
-    if !matches!(interpolation.expression, ExprRef::Js(_)) {
+    let ExprRef::Js(js) = interpolation.expression else {
         return Err(LegacyReason::ExpressionOrEncoding.into());
-    }
+    };
     let rewritten = em.expr(&interpolation.expression, TransformContent::Padded)?;
-    push_interpolate(em, rewritten);
+    let content = spans::trimmed(em.ctx.source, js.span);
+    push_interpolate(em, rewritten, content);
     Ok(())
 }
 
-fn push_interpolate(em: &mut Emitter<'_, '_, '_, '_, '_, '_>, text: vize_s0::String) {
+/// `_ssrInterpolate(exp)`, anchored at the authored content `span` as the AST
+/// walker anchors an interpolation.
+fn push_interpolate(em: &mut Emitter<'_, '_, '_, '_, '_, '_>, text: vize_s0::String, span: Span) {
     em.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
     em.ctx
-        .push_string_part_dynamic(&cstr!("_ssrInterpolate({text})"));
+        .push_wrapped_expression_part("_ssrInterpolate(", &text, ")", span);
 }
 
 /// The validated parts of a compound interpolation, or `None` for a plain one.

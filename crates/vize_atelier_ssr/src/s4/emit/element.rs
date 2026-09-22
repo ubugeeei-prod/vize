@@ -51,7 +51,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let content = content(attached, tag);
 
         self.ctx.push_string_part_static("<");
-        self.ctx.push_string_part_static(tag);
+        self.ctx
+            .push_string_part_static_mapped(tag, element.span.start + 1);
         if inherit {
             fallthrough::emit(self, attached, tag)?;
         } else {

@@ -19,6 +19,27 @@ pub(super) struct SlotSpec {
     pub(super) name: String,
     pub(super) pattern: Option<String>,
     pub(super) ranges: Ranges,
+    /// Authored starts of the slot name token and of the element carrying
+    /// the slot, as the AST walker anchors them (P3-9 source maps).
+    pub(super) anchor: SlotAnchor,
+}
+
+/// `(slot name start, carrying element start)`; both absent for the
+/// implicit default slot.
+pub(super) type SlotAnchor = (Option<u32>, Option<u32>);
+
+/// Start of the static slot name in the `#name` / `v-slot:name` directive.
+fn slot_name_start(file: &str, content: &s2::SlotContentOp<'_>) -> Option<u32> {
+    let Some(DynamicName::Static(name)) = content.name else {
+        return None;
+    };
+    let span = content.span;
+    let raw = file.get(span.start as usize..span.end as usize)?;
+    let rest = ["v-slot:", "#"]
+        .iter()
+        .find_map(|prefix| raw.strip_prefix(prefix))?;
+    rest.starts_with(name)
+        .then(|| span.start + (raw.len() - rest.len()) as u32)
 }
 
 /// A component's slot content in the legacy static-object shape.
@@ -116,6 +137,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 name,
                 pattern,
                 ranges,
+                anchor: (
+                    slot_name_start(self.ctx.source, content),
+                    Some(component.span.start),
+                ),
             });
             return Ok(slots);
         }
@@ -135,6 +160,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                     name,
                     pattern,
                     ranges,
+                    anchor: (
+                        slot_name_start(self.ctx.source, content),
+                        Some(element.span.start),
+                    ),
                 });
             } else if self.nested_carrier(child, child_end)? {
                 // A slot carrier nested below plain content has no legacy
@@ -204,6 +233,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                     name: "default".to_compact_string(),
                     pattern: None,
                     ranges: slots.default.clone(),
+                    anchor: (None, None),
                 };
                 self.slot_property(&default)?;
             }
@@ -223,10 +253,15 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     pub(super) fn slot_property(&mut self, spec: &SlotSpec) -> Result<()> {
         self.ctx.push_indent();
+        // The name maps to its authored `v-slot` argument, as the walker's does.
         if is_valid_js_identifier(&spec.name) {
-            self.ctx.push(&spec.name);
+            self.ctx.push_optionally_mapped(&spec.name, spec.anchor.0);
         } else {
-            self.ctx.push(&quoted_js_string(&spec.name));
+            let quoted = quoted_js_string(&spec.name);
+            self.ctx.push("\"");
+            self.ctx
+                .push_optionally_mapped(&quoted[1..quoted.len() - 1], spec.anchor.0);
+            self.ctx.push("\"");
         }
         self.ctx.push(": ");
         self.slot_fn(spec)?;
@@ -238,7 +273,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// else { return [...] } })`.
     pub(super) fn slot_fn(&mut self, spec: &SlotSpec) -> Result<()> {
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
-        self.ctx.push("_withCtx((");
+        self.ctx.push_optionally_mapped("_withCtx((", spec.anchor.1);
         self.ctx.push(spec.pattern.as_deref().unwrap_or("_"));
         self.ctx.push(", _push, _parent, _scopeId) => {\n");
         self.ctx.indent_level += 1;
