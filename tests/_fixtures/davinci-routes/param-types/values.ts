@@ -39,9 +39,11 @@ appRouter.push({ name: "item", params: { ...extra() } });
 appRouter.push({ path: "/items/1", name: "nope" });
 appRouter.push("/items/1");
 
+// A parameter named `undefined` is a string here, not the undefined value.
 function undefinedShadow(undefined: string) {
   appRouter.push({ name: "item", params: { id: undefined } });
 }
+undefinedShadow(dynamicId);
 
 function dynamicParams() {
   return { id: "a" };
