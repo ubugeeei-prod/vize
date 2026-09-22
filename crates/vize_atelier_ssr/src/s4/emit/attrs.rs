@@ -9,7 +9,7 @@ use vize_s2::op::{self as s2, DynamicName};
 
 use super::{Emitter, Result, model, plan_source, require_dynamic};
 use crate::codegen::element::props::{merge_prop_values, quoted_js_string};
-use vize_atelier_core::codegen::spanned::SpannedText;
+use vize_atelier_core::codegen::document::EmitDocument;
 
 use super::spans::{argument_start, attribute_value_start, directive_value, expression_span};
 use crate::codegen::helpers::escape_html_attr;
@@ -146,10 +146,10 @@ fn show_value<'r, 'a>(attached: &Attached<'r, 'a>) -> Option<&'r ExprRef<'a>> {
 impl Emitter<'_, '_, '_, '_, '_, '_> {
     /// A rewritten `v-bind` value anchored at its authored expression: the
     /// directive's quoted value, or the expanded shorthand's expression.
-    pub(super) fn bound_expression(&self, code: &str, bind: &Bind<'_, '_>) -> SpannedText {
+    pub(super) fn bound_expression(&self, code: &str, bind: &Bind<'_, '_>) -> EmitDocument {
         match directive_value(self.ctx.source, bind.span).or_else(|| expression_span(bind.value)) {
             Some(span) => self.ctx.spanned_expression(code, span),
-            None => SpannedText::plain(code),
+            None => EmitDocument::plain(code),
         }
     }
 
@@ -282,7 +282,7 @@ fn emit_inline_bind(
             em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttr);
             // The name maps to the authored argument and the value to its
             // expression, as the AST walker writes `_ssrRenderAttr`.
-            let mut piece = SpannedText::plain("_ssrRenderAttr(\"");
+            let mut piece = EmitDocument::plain("_ssrRenderAttr(\"");
             match argument_start(em.ctx.source, bind.span, name) {
                 Some(start) if em.ctx.spans_enabled() => piece.push_mapped(name, start),
                 _ => piece.push_str(name),

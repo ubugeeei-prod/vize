@@ -11,7 +11,7 @@ use super::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     ToCompactString, VNodePropEntry, cstr, escape_html_attr,
 };
-use vize_atelier_core::codegen::spanned::SpannedText;
+use vize_atelier_core::codegen::document::EmitDocument;
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process a plain HTML element
@@ -151,7 +151,7 @@ impl<'a> SsrCodegenContext<'a> {
         &mut self,
         el: &ElementNode,
         inherit_attrs: bool,
-    ) -> SpannedText {
+    ) -> EmitDocument {
         let mut entries: std::vec::Vec<VNodePropEntry> = std::vec::Vec::new();
         let mut spreads: std::vec::Vec<String> = std::vec::Vec::new();
         let mut needs_normalize = false;
@@ -181,14 +181,14 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         let entries = normalize_prop_entries(entries);
-        let mut args: std::vec::Vec<SpannedText> = std::vec::Vec::new();
+        let mut args: std::vec::Vec<EmitDocument> = std::vec::Vec::new();
 
         if !spreads.is_empty() {
             self.use_core_helper(RuntimeHelper::NormalizeProps);
             self.use_core_helper(RuntimeHelper::GuardReactiveProps);
             args.extend(spreads.into_iter().map(|spread| {
                 let guarded = wrap_call("_guardReactiveProps", &spread);
-                SpannedText::from(wrap_call("_normalizeProps", &guarded))
+                EmitDocument::from(wrap_call("_normalizeProps", &guarded))
             }));
         }
 
@@ -203,18 +203,18 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         if inherit_attrs {
-            args.push(SpannedText::plain("_attrs"));
+            args.push(EmitDocument::plain("_attrs"));
         }
 
         if let Some(model_exp) = dynamic_model_exp {
             self.use_ssr_helper(RuntimeHelper::SsrGetDynamicModelProps);
             let existing_props = self.merge_props_args_expression(&args);
             let model_props = cstr!("_ssrGetDynamicModelProps({existing_props}, {model_exp})");
-            args.push(SpannedText::from(model_props));
+            args.push(EmitDocument::from(model_props));
         }
 
         if args.is_empty() {
-            return SpannedText::plain("null");
+            return EmitDocument::plain("null");
         }
 
         if args.len() == 1 {
@@ -225,7 +225,7 @@ impl<'a> SsrCodegenContext<'a> {
         merge_props_call(&args)
     }
 
-    fn merge_props_args_expression(&mut self, args: &[SpannedText]) -> String {
+    fn merge_props_args_expression(&mut self, args: &[EmitDocument]) -> String {
         match args {
             [] => "{}".to_compact_string(),
             [arg] => arg.as_str().into(),

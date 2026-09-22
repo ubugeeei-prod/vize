@@ -17,7 +17,7 @@ use crate::codegen::element::spanned_props::{
     bound_entry, component_props_object_spanned, merge_props_call, wrap_spanned,
 };
 use crate::s4::string_plan::{SsrSegmentSource as Source, SsrStringPayloadKind};
-use vize_atelier_core::codegen::spanned::SpannedText;
+use vize_atelier_core::codegen::document::EmitDocument;
 
 pub(super) fn emit(
     em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
@@ -76,25 +76,25 @@ pub(super) fn emit(
     }
 
     let entries = normalize_prop_entries(entries);
-    let mut args: std::vec::Vec<SpannedText> = std::vec::Vec::new();
+    let mut args: std::vec::Vec<EmitDocument> = std::vec::Vec::new();
     if !spreads.is_empty() {
         em.ctx.use_core_helper(RuntimeHelper::NormalizeProps);
         em.ctx.use_core_helper(RuntimeHelper::GuardReactiveProps);
         args.extend(spreads.iter().map(|spread| {
             let guarded = wrap_call("_guardReactiveProps", spread);
-            SpannedText::from(wrap_call("_normalizeProps", &guarded))
+            EmitDocument::from(wrap_call("_normalizeProps", &guarded))
         }));
     }
     if !entries.is_empty() {
         args.push(component_props_object_spanned(&entries));
     }
-    args.push(SpannedText::plain("_attrs"));
+    args.push(EmitDocument::plain("_attrs"));
     if let Some(model_exp) = dynamic_model {
         em.ctx
             .use_ssr_helper(RuntimeHelper::SsrGetDynamicModelProps);
         let existing: String = merge_args(em, &args).as_str().into();
         let model = cstr!("_ssrGetDynamicModelProps({existing}, {model_exp})");
-        args.push(SpannedText::from(model));
+        args.push(EmitDocument::from(model));
     }
 
     let attrs = merge_args(em, &args);
@@ -105,7 +105,7 @@ pub(super) fn emit(
 }
 
 /// One argument stays itself; several merge through `_mergeProps`.
-fn merge_args(em: &mut Emitter<'_, '_, '_, '_, '_, '_>, args: &[SpannedText]) -> SpannedText {
+fn merge_args(em: &mut Emitter<'_, '_, '_, '_, '_, '_>, args: &[EmitDocument]) -> EmitDocument {
     if let [only] = args {
         return only.clone();
     }
@@ -126,12 +126,12 @@ fn static_entry(
         .and_then(|_| attribute_value_start(em.ctx.source, attr.span, name));
     let spanned = match start {
         Some(start) if value.len() >= 2 => {
-            let mut spanned = SpannedText::plain("\"");
+            let mut spanned = EmitDocument::plain("\"");
             spanned.push_mapped(&value[1..value.len() - 1], start);
             spanned.push_str("\"");
             spanned
         }
-        _ => SpannedText::plain(value),
+        _ => EmitDocument::plain(value),
     };
     bound_entry(name, Some(attr.span.start), spanned)
 }

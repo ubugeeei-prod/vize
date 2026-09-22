@@ -1,4 +1,4 @@
-use vize_atelier_core::{RuntimeHelper, codegen::spanned::SpannedText};
+use vize_atelier_core::{RuntimeHelper, codegen::document::EmitDocument};
 use vize_s0::{String, ToCompactString, camelize, capitalize};
 
 use super::SsrCodegenContext;
@@ -41,13 +41,13 @@ impl SsrCodegenContext<'_> {
         &mut self,
         component: &str,
         tag_start: Option<u32>,
-    ) -> SpannedText {
+    ) -> EmitDocument {
         self.use_core_helper(RuntimeHelper::ResolveComponent);
         let name = self.component_resolution_name(component);
         let mut quoted = String::default();
         push_quoted_js_string(&mut quoted, name.as_str());
         let inner = &quoted[1..quoted.len() - 1];
-        let mut out = SpannedText::plain("_resolveComponent(\"");
+        let mut out = EmitDocument::plain("_resolveComponent(\"");
         match tag_start.filter(|_| self.spans_enabled() && inner == component) {
             Some(start) => out.push_mapped(inner, start),
             None => out.push_str(inner),

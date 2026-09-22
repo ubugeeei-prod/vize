@@ -218,7 +218,11 @@ record's tracked-shortfall ledger. _Fourth slice 2026-09-21:_ the DOM codegen
 emits through span-carrying context methods and meets every TS-31 DOM budget.
 _Fifth slice 2026-09-21:_ SSR carries spans through template-literal parts
 and direct writes via the shared `SpannedText` primitive and meets every TS-31
-SSR budget. Vapor token-level emission and legacy recovery removal remain open.
+SSR budget. _Sixth slice 2026-09-22:_ DOM and SSR write into one
+target-neutral `EmitDocument` whose generated↔authored range links serialize
+as v3 segments and convert to P4-5a `ProjectionMapping` rows; maps and bytes
+unchanged. Vapor token-level emission onto the document and legacy recovery
+removal remain open.
 
 **P3-10 Try-measure-commit.** Placement alternatives (hoist/cache/inline/
 group) kept explicit on S3 nodes; extraction pass performs candidates,

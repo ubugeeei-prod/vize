@@ -12,8 +12,7 @@ mod spans;
 
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_core::{
-    RootNode, RuntimeHelper, TemplateChildNode,
-    codegen::{source_map::SourceMapBuilder, spanned::SpannedText},
+    RootNode, RuntimeHelper, TemplateChildNode, codegen::document::EmitDocument,
 };
 use vize_s0::{Allocator, FxHashSet, SmallVec, String};
 
@@ -32,9 +31,9 @@ pub struct SsrCodegenResult {
 #[derive(Debug)]
 pub(crate) enum TemplatePart {
     /// Static string content
-    Static(SpannedText),
+    Static(EmitDocument),
     /// Dynamic expression
-    Dynamic(SpannedText),
+    Dynamic(EmitDocument),
 }
 
 /// SSR codegen context
@@ -46,8 +45,9 @@ pub struct SsrCodegenContext<'a> {
     pub(crate) component_name: Option<String>,
     /// Whether the reserved `<Self>` tag resolves to the current component.
     pub(crate) experimental_self_component: bool,
-    /// Output buffer
-    pub(crate) code: Vec<u8>,
+    /// The structured emission document: generated code plus, when a Source
+    /// Map v3 document is requested, the links from its bytes to the template.
+    pub(crate) out: EmitDocument,
     /// Indent level
     pub(crate) indent_level: u32,
     /// Used SSR helpers
@@ -72,8 +72,6 @@ pub struct SsrCodegenContext<'a> {
     /// The source string node-loc spans index into, used to recover covered
     /// text from a `SourceLocation`.
     pub(crate) source: &'a str,
-    /// Span accumulator; `Some` only when a Source Map v3 document is requested.
-    map: Option<SourceMapBuilder>,
     /// Filename recorded in the Source Map v3 `file` and `sources` fields.
     source_map_filename: String,
 }
@@ -97,7 +95,6 @@ impl<'a> SsrCodegenContext<'a> {
         let component_name = experimental_options
             .component_name
             .or_else(|| options.component_name.clone());
-        let map = experimental_options.source_map.then(SourceMapBuilder::new);
         let source_map_filename = experimental_options
             .source_map_filename
             .unwrap_or_else(|| "template.vue".into());
@@ -107,7 +104,7 @@ impl<'a> SsrCodegenContext<'a> {
             component_name,
             experimental_self_component: experimental_options.self_component,
             source,
-            code: Vec::with_capacity(1024),
+            out: EmitDocument::with_capacity(1024, experimental_options.source_map),
             indent_level: 0,
             ssr_helpers: FxHashSet::default(),
             core_helpers: FxHashSet::default(),
@@ -116,7 +113,6 @@ impl<'a> SsrCodegenContext<'a> {
             with_slot_scope_id: false,
             scoped_params: std::vec::Vec::new(),
             select_v_model_stack: std::vec::Vec::new(),
-            map,
             source_map_filename,
         }
     }
@@ -178,15 +174,11 @@ impl<'a> SsrCodegenContext<'a> {
 
         let preamble = self.build_preamble();
 
-        // SAFETY: `self.code` is filled exclusively through `push(&str)`,
-        // `push_indent`, and helpers that append ASCII punctuation around
-        // already-valid template/source strings. No caller can inject raw
-        // bytes into the buffer, so the Vec<u8> invariant is "always valid
-        // UTF-8". Keeping this unchecked conversion avoids validating the
-        // complete generated SSR module after every compile.
-        let code = unsafe { String::from_utf8_unchecked(self.code) };
-        let filename = self.source_map_filename.as_str();
-        let map = self.map.map(|map| map.finish(&code, filename, self.source));
+        let map = self.out.is_recording().then(|| {
+            self.out
+                .source_map(self.source_map_filename.as_str(), self.source)
+        });
+        let code = self.out.into_string();
 
         SsrCodegenResult {
             code,
@@ -205,14 +197,14 @@ impl<'a> SsrCodegenContext<'a> {
             last.push_str(s);
         } else {
             self.current_template_parts
-                .push(TemplatePart::Static(SpannedText::plain(s)));
+                .push(TemplatePart::Static(EmitDocument::plain(s)));
         }
     }
 
     /// Push dynamic expression to the current template literal
     pub(crate) fn push_string_part_dynamic(&mut self, expr: &str) {
         self.current_template_parts
-            .push(TemplatePart::Dynamic(SpannedText::plain(expr)));
+            .push(TemplatePart::Dynamic(EmitDocument::plain(expr)));
     }
 
     /// Flush the current template literal as a _push() call.
@@ -272,13 +264,13 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Push raw code to the buffer
     pub(crate) fn push(&mut self, s: &str) {
-        self.code.extend_from_slice(s.as_bytes());
+        self.out.push_str(s);
     }
 
     /// Push indentation
     pub(crate) fn push_indent(&mut self) {
         for _ in 0..self.indent_level {
-            self.code.extend_from_slice(b"  ");
+            self.out.push_str("  ");
         }
     }
 
