@@ -27,10 +27,16 @@ linter	Linter	test/dev	crates/vize_patina/src/diagnostic.rs	18	s0	S0	stage	vize_
 linter	Linter	source	crates/vize_patina/src/diagnostic/compact_help.rs	3	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/diagnostic/formatting.rs	6	s0	S0	stage	vize_s0	preferred	2
 linter	Linter	source	crates/vize_patina/src/diagnostic/types.rs	12	s0	S0	stage	vize_s0	preferred	3
+linter	Linter	test/dev	crates/vize_patina/src/html_content_model/authored_tests.rs	6	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/html_content_model/authored_tests.rs	6	old_ast	old AST/parser	old	vize_armature	legacy	1
+linter	Linter	source	crates/vize_patina/src/html_content_model/authored.rs	16	s0	S0	stage	vize_s0	preferred	2
+linter	Linter	source	crates/vize_patina/src/html_content_model/authored.rs	16	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/html_content_model/build_helpers.rs	5	s0	S0	stage	vize_s0	preferred	4
 linter	Linter	source	crates/vize_patina/src/html_content_model/build.rs	7	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/html_content_model/build.rs	7	old_ast	old AST/parser	old	vize_armature	legacy	1
 linter	Linter	source	crates/vize_patina/src/html_content_model/facts.rs	11	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/html_content_model/skeleton.rs	12	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/html_content_model/tag_ids.rs	6	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/html_content_model/tests.rs	8	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/ir.rs	8	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/lib.rs	139	s0	S0	stage	vize_s0	preferred	1
@@ -670,8 +676,8 @@ linter	Linter	source	crates/vize_patina/src/rules/vue/no_v_text_v_html_on_compon
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs	30	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component/dynamic_component.rs	2	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component/dynamic_component.rs	2	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/vue/permitted_contents.rs	34	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize_patina/src/rules/vue/permitted_contents.rs	34	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/permitted_contents.rs	50	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/permitted_contents.rs	50	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/prop_name_casing.rs	40	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/prop_name_casing/declarations.rs	13	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/require_component_is.rs	25	old_ast	old AST/parser	old	vize_relief	legacy	1
@@ -717,4 +723,4 @@ linter	Linter	test/dev	crates/vize_patina/src/visitor_scope.rs	46	s0	S0	stage	vi
 linter	Linter	test/dev	crates/vize_patina/src/visitor_scope.rs	46	old_ast	old AST/parser	old	vize_relief	legacy	2
 linter	Linter	source	crates/vize_patina/src/visitor.rs	7	s0	S0	stage	vize_s0	preferred	2
 linter	Linter	source	crates/vize_patina/src/visitor.rs	7	old_ast	old AST/parser	old	vize_relief	legacy	3
-linter	Linter	test/dev	crates/vize_patina/tests/html_content_model_differential.rs	29	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/html_content_model_differential.rs	78	s0	S0	stage	vize_s0	preferred	1
