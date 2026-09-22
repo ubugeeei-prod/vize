@@ -13,6 +13,7 @@ use vize_atelier_core::{
 };
 use vize_s0::{Allocator, String, profile};
 
+mod p_end;
 mod selector;
 
 #[allow(clippy::too_many_arguments)]

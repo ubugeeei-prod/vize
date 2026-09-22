@@ -1,5 +1,6 @@
 pub(super) fn s2_sfc_fast_path_supported_source(source: &str) -> bool {
     !source_contains_non_void_native_self_closing_tag(source)
+        && !super::p_end::source_has_invalid_p_end_tag(source)
 }
 
 fn source_contains_non_void_native_self_closing_tag(source: &str) -> bool {

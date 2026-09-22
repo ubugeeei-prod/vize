@@ -25,26 +25,16 @@ use vize_s1_to_s2::{BindingTable, ReactiveRead};
 
 use crate::options::DomCompilerOptions;
 
-/// Whether `options` carries a Croquis summary that keeps the compile on the
-/// legacy lane under the `croquis` reason (P3-17). The projection is
-/// byte-exact on the production-path oracle, but the S2 lane is measured
-/// slower than the legacy lane on these compiles, so production keeps
-/// refusing until that closes (charter #22); the differential lanes arm
-/// the projection to hold its parity.
+/// Whether `options` carries a Croquis summary the S2 lane cannot
+/// reproduce from binding metadata (P3-17). A projectable summary is
+/// admitted: non-inline DOM reads the metadata table plus the summary's
+/// reactivity facts, and the production-path oracle holds those compiles
+/// to the legacy module byte for byte.
 pub(in crate::compile) fn unprojectable_croquis(options: &DomCompilerOptions) -> bool {
-    options.croquis.as_deref().is_some_and(|croquis| {
-        !(croquis_projection_armed() && projectable(croquis, options.binding_metadata.as_ref()))
-    })
-}
-
-#[cfg(feature = "davinci-differential")]
-fn croquis_projection_armed() -> bool {
-    super::selection::differential::croquis_projection()
-}
-
-#[cfg(not(feature = "davinci-differential"))]
-const fn croquis_projection_armed() -> bool {
-    false
+    options
+        .croquis
+        .as_deref()
+        .is_some_and(|croquis| !projectable(croquis, options.binding_metadata.as_ref()))
 }
 
 /// The binding table the S2 emitter reads: the script's binding metadata

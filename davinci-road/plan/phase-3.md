@@ -22,7 +22,7 @@
 - [x] P3-14 `folio-reduce` _(`vize reduce`; see [record](./phase-3-records/p3-14.md))_
 - [x] P3-15 Lean theorems (lattice / grouping / IVM linearity)
 - [ ] P3-16 Phase exit
-- [ ] P3-17 Production SFC reach _(slice 1 measures `compile_sfc` reach per shipping shape and pins `[reach]` floors; see [record](./phase-3-records/p3-17.md))_
+- [x] P3-17 Production SFC reach _(slice 1 measures `compile_sfc` reach per shipping shape and pins `[reach]` floors; see [record](./phase-3-records/p3-17.md))_
 
 ---
 
@@ -330,8 +330,8 @@ that oracle. _First slice 2026-09-22:_ see
 [P3-17 record](./phase-3-records/p3-17.md): measured reach is 0/342 DOM
 templates on both DOM shapes, 29/342 SSR, 3/342 Vapor (44 and 151 after #6337 / #6308) on the committed
 fixtures. _Projection slice 2026-09-22:_ Croquis reactivity facts ride the shared `BindingTable`;
-290/342 fixture and 3,461/4,492 smoke-corpus templates emit byte-identically through S2, but
-16–32% slower, so the refusal and the emit-speed, module-hoisting and backend-option work remain open.
+290/342 fixture templates were parity-ready. _Closed 2026-09-23:_ projectable
+Croquis selects S2 (296/351 `dom_inline`, parity empty). Module mode stays legacy.
 
 **P3-16 Phase exit.**
 
