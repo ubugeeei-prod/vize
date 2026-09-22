@@ -60,6 +60,15 @@ mod composition_tests {
             composed(&[("App", "<p><Card /></p>"), ("Card", "<div>body</div>")]),
             ["App:<Card /> | Card:div paragraph-auto-closed <- App:p"]
         );
+        // The lint parser does not mark `<my-card>` as a component. It still
+        // renders the imported component, whose `<div>` root closes the `<p>`.
+        assert_eq!(
+            composed(&[
+                ("App", "<p><my-card /></p>"),
+                ("my-card", "<div>body</div>")
+            ]),
+            ["App:my-card | my-card:div paragraph-auto-closed <- App:p"]
+        );
         assert_eq!(
             composed(&[
                 ("App", "<table><Row /></table>"),
@@ -85,6 +94,15 @@ mod composition_tests {
                 ("Row", "<tr><td /></tr>"),
             ],
             [("App", "<div><Card /></div>"), ("Card", "<div>body</div>")],
+            [
+                ("App", "<p><my-badge /></p>"),
+                ("my-badge", "<span>ok</span>"),
+            ],
+            // Hyphenated native tags are not component usages.
+            [
+                ("App", "<svg><color-profile /></svg>"),
+                ("color-profile", "<div>x</div>"),
+            ],
             [("App", "<ul><Item /></ul>"), ("Item", "<li>item</li>")],
         ] {
             assert_eq!(composed(&files), Vec::<String>::new());

@@ -15,7 +15,7 @@ mod pruning {
             .iter()
             .map(|source| composable_skeleton(&Allocator::with_capacity(4096), source))
             .collect();
-        let resolve = |_: u32, tag: &str| (tag == "Kv").then_some(1);
+        let resolve = |_: u32, tag: &str| matches!(tag, "Kv" | "my-card").then_some(1);
         let absent_falsy = |file: u32, prop: &str| file == 1 && falsy.contains(&prop);
         compose_with(&skeletons, &resolve, &absent_falsy)
             .into_iter()
@@ -74,6 +74,21 @@ mod pruning {
         ] {
             assert_eq!(classes("<button><Kv /></button>", child, &["copy"]), nested);
         }
+    }
+
+    #[test]
+    fn a_kebab_case_usage_records_the_props_it_passes() {
+        // `<my-card>` is an element to the parser and a component to Vue.
+        // A passed `show` keeps the `<div>` root; an unpassed falsy one drops it.
+        let div = "<div v-if=\"show\">body</div>";
+        assert_eq!(
+            classes("<p><my-card show=\"1\" /></p>", div, &["show"]),
+            ["paragraph-auto-closed"]
+        );
+        assert_eq!(
+            classes("<p><my-card /></p>", div, &["show"]),
+            Vec::<&str>::new()
+        );
     }
 
     #[test]
