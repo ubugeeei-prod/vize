@@ -20,4 +20,4 @@ _None._
 | ------------------ | -------: | ---: |
 | `BindingMetadata`  |        0 |   16 |
 | `Span`             |        0 |   17 |
-| `Croquis.bindings` |        0 |   26 |
+| `Croquis.bindings` |        0 |   27 |
