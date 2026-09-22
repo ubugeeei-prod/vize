@@ -161,7 +161,10 @@ test("the structured SFC map covers every anchor the legacy recovery does", () =
   assert.equal(rowKey(structuredBudget), "sfc/text-matching-recovery");
   const legacyRow = report.rows[rowKey(legacyBudget)];
   const structuredRow = report.rows[rowKey(structuredBudget)];
-  assert.deepEqual(Object.keys(structuredRow.anchors).sort(), Object.keys(legacyRow.anchors).sort());
+  assert.deepEqual(
+    Object.keys(structuredRow.anchors).sort(),
+    Object.keys(legacyRow.anchors).sort(),
+  );
   for (const [anchor, status] of Object.entries(legacyRow.anchors)) {
     assert.ok(
       rank(structuredRow.anchors[anchor]) >= rank(status),
