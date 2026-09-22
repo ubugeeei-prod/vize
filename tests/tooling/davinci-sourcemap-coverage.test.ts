@@ -139,21 +139,21 @@ test("every TS-31 row meets its budget or is a tracked shortfall", () => {
   );
 });
 
-test("the legacy SFC recovery stays until the structured path is measured", () => {
+test("the legacy SFC recovery is deleted and its frozen row stays the floor", () => {
   const legacy = Object.values(budgets).filter((budget) => budget.backend === "legacy-sfc");
   assert.deepEqual(legacy.map(rowKey), ["legacy-sfc/text-matching-recovery"]);
   const legacyRecovery = path.join(repoRoot, "crates/vize_atelier_sfc/src/source_map.rs");
   assert.equal(
     fs.existsSync(legacyRecovery),
-    true,
-    "deleting the text-matching recovery requires a structured SFC measurement row first",
+    false,
+    "the text-matching recovery is deleted; the structured module map is the SFC source map",
   );
   assert.equal(meetsBudget(report.rows[rowKey(legacy[0])], legacy[0]), true);
 });
 
-// Deleting the legacy recovery requires the structured map to reach at least
-// the legacy's measured coverage over the same battery: anchor by anchor, the
-// structured status is never worse, and its budget is never looser.
+// The legacy row is frozen: the recovery is deleted, so it is not remeasured.
+// Anchor by anchor, the live structured status is never worse than that
+// frozen row, and its budget is never looser.
 test("the structured SFC map covers every anchor the legacy recovery does", () => {
   const rank = (status: string) => ["unmapped", "covered", "exact"].indexOf(status);
   const legacyBudget = budgets.legacy_sfc_text_matching_recovery;

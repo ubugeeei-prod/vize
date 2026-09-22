@@ -54,7 +54,6 @@ pub(crate) mod module_map;
 pub mod module_shape;
 pub mod rewrite_default;
 pub mod script;
-pub mod source_map;
 pub mod style;
 pub mod types;
 pub mod vite_plugin;
@@ -100,7 +99,6 @@ pub use css::{
 };
 pub use parse::parse_sfc;
 pub use script::{TypeResolutionBatchGuard, begin_type_resolution_batch};
-pub use source_map::build_sfc_source_map;
 pub use types::{
     BindingMetadata, BindingType, BlockLocation, PadOption, PropsDestructure, ScriptCompileOptions,
     SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcCustomBlock,
