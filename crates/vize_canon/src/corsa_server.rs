@@ -26,10 +26,14 @@ use std::os::unix::net::{UnixListener, UnixStream};
 #[allow(clippy::disallowed_types)]
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 use vize_carton::{FxHashMap, String};
+
+use crate::corsa_session_cache::{DEFAULT_SESSION_IDLE, SessionMap};
 
 mod diagnostics;
 mod request;
+mod sessions;
 mod sfc_semantics;
 
 /// JSON-RPC Request
@@ -68,6 +72,10 @@ pub struct JsonRpcError {
 pub struct CheckParams {
     pub uri: String,
     pub content: String,
+    /// Canonical checking-flag spelling. Omitted means no overrides, which is
+    /// what `vize check` sends. A different spelling is a different session.
+    #[serde(default)]
+    pub flags: String,
 }
 
 /// Check response
@@ -92,12 +100,25 @@ pub struct Diagnostic {
 }
 
 /// Server configuration
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct ServerConfig {
     /// Path to the Corsa executable (uses PATH if not specified)
     pub corsa_path: Option<String>,
     /// Working directory for module resolution
     pub working_dir: Option<String>,
+    /// Drop a project session that has not been used for this long.
+    /// Zero keeps every session until the process exits.
+    pub idle_timeout: Duration,
+}
+
+impl Default for ServerConfig {
+    fn default() -> Self {
+        Self {
+            corsa_path: None,
+            working_dir: None,
+            idle_timeout: DEFAULT_SESSION_IDLE,
+        }
+    }
 }
 
 /// Corsa server.
@@ -107,8 +128,10 @@ pub struct CorsaServer {
     running: Arc<AtomicBool>,
     /// Cache of generated Virtual TypeScript (uri -> content)
     cache: FxHashMap<String, String>,
-    /// Project-session client for Corsa (lazy initialized).
-    corsa_client: Option<crate::corsa_client::CorsaProjectClient>,
+    /// Project sessions keyed by the full P5-1b ambient manifest.
+    sessions: SessionMap<crate::corsa_client::CorsaProjectClient>,
+    /// TypeScript project initializations observed by this server.
+    observed_project_inits: u64,
     /// Shared importer-scoped package topology for the full server lifetime.
     package_route_resolver: crate::PackageRouteResolver,
     /// Private editor mirror/cache for this check-server process.
@@ -124,11 +147,13 @@ impl CorsaServer {
     /// Create a new server with custom configuration.
     #[allow(clippy::disallowed_types)]
     pub fn with_config(config: ServerConfig) -> Self {
+        let idle_timeout = config.idle_timeout;
         Self {
             config,
             running: Arc::new(AtomicBool::new(false)),
             cache: FxHashMap::default(),
-            corsa_client: None,
+            sessions: SessionMap::new(idle_timeout),
+            observed_project_inits: 0,
             package_route_resolver: crate::PackageRouteResolver::default(),
             editor_session: crate::corsa_bridge::EditorMirrorSession::new(),
         }
@@ -247,6 +272,9 @@ impl Default for CorsaServer {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod reuse_tests;
 
 #[cfg(test)]
 mod tests {

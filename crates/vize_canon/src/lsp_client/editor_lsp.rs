@@ -93,6 +93,7 @@ impl EditorLspSession {
             let _ = responder.join();
             return Err(error);
         }
+        crate::corsa_session_cache::note_typescript_project_init();
 
         Ok(Self {
             overlay: client.overlay(),

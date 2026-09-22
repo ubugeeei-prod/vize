@@ -29,44 +29,91 @@ impl CorsaServer {
         &mut self,
         project: &CorsaVueVirtualProject,
         source: &str,
+        source_path: &std::path::Path,
+        flags: &str,
     ) -> Result<Vec<Diagnostic>, String> {
-        if self.corsa_client.is_none() {
-            let client = crate::corsa_client::CorsaProjectClient::new(
-                self.config.corsa_path.as_deref(),
-                self.config.working_dir.as_deref(),
-            )?;
-            self.corsa_client = Some(client);
-        }
-
-        let client = self
-            .corsa_client
-            .as_mut()
-            .expect("corsa_client must be initialized above");
-        if let Some(project_root) = project.session_project_root.as_deref() {
-            client.synchronize_materialized_project(project_root, &project.materialized_changes)?;
-        }
-        let documents: Vec<(&str, &str)> = project
-            .documents
-            .iter()
-            .map(|(uri, content)| (uri.as_str(), content.as_str()))
-            .collect();
-        client.did_open_batch_fast(&documents)?;
-        let corsa_diagnostics = client.request_diagnostics(&project.host.request_uri)?;
+        let report_unused = reports_unused(&self.working_dir(), source_path);
         let virtual_line_index = LineIndex::new(&project.host.code);
         let source_line_index = LineIndex::new(source);
+        self.with_project_session(source_path, flags, |client| {
+            if let Some(project_root) = project.session_project_root.as_deref() {
+                client.synchronize_materialized_project(
+                    project_root,
+                    &project.materialized_changes,
+                )?;
+            }
+            let documents: Vec<(&str, &str)> = project
+                .documents
+                .iter()
+                .map(|(uri, content)| (uri.as_str(), content.as_str()))
+                .collect();
+            client.did_open_batch_fast(&documents)?;
+            let corsa_diagnostics = client.request_diagnostics(&project.host.request_uri)?;
+            let mut diagnostics = corsa_diagnostics
+                .into_iter()
+                .filter_map(|diagnostic| {
+                    map_corsa_diagnostic(
+                        project,
+                        source,
+                        &virtual_line_index,
+                        &source_line_index,
+                        diagnostic,
+                    )
+                })
+                .filter(|diagnostic| check_reports(diagnostic, report_unused))
+                .collect::<Vec<_>>();
+            diagnostics.sort_by(|left, right| {
+                left.line
+                    .cmp(&right.line)
+                    .then(left.column.cmp(&right.column))
+                    .then(left.code.cmp(&right.code))
+                    .then(left.message.cmp(&right.message))
+            });
+            Ok(diagnostics)
+        })
+    }
+}
 
-        Ok(corsa_diagnostics
-            .into_iter()
-            .filter_map(|diagnostic| {
-                map_corsa_diagnostic(
-                    project,
-                    source,
-                    &virtual_line_index,
-                    &source_line_index,
-                    diagnostic,
-                )
-            })
-            .collect())
+/// `vize check` drops `TS6133` unless the tsconfig asks for unused declarations.
+/// The server must use that same policy or the two paths disagree (TS-9).
+fn reports_unused(project_root: &std::path::Path, source: &std::path::Path) -> bool {
+    let root = std::fs::canonicalize(project_root).unwrap_or_else(|_| project_root.to_path_buf());
+    let source = std::fs::canonicalize(source).unwrap_or_else(|_| source.to_path_buf());
+    let tsconfig = crate::corsa_session_cache::project_tsconfig(&source, &root);
+    let Ok(options) = crate::snapshot_tsconfig_compiler_options(&root, &tsconfig) else {
+        return false;
+    };
+    ["noUnusedLocals", "noUnusedParameters"]
+        .into_iter()
+        .any(|name| {
+            options
+                .get(name)
+                .and_then(serde_json::Value::as_bool)
+                .unwrap_or(false)
+        })
+}
+
+fn check_reports(diagnostic: &Diagnostic, report_unused: bool) -> bool {
+    crate::projection::assemble::is_reportable(
+        typescript_code(diagnostic.code.as_deref()),
+        severity_code(diagnostic.severity.as_str()),
+        diagnostic.message.as_str(),
+        crate::projection::AssemblyPolicy { report_unused },
+    )
+}
+
+fn typescript_code(code: Option<&str>) -> Option<u32> {
+    let code = code?;
+    code.strip_prefix("TS").unwrap_or(code).parse().ok()
+}
+
+fn severity_code(severity: &str) -> Option<u8> {
+    match severity {
+        "error" => Some(1),
+        "warning" => Some(2),
+        "info" => Some(3),
+        "hint" => Some(4),
+        _ => None,
     }
 }
 

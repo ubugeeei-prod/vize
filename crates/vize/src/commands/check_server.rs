@@ -17,12 +17,17 @@ pub struct CheckServerArgs {
     /// Working directory
     #[arg(long)]
     pub working_dir: Option<String>,
+
+    /// Drop an unused project session after this many seconds (`0` keeps it).
+    #[arg(long, default_value_t = 60)]
+    pub idle_timeout_secs: u64,
 }
 
 pub fn run(args: CheckServerArgs) {
     let config = ServerConfig {
         corsa_path: args.corsa_path.map(Into::into),
         working_dir: args.working_dir.map(Into::into),
+        idle_timeout: std::time::Duration::from_secs(args.idle_timeout_secs),
     };
 
     let mut server = CorsaServer::with_config(config);
@@ -31,7 +36,7 @@ pub fn run(args: CheckServerArgs) {
         // Unix socket mode
         eprintln!("vize check-server: Starting on Unix socket");
         eprintln!("Socket: {}", socket_path);
-        eprintln!("Methods: check, shutdown");
+        eprintln!("Methods: check, session-stats, shutdown");
         eprintln!();
         eprintln!("Connect with:");
         eprintln!(
@@ -47,7 +52,7 @@ pub fn run(args: CheckServerArgs) {
         // stdio mode
         eprintln!("vize check-server: JSON-RPC server started (stdio mode)");
         eprintln!("Protocol: one JSON object per line on stdin, responses on stdout");
-        eprintln!("Methods: check, shutdown");
+        eprintln!("Methods: check, session-stats, shutdown");
         eprintln!();
         eprintln!("Tip: Use --socket for Unix socket mode (faster for multiple requests)");
         eprintln!();

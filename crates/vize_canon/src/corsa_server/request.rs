@@ -29,6 +29,15 @@ impl CorsaServer {
 
         match request.method.as_str() {
             "check" => self.handle_check(request.id, request.params),
+            "session-stats" => JsonRpcResponse {
+                jsonrpc: "2.0",
+                id: request.id,
+                result: Some(serde_json::json!({
+                    "projectInits": self.project_inits(),
+                    "liveSessions": self.live_sessions(),
+                })),
+                error: None,
+            },
             "shutdown" => {
                 self.running
                     .store(false, std::sync::atomic::Ordering::SeqCst);
@@ -69,7 +78,7 @@ impl CorsaServer {
             }
         };
 
-        match self.check_vue_sfc(&params.uri, &params.content) {
+        match self.check_vue_sfc(&params.uri, &params.content, &params.flags) {
             Ok(result) => JsonRpcResponse {
                 jsonrpc: "2.0",
                 id,
@@ -89,7 +98,12 @@ impl CorsaServer {
         }
     }
 
-    fn check_vue_sfc(&mut self, uri: &str, content: &str) -> Result<CheckResult, String> {
+    fn check_vue_sfc(
+        &mut self,
+        uri: &str,
+        content: &str,
+        flags: &str,
+    ) -> Result<CheckResult, String> {
         use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
         let working_dir = self.working_dir();
@@ -123,7 +137,7 @@ impl CorsaServer {
         )
         .map_err(|error| cstr!("Failed to parse SFC: {}", error.message))?;
 
-        let mut diagnostics = self.run_corsa(&project, content)?;
+        let mut diagnostics = self.run_corsa(&project, content, &source_path, flags)?;
         diagnostics.extend(sfc_semantics::collect_sfc_compile_diagnostic(
             uri,
             content,
@@ -142,7 +156,7 @@ impl CorsaServer {
         })
     }
 
-    fn working_dir(&self) -> PathBuf {
+    pub(super) fn working_dir(&self) -> PathBuf {
         self.config
             .working_dir
             .as_deref()
@@ -189,21 +203,22 @@ void Widget
         let mut server = CorsaServer::with_config(ServerConfig {
             corsa_path: Some(corsa_path.to_string_lossy().into_owned().into()),
             working_dir: Some(app.to_string_lossy().into_owned().into()),
+            ..ServerConfig::default()
         });
         let uri = crate::file_uri::path_to_file_uri(&host);
 
-        let missing = server.check_vue_sfc(&uri, source).unwrap();
+        let missing = server.check_vue_sfc(&uri, source, "").unwrap();
         assert!(has_code(&missing, "TS2307"));
 
         write(
             &package.join("Widget.vue"),
             "<script setup lang=\"ts\">defineProps<{ created: true }>()</script>\n",
         );
-        let created = server.check_vue_sfc(&uri, source).unwrap();
+        let created = server.check_vue_sfc(&uri, source, "").unwrap();
         assert!(!has_code(&created, "TS2307"));
 
         std::fs::remove_file(package.join("Widget.vue")).unwrap();
-        let deleted = server.check_vue_sfc(&uri, source).unwrap();
+        let deleted = server.check_vue_sfc(&uri, source, "").unwrap();
         assert!(has_code(&deleted, "TS2307"));
     }
 

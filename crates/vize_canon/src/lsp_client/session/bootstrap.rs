@@ -22,7 +22,7 @@ pub(in crate::lsp_client) fn spawn_project_session(
         config_path_wire.as_ref(),
         mode,
     )) {
-        Ok(session) => session,
+        Ok(session) => note_project_init(session),
         Err(error) if should_retry_json_rpc(mode, &error) => {
             match block_on(spawn_project_session_with_mode(
                 executable,
@@ -30,7 +30,7 @@ pub(in crate::lsp_client) fn spawn_project_session(
                 config_path_wire.as_ref(),
                 ApiMode::AsyncJsonRpcStdio,
             )) {
-                Ok(session) => session,
+                Ok(session) => note_project_init(session),
                 Err(fallback) => {
                     return Err(classify_project_session_error(
                         fallback,
@@ -98,6 +98,11 @@ pub(super) fn should_retry_json_rpc(mode: ApiMode, error: &CorsaError) -> bool {
     message.contains("expected tuple marker")
         || message.contains("expected uint8 marker")
         || message.contains("expected bin marker")
+}
+
+fn note_project_init(session: ProjectSession) -> ProjectSession {
+    crate::corsa_session_cache::note_typescript_project_init();
+    session
 }
 
 pub(super) fn api_mode_for_executable(executable: &str) -> ApiMode {

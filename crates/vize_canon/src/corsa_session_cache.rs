@@ -17,7 +17,8 @@
 //! | `feature-flags`     | the caller's canonical spelling of its checking flags         |
 //! | `platform`          | the host's architecture and OS                                |
 //!
-//! The session map and its lifecycle consume this key (`vize check-server`).
+//! `SessionMap` stores one live session per fingerprint. `vize check-server`
+//! reuses it across checks and drops it after idle.
 
 use core::fmt::Write as _;
 use std::path::{Path, PathBuf};
@@ -26,8 +27,13 @@ use vize_carton::String;
 use vize_davinci::key::manifest::{AmbientInput, CachedArtifact, KeyManifest};
 
 mod chain;
+mod lifecycle;
 
 pub use chain::tsconfig_chain_digest;
+pub use lifecycle::DEFAULT_SESSION_IDLE;
+pub(crate) use lifecycle::{
+    SessionMap, note_typescript_project_init, project_tsconfig, typescript_project_inits,
+};
 
 /// The resolved value of every ambient input of a Corsa session.
 #[derive(Debug, Clone, PartialEq, Eq)]

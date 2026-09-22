@@ -23,6 +23,8 @@
 
 ## P5-8 — Corsa session reuse
 
+**Landed 2026-09-22** — full record: [phase-5-records/p5-8.md](./phase-5-records/p5-8.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** F
@@ -31,8 +33,8 @@
 
 **Steps:**
 
-- [ ] Widen `CorsaSessionKey` first (a test flips each manifest input and asserts a different key), then add the session map and lifecycle in `check_server`
-- [ ] A timed test: the second `vize check` run through the server skips TypeScript project initialization
+- [x] Widen `CorsaSessionKey` first (a test flips each manifest input and asserts a different key), then add the session map and lifecycle in `check_server`
+- [x] A timed test: the second `vize check` run through the server skips TypeScript project initialization
 
 **Acceptance:** the key test proves every manifest input separates sessions; the second-run test asserts project init did not run (an init counter, not wall time alone); `vize check` diagnostics identical with and without the server (TS-9).
 
