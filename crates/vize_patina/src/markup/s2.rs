@@ -204,6 +204,11 @@ impl<'a> S2Template<'a> {
     pub fn lowered(&self) -> &Lowered<'a> {
         &self.lowered
     }
+
+    /// The S1 surface tree the artifact was lowered from.
+    pub fn surface(&self) -> &SurfaceTree<'a> {
+        &self.tree
+    }
 }
 
 /// The element-shaped S2 ops the facade presents as a [`super::MarkupElement`].

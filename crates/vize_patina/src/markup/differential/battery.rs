@@ -14,7 +14,7 @@
 //! - [`JSX`]: JSX/TSX modules whose lowered roots the P2-16 projection admits
 //!   (and some it refuses, counted).
 
-use super::{JsxComparison, compare_jsx, compare_template};
+use super::{JsxComparison, TemplateComparison, compare_jsx, compare_template};
 use std::path::Path;
 use vize_atelier_jsx::JsxLang;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
@@ -235,8 +235,11 @@ pub struct BatteryCensus {
     pub rule_fixtures: usize,
     /// Construct-matrix templates compared.
     pub matrix: usize,
-    /// Trace lines compared over both template planes.
+    /// Trace lines compared over the template planes.
     pub template_lines: usize,
+    /// Templates the lint parse restructured (browser tree construction), so
+    /// the two projections present different documents by design.
+    pub restructured: usize,
     /// JSX modules, roots, refused roots, and trace lines.
     pub jsx: JsxComparison,
 }
@@ -247,6 +250,7 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     rule_fixtures: 851,
     matrix: 90,
     template_lines: 6103,
+    restructured: 0,
     jsx: JsxComparison {
         roots: 13,
         refused: 1,
@@ -258,16 +262,23 @@ fn matrix_dir() -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/davinci-matrix")
 }
 
+fn tally(census: &mut BatteryCensus, comparison: TemplateComparison) {
+    match comparison {
+        TemplateComparison::Compared(lines) => census.template_lines += lines,
+        TemplateComparison::Restructured => census.restructured += 1,
+    }
+}
+
 /// Run the whole battery, panicking with the exact divergence on the first
 /// disagreement.
 pub fn run_battery() -> BatteryCensus {
     let mut census = BatteryCensus::default();
     for (name, source) in TEMPLATES {
-        census.template_lines += expect_same(name, compare_template(source));
+        tally(&mut census, expect_same(name, compare_template(source)));
         census.templates += 1;
     }
     for (name, source) in super::rule_fixtures::rule_fixture_templates() {
-        census.template_lines += expect_same(&name, compare_template(&source));
+        tally(&mut census, expect_same(&name, compare_template(&source)));
         census.rule_fixtures += 1;
     }
     let mut matrix: std::vec::Vec<_> = std::fs::read_dir(matrix_dir())
@@ -282,7 +293,10 @@ pub fn run_battery() -> BatteryCensus {
             parse_sfc(&source, SfcParseOptions::default()).expect("matrix fixture parses");
         let template = descriptor.template.expect("matrix fixture has a template");
         let name = vize_s0::cstr!("{}", path.display());
-        census.template_lines += expect_same(&name, compare_template(&template.content));
+        tally(
+            &mut census,
+            expect_same(&name, compare_template(&template.content)),
+        );
         census.matrix += 1;
     }
     for (name, lang, source) in JSX {

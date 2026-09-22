@@ -14,6 +14,7 @@
 //! `tests/davinci_markup_differential.rs`).
 
 mod battery;
+mod nesting;
 mod rule_fixtures;
 mod trace;
 
@@ -77,6 +78,17 @@ pub fn compare_traces(relief: &[String], s2: &[String]) -> Result<usize, Diverge
     Ok(len)
 }
 
+/// What one template comparison covered.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TemplateComparison {
+    /// Trace lines compared, all equal.
+    Compared(usize),
+    /// The lint parse applied browser tree construction and nests elements
+    /// differently from the authored tree S2 keeps ([`nesting`]); not
+    /// compared.
+    Restructured,
+}
+
 /// Project a Vue template through Relief and through S1→S2, and compare.
 ///
 /// The Relief reference is parsed with the compiler's `<pre>` rule
@@ -84,22 +96,24 @@ pub fn compare_traces(relief: &[String], s2: &[String]) -> Result<usize, Diverge
 /// defined against (P2-9 installment 4) and S2 renders: `<pre>` content keeps
 /// its bytes. The lint lane's own parse condenses inside `<pre>`; its rules
 /// read text only for significance, which condensing never changes.
-pub fn compare_template(source: &str) -> Result<usize, Divergence> {
+pub fn compare_template(source: &str) -> Result<TemplateComparison, Divergence> {
     let allocator = Allocator::with_capacity(source.len() * 4 + 1024);
     let options = vize_relief::ParserOptions {
         is_pre_tag: |tag| tag == "pre",
         ..vize_relief::ParserOptions::default()
     };
     let (root, _errors) = vize_armature::Parser::with_options(&allocator, source, options).parse();
-    let relief = trace_document(&MarkupDocument::new(&root, TemplateSyntax::Vue), source);
-
     let lowered = S2Template::lower(&allocator, source);
+    if nesting::is_restructured(&root, lowered.surface()) {
+        return Ok(TemplateComparison::Restructured);
+    }
+    let relief = trace_document(&MarkupDocument::new(&root, TemplateSyntax::Vue), source);
     let markup = lowered.markup();
     let s2 = trace_document(
         &MarkupDocument::from_s2(&markup, TemplateSyntax::Vue),
         source,
     );
-    compare_traces(&relief, &s2)
+    compare_traces(&relief, &s2).map(TemplateComparison::Compared)
 }
 
 /// Project every render root of a JSX/TSX module through its lowered Relief
