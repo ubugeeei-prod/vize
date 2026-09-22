@@ -72,8 +72,11 @@ pub(super) fn emit_slot_outlet_helpers(
         );
     }
     if needs_spread {
+        // Intersecting known payloads with the expected type hides incompatible
+        // members as `never`. Keep their authored types, including generic
+        // conditional payloads, and apply the fallback only to non-object values.
         ts.push_str(
-            "  type __VizeSlotOutletSpreadPayload<__Expected, __T> = __Expected & (__T extends object ? __T : Record<string, unknown>);\n",
+            "  type __VizeSlotOutletSpreadPayload<__Expected, __T> = Extract<__T, object> | (__T extends object ? never : __Expected & Record<string, unknown>);\n",
         );
         ts.push_str(
             "  function __vizeSlotOutletSpread<__Expected>() { return function <__T>(value: __T): __VizeSlotOutletSpreadPayload<__Expected, __T> { return value as any; }; }\n",
