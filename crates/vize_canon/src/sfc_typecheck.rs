@@ -42,6 +42,7 @@ mod analysis;
 mod checks;
 pub(crate) mod patterns;
 mod runner;
+mod template_bindings;
 #[cfg(test)]
 mod tests;
 

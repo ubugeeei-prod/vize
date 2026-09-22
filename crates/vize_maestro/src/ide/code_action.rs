@@ -13,8 +13,11 @@ use tower_lsp::lsp_types::{
 // Shared, UTF-16-correct offset->(line, column) conversion (#1389).
 use vize_s0::line_index::offset_to_line_col;
 
+mod script_bindings;
 #[cfg(test)]
 mod source_position_tests;
+
+use script_bindings::sfc_script_declares;
 
 /// Code action service for providing quick fixes and refactorings.
 pub struct CodeActionService;
@@ -583,34 +586,6 @@ fn get_line_indent(source: &str, offset: usize) -> &str {
 /// Check if two ranges overlap.
 /// Return the byte range of the identifier under the cursor, or `None` when
 /// the cursor is not on an identifier.
-/// True when the SFC's script (setup or plain) declares `name` via Croquis'
-/// binding analysis. Used by the auto-import code action to skip names the
-/// user already imported / declared.
-fn sfc_script_declares(content: &str, name: &str) -> bool {
-    let options = vize_atelier_sfc::SfcParseOptions::default();
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-        return false;
-    };
-    let script_content = descriptor
-        .script_setup
-        .as_ref()
-        .map(|s| s.content.to_string())
-        .or_else(|| descriptor.script.as_ref().map(|s| s.content.to_string()));
-    let Some(script_content) = script_content else {
-        return false;
-    };
-    let mut analyzer = vize_croquis::Drawer::with_options(vize_croquis::DrawerOptions {
-        analyze_script: true,
-        ..Default::default()
-    });
-    if descriptor.script_setup.is_some() {
-        analyzer.analyze_script_setup(&script_content);
-    } else {
-        analyzer.analyze_script_plain(&script_content);
-    }
-    analyzer.finish().bindings.contains(name)
-}
-
 /// Convert an absolute path to a relative module specifier suitable for an
 /// import statement (`./Button.vue`, `../shared/useCounter`). Returns `None`
 /// when the two paths share no common root.

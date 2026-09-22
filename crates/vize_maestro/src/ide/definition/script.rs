@@ -120,7 +120,7 @@ pub(crate) fn find_analyzed_binding_location(ctx: &IdeContext, word: &str) -> Op
         return None;
     }
 
-    let &(start, end) = analysis.croquis.binding_spans.get(word)?;
+    let (start, end) = super::facts::binding_span(&analysis.croquis, word)?;
     if end <= start {
         return None;
     }
