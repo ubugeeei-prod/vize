@@ -13,13 +13,13 @@
 //! enum's own text either way, so no English output moves.
 
 use super::{CompilerError, ErrorCode};
-use vize_davinci::diagnostic::{Diagnostic, DiagnosticPart, PartKind, Severity, Stage, Witness};
+use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Stage};
 use vize_s0::i18n::{Locale, translator};
 use vize_s0::{CompactString, Span, cstr};
 
-/// The inventory name a legacy error-severity diagnostic is exempt under
-/// until the compiler produces witnesses (P4-6).
-pub const LEGACY_PRODUCER: &str = "vize_relief";
+/// The exemption compiler errors report under until the compiler produces
+/// witnesses (P4-6), counted in `davinci-road/plan/witness-exemptions.tsv`.
+pub static COMPILER_ERROR: Exemption = Exemption::new("vize_relief", "compiler-error");
 
 impl ErrorCode {
     /// The stage whose checks raise this code.
@@ -66,20 +66,17 @@ impl CompilerError {
     /// error without a location is anchored at the start of the file.
     #[must_use]
     pub fn to_diagnostic(&self, locale: Locale) -> Diagnostic {
-        let severity = if self.is_recoverable() {
-            Severity::Warning
-        } else {
-            Severity::Error
-        };
         let span = self.loc.as_ref().map_or(Span::new(0, 0), |loc| loc.span);
         let message = self.localized_message(locale);
-        let mut diagnostic = Diagnostic::new(severity, self.code.stage(), span, message);
+        let stage = self.code.stage();
+        let mut diagnostic = if self.is_recoverable() {
+            Diagnostic::new(Advisory::Warning, stage, span, message)
+        } else {
+            Diagnostic::legacy_error(&COMPILER_ERROR, stage, span, message)
+        };
         if self.code != ErrorCode::ExtendPoint {
             let help = self.code.localized_help(locale);
             diagnostic = diagnostic.with_part(DiagnosticPart::new(PartKind::Help, span, help));
-        }
-        if severity == Severity::Error {
-            diagnostic = diagnostic.with_witness(Witness::LegacyExempt(LEGACY_PRODUCER.into()));
         }
         diagnostic
     }
@@ -87,11 +84,9 @@ impl CompilerError {
 
 #[cfg(test)]
 mod tests {
-    use super::{CompilerError, ErrorCode, LEGACY_PRODUCER};
+    use super::{COMPILER_ERROR, CompilerError, ErrorCode};
     use crate::SourceLocation;
-    use vize_davinci::diagnostic::{
-        Diagnostic, DiagnosticPart, PartKind, Severity, Stage, Witness,
-    };
+    use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, PartKind, Stage};
     use vize_s0::Span;
     use vize_s0::i18n::Locale;
 
@@ -113,8 +108,8 @@ mod tests {
             span: Span::new(4, 9),
         };
         let error = CompilerError::new(ErrorCode::VIfNoExpression, Some(loc));
-        let expected = Diagnostic::new(
-            Severity::Error,
+        let expected = Diagnostic::legacy_error(
+            &COMPILER_ERROR,
             Stage::Lowered,
             Span::new(4, 9),
             "v-if/v-else-if に式がありません。",
@@ -123,8 +118,7 @@ mod tests {
             PartKind::Help,
             Span::new(4, 9),
             "`v-if=\"visible\"` のように条件式を指定してください",
-        ))
-        .with_witness(Witness::LegacyExempt(LEGACY_PRODUCER.into()));
+        ));
         assert_eq!(error.to_diagnostic(Locale::Ja), expected);
     }
 
@@ -136,7 +130,7 @@ mod tests {
             None,
         );
         let expected = Diagnostic::new(
-            Severity::Warning,
+            Advisory::Warning,
             Stage::Surface,
             Span::new(0, 0),
             "Duplicate attribute `class`.",
@@ -152,13 +146,12 @@ mod tests {
     #[test]
     fn extension_points_carry_no_generic_help() {
         let error = CompilerError::with_message(ErrorCode::ExtendPoint, "Recovered.", None);
-        let expected = Diagnostic::new(
-            Severity::Error,
+        let expected = Diagnostic::legacy_error(
+            &COMPILER_ERROR,
             Stage::Surface,
             Span::new(0, 0),
             "Recovered.",
-        )
-        .with_witness(Witness::LegacyExempt(LEGACY_PRODUCER.into()));
+        );
         assert_eq!(error.to_diagnostic(Locale::En), expected);
     }
 }

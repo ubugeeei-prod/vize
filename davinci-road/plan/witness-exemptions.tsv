@@ -101,6 +101,7 @@ vize_patina	vue/valid-v-once	1
 vize_patina	vue/valid-v-show	1
 vize_patina	vue/valid-v-slot	1
 vize_patina	vue/valid-v-text	1
+vize_relief	compiler-error	3
 vize_s1_to_s2	lowering	1
 vize_s1_to_s2	missing-end-tag	1
 vize_s1_to_s2	surface-syntax	1
