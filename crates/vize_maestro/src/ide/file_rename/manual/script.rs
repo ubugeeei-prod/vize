@@ -122,12 +122,7 @@ pub(super) fn collect_vue_edits(
     source: &str,
     rename_targets: &[RenameTarget],
 ) -> Vec<TextEdit> {
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: path.to_string_lossy().to_string().into(),
-        ..Default::default()
-    };
-
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, options) else {
+    let Some(descriptor) = state.component_descriptor(path, source) else {
         return Vec::new();
     };
 

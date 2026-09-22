@@ -21,11 +21,7 @@ pub(crate) struct DefineArtSource {
 }
 
 pub(crate) fn define_art_sources(content: &str, uri: &Url) -> Vec<DefineArtSource> {
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: uri.path().to_string().into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+    let Some(descriptor) = vize_resident::parse_descriptor(uri.path(), content) else {
         return Vec::new();
     };
     let Some(script_setup) = descriptor.script_setup.as_ref() else {

@@ -118,16 +118,10 @@ fn component_event_range_at(ctx: &IdeContext<'_>) -> Option<OffsetRange<usize>> 
 }
 
 pub(super) fn component_event_ranges(source: &str, filename: &str) -> Vec<OffsetRange<usize>> {
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(
-        source,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: filename.to_string().into(),
-            ..Default::default()
-        },
-    ) else {
+    let Some(descriptor) = vize_resident::parse_descriptor(filename, source) else {
         return Vec::new();
     };
-    let Some(template) = descriptor.template else {
+    let Some(template) = descriptor.template.as_ref() else {
         return Vec::new();
     };
     let Some(template_source) = source.get(template.loc.start..template.loc.end) else {
@@ -169,16 +163,10 @@ pub(super) fn component_event_ranges(source: &str, filename: &str) -> Vec<Offset
 }
 
 fn query_is_event_declaration(ctx: &IdeContext<'_>) -> bool {
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(
-        &ctx.content,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        },
-    ) else {
+    let Some(descriptor) = ctx.state.sfc_descriptor(ctx.uri, &ctx.content) else {
         return false;
     };
-    let Some(script) = descriptor.script_setup else {
+    let Some(script) = descriptor.script_setup.as_ref() else {
         return false;
     };
     let Some(relative) = ctx.offset.checked_sub(script.loc.start) else {

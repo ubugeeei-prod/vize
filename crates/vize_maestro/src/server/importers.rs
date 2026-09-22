@@ -182,11 +182,8 @@ fn collect_dependencies(
         );
         return dependencies.into_iter().collect();
     }
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: importer.to_string_lossy().into_owned().into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, options) else {
+    let Some(descriptor) = vize_resident::parse_descriptor(&importer.to_string_lossy(), source)
+    else {
         return Vec::new();
     };
     let mut dependencies = FxHashSet::default();
