@@ -18,19 +18,22 @@ ignores it, and so does the plan.
 ## Measured
 
 `VIZE_DAVINCI_DIFFERENTIAL_CORPUS` = the checkout, 0 divergences, 0
-rejected:
+rejected. After the two shapes below, production lanes are only `s4`
+(785) and `none` (3). Compared templates are 784 of 788, with 4 legacy
+compile errors skipped. The emitter sweep is 779 of 779.
 
-| sweep | result |
-| --- | --- |
-| emitter | 779 of 779 plan-emitted |
-| production `compile_sfc` | 783 of 784 (`legacy.binding` 1, `legacy.expression_or_encoding` 1, `none` 3) |
+`v-model` on a `v-for` or slot alias, and `v-model` with an argument on
+a plain element, are errors the walker reports and then does not render.
+The plan admits them and writes no attribute. A custom-directive value
+the transform cannot parse is passed through raw, which is how a
+disabled `v-match` / `v-when` template renders (`_ssrGetDirectiveProps`
+with the authored text, plus `X_INVALID_EXPRESSION`).
 
-`legacy.croquis` is empty. The binding row is `v-model` on a `v-for`
-alias plus `v-model:value` (the walker drops both as errors). The
-expression row is `v-match` / `v-when`. The walker stays for those, for
-option shapes the plan refuses, and for the parity oracle. P3-8 stays
-open: the Real Project Matrix has no SSR surface, and charter #26 still
-wants the walker deleted only once nothing compared still needs it.
+TS-11's harness has no SSR surface, so the corpus gate above is the
+byte-parity witness. The walker remains the fallback for option shapes
+and fixtures the corpus does not compare (invalid interpolations, raw
+text, inline render closures). Nothing in the checkout sweep still
+selects it.
 
 ## Witnesses
 

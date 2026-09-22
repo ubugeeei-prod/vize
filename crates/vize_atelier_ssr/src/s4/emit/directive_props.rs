@@ -18,7 +18,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         let value = directive
             .value
             .as_ref()
-            .map(|value| self.expr(value, TransformContent::Decoded))
+            .map(|value| self.directive_value(value))
             .transpose()?;
         if let Some(value) = &value {
             out.push_str(", ");
@@ -59,5 +59,20 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         }
         out.push(')');
         Ok(out)
+    }
+
+    /// A directive value. An expression the transform cannot parse is
+    /// passed through raw, which is what the walker emits beside
+    /// `X_INVALID_EXPRESSION`.
+    fn directive_value(&mut self, value: &vize_s2::expr::ExprRef<'_>) -> Result<String> {
+        match self.exprs.expr(value, TransformContent::Decoded) {
+            Ok(rewritten) => self.consume(rewritten),
+            Err(vize_s1_to_s2::TransformRefusal::InvalidExpression) => {
+                Ok(value.source().to_compact_string())
+            }
+            Err(vize_s1_to_s2::TransformRefusal::ExpressionKind) => {
+                Err(crate::s4::LegacyReason::ExpressionOrEncoding.into())
+            }
+        }
     }
 }

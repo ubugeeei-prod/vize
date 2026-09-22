@@ -10,19 +10,33 @@ use super::attrs::{Attached, admit_value, bound_value, static_value};
 use super::{Emitter, Result};
 use crate::codegen::element::VNodePropEntry;
 use crate::codegen::element::props::{component_prop_entry, quoted_js_string};
-use crate::s4::LegacyReason;
 
 /// `v-model` reads the plan emitter can own.
 ///
-/// An argument stays on the legacy walker (`<input v-model:foo>`). On a
-/// non-form tag the legacy walker emits no attribute
-/// (`process_v_model_on_element`'s empty arm); admitting the read lets the
-/// plan do the same, and form tags still realize the read later.
+/// An argument on a plain element is `VModelArgOnElement`: the walker
+/// reports it and emits no attribute. A read that is only a `v-for` or
+/// slot alias is `VModelOnScope` and is dropped the same way. Both stay
+/// on this lane; [`dropped`] writes nothing for them. On a non-form tag
+/// the walker emits no attribute either.
 pub(super) fn admit(model: &s2::ModelOp<'_>, _tag: &str) -> Result<()> {
-    if model.argument.is_some() {
-        return Err(LegacyReason::Binding.into());
+    if dropped_read(model) {
+        return Ok(());
     }
     admit_value(Some(&model.contract.read))
+}
+
+/// The walker removes this model before codegen.
+pub(super) fn dropped(em: &Emitter<'_, '_, '_, '_, '_, '_>, model: &s2::ModelOp<'_>) -> bool {
+    dropped_read(model) || alias_model(em, model)
+}
+
+fn dropped_read(model: &s2::ModelOp<'_>) -> bool {
+    model.argument.is_some()
+}
+
+fn alias_model(em: &Emitter<'_, '_, '_, '_, '_, '_>, model: &s2::ModelOp<'_>) -> bool {
+    let name = model.contract.read.source().trim();
+    !name.is_empty() && em.scoped_params.iter().any(|frame| frame.contains(name))
 }
 
 impl Emitter<'_, '_, '_, '_, '_, '_> {
@@ -45,6 +59,9 @@ pub(super) fn emit_inline(
     model: &s2::ModelOp<'_>,
     tag: &str,
 ) -> Result<()> {
+    if dropped(em, model) {
+        return Ok(());
+    }
     let exp = em.model_read(model)?;
     match tag {
         "input" => {
@@ -96,6 +113,9 @@ pub(super) fn collect_root(
     entries: &mut std::vec::Vec<VNodePropEntry>,
     dynamic_model: &mut Option<String>,
 ) -> Result<()> {
+    if dropped(em, model) {
+        return Ok(());
+    }
     let exp = em.model_read(model)?;
     if tag != "input" {
         return Ok(());

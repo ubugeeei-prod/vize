@@ -214,7 +214,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                             }
                         }
                     }
-                    s2::BindingOp::Model(model) if runtime_type => {
+                    s2::BindingOp::Model(model) if runtime_type && !model::dropped(self, model) => {
                         dynamic_model =
                             Some(self.expr(&model.contract.read, TransformContent::Decoded)?);
                     }

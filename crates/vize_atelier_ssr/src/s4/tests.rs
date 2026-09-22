@@ -184,7 +184,6 @@ fn unowned_shapes_name_their_legacy_reason() {
             "<p v-if=\"a\">1</p><!-- @vize:todo x --><p v-else>2</p>",
             LegacyReason::SurfaceSemantics,
         ),
-        (r#"<input v-model:foo="x">"#, LegacyReason::Binding),
         (
             r#"<div>{{ a &amp;&amp; b }}</div>"#,
             LegacyReason::ExpressionOrEncoding,

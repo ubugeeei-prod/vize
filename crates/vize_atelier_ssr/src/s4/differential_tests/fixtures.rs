@@ -180,6 +180,15 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         "legacy-content-tags",
         "<div><noembed>x</noembed><noframes>y</noframes><xmp>a &lt; b</xmp></div>",
     ),
+    ("v-model-argument", r#"<input v-model:foo="msg">"#),
+    (
+        "model-scope",
+        "<form class=\"list\"><h1>Items</h1><input v-for=\"item in items\" :key=\"item\" v-model=\"item\"><input v-model:value=\"query\"></form>",
+    ),
+    (
+        "patterned-disabled",
+        "<template v-match=\"result\"><p v-when=\"{ kind: 'ok', data: [const first, ...const tail], ...const metadata } as success if (first > 0 && tail.length)\">{{ first }}</p><p v-when=\"('idle' | 'pending') as waiting\">{{ waiting }}</p><p v-when=\"Status.Error\">error</p><p v-when=\"{ kind: _, ... }\">known</p><p v-when='[1, \"two\", ...]'>tuple</p><p v-when=\"_\">empty</p></template><p :title=\"result.kind\">after pattern</p>",
+    ),
     ("v-model-div", r#"<div v-model="msg"></div>"#),
     ("v-model-svg", r#"<svg v-model="msg"></svg>"#),
     ("v-model-math", r#"<math v-model="msg"></math>"#),
@@ -225,7 +234,6 @@ pub(super) const REFUSED: &[(&str, &str)] = &[
         "outlet-v-pre",
         "<slot v-pre>{{ not }} an interpolation</slot>",
     ),
-    ("v-model-argument", r#"<input v-model:foo="msg">"#),
     ("invalid-expression", "<div>{{ a &amp;&amp; b }}</div>"),
     ("invalid-bind", r#"<div :title="a +"></div>"#),
     ("script", "<div><script>var a = 1 < 2</script></div>"),
