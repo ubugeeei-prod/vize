@@ -12,7 +12,7 @@
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_s1_to_s2::lower::pug::PugBlockView;
 
-use super::super::config::{LintResult, Linter};
+use crate::linter::config::{LintResult, Linter};
 
 impl Linter {
     /// Lint `source` through its pug view, or `None` when the SFC has no

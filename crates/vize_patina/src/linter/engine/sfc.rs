@@ -1,3 +1,5 @@
+mod pug;
+
 use super::{
     SfcTemplateLintInput, TemplateAnalysis, TemplateRuleEnv, analyze_descriptor_for_lint,
     extract_template_fast, offset_result,

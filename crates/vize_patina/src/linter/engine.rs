@@ -12,7 +12,6 @@
 mod ecosystem_hint;
 mod offset;
 mod parse_diagnostics;
-mod pug;
 mod rule_sets;
 mod script;
 mod sfc;
