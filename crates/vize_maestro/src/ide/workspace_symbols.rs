@@ -69,12 +69,7 @@ impl WorkspaceSymbolsService {
         query: &str,
         symbols: &mut Vec<SymbolInformation>,
     ) {
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+        let Some(descriptor) = vize_resident::parse_descriptor(uri.path(), content) else {
             return;
         };
 

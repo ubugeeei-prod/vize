@@ -7,10 +7,7 @@
 // removed one fails until this ceiling is lowered to match, so the count only
 // falls.
 //
-// P5-6c acceptance is not met. After the template-ref/diagnostic slice, 14 request-path
-// sites remain (rename,
-// formatting, virtual documents, importers, musea,
-// workspace symbols and SFC regions) plus 15 test-only sites.
+// Request-path `parse_sfc` is 0. The 15 remaining sites are tests.
 // `with_content` is not deleted.
 
 import assert from "node:assert/strict";
@@ -24,14 +21,14 @@ import { maskRustNonCode } from "./davinci-storage-rust-syntax.ts";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const maestroSrc = path.join(repoRoot, "crates/vize_maestro/src");
 
-/** `parse_sfc` call sites left in `crates/vize_maestro/src` (81 before P5-6a, 50 before P5-6b, 47 before semantic tokens, 46 before inlay hints, 45 before document links, 44 before annotations and structure, 40 before context consumers, 32 before template refs and diagnostics). */
-const CEILING = 29;
+/** `parse_sfc` call sites left in `crates/vize_maestro/src` (81 before P5-6a, 50 before P5-6b, 47 before semantic tokens, 46 before inlay hints, 45 before document links, 44 before annotations and structure, 40 before context consumers, 32 before template refs and diagnostics, 29 before the remaining request paths). */
+const CEILING = 15;
 
 /**
- * Request-path `parse_sfc(` sites after context consumers moved onto the resident
- * descriptor. The other `CEILING - REQUEST_PATH` sites are tests.
+ * Request-path `parse_sfc(` sites. The other `CEILING - REQUEST_PATH` sites are tests.
+ * P5-6c acceptance is 0.
  */
-const REQUEST_PATH = 14;
+const REQUEST_PATH = 0;
 
 /** Files whose every `parse_sfc(` is a test, including inline `#[cfg(test)]` modules. */
 function isTestOnly(file: string): boolean {
@@ -128,7 +125,25 @@ test("the P5-6c annotation and structure request paths call parse_sfc nowhere", 
   );
 });
 
-test("request-path parse_sfc sites remaining after template refs and diagnostics", () => {
+test("formatting, virtual documents, importers, rename and structure call parse_sfc nowhere", () => {
+  const migrated = [
+    "server/state/virtual_docs.rs:",
+    "server/format/blocks.rs:",
+    "server/importers.rs:",
+    "ide/sfc_region.rs:",
+    "ide/musea.rs:",
+    "ide/workspace_symbols.rs:",
+    "ide/file_rename/",
+    "ide/rename/",
+    "virtual_code/generator/block.rs:",
+  ];
+  assert.deepEqual(
+    sites.filter((site) => migrated.some((prefix) => site.startsWith(prefix))),
+    [],
+  );
+});
+
+test("request-path parse_sfc sites remaining after the resident descriptor migration", () => {
   const requestPath = sites.filter((site) => !isTestOnly(site.slice(0, site.lastIndexOf(":"))));
   assert.equal(
     requestPath.length,

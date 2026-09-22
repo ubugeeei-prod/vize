@@ -40,12 +40,7 @@ impl ServerState {
             return;
         }
 
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+        let Some(descriptor) = self.sfc_descriptor(uri, content) else {
             self.remove_virtual_docs(uri);
             return;
         };
@@ -149,11 +144,7 @@ impl ServerState {
 
         // Generate script_setup virtual doc using SFC parser
         // (SFC parser handles script blocks even in art files)
-        let sfc_options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-        if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, sfc_options) {
+        if let Some(descriptor) = self.sfc_descriptor(uri, content) {
             if let Some(ref script_setup) = descriptor.script_setup {
                 let isolate = art_script_setup_isolated(script_setup);
                 let mut script_doc = generate_art_script_setup_virtual_doc(

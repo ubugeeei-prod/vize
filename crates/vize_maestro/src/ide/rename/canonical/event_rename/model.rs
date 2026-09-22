@@ -20,16 +20,10 @@ pub(super) fn usage_range_at(ctx: &IdeContext<'_>) -> Option<Range<usize>> {
 }
 
 pub(super) fn usage_ranges(source: &str, filename: &str) -> Vec<Range<usize>> {
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(
-        source,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: filename.to_string().into(),
-            ..Default::default()
-        },
-    ) else {
+    let Some(descriptor) = vize_resident::parse_descriptor(filename, source) else {
         return Vec::new();
     };
-    let Some(template) = descriptor.template else {
+    let Some(template) = descriptor.template.as_ref() else {
         return Vec::new();
     };
     let Some(template_source) = source.get(template.loc.start..template.loc.end) else {
@@ -67,16 +61,10 @@ pub(super) fn usage_ranges(source: &str, filename: &str) -> Vec<Range<usize>> {
 }
 
 pub(super) fn declaration_ranges(source: &str, filename: &str) -> Vec<Range<usize>> {
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(
-        source,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: filename.to_string().into(),
-            ..Default::default()
-        },
-    ) else {
+    let Some(descriptor) = vize_resident::parse_descriptor(filename, source) else {
         return Vec::new();
     };
-    let Some(script) = descriptor.script_setup else {
+    let Some(script) = descriptor.script_setup.as_ref() else {
         return Vec::new();
     };
     let mut drawer = Drawer::with_options(DrawerOptions {

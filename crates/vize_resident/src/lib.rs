@@ -38,5 +38,5 @@ pub use artifact::{
 pub use db::{ResidentDatabase, SourceFile};
 pub use descriptor::{
     DescriptorParseError, DescriptorParseLoc, DescriptorStats, ParsedSfc, ResidentDocuments,
-    SharedDescriptor,
+    SharedDescriptor, parse_descriptor,
 };

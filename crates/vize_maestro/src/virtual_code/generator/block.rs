@@ -200,12 +200,7 @@ pub(crate) fn find_art_block_at_completion_offset(
 
 fn find_art_block_at_position(source: &str, offset: usize, completion: bool) -> Option<BlockType> {
     // First check SFC blocks (script, style)
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: Default::default(),
-        ..Default::default()
-    };
-
-    if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, options) {
+    if let Some(descriptor) = vize_resident::parse_descriptor("", source) {
         // Check script/script_setup/style blocks
         if let Some(ref script) = descriptor.script
             && is_script_position(script, offset, completion)
