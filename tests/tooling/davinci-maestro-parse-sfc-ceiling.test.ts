@@ -7,8 +7,8 @@
 // removed one fails until this ceiling is lowered to match, so the count only
 // falls.
 //
-// P5-6c acceptance is not met. After the annotations/structure slice, 25 request-path
-// sites remain (ecosystem, code actions, rename,
+// P5-6c acceptance is not met. After the context-consumer slice, 17 request-path
+// sites remain (ecosystem diagnostics, rename,
 // formatting, virtual documents, importers, the type service, musea,
 // template refs and SFC regions) plus 15 test-only sites.
 // `with_content` is not deleted.
@@ -22,14 +22,14 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const maestroSrc = path.join(repoRoot, "crates/vize_maestro/src");
 
-/** `parse_sfc` call sites left in `crates/vize_maestro/src` (81 before P5-6a, 50 before P5-6b, 47 before semantic tokens, 46 before inlay hints, 45 before document links, 44 before annotations and structure). */
-const CEILING = 40;
+/** `parse_sfc` call sites left in `crates/vize_maestro/src` (81 before P5-6a, 50 before P5-6b, 47 before semantic tokens, 46 before inlay hints, 45 before document links, 44 before annotations and structure, 40 before context consumers). */
+const CEILING = 32;
 
 /**
- * Request-path `parse_sfc(` sites after annotations and structure moved onto the resident
+ * Request-path `parse_sfc(` sites after context consumers moved onto the resident
  * descriptor. The other `CEILING - REQUEST_PATH` sites are tests.
  */
-const REQUEST_PATH = 25;
+const REQUEST_PATH = 17;
 
 /** Files whose every `parse_sfc(` is a test, including inline `#[cfg(test)]` modules. */
 function isTestOnly(file: string): boolean {
@@ -126,12 +126,27 @@ test("the P5-6c annotation and structure request paths call parse_sfc nowhere", 
   );
 });
 
-test("request-path parse_sfc sites remaining after annotations and structure", () => {
+test("request-path parse_sfc sites remaining after context consumers", () => {
   const requestPath = sites.filter((site) => !isTestOnly(site.slice(0, site.lastIndexOf(":"))));
   assert.equal(
     requestPath.length,
     REQUEST_PATH,
     `found ${requestPath.length} request-path sites; P5-6c acceptance is 0\n${requestPath.join("\n")}`,
+  );
+});
+
+test("code actions and type-query entry points use resident descriptors", () => {
+  assert.deepEqual(
+    sites.filter((site) => {
+      const file = site.slice(0, site.lastIndexOf(":"));
+      return (
+        !isTestOnly(file) &&
+        (file === "ide/code_action.rs" ||
+          file.startsWith("ide/code_action/") ||
+          file === "ide/type_service.rs")
+      );
+    }),
+    [],
   );
 });
 

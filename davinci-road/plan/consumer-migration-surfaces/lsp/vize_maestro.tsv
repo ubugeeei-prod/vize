@@ -20,7 +20,7 @@ lsp	LSP	source	crates/vize_maestro/src/ide/call_hierarchy.rs	133	s0	S0	stage	viz
 lsp	LSP	source	crates/vize_maestro/src/ide/call_hierarchy/document.rs	48	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/call_hierarchy/tests.rs	217	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/code_action.rs	14	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/code_action.rs	675	croquis	Croquis analysis	old	vize_croquis	legacy	3
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/code_action.rs	658	croquis	Croquis analysis	old	vize_croquis	legacy	3
 lsp	LSP	source	crates/vize_maestro/src/ide/code_action/script_bindings.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	3
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/code_action/source_position_tests.rs	51	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/component_props_tests.rs	318	s0	S0	stage	vize_s0	preferred	1
@@ -258,9 +258,9 @@ lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/v_slot.rs	4	old_ast	ol
 lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/v_slot.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/type_definition.rs	119	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/type_definition/tests.rs	114	s0	S0	stage	vize_s0	preferred	2
-lsp	LSP	source	crates/vize_maestro/src/ide/type_service.rs	141	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/type_service.rs	131	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/type_service/diagnostics.rs	294	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/ide/type_service/type_context.rs	229	s0	S0	stage	vize_s0	preferred	14
+lsp	LSP	source	crates/vize_maestro/src/ide/type_service/type_context.rs	230	s0	S0	stage	vize_s0	preferred	14
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/workspace_symbols.rs	16	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/workspace_symbols.rs	16	croquis	Croquis analysis	old	vize_croquis	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/lib.rs	160	s0	S0	stage	vize_s0	preferred	1

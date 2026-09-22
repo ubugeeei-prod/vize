@@ -26,17 +26,13 @@ pub(crate) fn completions(ctx: &IdeContext<'_>) -> Vec<CompletionItem> {
         return Vec::new();
     }
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+    let Some(descriptor) = ctx.descriptor() else {
         return Vec::new();
     };
 
-    let mut items = i18n::completions(ctx, &descriptor);
+    let mut items = i18n::completions(ctx, descriptor);
     if items.is_empty() {
-        items = router::completions(ctx, &descriptor);
+        items = router::completions(ctx, descriptor);
     }
     if items.is_empty() {
         items = void::completions(ctx);
