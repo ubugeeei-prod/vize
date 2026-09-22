@@ -1,6 +1,6 @@
 //! Template-expression projection through the S4 emission document (P4-5b).
 //!
-//! Each interpolation and `v-bind` value is emitted by the JS [`ExprDialect`]
+//! Template value expressions are emitted by the JS [`ExprDialect`]
 //! into one [`EmitDocument`]. The document's links are the [`ProjectionMapping`]
 //! rows, so the projection has no mapping model of its own. [`ExprRef::Opaque`]
 //! keeps the pessimal answers: nothing is enumerated, it is not constant, it
@@ -14,7 +14,10 @@ use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{Allocator, Span, String};
 use vize_s1_to_s2::lower;
 use vize_s2::expr::{ExprDialect, ExprRef};
-use vize_s2::op::{BindingOp, Op, Region};
+use vize_s2::op::{DynamicName, Op, Region};
+
+mod bindings;
+use bindings::project_bindings;
 
 use crate::virtual_ts::ProjectionMapping;
 
@@ -49,11 +52,18 @@ fn project_op<D: ExprDialect>(document: &mut EmitDocument, dialect: &D, op: &Op<
         }
         Op::If(if_op) => {
             for branch in &if_op.branches {
+                if let Some(condition) = branch.condition {
+                    project_expr(document, dialect, condition);
+                }
                 project_region(document, dialect, &branch.region);
             }
         }
-        Op::For(for_op) => project_region(document, dialect, &for_op.region),
+        Op::For(for_op) => {
+            project_expr(document, dialect, for_op.binding.source);
+            project_region(document, dialect, &for_op.region);
+        }
         Op::Slot(slot) => {
+            project_name(document, dialect, Some(slot.name));
             project_bindings(document, dialect, &slot.bindings);
             project_region(document, dialect, &slot.fallback);
         }
@@ -61,19 +71,14 @@ fn project_op<D: ExprDialect>(document: &mut EmitDocument, dialect: &D, op: &Op<
     }
 }
 
-/// `ui.bind` values (`:title="name"`). The row is the expression, not the
-/// directive.
-fn project_bindings<D: ExprDialect>(
+/// Dynamic names are expressions; static names are syntax, not references.
+fn project_name<D: ExprDialect>(
     document: &mut EmitDocument,
     dialect: &D,
-    bindings: &[BindingOp<'_>],
+    name: Option<DynamicName<'_>>,
 ) {
-    for binding in bindings {
-        if let BindingOp::Bind(bind) = binding
-            && let Some(value) = bind.value
-        {
-            project_expr(document, dialect, value);
-        }
+    if let Some(DynamicName::Dynamic(expr)) = name {
+        project_expr(document, dialect, expr);
     }
 }
 
@@ -221,33 +226,4 @@ impl Visit<'_> for ScopeProbe {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::project_template_expressions;
-    use crate::virtual_ts::VizeMapping;
-
-    #[test]
-    fn projects_count_interpolation_onto_its_expression_span() {
-        let source = "{{ count }}";
-        let start = source.find("count").unwrap();
-        let end = start + "count".len();
-        let mapping = project_template_expressions(source);
-        assert_eq!(mapping.spans(), &[VizeMapping::new(0..5, start..end)]);
-        assert_eq!(
-            mapping.diagnostic_range_to_authored(0, 5),
-            Some((start, end))
-        );
-    }
-
-    #[test]
-    fn projects_title_bind_onto_its_expression_span() {
-        let source = r#"<div :title="name"></div>"#;
-        let start = source.find("name").unwrap();
-        let end = start + "name".len();
-        let mapping = project_template_expressions(source);
-        assert_eq!(mapping.spans(), &[VizeMapping::new(0..4, start..end)]);
-        assert_eq!(
-            mapping.diagnostic_range_to_authored(0, 4),
-            Some((start, end))
-        );
-    }
-}
+mod tests;
