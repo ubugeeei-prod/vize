@@ -9,7 +9,7 @@ use super::super::props::{
 };
 use super::super::props_bind::{StaticBindKey, StaticBindKeyCasing};
 use super::super::props_value::{BindValue, bind_value};
-use super::legacy_constant::legacy_global_constant_expr;
+use super::legacy_constant::{legacy_global_constant_expr, self_bound_constant_expr};
 
 pub(super) fn static_hoist_prop<'a>(
     out: &mut String,
@@ -57,7 +57,10 @@ pub(super) fn component_hoist_prop<'a>(
             let Some(js) = value.js() else {
                 return Ok(None);
             };
-            if dynamic_value && !legacy_global_constant_expr(js.ast, js.source) {
+            if dynamic_value
+                && !legacy_global_constant_expr(js.ast, js.source)
+                && !self_bound_constant_expr(js.ast, js.source)
+            {
                 return Ok(None);
             }
             push_key(out, key.as_str());
@@ -170,6 +173,7 @@ pub(super) fn bind_value_is_legacy_static_prop(bind: &BindOp<'_>, is_ts: bool) -
     bind_value_is_static_patchless(bind, is_ts)
         || js.source.trim() == "undefined"
         || legacy_static_style_prop(bind, &value)
+        || self_bound_constant_expr(js.ast, js.source)
 }
 
 pub(super) fn multiline_props_object(props: &[String], line_indent: usize) -> String {

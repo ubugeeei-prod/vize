@@ -161,6 +161,20 @@ fn a_constant_bind_value_keeps_the_element_static() {
 }
 
 #[test]
+fn a_self_bound_parameter_is_constant_for_hoist() {
+    // P3-17: `(v) => v.toFixed(2)` is constant for the shipped
+    // classifier (`v` is a local the expression binds). The pass used
+    // to refuse every identifier, so the inline root props hoist
+    // diverged and the emitter refused the template.
+    with_transformed(r#"<i :n="(v) => v.toFixed(2)">m</i>"#, |_, _, facts, _| {
+        assert_eq!(
+            rows(&facts.static_facts),
+            vec![(0, fact(StaticLevel::FullyStatic, true, true, true))]
+        );
+    });
+}
+
+#[test]
 fn the_weaker_const_rule_refuses_every_recorded_narrowing() {
     // The four narrowings of `pass/hoist/consts.rs`, each pinned: any
     // identifier (the shipped classifier admits allowlisted globals),

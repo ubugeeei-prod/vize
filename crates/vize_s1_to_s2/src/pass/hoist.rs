@@ -58,9 +58,9 @@
 //!   `v-text`, `v-cloak`) fail `hoistable_binding` like any non-`ui.bind`.
 //!   The still-deferred builtin (`v-pre`) leaves the element looking
 //!   cleaner to S2 than to the legacy lane; counted (`builtins_subtrees`).
-//! - **The const rule** is deliberately weaker than the shipped
-//!   classifier's ([`consts::constant_for_hoist`]'s module docs — the
-//!   pessimal law's first real consumer lives there).
+//! - **The const rule** admits locals the expression binds and is still
+//!   weaker than the shipped classifier on free names and `this`
+//!   ([`consts::constant_for_hoist`]'s module docs).
 //!
 //! # Facts and accounting
 //!
@@ -85,6 +85,7 @@ mod lattice;
 mod remarks;
 
 pub use consts::constant_for_hoist;
+pub(crate) use consts::self_bound_js_constant;
 pub use remarks::{STATIC_PROPS, STATIC_SUBTREE};
 
 /// The pass name in pipeline strings and folio pages.

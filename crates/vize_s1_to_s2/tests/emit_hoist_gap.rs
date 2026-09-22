@@ -1,13 +1,10 @@
-//! P3-17: the inline root props-hoist gap is refused, never guessed.
+//! P3-17: inline root props that the shipped lane hoists must hoist here.
 //!
-//! The shipped lane hoists a root props surface of an inlined render
-//! function when every value passes `is_constant_simple_expression` — which
-//! admits a value reading only locals it binds itself (`(v) => v.id`). The S2
-//! hoist pass classifies such a value as dynamic, so S2 would spell the props
-//! inline. Measured on the production-path parity oracle
-//! (`vize_atelier_sfc/tests/davinci_production_reach.rs`), the emitter now
-//! refuses exactly the root surfaces of an inline render on which the two
-//! classifiers disagree, and keeps emitting everything else.
+//! `is_constant_simple_expression` admits a value whose identifiers are
+//! locals it binds (`(v) => v.id`). The S2 hoist pass now admits that same
+//! class, so the inline root arm spells `_hoisted_N` on both lanes. A value
+//! the pass still under-classifies (a local mixed with a free name) stays
+//! refused rather than guessed.
 
 #![allow(
     clippy::disallowed_macros,
@@ -85,19 +82,29 @@ fn refused(source: &str) -> Reason {
 }
 
 #[test]
-fn inline_root_surfaces_the_shipped_lane_hoists_are_refused() {
+fn inline_root_surfaces_the_shipped_lane_hoists_match() {
     for source in [
         r#"<Card :format="(row) => row.name" />"#,
         r#"<Card title="a" :format="(v) => v.toFixed(2)" /><Card :format="(v) => v" />"#,
         r#"<div :format="(v) => v.toFixed(2)" class="a"></div>"#,
     ] {
-        assert_ne!(
-            shipped(source, true).find("_hoisted_1"),
-            None,
+        let legacy = shipped(source, true);
+        assert!(
+            legacy.contains("_hoisted_1"),
             "{source:?}: the shipped inline lane hoists this surface"
         );
-        assert_eq!(refused(source), Reason::HoistConstantGap, "{source:?}");
+        let emitted =
+            s2(source, true).unwrap_or_else(|error| panic!("{source:?} must emit, got {error:?}"));
+        assert_eq!(emitted, legacy, "{source:?}");
     }
+    // A local mixed with a free name is still under-classified, so the
+    // inline lane refuses instead of spelling a different props object.
+    let mixed = r#"<Card :format="(row) => Math.max(row, 1)" />"#;
+    assert!(
+        shipped(mixed, true).contains("_hoisted_1"),
+        "the shipped lane hoists an allowlisted global inside the arrow"
+    );
+    assert_eq!(refused(mixed), Reason::HoistConstantGap);
 }
 
 #[test]

@@ -4,15 +4,15 @@
 //! attribute but `ref` is static and every directive is a static-name
 //! `v-bind` whose value `is_constant_simple_expression` admits — an
 //! expression whose identifiers are all locals it binds itself, allowlisted
-//! globals, or helper aliases. The S2 hoist pass classifies values with the
-//! deliberately narrower `constant_for_hoist` (no identifier reference at
-//! all), so a surface such as `:format="(v) => v.toFixed(2)"` is hoisted by
-//! the shipped lane and spelled inline by S2. The production-path parity
-//! oracle measured exactly that as byte divergence.
+//! globals, or helper aliases. The S2 hoist pass admits the self-bound
+//! locals and still refuses a free name, so `:format="(v) => v.toFixed(2)"`
+//! hoists on both lanes while `:format="(v) => Math.max(v, 1)"` would
+//! diverge. The production-path parity oracle measured that disagreement
+//! as byte divergence.
 //!
-//! Until the pass carries the shipped rule, a root-position surface of an
-//! inlined render function on which the two classifiers disagree refuses
-//! the S2 emit, so the compile stays on the lane that produced the bytes.
+//! A root-position surface of an inlined render function on which the two
+//! classifiers still disagree refuses the S2 emit, so the compile stays on
+//! the lane that produced the bytes.
 //! That is the shipped `is_root && inline` props-hoist arm the production
 //! SFC shape reaches; the non-inline lanes keep their corpus-proven output
 //! (the remaining non-inline root case is recorded in the P3-17 record). The gate is a superset of the divergent

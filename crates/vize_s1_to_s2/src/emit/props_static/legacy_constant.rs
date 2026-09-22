@@ -25,3 +25,9 @@ impl<'a> Visit<'a> for LegacyGlobalConstWalk {
         }
     }
 }
+
+/// The self-bound half of the shipped constant rule. Free names stay
+/// dynamic; see [`crate::pass::hoist::constant_for_hoist`].
+pub(super) fn self_bound_constant_expr(expr: &Expression<'_>, source: &str) -> bool {
+    crate::pass::hoist::self_bound_js_constant(expr, source)
+}

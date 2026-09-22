@@ -13,41 +13,41 @@
 //! bind value therefore blocks its element's hoistability, exactly as
 //! the law prescribes.
 //!
-//! # The deliberately weaker JS rule (recorded, counted)
+//! # The JS rule (self-bound locals ported, free names still weaker)
 //!
 //! For a retained [`ExprRef::Js`] the shipped classifier
 //! (`vize_atelier_core::codegen::is_constant_simple_expression`, called
 //! with `bindings: None` by `hoist_static/props.rs`) admits an
-//! expression whose free identifiers are all in `vize_croquis`'s global
-//! allowlist, and — a measured quirk — admits `this`-expressions, since
-//! its visitor inspects identifier references only. This crate is
-//! `no_std + alloc` and must not grow a `vize_croquis` (std) edge, and
-//! the #4365 precedent (pattern-params scope names) is to record a
-//! **strictly weaker** rule loudly rather than duplicate a contested
-//! scanner. The rule here: a retained expression is constant iff its
-//! walk meets
+//! expression whose identifiers are locals it binds itself, allowlisted
+//! globals, or helper aliases, and — a measured quirk — admits `this`.
+//! This crate stays off the `vize_croquis` allowlist. The rule here: a
+//! retained expression is constant iff its walk meets
 //!
-//! - **no identifier reference at all** (strictly narrower than the
-//!   allowlist: every allowlisted global is an identifier),
+//! - **every identifier reference is a local the expression binds**
+//!   (an arrow or function parameter, or a binding declared in its
+//!   body). Free names, including allowlisted globals, stay
+//!   non-constant — strictly narrower than the shipped allowlist,
 //! - **no `this`** (narrower than the shipped quirk),
 //! - **no TS-only construct** (`as` / `satisfies` / `<T>` assertion /
 //!   `!` non-null / explicit instantiation): the shipped classifier
-//!   re-parses under an **mjs** source type and refuses these, and the
-//!   exclusion is what keeps this rule one-sided against it,
+//!   re-parses under an **mjs** source type and refuses these,
 //! - and none of the shipped classifier's four literal context
-//!   substrings (`_ctx.` and kin), mirrored byte-for-byte — they refuse
-//!   even inside string literals, and imitating that keeps string-only
-//!   payloads decision-equal.
+//!   substrings (`_ctx.` and kin), mirrored byte-for-byte.
 //!
-//! One-sidedness (`constant_for_hoist` ⇒ shipped-constant) is the
-//! designed invariant: every divergence is an S2 *under*-hoist, which
-//! the differential lane counts as one class (`consts_templates`)
-//! instead of comparing — measured, never averaged.
+//! Self-bound locals are the shipped answer, so `(v) => v.toFixed(2)`
+//! hoists on both lanes (P3-17 `hoist_constant_gap`). One-sidedness
+//! (`constant_for_hoist` ⇒ shipped-constant) still holds: every
+//! remaining divergence is an S2 *under*-hoist, counted as
+//! `consts_templates` instead of compared.
 //!
 //! [`OpaqueExpr::is_constant`]: vize_s2::expr::OpaqueExpr::is_constant
 
+use alloc::vec::Vec as StdVec;
+
 use oxc_ast::ast as js;
 use oxc_ast_visit::Visit;
+use oxc_ast_visit::walk::{walk_arrow_function_expression, walk_binding_pattern, walk_function};
+use oxc_syntax::scope::ScopeFlags;
 use vize_s0::camelize;
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{Attribute, BindingOp, DynamicName, SlotOp};
@@ -60,22 +60,7 @@ pub fn constant_for_hoist(expr: &ExprRef<'_>) -> bool {
         // Pessimal law 3, consumed: never constant, no exceptions.
         ExprRef::Opaque(opaque) => opaque.is_constant(),
         ExprRef::Foreign(_) | ExprRef::Filter(_) => false,
-        ExprRef::Js(retained) => {
-            let source = retained.source;
-            // The shipped classifier's literal substring refusals,
-            // mirrored byte-for-byte (they apply inside string
-            // literals too, deliberately).
-            if source.contains("_ctx.")
-                || source.contains("$setup.")
-                || source.contains("__props.")
-                || source.contains("$props.")
-            {
-                return false;
-            }
-            let mut walk = ConstWalk { dynamic: false };
-            walk.visit_expression(retained.ast);
-            !walk.dynamic
-        }
+        ExprRef::Js(retained) => self_bound_js_constant(retained.ast, retained.source),
     }
 }
 
@@ -148,19 +133,109 @@ fn prefixed(prefix: char, name: &str) -> vize_s0::String {
     out
 }
 
-/// The retained-AST walk: any identifier reference, `this`, or TS-only
-/// construct makes the expression non-constant (module docs).
+/// Whether a retained JS expression is constant under the self-bound
+/// rule (module docs). The DOM props hoist spells the same answer.
+#[must_use]
+pub(crate) fn self_bound_js_constant(expr: &js::Expression<'_>, source: &str) -> bool {
+    if source.contains("_ctx.")
+        || source.contains("$setup.")
+        || source.contains("__props.")
+        || source.contains("$props.")
+    {
+        return false;
+    }
+    let mut walk = ConstWalk {
+        locals: StdVec::new(),
+        dynamic: false,
+    };
+    walk.visit_expression(expr);
+    !walk.dynamic
+}
+
+/// The retained-AST walk. A reference is constant only when the
+/// expression itself binds that name; `this` and TS-only constructs
+/// stay non-constant (module docs).
 struct ConstWalk {
+    locals: StdVec<StdVec<vize_s0::String>>,
     dynamic: bool,
 }
 
+impl ConstWalk {
+    fn is_local(&self, name: &str) -> bool {
+        self.locals
+            .iter()
+            .any(|frame| frame.iter().any(|bound| bound.as_str() == name))
+    }
+
+    fn bind_pattern(&mut self, pattern: &js::BindingPattern<'_>) {
+        match pattern {
+            js::BindingPattern::BindingIdentifier(ident) => {
+                if let Some(frame) = self.locals.last_mut() {
+                    frame.push(vize_s0::String::from(ident.name.as_str()));
+                }
+            }
+            js::BindingPattern::ObjectPattern(object) => {
+                for property in &object.properties {
+                    self.bind_pattern(&property.value);
+                }
+                if let Some(rest) = &object.rest {
+                    self.bind_pattern(&rest.argument);
+                }
+            }
+            js::BindingPattern::ArrayPattern(array) => {
+                for element in array.elements.iter().flatten() {
+                    self.bind_pattern(element);
+                }
+                if let Some(rest) = &array.rest {
+                    self.bind_pattern(&rest.argument);
+                }
+            }
+            js::BindingPattern::AssignmentPattern(assignment) => {
+                self.bind_pattern(&assignment.left);
+            }
+        }
+    }
+}
+
 impl<'a> Visit<'a> for ConstWalk {
-    fn visit_identifier_reference(&mut self, _ident: &js::IdentifierReference<'a>) {
-        self.dynamic = true;
+    fn visit_identifier_reference(&mut self, ident: &js::IdentifierReference<'a>) {
+        if !self.is_local(ident.name.as_str()) {
+            self.dynamic = true;
+        }
     }
 
     fn visit_this_expression(&mut self, _this: &js::ThisExpression) {
         self.dynamic = true;
+    }
+
+    fn visit_arrow_function_expression(&mut self, arrow: &js::ArrowFunctionExpression<'a>) {
+        self.locals.push(StdVec::new());
+        for param in &arrow.params.items {
+            self.bind_pattern(&param.pattern);
+        }
+        walk_arrow_function_expression(self, arrow);
+        self.locals.pop();
+    }
+
+    fn visit_function(&mut self, function: &js::Function<'a>, flags: ScopeFlags) {
+        self.locals.push(StdVec::new());
+        for param in &function.params.items {
+            self.bind_pattern(&param.pattern);
+        }
+        walk_function(self, function, flags);
+        self.locals.pop();
+    }
+
+    fn visit_variable_declarator(&mut self, declarator: &js::VariableDeclarator<'a>) {
+        if let Some(init) = &declarator.init {
+            self.visit_expression(init);
+        }
+        self.bind_pattern(&declarator.id);
+        // Types and default values live on the pattern. Walking them
+        // after the bind keeps a TS annotation dynamic (the shipped
+        // mjs re-parse refuses it) without treating the bound name as
+        // a free reference.
+        walk_binding_pattern(self, &declarator.id);
     }
 
     fn visit_ts_as_expression(&mut self, _expr: &js::TSAsExpression<'a>) {
