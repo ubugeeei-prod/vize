@@ -73,6 +73,9 @@ pub mod legacy;
 pub mod batch;
 #[cfg(feature = "native")]
 pub mod corsa_bridge;
+/// The one diagnostic assembly post-pass shared by `vize check` and Maestro.
+#[cfg(feature = "native")]
+pub mod projection;
 
 #[cfg(feature = "native")]
 pub mod lsp_client;

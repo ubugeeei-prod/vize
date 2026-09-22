@@ -8,14 +8,11 @@ use crate::server::ServerState;
 
 use super::super::{DiagnosticService, sources};
 use super::collect_variant::{VariantProjectContext, collect_virtual_result_diagnostics};
-use super::collect_virtual::{collect_synced_virtual_result_diagnostics, deduplicate_diagnostics};
+use super::collect_virtual::{
+    CorsaDocument, assemble_corsa_diagnostics, fetch_finished_diagnostics,
+};
 use vize_canon::{CorsaBridgeError, CorsaVueVirtualDocumentOptions};
 use vize_s0::cstr;
-
-#[path = "template_directives.rs"]
-mod template_directives;
-#[path = "template_instance.rs"]
-mod template_instance;
 
 /// One attempt either yields diagnostics (possibly empty for non-Corsa
 /// reasons such as unsupported documents) or fails on a bridge call.
@@ -152,7 +149,11 @@ impl DiagnosticService {
             dialect: state.type_checker_vue_version(),
         };
         let mut resolved_dependencies = Vec::new();
-        let mut diagnostics = if is_art_file {
+        // Every virtual document projecting this SFC is synced first; the one
+        // assembly pass then sees the file's complete diagnostic set.
+        let mut documents = Vec::new();
+        let mut finished = Vec::new();
+        if is_art_file {
             let Some(art_virtual) = Self::generate_virtual_ts_for_art_with_dependencies(
                 uri,
                 &content,
@@ -161,26 +162,25 @@ impl DiagnosticService {
                 tracing::warn!("failed to generate virtual ts for {}", uri);
                 return Ok(vec![]);
             };
-            let mut art_diagnostics = Vec::new();
             for variant in art_virtual.variants {
-                let (diagnostics, dependencies) = collect_virtual_result_diagnostics(
-                    &bridge,
-                    uri,
-                    content.as_str(),
-                    super::virtual_ts_art::art_variant_virtual_name(uri, variant.variant_index),
-                    variant.virtual_result,
-                    VariantProjectContext {
-                        options: document_options,
-                        overlays: &overlays,
-                        virtual_ts_options: &virtual_ts_options,
-                    },
-                )
-                .await
-                .map_err(|error| classify(&bridge, error))?;
-                art_diagnostics.extend(diagnostics);
+                let (document, variant_finished, dependencies) =
+                    collect_virtual_result_diagnostics(
+                        &bridge,
+                        super::virtual_ts_art::art_variant_virtual_name(uri, variant.variant_index),
+                        variant.virtual_result,
+                        VariantProjectContext {
+                            options: document_options,
+                            overlays: &overlays,
+                            virtual_ts_options: &virtual_ts_options,
+                        },
+                        documents.len(),
+                    )
+                    .await
+                    .map_err(|error| classify(&bridge, error))?;
+                documents.push(document);
+                finished.extend(variant_finished);
                 resolved_dependencies.extend(dependencies);
             }
-            art_diagnostics
         } else {
             let Ok(source_path) = uri.to_file_path() else {
                 tracing::warn!("cannot derive source path for {}", uri);
@@ -199,16 +199,14 @@ impl DiagnosticService {
             resolved_dependencies.extend(opened.resolved_dependencies.iter().cloned());
             let (virtual_uri, virtual_result) =
                 Self::virtual_ts_result_from_corsa_vue_document(opened);
-            collect_synced_virtual_result_diagnostics(
-                &bridge,
-                uri,
-                content.as_str(),
-                virtual_uri,
-                virtual_result,
-            )
-            .await
-            .map_err(|error| classify(&bridge, error))?
-        };
+            let document = CorsaDocument::from_result(virtual_result);
+            finished.extend(
+                fetch_finished_diagnostics(&bridge, &virtual_uri, &document, documents.len())
+                    .await
+                    .map_err(|error| classify(&bridge, error))?,
+            );
+            documents.push(document);
+        }
 
         if !is_art_file {
             for (variant_index, inline_virtual) in Self::generate_virtual_ts_for_inline_art_variants(
@@ -218,29 +216,30 @@ impl DiagnosticService {
                 legacy_vue2,
                 &virtual_ts_options,
             ) {
-                let (variant_diagnostics, dependencies) = collect_virtual_result_diagnostics(
-                    &bridge,
-                    uri,
-                    content.as_str(),
-                    cstr!(
-                        "{}.inline_art_{variant_index}.ts",
-                        uri.to_file_path()
-                            .map_err(|_| CollectFailure::Request(
-                                CorsaBridgeError::CommunicationError("invalid file URI".into())
-                            ))?
-                            .display()
+                let (document, variant_finished, dependencies) =
+                    collect_virtual_result_diagnostics(
+                        &bridge,
+                        cstr!(
+                            "{}.inline_art_{variant_index}.ts",
+                            uri.to_file_path()
+                                .map_err(|_| CollectFailure::Request(
+                                    CorsaBridgeError::CommunicationError("invalid file URI".into())
+                                ))?
+                                .display()
+                        )
+                        .to_string(),
+                        inline_virtual,
+                        VariantProjectContext {
+                            options: document_options,
+                            overlays: &overlays,
+                            virtual_ts_options: &virtual_ts_options,
+                        },
+                        documents.len(),
                     )
-                    .to_string(),
-                    inline_virtual,
-                    VariantProjectContext {
-                        options: document_options,
-                        overlays: &overlays,
-                        virtual_ts_options: &virtual_ts_options,
-                    },
-                )
-                .await
-                .map_err(|error| classify(&bridge, error))?;
-                diagnostics.extend(variant_diagnostics);
+                    .await
+                    .map_err(|error| classify(&bridge, error))?;
+                documents.push(document);
+                finished.extend(variant_finished);
                 resolved_dependencies.extend(dependencies);
             }
         }
@@ -248,11 +247,9 @@ impl DiagnosticService {
         state.record_typecheck_dependencies(uri, revision, &resolved_dependencies);
 
         // One authored problem inside the shared script context is reported by
-        // every variant document that includes it, so the per-document dedup
-        // has to be repeated across the whole set.
-        template_instance::apply(&content, &mut diagnostics);
-        template_directives::apply(&content, &mut diagnostics);
-        Ok(deduplicate_diagnostics(diagnostics))
+        // every variant document that includes it; the assembly pass runs over
+        // the whole set, so it lands once.
+        Ok(assemble_corsa_diagnostics(&content, &documents, finished))
     }
 }
 

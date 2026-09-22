@@ -1,9 +1,77 @@
-use super::{
-    corsa_diagnostic_code, deduplicate_diagnostics, is_authored_vue_import_extension_diagnostic,
-    is_generated_vue_ts_import_extension_diagnostic, is_inferred_implicit_any_suggestion,
-};
-use tower_lsp::lsp_types::{Diagnostic, NumberOrString, Position, Range};
+use super::{CorsaDocument, assemble_corsa_diagnostics, corsa_diagnostic_code, finished_from_lsp};
+use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range};
+use vize_canon::ImportSourceMap;
 use vize_canon::corsa_bridge::{LspDiagnostic, LspPosition, LspRange};
+use vize_canon::virtual_ts::{ProjectionMapping, VizeMapping};
+
+const CONTENT: &str = "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nconst count: string = 1\n</script>\n";
+const GENERATED: &str = "import Child from './Child.vue.ts';\nconst count: string = 1\n";
+const TS5097: &str = "An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.";
+
+/// One document whose script statements map onto the authored SFC.
+fn document() -> CorsaDocument {
+    let import = CONTENT.find("import Child").unwrap();
+    let count = CONTENT.find("const count").unwrap();
+    let generated_count = GENERATED.find("const count").unwrap();
+    CorsaDocument {
+        code: GENERATED.into(),
+        mapping: ProjectionMapping::from_spans(vec![
+            VizeMapping::new(0..34, import..import + 31),
+            VizeMapping::new(generated_count..generated_count + 23, count..count + 23),
+        ]),
+        import_source_map: ImportSourceMap::empty(),
+    }
+}
+
+fn lsp(needle: &str, severity: u8, code: serde_json::Value, message: &str) -> LspDiagnostic {
+    let start = GENERATED.find(needle).unwrap() as u32;
+    let line = GENERATED[..start as usize].matches('\n').count() as u32;
+    let line_start = GENERATED[..start as usize]
+        .rfind('\n')
+        .map_or(0, |index| index + 1) as u32;
+    LspDiagnostic {
+        range: LspRange {
+            start: LspPosition {
+                line,
+                character: start - line_start,
+            },
+            end: LspPosition {
+                line,
+                character: start - line_start + needle.len() as u32,
+            },
+        },
+        severity: Some(severity),
+        code: Some(code),
+        source: Some("ts".into()),
+        message: message.into(),
+        related_information: None,
+    }
+}
+
+fn assemble(diagnostics: Vec<LspDiagnostic>) -> Vec<Diagnostic> {
+    let finished = diagnostics
+        .into_iter()
+        .filter_map(|diagnostic| finished_from_lsp(GENERATED, diagnostic, 0))
+        .collect();
+    assemble_corsa_diagnostics(CONTENT, &[document()], finished)
+}
+
+fn at(needle: &str, code: NumberOrString, message: &str) -> Diagnostic {
+    let start = CONTENT.find(needle).unwrap();
+    let line = CONTENT[..start].matches('\n').count() as u32;
+    let character = (start - CONTENT[..start].rfind('\n').map_or(0, |index| index + 1)) as u32;
+    Diagnostic {
+        range: Range {
+            start: Position::new(line, character),
+            end: Position::new(line, character + needle.len() as u32),
+        },
+        severity: Some(DiagnosticSeverity::ERROR),
+        code: Some(code),
+        source: Some(super::sources::TYPE_CHECKER.to_string()),
+        message: message.to_string(),
+        ..Default::default()
+    }
+}
 
 #[test]
 fn corsa_diagnostic_codes_preserve_lsp_number_and_string_shapes() {
@@ -18,179 +86,55 @@ fn corsa_diagnostic_codes_preserve_lsp_number_and_string_shapes() {
 }
 
 #[test]
-fn only_ts7044_hints_are_suppressed() {
-    let diagnostic = |severity, code| LspDiagnostic {
-        range: LspRange {
-            start: LspPosition {
-                line: 0,
-                character: 0,
-            },
-            end: LspPosition {
-                line: 0,
-                character: 1,
-            },
-        },
-        severity,
-        code,
-        source: Some("ts".into()),
-        message: "diagnostic".into(),
-        related_information: None,
-    };
-
-    assert!(is_inferred_implicit_any_suggestion(&diagnostic(
-        Some(4),
-        Some(serde_json::json!(7044)),
-    )));
-    assert!(is_inferred_implicit_any_suggestion(&diagnostic(
-        Some(4),
-        Some(serde_json::json!("TS7044")),
-    )));
-    assert!(!is_inferred_implicit_any_suggestion(&diagnostic(
-        Some(1),
-        Some(serde_json::json!(7044)),
-    )));
-    assert!(!is_inferred_implicit_any_suggestion(&diagnostic(
-        Some(4),
-        Some(serde_json::json!(7043)),
-    )));
-    assert!(!is_inferred_implicit_any_suggestion(&diagnostic(
-        None, None
-    )));
-}
-
-#[test]
-fn generated_vue_ts_import_extension_diagnostics_are_suppressed() {
-    let virtual_ts = "import Child from './Child.vue.ts';\nimport plain from './plain.ts';\n";
-    let diagnostic = |start, end| {
-        LspDiagnostic {
-        range: LspRange {
-            start: LspPosition {
-                line: 0,
-                character: start,
-            },
-            end: LspPosition {
-                line: 0,
-                character: end,
-            },
-        },
-        severity: Some(1),
-        code: Some(serde_json::json!(5097)),
-        source: Some("ts".into()),
-        message: "An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled."
-            .into(),
-        related_information: None,
-    }
-    };
-
-    assert!(is_generated_vue_ts_import_extension_diagnostic(
-        virtual_ts,
-        &diagnostic(18, 34),
-    ));
-
-    let authored_ts_import = LspDiagnostic {
-        range: LspRange {
-            start: LspPosition {
-                line: 1,
-                character: 18,
-            },
-            end: LspPosition {
-                line: 1,
-                character: 30,
-            },
-        },
-        ..diagnostic(18, 34)
-    };
-    assert!(!is_generated_vue_ts_import_extension_diagnostic(
-        virtual_ts,
-        &authored_ts_import,
-    ));
-}
-
-#[test]
-fn mapped_authored_vue_import_extension_diagnostics_are_suppressed() {
-    let content = "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nimport plain from './plain.ts'\n</script>\n";
-    let diagnostic = LspDiagnostic {
-        range: LspRange {
-            start: LspPosition {
-                line: 0,
-                character: 0,
-            },
-            end: LspPosition {
-                line: 0,
-                character: 1,
-            },
-        },
-        severity: Some(1),
-        code: Some(serde_json::json!("TS5097")),
-        source: Some("ts".into()),
-        message: "An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled."
-            .into(),
-        related_information: None,
-    };
-
-    assert!(is_authored_vue_import_extension_diagnostic(
-        content,
-        &diagnostic,
-        1,
-        18,
-        1,
-        31,
-    ));
-    assert!(!is_authored_vue_import_extension_diagnostic(
-        content,
-        &diagnostic,
-        2,
-        18,
-        2,
-        30,
-    ));
-    assert!(!is_authored_vue_import_extension_diagnostic(
-        "import authored from './Child.vue.ts'\n",
-        &diagnostic,
-        0,
-        21,
-        0,
-        37,
-    ));
-}
-
-#[test]
-fn exact_diagnostics_are_stably_deduplicated() {
-    let original = Diagnostic {
-        range: Range {
-            start: Position {
-                line: 1,
-                character: 19,
-            },
-            end: Position {
-                line: 1,
-                character: 30,
-            },
-        },
-        severity: Some(tower_lsp::lsp_types::DiagnosticSeverity::ERROR),
-        code: Some(NumberOrString::Number(2304)),
-        source: Some("vize/types".into()),
-        message: "Cannot find name 'missingList'.".into(),
-        ..Default::default()
-    };
-    let distinct = Diagnostic {
-        message: "Cannot find name 'anotherBinding'.".into(),
-        ..original.clone()
-    };
-    let distinct_data = Diagnostic {
-        data: Some(serde_json::json!({ "origin": "second-pass" })),
-        ..original.clone()
-    };
-
+fn assembled_diagnostics_keep_the_checker_code_spelling() {
+    let message = "Type 'number' is not assignable to type 'string'.";
     assert_eq!(
-        deduplicate_diagnostics(vec![
-            original.clone(),
-            distinct.clone(),
-            original.clone(),
-            distinct.clone(),
-            distinct_data.clone(),
-            distinct_data.clone(),
+        assemble(vec![lsp("count", 1, serde_json::json!(2322), message)]),
+        [at("count", NumberOrString::Number(2322), message)]
+    );
+    assert_eq!(
+        assemble(vec![lsp("count", 1, serde_json::json!("TS2322"), message)]),
+        [at(
+            "count",
+            NumberOrString::String("TS2322".into()),
+            message
+        )]
+    );
+}
+
+#[test]
+fn exact_duplicates_are_reported_once() {
+    let message = "Type 'number' is not assignable to type 'string'.";
+    let diagnostic = lsp("count", 1, serde_json::json!(2322), message);
+    assert_eq!(
+        assemble(vec![diagnostic.clone(), diagnostic]),
+        [at("count", NumberOrString::Number(2322), message)]
+    );
+}
+
+#[test]
+fn only_ts7044_hints_are_suppressed() {
+    let message =
+        "Parameter 'x' implicitly has an 'any' type, but a better type may be inferred from usage.";
+    let assembled = assemble(vec![
+        lsp("count", 4, serde_json::json!(7044), message),
+        lsp("count", 1, serde_json::json!(7044), message),
+    ]);
+    assert_eq!(
+        assembled,
+        [at("count", NumberOrString::Number(7044), message)]
+    );
+}
+
+#[test]
+fn vue_import_extension_diagnostics_are_suppressed_on_both_sides_of_the_projection() {
+    // The generated `.vue.ts` spelling is the import rewriter's; the authored
+    // `.vue` spelling is always allowed.
+    assert_eq!(
+        assemble(vec![
+            lsp("'./Child.vue.ts'", 1, serde_json::json!(5097), TS5097),
+            lsp("'./Child.vue", 1, serde_json::json!("TS5097"), TS5097),
         ]),
-        vec![original, distinct, distinct_data],
+        []
     );
 }

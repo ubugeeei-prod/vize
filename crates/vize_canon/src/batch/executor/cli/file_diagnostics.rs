@@ -1,15 +1,26 @@
-use super::super::diagnostics::{
-    DiagnosticMapper, should_skip_diagnostic, should_skip_original_diagnostic,
-    template_instance::template_instance_diagnostic,
-};
+use super::super::diagnostics::{DiagnosticMapper, RawDiagnostic};
 use super::{normalize_cli_path, project_diagnostics};
 use crate::batch::{Diagnostic, VirtualProject};
+
+/// One diagnostic line of `--pretty false` output, decoded but not assembled.
+pub(super) enum Decoded {
+    /// A project-level diagnostic (the generated tsconfig's own findings),
+    /// attributed to the authored configuration.
+    Project(Diagnostic),
+    /// A diagnostic in a file the checker saw; `reachability` marks a
+    /// `TS2322` on a generated reachability assertion, whose continuation
+    /// lines the output interleaves with warning summaries.
+    Raw {
+        raw: RawDiagnostic,
+        reachability: bool,
+    },
+}
 
 pub(super) fn parse_cli_diagnostic_line(
     line: &str,
     project: &VirtualProject,
     mapper: &mut DiagnosticMapper<'_>,
-) -> Option<Diagnostic> {
+) -> Option<Decoded> {
     let (prefix, suffix) = line.split_once("): ")?;
     let open = prefix.rfind('(')?;
     let path = &prefix[..open];
@@ -29,44 +40,27 @@ pub(super) fn parse_cli_diagnostic_line(
     let code = code
         .strip_prefix("TS")
         .and_then(|code| code.parse::<u32>().ok());
-    if should_skip_diagnostic(code, message) {
-        return None;
-    }
-    if code == Some(6133) && !mapper.preserves_unused_diagnostics() {
-        return None;
-    }
 
     let virtual_path = normalize_cli_path(path, project.virtual_root());
-    if code == Some(2322) && mapper.is_keyof_indexed_assignment(&virtual_path, line, column) {
-        return None;
-    }
     if let Some(diagnostic) =
         project_diagnostics::config(&virtual_path, project, message, code, severity)
     {
-        return Some(diagnostic);
+        return mapper
+            .is_reportable_project_diagnostic(code, message)
+            .then_some(Decoded::Project(diagnostic));
     }
-    let original = mapper.map_to_original(&virtual_path, line, column)?;
-    if should_skip_original_diagnostic(code, &original) {
-        return None;
-    }
-
-    let severity = if mapper.is_unreachable_pattern(&virtual_path, line, column, code) {
-        2
-    } else {
-        severity
-    };
-    let (code, message) = match template_instance_diagnostic(code, &original, message) {
-        Some((code, message)) => (Some(code), message),
-        None => (code, message.into()),
-    };
-
-    Some(Diagnostic {
-        message: mapper.devirtualized_module_message(&original, message),
-        line: original.line,
-        column: original.column,
-        file: original.path,
-        code,
-        severity,
-        block_type: original.block_type,
+    let reachability = code == Some(2322)
+        && (severity == 2 || mapper.is_unreachable_pattern(&virtual_path, line, column, code));
+    Some(Decoded::Raw {
+        raw: RawDiagnostic {
+            virtual_path,
+            line,
+            column,
+            end: None,
+            code,
+            severity,
+            message: message.into(),
+        },
+        reachability,
     })
 }

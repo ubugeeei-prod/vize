@@ -1,10 +1,8 @@
-use std::path::Path;
-
 use super::matches_at;
 
 fn matches_assignment(source: &str) -> bool {
     let offset = source.find("target[key").unwrap() as u32;
-    matches_at(source, Path::new("scope.ts"), offset)
+    matches_at(source, false, offset)
 }
 
 #[test]
@@ -149,7 +147,7 @@ fn nested_rhs_errors_and_non_assignment_operators_are_not_suppressed() {
     let source = "type A = { text: string; count: number }; declare const target: A; \
                   declare const key: string; target[key as keyof A] = (() => { \
                   const wrong: string = 42; return wrong; })() as A[keyof A];";
-    let index = super::AssignmentIndex::new(source, Path::new("scope.ts"));
+    let index = super::AssignmentIndex::new(source, false);
     assert!(matches_assignment(source));
     for needle in ["wrong: string", "key as", "42", "return wrong"] {
         assert!(
@@ -168,7 +166,7 @@ fn one_index_retains_all_assignment_locations() {
     let source = "type A = { text: string; count: number }; declare const target: A; \
                   declare const key: string; const value = null as unknown as A[keyof A]; \
                   target[key as keyof A] = value; target[key as keyof A] = value;";
-    let index = super::AssignmentIndex::new(source, Path::new("scope.ts"));
+    let index = super::AssignmentIndex::new(source, false);
     let offsets: Vec<_> = source
         .match_indices("target[key")
         .map(|(offset, _)| offset as u32)
@@ -181,7 +179,7 @@ fn one_index_retains_all_assignment_locations() {
         assert!(!index.matches_at(u32::MAX));
     }
     assert!(
-        super::AssignmentIndex::new("const value = 1;", Path::new("scope.ts"))
+        super::AssignmentIndex::new("const value = 1;", false)
             .offsets
             .is_empty()
     );

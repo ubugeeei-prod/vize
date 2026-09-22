@@ -15,7 +15,6 @@ mod incremental;
 mod metrics;
 mod paths;
 mod result;
-mod template_directives;
 pub use declarations::{DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput};
 pub use metrics::IncrementalCheckMetrics;
 use paths::{IncrementalPaths, collect_project_paths};
@@ -327,7 +326,6 @@ impl BatchTypeChecker {
             .extend(project.diagnostics().iter().cloned());
         let had_errors = result.has_errors();
         generic_private_names::apply(&mut result.diagnostics, project);
-        template_directives::apply(&mut result.diagnostics, project);
         if result.has_errors() {
             result.success = false;
             result.exit_code = result.exit_code.max(1);

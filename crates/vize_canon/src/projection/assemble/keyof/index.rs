@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use oxc_ast::{
     AstKind,
     ast::{
@@ -17,12 +15,16 @@ use super::{
 };
 
 impl AssignmentIndex {
-    pub(super) fn new(source: &str, path: &Path) -> Self {
+    pub(in super::super) fn new(source: &str, tsx: bool) -> Self {
         if !source.contains("keyof") {
             return Self::default();
         }
         let allocator = oxc_allocator::Allocator::default();
-        let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::ts());
+        let source_type = if tsx {
+            SourceType::tsx()
+        } else {
+            SourceType::ts()
+        };
         let parsed = Parser::new(&allocator, source, source_type).parse();
         if !parsed.diagnostics.is_empty() {
             return Self::default();
@@ -53,7 +55,7 @@ impl AssignmentIndex {
         }
     }
 
-    pub(super) fn matches_at(&self, offset: u32) -> bool {
+    pub(in super::super) fn matches_at(&self, offset: u32) -> bool {
         self.offsets.binary_search(&offset).is_ok()
     }
 }

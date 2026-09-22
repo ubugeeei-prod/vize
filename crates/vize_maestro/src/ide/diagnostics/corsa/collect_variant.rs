@@ -1,8 +1,7 @@
 //! Synchronize authored art variants through the canonical native project.
 
 use super::super::VirtualTsResult;
-use super::collect_virtual::collect_synced_virtual_result_diagnostics;
-use tower_lsp::lsp_types::{Diagnostic, Url};
+use super::collect_virtual::{CorsaDocument, CorsaFinished, fetch_finished_diagnostics};
 
 /// A generated art variant shares the native project and dependency graph with
 /// regular Vue and script documents. Relative-only in-memory mirrors cannot
@@ -13,14 +12,18 @@ pub(super) struct VariantProjectContext<'a> {
     pub virtual_ts_options: &'a vize_canon::virtual_ts::VirtualTsOptions,
 }
 
+/// Sync one art variant document and fetch its finished diagnostics; the
+/// caller assembles every document of the SFC together.
 pub(super) async fn collect_virtual_result_diagnostics(
     bridge: &std::sync::Arc<vize_canon::CorsaBridge>,
-    host_uri: &Url,
-    content: &str,
     virtual_name: String,
     mut virtual_result: VirtualTsResult,
     project: VariantProjectContext<'_>,
-) -> Result<(Vec<Diagnostic>, Vec<std::path::PathBuf>), vize_canon::CorsaBridgeError> {
+    index: usize,
+) -> Result<
+    (CorsaDocument, Vec<CorsaFinished>, Vec<std::path::PathBuf>),
+    vize_canon::CorsaBridgeError,
+> {
     let opened = bridge
         .open_script_virtual_document_with_vue_dependencies(
             vize_canon::CorsaScriptVirtualDocumentRequest {
@@ -40,13 +43,8 @@ pub(super) async fn collect_virtual_result_diagnostics(
     );
     virtual_result.code = opened.code.to_string();
     virtual_result.import_source_map = opened.import_source_map;
-    let diagnostics = collect_synced_virtual_result_diagnostics(
-        bridge,
-        host_uri,
-        content,
-        opened.request_uri.to_string(),
-        virtual_result,
-    )
-    .await?;
-    Ok((diagnostics, opened.resolved_dependencies))
+    let document = CorsaDocument::from_result(virtual_result);
+    let finished =
+        fetch_finished_diagnostics(bridge, opened.request_uri.as_str(), &document, index).await?;
+    Ok((document, finished, opened.resolved_dependencies))
 }

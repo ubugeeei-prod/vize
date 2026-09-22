@@ -1,7 +1,9 @@
-//! Collapsing exact-duplicate diagnostics at the collection point, shared by
-//! the LSP and CLI paths.
+//! Collapsing duplicates across everything one check collected: every
+//! authored file's assembled diagnostics (already deduplicated by the shared
+//! assembly pass), sharded runs, option-probe and registration diagnostics.
 
-use super::{Diagnostic, skip_rules};
+use super::Diagnostic;
+use crate::projection::assemble::widen_leading_literal_type;
 use vize_carton::{FxHashSet, String};
 
 /// Identity key for deduplicating diagnostics — (file, line, column, code,
@@ -54,38 +56,7 @@ pub(in crate::batch::executor) fn dedup_diagnostics(
             !seen.contains(&key)
         })
     });
-    skip_rules::filter_authored_diagnostics(deduped)
-}
-
-/// The message with its leading `Type '<literal>'` widened to the literal's
-/// primitive, or `None` when the message does not start with a literal type.
-fn widen_leading_literal_type(message: &str) -> Option<String> {
-    const PREFIX: &str = "Type '";
-    const NEEDLE: &str = "' is not assignable to ";
-    let rest = message.strip_prefix(PREFIX)?;
-    let end = rest.find(NEEDLE)?;
-    let widened = widened_primitive_name(&rest[..end])?;
-    let mut normalized = String::from(PREFIX);
-    normalized.push_str(widened);
-    normalized.push_str(&rest[end..]);
-    Some(normalized)
-}
-
-fn widened_primitive_name(rendered: &str) -> Option<&'static str> {
-    if rendered.len() >= 2 && rendered.starts_with('"') && rendered.ends_with('"') {
-        return Some("string");
-    }
-    match rendered {
-        "true" | "false" => Some("boolean"),
-        _ if rendered.strip_suffix('n').is_some_and(|digits| {
-            !digits.is_empty() && digits.chars().all(|ch| ch.is_ascii_digit() || ch == '-')
-        }) =>
-        {
-            Some("bigint")
-        }
-        _ if rendered.parse::<f64>().is_ok() => Some("number"),
-        _ => None,
-    }
+    deduped
 }
 
 #[cfg(test)]

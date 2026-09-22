@@ -1,6 +1,16 @@
 use vize_s0::cstr;
 
-use super::mapping::{line_character_to_byte_offset, source_offset_to_position};
+use vize_s0::line_index::LineBreaks;
+
+// The editor decodes Corsa positions and renders assembled ranges through
+// `LineBreaks::Lsp` (UTF-16 code units).
+fn line_character_to_byte_offset(source: &str, line: u32, character: u32) -> Option<usize> {
+    LineBreaks::Lsp.position_to_offset(source, line, character)
+}
+
+fn source_offset_to_position(source: &str, offset: usize) -> (u32, u32) {
+    LineBreaks::Lsp.offset_to_position(source, offset)
+}
 
 #[test]
 fn line_character_to_byte_offset_counts_utf16_code_units() {

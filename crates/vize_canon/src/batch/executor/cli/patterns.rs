@@ -1,5 +1,6 @@
 use super::{
-    DiagnosticMapper, is_cli_diagnostic_line, is_global_diagnostic_line, parse_cli_diagnostic_line,
+    Decoded, DiagnosticMapper, is_cli_diagnostic_line, is_global_diagnostic_line,
+    parse_cli_diagnostic_line,
 };
 use crate::batch::VirtualProject;
 use std::process::Output;
@@ -40,10 +41,17 @@ pub(super) fn only_pattern_warnings(output: &Output, project: &VirtualProject) -
             if !line.contains("): error TS2322:") {
                 return false;
             }
-            let Some(diagnostic) = parse_cli_diagnostic_line(line, project, &mut mapper) else {
+            let Some(Decoded::Raw {
+                raw,
+                reachability: true,
+            }) = parse_cli_diagnostic_line(line, project, &mut mapper)
+            else {
                 return false;
             };
-            if diagnostic.severity != 2 {
+            if mapper
+                .map_to_original(&raw.virtual_path, raw.line, raw.column)
+                .is_none()
+            {
                 return false;
             }
             found += 1;

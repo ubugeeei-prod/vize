@@ -11,7 +11,6 @@ mod collect_variant;
 mod collect_virtual;
 mod log_preview;
 pub(in crate::ide) use collect_virtual::corsa_diagnostic_code;
-mod mapping;
 mod message;
 pub(in crate::ide) use message::rewrite_corsa_message;
 mod virtual_ts;

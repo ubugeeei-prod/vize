@@ -78,7 +78,7 @@ fn known_continuations_and_summary_are_not_backend_failures() {
         b"  Type 'boolean' is not assignable to type 'never'.\n\nFound 1 error.\n",
     );
     assert!(only_pattern_warnings(&output, &project));
-    let diagnostics = parse_output_diagnostics(&output, &project);
+    let diagnostics = parse_output_diagnostics(&output, &project, &|_| true);
     assert_eq!(diagnostics.len(), 1);
     assert_eq!(diagnostics[0].severity, 2);
     assert_eq!(
@@ -93,7 +93,7 @@ fn fatal_output_is_not_appended_as_a_warning_continuation() {
     output
         .stdout
         .extend_from_slice(b"fatal error: out of memory\n");
-    let diagnostics = parse_output_diagnostics(&output, &project);
+    let diagnostics = parse_output_diagnostics(&output, &project, &|_| true);
     assert_eq!(diagnostics.len(), 1);
     assert_eq!(diagnostics[0].severity, 1);
     assert_eq!(

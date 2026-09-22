@@ -92,6 +92,26 @@ pub(crate) fn quoted_specifiers(message: &str) -> Vec<&str> {
     found
 }
 
+/// The authored `.vue` spelling behind a generated mirror-module specifier, or
+/// `None` when `specifier` is not one. `./Panel.vue.ts` is what the import
+/// rewriter writes for an authored `./Panel.vue`; `./Panel.vue.tsx` is the TSX
+/// SFC form. Anything else — including an authored `./util.ts` — is left alone.
+pub(crate) fn mirror_module_specifier_source(specifier: &str) -> Option<&str> {
+    specifier
+        .strip_suffix(".ts")
+        .or_else(|| specifier.strip_suffix(".tsx"))
+        .filter(|source| source.ends_with(".vue"))
+}
+
+/// The authored `.vue` specifier a missing-import sentinel quotes, if any.
+pub(crate) fn missing_vue_import_specifier_source(message: &str) -> Option<&str> {
+    quoted_specifiers(message).into_iter().find_map(|reported| {
+        reported
+            .strip_suffix(MISSING_VUE_IMPORT_SENTINEL)
+            .and_then(mirror_module_specifier_source)
+    })
+}
+
 fn is_specifier_shaped(candidate: &str) -> bool {
     !candidate.is_empty()
         && !candidate

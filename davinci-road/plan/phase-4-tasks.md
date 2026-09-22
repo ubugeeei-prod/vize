@@ -237,10 +237,10 @@
 **Steps:**
 
 - [x] `crates/vize_canon/src/virtual_ts/mapping.rs` owns `ProjectionMapping`; Maestro and Canon source-map types become thin views, then are deleted
-- [ ] `assemble_diagnostics(finished, &ProjectionMapping)` is the single assembly point; both the CLI batch path and `crates/vize_maestro/src/ide/diagnostics/corsa*` call it
-- [ ] A regression fixture drives one SFC through both entry points and asserts identical diagnostics
+- [x] `assemble_diagnostics(finished, &ProjectionMapping)` is the single assembly point; both the CLI batch path and `crates/vize_maestro/src/ide/diagnostics/corsa*` call it
+- [x] A regression fixture drives one SFC through both entry points and asserts identical diagnostics
 
-**Step 1 landed 2026-09-22:** `ProjectionMapping` with per-row `ProjectionMeta`; Canon's `source_map` module and Maestro's `virtual_code::source_map` deleted, `SfcSourceMap` a thin view, TS-40 byte-identical; a fourth model (`vize_carton::source_range`, Croquis generator only) dies in P4-5c — see the [P4-5a record](./phase-4-records/p4-5a.md).
+**Landed 2026-09-22:** `ProjectionMapping` with per-row `ProjectionMeta` (Canon's `source_map` module and Maestro's virtual-code source map deleted, `SfcSourceMap` a thin view, TS-40 byte-identical) and `vize_canon::projection::assemble_diagnostics`, the one post-pass both `vize check` and the Maestro session call per authored file, pinned by a real-Corsa fixture that drives one SFC through both entry points; every rule that ran on one surface only now runs on both — see the [P4-5a record](./phase-4-records/p4-5a.md) for the convergence ledger and the fourth mapping model P4-5c deletes.
 
 **Acceptance:** TS-40 digests byte-identical (`node --test tests/tooling/davinci-ts40-projection.test.ts tests/tooling/lsp-davinci-ts40-projection-diagnostics.test.ts`); `grep -rn "virtual_code::source_map::SourceMap" crates` empty; TS-7 LSP smoke; TS-9 check fixtures unchanged; TS-1, TS-13.
 

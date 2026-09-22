@@ -184,16 +184,11 @@ fn line_column_for_offset(source: &str, offset: u32) -> (u32, u32) {
 
 pub(super) fn collect_sfc_block_ranges(descriptor: &SfcDescriptor) -> Vec<SfcBlockRange> {
     let mut blocks = Vec::with_capacity(3);
-    if let Some(template) = descriptor.template.as_ref() {
-        let (start, end) = if template.has_root_match() {
-            (template.loc.tag_start, template.loc.tag_end)
-        } else {
-            (template.loc.start, template.loc.end)
-        };
+    if let Some(template) = crate::projection::assemble::sfc_template_block_range(descriptor) {
         push_block_range(
             &mut blocks,
-            start as u32,
-            end.saturating_sub(start) as u32,
+            template.start as u32,
+            template.len() as u32,
             SfcBlockType::Template,
         );
     }

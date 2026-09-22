@@ -3,12 +3,10 @@ use std::{
     process::{Command, Output},
 };
 
-use super::super::{Diagnostic, TypeCheckResult, VirtualProject};
+use super::super::{TypeCheckResult, VirtualProject};
 use crate::batch::declaration_path::is_declaration_file;
 use crate::batch::error::{CorsaError, CorsaResult};
-use crate::batch::executor::diagnostics::{
-    DiagnosticMapper, dedup_diagnostics, restore_authored_paths_in_messages,
-};
+use crate::batch::executor::diagnostics::DiagnosticMapper;
 use vize_carton::{FxHashMap, profile};
 use vize_carton::{String, cstr};
 
@@ -16,14 +14,18 @@ mod checkers;
 mod diagnostic_paths;
 mod file_diagnostics;
 mod import_resolution;
+mod output;
 mod patterns;
 mod project_diagnostics;
 mod shard_sizing;
 
 use checkers::{checker_count, rejects_checkers_flag};
 use diagnostic_paths::normalize_cli_path;
-use file_diagnostics::parse_cli_diagnostic_line;
+use file_diagnostics::{Decoded, parse_cli_diagnostic_line};
 use import_resolution::resolve_virtual_import;
+#[cfg(test)]
+use output::parse_cli_diagnostics;
+use output::parse_output_diagnostics;
 use shard_sizing::shard_count;
 
 pub(super) fn check_with_cli(
@@ -31,7 +33,9 @@ pub(super) fn check_with_cli(
     project: &VirtualProject,
 ) -> CorsaResult<TypeCheckResult> {
     let config_path = project.virtual_root().join("tsconfig.json");
-    run_cli_for_config(corsa_path, project, &config_path, checker_count())
+    run_cli_for_config(corsa_path, project, &config_path, checker_count(), &|_| {
+        true
+    })
 }
 
 /// Run the project check sharded across `servers` concurrent Corsa CLI
@@ -70,9 +74,15 @@ pub(super) fn check_with_cli_sharded(
         std::thread::scope(|scope| {
             let handles: Vec<_> = config_paths
                 .iter()
-                .map(|config_path| {
+                .enumerate()
+                .map(|(index, config_path)| {
                     scope.spawn(move || {
-                        run_cli_for_config(corsa_path, project, config_path, checkers)
+                        // Each shard evaluates the template directives of the
+                        // files it owns; the merge keeps only the owner's.
+                        let owns = |path: &Path| {
+                            !matches!(owners.get(path), Some(owner) if *owner != index)
+                        };
+                        run_cli_for_config(corsa_path, project, config_path, checkers, &owns)
                     })
                 })
                 .collect();
@@ -372,6 +382,7 @@ fn run_cli_for_config(
     project: &VirtualProject,
     config_path: &Path,
     checkers: usize,
+    owns: &dyn Fn(&Path) -> bool,
 ) -> CorsaResult<TypeCheckResult> {
     let output = profile!("canon.corsa.cli.command", {
         let mut command = Command::new(corsa_path);
@@ -388,7 +399,7 @@ fn run_cli_for_config(
     })?;
     let diagnostics = profile!(
         "canon.corsa.cli.parse",
-        parse_output_diagnostics(&output, project)
+        parse_output_diagnostics(&output, project, owns)
     );
 
     if !output.status.success() && rejects_checkers_flag(&diagnostics) {
@@ -432,67 +443,6 @@ fn run_cli_for_config(
         success,
         diagnostics,
     })
-}
-
-fn parse_output_diagnostics(output: &Output, project: &VirtualProject) -> Vec<Diagnostic> {
-    let mut diagnostics = Vec::new();
-    let mut mapper = DiagnosticMapper::new(project);
-    #[allow(clippy::disallowed_types)]
-    let stdout = std::string::String::from_utf8_lossy(&output.stdout);
-    parse_cli_diagnostics(stdout.as_ref(), project, &mut mapper, &mut diagnostics);
-    #[allow(clippy::disallowed_types)]
-    let stderr = std::string::String::from_utf8_lossy(&output.stderr);
-    parse_cli_diagnostics(stderr.as_ref(), project, &mut mapper, &mut diagnostics);
-    // A single template error surfaces twice — the dynamic prop binding it sits
-    // on is generated at two virtual positions that map back to the same source
-    // attribute span (#1389). Collapse exact duplicates at the collection point.
-    dedup_diagnostics(restore_authored_paths_in_messages(diagnostics, project))
-}
-
-fn parse_cli_diagnostics(
-    output: &str,
-    project: &VirtualProject,
-    mapper: &mut DiagnosticMapper<'_>,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    let mut last_was_kept = false;
-    for line in output.lines() {
-        // Project-level diagnostics carry no file position (`error TS2688:
-        // Cannot find type definition file for 'x'.`). They are real,
-        // user-actionable problems — tsc and vue-tsc report them and the
-        // runtime may skip the semantic pass because of them — so they are
-        // attributed to the project's tsconfig instead of being dropped.
-        let diagnostic = parse_cli_diagnostic_line(line, project, mapper)
-            .or_else(|| project_diagnostics::global(line, project));
-        if let Some(diagnostic) = diagnostic {
-            diagnostics.push(diagnostic);
-            last_was_kept = true;
-            continue;
-        }
-        if is_cli_diagnostic_line(line) || is_global_diagnostic_line(line) {
-            last_was_kept = false;
-            continue;
-        }
-        let Some(last) = diagnostics.last_mut().filter(|_| last_was_kept) else {
-            continue;
-        };
-        if last.severity == 2 && last.code == Some(2322) && !line.trim().is_empty() {
-            if patterns::warning_summary_count(line).is_some() {
-                last_was_kept = false;
-                continue;
-            }
-            if !patterns::is_warning_continuation(line) {
-                last.severity = 1;
-                last_was_kept = false;
-            }
-        }
-        let line = line.trim();
-        if line.is_empty() {
-            continue;
-        }
-        last.message.push('\n');
-        last.message.push_str(line);
-    }
 }
 
 fn output_contains_diagnostic_lines(output: &Output) -> bool {

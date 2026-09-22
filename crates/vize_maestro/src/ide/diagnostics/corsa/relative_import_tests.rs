@@ -1,4 +1,6 @@
-use super::collect_virtual::collect_synced_virtual_result_diagnostics;
+use super::collect_virtual::{
+    CorsaDocument, assemble_corsa_diagnostics, fetch_finished_diagnostics,
+};
 use crate::DiagnosticService;
 use tower_lsp::lsp_types::Url;
 use vize_canon::{CorsaBridge, CorsaBridgeConfig, CorsaVueVirtualDocumentOptions};
@@ -188,16 +190,15 @@ defineSlots<{
             assert_eq!(actual_imports, expected_imports);
             let (virtual_uri, virtual_result) =
                 DiagnosticService::virtual_ts_result_from_corsa_vue_document(opened);
-            let diagnostics = collect_synced_virtual_result_diagnostics(
-                &bridge,
-                &host_uri,
+            let document = CorsaDocument::from_result(virtual_result);
+            let finished = fetch_finished_diagnostics(&bridge, &virtual_uri, &document, 0)
+                .await
+                .ok()?;
+            Some(assemble_corsa_diagnostics(
                 host_content,
-                virtual_uri,
-                virtual_result,
-            )
-            .await
-            .ok()?;
-            Some(diagnostics)
+                &[document],
+                finished,
+            ))
         }
         .await;
         let _ = bridge.shutdown().await;

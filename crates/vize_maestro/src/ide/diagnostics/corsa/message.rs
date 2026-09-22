@@ -9,7 +9,7 @@ pub(in crate::ide) fn rewrite_corsa_message(message: &str, authored_source: &str
     strip_corsa_overlay_paths(&restore_virtual_vue_specifiers(message, authored_source))
 }
 
-fn strip_corsa_overlay_paths(message: &str) -> String {
+pub(super) fn strip_corsa_overlay_paths(message: &str) -> String {
     const MARKER: &str = "/node_modules/.vize/corsa/";
     const OVERLAYS: &str = "/overlays";
 

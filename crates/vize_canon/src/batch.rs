@@ -31,7 +31,7 @@ mod source_map;
 mod source_policy;
 mod type_checker;
 pub(crate) mod virtual_project;
-mod virtual_specifier_message;
+pub(crate) mod virtual_specifier_message;
 mod virtual_ts;
 
 pub use error::{CorsaError, CorsaNotFoundError, CorsaResult, PackageManager};

@@ -7,22 +7,24 @@ use crate::corsa_client::LspDiagnostic;
 use crate::file_uri::file_uri_to_path;
 use vize_carton::{FxHashMap, String, line_index::LineBreaks};
 
+mod assembly;
 mod dedup;
-mod keyof_indexed_assignment;
 mod line_index;
-mod lsp;
 mod module_specifier;
 mod patterns;
-mod skip_rules;
-pub(super) mod template_instance;
 mod virtual_path_message;
 
+#[cfg(test)]
+mod keyof_mapping_tests;
+
+pub(in crate::batch::executor) use assembly::RawDiagnostic;
 pub(super) use dedup::dedup_diagnostics;
 use line_index::LineIndex;
-pub(super) use skip_rules::{should_skip_diagnostic, should_skip_original_diagnostic};
 use virtual_path_message::restore_authored_paths;
 pub(super) use virtual_path_message::restore_authored_paths_in_messages;
 
+/// The project-session backend: every diagnostic of the request goes through
+/// the one assembly pass together.
 pub(super) fn map_batch_diagnostics(
     results: Vec<(String, Vec<LspDiagnostic>)>,
     project: &VirtualProject,
@@ -30,20 +32,22 @@ pub(super) fn map_batch_diagnostics(
     let diagnostic_count = results
         .iter()
         .fold(0usize, |acc, (_, diagnostics)| acc + diagnostics.len());
-    let mut diagnostics = Vec::with_capacity(diagnostic_count);
-    let mut mapper = DiagnosticMapper::new(project);
-    mapper.virtual_line_breaks = LineBreaks::Lsp;
-
+    let mut raws = Vec::with_capacity(diagnostic_count);
     for (uri, lsp_diagnostics) in results {
         let virtual_path = uri_to_path(uri.as_str());
-        for diagnostic in lsp_diagnostics {
-            if let Some(diagnostic) = mapper.map_lsp_diagnostic(&virtual_path, diagnostic) {
-                diagnostics.push(diagnostic);
-            }
-        }
+        raws.extend(lsp_diagnostics.into_iter().map(|diagnostic| RawDiagnostic {
+            virtual_path: virtual_path.clone(),
+            line: diagnostic.range.start.line,
+            column: diagnostic.range.start.character,
+            end: Some((diagnostic.range.end.line, diagnostic.range.end.character)),
+            code: parse_diagnostic_code(diagnostic.code.as_ref()),
+            severity: parse_severity(diagnostic.severity),
+            message: diagnostic.message,
+        }));
     }
-
-    dedup_diagnostics(diagnostics)
+    let mut mapper = DiagnosticMapper::new(project);
+    mapper.virtual_line_breaks = LineBreaks::Lsp;
+    dedup_diagnostics(mapper.assemble(raws, &|_| true))
 }
 
 pub(super) struct DiagnosticMapper<'a> {
@@ -52,7 +56,6 @@ pub(super) struct DiagnosticMapper<'a> {
     original_sources: FxHashMap<PathBuf, CachedSource>,
     virtual_line_indexes: FxHashMap<PathBuf, LineIndex>,
     virtual_line_breaks: LineBreaks,
-    keyof_assignments: FxHashMap<PathBuf, keyof_indexed_assignment::AssignmentIndex>,
 }
 
 impl<'a> DiagnosticMapper<'a> {
@@ -63,12 +66,7 @@ impl<'a> DiagnosticMapper<'a> {
             original_sources: FxHashMap::default(),
             virtual_line_indexes: FxHashMap::default(),
             virtual_line_breaks: LineBreaks::TypeScript,
-            keyof_assignments: FxHashMap::default(),
         }
-    }
-
-    pub(super) fn preserves_unused_diagnostics(&self) -> bool {
-        self.preserve_unused_diagnostics
     }
 
     /// A checker message with every trace of the virtual project removed.
@@ -173,10 +171,9 @@ fn parse_severity(severity: Option<i32>) -> u8 {
 #[cfg(test)]
 mod tests {
     use super::{
-        LineIndex, map_batch_diagnostics, parse_diagnostic_code, parse_severity,
-        should_skip_diagnostic, should_skip_original_diagnostic, uri_to_path,
+        LineIndex, map_batch_diagnostics, parse_diagnostic_code, parse_severity, uri_to_path,
     };
-    use crate::batch::{OriginalPosition, SfcBlockType, VirtualProject};
+    use crate::batch::{SfcBlockType, VirtualProject};
     use serde_json::json;
     use std::path::PathBuf;
     use tempfile::TempDir;
@@ -280,62 +277,6 @@ mod tests {
             uri_to_path("file:///workspace/pages/%5Bname%5D%20%231.vue.ts"),
             PathBuf::from("/workspace/pages/[name] #1.vue.ts")
         );
-    }
-
-    #[test]
-    fn ts2307_module_not_found_diagnostics_are_not_skipped_globally() {
-        let vue_msg = "Cannot find module './app.vue' or its corresponding type declarations.";
-        let vue_ts_msg =
-            "Cannot find module './app.vue.ts' or its corresponding type declarations.";
-        let non_vue_msg = "Cannot find module 'lodash-es' or its corresponding type declarations.";
-
-        assert!(!should_skip_diagnostic(Some(2307), vue_msg));
-        assert!(!should_skip_diagnostic(Some(2307), vue_ts_msg));
-        assert!(!should_skip_diagnostic(Some(2307), non_vue_msg));
-
-        // TS6133 is location-sensitive: user-mapped diagnostics must survive,
-        // while generated virtual-SFC helper diagnostics are handled after
-        // source mapping by should_skip_original_diagnostic().
-        assert!(!should_skip_diagnostic(Some(6133), "any message"));
-        assert!(should_skip_diagnostic(Some(2666), "any message"));
-        // TS7006/7043/7044 (noImplicitAny family) must surface to match
-        // vue-tsc — #966.
-        assert!(!should_skip_diagnostic(Some(7006), "any message"));
-        assert!(!should_skip_diagnostic(Some(7043), "any message"));
-        assert!(!should_skip_diagnostic(Some(7044), "any message"));
-        assert!(!should_skip_diagnostic(Some(2322), "any message"));
-        assert!(should_skip_diagnostic(
-            Some(2322),
-            "Type 'ArrayBuffer | SharedArrayBuffer' is not assignable to type 'ArrayBuffer'."
-        ));
-        assert!(!should_skip_diagnostic(None, "any message"));
-    }
-
-    #[test]
-    fn ts6133_suppression_is_limited_to_unmapped_vue_generated_code() {
-        let unmapped_vue = OriginalPosition {
-            path: PathBuf::from("App.vue"),
-            line: 0,
-            column: 0,
-            block_type: None,
-        };
-        let mapped_vue = OriginalPosition {
-            path: PathBuf::from("App.vue"),
-            line: 1,
-            column: 6,
-            block_type: Some(SfcBlockType::ScriptSetup),
-        };
-        let plain_ts = OriginalPosition {
-            path: PathBuf::from("main.ts"),
-            line: 0,
-            column: 6,
-            block_type: None,
-        };
-
-        assert!(should_skip_original_diagnostic(Some(6133), &unmapped_vue));
-        assert!(!should_skip_original_diagnostic(Some(6133), &mapped_vue));
-        assert!(!should_skip_original_diagnostic(Some(6133), &plain_ts));
-        assert!(!should_skip_original_diagnostic(Some(2322), &unmapped_vue));
     }
 
     #[test]

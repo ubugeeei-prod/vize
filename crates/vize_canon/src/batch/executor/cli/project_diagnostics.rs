@@ -2,8 +2,6 @@ use std::path::Path;
 
 use crate::batch::{Diagnostic, VirtualProject};
 
-use super::super::diagnostics::should_skip_diagnostic;
-
 pub(super) fn global(line: &str, project: &VirtualProject) -> Option<Diagnostic> {
     let (severity, rest) = line.split_once(' ')?;
     let severity = match severity {
@@ -14,9 +12,6 @@ pub(super) fn global(line: &str, project: &VirtualProject) -> Option<Diagnostic>
     };
     let (code, message) = rest.split_once(": ")?;
     let code = code.strip_prefix("TS")?.parse::<u32>().ok()?;
-    if should_skip_diagnostic(Some(code), message) {
-        return None;
-    }
 
     Some(Diagnostic {
         file: project.project_diagnostics_anchor(),

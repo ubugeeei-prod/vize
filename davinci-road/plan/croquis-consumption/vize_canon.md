@@ -71,9 +71,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `PropDefinition`               |     6 |    22 |
 | `PropsDestructuredBindings`    |     1 |     1 |
 | `ReactivityLossKind`           |     1 |    11 |
-| `SfcDescriptor`                |    10 |    25 |
+| `SfcDescriptor`                |    11 |    26 |
 | `SfcError`                     |     2 |     2 |
-| `SfcParseOptions`              |    12 |    18 |
+| `SfcParseOptions`              |    13 |    19 |
 | `SfcTemplateBlock`             |     2 |     2 |
 | `ViolationSeverity`            |     1 |     3 |
 | `WITH_DEFAULTS`                |     1 |     1 |
@@ -113,7 +113,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeId`                 |       22 |   29 |
 | `ScopeKind`               |       59 |   76 |
 | `SlotUsage`               |        1 |    3 |
-| `Span`                    |        0 |   44 |
+| `Span`                    |        0 |   45 |
 | `SpreadProp`              |        6 |   10 |
 | `Symbol`                  |        0 |    4 |
 | `SymbolId`                |        0 |    3 |

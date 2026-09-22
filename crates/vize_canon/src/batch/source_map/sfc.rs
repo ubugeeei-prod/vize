@@ -70,13 +70,7 @@ impl SfcSourceMap {
         let src_offset =
             crate::virtual_ts::mapping::map_generated_offset_to_source(mapping, virtual_offset);
         let src_offset = u32::try_from(src_offset).ok()?;
-        let block = self
-            .blocks
-            .iter()
-            .find(|block| block.contains(src_offset))
-            .map(|block| block.block_type)
-            .unwrap_or(SfcBlockType::Script);
-        Some((src_offset, 0, block))
+        Some((src_offset, 0, self.block_type_at(src_offset)))
     }
 
     /// Get the virtual TS offset from an SFC offset.
@@ -103,6 +97,23 @@ impl SfcSourceMap {
     /// The projection mapping this view reads.
     pub fn projection(&self) -> &ProjectionMapping {
         &self.projection
+    }
+
+    /// The SFC block containing authored `offset` (script outside every block).
+    pub fn block_type_at(&self, offset: u32) -> SfcBlockType {
+        self.blocks
+            .iter()
+            .find(|block| block.contains(offset))
+            .map(|block| block.block_type)
+            .unwrap_or(SfcBlockType::Script)
+    }
+
+    /// The template block's authored range.
+    pub fn template_block(&self) -> Option<std::ops::Range<usize>> {
+        self.blocks
+            .iter()
+            .find(|block| block.block_type == SfcBlockType::Template)
+            .map(|block| block.start as usize..block.end as usize)
     }
 
     /// Access the raw virtual TS mappings.

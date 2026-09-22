@@ -1,4 +1,6 @@
-use std::path::Path;
+//! `TS2322` on `target[key as keyof T] = value as T[keyof T]` is a checker
+//! false positive when both sides name the same `keyof` type; the generated
+//! program is scanned once per document for that shape.
 
 use oxc_ast::ast::{Expression, TSIndexedAccessType, TSType, TSTypeOperatorOperator};
 
@@ -10,29 +12,9 @@ pub(super) struct AssignmentIndex {
     offsets: Vec<u32>,
 }
 
-impl super::DiagnosticMapper<'_> {
-    pub(in super::super) fn is_keyof_indexed_assignment(
-        &mut self,
-        virtual_path: &Path,
-        line: u32,
-        column: u32,
-    ) -> bool {
-        let Some(file) = self.project.find_by_diagnostic_virtual(virtual_path) else {
-            return false;
-        };
-        let Some(offset) = self.virtual_offset(file, line, column) else {
-            return false;
-        };
-        self.keyof_assignments
-            .entry(file.virtual_path.clone())
-            .or_insert_with(|| AssignmentIndex::new(&file.content, &file.virtual_path))
-            .matches_at(offset)
-    }
-}
-
 #[cfg(test)]
-fn matches_at(source: &str, path: &Path, offset: u32) -> bool {
-    AssignmentIndex::new(source, path).matches_at(offset)
+fn matches_at(source: &str, tsx: bool, offset: u32) -> bool {
+    AssignmentIndex::new(source, tsx).matches_at(offset)
 }
 
 fn keyof_operand_from_cast<'expr, 'ast>(
@@ -91,17 +73,10 @@ fn peel_type<'ty, 'ast>(ty: &'ty TSType<'ast>) -> &'ty TSType<'ast> {
 }
 
 #[cfg(test)]
-#[path = "keyof_indexed_assignment/scope_tests.rs"]
 mod scope_tests;
 
 #[cfg(test)]
-#[path = "keyof_indexed_assignment/mapping_tests.rs"]
-mod mapping_tests;
-
-#[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
-
     use super::matches_at;
 
     #[test]
@@ -128,11 +103,7 @@ export function pickDefinedProps<T extends Record<string, unknown>>(
 "#;
         let offset = source.find("result[key").unwrap() as u32;
 
-        assert!(matches_at(
-            source,
-            PathBuf::from("foo.ts").as_path(),
-            offset
-        ));
+        assert!(matches_at(source, false, offset));
     }
 
     #[test]
@@ -146,10 +117,6 @@ target[key as keyof A] = value as B[keyof B];
 "#;
         let offset = source.find("target[key").unwrap() as u32;
 
-        assert!(!matches_at(
-            source,
-            PathBuf::from("foo.ts").as_path(),
-            offset
-        ));
+        assert!(!matches_at(source, false, offset));
     }
 }

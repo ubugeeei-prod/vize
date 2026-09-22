@@ -41,7 +41,7 @@ exit 0
     let config_path = project.virtual_root().join("tsconfig.json");
     fs::write(&config_path, "{}\n").unwrap();
 
-    let error = run_cli_for_config(&stub, &project, &config_path, 1).unwrap_err();
+    let error = run_cli_for_config(&stub, &project, &config_path, 1, &|_| true).unwrap_err();
     match error {
         CorsaError::CorsaExecution { exit_code, message } => {
             assert_eq!(exit_code, 1);
