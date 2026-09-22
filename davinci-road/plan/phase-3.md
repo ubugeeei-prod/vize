@@ -209,22 +209,14 @@ _Accept:_ TS-31 coverage budget — **the numeric threshold is pinned in
 `budgets.toml` before this task merges**, and the text-matching recovery may
 only be deleted once the new path's measured coverage ≥ the old heuristic's
 measured coverage; TS-11 empty (maps are additive artifacts).
-_First slice 2026-09-13:_ see
-[P3-9 record](./phase-3-records/p3-9.md) for the TS-31 budget pin.
-_Second slice 2026-09-13:_ the same record now covers SSR/Vapor opt-in map
-entry points and binding bridge propagation. _Third slice 2026-09-21:_ TS-31
-is measured by an independent-decoder harness over a committed fixture battery
-([report](./ts31-sourcemap-coverage.json)); rows below budget are listed in the
-record's tracked-shortfall ledger. _Fourth slice 2026-09-21:_ the DOM codegen
-emits through span-carrying context methods and meets every TS-31 DOM budget.
-_Fifth slice 2026-09-21:_ SSR carries spans through template-literal parts
-and direct writes via the shared `SpannedText` primitive and meets every TS-31
-SSR budget. _Eighth slice 2026-09-22:_ `compile_sfc` attaches a structured
-SFC module map. It carries byte runs and point anchors through every script
-stage and oxc re-print, and napi uses it. TS-31 measures it at 11/11 exact on
-the legacy battery, no worse than the legacy on any anchor, and 19/19 on
-rewritten statements. Vapor token-level emission and legacy recovery removal
-remain open.
+_Slices 1-5 (2026-09-13..21), see the [P3-9 record](./phase-3-records/p3-9.md):_
+TS-31 budgets pinned and measured by an independent-decoder harness
+([report](./ts31-sourcemap-coverage.json)); DOM and SSR emit through
+span-carrying writes and meet every TS-31 budget. _Eighth slice 2026-09-22:_
+`compile_sfc` attaches a structured module map (byte runs and point anchors
+through every script stage and oxc re-print; napi uses it), 11/11 exact on the
+legacy battery and 19/19 on rewritten statements. Vapor emission and legacy
+recovery removal remain open.
 
 **P3-10 Try-measure-commit.** Placement alternatives (hoist/cache/inline/
 group) kept explicit on S3 nodes; extraction pass performs candidates,
