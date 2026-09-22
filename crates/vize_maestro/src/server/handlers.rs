@@ -449,7 +449,7 @@ impl LanguageServer for MaestroServer {
         let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-        let links = DocumentLinkService::get_links(&content, uri);
+        let links = DocumentLinkService::get_links(&self.state, &content, uri);
 
         if links.is_empty() {
             Ok(None)
