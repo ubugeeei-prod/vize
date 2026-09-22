@@ -43,10 +43,9 @@ def validateElementBindings (program : Program) (rows : List Operand) (op : Op)
   let bindings := attached program rows op.id
   let models := bindings.filter (Model.modelRow rows)
   if ["input", "select"].contains tag then
-    if models.length != 1 || bindings.length != 1 then
-      throw "form controls require exactly one model binding"
-    return
-  if !models.isEmpty then throw "unsupported model target"
+    if models.length != 1 || bindings.any (fun b => !Model.modelRow rows b && b.kind != .setProp) then
+      throw "form controls take one model binding plus data-id/title properties"
+  else if !models.isEmpty then throw "unsupported model target"
   if tag == "option" then
     let owner := (program.regions.find? (·.id == op.region)).bind (·.owner)
     let parent := program.ops.find? (fun parent => some parent.id == owner && parent.kind == .insertNode)
@@ -61,7 +60,7 @@ def validateElementBindings (program : Program) (rows : List Operand) (op : Op)
     if (bindings.filter (fun binding => binding.kind == kind)).length > 1 then
       throw "unsupported multiple bindings of the same kind"
   let mut names := (<- staticElement rows op.id).2.map (·.1)
-  for binding in bindings do
+  for binding in bindings.filter (!Model.modelRow rows ·) do
     if textBinding rows binding then
       if program.regions.any (fun r => r.owner == some op.id &&
           program.ops.any (fun child => child.region == r.id)) then

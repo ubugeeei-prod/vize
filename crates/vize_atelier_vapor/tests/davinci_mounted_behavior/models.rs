@@ -21,10 +21,14 @@ fn lines(name: &str) -> Vec<Value> {
 }
 
 fn run_family(prefixes: &[&str]) {
-    let cases = lines("model-reference.cases.jsonl");
-    let behaviors = lines("model-reference.behavior.jsonl");
+    run_stem("model-reference", prefixes, false, 10);
+}
+
+fn run_stem(stem: &str, prefixes: &[&str], identities: bool, minimum: usize) {
+    let cases = lines(&format!("{stem}.cases.jsonl"));
+    let behaviors = lines(&format!("{stem}.behavior.jsonl"));
     assert_eq!(cases.len(), behaviors.len());
-    assert!(cases.len() >= 10, "model reference is too small");
+    assert!(cases.len() >= minimum, "{stem} is too small");
     let mut checked = 0;
     for (case, behavior) in cases.iter().zip(&behaviors) {
         let name = case["name"].as_str().unwrap();
@@ -45,7 +49,7 @@ fn run_family(prefixes: &[&str]) {
                 Value::Object(scenario.context.clone()),
                 Value::Array(scenario.steps.clone()),
                 false,
-                false,
+                identities,
             );
             let actual = actual.as_array().unwrap();
             assert_eq!(actual.len(), expected.len(), "{name}: {backend} length");
@@ -70,4 +74,11 @@ fn mounted_toggle_models_match_the_lean_model_reference() {
 #[test]
 fn mounted_select_models_match_the_lean_model_reference() {
     run_family(&["select-"]);
+}
+
+/// Keyed interactions: element identity decides which item an in-flight IME
+/// commit or a checkbox toggle reaches when rows reorder around it.
+#[test]
+fn mounted_looped_models_match_the_lean_model_reference() {
+    run_stem("model-loop-reference", &["keyed-", "positional-"], true, 4);
 }

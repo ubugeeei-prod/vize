@@ -211,6 +211,7 @@ export function validateLoopScenario(context, steps) {
       step !== null && typeof step === "object" && !Array.isArray(step),
       "expected loop step object",
     );
+    if (Object.hasOwn(step, "event")) continue; // validated when dispatched
     assert.equal(Object.keys(step).length, 1, "expected one loop step field");
     if (Object.hasOwn(step, "click")) {
       assert.equal(typeof step.click, "string", "loop target must be a data-id string");

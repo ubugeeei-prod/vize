@@ -17,7 +17,7 @@
 - [ ] P3-9 S4 structured emitter + universal source maps _(slice 1 pins TS-31 source-map budgets before emitter migration; see [record](./phase-3-records/p3-9.md))_
 - [ ] P3-10 Try-measure-commit extraction _(slice 1 pins optimization budgets before extraction; see [record](./phase-3-records/p3-10.md))_
 - [x] P3-11 IVM oracle
-- [ ] P3-12 Behavioral (sprout) runner incl. IME scripts
+- [x] P3-12 Behavioral (sprout) runner incl. IME scripts
 - [ ] P3-13 Optimization remarks + corpus remarks-diff
 - [x] P3-14 `folio-reduce` _(`vize reduce`; see [record](./phase-3-records/p3-14.md))_
 - [x] P3-15 Lean theorems (lattice / grouping / IVM linearity)
@@ -222,8 +222,10 @@ _Progress 2026-09-16:_ [P3-12 record](./phase-3-records/p3-12.md)
 covers the mounted Vue runtime gate, reactive button and slot/branch scripts,
 IME composition, model modifiers, checkbox arrays, select-multiple, and member
 bindings. It records the `v-text`, source-order, and model-expression defects
-exposed by those scripts. Broader keyed interactions and stateful Lean
-differential traces remain open.
+exposed by those scripts. _Closed 2026-09-22:_ every acceptance surface
+(IME scripts, modifiers, checkbox arrays, select-multiple, keyed interactions
+including live model state across reorder, slots) now has trace equality across
+both backends and against the Lean reference; see the record's gate table.
 
 **P3-13 Remarks.** `{pass, kind: applied|missed, span, args}` structured
 remarks through the observer; corpus remarks-diff job (TS-32); missed-remarks

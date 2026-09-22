@@ -26,16 +26,43 @@ def opOf (address : String) : Except String Nat := do
   let some last := parts.back? | throw "empty S3 address"
   last.getNat?
 
-partial def controlNodes (runner : Runner) : Incremental.Node -> Except String (List (Nat × Model.Control))
+partial def controlNodes (runner : Runner) :
+    Incremental.Node -> Except String (List (Nat × Model.Control × String))
   | .text _ => pure []
   | .element address identity _ _ _ _ children => do
       let own := match runner.controls.lookup (<- opOf address) with
-        | some control => [(identity, control)]
+        | some control => [(identity, control, address)]
         | none => []
       pure (own ++ (<- children.flatMapM (controlNodes runner)))
 
-def liveControls (runner : Runner) : Except String (List (Nat × Model.Control)) :=
+def liveControls (runner : Runner) : Except String (List (Nat × Model.Control × String)) :=
   runner.state.roots.flatMapM (controlNodes runner)
+
+/-- Read scope and root write path of one control instance. Inside a (single,
+non-nested) array loop, a path through the value alias writes into the source
+element at the instance's current index, as Vue's reactive item proxy does. -/
+def instanceScope (runner : Runner) (address : String) (control : Model.Control) :
+    Except String (Json × List String) := do
+  let fields := control.path.splitOn "."
+  match (<- (<- Json.parse address).getArr?).toList.dropLast with
+  | [] => pure (runner.context, fields)
+  | [entry] => do
+      let loopId <- (<- entry.getArrVal? 0).getNat?
+      let some loopOp := runner.program.ops.find? (·.id == loopId) | throw "missing loop op"
+      let source <- Values.one runner.rows loopId "for-source"
+      if source.kind != "js" || !Iteration.path source.text then
+        throw "model loops require a path source"
+      let valueAlias <- Iteration.alias (<- Values.one runner.rows loopId "for-value")
+      let others := (Values.forOp runner.rows loopId).filter (fun row =>
+        ["for-key", "for-index"].contains row.role && row.kind != "absent") |>.map (·.text)
+      if fields.head?.any others.contains then throw "models cannot assign loop index aliases"
+      let scopes <- Iteration.contexts runner.program runner.rows loopOp runner.context
+      let some ((_, scope), index) := scopes.zipIdx.find? (fun pair => pair.1.1 == entry)
+        | throw "control scope is not live"
+      if fields.head? != some valueAlias then return (scope, fields)
+      let _ <- (<- Iteration.lookup runner.context source.text).getArr?
+      pure (scope, source.text.splitOn "." ++ [toString index] ++ fields.drop 1)
+  | _ => throw "model controls in nested loops are outside the reference subset"
 
 /-- Re-render through the incremental machine, then run mount/update hooks. -/
 def rerender (runner : Runner) (assigning : Option Nat := none) : Except String Runner := do
@@ -43,8 +70,8 @@ def rerender (runner : Runner) (assigning : Option Nat := none) : Except String 
   let state <- Incremental.update (runner.program.regions.length + 2) runner.state fresh.nodes
   let runner := { runner with state }
   let mut forms := []
-  for (identity, control) in <- liveControls runner do
-    let model <- Iteration.lookup runner.context control.path
+  for (identity, control, address) in <- liveControls runner do
+    let model <- Iteration.lookup (<- instanceScope runner address control).1 control.path
     let live <- match runner.forms.lookup identity with
       | some live => Model.update control live model (assigning == some identity)
       | none => Model.mount control model
@@ -63,30 +90,42 @@ def changed (old new : Option Json) : Bool :=
 partial def setPath (value : Json) (fields : List String) (next : Json) : Except String Json := do
   match fields with
   | [] => pure next
-  | [field] => do let _ <- value.getObj?; pure (value.setObjVal! field next)
   | field :: rest => do
-      let inner <- value.getObjVal? field
-      pure (value.setObjVal! field (<- setPath inner rest next))
+      match value, field.toNat? with
+      | .arr items, some index =>
+          let some inner := items[index]? | throw "array write out of range"
+          pure (.arr (items.set! index (<- setPath inner rest next)))
+      | _, _ =>
+          let _ <- value.getObj?
+          if rest.isEmpty then return value.setObjVal! field next
+          pure (value.setObjVal! field (<- setPath (<- value.getObjVal? field) rest next))
 
-def assign (runner : Runner) (control : Model.Control) (next : Json) : Except String (Runner × Bool) := do
-  let old := (Iteration.lookup runner.context control.path).toOption
-  let context <- setPath runner.context (control.path.splitOn ".") next
+def assign (runner : Runner) (control : Model.Control) (address : String) (next : Json) :
+    Except String (Runner × Bool) := do
+  let (scope, target) <- instanceScope runner address control
+  let old := (Iteration.lookup scope control.path).toOption
+  let context <- setPath runner.context target next
   pure ({ runner with context }, changed old (some next))
 
 def transform (control : Model.Control) (text : String) : Except String Json := do
   let text <- if control.trim then Model.trimJs text else pure text
   if control.number then Model.looseToNumber text else pure (.str text)
 
-/-- Selector subset: `tag` or `tag[value=...]`, first match in document order. -/
+/-- Selector subset: `tag`, `tag[value=...]` or `tag[data-id=...]`, first match
+in document order. -/
 def selects (selector : String) (node : Incremental.Node) : Bool :=
   match node with
   | .text _ => false
   | .element _ _ tag attrs _ _ _ =>
-      match selector.splitOn "[value=" with
+      match selector.splitOn "[" with
       | [name] => name == tag
       | [name, rest] =>
-          let wanted := (rest.dropEnd 1).toString.replace "\"" ""
-          rest.endsWith "]" && name == tag && attrs.lookup "value" == some (.str wanted)
+          match rest.splitOn "=" with
+          | [attr, value] =>
+              let wanted := (value.dropEnd 1).toString.replace "\"" ""
+              ["value", "data-id"].contains attr && value.endsWith "]" && name == tag &&
+                attrs.lookup attr == some (.str wanted)
+          | _ => false
       | _ => false
 
 partial def find (selector : String) : Incremental.Node -> List Incremental.Node
@@ -102,7 +141,8 @@ def event (runner : Runner) (step : Json) : Except String Runner := do
   let selector <- (<- step.getObjVal? "selector").getStr?
   let some (.element _ identity _ _ _ _ _) := (runner.state.roots.flatMap (find selector)).head?
     | throw "missing interaction target"
-  let some control := (<- liveControls runner).lookup identity | throw "target is not a model control"
+  let some (control, address) := (<- liveControls runner).lookup identity
+    | throw "target is not a model control"
   let some live := runner.forms.lookup identity | throw "control has no live state"
   let mut live := live
   if let .ok value := step.getObjVal? "value" then
@@ -162,7 +202,7 @@ def event (runner : Runner) (step : Json) : Except String Runner := do
   let runner := { runner with forms := runner.forms.map (fun (id, state) =>
     (id, if id == identity then live else state)) }
   let some next := assigned | return runner
-  let (runner, didChange) <- assign runner control next
+  let (runner, didChange) <- assign runner control address next
   if !didChange then return runner
   rerender runner (if control.kind == .select then some identity else none)
 
@@ -188,10 +228,12 @@ partial def nodeJson (runner : Runner) (pairs : List (Nat × Model.Control)) (se
       (Json.mkObj ([("tag", Json.str tag), ("attributes", Json.mkObj attrs),
         ("children", .arr kids.toArray)] ++ own ++ form), selection)
 
-def snapshot (runner : Runner) : Except String Json := do
-  let pairs <- liveControls runner
+def snapshot (runner : Runner) (identities : Bool) : Except String Json := do
+  let pairs := (<- liveControls runner).map (fun (identity, control, _) => (identity, control))
   let tree := runner.state.roots.map (fun node => (nodeJson runner pairs [] node).1)
-  pure (Json.mkObj [("tree", .arr tree.toArray), ("events", .arr #[])])
+  let fields := [("tree", Json.arr tree.toArray), ("events", .arr #[])]
+  pure (Json.mkObj (if identities then fields ++ [("identities", Incremental.identities runner.state)]
+    else fields))
 
 def insideLoop (program : Program) (region : Nat) : Nat -> Bool
   | 0 => true
@@ -202,7 +244,8 @@ def insideLoop (program : Program) (region : Nat) : Nat -> Bool
             insideLoop program parent fuel
       | _ => false
 
-def run (program : Program) (rows : List Operand) (script : Json) : Except String Json := do
+def run (program : Program) (rows : List Operand) (script : Json) (identities : Bool := false) :
+    Except String Json := do
   if (<- Behavior.keys script) != ["context", "steps"] then throw "unsupported model scenario fields"
   let context <- script.getObjVal? "context"
   Behavior.validateState context
@@ -212,11 +255,11 @@ def run (program : Program) (rows : List Operand) (script : Json) : Except Strin
     let control <- Model.control program rows op
     let some target := (Values.forOp rows op.id).findSome? (·.target) | throw "untargeted model"
     let some element := program.ops.find? (·.id == target) | throw "missing model target"
-    if insideLoop program element.region (program.regions.length + 1) then
-      throw "model controls inside loops are outside the reference subset"
+    if insideLoop program element.region (program.regions.length + 1) && !identities then
+      throw "looped model controls are observed with element identities"
     controls := controls ++ [(target, control)]
   let mut runner <- rerender { program, rows, controls, context }
-  let mut trace := [<- snapshot runner]
+  let mut trace := [<- snapshot runner identities]
   for step in (<- (<- script.getObjVal? "steps").getArr?).toList do
     let fields <- Behavior.keys step
     if fields == ["patch"] then
@@ -231,7 +274,8 @@ def run (program : Program) (rows : List Operand) (script : Json) : Except Strin
       if dirty then runner <- rerender runner
     else if fields.contains "event" then runner <- event runner step
     else throw "unsupported model step"
-    trace := trace ++ [<- snapshot runner]
-  pure (.arr (trace ++ [Json.mkObj [("tree", .arr #[]), ("events", .arr #[])]]).toArray)
+    trace := trace ++ [<- snapshot runner identities]
+  let final := [("tree", Json.arr #[]), ("events", .arr #[])]
+  pure (.arr (trace ++ [Json.mkObj (if identities then final ++ [("identities", .arr #[])] else final)]).toArray)
 
 end Impeto.ModelBehavior

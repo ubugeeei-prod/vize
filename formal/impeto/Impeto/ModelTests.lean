@@ -71,10 +71,25 @@ def negativeTests (cases lowered : String) : Except String Unit := do
   ] do
     expectError label (ModelBehavior.run text.program rows text.scenario)
 
+/-- Looped controls: index aliases are not assignable, nested loops and
+identity-free observation fail closed. -/
+def loopTests (cases lowered : String) : Except String Unit := do
+  let keyed <- load cases lowered "keyed-text-ime"
+  expectError "looped control without identities" (ModelBehavior.run keyed.program keyed.rows keyed.scenario)
+  let _ <- ModelBehavior.run keyed.program keyed.rows keyed.scenario true
+  let indexWrite := keyed.rows.map (fun row =>
+    if ["model-read", "model-write"].contains row.role then { row with text := "position" }
+    else if row.role == "for-key" then { row with kind := "js", text := "position" } else row)
+  expectError "index alias assignment" (ModelBehavior.run keyed.program indexWrite keyed.scenario true)
+  let step := "{\"event\":\"input\",\"selector\":\"input[data-id=zzz]\",\"value\":\"x\"}"
+  expectError "missing keyed target" (ModelBehavior.run keyed.program keyed.rows (<- withSteps keyed [step]) true)
+
 def check : IO UInt32 := do
   let cases <- IO.FS.readFile "fixtures/model-reference.cases.jsonl"
   let lowered <- IO.FS.readFile "fixtures/model-reference.lowered.jsonl"
-  match negativeTests cases lowered with
+  let loopCases <- IO.FS.readFile "fixtures/model-loop-reference.cases.jsonl"
+  let loopLowered <- IO.FS.readFile "fixtures/model-loop-reference.lowered.jsonl"
+  match negativeTests cases lowered *> loopTests loopCases loopLowered with
   | .ok () => pure 0
   | .error message => IO.eprintln s!"model reference: {message}"; pure 1
 

@@ -199,12 +199,82 @@ fn check_lines(path: &Path, lines: &[Value]) {
     );
 }
 
-#[test]
-fn model_reference_cases_are_rust_lowered() {
+type Case = (&'static str, String, Value, Vec<Value>);
+
+/// Keyed interactions: model controls inside keyed and positional loops. The
+/// same scripts reorder rows while an IME composition is in flight, so element
+/// identity (not position) decides which item a commit reaches.
+fn loop_cases() -> Vec<Case> {
+    let text = |key: &str| {
+        format!(
+            r#"<main><div v-for="item in items"{key}><input v-model="item.text" :data-id="item.id"><span>{{{{ item.text }}}}</span></div><p>{{{{ items.length }}}}</p></main>"#
+        )
+    };
+    let check = |key: &str| {
+        format!(
+            r#"<main><div v-for="item in items"{key}><input type="checkbox" v-model="item.done" :data-id="item.id"><span>{{{{ item.done ? 'done' : 'todo' }}}}</span></div></main>"#
+        )
+    };
+    let rows = |pairs: &[(&str, &str)]| {
+        json!(
+            pairs
+                .iter()
+                .map(|(id, text)| json!({ "id": id, "text": text }))
+                .collect::<Vec<_>>()
+        )
+    };
+    let done = |pairs: &[(&str, bool)]| {
+        json!(
+            pairs
+                .iter()
+                .map(|(id, done)| json!({ "id": id, "done": done }))
+                .collect::<Vec<_>>()
+        )
+    };
+    let at = |name: &str, id: &str| event(name, &format!("input[data-id={id}]"));
+    let ime = |commit_target: &str| {
+        vec![
+            with(at("input", "b"), "value", json!("B1")),
+            patch("items", rows(&[("b", "B1"), ("a", "A")])),
+            at("compositionstart", "a"),
+            with(at("input", "a"), "value", json!("\u{3042}")),
+            patch("items", rows(&[("a", "A"), ("b", "B1")])),
+            with(
+                at("compositionend", commit_target),
+                "value",
+                json!("\u{4e9c}"),
+            ),
+            patch("items", rows(&[("a", "A"), ("c", "C")])),
+            with(at("input", "c"), "value", json!("C1")),
+        ]
+    };
+    let toggles = vec![
+        with(at("change", "b"), "checked", json!(true)),
+        patch("items", done(&[("b", true), ("a", false)])),
+        with(at("change", "a"), "checked", json!(true)),
+        patch("items", done(&[("a", true), ("c", false)])),
+    ];
+    let keyed = r#" :key="item.id""#;
+    let pair = json!({ "items": rows(&[("a", "A"), ("b", "B")]) });
+    let unchecked = json!({ "items": done(&[("a", false), ("b", false)]) });
+    vec![
+        ("keyed-text-ime", text(keyed), pair.clone(), ime("a")),
+        ("positional-text-ime", text(""), pair, ime("b")),
+        (
+            "keyed-checkbox",
+            check(keyed),
+            unchecked.clone(),
+            toggles.clone(),
+        ),
+        ("positional-checkbox", check(""), unchecked, toggles),
+    ]
+}
+
+fn emit(stem: &str, cases: Vec<Case>) {
     let mut rows = Vec::new();
     let mut graphs = Vec::new();
-    for (name, template, context, steps) in cases() {
-        let (graph, values) = lowered(template);
+    for (name, template, context, steps) in cases {
+        let (graph, values) = lowered(&template);
         rows.push(json!({
             "name": name,
             "template": template,
@@ -213,6 +283,20 @@ fn model_reference_cases_are_rust_lowered() {
         graphs.push(json!({ "name": name, "graph": graph, "values": values }));
     }
     let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../formal/impeto/fixtures");
-    check_lines(&fixtures.join("model-reference.cases.jsonl"), &rows);
-    check_lines(&fixtures.join("model-reference.lowered.jsonl"), &graphs);
+    check_lines(&fixtures.join(format!("{stem}.cases.jsonl")), &rows);
+    check_lines(&fixtures.join(format!("{stem}.lowered.jsonl")), &graphs);
+}
+
+#[test]
+fn model_reference_cases_are_rust_lowered() {
+    let cases = cases()
+        .into_iter()
+        .map(|(name, template, context, steps)| (name, template.to_string(), context, steps))
+        .collect();
+    emit("model-reference", cases);
+}
+
+#[test]
+fn keyed_model_reference_cases_are_rust_lowered() {
+    emit("model-loop-reference", loop_cases());
 }

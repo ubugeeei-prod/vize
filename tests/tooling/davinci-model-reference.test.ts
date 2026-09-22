@@ -95,3 +95,36 @@ test("P3-4 supplied-slot reference artifacts are aligned and exercise supplied c
     assert.deepEqual(trace.at(-1), { tree: [], events: [], identities: [] }, entry.name);
   }
 });
+
+test("P3-12 keyed model interactions route in-flight commits by identity", () => {
+  const loopCases = jsonLines("model-loop-reference.cases.jsonl");
+  const loopBehaviors = jsonLines("model-loop-reference.behavior.jsonl");
+  assert.deepEqual(
+    loopBehaviors.map((entry) => entry.name),
+    loopCases.map((entry) => entry.name),
+  );
+  type Node = { tag: string; children: Array<Node | string> };
+  const spans = (name: string, index: number) => {
+    const out: string[] = [];
+    const walk = (nodes: Array<Node | string>) => {
+      for (const node of nodes) {
+        if (typeof node === "string") continue;
+        if (node.tag === "span") out.push(node.children.join(""));
+        walk(node.children);
+      }
+    };
+    const trace = loopBehaviors.find((entry) => entry.name === name)!.trace;
+    walk((trace[index] as { tree: Node[] }).tree);
+    return out;
+  };
+  // The IME commit (step 6) reaches item `a` when keyed, and whichever row now
+  // occupies the composing element's position when positional.
+  assert.deepEqual(spans("keyed-text-ime", 6), ["\u4e9c", "B1"]);
+  assert.deepEqual(spans("positional-text-ime", 6), ["A", "\u4e9c"]);
+  for (const entry of loopBehaviors) {
+    assert.ok(
+      (entry.trace as Array<{ identities?: unknown }>).every((s) => Array.isArray(s.identities)),
+      `${entry.name} must observe element identities`,
+    );
+  }
+});
