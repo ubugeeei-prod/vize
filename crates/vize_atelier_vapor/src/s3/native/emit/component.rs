@@ -107,7 +107,12 @@ impl<'a> Emitter<'a, '_> {
     fn props(&self, props: &[Prop<'a>], component: bool) -> Vec<'a, IRProp<'a>> {
         let mut out = Vec::new_in(&self.allocator);
         for prop in props {
-            let key = if prop.handler {
+            let key = if prop.key == "$" {
+                // A `v-bind`/`v-on` object source; `v-on` normalizes handlers.
+                let mut node = SimpleExpressionNode::new("$", true, SourceLocation::STUB);
+                node.is_handler_key = prop.handler;
+                Box::new_in(node, &self.allocator)
+            } else if prop.handler {
                 // The retained lane's handler key: `on` + capitalized name.
                 let mut key = String::from("on");
                 let mut chars = prop.key.chars();

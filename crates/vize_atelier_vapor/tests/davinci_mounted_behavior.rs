@@ -23,6 +23,7 @@ mod davinci_mounted_behavior {
     mod native_control;
     mod native_roots;
     mod native_slots;
+    mod native_spreads;
     mod native_templates;
     pub(crate) mod runtime;
     mod slots;

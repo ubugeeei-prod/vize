@@ -63,7 +63,7 @@ fn component_outlet_and_fragment_shapes_are_admitted() {
 
 #[test]
 fn unsupported_component_shapes_select_exact_legacy_reasons() {
-    use LegacyReason::{Binding, Component, Operation};
+    use LegacyReason::{Binding, Component};
     for (source, reason) in [
         // Slot shapes beyond static names and flat parameter patterns
         // (`tests/slots.rs`).
@@ -89,7 +89,7 @@ fn unsupported_component_shapes_select_exact_legacy_reasons() {
         (r#"<slot :name="dynamic" />"#, Component),
         (r#"<slot @click="save" />"#, Component),
         (r#"<MyComp v-model="value" />"#, Binding),
-        (r#"<MyComp v-bind="props" />"#, Operation),
+        (r#"<slot v-bind="props" />"#, Component),
     ] {
         let allocator = Allocator::new();
         let status = lower_source_for_vapor(&allocator, source, options());

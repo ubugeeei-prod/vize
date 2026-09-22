@@ -110,6 +110,10 @@ fn native_pair(criterion: &mut Criterion) {
             "<main><template v-if=\"open\"><header>{{ title }}</header><section>{{ lead }}</section></template><ul><template v-for=\"row in rows\" :key=\"row.id\"><li>{{ row.label }}</li><li v-if=\"row.note\">{{ row.note }}</li></template></ul></main>",
         ),
         (
+            "spreads",
+            "<main class=\"shell\"><section id=\"card\" class=\"card\" v-bind=\"attrs\" :title=\"title\"><b v-bind=\"badge\">{{ count }}</b></section><Panel v-bind=\"panel\" v-on=\"{ close: save }\" :size=\"size\" /><button v-on=\"handlers\">go</button></main>",
+        ),
+        (
             "control_flow",
             "<main><section v-if=\"open\"><b>{{ title }}</b><span v-for=\"row in rows\" :key=\"row.id\" :title=\"row.title\">{{ row.label }}</span></section><i v-else>closed</i><ul><li v-for=\"(cell, i) in cells\" @click=\"save\">{{ i }}: {{ cell }}</li></ul></main>",
         ),

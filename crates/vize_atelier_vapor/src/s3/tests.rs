@@ -203,7 +203,7 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<div title=\"&quot;\"></div>",
         "<Comp v-slot=\"{ p: q }\">{{ q }}</Comp>",
         "<Teleport to=\"body\"><div></div></Teleport>",
-        "<div v-bind=\"props\"></div>",
+        "<div v-bind=\"props\" @click=\"go\"></div>",
         "<pre> text </pre>",
         // The legacy parser reports invalid self-closing HTML elements.
         "<div />",
@@ -309,4 +309,5 @@ mod elements;
 mod models;
 mod parser_agreement;
 mod slots;
+mod spreads;
 mod templates;

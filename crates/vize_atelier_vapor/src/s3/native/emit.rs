@@ -12,6 +12,7 @@ mod bindings;
 mod component;
 mod control;
 mod element;
+mod spread;
 mod text;
 
 use vize_atelier_core::{RootNode, SimpleExpressionNode, SourceLocation};

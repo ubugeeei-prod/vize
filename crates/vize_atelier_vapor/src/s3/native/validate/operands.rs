@@ -47,7 +47,7 @@ pub(super) fn element<'a>(values: &[Operand<'a>]) -> Result<Content<'a>> {
                 if !attribute_name(name)
                     || attributes
                         .iter()
-                        .any(|(seen, _): &(&str, _)| seen.eq_ignore_ascii_case(name))
+                        .any(|(seen, ..): &(&str, _, _)| seen.eq_ignore_ascii_case(name))
                 {
                     return Err(LegacyReason::Binding.into());
                 }
@@ -56,7 +56,7 @@ pub(super) fn element<'a>(values: &[Operand<'a>]) -> Result<Content<'a>> {
                     ValueKind::Literal if !value.value.text.contains('&') => Some(value.value.text),
                     _ => return Err(LegacyReason::ExpressionOrEncoding.into()),
                 };
-                attributes.push((name, text));
+                attributes.push((name, text, value.value.span.start));
             }
             _ => return Err(LegacyReason::Structure.into()),
         }
@@ -82,6 +82,15 @@ pub(super) fn binding<'a>(
     // Directive op also once/memo/cloak/custom). Select the family first.
     let family = match (kind, binding.value.kind, binding.value.text) {
         (OpKind::SetProp, ValueKind::Literal, "bind") => BindingKind::Prop,
+        (OpKind::SetDynamicProps, ValueKind::Literal, "bind") => BindingKind::Spread,
+        // An argument-less `v-on` binds an object of listeners.
+        (OpKind::SetEvent, ValueKind::Literal, "on")
+            if values
+                .iter()
+                .any(|v| v.role == Role::Name && v.value.kind == ValueKind::Absent) =>
+        {
+            BindingKind::Handlers
+        }
         (OpKind::SetEvent, ValueKind::Literal, "on") => BindingKind::Event,
         (OpKind::Directive, ValueKind::Literal, "vue.show") => BindingKind::Show,
         (OpKind::SetHtml, ValueKind::Literal, "vue.html") => BindingKind::Html,
@@ -99,6 +108,13 @@ pub(super) fn binding<'a>(
     let value = one(values, Role::Value)?;
     let (name, modifiers) = if matches!(family, BindingKind::Prop | BindingKind::Event) {
         named(values, family)?
+    } else if matches!(family, BindingKind::Spread | BindingKind::Handlers) {
+        // The object form: an absent name and no modifiers.
+        let name = one(values, Role::Name)?;
+        if values.len() != 3 || name.value.kind != ValueKind::Absent {
+            return Err(LegacyReason::Binding.into());
+        }
+        ("", std::vec::Vec::new())
     } else if values.len() == 2 {
         ("", std::vec::Vec::new())
     } else {
@@ -117,6 +133,7 @@ pub(super) fn binding<'a>(
             value,
             modifiers,
             merge: None,
+            position: 0,
         },
     ))
 }

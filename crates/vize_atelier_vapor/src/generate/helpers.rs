@@ -5,7 +5,7 @@ use vize_carton::{FxHashMap, String, cstr};
 
 use super::{
     context::GenerateContext,
-    operations::generate_operation,
+    operations::{generate_operation, merged_props_call},
     setup::{escape_js_string_literal, is_svg_tag},
 };
 
@@ -47,6 +47,7 @@ pub(crate) fn generate_operation_inline(
         OperationNode::SetDynamicProps(set_props) => {
             Some(generate_set_dynamic_props_inline(ctx, set_props))
         }
+        OperationNode::SetMergedProps(merged) => Some(merged_props_call(ctx, merged)),
         OperationNode::SetText(set_text) => {
             let helper = if set_text.is_element {
                 "setElementText"

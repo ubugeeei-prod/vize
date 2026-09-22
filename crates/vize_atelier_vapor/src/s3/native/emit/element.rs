@@ -5,7 +5,7 @@
 
 use vize_carton::{String, Vec, ensure_sufficient_stack};
 
-use super::super::Content;
+use super::super::{BindingKind, Content};
 use super::{Emitter, escape};
 use crate::ir::{BlockIRNode, InsertNodeIRNode, OperationNode};
 
@@ -57,7 +57,10 @@ impl<'a> Emitter<'a, '_> {
                 template.push(' ');
                 template.push_str(scope_id);
             }
-            for (name, value) in attributes {
+            // A `v-bind` object merges the static attributes at runtime.
+            let merged = (self.artifact.nodes[index].bindings.iter())
+                .any(|binding| binding.kind == BindingKind::Spread);
+            for (name, value, _) in attributes.iter().filter(|_| !merged) {
                 template.push(' ');
                 template.push_str(name);
                 if let Some(value) = value {

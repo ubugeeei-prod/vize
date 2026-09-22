@@ -1,7 +1,8 @@
 //! Bindings attach to their native owner once the tree is known: each
 //! name/family binds at most once, a loop body's `:key` moves to its loop, a
 //! static `class` merges into its `:class` exactly as the retained lane does,
-//! and component/outlet bindings become props in authored order.
+//! component/outlet bindings become props in authored order, and a `v-bind`
+//! or `v-on` object on a component becomes a `$` source in that order.
 
 use vize_carton::FxHashSet;
 use vize_s3::op::{OpId, RegionId};
@@ -22,9 +23,8 @@ pub(super) fn bindings<'a>(
     let mut names = FxHashSet::default();
     for (index, node) in nodes.iter().enumerate() {
         match &node.content {
-            Content::Element { attributes, .. } => {
-                names.extend((attributes.iter()).map(|(name, _)| (index, BindingKind::Prop, *name)))
-            }
+            Content::Element { attributes, .. } => names
+                .extend((attributes.iter()).map(|(name, ..)| (index, BindingKind::Prop, *name))),
             Content::Component { props, .. } | Content::Outlet { props, .. } => {
                 names.extend(
                     props
@@ -35,6 +35,12 @@ pub(super) fn bindings<'a>(
             _ => {}
         }
     }
+    // Elements whose props merge through a `v-bind` object keep every static
+    // attribute and `:class`/`:style` as its own ordered source.
+    let spreads: FxHashSet<OpId> = (bindings.iter())
+        .filter(|(.., binding)| binding.kind == BindingKind::Spread)
+        .map(|(target, ..)| *target)
+        .collect();
     for (target, region, position, mut binding) in bindings {
         let Some(&Some((index, target_region))) = slots.get(target.index() as usize) else {
             return Err(LegacyReason::Structure.into());
@@ -79,6 +85,21 @@ pub(super) fn bindings<'a>(
                 }
                 continue;
             }
+            Content::Component { props, .. }
+                if matches!(binding.kind, BindingKind::Spread | BindingKind::Handlers) =>
+            {
+                if !fresh {
+                    return Err(LegacyReason::Component.into());
+                }
+                props.push(Prop {
+                    key: "$",
+                    value: Some(binding.value),
+                    dynamic: true,
+                    handler: binding.kind == BindingKind::Handlers,
+                    position,
+                });
+                continue;
+            }
             Content::Component { props, .. } => {
                 prop(props, binding, position, fresh, true)?;
                 continue;
@@ -93,7 +114,16 @@ pub(super) fn bindings<'a>(
                 ));
             }
         }
-        if !fresh {
+        if !fresh && spreads.contains(&target) {
+            // Only a `:class`/`:style` beside its static attribute repeats.
+            if binding.kind != BindingKind::Prop
+                || !matches!(binding.name, "class" | "style")
+                || (nodes[index].bindings.iter())
+                    .any(|b| b.kind == binding.kind && b.name == binding.name)
+            {
+                return Err(LegacyReason::Binding.into());
+            }
+        } else if !fresh {
             binding.merge = static_class(&mut nodes[index], &binding);
             if binding.merge.is_none() {
                 return Err(LegacyReason::Binding.into());
@@ -179,6 +209,6 @@ fn static_class<'a>(node: &mut Node<'a>, binding: &Binding<'a>) -> Option<&'a st
     };
     let position = attributes
         .iter()
-        .position(|(name, value)| *name == "class" && value.is_some())?;
+        .position(|(name, value, _)| *name == "class" && value.is_some())?;
     attributes.remove(position).1
 }

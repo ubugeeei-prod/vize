@@ -78,6 +78,8 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
         r#"<main data-id="root"><component :is="kind" :label="label"></component></main>"#,
         // The `vapor_native_pair/templates` bench fixture.
         r#"<main><template v-if="open"><header>{{ title }}</header><section>{{ lead }}</section></template><ul><template v-for="row in rows" :key="row.id"><li>{{ row.label }}</li><li v-if="row.note">{{ row.note }}</li></template></ul></main>"#,
+        // The mounted component and listener object scenario.
+        r#"<main><Tag v-bind="props" v-on="{ go: save }" label="fixed" /><span data-id="out"><button data-id="own" v-on="{ click: save }">own</button></span></main>"#,
     ];
     for source in accepted {
         for prefix_identifiers in [false, true] {
@@ -119,6 +121,39 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
                 result.templates, legacy.templates,
                 "template payload changed: {source}"
             );
+        }
+    }
+    // Element `v-bind` objects merge static attributes at runtime (upstream's
+    // shape), so the native template omits them; the retained one keeps them.
+    for (source, template) in [
+        (
+            r#"<main><div data-id="box" class="base" v-bind="attrs" title="fixed" :aria-label="label">{{ label }}</div></main>"#,
+            "<main><div> </div></main>",
+        ),
+        // The `vapor_native_pair/spreads` bench fixture.
+        (
+            r#"<main class="shell"><section id="card" class="card" v-bind="attrs" :title="title"><b v-bind="badge">{{ count }}</b></section><Panel v-bind="panel" v-on="{ close: save }" :size="size" /><button v-on="handlers">go</button></main>"#,
+            "<main class=\"shell\"><section><b> </b></section><!----><button>go</button></main>",
+        ),
+    ] {
+        for prefix_identifiers in [false, true] {
+            let allocator = Allocator::new();
+            let options = VaporCompilerOptions {
+                prefix_identifiers,
+                ..Default::default()
+            };
+            let before = WalkCounts::snapshot();
+            let parses = expr_parse_probe::expr_parse_count();
+            let result = compile_vapor(&allocator, source, options);
+            assert!(result.error_messages.is_empty(), "{source}");
+            assert_eq!(
+                WalkCounts::snapshot().since(before).total_walks(),
+                0,
+                "{source}"
+            );
+            assert_eq!(expr_parse_probe::expr_parse_count() - parses, 0, "{source}");
+            assert_eq!(result.templates.len(), 1, "{source}");
+            assert_eq!(result.templates[0].as_str(), template, "{source}");
         }
     }
     let allocator = Allocator::new();

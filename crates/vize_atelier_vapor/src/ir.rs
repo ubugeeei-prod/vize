@@ -108,6 +108,7 @@ pub struct IREffect<'a> {
 pub enum OperationNode<'a> {
     SetProp(SetPropIRNode<'a>),
     SetDynamicProps(SetDynamicPropsIRNode<'a>),
+    SetMergedProps(SetMergedPropsIRNode<'a>),
     SetText(SetTextIRNode<'a>),
     SetEvent(SetEventIRNode<'a>),
     SetHtml(SetHtmlIRNode<'a>),
@@ -150,6 +151,22 @@ pub struct SetDynamicPropsIRNode<'a> {
     pub element: usize,
     pub props: Vec<'a, Box<'a, SimpleExpressionNode<'a>>>,
     pub is_event: bool,
+}
+
+/// `setDynamicProps` over upstream's ordered sources for an element with a
+/// `v-bind` object: the object, and literal groups of the props around it.
+#[derive(Debug)]
+pub struct SetMergedPropsIRNode<'a> {
+    pub element: usize,
+    pub sources: Vec<'a, MergedPropsSource<'a>>,
+}
+
+/// One `setDynamicProps` source.
+#[derive(Debug)]
+pub enum MergedPropsSource<'a> {
+    Object(Box<'a, SimpleExpressionNode<'a>>),
+    /// `key: value` entries; a `class`/`style` with several values merges.
+    Group(Vec<'a, IRProp<'a>>),
 }
 
 /// Set text operation

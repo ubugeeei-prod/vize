@@ -12,8 +12,11 @@ mod for_loop;
 mod if_block;
 mod insertion;
 mod match_scope;
+mod merged_props;
 mod refs;
 mod slots;
+
+pub(crate) use merged_props::merged_props_call;
 
 use crate::ir::OperationNode;
 use vize_carton::FxHashMap;
@@ -32,6 +35,9 @@ pub(crate) fn generate_operation(
         }
         OperationNode::SetDynamicProps(set_props) => {
             dom::generate_set_dynamic_props(ctx, set_props);
+        }
+        OperationNode::SetMergedProps(merged) => {
+            merged_props::generate_set_merged_props(ctx, merged);
         }
         OperationNode::SetText(set_text) => {
             dom::generate_set_text(ctx, set_text);

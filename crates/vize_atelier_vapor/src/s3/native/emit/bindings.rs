@@ -7,13 +7,16 @@ use vize_carton::{Box, Vec};
 use super::super::{BindingKind, Content, Expr};
 use super::Emitter;
 use crate::ir::{
-    BlockIRNode, DirectiveIRNode, EventModifiers, IRProp, OperationNode, SetEventIRNode,
-    SetHtmlIRNode, SetPropIRNode, SetTextIRNode,
+    BlockIRNode, DirectiveIRNode, EventModifiers, IRProp, OperationNode, SetDynamicPropsIRNode,
+    SetEventIRNode, SetHtmlIRNode, SetPropIRNode, SetTextIRNode,
 };
 
 impl<'a> Emitter<'a, '_> {
     /// Every binding of an element, in authored order.
     pub(super) fn bindings(&mut self, index: usize, element: usize, block: &mut BlockIRNode<'a>) {
+        if (self.artifact.nodes[index].bindings.iter()).any(|b| b.kind == BindingKind::Spread) {
+            return self.merged_props(index, element, block);
+        }
         for binding in 0..self.artifact.nodes[index].bindings.len() {
             self.binding(index, binding, element, block);
         }
@@ -35,7 +38,7 @@ impl<'a> Emitter<'a, '_> {
         };
         let input_type = attributes
             .iter()
-            .find_map(|(name, value)| (*name == "type").then_some(*value).flatten())
+            .find_map(|(name, value, _)| (*name == "type").then_some(*value).flatten())
             .unwrap_or("");
         let binding = &self.artifact.nodes[index].bindings[binding];
         match binding.kind {
@@ -137,7 +140,19 @@ impl<'a> Emitter<'a, '_> {
                         input_type,
                     }));
             }
+            BindingKind::Handlers => {
+                let props = self.values(binding.value);
+                self.effect(
+                    OperationNode::SetDynamicProps(SetDynamicPropsIRNode {
+                        element,
+                        props,
+                        is_event: true,
+                    }),
+                    block,
+                );
+            }
             BindingKind::Slot => unreachable!("slot content is emitted with its component"),
+            BindingKind::Spread => unreachable!("a spread element merges its props"),
         }
     }
 }

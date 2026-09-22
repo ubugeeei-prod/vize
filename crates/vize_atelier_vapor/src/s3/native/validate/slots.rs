@@ -45,6 +45,7 @@ pub(super) fn slot<'a>(values: &[Operand<'a>]) -> Result<(OpId, Binding<'a>)> {
             value: Expr::plain(params),
             modifiers: std::vec::Vec::new(),
             merge: None,
+            position: 0,
         },
     ))
 }

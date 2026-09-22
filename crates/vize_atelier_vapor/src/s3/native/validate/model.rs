@@ -59,6 +59,7 @@ pub(super) fn model<'a>(values: &[Operand<'a>]) -> Result<(OpId, Binding<'a>)> {
             value: Expr::plain(text),
             modifiers,
             merge: None,
+            position: 0,
         },
     ))
 }

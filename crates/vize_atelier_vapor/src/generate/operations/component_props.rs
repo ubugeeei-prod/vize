@@ -27,6 +27,10 @@ pub(super) fn generate_component_props_str(
         {
             ctx.use_helper("toHandlerKey");
         }
+        // A `v-on` object source normalizes its keys to `onX` handlers.
+        if (component.props.iter()).any(|p| p.key.content == "$" && p.key.is_handler_key) {
+            ctx.use_helper("toHandlers");
+        }
         return generate_component_spread_props_str(ctx, &component.props);
     }
 
@@ -72,7 +76,11 @@ fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[IRProp<'_
             push_component_static_prop_group(ctx, &mut sources, &mut static_group);
             if let Some(first) = prop.values.first() {
                 let resolved = ctx.resolve_expression_node(first);
-                sources.push(cstr!("() => ({})", resolved));
+                sources.push(if prop.key.is_handler_key {
+                    cstr!("() => (_toHandlers({}))", resolved)
+                } else {
+                    cstr!("() => ({})", resolved)
+                });
             }
         } else {
             static_group.push(prop);

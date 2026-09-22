@@ -9,6 +9,7 @@ mod model;
 mod operands;
 mod order;
 mod slots;
+mod spread;
 mod tree;
 
 use std::borrow::Cow;
@@ -68,6 +69,7 @@ pub(super) fn admit<'a>(
             // Slot content shares the outlet op kind; it binds to its template or
             // component like any other binding.
             OpKind::SetProp
+            | OpKind::SetDynamicProps
             | OpKind::SetEvent
             | OpKind::SetText
             | OpKind::SetHtml
@@ -76,11 +78,12 @@ pub(super) fn admit<'a>(
                 if op.kind != OpKind::SlotOutlet
                     || values.iter().any(|value| value.role == Role::BindingKind) =>
             {
-                let (target, binding) = if op.kind == OpKind::SlotOutlet {
+                let (target, mut binding) = if op.kind == OpKind::SlotOutlet {
                     slots::slot(values)?
                 } else {
                     operands::binding(values, op.kind, retained)?
                 };
+                binding.position = op.span.start;
                 if op.effect.is_none() {
                     return Err(AdmissionFailure::Invalid(
                         "binding lacks its dynamic partition",
@@ -145,6 +148,7 @@ pub(super) fn admit<'a>(
     attach::bindings(&mut nodes, &slots, &parents, bindings)?;
     slots::check(&nodes, &parents)?;
     model::check(&nodes)?;
+    spread::check(&nodes)?;
     tree::check_nesting(&nodes, &parents)?;
     // The root fragment may hold several nodes, text included.
     let roots = std::mem::take(&mut regions[RegionId::ROOT.index() as usize]);

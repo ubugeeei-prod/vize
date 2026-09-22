@@ -28,7 +28,8 @@ struct Node<'a> {
 enum Content<'a> {
     Element {
         tag: &'a str,
-        attributes: std::vec::Vec<(&'a str, Option<&'a str>)>,
+        /// Static attributes with their authored positions.
+        attributes: std::vec::Vec<(&'a str, Option<&'a str>, u32)>,
     },
     Text {
         parts: std::vec::Vec<TextPart<'a>>,
@@ -54,6 +55,7 @@ enum Content<'a> {
 
 /// One component or outlet prop in authored order. Static attributes carry a
 /// literal (or no value), bindings an expression, listeners a handler key.
+/// A `v-bind`/`v-on` object is the `$` source key (`handler` for `v-on`).
 #[derive(Debug, Clone, Copy)]
 struct Prop<'a> {
     key: &'a str,
@@ -114,6 +116,8 @@ struct Binding<'a> {
     modifiers: std::vec::Vec<&'a str>,
     /// A static `class` merged ahead of this dynamic `:class`.
     merge: Option<&'a str>,
+    /// Authored position, which orders an element's spread sources.
+    position: u32,
 }
 
 /// The binding families the native projection emits.
@@ -130,6 +134,10 @@ enum BindingKind {
     /// Slot content on a `<template #name>` or its component: `name` is the
     /// slot name, `value` the parameter pattern (empty when there is none).
     Slot,
+    /// `v-bind="object"`: the element's props merge in authored order.
+    Spread,
+    /// `v-on="object"`: listeners bound from an object.
+    Handlers,
 }
 
 impl<'a> NativeArtifact<'a> {
