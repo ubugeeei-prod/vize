@@ -16,8 +16,9 @@ _None._
 
 ## Naive grep disagreements (resolved/grep)
 
-| product   | resolved | grep |
-| --------- | -------: | ---: |
-| `Croquis` |        0 |    1 |
-| `Span`    |        0 |   89 |
-| `Symbol`  |        0 |    3 |
+| product                   | resolved | grep |
+| ------------------------- | -------: | ---: |
+| `Croquis`                 |        0 |    1 |
+| `Span`                    |        0 |   89 |
+| `Symbol`                  |        0 |    3 |
+| `Croquis.unused_bindings` |        0 |    1 |
