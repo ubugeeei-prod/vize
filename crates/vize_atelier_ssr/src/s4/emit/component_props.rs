@@ -22,19 +22,55 @@ enum Segment {
     Spread(String),
 }
 
-/// A dynamic directive argument the plan emitter owns: a bare identifier,
-/// which the legacy walker spells `_ctx.<name>` without any rewrite.
-fn dynamic_key(name: &DynamicName<'_>) -> Result<Option<String>> {
-    let DynamicName::Dynamic(expr) = name else {
-        return Ok(None);
-    };
-    let source = expr.source();
-    let simple = is_valid_js_identifier(source)
-        && !matches!(source, "true" | "false" | "null" | "undefined");
-    if !simple {
-        return Err(LegacyReason::Binding.into());
+impl Emitter<'_, '_, '_, '_, '_, '_> {
+    /// A `v-bind` / `v-on` dynamic key the plan emitter owns: a bare
+    /// identifier, spelled `_ctx.<name>` outside a scope and as the local
+    /// inside a `v-for` / slot scope (the legacy `dynamic_arg_to_string`
+    /// over an argument the transform leaves unprefixed).
+    pub(super) fn dynamic_key(&self, name: &DynamicName<'_>) -> Result<String> {
+        let DynamicName::Dynamic(expr) = name else {
+            return Err(LegacyReason::Binding.into());
+        };
+        super::attrs::admit_dynamic_key(expr)?;
+        Ok(self.ctx_key(expr.source()))
     }
-    Ok(Some(cstr!("_ctx.{source}")))
+
+    /// A custom directive's dynamic argument. The transform prefixes it like
+    /// a value (`$setup.x` / `$props.x` under binding metadata), and the
+    /// legacy `dynamic_arg_to_string` then spells a still-bare identifier as
+    /// `_ctx.<name>`.
+    pub(super) fn directive_argument(&self, name: &DynamicName<'_>) -> Result<String> {
+        let DynamicName::Dynamic(expr) = name else {
+            return Err(LegacyReason::Binding.into());
+        };
+        super::attrs::admit_dynamic_key(expr)?;
+        let rewritten = self
+            .exprs
+            .expr(expr, TransformContent::Padded)
+            .map_err(|_| LegacyReason::ExpressionOrEncoding)?;
+        if rewritten.used_unref {
+            return Err(LegacyReason::ExpressionOrEncoding.into());
+        }
+        let text = rewritten.text;
+        if is_valid_js_identifier(&text)
+            && !matches!(text.as_str(), "true" | "false" | "null" | "undefined")
+        {
+            return Ok(self.ctx_key(&text));
+        }
+        Ok(
+            crate::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params(
+                &self.scoped_params,
+                &text,
+            ),
+        )
+    }
+
+    fn ctx_key(&self, name: &str) -> String {
+        crate::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params(
+            &self.scoped_params,
+            &cstr!("_ctx.{name}"),
+        )
+    }
 }
 
 /// `v-bind` key modifiers: `.camel` camelizes, `.prop` / `.attr` prefix.
@@ -133,7 +169,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                         entries.push(component_prop_entry(&key, &value, false));
                     }
                     Some(name) => {
-                        let key = dynamic_key(name)?.ok_or(LegacyReason::Binding)?;
+                        let key = self.dynamic_key(name)?;
                         entries.push(component_prop_entry(&key, &value, true));
                     }
                 }
@@ -154,7 +190,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                         entries.push(component_prop_entry(&key, &handler, false));
                     }
                     DynamicName::Dynamic(_) => {
-                        let name = dynamic_key(name)?.ok_or(LegacyReason::Binding)?;
+                        let name = self.dynamic_key(name)?;
                         self.ctx.use_core_helper(RuntimeHelper::ToHandlerKey);
                         let key = cstr!("_toHandlerKey({name})");
                         entries.push(component_prop_entry(&key, &handler, true));

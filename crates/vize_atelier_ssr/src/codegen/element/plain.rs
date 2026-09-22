@@ -1,17 +1,10 @@
 //! Plain HTML element SSR emission and element-only directives.
 
-use super::props::{
-    component_prop_entry, is_static_named_prop, merge_prop_values, normalize_prop_entries,
-    quoted_js_string, transform_bound_prop_key, wrap_call,
-};
-use super::spanned_props::{
-    attribute_entry, component_props_object_spanned, merge_props_call, wrap_spanned,
-};
+use super::props::{is_static_named_prop, merge_prop_values, quoted_js_string};
 use super::{
-    DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
-    ToCompactString, VNodePropEntry, cstr, escape_html_attr,
+    ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
+    ToCompactString, cstr, escape_html_attr,
 };
-use vize_atelier_core::codegen::spanned::SpannedText;
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process a plain HTML element
@@ -22,12 +15,13 @@ impl<'a> SsrCodegenContext<'a> {
         self.push_string_part_static("<");
         self.push_string_part_static_mapped(tag, el.loc.span.start + 1);
 
-        // Process attributes
-        if inherit_attrs {
-            let attrs = self.build_element_attrs_expression(el, true);
-            if attrs.as_str() != "null" {
-                self.use_ssr_helper(RuntimeHelper::SsrRenderAttrs);
-                self.push_string_part_dynamic_spanned(wrap_spanned("_ssrRenderAttrs", &attrs));
+        // Process attributes: one merged props object (Vue's `needMergeProps`)
+        // or the inline attribute parts.
+        let mut owned_content = None;
+        if inherit_attrs || super::merged::needs_merged_props(el) {
+            if let Some(merged) = self.merged_element_attrs(el, inherit_attrs) {
+                self.push_string_part_dynamic_spanned(merged.attrs);
+                owned_content = merged.content;
             }
         } else {
             self.process_element_attrs(el);
@@ -69,7 +63,9 @@ impl<'a> SsrCodegenContext<'a> {
 
         self.push_string_part_static(">");
 
-        if let Some(exp) = crate::get_v_html_exp(el) {
+        if let Some(content) = owned_content {
+            self.push_string_part_dynamic(&content);
+        } else if let Some(exp) = crate::get_v_html_exp(el) {
             let exp = self.expression_to_string(exp);
             self.push_string_part_dynamic(&cstr!("({exp}) ?? ''"));
         } else if let Some(exp) = crate::get_v_text_exp(el) {
@@ -147,196 +143,6 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    fn build_element_attrs_expression(
-        &mut self,
-        el: &ElementNode,
-        inherit_attrs: bool,
-    ) -> SpannedText {
-        let mut entries: std::vec::Vec<VNodePropEntry> = std::vec::Vec::new();
-        let mut spreads: std::vec::Vec<String> = std::vec::Vec::new();
-        let mut needs_normalize = false;
-        let mut dynamic_model_exp = None;
-
-        for prop in &el.props {
-            match prop {
-                PropNode::Attribute(attr) => {
-                    let value = attr
-                        .value
-                        .as_ref()
-                        .map(|value| quoted_js_string(value.content))
-                        .unwrap_or_else(|| "\"\"".to_compact_string());
-                    entries.push(attribute_entry(attr, &value, self.spans_enabled()));
-                }
-                PropNode::Directive(dir) => {
-                    self.collect_element_directive_attr(
-                        el,
-                        dir,
-                        &mut entries,
-                        &mut spreads,
-                        &mut needs_normalize,
-                        &mut dynamic_model_exp,
-                    );
-                }
-            }
-        }
-
-        let entries = normalize_prop_entries(entries);
-        let mut args: std::vec::Vec<SpannedText> = std::vec::Vec::new();
-
-        if !spreads.is_empty() {
-            self.use_core_helper(RuntimeHelper::NormalizeProps);
-            self.use_core_helper(RuntimeHelper::GuardReactiveProps);
-            args.extend(spreads.into_iter().map(|spread| {
-                let guarded = wrap_call("_guardReactiveProps", &spread);
-                SpannedText::from(wrap_call("_normalizeProps", &guarded))
-            }));
-        }
-
-        if !entries.is_empty() {
-            let object = component_props_object_spanned(&entries);
-            if needs_normalize {
-                self.use_core_helper(RuntimeHelper::NormalizeProps);
-                args.push(wrap_spanned("_normalizeProps", &object));
-            } else {
-                args.push(object);
-            }
-        }
-
-        if inherit_attrs {
-            args.push(SpannedText::plain("_attrs"));
-        }
-
-        if let Some(model_exp) = dynamic_model_exp {
-            self.use_ssr_helper(RuntimeHelper::SsrGetDynamicModelProps);
-            let existing_props = self.merge_props_args_expression(&args);
-            let model_props = cstr!("_ssrGetDynamicModelProps({existing_props}, {model_exp})");
-            args.push(SpannedText::from(model_props));
-        }
-
-        if args.is_empty() {
-            return SpannedText::plain("null");
-        }
-
-        if args.len() == 1 {
-            return args.into_iter().next().unwrap_or_default();
-        }
-
-        self.use_core_helper(RuntimeHelper::MergeProps);
-        merge_props_call(&args)
-    }
-
-    fn merge_props_args_expression(&mut self, args: &[SpannedText]) -> String {
-        match args {
-            [] => "{}".to_compact_string(),
-            [arg] => arg.as_str().into(),
-            _ => {
-                self.use_core_helper(RuntimeHelper::MergeProps);
-                merge_props_call(args).as_str().into()
-            }
-        }
-    }
-
-    fn collect_element_directive_attr(
-        &mut self,
-        el: &ElementNode,
-        dir: &DirectiveNode,
-        entries: &mut std::vec::Vec<VNodePropEntry>,
-        spreads: &mut std::vec::Vec<String>,
-        needs_normalize: &mut bool,
-        dynamic_model_exp: &mut Option<String>,
-    ) {
-        match dir.name {
-            "bind" => {
-                let value = dir
-                    .exp
-                    .as_ref()
-                    .map(|exp| self.expression_to_string(exp))
-                    .unwrap_or_else(|| "undefined".to_compact_string());
-
-                let Some(arg) = &dir.arg else {
-                    spreads.push(value);
-                    return;
-                };
-
-                let arg_is_static =
-                    matches!(arg, ExpressionNode::Simple(simple) if simple.is_static);
-                if arg_is_static {
-                    let key = transform_bound_prop_key(&self.expression_to_string(arg), dir);
-                    entries.push(self.bound_prop_entry(&key, arg, dir, &value));
-                } else {
-                    *needs_normalize = true;
-                    let key = self.dynamic_arg_to_string(arg);
-                    entries.push(component_prop_entry(&key, &value, true));
-                }
-            }
-            "model" => {
-                self.collect_v_model_element_attr(el, dir, entries, dynamic_model_exp);
-            }
-            "show" => {
-                let Some(exp) = dir.exp.as_ref().map(|exp| self.expression_to_string(exp)) else {
-                    return;
-                };
-                entries.push(component_prop_entry(
-                    "style",
-                    &cstr!("(({exp}) ? null : {{ display: \"none\" }})"),
-                    false,
-                ));
-            }
-            "on" | "html" | "text" => {}
-            _ => {
-                self.use_ssr_helper(RuntimeHelper::SsrGetDirectiveProps);
-                spreads.push(cstr!(
-                    "_ssrGetDirectiveProps(_ctx, _directives, \"{}\")",
-                    dir.name
-                ));
-            }
-        }
-    }
-
-    fn collect_v_model_element_attr(
-        &mut self,
-        el: &ElementNode,
-        dir: &DirectiveNode,
-        entries: &mut std::vec::Vec<VNodePropEntry>,
-        dynamic_model_exp: &mut Option<String>,
-    ) {
-        let Some(exp) = dir.exp.as_ref().map(|exp| self.expression_to_string(exp)) else {
-            return;
-        };
-
-        if el.tag == "input" {
-            if self.get_dynamic_bind_exp(el, "type").is_some() {
-                *dynamic_model_exp = Some(exp);
-                return;
-            }
-
-            let input_type = self.get_element_attr_value(el, "type");
-            match input_type.as_deref() {
-                Some("checkbox") => {
-                    self.use_ssr_helper(RuntimeHelper::SsrLooseContain);
-                    entries.push(component_prop_entry(
-                        "checked",
-                        &cstr!("(Array.isArray({exp}) ? _ssrLooseContain({exp}, null) : {exp})"),
-                        false,
-                    ));
-                }
-                Some("radio") => {
-                    self.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
-                    let value = self
-                        .get_element_attr_value(el, "value")
-                        .map(|value| quoted_js_string(&value))
-                        .unwrap_or_else(|| "null".to_compact_string());
-                    entries.push(component_prop_entry(
-                        "checked",
-                        &cstr!("_ssrLooseEqual({exp}, {value})"),
-                        false,
-                    ));
-                }
-                _ => entries.push(component_prop_entry("value", &exp, false)),
-            }
-        }
-    }
-
     /// Process a directive on an element
     fn process_directive_on_element(
         &mut self,
@@ -362,10 +168,9 @@ impl<'a> SsrCodegenContext<'a> {
             "text" => {
                 // v-text is processed when generating children
             }
-            _ => {
-                // Custom directives: use ssrGetDirectiveProps
-                self.process_custom_directive(el, dir);
-            }
+            // `v-once` / `v-cloak` / `v-memo` render nothing on the server;
+            // custom directives take the merged-props path.
+            _ => {}
         }
     }
 
@@ -377,7 +182,14 @@ impl<'a> SsrCodegenContext<'a> {
     ) {
         use vize_atelier_core::ExpressionNode;
 
+        let camel = dir
+            .modifiers
+            .iter()
+            .any(|modifier| modifier.content == "camel");
         let arg_name = match &dir.arg {
+            Some(ExpressionNode::Simple(simple)) if simple.is_static && camel => {
+                Some(self.allocator.alloc_str(&vize_s0::camelize(simple.content)))
+            }
             Some(ExpressionNode::Simple(simple)) if simple.is_static => Some(simple.content),
             _ => None,
         };
@@ -559,20 +371,6 @@ impl<'a> SsrCodegenContext<'a> {
             .any(|prop| is_static_named_prop(prop, "style"))
     }
 
-    /// Process a custom directive
-    fn process_custom_directive(
-        &mut self,
-        _el: &ElementNode,
-        dir: &vize_atelier_core::DirectiveNode,
-    ) {
-        self.use_ssr_helper(RuntimeHelper::SsrGetDirectiveProps);
-        // Custom directives use ssrGetDirectiveProps to merge props
-        self.push_string_part_dynamic(&cstr!(
-            "_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, _directives, \"{}\"))",
-            dir.name
-        ));
-    }
-
     /// Get an attribute value from an element
     pub(crate) fn get_element_attr_value(&self, el: &ElementNode, name: &str) -> Option<String> {
         use vize_atelier_core::PropNode;
@@ -591,7 +389,7 @@ impl<'a> SsrCodegenContext<'a> {
     /// `el`, if any. Used by SSR v-model lowering to find `:type` on
     /// `<input :type="t" v-model>` so the dynamic-model helper kicks in.
     /// (#962)
-    fn get_dynamic_bind_exp(&mut self, el: &ElementNode, name: &str) -> Option<String> {
+    pub(super) fn get_dynamic_bind_exp(&mut self, el: &ElementNode, name: &str) -> Option<String> {
         for prop in &el.props {
             let PropNode::Directive(dir) = prop else {
                 continue;

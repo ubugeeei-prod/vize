@@ -3,5 +3,5 @@ source: crates/vize_atelier_ssr/src/lib.rs
 expression: result.code.as_str()
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(`<div${_ssrRenderAttrs(_mergeProps({ style: ((_ctx.visible) ? null : { display: "none" }) }, _attrs))}>toggle</div>`)
+  _push(`<div${_ssrRenderAttrs(_mergeProps(_attrs, { style: ((_ctx.visible) ? null : { display: "none" }) }))}>toggle</div>`)
 }

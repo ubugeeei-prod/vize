@@ -5,6 +5,8 @@
 
 mod component;
 mod component_props;
+mod directive_props;
+mod merged;
 mod plain;
 pub(crate) mod props;
 mod slot;

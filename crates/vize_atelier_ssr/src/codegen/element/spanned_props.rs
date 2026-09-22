@@ -84,15 +84,6 @@ impl SsrCodegenContext<'_> {
     }
 }
 
-/// `callee(arg)` keeping `arg`'s anchors.
-pub(crate) fn wrap_spanned(callee: &str, arg: &SpannedText) -> SpannedText {
-    let mut out = SpannedText::plain(callee);
-    out.push_str("(");
-    out.push_spanned(arg);
-    out.push_str(")");
-    out
-}
-
 /// The object literal [`component_props_object`](super::props::component_props_object)
 /// emits, with entry anchors kept.
 pub(crate) fn component_props_object_spanned(entries: &[VNodePropEntry]) -> SpannedText {

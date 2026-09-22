@@ -10,6 +10,7 @@ mod component_fixtures;
 mod control_fixtures;
 mod fixtures;
 mod slot_fixtures;
+mod vue_align_fixtures;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_core::options::{BindingMetadata, BindingType, CustomElementMatcher};
@@ -131,6 +132,7 @@ fn admitted_fixtures_emit_from_the_plan_with_legacy_byte_parity() {
             .chain(control_fixtures::ADMITTED)
             .chain(component_fixtures::ADMITTED)
             .chain(slot_fixtures::ADMITTED)
+            .chain(vue_align_fixtures::ADMITTED)
         {
             let context = std::format!("{set}/{name}: {source}");
             let selected = selection(source, &options, &experimental);

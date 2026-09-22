@@ -94,8 +94,7 @@ fn unowned_shapes_name_their_legacy_reason() {
             LegacyReason::Operation,
         ),
         (r#"<Foo v-model:[a]="x" />"#, LegacyReason::Binding),
-        (r#"<div v-focus="ok"></div>"#, LegacyReason::Binding),
-        (r#"<div v-once>{{ a }}</div>"#, LegacyReason::Binding),
+        (r#"<div v-focus:[a+b]="ok"></div>"#, LegacyReason::Binding),
         (r#"<script>x</script>"#, LegacyReason::Element),
         (
             "<div><!-- @vize:forget pre-escaped --><p>y</p></div>",
@@ -106,8 +105,7 @@ fn unowned_shapes_name_their_legacy_reason() {
             LegacyReason::SurfaceSemantics,
         ),
         (r#"<input v-model:foo="x">"#, LegacyReason::Binding),
-        (r#"<div :id.camel="x"></div>"#, LegacyReason::Binding),
-        (r#"<div :[key]="x"></div>"#, LegacyReason::Binding),
+        (r#"<div :[a+b]="x"></div>"#, LegacyReason::Binding),
         (
             r#"<div>{{ a &amp;&amp; b }}</div>"#,
             LegacyReason::ExpressionOrEncoding,

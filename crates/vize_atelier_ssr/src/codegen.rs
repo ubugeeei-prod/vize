@@ -7,6 +7,7 @@ mod component_binding;
 mod component_resolution;
 pub(crate) mod element;
 pub(crate) mod helpers;
+mod module_parts;
 pub(crate) mod scope_prefix;
 mod spans;
 
@@ -76,6 +77,10 @@ pub struct SsrCodegenContext<'a> {
     map: Option<SourceMapBuilder>,
     /// Filename recorded in the Source Map v3 `file` and `sources` fields.
     source_map_filename: String,
+    /// `_tempN` bindings allocated by merged-props elements.
+    pub(crate) temps: u32,
+    /// Where the render body starts, so temp declarations land there.
+    body_start: usize,
 }
 
 impl<'a> SsrCodegenContext<'a> {
@@ -118,6 +123,8 @@ impl<'a> SsrCodegenContext<'a> {
             select_v_model_stack: std::vec::Vec::new(),
             map,
             source_map_filename,
+            temps: 0,
+            body_start: 0,
         }
     }
 
@@ -168,6 +175,7 @@ impl<'a> SsrCodegenContext<'a> {
             self.push(css_vars);
             self.push(" }\n");
         }
+        self.mark_body_start();
     }
 
     /// Close `ssrRender` and assemble the module parts.
@@ -175,6 +183,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.flush_push();
         self.indent_level -= 1;
         self.push("}\n");
+        self.declare_temps();
 
         let preamble = self.build_preamble();
 
@@ -280,43 +289,6 @@ impl<'a> SsrCodegenContext<'a> {
         for _ in 0..self.indent_level {
             self.code.extend_from_slice(b"  ");
         }
-    }
-
-    /// Build the preamble with imports
-    fn build_preamble(&self) -> String {
-        let mut preamble = String::default();
-
-        // SSR helpers from @vue/server-renderer
-        if !self.ssr_helpers.is_empty() {
-            preamble.push_str("import { ");
-            let mut ssr_helpers: Vec<_> = self.ssr_helpers.iter().copied().collect();
-            ssr_helpers.sort();
-            push_helper_imports(&mut preamble, &ssr_helpers);
-            preamble.push_str(" } from \"@vue/server-renderer\"\n");
-        }
-
-        // Core helpers from vue
-        if !self.core_helpers.is_empty() {
-            preamble.push_str("import { ");
-            let mut core_helpers: Vec<_> = self.core_helpers.iter().copied().collect();
-            core_helpers.sort();
-            push_helper_imports(&mut preamble, &core_helpers);
-            preamble.push_str(" } from \"vue\"\n");
-        }
-
-        preamble
-    }
-}
-
-fn push_helper_imports(out: &mut String, helpers: &[RuntimeHelper]) {
-    for (index, helper) in helpers.iter().enumerate() {
-        if index > 0 {
-            out.push_str(", ");
-        }
-        let name = helper.name();
-        out.push_str(name);
-        out.push_str(" as _");
-        out.push_str(name);
     }
 }
 

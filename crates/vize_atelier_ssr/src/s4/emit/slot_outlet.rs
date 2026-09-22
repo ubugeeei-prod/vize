@@ -36,8 +36,8 @@ fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
                         return Err(LegacyReason::Binding.into());
                     }
                     s2::BindingOp::Bind(bind) => {
-                        if matches!(bind.name, Some(DynamicName::Dynamic(_))) {
-                            return Err(LegacyReason::Binding.into());
+                        if let Some(DynamicName::Dynamic(argument)) = &bind.name {
+                            super::attrs::admit_dynamic_key(argument)?;
                         }
                         admit_value(bind.value.as_ref())?;
                     }
@@ -132,13 +132,16 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 Source::Binding(s2::BindingOp::Bind(bind)) => {
                     let value = bind.value.as_ref().ok_or(LegacyReason::Binding)?;
                     let value = self.expr(value, TransformContent::Decoded)?;
-                    match bind.name {
+                    match &bind.name {
                         None => spreads.push(value),
                         Some(DynamicName::Static(name)) => {
                             let key = slot_prop_key(name, &bind.modifiers);
                             entries.push(component_prop_entry(&key, &value, false));
                         }
-                        Some(DynamicName::Dynamic(_)) => return Err(LegacyReason::Binding.into()),
+                        Some(name @ DynamicName::Dynamic(_)) => {
+                            let key = self.dynamic_key(name)?;
+                            entries.push(component_prop_entry(&key, &value, true));
+                        }
                     }
                 }
                 _ => {}

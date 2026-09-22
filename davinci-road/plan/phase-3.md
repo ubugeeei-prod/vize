@@ -197,8 +197,10 @@ transform door.
 _JSX SSR 2026-09-22:_ JSX/TSX SSR enters the same plan lane from its S2
 projection (`compile_s2_to_ssr`), byte-identical to the walker on every JSX
 SSR snapshot and a 28-case differential; JSX custom directives and
-`<component>` still use the walker. The Vue 3.5 alignment of the legacy
-directive output (`fix(ssr)!`), Croquis-informed rewrites, a canonical Real
+`<component>` still use the walker. _Vue 3.5 alignment (`fix(ssr)!`):_ legacy
+directives, binds, spreads, and dynamic keys match `@vue/compiler-ssr` 3.5
+([waivers](./compile-waivers.md) W-SSR-1..16) and the plan emits them (checkout
+709 of 736, vendor 1,279 of 1,279). Croquis-informed rewrites, a canonical Real
 Project Matrix run, and the legacy walker deletion remain before P3-8 closes.
 
 **P3-9 S4 emitter + source maps.** Structured span-carrying emission document

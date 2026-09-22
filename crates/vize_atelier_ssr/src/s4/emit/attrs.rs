@@ -11,7 +11,7 @@ use super::{Emitter, Result, model, plan_source, require_dynamic};
 use crate::codegen::element::props::{merge_prop_values, quoted_js_string};
 use vize_atelier_core::codegen::spanned::SpannedText;
 
-use super::spans::{argument_start, attribute_value_start, directive_value, expression_span};
+use super::spans::{attribute_value_start, directive_value, expression_span};
 use crate::codegen::helpers::escape_html_attr;
 use crate::s4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
@@ -21,9 +21,20 @@ use crate::s4::{AdmissionFailure, LegacyReason};
 
 pub(super) type Attached<'r, 'a> = [SsrStringSegment<'r, 'a>];
 
-/// One admitted `v-bind`: a static name or the object spread, never modified.
+/// The name position of one admitted `v-bind`.
+pub(super) enum BindName<'r, 'a> {
+    /// `v-bind="object"`.
+    Spread,
+    Static(&'a str),
+    /// `:[key]`: a bare identifier (rendered through the merged path).
+    Dynamic(&'r DynamicName<'a>),
+}
+
+/// One admitted `v-bind`. `.camel` camelizes the key; `.prop` / `.attr`
+/// render as the plain attribute on the server.
 pub(super) struct Bind<'r, 'a> {
-    pub(super) name: Option<&'a str>,
+    pub(super) name: BindName<'r, 'a>,
+    pub(super) camel: bool,
     pub(super) value: &'r ExprRef<'a>,
     /// The whole directive's authored range.
     pub(super) span: vize_s0::Span,
@@ -54,6 +65,19 @@ pub(super) fn admit(attached: &Attached<'_, '_>, owner_fact: u32, tag: &str) -> 
                     s2::BindingOp::VueShow(show) => admit_value(Some(&show.value))?,
                     s2::BindingOp::VueHtml(html) => admit_value(html.value.as_ref())?,
                     s2::BindingOp::VueText(text) => admit_value(text.value.as_ref())?,
+                    // Rendered through `_ssrGetDirectiveProps`; a dynamic
+                    // argument must be a bare identifier.
+                    s2::BindingOp::VueDirective(directive) => {
+                        if let Some(value) = &directive.value {
+                            admit_value(Some(value))?;
+                        }
+                        if let Some(DynamicName::Dynamic(argument)) = &directive.argument {
+                            admit_dynamic_key(argument)?;
+                        }
+                    }
+                    // Server rendering drops them; their partition is static.
+                    s2::BindingOp::VueOnce(_) | s2::BindingOp::VueCloak(_) => continue,
+                    s2::BindingOp::VueMemo(_) => {}
                     _ => return Err(LegacyReason::Binding.into()),
                 }
                 require_dynamic(segment)?;
@@ -83,22 +107,43 @@ pub(super) fn bind<'r, 'a>(binding: &'r s2::BindingOp<'a>) -> Result<Option<Bind
     let s2::BindingOp::Bind(bind) = binding else {
         return Ok(None);
     };
-    if !bind.modifiers.is_empty() {
+    if bind
+        .modifiers
+        .iter()
+        .any(|modifier| !matches!(*modifier, "camel" | "prop" | "attr"))
+    {
         return Err(LegacyReason::Binding.into());
     }
-    let name = match bind.name {
-        None => None,
-        Some(DynamicName::Static(name)) => Some(name),
-        Some(DynamicName::Dynamic(_)) => return Err(LegacyReason::Binding.into()),
+    let name = match &bind.name {
+        None => BindName::Spread,
+        Some(DynamicName::Static(name)) => BindName::Static(name),
+        Some(name @ DynamicName::Dynamic(argument)) => {
+            admit_dynamic_key(argument)?;
+            BindName::Dynamic(name)
+        }
     };
     admit_value(bind.value.as_ref())?;
     match &bind.value {
         Some(value) => Ok(Some(Bind {
             name,
+            camel: bind.modifiers.contains(&"camel"),
             value,
             span: bind.span,
         })),
         None => Err(LegacyReason::Binding.into()),
+    }
+}
+
+/// A dynamic key the plan emitter owns: a bare identifier (`_ctx.<key>`, or
+/// the scope-local name inside a `v-for` / slot scope).
+pub(super) fn admit_dynamic_key(argument: &ExprRef<'_>) -> Result<()> {
+    let source = argument.source();
+    let simple = crate::codegen::element::props::is_valid_js_identifier(source)
+        && !matches!(source, "true" | "false" | "null" | "undefined");
+    if simple {
+        Ok(())
+    } else {
+        Err(LegacyReason::Binding.into())
     }
 }
 
@@ -218,7 +263,17 @@ pub(super) fn emit_inline(
                         continue;
                     };
                     let exp = em.expr(bind.value, TransformContent::Decoded)?;
-                    emit_inline_bind(em, attached, &bind, exp)?;
+                    let name = match bind.name {
+                        BindName::Static(name) if bind.camel => Some(vize_s0::camelize(name)),
+                        BindName::Static(name) => Some(name.to_compact_string()),
+                        // Spreads and dynamic keys take the merged path.
+                        BindName::Spread | BindName::Dynamic(_) => {
+                            return Err(AdmissionFailure::Invalid(
+                                "a merged-props bind reached the inline attribute path",
+                            ));
+                        }
+                    };
+                    super::inline_bind::emit(em, attached, &bind, name.as_deref(), exp)?;
                 }
                 s2::BindingOp::Model(model) => model::emit_inline(em, attached, model, tag)?,
                 s2::BindingOp::VueShow(show) if !explicit_style => {
@@ -230,72 +285,6 @@ pub(super) fn emit_inline(
                 _ => {}
             },
             _ => {}
-        }
-    }
-    Ok(())
-}
-
-fn emit_inline_bind(
-    em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
-    attached: &Attached<'_, '_>,
-    bind: &Bind<'_, '_>,
-    exp: String,
-) -> Result<()> {
-    match bind.name {
-        Some(name) if vize_s0::is_reserved_prop(name) => {}
-        Some("class") => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderClass);
-            em.ctx.push_string_part_static(" class=\"");
-            let class_exp = match static_value(attached, "class") {
-                Some(static_class) => {
-                    let quoted = quoted_js_string(&static_class);
-                    cstr!("_ssrRenderClass([{quoted}, {exp}])")
-                }
-                None => cstr!("_ssrRenderClass({exp})"),
-            };
-            em.ctx.push_string_part_dynamic(&class_exp);
-            em.ctx.push_string_part_static("\"");
-        }
-        Some("style") => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderStyle);
-            em.ctx.push_string_part_static(" style=\"");
-            let mut values = std::vec::Vec::new();
-            if let Some(static_style) = static_value(attached, "style") {
-                values.push(quoted_js_string(&static_style));
-            }
-            values.push(exp);
-            if let Some(show) = em.show_style(attached)? {
-                values.push(show);
-            }
-            let style_exp = merge_prop_values(values);
-            em.ctx
-                .push_string_part_dynamic(&cstr!("_ssrRenderStyle({style_exp})"));
-            em.ctx.push_string_part_static("\"");
-        }
-        Some(name) if vize_s0::is_boolean_attr(name) => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
-            em.ctx.push_string_part_dynamic(&cstr!(
-                "(_ssrIncludeBooleanAttr({exp})) ? \" {name}\" : \"\""
-            ));
-        }
-        Some(name) => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttr);
-            // The name maps to the authored argument and the value to its
-            // expression, as the AST walker writes `_ssrRenderAttr`.
-            let mut piece = SpannedText::plain("_ssrRenderAttr(\"");
-            match argument_start(em.ctx.source, bind.span, name) {
-                Some(start) if em.ctx.spans_enabled() => piece.push_mapped(name, start),
-                _ => piece.push_str(name),
-            }
-            piece.push_str("\", ");
-            piece.push_spanned(&em.bound_expression(&exp, bind));
-            piece.push_str(")");
-            em.ctx.push_string_part_dynamic_spanned(piece);
-        }
-        None => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttrs);
-            em.ctx
-                .push_string_part_dynamic(&cstr!("_ssrRenderAttrs({exp})"));
         }
     }
     Ok(())

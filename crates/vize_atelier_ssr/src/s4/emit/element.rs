@@ -7,7 +7,7 @@ use vize_s0::cstr;
 use vize_s1_to_s2::TransformContent;
 use vize_s2::op as s2;
 
-use super::{Emitter, Flags, Result, attrs, fallthrough, model, plan_source};
+use super::{Emitter, Flags, Result, attrs, merged, model, plan_source};
 use crate::s4::LegacyReason;
 use crate::s4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
@@ -53,8 +53,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push_string_part_static("<");
         self.ctx
             .push_string_part_static_mapped(tag, element.span.start + 1);
-        if inherit {
-            fallthrough::emit(self, attached, tag)?;
+        let mut owned_content = None;
+        if inherit || merged::needs_merged(attached) {
+            if let Some(merged) = self.merged_attrs(attached, tag, inherit)? {
+                self.ctx.push_string_part_dynamic_spanned(merged.attrs);
+                owned_content = merged.content;
+            }
         } else {
             attrs::emit_inline(self, attached, tag)?;
         }
@@ -73,6 +77,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             if !element.children.ops.is_empty() {
                 return Err(LegacyReason::Structure.into());
             }
+        } else if let Some(owned) = owned_content {
+            self.ctx.push_string_part_dynamic(&owned);
+            self.skip_children()?;
         } else {
             self.content(content)?;
         }

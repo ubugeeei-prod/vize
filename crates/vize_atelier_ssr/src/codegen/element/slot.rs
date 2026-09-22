@@ -85,25 +85,23 @@ impl<'a> SsrCodegenContext<'a> {
                         continue;
                     };
 
-                    let ExpressionNode::Simple(arg) = arg else {
-                        entries.push(component_prop_entry(
-                            &self.expression_to_string(arg),
-                            &value,
-                            true,
-                        ));
-                        continue;
+                    let simple = match arg {
+                        ExpressionNode::Simple(simple) if simple.is_static => simple,
+                        _ => {
+                            // `[k || ""]` reads the key like any other
+                            // expression: `_ctx.k` outside a scope.
+                            let key = self.dynamic_arg_to_string(arg);
+                            entries.push(component_prop_entry(&key, &value, true));
+                            continue;
+                        }
                     };
 
-                    if arg.is_static && arg.content == "name" {
+                    if simple.content == "name" {
                         continue;
                     }
 
-                    let key = if arg.is_static {
-                        transform_slot_outlet_bound_prop_key(arg.content, dir)
-                    } else {
-                        String::new(arg.content)
-                    };
-                    entries.push(component_prop_entry(&key, &value, !arg.is_static));
+                    let key = transform_slot_outlet_bound_prop_key(simple.content, dir);
+                    entries.push(component_prop_entry(&key, &value, false));
                 }
                 _ => {}
             }
