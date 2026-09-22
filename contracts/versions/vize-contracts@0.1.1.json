@@ -1,0 +1,289 @@
+{
+  "format": "vize.contract-surface",
+  "formatVersion": 1,
+  "package": "vize:contracts",
+  "version": "0.1.1",
+  "protocolVersion": 1,
+  "pages": {
+    "facts-page": 1,
+    "projection-page": 1,
+    "s1-page": 1,
+    "s2-page": 1
+  },
+  "interfaces": {
+    "expression-analysis": {
+      "types": {
+        "analysis": {
+          "record": [
+            {
+              "name": "facts",
+              "type": "types.page"
+            },
+            {
+              "name": "projection",
+              "type": "types.page"
+            },
+            {
+              "name": "diagnostics",
+              "type": "list<types.diagnostic>"
+            }
+          ]
+        },
+        "binding": {
+          "record": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "kind",
+              "type": "string"
+            }
+          ]
+        },
+        "expression": {
+          "record": [
+            {
+              "name": "id",
+              "type": "u32"
+            },
+            {
+              "name": "source",
+              "type": "string"
+            },
+            {
+              "name": "span",
+              "type": "types.span"
+            }
+          ]
+        },
+        "expression-batch": {
+          "record": [
+            {
+              "name": "environment",
+              "type": "list<expression-analysis.binding>"
+            },
+            {
+              "name": "expressions",
+              "type": "list<expression-analysis.expression>"
+            }
+          ]
+        }
+      },
+      "functions": {
+        "analyze": {
+          "params": [
+            {
+              "name": "batch",
+              "type": "expression-analysis.expression-batch"
+            }
+          ],
+          "result": "expression-analysis.analysis"
+        }
+      }
+    },
+    "handshake": {
+      "types": {
+        "capability": {
+          "record": [
+            {
+              "name": "protocol-version",
+              "type": "u32"
+            },
+            {
+              "name": "features",
+              "type": "list<string>"
+            }
+          ]
+        }
+      },
+      "functions": {
+        "get-capability": {
+          "params": [],
+          "result": "handshake.capability"
+        }
+      }
+    },
+    "input-lowering": {
+      "types": {
+        "lowered-block": {
+          "record": [
+            {
+              "name": "surface",
+              "type": "types.page"
+            },
+            {
+              "name": "semantic",
+              "type": "types.page"
+            },
+            {
+              "name": "diagnostics",
+              "type": "list<types.diagnostic>"
+            }
+          ]
+        },
+        "source-block": {
+          "record": [
+            {
+              "name": "source",
+              "type": "string"
+            },
+            {
+              "name": "base",
+              "type": "u32"
+            },
+            {
+              "name": "lang",
+              "type": "option<string>"
+            }
+          ]
+        }
+      },
+      "functions": {
+        "lower-block": {
+          "params": [
+            {
+              "name": "block",
+              "type": "input-lowering.source-block"
+            }
+          ],
+          "result": "input-lowering.lowered-block"
+        }
+      }
+    },
+    "types": {
+      "types": {
+        "diagnostic": {
+          "record": [
+            {
+              "name": "severity",
+              "type": "types.severity"
+            },
+            {
+              "name": "stage",
+              "type": "types.stage"
+            },
+            {
+              "name": "span",
+              "type": "types.span"
+            },
+            {
+              "name": "message",
+              "type": "string"
+            },
+            {
+              "name": "parts",
+              "type": "list<types.diagnostic-part>"
+            },
+            {
+              "name": "witness",
+              "type": "option<types.witness>"
+            }
+          ]
+        },
+        "diagnostic-part": {
+          "record": [
+            {
+              "name": "kind",
+              "type": "types.part-kind"
+            },
+            {
+              "name": "span",
+              "type": "types.span"
+            },
+            {
+              "name": "message",
+              "type": "string"
+            }
+          ]
+        },
+        "page": {
+          "record": [
+            {
+              "name": "schema-version",
+              "type": "u32"
+            },
+            {
+              "name": "text",
+              "type": "string"
+            }
+          ]
+        },
+        "part-kind": {
+          "enum": [
+            "primary",
+            "secondary",
+            "help",
+            "suggestion"
+          ]
+        },
+        "severity": {
+          "enum": [
+            "error",
+            "warning",
+            "info",
+            "hint"
+          ]
+        },
+        "span": {
+          "record": [
+            {
+              "name": "start",
+              "type": "u32"
+            },
+            {
+              "name": "end",
+              "type": "u32"
+            }
+          ]
+        },
+        "stage": {
+          "enum": [
+            "source",
+            "surface",
+            "semantic",
+            "lowered",
+            "emit"
+          ]
+        },
+        "witness": {
+          "variant": [
+            {
+              "name": "legacy-exempt",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "functions": {}
+    }
+  },
+  "worlds": {
+    "expression-dialect": {
+      "imports": [
+        "types"
+      ],
+      "exports": [
+        "expression-analysis",
+        "handshake"
+      ],
+      "requiredFeatures": [
+        "facts-page@1",
+        "projection-page@1"
+      ]
+    },
+    "input-dialect": {
+      "imports": [
+        "types"
+      ],
+      "exports": [
+        "handshake",
+        "input-lowering"
+      ],
+      "requiredFeatures": [
+        "s1-page@1",
+        "s2-page@1"
+      ]
+    }
+  }
+}

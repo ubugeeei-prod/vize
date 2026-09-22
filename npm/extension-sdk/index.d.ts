@@ -1,4 +1,4 @@
-// The `vize:contracts@0.1.0` WIT types in the component-model JavaScript
+// The `vize:contracts@0.1.1` WIT types in the component-model JavaScript
 // mapping (records as camelCase interfaces, enums as kebab-case string unions,
 // variants as `{ tag, val }`, `option<T>` as `T | undefined`, `u32` as
 // `number`). `tests/tooling/davinci-extension-sdk.test.ts` pins every
@@ -65,6 +65,30 @@ export interface LoweredBlock {
   diagnostics: Array<Diagnostic>;
 }
 
+// interface expression-analysis
+
+export interface Binding {
+  name: string;
+  kind: string;
+}
+
+export interface Expression {
+  id: number;
+  source: string;
+  span: Span;
+}
+
+export interface ExpressionBatch {
+  environment: Array<Binding>;
+  expressions: Array<Expression>;
+}
+
+export interface Analysis {
+  facts: Page;
+  projection: Page;
+  diagnostics: Array<Diagnostic>;
+}
+
 // world input-dialect: what a guest exports
 
 export interface Handshake {
@@ -75,11 +99,20 @@ export interface InputLowering {
   lowerBlock(block: SourceBlock): LoweredBlock;
 }
 
-export declare const PACKAGE: "vize:contracts@0.1.0";
+// world expression-dialect: what a guest exports beside `Handshake`
+
+export interface ExpressionAnalysis {
+  analyze(batch: ExpressionBatch): Analysis;
+}
+
+export declare const PACKAGE: "vize:contracts@0.1.1";
 export declare const PROTOCOL_VERSION: 1;
 export declare const S1_PAGE_SCHEMA: 1;
 export declare const S2_PAGE_SCHEMA: 1;
 export declare const REQUIRED_FEATURES: readonly ["s1-page@1", "s2-page@1"];
+export declare const FACTS_PAGE_SCHEMA: 1;
+export declare const PROJECTION_PAGE_SCHEMA: 1;
+export declare const EXPRESSION_REQUIRED_FEATURES: readonly ["facts-page@1", "projection-page@1"];
 
 /** The capability offer for a guest lowering the given `lang` values. */
 export declare function capability(langs: readonly string[]): Capability;

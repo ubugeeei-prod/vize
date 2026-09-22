@@ -122,8 +122,8 @@ type Surface = {
 
 function newestSurface(): Surface {
   const files = fs.readdirSync(path.join(root, "contracts/versions")).toSorted();
-  assert.deepEqual(files, ["vize-contracts@0.1.0.json"]);
-  return JSON.parse(read("contracts/versions", files[0])) as Surface;
+  assert.deepEqual(files, ["vize-contracts@0.1.0.json", "vize-contracts@0.1.1.json"]);
+  return JSON.parse(read("contracts/versions", files.at(-1)!)) as Surface;
 }
 
 const pascal = (name: string) =>
@@ -183,14 +183,14 @@ test("the TypeScript declarations mirror the released surface", () => {
       }
     }
   }
-  for (const exported of ["handshake", "input-lowering"]) {
+  for (const exported of ["handshake", "input-lowering", "expression-analysis"]) {
     const methods = Object.entries(surface.interfaces[exported].functions).map(
       ([name, fn]) =>
         `${camel(name)}(${fn.params.map((param) => `${camel(param.name)}: ${tsType(param.type)}`).join(", ")}): ${fn.result ? tsType(fn.result) : "void"};`,
     );
     assert.deepEqual(interfaceBody(declarations, pascal(exported)), methods);
   }
-  assert.equal(checked, 11);
+  assert.equal(checked, 15);
 });
 
 test("the JS and Rust SDK constants are the released handshake", async () => {
@@ -213,6 +213,19 @@ test("the JS and Rust SDK constants are the released handshake", async () => {
   const required = surface.worlds["input-dialect"].requiredFeatures;
   assert.deepEqual(sdkJs.REQUIRED_FEATURES, required);
   assert.equal(rustConst("REQUIRED_FEATURES"), `&[${required.map((f) => `"${f}"`).join(", ")}]`);
+  for (const [name, page] of [
+    ["FACTS_PAGE_SCHEMA", "facts-page"],
+    ["PROJECTION_PAGE_SCHEMA", "projection-page"],
+  ]) {
+    assert.equal(sdkJs[name], surface.pages[page], name);
+    assert.equal(rustConst(name), `${surface.pages[page]}`, name);
+  }
+  const expressionRequired = surface.worlds["expression-dialect"].requiredFeatures;
+  assert.deepEqual(sdkJs.EXPRESSION_REQUIRED_FEATURES, expressionRequired);
+  assert.equal(
+    rustConst("EXPRESSION_REQUIRED_FEATURES"),
+    `&[${expressionRequired.map((f) => `"${f}"`).join(", ")}]`,
+  );
   const capability = sdkJs.capability as (langs: string[]) => unknown;
   assert.deepEqual(capability(["zz", "html", "html"]), {
     protocolVersion: 1,

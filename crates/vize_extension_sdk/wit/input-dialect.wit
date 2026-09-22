@@ -1,4 +1,4 @@
-package vize:contracts@0.1.0;
+package vize:contracts@0.1.1;
 
 /// The input-dialect boundary: one source block in, its S1 surface page and
 /// S2 semantic page out.

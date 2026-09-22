@@ -77,6 +77,8 @@ jobs:
         run: cargo clippy -p vize_extension_sdk --target wasm32-wasip2 -- -D warnings -D clippy::wildcard_imports
       - name: Run TS-48 (input world, both hosting modes)
         run: cargo test -p vize_extension_host --features extension-host --test wit_golden
+      - name: Run TS-48 (expression world, both hosting modes) (P6-1b)
+        run: cargo test -p vize_extension_host --features extension-host --test wit_golden_expression --test expression_contract
       - name: Build the hello dialect from the packed SDK and run it (P6-2)
         run: cargo test -p vize_extension_host --features extension-host --test sdk_hello
       - name: Stop runaway and hoarding guests at their limits in both modes (P6-3)

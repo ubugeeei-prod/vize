@@ -57,7 +57,7 @@ pub struct AlphaDesc {
 /// Every production group with an α form. A group gains its row here in the
 /// same change that implements [`AlphaExport`] for it, and the schema doc
 /// documents it before that change can land.
-pub const ALPHA_GROUPS: &[AlphaDesc] = &[];
+pub const ALPHA_GROUPS: &[AlphaDesc] = &[<super::ExpressionFacts as AlphaExport>::ALPHA_DESC];
 
 /// An α page inside its versioned header.
 ///

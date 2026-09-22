@@ -3,6 +3,8 @@
 
 #![allow(dead_code)]
 
+pub mod expression;
+
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -132,7 +134,16 @@ pub fn golden_texts(lowered: &LoweredBlock) -> [String; 3] {
 /// Build the echo guest for `wasm32-wasip2` with `features`, into its own
 /// target directory, and return the component path.
 pub fn build_echo_guest(features: &[&str]) -> PathBuf {
-    let manifest = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/guests/echo/Cargo.toml");
+    build_guest("echo", "vize_contract_echo_guest", features)
+}
+
+/// Build the guest crate in `tests/guests/<dir>` for `wasm32-wasip2` with
+/// `features`, into its own target directory, and return the component.
+pub fn build_guest(dir: &str, artifact: &str, features: &[&str]) -> PathBuf {
+    let manifest = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/guests")
+        .join(dir)
+        .join("Cargo.toml");
     let variant = if features.is_empty() {
         cstr!("default")
     } else {
@@ -142,7 +153,10 @@ pub fn build_echo_guest(features: &[&str]) -> PathBuf {
         || Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target"),
         PathBuf::from,
     );
-    let target_dir = target_root.join("contract-guests").join(variant.as_str());
+    let target_dir = target_root
+        .join("contract-guests")
+        .join(dir)
+        .join(variant.as_str());
     let mut command = Command::new(env!("CARGO"));
     command
         .args([
@@ -169,5 +183,7 @@ pub fn build_echo_guest(features: &[&str]) -> PathBuf {
     }
     let status = command.status().expect("cargo runs");
     assert!(status.success(), "building the echo guest failed: {status}");
-    target_dir.join("wasm32-wasip2/release/vize_contract_echo_guest.wasm")
+    target_dir
+        .join("wasm32-wasip2/release")
+        .join(cstr!("{artifact}.wasm").as_str())
 }

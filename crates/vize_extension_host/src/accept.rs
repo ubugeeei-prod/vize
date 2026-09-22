@@ -124,7 +124,11 @@ pub fn accept(block: &SourceBlock, lowered: LoweredBlock) -> Result<Accepted, Ac
     })
 }
 
-fn read_page<T: Folio>(name: &'static str, reads: u32, page: &Page) -> Result<T, AcceptError> {
+pub(crate) fn read_page<T: Folio>(
+    name: &'static str,
+    reads: u32,
+    page: &Page,
+) -> Result<T, AcceptError> {
     if page.schema_version != reads {
         return Err(AcceptError::UnreadableSchema {
             page: name,

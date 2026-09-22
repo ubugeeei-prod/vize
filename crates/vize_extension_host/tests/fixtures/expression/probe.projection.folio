@@ -1,0 +1,13 @@
+[projection]
+rows=2
+
+[projection.rows]
+row 1:13 110:122 directive-expr all
+  sub 1:4 110:113
+  sub 7:13 116:122
+row 17:26 126:135 interpolation hover,definition,diagnostics
+  sub 17:22 126:131
+
+[projection.text]
+(msg + suffix);
+(count * 2);

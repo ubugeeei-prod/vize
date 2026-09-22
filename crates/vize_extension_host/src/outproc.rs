@@ -17,6 +17,7 @@ use vize_s0::cstr;
 use crate::contract::{
     Capability, GuestError, GuestLimits, InputDialectGuest, LoweredBlock, SourceBlock,
 };
+use crate::expression::{Analysis, ExpressionBatch, ExpressionDialectGuest};
 use crate::wire::{Request, Response, read_message, transport, write_message};
 
 /// A guest behind a child process.
@@ -39,14 +40,30 @@ pub fn serve_command(runner: &Path, component: &Path) -> Command {
 #[must_use]
 pub fn serve_command_with(runner: &Path, component: &Path, limits: GuestLimits) -> Command {
     let mut command = Command::new(runner);
+    command.arg("serve").arg(component);
+    with_limits(&mut command, limits);
+    command
+}
+
+/// The command that serves an `expression-dialect` component.
+#[must_use]
+pub fn serve_expression_command(runner: &Path, component: &Path, limits: GuestLimits) -> Command {
+    let mut command = Command::new(runner);
     command
         .arg("serve")
         .arg(component)
+        .arg("--world")
+        .arg("expression-dialect");
+    with_limits(&mut command, limits);
+    command
+}
+
+fn with_limits(command: &mut Command, limits: GuestLimits) {
+    command
         .arg("--fuel")
         .arg(vize_s0::cstr!("{}", limits.fuel_per_call).as_str())
         .arg("--memory")
         .arg(vize_s0::cstr!("{}", limits.max_memory_bytes).as_str());
-    command
 }
 
 impl OutOfProcessGuest {
@@ -109,6 +126,7 @@ fn unexpected(response: &Response) -> GuestError {
         Response::LoadError(_) => "load-error",
         Response::Capability(_) => "capability",
         Response::LoweredBlock(_) => "lowered-block",
+        Response::Analysis(_) => "analysis",
         Response::Guest(_) => "guest",
     };
     GuestError::Transport(cstr!("unexpected `{name}` response"))
@@ -128,6 +146,22 @@ impl InputDialectGuest for OutOfProcessGuest {
         };
         match self.call(&request)? {
             Response::LoweredBlock(lowered) => Ok(lowered),
+            other => Err(unexpected(&other)),
+        }
+    }
+}
+
+impl ExpressionDialectGuest for OutOfProcessGuest {
+    fn get_capability(&mut self) -> Result<Capability, GuestError> {
+        InputDialectGuest::get_capability(self)
+    }
+
+    fn analyze(&mut self, batch: &ExpressionBatch) -> Result<Analysis, GuestError> {
+        let request = Request::Analyze {
+            batch: batch.clone(),
+        };
+        match self.call(&request)? {
+            Response::Analysis(analysis) => Ok(analysis),
             other => Err(unexpected(&other)),
         }
     }

@@ -20,7 +20,11 @@ use crate::contract::{
     LoweredBlock, Page, PartKind, Severity, SourceBlock, Span, Stage, Witness,
 };
 
-mod bindings {
+mod expression;
+
+pub use expression::WasmExpressionGuest;
+
+pub(crate) mod bindings {
     wasmtime::component::bindgen!({
         path: "../../contracts/wit",
         world: "input-dialect",
@@ -34,14 +38,19 @@ use bindings::vize::contracts::types as wit;
 
 /// A component guest instantiated in this process.
 pub struct WasmGuest {
-    store: Store<MemoryCeiling>,
+    sandbox: Sandbox,
     instance: bindings::InputDialect,
+}
+
+/// One guest's store under its limits, shared by every world's host.
+pub(crate) struct Sandbox {
+    pub(crate) store: Store<MemoryCeiling>,
     limits: GuestLimits,
 }
 
 /// Denies memory growth past the limit and remembers that it did, so the
 /// trap that follows is reported as the limit, not as the guest's own fault.
-struct MemoryCeiling {
+pub(crate) struct MemoryCeiling {
     max_bytes: usize,
     denied: bool,
 }
@@ -74,7 +83,7 @@ impl core::fmt::Debug for WasmGuest {
     }
 }
 
-fn instantiate_error(error: &wasmtime::Error) -> GuestError {
+pub(crate) fn instantiate_error(error: &wasmtime::Error) -> GuestError {
     GuestError::Instantiate(cstr!("{error:#}"))
 }
 
@@ -99,6 +108,19 @@ impl WasmGuest {
     ///
     /// [`GuestError::Instantiate`] with wasmtime's message.
     pub fn load_with(path: &Path, limits: GuestLimits) -> Result<Self, GuestError> {
+        let (mut sandbox, component, linker) = Sandbox::load(path, limits)?;
+        let instance = bindings::InputDialect::instantiate(&mut sandbox.store, &component, &linker)
+            .map_err(|error| instantiate_error(&error))?;
+        Ok(Self { sandbox, instance })
+    }
+}
+
+impl Sandbox {
+    /// Compile the component at `path` into a fresh store under `limits`.
+    pub(crate) fn load(
+        path: &Path,
+        limits: GuestLimits,
+    ) -> Result<(Self, Component, Linker<MemoryCeiling>), GuestError> {
         let mut config = Config::new();
         config.consume_fuel(true);
         // Trap messages cross the contract verbatim, so they carry no wasm
@@ -117,17 +139,11 @@ impl WasmGuest {
         store
             .set_fuel(limits.fuel_per_call)
             .map_err(|error| instantiate_error(&error))?;
-        let instance = bindings::InputDialect::instantiate(&mut store, &component, &linker)
-            .map_err(|error| instantiate_error(&error))?;
-        Ok(Self {
-            store,
-            instance,
-            limits,
-        })
+        Ok((Self { store, limits }, component, linker))
     }
 
     /// Grant a fresh budget before a call.
-    fn arm(&mut self) -> Result<(), GuestError> {
+    pub(crate) fn arm(&mut self) -> Result<(), GuestError> {
         self.store.data_mut().denied = false;
         self.store
             .set_fuel(self.limits.fuel_per_call)
@@ -135,7 +151,7 @@ impl WasmGuest {
     }
 
     /// Classify a failed call: a limit the host enforced, or a guest trap.
-    fn failure(&self, error: &wasmtime::Error) -> GuestError {
+    pub(crate) fn failure(&self, error: &wasmtime::Error) -> GuestError {
         if error.downcast_ref::<Trap>() == Some(&Trap::OutOfFuel) {
             GuestError::OutOfFuel {
                 budget: self.limits.fuel_per_call,
@@ -152,12 +168,12 @@ impl WasmGuest {
 
 impl InputDialectGuest for WasmGuest {
     fn get_capability(&mut self) -> Result<Capability, GuestError> {
-        self.arm()?;
+        self.sandbox.arm()?;
         let offer = self
             .instance
             .vize_contracts_handshake()
-            .call_get_capability(&mut self.store);
-        let offer = offer.map_err(|error| self.failure(&error))?;
+            .call_get_capability(&mut self.sandbox.store);
+        let offer = offer.map_err(|error| self.sandbox.failure(&error))?;
         let wit_handshake::Capability {
             protocol_version,
             features,
@@ -174,16 +190,16 @@ impl InputDialectGuest for WasmGuest {
             base: block.base,
             lang: block.lang.as_ref().map(|lang| lang.as_str().into()),
         };
-        self.arm()?;
+        self.sandbox.arm()?;
         let answer = self
             .instance
             .vize_contracts_input_lowering()
-            .call_lower_block(&mut self.store, &request);
+            .call_lower_block(&mut self.sandbox.store, &request);
         let wit_lowering::LoweredBlock {
             surface,
             semantic,
             diagnostics,
-        } = answer.map_err(|error| self.failure(&error))?;
+        } = answer.map_err(|error| self.sandbox.failure(&error))?;
         Ok(LoweredBlock {
             surface: page(surface),
             semantic: page(semantic),
@@ -192,7 +208,7 @@ impl InputDialectGuest for WasmGuest {
     }
 }
 
-fn page(page: wit::Page) -> Page {
+pub(crate) fn page(page: wit::Page) -> Page {
     let wit::Page {
         schema_version,
         text,
@@ -208,7 +224,7 @@ fn span(span: wit::Span) -> Span {
     Span { start, end }
 }
 
-fn diagnostic(diagnostic: wit::Diagnostic) -> Diagnostic {
+pub(crate) fn diagnostic(diagnostic: wit::Diagnostic) -> Diagnostic {
     let wit::Diagnostic {
         severity,
         stage,
