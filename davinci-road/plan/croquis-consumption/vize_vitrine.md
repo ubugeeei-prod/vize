@@ -12,7 +12,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | ----------------------------- | ----- | ------------ | ----: | ----: |
 | `Analyzer`                    | type  | `analyzer`   |     1 |     1 |
 | `AnalyzerOptions`             | type  | `analyzer`   |     1 |     1 |
-| `Croquis`                     | type  | `croquis`    |     2 |     2 |
+| `Croquis`                     | type  | `croquis`    |     3 |     3 |
 | `InvalidExportKind`           | type  | `croquis`    |     1 |     6 |
 | `ReactivityTracker`           | type  | `reactivity` |     1 |     1 |
 | `ScopeKind`                   | type  | `scope`      |     1 |     6 |
@@ -46,7 +46,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | ------------------- | -------: | ---: |
 | `Analyzer`          |        1 |    2 |
 | `BindingMetadata`   |        0 |    6 |
-| `Croquis`           |        2 |    5 |
+| `Croquis`           |        3 |    7 |
 | `ReactivityTracker` |        1 |    2 |
 | `Scope`             |        0 |    2 |
 | `ScopeId`           |        0 |    2 |
