@@ -171,6 +171,9 @@ jobs:
         if: always()
         with:
           name: ts45-${{ matrix.client }}
+          # Failed-only reruns replace this client's result while keeping the
+          # artifacts from clients that already passed in an earlier attempt.
+          overwrite: true
           path: ${{ runner.temp }}/ts45
           retention-days: 14
 
