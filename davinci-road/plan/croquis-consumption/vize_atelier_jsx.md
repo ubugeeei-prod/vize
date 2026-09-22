@@ -29,5 +29,5 @@ _None._
 | `Scope`            |        0 |    1 |
 | `ScopeBinding`     |        0 |    4 |
 | `Span`             |        0 |   75 |
-| `Croquis.bindings` |        1 |   36 |
+| `Croquis.bindings` |        1 |   38 |
 | `Croquis.scopes`   |        0 |   11 |

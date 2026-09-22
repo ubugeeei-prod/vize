@@ -225,7 +225,7 @@ fn lower_binding<'a>(
             lower_vue_directive(allocator, directive, element_type)
         }
         "slot" => lower_slot_content(allocator, directive, node, cx),
-        _ => Err(S2Refusal::Directive),
+        _ => lower_vue_directive(allocator, directive, element_type),
     }
 }
 
@@ -264,7 +264,7 @@ fn lower_bind_or_on<'a>(
     }
 }
 
-fn lower_modifiers<'a>(
+pub(super) fn lower_modifiers<'a>(
     allocator: &'a Allocator,
     directive: &vize_relief::DirectiveNode<'a>,
 ) -> Vec<'a, &'a str> {

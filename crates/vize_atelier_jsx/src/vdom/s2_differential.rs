@@ -149,6 +149,11 @@ fn s2_vdom_admitted_cases_match_relief_codegen() {
             JsxLang::Jsx,
         ),
         (
+            "lowercase dynamic component",
+            "const A = () => <component is={view} foo={1} />;",
+            JsxLang::Jsx,
+        ),
+        (
             "element v-show",
             "const A = () => <div v-show={visible} />;",
             JsxLang::Jsx,

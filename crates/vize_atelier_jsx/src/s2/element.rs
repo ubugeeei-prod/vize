@@ -1,7 +1,7 @@
 use vize_relief::{ElementNode, ElementType, Namespace as ReliefNamespace};
 use vize_s0::{Allocator, Box};
 use vize_s1_to_s2::lower::OpFamily;
-use vize_s2::op::{ComponentOp, ElementOp, Namespace, Op, Region};
+use vize_s2::op::{BindingOp, ComponentOp, DynamicName, ElementOp, Namespace, Op, Region};
 
 use super::native_model::native_model_kind;
 use super::slots::{has_slot_content, slot_template_span};
@@ -24,8 +24,15 @@ pub(super) fn lower_element<'a>(
     let children = Region {
         ops: lower_children(allocator, source, &element.children, cx)?,
     };
+    // A lowercase `<component is={...}>` is Vue's dynamic component, which
+    // every backend resolves through `resolveDynamicComponent`, not a
+    // native element.
+    let dynamic_component = element.tag_type == ElementType::Element
+        && element.tag == "component"
+        && (props.attributes.iter().any(|attr| attr.name == "is")
+            || props.bindings.iter().any(is_binding));
     match element.tag_type {
-        ElementType::Element => Ok(Op::Element(Box::new_in(
+        ElementType::Element if !dynamic_component => Ok(Op::Element(Box::new_in(
             ElementOp {
                 tag: element.tag,
                 namespace: namespace(element.ns),
@@ -36,7 +43,7 @@ pub(super) fn lower_element<'a>(
             },
             &allocator,
         ))),
-        ElementType::Component => {
+        ElementType::Element | ElementType::Component => {
             cx.observe(OpFamily::SlotCarrier);
             Ok(Op::Component(Box::new_in(
                 ComponentOp {
@@ -66,6 +73,10 @@ pub(super) fn lower_element<'a>(
         }
         ElementType::Slot | ElementType::Template => Err(S2Refusal::UnsupportedElement),
     }
+}
+
+fn is_binding(binding: &BindingOp<'_>) -> bool {
+    matches!(binding, BindingOp::Bind(bind) if matches!(bind.name, Some(DynamicName::Static("is"))))
 }
 
 const fn namespace(namespace: ReliefNamespace) -> Namespace {

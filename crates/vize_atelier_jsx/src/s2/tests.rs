@@ -297,3 +297,48 @@ fn v_show_with_argument_stays_on_directive_refusal_path() {
 
     assert!(matches!(root.s2, Err(S2Refusal::Directive)));
 }
+
+#[test]
+fn lowercase_component_with_is_projects_as_a_dynamic_component() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <div><component is={view} /><component>x</component></div>";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let s2 = lowered.roots[0].s2.as_ref().expect("S2 root");
+    let Op::Element(root) = &s2.root.ops[0] else {
+        panic!("root is an element");
+    };
+    let Op::Component(dynamic) = &root.children.ops[0] else {
+        panic!("`<component is>` is a component op");
+    };
+    assert_eq!(dynamic.name, "component");
+    // Without `is` there is no dynamic component to resolve.
+    assert!(matches!(&root.children.ops[1], Op::Element(element) if element.tag == "component"));
+}
+
+#[test]
+fn custom_directive_projects_with_its_argument_and_value() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <p v-focus:top={x} v-once>t</p>";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    // `v-once` keeps the directive refusal; the custom directive alone projects.
+    assert!(matches!(lowered.roots[0].s2, Err(S2Refusal::Directive)));
+    let source = "const App = () => <p v-focus:top={x}>t</p>";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let s2 = lowered.roots[0].s2.as_ref().expect("S2 root");
+    let Op::Element(element) = &s2.root.ops[0] else {
+        panic!("root is an element");
+    };
+    let BindingOp::VueDirective(directive) = &element.bindings[0] else {
+        panic!("custom directive binding");
+    };
+    assert_eq!(directive.name, "focus");
+    assert!(matches!(
+        directive.argument,
+        Some(DynamicName::Static("top"))
+    ));
+    assert!(directive.modifiers.is_empty());
+    assert_eq!(
+        directive.value.as_ref().map(|value| value.source()),
+        Some("x")
+    );
+}

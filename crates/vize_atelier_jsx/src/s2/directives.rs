@@ -3,13 +3,16 @@ use vize_s0::{Allocator, Box, Vec};
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{BindingOp, VueDirectiveOp, VueHtmlOp, VueShowOp, VueTextOp};
 
-use super::{S2Refusal, lower_expression};
+use super::{S2Refusal, lower_dynamic_name, lower_expression, lower_modifiers};
 
 pub(super) fn lower_vue_directive<'a>(
     allocator: &'a Allocator,
     directive: &DirectiveNode<'a>,
     element_type: ElementType,
 ) -> Result<BindingOp<'a>, S2Refusal> {
+    if element_type == ElementType::Element && is_custom_directive(directive.name) {
+        return lower_custom(allocator, directive);
+    }
     if directive.arg.is_some() || !directive.modifiers.is_empty() {
         return Err(S2Refusal::Directive);
     }
@@ -23,6 +26,35 @@ pub(super) fn lower_vue_directive<'a>(
         "text" if element_type == ElementType::Element => lower_text(allocator, directive),
         _ => Err(S2Refusal::Directive),
     }
+}
+
+/// A user directive (`v-focus`): not a Vue built-in and not one of the JSX
+/// sugar directives (`v-slots`, `v-models`).
+fn is_custom_directive(name: &str) -> bool {
+    !vize_s0::is_builtin_directive(name) && !matches!(name, "slots" | "models")
+}
+
+/// A custom directive on a native element, with its value, static or
+/// dynamic argument, and modifiers.
+fn lower_custom<'a>(
+    allocator: &'a Allocator,
+    directive: &DirectiveNode<'a>,
+) -> Result<BindingOp<'a>, S2Refusal> {
+    let value = directive
+        .exp
+        .as_ref()
+        .map(|exp| lower_expression(allocator, exp))
+        .transpose()?;
+    Ok(BindingOp::VueDirective(Box::new_in(
+        VueDirectiveOp {
+            name: directive.name,
+            argument: lower_dynamic_name(allocator, directive.arg.as_ref())?,
+            modifiers: lower_modifiers(allocator, directive),
+            value,
+            span: directive.loc.span,
+        },
+        &allocator,
+    )))
 }
 
 fn lower_slots_spread<'a>(

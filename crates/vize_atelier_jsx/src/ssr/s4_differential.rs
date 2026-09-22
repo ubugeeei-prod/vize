@@ -127,26 +127,54 @@ const ADMITTED: &[(&str, &str, JsxLang)] = &[
         JsxLang::Jsx,
     ),
     (
-        "two roots",
-        "const A = () => <p>{a}</p>; const B = () => <ul>{xs.map((x) => <li key={x}>{x}</li>)}</ul>;",
+        "lowercase dynamic component",
+        "const A = () => <component is={view} />;",
         JsxLang::Jsx,
     ),
-];
-
-/// Cases that stay on the walker (JSX custom directives and `<component>`
-/// are not projected to S2 yet); parity holds either way.
-const OBSERVED: &[(&str, &str, JsxLang)] = &[
+    (
+        "dynamic component",
+        "const A = () => <Component is={view} title=\"t\" />;",
+        JsxLang::Jsx,
+    ),
+    (
+        "member expression tag",
+        "const A = () => <props.as class=\"x\">t</props.as>;",
+        JsxLang::Jsx,
+    ),
     (
         "custom directive",
         "const A = () => <div><p v-focus={x}>t</p></div>;",
         JsxLang::Jsx,
     ),
     (
-        "dynamic component",
-        "const A = () => <component is={view} />;",
+        "custom directive argument",
+        "const A = () => <div><p v-focus:top={x} class=\"a\">t</p></div>;",
+        JsxLang::Jsx,
+    ),
+    (
+        "custom directive owning empty content",
+        "const A = () => <div><p v-content /><textarea v-val /></div>;",
+        JsxLang::Jsx,
+    ),
+    (
+        "custom directive on the root",
+        "const A = () => <section v-focus={x} v-show={ok}>x</section>;",
+        JsxLang::Jsx,
+    ),
+    (
+        "two roots",
+        "const A = () => <p>{a}</p>; const B = () => <ul>{xs.map((x) => <li key={x}>{x}</li>)}</ul>;",
         JsxLang::Jsx,
     ),
 ];
+
+/// Cases that stay on the walker (`v-once` / `v-memo` on a JSX element are
+/// not projected to S2); parity holds either way.
+const OBSERVED: &[(&str, &str, JsxLang)] = &[(
+    "v-once",
+    "const A = () => <div><p v-once>{a}</p></div>;",
+    JsxLang::Jsx,
+)];
 
 fn compile(source: &str, lang: JsxLang, lane: SsrLane) -> std::vec::Vec<String> {
     let allocator = Allocator::new();
