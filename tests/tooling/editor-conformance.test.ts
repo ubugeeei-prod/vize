@@ -229,6 +229,8 @@ test("CI runs every client at the editor-host-smoke pins and requires all four r
   const steps = workflow.jobs.conformance.steps as Array<{
     name?: string;
     env?: Record<string, string>;
+    uses?: string;
+    with?: Record<string, unknown>;
   }>;
   const pins = Object.assign({}, ...steps.map((step) => step.env ?? {}));
   for (const name of [
@@ -248,6 +250,15 @@ test("CI runs every client at the editor-host-smoke pins and requires all four r
   const report = workflow.jobs.report.steps.at(-1).run as string;
   assert.match(report, /report\.ts "\$\{RUNNER_TEMP\}\/ts45" --require helix,neovim,vscode,zed$/u);
   assert.equal(workflow.jobs.report.if, "always()");
+  const upload = steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"));
+  // A failed-only rerun must replace its earlier result without requiring
+  // fresh artifacts from the three clients GitHub does not rerun.
+  assert.equal(upload?.with?.name, "ts45-${{ matrix.client }}");
+  assert.equal(upload?.with?.overwrite, true);
+  const download = workflow.jobs.report.steps.find((step: { uses?: string }) =>
+    step.uses?.startsWith("actions/download-artifact@"),
+  );
+  assert.equal(download?.with?.pattern, "ts45-*");
 });
 
 test("every client has a driver and only Zed is a protocol replay", async () => {

@@ -43,7 +43,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScriptParseResult`                       |     2 |     2 |
 | `ScriptParserOptions`                     |     1 |     1 |
 | `SfcCustomBlock`                          |     1 |     2 |
-| `SfcDescriptor`                           |    11 |    15 |
+| `SfcDescriptor`                           |    10 |    13 |
 | `SfcError`                                |     1 |     2 |
 | `SfcParseOptions`                         |    11 |    12 |
 | `UndefinedRefs`                           |     1 |     2 |

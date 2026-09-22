@@ -196,7 +196,7 @@ davinci_fact_query_observed = { wall_p50_ns = 0, allocs = 19, rss_peak_bytes = 0
 # The wall side is report-only (wall_p50_ns = 0): sub-2us windows vary more than
 # the 10% ceiling across CI runners (764-855ns and 1494-1906ns in one day, PRs
 # #4857/#4877); alloc and peak gates hold until a reference-runner method lands.
-s1_to_s2_lower_vfor_three_aliases = { wall_p50_ns = 0, allocs = 13, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+s1_to_s2_lower_vfor_three_aliases = { wall_p50_ns = 0, allocs = 12, rss_peak_bytes = 0, wall_tolerance = 0.10 }
 s1_to_s2_emit_von_two_per_bucket = { wall_p50_ns = 0, allocs = 18, rss_peak_bytes = 0, wall_tolerance = 0.10 }
 s1_to_s2_pass_template_complexity = { wall_p50_ns = 0, allocs = 3, rss_peak_bytes = 0, wall_tolerance = 0.10 }
 
@@ -226,7 +226,7 @@ musea_parse_art_inline = { wall_p50_ns = 0, allocs = 10, rss_peak_bytes = 0, wal
 # the value deterministic on one platform, but allocator requests can differ
 # across target operating systems. Every gated platform is therefore explicit;
 # an unknown report platform or a missing platform entry fails closed.
-s1_to_s2_lower_vfor_three_aliases = { linux = 1671, macos = 1655 }
+s1_to_s2_lower_vfor_three_aliases = { linux = 1511, macos = 1495 }
 s1_to_s2_emit_von_two_per_bucket = { linux = 648, macos = 648 }
 
 [mutation]

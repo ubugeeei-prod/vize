@@ -1,0 +1,26 @@
+name: Release Promotion
+on:
+  workflow_call:
+    inputs:
+      release_pr: { type: string, required: true }
+      expected_sha: { type: string, required: true }
+      tag_name: { type: string, required: true }
+permissions: { contents: read, pull-requests: read }
+jobs:
+  promotion:
+    name: Wait for validated PR and tag promotion
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
+        with: { toolchain: stable }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Require the validated commit on main and its immutable tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_PR: ${{ inputs.release_pr }}
+          RELEASE_SHA: ${{ inputs.expected_sha }}
+          RELEASE_TAG: ${{ inputs.tag_name }}
+        run: rust-script tools/commands/release/pr.rs wait-promotion "$RELEASE_PR" "$RELEASE_SHA" "$RELEASE_TAG"

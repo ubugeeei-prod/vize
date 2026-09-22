@@ -7,10 +7,10 @@
 // removed one fails until this ceiling is lowered to match, so the count only
 // falls.
 //
-// P5-6c acceptance is not met. After the annotations/structure slice, 25 request-path
-// sites remain (ecosystem, code actions, rename,
-// formatting, virtual documents, importers, the type service, musea,
-// template refs and SFC regions) plus 15 test-only sites.
+// P5-6c acceptance is not met. After the template-ref/diagnostic slice, 14 request-path
+// sites remain (rename,
+// formatting, virtual documents, importers, musea,
+// workspace symbols and SFC regions) plus 15 test-only sites.
 // `with_content` is not deleted.
 
 import assert from "node:assert/strict";
@@ -19,17 +19,19 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { maskRustNonCode } from "./davinci-storage-rust-syntax.ts";
+
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const maestroSrc = path.join(repoRoot, "crates/vize_maestro/src");
 
-/** `parse_sfc` call sites left in `crates/vize_maestro/src` (81 before P5-6a, 50 before P5-6b, 47 before semantic tokens, 46 before inlay hints, 45 before document links, 44 before annotations and structure). */
-const CEILING = 40;
+/** `parse_sfc` call sites left in `crates/vize_maestro/src` (81 before P5-6a, 50 before P5-6b, 47 before semantic tokens, 46 before inlay hints, 45 before document links, 44 before annotations and structure, 40 before context consumers, 32 before template refs and diagnostics). */
+const CEILING = 29;
 
 /**
- * Request-path `parse_sfc(` sites after annotations and structure moved onto the resident
+ * Request-path `parse_sfc(` sites after context consumers moved onto the resident
  * descriptor. The other `CEILING - REQUEST_PATH` sites are tests.
  */
-const REQUEST_PATH = 25;
+const REQUEST_PATH = 14;
 
 /** Files whose every `parse_sfc(` is a test, including inline `#[cfg(test)]` modules. */
 function isTestOnly(file: string): boolean {
@@ -48,15 +50,15 @@ const WAVE = ["hover", "completion", "definition", "template_scope", "references
   (feature) => [`ide/${feature}.rs`, `ide/${feature}/`],
 );
 
-/** Every `parse_sfc(` on a non-comment line, as `path:line`. */
+/** Every call, including multiline calls and test bodies, as `path:line`. */
 function parseSfcSites(files: Map<string, string>): string[] {
   const sites: string[] = [];
   for (const [file, source] of files) {
-    source.split("\n").forEach((line, index) => {
-      if (!line.trimStart().startsWith("//") && line.includes("parse_sfc(")) {
-        sites.push(`${file}:${index + 1}`);
-      }
-    });
+    const code = maskRustNonCode(source);
+    for (const match of code.matchAll(/\bparse_sfc\s*\(/g)) {
+      const line = code.slice(0, match.index).split("\n").length;
+      sites.push(`${file}:${line}`);
+    }
   }
   return sites.sort();
 }
@@ -126,12 +128,30 @@ test("the P5-6c annotation and structure request paths call parse_sfc nowhere", 
   );
 });
 
-test("request-path parse_sfc sites remaining after annotations and structure", () => {
+test("request-path parse_sfc sites remaining after template refs and diagnostics", () => {
   const requestPath = sites.filter((site) => !isTestOnly(site.slice(0, site.lastIndexOf(":"))));
   assert.equal(
     requestPath.length,
     REQUEST_PATH,
     `found ${requestPath.length} request-path sites; P5-6c acceptance is 0\n${requestPath.join("\n")}`,
+  );
+});
+
+test("code actions, template refs and type/ecosystem entry points use resident descriptors", () => {
+  assert.deepEqual(
+    sites.filter((site) => {
+      const file = site.slice(0, site.lastIndexOf(":"));
+      return (
+        !isTestOnly(file) &&
+        (file === "ide/code_action.rs" ||
+          file.startsWith("ide/code_action/") ||
+          file === "ide/type_service.rs" ||
+          file.startsWith("ide/type_service/") ||
+          file === "ide/template_ref.rs" ||
+          file === "ide/ecosystem.rs")
+      );
+    }),
+    [],
   );
 });
 
@@ -149,4 +169,24 @@ test("the count fails on an injected call and ignores comments", () => {
     ["ide/hover/comment.rs", "    // re-parsing with `parse_sfc(` is gone"],
   ]);
   assert.deepEqual(parseSfcSites(injected), ["ide/hover/injected.rs:1"]);
+});
+
+test("the count preserves authored lines across multiline calls, comments and literals", () => {
+  const source = [
+    "// parse_sfc(",
+    "/* nested /* parse_sfc( */ comment */",
+    'let text = "雪😀 parse_sfc(";',
+    'let raw = br###"parse_sfc(',
+    'inside a raw string"###;',
+    "let first = vize_atelier_sfc::parse_sfc",
+    " /* across lines */ (source, options);",
+    "#[cfg(test)]",
+    "fn test_parse() { parse_sfc /* inline */ (source, options); }",
+  ].join("\r\n");
+  assert.deepEqual(parseSfcSites(new Map([["tests.rs", source]])), ["tests.rs:6", "tests.rs:9"]);
+});
+
+test("the count includes every call on one line and rejects identifier lookalikes", () => {
+  const source = "parse_sfc(a, b); parse_sfc (c, d); reparse_sfc(e, f);";
+  assert.deepEqual(parseSfcSites(new Map([["calls.rs", source]])), ["calls.rs:1", "calls.rs:1"]);
 });

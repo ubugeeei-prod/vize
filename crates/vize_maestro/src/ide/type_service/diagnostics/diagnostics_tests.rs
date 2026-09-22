@@ -141,3 +141,60 @@ const bar = 'baz'
         "regex literals should not produce undefined-binding diagnostics: {diagnostics:#?}"
     );
 }
+
+#[test]
+#[allow(deprecated)]
+fn resident_legacy_diagnostics_share_cached_success_rejection_and_recovery() {
+    use crate::ide::IdeContext;
+    use vize_resident::DescriptorStats;
+
+    let state = ServerState::new();
+    let uri = Url::parse("file:///Legacy.vue").unwrap();
+    let source = "<script setup>\r\nconst count = 1\r\n</script>\r\n<template>\r\n雪😀 {{ missing }}\r\n</template>";
+    state
+        .documents
+        .open(uri.clone(), source.into(), 1, "vue".into());
+    let _context = IdeContext::with_content(&state, &uri, 0, source.into());
+    let first = TypeService::collect_diagnostics_legacy(&state, &uri);
+    assert!(!first.is_empty());
+    assert!(first.iter().any(|diag| diag.message.contains("missing")));
+    assert_eq!(
+        state.resident.take_stats(),
+        DescriptorStats {
+            lookups: 2,
+            parses: 1
+        }
+    );
+    assert_eq!(TypeService::collect_diagnostics_legacy(&state, &uri), first);
+    assert_eq!(
+        state.resident.take_stats(),
+        DescriptorStats {
+            lookups: 1,
+            parses: 0
+        }
+    );
+    for (revision, parses) in [(2, 1), (3, 0)] {
+        state.documents.open(
+            uri.clone(),
+            "<template>{{ missing }}".into(),
+            revision,
+            "vue".into(),
+        );
+        assert!(TypeService::collect_diagnostics_legacy(&state, &uri).is_empty());
+        assert_eq!(
+            state.resident.take_stats(),
+            DescriptorStats { lookups: 1, parses }
+        );
+    }
+    state
+        .documents
+        .open(uri.clone(), source.into(), 4, "vue".into());
+    assert_eq!(TypeService::collect_diagnostics_legacy(&state, &uri), first);
+    assert_eq!(
+        state.resident.take_stats(),
+        DescriptorStats {
+            lookups: 1,
+            parses: 1
+        }
+    );
+}

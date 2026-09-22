@@ -25,18 +25,18 @@ fn main() -> ExitCode {
 
 fn run() -> Result<(), String> {
     let args = env::args().skip(1).collect::<Vec<_>>();
-    let [tag] = args.as_slice() else {
-        return Err(
-            "Usage: rust-script tools/commands/ci/github/release-local-guard.rs <release-tag>"
-                .to_string(),
-        );
+    let (tag, candidate) = match args.as_slice() {
+        [tag] => (tag, false),
+        [tag, mode] if mode == "--candidate" => (tag, true),
+        _ => return Err("Usage: release-local-guard.rs <release-tag> [--candidate]".into()),
     };
     let timeout = git_timeout()?;
     parse_release_version(tag)?;
-    if git(["branch", "--show-current"], &[0], timeout)?
-        .stdout
-        .trim()
-        != "main"
+    if !candidate
+        && git(["branch", "--show-current"], &[0], timeout)?
+            .stdout
+            .trim()
+            != "main"
     {
         return Err("Releases must be prepared from the local main branch.".to_string());
     }

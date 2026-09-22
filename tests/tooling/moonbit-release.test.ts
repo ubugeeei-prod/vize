@@ -232,14 +232,13 @@ test("release version sweep covers every manifest the preflight verifies", () =>
   }
 });
 
-test("release script creates immutable tags and pushes main and tag atomically", () => {
+test("release preparation commits aligned metadata without creating or pushing a tag", () => {
   const fixture = runRepositoryGuardFixture({ branch: "main" });
 
   try {
     assert.equal(fixture.result.status, 0, fixture.result.stderr);
     assert.match(fixture.gitLog, /^commit --no-verify -m chore: release v0\.290\.1$/m);
-    assert.match(fixture.gitLog, /^tag -a v0\.290\.1 -m Release 0\.290\.1$/m);
-    assert.match(fixture.gitLog, /^push --atomic origin main refs\/tags\/v0\.290\.1$/m);
+    assert.doesNotMatch(fixture.gitLog, /^(?:tag|push)\b/m);
     assert.doesNotMatch(fixture.gitLog, /--force-tag|(?:^|\s)--force(?:\s|$)|--allow-empty/);
   } finally {
     fs.rmSync(fixture.tempDir, { recursive: true, force: true });
@@ -256,20 +255,7 @@ test("release script accepts an exact merge commit at the main tip", () => {
   try {
     assert.equal(fixture.result.status, 0, fixture.result.stderr);
     assert.doesNotMatch(fixture.gitLog, /^rev-list\b/m);
-    assert.match(fixture.result.stdout, /Release 0\.290\.1 complete!/);
-  } finally {
-    fs.rmSync(fixture.tempDir, { recursive: true, force: true });
-  }
-});
-
-test("release script explains local cleanup after an atomic push failure", () => {
-  const fixture = runRepositoryGuardFixture({ branch: "main", pushFails: true });
-
-  try {
-    assert.equal(fixture.result.status, 1);
-    assert.match(fixture.result.stderr, /Failed to atomically push main and the release tag/);
-    assert.match(fixture.result.stderr, /git tag -d v0\.290\.1/);
-    assert.match(fixture.result.stderr, /git reset --hard origin\/main/);
+    assert.match(fixture.result.stdout, /Release candidate commit prepared; no tag was created/);
   } finally {
     fs.rmSync(fixture.tempDir, { recursive: true, force: true });
   }

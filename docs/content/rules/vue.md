@@ -7,474 +7,266 @@ title: Vue Rules
 Vue rules are Patina single-file rules. They inspect SFC template structure, directive syntax,
 component naming, and Vue-specific correctness hazards before the code reaches the runtime.
 
+Each detail page lists rule behavior, default severity, presets, and Bad/Good examples.
+See [Vue Rule Options](./options-vue.md) for configurable rule settings.
+
+## Rule Detail Pages
+
+- [Template Structure](./vue-template-structure.md):
+  Loops, conditional branches, template scope, and template containers.
+- [Template Safety](./vue-template-safety.md):
+  HTML content, duplicate attributes, URL safety, and reusable element IDs.
+- [Components and Props](./vue-components.md):
+  Component naming, registration, dynamic components, and prop ownership.
+- [Template Formatting](./vue-formatting.md):
+  Attribute conventions, tag style, whitespace, and prop spelling.
+- [SFC Blocks](./vue-sfc.md):
+  Block order, supported languages, external sources, and style scope.
+- [Directive Conventions](./vue-directives.md):
+  Event naming, modifier usage, directive spelling, and custom directives.
+- [Directive Validity](./vue-directive-validity.md):
+  Required arguments and valid expressions for built-in Vue directives.
+
+## Rule References
+
+Find a rule by name, then follow its link for behavior and examples.
+
 ## `vue/require-v-for-key`
 
-Requires every `v-for` node to have a stable key.
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<template>
-  <li v-for="item in items">{{ item.name }}</li>
-</template>
-```
-
-Good:
-
-```vue
-<template>
-  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
-</template>
-```
+See [Template Structure: `require-v-for-key`](./vue-template-structure.md#vue-require-v-for-key).
 
 ## `vue/no-use-v-if-with-v-for`
 
-Reports a node that has `v-if` and `v-for` at the same time. Filtering in a computed value keeps the
-list identity stable and makes the template easier to analyze.
-
-Default severity: `warning`  
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<template>
-  <li v-for="item in items" v-if="item.visible" :key="item.id">
-    {{ item.name }}
-  </li>
-</template>
-```
-
-Good:
-
-```vue
-<script setup lang="ts">
-const visibleItems = computed(() => items.filter((item) => item.visible));
-</script>
-
-<template>
-  <li v-for="item in visibleItems" :key="item.id">
-    {{ item.name }}
-  </li>
-</template>
-```
-
-## `vue/no-mutating-props`
-
-Reports writes to props. The owning component should update the value through an event or a model
-binding.
-
-Default severity: `error`  
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ count: number }>();
-
-props.count++;
-</script>
-```
-
-Good:
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ count: number }>();
-const emit = defineEmits<{ "update:count": [value: number] }>();
-
-function increment() {
-  emit("update:count", props.count + 1);
-}
-</script>
-```
-
-## `vue/no-v-html`
-
-Reports `v-html` because it renders raw HTML and can turn user-controlled content into an XSS sink.
-
-Default severity: `warning`  
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<template>
-  <article v-html="content" />
-</template>
-```
-
-Good:
-
-```vue
-<template>
-  <article>{{ content }}</article>
-</template>
-```
+See [Template Structure: `no-use-v-if-with-v-for`](./vue-template-structure.md#vue-no-use-v-if-with-v-for).
 
 ## `vue/no-child-content`
 
-Reports child content on elements that also use `v-html` or `v-text`. Vue replaces the children at
-runtime, so the authored content is misleading.
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<template>
-  <p v-text="message">Fallback text</p>
-</template>
-```
-
-Good:
-
-```vue
-<template>
-  <p v-text="message" />
-</template>
-```
-
-## `vue/no-duplicate-attributes`
-
-Reports duplicate attributes on the same element.
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<template>
-  <button class="primary" class="large">Save</button>
-</template>
-```
-
-Good:
-
-```vue
-<template>
-  <button class="primary large">Save</button>
-</template>
-```
+See [Template Structure: `no-child-content`](./vue-template-structure.md#vue-no-child-content).
 
 ## `vue/no-dupe-v-else-if`
 
-Reports repeated conditions in a `v-if` / `v-else-if` chain.
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<template>
-  <p v-if="status === 'ready'">Ready</p>
-  <p v-else-if="status === 'ready'">Still ready</p>
-</template>
-```
-
-Good:
-
-```vue
-<template>
-  <p v-if="status === 'ready'">Ready</p>
-  <p v-else-if="status === 'loading'">Loading</p>
-</template>
-```
+See [Template Structure: `no-dupe-v-else-if`](./vue-template-structure.md#vue-no-dupe-v-else-if).
 
 ## `vue/no-template-shadow`
 
-Reports template variables that shadow variables from an outer scope. This prevents accidental
-references to a different value than the reader expects.
+See [Template Structure: `no-template-shadow`](./vue-template-structure.md#vue-no-template-shadow).
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`
+## `vue/no-lone-template`
 
-Bad:
+See [Template Structure: `no-lone-template`](./vue-template-structure.md#vue-no-lone-template).
 
-```vue
-<script setup lang="ts">
-const item = ref("selected");
-</script>
+## `vue/no-template-key`
 
-<template>
-  <p v-for="item in items" :key="item.id">{{ item.name }}</p>
-</template>
-```
+See [Template Structure: `no-template-key`](./vue-template-structure.md#vue-no-template-key).
 
-Good:
+## `vue/no-unused-vars`
 
-```vue
-<script setup lang="ts">
-const selectedItem = ref("selected");
-</script>
+See [Template Structure: `no-unused-vars`](./vue-template-structure.md#vue-no-unused-vars).
 
-<template>
-  <p v-for="item in items" :key="item.id">{{ item.name }}</p>
-</template>
-```
+## `vue/no-useless-template-attributes`
+
+See [Template Structure: `no-useless-template-attributes`](./vue-template-structure.md#vue-no-useless-template-attributes).
+
+## `vue/no-v-html`
+
+See [Template Safety: `no-v-html`](./vue-template-safety.md#vue-no-v-html).
+
+## `vue/no-duplicate-attributes`
+
+See [Template Safety: `no-duplicate-attributes`](./vue-template-safety.md#vue-no-duplicate-attributes).
 
 ## `vue/no-unsafe-url`
 
-Reports URL bindings and static URL attributes that may resolve to unsafe schemes such as
-`javascript:`, `vbscript:`, or executable `data:` payloads.
-
-Default severity: `warning`  
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<template>
-  <iframe src="javascript:alert(1)"></iframe>
-  <object data="data:text/html,<script>alert(1)</script>"></object>
-  <img srcset="/safe.png 1x, javascript:alert(1) 2x" />
-  <a :href="nextUrl">Continue</a>
-</template>
-```
-
-Good:
-
-```vue
-<script setup lang="ts">
-const rawNextUrl = ref("/next");
-const nextUrl = computed(() => {
-  return rawNextUrl.value.startsWith("/") ? rawNextUrl.value : "/";
-});
-</script>
-
-<template>
-  <iframe src="/embedded/report" title="Report"></iframe>
-  <img srcset="/avatar.png 1x, /avatar@2x.png 2x" />
-  <a :href="nextUrl">Continue</a>
-</template>
-```
-
-## `vue/no-unused-components`
-
-Reports locally registered components that never appear in the template.
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<script setup lang="ts">
-import UserAvatar from "./UserAvatar.vue";
-</script>
-
-<template>
-  <p>{{ user.name }}</p>
-</template>
-```
-
-Good:
-
-```vue
-<script setup lang="ts">
-import UserAvatar from "./UserAvatar.vue";
-</script>
-
-<template>
-  <UserAvatar :user="user" />
-</template>
-```
-
-## `vue/no-unused-properties`
-
-Reports props declared through `defineProps` that are not used by the component.
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<script setup lang="ts">
-defineProps<{ title: string; description: string }>();
-</script>
-
-<template>
-  <h1>{{ title }}</h1>
-</template>
-```
-
-Good:
-
-```vue
-<script setup lang="ts">
-defineProps<{ title: string; description: string }>();
-</script>
-
-<template>
-  <h1>{{ title }}</h1>
-  <p>{{ description }}</p>
-</template>
-```
-
-## `vue/require-component-is`
-
-Reports `<component>` without an `is` binding.
-
-Default severity: `error`  
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<template>
-  <component />
-</template>
-```
-
-Good:
-
-```vue
-<template>
-  <component :is="currentComponent" />
-</template>
-```
+See [Template Safety: `no-unsafe-url`](./vue-template-safety.md#vue-no-unsafe-url).
 
 ## `vue/use-unique-element-ids`
 
-Reports static literal IDs in places where `useId()` is safer for component reuse and SSR.
+See [Template Safety: `use-unique-element-ids`](./vue-template-safety.md#vue-use-unique-element-ids).
 
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`
+## `vue/no-textarea-mustache`
 
-Bad:
+See [Template Safety: `no-textarea-mustache`](./vue-template-safety.md#vue-no-textarea-mustache).
 
-```vue
-<template>
-  <label for="email">Email</label>
-  <input id="email" />
-</template>
-```
+## `vue/no-v-text-v-html-on-component`
 
-Good:
+See [Template Safety: `no-v-text-v-html-on-component`](./vue-template-safety.md#vue-no-v-text-v-html-on-component).
 
-```vue
-<script setup lang="ts">
-const emailId = useId();
-</script>
+## `vue/permitted-contents`
 
-<template>
-  <label :for="emailId">Email</label>
-  <input :id="emailId" />
-</template>
-```
+See [Template Safety: `permitted-contents`](./vue-template-safety.md#vue-permitted-contents).
 
-## Syntax And Style Rules
+## `vue/no-mutating-props`
 
-These rules do not need long examples, but they still behave as first-class rules.
+See [Components and Props: `no-mutating-props`](./vue-components.md#vue-no-mutating-props).
 
-`vue/attribute-hyphenation` enforces attribute naming style on custom components. Default:
-`warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
+## `vue/no-unused-components`
 
-`vue/attribute-order` enforces a stable attribute order. Default: `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
+See [Components and Props: `no-unused-components`](./vue-components.md#vue-no-unused-components).
 
-`vue/component-definition-name-casing` enforces PascalCase component definition names. Default:
-`warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
+## `vue/no-unused-properties`
 
-`vue/component-name-in-template-casing` enforces component name casing in templates. Default:
-`warning`. Presets: `nuxt`, `opinionated`.
+See [Components and Props: `no-unused-properties`](./vue-components.md#vue-no-unused-properties).
 
-`vue/html-quotes` enforces quote style for HTML attributes. Default: `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
+## `vue/require-component-is`
 
-`vue/html-self-closing` enforces self-closing style. Default: `warning`. Presets: `nuxt`, `opinionated`.
-`linter.ruleOptions["vue/html-self-closing"]` accepts `html.void`, `html.normal`, `html.component`, `svg`, and `math`; each is `"always"`, `"never"`, or `"any"`.
+See [Components and Props: `require-component-is`](./vue-components.md#vue-require-component-is).
 
-`vue/multi-word-component-names` requires component names to contain more than one word. Default: `error`. Presets: `essential`, `nuxt`, `opinionated`.
+## `vue/component-definition-name-casing`
 
-`vue/mustache-interpolation-spacing` enforces spacing inside mustache interpolation. Default:
-`warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
+See [Components and Props: `component-definition-name-casing`](./vue-components.md#vue-component-definition-name-casing).
 
-`vue/no-boolean-attr-value` disallows explicit values for boolean HTML attributes. Default:
-`warning`. Presets: `nuxt`, `opinionated`.
+## `vue/component-name-in-template-casing`
 
-`vue/no-inline-style` discourages inline `style` attributes. Default: `warning`. Presets: `nuxt`,
-`opinionated`.
+See [Components and Props: `component-name-in-template-casing`](./vue-components.md#vue-component-name-in-template-casing).
 
-`vue/no-lone-template` disallows unnecessary `<template>` wrappers. Default: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
+## `vue/multi-word-component-names`
 
-`vue/no-multi-spaces` disallows repeated spaces in templates. Default: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
+See [Components and Props: `multi-word-component-names`](./vue-components.md#vue-multi-word-component-names).
 
-`vue/no-non-component-keep-alive-child` reports plain element wrappers directly below `<KeepAlive>` because Vue only caches component VNodes. Default: `warning`. Presets: none (opt-in).
-`v-show`-only wrappers are ignored.
+## `vue/no-non-component-keep-alive-child`
 
-`vue/no-preprocessor-lang` discourages CSS preprocessor languages in SFC blocks. Default: `warning`.
-Presets: `nuxt`, `opinionated`.
+See [Components and Props: `no-non-component-keep-alive-child`](./vue-components.md#vue-no-non-component-keep-alive-child).
 
-`vue/no-reserved-component-names` disallows reserved HTML or Vue names as component names. Default:
-`error`. Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
+## `vue/no-reserved-component-names`
 
-`vue/no-script-non-standard-lang` discourages non-standard script languages. Default: `warning`.
-Presets: `nuxt`, `opinionated`.
+See [Components and Props: `no-reserved-component-names`](./vue-components.md#vue-no-reserved-component-names).
 
-`vue/no-src-attribute` discourages external `src` attributes on SFC blocks. Default: `warning`.
-Presets: `nuxt`, `opinionated`.
+## `vue/require-component-registration`
 
-`vue/no-template-key` disallows `key` on `<template>`. Default: `error`. Presets: `essential`,
-`happy-path`, `nuxt`, `opinionated`.
+See [Components and Props: `require-component-registration`](./vue-components.md#vue-require-component-registration).
 
-`vue/no-template-lang` discourages `lang` on `<template>`. Default: `warning`. Presets: `nuxt`,
-`opinionated`.
+## `vue/attribute-hyphenation`
 
-`vue/no-textarea-mustache` disallows mustache interpolation inside `<textarea>`. Default: `error`.
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
+See [Template Formatting: `attribute-hyphenation`](./vue-formatting.md#vue-attribute-hyphenation).
 
-`vue/no-unused-vars` reports unused variables introduced by `v-for` and `v-slot`. Default:
-`warning`. Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
+## `vue/attribute-order`
 
-`vue/no-useless-template-attributes` disallows attributes on `<template>` that Vue ignores. Default:
-`error`. Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
+See [Template Formatting: `attribute-order`](./vue-formatting.md#vue-attribute-order).
 
-`vue/no-v-text-v-html-on-component` disallows `v-text` or `v-html` on component elements. Default:
-`error`. Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
+## `vue/html-quotes`
 
-`vue/permitted-contents` enforces HTML content model rules inside Vue templates. Default: `error`.
-Presets: `happy-path`, `nuxt`, `opinionated`.
+See [Template Formatting: `html-quotes`](./vue-formatting.md#vue-html-quotes).
 
-`vue/prefer-props-shorthand` recommends shorthand syntax for props. Default: `warning`. Presets:
-`nuxt`, `opinionated`.
+## `vue/html-self-closing`
 
-`vue/prop-name-casing` enforces a casing for declared prop names. Default: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
+See [Template Formatting: `html-self-closing`](./vue-formatting.md#vue-html-self-closing).
 
-`vue/require-component-registration` requires explicit component import or registration. Default:
-`warning`. Presets: `opinionated`.
+## `vue/mustache-interpolation-spacing`
 
-`vue/require-scoped-style` requires `scoped` on SFC style blocks. Default: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
+See [Template Formatting: `mustache-interpolation-spacing`](./vue-formatting.md#vue-mustache-interpolation-spacing).
 
-`vue/scoped-event-names` recommends scoped event names such as `form:submit`. Default: `warning`.
-Presets: `nuxt`, `opinionated`.
+## `vue/no-boolean-attr-value`
 
-`vue/sfc-element-order` enforces `vue/block-order`'s default order: `<script>` and `<template>` are
-interchangeable, `<style>` last. Default: `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
+See [Template Formatting: `no-boolean-attr-value`](./vue-formatting.md#vue-no-boolean-attr-value).
 
-`vue/single-style-block` recommends keeping styles in a single block. Default: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
+## `vue/no-inline-style`
 
-`vue/use-v-on-exact` enforces `.exact` when modifier-based handlers coexist. Default: `warning`.
-Presets: `essential`, `nuxt`, `opinionated`.
+See [Template Formatting: `no-inline-style`](./vue-formatting.md#vue-no-inline-style).
 
-`vue/v-bind-style`, `vue/v-on-style`, and `vue/v-slot-style` enforce directive style preferences.
-Defaults: `warning`. Presets: `nuxt` and/or `happy-path`, plus `opinionated`.
+## `vue/no-multi-spaces`
 
-`vue/valid-attribute-name`, `vue/valid-v-bind`, `vue/valid-v-else`, `vue/valid-v-for`,
-`vue/valid-v-if`, `vue/valid-v-memo`, `vue/valid-v-model`, `vue/valid-v-on`, `vue/valid-v-show`,
-and `vue/valid-v-slot` report invalid Vue directive syntax. Default: `error`. Presets:
-`essential`, `happy-path`, `nuxt`, `opinionated`.
+See [Template Formatting: `no-multi-spaces`](./vue-formatting.md#vue-no-multi-spaces).
 
-`vue/warn-custom-block` and `vue/warn-custom-directive` warn about custom Vue extension points that
-need host support or registration. Default: `warning`. Presets: `nuxt`, `opinionated`.
+## `vue/prefer-props-shorthand`
+
+See [Template Formatting: `prefer-props-shorthand`](./vue-formatting.md#vue-prefer-props-shorthand).
+
+## `vue/prop-name-casing`
+
+See [Template Formatting: `prop-name-casing`](./vue-formatting.md#vue-prop-name-casing).
+
+## `vue/valid-attribute-name`
+
+See [Template Formatting: `valid-attribute-name`](./vue-formatting.md#vue-valid-attribute-name).
+
+## `vue/no-preprocessor-lang`
+
+See [SFC Blocks: `no-preprocessor-lang`](./vue-sfc.md#vue-no-preprocessor-lang).
+
+## `vue/no-script-non-standard-lang`
+
+See [SFC Blocks: `no-script-non-standard-lang`](./vue-sfc.md#vue-no-script-non-standard-lang).
+
+## `vue/no-src-attribute`
+
+See [SFC Blocks: `no-src-attribute`](./vue-sfc.md#vue-no-src-attribute).
+
+## `vue/no-template-lang`
+
+See [SFC Blocks: `no-template-lang`](./vue-sfc.md#vue-no-template-lang).
+
+## `vue/require-scoped-style`
+
+See [SFC Blocks: `require-scoped-style`](./vue-sfc.md#vue-require-scoped-style).
+
+## `vue/sfc-element-order`
+
+See [SFC Blocks: `sfc-element-order`](./vue-sfc.md#vue-sfc-element-order).
+
+## `vue/single-style-block`
+
+See [SFC Blocks: `single-style-block`](./vue-sfc.md#vue-single-style-block).
+
+## `vue/warn-custom-block`
+
+See [SFC Blocks: `warn-custom-block`](./vue-sfc.md#vue-warn-custom-block).
+
+## `vue/scoped-event-names`
+
+See [Directive Conventions: `scoped-event-names`](./vue-directives.md#vue-scoped-event-names).
+
+## `vue/use-v-on-exact`
+
+See [Directive Conventions: `use-v-on-exact`](./vue-directives.md#vue-use-v-on-exact).
+
+## `vue/v-bind-style`
+
+See [Directive Conventions: `v-bind-style`](./vue-directives.md#vue-v-bind-style).
+
+## `vue/v-on-style`
+
+See [Directive Conventions: `v-on-style`](./vue-directives.md#vue-v-on-style).
+
+## `vue/v-slot-style`
+
+See [Directive Conventions: `v-slot-style`](./vue-directives.md#vue-v-slot-style).
+
+## `vue/warn-custom-directive`
+
+See [Directive Conventions: `warn-custom-directive`](./vue-directives.md#vue-warn-custom-directive).
+
+## `vue/valid-v-bind`
+
+See [Directive Validity: `valid-v-bind`](./vue-directive-validity.md#vue-valid-v-bind).
+
+## `vue/valid-v-else`
+
+See [Directive Validity: `valid-v-else`](./vue-directive-validity.md#vue-valid-v-else).
+
+## `vue/valid-v-for`
+
+See [Directive Validity: `valid-v-for`](./vue-directive-validity.md#vue-valid-v-for).
+
+## `vue/valid-v-if`
+
+See [Directive Validity: `valid-v-if`](./vue-directive-validity.md#vue-valid-v-if).
+
+## `vue/valid-v-memo`
+
+See [Directive Validity: `valid-v-memo`](./vue-directive-validity.md#vue-valid-v-memo).
+
+## `vue/valid-v-model`
+
+See [Directive Validity: `valid-v-model`](./vue-directive-validity.md#vue-valid-v-model).
+
+## `vue/valid-v-on`
+
+See [Directive Validity: `valid-v-on`](./vue-directive-validity.md#vue-valid-v-on).
+
+## `vue/valid-v-show`
+
+See [Directive Validity: `valid-v-show`](./vue-directive-validity.md#vue-valid-v-show).
+
+## `vue/valid-v-slot`
+
+See [Directive Validity: `valid-v-slot`](./vue-directive-validity.md#vue-valid-v-slot).

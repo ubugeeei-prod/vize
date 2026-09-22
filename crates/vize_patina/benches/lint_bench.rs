@@ -58,6 +58,24 @@ fn bench_lint_large_template(c: &mut Criterion) {
     group.finish();
 }
 
+fn bench_lint_sfc(c: &mut Criterion) {
+    // Exercise the production SFC entry: descriptor, template, S2 markup and
+    // template-aware script rules. Template-only benchmarks miss this sharing.
+    let linter = Linter::new();
+    let mut group = c.benchmark_group("sfc");
+    for count in [1, 100] {
+        let source = format!(
+            "<script>export default {{ computed: {{ total() {{ return 1 }} }} }}</script><template><main>{}</main></template>",
+            "<section><p>{{ total() }}</p><button type=\"button\" @click=\"total()\">Read</button></section>".repeat(count)
+        );
+        group.throughput(Throughput::Bytes(source.len() as u64));
+        group.bench_function(format!("lint_{count}_sections"), |b| {
+            b.iter(|| linter.lint_sfc(black_box(&source), "bench.vue"))
+        });
+    }
+    group.finish();
+}
+
 fn bench_script_rules(c: &mut Criterion) {
     let script = r#"
 import { ref, computed, onMounted } from 'vue'
@@ -130,6 +148,7 @@ criterion_group!(
     benches,
     bench_lint_template,
     bench_lint_large_template,
+    bench_lint_sfc,
     bench_script_rules,
     bench_musea_rules
 );

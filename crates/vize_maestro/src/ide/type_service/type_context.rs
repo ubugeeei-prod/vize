@@ -51,7 +51,8 @@ impl TypeService {
                     };
 
                     // Try to infer type
-                    let type_info = Self::infer_binding_type(remaining, &ident);
+                    let after_ident = &remaining.trim_start()[ident.len()..];
+                    let type_info = Self::infer_binding_type(after_ident, &ident);
 
                     ctx.add_binding(
                         ident.clone(),

@@ -11,7 +11,7 @@ if (puppeteerExecutablePath) {
 }
 
 const themeDir = resolve(import.meta.dirname, "theme");
-const themeCss = ["style.css", "features.css", "i18n/locale-selector.css"]
+const themeCss = ["style.css", "entry-layout.css", "features.css", "i18n/locale-selector.css"]
   .map((file) => readFileSync(resolve(themeDir, file), "utf-8"))
   .join("\n");
 const themeJs = buildDocsBackgroundScript(themeDir);
@@ -101,7 +101,8 @@ export default defineConfig({
 
           embed: {
             head: [
-              '<link rel="icon" href="/mv.svg" type="image/svg+xml">',
+              '<link rel="icon" href="/logo.svg" type="image/svg+xml">',
+              '<link rel="icon" href="/logo-light.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)">',
               '<link rel="preconnect" href="https://fonts.googleapis.com">',
               '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
               '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">',

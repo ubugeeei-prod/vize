@@ -56,7 +56,7 @@ const MODERN_REF_UNWRAP_HELPER: &str = r#"    type __VizeIsUnion<T, __U = T> = T
 const MODERN_HOISTED_REF_UNWRAP_HELPER: &str =
     "    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;\n";
 const MODERN_GENERIC_REF_UNWRAP_HELPER: &str =
-    "    type __U<T> = T extends import('vue').Ref ? T['value'] : T;\n";
+    "    type __U<T> = T extends import('vue').Ref<any> ? T['value'] : T;\n";
 const MODERN_EXPOSED_UNWRAP_HELPER: &str = "type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };\n";
 const LEGACY_DEFINE_COMPONENT_HELPER: &str = r#"type __VizeNuxt2Context = {
   app: any;

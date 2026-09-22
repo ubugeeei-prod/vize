@@ -74,7 +74,7 @@ export function assertReleasePlatformCommandsUseRefEnv(
   );
   for (const jobName of jobNames) {
     const job = workflowJobBody(workflow, jobName);
-    assert.match(job, /RELEASE_REF_NAME:\s*\$\{\{\s*github\.ref_name\s*\}\}/, jobName);
+    assert.match(job, /RELEASE_REF_NAME:\s*\$\{\{\s*inputs\.tag_name\s*\}\}/, jobName);
     assert.match(
       job,
       /release-platforms\.rs (?:github-output|apply-cadence) "\$RELEASE_REF_NAME"/,

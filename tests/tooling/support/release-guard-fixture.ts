@@ -87,7 +87,7 @@ export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
     ].join("\n"),
   );
 
-  const result = runMoonScript("release", ["patch", "-y"], {
+  const result = runMoonScript("release", ["patch", "-y", "--prepare-only"], {
     cwd: tempDir,
     env: {
       PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,

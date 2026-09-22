@@ -15,11 +15,10 @@ impl FactConsumer for AutoImportBindingCheck {
 /// True when the SFC's script (setup or plain) declares `name` via Croquis'
 /// binding analysis. Used by the auto-import code action to skip names the
 /// user already imported / declared.
-pub(super) fn sfc_script_declares(content: &str, name: &str) -> bool {
-    let options = vize_atelier_sfc::SfcParseOptions::default();
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-        return false;
-    };
+pub(super) fn sfc_script_declares(
+    descriptor: &vize_atelier_sfc::SfcDescriptor,
+    name: &str,
+) -> bool {
     let script_content = descriptor
         .script_setup
         .as_ref()

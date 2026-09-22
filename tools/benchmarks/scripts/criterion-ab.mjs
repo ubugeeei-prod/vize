@@ -42,6 +42,7 @@ import {
   critcmpExportArgs,
   evaluateAbsoluteBudgets,
   parseCritcmpExport,
+  resetCriterionResults,
   validateComparisonTable,
 } from "./criterion-baselines.mjs";
 import { renderSummary } from "./criterion-summary.mjs";
@@ -155,6 +156,7 @@ export function criterionBenchRunOptions({ checkoutDir, targetDir }) {
 }
 
 function benchSide({ side, checkoutDir, baseline, targetDir, suites }) {
+  resetCriterionResults(targetDir);
   for (const suite of suites) {
     const args = cargoBenchArgs({
       pkg: suite.package,

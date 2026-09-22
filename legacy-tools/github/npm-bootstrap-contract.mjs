@@ -102,10 +102,25 @@ function exactJob(jobs, name) {
 }
 
 export function validateReleaseRun({ run, releaseRunId, repository, tagName, tagSha }) {
+  const candidate = run?.event === "workflow_dispatch";
+  if (candidate) {
+    const prefix = `Release ${tagName} PR #`;
+    const suffix = ` @ ${tagSha}`;
+    const title = run?.display_title ?? "";
+    const number =
+      title.startsWith(prefix) && title.endsWith(suffix)
+        ? title.slice(prefix.length, -suffix.length)
+        : "";
+    if (!/^[1-9]\d*$/.test(number)) {
+      throw new Error(
+        "Release run does not match the failed exact-tag release contract: invalid candidate title",
+      );
+    }
+  }
   const expected = {
     conclusion: "failure",
-    event: "push",
-    head_branch: tagName,
+    event: candidate ? "workflow_dispatch" : "push",
+    head_branch: candidate ? `release/${tagName}` : tagName,
     head_sha: tagSha,
     id: releaseRunId,
     name: "Release",
@@ -149,7 +164,21 @@ export function validateReleaseJobs(jobs) {
     );
   }
 
-  for (const name of requiredSuccessfulReleaseJobs) {
+  const candidate = jobs.some(
+    (job) => job.name === "Release candidate ready" || job.name === "Authorize release candidate",
+  );
+  const required = candidate
+    ? [
+        "Build release npm packages",
+        "Smoke release npm package installs",
+        "Authorize release candidate",
+        "Release candidate ready",
+        "candidate-preflight / Verify release safety contract",
+        "candidate-preflight / Validate crates.io publish plan",
+        "release-preflight / Wait for validated PR and tag promotion",
+      ]
+    : requiredSuccessfulReleaseJobs;
+  for (const name of required) {
     const job = exactJob(jobs, name);
     if (job.status !== "completed" || job.conclusion !== "success") {
       throw new Error(`${name} must be completed/success, got ${job.status}/${job.conclusion}`);
@@ -174,7 +203,10 @@ export function validateReleaseJobs(jobs) {
     ...requiredSkippedReleaseJobs.map((name) => [name, "skipped"]),
   ]);
   for (const job of jobs) {
-    const expected = allowedNonSuccess.get(job.name) ?? "success";
+    const expected =
+      candidate && job.name === "Release crates.io handoff crates"
+        ? "skipped"
+        : (allowedNonSuccess.get(job.name) ?? "success");
     if (job.conclusion !== expected) {
       throw new Error(
         `Unexpected Release job conclusion: ${String(job.name)}=${String(job.conclusion)}, expected ${String(expected)}`,
@@ -203,7 +235,7 @@ export function validateReleaseArtifact({
   const source = artifact.workflow_run;
   if (
     String(source?.id ?? "") !== releaseRunId ||
-    source?.head_branch !== tagName ||
+    ![tagName, `release/${tagName}`].includes(source?.head_branch) ||
     source?.head_sha !== tagSha
   ) {
     throw new Error(`Release artifact ${artifactName} is not bound to ${tagName} (${tagSha})`);

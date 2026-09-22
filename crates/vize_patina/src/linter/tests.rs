@@ -42,6 +42,8 @@ mod nuxt_prefer_nuxt_link;
 mod prop_style_policy;
 mod recovered_parse_analysis;
 mod script;
+#[cfg(not(target_arch = "wasm32"))]
+mod script_template_ast;
 mod severity_overrides;
 mod sfc;
 mod v_for_unused_vars;

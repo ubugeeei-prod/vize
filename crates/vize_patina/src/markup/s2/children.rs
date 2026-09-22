@@ -21,10 +21,13 @@ use vize_s1::SurfaceChild;
 use vize_s2::op::{IfOp, InterpolationOp, Op, TextOp};
 
 /// Visit the child nodes a region contributes, in authored order.
+///
+/// Keep this reconstruction shared across rule callbacks, including recursive
+/// branch walks. The borrowed callback adds no allocation to the traversal.
 pub(in crate::markup) fn walk_nodes<'a>(
     doc: &'a S2Markup<'a>,
     ops: &'a [Op<'a>],
-    visitor: &mut impl FnMut(MarkupNode<'a>),
+    visitor: &mut dyn FnMut(MarkupNode<'a>),
 ) {
     let mut index = 0;
     while let Some(op) = ops.get(index) {
@@ -83,7 +86,7 @@ fn walk_chain<'a>(
     ops: &'a [Op<'a>],
     index: usize,
     if_op: &'a IfOp<'a>,
-    visitor: &mut impl FnMut(MarkupNode<'a>),
+    visitor: &mut dyn FnMut(MarkupNode<'a>),
 ) -> usize {
     let inside = |span: Span| span.start >= if_op.span.start && span.end <= if_op.span.end;
     let texts_end = index
@@ -143,7 +146,7 @@ fn walk_chain<'a>(
 pub(in crate::markup) fn walk_interpolation<'a>(
     doc: &'a S2Markup<'a>,
     interpolation: &'a InterpolationOp<'a>,
-    visitor: &mut impl FnMut(MarkupNode<'a>),
+    visitor: &mut (impl FnMut(MarkupNode<'a>) + ?Sized),
 ) {
     let Some(parts) = doc.text_parts(interpolation.span) else {
         visitor(MarkupNode::Interpolation(s2_range(interpolation.span)));

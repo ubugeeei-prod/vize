@@ -37,7 +37,7 @@ function quotedLiteralEnd(source: string, quote: number): number {
   return source.length;
 }
 
-function maskNonCode(source: string): string {
+export function maskRustNonCode(source: string): string {
   const output = source.split("");
   let index = 0;
   while (index < source.length) {
@@ -217,7 +217,7 @@ function itemEnd(source: string, start: number): number {
 }
 
 export function maskRustSource(source: string): string {
-  const code = maskNonCode(source);
+  const code = maskRustNonCode(source);
   const output = code.split("");
   const cfg = /#\s*\[\s*cfg\s*\(\s*test\s*\)\s*\]/gu;
   for (const match of code.matchAll(cfg)) {

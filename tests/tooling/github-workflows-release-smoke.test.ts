@@ -21,7 +21,14 @@ test("smoke job downloads every packed artifact directory it smoke-installs", ()
   // Packages assembled in-job from bindings artifacts (native, fresco-native)
   // never appear here, so they are exempt by construction rather than by list.
   const uploadedPathToName = new Map<string, string>();
-  for (const job of Object.values(jobs)) {
+  const packageBuilder = jobs["build-release-packages"];
+  assert.ok(
+    packageBuilder.steps?.some((step) => step.uses === "./.github/actions/release-build-packages"),
+  );
+  const composite = parse(
+    readRepoFile(".github", "actions", "release-build-packages", "action.yml"),
+  ) as { runs: ReleaseJob };
+  for (const job of [...Object.values(jobs), composite.runs]) {
     for (const step of job.steps ?? []) {
       if (!step.uses?.includes("actions/upload-artifact@")) continue;
       const name = step.with?.name;

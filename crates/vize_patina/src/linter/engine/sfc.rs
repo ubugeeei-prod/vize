@@ -26,15 +26,26 @@ impl Linter {
         )
     }
 
-    pub(crate) fn lint_sfc_template_with_descriptor<'a>(
+    fn lint_sfc_with_descriptor<'a>(
         &self,
         filename: &str,
         descriptor: &vize_atelier_sfc::SfcDescriptor<'a>,
     ) -> LintResult {
         let Some(template) = descriptor.template.as_ref() else {
-            return empty_lint_result(filename);
+            let mut result = empty_lint_result(filename);
+            super::super::script_rules::append_builtin_script_diagnostics(
+                self,
+                descriptor,
+                &mut result,
+                None,
+            );
+            return result;
         };
 
+        let profiler = vize_s0::profiler::global_profiler();
+        let template_profile = profiler
+            .is_enabled()
+            .then(|| profiler.global_span("patina.sfc.descriptor.template_lint"));
         let allocator =
             Allocator::with_capacity((template.content.len() * 4).max(self.initial_capacity));
         let parser = Parser::new(&allocator, &template.content);
@@ -67,7 +78,15 @@ impl Linter {
             },
         });
 
-        Self::merge_lint_results(parse_result, lint_result)
+        let mut result = Self::merge_lint_results(parse_result, lint_result);
+        drop(template_profile);
+        super::super::script_rules::append_builtin_script_diagnostics(
+            self,
+            descriptor,
+            &mut result,
+            (!has_fatal_parse_errors).then_some((&root, template.loc.start as u32)),
+        );
+        result
     }
 
     /// Lint a full Vue SFC file.
@@ -145,9 +164,7 @@ impl Linter {
             let template_result = match shared_descriptor {
                 Some(descriptor) => {
                     profile!("patina.sfc.descriptor_rules", {
-                        let mut result = super::super::script_rules::lint_with_descriptor(
-                            self, filename, descriptor,
-                        );
+                        let mut result = self.lint_sfc_with_descriptor(filename, descriptor);
                         if super::super::css_rules::has_active_builtin_css_rules(self) {
                             super::super::css_rules::append_builtin_css_diagnostics(
                                 self,

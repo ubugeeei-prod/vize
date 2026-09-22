@@ -20,7 +20,9 @@ pub(super) fn parse_raw_config_file(
         Some("ts" | "js" | "mjs") => parse_js_config(path)?,
         Some("json") => {
             let content = std::fs::read_to_string(path)?;
-            serde_json::from_str::<RawVizeConfig>(&content)?
+            // Share the same config deserializer as JS and PKL evaluation.
+            // Keeping a separate str reader instantiates the entire model twice.
+            serde_json::from_slice::<RawVizeConfig>(content.as_bytes())?
         }
         _ => return Ok(RawVizeConfig::default()),
     };
@@ -54,4 +56,60 @@ fn should_try_next_config(path: &Path, error: &(dyn std::error::Error + 'static)
     }
 
     pkl::is_process_error_box(error)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_raw_config_file;
+
+    #[test]
+    fn json_config_preserves_unicode_and_escaped_strings() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("vize.config.json");
+        std::fs::write(
+            &path,
+            r#"{
+                "basePath": "日本語/🎨",
+                "files": ["src/\u65e5\u672c.vue"],
+                "formatter": {
+                    "attributeGroups": [["é", "data-\"quoted\""]]
+                }
+            }"#,
+        )
+        .unwrap();
+
+        let config = parse_raw_config_file(&path).unwrap();
+        assert_eq!(config.base_path.as_deref(), Some("日本語/🎨"));
+        assert_eq!(config.files.unwrap()[0], "src/日本.vue");
+        let groups = config.formatter.attribute_groups.unwrap();
+        assert_eq!(groups[0][0], "é");
+        assert_eq!(groups[0][1], "data-\"quoted\"");
+    }
+
+    #[test]
+    fn json_config_rejects_invalid_utf8_before_deserialization() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("vize.config.json");
+        std::fs::write(&path, b"{\"basePath\":\"\xff\"}").unwrap();
+
+        let error = parse_raw_config_file(&path).unwrap_err();
+        let error = error.downcast_ref::<std::io::Error>().unwrap();
+        assert_eq!(error.kind(), std::io::ErrorKind::InvalidData);
+    }
+
+    #[test]
+    fn json_config_preserves_trailing_input_error_location() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("vize.config.json");
+        std::fs::write(&path, "{}\r\n\r\n[]").unwrap();
+
+        let error = parse_raw_config_file(&path).unwrap_err();
+        let error = error.downcast_ref::<serde_json::Error>().unwrap();
+        assert!(error.is_syntax());
+        assert_eq!((error.line(), error.column()), (3, 1));
+        assert_eq!(
+            crate::cstr!("{error}"),
+            "trailing characters at line 3 column 1"
+        );
+    }
 }

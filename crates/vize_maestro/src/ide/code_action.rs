@@ -22,8 +22,8 @@ use script_bindings::sfc_script_declares;
 /// Code action service for providing quick fixes and refactorings.
 pub struct CodeActionService;
 
-/// One SFC parse + template lint pass, shared across the lint-based collectors
-/// so a single code-action request doesn't parse and lint the same file twice.
+/// One template lint pass over the resident descriptor, shared across the
+/// lint-based collectors in a single request.
 struct TemplateLint {
     /// Template block content (the text the linter ran against).
     content: String,
@@ -38,9 +38,8 @@ impl CodeActionService {
     pub fn code_actions(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
         let mut actions = Vec::new();
 
-        // Parse the SFC and run the template linter exactly once; both the
-        // lint-fix and `@vize:forget` collectors below operate on this shared
-        // result instead of re-parsing + re-linting the same content twice.
+        // Run the template linter once over the resident descriptor; both the
+        // lint-fix and `@vize:forget` collectors share that result.
         if let Some(lint) = Self::lint_template_once(ctx) {
             actions.extend(Self::collect_lint_fixes(ctx, range, &lint));
             actions.extend(Self::collect_forget_suppress(ctx, range, &lint));
@@ -76,7 +75,10 @@ impl CodeActionService {
         // Skip names that the SFC already binds. Looking only at script
         // setup is sufficient for the common case; the broader Croquis
         // resolution moves in a follow-up.
-        if sfc_script_declares(&ctx.content, identifier) {
+        let Some(descriptor) = ctx.descriptor() else {
+            return Vec::new();
+        };
+        if sfc_script_declares(descriptor, identifier) {
             return Vec::new();
         }
 
@@ -114,13 +116,6 @@ impl CodeActionService {
 
         // Insert at the start of script setup if present, otherwise at the
         // start of the regular script block.
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
-            return Vec::new();
-        };
         let insert_offset = descriptor
             .script_setup
             .as_ref()
@@ -197,7 +192,7 @@ impl CodeActionService {
             start -= 1;
         }
         let receiver = &ctx.content[start..dot_pos];
-        if !is_reactive_ref_in_script(&ctx.content, ctx.uri, receiver) {
+        if !is_reactive_ref_in_script(ctx, receiver) {
             return Vec::new();
         }
 
@@ -261,7 +256,7 @@ impl CodeActionService {
             return Vec::new();
         };
         let identifier = &ctx.content[identifier_range.clone()];
-        if !is_reactive_ref_in_script(&ctx.content, ctx.uri, identifier) {
+        if !is_reactive_ref_in_script(ctx, identifier) {
             return Vec::new();
         }
 
@@ -305,17 +300,11 @@ impl CodeActionService {
         vec![CodeActionOrCommand::CodeAction(action)]
     }
 
-    /// Parse the SFC and run the template linter once, returning the template
-    /// content, its starting line in the SFC, and the lint result. Shared by
-    /// the lint-fix and `@vize:forget` collectors so the (expensive) SFC parse
-    /// and template lint run a single time per code-action request.
+    /// Read the resident SFC descriptor and run the template linter once.
+    /// Share its content, source offset and result between lint-fix and
+    /// `@vize:forget` collectors within the same request.
     fn lint_template_once(ctx: &IdeContext) -> Option<TemplateLint> {
-        #[allow(clippy::disallowed_methods)]
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+        let descriptor = ctx.descriptor()?;
         let template = descriptor.template.as_ref()?;
         let linter = vize_patina::Linter::new();
         let result = linter.lint_template(&template.content, ctx.uri.path());
@@ -481,13 +470,7 @@ impl CodeActionService {
 
     /// Get all available fixes for a document (for "fix all" actions).
     pub fn get_all_fixes(ctx: &IdeContext) -> Option<WorkspaceEdit> {
-        #[allow(clippy::disallowed_methods)]
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+        let descriptor = ctx.descriptor()?;
         let template = descriptor.template.as_ref()?;
 
         let linter = vize_patina::Linter::new();
@@ -671,13 +654,9 @@ fn is_ident_byte(b: u8) -> bool {
 /// True when `name` resolves to a Vue ref (Ref / ShallowRef / ToRef /
 /// ComputedRef) declared anywhere in the SFC's script-setup block. Used to
 /// decide whether "Wrap with `.value`" makes sense at the cursor.
-fn is_reactive_ref_in_script(content: &str, uri: &tower_lsp::lsp_types::Url, name: &str) -> bool {
+fn is_reactive_ref_in_script(ctx: &IdeContext, name: &str) -> bool {
     use vize_croquis::reactivity::ReactiveKind;
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: uri.path().to_string().into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+    let Some(descriptor) = ctx.descriptor() else {
         return false;
     };
     let Some(ref script_setup) = descriptor.script_setup else {

@@ -108,6 +108,39 @@ mod tests {
     }
 
     #[test]
+    fn test_type_query_keeps_authored_offsets_after_interpolation_whitespace() {
+        let checker = TypeChecker::new();
+        let ctx = create_test_context();
+        for template in [
+            "<p>雪😀 {{ count }}</p>",
+            "<p>{{\r\n\tcount\r\n}}</p>",
+            "<p>{{\u{3000}count\u{3000}}}</p>",
+        ] {
+            let start = template.find("count").unwrap();
+            for offset in start..start + "count".len() {
+                assert_eq!(
+                    checker
+                        .get_type_at(template, offset as u32, &ctx)
+                        .unwrap()
+                        .display,
+                    "Ref<number>"
+                );
+            }
+            let expression_start = template.find("{{").unwrap() + 2;
+            assert!(
+                checker
+                    .get_type_at(template, expression_start as u32, &ctx)
+                    .is_none()
+            );
+            assert!(
+                checker
+                    .get_type_at(template, (start + "count".len()) as u32, &ctx)
+                    .is_none()
+            );
+        }
+    }
+
+    #[test]
     fn test_get_completions() {
         let checker = TypeChecker::new();
         let ctx = create_test_context();

@@ -54,12 +54,15 @@ impl<'a> S2Item<'a> {
 /// span, or — when S2 consumed or dropped it — to a [`S2Item::Surface`]. A
 /// JSX projection has no surface tree and drops nothing (it refuses instead),
 /// so its attributes and bindings are merged by span.
+///
+/// Share the authored-order reconstruction across rules; only the final
+/// callback differs. Borrowing the callback does not allocate.
 pub(in crate::markup) fn walk_items<'a>(
     doc: &'a S2Markup<'a>,
     attributes: &'a [Attribute<'a>],
     bindings: &'a [BindingOp<'a>],
     surface: Option<&'a vize_s1::Element<'a>>,
-    visitor: &mut impl FnMut(S2Item<'a>),
+    visitor: &mut dyn FnMut(S2Item<'a>),
 ) {
     if let Some(element) = surface {
         for attr in &element.open.attrs {

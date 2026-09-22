@@ -5,6 +5,8 @@ use super::super::helper::Helper;
 use super::Buf;
 use super::call_position::helper_call_position;
 
+type RankFiveKey = (usize, u8, u8);
+
 impl Buf {
     pub(super) fn ordered_helpers(&self) -> StdVec<Helper> {
         let mut listed = StdVec::new();
@@ -25,31 +27,53 @@ impl Buf {
         for helper in Helper::ALL {
             push(helper);
         }
+        let mut rank_five_keys = [None; 8];
         listed.sort_by(|left, right| {
             left.rank()
                 .cmp(&right.rank())
-                .then_with(|| self.order_same_rank_helper(*left, *right))
+                .then_with(|| self.order_same_rank_helper(*left, *right, &mut rank_five_keys))
         });
         listed
     }
 
-    fn order_same_rank_helper(&self, left: Helper, right: Helper) -> Ordering {
-        match (
-            left.rank(),
-            self.preferred_position(left),
-            self.preferred_position(right),
-            self.first_alias_position(left),
-            self.first_alias_position(right),
-        ) {
-            (2, Some(left_pos), Some(right_pos), _, _) => left_pos.cmp(&right_pos),
-            (2, Some(_), None, _, _) => Ordering::Less,
-            (2, None, Some(_), _, _) => Ordering::Greater,
-            (2, None, None, Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
-            (5, _, _, _, _) => self.rank_five_key(left).cmp(&self.rank_five_key(right)),
-            (10, _, _, _, _)
-                if self.used & Helper::ResolveDirective.bit() != 0
-                    && self.used & Helper::CreateText.bit() != 0
-                    && create_slots_show_pair(left, right) =>
+    fn order_same_rank_helper(
+        &self,
+        left: Helper,
+        right: Helper,
+        rank_five_keys: &mut [Option<RankFiveKey>; 8],
+    ) -> Ordering {
+        // Alias positions scan the generated module. Only ranks that consume
+        // them should pay that cost; transform preference settles most ties.
+        match left.rank() {
+            2 => match (
+                self.preferred_position(left),
+                self.preferred_position(right),
+            ) {
+                (Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
+                (Some(_), None) => Ordering::Less,
+                (None, Some(_)) => Ordering::Greater,
+                (None, None) => match (
+                    self.first_alias_position(left),
+                    self.first_alias_position(right),
+                ) {
+                    (Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
+                    _ => Ordering::Equal,
+                },
+            },
+            5 => {
+                let mut key = |helper| {
+                    let Some(cached) =
+                        rank_five_keys.get_mut(usize::from(rank_five_all_order(helper)))
+                    else {
+                        return self.rank_five_key(helper);
+                    };
+                    *cached.get_or_insert_with(|| self.rank_five_key(helper))
+                };
+                key(left).cmp(&key(right))
+            }
+            10 if self.used & Helper::ResolveDirective.bit() != 0
+                && self.used & Helper::CreateText.bit() != 0
+                && create_slots_show_pair(left, right) =>
             {
                 create_slots_before_v_show(left, right)
             }
@@ -75,7 +99,7 @@ impl Buf {
         helper_call_position(self.code.as_str(), alias).map(|position| offset + position)
     }
 
-    fn rank_five_key(&self, helper: Helper) -> (usize, u8, u8) {
+    fn rank_five_key(&self, helper: Helper) -> RankFiveKey {
         if let Some((position, order)) = self.normalize_props_guard_merge_order(helper) {
             return (position, order, rank_five_all_order(helper));
         }
@@ -88,6 +112,9 @@ impl Buf {
     }
 
     fn normalize_props_guard_merge_order(&self, helper: Helper) -> Option<(usize, u8)> {
+        if !matches!(helper, Helper::GuardReactiveProps | Helper::MergeProps) {
+            return None;
+        }
         let normalize_pos = self.first_alias_position(Helper::NormalizeProps)?;
         let merge_pos = self.first_alias_position(Helper::MergeProps)?;
         if normalize_pos >= merge_pos {
