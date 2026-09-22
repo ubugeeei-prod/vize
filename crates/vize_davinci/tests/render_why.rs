@@ -1,14 +1,11 @@
-// Included by render::why so private witness formatting can be tested.
+// Exercise witness formatting through the public renderer.
 // Test-only exemptions live outside the production source inventory.
-use alloc::vec::Vec;
-
-use super::notes;
-use crate::diagnostic::{
+use vize_davinci::diagnostic::{
     Advisory, Diagnostic, Exemption, Stage, WitnessChain, WitnessKey, WitnessLink,
 };
-use crate::fact::ids;
-use crate::pass::AnalysisId;
-use crate::render::{Catalog, EnglishCatalog, Phrase, SourceFile};
+use vize_davinci::fact::ids;
+use vize_davinci::pass::AnalysisId;
+use vize_davinci::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
 use vize_s0::{Span, String};
 
 /// Supplies one fact sentence, ahead of the built-in group phrases.
@@ -74,4 +71,12 @@ fn an_unproven_diagnostic_and_a_legacy_exemption_have_no_notes() {
     static EXEMPT: Exemption = Exemption::new("vize_davinci", "render-why-fixture");
     let exempt = Diagnostic::legacy_error(&EXEMPT, Stage::Semantic, Span::new(0, 1), "e");
     assert_eq!(notes(&file, &EnglishCatalog, &exempt), Vec::<String>::new());
+}
+
+fn notes<C: Catalog>(file: &SourceFile<'_>, catalog: &C, diagnostic: &Diagnostic) -> Vec<String> {
+    Renderer::new(catalog)
+        .render(file, None, diagnostic)
+        .lines()
+        .filter_map(|line| line.trim().strip_prefix("= note: ").map(String::from))
+        .collect()
 }

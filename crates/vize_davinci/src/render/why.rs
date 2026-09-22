@@ -137,7 +137,3 @@ fn fill(template: &str, vars: &[(&str, &str)]) -> String {
     out.push_str(rest);
     out
 }
-
-#[cfg(test)]
-#[path = "../../tests/support/render_why_unit.rs"]
-mod tests;
