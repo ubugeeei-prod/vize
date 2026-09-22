@@ -43,29 +43,30 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 ## Non-product `vize_croquis` imports
 
-| item                        | files | sites |
-| --------------------------- | ----: | ----: |
-| `Bindings`                  |     3 |     4 |
-| `CroquisFacts`              |     2 |     2 |
-| `Demand`                    |     1 |     4 |
-| `EmitDefinition`            |     3 |     3 |
-| `FactConsumer`              |     1 |     2 |
-| `InjectEntry`               |     4 |     8 |
-| `InjectPattern`             |     4 |    21 |
-| `MacroKind`                 |     1 |     1 |
-| `PropDefinition`            |     3 |     3 |
-| `ProvideEntry`              |     2 |     7 |
-| `ProvideKey`                |     7 |    34 |
-| `RaceConditionRisk`         |     2 |     4 |
-| `RaceConditionRiskKind`     |     2 |     3 |
-| `ReactiveKind`              |     7 |    37 |
-| `ReactiveSource`            |     1 |     1 |
-| `ReactivityLossKind`        |     2 |    18 |
-| `SetupContextViolation`     |     1 |     1 |
-| `SetupContextViolationKind` |     2 |    11 |
-| `SfcParseOptions`           |     1 |     1 |
-| `ViolationSeverity`         |     1 |     6 |
-| `parse_sfc`                 |     1 |     1 |
+| item                         | files | sites |
+| ---------------------------- | ----: | ----: |
+| `Bindings`                   |     3 |     4 |
+| `CroquisFacts`               |     2 |     2 |
+| `Demand`                     |     1 |     4 |
+| `EmitDefinition`             |     3 |     3 |
+| `FactConsumer`               |     1 |     2 |
+| `InjectEntry`                |     4 |     8 |
+| `InjectPattern`              |     4 |    21 |
+| `MacroKind`                  |     1 |     1 |
+| `PropDefinition`             |     3 |     3 |
+| `ProvideEntry`               |     2 |     7 |
+| `ProvideKey`                 |     7 |    34 |
+| `RaceConditionRisk`          |     2 |     4 |
+| `RaceConditionRiskKind`      |     2 |     3 |
+| `ReactiveKind`               |     7 |    37 |
+| `ReactiveSource`             |     1 |     1 |
+| `ReactivityLossKind`         |     2 |    18 |
+| `SetupContextViolation`      |     1 |     1 |
+| `SetupContextViolationKind`  |     2 |    11 |
+| `SfcParseOptions`            |     2 |     2 |
+| `ViolationSeverity`          |     1 |     6 |
+| `parse_sfc`                  |     1 |     1 |
+| `parse_sfc_without_css_vars` |     1 |     1 |
 
 ## Naive grep disagreements (resolved/grep)
 
@@ -86,7 +87,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeId`                              |       18 |   27 |
 | `ScopeKind`                            |        9 |   10 |
 | `SlotUsage`                            |        2 |    7 |
+| `Span`                                 |        0 |   36 |
 | `Symbol`                               |        0 |   27 |
+| `SymbolId`                             |        0 |    6 |
 | `build_effect_graph_from_script`       |        2 |    3 |
 | `build_effect_graph_from_script_setup` |        1 |    2 |
 | `build_effect_graph_from_sfc_scripts`  |        1 |    2 |
