@@ -65,6 +65,8 @@
 
 ## P5-10 — Fault-tolerant analysis
 
+**Landed 2026-09-22** — full record: [phase-5-records/p5-10.md](./phase-5-records/p5-10.md).
+
 **Start gate:** gated on P4-1a — partial fragments produce facts through the fact API.
 
 **Lane:** H
@@ -73,8 +75,8 @@
 
 **Steps:**
 
-- [ ] `crates/vize_s1_to_s2/src/partial.rs` exposes the kept fragments to the fact manager
-- [ ] TS-47 scenarios in `tests/tooling/lsp-broken-file*`: hover and completion in a file with a parse error elsewhere
+- [x] `crates/vize_s1_to_s2/src/partial.rs` exposes the kept fragments to the fact manager
+- [x] TS-47 scenarios in `tests/tooling/lsp-broken-file*`: hover and completion in a file with a parse error elsewhere
 
 **Acceptance:** TS-47 scenarios exact; no diagnostic regression on the well-formed fixtures (TS-9).
 
