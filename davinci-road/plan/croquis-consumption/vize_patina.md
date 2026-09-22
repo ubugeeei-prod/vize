@@ -11,7 +11,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | product                           | kind  | module              | files | sites |
 | --------------------------------- | ----- | ------------------- | ----: | ----: |
 | `COMPILER_MACRO_NAMES`            | type  | `croquis`           |     1 |     1 |
-| `Croquis`                         | type  | `croquis`           |     8 |    22 |
+| `Croquis`                         | type  | `croquis`           |     9 |    22 |
 | `Drawer`                          | type  | `drawer`            |     1 |     1 |
 | `ElementIdKind`                   | type  | `croquis::template` |     1 |     2 |
 | `OptionMember`                    | type  | `croquis`           |     2 |     3 |
@@ -45,7 +45,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `SfcCustomBlock`                          |     1 |     2 |
 | `SfcDescriptor`                           |    11 |    15 |
 | `SfcError`                                |     1 |     2 |
-| `SfcParseOptions`                         |    10 |    11 |
+| `SfcParseOptions`                         |    11 |    12 |
 | `UndefinedRefs`                           |     1 |     2 |
 | `VirtualTsConfig`                         |     1 |     1 |
 | `VirtualTsOutput`                         |     5 |    16 |
@@ -76,11 +76,11 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeData`             |        2 |    4 |
 | `ScopeId`               |        0 |    1 |
 | `ScopeKind`             |        3 |    5 |
-| `Span`                  |        0 |  191 |
+| `Span`                  |        0 |  219 |
 | `Symbol`                |        0 |   15 |
 | `SymbolId`              |        0 |    3 |
 | `UnusedVarContext`      |        4 |    5 |
-| `Croquis.bindings`      |        0 |    5 |
+| `Croquis.bindings`      |        0 |   10 |
 | `Croquis.macros`        |       22 |   31 |
 | `Croquis.reactivity`    |        1 |    4 |
 | `Croquis.scopes`        |        4 |   27 |
