@@ -36,12 +36,18 @@ pub const HTML_COMPOSED_NESTING: AnalysisId = AnalysisId::new(11);
 /// `ExpressionFacts` — foreign-dialect expression facts over the P6-1b
 /// contract world.
 pub const EXPRESSION_FACTS: AnalysisId = AnalysisId::new(12);
+/// `PartialHoles` — S1 `Unexpected` / `Missing` holes beside a partial page (P5-10).
+pub const PARTIAL_HOLES: AnalysisId = AnalysisId::new(13);
+/// `PartialRegions` — kept S2 fragments in the well-formed regions (P5-10).
+pub const PARTIAL_REGIONS: AnalysisId = AnalysisId::new(14);
+/// `PartialScopes` — scope names of those fragments (P5-10).
+pub const PARTIAL_SCOPES: AnalysisId = AnalysisId::new(15);
 
 /// The first id tests and bench fixtures may use.
 pub const FIXTURE_BASE: u8 = 32;
 
 /// Every allocated production id, in id order.
-pub const PRODUCTION: [AnalysisId; 12] = [
+pub const PRODUCTION: [AnalysisId; 15] = [
     BINDINGS,
     UNDEFINED_REFS,
     UNUSED_BINDINGS,
@@ -54,6 +60,9 @@ pub const PRODUCTION: [AnalysisId; 12] = [
     HTML_ELEMENTS,
     HTML_COMPOSED_NESTING,
     EXPRESSION_FACTS,
+    PARTIAL_HOLES,
+    PARTIAL_REGIONS,
+    PARTIAL_SCOPES,
 ];
 
 // Unique, ascending, and below the fixture range.

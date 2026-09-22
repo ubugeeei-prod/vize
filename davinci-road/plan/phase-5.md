@@ -79,7 +79,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [ ] [P5-7](./phase-5-tasks-later.md#p5-7--block-level-projection-reuse) Block-level projection reuse — lane E · gated on P4-5c
 - [x] [P5-8](./phase-5-tasks-later.md#p5-8--corsa-session-reuse) Corsa session reuse — lane F · startable now
 - [x] [P5-9](./phase-5-tasks-later.md#p5-9--incremental-equals-clean-in-ci) Incremental equals clean in CI — lane G · startable now
-- [ ] [P5-10](./phase-5-tasks-later.md#p5-10--fault-tolerant-analysis) Fault-tolerant analysis — lane H · gated on P4-1a
+- [x] [P5-10](./phase-5-tasks-later.md#p5-10--fault-tolerant-analysis) Fault-tolerant analysis — lane H · gated on P4-1a
 - [x] [P5-11a](./phase-5-tasks-later.md#p5-11a--resident-resource-baselines-and-methodology) Resident resource baselines and methodology — lane I · startable now
 - [ ] [P5-11b](./phase-5-tasks-later.md#p5-11b--resource-budgets-enforced) Resource budgets enforced — lane I · startable now (behind P5-6c)
 - [x] [P5-12](./phase-5-tasks-later.md#p5-12--multi-client-lsp-conformance) Multi-client LSP conformance — lane J · startable now
