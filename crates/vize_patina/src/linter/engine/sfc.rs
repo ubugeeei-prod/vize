@@ -21,7 +21,7 @@ impl Linter {
             TemplateRuleEnv {
                 sfc_descriptor: input.descriptor,
                 dialect: VueDialect::Vue,
-                facade_rule: Some(facade::RULE),
+                facade_rules: facade::RULES,
             },
         )
     }
@@ -183,7 +183,7 @@ impl Linter {
         self.append_sfc_document_rule_diagnostics(source, filename, result)
     }
 
-    /// Template body extracted from an SFC. [`facade::RULE`] runs on the S2 facade.
+    /// Template body extracted from an SFC. [`facade::RULES`] run on the S2 facade.
     fn lint_sfc_template_source(&self, source: &str, filename: &str) -> LintResult {
         let capacity = (source.len() * 4).max(self.initial_capacity);
         let allocator = Allocator::with_capacity(capacity);
@@ -196,7 +196,7 @@ impl Linter {
             TemplateRuleEnv {
                 sfc_descriptor: None,
                 dialect: VueDialect::Vue,
-                facade_rule: Some(facade::RULE),
+                facade_rules: facade::RULES,
             },
         )
     }

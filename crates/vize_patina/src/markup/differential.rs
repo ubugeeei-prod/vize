@@ -146,3 +146,6 @@ pub fn compare_jsx(source: &str, lang: JsxLang) -> Result<JsxComparison, Diverge
     }
     Ok(comparison)
 }
+
+#[cfg(test)]
+pub(crate) use rule_fixtures::scan_rule_fixtures;

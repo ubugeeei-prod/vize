@@ -63,9 +63,9 @@ pub(crate) struct SfcTemplateLintInput<'a> {
 pub(crate) struct TemplateRuleEnv<'a> {
     pub sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
     pub dialect: VueDialect,
-    /// Markup rule `lint_sfc` runs on the S2 facade instead of the visitor.
-    /// `None` on the raw-template and standalone-HTML lanes.
-    pub facade_rule: Option<&'static str>,
+    /// Markup rules `lint_sfc` runs on the S2 facade instead of the visitor.
+    /// Empty on the raw-template and standalone-HTML lanes.
+    pub facade_rules: &'static [&'static str],
 }
 
 impl<'a> TemplateRuleEnv<'a> {
@@ -73,7 +73,7 @@ impl<'a> TemplateRuleEnv<'a> {
         Self {
             sfc_descriptor: None,
             dialect,
-            facade_rule: None,
+            facade_rules: &[],
         }
     }
 }
@@ -269,7 +269,7 @@ impl Linter {
                 source,
                 root,
                 analysis,
-                rule: env.facade_rule,
+                rules: env.facade_rules,
                 rule_count,
             },
         );

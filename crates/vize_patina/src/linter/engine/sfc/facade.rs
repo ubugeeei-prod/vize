@@ -1,27 +1,37 @@
-//! One SFC markup rule on the S2 facade (Davinci P4-7b).
+//! SFC markup rules whose diagnostics match the Relief visitor (P4-7b).
 //!
-//! Every other template rule still walks the Relief visitor. [`RULE`] is the
-//! markup rule whose SFC diagnostics already match that visitor, so `lint_sfc`
-//! drives it here instead.
+//! The admitted rules share one S2 lowering and one traversal. All other
+//! template rules stay on the Relief visitor until their parity is proven.
 
 use crate::context::LintContext;
 use crate::ir::TemplateSyntax;
 use crate::linter::config::Linter;
-use crate::markup::{MarkupContext, MarkupDocument, MarkupRule, S2Template};
+use crate::markup::{MarkupContext, MarkupDocument, S2Template};
 use crate::visitor::LintVisitor;
 use vize_croquis::Croquis;
 use vize_relief::RootNode;
 use vize_s0::{Allocator, profile};
 
-/// `vue/no-multi-spaces` — opening-tag gap spans match the Relief visitor.
-pub(in crate::linter::engine) const RULE: &str = "vue/no-multi-spaces";
+mod batch;
+
+/// Exact diagnostic, help, label and fix parity is checked by the SFC battery.
+pub(in crate::linter::engine) const RULES: &[&str] = &[
+    "vue/no-multi-spaces",
+    "vue/no-textarea-mustache",
+    "vue/no-template-target-blank",
+    "vue/no-unsandboxed-iframe",
+    "vue/no-invalid-html-attribute",
+    "vue/html-button-has-type",
+    "vue/no-inline-style",
+    "vue/no-boolean-attr-value",
+];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {
     pub allocator: &'a Allocator,
     pub source: &'a str,
     pub root: &'a RootNode<'a>,
     pub analysis: Option<&'a Croquis>,
-    pub rule: Option<&'static str>,
+    pub rules: &'static [&'static str],
     pub rule_count: usize,
 }
 
@@ -33,30 +43,31 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
     let rules = &linter.registry.rules()[..input.rule_count];
     let names = &linter.rule_names()[..input.rule_count];
     let exit = linter.registry.has_exit_element_rules();
-    let facade_index = input.rule.and_then(|name| {
-        let index = names.iter().position(|candidate| *candidate == name)?;
-        rules[index].as_markup_rule()?;
-        Some(index)
-    });
+    let selected: Vec<_> = rules
+        .iter()
+        .enumerate()
+        .filter_map(|(index, rule)| {
+            let name = names[index];
+            (input.rules.contains(&name) && linter.is_rule_enabled(name))
+                .then(|| rule.as_markup_rule().map(|rule| (index, rule)))
+                .flatten()
+        })
+        .collect();
 
-    let Some(index) = facade_index else {
+    if selected.is_empty() {
         let mut visitor = LintVisitor::new(ctx, rules, names, exit);
         profile!("patina.template.visit", visitor.visit_root(input.root));
         return;
-    };
+    }
 
     let mut keep = vec![true; input.rule_count];
-    keep[index] = false;
+    for (index, _) in &selected {
+        keep[*index] = false;
+    }
     {
         let mut visitor = LintVisitor::with_rule_filter(ctx, rules, names, exit, &keep);
         profile!("patina.template.visit", visitor.visit_root(input.root));
     }
-    if let Some(rule) = rules[index].as_markup_rule() {
-        visit_facade(ctx, &input, rule);
-    }
-}
-
-fn visit_facade<'a>(ctx: &mut LintContext<'a>, input: &Dispatch<'a>, rule: &dyn MarkupRule) {
     let lowered = S2Template::lower(input.allocator, input.source);
     let markup = lowered.markup();
     let markup = crate::markup::reborrow_markup(&markup);
@@ -66,6 +77,9 @@ fn visit_facade<'a>(ctx: &mut LintContext<'a>, input: &Dispatch<'a>, rule: &dyn 
     }
     profile!("patina.sfc.facade.visit", {
         let mut markup_ctx = MarkupContext::new(ctx, &document);
-        document.visit_with(rule, &mut markup_ctx);
+        document.visit_with(&batch::Rules(&selected), &mut markup_ctx);
     });
 }
+
+#[cfg(test)]
+mod tests;
