@@ -5,7 +5,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+use vize_davinci::diagnostic::Diagnostic;
 use vize_s0::{Span, String, cstr};
 use vize_s1::Token;
 use vize_s1::pug::{
@@ -65,12 +65,8 @@ impl<'t> Emitter<'t> {
     }
 
     pub(super) fn error(&mut self, span: Span, message: String) {
-        self.diagnostics.push(Diagnostic::new(
-            Severity::Error,
-            Stage::Semantic,
-            span,
-            message,
-        ));
+        self.diagnostics
+            .push(crate::exemptions::lowering(span, &message));
     }
 
     pub(super) fn nodes(&mut self, nodes: &[PugNode<'_>]) {

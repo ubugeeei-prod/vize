@@ -23,7 +23,7 @@ _None._
 | `Scope`            |        0 |    2 |
 | `ScopeBinding`     |        0 |   11 |
 | `ScopeChain`       |        0 |    1 |
-| `Span`             |        0 |  160 |
+| `Span`             |        0 |  163 |
 | `Symbol`           |        0 |    1 |
 | `Croquis.bindings` |        0 |  236 |
 | `Croquis.hoists`   |        0 |    6 |

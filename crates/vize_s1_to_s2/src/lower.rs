@@ -24,7 +24,7 @@
 use alloc::vec::Vec as StdVec;
 use core::fmt;
 
-use vize_davinci::diagnostic::{Diagnostic, Stage};
+use vize_davinci::diagnostic::Diagnostic;
 use vize_davinci::side_table::SideTable;
 use vize_s0::{Allocator, SourceBlock, SourceRoot, Span, String};
 use vize_s1::{SurfaceError, SurfaceTree};
@@ -239,11 +239,9 @@ fn lower_source_block_with_caps_and_comment_policy<'a>(
         custom_elements.predicate,
     );
     for error in errors {
-        cx.diagnostics.push(Diagnostic::legacy_error(
-            &crate::exemptions::SURFACE_SYNTAX,
-            Stage::Surface,
+        cx.diagnostics.push(crate::exemptions::surface_syntax(
             surface_error_span(block, error.offset),
-            String::from(error.code.message()),
+            error.code.message(),
         ));
     }
     let ops = structural::lower_children(&mut cx, &tree.children, Namespace::Html);

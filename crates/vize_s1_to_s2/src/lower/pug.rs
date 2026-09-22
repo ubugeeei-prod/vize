@@ -35,7 +35,7 @@ mod refusal;
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+use vize_davinci::diagnostic::{Diagnostic, Severity};
 use vize_s0::{Allocator, Span, String};
 use vize_s1::pug::{PugError, PugTree, parse_pug};
 
@@ -64,7 +64,7 @@ impl PugTemplate {
     pub fn first_error(&self) -> Option<&Diagnostic> {
         self.diagnostics
             .iter()
-            .find(|diagnostic| diagnostic.severity == Severity::Error)
+            .find(|diagnostic| diagnostic.severity() == Severity::Error)
     }
 }
 
@@ -73,11 +73,9 @@ impl PugTemplate {
 pub fn derive_template(tree: &PugTree<'_>, errors: &[PugError]) -> PugTemplate {
     let mut emitter = emit::Emitter::new(tree);
     for error in errors {
-        emitter.diagnostics.push(Diagnostic::new(
-            Severity::Error,
-            Stage::Surface,
+        emitter.diagnostics.push(crate::exemptions::surface_syntax(
             Span::new(error.offset, error.offset),
-            String::from(error.code.message()),
+            error.code.message(),
         ));
     }
     emitter.nodes(&tree.nodes);

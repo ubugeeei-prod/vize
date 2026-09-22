@@ -270,12 +270,8 @@ impl<'a> Cx<'a> {
     }
 
     pub(crate) fn error(&mut self, span: Span, message: String) {
-        self.diagnostics.push(Diagnostic::legacy_error(
-            &crate::exemptions::LOWERING,
-            Stage::Semantic,
-            span,
-            message,
-        ));
+        self.diagnostics
+            .push(crate::exemptions::lowering(span, &message));
     }
 
     /// Render an S1 typed hole into the unified channel. The tokenizer
