@@ -43,7 +43,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `SfcCustomBlock`                          |     1 |     2 |
 | `SfcDescriptor`                           |    11 |    15 |
 | `SfcError`                                |     1 |     2 |
-| `SfcParseOptions`                         |     9 |    10 |
+| `SfcParseOptions`                         |    10 |    11 |
 | `VirtualTsConfig`                         |     1 |     1 |
 | `VirtualTsOutput`                         |     5 |    16 |
 | `collect_options_descriptor`              |     4 |     4 |
