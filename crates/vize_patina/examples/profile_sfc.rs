@@ -2,7 +2,7 @@
 //!
 //! `cargo run --profile ci-opt -p vize_patina --example profile_sfc -- <directory> 100`
 //! enables wall timing; set `VIZE_LINT_PROFILE=1` for per-pass attribution.
-use std::{fs, hint::black_box, path::Path, time::Instant};
+use std::{fs, hint::black_box, time::Instant};
 use vize_patina::Linter;
 use vize_s0::profiler::global_profiler;
 
@@ -30,7 +30,7 @@ fn main() {
     let start = Instant::now();
     for _ in 0..iterations {
         for (path, source) in paths.iter().zip(&inputs) {
-            black_box(linter.lint_sfc(source, Path::new(path).to_str().unwrap()));
+            black_box(linter.lint_sfc(source, &path.to_string_lossy()));
         }
     }
     let elapsed = start.elapsed();
