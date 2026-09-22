@@ -83,3 +83,204 @@ revisited together with this entry.
 **Disposition:** `deferred-with-issue` — the consumer arrives with the rule
 SDK / fact-channel work (assurance doctrine, precision tiers); explicitly
 not a phase-0 gate per the P0-13 plan text.
+
+## FN-3 — exact/sound rules without a seeded defect class (P4-15a)
+
+**Measured 2026-09-22:** `--check-classes` reads every `Exact` and `Sound` row of
+`crates/vize_patina/src/rule_contracts/table.rs`.
+`scope-proof: exact=199 sound=0 classed-rules=20 classed-classes=40 unclassed=179 untriaged=0 stale=0`.
+The 20 classed rules are the HTML-nesting generator (`vue/permitted-contents`,
+recall on `--html-nesting`) and 19 snippet classes.
+`seed-defects.rs --exact-classes --assert` on those snippets:
+`assert: detected=19/19 unexpected=0 verdict=pass`, identity not count.
+This is not TS-37 at 100% — 179 exact rules still have no class. Sound rules: 0.
+
+The check exits **1** while any row below remains. It exits **2** when an
+exact/sound rule is in neither the class registry nor this list (untriaged),
+or when a listed rule is no longer an unclassed exact/sound rule (stale).
+A listed rule is triaged, not waived: the exit stays 1, and the identity
+assert is not relaxed to count-only or to an optional span.
+
+**Disposition:** `deferred-with-issue` for each row — no generator yet. Delete a row only by registering its class in the same change.
+
+<!-- p4-15a-unclassed -->
+- `a11y/alt-text`
+- `a11y/anchor-is-valid`
+- `a11y/aria-props`
+- `a11y/aria-role`
+- `a11y/aria-unsupported-elements`
+- `a11y/click-events-have-key-events`
+- `a11y/heading-levels`
+- `a11y/img-alt`
+- `a11y/interactive-supports-focus`
+- `a11y/media-has-caption`
+- `a11y/mouse-events-have-key-events`
+- `a11y/no-aria-hidden-on-focusable`
+- `a11y/no-distracting-elements`
+- `a11y/no-redundant-roles`
+- `a11y/no-role-presentation-on-focusable`
+- `a11y/no-static-element-interactions`
+- `a11y/placeholder-label-option`
+- `a11y/role-has-required-aria-props`
+- `a11y/tabindex-no-positive`
+- `css/no-id-selectors`
+- `css/no-important`
+- `css/no-v-bind-performance`
+- `css/prefer-logical-properties`
+- `css/require-font-display`
+- `ecosystem/nuxt-prefer-nuxt-link`
+- `ecosystem/router-link-require-to`
+- `ecosystem/void-link-require-href`
+- `ecosystem/void-link-valid-method`
+- `ecosystem/vue-router-prefer-named-link`
+- `ecosystem/vue-router-prefer-named-push`
+- `ecosystem/vue-test-utils-no-html-snapshot`
+- `html/deprecated-attr`
+- `html/no-dupe-style-properties`
+- `html/no-duplicate-class`
+- `html/no-duplicate-dt`
+- `html/no-empty-palpable-content`
+- `musea/no-empty-variant`
+- `musea/require-component`
+- `musea/require-title`
+- `musea/unique-variant-names`
+- `musea/valid-variant`
+- `nuxt/no-nuxt-config-test-key`
+- `nuxt/nuxt-config-keys-order`
+- `nuxt/prefer-import-meta`
+- `petite-vue/no-unsupported-directive`
+- `petite-vue/valid-v-effect`
+- `petite-vue/valid-v-scope`
+- `script/component-options-name-casing`
+- `script/define-emits-declaration`
+- `script/define-macros-order`
+- `script/define-props-declaration`
+- `script/define-props-destructuring`
+- `script/no-arrow-functions-in-watch`
+- `script/no-async-in-computed`
+- `script/no-boolean-default`
+- `script/no-deep-destructure-in-props`
+- `script/no-deprecated-data-object-declaration`
+- `script/no-deprecated-destroyed-lifecycle`
+- `script/no-deprecated-dollar-listeners-api`
+- `script/no-deprecated-dollar-scopedslots-api`
+- `script/no-deprecated-events-api`
+- `script/no-deprecated-props-default-this`
+- `script/no-dupe-keys`
+- `script/no-export-in-script-setup`
+- `script/no-get-current-instance`
+- `script/no-import-compiler-macros`
+- `script/no-internal-imports`
+- `script/no-multiple-slot-args`
+- `script/no-next-tick`
+- `script/no-options-api`
+- `script/no-required-prop-with-default`
+- `script/no-reserved-identifiers`
+- `script/no-reserved-keys`
+- `script/no-reserved-props`
+- `script/no-restricted-globals`
+- `script/no-restricted-members`
+- `script/no-top-level-ref-in-script`
+- `script/no-with-defaults`
+- `script/prefer-define-options`
+- `script/prefer-import-from-vue`
+- `script/prefer-use-attrs`
+- `script/prefer-use-slots`
+- `script/require-default-prop`
+- `script/require-function-return-type`
+- `script/require-prop-type-constructor`
+- `script/require-prop-types`
+- `script/require-symbol-provide`
+- `script/require-typed-object-prop`
+- `script/require-typed-ref`
+- `script/valid-define-emits`
+- `script/valid-define-options`
+- `script/valid-define-props`
+- `type/require-typed-emits`
+- `type/require-typed-props`
+- `vapor/no-inline-template`
+- `vapor/no-vue-lifecycle-events`
+- `vapor/prefer-static-class`
+- `vapor/require-vapor-attribute`
+- `vue/a11y-img-alt`
+- `vue/attribute-hyphenation`
+- `vue/attribute-order`
+- `vue/component-definition-name-casing`
+- `vue/component-name-in-template-casing`
+- `vue/html-button-has-type`
+- `vue/html-self-closing`
+- `vue/multi-word-component-names`
+- `vue/mustache-interpolation-spacing`
+- `vue/no-array-index-key`
+- `vue/no-boolean-attr-value`
+- `vue/no-deprecated-filter`
+- `vue/no-deprecated-functional-template`
+- `vue/no-deprecated-html-element-is`
+- `vue/no-deprecated-inline-template`
+- `vue/no-deprecated-router-link-tag-prop`
+- `vue/no-deprecated-scope-attribute`
+- `vue/no-deprecated-slot-attribute`
+- `vue/no-deprecated-slot-scope-attribute`
+- `vue/no-deprecated-v-bind-sync`
+- `vue/no-deprecated-v-on-native-modifier`
+- `vue/no-deprecated-v-on-number-modifiers`
+- `vue/no-empty-component-block`
+- `vue/no-inline-style`
+- `vue/no-invalid-html-attribute`
+- `vue/no-multiple-objects-in-class`
+- `vue/no-multiple-template-root`
+- `vue/no-negated-v-if-condition`
+- `vue/no-non-component-keep-alive-child`
+- `vue/no-preprocessor-lang`
+- `vue/no-reserved-component-names`
+- `vue/no-root-v-if`
+- `vue/no-script-non-standard-lang`
+- `vue/no-src-attribute`
+- `vue/no-static-inline-styles`
+- `vue/no-template-lang`
+- `vue/no-template-shadow`
+- `vue/no-template-target-blank`
+- `vue/no-unsandboxed-iframe`
+- `vue/no-unused-vars`
+- `vue/no-use-v-else-with-v-for`
+- `vue/no-use-v-if-with-v-for`
+- `vue/no-useless-mustaches`
+- `vue/no-useless-template-attributes`
+- `vue/no-useless-v-bind`
+- `vue/no-v-for-template-key-on-child`
+- `vue/no-v-text`
+- `vue/no-v-text-v-html-on-component`
+- `vue/prefer-props-shorthand`
+- `vue/prefer-true-attribute-shorthand`
+- `vue/prop-name-casing`
+- `vue/require-scoped-style`
+- `vue/require-toggle-inside-transition`
+- `vue/scoped-event-names`
+- `vue/sfc-element-order`
+- `vue/single-style-block`
+- `vue/slot-name-casing`
+- `vue/this-in-template`
+- `vue/use-unique-element-ids`
+- `vue/use-v-on-exact`
+- `vue/v-bind-style`
+- `vue/v-on-event-hyphenation`
+- `vue/v-on-handler-style`
+- `vue/v-on-style`
+- `vue/v-slot-style`
+- `vue/valid-attribute-name`
+- `vue/valid-template-root`
+- `vue/valid-v-bind`
+- `vue/valid-v-cloak`
+- `vue/valid-v-for`
+- `vue/valid-v-html`
+- `vue/valid-v-if`
+- `vue/valid-v-memo`
+- `vue/valid-v-model`
+- `vue/valid-v-on`
+- `vue/valid-v-once`
+- `vue/valid-v-show`
+- `vue/valid-v-slot`
+- `vue/valid-v-text`
+- `vue/warn-custom-block`
+- `vue/warn-custom-directive`
+<!-- /p4-15a-unclassed -->

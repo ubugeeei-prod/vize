@@ -8,32 +8,39 @@
 //! serde_json = "1"
 //! ```
 
-use std::{
-    collections::BTreeMap,
-    env,
-    path::{Path, PathBuf},
-    process::ExitCode,
-};
+use std::{env, path::PathBuf, process::ExitCode};
 
 #[path = "../../support/common.rs"]
 mod common;
 #[path = "../../support/davinci/fpfn.rs"]
 mod davinci_fpfn;
+#[path = "../../support/davinci/seed_exact.rs"]
+mod seed_exact;
+#[path = "../../support/davinci/seed_exact_gen.rs"]
+mod seed_exact_gen;
+#[path = "../../support/davinci/seed_exact_snippets.rs"]
+mod seed_exact_snippets;
 #[path = "../../support/davinci/seed_html.rs"]
 mod seed_html;
 #[path = "../../support/davinci/seed_html_run.rs"]
 mod seed_html_run;
+#[path = "../../support/davinci/seed_pilot.rs"]
+mod seed_pilot;
 #[path = "../../support/davinci/seed_print.rs"]
 mod seed_print;
 
-use davinci_fpfn::{
-    CLASS_A, CLASS_A_RULE, CLASS_B, EditRecord, Identifier, Injection, SeedFile, SeedManifest,
-    SeedScope, SourceInfo, UNUSED_BINDING_NAME, apply_seed, assert_seeded_tree,
-    describe_seeded_span, list_vue_files, plan_class_a, plan_class_b, resolve_corpus_sources,
-    resolve_fixture_sources, resolve_vize_cli,
-};
+use davinci_fpfn::{assert_seeded_tree, resolve_vize_cli};
 
-const USAGE: &str = "Usage: rust-script tools/commands/davinci/seed-defects.rs [--html-nesting] (--fixtures <dir> | --matrix | --corpus-shard) --out <dir> [--assert] [--report <path>]\n\nSeeds the P0-13 defect classes into copies of .vue sources and (with\n--assert) verifies recall by diagnostic identity against the manifest. --html-nesting seeds\nthe P4-11 HTML nesting classes instead (seed_html.rs).";
+pub const USAGE: &str = "\
+Usage: rust-script tools/commands/davinci/seed-defects.rs [--html-nesting | --exact-classes] (--fixtures <dir> | --matrix | --corpus-shard) --out <dir> [--assert] [--report <path>]
+       rust-script tools/commands/davinci/seed-defects.rs --check-classes [--contracts <table.rs>] [--ledger <ledger-fn.md>]
+
+Seeds defect classes and (with --assert) verifies recall by diagnostic
+identity. --html-nesting seeds the P4-11 HTML nesting classes.
+--exact-classes seeds one file per exact/sound snippet class.
+--check-classes fails unless every exact/sound rule in rule_contracts.rs
+has a class. A rule listed in ledger-fn.md is triaged, not waived.
+";
 
 #[derive(Debug)]
 struct Args {
@@ -41,6 +48,10 @@ struct Args {
     matrix: bool,
     corpus_shard: bool,
     html_nesting: bool,
+    exact_classes: bool,
+    check_classes: bool,
+    contracts: Option<PathBuf>,
+    ledger: Option<PathBuf>,
     out: Option<PathBuf>,
     assert: bool,
     report: Option<PathBuf>,
@@ -66,21 +77,90 @@ fn run() -> Result<u8, (u8, String)> {
         println!("{USAGE}");
         return Ok(0);
     }
+    if args.check_classes {
+        if args.exact_classes
+            || args.html_nesting
+            || args.fixtures.is_some()
+            || args.matrix
+            || args.corpus_shard
+            || args.assert
+            || args.out.is_some()
+        {
+            return Err((
+                2,
+                format!("--check-classes does not take a source mode\n\n{USAGE}"),
+            ));
+        }
+        return seed_exact::check(
+            &repo_root,
+            args.contracts.as_deref(),
+            args.ledger.as_deref(),
+        )
+        .map_err(|error| (2, error));
+    }
+    if args.contracts.is_some() || args.ledger.is_some() {
+        return Err((
+            2,
+            format!("--contracts and --ledger require --check-classes\n\n{USAGE}"),
+        ));
+    }
     let out = args
         .out
         .clone()
         .ok_or_else(|| (2, format!("--out <dir> is required\n\n{USAGE}")))?;
-    let out_dir = absolute(&out);
+    let out_dir = seed_pilot::absolute(&out);
     common::mkdir(&out_dir).map_err(|error| (2, error))?;
     if args.html_nesting {
-        let source = resolve_sources(&repo_root, &args, &out_dir).map_err(|error| (2, error))?;
+        if args.exact_classes {
+            return Err((
+                2,
+                format!("--html-nesting and --exact-classes conflict\n\n{USAGE}"),
+            ));
+        }
+        let source = seed_pilot::resolve_sources(
+            &repo_root,
+            args.fixtures.as_deref(),
+            args.matrix,
+            args.corpus_shard,
+            &out_dir,
+        )
+        .map_err(|error| (2, error))?;
         return seed_html_run::run(&repo_root, &source, &out_dir, args.assert)
             .map_err(|error| (2, error));
+    }
+    if args.exact_classes {
+        if args.fixtures.is_some()
+            || args.matrix
+            || args.corpus_shard
+            || args.baseline_lint_json.is_some()
+        {
+            return Err((
+                2,
+                format!(
+                    "--exact-classes seeds its own files and takes only --seeded-lint-json\n\n{USAGE}"
+                ),
+            ));
+        }
+        return seed_exact_gen::run(
+            &repo_root,
+            &out_dir,
+            args.assert,
+            args.seeded_lint_json.as_deref(),
+            args.report.as_deref(),
+        )
+        .map_err(|error| (2, error));
     }
 
     let has_source = args.fixtures.is_some() || args.matrix || args.corpus_shard;
     let manifest = if has_source {
-        seed(&repo_root, &args, &out_dir).map_err(|error| (2, error))?
+        seed_pilot::seed(
+            &repo_root,
+            args.fixtures.as_deref(),
+            args.matrix,
+            args.corpus_shard,
+            &out_dir,
+        )
+        .map_err(|error| (2, error))?
     } else if args.assert && out_dir.join("manifest.json").exists() {
         serde_json::from_value(
             common::read_json(out_dir.join("manifest.json")).map_err(|error| (2, error))?,
@@ -110,7 +190,8 @@ fn run() -> Result<u8, (u8, String)> {
     )
     .map_err(|error| (2, error))?;
     if let Some(path) = args.report {
-        common::write_json_pretty(absolute(&path), &report).map_err(|error| (2, error))?;
+        common::write_json_pretty(seed_pilot::absolute(&path), &report)
+            .map_err(|error| (2, error))?;
     }
     seed_print::print_assert_report(&report);
     Ok(if report.verdict == "pass" { 0 } else { 1 })
@@ -122,6 +203,10 @@ fn parse_args(argv: Vec<String>) -> Result<Args, (u8, String)> {
         matrix: false,
         corpus_shard: false,
         html_nesting: false,
+        exact_classes: false,
+        check_classes: false,
+        contracts: None,
+        ledger: None,
         out: None,
         assert: false,
         report: None,
@@ -139,6 +224,16 @@ fn parse_args(argv: Vec<String>) -> Result<Args, (u8, String)> {
             "--matrix" => args.matrix = true,
             "--corpus-shard" => args.corpus_shard = true,
             "--html-nesting" => args.html_nesting = true,
+            "--exact-classes" => args.exact_classes = true,
+            "--check-classes" => args.check_classes = true,
+            "--contracts" => {
+                index += 1;
+                args.contracts = Some(PathBuf::from(value(&argv, index, "--contracts")?));
+            }
+            "--ledger" => {
+                index += 1;
+                args.ledger = Some(PathBuf::from(value(&argv, index, "--ledger")?));
+            }
             "--out" => {
                 index += 1;
                 args.out = Some(PathBuf::from(value(&argv, index, "--out")?));
@@ -170,204 +265,4 @@ fn value(argv: &[String], index: usize, name: &str) -> Result<String, (u8, Strin
     argv.get(index)
         .cloned()
         .ok_or_else(|| (2, format!("{name} requires a value")))
-}
-
-fn seed(repo_root: &Path, args: &Args, out_dir: &Path) -> Result<SeedManifest, String> {
-    let source = resolve_sources(repo_root, args, out_dir)?;
-    let mut files = Vec::new();
-    let mut injections = Vec::new();
-    let mut edits = BTreeMap::<String, Vec<EditRecord>>::new();
-    let mut class_a_eligible = 0usize;
-    for root in &source.roots {
-        for rel_path in list_vue_files(&root.root)? {
-            let seed_path = format!("{}{}", root.prefix, rel_path);
-            let original = common::read_text(root.root.join(&rel_path))?;
-            let (class_a, class_a_reason) = plan_class_a(&original);
-            let (class_b, _) = plan_class_b(&original);
-            let applied = apply_seed(&original, class_a.as_ref(), class_b.as_ref());
-            files.push(SeedFile {
-                path: seed_path.clone(),
-                class_a: class_a.is_some(),
-                class_b: class_b.is_some(),
-                class_a_reason: class_a_reason.clone(),
-            });
-            if let Some(plan) = &class_a {
-                class_a_eligible += 1;
-                let ref_start = map_template_ref(
-                    &applied.seeded,
-                    plan.template_ref[0],
-                    &plan.name,
-                    &applied.edits,
-                )?;
-                let starts = davinci_fpfn::line_starts_of(&applied.seeded);
-                injections.push(Injection {
-                    class_name: CLASS_A.to_string(),
-                    path: seed_path.clone(),
-                    expected_rule: Some(CLASS_A_RULE.to_string()),
-                    identifier: Identifier {
-                        original: Some(plan.name.clone()),
-                        seeded: plan.seeded_name.clone(),
-                    },
-                    script_rename_count: Some(plan.rename_spans.len()),
-                    created_script_setup_block: None,
-                    expected: describe_seeded_span(
-                        &applied.seeded,
-                        &starts,
-                        ref_start,
-                        ref_start + plan.name.len(),
-                    ),
-                    note: None,
-                });
-            }
-            if let Some(plan) = &class_b {
-                let id_start = applied.seeded.find(UNUSED_BINDING_NAME).ok_or_else(|| {
-                    "seed-defects internal error: unused binding not found".to_string()
-                })?;
-                let starts = davinci_fpfn::line_starts_of(&applied.seeded);
-                injections.push(Injection {
-                    class_name: CLASS_B.to_string(),
-                    path: seed_path.clone(),
-                    expected_rule: None,
-                    identifier: Identifier {
-                        original: None,
-                        seeded: UNUSED_BINDING_NAME.to_string(),
-                    },
-                    script_rename_count: None,
-                    created_script_setup_block: Some(plan.created_block),
-                    expected: describe_seeded_span(
-                        &applied.seeded,
-                        &starts,
-                        id_start,
-                        id_start + UNUSED_BINDING_NAME.len(),
-                    ),
-                    note: Some(
-                        "vize_croquis unused_bindings has no lint consumer (documented FN, ledger-fn.md)"
-                            .to_string(),
-                    ),
-                });
-            }
-            if !applied.edits.is_empty() {
-                edits.insert(seed_path.clone(), applied.edits);
-            }
-            common::write_text(out_dir.join("original").join(&seed_path), &original)?;
-            common::write_text(out_dir.join("seeded").join(&seed_path), &applied.seeded)?;
-        }
-    }
-    injections.sort_by(|a, b| a.path.cmp(&b.path).then(a.class_name.cmp(&b.class_name)));
-    let manifest = SeedManifest {
-        schema_version: 1,
-        tool: "tools/commands/davinci/seed-defects.rs".to_string(),
-        source: SourceInfo {
-            kind: source.kind,
-            label: source.label,
-        },
-        scope: SeedScope {
-            files_copied: files.len(),
-            class_a_eligible,
-            class_a_injections: injections
-                .iter()
-                .filter(|injection| injection.class_name == CLASS_A)
-                .count(),
-            class_b_injections: injections
-                .iter()
-                .filter(|injection| injection.class_name == CLASS_B)
-                .count(),
-        },
-        files,
-        injections,
-        edits,
-    };
-    common::write_json_pretty(out_dir.join("manifest.json"), &manifest)?;
-    println!(
-        "seed-defects: source={} -> {}",
-        manifest.source.label,
-        common::relative_path(
-            &env::current_dir().map_err(|error| error.to_string())?,
-            out_dir
-        )
-    );
-    println!(
-        "scope-proof: files-scanned={} class-a-eligible={} class-a-injections={} class-b-injections={}",
-        manifest.scope.files_copied,
-        manifest.scope.class_a_eligible,
-        manifest.scope.class_a_injections,
-        manifest.scope.class_b_injections
-    );
-    Ok(manifest)
-}
-
-fn resolve_sources(
-    repo_root: &Path,
-    args: &Args,
-    out_dir: &Path,
-) -> Result<davinci_fpfn::ResolvedSources, String> {
-    let picked = usize::from(args.fixtures.is_some())
-        + usize::from(args.matrix)
-        + usize::from(args.corpus_shard);
-    if picked != 1 {
-        return Err(format!(
-            "exactly one of --fixtures/--matrix/--corpus-shard is required\n\n{USAGE}"
-        ));
-    }
-    if let Some(fixtures) = &args.fixtures {
-        return resolve_fixture_sources(repo_root, &absolute(fixtures));
-    }
-    if args.matrix {
-        let matrix_dir = out_dir.join("matrix-src");
-        common::run_capture_in(
-            "rust-script",
-            &[
-                "tools/commands/davinci/matrix-gen.rs",
-                "--write",
-                "--out-dir",
-                matrix_dir.to_string_lossy().as_ref(),
-            ],
-            repo_root,
-        )?;
-        return Ok(davinci_fpfn::ResolvedSources {
-            kind: "matrix".to_string(),
-            label: "matrix-gen".to_string(),
-            roots: vec![davinci_fpfn::SourceRoot {
-                root: matrix_dir,
-                prefix: String::new(),
-            }],
-        });
-    }
-    resolve_corpus_sources(repo_root)
-}
-
-fn map_template_ref(
-    seeded: &str,
-    original_ref_start: usize,
-    name: &str,
-    edits: &[EditRecord],
-) -> Result<usize, String> {
-    let mut ref_start = original_ref_start as isize;
-    for edit in edits {
-        if edit.span[1] <= original_ref_start {
-            ref_start += edit.delta;
-        }
-    }
-    let ref_start = usize::try_from(ref_start).map_err(|_| "negative template ref".to_string())?;
-    let found = seeded
-        .get(ref_start..ref_start + name.len())
-        .ok_or_else(|| {
-            "seed-defects internal error: template ref relocation out of range".to_string()
-        })?;
-    if found != name {
-        return Err(format!(
-            "seed-defects internal error: template ref relocation failed ({found})"
-        ));
-    }
-    Ok(ref_start)
-}
-
-fn absolute(path: &Path) -> PathBuf {
-    if path.is_absolute() {
-        path.to_path_buf()
-    } else {
-        env::current_dir()
-            .unwrap_or_else(|_| PathBuf::from("."))
-            .join(path)
-    }
 }
