@@ -41,7 +41,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScriptParseResult`                       |     2 |     2 |
 | `ScriptParserOptions`                     |     1 |     1 |
 | `SfcCustomBlock`                          |     1 |     2 |
-| `SfcDescriptor`                           |    10 |    14 |
+| `SfcDescriptor`                           |    11 |    15 |
 | `SfcError`                                |     1 |     2 |
 | `SfcParseOptions`                         |     9 |    10 |
 | `VirtualTsConfig`                         |     1 |     1 |
@@ -73,7 +73,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeData`             |        2 |    4 |
 | `ScopeId`               |        0 |    1 |
 | `ScopeKind`             |        3 |    5 |
-| `Span`                  |        0 |  172 |
+| `Span`                  |        0 |  175 |
 | `Symbol`                |        0 |   15 |
 | `SymbolId`              |        0 |    3 |
 | `UnusedVarContext`      |        4 |    5 |
