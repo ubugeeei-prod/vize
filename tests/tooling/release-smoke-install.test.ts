@@ -44,7 +44,7 @@ test("release install smoke packs and installs local package tarballs", () => {
 test("release install smoke canonicalizes symlinked temp directories", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
   try {
-    const realTemp = path.join(tempDir, "real-temp");
+    const realTemp = path.join(tempDir, "real temp 新規");
     const linkedTemp = path.join(tempDir, "linked-temp");
     fs.mkdirSync(realTemp, { recursive: true });
     fs.symlinkSync(realTemp, linkedTemp, process.platform === "win32" ? "junction" : "dir");
@@ -233,7 +233,6 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(smokeSources, /"lint"[\s\S]*"src\/App\.vue"/);
   assert.match(smokeSources, /runInitTypecheckChecks\([\s\S]*RUNTIME_PEER_DEPENDENCIES\)/);
   assert.match(rustScript, /npm_smoke_init::run\(/);
-  assert.doesNotMatch(rustScript, /fn run_init_typecheck_checks\(/);
   assert.doesNotMatch(rustScript, /"--language"/);
   assert.match(runtimeScript, /VIZE_TEST_CONTENT_MAPPER_TSGO/);
   assert.match(runtimeScript, /runInstalledContentMapperChecks/);

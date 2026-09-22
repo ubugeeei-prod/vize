@@ -86,7 +86,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         );
     }
 
-    let has_croquis = options.croquis.is_some();
+    let has_croquis = stage_options::unprojectable_croquis(&options);
     let codegen_opts = stage_options::codegen_options(&options, codegen_options);
     let template_syntax_quirks = template_syntax.is_quirks();
     let s2_refusal = stage_options::s2_emit_refusal(
@@ -101,6 +101,10 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     .or_else(|| {
         stage_options::source_may_contain_patterned_template_syntax(source)
             .then_some(DomLegacyReason::PatternedSource)
+    })
+    .or_else(|| {
+        stage_options::source_may_contain_vize_directive_comment(source)
+            .then_some(DomLegacyReason::DirectiveComment)
     });
     let use_s2_emit = s2_refusal.is_none();
     let s2_custom_elements = custom_elements.clone();
@@ -112,6 +116,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
             &codegen_opts,
             &s2_custom_elements,
             hoisted_scope_id.as_deref(),
+            codegen_experimental_options.component_name.as_deref(),
             None,
         ) {
             selection::record(Ok(()));
@@ -124,6 +129,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
 
     let s2_emit_after_transform = (use_s2_emit && codegen_opts.source_map)
         .then(|| (options.clone(), hoisted_scope_id.clone()));
+    let experimental_component_name = codegen_experimental_options.component_name.clone();
     let transform_opts = stage_options::transform_options(&options);
     // Park the summary on the allocator so it shares the allocator lifetime.
     let analysis: Option<&Croquis> = options.croquis.map(|c| allocator.alloc_owned(*c));
@@ -157,6 +163,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
             &codegen_opts,
             &s2_custom_elements,
             hoisted_scope_id.as_deref(),
+            experimental_component_name.as_deref(),
             template_walks,
         )
     });

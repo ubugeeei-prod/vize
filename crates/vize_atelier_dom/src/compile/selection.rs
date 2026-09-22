@@ -43,6 +43,8 @@ pub(super) enum DomLegacyReason {
     Croquis,
     /// The source text may carry patterned-template directives.
     PatternedSource,
+    /// The source text may carry an `@vize:` directive comment.
+    DirectiveComment,
     /// The `davinci-differential` legacy lane was forced for this thread.
     #[cfg(feature = "davinci-differential")]
     Forced,
@@ -63,6 +65,7 @@ impl DomLegacyReason {
             Self::TemplateSyntax => "davinci.s2_dom.legacy.template_syntax",
             Self::Croquis => "davinci.s2_dom.legacy.croquis",
             Self::PatternedSource => "davinci.s2_dom.legacy.patterned_source",
+            Self::DirectiveComment => "davinci.s2_dom.legacy.directive_comment",
             #[cfg(feature = "davinci-differential")]
             Self::Forced => "davinci.s2_dom.legacy.forced",
         }
@@ -92,6 +95,26 @@ pub mod differential {
 
     std::thread_local! {
         static FORCE_LEGACY: Cell<bool> = const { Cell::new(false) };
+        static CROQUIS_PROJECTION: Cell<bool> = const { Cell::new(false) };
+    }
+
+    /// Run `f` with Croquis-carrying DOM compiles on this thread admitted to
+    /// S2 through the projected facts (`croquis_facts`), as the production
+    /// selector will once the S2 lane is not slower than the legacy lane on
+    /// those compiles (charter #22; measured in the P3-17 record).
+    pub fn with_croquis_projection<R>(f: impl FnOnce() -> R) -> R {
+        struct Reset(bool);
+        impl Drop for Reset {
+            fn drop(&mut self) {
+                CROQUIS_PROJECTION.with(|flag| flag.set(self.0));
+            }
+        }
+        let _reset = Reset(CROQUIS_PROJECTION.with(|flag| flag.replace(true)));
+        f()
+    }
+
+    pub(in crate::compile) fn croquis_projection() -> bool {
+        CROQUIS_PROJECTION.with(Cell::get)
     }
 
     /// Run `f` with every DOM compile on this thread on the legacy lane.

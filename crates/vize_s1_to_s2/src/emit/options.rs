@@ -121,6 +121,9 @@ pub struct BindingTable {
     aliases: StdVec<(String, String)>,
     /// Whether the bindings come from `<script setup>`.
     is_script_setup: bool,
+    /// `(name, read)` from the script's reactivity tracker, sorted by name
+    /// (P3-17): see [`ReactiveRead`].
+    reactive: StdVec<(String, ReactiveRead)>,
 }
 
 impl BindingTable {
@@ -135,6 +138,7 @@ impl BindingTable {
             names: StdVec::new(),
             aliases: StdVec::new(),
             is_script_setup,
+            reactive: StdVec::new(),
         };
         for (name, kind) in names {
             match table
@@ -299,6 +303,10 @@ impl Default for DomEmitOptions<'static> {
         Self::DEFAULT
     }
 }
+
+mod reactive;
+
+pub use reactive::ReactiveRead;
 
 #[cfg(test)]
 mod tests;

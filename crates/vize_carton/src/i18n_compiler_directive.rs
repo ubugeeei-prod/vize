@@ -1,0 +1,175 @@
+//! Compiler codes for slot placement, `v-model`, `v-show`, expressions,
+//! compiler modes and the extended codes. Registered by
+//! [`crate::i18n_compiler`].
+
+/// `(key, en, ja, zh)`.
+pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
+    (
+        "compiler/v-slot-misplaced.message",
+        "v-slot can only be used on components or <template> tags.",
+        "v-slot はコンポーネントか <template> タグにしか使えません。",
+        "v-slot 只能用在组件或 <template> 标签上。",
+    ),
+    (
+        "compiler/v-slot-misplaced.help",
+        "wrap the content in `<template #name>`, or move `v-slot` onto the component",
+        "内容を `<template #name>` で囲むか、`v-slot` をコンポーネントに移してください",
+        "请用 `<template #name>` 包裹内容，或把 `v-slot` 移到组件上",
+    ),
+    (
+        "compiler/v-model-no-expression.message",
+        "v-model is missing expression.",
+        "v-model に式がありません。",
+        "v-model 缺少表达式。",
+    ),
+    (
+        "compiler/v-model-no-expression.help",
+        "bind a writable value, as in `v-model=\"title\"`",
+        "`v-model=\"title\"` のように、書き込み可能な値をバインドしてください",
+        "请绑定一个可写的值，例如 `v-model=\"title\"`",
+    ),
+    (
+        "compiler/v-model-malformed-expression.message",
+        "v-model value must be a valid JavaScript member expression.",
+        "v-model の値は有効な JavaScript のメンバー式である必要があります。",
+        "v-model 的值必须是有效的 JavaScript 成员表达式。",
+    ),
+    (
+        "compiler/v-model-malformed-expression.help",
+        "`v-model` writes back to its value, so bind a variable or property such as `form.title`, not a call or a literal",
+        "`v-model` は値を書き戻すため、関数呼び出しやリテラルではなく `form.title` のような変数かプロパティをバインドしてください",
+        "`v-model` 会写回它的值，因此请绑定变量或属性（例如 `form.title`），而不是函数调用或字面量",
+    ),
+    (
+        "compiler/v-model-on-scope.message",
+        "v-model cannot be used on v-for or v-slot scope variables.",
+        "v-model は v-for や v-slot のスコープ変数には使えません。",
+        "v-model 不能用于 v-for 或 v-slot 的作用域变量。",
+    ),
+    (
+        "compiler/v-model-on-scope.help",
+        "a scope variable is a local copy; bind the source instead, as in `v-model=\"items[index]\"`",
+        "スコープ変数はローカルなコピーです。`v-model=\"items[index]\"` のように元のデータをバインドしてください",
+        "作用域变量只是局部副本；请绑定源数据，例如 `v-model=\"items[index]\"`",
+    ),
+    (
+        "compiler/v-model-on-props.message",
+        "v-model cannot be used on props.",
+        "v-model は props には使えません。",
+        "v-model 不能用于 props。",
+    ),
+    (
+        "compiler/v-model-on-props.help",
+        "props are read-only; emit `update:<prop>` instead, or copy the prop into local state",
+        "props は読み取り専用です。代わりに `update:<prop>` イベントを発行するか、props の値をローカルの状態にコピーしてください",
+        "props 是只读的；请改为触发 `update:<prop>` 事件，或把 prop 复制到本地状态中",
+    ),
+    (
+        "compiler/v-model-arg-on-element.message",
+        "v-model argument is not supported on plain elements.",
+        "通常の要素では v-model の引数は使えません。",
+        "普通元素上不支持 v-model 参数。",
+    ),
+    (
+        "compiler/v-model-arg-on-element.help",
+        "arguments such as `v-model:title` only work on components; use plain `v-model` on native inputs",
+        "`v-model:title` のような引数はコンポーネントでしか使えません。ネイティブの入力要素には引数なしの `v-model` を使ってください",
+        "`v-model:title` 这样的参数只能用在组件上；原生输入元素请使用不带参数的 `v-model`",
+    ),
+    (
+        "compiler/v-show-no-expression.message",
+        "v-show is missing expression.",
+        "v-show に式がありません。",
+        "v-show 缺少表达式。",
+    ),
+    (
+        "compiler/v-show-no-expression.help",
+        "give the condition, as in `v-show=\"open\"`",
+        "`v-show=\"open\"` のように条件式を指定してください",
+        "请提供条件表达式，例如 `v-show=\"open\"`",
+    ),
+    (
+        "compiler/invalid-expression.message",
+        "Error parsing JavaScript expression.",
+        "JavaScript の式を解析できませんでした。",
+        "解析 JavaScript 表达式时出错。",
+    ),
+    (
+        "compiler/invalid-expression.help",
+        "a template expression must be a single JavaScript expression; statements such as `if` or `let` are not allowed",
+        "テンプレート内の式は 1 つの JavaScript 式でなければなりません。`if` や `let` などの文は書けません",
+        "模板表达式必须是单个 JavaScript 表达式；不能使用 `if`、`let` 等语句",
+    ),
+    (
+        "compiler/prefix-id-not-supported.message",
+        "prefixIdentifiers option is not supported in this mode.",
+        "このモードでは prefixIdentifiers オプションを使えません。",
+        "此模式不支持 prefixIdentifiers 选项。",
+    ),
+    (
+        "compiler/prefix-id-not-supported.help",
+        "this mode compiles without prefixing identifiers; remove the `prefixIdentifiers` option",
+        "このモードでは識別子にプレフィックスを付けずにコンパイルします。`prefixIdentifiers` オプションを外してください",
+        "该模式编译时不会为标识符添加前缀；请去掉 `prefixIdentifiers` 选项",
+    ),
+    (
+        "compiler/module-mode-not-supported.message",
+        "ES module mode is not supported in this mode.",
+        "このモードでは ES モジュールモードを使えません。",
+        "此模式不支持 ES 模块模式。",
+    ),
+    (
+        "compiler/module-mode-not-supported.help",
+        "compile with the function mode here, or switch to a build that emits ES modules",
+        "ここでは function モードでコンパイルするか、ES モジュールを出力するビルドに切り替えてください",
+        "请在此处使用 function 模式编译，或切换到输出 ES 模块的构建",
+    ),
+    (
+        "compiler/cache-handler-not-supported.message",
+        "cacheHandlers option is not supported in this mode.",
+        "このモードでは cacheHandlers オプションを使えません。",
+        "此模式不支持 cacheHandlers 选项。",
+    ),
+    (
+        "compiler/cache-handler-not-supported.help",
+        "handler caching needs `prefixIdentifiers`; remove the `cacheHandlers` option in this mode",
+        "ハンドラーのキャッシュには `prefixIdentifiers` が必要です。このモードでは `cacheHandlers` オプションを外してください",
+        "缓存处理函数需要 `prefixIdentifiers`；在此模式下请去掉 `cacheHandlers` 选项",
+    ),
+    (
+        "compiler/scope-id-not-supported.message",
+        "scopeId option is not supported in this mode.",
+        "このモードでは scopeId オプションを使えません。",
+        "此模式不支持 scopeId 选项。",
+    ),
+    (
+        "compiler/scope-id-not-supported.help",
+        "scoped styles need the module mode; remove the `scopeId` option or switch modes",
+        "スコープ付きスタイルにはモジュールモードが必要です。`scopeId` オプションを外すか、モードを切り替えてください",
+        "作用域样式需要模块模式；请去掉 `scopeId` 选项或切换模式",
+    ),
+    (
+        "compiler/unhandled-code-path.message",
+        "Unhandled code path.",
+        "想定外のコードパスに到達しました。",
+        "遇到了未处理的代码路径。",
+    ),
+    (
+        "compiler/unhandled-code-path.help",
+        "this is a compiler bug; please report it with the template that triggers it",
+        "コンパイラーの不具合です。発生したテンプレートを添えて報告してください",
+        "这是编译器的缺陷；请附上触发该问题的模板进行报告",
+    ),
+    (
+        "compiler/extend-point.message",
+        "Extension point.",
+        "拡張ポイントです。",
+        "扩展点。",
+    ),
+    (
+        "compiler/extend-point.help",
+        "this code carries a specific message describing a recovery the parser applied or a compatibility notice",
+        "このコードの診断には、パーサーが行った回復処理や互換性に関する通知を説明する個別のメッセージが付きます",
+        "该代码的诊断会附带具体消息，说明解析器所做的恢复处理或兼容性提示",
+    ),
+];

@@ -9,7 +9,10 @@
 # `crates/vize_atelier_sfc/tests/davinci_production_reach.rs` (per-reason
 # table: phase-3-records/p3-17.md). `accepted_min` only rises — the gate
 # prints when a run exceeds it, so the PR that raises reach raises the floor;
-# `templates_min` guards the denominator.
+# `ready_min` floors the DOM templates the production selector still refuses
+# for their Croquis summary but S2 emits byte-identically under the
+# projection (parity-ready, blocked on performance); `templates_min` guards
+# the denominator.
 #
 # Shapes: `dom_inline` = `vize build` / Rust `compile_sfc` (inline render);
 # `dom_module` = the Vite plugin's NAPI default (module mode, separate render);
@@ -18,7 +21,7 @@
 schema_version = 1
 
 [reach]
-dom_inline = { accepted_min = 0, templates_min = 342 }
-dom_module = { accepted_min = 0, templates_min = 342 }
-ssr = { accepted_min = 44, templates_min = 342 }
-vapor = { accepted_min = 151, templates_min = 342 }
+dom_inline = { accepted_min = 0, ready_min = 290, templates_min = 346 }
+dom_module = { accepted_min = 0, ready_min = 0, templates_min = 346 }
+ssr = { accepted_min = 49, ready_min = 0, templates_min = 346 }
+vapor = { accepted_min = 186, ready_min = 0, templates_min = 346 }

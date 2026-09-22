@@ -147,10 +147,13 @@ fn push_argument(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) -> Result<(), EmitError> 
 fn emit_model_name(cx: &mut EmitCx<'_>, name: ModelName<'_>) -> Result<(), EmitError> {
     match name {
         ModelName::Static(name) => push_ident_key(cx, name),
+        // The shipped `generate_vmodel_prop` parenthesizes every dynamic
+        // argument spelling, preserving comma expressions and derived-key
+        // precedence: `[(arg)]`, `["onUpdate:" + (arg)]`, `[(arg) + "Modifiers"]`.
         ModelName::Dynamic(js) => {
-            cx.buf.push("[");
+            cx.buf.push("[(");
             push_argument(cx, js)?;
-            cx.buf.push("]");
+            cx.buf.push(")]");
         }
     }
     Ok(())
@@ -160,9 +163,9 @@ fn emit_update_key(cx: &mut EmitCx<'_>, key: &ModelUpdateKey<'_>) -> Result<(), 
     match key {
         ModelUpdateKey::Static(key) => push_ident_key(cx, key.as_str()),
         ModelUpdateKey::Dynamic(js) => {
-            cx.buf.push("[\"onUpdate:\" + ");
+            cx.buf.push("[\"onUpdate:\" + (");
             push_argument(cx, js)?;
-            cx.buf.push("]");
+            cx.buf.push(")]");
         }
     }
     Ok(())
@@ -172,9 +175,9 @@ fn emit_modifiers_key(cx: &mut EmitCx<'_>, key: &ModelModifiersKey<'_>) -> Resul
     match key {
         ModelModifiersKey::Static(key) => push_ident_key(cx, key.as_str()),
         ModelModifiersKey::Dynamic(js) => {
-            cx.buf.push("[");
+            cx.buf.push("[(");
             push_argument(cx, js)?;
-            cx.buf.push(" + \"Modifiers\"]");
+            cx.buf.push(") + \"Modifiers\"]");
         }
     }
     Ok(())

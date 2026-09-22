@@ -71,6 +71,8 @@ pub mod key;
 pub mod lower;
 pub mod pass;
 
+/// Croquis reactivity facts the S2 transform rewrite reads (P3-17).
+pub use emit::ReactiveRead;
 pub use emit::{
     BindingKind, BindingTable, DomEmit, DomEmitBudget, DomEmitMode, DomEmitOptions,
     DomEmitSections, EmitError, ObservedDomEmit, TransformContent, TransformExpressions,

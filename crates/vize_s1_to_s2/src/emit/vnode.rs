@@ -3,7 +3,7 @@
 mod array_child;
 mod checks;
 
-pub(super) use array_child::emit_array_child;
+pub(super) use array_child::{emit_array_child, emit_branch_root_element};
 use vize_davinci::id::NodeId;
 use vize_s2::op::ElementOp;
 
@@ -185,7 +185,11 @@ pub(super) fn emit_call(
     once: bool,
 ) -> Result<(), EmitError> {
     admit_element_bindings(&element.attributes, &element.bindings)?;
+    let slot_branch_root = core::mem::take(&mut cx.slot_if_branch_root);
     let (allow_hoist, id, prop_hoist) = hoist;
+    if matches!(prop_hoist, PropHoistPosition::Root) && cx.hoist_static && cx.scope.inline() {
+        super::props_object::check_hoist_gap(&element.attributes, &element.bindings)?;
+    }
     let once_layout = once || super::once::has(&element.bindings);
     let alias = if block {
         Buf::create_element_block_alias()
@@ -202,7 +206,7 @@ pub(super) fn emit_call(
         element,
         id,
         allow_hoist,
-        if_key.is_some() && !for_item,
+        (if_key.is_some() || slot_branch_root) && !for_item,
         for_item,
     );
     let has_memo = super::memo::has(&element.bindings);
