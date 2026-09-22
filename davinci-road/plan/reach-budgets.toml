@@ -20,5 +20,5 @@ schema_version = 1
 [reach]
 dom_inline = { accepted_min = 0, templates_min = 342 }
 dom_module = { accepted_min = 0, templates_min = 342 }
-ssr = { accepted_min = 29, templates_min = 342 }
-vapor = { accepted_min = 3, templates_min = 342 }
+ssr = { accepted_min = 44, templates_min = 342 }
+vapor = { accepted_min = 151, templates_min = 342 }
