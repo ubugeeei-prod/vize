@@ -1,0 +1,8 @@
+/* Entry pages own their full-width layout, including each translated homepage. */
+.entry-page .toc {
+  display: none;
+}
+
+.entry-page .main.main--with-toc {
+  padding-inline: 0;
+}
