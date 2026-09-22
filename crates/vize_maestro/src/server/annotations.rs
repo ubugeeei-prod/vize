@@ -32,6 +32,7 @@ pub(super) fn inlay_hint(state: &ServerState, params: &InlayHintParams) -> Optio
     let uri = &params.text_document.uri;
     let content = state.documents.text(uri)?;
     let hints = InlayHintService::get_hints_with_ecosystem(
+        state,
         &content,
         uri,
         params.range,

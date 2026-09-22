@@ -32,7 +32,7 @@ const doubled = computed(() => count.value * 2)
             character: 0,
         },
     };
-    let hints = InlayHintService::get_hints(content, &uri, range);
+    let hints = InlayHintService::get_hints(&super::fresh_state(), content, &uri, range);
     let labels: Vec<String> = hints
         .iter()
         .filter_map(|h| match &h.label {
@@ -72,7 +72,7 @@ const label = ref<string>()
             character: 0,
         },
     };
-    let hints = InlayHintService::get_hints(content, &uri, range);
+    let hints = InlayHintService::get_hints(&super::fresh_state(), content, &uri, range);
     let labels: Vec<String> = hints
         .iter()
         .filter_map(|h| match &h.label {

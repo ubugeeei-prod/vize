@@ -5,6 +5,9 @@
 //!
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 //! Uses vize_croquis for proper scope analysis to accurately identify destructured props.
+//!
+//! SFC blocks come from the resident descriptor (P5-6c): one parse per buffer
+//! revision, shared with the other request paths.
 
 mod expr_regions;
 mod script;
@@ -16,44 +19,57 @@ mod binding_hint_tests;
 mod i18n_hint_tests;
 #[cfg(test)]
 mod prop_hint_tests;
+#[cfg(test)]
+mod resident_tests;
 
 use tower_lsp::lsp_types::{InlayHint, Position, Range, Url};
 use vize_croquis::{Drawer, DrawerOptions};
 
 use crate::ide::ecosystem;
 use crate::ide::offset_to_position;
+use crate::server::ServerState;
 
 /// Inlay hint service.
 pub struct InlayHintService;
 
 impl InlayHintService {
-    /// Get inlay hints for a document range.
-    pub fn get_hints(content: &str, uri: &Url, range: Range) -> Vec<InlayHint> {
-        Self::get_hints_with_ecosystem(content, uri, range, true)
+    /// Inlay hints for a document range, from its resident descriptor.
+    pub fn get_hints(
+        state: &ServerState,
+        content: &str,
+        uri: &Url,
+        range: Range,
+    ) -> Vec<InlayHint> {
+        Self::get_hints_with_ecosystem(state, content, uri, range, true)
     }
 
-    /// Get inlay hints for a document range with optional ecosystem helpers.
+    /// Inlay hints for a document range, with optional ecosystem helpers.
     pub fn get_hints_with_ecosystem(
+        state: &ServerState,
         content: &str,
         uri: &Url,
         range: Range,
         ecosystem_enabled: bool,
     ) -> Vec<InlayHint> {
+        let Some(descriptor) = state.sfc_descriptor(uri, content) else {
+            return Vec::new();
+        };
+        Self::hints_from_descriptor(content, uri, range, ecosystem_enabled, &descriptor)
+    }
+
+    fn hints_from_descriptor(
+        content: &str,
+        uri: &Url,
+        range: Range,
+        ecosystem_enabled: bool,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    ) -> Vec<InlayHint> {
         let mut hints = Vec::new();
-
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-            return hints;
-        };
 
         if ecosystem_enabled {
             ecosystem::i18n::collect_inlay_hints(
                 content,
-                &descriptor,
+                descriptor,
                 Some(uri),
                 range,
                 &mut hints,
@@ -236,4 +252,9 @@ impl InlayHintService {
     fn is_ident_char(c: u8) -> bool {
         c.is_ascii_alphanumeric() || c == b'_' || c == b'$'
     }
+}
+
+#[cfg(test)]
+fn fresh_state() -> ServerState {
+    ServerState::new()
 }
