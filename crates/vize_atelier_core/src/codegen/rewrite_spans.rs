@@ -37,12 +37,22 @@ const SUFFIXES: [&str; 2] = [")", ".value"];
 const MAX_CELLS: usize = 1 << 22;
 
 /// One rewritten identifier: its offset in the emitted text, its offset in the
-/// authored text, and its authored name.
+/// authored text, its authored name, and the length of the accessor prefix
+/// the rewrite inserted before it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RewrittenIdentifier<'a> {
     pub emitted: usize,
     pub authored: usize,
     pub name: &'a str,
+    pub prefix_len: usize,
+}
+
+impl RewrittenIdentifier<'_> {
+    /// Length of the rewritten reference in the emitted text: the accessor
+    /// prefix plus the name.
+    pub fn emitted_len(&self) -> usize {
+        self.prefix_len + self.name.len()
+    }
 }
 
 /// Decompose `emitted` into `authored` plus rewrite insertions and return the
@@ -100,6 +110,7 @@ pub fn rewritten_identifier_spans<'a>(
                 emitted: i + k,
                 authored: i,
                 name,
+                prefix_len: token.len(),
             });
         }
         k += token.len();
@@ -136,6 +147,7 @@ mod tests {
                          emitted,
                          authored,
                          name,
+                         ..
                      }| (emitted, authored, name),
                 )
                 .collect()

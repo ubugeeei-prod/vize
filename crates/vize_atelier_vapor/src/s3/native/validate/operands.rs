@@ -58,13 +58,14 @@ pub(super) fn element<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Resul
                     ValueKind::Literal if !value.value.text.contains('&') => Some(value.value.text),
                     _ => return Err(LegacyReason::ExpressionOrEncoding.into()),
                 };
-                attributes.push((name, text, value.value.span.start));
+                attributes.push((name, text, (value.value.span.start, value.value.span.end)));
             }
             _ => return Err(LegacyReason::Structure.into()),
         }
     }
     Ok(Content::Element {
         tag: tag.value.text,
+        tag_span: (tag.value.span.start, tag.value.span.end),
         attributes,
     })
 }
@@ -108,6 +109,16 @@ pub(super) fn binding<'a>(
         return Err(LegacyReason::Binding.into());
     }
     let value = one(values, Role::Value)?;
+    // The name span is the authored argument; unnamed directives have none
+    // and keep their keyword's span, which no emitted token reads.
+    let spans = [
+        match family {
+            BindingKind::Prop | BindingKind::Event => one(values, Role::Name)?.value.span,
+            _ => binding.value.span,
+        },
+        value.value.span,
+    ]
+    .map(|span| (span.start, span.end));
     let (name, modifiers) = if matches!(family, BindingKind::Prop | BindingKind::Event) {
         named(values, family, retained.allocator())?
     } else if matches!(family, BindingKind::Spread | BindingKind::Handlers) {
@@ -136,6 +147,7 @@ pub(super) fn binding<'a>(
             modifiers,
             merge: None,
             position: 0,
+            spans,
         },
     ))
 }
@@ -187,13 +199,18 @@ pub(super) fn text<'a>(values: &[Operand<'a>], retained: &Retained<'_, 'a>) -> R
     let mut parts = Vec::new_in(&retained.allocator());
     for operand in values {
         let value = operand.value;
+        let span = (value.span.start, value.span.end);
         let (value, dynamic) = match value.kind {
             ValueKind::Literal if !value.text.is_empty() && !value.text.contains('&') => {
                 (Expr::plain(value.text), false)
             }
             _ => (js(retained, operand)?, true),
         };
-        parts.push(TextPart { value, dynamic });
+        parts.push(TextPart {
+            value,
+            dynamic,
+            span,
+        });
     }
     let dynamic = parts.iter().any(|part| part.dynamic);
     Ok(Content::Text { parts, dynamic })

@@ -709,6 +709,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/legacy_vue2_vu
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/macro_type_mappings.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/macro_type_mappings.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	2
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/mapping/document.rs	54	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/mapping/tests.rs	6	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/model_types.rs	3	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/model_types.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1

@@ -2,9 +2,9 @@
 
 mod component;
 mod deferred;
-mod template;
+pub(super) mod template;
 
-use vize_carton::{Box, String, Vec, append, cstr, ensure_sufficient_stack};
+use vize_carton::{Box, String, Vec, ensure_sufficient_stack};
 
 use crate::ir::{
     BlockIRNode, ChildRefIRNode, ComponentKind, CreateComponentIRNode, IRProp, IRSlot,
@@ -20,7 +20,7 @@ use self::{
     deferred::{
         transform_element_with_control_flow_children, transform_element_with_dynamic_children,
     },
-    template::{generate_element_template, is_static_element, transform_template_ref},
+    template::{is_static_element, transform_template_ref},
 };
 
 use super::{
@@ -124,7 +124,7 @@ pub(crate) fn transform_element<'a>(
 
     match el.tag_type {
         ElementType::Element => {
-            let template = generate_element_template(el, ctx.scope_id.as_deref());
+            let template = ctx.element_template(el);
 
             // Process props and events
             for prop in el.props.iter() {

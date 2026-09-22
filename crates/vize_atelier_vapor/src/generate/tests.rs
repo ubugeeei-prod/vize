@@ -3,8 +3,9 @@
 // `#[cfg(test)] mod` bodies under `src/`, keeps covering these tests.
 #[cfg(test)]
 mod vapor_generate_tests {
-    use super::super::{generate_vapor, setup::escape_template};
+    use super::super::{generate_vapor, spans::TEMPLATE_ESCAPES};
     use crate::lower::transform_to_ir;
+    use vize_atelier_core::codegen::document::EmitDocument;
     use vize_atelier_core::parser::parse;
     use vize_carton::Allocator;
 
@@ -31,9 +32,17 @@ mod vapor_generate_tests {
         insta::assert_snapshot!(result.code.as_str());
     }
 
+    /// Template strings are escaped through the emission document.
+    fn escape_template(s: &str) -> vize_carton::String {
+        let mut out = EmitDocument::new(false);
+        out.push_escaped(&EmitDocument::plain(s), &TEMPLATE_ESCAPES);
+        out.into_string()
+    }
+
     #[test]
     fn test_escape_template() {
         assert_eq!(escape_template("hello"), "hello");
+        assert_eq!(escape_template("a\\b\r"), "a\\\\b\\r");
         assert_eq!(escape_template("hello\nworld"), "hello\\nworld");
         assert_eq!(escape_template("hello\"world"), "hello\\\"world");
     }

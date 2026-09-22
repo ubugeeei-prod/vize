@@ -3,13 +3,12 @@
 use std::fmt::Write;
 
 use crate::ir::{OperationNode, RootIRNode};
-use vize_atelier_core::{
-    codegen::source_map_anchor::build_single_anchor_source_map, options::BindingMetadata,
-};
-use vize_carton::{FxHashSet, String};
+use vize_atelier_core::{codegen::document::EmitDocument, options::BindingMetadata};
+use vize_carton::{FxHashSet, String, cstr};
 
 use super::context::GenerateContext;
-use super::setup::{escape_template, generate_imports};
+use super::setup::generate_imports;
+use super::spans::{TEMPLATE_ESCAPES, VaporSourceSpans};
 use super::{
     block_has_template_refs, collect_custom_directives, collect_root_if_templates,
     directive_resolution_ident, generate_block,
@@ -79,6 +78,21 @@ pub fn generate_vapor_with_options_and_experimentals(
     options: VaporGenerateOptions,
     experimental_options: VaporGenerateExperimentalOptions<'_>,
 ) -> VaporGenerateResult {
+    generate_vapor_with_spans(ir, binding_metadata, options, experimental_options, None)
+}
+
+/// Generate Vapor code, taking the authored anchors a map-requesting compile
+/// collected beyond the IR (Davinci P3-9). Without them, a requested map
+/// still carries the render entry and every IR expression's anchors.
+pub(crate) fn generate_vapor_with_spans(
+    ir: &RootIRNode<'_>,
+    binding_metadata: Option<&BindingMetadata>,
+    options: VaporGenerateOptions,
+    experimental_options: VaporGenerateExperimentalOptions<'_>,
+    spans: Option<&VaporSourceSpans>,
+) -> VaporGenerateResult {
+    let ir_only = VaporSourceSpans::default();
+    let spans = spans.or_else(|| experimental_options.source_map.then_some(&ir_only));
     let mut ctx = GenerateContext::new(
         &ir.element_template_map,
         &ir.standalone_text_elements,
@@ -88,6 +102,8 @@ pub fn generate_vapor_with_options_and_experimentals(
     ctx.jsx_closure = options.jsx_closure;
     ctx.component_name = experimental_options.component_name;
     ctx.experimental_self_component = experimental_options.self_component;
+    ctx.spans = spans;
+    ctx.out = EmitDocument::with_capacity(4096, spans.is_some());
 
     if !ir.templates.is_empty() {
         ctx.use_helper("template");
@@ -110,40 +126,33 @@ pub fn generate_vapor_with_options_and_experimentals(
         }
     }
 
-    let mut template_code = String::default();
+    // Template strings keep the links lowering gave them through escaping.
+    let mut template_code = EmitDocument::new(spans.is_some());
     for (i, template) in ir.templates.iter().enumerate() {
-        let is_root = root_template_indices.contains(&i);
-        let is_svg = template.starts_with("<svg");
-        match (is_root, is_svg) {
-            (true, true) => writeln!(
-                template_code,
-                "const t{} = _template(\"{}\", true, 1)",
-                i,
-                escape_template(template)
-            ),
-            (true, false) => writeln!(
-                template_code,
-                "const t{} = _template(\"{}\", true)",
-                i,
-                escape_template(template)
-            ),
-            (false, true) => writeln!(
-                template_code,
-                "const t{} = _template(\"{}\", false, 1)",
-                i,
-                escape_template(template)
-            ),
-            (false, false) => writeln!(
-                template_code,
-                "const t{} = _template(\"{}\")",
-                i,
-                escape_template(template)
-            ),
-        }
-        .ok();
+        let links = spans
+            .and_then(|spans| spans.templates.get(&i))
+            .cloned()
+            .unwrap_or_default();
+        template_code.push_str(&cstr!("const t{i} = _template(\""));
+        template_code.push_escaped(
+            &EmitDocument::from_parts(String::new(template), links),
+            &TEMPLATE_ESCAPES,
+        );
+        template_code.push_str(
+            match (
+                root_template_indices.contains(&i),
+                template.starts_with("<svg"),
+            ) {
+                (true, true) => "\", true, 1)\n",
+                (true, false) => "\", true)\n",
+                (false, true) => "\", false, 1)\n",
+                (false, false) => "\")\n",
+            },
+        );
     }
 
-    ctx.push_line("export function render(_ctx) {");
+    let render = ctx.spanned_at("export function render(_ctx) {", spans.map(|s| s.root));
+    ctx.push_line_spanned(&render);
     ctx.indent();
 
     if block_has_template_refs(&ir.block) {
@@ -177,30 +186,23 @@ pub fn generate_vapor_with_options_and_experimentals(
         }
     }
 
-    let imports = generate_imports(&ctx);
-    let mut final_code = imports;
-    if !template_code.is_empty() {
-        final_code.push_str(&template_code);
+    let mut document = EmitDocument::new(spans.is_some());
+    document.push_str(&generate_imports(&ctx));
+    document.push_spanned(&template_code);
+    document.push_str(&delegate_code);
+    if !document.is_empty() {
+        document.push_char('\n');
     }
-    if !delegate_code.is_empty() {
-        final_code.push_str(&delegate_code);
-    }
-    if !final_code.is_empty() {
-        final_code.push('\n');
-    }
-    final_code.push_str(&ctx.code);
-    let map = experimental_options.source_map.then(|| {
-        build_single_anchor_source_map(
-            final_code.as_str(),
-            experimental_options
-                .source_map_filename
-                .unwrap_or("template.vue"),
-            ir.source,
-        )
+    document.push_spanned(&ctx.out);
+    let map = spans.map(|_| {
+        let filename = experimental_options
+            .source_map_filename
+            .unwrap_or("template.vue");
+        document.source_map(filename, ir.source)
     });
 
     VaporGenerateResult {
-        code: final_code,
+        code: document.into_string(),
         templates: ir.templates.iter().map(|t| String::new(t)).collect(),
         map,
     }

@@ -24,12 +24,17 @@ struct Node<'a> {
     bindings: Vec<'a, Binding<'a>>,
 }
 
+/// Authored `[start, end)` byte span of a payload value (P3-9 source maps).
+type AuthoredSpan = (u32, u32);
+
 #[derive(Debug)]
 enum Content<'a> {
     Element {
         tag: &'a str,
-        /// Static attributes with their authored positions.
-        attributes: Vec<'a, (&'a str, Option<&'a str>, u32)>,
+        tag_span: AuthoredSpan,
+        /// Name, literal value, and the authored span of that value.
+        /// The span start orders a `v-bind` object's sources.
+        attributes: Vec<'a, (&'a str, Option<&'a str>, AuthoredSpan)>,
     },
     Text {
         parts: Vec<'a, TextPart<'a>>,
@@ -69,6 +74,8 @@ struct Prop<'a> {
 struct Branch<'a> {
     /// `None` only for a trailing unconditional (`v-else`) branch.
     condition: Option<Expr<'a>>,
+    /// Authored span of the untrimmed condition value.
+    span: AuthoredSpan,
     region: vize_s3::op::RegionId,
     /// The branch body in authored order: one element, or a template fragment.
     roots: Vec<'a, usize>,
@@ -85,6 +92,18 @@ struct Loop<'a> {
     key_prop: Option<Expr<'a>>,
     /// Carried by `<template v-for>`: the body is a fragment.
     template: bool,
+    /// Authored spans of the untrimmed source, the value/key/index aliases,
+    /// and the `:key` value (P3-9 source maps).
+    spans: LoopSpans,
+    /// Authored start (`<`) of the carrier element, for source-map units.
+    carrier_start: u32,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+struct LoopSpans {
+    source: AuthoredSpan,
+    aliases: [Option<AuthoredSpan>; 3],
+    key_prop: Option<AuthoredSpan>,
 }
 
 /// One admitted operand. A direct reference or static text needs no AST; any
@@ -105,6 +124,7 @@ impl<'a> Expr<'a> {
 struct TextPart<'a> {
     value: Expr<'a>,
     dynamic: bool,
+    span: AuthoredSpan,
 }
 
 #[derive(Debug)]
@@ -118,6 +138,8 @@ struct Binding<'a> {
     merge: Option<&'a str>,
     /// Authored position, which orders an element's spread sources.
     position: u32,
+    /// Authored spans of the name and of the untrimmed value.
+    spans: [AuthoredSpan; 2],
 }
 
 /// The binding families the native projection emits.
@@ -151,12 +173,19 @@ impl<'a> NativeArtifact<'a> {
 
     /// Consuming the checked projection is the only production generation path
     /// for an accepted artifact. No source parsing or AST lowering occurs here.
-    pub(super) fn into_ir(
+    /// With `spans`, payload slices borrowed from `source` keep their authored
+    /// spans and the template and control-flow anchors are returned (Davinci
+    /// P3-9).
+    pub(super) fn into_ir_with_spans(
         self,
         allocator: &'a Allocator,
         source: &'a str,
         scope_id: Option<&str>,
-    ) -> crate::ir::RootIRNode<'a> {
-        emit::emit(self, allocator, source, scope_id)
+        spans: bool,
+    ) -> (
+        crate::ir::RootIRNode<'a>,
+        Option<crate::generate::spans::VaporSourceSpans>,
+    ) {
+        emit::emit(self, allocator, source, scope_id, spans)
     }
 }

@@ -67,15 +67,6 @@ pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {
     cstr!("import {{ {imports} }} from 'vue';\n")
 }
 
-/// Escape template string for JavaScript
-pub(crate) fn escape_template(s: &str) -> String {
-    s.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .into()
-}
-
 /// Escape a value for use inside a double-quoted JavaScript string literal.
 pub(crate) fn escape_js_string_literal(s: &str) -> String {
     let mut result = String::with_capacity(s.len());

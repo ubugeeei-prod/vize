@@ -13,7 +13,7 @@ use vize_carton::{Allocator, String, Vec, ensure_sufficient_stack};
 use crate::ir::{BlockIRNode, RootIRNode};
 use vize_atelier_core::{RootNode, TemplateChildNode};
 
-use context::TransformContext;
+use context::{TemplateSpans, TransformContext};
 use control::{transform_for_node, transform_if_node};
 use element::transform_element;
 use text::{transform_interpolation, transform_text};
@@ -41,8 +41,22 @@ pub(crate) fn transform_to_ir_with_scope_id<'a>(
     source: &'a str,
     scope_id: Option<&str>,
 ) -> (RootIRNode<'a>, std::vec::Vec<String>) {
+    let (ir, diagnostics, _) = transform_to_ir_with_spans(allocator, root, source, scope_id, false);
+    (ir, diagnostics)
+}
+
+/// [`transform_to_ir_with_scope_id`] that also returns the authored anchors
+/// of every template string when `spans` is set (Davinci P3-9).
+pub(crate) fn transform_to_ir_with_spans<'a>(
+    allocator: &'a Allocator,
+    root: &RootNode<'a>,
+    source: &'a str,
+    scope_id: Option<&str>,
+    spans: bool,
+) -> (RootIRNode<'a>, std::vec::Vec<String>, Option<TemplateSpans>) {
     let mut ctx = TransformContext::new(allocator, source);
     ctx.scope_id = scope_id.map(String::from);
+    ctx.template_spans = spans.then(TemplateSpans::default);
 
     vize_atelier_core::walk_probe::record_walk(
         vize_atelier_core::walk_probe::WalkStage::VaporLower,
@@ -68,6 +82,7 @@ pub(crate) fn transform_to_ir_with_scope_id<'a>(
             standalone_text_elements: ctx.standalone_text_elements,
         },
         ctx.diagnostics,
+        ctx.template_spans,
     )
 }
 

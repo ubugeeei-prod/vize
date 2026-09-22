@@ -111,7 +111,7 @@ pub(super) fn admit<'a>(
                     .iter()
                     .find(|(id, _)| *id == op.id)
                     .map(|(_, key)| *key);
-                control::for_loop(values, retained, carrier)?
+                control::for_loop(values, retained, carrier, op.span)?
             }
             OpKind::CreateComponent => component::component(values, alloc)?,
             OpKind::SlotOutlet => component::outlet(values, alloc)?,

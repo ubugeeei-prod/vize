@@ -209,8 +209,7 @@ fn generate_vbind_prop(
             // Anchor the generated prop key back to the v-bind argument in
             // source, recording the original (untransformed) symbol so it lands
             // in the v3 `names` array. No-op without `source_map`.
-            ctx.record_mapping_named(exp.loc.span.start, exp.content);
-            ctx.push(&transformed_key);
+            ctx.push_named(&transformed_key, exp.loc.span, exp.content);
             if needs_quotes {
                 ctx.push("\"");
             }
@@ -353,8 +352,7 @@ fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
             // Anchor the generated event-handler key back to the v-on argument
             // in source, recording the original event name so it lands in the
             // v3 `names` array. No-op without `source_map`.
-            ctx.record_mapping_named(exp.loc.span.start, exp.content);
-            ctx.push(&event_name);
+            ctx.push_named(&event_name, exp.loc.span, exp.content);
             if needs_quotes {
                 ctx.push("\"");
             }

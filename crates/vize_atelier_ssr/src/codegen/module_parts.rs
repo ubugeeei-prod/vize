@@ -17,7 +17,7 @@ impl SsrCodegenContext<'_> {
     /// Record where the render body starts, after the signature and the
     /// CSS-variable prelude.
     pub(super) fn mark_body_start(&mut self) {
-        self.body_start = self.code.len();
+        self.body_start = self.out.len();
     }
 
     /// Declare every allocated temp at the body start: `let _temp0, _temp1`.
@@ -30,9 +30,8 @@ impl SsrCodegenContext<'_> {
             .collect::<std::vec::Vec<_>>()
             .join(", ");
         let declaration = cstr!("  let {names}\n");
-        let tail = self.code.split_off(self.body_start);
-        self.code.extend_from_slice(declaration.as_bytes());
-        self.code.extend_from_slice(&tail);
+        // Links recorded after the body start move with the text they cover.
+        self.out.insert_str(self.body_start, &declaration);
     }
 
     /// Build the preamble with imports

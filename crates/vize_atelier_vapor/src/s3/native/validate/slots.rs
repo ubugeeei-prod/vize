@@ -31,6 +31,10 @@ pub(super) fn slot<'a>(
     {
         return Err(LegacyReason::Component.into());
     }
+    let spans = [
+        (name.value.span.start, name.value.span.end),
+        (params.value.span.start, params.value.span.end),
+    ];
     let name = match name.value.kind {
         ValueKind::Absent => "default",
         ValueKind::Literal if component_prop(name.value.text) => name.value.text,
@@ -50,6 +54,7 @@ pub(super) fn slot<'a>(
             modifiers: Vec::new_in(&alloc),
             merge: None,
             position: 0,
+            spans,
         },
     ))
 }
