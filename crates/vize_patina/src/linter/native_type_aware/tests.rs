@@ -1209,7 +1209,6 @@ fn type_aware_diagnostics_snapshot() {
     if !corsa_available() {
         return;
     }
-
     let linter = Linter::with_preset(LintPreset::Opinionated).with_type_aware_lint(true);
     let source = r#"<script setup lang="ts">
 import { ref } from 'vue'
@@ -1233,7 +1232,7 @@ useMyComposable(count)
   <button @click="anyHandler()">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "TypeAwareFixture.vue");
-    let diagnostics = result
+    let mut diagnostics = result
         .diagnostics
         .iter()
         .map(|diag| {
@@ -1246,5 +1245,6 @@ useMyComposable(count)
             )
         })
         .collect::<Vec<_>>();
+    diagnostics.sort_unstable();
     insta::assert_debug_snapshot!(diagnostics);
 }
