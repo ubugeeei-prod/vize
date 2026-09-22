@@ -76,6 +76,11 @@
 "tests/_fixtures/davinci-html-nesting/Page.vue"
 "tests/_fixtures/davinci-html-nesting/Pug.vue"
 "tests/_fixtures/davinci-html-nesting/Static.vue"
+"tests/_fixtures/davinci-routes/demo-app/src/components/UserCard.vue"
+"tests/_fixtures/davinci-routes/demo-app/src/views/HomeView.vue"
+"tests/_fixtures/davinci-routes/demo-app/src/views/UserPost.vue"
+"tests/_fixtures/davinci-routes/open-tree/OrderLinks.vue"
+"tests/_fixtures/davinci-routes/shadowing/CustomLink.vue"
 "tests/_fixtures/davinci-ts40-projection/child-local-import.vue"
 "tests/_fixtures/davinci-ts40-projection/define-model.vue"
 "tests/_fixtures/davinci-ts40-projection/dual-scripts-emits.vue"
@@ -461,6 +466,9 @@
 "tests/_fixtures/_projects/typecheck-errors/src/VBindWrongType.vue" s3.extract-placements applied group @505:524 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=126
 "tests/_fixtures/_projects/typecheck-errors/src/WrongEventHandler.vue" s3.extract-placements missed cache @173:192 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
 "tests/_fixtures/davinci-fpfn/HelloCounter.vue" s3.extract-placements missed cache @186:204 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/davinci-routes/demo-app/src/components/UserCard.vue" s3.extract-placements missed cache @571:647 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/davinci-routes/demo-app/src/components/UserCard.vue" s3.extract-placements missed cache @688:723 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/davinci-routes/demo-app/src/views/UserPost.vue" s3.extract-placements missed cache @202:224 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
 "tests/_fixtures/davinci-ts40-projection/define-model.vue" s3.extract-placements missed cache @228:259 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
 "tests/_fixtures/davinci-ts40-projection/define-model.vue" s3.extract-placements missed cache @264:300 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
 "tests/_fixtures/davinci-ts40-projection/dual-scripts-emits.vue" s3.extract-placements missed cache @177:207 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
