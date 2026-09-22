@@ -25,21 +25,17 @@ fn helper_order_recomputes_after_body_changes() {
         buf.use_helper(helper);
     }
     buf.push("_mergeProps(_guardReactiveProps(props), extra)");
-    assert_eq!(
-        buf.ordered_helpers()
-            .into_iter()
-            .map(Helper::alias)
-            .collect::<alloc::vec::Vec<_>>(),
-        ["_mergeProps", "_guardReactiveProps", "_normalizeProps"]
-    );
+    assert!(buf.ordered_helpers().into_iter().map(Helper::alias).eq([
+        "_mergeProps",
+        "_guardReactiveProps",
+        "_normalizeProps"
+    ]));
     buf.push_hoist("_normalizeProps(props)".into());
-    assert_eq!(
-        buf.ordered_helpers()
-            .into_iter()
-            .map(Helper::alias)
-            .collect::<alloc::vec::Vec<_>>(),
-        ["_normalizeProps", "_guardReactiveProps", "_mergeProps"]
-    );
+    assert!(buf.ordered_helpers().into_iter().map(Helper::alias).eq([
+        "_normalizeProps",
+        "_guardReactiveProps",
+        "_mergeProps"
+    ]));
 }
 
 #[test]
