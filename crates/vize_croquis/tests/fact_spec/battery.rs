@@ -88,6 +88,9 @@ const refs = toRefs(state);
 let shallow = shallowRef(1);
 const el = useTemplateRef("el");
 const notReactive = watch;
+var shadowed = ref;
+var shadowed = other;
+const viaShadow = shadowed(1);
 </script>
 <template><p ref="el">{{ count }} {{ aliased }} {{ doubled }} {{ state.n }}</p></template>
 "#;

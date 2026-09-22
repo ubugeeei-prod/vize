@@ -54,11 +54,11 @@ impl Planes {
     }
 }
 
-pub fn collect_vue_files(root: &Path, out: &mut Vec<PathBuf>) {
-    let Ok(entries) = fs::read_dir(root) else {
-        return;
-    };
-    let mut entries: Vec<PathBuf> = entries.flatten().map(|entry| entry.path()).collect();
+pub fn collect_vue_files(root: &Path, out: &mut Vec<PathBuf>) -> std::io::Result<()> {
+    let mut entries = Vec::new();
+    for entry in fs::read_dir(root)? {
+        entries.push(entry?.path());
+    }
     entries.sort();
     for path in entries {
         if path.is_dir() {
@@ -68,11 +68,12 @@ pub fn collect_vue_files(root: &Path, out: &mut Vec<PathBuf>) {
             {
                 continue;
             }
-            collect_vue_files(&path, out);
+            collect_vue_files(&path, out)?;
         } else if path.extension().is_some_and(|ext| ext == "vue") {
             out.push(path);
         }
     }
+    Ok(())
 }
 
 pub fn run_source(name: &str, source: &str, planes: &mut Planes) {

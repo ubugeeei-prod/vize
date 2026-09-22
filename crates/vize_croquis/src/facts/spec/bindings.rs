@@ -9,8 +9,10 @@
 //! ```
 //!
 //! A macro is recognized by its own spelling; any other call's callee first
-//! resolves through `alias(a, api) :- decl(a, const a = api)` declared earlier
-//! in the script, as production resolves `const r = ref`.
+//! resolves through `alias(a, api)`, the last declaration of `a` when that
+//! declaration is `a = api` for an [`ALIAS_APIS`] name. A later declaration
+//! of `a` that is not such an alias clears it, as `var r = ref; var r = other`
+//! must not make `r()` a ref.
 
 use std::collections::BTreeMap;
 
@@ -241,6 +243,26 @@ fn yield_of(class: Class) -> Yield {
         .map_or(Yield::Nothing, |(_, rule)| *rule)
 }
 
+/// The last declaration of a name owns its alias. A supported identifier
+/// initializer installs the canonical API; every other form clears it.
+fn record_alias(aliases: &mut BTreeMap<CompactString, &'static str>, decl: &Decl) {
+    let canonical = match &decl.form {
+        Form::Simple(_, Init::Identifier(api)) => ALIAS_APIS
+            .iter()
+            .copied()
+            .find(|name| *name == api.as_str()),
+        _ => None,
+    };
+    match canonical {
+        Some(api) => {
+            aliases.insert(decl.name.clone(), api);
+        }
+        None => {
+            aliases.remove(&decl.name);
+        }
+    }
+}
+
 fn kind_of(form: &Form) -> VarKind {
     match form {
         Form::Simple(kind, _) | Form::Pattern { kind, .. } => *kind,
@@ -277,11 +299,7 @@ pub fn evaluate(
         if let Some(span) = decl.span {
             spans.insert(decl.name.clone(), span);
         }
-        if let Form::Simple(_, Init::Identifier(api)) = &decl.form
-            && let Some(canonical) = ALIAS_APIS.iter().find(|name| **name == api.as_str())
-        {
-            aliases.insert(decl.name.clone(), canonical);
-        }
+        record_alias(&mut aliases, decl);
     }
     for prop in macro_props {
         kinds.entry(prop.clone()).or_insert(BindingType::Props);

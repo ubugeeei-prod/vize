@@ -38,11 +38,7 @@ fn the_committed_planes_agree_with_the_specs() {
     }
     battery.assert_verdicts("battery");
     eprintln!("{}", battery.scope_lines("battery"));
-    assert_eq!(
-        battery.census(),
-        ((9, 9, 85), (9, 9, 11)),
-        "battery census moved: re-pin deliberately (see the P4-3a record)"
-    );
+    assert_census(&battery, (9, 9, 87), (9, 9, 11), "battery");
 
     let mut ladder = Planes::default();
     for fixture in &davinci_harness::fixtures::LADDER {
@@ -50,14 +46,10 @@ fn the_committed_planes_agree_with_the_specs() {
     }
     ladder.assert_verdicts("ladder");
     eprintln!("{}", ladder.scope_lines("ladder"));
-    assert_eq!(
-        ladder.census(),
-        ((6, 5, 80), (6, 6, 4)),
-        "ladder census moved: re-pin deliberately (see the P4-3a record)"
-    );
+    assert_census(&ladder, (6, 5, 80), (6, 6, 4), "ladder");
 
     let mut files = Vec::new();
-    collect_vue_files(&matrix_dir(), &mut files);
+    collect_vue_files(&matrix_dir(), &mut files).expect("read the P2-15 matrix");
     assert_eq!(files.len(), 90, "the committed P2-15 plane moved");
     let mut matrix = Planes::default();
     for file in &files {
@@ -69,11 +61,7 @@ fn the_committed_planes_agree_with_the_specs() {
         );
     }
     eprintln!("{}", matrix.scope_lines("matrix plane"));
-    assert_eq!(
-        matrix.census(),
-        ((90, 90, 0), (90, 90, 0)),
-        "matrix census moved: re-pin deliberately (see the P4-3a record)"
-    );
+    assert_census(&matrix, (90, 90, 0), (90, 90, 0), "matrix");
     assert!(matrix.bindings.divergences.is_empty() && matrix.undefined.divergences.is_empty());
 }
 
@@ -98,7 +86,8 @@ fn the_corpus_shard_agrees_with_the_specs() {
             "VIZE_DAVINCI_FACT_CORPUS must name directories: {}",
             root.display()
         );
-        collect_vue_files(&root, &mut files);
+        collect_vue_files(&root, &mut files)
+            .unwrap_or_else(|error| panic!("corpus walk {}: {error}", root.display()));
     }
     assert!(!files.is_empty(), "corpus shard found no .vue files");
     let mut shard = Planes::default();
@@ -116,4 +105,25 @@ fn the_corpus_shard_agrees_with_the_specs() {
     }
     eprintln!("{}", shard.scope_lines("corpus shard"));
     shard.assert_verdicts("corpus shard");
+}
+
+/// Bindings census is build-independent. `UndefinedRefs` is compared only
+/// when the debug trace exists; a release run still counts the artifacts
+/// and compares nothing.
+fn assert_census(
+    planes: &Planes,
+    bindings: (u64, u64, u64),
+    undefined_debug: (u64, u64, u64),
+    what: &str,
+) {
+    let undefined = if cfg!(debug_assertions) {
+        undefined_debug
+    } else {
+        (undefined_debug.0, 0, 0)
+    };
+    assert_eq!(
+        planes.census(),
+        (bindings, undefined),
+        "{what} census moved: re-pin deliberately (see the P4-3a record)"
+    );
 }

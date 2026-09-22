@@ -33,11 +33,11 @@ pub(in crate::script_parser) fn process_variable_declarator(
     kind: VariableDeclarationKind,
     source: &str,
 ) {
-    // Handle destructuring patterns
     match &declarator.id {
         BindingPattern::BindingIdentifier(id) => {
             let name = id.name.as_str();
             let at = id.span.start;
+            let mut keeps_reactivity_alias = false;
             result
                 .binding_spans
                 .insert(CompactString::new(name), (id.span.start, id.span.end));
@@ -47,7 +47,6 @@ pub(in crate::script_parser) fn process_variable_declarator(
             {
                 // Check for macro calls (defineProps, defineEmits, etc.)
                 if let Some(macro_kind) = process_call_expression(result, call, source) {
-                    // Assign binding type based on macro kind
                     let binding_type = match macro_kind {
                         MacroKind::DefineProps | MacroKind::WithDefaults => {
                             BindingType::SetupReactiveConst
@@ -73,14 +72,13 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     result.bindings.add(name, binding_type);
                     // Walk into the call's callback arguments to track nested scopes
                     walk_call_arguments(result, call, source);
+                    result.reactivity_aliases.remove(name);
                     return;
                 }
 
-                // Check for reactivity wrappers (also handles aliases)
                 if let Some((reactive_kind, binding_type)) =
                     detect_reactivity_call(call, &result.reactivity_aliases)
                 {
-                    // Detect setup context violations for module-level state
                     detect_setup_context_violation(result, call);
 
                     result
@@ -89,6 +87,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     result.bindings.add(name, binding_type);
                     // Walk into the call's callback arguments to track nested scopes
                     walk_call_arguments(result, call, source);
+                    result.reactivity_aliases.remove(name);
                     return;
                 }
 
@@ -126,6 +125,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             get_binding_type_from_kind(kind)
                         };
                         result.bindings.add(name, binding_type);
+                        result.reactivity_aliases.remove(name);
                         return;
                     }
                 }
@@ -171,21 +171,17 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             "provide" => {
                                 result.provide_aliases.insert(CompactString::new(name));
                             }
-                            // Reactivity APIs
                             "ref" | "shallowRef" | "reactive" | "shallowReactive"
                             | "computed" | "readonly" | "shallowReadonly"
                             | "toRef" | "toRefs" | "toValue" | "toRaw"
                             | "isRef" | "isReactive" | "isReadonly" | "isProxy"
                             | "unref" | "triggerRef" | "customRef"
                             | "markRaw" | "effectScope" | "getCurrentScope" | "onScopeDispose"
-                            // Watch APIs
                             | "watch" | "watchEffect" | "watchPostEffect" | "watchSyncEffect"
-                            // Lifecycle hooks
                             | "onMounted" | "onUnmounted" | "onBeforeMount" | "onBeforeUnmount"
                             | "onUpdated" | "onBeforeUpdate" | "onActivated" | "onDeactivated"
                             | "onErrorCaptured" | "onRenderTracked" | "onRenderTriggered"
                             | "onServerPrefetch"
-                            // Component APIs
                             | "defineComponent" | "defineAsyncComponent"
                             | "getCurrentInstance" | "nextTick"
                             // Types (for InjectionKey tracking)
@@ -194,6 +190,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                                     CompactString::new(name),
                                     CompactString::new(api_name),
                                 );
+                                keeps_reactivity_alias = true;
                             }
                             _ => {}
                         }
@@ -210,6 +207,9 @@ pub(in crate::script_parser) fn process_variable_declarator(
             } else {
                 get_binding_type_from_kind(kind)
             };
+            if !keeps_reactivity_alias {
+                result.reactivity_aliases.remove(name);
+            }
             result.bindings.add(name, binding_type);
         }
 
