@@ -62,6 +62,7 @@ mod i18n_rules_ecosystem;
 mod i18n_rules_markup;
 mod i18n_rules_script;
 mod i18n_rules_script_more;
+mod i18n_s3;
 mod i18n_supplemental;
 mod i18n_supplemental_extra;
 mod i18n_supplemental_extra2;

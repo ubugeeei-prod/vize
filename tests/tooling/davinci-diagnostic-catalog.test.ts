@@ -7,11 +7,9 @@ import {
   type Entry,
   block,
   catalogEntries,
-  canonProblems,
   compilerProblems,
   legacyTranslations,
   locales,
-  parseCanonCodes,
   parseCompilerCodes,
   parseRules,
   parseVocabulary,
@@ -22,6 +20,12 @@ import {
   tableProblems,
   vocabularyProblems,
 } from "./davinci-diagnostic-catalog-sources.ts";
+import {
+  canonProblems,
+  parseCanonCodes,
+  parseS3Codes,
+  s3Problems,
+} from "./davinci-diagnostic-catalog-producers.ts";
 
 // TS-53 (davinci-road/plan/test-suites.md), catalog half: every word the
 // Davinci diagnostic renderer prints around producer text, and every
@@ -93,6 +97,15 @@ test("TS-53: every Canon type-error code is catalogued in en, ja and zh", () => 
     "`ts/2304.help` has no ja catalog text",
     "`ts/2304.help` has no zh catalog text",
   ]);
+});
+
+test("TS-53: every S3 verifier code is catalogued in en, ja and zh", () => {
+  const codes = parseS3Codes();
+  assert.equal(codes.size, 10, "the parser reads every ViolationCode arm");
+  const entries = catalogEntries();
+  assert.deepEqual(s3Problems(codes, entries), []);
+  const dropped = entries.filter(([key]) => key !== "s3/S3V001.message");
+  assert.deepEqual(s3Problems(codes, dropped), ["`s3/S3V001.message` is not catalogued"]);
 });
 
 test("TS-53: the catalog check fails on a removed, emptied or drifted entry", () => {
