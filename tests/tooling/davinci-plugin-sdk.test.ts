@@ -100,7 +100,10 @@ test("results are content-keyed by the plugin's own version and code", () => {
   const edited = definePlugin({ ...team, rules: { "no-index-key"() {} } });
   const keys = [bumped, edited].map((plugin) => lint(TODO_LIST, [plugin], { cache: true }));
   assert.deepEqual(
-    keys.map((out) => [out.plugins[0].cached, out.plugins[0].contentKey === first.plugins[0].contentKey]),
+    keys.map((out) => [
+      out.plugins[0].cached,
+      out.plugins[0].contentKey === first.plugins[0].contentKey,
+    ]),
     [
       [false, false],
       [false, false],
@@ -116,7 +119,8 @@ test("demands are static: unknown groups refuse, undeclared reads throw", () => 
   });
   const undeclared = definePlugin({ ...team, demands: [] });
   assert.throws(() => lint(TODO_LIST, [undeclared]), {
-    message: "team-conventions/no-index-key: fact group `templateScopes` was not declared in demands",
+    message:
+      "team-conventions/no-index-key: fact group `templateScopes` was not declared in demands",
   });
 });
 
@@ -153,7 +157,13 @@ function batchOf(handle) {
     if (kind === "ui.for" || kind === "ui.bind") {
       const aliasValue = handle.field(id, "alias.value");
       const alias = aliasValue === null ? undefined : { value: aliasValue };
-      nodes.push({ id, kind, name: handle.field(id, "name"), value: handle.field(id, "value"), alias });
+      nodes.push({
+        id,
+        kind,
+        name: handle.field(id, "name"),
+        value: handle.field(id, "value"),
+        alias,
+      });
     }
     const scope = handle.scope(id);
     if (scope) facts.push([id, scope]);

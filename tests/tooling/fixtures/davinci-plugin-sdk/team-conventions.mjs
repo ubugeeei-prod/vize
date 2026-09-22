@@ -24,7 +24,10 @@ export default definePlugin({
         // an array it is the index. Only the item itself is stable.
         if (owner && bound(owner).position !== "value") {
           const item = loops[0].alias.value;
-          ctx.report(bind, `Don't key a v-for by its index \`${name}\`; use a stable id such as \`${item}.id\`.`);
+          ctx.report(
+            bind,
+            `Don't key a v-for by its index \`${name}\`; use a stable id such as \`${item}.id\`.`,
+          );
         }
       }
     },

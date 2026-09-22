@@ -17,6 +17,7 @@ mod lint_fix_tests;
 // same way.
 #[cfg(all(test, not(feature = "napi")))]
 #[path = "napi/plugin_sdk"]
+#[allow(dead_code)] // the napi half that reads the rest is not compiled here
 mod plugin_sdk_host {
     mod batch;
     mod document;

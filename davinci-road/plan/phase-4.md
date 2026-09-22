@@ -109,7 +109,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [ ] [P4-14c](./phase-4-tasks-last.md#p4-14c--explain-pages-and-witness-why) Explain pages and witness why — lane M · startable now
 - [ ] [P4-15a](./phase-4-tasks-last.md#p4-15a--seeded-defect-matrix-at-full-scale) Seeded-defect matrix at full scale — lane N · startable now
 - [ ] [P4-15b](./phase-4-tasks-last.md#p4-15b--corpus-suppression-triage-to-zero-untriaged) Corpus suppression triage to zero untriaged — lane N · startable now
-- [ ] [P4-16](./phase-4-tasks-last.md#p4-16--js-plugin-sdk-spike) JS plugin SDK spike — lane O · startable now
+- [x] [P4-16](./phase-4-tasks-last.md#p4-16--js-plugin-sdk-spike) JS plugin SDK spike — lane O · startable now
 - [ ] [P4-17](./phase-4-tasks-last.md#p4-17--phase-exit) Phase exit — lane X · gated on P3-16
 
 "Startable now (behind P4-5b)" means the task has no phase-3 dependency of its own but depends on a gated task.

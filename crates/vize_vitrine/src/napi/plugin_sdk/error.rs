@@ -1,6 +1,10 @@
 //! Why the JS plugin host refused a plugin or a document (P4-16 spike).
 
-#![allow(clippy::disallowed_types, clippy::disallowed_methods, clippy::disallowed_macros)]
+#![allow(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::disallowed_macros
+)]
 
 use core::fmt;
 
@@ -44,10 +48,16 @@ impl fmt::Display for HostError {
                 write!(f, "{plugin}: `{kind}` is not an S2 node kind")
             }
             Self::BadReports { plugin, detail } => {
-                write!(f, "{plugin}: run() must return a JSON report array ({detail})")
+                write!(
+                    f,
+                    "{plugin}: run() must return a JSON report array ({detail})"
+                )
             }
             Self::UnknownNode { plugin, rule, node } => {
-                write!(f, "{plugin}/{rule}: reported node {node}, which the document does not have")
+                write!(
+                    f,
+                    "{plugin}/{rule}: reported node {node}, which the document does not have"
+                )
             }
         }
     }

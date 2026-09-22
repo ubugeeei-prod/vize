@@ -13,7 +13,10 @@ export default definePlugin({
         if (text.kind !== "ui.text" || !/\p{L}/u.test(text.value)) continue;
         const inCode = (el) => el.name === "code" || el.name === "pre";
         if ([...ctx.ancestors(text, "ui.element")].some(inCode)) continue;
-        ctx.report(text, `Hard-coded text "${text.value.trim()}": use $t() so it can be translated.`);
+        ctx.report(
+          text,
+          `Hard-coded text "${text.value.trim()}": use $t() so it can be translated.`,
+        );
       }
     },
   },

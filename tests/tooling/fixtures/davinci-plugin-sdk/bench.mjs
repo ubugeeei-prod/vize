@@ -25,7 +25,9 @@ export function corpus(dirs = ["examples", "playground/src", "npm/builder/vite-m
     }
   };
   for (const dir of dirs) walk(path.join(root, dir));
-  return files.sort().map((file) => ({ file: path.relative(root, file), source: readFileSync(file, "utf8") }));
+  return files
+    .sort()
+    .map((file) => ({ file: path.relative(root, file), source: readFileSync(file, "utf8") }));
 }
 
 function native() {
@@ -41,7 +43,8 @@ export async function measure(files, rounds = 1, module = "team-conventions.mjs"
   const binding = native();
   const batches = [];
   const recorder = { ...team, run: (json) => (batches.push(json), "[]") };
-  for (const { file, source } of files) binding.lintWithPlugins(source, [recorder], { filename: file });
+  for (const { file, source } of files)
+    binding.lintWithPlugins(source, [recorder], { filename: file });
 
   const arms = { batch: [], proxy: [], sync: [], worker: [] };
   const time = { build: 0, batch: 0, proxy: 0, sync: 0, worker: 0 };
@@ -70,7 +73,8 @@ export async function measure(files, rounds = 1, module = "team-conventions.mjs"
     time.sync += elapsed(start);
   }
   const worker = new Worker(path.join(here, "worker.mjs"), { workerData: module });
-  const ask = (json) => new Promise((resolve) => (worker.once("message", resolve), worker.postMessage(json)));
+  const ask = (json) =>
+    new Promise((resolve) => (worker.once("message", resolve), worker.postMessage(json)));
   await ask(batches[0] ?? "{}");
   for (let round = 0; round < rounds; round += 1) {
     const start = process.hrtime.bigint();
@@ -85,7 +89,12 @@ export async function measure(files, rounds = 1, module = "team-conventions.mjs"
     Object.entries(time).map(([arm, us]) => [arm, us / (rounds * Math.max(files.length, 1))]),
   );
   const bytes = batches.reduce((sum, json) => sum + json.length, 0);
-  return { files: files.length, perFile, arms, batchBytesPerFile: bytes / Math.max(files.length, 1) };
+  return {
+    files: files.length,
+    perFile,
+    arms,
+    batchBytesPerFile: bytes / Math.max(files.length, 1),
+  };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
@@ -94,6 +103,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   for (const module of ["team-conventions.mjs", "design-system.mjs", "i18n.mjs"]) {
     const { perFile, batchBytesPerFile } = await measure(files, rounds, module);
     const arms = Object.entries(perFile).map(([arm, us]) => `${arm}=${us.toFixed(1)}`);
-    console.log(`${module} files=${files.length} rounds=${rounds} batch-bytes/file=${batchBytesPerFile.toFixed(0)} µs/file: ${arms.join(" ")}`);
+    console.log(
+      `${module} files=${files.length} rounds=${rounds} batch-bytes/file=${batchBytesPerFile.toFixed(0)} µs/file: ${arms.join(" ")}`,
+    );
   }
 }

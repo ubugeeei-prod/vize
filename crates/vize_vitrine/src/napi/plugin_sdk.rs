@@ -20,7 +20,11 @@
 //! GA (all four hook families, the `@vizejs/plugin-sdk` package, the
 //! persistent cache) is P6-7 after P5-13.
 
-#![allow(clippy::disallowed_types, clippy::disallowed_methods, clippy::disallowed_macros)]
+#![allow(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::disallowed_macros
+)]
 
 mod batch;
 mod document;
@@ -33,8 +37,8 @@ use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock};
 use std::time::Instant;
 
-use napi::bindgen_prelude::{Error, FunctionRef, Result, Status};
 use napi::Env;
+use napi::bindgen_prelude::{Error, FunctionRef, Result, Status};
 use napi_derive::napi;
 use vize_davinci::fact::FactManager;
 
@@ -137,7 +141,9 @@ pub fn lint_with_plugins(
     options: Option<PluginLintOptionsNapi>,
 ) -> Result<PluginLintOutputNapi> {
     let options = options.unwrap_or_default();
-    let filename = options.filename.unwrap_or_else(|| "anonymous.vue".to_owned());
+    let filename = options
+        .filename
+        .unwrap_or_else(|| "anonymous.vue".to_owned());
     let use_cache = options.cache == Some(true);
     let document = PluginDocument::build(&source, &filename).map_err(host_error)?;
     let mut manager = FactManager::new(&REGISTRY);
@@ -154,7 +160,9 @@ pub fn lint_with_plugins(
             demands: &demands,
         };
         let key = content_key(&source, &filename, &spec);
-        let hit = use_cache.then(|| cache().lock().ok()?.get(&key).cloned()).flatten();
+        let hit = use_cache
+            .then(|| cache().lock().ok()?.get(&key).cloned())
+            .flatten();
         let (found, nodes, bytes, js_ns, cached) = match hit {
             Some(found) => (found, 0, 0, 0.0, true),
             None => {
@@ -202,7 +210,10 @@ pub struct PluginDocumentHandle {
 
 /// Open the proxy-arm handle over one SFC, computing `templateScopes`.
 #[napi(js_name = "openPluginDocument")]
-pub fn open_plugin_document(source: String, filename: Option<String>) -> Result<PluginDocumentHandle> {
+pub fn open_plugin_document(
+    source: String,
+    filename: Option<String>,
+) -> Result<PluginDocumentHandle> {
     let filename = filename.unwrap_or_else(|| "anonymous.vue".to_owned());
     let document = PluginDocument::build(&source, &filename).map_err(host_error)?;
     let demand = resolve_demands("proxy", &["templateScopes".to_owned()]).map_err(host_error)?;
@@ -213,7 +224,12 @@ pub fn open_plugin_document(source: String, filename: Option<String>) -> Result<
     let view = manager.view::<facts::JsPluginHost>();
     let scopes = view
         .get::<TemplateScopes>()
-        .map(|table| table.iter().map(|(id, entries)| (*id, entries.clone())).collect())
+        .map(|table| {
+            table
+                .iter()
+                .map(|(id, entries)| (*id, entries.clone()))
+                .collect()
+        })
         .unwrap_or_default();
     Ok(PluginDocumentHandle { document, scopes })
 }
@@ -234,7 +250,9 @@ impl PluginDocumentHandle {
     /// The owning node, or -1.
     #[napi]
     pub fn parent(&self, id: u32) -> i32 {
-        self.node(id).and_then(|node| node.parent).map_or(-1, |parent| parent as i32)
+        self.node(id)
+            .and_then(|node| node.parent)
+            .map_or(-1, |parent| parent as i32)
     }
 
     /// `name`, `value`, `alias.value`, `alias.key` or `alias.index`.

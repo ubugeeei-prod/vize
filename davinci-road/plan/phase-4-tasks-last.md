@@ -265,10 +265,12 @@ _Slice 1 2026-09-22 (surface, lowering, compile lanes):_ see [P4-12c record](./p
 
 **Steps:**
 
-- [ ] `crates/vize_vitrine/src/napi/plugin*` spike and one rule; measure batch vs proxy cost
-- [ ] Record the decision; the open-questions entry becomes a stub
+- [x] `crates/vize_vitrine/src/napi/plugin*` spike and one rule; measure batch vs proxy cost
+- [x] Record the decision; the open-questions entry becomes a stub
 
 **Acceptance:** the spike rule's output byte-identical across two runs and its time attributed per plugin in lint output, in a node test; decision recorded; the spike code kept with tests or deleted, and the PR says which (GA is P6-7).
+
+**Landed 2026-09-22:** serialized S2 visit batches over sync napi with static manifest demands, measured against a proxy handle and a worker; one team-convention rule (`no-index-key`) through `lintWithPlugins` with per-plugin cost and content keys; spike code kept with tests — see the [P4-16 record](./phase-4-records/p4-16.md).
 
 **Deps:** P4-1a, P4-7a.
 

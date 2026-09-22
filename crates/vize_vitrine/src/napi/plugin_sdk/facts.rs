@@ -16,13 +16,17 @@
 //! production groups (the `fact::ids` rule), and P6-7 replaces it with the
 //! production groups' α pages (P4-2).
 
-#![allow(clippy::disallowed_types, clippy::disallowed_methods, clippy::disallowed_macros)]
+#![allow(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::disallowed_macros
+)]
 
 use serde::Serialize;
 use vize_davinci::fact::ids::FIXTURE_BASE;
 use vize_davinci::fact::{
-    Demand, FactConsumer, FactGroup, FactManager, FactProducer, FactRegistry, FactTable,
-    FactView, ProducerEntry,
+    Demand, FactConsumer, FactGroup, FactManager, FactProducer, FactRegistry, FactTable, FactView,
+    ProducerEntry,
 };
 use vize_davinci::pass::AnalysisId;
 

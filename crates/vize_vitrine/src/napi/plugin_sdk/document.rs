@@ -8,7 +8,11 @@
 //! the lowering arena, which both crossing shapes the spike measures need
 //! (a serialized batch and a proxy handle).
 
-#![allow(clippy::disallowed_types, clippy::disallowed_methods, clippy::disallowed_macros)]
+#![allow(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::disallowed_macros
+)]
 
 use serde::Serialize;
 use vize_croquis::sfc::{SfcParseOptions, parse_sfc};
@@ -228,7 +232,8 @@ fn static_name(name: Option<&DynamicName<'_>>) -> Option<String> {
 }
 
 fn attrs(attributes: &[vize_s2::op::Attribute<'_>]) -> Vec<(String, Option<String>)> {
-    let own = |attr: &vize_s2::op::Attribute<'_>| (attr.name.to_owned(), attr.value.map(str::to_owned));
+    let own =
+        |attr: &vize_s2::op::Attribute<'_>| (attr.name.to_owned(), attr.value.map(str::to_owned));
     attributes.iter().map(own).collect()
 }
 
@@ -236,10 +241,22 @@ fn attrs(attributes: &[vize_s2::op::Attribute<'_>]) -> Vec<(String, Option<Strin
 fn binding_parts(binding: &BindingOp<'_>) -> (Span, Option<String>, Option<String>) {
     let value = |expr: Option<&ExprRef<'_>>| expr.map(expr_text);
     match binding {
-        BindingOp::Bind(bind) => (bind.span, static_name(bind.name.as_ref()), value(bind.value.as_ref())),
-        BindingOp::On(on) => (on.span, static_name(on.name.as_ref()), value(on.handler.as_ref())),
+        BindingOp::Bind(bind) => (
+            bind.span,
+            static_name(bind.name.as_ref()),
+            value(bind.value.as_ref()),
+        ),
+        BindingOp::On(on) => (
+            on.span,
+            static_name(on.name.as_ref()),
+            value(on.handler.as_ref()),
+        ),
         BindingOp::Model(model) => (model.span, static_name(model.argument.as_ref()), None),
-        BindingOp::SlotContent(slot) => (slot.span, static_name(slot.name.as_ref()), value(slot.params.as_ref())),
+        BindingOp::SlotContent(slot) => (
+            slot.span,
+            static_name(slot.name.as_ref()),
+            value(slot.params.as_ref()),
+        ),
         BindingOp::VueDirective(directive) => (
             directive.span,
             Some(directive.name.to_owned()),

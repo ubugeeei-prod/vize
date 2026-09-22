@@ -121,21 +121,14 @@ isolation, corpus-run quotas) and the audit trail format for auto-merged PRs.
 
 ## JS plugin API shape
 
-Charter #29 commits to user-land JS plugins/custom rules; the API shape is
-open: serialized visit batches vs proxy objects over napi; sync napi calls vs
-a worker pool; how a JS rule's declared fact demands are expressed in the JS
-SDK; how rule output caching keys include the plugin's own version/content;
-and whether the same SDK surface doubles for the WASM tier (one authoring
-model, two runtimes). ESLint-compatibility (running existing eslint-plugin-vue
-rules unchanged) is explicitly _not_ the goal — the SDK targets the
-neutral-core view.
-
-**Deferred to its spike (phase-4 re-cut, 2026-09-21):** the decision is the
-deliverable of [P4-16](./plan/phase-4-tasks-last.md#p4-16--js-plugin-sdk-spike),
-which must measure it with a real custom rule rather than argue it. The
-working hypothesis the spike tests first: serialized visit batches over sync
-napi with demands declared as a static list in the plugin manifest, because
-charter #29 already requires JS to run outside the fused walks in batched passes.
+**Decided by measurement (P4-16, 2026-09-22)** →
+[P4-16 record](./plan/phase-4-records/p4-16.md): serialized S2 visit batches
+over sync napi; fact demands declared as a static list in the plugin
+manifest; content keys over the plugin's version, code fingerprint, batch
+schema and file; the batch doubles as the WASM-tier contract. The measured
+proxy arm was not slower on small templates and was rejected on portability,
+write-back and hashability grounds (numbers in the record). ESLint
+compatibility stays a non-goal.
 
 ## App-level fact provider contract
 
