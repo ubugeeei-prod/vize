@@ -1,5 +1,6 @@
 //! Source-file path preparation for virtual type analysis.
 
+#[cfg(test)]
 use std::path::{Path, PathBuf};
 
 /// Resolve the analyzed SFC filename to a complete source-file path.

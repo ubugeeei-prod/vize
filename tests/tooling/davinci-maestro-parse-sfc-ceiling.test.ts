@@ -8,7 +8,7 @@
 // falls.
 //
 // Request-path `parse_sfc` is 0. The 15 remaining sites are tests.
-// `with_content` is not deleted.
+// `fn with_content` is absent. `IdeContext::for_unopened` still takes the buffer string.
 
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";

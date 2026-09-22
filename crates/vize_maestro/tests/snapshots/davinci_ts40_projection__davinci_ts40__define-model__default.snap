@@ -28,12 +28,12 @@ authored-hits=35:49ec2b2f98d70356900f5841f1c218af8012057fb091af61d4a5a3416a0f544
 authored-hit-anchors=["update:title", "update:modelValue", "v-model", "defineModel", "title", "modelValue"]
 [maestro]
 status=ok
-text=675:8b0326a6d53718a39d5d334656a0371f25ea52b05d24808f50da4ca5dcbe963d
+text=33607:69da9cfe7fbf89e372e14bb46039767b3c6a45c15459729d7094170775571d31
 pre-rewrite-text=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 import-source-map=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 import-source-map-probes=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-mappings=7:b4f0a323afafa43208ceff47b03e00cf44e366b2cb187b771f7d7d16f24d1b3e
+mappings=22:2f0ebc484608e3fa695e2bf1c0e2c9cb16d25460d5796e623d597bed8fd8cf21
 semantic-links=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 diagnostics=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-authored-hits=9:8bb099339b5e70a7ea8f51b1458161ed253df80a44fafb2d0e0dbb158c69aae0
+authored-hits=26:70066f9c078bb1dcc7ca34037dd34f13741abe801d6ffc2c53daf4df1602ddcf
 authored-hit-anchors=["defineModel", "title", "modelValue"]

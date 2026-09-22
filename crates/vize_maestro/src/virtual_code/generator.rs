@@ -6,6 +6,7 @@
 mod art_script;
 mod binding;
 mod block;
+mod checker_document;
 mod inline_art;
 
 // Both test modules below: `insta`'s snapshot macros expand through the
@@ -90,16 +91,9 @@ impl VirtualCodeGenerator {
             // Parse template with arena allocation
             let (ast, _errors) = vize_armature::parse(&allocator, template_content);
             template_expressions = extract_expressions(&ast);
-
-            // Set block offset for source mapping
-            self.template_gen
-                .set_block_offset(template.loc.start as u32);
-
-            // Generate virtual TypeScript
-            let mut template_doc = self.template_gen.generate(&ast, template_content);
-            template_doc.uri = cstr!("{base_uri}.__template.ts").to_string();
-
-            docs.template = Some(template_doc);
+            docs.template = Some(checker_document::template_document(
+                descriptor, &ast, base_uri,
+            ));
         }
 
         // Generate script virtual code
@@ -153,13 +147,9 @@ impl VirtualCodeGenerator {
             // Parse template with provided allocator
             let (ast, _errors) = vize_armature::parse(allocator, template_content);
             template_expressions = extract_expressions(&ast);
-
-            self.template_gen
-                .set_block_offset(template.loc.start as u32);
-            let mut template_doc = self.template_gen.generate(&ast, template_content);
-            template_doc.uri = cstr!("{base_uri}.__template.ts").to_string();
-
-            docs.template = Some(template_doc);
+            docs.template = Some(checker_document::template_document(
+                descriptor, &ast, base_uri,
+            ));
         }
 
         // Generate script virtual code

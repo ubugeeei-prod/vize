@@ -1,7 +1,8 @@
-//! TS-40 baseline for the current Canon and Maestro projection implementations.
+//! TS-40 baseline for Canon and the editor projection.
 //!
-//! This is a migration oracle, not evidence that Davinci or S2 already owns the
-//! projection. The two current generators deliberately remain independent.
+//! The Maestro lane's template document is the checker virtual TypeScript.
+//! Canon and the content mapper keep their own producers. This is not evidence
+//! that S2 owns the projection.
 
 mod davinci_ts40_projection_support;
 
