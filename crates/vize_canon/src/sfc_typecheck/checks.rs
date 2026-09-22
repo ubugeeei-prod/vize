@@ -1,5 +1,6 @@
 //! Type checking functions for Vue SFC diagnostics.
 
+pub use super::template_bindings::check_template_bindings;
 use super::{SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity};
 use vize_croquis::reactivity::ReactivityLossKind;
 use vize_croquis::setup_context::ViolationSeverity;
@@ -175,36 +176,6 @@ fn has_inferable_runtime_emits(runtime_args: &str) -> bool {
     let args = runtime_args.trim();
     !matches!(args, "" | "[]" | "{}")
 }
-pub fn check_template_bindings(
-    summary: &vize_croquis::Croquis,
-    template_offset: u32,
-    result: &mut SfcTypeCheckResult,
-    _strict: bool,
-    suppress_options_api_setup_spread_refs: bool,
-) {
-    for undef_ref in &summary.undefined_refs {
-        if suppress_options_api_setup_spread_refs && undef_ref.context == "template expression" {
-            continue;
-        }
-        result.add_diagnostic(SfcTypeDiagnostic {
-            severity: SfcTypeSeverity::Error,
-            message: cstr!(
-                "Undefined reference '{}' in {}",
-                undef_ref.name,
-                undef_ref.context
-            ),
-            start: undef_ref.offset + template_offset,
-            end: undef_ref.offset + template_offset + undef_ref.name.len() as u32,
-            code: Some("undefined-binding".into()),
-            help: Some(cstr!(
-                "Make sure '{}' is defined in script setup or imported",
-                undef_ref.name
-            )),
-            related: Vec::new(),
-        });
-    }
-}
-
 pub fn check_reactivity(
     summary: &vize_croquis::Croquis,
     script_offset: u32,

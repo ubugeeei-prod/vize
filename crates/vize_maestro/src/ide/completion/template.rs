@@ -18,6 +18,7 @@ mod component_meta;
 #[cfg(feature = "native")]
 mod component_native;
 mod components;
+mod css_modules;
 mod directives;
 mod native;
 #[cfg(test)]
@@ -54,7 +55,7 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
 
     // `$style.|` in a template expression should resolve to class names
     // declared in the SFC's `<style module>` blocks.
-    if let Some(items) = bindings::css_module_class_completions(ctx) {
+    if let Some(items) = css_modules::css_module_class_completions(ctx) {
         return items;
     }
 
