@@ -4662,6 +4662,7 @@ dependencies = [
  "vize_armature",
  "vize_atelier_jsx",
  "vize_atelier_sfc",
+ "vize_canon",
  "vize_carton",
  "vize_croquis",
  "vize_davinci",

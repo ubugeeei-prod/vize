@@ -1,3 +1,4 @@
+use super::super::document::TypeAwareDocument;
 use super::{
     TemplateContext, TemplatePromiseQuery, TemplateQuery, TemplateQueryKind,
     absolute_expression_range,
@@ -6,7 +7,6 @@ use super::{
 };
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_span::SourceType;
-use vize_croquis::virtual_ts::VirtualTsOutput;
 use vize_relief::{
     DirectiveNode, ExpressionNode, ForNode, IfNode, PropNode, RootNode, TemplateChildNode,
     TextCallContent,
@@ -14,7 +14,7 @@ use vize_relief::{
 use vize_s0::profile;
 
 pub(super) fn collect_template_query_sets(
-    virtual_ts: &VirtualTsOutput,
+    virtual_ts: &TypeAwareDocument,
     template_ast: &RootNode<'_>,
     template_offset: u32,
     include_template_queries: bool,
@@ -114,7 +114,7 @@ fn dedupe_template_promise_queries(queries: &mut Vec<TemplatePromiseQuery>) {
 }
 
 fn collect_children(
-    virtual_ts: &VirtualTsOutput,
+    virtual_ts: &TypeAwareDocument,
     children: &[TemplateChildNode<'_>],
     template_offset: u32,
     allocator: &mut OxcAllocator,
@@ -237,7 +237,7 @@ fn collect_children(
 }
 
 fn collect_if(
-    virtual_ts: &VirtualTsOutput,
+    virtual_ts: &TypeAwareDocument,
     if_node: &IfNode<'_>,
     template_offset: u32,
     allocator: &mut OxcAllocator,
@@ -272,7 +272,7 @@ fn collect_if(
 }
 
 fn collect_for(
-    virtual_ts: &VirtualTsOutput,
+    virtual_ts: &TypeAwareDocument,
     for_node: &ForNode<'_>,
     template_offset: u32,
     allocator: &mut OxcAllocator,
@@ -304,7 +304,7 @@ fn collect_for(
 
 #[allow(clippy::too_many_arguments)]
 fn collect_expression(
-    virtual_ts: &VirtualTsOutput,
+    virtual_ts: &TypeAwareDocument,
     expression: &ExpressionNode<'_>,
     template_offset: u32,
     context: TemplateContext,
@@ -333,7 +333,7 @@ fn collect_expression(
 }
 
 fn collect_directive(
-    virtual_ts: &VirtualTsOutput,
+    virtual_ts: &TypeAwareDocument,
     directive: &DirectiveNode<'_>,
     template_offset: u32,
     allocator: &mut OxcAllocator,
@@ -362,7 +362,7 @@ fn collect_directive(
 
 #[allow(clippy::too_many_arguments)]
 fn collect_expression_query_sets(
-    virtual_ts: &VirtualTsOutput,
+    virtual_ts: &TypeAwareDocument,
     expression: &ExpressionNode<'_>,
     template_offset: u32,
     context: TemplateContext,

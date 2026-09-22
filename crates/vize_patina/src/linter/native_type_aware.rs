@@ -9,6 +9,7 @@ use corsa::utils::{
 use vize_atelier_sfc::SfcDescriptor;
 use vize_s0::{String, ToCompactString, profile};
 
+mod document;
 mod driver;
 mod markers;
 mod parsing;

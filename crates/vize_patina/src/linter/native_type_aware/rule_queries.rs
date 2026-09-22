@@ -1,3 +1,4 @@
+use super::document::TypeAwareDocument;
 use super::{
     LintResult, Linter, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
     markers::{MacroQuery, QueryKind, push_emit_validator_markers, push_prop_type_markers},
@@ -5,7 +6,7 @@ use super::{
     push_script_warning, push_warning,
 };
 use crate::diagnostic::LintDiagnostic;
-use vize_croquis::{Croquis, virtual_ts::VirtualTsOutput};
+use vize_croquis::Croquis;
 
 pub(super) struct MacroWarning<'a> {
     pub kind: QueryKind,
@@ -21,7 +22,7 @@ pub(super) fn collect_prop_queries(
     analysis: &Croquis,
     result: &mut LintResult,
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
-    virtual_ts: &mut VirtualTsOutput,
+    virtual_ts: &mut TypeAwareDocument,
     macro_queries: &mut Vec<MacroQuery>,
 ) {
     if !(linter.registry.has_rule(RULE_REQUIRE_TYPED_PROPS)
@@ -64,7 +65,7 @@ pub(super) fn collect_emit_queries(
     analysis: &Croquis,
     result: &mut LintResult,
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
-    virtual_ts: &mut VirtualTsOutput,
+    virtual_ts: &mut TypeAwareDocument,
     macro_queries: &mut Vec<MacroQuery>,
 ) {
     if !(linter.registry.has_rule(RULE_REQUIRE_TYPED_EMITS)

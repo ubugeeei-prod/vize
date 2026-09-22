@@ -1,5 +1,5 @@
+use super::document::TypeAwareDocument;
 use super::parsing::extract_runtime_object_property_values;
-use vize_croquis::virtual_ts::VirtualTsOutput;
 use vize_s0::{String, ToCompactString};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -17,7 +17,7 @@ pub(super) struct MacroQuery {
 }
 
 pub(super) fn push_promise_marker(
-    virtual_ts: &mut VirtualTsOutput,
+    virtual_ts: &mut TypeAwareDocument,
     script_content: &str,
     source_start: u32,
     source_end: u32,
@@ -55,7 +55,7 @@ pub(super) fn push_promise_marker(
 }
 
 pub(super) fn push_prop_type_markers(
-    virtual_ts: &mut VirtualTsOutput,
+    virtual_ts: &mut TypeAwareDocument,
     runtime_args: Option<&str>,
     source_start: u32,
     source_end: u32,
@@ -99,7 +99,7 @@ pub(super) fn push_prop_type_markers(
 }
 
 pub(super) fn push_emit_validator_markers(
-    virtual_ts: &mut VirtualTsOutput,
+    virtual_ts: &mut TypeAwareDocument,
     runtime_args: Option<&str>,
     source_start: u32,
     source_end: u32,
@@ -143,8 +143,9 @@ pub(super) fn push_emit_validator_markers(
     virtual_ts.content.insert_str(insert_offset, &block);
 }
 
+/// Byte where type probes are inserted: the setup close in Canon’s document.
 pub(super) fn marker_insert_offset(content: &str) -> Option<usize> {
     content
-        .rfind("\n}\n\n// Invoke setup")
+        .rfind("\n}\n\n// Invoke setup to verify types\n")
         .map(|index| index + 1)
 }

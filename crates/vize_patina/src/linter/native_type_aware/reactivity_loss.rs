@@ -1,3 +1,4 @@
+use super::document::TypeAwareDocument;
 use super::{
     LintResult, Linter, RULE_NO_REACTIVITY_LOSS, markers::marker_insert_offset, push_warning,
 };
@@ -5,7 +6,6 @@ use crate::diagnostic::LintDiagnostic;
 use vize_croquis::{
     reactivity::{ReactivityLoss, ReactivityLossKind},
     script_parser::ScriptParseResult,
-    virtual_ts::VirtualTsOutput,
 };
 use vize_s0::{CompactString, FxHashSet, String, ToCompactString, cstr};
 
@@ -41,7 +41,7 @@ pub(super) fn collect_reactivity_loss_queries(
     parse_result: &ScriptParseResult,
     script_content: &str,
     script_offset: u32,
-    virtual_ts: &mut VirtualTsOutput,
+    virtual_ts: &mut TypeAwareDocument,
 ) -> Vec<ReactivityLossQuery> {
     if !(linter.registry.has_rule(RULE_NO_REACTIVITY_LOSS)
         && linter.is_rule_enabled(RULE_NO_REACTIVITY_LOSS))
@@ -80,7 +80,7 @@ pub(super) fn collect_reactivity_loss_queries(
 }
 
 fn push_reactivity_loss_marker(
-    virtual_ts: &mut VirtualTsOutput,
+    virtual_ts: &mut TypeAwareDocument,
     expression_source: &str,
     diagnostic: &ReactivityLossQuery,
 ) -> Option<ReactivityLossQuery> {

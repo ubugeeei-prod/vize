@@ -1,6 +1,6 @@
+use super::document::TypeAwareDocument;
 use super::{RULE_NO_FLOATING_PROMISES, RULE_NO_UNSAFE_TEMPLATE_BINDING};
 use crate::diagnostic::LintDiagnostic;
-use vize_croquis::virtual_ts::VirtualTsOutput;
 use vize_relief::{ExpressionNode, RootNode};
 
 mod calls;
@@ -120,7 +120,7 @@ impl TemplatePromiseQuery {
 }
 
 pub(super) fn collect_template_query_sets(
-    virtual_ts: &VirtualTsOutput,
+    virtual_ts: &TypeAwareDocument,
     template_ast: &RootNode<'_>,
     template_offset: u32,
     include_template_queries: bool,
@@ -146,12 +146,12 @@ pub(super) fn absolute_expression_range(
 }
 
 pub(super) fn generated_offset_for_text(
-    virtual_ts: &VirtualTsOutput,
+    virtual_ts: &TypeAwareDocument,
     source_start: u32,
     source_text: &str,
 ) -> Option<u32> {
     let probe_offset = probe_offset_for_text(source_start, source_text)?;
-    virtual_ts.source_map.to_generated(probe_offset)
+    virtual_ts.generated_offset(probe_offset)
 }
 
 fn probe_offset_for_text(source_start: u32, source_text: &str) -> Option<u32> {

@@ -5,12 +5,13 @@ use planning::{
 };
 
 use super::super::engine::{SfcTemplateLintInput, TemplateAnalysis};
+use super::document::project_type_aware;
 use super::{
     LintResult, Linter, RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS,
     RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
     has_promise_like_return, has_unsafe_template_type, push_warning,
     should_warn_for_emit_validator, should_warn_for_prop_access, should_warn_for_reactivity_loss,
-    source_path::absolute_source_file, with_corsa_session,
+    with_corsa_session,
 };
 use super::{
     markers::{QueryKind, push_promise_marker},
@@ -21,10 +22,7 @@ use super::{
 };
 use crate::diagnostic::LintDiagnostic;
 use vize_armature::Parser as TemplateParser;
-use vize_croquis::{
-    script_parser,
-    virtual_ts::{VirtualTsConfig, generate_virtual_ts_with_croquis},
-};
+use vize_croquis::script_parser;
 use vize_s0::{FxHashSet, profile};
 pub(super) fn lint_with_descriptor<'a>(
     linter: &Linter,
@@ -138,7 +136,6 @@ pub(super) fn lint_with_descriptor<'a>(
         .as_ref()
         .map(|(_, offset, _, _)| *offset)
         .unwrap_or(0);
-    let from_file = absolute_source_file(filename);
     let parse_result = profile!("patina.type_aware.script_parse", {
         if let Some(script_setup) = descriptor.script_setup.as_ref() {
             let generic = script_setup
@@ -152,22 +149,16 @@ pub(super) fn lint_with_descriptor<'a>(
             super::script_options::parse_plain_script_for_type_aware(script_content)
         }
     });
-    let config = VirtualTsConfig {
-        script_offset: script_block.loc.start as u32,
-        template_offset,
-        ..Default::default()
-    };
     let mut virtual_ts = profile!(
         "patina.type_aware.virtual_ts",
-        generate_virtual_ts_with_croquis(
+        project_type_aware(
+            descriptor,
             script_content,
-            &parse_result,
             template_ast
                 .as_ref()
                 .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),
-            &config,
-            None,
-            Some(from_file.as_path()),
+            script_block.loc.start as u32,
+            template_offset,
         )
     );
 
