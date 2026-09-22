@@ -31,8 +31,15 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         let DynamicName::Dynamic(expr) = name else {
             return Err(LegacyReason::Binding.into());
         };
-        super::attrs::admit_dynamic_key(expr)?;
-        Ok(self.ctx_key(expr.source()))
+        let source = expr.source();
+        if is_valid_js_identifier(source)
+            && !matches!(source, "true" | "false" | "null" | "undefined")
+        {
+            return Ok(self.ctx_key(source));
+        }
+        // A non-identifier argument is not prefix-rewritten. The legacy
+        // walker prints the authored text (`a+b`, `row.field`).
+        Ok(vize_s0::String::from(source.trim()))
     }
 
     /// A custom directive's dynamic argument. The transform prefixes it like
@@ -221,19 +228,36 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         entries: &mut std::vec::Vec<VNodePropEntry>,
     ) -> Result<()> {
         let value = self.expr(&model.contract.read, TransformContent::Decoded)?;
+        let dynamic_prop;
+        let mut dynamic_arg = false;
         let prop = match &model.argument {
             None => "modelValue",
             Some(DynamicName::Static(name)) => name,
-            Some(DynamicName::Dynamic(_)) => return Err(LegacyReason::Binding.into()),
+            Some(DynamicName::Dynamic(expr)) => {
+                // The argument is rewritten like a value (`$setup.fooBar`),
+                // not forced through `_ctx.`.
+                dynamic_prop = self.expr(expr, TransformContent::Decoded)?;
+                dynamic_arg = true;
+                dynamic_prop.as_str()
+            }
         };
-        let update_key = vize_atelier_core::steps::create_on_name(&cstr!("update:{prop}"));
-        entries.push(component_prop_entry(prop, value.trim(), false));
+        let update_owned = if dynamic_arg {
+            cstr!("\"onUpdate:\" + {prop}")
+        } else {
+            vize_atelier_core::steps::create_on_name(&cstr!("update:{prop}"))
+        };
+        entries.push(component_prop_entry(prop, value.trim(), dynamic_arg));
         let handler = self
             .exprs
             .model_update(&model.contract.read, TransformContent::Padded)
             .map_err(|_| LegacyReason::ExpressionOrEncoding)?;
         let handler = self.callable_handler(handler)?;
-        entries.push(component_prop_entry(&update_key, &handler, false));
+        entries.push(component_prop_entry(&update_owned, &handler, dynamic_arg));
+        // The legacy walker does not emit a modifiers object for a dynamic
+        // `v-model` argument.
+        if dynamic_arg {
+            return Ok(());
+        }
         let modifiers = match model.attributes.split_first() {
             Some((kind, modifiers)) if kind.name == "element-kind" => modifiers,
             _ => return Err(LegacyReason::Binding.into()),

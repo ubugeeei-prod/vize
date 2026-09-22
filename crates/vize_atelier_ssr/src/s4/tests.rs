@@ -89,23 +89,12 @@ fn unowned_shapes_name_their_legacy_reason() {
             r#"<Foo><div v-if="a"><template #a>x</template></div></Foo>"#,
             LegacyReason::Operation,
         ),
-        (
-            r#"<Foo><template #[names[0]]>x</template></Foo>"#,
-            LegacyReason::Operation,
-        ),
-        (r#"<Foo v-model:[a]="x" />"#, LegacyReason::Binding),
-        (r#"<div v-focus:[a+b]="ok"></div>"#, LegacyReason::Binding),
         (r#"<script>x</script>"#, LegacyReason::Element),
-        (
-            "<div><!-- @vize:forget pre-escaped --><p>y</p></div>",
-            LegacyReason::SurfaceSemantics,
-        ),
         (
             "<p v-if=\"a\">1</p><!-- @vize:todo x --><p v-else>2</p>",
             LegacyReason::SurfaceSemantics,
         ),
         (r#"<input v-model:foo="x">"#, LegacyReason::Binding),
-        (r#"<div :[a+b]="x"></div>"#, LegacyReason::Binding),
         (
             r#"<div>{{ a &amp;&amp; b }}</div>"#,
             LegacyReason::ExpressionOrEncoding,

@@ -131,6 +131,13 @@ const ADMITTED_RULES: &[&str] = &[
     "condense.drop-whitespace",
     "drop.comment",
     "drop.branch-gap",
+    "lower.comment",
+    // `v-model` on an outlet is an error diagnostic and no binding. The
+    // legacy SSR walker ignores the directive and renders the outlet.
+    "error.v-model-on-slot",
+    // Attributes on an unwrapped `<template>` wrapper. The legacy SSR
+    // walker drops them with the wrapper.
+    "drop.template-attribute",
     // `v-pre` freezes its subtree as text and drops the directive itself.
     "drop.v-pre",
     "lower.v-pre-text",
@@ -203,13 +210,11 @@ fn lower_and_emit(
             // An Error still means the lowering refused a shape. Info is a
             // deferral the legacy SSR walker does not render, so it does not
             // by itself keep the template on that walker.
-            if s2
-                .diagnostics
-                .iter()
-                .any(|diagnostic| diagnostic.severity() != vize_davinci::diagnostic::Severity::Info)
+            if s2.diagnostics.iter().any(blocks_surface)
                 || s2.provenance.iter().any(|record| {
                     !admitted_rule(record) || drops_directive(record)
                 })
+                || surface_gate::slot_v_pre_interpolates(source, &s2.root.ops)
             {
                 return Err(LegacyReason::SurfaceSemantics);
             }
@@ -229,14 +234,18 @@ fn lower_and_emit(
 /// slot walker does not render. `v-pre` is the exception: it freezes the
 /// outlet fallback as text, which the plan still interpolates.
 fn admitted_rule(record: &vize_s2::provenance::ProvenanceRecord) -> bool {
-    if record.rule.as_str() == "defer.slot-directive" {
-        return !record.before.as_str().contains("v-pre");
-    }
-    ADMITTED_RULES.contains(&record.rule.as_str())
+    record.rule.as_str() == "defer.slot-directive" || ADMITTED_RULES.contains(&record.rule.as_str())
 }
 
-/// The legacy parser keeps `@vize:` directive comments with `comments` off
-/// and its SSR walker renders them, while S2 drops every comment.
+/// The slot `v-model` error is the lowering's note that the directive has
+/// no outlet op. The legacy SSR walker ignores it and renders the outlet.
+fn blocks_surface(diagnostic: &vize_davinci::diagnostic::Diagnostic) -> bool {
+    diagnostic.severity() != vize_davinci::diagnostic::Severity::Info
+        && diagnostic.message.as_str() != "v-model is not supported on <slot> outlets."
+}
+
+/// `@vize:` comments that still drop (`v-if` / `v-else` gaps) stay on the
+/// legacy walker. In-tree directive comments are `lower.comment`.
 fn drops_directive(record: &vize_s2::provenance::ProvenanceRecord) -> bool {
     if !matches!(record.rule.as_str(), "drop.comment" | "drop.branch-gap") {
         return false;
@@ -297,6 +306,8 @@ pub(super) fn record_bridge_counters(
     profiler.record_counter_enabled("davinci.s4_ssr.partition_facts", partition_facts);
     profiler.record_counter_enabled("davinci.s4_ssr.s2_diagnostics", diagnostics);
 }
+
+mod surface_gate;
 
 #[cfg(test)]
 mod differential_tests;

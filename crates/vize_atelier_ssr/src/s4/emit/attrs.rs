@@ -134,16 +134,14 @@ pub(super) fn bind<'r, 'a>(binding: &'r s2::BindingOp<'a>) -> Result<Option<Bind
     }
 }
 
-/// A dynamic key the plan emitter owns: a bare identifier (`_ctx.<key>`, or
-/// the scope-local name inside a `v-for` / slot scope).
+/// A dynamic key the plan emitter can spell. Bare identifiers stay
+/// `_ctx.<key>` (or the scope-local name); any other expression uses the
+/// same rewrite as a value.
 pub(super) fn admit_dynamic_key(argument: &ExprRef<'_>) -> Result<()> {
-    let source = argument.source();
-    let simple = crate::codegen::element::props::is_valid_js_identifier(source)
-        && !matches!(source, "true" | "false" | "null" | "undefined");
-    if simple {
-        Ok(())
-    } else {
+    if argument.source().is_empty() {
         Err(LegacyReason::Binding.into())
+    } else {
+        Ok(())
     }
 }
 

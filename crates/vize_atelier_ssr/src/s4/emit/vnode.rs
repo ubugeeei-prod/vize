@@ -101,6 +101,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 let expression = vize_s0::ensure_sufficient_stack(|| self.vnode_for(for_op))?;
                 out.push(expression);
             }
+            (Kind::Comment, Source::Comment(comment)) => {
+                self.pos += 1;
+                self.ctx.use_core_helper(RuntimeHelper::CreateComment);
+                let quoted = quoted_js_string(comment.content);
+                out.push(cstr!("_createCommentVNode({quoted})"));
+            }
             _ => return Err(LegacyReason::Operation.into()),
         }
         Ok(())

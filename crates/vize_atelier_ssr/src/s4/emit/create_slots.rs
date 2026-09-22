@@ -16,11 +16,10 @@ use super::control::alias;
 use super::slots::{ComponentSlots, SlotSpec, slot_pattern};
 use super::spans::expression_span;
 use super::{Emitter, Result};
-use crate::codegen::element::props::{is_valid_js_identifier, quoted_js_string};
+use crate::codegen::element::props::quoted_js_string;
 use crate::codegen::helpers::extract_destructure_params;
-use crate::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params;
 use crate::s4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
-use crate::s4::{AdmissionFailure, LegacyReason};
+use crate::s4::AdmissionFailure;
 
 /// A `createSlots` entry source, by the plan position of its content child.
 #[derive(Clone, Copy)]
@@ -100,15 +99,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let name = match &content.name {
             None => quoted_js_string("default"),
             Some(DynamicName::Static(name)) => quoted_js_string(name),
-            Some(DynamicName::Dynamic(expr)) => {
-                let source = expr.source();
-                if !is_valid_js_identifier(source)
-                    || matches!(source, "true" | "false" | "null" | "undefined")
-                {
-                    return Err(LegacyReason::Operation.into());
-                }
-                strip_scope_prefixes_for_scoped_params(&self.scoped_params, &cstr!("_ctx.{source}"))
-            }
+            Some(DynamicName::Dynamic(expr)) => self.expr(expr, TransformContent::Decoded)?,
         };
         let pattern = slot_pattern(self.ctx.source, content)?;
         let inner = template + 1 + element.attributes.len() + element.bindings.len();

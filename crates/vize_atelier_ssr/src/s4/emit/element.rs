@@ -44,6 +44,25 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         if REFUSED_TAGS.contains(&tag) || !vize_s0::is_native_tag(tag) {
             return Err(LegacyReason::Element.into());
         }
+        // `<template #default>` inside `<Suspense>` is not a tag. A plain
+        // `<template>` still renders its own element.
+        if tag == "template"
+            && element
+                .bindings
+                .iter()
+                .any(|binding| matches!(binding, s2::BindingOp::SlotContent(_)))
+        {
+            self.pos += 1;
+            let _attached = self.take_attached(element.attributes.len() + element.bindings.len())?;
+            self.children(Flags {
+                as_fragment: false,
+                disable_nested_fragments: false,
+                inherit_attrs: false,
+            })?;
+            return self.close(Kind::CloseElement, |source| {
+                matches!(source, Source::Element(closed) if core::ptr::eq(*closed, element))
+            });
+        }
         self.pos += 1;
         let attached = self.take_attached(element.attributes.len() + element.bindings.len())?;
         let attached = attached.as_slice();

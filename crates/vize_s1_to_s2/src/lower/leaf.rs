@@ -26,7 +26,9 @@ pub(crate) fn lower_leaf<'a>(cx: &mut Cx<'a>, child: &SurfaceChild<'a>, out: &mu
         SurfaceChild::Text(token) => lower_text(cx, token, token.text, out),
         SurfaceChild::Interpolation(node) => lower_interpolation(cx, node, out),
         SurfaceChild::Comment(token) => {
-            if cx.preserve_comments() {
+            // `@vize:` comments stay in the tree: the SSR walker renders them
+            // even when ordinary comments are off.
+            if cx.preserve_comments() || keeps_directive_comment(token.text) {
                 lower_comment(cx, token, out);
             } else {
                 let span = cx.token_span(token);
@@ -112,6 +114,13 @@ fn lower_comment<'a>(cx: &mut Cx<'a>, token: &Token<'a>, out: &mut Vec<'a, Op<'a
         },
         &cx.allocator,
     )));
+}
+
+/// `@vize:` directive comments are rendered by the legacy SSR walker.
+pub(crate) fn keeps_directive_comment(text: &str) -> bool {
+    let inner = text.strip_prefix("<!--").unwrap_or(text);
+    let inner = inner.strip_suffix("-->").unwrap_or(inner);
+    vize_s0::directive::parse_vize_directive(inner, 1, 0).is_some()
 }
 
 fn comment_content(text: &str) -> &str {

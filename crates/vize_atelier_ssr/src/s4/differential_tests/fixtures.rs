@@ -193,22 +193,9 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         "v-pre-whitespace",
         "<pre>\n  a  b\n</pre><code v-pre class=\"font-code\">\n    {{ variable }}\n  </code>",
     ),
-];
-
-/// Templates the selector must keep on the legacy walker in this slice.
-pub(super) const REFUSED: &[(&str, &str)] = &[
     (
-        "dynamic-slot-name-expression",
-        r#"<Foo><template #[names[0]]>x</template></Foo>"#,
-    ),
-    (
-        "nested-slot-carrier",
-        r#"<Foo><div v-if="a"><template #a>x</template></div></Foo>"#,
-    ),
-    ("slot-name-twice", r#"<div><slot name :name="n" /></div>"#),
-    (
-        "outlet-v-pre",
-        "<slot v-pre>{{ not }} an interpolation</slot>",
+        "vize-directive-comment",
+        "<div><!-- @vize:forget pre-escaped --><p>y</p></div>",
     ),
     (
         "directive-complex-arg",
@@ -218,16 +205,32 @@ pub(super) const REFUSED: &[(&str, &str)] = &[
         "dynamic-key-expression",
         r#"<div><p :[a+b]="val"></p></div>"#,
     ),
+    ("slot-v-model", r#"<slot v-model="modelValue"></slot>"#),
+    ("slot-v-pre-empty", "<slot v-pre></slot>"),
+    ("template-attr-drop", r#"<template v-if="a" :foo />"#),
+    (
+        "suspense-default-template",
+        "<Suspense><template #default></template></Suspense>",
+    ),
+];
+
+/// Templates the selector must keep on the legacy walker in this slice.
+pub(super) const REFUSED: &[(&str, &str)] = &[
+    (
+        "nested-slot-carrier",
+        r#"<Foo><div v-if="a"><template #a>x</template></div></Foo>"#,
+    ),
+    ("slot-name-twice", r#"<div><slot name :name="n" /></div>"#),
+    (
+        "outlet-v-pre",
+        "<slot v-pre>{{ not }} an interpolation</slot>",
+    ),
     ("v-model-argument", r#"<input v-model:foo="msg">"#),
     ("invalid-expression", "<div>{{ a &amp;&amp; b }}</div>"),
     ("invalid-bind", r#"<div :title="a +"></div>"#),
     ("script", "<div><script>var a = 1 < 2</script></div>"),
     ("style", "<div><style>.a > b { }</style></div>"),
     ("whitespace-entities", "<p>a&#10;&#32; b</p>"),
-    (
-        "component-model-dynamic-arg",
-        r#"<div><Foo v-model:[prop]="value" /></div>"#,
-    ),
 ];
 
 /// TypeScript-only expressions: owned under `is_ts`, refused without it

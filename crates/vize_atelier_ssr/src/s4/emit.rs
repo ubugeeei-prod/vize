@@ -174,7 +174,13 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             (Kind::For, Source::For(for_op)) => {
                 vize_s0::ensure_sufficient_stack(|| self.for_loop(segment, for_op, disable))
             }
-            (Kind::Comment, _) => Err(LegacyReason::Operation.into()),
+            (Kind::Comment, Source::Comment(comment)) => {
+                self.pos += 1;
+                self.ctx.push_string_part_static("<!--");
+                self.ctx.push_string_part_static(comment.content);
+                self.ctx.push_string_part_static("-->");
+                Ok(())
+            }
             _ => Err(AdmissionFailure::Invalid(
                 "string plan places a segment outside its region",
             )),

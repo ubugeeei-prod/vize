@@ -70,6 +70,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                     shape.legacy_children += 1;
                     shape.non_text = true;
                 }
+                Kind::Comment => {
+                    shape.legacy_children += 1;
+                    shape.non_text = true;
+                }
                 _ => return Err(LegacyReason::Operation.into()),
             }
         }

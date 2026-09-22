@@ -175,6 +175,22 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
     ("outlet-v-html", r#"<slot v-html="rawHtml"></slot>"#),
     ("outlet-v-text", r#"<slot v-text="textContent"></slot>"#),
     ("outlet-v-cloak", "<slot v-cloak></slot>"),
+    (
+        "component-model-dynamic-arg",
+        r#"<div><Foo v-model:[prop]="value" /></div>"#,
+    ),
+    (
+        "dynamic-slot-name-expression",
+        r#"<Foo><template #[names[0]]>x</template></Foo>"#,
+    ),
+    (
+        "dynamic-slot-name-member",
+        r#"<Foo><template #[names.current]>x</template></Foo>"#,
+    ),
+    (
+        "dynamic-slot-name-template",
+        r#"<Foo><template #[`filter-cell-${col}`]>x</template></Foo>"#,
+    ),
     ("outlet-v-show", r#"<slot v-show="shown">fallback</slot>"#),
     ("outlet-v-once", "<slot v-once>fallback</slot>"),
     ("outlet-v-memo", r#"<slot v-memo="[dep]">{{ dep }}</slot>"#),

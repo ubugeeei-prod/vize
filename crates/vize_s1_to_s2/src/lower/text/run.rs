@@ -87,6 +87,7 @@ pub(crate) fn lower_text_run<'a>(
         if i > start
             && let SurfaceChild::Comment(token) = &children[i]
             && !cx.preserve_comments()
+            && !super::super::leaf::keeps_directive_comment(token.text)
             && token.leading.is_empty()
             && cx.offset(token.text) == probe
         {
