@@ -132,7 +132,7 @@ fn replace(page: &mut Page, from: &str, to: &str) {
 
 #[test]
 fn analyses_are_refused_exactly() {
-    let cases: [(Tamper, &str); 9] = [
+    let cases: [(Tamper, &str); 10] = [
         (
             |a| a.facts.schema_version = 2,
             "facts-page schema version 2 is unreadable: this host reads version 1",
@@ -166,6 +166,14 @@ fn analyses_are_refused_exactly() {
         (
             |a| replace(&mut a.projection, "sub 17:22", "sub 16:22"),
             "projection row 1 has a sub-span outside the row",
+        ),
+        (
+            |a| {
+                replace(&mut a.projection, "(count * 2);", "(éount * 2);");
+                replace(&mut a.projection, "row 17:26", "row 17:27");
+                replace(&mut a.projection, "sub 17:22", "sub 18:23");
+            },
+            "projection row 1 has a sub-span off a character boundary",
         ),
         (
             |a| replace(&mut a.projection, "rows=2", "rows=02"),

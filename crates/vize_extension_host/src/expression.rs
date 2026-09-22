@@ -11,7 +11,7 @@
 //!    environment when the enumeration claims to be exact;
 //! 3. every projection row inside the generated text (on character
 //!    boundaries) and inside one expression's authored span, every sub-span
-//!    inside its row;
+//!    inside its row and, on the generated side, on a character boundary;
 //! 4. every diagnostic span inside an expression.
 
 use core::fmt;

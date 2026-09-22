@@ -102,6 +102,8 @@ fn check_rows(batch: &ExpressionBatch, projection: &ProjectionPage) -> Result<()
             !within(*generated, row.generated) || !within(*authored, row.authored)
         }) {
             Some("has a sub-span outside the row")
+        } else if row.sub_spans.iter().any(|(generated, _)| !generated_ok(*generated)) {
+            Some("has a sub-span off a character boundary")
         } else {
             None
         };
