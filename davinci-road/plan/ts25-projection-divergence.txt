@@ -1,0 +1,7 @@
+# TS-25 P4-5b authored-anchor divergence: 57 comparisons
+# `vize check` diagnostic-set comparison: not run (P4-5b slice 2)
+parse-recovery broken@31 current=false s2=true
+parse-recovery broken@77 current=false s2=true
+define-model title@319 current=true s2=false
+define-model modelValue@331 current=true s2=false
+parent-local-import ChildLocal@126 current=true s2=false

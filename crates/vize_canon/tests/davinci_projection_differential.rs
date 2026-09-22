@@ -38,8 +38,10 @@ struct Fixture {
 
 fn fixtures() -> Vec<Fixture> {
     let matrix: serde_json::Value = serde_json::from_str(
-        &std::fs::read_to_string(workspace().join("tests/_fixtures/davinci-ts40-projection/matrix.json"))
-            .expect("TS-40 matrix"),
+        &std::fs::read_to_string(
+            workspace().join("tests/_fixtures/davinci-ts40-projection/matrix.json"),
+        )
+        .expect("TS-40 matrix"),
     )
     .expect("matrix JSON");
     matrix["fixtures"]
@@ -122,7 +124,7 @@ fn measure() -> (usize, String) {
 /// of the matrix, never silently fewer.
 #[test]
 fn the_differential_compares_every_matrix_anchor() {
-    assert_eq!(measure().0, 44);
+    assert_eq!(measure().0, 57);
 }
 
 #[cfg(feature = "davinci-differential")]
@@ -139,5 +141,9 @@ fn s2_projection_divergence_matches_the_ledger() {
         std::fs::write(&path, measured.as_str()).expect("write ledger");
     }
     let committed = std::fs::read_to_string(&path).expect("committed ledger");
-    assert_eq!(measured.as_str(), committed, "the ledger may only change with review");
+    assert_eq!(
+        measured.as_str(),
+        committed,
+        "the ledger may only change with review"
+    );
 }

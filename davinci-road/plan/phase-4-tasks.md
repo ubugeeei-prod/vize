@@ -262,6 +262,8 @@
 - [ ] Differential comparator `crates/vize_canon/tests/davinci_projection_differential.rs` behind `davinci-differential`: `vize check` diagnostic sets and authored-anchor resolution compared exactly; generated text is free
 - [ ] Corpus-runnable entry with its command recorded; plain-suite coverage witness pins the comparison count
 
+**Slice 1 landed 2026-09-22:** `vize_canon::projection::project_sfc` emits through the P3-9 `EmitDocument` (plus its `link_since`/edges APIs and containment nesting) and the TS-25 anchor lane records 5 divergences over 57 comparisons — see the [P4-5b record](./phase-4-records/p4-5b.md).
+
 **Acceptance:** TS-25 zero divergence over the TS-40 matrix and the `vize check` corpus with scope proof; TS-24 unaffected; TS-1, TS-13.
 
 **Deps:** P4-5a, P3-9.

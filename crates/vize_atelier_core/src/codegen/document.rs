@@ -220,8 +220,12 @@ impl EmitDocument {
             let base = self.cursor();
             self.links
                 .extend(other.links.iter().map(|link| link.rebased(base)));
-            self.edges
-                .extend(other.edges.iter().map(|edge| links::rebase_edge(edge, |at| at + base)));
+            self.edges.extend(
+                other
+                    .edges
+                    .iter()
+                    .map(|edge| links::rebase_edge(edge, |at| at + base)),
+            );
         }
         self.text.push_str(&other.text);
     }

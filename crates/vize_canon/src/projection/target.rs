@@ -142,9 +142,13 @@ impl Target {
             Op::For(node) => {
                 self.document.push_str("{\n");
                 self.statement(node.binding.source, node.span);
-                for alias in [Some(node.binding.value), node.binding.key, node.binding.index]
-                    .into_iter()
-                    .flatten()
+                for alias in [
+                    Some(node.binding.value),
+                    node.binding.key,
+                    node.binding.index,
+                ]
+                .into_iter()
+                .flatten()
                 {
                     self.declaration(alias);
                 }
