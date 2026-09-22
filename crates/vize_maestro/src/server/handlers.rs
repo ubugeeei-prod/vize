@@ -30,7 +30,7 @@ use tower_lsp::lsp_types::{Position, Range};
 use super::{MaestroServer, server_capabilities};
 use crate::ide::{
     CompletionService, DocumentHighlightService, DocumentLinkService, HoverService, IdeContext,
-    RenameService, SemanticTokensService, position_to_offset,
+    RenameService, position_to_offset,
 };
 
 mod call_hierarchy;
@@ -395,52 +395,14 @@ impl LanguageServer for MaestroServer {
         &self,
         params: SemanticTokensParams,
     ) -> Result<Option<SemanticTokensResult>> {
-        if !self.state.lsp_features().semantic_tokens {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document.uri;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-
-        // `.jsx`/`.tsx`: highlight the dynamic JSX expressions. Structural, so
-        // not gated on `typeChecker.jsxTypecheck`.
-        if crate::utils::is_jsx_path(uri.path()) {
-            return Ok(crate::ide::JsxSemanticTokensService::tokens(&content, uri));
-        }
-
-        Ok(SemanticTokensService::get_tokens(&content, uri))
+        Ok(super::semantic_tokens::full(&self.state, &params))
     }
 
     async fn semantic_tokens_range(
         &self,
         params: SemanticTokensRangeParams,
     ) -> Result<Option<SemanticTokensRangeResult>> {
-        if !self.state.lsp_features().semantic_tokens {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document.uri;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-
-        if crate::utils::is_jsx_path(uri.path()) {
-            return Ok(crate::ide::JsxSemanticTokensService::tokens_range(
-                &content,
-                uri,
-                params.range,
-            ));
-        }
-
-        Ok(SemanticTokensService::get_tokens_range(
-            &content,
-            uri,
-            params.range,
-        ))
+        Ok(super::semantic_tokens::range(&self.state, &params))
     }
 
     async fn code_lens(&self, params: CodeLensParams) -> Result<Option<Vec<CodeLens>>> {
