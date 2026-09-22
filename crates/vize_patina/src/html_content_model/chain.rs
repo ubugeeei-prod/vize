@@ -118,6 +118,11 @@ impl Frame {
     /// node, each with the namespace that produces it.
     pub fn dispatches(&self) -> impl Iterator<Item = (Dispatch, Ns)> + '_ {
         let mut out: [Option<(Dispatch, Ns)>; 4] = [None; 4];
+        if self.ns == NsSet::one(Ns::Html) {
+            // The common case: an HTML element has the one HTML dispatch.
+            out[0] = Some((Dispatch::Html, Ns::Html));
+            return out.into_iter().flatten();
+        }
         let mut len = 0;
         let mut push = |dispatch, ns| {
             out[len] = Some((dispatch, ns));

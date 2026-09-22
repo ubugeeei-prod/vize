@@ -11,7 +11,7 @@ use super::content_rules;
 use super::facts::{Ns, facts};
 use super::parser_rules::{Outcome, Subject, foreign_start_tag, html_start_tag};
 use super::skeleton::{NodeKind, Skeleton};
-use super::table_rules::html_text;
+use super::table_rules::{html_text, inert_whitespace};
 use super::tri::Tri;
 
 /// The context a skeleton is checked in.
@@ -189,7 +189,12 @@ impl Walker<'_, '_> {
                 chain.frames.pop();
             }
             NodeKind::Text { whitespace_only } => {
-                let verdict = self.text(chain, *whitespace_only, false);
+                let inert = *whitespace_only && inert_whitespace(chain);
+                let verdict = if inert {
+                    Verdict::Refuted
+                } else {
+                    self.text(chain, *whitespace_only, false)
+                };
                 self.record_text(index, verdict);
             }
             NodeKind::DynamicText => {

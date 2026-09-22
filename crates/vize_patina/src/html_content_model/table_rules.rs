@@ -111,3 +111,15 @@ pub fn html_text(chain: &Chain, whitespace_only: bool, dynamic: bool) -> Option<
         Some(Outcome::Diverge(class, top))
     }
 }
+
+/// Whitespace whose current node is a single-namespace HTML element that is
+/// neither void nor a `form`: [`html_text`] and the content model both
+/// insert it as that element's child, so the checker skips both.
+pub fn inert_whitespace(chain: &Chain) -> bool {
+    chain.top().is_some_and(|top| {
+        top.ns == NsSet::one(Ns::Html)
+            && top
+                .id(Ns::Html)
+                .is_some_and(|id| !facts().is(Row::Void, Some(id)) && facts().name(id).1 != "form")
+    })
+}
