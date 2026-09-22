@@ -156,16 +156,12 @@ fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<Stri
 }
 
 pub(super) fn extract_component_metadata(
-    content: &str,
+    descriptor: Option<&vize_atelier_sfc::SfcDescriptor<'_>>,
     filename: &str,
     options_api: bool,
     legacy_vue2: bool,
 ) -> ComponentMetadata {
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: filename.to_string().into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+    let Some(descriptor) = descriptor else {
         return ComponentMetadata {
             props: Vec::new(),
             slots: Vec::new(),
@@ -179,7 +175,7 @@ pub(super) fn extract_component_metadata(
 
     if descriptor.script_setup.is_some() || descriptor.script.is_some() {
         let summary = vize_atelier_sfc::croquis::analyze_sfc_descriptor_resolved(
-            &descriptor,
+            descriptor,
             None,
             vize_atelier_sfc::croquis::SfcCroquisOptions::full(),
             options_api,

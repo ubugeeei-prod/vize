@@ -15,14 +15,7 @@ pub(super) fn component_path(ctx: &IdeContext<'_>, component_name: &str) -> Opti
     )
     .ok()?;
     let component_path = art_desc.metadata.component?;
-    let descriptor = vize_atelier_sfc::parse_sfc(
-        &ctx.content,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        },
-    )
-    .ok()?;
+    let descriptor = ctx.descriptor()?;
     if let Some(script_setup) = descriptor.script_setup.as_ref()
         && let Some(defined_component) =
             crate::virtual_code::find_define_art_component_name(script_setup.content.as_ref())

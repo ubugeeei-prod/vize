@@ -11,6 +11,9 @@
 //! - [`db`] — [`ResidentDatabase`]: file texts and project config as inputs,
 //!   [`Block`](db::Block) as the firewall (content and position as separate
 //!   tracked fields), and the `sfc_blocks` → `s1_block` / `s2_page` queries.
+//! - [`descriptor`] — [`ResidentDocuments`]: the SFC descriptor as a
+//!   memoized query, one parse per buffer revision for Maestro's request
+//!   paths (P5-6a).
 //! - [`accounting`] — cache-hit accounting read from salsa's event stream
 //!   (TS-46).
 //! - [`equivalence`] — TS-42: edit scripts run through the database, every
@@ -23,6 +26,7 @@
 pub mod accounting;
 pub mod artifact;
 pub mod db;
+pub mod descriptor;
 pub mod equivalence;
 pub mod snapshot;
 
@@ -32,3 +36,4 @@ pub use artifact::{
     compute_file_artifacts,
 };
 pub use db::{ResidentDatabase, SourceFile};
+pub use descriptor::{DescriptorStats, ResidentDocuments, SharedDescriptor};

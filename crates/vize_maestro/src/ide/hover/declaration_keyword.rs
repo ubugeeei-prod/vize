@@ -39,11 +39,7 @@ pub(super) fn align_hover(ctx: &IdeContext<'_>, word: &str, hover: &mut Hover) {
     let HoverContents::Markup(ref mut markup) = hover.contents else {
         return;
     };
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+    let Some(descriptor) = ctx.descriptor() else {
         return;
     };
     if let Some(script_setup) = descriptor.script_setup.as_ref() {

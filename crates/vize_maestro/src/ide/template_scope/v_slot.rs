@@ -11,14 +11,7 @@ pub(super) fn binding_at(ctx: &IdeContext<'_>, word: &str) -> Option<TemplateSco
         return None;
     }
 
-    let descriptor = vize_atelier_sfc::parse_sfc(
-        &ctx.content,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        },
-    )
-    .ok()?;
+    let descriptor = ctx.descriptor()?;
     let template = descriptor.template.as_ref()?;
     if ctx.offset < template.loc.start || ctx.offset > template.loc.end {
         return None;

@@ -61,6 +61,9 @@ vize_glyph = { workspace = true, optional = true }
 vize_patina.workspace = true
 vize_canon = { workspace = true }
 vize_croquis.workspace = true
+# The resident tier (Davinci P5-6a): request paths read memoized SFC
+# descriptors instead of calling `parse_sfc` per request.
+vize_resident.workspace = true
 vize_musea.workspace = true
 
 [dev-dependencies]

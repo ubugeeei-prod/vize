@@ -54,16 +54,11 @@ pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionR
     }
 
     // Parse SFC to get the actual script content (not virtual code)
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-
-    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+    let descriptor = ctx.descriptor()?;
 
     // Check if this word is a prop name (props are available directly in template)
     if helpers::is_in_vue_directive_expression(ctx)
-        && let Some(def) = find_prop_definition_by_name(ctx, &descriptor, &word)
+        && let Some(def) = find_prop_definition_by_name(ctx, descriptor, &word)
     {
         return Some(def);
     }
@@ -341,12 +336,7 @@ pub(crate) fn find_props_property_definition(
         return None;
     }
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-
-    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+    let descriptor = ctx.descriptor()?;
 
     if let Some(ref script_setup) = descriptor.script_setup {
         let content = &script_setup.content;
@@ -409,12 +399,9 @@ pub(crate) fn find_component_prop_definition(
         })?;
     let component_content = std::fs::read_to_string(&resolved_path).ok()?;
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: resolved_path.to_string_lossy().to_string().into(),
-        ..Default::default()
-    };
-
-    let descriptor = vize_atelier_sfc::parse_sfc(&component_content, options).ok()?;
+    let descriptor = ctx
+        .state
+        .component_descriptor(&resolved_path, &component_content)?;
 
     let prop_name = helpers::kebab_to_camel(&attr_name);
 
@@ -535,13 +522,8 @@ pub(crate) fn find_component_definition(
         return super::inline_art::self_component_definition(ctx);
     }
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-
     let mut analyzer = Drawer::with_options(DrawerOptions::full());
-    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+    let descriptor = ctx.descriptor()?;
 
     if let Some(ref script_setup) = descriptor.script_setup {
         analyzer.analyze_script_setup(&script_setup.content);

@@ -10,11 +10,9 @@ pub(super) fn component_slot_definition(ctx: &IdeContext<'_>) -> Option<GotoDefi
     let resolved_path = helpers::resolve_import_path(ctx.uri, &import_path)?;
     let component_content = std::fs::read_to_string(&resolved_path).ok()?;
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: resolved_path.to_string_lossy().to_string().into(),
-        ..Default::default()
-    };
-    let descriptor = vize_atelier_sfc::parse_sfc(&component_content, options).ok()?;
+    let descriptor = ctx
+        .state
+        .component_descriptor(&resolved_path, &component_content)?;
     let script_setup = descriptor.script_setup.as_ref()?;
     let script = script_setup.content.as_ref();
     let define_slots_pos = script.find("defineSlots")?;
@@ -36,11 +34,7 @@ pub(super) fn component_slot_definition(ctx: &IdeContext<'_>) -> Option<GotoDefi
 }
 
 fn component_slot_at_offset(ctx: &IdeContext<'_>) -> Option<(String, String)> {
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+    let descriptor = ctx.descriptor()?;
     let template = descriptor.template.as_ref()?;
     if ctx.offset < template.loc.start || ctx.offset > template.loc.end {
         return None;

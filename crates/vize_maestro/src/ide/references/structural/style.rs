@@ -15,7 +15,7 @@ pub(super) struct Analysis {
 }
 
 pub(super) fn analyze(ctx: &IdeContext<'_>, semantic: &Semantic<'_>) -> Analysis {
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, Default::default()) else {
+    let Some(descriptor) = ctx.descriptor() else {
         return Analysis::default();
     };
     let Some(scope) = semantic.nodes().iter().find_map(|node| match node.kind() {

@@ -20,14 +20,10 @@ fn is_script_setup_local_binding(ctx: &IdeContext<'_>) -> bool {
     if crate::ide::definition::helpers::find_import_path(ctx, &word).is_some() {
         return false;
     }
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+    let Some(descriptor) = ctx.descriptor() else {
         return false;
     };
-    let Some(script_setup) = descriptor.script_setup else {
+    let Some(script_setup) = descriptor.script_setup.as_ref() else {
         return false;
     };
     let mut analyzer = Drawer::with_options(DrawerOptions::full());

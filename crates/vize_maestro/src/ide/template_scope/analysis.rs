@@ -16,16 +16,9 @@ pub(super) fn analyze_with_patterns(
     ctx: &IdeContext<'_>,
     patterned: bool,
 ) -> Option<(Croquis, usize)> {
-    let descriptor = vize_atelier_sfc::parse_sfc(
-        &ctx.content,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        },
-    )
-    .ok()?;
+    let descriptor = ctx.descriptor()?;
     let descriptor = vize_atelier_sfc::prepare_root_patterned_template(
-        &descriptor,
+        descriptor,
         patterned,
         false,
         Default::default(),

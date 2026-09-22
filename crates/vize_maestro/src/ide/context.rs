@@ -1,6 +1,9 @@
 //! Per-request IDE context shared by every language feature service.
 
+use std::sync::OnceLock;
+
 use tower_lsp::lsp_types::Url;
+use vize_resident::SharedDescriptor;
 
 use super::standalone_html_block_at_offset;
 use crate::server::ServerState;
@@ -24,6 +27,9 @@ pub struct IdeContext<'a> {
     pub block_type: Option<BlockType>,
     /// Virtual documents for this file. An owned snapshot, never a `DashMap` shard guard: `&IdeContext` crosses the `.await` points of hover, completion, definition, references and rename, where a live guard hangs the server — see [`ServerState::get_virtual_docs`] (#3377).
     pub virtual_docs: Option<std::sync::Arc<VirtualDocuments>>,
+    /// This document's SFC descriptor, read once from the resident tier
+    /// (P5-6a) — see [`IdeContext::descriptor`].
+    descriptor: OnceLock<Option<SharedDescriptor>>,
 }
 
 impl<'a> IdeContext<'a> {
@@ -69,6 +75,7 @@ impl<'a> IdeContext<'a> {
         content: String,
         completion: bool,
     ) -> Self {
+        let descriptor = OnceLock::new();
         // Determine block type
         let block_type = if uri.path().ends_with(".art.vue") {
             // For art files, use art-specific block detection
@@ -80,25 +87,22 @@ impl<'a> IdeContext<'a> {
         } else if is_standalone_html_path(uri.path()) {
             Some(standalone_html_block_at_offset(&content, offset))
         } else {
-            // Parse SFC to determine block type
-            let options = vize_atelier_sfc::SfcParseOptions {
-                filename: uri.path().to_string().into(),
-                ..Default::default()
-            };
-            if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) {
-                if completion {
-                    find_block_at_completion_offset(&descriptor, offset)
-                } else {
-                    find_block_at_offset(&descriptor, offset)
-                }
-                .or_else(|| {
-                    (state.patterned_template_enabled()
-                        && root_match_subject_at(&descriptor, offset, completion))
-                    .then_some(BlockType::Template)
+            // The resident descriptor determines the block type.
+            descriptor
+                .get_or_init(|| state.sfc_descriptor(uri, &content))
+                .as_deref()
+                .and_then(|descriptor| {
+                    if completion {
+                        find_block_at_completion_offset(descriptor, offset)
+                    } else {
+                        find_block_at_offset(descriptor, offset)
+                    }
+                    .or_else(|| {
+                        (state.patterned_template_enabled()
+                            && root_match_subject_at(descriptor, offset, completion))
+                        .then_some(BlockType::Template)
+                    })
                 })
-            } else {
-                None
-            }
         };
 
         let virtual_docs = state.get_virtual_docs(uri);
@@ -110,7 +114,17 @@ impl<'a> IdeContext<'a> {
             offset,
             block_type,
             virtual_docs,
+            descriptor,
         }
+    }
+
+    /// This document's SFC descriptor, served by the resident tier: one parse
+    /// per buffer revision shared by every request, instead of `parse_sfc`
+    /// per request (P5-6a). `None` when the parser rejects the content.
+    pub fn descriptor(&self) -> Option<&SharedDescriptor> {
+        self.descriptor
+            .get_or_init(|| self.state.sfc_descriptor(self.uri, &self.content))
+            .as_ref()
     }
 
     /// Effective Vue dialect for this document.

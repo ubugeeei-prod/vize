@@ -8,9 +8,9 @@ use crate::ide::IdeContext;
 type Spans = FxHashMap<(usize, usize), (usize, usize)>;
 
 pub(super) fn shorthands(ctx: &IdeContext<'_>) -> Option<Spans> {
-    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, Default::default()).ok()?;
+    let descriptor = ctx.descriptor()?;
     let mut spans = FxHashMap::default();
-    let Some(template) = descriptor.template else {
+    let Some(template) = descriptor.template.as_ref() else {
         return Some(spans);
     };
     let allocator = vize_s0::Allocator::new();

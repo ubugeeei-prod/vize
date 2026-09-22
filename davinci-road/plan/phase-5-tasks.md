@@ -147,6 +147,8 @@
 
 ## P5-6a — Maestro hover, completion and definition wave
 
+**Landed 2026-09-22** — full record: [phase-5-records/p5-6a.md](./phase-5-records/p5-6a.md).
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** D
@@ -155,8 +157,8 @@
 
 **Steps:**
 
-- [ ] Replace the wave's `parse_sfc` calls (hover 7, definition 6, template scope 3, references 4, completion 2 of today's 71) with resident queries
-- [ ] A keystroke perf test per feature on a large corpus project, results recorded in the task record
+- [x] Replace the wave's `parse_sfc` calls (hover 7, definition 6, template scope 3, references 4, completion 2 of today's 71) with resident queries _(30 wave sites at landing plus the context's own parse: 81 → 50, pinned by `davinci-maestro-parse-sfc-ceiling.test.ts`)_
+- [x] A keystroke perf test per feature on a large corpus project, results recorded in the task record _(exact parse accounting in `server/state/resident/tests.rs`; latency from `examples/keystroke_wave.rs`)_
 
 **Acceptance:** the wave's `parse_sfc` sites gone (a ceiling test pins the remaining count, which only falls); LSP e2e suites for hover/completion/definition exact (TS-7 and the `lsp-*` tooling tests); the recorded keystroke p95 not worse than the P5-11a baseline.
 

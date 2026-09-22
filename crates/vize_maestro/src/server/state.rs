@@ -4,6 +4,7 @@
 mod art_template_context;
 mod config;
 mod features;
+mod resident;
 mod virtual_docs;
 mod workspace_folders;
 
@@ -58,6 +59,8 @@ pub use batch_cache::BatchTypeCheckCache;
 pub struct ServerState {
     /// Document store for managing open documents
     pub documents: DocumentStore,
+    /// Memoized SFC descriptors, one parse per buffer revision (P5-6a).
+    pub(crate) resident: resident::ResidentCache,
     /// Virtual code generator (reusable)
     virtual_gen: RwLock<VirtualCodeGenerator>,
     /// Cached virtual documents per file.
@@ -178,6 +181,7 @@ impl ServerState {
         let package_route_resolver = vize_canon::PackageRouteResolver::default();
         Self {
             documents: DocumentStore::new(),
+            resident: resident::ResidentCache::default(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
             open_imports: super::importers::OpenImportIndex::with_package_routes(
@@ -245,6 +249,7 @@ impl ServerState {
     /// Close a document and release any cached Corsa overlay immediately.
     pub(crate) fn close_document(&self, uri: &Url) {
         self.documents.close(uri);
+        self.resident.close(uri.as_str());
         #[cfg(feature = "native")]
         {
             self.corsa_overlays.remove(uri);

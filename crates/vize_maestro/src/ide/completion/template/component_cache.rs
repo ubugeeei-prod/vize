@@ -52,8 +52,9 @@ pub(super) fn cached_component_metadata(
         )
     };
 
+    let descriptor = ctx.state.component_descriptor(resolved, &content);
     let metadata = Arc::new(extract_component_metadata(
-        &content,
+        descriptor.as_deref(),
         &resolved.to_string_lossy(),
         ctx.state.options_api_enabled(),
         ctx.state.legacy_vue2_enabled(),

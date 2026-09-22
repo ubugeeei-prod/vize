@@ -209,16 +209,11 @@ impl super::DefinitionService {
         }
 
         // Check if this is a prop name used directly in template
-        if helpers::is_in_vue_directive_expression(ctx) {
-            let options = vize_atelier_sfc::SfcParseOptions {
-                filename: ctx.uri.path().to_string().into(),
-                ..Default::default()
-            };
-            if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options)
-                && let Some(def) = template::find_prop_definition_by_name(ctx, &descriptor, &word)
-            {
-                return Some(def);
-            }
+        if helpers::is_in_vue_directive_expression(ctx)
+            && let Some(descriptor) = ctx.descriptor()
+            && let Some(def) = template::find_prop_definition_by_name(ctx, descriptor, &word)
+        {
+            return Some(def);
         }
 
         // Fall back to synchronous definition, unwrapping only an actual

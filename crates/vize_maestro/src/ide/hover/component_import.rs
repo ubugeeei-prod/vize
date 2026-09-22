@@ -51,14 +51,7 @@ pub(super) fn component_contract_markdown(
     let resolved_path = imported_vue_component_path(ctx, local_name)?;
     let source = component_source(ctx, &resolved_path)?;
     let filename = resolved_path.to_string_lossy();
-    let descriptor = vize_atelier_sfc::parse_sfc(
-        &source,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: filename.to_string().into(),
-            ..Default::default()
-        },
-    )
-    .ok()?;
+    let descriptor = ctx.state.component_descriptor(&resolved_path, &source)?;
     let analysis = vize_atelier_sfc::croquis::analyze_sfc_descriptor_resolved(
         &descriptor,
         None,

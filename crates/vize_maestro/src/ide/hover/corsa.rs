@@ -39,12 +39,7 @@ impl HoverService {
         }
 
         // Get template block start offset in SFC
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+        let descriptor = ctx.descriptor()?;
         let template_block = descriptor.template.as_ref()?;
         let template_start = template_block.loc.start;
 
@@ -77,12 +72,7 @@ impl HoverService {
             return Some(offset);
         }
 
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+        let descriptor = ctx.descriptor()?;
 
         // Try script setup first
         if let Some(ref script_setup) = descriptor.script_setup

@@ -139,6 +139,13 @@ impl ResidentDatabase {
             .to(String::from(text));
     }
 
+    /// Rename `file` (a new revision).
+    pub fn rename(&mut self, file: SourceFile, path: &str) {
+        file.set_path(self)
+            .with_durability(Durability::LOW)
+            .to(String::from(path));
+    }
+
     /// Replace the project configuration (a new revision).
     pub fn configure(&mut self, config: StageConfig) {
         let project = ProjectConfig::get(self);

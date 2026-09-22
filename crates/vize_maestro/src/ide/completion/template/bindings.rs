@@ -22,14 +22,7 @@ pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<Compl
     if !trimmed.ends_with("$style.") {
         return None;
     }
-    let descriptor = vize_atelier_sfc::parse_sfc(
-        &ctx.content,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        },
-    )
-    .ok()?;
+    let descriptor = ctx.descriptor()?;
     let mut classes = BTreeSet::new();
     for style in descriptor.styles.iter() {
         let attrs = &style.attrs;

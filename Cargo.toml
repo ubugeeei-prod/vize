@@ -74,6 +74,7 @@ vize_vitrine = { path = "crates/vize_vitrine", default-features = false }
 vize_glyph = { path = "crates/vize_glyph" }
 vize_maestro = { path = "crates/vize_maestro" }
 vize_curator = { path = "crates/vize_curator" }
+vize_resident = { path = "crates/vize_resident" }
 vize_extension_sdk = { path = "crates/vize_extension_sdk" }
 
 # Publishable Davinci stage infrastructure. Stage crates keep their physical

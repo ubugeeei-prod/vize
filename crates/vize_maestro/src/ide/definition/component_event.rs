@@ -1,7 +1,5 @@
 //! Component event contract lookup for template listeners.
 
-use std::path::Path;
-
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range, Url};
 
 use super::{IdeContext, component_import, helpers};
@@ -26,7 +24,9 @@ pub(crate) fn contract(ctx: &IdeContext<'_>) -> Option<ComponentEventContract> {
             helpers::resolve_import_path(ctx.uri, &import_path)
         })?;
     let component_content = std::fs::read_to_string(&resolved_path).ok()?;
-    let descriptor = parse_component(&component_content, &resolved_path)?;
+    let descriptor = ctx
+        .state
+        .component_descriptor(&resolved_path, &component_content)?;
     let summary = vize_atelier_sfc::croquis::analyze_sfc_descriptor_resolved(
         &descriptor,
         None,
@@ -70,20 +70,6 @@ pub(crate) fn definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse>
         uri: contract.target_uri,
         range: contract.target_range,
     }))
-}
-
-fn parse_component<'a>(
-    component_content: &'a str,
-    resolved_path: &Path,
-) -> Option<vize_atelier_sfc::SfcDescriptor<'a>> {
-    vize_atelier_sfc::parse_sfc(
-        component_content,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: resolved_path.to_string_lossy().to_string().into(),
-            ..Default::default()
-        },
-    )
-    .ok()
 }
 
 fn define_emits_event_range(

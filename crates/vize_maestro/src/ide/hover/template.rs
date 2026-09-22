@@ -208,12 +208,7 @@ impl HoverService {
     /// Get hover for TypeScript binding using croquis analysis.
     pub(super) fn hover_ts_binding(ctx: &IdeContext, word: &str) -> Option<Hover> {
         // Parse SFC to get script content
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+        let descriptor = ctx.descriptor()?;
 
         // Get the script content for type inference
         let script_content = descriptor

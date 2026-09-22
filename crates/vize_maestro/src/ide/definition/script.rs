@@ -42,12 +42,7 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
         return None;
     }
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-
-    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+    let descriptor = ctx.descriptor()?;
 
     let is_setup = matches!(ctx.block_type, Some(BlockType::ScriptSetup));
 
@@ -97,34 +92,23 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
 /// Returns `None` for ordinary `<script setup>` files without either signal,
 /// leaving the raw-text binding lookup untouched.
 pub(crate) fn find_analyzed_binding_location(ctx: &IdeContext, word: &str) -> Option<Location> {
-    use vize_atelier_sfc::{
-        SfcParseOptions,
-        croquis::{
-            SfcCroquisOptions, analyze_sfc_descriptor_with_context,
-            analyze_sfc_descriptor_with_context_legacy_vue2,
-            analyze_sfc_descriptor_with_context_options_api,
-        },
-        parse_sfc,
+    use vize_atelier_sfc::croquis::{
+        SfcCroquisOptions, analyze_sfc_descriptor_with_context,
+        analyze_sfc_descriptor_with_context_legacy_vue2,
+        analyze_sfc_descriptor_with_context_options_api,
     };
     use vize_croquis::ComponentShape;
 
-    let descriptor = parse_sfc(
-        &ctx.content,
-        SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        },
-    )
-    .ok()?;
+    let descriptor = ctx.descriptor()?;
 
     let croquis_options = SfcCroquisOptions::full();
     let options_api = ctx.state.options_api_enabled();
     let analysis = if ctx.state.legacy_vue2_enabled() {
-        analyze_sfc_descriptor_with_context_legacy_vue2(&descriptor, None, croquis_options)
+        analyze_sfc_descriptor_with_context_legacy_vue2(descriptor, None, croquis_options)
     } else if options_api {
-        analyze_sfc_descriptor_with_context_options_api(&descriptor, None, croquis_options)
+        analyze_sfc_descriptor_with_context_options_api(descriptor, None, croquis_options)
     } else {
-        analyze_sfc_descriptor_with_context(&descriptor, None, croquis_options)
+        analyze_sfc_descriptor_with_context(descriptor, None, croquis_options)
     };
 
     // Class-component members are collected unconditionally (auto-detected by
@@ -141,8 +125,8 @@ pub(crate) fn find_analyzed_binding_location(ctx: &IdeContext, word: &str) -> Op
         return None;
     }
 
-    let offset = analysis.script_source_offset(&descriptor, start) as usize;
-    let len = analysis.script_source_len(&descriptor, start, end) as usize;
+    let offset = analysis.script_source_offset(descriptor, start) as usize;
+    let len = analysis.script_source_len(descriptor, start, end) as usize;
     Some(location_from_sfc_offset(ctx, offset, len))
 }
 
@@ -170,31 +154,25 @@ pub(crate) fn definition_in_style(ctx: &IdeContext) -> Option<GotoDefinitionResp
     }
 
     // Check for v-bind() references to script variables.
-    if is_inside_style_v_bind_argument(&ctx.content, ctx.offset) {
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
+    if is_inside_style_v_bind_argument(&ctx.content, ctx.offset)
+        && let Some(descriptor) = ctx.descriptor()
+        && let Some(ref script_setup) = descriptor.script_setup
+    {
+        let content = script_setup.content.as_ref();
+        if let Some(binding_loc) = find_binding_location_raw(content, &word) {
+            let sfc_offset = script_setup.loc.start + binding_loc.offset;
+            let (line, character) = helpers::offset_to_position(&ctx.content, sfc_offset);
 
-        if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options)
-            && let Some(ref script_setup) = descriptor.script_setup
-        {
-            let content = script_setup.content.as_ref();
-            if let Some(binding_loc) = find_binding_location_raw(content, &word) {
-                let sfc_offset = script_setup.loc.start + binding_loc.offset;
-                let (line, character) = helpers::offset_to_position(&ctx.content, sfc_offset);
-
-                return Some(GotoDefinitionResponse::Scalar(Location {
-                    uri: ctx.uri.clone(),
-                    range: Range {
-                        start: Position { line, character },
-                        end: Position {
-                            line,
-                            character: character + word.len() as u32,
-                        },
+            return Some(GotoDefinitionResponse::Scalar(Location {
+                uri: ctx.uri.clone(),
+                range: Range {
+                    start: Position { line, character },
+                    end: Position {
+                        line,
+                        character: character + word.len() as u32,
                     },
-                }));
-            }
+                },
+            }));
         }
     }
 

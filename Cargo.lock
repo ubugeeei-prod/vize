@@ -4589,6 +4589,7 @@ dependencies = [
  "vize_musea",
  "vize_patina",
  "vize_relief",
+ "vize_resident",
 ]
 
 [[package]]
