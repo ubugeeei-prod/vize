@@ -26,7 +26,7 @@ export function corpus(dirs = ["examples", "playground/src", "npm/builder/vite-m
   };
   for (const dir of dirs) walk(path.join(root, dir));
   return files
-    .sort()
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
     .map((file) => ({ file: path.relative(root, file), source: readFileSync(file, "utf8") }));
 }
 
