@@ -97,6 +97,10 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         r#"<div><KeepAlive><Foo :k="k" /></KeepAlive></div>"#,
     ),
     ("slot-basic", r#"<div><slot /></div>"#),
+    (
+        "slot-custom-directive",
+        r#"<slot v-example="payload"></slot>"#,
+    ),
     ("slot-root", r#"<slot name="header" :item="item" />"#),
     (
         "slot-fallback",

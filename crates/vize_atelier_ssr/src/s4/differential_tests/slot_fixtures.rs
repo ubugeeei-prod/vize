@@ -25,6 +25,10 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         r#"<List v-slot="{ row }"><span>{{ row.id }} {{ other }}</span></List>"#,
     ),
     (
+        "slot-self-with-named-template",
+        r#"<Layout #default="slotProps"><p>{{ slotProps.title }}</p><template #header><h1>Title</h1></template></Layout>"#,
+    ),
+    (
         "slot-kebab-name",
         r#"<Foo><template #row-item="props"><i>{{ props.x }}</i></template></Foo>"#,
     ),

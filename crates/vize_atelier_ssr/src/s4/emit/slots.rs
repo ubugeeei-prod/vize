@@ -126,11 +126,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         };
         if let Some(content) = slot_content(&component.bindings) {
             let (name, pattern) = slot_head(self.ctx.source, content)?;
+            // The walker puts every child in this one slot. A nested
+            // `<template v-slot>` is transparent there, not a second slot.
             let mut ranges = std::vec::Vec::new();
             for child in children {
-                if self.template_slot(child).is_some() {
-                    return Err(LegacyReason::Operation.into());
-                }
                 ranges.push((child, self.child_end(child)?));
             }
             slots.own = Some(SlotSpec {

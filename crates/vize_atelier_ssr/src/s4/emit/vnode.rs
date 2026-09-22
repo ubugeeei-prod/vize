@@ -79,6 +79,22 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                     }
                 }
             }
+            (Kind::OpenElement, Source::Element(element))
+                if element.tag == "template"
+                    && element
+                        .bindings
+                        .iter()
+                        .any(|binding| matches!(binding, s2::BindingOp::SlotContent(_))) =>
+            {
+                // The walker renders no node for a slot `<template>`.
+                self.pos += 1;
+                let _attached =
+                    self.take_attached(element.attributes.len() + element.bindings.len())?;
+                out.extend(self.vnode_region()?);
+                self.close(Kind::CloseElement, |source| {
+                    matches!(source, Source::Element(closed) if core::ptr::eq(*closed, element))
+                })?;
+            }
             (Kind::OpenElement, Source::Element(element)) => {
                 let expression =
                     vize_s0::ensure_sufficient_stack(|| self.vnode_element(element, None))?;
