@@ -133,9 +133,9 @@ diagnoses (CDATA, self-closed or implicitly closed elements, empty modifiers)
 stays legacy, checked over fixture prefixes and deletions. With dense admission
 tables the native route is 13% faster than the retained lane on expressions
 and 3% on components, 7–9% slower on text, events and control flow.
-_Carriers, slots, inputs, objects 2026-09-22:_ template carriers, named/scoped
-slots, input models, `<component :is>` and `v-bind`/`v-on` objects are native (see
-the P3-6 record); element objects merge props in authored order as VDOM does.
+_Carriers through gaps 2026-09-22:_ carriers, named/scoped slots, input models,
+`p`/`a`/`form`/headings and `<component :is>` stay byte-identical. `v-bind`/`v-on`
+objects merge element props in VDOM order; whitespace-only `v-if` gaps are native.
 
 **P3-7 VDOM patch flags from facts.** `patch_flag.rs` inference replaced by
 lattice-fact consumption; flags become explicit S3 decisions (or S2→S4
