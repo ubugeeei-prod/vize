@@ -65,6 +65,11 @@
   depends on the tsconfig (module and JSX settings) and the Vize config on top
   of the block's own S0 or S2 key.
 - **`corsa.session`** — a reused `ProjectSession` must never serve another
-  project, tsconfig, Corsa build, flag set or host. Today's
-  `CorsaSessionKey` covers only the tsconfig path — the gap P5-8 closes by
-  keying on this row.
+  project, tsconfig, Corsa build, flag set or host. `CorsaSessionKey`
+  (`crates/vize_canon/src/corsa_session_cache.rs`, P5-8's first step) is this
+  row's fingerprint: `SessionInputs` resolves all six inputs — the canonical
+  tsconfig path, every config its `extends` chain reaches (path and bytes; an
+  unresolved specifier by name), the Vize version, the Corsa build's identity
+  (canonical path, size, mtime), the caller's flags and the host — and a test
+  flips each one and asserts a different key. The session map and its
+  lifecycle in `vize check-server` consume it.

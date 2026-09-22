@@ -9,7 +9,7 @@ use vize_carton::String as CompactString;
 
 use crate::batch::error::CorsaResult;
 
-pub(super) fn resolve_extended_tsconfig_path(
+pub(crate) fn resolve_extended_tsconfig_path(
     tsconfig_path: &Path,
     extends: &str,
 ) -> Option<PathBuf> {
@@ -156,7 +156,7 @@ pub(super) fn normalize_path_lexically(path: &Path) -> PathBuf {
     normalized
 }
 
-pub(super) fn parse_jsonc_value(content: &str) -> CorsaResult<Value> {
+pub(crate) fn parse_jsonc_value(content: &str) -> CorsaResult<Value> {
     let stripped = strip_json_comments(content);
     let normalized = strip_trailing_commas(&stripped);
     Ok(serde_json::from_str(&normalized)?)
