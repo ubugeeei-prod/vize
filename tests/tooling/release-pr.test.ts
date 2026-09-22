@@ -59,6 +59,17 @@ test("release-only workflow validates all artifacts before promotion and preserv
     step.uses?.startsWith("softprops/action-gh-release@"),
   );
   assert.equal(publication.with.tag_name, "${{ inputs.tag_name }}");
+  const wasm = workflow.jobs["build-wasm-package"].steps;
+  const installed = wasm.findIndex(
+    (step: { with?: Record<string, unknown> }) => step.with?.["run-install"] === true,
+  );
+  const packed = wasm.findIndex((step: { run?: string }) =>
+    step.run?.includes("smoke-release-install.rs npm/wasm"),
+  );
+  assert.ok(
+    installed >= 0 && packed > installed,
+    "WASM tarball checks must run before the candidate can be promoted",
+  );
   const barrier = parse(readRepoFile(".github", "workflows", "release-promotion.yml"));
   assert.deepEqual(barrier.permissions, { contents: "read", "pull-requests": "read" });
   assert.match(barrier.jobs.promotion.steps.at(-1).run, /pr\.rs wait-promotion/);

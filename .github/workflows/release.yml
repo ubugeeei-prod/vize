@@ -270,9 +270,11 @@ jobs:
         run: moon run --target native tools/moon/cmd/build_vize_wasm_package --
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
+        with: { node-version-file: "package.json", run-install: true }
       - name: Smoke @vizejs/wasm package
         run: rust-script tools/commands/release/npm/smoke-wasm-package.rs npm/wasm
+      - name: Smoke install WASM package tarball before promotion
+        run: rust-script tools/commands/release/npm/smoke-release-install.rs npm/wasm
       - name: Upload WASM package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
