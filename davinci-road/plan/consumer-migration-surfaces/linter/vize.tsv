@@ -1,5 +1,5 @@
 consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
-linter	Linter	test/dev	crates/vize/src/commands/lint.rs	35	s0	S0	stage	vize_s0	preferred	2
+linter	Linter	test/dev	crates/vize/src/commands/lint.rs	36	s0	S0	stage	vize_s0	preferred	2
 linter	Linter	source	crates/vize/src/commands/lint/args.rs	5	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	test/dev	crates/vize/src/commands/lint/collect_tests.rs	135	s0	S0	stage	vize_s0	preferred	4
 linter	Linter	source	crates/vize/src/commands/lint/collect.rs	6	s0	S0	stage	vize_s0	preferred	3
@@ -24,4 +24,7 @@ linter	Linter	test/dev	crates/vize/src/commands/lint/patterns.rs	113	s0	S0	stage
 linter	Linter	source	crates/vize/src/commands/lint/rich.rs	15	davinci	Davinci	stage	vize_davinci	preferred	2
 linter	Linter	source	crates/vize/src/commands/lint/rich.rs	15	s0	S0	stage	vize_s0	preferred	3
 linter	Linter	test/dev	crates/vize/src/commands/lint/rich.rs	224	s0	S0	stage	vize_s0	preferred	2
+linter	Linter	source	crates/vize/src/commands/lint/routes.rs	7	davinci	Davinci	stage	vize_davinci	preferred	1
+linter	Linter	source	crates/vize/src/commands/lint/routes.rs	7	s0	S0	stage	vize_s0	preferred	2
+linter	Linter	source	crates/vize/src/commands/lint/routes.rs	7	croquis	Croquis analysis	old	vize_croquis_cf	legacy	2
 linter	Linter	source	crates/vize/src/commands/lint/stdout.rs	4	s0	S0	stage	vize_s0	preferred	1
