@@ -7,8 +7,6 @@ pub(crate) use checks::VirtualTsCheckOptions;
 
 use vize_carton::{FxHashSet, String, config::VueVersion, cstr};
 
-use super::semantic_links::VizeSemanticLink;
-
 /// The generator's span-link rows are the rows of the one projection mapping
 /// model, owned by [`super::mapping`].
 pub use super::mapping::{VizeMapping, VizeSubSpan};
@@ -284,8 +282,7 @@ mod tests;
 pub struct VirtualTsOutput {
     /// The generated TypeScript code.
     pub code: String,
-    /// Source mappings from virtual TS positions to SFC positions.
-    pub mappings: Vec<VizeMapping>,
-    /// Stable semantic links between generated ranges.
-    pub semantic_links: Vec<VizeSemanticLink>,
+    /// Span links from virtual TS positions to SFC positions, with the
+    /// stable semantic links between generated ranges.
+    pub mapping: super::mapping::ProjectionMapping,
 }

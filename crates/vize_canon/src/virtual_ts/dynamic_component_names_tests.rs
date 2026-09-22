@@ -39,7 +39,8 @@ fn dynamic_prop_names_do_not_become_static_component_contract_keys() {
         &VirtualTsOptions::default(),
     );
     let prop_link = output
-        .semantic_links
+        .mapping
+        .semantic_links()
         .iter()
         .find(|link| link.kind == super::VizeSemanticLinkKind::VueComponentPropNavigation)
         .expect("component prop navigation link");

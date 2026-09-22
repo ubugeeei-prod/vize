@@ -6,7 +6,6 @@ use vize_canon::{CorsaBridge, CorsaBridgeError, CorsaVueVirtualDocumentOptions};
 use super::{CanonicalDependencyDocument, CanonicalMaterializedSource, CanonicalVirtualDocument};
 use crate::ide::IdeContext;
 use crate::ide::diagnostics::VirtualTsResult;
-use crate::ide::diagnostics::corsa::semantic_links_after_import_rewrite;
 
 pub(crate) async fn open_canonical_virtual_document(
     ctx: &IdeContext<'_>,
@@ -82,15 +81,11 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
                 source_uri,
                 source: dependency.source,
                 request_uri: dependency.request_uri,
-                virtual_result: VirtualTsResult {
-                    code: dependency.code.to_string(),
-                    source_mappings: dependency.mappings,
-                    semantic_links: semantic_links_after_import_rewrite(
-                        dependency.semantic_links,
-                        &dependency.import_source_map,
-                    ),
-                    import_source_map: dependency.import_source_map,
-                },
+                virtual_result: VirtualTsResult::from_projection(
+                    dependency.code.to_string(),
+                    dependency.mapping,
+                    dependency.import_source_map,
+                ),
             })
         })
         .collect();
@@ -100,15 +95,11 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
     Ok(Some(CanonicalVirtualDocument {
         source_uri: ctx.uri.clone(),
         request_uri: opened.request_uri,
-        virtual_result: VirtualTsResult {
-            code: opened.code.to_string(),
-            source_mappings: opened.mappings,
-            semantic_links: semantic_links_after_import_rewrite(
-                opened.semantic_links,
-                &opened.import_source_map,
-            ),
-            import_source_map: opened.import_source_map,
-        },
+        virtual_result: VirtualTsResult::from_projection(
+            opened.code.to_string(),
+            opened.mapping,
+            opened.import_source_map,
+        ),
         dependencies,
         materialized_sources,
         session_project_roots: opened.session_project_root.into_iter().collect(),
@@ -130,15 +121,11 @@ pub(super) fn map_materialized_sources(
                 source_uri,
                 source: materialized.source,
                 request_uri: request_uri.into(),
-                virtual_result: VirtualTsResult {
-                    code: materialized.code.to_string(),
-                    source_mappings: materialized.mappings,
-                    semantic_links: semantic_links_after_import_rewrite(
-                        materialized.semantic_links,
-                        &materialized.import_source_map,
-                    ),
-                    import_source_map: materialized.import_source_map,
-                },
+                virtual_result: VirtualTsResult::from_projection(
+                    materialized.code.to_string(),
+                    materialized.mapping,
+                    materialized.import_source_map,
+                ),
                 mapping_kind: materialized.mapping_kind,
             })
         })

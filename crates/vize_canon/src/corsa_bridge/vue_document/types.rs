@@ -6,7 +6,7 @@ use oxc_span::SourceType;
 use vize_carton::String;
 
 use crate::batch::{ImportSourceMap, VueDocumentVirtualTs};
-use crate::virtual_ts::{VirtualTsOptions, VizeMapping, VizeSemanticLink};
+use crate::virtual_ts::{ProjectionMapping, VirtualTsOptions};
 
 /// Options for opening a Vue SFC as a canonical Corsa virtual document.
 #[derive(Clone, Copy, Debug, Default)]
@@ -24,8 +24,8 @@ pub struct CorsaVueVirtualDocument {
     pub request_uri: String,
     pub code: String,
     pub pre_rewrite_code: String,
-    pub mappings: Vec<VizeMapping>,
-    pub semantic_links: Vec<VizeSemanticLink>,
+    /// Span links and semantic links in pre-rewrite generated TS coordinates.
+    pub mapping: ProjectionMapping,
     pub import_source_map: ImportSourceMap,
     pub source_type: SourceType,
     pub virtual_suffix: &'static str,
@@ -44,8 +44,8 @@ pub struct CorsaMaterializedSource {
     pub source_path: PathBuf,
     pub source: String,
     pub code: String,
-    pub mappings: Vec<VizeMapping>,
-    pub semantic_links: Vec<VizeSemanticLink>,
+    /// Span links and semantic links in pre-rewrite generated TS coordinates.
+    pub mapping: ProjectionMapping,
     pub import_source_map: ImportSourceMap,
     pub mapping_kind: CorsaMaterializedMappingKind,
 }
@@ -70,8 +70,8 @@ pub struct CorsaVueVirtualDependency {
     pub source: String,
     pub request_uri: String,
     pub code: String,
-    pub mappings: Vec<VizeMapping>,
-    pub semantic_links: Vec<VizeSemanticLink>,
+    /// Span links and semantic links in pre-rewrite generated TS coordinates.
+    pub mapping: ProjectionMapping,
     pub import_source_map: ImportSourceMap,
     pub source_type: SourceType,
     pub virtual_suffix: &'static str,

@@ -208,7 +208,7 @@ void foo;
     let authored_model_start = script.find(r#""foo""#).expect("authored model name");
     let authored_model_range = authored_model_start..authored_model_start + r#""foo""#.len();
     assert!(
-        output.mappings.iter().all(|mapping| {
+        output.mapping.spans().iter().all(|mapping| {
             mapping.gen_range != generated_range || mapping.src_range != authored_model_range
         }),
         "a suppressed defineModel member must not own the emitted defineProps prop mapping:\n{}",

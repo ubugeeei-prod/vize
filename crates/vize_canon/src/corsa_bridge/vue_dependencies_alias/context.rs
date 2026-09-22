@@ -199,8 +199,10 @@ impl AliasContext {
                             source_path: document.source_path,
                             source: document.source,
                             code: document.code,
-                            mappings: document.mappings,
-                            semantic_links: document.semantic_links,
+                            mapping: crate::virtual_ts::ProjectionMapping::from_parts(
+                                document.mappings,
+                                document.semantic_links,
+                            ),
                             import_source_map: document.import_source_map,
                             mapping_kind: match document.mapping_kind {
                                 crate::batch::virtual_project::MaterializedSourceMappingKind::Generated => {

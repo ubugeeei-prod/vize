@@ -30,7 +30,8 @@ pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord
         Ok(document) => {
             let mappings = ordered_lines(
                 document
-                    .mappings
+                    .mapping
+                    .spans()
                     .iter()
                     .map(|mapping| {
                         let sub_spans = ordered_lines(
@@ -60,7 +61,8 @@ pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord
             );
             let links = ordered_lines(
                 document
-                    .semantic_links
+                    .mapping
+                    .semantic_links()
                     .iter()
                     .map(|link| {
                         cstr!(
@@ -98,9 +100,9 @@ pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord
                 import_source_map_sha256: import_map.map_sha256,
                 import_source_map_probe_count: import_map.probe_count,
                 import_source_map_probes_sha256: import_map.probes_sha256,
-                mapping_count: document.mappings.len(),
+                mapping_count: document.mapping.spans().len(),
                 mappings_sha256: sha256(&mappings),
-                semantic_link_count: document.semantic_links.len(),
+                semantic_link_count: document.mapping.semantic_links().len(),
                 semantic_links_sha256: sha256(&links),
                 diagnostic_count,
                 diagnostics_sha256,

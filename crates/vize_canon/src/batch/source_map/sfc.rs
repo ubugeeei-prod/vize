@@ -51,6 +51,12 @@ impl SfcSourceMap {
         }
     }
 
+    /// View `projection` through the SFC's block ranges.
+    pub fn from_projection(projection: ProjectionMapping, mut blocks: Vec<SfcBlockRange>) -> Self {
+        blocks.sort_by_key(|block| block.start);
+        Self { projection, blocks }
+    }
+
     /// Create an empty SFC source map.
     pub fn empty() -> Self {
         Self::default()

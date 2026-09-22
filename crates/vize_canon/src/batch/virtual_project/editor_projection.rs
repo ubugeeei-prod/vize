@@ -162,8 +162,7 @@ impl VirtualProject {
             VueDocumentVirtualTs {
                 code: file.content.clone(),
                 pre_rewrite_code,
-                mappings: map.mappings().to_vec(),
-                semantic_links: map.semantic_links().to_vec(),
+                mapping: map.projection().clone(),
                 import_source_map: file.source_map.import_map.clone(),
                 source_type: if tsx {
                     oxc_span::SourceType::tsx()

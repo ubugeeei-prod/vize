@@ -234,7 +234,8 @@ fn event_handler_mapping_targets_the_user_operand() {
     let source_start = template.find(expression).unwrap();
     let source_end = source_start + expression.len();
     let mapping = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .find(|mapping| mapping.src_range == (source_start..source_end))
         .expect("should map the event handler expression");

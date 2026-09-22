@@ -22,12 +22,11 @@ fn test_type_check_service_options_default() {
 fn maps_generated_utf16_columns_before_non_bmp_text() {
     let virtual_ts = VirtualTsOutput {
         code: "\u{1F600}missing;\n".into(),
-        mappings: vec![VizeMapping {
+        mapping: crate::virtual_ts::ProjectionMapping::from_spans(vec![VizeMapping {
             gen_range: 4..11,
             src_range: 100..107,
             sub_spans: Vec::new(),
-        }],
-        semantic_links: Vec::new(),
+        }]),
     };
 
     assert_eq!(

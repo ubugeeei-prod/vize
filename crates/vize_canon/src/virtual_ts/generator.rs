@@ -862,7 +862,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
     VirtualTsOutput {
         code: ts,
-        mappings,
-        semantic_links,
+        mapping: super::mapping::ProjectionMapping::from_parts(mappings, semantic_links),
     }
 }

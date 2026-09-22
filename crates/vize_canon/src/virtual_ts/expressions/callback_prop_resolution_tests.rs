@@ -74,7 +74,8 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     let callback_range = callback_start..callback_start + callback.len();
     assert_eq!(
         output
-            .mappings
+            .mapping
+            .spans()
             .iter()
             .flat_map(|mapping| &mapping.sub_spans)
             .filter(|span| span.src_range == callback_range)

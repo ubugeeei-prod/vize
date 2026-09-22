@@ -48,7 +48,8 @@ const childValue = 1;
     let child = &virtual_project.host.dependencies[0];
     let authored_offset = child.source.find("childValue").expect("authored token");
     let mapping = child
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .filter(|mapping| {
             authored_offset >= mapping.src_range.start && authored_offset < mapping.src_range.end

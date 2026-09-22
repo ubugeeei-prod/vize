@@ -166,7 +166,7 @@ fn build_script_virtual_project_with_package_routes(
     let mappings = materialized_sources
         .iter()
         .find(|source| source.materialized_path == path)
-        .map(|source| source.mappings.clone())
+        .map(|source| source.mapping.spans().to_vec())
         .unwrap_or_default();
     let mut documents = vec![(request_uri.clone(), generated.code.clone())];
     let resolved_dependencies = collect_script_dependency_documents(

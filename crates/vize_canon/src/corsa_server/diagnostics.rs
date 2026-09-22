@@ -124,7 +124,8 @@ fn map_host_position_to_source(
         as usize;
     let mapping = project
         .host
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .find(|mapping| mapping.gen_range.contains(&generated_offset))?;
     let (generated_range, source_range) = mapping
@@ -160,12 +161,11 @@ mod tests {
                 request_uri: "file:///App.vue.ts".into(),
                 code: VIRTUAL_SOURCE.into(),
                 pre_rewrite_code: VIRTUAL_SOURCE.into(),
-                mappings: vec![VizeMapping {
+                mapping: crate::virtual_ts::ProjectionMapping::from_spans(vec![VizeMapping {
                     gen_range: 7..13,
                     src_range: 0..6,
                     sub_spans: Vec::new(),
-                }],
-                semantic_links: Vec::new(),
+                }]),
                 import_source_map: ImportSourceMap::empty(),
                 source_type: SourceType::ts(),
                 virtual_suffix: ".ts",

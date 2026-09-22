@@ -34,7 +34,8 @@ const vFocus: Directive<HTMLElement, number> = () => {}"#;
     let value_start = template.find("'nope'").expect("bound expression");
     let value_range = value_start..value_start + "'nope'".len();
     let spans: Vec<_> = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .filter(|span| span.src_range == value_range)
         .collect();

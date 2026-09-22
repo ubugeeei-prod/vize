@@ -292,12 +292,12 @@ fn materialized_and_opened_vue_projections_share_code_and_coordinates() {
             .unwrap();
             let opened = &virtual_project.host;
             for (uri, code, mappings) in
-                std::iter::once((&opened.request_uri, &opened.code, &opened.mappings)).chain(
+                std::iter::once((&opened.request_uri, &opened.code, opened.mapping.spans())).chain(
                     opened.dependencies.iter().map(|dependency| {
                         (
                             &dependency.request_uri,
                             &dependency.code,
-                            &dependency.mappings,
+                            dependency.mapping.spans(),
                         )
                     }),
                 )
@@ -312,7 +312,8 @@ fn materialized_and_opened_vue_projections_share_code_and_coordinates() {
                     "one URI must identify one generated program"
                 );
                 assert_eq!(
-                    *mappings, materialized.mappings,
+                    mappings,
+                    materialized.mapping.spans(),
                     "overlays must query coordinates from that exact program"
                 );
                 assert_eq!(
