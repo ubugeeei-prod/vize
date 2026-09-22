@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { spawnSync } from "node:child_process";
+import path from "node:path";
+import { repoRoot } from "./_helpers/moonbit.ts";
 
 import {
   requiredSuccessfulReleaseJobs,
@@ -141,4 +144,91 @@ test("npm bootstrap verifies run, jobs, and artifact through the GitHub API", as
     `/repos/${repository}/actions/runs/${releaseRunId}/jobs`,
     `/repos/${repository}/actions/runs/${releaseRunId}/artifacts`,
   ]);
+});
+
+test("npm bootstrap recovers a promoted PR run only after all candidate gates passed", () => {
+  const run = releaseRun({
+    event: "workflow_dispatch",
+    head_branch: `release/${tagName}`,
+    display_title: `Release ${tagName} PR #42 @ ${tagSha}`,
+  });
+  assert.doesNotThrow(() => validateReleaseRun({ run, releaseRunId, repository, tagName, tagSha }));
+  assert.throws(() =>
+    validateReleaseRun({
+      run: { ...run, display_title: "Release crate handoff" },
+      releaseRunId,
+      repository,
+      tagName,
+      tagSha,
+    }),
+  );
+  const jobs = releaseJobs().filter(
+    (job) => job.name !== "release-preflight / Verify release safety contract",
+  );
+  const gates = [
+    "Authorize release candidate",
+    "Release candidate ready",
+    "candidate-preflight / Verify release safety contract",
+    "candidate-preflight / Validate crates.io publish plan",
+    "release-preflight / Wait for validated PR and tag promotion",
+  ];
+  jobs.push(...gates.map((name) => ({ name, status: "completed", conclusion: "success" })));
+  jobs.push({
+    name: "Release crates.io handoff crates",
+    status: "completed",
+    conclusion: "skipped",
+  });
+  assert.doesNotThrow(() => validateReleaseJobs(jobs));
+  for (const name of gates) {
+    assert.throws(
+      () => validateReleaseJobs(jobs.filter((job) => job.name !== name)),
+      /exactly one/,
+    );
+  }
+  assert.doesNotThrow(() =>
+    validateReleaseArtifact({
+      artifacts: [
+        releaseArtifact({
+          workflow_run: {
+            id: Number(releaseRunId),
+            head_branch: `release/${tagName}`,
+            head_sha: tagSha,
+          },
+        }),
+      ],
+      artifactName,
+      releaseRunId,
+      tagName,
+      tagSha,
+    }),
+  );
+});
+
+test("Rust recovery accepts the exact promoted candidate and rejects stale identity", () => {
+  const command = path.join(repoRoot, "tools/commands/ci/github/npm-bootstrap-preflight.rs");
+  const run = releaseRun({
+    event: "workflow_dispatch",
+    head_branch: `release/${tagName}`,
+    display_title: `Release ${tagName} PR #42 @ ${tagSha}`,
+  });
+  const invoke = (candidate: typeof run) =>
+    spawnSync(
+      "rust-script",
+      [
+        command,
+        "__contract",
+        "release-run",
+        JSON.stringify({ run: candidate, releaseRunId, repository, tagName, tagSha }),
+      ],
+      { encoding: "utf8" },
+    );
+  const valid = invoke(run);
+  assert.equal(valid.status, 0, `${valid.error ?? ""}\n${valid.stderr}`);
+  for (const changed of [
+    { head_sha: "d".repeat(40) },
+    { head_branch: "main" },
+    { display_title: "manual handoff" },
+  ]) {
+    assert.notEqual(invoke({ ...run, ...changed }).status, 0);
+  }
 });

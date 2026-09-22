@@ -1,7 +1,10 @@
 #![allow(dead_code)]
 
 use crate::common;
+#[path = "npm_bootstrap_evidence.rs"]
+mod evidence;
 use base64::Engine;
+pub use evidence::*;
 use regex::Regex;
 use serde::Serialize;
 use serde_json::Value;
@@ -189,160 +192,6 @@ pub fn validate_release_commit(
     if !is_on_first_parent {
         return Err(format!(
             "Release commit {tag_sha} is not on the first-parent history of current origin/main {main_sha}"
-        ));
-    }
-    Ok(())
-}
-
-pub fn validate_release_run(
-    run: &Value,
-    release_run_id: &str,
-    repository: &str,
-    tag_name: &str,
-    tag_sha: &str,
-) -> Result<(), String> {
-    let expected = BTreeMap::from([
-        ("conclusion", "failure".to_string()),
-        ("event", "push".to_string()),
-        ("head_branch", tag_name.to_string()),
-        ("head_sha", tag_sha.to_string()),
-        ("id", release_run_id.to_string()),
-        ("name", "Release".to_string()),
-        ("path", ".github/workflows/release.yml".to_string()),
-        ("repository", repository.to_string()),
-        ("status", "completed".to_string()),
-    ]);
-    let actual = BTreeMap::from([
-        ("conclusion", value_string(run.get("conclusion"))),
-        ("event", value_string(run.get("event"))),
-        ("head_branch", value_string(run.get("head_branch"))),
-        ("head_sha", value_string(run.get("head_sha"))),
-        ("id", value_string(run.get("id"))),
-        ("name", value_string(run.get("name"))),
-        ("path", value_string(run.get("path"))),
-        (
-            "repository",
-            value_string(
-                run.get("head_repository")
-                    .and_then(|repo| repo.get("full_name")),
-            ),
-        ),
-        ("status", value_string(run.get("status"))),
-    ]);
-    let mismatches = expected
-        .iter()
-        .filter_map(|(key, expected)| {
-            let actual = actual.get(key).cloned().unwrap_or_default();
-            if &actual == expected {
-                None
-            } else {
-                Some(format!("{key}={actual}"))
-            }
-        })
-        .collect::<Vec<_>>();
-    if mismatches.is_empty() {
-        Ok(())
-    } else {
-        Err(format!(
-            "Release run {release_run_id} does not match the failed exact-tag release contract: {}",
-            mismatches.join(", ")
-        ))
-    }
-}
-
-pub fn validate_release_jobs(jobs: &[Value]) -> Result<(), String> {
-    let mut counts: BTreeMap<String, usize> = BTreeMap::new();
-    for job in jobs {
-        let name = value_string(job.get("name"));
-        *counts.entry(name.clone()).or_default() += 1;
-        if job.get("status").and_then(Value::as_str) != Some("completed") {
-            return Err(format!(
-                "Every Release job must be terminal; {name} is {}",
-                value_string(job.get("status"))
-            ));
-        }
-    }
-    let duplicates = counts
-        .iter()
-        .filter(|(_, count)| **count != 1)
-        .map(|(name, count)| format!("{name}={count}"))
-        .collect::<Vec<_>>();
-    if !duplicates.is_empty() {
-        return Err(format!(
-            "Release job names must be unique: {}",
-            duplicates.join(", ")
-        ));
-    }
-
-    for name in REQUIRED_SUCCESSFUL_RELEASE_JOBS {
-        validate_exact_job(jobs, name, "success")?;
-    }
-    for name in REQUIRED_FAILED_RELEASE_JOBS {
-        validate_exact_job(jobs, name, "failure")?;
-    }
-    for name in REQUIRED_SKIPPED_RELEASE_JOBS {
-        validate_exact_job(jobs, name, "skipped")?;
-    }
-
-    let allowed_non_success = REQUIRED_FAILED_RELEASE_JOBS
-        .iter()
-        .map(|name| (*name, "failure"))
-        .chain(
-            REQUIRED_SKIPPED_RELEASE_JOBS
-                .iter()
-                .map(|name| (*name, "skipped")),
-        )
-        .collect::<BTreeMap<_, _>>();
-    for job in jobs {
-        let name = value_string(job.get("name"));
-        let expected = allowed_non_success
-            .get(name.as_str())
-            .copied()
-            .unwrap_or("success");
-        let conclusion = value_string(job.get("conclusion"));
-        if conclusion != expected {
-            return Err(format!(
-                "Unexpected Release job conclusion: {name}={conclusion}, expected {expected}"
-            ));
-        }
-    }
-    Ok(())
-}
-
-pub fn validate_release_artifact(
-    artifacts: &[Value],
-    artifact_name: &str,
-    release_run_id: &str,
-    tag_name: &str,
-    tag_sha: &str,
-) -> Result<(), String> {
-    let matches = artifacts
-        .iter()
-        .filter(|artifact| artifact.get("name").and_then(Value::as_str) == Some(artifact_name))
-        .collect::<Vec<_>>();
-    if matches.len() != 1 {
-        return Err(format!(
-            "Release run must contain exactly one {artifact_name} artifact, found {}",
-            matches.len()
-        ));
-    }
-    let artifact = matches[0];
-    if artifact.get("expired").and_then(Value::as_bool) == Some(true) {
-        return Err(format!("Release artifact {artifact_name} has expired"));
-    }
-    let source = artifact.get("workflow_run");
-    if value_string(source.and_then(|source| source.get("id"))) != release_run_id
-        || source
-            .and_then(|source| source.get("head_branch"))
-            .and_then(Value::as_str)
-            != Some(tag_name)
-        || source
-            .and_then(|source| source.get("head_sha"))
-            .and_then(Value::as_str)
-            != Some(tag_sha)
-    {
-        return Err(format!(
-            "Release artifact {artifact_name} is not bound to {tag_name} ({tag_sha})"
         ));
     }
     Ok(())
@@ -967,11 +816,7 @@ fn positive_safe_integer(value: &str) -> bool {
 }
 
 fn empty_label(value: &str) -> &str {
-    if value.is_empty() {
-        "(empty)"
-    } else {
-        value
-    }
+    if value.is_empty() { "(empty)" } else { value }
 }
 
 fn value_string(value: Option<&Value>) -> String {

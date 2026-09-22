@@ -192,21 +192,11 @@ test("rollback refuses changed remote, event, or fetched tag identities", async 
   }
 });
 
-test("release calls a credential-minimal hosted rollback workflow after preflight failure", () => {
+test("PR releases create no premature tag and retain the legacy rollback helper", () => {
   const release = parse(readRepoFile(".github", "workflows", "release.yml")) as {
     jobs: Record<string, Record<string, unknown>>;
   };
-  const caller = release.jobs["rollback-unpublished-tag"];
-  assert.equal(caller.needs, "release-preflight");
-  assert.equal(
-    caller.if,
-    "${{ github.event_name == 'push' && always() && needs.release-preflight.result != 'success' }}",
-  );
-  assert.deepEqual(caller.permissions, { contents: "write" });
-  assert.equal(caller.uses, "./.github/workflows/release-tag-rollback.yml");
-  assert.deepEqual(caller.with, {
-    preflight_result: "${{ needs.release-preflight.result }}",
-  });
+  assert.equal(release.jobs["rollback-unpublished-tag"], undefined);
 
   const called = parse(readRepoFile(".github", "workflows", "release-tag-rollback.yml")) as {
     jobs: Record<string, Record<string, unknown>>;

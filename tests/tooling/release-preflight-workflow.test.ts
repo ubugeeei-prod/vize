@@ -33,6 +33,7 @@ test("reusable release preflight verifies evidence and crate plans without regis
     actions: "write",
     contents: "read",
     issues: "read",
+    "pull-requests": "read",
   });
   assert.equal(workflow.env?.FORCE_JAVASCRIPT_ACTIONS_TO_NODE24, true);
   assert.deepEqual(Object.keys(workflow.jobs ?? {}).sort(), ["validate-crates", "verify"]);
@@ -45,6 +46,7 @@ test("reusable release preflight verifies evidence and crate plans without regis
     actions: "write",
     contents: "read",
     issues: "read",
+    "pull-requests": "read",
   });
   const verifyCheckout = verify.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
   assert.ok(verifyCheckout);
