@@ -8,7 +8,7 @@
 //! does while keeping those anchors.
 
 use vize_atelier_core::{
-    AttributeNode, DirectiveNode, ExpressionNode, codegen::spanned::SpannedText,
+    AttributeNode, DirectiveNode, ExpressionNode, codegen::document::EmitDocument,
 };
 use vize_s0::{Span, String};
 
@@ -22,7 +22,7 @@ pub(crate) struct PropEntrySpans {
     /// when the key is emitted verbatim.
     key: Option<u32>,
     /// The generated value, carrying its own anchors.
-    value: SpannedText,
+    value: EmitDocument,
 }
 
 /// A static attribute entry whose generated `value` is the quoted attribute
@@ -30,7 +30,7 @@ pub(crate) struct PropEntrySpans {
 pub(super) fn attribute_entry(attr: &AttributeNode, value: &str, spans: bool) -> VNodePropEntry {
     let mut entry = component_prop_entry(attr.name, value, false);
     if spans {
-        let mut spanned = SpannedText::default();
+        let mut spanned = EmitDocument::default();
         match &attr.value {
             Some(authored) if value.len() >= 2 => {
                 spanned.push_str("\"");
@@ -48,7 +48,11 @@ pub(super) fn attribute_entry(attr: &AttributeNode, value: &str, spans: bool) ->
 }
 
 /// A statically keyed entry whose value is an already spanned expression.
-pub(crate) fn bound_entry(key: &str, key_start: Option<u32>, value: SpannedText) -> VNodePropEntry {
+pub(crate) fn bound_entry(
+    key: &str,
+    key_start: Option<u32>,
+    value: EmitDocument,
+) -> VNodePropEntry {
     let mut entry = component_prop_entry(key, value.as_str(), false);
     entry.spans = Some(Box::new(PropEntrySpans {
         key: key_start,
@@ -86,8 +90,8 @@ impl SsrCodegenContext<'_> {
 
 /// The object literal [`component_props_object`](super::props::component_props_object)
 /// emits, with entry anchors kept.
-pub(crate) fn component_props_object_spanned(entries: &[VNodePropEntry]) -> SpannedText {
-    let mut out = SpannedText::plain("{ ");
+pub(crate) fn component_props_object_spanned(entries: &[VNodePropEntry]) -> EmitDocument {
+    let mut out = EmitDocument::plain("{ ");
     for (index, entry) in entries.iter().enumerate() {
         if index > 0 {
             out.push_str(", ");
@@ -118,8 +122,8 @@ pub(crate) fn component_props_object_spanned(entries: &[VNodePropEntry]) -> Span
 }
 
 /// `_mergeProps(a, b, ...)` over spanned arguments.
-pub(crate) fn merge_props_call(args: &[SpannedText]) -> SpannedText {
-    let mut out = SpannedText::plain("_mergeProps(");
+pub(crate) fn merge_props_call(args: &[EmitDocument]) -> EmitDocument {
+    let mut out = EmitDocument::plain("_mergeProps(");
     for (index, arg) in args.iter().enumerate() {
         if index > 0 {
             out.push_str(", ");

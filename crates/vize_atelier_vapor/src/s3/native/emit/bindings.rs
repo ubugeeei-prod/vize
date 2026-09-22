@@ -6,6 +6,7 @@ use vize_carton::{Box, Vec};
 
 use super::super::{BindingKind, Content, Expr};
 use super::Emitter;
+use super::spans::argument_offset;
 use crate::ir::{
     BlockIRNode, DirectiveIRNode, EventModifiers, IRProp, OperationNode, SetEventIRNode,
     SetHtmlIRNode, SetPropIRNode, SetTextIRNode,
@@ -29,15 +30,19 @@ impl<'a> Emitter<'a, '_> {
         let Content::Element {
             tag,
             ref attributes,
+            ..
         } = self.artifact.nodes[index].content
         else {
             unreachable!("bindings attach to elements")
         };
         let input_type = attributes
             .iter()
-            .find_map(|(name, value)| (*name == "type").then_some(*value).flatten())
+            .find_map(|(name, value, _)| (*name == "type").then_some(*value).flatten())
             .unwrap_or("");
         let binding = &self.artifact.nodes[index].bindings[binding];
+        // Values keep their authored span; a prop key maps to its argument.
+        let value_span = Some(self.trimmed(binding.spans[1]));
+        let name_span = self.token(binding.spans[0], |raw| argument_offset(raw, binding.name));
         match binding.kind {
             BindingKind::Event => {
                 let modifiers = EventModifiers::from_names(
@@ -52,7 +57,7 @@ impl<'a> Emitter<'a, '_> {
                     .push(OperationNode::SetEvent(SetEventIRNode {
                         element,
                         key: self.expression(Expr::plain(name), true),
-                        value: Some(self.expression(binding.value, false)),
+                        value: Some(self.spanned(binding.value, false, value_span)),
                         modifiers,
                         delegate,
                         effect: false,
@@ -63,8 +68,8 @@ impl<'a> Emitter<'a, '_> {
                 if let Some(merge) = binding.merge {
                     values.push(self.expression(Expr::plain(merge), true));
                 }
-                values.push(self.expression(binding.value, false));
-                let key = self.expression(Expr::plain(binding.name), true);
+                values.push(self.spanned(binding.value, false, value_span));
+                let key = self.spanned(Expr::plain(binding.name), true, name_span);
                 self.effect(
                     OperationNode::SetProp(SetPropIRNode {
                         element,
@@ -82,9 +87,11 @@ impl<'a> Emitter<'a, '_> {
             }
             BindingKind::Show => {
                 let mut dir = DirectiveNode::new(self.allocator, "show", SourceLocation::STUB);
-                dir.exp = Some(ExpressionNode::Simple(
-                    self.expression(binding.value, false),
-                ));
+                dir.exp = Some(ExpressionNode::Simple(self.spanned(
+                    binding.value,
+                    false,
+                    value_span,
+                )));
                 block
                     .operation
                     .push(OperationNode::Directive(DirectiveIRNode {
@@ -97,14 +104,14 @@ impl<'a> Emitter<'a, '_> {
                     }));
             }
             BindingKind::Html => {
-                let value = self.expression(binding.value, false);
+                let value = self.spanned(binding.value, false, value_span);
                 self.effect(
                     OperationNode::SetHtml(SetHtmlIRNode { element, value }),
                     block,
                 );
             }
             BindingKind::Text => {
-                let values = self.values(binding.value);
+                let values = self.values(binding.value, value_span);
                 self.effect(
                     OperationNode::SetText(SetTextIRNode {
                         element,

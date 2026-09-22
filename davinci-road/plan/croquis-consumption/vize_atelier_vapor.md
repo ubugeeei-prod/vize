@@ -18,6 +18,6 @@ _None._
 
 | product            | resolved | grep |
 | ------------------ | -------: | ---: |
-| `BindingMetadata`  |        0 |   15 |
-| `Span`             |        0 |    4 |
+| `BindingMetadata`  |        0 |   16 |
+| `Span`             |        0 |    9 |
 | `Croquis.bindings` |        0 |   15 |

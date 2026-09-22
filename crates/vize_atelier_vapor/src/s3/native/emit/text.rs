@@ -2,11 +2,11 @@
 //! one run with one DOM address. At a block root, a pure mixed run becomes one
 //! standalone text node; otherwise each part is its own node.
 
-use vize_atelier_core::SimpleExpressionNode;
-use vize_carton::{Box, String, Vec};
+use vize_atelier_core::{SimpleExpressionNode, codegen::document::EmitDocument};
+use vize_carton::{Box, Vec};
 
 use super::super::{Content, TextPart};
-use super::{Emitter, escape};
+use super::{Emitter, escaped};
 use crate::ir::{BlockIRNode, OperationNode, SetTextIRNode};
 
 type Values<'a> = Vec<'a, Box<'a, SimpleExpressionNode<'a>>>;
@@ -43,11 +43,11 @@ impl<'a> Emitter<'a, '_> {
         for _ in 1..parts.len() {
             self.id();
         }
-        self.register(id, " ");
+        self.register(id, &EmitDocument::plain(" "));
         self.ir.standalone_text_elements.insert(id);
         let mut values = Vec::new_in(&self.allocator);
         for part in &parts {
-            values.push(self.expression(part.value, !part.dynamic));
+            values.push(self.spanned(part.value, !part.dynamic, Some(part.span)));
         }
         self.effect(
             OperationNode::SetText(SetTextIRNode {
@@ -68,9 +68,9 @@ impl<'a> Emitter<'a, '_> {
         for part in parts {
             let id = self.id();
             if part.dynamic {
-                self.register(id, " ");
+                self.register(id, &EmitDocument::plain(" "));
                 self.ir.standalone_text_elements.insert(id);
-                let values = self.values(part.value);
+                let values = self.values(part.value, Some(part.span));
                 self.effect(
                     OperationNode::SetText(SetTextIRNode {
                         element: id,
@@ -80,7 +80,10 @@ impl<'a> Emitter<'a, '_> {
                     block,
                 );
             } else {
-                self.register(id, part.value.text);
+                let text = part.value.text;
+                let mut template = EmitDocument::new(self.source.is_some());
+                self.link(&mut template, text, Some(part.span), text.len());
+                self.register(id, &template);
             }
             block.returns.push(id);
         }
@@ -96,7 +99,7 @@ impl<'a> Emitter<'a, '_> {
         start: usize,
         parent: Option<usize>,
         offset: usize,
-        template: &mut String,
+        template: &mut EmitDocument,
         block: &mut BlockIRNode<'a>,
     ) -> usize {
         let end = children[start..]
@@ -111,12 +114,13 @@ impl<'a> Emitter<'a, '_> {
         let mut values: Values<'a> = Vec::new_in(&self.allocator);
         for part in &parts {
             if dynamic {
-                values.push(self.expression(part.value, !part.dynamic));
+                values.push(self.spanned(part.value, !part.dynamic, Some(part.span)));
             }
             if part.dynamic {
-                template.push(' ');
+                template.push_char(' ');
             } else {
-                escape(template, part.value.text);
+                let text = part.value.text;
+                self.link(template, &escaped(text), Some(part.span), text.len());
             }
         }
         if dynamic {

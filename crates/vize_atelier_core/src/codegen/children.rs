@@ -341,8 +341,7 @@ pub fn generate_comment(ctx: &mut CodegenContext, comment: &CommentNode) {
     ctx.push("(\"");
     // Anchor the generated comment string back to the comment node's source
     // position, just inside the opening quote. No-op without `source_map`.
-    ctx.record_mapping(comment.loc.span.start);
-    ctx.push(&escape_js_string(comment.content));
+    ctx.push_linked(&escape_js_string(comment.content), comment.loc.span);
     ctx.push("\")");
 }
 

@@ -12,6 +12,7 @@
 //! diagnostic on the same authored bytes, so the sub-span-aware offset
 //! arithmetic lives here and is consumed by both paths.
 
+mod document;
 mod model;
 mod rows;
 

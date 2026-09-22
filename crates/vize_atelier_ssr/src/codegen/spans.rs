@@ -1,17 +1,14 @@
 //! Span-carrying SSR emission (Davinci P3-9, S4).
 //!
-//! SSR code is written in two ways: straight into the code buffer (control
-//! flow, component calls) and through template-literal parts that are
-//! coalesced and flushed later. Both carry authored spans: direct writes
-//! record into the shared [`SourceMapBuilder`] as they happen, and parts are
-//! [`SpannedText`] whose anchors are rebased when the part is flushed. When no
-//! map is requested nothing is recorded and every part stays anchor-free, so
-//! the emitted bytes are identical either way (TS-11).
+//! SSR code is written in two ways: straight into the context's
+//! [`EmitDocument`] (control flow, component calls) and through
+//! template-literal parts, fragments that are coalesced and flushed later.
+//! Both carry authored links: direct writes record into the document as they
+//! happen, and a part's links are rebased when it is flushed. When no map is
+//! requested nothing is recorded and every part stays link-free, so the
+//! emitted bytes are identical either way (TS-11).
 
-use vize_atelier_core::{
-    DirectiveNode,
-    codegen::spanned::{SpannedText, expression_anchors},
-};
+use vize_atelier_core::{DirectiveNode, codegen::document::EmitDocument};
 use vize_s0::Span;
 
 use super::{SsrCodegenContext, TemplatePart};
@@ -19,20 +16,12 @@ use super::{SsrCodegenContext, TemplatePart};
 impl SsrCodegenContext<'_> {
     /// Whether this compile records a source map.
     pub(crate) fn spans_enabled(&self) -> bool {
-        self.map.is_some()
-    }
-
-    /// Anchor the next directly written byte at the authored byte `source`.
-    pub(crate) fn record_anchor(&mut self, source: u32) {
-        if let Some(map) = self.map.as_mut() {
-            map.add_raw(self.code.len(), source);
-        }
+        self.out.is_recording()
     }
 
     /// Write `text` directly, anchored at the authored byte `source`.
     pub(crate) fn push_mapped(&mut self, text: &str, source: u32) {
-        self.record_anchor(source);
-        self.push(text);
+        self.out.push_mapped(text, source);
     }
 
     /// Write `text` directly, anchored at `source` when there is one.
@@ -50,27 +39,18 @@ impl SsrCodegenContext<'_> {
     }
 
     /// Write a spanned piece directly, rebasing its anchors.
-    pub(crate) fn push_spanned(&mut self, piece: &SpannedText) {
-        if let Some(map) = self.map.as_mut() {
-            map.add_anchors(self.code.len(), piece.anchors());
-        }
-        self.push(piece.as_str());
+    pub(crate) fn push_spanned(&mut self, piece: &EmitDocument) {
+        self.out.push_spanned(piece);
     }
 
     /// Write an emitted expression authored at `span` directly.
     pub(crate) fn push_expression_text(&mut self, code: &str, span: Span) {
-        if let Some(map) = self.map.as_mut() {
-            map.add_anchors(
-                self.code.len(),
-                &expression_anchors(code, span, self.source),
-            );
-        }
-        self.push(code);
+        self.out.push_expression(code, span, self.source);
     }
 
     /// An emitted expression authored at `span`, anchored when maps are on.
-    pub(crate) fn spanned_expression(&self, code: &str, span: Span) -> SpannedText {
-        let mut piece = SpannedText::default();
+    pub(crate) fn spanned_expression(&self, code: &str, span: Span) -> EmitDocument {
+        let mut piece = EmitDocument::default();
         if self.spans_enabled() {
             piece.push_expression(code, span, self.source);
         } else {
@@ -86,8 +66,8 @@ impl SsrCodegenContext<'_> {
         code: &str,
         suffix: &str,
         span: Span,
-    ) -> SpannedText {
-        let mut piece = SpannedText::plain(prefix);
+    ) -> EmitDocument {
+        let mut piece = EmitDocument::plain(prefix);
         piece.push_spanned(&self.spanned_expression(code, span));
         piece.push_str(suffix);
         piece
@@ -107,7 +87,7 @@ impl SsrCodegenContext<'_> {
 
     /// Push `_ssrRenderAttr("name", exp)` for a statically named `v-bind`.
     pub(crate) fn push_bound_attr_part(&mut self, name: &str, dir: &DirectiveNode<'_>, exp: &str) {
-        let mut piece = SpannedText::plain("_ssrRenderAttr(\"");
+        let mut piece = EmitDocument::plain("_ssrRenderAttr(\"");
         match (&dir.arg, self.spans_enabled()) {
             (Some(arg), true) => piece.push_mapped(name, arg.loc().span.start),
             _ => piece.push_str(name),
@@ -130,54 +110,19 @@ impl SsrCodegenContext<'_> {
             last.push_mapped(text, source);
         } else {
             self.current_template_parts
-                .push(TemplatePart::Static(SpannedText::mapped(text, source)));
+                .push(TemplatePart::Static(EmitDocument::mapped(text, source)));
         }
     }
 
     /// Append a dynamic template-literal part that carries its own anchors.
-    pub(crate) fn push_string_part_dynamic_spanned(&mut self, piece: SpannedText) {
+    pub(crate) fn push_string_part_dynamic_spanned(&mut self, piece: EmitDocument) {
         self.current_template_parts
             .push(TemplatePart::Dynamic(piece));
     }
 
     /// Write a static template-literal part, escaping `` ` `` and `${`, and
-    /// rebasing its anchors onto the escaped output.
-    pub(super) fn push_template_static(&mut self, part: &SpannedText) {
-        let bytes = part.as_str().as_bytes();
-        let mut anchors = part.anchors().iter().peekable();
-        let mut start = 0;
-        let mut index = 0;
-
-        while index <= bytes.len() {
-            while let Some(anchor) = anchors.next_if(|anchor| anchor.offset <= index) {
-                self.code.extend_from_slice(&bytes[start..index]);
-                start = index;
-                if let Some(map) = self.map.as_mut() {
-                    map.add_raw(self.code.len(), anchor.source);
-                }
-            }
-            if index == bytes.len() {
-                break;
-            }
-            match bytes[index] {
-                b'`' => {
-                    self.code.extend_from_slice(&bytes[start..index]);
-                    self.code.extend_from_slice(b"\\`");
-                    index += 1;
-                    start = index;
-                }
-                b'$' if index + 1 < bytes.len() && bytes[index + 1] == b'{' => {
-                    self.code.extend_from_slice(&bytes[start..index]);
-                    self.code.extend_from_slice(b"\\${");
-                    index += 2;
-                    start = index;
-                }
-                _ => {
-                    index += 1;
-                }
-            }
-        }
-
-        self.code.extend_from_slice(&bytes[start..]);
+    /// rebasing its links onto the escaped output.
+    pub(super) fn push_template_static(&mut self, part: &EmitDocument) {
+        self.out.push_escaped(part, &[("`", "\\`"), ("${", "\\${")]);
     }
 }

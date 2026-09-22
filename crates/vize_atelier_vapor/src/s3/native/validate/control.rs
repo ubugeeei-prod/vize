@@ -8,10 +8,10 @@
 use vize_atelier_core::steps::expression::is_template_global;
 use vize_s3::{
     op::{OpId, OpKind, Program, RegionId},
-    operand::{Operand, OperandRole as Role, ValueKind},
+    operand::{Operand, OperandRole as Role, OperandValue, ValueKind},
 };
 
-use super::super::{Branch, Content, Expr, Loop};
+use super::super::{Branch, Content, Expr, Loop, LoopSpans};
 use super::{Result, operands::js, operands::one};
 use crate::s3::{AdmissionFailure, LegacyReason, retained::Retained};
 
@@ -43,6 +43,7 @@ pub(super) fn branches<'a>(
         };
         branches.push(Branch {
             condition,
+            span: (value.value.span.start, value.value.span.end),
             region,
             root: None,
         });
@@ -71,6 +72,16 @@ pub(super) fn for_loop<'a>(
     let value = one(values, Role::ForValue)?.value;
     let key = one(values, Role::ForKey)?.value;
     let index = one(values, Role::ForIndex)?.value;
+    let span = |value: OperandValue<'_>| (value.span.start, value.span.end);
+    let spans = LoopSpans {
+        source: span(source.value),
+        aliases: [
+            Some(span(value)),
+            (key.kind != ValueKind::Absent).then(|| span(key)),
+            (index.kind != ValueKind::Absent).then(|| span(index)),
+        ],
+        key_prop: None,
+    };
     let text = source.value.text;
     let source = if source.value.kind == ValueKind::Js
         && !text.is_empty()
@@ -96,6 +107,7 @@ pub(super) fn for_loop<'a>(
         key,
         index,
         key_prop: None,
+        spans,
     }))
 }
 

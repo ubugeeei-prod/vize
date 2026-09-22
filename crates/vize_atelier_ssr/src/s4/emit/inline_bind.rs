@@ -4,7 +4,7 @@
 //! argument.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::spanned::SpannedText;
+use vize_atelier_core::codegen::document::EmitDocument;
 use vize_s0::{String, cstr};
 
 use super::attrs::{Attached, Bind, BindName, static_value};
@@ -60,7 +60,7 @@ pub(super) fn emit(
             em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttr);
             // The name maps to the authored argument and the value to its
             // expression, as the AST walker writes `_ssrRenderAttr`.
-            let mut piece = SpannedText::plain("_ssrRenderAttr(\"");
+            let mut piece = EmitDocument::plain("_ssrRenderAttr(\"");
             // A camelized name maps to its authored (kebab) argument, as the
             // walker anchors the name at the argument whatever its spelling.
             let authored = match bind.name {

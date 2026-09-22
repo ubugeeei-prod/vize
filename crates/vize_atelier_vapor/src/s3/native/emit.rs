@@ -12,20 +12,27 @@ mod bindings;
 mod component;
 mod control;
 mod element;
+mod spans;
 mod text;
 
-use vize_atelier_core::{RootNode, SimpleExpressionNode, SourceLocation};
-use vize_carton::{Allocator, Box, String, Vec, ensure_sufficient_stack};
+use vize_atelier_core::{
+    RootNode, SimpleExpressionNode, SourceLocation, codegen::document::EmitDocument,
+};
+use vize_carton::{Allocator, Box, FxHashMap, String, Vec, ensure_sufficient_stack};
 
-use super::{Content, Expr, NativeArtifact};
+use super::{AuthoredSpan, Content, Expr, NativeArtifact};
+use crate::generate::spans::{TemplateSpans, VaporSourceSpans};
 use crate::ir::{BlockIRNode, ChildRefIRNode, IREffect, OperationNode, RootIRNode};
 
+/// The shared emitter IR for `artifact`; with `spans`, also the template and
+/// control-flow anchors a source map needs (Davinci P3-9).
 pub(super) fn emit<'a>(
     artifact: NativeArtifact<'a>,
     allocator: &'a Allocator,
     source: &'a str,
     scope_id: Option<&str>,
-) -> RootIRNode<'a> {
+    spans: bool,
+) -> (RootIRNode<'a>, Option<VaporSourceSpans>) {
     let mut ir = RootIRNode {
         node: RootNode::new(allocator, ""),
         source,
@@ -64,10 +71,21 @@ pub(super) fn emit<'a>(
         ir: &mut ir,
         next_id: 0,
         scope_id,
+        source: spans.then_some(source),
+        template_spans: TemplateSpans::default(),
+        units: FxHashMap::default(),
+        else_units: FxHashMap::default(),
     };
     let block = emitter.block(&roots);
+    let spans = spans.then(|| {
+        VaporSourceSpans::native(
+            std::mem::take(&mut emitter.template_spans),
+            std::mem::take(&mut emitter.units),
+            std::mem::take(&mut emitter.else_units),
+        )
+    });
     ir.block = block;
-    ir
+    (ir, spans)
 }
 
 struct Emitter<'a, 'b> {
@@ -77,6 +95,13 @@ struct Emitter<'a, 'b> {
     ir: &'b mut RootIRNode<'a>,
     next_id: usize,
     scope_id: Option<&'b str>,
+    /// The authored source, only for map-requesting compiles.
+    source: Option<&'a str>,
+    template_spans: TemplateSpans,
+    /// Expression span start -> authored start of its control-flow unit.
+    units: FxHashMap<u32, u32>,
+    /// Condition span start -> authored start of the following `v-else`.
+    else_units: FxHashMap<u32, u32>,
 }
 
 impl<'a> Emitter<'a, '_> {
@@ -115,11 +140,15 @@ impl<'a> Emitter<'a, '_> {
         id
     }
 
-    fn register(&mut self, id: usize, template: &str) {
+    fn register(&mut self, id: usize, template: &EmitDocument) {
+        let index = self.ir.templates.len();
+        self.ir.element_template_map.insert(id, index);
         self.ir
-            .element_template_map
-            .insert(id, self.ir.templates.len());
-        self.ir.templates.push(self.allocator.alloc_str(template));
+            .templates
+            .push(self.allocator.alloc_str(template.as_str()));
+        if self.source.is_some() && !template.links().is_empty() {
+            self.template_spans.insert(index, template.links().to_vec());
+        }
     }
 
     fn child(&mut self, parent_id: usize, offset: usize, block: &mut BlockIRNode<'a>) -> usize {
@@ -137,14 +166,34 @@ impl<'a> Emitter<'a, '_> {
     /// A generator expression node; a retained AST lets the shared resolver
     /// consume it without reparsing the text.
     fn expression(&self, value: Expr<'a>, is_static: bool) -> Box<'a, SimpleExpressionNode<'a>> {
-        let mut node = SimpleExpressionNode::new(value.text, is_static, SourceLocation::STUB);
+        self.spanned(value, is_static, None)
+    }
+
+    /// [`Self::expression`] that keeps the payload's authored `span` for a
+    /// map-requesting compile.
+    fn spanned(
+        &self,
+        value: Expr<'a>,
+        is_static: bool,
+        span: Option<AuthoredSpan>,
+    ) -> Box<'a, SimpleExpressionNode<'a>> {
+        let loc = span
+            .filter(|_| self.source.is_some())
+            .map_or(SourceLocation::STUB, |(start, end)| {
+                SourceLocation::new(start, end)
+            });
+        let mut node = SimpleExpressionNode::new(value.text, is_static, loc);
         node.js_ast = value.js;
         Box::new_in(node, &self.allocator)
     }
 
-    fn values(&self, value: Expr<'a>) -> Vec<'a, Box<'a, SimpleExpressionNode<'a>>> {
+    fn values(
+        &self,
+        value: Expr<'a>,
+        span: Option<AuthoredSpan>,
+    ) -> Vec<'a, Box<'a, SimpleExpressionNode<'a>>> {
         let mut values = Vec::new_in(&self.allocator);
-        values.push(self.expression(value, false));
+        values.push(self.spanned(value, false, span));
         values
     }
 
@@ -155,7 +204,8 @@ impl<'a> Emitter<'a, '_> {
     }
 }
 
-fn escape(output: &mut String, value: &str) {
+fn escaped(value: &str) -> String {
+    let mut output = String::with_capacity(value.len());
     for ch in value.chars() {
         match ch {
             '&' => output.push_str("&amp;"),
@@ -166,4 +216,5 @@ fn escape(output: &mut String, value: &str) {
             ch => output.push(ch),
         }
     }
+    output
 }

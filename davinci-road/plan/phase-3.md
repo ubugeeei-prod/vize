@@ -214,11 +214,14 @@ measured coverage; TS-11 empty (maps are additive artifacts).
 _Slices 1-5 (2026-09-13..21), see the [P3-9 record](./phase-3-records/p3-9.md):_
 TS-31 budgets pinned and measured by an independent-decoder harness
 ([report](./ts31-sourcemap-coverage.json)); DOM and SSR emit through
-span-carrying writes and meet every TS-31 budget. _Eighth slice 2026-09-22:_
-`compile_sfc` attaches a structured module map (byte runs and point anchors
-through every script stage and oxc re-print; napi uses it), 11/11 exact on the
-legacy battery and 19/19 on rewritten statements. Vapor emission and legacy
-recovery removal remain open.
+span-carrying writes and meet every TS-31 budget. _Slices 6-7 2026-09-22:_ DOM,
+SSR and both Vapor lanes write into one target-neutral `EmitDocument` whose
+range links serialize as v3 segments and convert to P4-5a `ProjectionMapping`
+rows; Vapor meets every TS-31 budget. _Eighth slice 2026-09-22:_ `compile_sfc`
+attaches a structured module map (byte runs and point anchors through every
+script stage and oxc re-print; napi uses it), 11/11 exact on the legacy
+battery and 19/19 on rewritten statements. Legacy
+recovery removal remains open.
 
 **P3-10 Try-measure-commit.** Placement alternatives (hoist/cache/inline/
 group) kept explicit on S3 nodes; extraction pass performs candidates,

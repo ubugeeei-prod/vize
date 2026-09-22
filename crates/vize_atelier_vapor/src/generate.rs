@@ -9,11 +9,13 @@ mod expression_retained;
 mod helpers;
 mod operations;
 mod setup;
+pub(crate) mod spans;
 
 use crate::ir::{BlockIRNode, CreateComponentIRNode, NegativeBranch, OperationNode};
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, ensure_sufficient_stack};
 
 use context::GenerateContext;
+pub(crate) use entry::generate_vapor_with_spans;
 pub use entry::{
     VaporGenerateExperimentalOptions, VaporGenerateOptions, VaporGenerateResult, generate_vapor,
     generate_vapor_with_options, generate_vapor_with_options_and_experimentals,
