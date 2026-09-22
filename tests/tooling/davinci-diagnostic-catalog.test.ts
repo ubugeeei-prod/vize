@@ -7,9 +7,11 @@ import {
   type Entry,
   block,
   catalogEntries,
+  canonProblems,
   compilerProblems,
   legacyTranslations,
   locales,
+  parseCanonCodes,
   parseCompilerCodes,
   parseRules,
   parseVocabulary,
@@ -77,6 +79,20 @@ test("TS-53: every one of the 249 lint rules has a description in every locale",
   const rules = parseRules();
   assert.equal(rules.size, 249, "the parser reads every RuleMeta-family declaration");
   assert.deepEqual(ruleProblems(rules, legacyTranslations(), catalogEntries()), []);
+});
+
+test("TS-53: every Canon type-error code is catalogued in en, ja and zh", () => {
+  const canon = parseCanonCodes();
+  assert.equal(canon.variants.length, 22, "the parser reads the whole TypeErrorCode enum");
+  const legacy = legacyTranslations();
+  assert.deepEqual(canonProblems(canon, legacy), []);
+  const dropped = new Map(legacy);
+  dropped.delete("ts/2304.help");
+  assert.deepEqual(canonProblems(canon, dropped), [
+    "`ts/2304.help` has no en catalog text",
+    "`ts/2304.help` has no ja catalog text",
+    "`ts/2304.help` has no zh catalog text",
+  ]);
 });
 
 test("TS-53: the catalog check fails on a removed, emptied or drifted entry", () => {
