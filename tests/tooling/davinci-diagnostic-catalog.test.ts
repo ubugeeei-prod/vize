@@ -56,6 +56,12 @@ test("TS-53: every renderer phrase is catalogued", () => {
     "Hint",
     "Help",
     "SuggestedFix",
+    "Why",
+    "Because",
+    "FactFallback",
+    "UnusedBinding",
+    "HtmlElement",
+    "HtmlComposedNesting",
   ]);
   assert.deepEqual(vocabularyProblems(vocabulary, catalogEntries()), []);
 });
@@ -149,10 +155,84 @@ export function renderCaseNames(): string[] {
   });
 }
 
+/** `=== <code>` headers of one locale's explain snapshot, in order. */
+function explainCodes(locale: string): string[] {
+  return read("crates", "vize", "src", "commands", "explain", "snapshots", `${locale}.txt`)
+    .split("\n")
+    .filter((line) => line.startsWith("=== "))
+    .map((line) => line.slice(4));
+}
+
+test("TS-53: vize explain has one generated page per compiler code and lint rule", () => {
+  const expected = [
+    ...[...parseCompilerCodes().codes.values()].sort(),
+    ...[...parseRules().keys()].sort(),
+  ];
+  const en = explainCodes("en");
+  assert.deepEqual(en, expected);
+  for (const locale of ["ja", "zh"] as const) {
+    assert.deepEqual(explainCodes(locale), en, locale);
+  }
+  const dropped = en.filter((code) => code !== "vue/require-v-for-key");
+  const missing = expected
+    .filter((code) => !dropped.includes(code))
+    .map((code) => `\`${code}\` has no explain page`);
+  assert.deepEqual(missing, ["`vue/require-v-for-key` has no explain page"]);
+
+  const page = read("crates", "vize", "src", "commands", "explain", "snapshots", "en.txt");
+  const ruleAt = page.indexOf("=== vue/require-v-for-key\n");
+  const rule = page.slice(ruleAt, page.indexOf("\n=== ", ruleAt + 1));
+  assert.match(rule, /^tier: exact$/m);
+  assert.match(rule, /^domain: elements and Vue directive syntax/m);
+  assert.match(rule, /<li v-for="item in items">\{\{ item \}\}<\/li>/);
+  const compilerAt = page.indexOf("=== compiler/v-if-no-expression\n");
+  const compiler = page.slice(compilerAt, page.indexOf("\n=== ", compilerAt + 1));
+  assert.match(compiler, /v-if\/v-else-if is missing expression/);
+  assert.match(compiler, /give the condition, as in v-if="visible"/);
+});
+
+test("TS-53: witness-why snapshots for the P4-3c and P4-11b witnesses", () => {
+  for (const name of ["witness_unused_binding", "witness_composed_nesting"]) {
+    for (const locale of locales) {
+      const text = read(
+        "crates",
+        "vize_davinci",
+        "tests",
+        "snapshots",
+        "diagnostic_render",
+        `${name}.${locale}.txt`,
+      );
+      const why = text.search(/= (?:note|根拠|依据): /u);
+      const help = text.search(/= (?:help|ヒント|帮助): /u);
+      assert.ok(why >= 0 && help > why, `${name}.${locale} note before help`);
+    }
+  }
+  const composed = read(
+    "crates",
+    "vize_davinci",
+    "tests",
+    "snapshots",
+    "diagnostic_render",
+    "witness_composed_nesting.en.txt",
+  );
+  assert.equal(composed.split("\n").filter((line) => line.includes("= note:")).length, 2);
+  const unused = read(
+    "crates",
+    "vize_davinci",
+    "tests",
+    "snapshots",
+    "diagnostic_render",
+    "witness_unused_binding.en.txt",
+  );
+  assert.match(unused, /because `total` is a <script setup> binding that nothing reads/);
+  assert.match(composed, /because `<p` is the ancestor element this nesting proof cites/);
+  assert.match(composed, /because `<InfoCard` is rendered where its parent forbids that child/);
+});
+
 test("TS-53: every renderer case is committed in every locale, and nothing else is", () => {
   const names = renderCaseNames();
   assert.equal(new Set(names).size, names.length, "case names are unique");
-  assert.equal(names.length, 14, "the parser reads the whole TS-53 case list");
+  assert.equal(names.length, 16, "the parser reads the whole TS-53 case list");
   const expected = names
     .flatMap((name) => [...locales.map((locale) => `${name}.${locale}.txt`), `${name}.en.ansi`])
     .sort();

@@ -14,6 +14,9 @@
 //! `tests/tooling/davinci-diagnostic-catalog.test.ts` fails when a key is
 //! missing from any of en/ja/zh.
 
+use crate::diagnostic::WitnessLink;
+use vize_s0::String;
+
 /// A word or phrase the renderer prints around producer text.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Phrase {
@@ -29,18 +32,36 @@ pub enum Phrase {
     Help,
     /// The title of a fix that carries no guidance of its own.
     SuggestedFix,
+    /// The word introducing a witness-derived note: `= note: because …`.
+    Why,
+    /// The sentence around a witness fact. `{fact}` is replaced.
+    Because,
+    /// A fact this catalog has no sentence for. `{group}` and `{subject}` are replaced.
+    FactFallback,
+    /// `{subject}` is an unread `<script setup>` binding (P4-3c, `UnusedBindings`).
+    UnusedBinding,
+    /// `{subject}` is the ancestor element a composed-nesting proof cites (P4-11b).
+    HtmlElement,
+    /// `{subject}` is a component rendered where its parent forbids it (P4-11b).
+    HtmlComposedNesting,
 }
 
 impl Phrase {
     /// Every phrase, in declaration order. The catalog checker enumerates
     /// keys from this list, so adding a variant without a key is caught.
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 12] = [
         Self::Error,
         Self::Warning,
         Self::Info,
         Self::Hint,
         Self::Help,
         Self::SuggestedFix,
+        Self::Why,
+        Self::Because,
+        Self::FactFallback,
+        Self::UnusedBinding,
+        Self::HtmlElement,
+        Self::HtmlComposedNesting,
     ];
 
     /// The catalog key this phrase is stored under.
@@ -53,6 +74,12 @@ impl Phrase {
             Self::Hint => "render.hint",
             Self::Help => "render.help",
             Self::SuggestedFix => "render.suggested_fix",
+            Self::Why => "render.why",
+            Self::Because => "render.because",
+            Self::FactFallback => "render.fact_fallback",
+            Self::UnusedBinding => "render.witness.unused_bindings",
+            Self::HtmlElement => "render.witness.html_elements",
+            Self::HtmlComposedNesting => "render.witness.html_composed_nesting",
         }
     }
 }
@@ -64,6 +91,15 @@ impl Phrase {
 pub trait Catalog {
     /// The text of `phrase` in this catalog's locale.
     fn phrase(&self, phrase: Phrase) -> &str;
+
+    /// A caller-supplied sentence for the fact `link` names, about `subject`
+    /// (its quoted source text, or its key). `Some` replaces the sentence the
+    /// renderer already has for the P4-3c and P4-11b groups. `None` keeps
+    /// that sentence, or [`Phrase::FactFallback`] for a group it does not know.
+    fn witness(&self, link: &WitnessLink, subject: &str) -> Option<String> {
+        let _ = (link, subject);
+        None
+    }
 }
 
 /// The English vocabulary, for callers with no translator at hand (tools,
@@ -81,6 +117,14 @@ impl Catalog for EnglishCatalog {
             Phrase::Hint => "hint",
             Phrase::Help => "help",
             Phrase::SuggestedFix => "suggested fix",
+            Phrase::Why => "note",
+            Phrase::Because => "because {fact}",
+            Phrase::FactFallback => "fact group {group} holds for {subject}",
+            Phrase::UnusedBinding => "{subject} is a <script setup> binding that nothing reads",
+            Phrase::HtmlElement => "{subject} is the ancestor element this nesting proof cites",
+            Phrase::HtmlComposedNesting => {
+                "{subject} is rendered where its parent forbids that child"
+            }
         }
     }
 }

@@ -56,6 +56,7 @@ pub mod i18n;
 mod i18n_compiler;
 mod i18n_compiler_directive;
 mod i18n_compiler_template;
+mod i18n_explain;
 mod i18n_render;
 mod i18n_rules_ecosystem;
 mod i18n_rules_markup;

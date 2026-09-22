@@ -9,6 +9,7 @@
 mod layout;
 mod markup;
 mod text;
+mod witness;
 
 use vize_davinci::diagnostic::{
     Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Severity, Stage,
@@ -41,6 +42,8 @@ pub const ALL: &[&Case] = &[
     &layout::LONG_SPAN,
     &layout::MULTI_LINE_LABELS,
     &text::EDGE_CASES,
+    &witness::UNUSED_BINDING,
+    &witness::COMPOSED_NESTING,
 ];
 
 /// The text for `locale`.

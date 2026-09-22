@@ -30,6 +30,9 @@ enum Commands {
     #[command(visible_alias = "patina")]
     Lint(crate::commands::lint::LintArgs),
 
+    /// Explain a diagnostic code
+    Explain(crate::commands::explain::ExplainArgs),
+
     /// Type check Vue, JSX, and TSX files
     Check(crate::commands::check::CheckArgs),
 
@@ -95,6 +98,7 @@ fn run(cli: Cli) {
         #[cfg(feature = "glyph")]
         Some(Commands::Fmt(args)) => crate::commands::fmt::run(args),
         Some(Commands::Lint(args)) => crate::commands::lint::run(args),
+        Some(Commands::Explain(args)) => crate::commands::explain::run(args),
         Some(Commands::Check(args)) => crate::commands::check::run(args),
         Some(Commands::Inspector(args)) => crate::commands::inspector::run(args),
         Some(Commands::Curator(args)) => crate::commands::curator::run(args),

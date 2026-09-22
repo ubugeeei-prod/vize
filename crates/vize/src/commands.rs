@@ -9,6 +9,7 @@ pub mod curator;
 pub(crate) mod davinci_ice;
 pub mod doctor;
 pub mod env_info;
+pub mod explain;
 #[cfg(feature = "glyph")]
 pub mod fmt;
 #[cfg(feature = "maestro")]

@@ -1,0 +1,8 @@
+error[vue/no-unused-setup-bindings]: `total` is declared in `<script setup>` and nothing reads it.
+ --> src/components/Totals.vue:2:7
+  |
+2 | const total = ref(0)
+  |       ^^^^^ declared here
+  |
+  = note: because `total` is a <script setup> binding that nothing reads
+  = help: remove the binding, or read it from the template

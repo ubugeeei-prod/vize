@@ -1,0 +1,11 @@
+[1;91merror[html/cross-component-nesting][0m[1m: <div> (rendered by <InfoCard> at src/components/InfoCard.vue:6:3) closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template[0m
+ [1;94m-->[0m src/App.vue:7:5
+  [1;94m|[0m
+[1;94m6[0m [1;94m|[0m   <p>
+  [1;94m|[0m   [1;94m--[0m [1;94m<p> is open here[0m
+[1;94m7[0m [1;94m|[0m     <InfoCard title="Composed" />
+  [1;94m|[0m     [1;91m^^^^^^^^^[0m
+  [1;94m|[0m
+  [1;94m=[0m [1mnote[0m: because `<p` is the ancestor element this nesting proof cites
+  [1;94m=[0m [1mnote[0m: because `<InfoCard` is rendered where its parent forbids that child
+  [1;94m=[0m [1mhelp[0m: render the component where its root is permitted, or change the parent element
