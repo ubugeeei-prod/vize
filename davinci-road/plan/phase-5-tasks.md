@@ -48,6 +48,8 @@
 
 ## P5-2 — Per-SFC summary
 
+**Landed 2026-09-22** — full record: [phase-5-records/p5-2.md](./phase-5-records/p5-2.md).
+
 **Start gate:** gated on P4-2 — the summary is the fact groups' α form.
 
 **Lane:** B
@@ -56,8 +58,8 @@
 
 **Steps:**
 
-- [ ] `crates/vize_davinci/src/summary.rs`: `SfcSummary` over α pages with per-declaration fingerprints
-- [ ] A fixture proves a hot-path optimization change inside a component body does not change any fingerprint
+- [x] `crates/vize_davinci/src/summary.rs`: `SfcSummary` over α pages with per-declaration fingerprints
+- [x] A fixture proves a hot-path optimization change inside a component body does not change any fingerprint
 
 **Acceptance:** `cargo test -p vize_davinci --test sfc_summary` — summary round trip exact (TS-16), the no-ripple fixture green, and a signature change invalidates exactly the recorded users.
 
