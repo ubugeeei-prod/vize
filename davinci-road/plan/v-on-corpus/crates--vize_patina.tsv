@@ -1,4 +1,7 @@
 file	spelling
+crates/vize_patina/src/markup/differential/battery.rs	@input.trim.lazy
+crates/vize_patina/src/markup/differential/battery.rs	@click.prevent
+crates/vize_patina/src/markup/differential/battery.rs	@keyup.enter
 crates/vize_patina/src/markup/tests.rs	@click.stop.prevent
 crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs	@click.stop
 crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs	@contextmenu.prevent
