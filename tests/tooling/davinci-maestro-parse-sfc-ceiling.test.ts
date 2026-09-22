@@ -19,6 +19,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { maskRustNonCode } from "./davinci-storage-rust-syntax.ts";
+
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const maestroSrc = path.join(repoRoot, "crates/vize_maestro/src");
 
@@ -48,15 +50,15 @@ const WAVE = ["hover", "completion", "definition", "template_scope", "references
   (feature) => [`ide/${feature}.rs`, `ide/${feature}/`],
 );
 
-/** Every `parse_sfc(` on a non-comment line, as `path:line`. */
+/** Every call, including multiline calls and test bodies, as `path:line`. */
 function parseSfcSites(files: Map<string, string>): string[] {
   const sites: string[] = [];
   for (const [file, source] of files) {
-    source.split("\n").forEach((line, index) => {
-      if (!line.trimStart().startsWith("//") && line.includes("parse_sfc(")) {
-        sites.push(`${file}:${index + 1}`);
-      }
-    });
+    const code = maskRustNonCode(source);
+    for (const match of code.matchAll(/\bparse_sfc\s*\(/g)) {
+      const line = code.slice(0, match.index).split("\n").length;
+      sites.push(`${file}:${line}`);
+    }
   }
   return sites.sort();
 }
@@ -167,4 +169,24 @@ test("the count fails on an injected call and ignores comments", () => {
     ["ide/hover/comment.rs", "    // re-parsing with `parse_sfc(` is gone"],
   ]);
   assert.deepEqual(parseSfcSites(injected), ["ide/hover/injected.rs:1"]);
+});
+
+test("the count preserves authored lines across multiline calls, comments and literals", () => {
+  const source = [
+    "// parse_sfc(",
+    "/* nested /* parse_sfc( */ comment */",
+    'let text = "雪😀 parse_sfc(";',
+    'let raw = br###"parse_sfc(',
+    'inside a raw string"###;',
+    "let first = vize_atelier_sfc::parse_sfc",
+    " /* across lines */ (source, options);",
+    "#[cfg(test)]",
+    "fn test_parse() { parse_sfc /* inline */ (source, options); }",
+  ].join("\r\n");
+  assert.deepEqual(parseSfcSites(new Map([["tests.rs", source]])), ["tests.rs:6", "tests.rs:9"]);
+});
+
+test("the count includes every call on one line and rejects identifier lookalikes", () => {
+  const source = "parse_sfc(a, b); parse_sfc (c, d); reparse_sfc(e, f);";
+  assert.deepEqual(parseSfcSites(new Map([["calls.rs", source]])), ["calls.rs:1", "calls.rs:1"]);
 });
