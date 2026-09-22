@@ -79,7 +79,7 @@ impl DiagnosticService {
                     .component
                     .and_then(crate::virtual_code::art_target_component_from_source)
             });
-        let script = art_script_context(&descriptor);
+        let script = art_script_context(descriptor);
 
         let mut variants = Vec::new();
         for (variant_index, variant) in art_desc.variants.iter().enumerate() {
