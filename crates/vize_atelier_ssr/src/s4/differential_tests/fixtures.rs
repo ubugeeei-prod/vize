@@ -147,6 +147,10 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         "<table><tr><td>a</td></tr></table>",
     ),
     (
+        "table-implicit-tr",
+        "<table><tbody><td>{{ a }}</td></tbody></table>",
+    ),
+    (
         "list-markup",
         "<ul><li>a</li><li :class=\"c\">{{ b }}</li></ul>",
     ),

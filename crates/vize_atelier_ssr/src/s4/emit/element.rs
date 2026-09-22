@@ -144,10 +144,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
 /// Where the open-tag name is anchored.
 ///
-/// An authored tag maps at the byte after `<`. An implicit `tbody` has no
-/// tag in the source: its span starts at the triggering child's `<`, and the
-/// legacy walker anchors the synthesized name one byte later than that
-/// (zero-width loc at the child tag name, then `start + 1`).
+/// An authored tag maps at the byte after `<`. An implicit `tbody` or `tr`
+/// has no tag in the source: its span starts at the triggering child's `<`,
+/// and the legacy walker anchors the synthesized name one byte later than
+/// that (zero-width loc at the child tag name, then `start + 1`).
 fn open_tag_anchor(source: &str, element: &s2::ElementOp<'_>, tag: &str) -> u32 {
     let start = element.span.start;
     let authored = source.get(start as usize..).is_some_and(|rest| {
