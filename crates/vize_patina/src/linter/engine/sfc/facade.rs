@@ -46,6 +46,8 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "a11y/use-list",
     "html/no-duplicate-class",
     "html/no-dupe-style-properties",
+    "vapor/no-vue-lifecycle-events",
+    "vue/no-static-inline-styles",
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {

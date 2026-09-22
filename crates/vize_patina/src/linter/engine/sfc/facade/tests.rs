@@ -6,7 +6,7 @@ use crate::linter::engine::offset_result;
 use vize_s0::ToCompactString;
 
 fn linter() -> Linter {
-    Linter {
+    let mut linter = Linter {
         enabled_rules: Some(
             super::RULES
                 .iter()
@@ -14,7 +14,12 @@ fn linter() -> Linter {
                 .collect(),
         ),
         ..Linter::default()
-    }
+    };
+    // Opt-in, so the happy-path registry would otherwise skip the comparison.
+    linter
+        .registry
+        .register(Box::new(crate::rules::vue::NoStaticInlineStyles));
+    linter
 }
 
 fn compare_template(source: &str) {
@@ -55,9 +60,20 @@ fn disabled_rules_and_severity_overrides_apply_to_the_batch() {
         .with_rule_severity_overrides(vec![("vue/no-textarea-mustache".into(), Severity::Warning)]);
     let source = "<template><textarea aria-label=\"Message\" style=\"color:red\">{{ value }}</textarea></template>";
     let result = linter.lint_sfc(source, "test.vue");
-    assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
-    assert_eq!(result.diagnostics[0].rule_name, "vue/no-textarea-mustache");
-    assert_eq!(result.diagnostics[0].severity, Severity::Warning);
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "vue/no-inline-style"),
+        "{:?}",
+        result.diagnostics
+    );
+    let mustache = result
+        .diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.rule_name == "vue/no-textarea-mustache")
+        .expect("textarea mustache");
+    assert_eq!(mustache.severity, Severity::Warning);
 }
 
 #[test]
@@ -107,7 +123,8 @@ impl crate::rule::Rule for FacadeOnly {
 
 #[test]
 fn every_admitted_rule_reaches_only_the_s2_facade() {
-    let all = crate::rule::RuleRegistry::with_all();
+    let mut all = crate::rule::RuleRegistry::with_all();
+    all.register_opt_in_rules();
     for name in super::RULES {
         let meta = all
             .rules()
