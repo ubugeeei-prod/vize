@@ -6,7 +6,7 @@
 //!
 //! The `en` column is the rule's own `RuleMeta` description, byte for byte —
 //! `tests/tooling/davinci-diagnostic-catalog.test.ts` reads both from source
-//! and fails on drift, and on any of the 248 rules without a description in
+//! and fails on drift, and on any of the 249 rules without a description in
 //! every locale. Japanese follows the "〜を禁止する / 〜を必須にする / 〜を推奨する"
 //! register rule catalogues use; Chinese the matching 禁止 / 要求 / 推荐.
 
@@ -192,6 +192,12 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "Suggest adding vapor attribute to script setup",
         "script setup に vapor 属性を付けるよう提案する",
         "建议为 script setup 添加 vapor 属性",
+    ),
+    (
+        "vue/max-template-complexity.description",
+        "Limit a component's own template complexity (cyclomatic and cognitive)",
+        "コンポーネント自身のテンプレート複雑度（循環的複雑度と認知的複雑度）に上限を設ける",
+        "限制组件自身模板的复杂度（圈复杂度与认知复杂度）",
     ),
     (
         "vue/no-boolean-attr-value.description",

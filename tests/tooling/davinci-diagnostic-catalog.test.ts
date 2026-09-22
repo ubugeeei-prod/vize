@@ -67,9 +67,9 @@ test("TS-53: every compiler error code is named and catalogued, English unchange
   assert.deepEqual(compilerProblems(compiler, catalogEntries()), []);
 });
 
-test("TS-53: every one of the 248 lint rules has a description in every locale", () => {
+test("TS-53: every one of the 249 lint rules has a description in every locale", () => {
   const rules = parseRules();
-  assert.equal(rules.size, 248, "the parser reads every RuleMeta-family declaration");
+  assert.equal(rules.size, 249, "the parser reads every RuleMeta-family declaration");
   assert.deepEqual(ruleProblems(rules, legacyTranslations(), catalogEntries()), []);
 });
 
