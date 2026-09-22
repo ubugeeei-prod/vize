@@ -1,0 +1,27 @@
+warning[7]: Warning (unused_field): Field 'title' is never read
+  --> todo-typos.vue:3:3
+  |
+3 |   title : String
+  |   ^^^^^
+
+error[4014]: Expr Type Mismatch
+        has type : () -> Int
+        wanted   : () -> Unit
+  --> todo-typos.vue:21:19
+   |
+21 |   <button @click="remaining">Toggle</button>
+   |                   ^^^^^^^^^
+
+error[4091]: The type Todo has no field titel.
+  --> todo-typos.vue:24:17
+   |
+24 |       {{ "✓ " + todo.titel }}
+   |                 ^^^^^^^^^^
+
+error[4014]: Expr Type Mismatch
+        has type : Int
+        wanted   : Bool
+  --> todo-typos.vue:27:12
+   |
+27 |   <p v-if="remaining()">Keep going</p>
+   |            ^^^^^^^^^^^

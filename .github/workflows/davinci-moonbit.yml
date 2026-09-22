@@ -1,0 +1,76 @@
+name: Davinci MoonBit
+
+# P6-4a: MoonBit expressions in Vue templates, type-checked by the pinned
+# native `moonc` (`.moonbit-version`, installed by setup-moonbit). The
+# toolchain host sits behind `vize_dialect_moonbit`'s `moonc` feature
+# (charter #39), so this lane is the one place CI enables it; `check.yml`
+# runs the crate's toolchain-free suites with the workspace.
+
+on:
+  push:
+    branches: [main, davinci]
+    paths:
+      - "crates/vize_dialect_moonbit/**"
+      - "crates/vize_croquis/src/sfc/**"
+      - "crates/vize_s1/**"
+      - "crates/vize_s1_to_s2/**"
+      - "crates/vize_s2/**"
+      - ".moonbit-version"
+      - ".github/actions/setup-moonbit/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/davinci-moonbit.yml"
+  pull_request:
+    branches: [main, davinci]
+    paths:
+      - "crates/vize_dialect_moonbit/**"
+      - "crates/vize_croquis/src/sfc/**"
+      - "crates/vize_s1/**"
+      - "crates/vize_s1_to_s2/**"
+      - "crates/vize_s2/**"
+      - ".moonbit-version"
+      - ".github/actions/setup-moonbit/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/davinci-moonbit.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: davinci-moonbit-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  moonc-e2e:
+    name: MoonBit template expressions through pinned moonc (P6-4a)
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          components: clippy
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: davinci-moonbit
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-moonbit
+      - name: Clippy the moonc host lane
+        run: cargo clippy -p vize_dialect_moonbit --all-targets --features moonc -- -D warnings -D clippy::wildcard_imports
+      - name: Check every fixture with the pinned moonc
+        run: cargo test -p vize_dialect_moonbit --features moonc
+      - name: Showcase run (expected to report the fixture's three errors)
+        run: |
+          set +e
+          cargo run -q -p vize_dialect_moonbit --features moonc --example moonbit_check -- crates/vize_dialect_moonbit/tests/fixtures/todo-typos.vue
+          test "$?" -eq 1

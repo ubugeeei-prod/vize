@@ -32,6 +32,7 @@ members = [
   "crates/vize_doctor",
   "crates/vize_extension_host",
   "crates/vize_resident",
+  "crates/vize_dialect_moonbit",
   "tools/benchmarks/crates/davinci_harness",
   "tools/benchmarks/crates/vize",
   "tests/davinci_test_support",

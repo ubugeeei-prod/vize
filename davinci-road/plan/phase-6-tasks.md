@@ -102,6 +102,8 @@
 
 ## P6-4a — MoonBit hosting spike
 
+**Landed 2026-09-22** — decided: the pinned native `moonc` as a child process behind the `MooncHost` boundary (no wasm build of `moonc` exists; the `moonc-worker` Node build is the fallback); the spike is kept with tests as `crates/vize_dialect_moonbit/` — full record: [phase-6-records/p6-4a.md](./phase-6-records/p6-4a.md). Review point open.
+
 **Start gate:** startable now — no open earlier-phase dependency.
 
 **Lane:** D
@@ -110,8 +112,8 @@
 
 **Steps:**
 
-- [ ] Try the wasm artifact under wasmtime; record the imports and failures exactly
-- [ ] Record the decision and its measurements in the task record
+- [x] Try the wasm artifact under wasmtime; record the imports and failures exactly
+- [x] Record the decision and its measurements in the task record
 
 **Acceptance:** decision recorded with reproduction commands; the spike code kept with tests or deleted, and the PR says which. **Review point:** the maintainer accepts the hosting choice.
 

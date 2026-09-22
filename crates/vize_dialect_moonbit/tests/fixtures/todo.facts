@@ -1,0 +1,8 @@
+Interpolation 347..358 `remaining()` bindings=["remaining"] exact=true constant=false inner0..1=Span { start: 347, end: 348 }
+HandlerStatement 390..420 `show_done.val = !show_done.val` bindings=["show_done"] exact=true constant=false inner0..1=Span { start: 390, end: 391 }
+IterValue 460..464 `todo` bindings=["todo"] exact=true constant=false inner0..1=Span { start: 460, end: 461 }
+IterSource 468..473 `todos` bindings=["todos"] exact=true constant=false inner0..1=Span { start: 468, end: 469 }
+Show 483..510 `show_done.val || !todo.done` bindings=["show_done", "todo"] exact=true constant=false inner0..1=Span { start: 483, end: 484 }
+Bind 520..529 `todo.done` bindings=["todo"] exact=true constant=false inner0..1=Span { start: 520, end: 521 }
+Interpolation 541..551 `todo.title` bindings=["todo"] exact=true constant=false inner0..1=Span { start: 541, end: 542 }
+Condition 584..599 `remaining() > 0` bindings=["remaining"] exact=true constant=false inner0..1=Span { start: 584, end: 585 }

@@ -1,0 +1,4 @@
+{"$message_type":"diagnostic","level":"warning","error_code":7,"path":"vize/sfc/todo-typos.vue.mbt","loc":"4:3-4:8","message":"Warning (unused_field): Field 'title' is never read","context":""}
+{"$message_type":"diagnostic","level":"error","error_code":4014,"path":"vize/sfc/todo-typos.vue.mbt","loc":"22:13-22:22","message":"Expr Type Mismatch\n        has type : () -> Int\n        wanted   : () -> Unit","context":""}
+{"$message_type":"diagnostic","level":"error","error_code":4091,"path":"vize/sfc/todo-typos.vue.mbt","loc":"26:24-26:34","message":"The type Todo has no field titel.","context":""}
+{"$message_type":"diagnostic","level":"error","error_code":4014,"path":"vize/sfc/todo-typos.vue.mbt","loc":"28:6-28:17","message":"Expr Type Mismatch\n        has type : Int\n        wanted   : Bool","context":""}

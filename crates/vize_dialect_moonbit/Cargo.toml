@@ -1,0 +1,39 @@
+# The MoonBit expression dialect (Davinci phase 6, lane D: P6-4a -> P6-4b).
+#
+# P6-4a hosting spike: MoonBit expressions in a Vue template are re-read as
+# `ExprRef::Foreign`, projected into one virtual `.mbt` file with span links
+# (charter #14), and type-checked by the pinned native `moonc` behind the
+# `MooncHost` boundary. Nothing in the default build depends on this crate,
+# and the toolchain host is reachable only through the `moonc` feature
+# (charter #39); it adds no third-party dependency.
+[package]
+name = "vize_dialect_moonbit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Davinci MoonBit expression dialect: virtual MoonBit projection and moonc hosting (experimental)"
+publish = false
+metadata.vize.stability = "experimental"
+
+[features]
+# Hosts the pinned native `moonc` (`.moonbit-version`) as the dialect's
+# checker. Off by default: nothing in a default build spawns the toolchain.
+moonc = []
+
+[dependencies]
+serde_json = { workspace = true }
+vize_croquis = { workspace = true }
+vize_s0 = { workspace = true }
+vize_s1 = { workspace = true }
+vize_s1_to_s2 = { workspace = true }
+vize_s2 = { workspace = true }
+
+[[test]]
+name = "moonc_e2e"
+required-features = ["moonc"]
+
+[[example]]
+name = "moonbit_check"
+required-features = ["moonc"]

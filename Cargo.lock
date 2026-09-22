@@ -4424,6 +4424,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_dialect_moonbit"
+version = "0.425.1"
+dependencies = [
+ "serde_json",
+ "vize_carton",
+ "vize_croquis",
+ "vize_s1",
+ "vize_s1_to_s2",
+ "vize_s2",
+]
+
+[[package]]
 name = "vize_doctor"
 version = "0.425.1"
 dependencies = [
