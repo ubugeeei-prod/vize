@@ -13,34 +13,46 @@ defineSlots<{ row(props: { item: { id: number; label: string } }): unknown }>();
   <slot name="row" v-bind="row" />
 </template>
 "#;
-    let broken = clean.replace("id: 1", "id: 'wrong'");
-    let project = create_case_with_files("spread-nested", &[("src/App.vue", clean)]);
-    for target in ["src/App.vue", "src"] {
-        assert_clean(&project, &corsa_path, target);
-        std::fs::write(project.join("src/App.vue"), &broken).unwrap();
-        let report = run_check_json(&project, &corsa_path, target);
-        assert!(
-            !report.status.success(),
-            "bad spread passed: {}",
-            report.json
-        );
-        assert_eq!(report.json["errorCount"], 1, "{}", report.json);
-        assert_diagnostic(
-            &report.json,
-            "src/App.vue",
-            6,
-            4,
-            2345,
-            concat!(
-                "error:6:4 [TS2345] Argument of type '{ item: { id: string; label: string; }; }' is not assignable to parameter of type '{ item: { id: number; label: string; }; }'.",
+    for (name, declaration, line) in [
+        ("spread-nested", "", 6),
+        (
+            "spread-shadowed-generic-extract",
+            "type Extract<T, U> = { unrelated: boolean };\n",
+            7,
+        ),
+        ("spread-shadowed-extract", "type Extract = string;\n", 7),
+    ] {
+        let clean = clean.replacen("const row", &format!("{declaration}const row"), 1);
+        let broken = clean.replace("id: 1", "id: 'wrong'");
+        let project = create_case_with_files(name, &[("src/App.vue", &clean)]);
+        for target in ["src/App.vue", "src"] {
+            assert_clean(&project, &corsa_path, target);
+            std::fs::write(project.join("src/App.vue"), &broken).unwrap();
+            let report = run_check_json(&project, &corsa_path, target);
+            assert!(
+                !report.status.success(),
+                "bad spread passed: {}",
+                report.json
+            );
+            assert_eq!(report.json["errorCount"], 1, "{}", report.json);
+            let message = concat!(
+                "Argument of type '{ item: { id: string; label: string; }; }' is not assignable to parameter of type '{ item: { id: number; label: string; }; }'.",
                 "\nThe types of 'item.id' are incompatible between these types.",
                 "\nType 'string' is not assignable to type 'number'.",
-            ),
-        );
-        std::fs::write(project.join("src/App.vue"), clean).unwrap();
-        assert_clean(&project, &corsa_path, target);
+            );
+            assert_diagnostic(
+                &report.json,
+                "src/App.vue",
+                line,
+                4,
+                2345,
+                &format!("error:{line}:4 [TS2345] {message}"),
+            );
+            std::fs::write(project.join("src/App.vue"), &clean).unwrap();
+            assert_clean(&project, &corsa_path, target);
+        }
+        std::fs::remove_dir_all(project).unwrap();
     }
-    std::fs::remove_dir_all(project).unwrap();
 }
 
 #[test]
