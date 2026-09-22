@@ -1,0 +1,8 @@
+エラー[vue/no-unused-setup-bindings]: `total` は `<script setup>` で宣言されていますが、どこからも読まれていません。
+ --> src/components/Totals.vue:2:7
+  |
+2 | const total = ref(0)
+  |       ^^^^^ ここで宣言されています
+  |
+  = 根拠: `total` は <script setup> の束縛で、どこからも読まれていません
+  = ヒント: この束縛を削除するか、テンプレートから読んでください

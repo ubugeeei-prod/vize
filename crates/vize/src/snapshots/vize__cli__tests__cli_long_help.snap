@@ -10,6 +10,7 @@ Commands:
   build           Compile Vue SFC files (default command) [alias: atelier]
   fmt             Format Vue, JSX, and TSX files [alias: glyph]
   lint            Lint Vue, HTML, JSX, and TSX files [alias: patina]
+  explain         Explain a diagnostic code
   check           Type check Vue, JSX, and TSX files
   inspector       Create playground compiler inspector payloads and agent reports
   curator         Curator utilities for diagnostics and reports
