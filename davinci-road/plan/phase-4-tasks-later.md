@@ -109,6 +109,8 @@
 
 **Non-goals:** the 208 rules not yet on the facade (P4-8a…P4-8c).
 
+**Progress 2026-09-22:** `lint_jsx` drives the 40 markup-facade rules over the S2 projection when P2-16 admits the root, and over the lowered Relief document when it refuses. `LintDocumentKind::s1_input_dialect` maps Vue/HTML fragments, JSX modules, and (via template lang) pug. Not closed: `lint_sfc` still runs those rules through the Relief `Rule` visitor — the `MarkupRule` bodies are not snapshot-identical (directive spans, autofixes, dynamic arguments, `vue/permitted-contents`) — and `MarkupDocumentInner::Relief` / `MarkupDocument::from_jsx` remain for that visitor, the content-model skeleton, and the TS-25 witness. See the [P4-7b record](./phase-4-records/p4-7b.md).
+
 ## P4-8a — Neutral-core rule wave
 
 **Start gate:** startable now — P3-independent.
