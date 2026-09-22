@@ -19,21 +19,23 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeData`                       | type  | `scope`             |     2 |     2 |
 | `ScopeKind`                       | type  | `scope`             |     2 |     3 |
 | `UnusedVarContext`                | type  | `croquis`           |     1 |     4 |
-| `Croquis.bindings`                | field | `croquis`           |     1 |     1 |
 | `Croquis.component_registrations` | field | `croquis`           |     2 |     2 |
 | `Croquis.element_ids`             | field | `croquis`           |     1 |     2 |
 | `Croquis.import_statements`       | field | `croquis`           |     1 |     1 |
 | `Croquis.macros`                  | field | `croquis`           |     8 |    22 |
 | `Croquis.reactivity`              | field | `croquis`           |     1 |     1 |
 | `Croquis.scopes`                  | field | `croquis`           |     2 |     4 |
-| `Croquis.undefined_refs`          | field | `croquis`           |     1 |     1 |
 | `Croquis.used_components`         | field | `croquis`           |     1 |     1 |
 
 ## Non-product `vize_croquis` imports
 
 | item                                      | files | sites |
 | ----------------------------------------- | ----: | ----: |
+| `Bindings`                                |     1 |     2 |
 | `BlockLocation`                           |     1 |     2 |
+| `CroquisFacts`                            |     2 |     2 |
+| `Demand`                                  |     2 |     4 |
+| `FactConsumer`                            |     2 |     2 |
 | `MacroKind`                               |     3 |     3 |
 | `ReactiveKind`                            |     1 |     1 |
 | `ReactivityLoss`                          |     1 |     2 |
@@ -44,6 +46,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `SfcDescriptor`                           |    11 |    15 |
 | `SfcError`                                |     1 |     2 |
 | `SfcParseOptions`                         |    10 |    11 |
+| `UndefinedRefs`                           |     1 |     2 |
 | `VirtualTsConfig`                         |     1 |     1 |
 | `VirtualTsOutput`                         |     5 |    16 |
 | `collect_options_descriptor`              |     4 |     4 |
@@ -77,7 +80,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Symbol`                |        0 |   15 |
 | `SymbolId`              |        0 |    3 |
 | `UnusedVarContext`      |        4 |    5 |
-| `Croquis.bindings`      |        1 |    6 |
+| `Croquis.bindings`      |        0 |    5 |
 | `Croquis.macros`        |       22 |   31 |
 | `Croquis.reactivity`    |        1 |    4 |
 | `Croquis.scopes`        |        4 |   27 |

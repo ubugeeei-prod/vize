@@ -26,13 +26,14 @@ lsp	LSP	source	crates/vize_maestro/src/ide/completion/resolve/visibility.rs	3	s0
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/resolve/visibility.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/resolve/visibility.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/resolve/visibility.rs	3	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/script.rs	24	old_ast	old AST/parser	old	vize_relief	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/script.rs	24	croquis	Croquis analysis	old	vize_croquis	legacy	2
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/script.rs	20	croquis	Croquis analysis	old	vize_croquis	legacy	5
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/script.rs	33	old_ast	old AST/parser	old	vize_relief	legacy	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/script.rs	33	croquis	Croquis analysis	old	vize_croquis	legacy	5
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/context.rs	10	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/member_access.rs	12	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/member_access.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal.rs	6	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	9
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
@@ -103,7 +104,7 @@ lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/message.rs	79	s0	
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	151	s0	S0	stage	vize_s0	preferred	4
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/tests.rs	1	s0	S0	stage	vize_s0	preferred	3
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art_bindings.rs	5	s0	S0	stage	vize_s0	preferred	4
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art_bindings.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art_bindings.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	9
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	10	s0	S0	stage	vize_s0	preferred	3
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	10	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	10	croquis	Croquis analysis	old	vize_croquis	legacy	1
