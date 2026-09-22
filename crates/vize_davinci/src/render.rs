@@ -24,6 +24,9 @@
 //! - **Excerpt** — every [`PartKind::Primary`] and [`PartKind::Secondary`]
 //!   part plus the diagnostic's own span, which is marked as primary unless a
 //!   primary part already covers exactly it. See [`excerpt`] for the layout.
+//! - **Why** — one `= note: because …` footer per link of a proven witness,
+//!   in proof order. See [`why`]. A legacy exemption is not a proof and adds
+//!   no note.
 //! - **Footers** — each [`PartKind::Help`] part as `= help: …`, except a
 //!   help part immediately followed by suggestions, which titles that fix.
 //! - **Fixes** — each run of consecutive [`PartKind::Suggestion`] parts is one
@@ -50,6 +53,7 @@ mod paint;
 mod row;
 mod source;
 mod text;
+mod why;
 
 use alloc::vec::Vec;
 
@@ -184,8 +188,13 @@ impl<'c, C: Catalog> Renderer<'c, C> {
         excerpt.write(out, file, &frame);
 
         let help = self.catalog.phrase(Phrase::Help);
-        if !footers.is_empty() || !fixes.is_empty() {
+        let notes = why::notes(file, self.catalog, diagnostic);
+        if !footers.is_empty() || !notes.is_empty() || !fixes.is_empty() {
             frame.blank(out);
+        }
+        let because = self.catalog.phrase(Phrase::Why);
+        for note in &notes {
+            frame.footer(out, because, note.as_str());
         }
         for message in footers {
             frame.footer(out, help, message);

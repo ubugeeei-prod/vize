@@ -1,0 +1,5818 @@
+=== compiler/abrupt-closing-of-empty-comment
+compiler/abrupt-closing-of-empty-comment · compiler error
+Illegal comment.
+
+stage: surface
+severity: error
+
+help:
+  write a comment as <!-- … -->; <!--> and <!---> end it too early
+=== compiler/cache-handler-not-supported
+compiler/cache-handler-not-supported · compiler error
+cacheHandlers option is not supported in this mode.
+
+stage: emit
+severity: error
+
+help:
+  handler caching needs prefixIdentifiers; remove the cacheHandlers option in this mode
+=== compiler/cdata-in-html-content
+compiler/cdata-in-html-content · compiler error
+CDATA section is allowed only in XML context.
+
+stage: surface
+severity: error
+
+help:
+  <![CDATA[ … ]]> only works inside <svg> or <math>; escape the text instead
+=== compiler/duplicate-attribute
+compiler/duplicate-attribute · compiler error
+Duplicate attribute.
+
+stage: surface
+severity: warning
+
+help:
+  remove one of the two, or merge their values
+=== compiler/end-tag-with-attributes
+compiler/end-tag-with-attributes · compiler error
+End tag cannot have attributes.
+
+stage: surface
+severity: error
+
+help:
+  move the attributes to the matching start tag
+=== compiler/end-tag-with-trailing-solidus
+compiler/end-tag-with-trailing-solidus · compiler error
+Trailing solidus not allowed in end tags.
+
+stage: surface
+severity: error
+
+help:
+  write </div>, not </div/>
+=== compiler/eof-before-tag-name
+compiler/eof-before-tag-name · compiler error
+Unexpected EOF in tag.
+
+stage: surface
+severity: error
+
+help:
+  the file ends right after <; finish the tag or remove the stray <
+=== compiler/eof-in-cdata
+compiler/eof-in-cdata · compiler error
+EOF in CDATA section.
+
+stage: surface
+severity: error
+
+help:
+  close the section with ]]>
+=== compiler/eof-in-comment
+compiler/eof-in-comment · compiler error
+EOF in comment.
+
+stage: surface
+severity: error
+
+help:
+  close the comment with -->
+=== compiler/eof-in-script-html-comment-like-text
+compiler/eof-in-script-html-comment-like-text · compiler error
+EOF in script.
+
+stage: surface
+severity: error
+
+help:
+  a <!-- inside <script> is never closed; remove it or close it with -->
+=== compiler/eof-in-tag
+compiler/eof-in-tag · compiler error
+EOF in tag.
+
+stage: surface
+severity: error
+
+help:
+  finish the tag with > before the end of the file
+=== compiler/extend-point
+compiler/extend-point · compiler error
+Extension point.
+
+stage: surface
+severity: error
+=== compiler/incorrectly-closed-comment
+compiler/incorrectly-closed-comment · compiler error
+Incorrectly closed comment.
+
+stage: surface
+severity: error
+
+help:
+  close comments with -->, not --!>
+=== compiler/incorrectly-opened-comment
+compiler/incorrectly-opened-comment · compiler error
+Incorrectly opened comment.
+
+stage: surface
+severity: error
+
+help:
+  open comments with <!--; <! alone starts a bogus comment
+=== compiler/invalid-end-tag
+compiler/invalid-end-tag · compiler error
+Invalid end tag.
+
+stage: surface
+severity: error
+
+help:
+  this end tag closes no open element; remove it or add the matching start tag
+=== compiler/invalid-expression
+compiler/invalid-expression · compiler error
+Error parsing JavaScript expression.
+
+stage: lowered
+severity: error
+
+help:
+  a template expression must be a single JavaScript expression; statements such as if or let are not allowed
+=== compiler/invalid-first-character-of-tag-name
+compiler/invalid-first-character-of-tag-name · compiler error
+Invalid first character of tag name.
+
+stage: surface
+severity: error
+
+help:
+  a tag name starts with an ASCII letter; write &lt; for a literal <
+=== compiler/missing-attribute-value
+compiler/missing-attribute-value · compiler error
+Attribute value expected.
+
+stage: surface
+severity: error
+
+help:
+  give the attribute a value after =, or remove the =
+=== compiler/missing-directive-modifier
+compiler/missing-directive-modifier · compiler error
+Directive modifier is expected.
+
+stage: surface
+severity: error
+
+help:
+  a . must be followed by a modifier name, as in @click.stop
+=== compiler/missing-directive-name
+compiler/missing-directive-name · compiler error
+Directive name is missing.
+
+stage: surface
+severity: error
+
+help:
+  write the directive name after v-, as in v-show
+=== compiler/missing-dynamic-directive-argument-end
+compiler/missing-dynamic-directive-argument-end · compiler error
+End bracket for dynamic directive argument was not found.
+
+stage: surface
+severity: error
+
+help:
+  close the dynamic argument with ], as in :[key]="value"
+=== compiler/missing-end-tag
+compiler/missing-end-tag · compiler error
+Element is missing end tag.
+
+stage: surface
+severity: error
+
+help:
+  close the element before its parent ends
+=== compiler/missing-end-tag-name
+compiler/missing-end-tag-name · compiler error
+End tag name expected.
+
+stage: surface
+severity: error
+
+help:
+  </> is not an end tag; name the element, as in </div>
+=== compiler/missing-interpolation-end
+compiler/missing-interpolation-end · compiler error
+Interpolation end sign was not found.
+
+stage: surface
+severity: error
+
+help:
+  close the interpolation with }}
+=== compiler/missing-whitespace-between-attributes
+compiler/missing-whitespace-between-attributes · compiler error
+Whitespace expected between attributes.
+
+stage: surface
+severity: error
+
+help:
+  separate the attributes with a space
+=== compiler/module-mode-not-supported
+compiler/module-mode-not-supported · compiler error
+ES module mode is not supported in this mode.
+
+stage: emit
+severity: error
+
+help:
+  compile with the function mode here, or switch to a build that emits ES modules
+=== compiler/nested-comment
+compiler/nested-comment · compiler error
+Nested comments are not allowed.
+
+stage: surface
+severity: error
+
+help:
+  a comment cannot contain <!--; close the outer comment first
+=== compiler/prefix-id-not-supported
+compiler/prefix-id-not-supported · compiler error
+prefixIdentifiers option is not supported in this mode.
+
+stage: emit
+severity: error
+
+help:
+  this mode compiles without prefixing identifiers; remove the prefixIdentifiers option
+=== compiler/scope-id-not-supported
+compiler/scope-id-not-supported · compiler error
+scopeId option is not supported in this mode.
+
+stage: emit
+severity: error
+
+help:
+  scoped styles need the module mode; remove the scopeId option or switch modes
+=== compiler/unexpected-character-in-attribute-name
+compiler/unexpected-character-in-attribute-name · compiler error
+Unexpected character in attribute name.
+
+stage: surface
+severity: error
+
+help:
+  ", ' and < cannot appear in an attribute name; check for a missing = or quote
+=== compiler/unexpected-character-in-unquoted-attribute-value
+compiler/unexpected-character-in-unquoted-attribute-value · compiler error
+Unexpected character in unquoted attribute value.
+
+stage: surface
+severity: error
+
+help:
+  quote the value: one containing ", ', <, = or    must be quoted
+=== compiler/unexpected-equals-sign-before-attribute-name
+compiler/unexpected-equals-sign-before-attribute-name · compiler error
+Unexpected equals sign before attribute name.
+
+stage: surface
+severity: error
+
+help:
+  an attribute name cannot start with =; remove the stray =
+=== compiler/unexpected-null-character
+compiler/unexpected-null-character · compiler error
+Unexpected null character.
+
+stage: surface
+severity: error
+
+help:
+  remove the U+0000 character; it usually means a corrupted file or stray binary data
+=== compiler/unexpected-question-mark-instead-of-tag-name
+compiler/unexpected-question-mark-instead-of-tag-name · compiler error
+Invalid tag name.
+
+stage: surface
+severity: error
+
+help:
+  <? starts a processing instruction, which HTML does not support; remove it
+=== compiler/unexpected-solidus-in-tag
+compiler/unexpected-solidus-in-tag · compiler error
+Unexpected solidus in tag.
+
+stage: surface
+severity: error
+
+help:
+  a / is only allowed right before >, to self-close the tag
+=== compiler/unhandled-code-path
+compiler/unhandled-code-path · compiler error
+Unhandled code path.
+
+stage: emit
+severity: error
+
+help:
+  this is a compiler bug; please report it with the template that triggers it
+=== compiler/v-bind-no-expression
+compiler/v-bind-no-expression · compiler error
+v-bind is missing expression.
+
+stage: lowered
+severity: error
+
+help:
+  bind a value, as in :title="title", or use the same-name shorthand :title (Vue 3.4+)
+=== compiler/v-bind-same-name-shorthand
+compiler/v-bind-same-name-shorthand · compiler error
+v-bind shorthand requires prop name.
+
+stage: lowered
+severity: error
+
+help:
+  the same-name shorthand needs a static name, as in :title; a dynamic :[name] needs a value
+=== compiler/v-else-no-adjacent-if
+compiler/v-else-no-adjacent-if · compiler error
+v-else/v-else-if has no adjacent v-if.
+
+stage: lowered
+severity: error
+
+help:
+  place it right after an element with v-if or v-else-if; only comments and whitespace may sit between them
+=== compiler/v-for-malformed-expression
+compiler/v-for-malformed-expression · compiler error
+v-for has invalid expression.
+
+stage: lowered
+severity: error
+
+help:
+  use item in items, (item, index) in items or (value, key, index) in object
+=== compiler/v-for-no-expression
+compiler/v-for-no-expression · compiler error
+v-for is missing expression.
+
+stage: lowered
+severity: error
+
+help:
+  write the iteration, as in v-for="item in items"
+=== compiler/v-for-template-key-placement
+compiler/v-for-template-key-placement · compiler error
+<template v-for> key should be placed on the <template> tag.
+
+stage: lowered
+severity: error
+
+help:
+  move :key from the child element onto <template v-for>
+=== compiler/v-if-no-expression
+compiler/v-if-no-expression · compiler error
+v-if/v-else-if is missing expression.
+
+stage: lowered
+severity: error
+
+help:
+  give the condition, as in v-if="visible"
+=== compiler/v-if-same-key
+compiler/v-if-same-key · compiler error
+v-if/v-else-if branches must use unique keys.
+
+stage: lowered
+severity: error
+
+help:
+  give each branch its own key, or drop the keys and let Vue generate them
+=== compiler/v-model-arg-on-element
+compiler/v-model-arg-on-element · compiler error
+v-model argument is not supported on plain elements.
+
+stage: lowered
+severity: error
+
+help:
+  arguments such as v-model:title only work on components; use plain v-model on native inputs
+=== compiler/v-model-malformed-expression
+compiler/v-model-malformed-expression · compiler error
+v-model value must be a valid JavaScript member expression.
+
+stage: lowered
+severity: error
+
+help:
+  v-model writes back to its value, so bind a variable or property such as form.title, not a call or a literal
+=== compiler/v-model-no-expression
+compiler/v-model-no-expression · compiler error
+v-model is missing expression.
+
+stage: lowered
+severity: error
+
+help:
+  bind a writable value, as in v-model="title"
+=== compiler/v-model-on-props
+compiler/v-model-on-props · compiler error
+v-model cannot be used on props.
+
+stage: lowered
+severity: error
+
+help:
+  props are read-only; emit update:<prop> instead, or copy the prop into local state
+=== compiler/v-model-on-scope
+compiler/v-model-on-scope · compiler error
+v-model cannot be used on v-for or v-slot scope variables.
+
+stage: lowered
+severity: error
+
+help:
+  a scope variable is a local copy; bind the source instead, as in v-model="items[index]"
+=== compiler/v-on-no-expression
+compiler/v-on-no-expression · compiler error
+v-on is missing expression.
+
+stage: lowered
+severity: error
+
+help:
+  give a handler, as in @click="save", or use a modifier-only form such as @submit.prevent
+=== compiler/v-show-no-expression
+compiler/v-show-no-expression · compiler error
+v-show is missing expression.
+
+stage: lowered
+severity: error
+
+help:
+  give the condition, as in v-show="open"
+=== compiler/v-slot-duplicate-slot-names
+compiler/v-slot-duplicate-slot-names · compiler error
+Duplicate slot names detected.
+
+stage: lowered
+severity: error
+
+help:
+  each slot of a component may be provided once; merge the two <template>s
+=== compiler/v-slot-extraneous-default-slot-children
+compiler/v-slot-extraneous-default-slot-children · compiler error
+Extraneous children found when component already has an explicit default slot.
+
+stage: lowered
+severity: error
+
+help:
+  move these children into <template #default>, or remove the explicit default slot
+=== compiler/v-slot-misplaced
+compiler/v-slot-misplaced · compiler error
+v-slot can only be used on components or <template> tags.
+
+stage: lowered
+severity: error
+
+help:
+  wrap the content in <template #name>, or move v-slot onto the component
+=== compiler/v-slot-mixed-slot-usage
+compiler/v-slot-mixed-slot-usage · compiler error
+Mixed v-slot usage with named slots detected.
+
+stage: lowered
+severity: error
+
+help:
+  when a component has named slots, put the default slot in <template #default> too
+=== compiler/v-slot-unexpected-directive-on-slot-outlet
+compiler/v-slot-unexpected-directive-on-slot-outlet · compiler error
+Unexpected custom directive on <slot> outlet.
+
+stage: lowered
+severity: error
+
+help:
+  <slot> renders no element of its own; move the directive to an element inside or around it
+=== a11y/alt-text
+a11y/alt-text · lint rule
+Require alternative text for media elements
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <img src="photo.jpg" />
+  <area href="/link" />
+  <input type="image" />
+  <object data="file.swf" />
+
+valid:
+  <img src="photo.jpg" alt="A sunset" />
+  <area href="/link" alt="Link description" />
+  <input type="image" alt="Submit" />
+  <object data="file.swf" title="Flash content" aria-label="Content" />
+=== a11y/anchor-has-content
+a11y/anchor-has-content · lint rule
+Require anchor elements to have accessible content
+
+tier: complete
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Fix options:
+  1. Add text content:
+    <a href="/about">About Us</a>
+  2. Add aria-label for icon-only links:
+    <a href="/settings" aria-label="Settings">
+    <IconSettings />
+    </a>
+  3. Include image with alt:
+    <a href="/"><img src="logo.png" alt="Home"></a>
+=== a11y/anchor-is-valid
+a11y/anchor-is-valid · lint rule
+Enforce valid href on anchor elements
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <a href="">Link</a>
+  <a href="#">Link</a>
+  <a href="javascript:void(0)">Link</a>
+
+valid:
+  <a href="/about">About</a>
+  <a :href="url">Dynamic Link</a>
+
+help:
+  Fix:
+    <!-- Use a valid URL -->
+    <a href="/about">About</a>
+
+    <!-- For click handlers, use <button> -->
+    <button @click="handleClick">Action</button>
+
+    <!-- For dynamic URLs -->
+    <a :href="url">Link</a>
+=== a11y/aria-props
+a11y/aria-props · lint rule
+Disallow invalid ARIA attributes
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: error
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Why: Invalid ARIA attributes prevent assistive technologies from conveying the intended meaning to users.
+  Valid ARIA attributes are defined in the WAI-ARIA specification:
+  https://www.w3.org/TR/wai-aria/#state_prop_def
+  Common ARIA attributes:
+    <!-- Labeling -->
+    <input aria-label="Search" />
+    <div aria-labelledby="title-id">
+
+    <!-- State -->
+    <button aria-expanded="false">
+    <input aria-invalid="true">
+
+    <!-- Relationships -->
+    <input aria-describedby="hint-id">
+    <div aria-controls="panel-id">
+  Note: Custom aria-* attributes are not allowed. Only use attributes from the WAI-ARIA specification.
+=== a11y/aria-role
+a11y/aria-role · lint rule
+Elements with ARIA roles must use a valid, non-abstract ARIA role
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: error
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Why: Invalid ARIA roles prevent assistive technologies from conveying the intended meaning to users.
+  Valid ARIA roles are defined in the WAI-ARIA specification:
+  https://www.w3.org/TR/wai-aria/#role_definitions
+  Common roles:
+    <!-- Widget roles -->
+    <div role="button">Click me</div>
+    <div role="dialog">Modal content</div>
+    <div role="checkbox">Toggle</div>
+
+    <!-- Landmark roles -->
+    <nav role="navigation">...</nav>
+    <main role="main">...</main>
+    <aside role="complementary">...</aside>
+
+    <!-- Document structure roles -->
+    <div role="heading" aria-level="2">Title</div>
+    <div role="list">...</div>
+=== a11y/aria-unsupported-elements
+a11y/aria-unsupported-elements · lint rule
+Disallow ARIA attributes on elements that do not support them
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: error
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Remove the ARIA attribute or role. Elements like <meta>, <html>, <script>, and <style> are not rendered and do not support ARIA
+=== a11y/click-events-have-key-events
+a11y/click-events-have-key-events · lint rule
+Require keyboard event handlers with click events
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Why: Keyboard users cannot activate click-only handlers.
+  Best solution: Use semantic elements:
+    <button @click="handleClick">Click me</button>
+  If you must use a div:
+    <div
+    role="button"
+    tabindex="0"
+    @click="handleClick"
+    @keydown.enter="handleClick"
+    @keydown.space="handleClick"
+    >
+    Click me
+    </div>
+=== a11y/form-control-has-label
+a11y/form-control-has-label · lint rule
+Require form controls to have associated labels
+
+tier: complete
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Option 1: Use <label> with for:
+    <label for="email">Email</label>
+    <input id="email" type="email">
+  Option 2: Wrap input in label:
+    <label>
+    Email
+    <input type="email">
+    </label>
+  Option 3: Use aria-label:
+    <input type="search" aria-label="Search">
+  Note: Placeholder is NOT a substitute for a label.
+=== a11y/heading-has-content
+a11y/heading-has-content · lint rule
+Require heading elements to have accessible content
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Why: Empty headings confuse screen reader users and break document structure.
+  Fix:
+    <!-- Add text content -->
+    <h2>Section Title</h2>
+
+    <!-- Or use aria-label for dynamic content -->
+    <h2 aria-label="Loading..."><Spinner /></h2>
+=== a11y/heading-levels
+a11y/heading-levels · lint rule
+Disallow skipping heading levels
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <template>
+    <h1>Title</h1>
+    <h3>Subsection</h3>
+  </template>
+
+valid:
+  <template>
+    <h1>Title</h1>
+    <h2>Section</h2>
+    <h3>Subsection</h3>
+  </template>
+
+help:
+  Heading levels should increase by one. Screen reader users navigate by heading levels, so skipping levels makes the document structure confusing.
+=== a11y/iframe-has-title
+a11y/iframe-has-title · lint rule
+Require iframe elements to have a title attribute
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Why: Screen readers announce the title to help users understand the iframe content.
+  Fix:
+    <iframe
+    src="https://example.com/video"
+    title="Product demo video"
+    ></iframe>
+  Note: The title should describe the content, not the source.
+=== a11y/img-alt
+a11y/img-alt · lint rule
+Require alt attribute on images for accessibility
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Why: Screen readers use alt text to describe images to visually impaired users.
+  For informative images:
+    <img src="chart.png" alt="Sales increased 20% in Q4">
+  For decorative images:
+    <img src="decoration.png" alt="">
+  For complex images:
+    <img src="diagram.png" alt="Process flow" aria-describedby="desc">
+    <p id="desc">Detailed description...</p>
+=== a11y/interactive-supports-focus
+a11y/interactive-supports-focus · lint rule
+Require interactive role elements to be focusable
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <div role="button" @click="handle">Click</div>
+
+valid:
+  <div role="button" tabindex="0" @click="handle">Click</div>
+  <button @click="handle">Click</button>
+
+help:
+  Why: Interactive roles imply the element can be activated by keyboard users.
+  Fix:
+    <div role="button" tabindex="0" @click="handle">
+    Click me
+    </div>
+  Better: Use native interactive elements:
+    <button @click="handle">Click me</button>
+=== a11y/label-has-for
+a11y/label-has-for · lint rule
+Require labels to have associated form controls
+
+tier: complete
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <label>Name</label>
+
+valid:
+  <label for="name">Name</label>
+  <label><input type="text" /> Name</label>
+  <label :for="id">Name</label>
+
+help:
+  Fix options:
+  1. Use for attribute:
+    <label for="name">Name</label>
+    <input id="name" type="text">
+  2. Wrap form control:
+    <label>Name <input type="text"></label>
+=== a11y/landmark-roles
+a11y/landmark-roles · lint rule
+Validate landmark role placement and uniqueness
+
+tier: complete
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <template>
+    <main>content</main>
+    <main>another main</main>
+  </template>
+
+valid:
+  <template>
+    <main>content</main>
+    <nav aria-label="Primary">primary nav</nav>
+    <nav aria-label="Footer">footer nav</nav>
+  </template>
+=== a11y/media-has-caption
+a11y/media-has-caption · lint rule
+Require media elements to have captions
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <video src="movie.mp4"></video>
+
+valid:
+  <video src="movie.mp4">
+    <track kind="captions" src="captions.vtt" />
+  </video>
+  <video src="movie.mp4" muted></video>
+
+help:
+  Fix:
+    <video src="movie.mp4">
+    <track kind="captions" src="captions.vtt" />
+    </video>
+  Alternatives:
+  - Add muted attribute for decorative media
+  - Add aria-label for described media
+=== a11y/mouse-events-have-key-events
+a11y/mouse-events-have-key-events · lint rule
+Require focus/blur events with mouse events
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <div @mouseenter="show">...</div>
+
+valid:
+  <div @mouseenter="show" @focus="show">...</div>
+
+help:
+  Why: Keyboard and touch users cannot trigger mouse events.
+  Fix:
+    <div
+    @mouseenter="show"
+    @mouseleave="hide"
+    @focus="show"
+    @blur="hide"
+    tabindex="0"
+    >
+    Hover or focus me
+    </div>
+=== a11y/no-access-key
+a11y/no-access-key · lint rule
+Disallow the use of the accesskey attribute
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Remove the accesskey attribute. Access keys create inconsistent keyboard shortcuts across platforms and conflict with assistive technology shortcuts
+=== a11y/no-aria-hidden-on-focusable
+a11y/no-aria-hidden-on-focusable · lint rule
+Disallow aria-hidden="true" on focusable elements
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: error
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Remove aria-hidden="true" or make the element non-focusable with tabindex="-1"
+=== a11y/no-autofocus
+a11y/no-autofocus · lint rule
+Disallow the use of the autofocus attribute
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Remove the autofocus attribute. Manage focus programmatically when needed using ref and focus()
+=== a11y/no-distracting-elements
+a11y/no-distracting-elements · lint rule
+Disallow distracting elements like <marquee> and <blink>
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Remove this element or use CSS animations with reduced motion support
+=== a11y/no-i-for-icon
+a11y/no-i-for-icon · lint rule
+Disallow using <i> element for icons
+
+tier: heuristic
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <template>
+    <i class="fas fa-home"></i>
+    <i class="material-icons">home</i>
+    <i class="bi bi-heart"></i>
+  </template>
+
+valid:
+  <template>
+    <span class="fas fa-home" aria-hidden="true"></span>
+    <i>italic text</i>
+  </template>
+
+help:
+  Why: The <i> element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues — screen readers may announce meaningless content.
+  Fix: Use <span> with aria-hidden="true" instead:
+    <span class="fas fa-home" aria-hidden="true"></span>
+    <span class="sr-only">Home</span>
+  Or use an SVG icon component for best accessibility.
+=== a11y/no-redundant-roles
+a11y/no-redundant-roles · lint rule
+Disallow redundant ARIA roles
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: yes
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <nav role="navigation">...</nav>
+  <button role="button">...</button>
+
+valid:
+  <nav>...</nav>
+  <div role="navigation">...</div>
+
+help:
+  Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics
+=== a11y/no-refer-to-non-existent-id
+a11y/no-refer-to-non-existent-id · lint rule
+Disallow references to non-existent IDs
+
+tier: heuristic
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <template>
+    <label for="nonexistent">Name:</label>
+    <input id="name-input" />
+  </template>
+
+valid:
+  <template>
+    <label for="name-input">Name:</label>
+    <input id="name-input" />
+  </template>
+
+help:
+  Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.
+  Fix: Ensure the referenced ID exists in the template:
+    <label for="name">Name:</label>
+    <input id="name" type="text">
+=== a11y/no-role-presentation-on-focusable
+a11y/no-role-presentation-on-focusable · lint rule
+Disallow role="presentation" or role="none" on focusable elements
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: error
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Remove the role attribute or make the element non-focusable. Presentation role removes semantic meaning while the element remains focusable
+=== a11y/no-static-element-interactions
+a11y/no-static-element-interactions · lint rule
+Disallow event handlers on static elements
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <div @click="handleClick">Click</div>
+
+valid:
+  <button @click="handleClick">Click</button>
+  <div role="button" tabindex="0" @click="handleClick">Click</div>
+
+help:
+  Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.
+  Fix options:
+  1. Use a native interactive element:
+    <button @click="handle">Click me</button>
+  2. Add role and tabindex:
+    <div role="button" tabindex="0" @click="handle">
+    Click me
+    </div>
+=== a11y/placeholder-label-option
+a11y/placeholder-label-option · lint rule
+Require disabled or hidden on select placeholder option
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <template>
+    <select>
+      <option value="">Choose one</option>
+      <option value="a">A</option>
+    </select>
+  </template>
+
+valid:
+  <template>
+    <select>
+      <option value="" disabled>Choose one</option>
+      <option value="a">A</option>
+    </select>
+  </template>
+
+help:
+  Add disabled or hidden to the placeholder <option> to prevent it from being selected:
+  <option value="" disabled>Choose one</option>
+=== a11y/role-has-required-aria-props
+a11y/role-has-required-aria-props · lint rule
+Require ARIA roles to have required properties
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <div role="checkbox">Check</div>
+  <div role="slider">Slider</div>
+
+valid:
+  <div role="checkbox" aria-checked="false">Check</div>
+  <div role="slider" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">Slider</div>
+
+help:
+  Role {role} requires: {props}
+  Example:
+    <div role="{role}" {props}="...">
+    Content
+    </div>
+=== a11y/tabindex-no-positive
+a11y/tabindex-no-positive · lint rule
+Disallow positive tabindex values
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+help:
+  Use tabindex="0" for focusable elements or tabindex="-1" for programmatic focus only
+=== a11y/use-list
+a11y/use-list · lint rule
+Suggest using list elements for bullet-like text
+
+tier: heuristic
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/accessibility.md
+
+invalid:
+  <template>
+    <p>- Item one</p>
+    <p>- Item two</p>
+    <p>* Another item</p>
+  </template>
+
+valid:
+  <template>
+    <ul>
+      <li>Item one</li>
+      <li>Item two</li>
+    </ul>
+  </template>
+
+help:
+  Screen readers cannot identify bullet characters as list items. Use semantic <ul>/<ol> with <li> elements instead.
+=== css/no-display-none
+css/no-display-none · lint rule
+Suggest using v-show instead of display: none
+
+tier: heuristic
+domain: declarations and selectors of <style> blocks as parsed by lightningcss
+severity: warning
+category: css
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== css/no-hardcoded-values
+css/no-hardcoded-values · lint rule
+Suggest using CSS variables instead of hardcoded values
+
+tier: heuristic
+domain: declarations and selectors of <style> blocks as parsed by lightningcss
+severity: warning
+category: css
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== css/no-id-selectors
+css/no-id-selectors · lint rule
+Discourage use of ID selectors in CSS
+
+tier: exact
+domain: declarations and selectors of <style> blocks as parsed by lightningcss
+severity: warning
+category: css
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== css/no-important
+css/no-important · lint rule
+Discourage use of !important in CSS
+
+tier: exact
+domain: declarations and selectors of <style> blocks as parsed by lightningcss
+severity: warning
+category: css
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== css/no-utility-classes
+css/no-utility-classes · lint rule
+Warn against implementing utility classes in component styles
+
+tier: heuristic
+domain: declarations and selectors of <style> blocks as parsed by lightningcss
+severity: warning
+category: css
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+
+invalid:
+  .flex { display: flex; }
+  .mt-4 { margin-top: 1rem; }
+  .text-center { text-align: center; }
+
+valid:
+  .my-component { display: flex; margin-top: 1rem; }
+=== css/no-v-bind-performance
+css/no-v-bind-performance · lint rule
+Warn about performance cost of CSS v-bind()
+
+tier: exact
+domain: declarations and selectors of <style> blocks as parsed by lightningcss
+severity: warning
+category: css
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== css/prefer-logical-properties
+css/prefer-logical-properties · lint rule
+Recommend CSS logical properties for better i18n support
+
+tier: exact
+domain: declarations and selectors of <style> blocks as parsed by lightningcss
+severity: warning
+category: css
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== css/prefer-nested-selectors
+css/prefer-nested-selectors · lint rule
+Recommend using CSS nesting for descendant selectors
+
+tier: heuristic
+domain: declarations and selectors of <style> blocks as parsed by lightningcss
+severity: warning
+category: css
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== css/prefer-slotted
+css/prefer-slotted · lint rule
+Recommend ::v-slotted() for styling slot content
+
+tier: heuristic
+domain: declarations and selectors of <style> blocks as parsed by lightningcss
+severity: warning
+category: css
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== css/require-font-display
+css/require-font-display · lint rule
+Require font-display in @font-face rules
+
+tier: exact
+domain: declarations and selectors of <style> blocks as parsed by lightningcss
+severity: warning
+category: css
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== ecosystem/nuxt-prefer-nuxt-link
+ecosystem/nuxt-prefer-nuxt-link · lint rule
+Prefer NuxtLink for internal application links
+
+tier: exact
+domain: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+severity: warning
+category: ecosystem
+autofix: no
+docs: docs/content/rules/ecosystem.md
+=== ecosystem/pinia-prefer-store-to-refs
+ecosystem/pinia-prefer-store-to-refs · lint rule
+Prefer storeToRefs() when destructuring Pinia stores
+
+tier: complete
+domain: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+severity: warning
+category: ecosystem
+autofix: no
+docs: docs/content/rules/ecosystem.md
+=== ecosystem/router-link-require-to
+ecosystem/router-link-require-to · lint rule
+Require a `to` target on RouterLink and NuxtLink components
+
+tier: exact
+domain: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+severity: error
+category: ecosystem
+autofix: no
+docs: docs/content/rules/ecosystem.md
+=== ecosystem/void-link-require-href
+ecosystem/void-link-require-href · lint rule
+Require `href` on Void Vue Link components
+
+tier: exact
+domain: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+severity: error
+category: ecosystem
+autofix: no
+docs: docs/content/rules/ecosystem.md
+=== ecosystem/void-link-valid-method
+ecosystem/void-link-valid-method · lint rule
+Validate static Void Vue Link method props
+
+tier: exact
+domain: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+severity: warning
+category: ecosystem
+autofix: no
+docs: docs/content/rules/ecosystem.md
+=== ecosystem/vue-i18n-no-missing-key
+ecosystem/vue-i18n-no-missing-key · lint rule
+Report static vue-i18n keys that are absent from local SFC messages
+
+tier: complete
+domain: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+severity: warning
+category: ecosystem
+autofix: no
+docs: docs/content/rules/ecosystem.md
+=== ecosystem/vue-router-prefer-named-link
+ecosystem/vue-router-prefer-named-link · lint rule
+Prefer named route objects over static path strings in RouterLink
+
+tier: exact
+domain: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+severity: warning
+category: ecosystem
+autofix: no
+docs: docs/content/rules/ecosystem.md
+=== ecosystem/vue-router-prefer-named-push
+ecosystem/vue-router-prefer-named-push · lint rule
+Prefer named route objects for Vue Router programmatic navigation
+
+tier: exact
+domain: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+severity: warning
+category: ecosystem
+autofix: no
+docs: docs/content/rules/ecosystem.md
+=== ecosystem/vue-test-utils-no-html-snapshot
+ecosystem/vue-test-utils-no-html-snapshot · lint rule
+Avoid snapshotting wrapper.html() in Vue Test Utils tests
+
+tier: exact
+domain: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+severity: warning
+category: ecosystem
+autofix: no
+docs: docs/content/rules/ecosystem.md
+=== html/deprecated-attr
+html/deprecated-attr · lint rule
+Disallow deprecated HTML attributes
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: html-conformance
+autofix: no
+docs: docs/content/rules/html.md
+
+invalid:
+  <template>
+    <div align="center">text</div>
+    <table bgcolor="#fff" cellpadding="5">...</table>
+  </template>
+
+valid:
+  <template>
+    <div style="text-align: center">text</div>
+    <table style="background-color: #fff">...</table>
+  </template>
+
+help:
+  Use {suggestion} instead.
+=== html/deprecated-element
+html/deprecated-element · lint rule
+Disallow deprecated HTML elements
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: html-conformance
+autofix: no
+docs: docs/content/rules/html.md
+
+invalid:
+  <template>
+    <center>centered text</center>
+    <font color="red">colored text</font>
+    <marquee>scrolling text</marquee>
+  </template>
+
+valid:
+  <template>
+    <div style="text-align: center">centered text</div>
+    <span style="color: red">colored text</span>
+  </template>
+
+help:
+  This element is obsolete per the HTML Living Standard. Use modern HTML elements with CSS for styling instead.
+=== html/id-duplication
+html/id-duplication · lint rule
+Disallow duplicate element IDs
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: error
+category: html-conformance
+autofix: no
+docs: docs/content/rules/html.md
+
+invalid:
+  <template>
+    <div id="content">first</div>
+    <div id="content">second</div>
+  </template>
+
+valid:
+  <template>
+    <div id="content">first</div>
+    <div id="sidebar">second</div>
+  </template>
+
+help:
+  Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById().
+=== html/no-consecutive-br
+html/no-consecutive-br · lint rule
+Disallow consecutive <br> elements
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: html-conformance
+autofix: no
+docs: docs/content/rules/html.md
+
+invalid:
+  <template>
+    <p>First paragraph<br><br>Second paragraph</p>
+  </template>
+
+valid:
+  <template>
+    <p>First paragraph</p>
+    <p>Second paragraph</p>
+  </template>
+
+help:
+  Use <p> elements or CSS margin/padding for spacing instead of multiple <br> tags.
+=== html/no-dupe-style-properties
+html/no-dupe-style-properties · lint rule
+Disallow duplicate properties in inline style attributes
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: html-conformance
+autofix: no
+docs: docs/content/rules/html.md
+
+invalid:
+  <template>
+    <div style="color: red; color: blue">text</div>
+    <div style="margin: 0; MARGIN: 1px">text</div>
+  </template>
+
+valid:
+  <template>
+    <div style="color: red; background: blue">text</div>
+    <div :style="{ color: a, color: b }">text</div>
+  </template>
+
+help:
+  Remove the duplicate declaration. When a property is declared more than once, only the last value applies, so the earlier ones are dead code.
+=== html/no-duplicate-class
+html/no-duplicate-class · lint rule
+Disallow duplicate class names in a static class attribute
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: html-conformance
+autofix: no
+docs: docs/content/rules/html.md
+
+invalid:
+  <template>
+    <div class="btn btn primary">click</div>
+  </template>
+
+valid:
+  <template>
+    <div class="btn primary">click</div>
+  </template>
+
+help:
+  Remove the duplicate occurrence so each class name appears only once in the class attribute.
+=== html/no-duplicate-dt
+html/no-duplicate-dt · lint rule
+Disallow duplicate <dt> names in <dl>
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: html-conformance
+autofix: no
+docs: docs/content/rules/html.md
+
+invalid:
+  <template>
+    <dl>
+      <dt>Term A</dt>
+      <dd>Definition 1</dd>
+      <dt>Term A</dt>
+      <dd>Definition 2</dd>
+    </dl>
+  </template>
+
+valid:
+  <template>
+    <dl>
+      <dt>Term A</dt>
+      <dd>Definition A</dd>
+      <dt>Term B</dt>
+      <dd>Definition B</dd>
+    </dl>
+  </template>
+
+help:
+  Each term in a definition list should be unique. Combine definitions under a single <dt> or use distinct terms.
+=== html/no-empty-palpable-content
+html/no-empty-palpable-content · lint rule
+Disallow empty elements that expect visible content
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: html-conformance
+autofix: no
+docs: docs/content/rules/html.md
+
+invalid:
+  <template>
+    <p></p>
+    <li></li>
+    <td></td>
+  </template>
+
+valid:
+  <template>
+    <p>text</p>
+    <li>item</li>
+    <td>cell</td>
+  </template>
+
+help:
+  Add text content, child elements, or use aria-label for accessible content.
+=== html/require-datetime
+html/require-datetime · lint rule
+Require datetime attribute on <time> element
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: html-conformance
+autofix: no
+docs: docs/content/rules/html.md
+
+invalid:
+  <template>
+    <time>last Tuesday</time>
+    <time>Christmas</time>
+  </template>
+
+valid:
+  <template>
+    <time datetime="2024-12-25">Christmas</time>
+    <time>2024-12-25</time>
+  </template>
+
+help:
+  Add a datetime attribute with a machine-readable date/time value, e.g. <time datetime="2024-12-25">Christmas</time>
+=== musea/no-empty-variant
+musea/no-empty-variant · lint rule
+Disallow empty <variant> blocks
+
+tier: exact
+domain: <art> and <variant> blocks of .art.vue files
+severity: warning
+category: musea
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== musea/prefer-design-tokens
+musea/prefer-design-tokens · lint rule
+Prefer design token CSS variables over hardcoded primitive values
+
+tier: heuristic
+domain: <art> and <variant> blocks of .art.vue files
+severity: warning
+category: musea
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+
+invalid:
+  .button {
+    background: #3b82f6;  /* matches primitive token color.primary */
+  }
+
+valid:
+  .button {
+    background: var(--color-primary);
+  }
+=== musea/require-component
+musea/require-component · lint rule
+Require component attribute in <art> block
+
+tier: exact
+domain: <art> and <variant> blocks of .art.vue files
+severity: warning
+category: musea
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== musea/require-title
+musea/require-title · lint rule
+Require title attribute in <art> block
+
+tier: exact
+domain: <art> and <variant> blocks of .art.vue files
+severity: error
+category: musea
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+
+invalid:
+  <art component="./Button.vue">
+    <!-- missing title -->
+  </art>
+
+valid:
+  <script setup>
+  defineArt("./Button.vue", { title: "Button" });
+  </script>
+  
+  <art>
+  </art>
+
+help:
+  Add a title attribute to describe the component
+=== musea/unique-variant-names
+musea/unique-variant-names · lint rule
+Require unique variant names
+
+tier: exact
+domain: <art> and <variant> blocks of .art.vue files
+severity: error
+category: musea
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== musea/valid-variant
+musea/valid-variant · lint rule
+Require name attribute in <variant> blocks
+
+tier: exact
+domain: <art> and <variant> blocks of .art.vue files
+severity: error
+category: musea
+autofix: no
+docs: docs/content/rules/musea-and-css.md
+=== nuxt/no-nuxt-config-test-key
+nuxt/no-nuxt-config-test-key · lint rule
+Disallow setting `test` key in Nuxt config
+
+tier: exact
+domain: Nuxt configuration objects and definePageMeta calls written as literals
+severity: error
+category: nuxt
+autofix: no
+docs: docs/content/rules/index.md
+=== nuxt/no-page-meta-runtime-values
+nuxt/no-page-meta-runtime-values · lint rule
+Disallow runtime context values inside `definePageMeta` at the eager level, which is extracted into a separate chunk at build time and runs before component setup
+
+tier: complete
+domain: Nuxt configuration objects and definePageMeta calls written as literals
+severity: error
+category: nuxt
+autofix: no
+docs: docs/content/rules/index.md
+=== nuxt/nuxt-config-keys-order
+nuxt/nuxt-config-keys-order · lint rule
+Prefer recommended order of Nuxt config properties
+
+tier: exact
+domain: Nuxt configuration objects and definePageMeta calls written as literals
+severity: error
+category: nuxt
+autofix: yes
+docs: docs/content/rules/index.md
+=== nuxt/prefer-import-meta
+nuxt/prefer-import-meta · lint rule
+Prefer using `import.meta.*` over `process.*`
+
+tier: exact
+domain: Nuxt configuration objects and definePageMeta calls written as literals
+severity: error
+category: nuxt
+autofix: yes
+docs: docs/content/rules/index.md
+=== petite-vue/no-unsupported-directive
+petite-vue/no-unsupported-directive · lint rule
+Disallow directives that petite-vue does not support
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/index.md
+
+invalid:
+  <div v-memo="[a, b]"></div>
+  <template v-slot:header></template>
+  <div v-my-directive></div>
+
+valid:
+  <div v-scope="{ count: 0 }" v-effect="console.log(count)"></div>
+  <div v-if="ok" v-bind:title="title" @click="count++"></div>
+
+help:
+  petite-vue supports v-scope, v-effect, v-if/v-else/v-else-if, v-for, v-show, v-html, v-text, v-model, v-bind (:), v-on (@), v-once, v-pre, v-cloak, and the ref attribute. Remove the unsupported directive or use a supported alternative.
+=== petite-vue/valid-v-effect
+petite-vue/valid-v-effect · lint rule
+Require v-effect to have a non-empty expression
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/index.md
+
+invalid:
+  <div v-effect></div>
+  <div v-effect=""></div>
+  <div v-effect="   "></div>
+
+valid:
+  <div v-effect="el.textContent = count"></div>
+  <div v-effect="count++"></div>
+
+help:
+  Give v-effect a statement to run as a reactive side effect, such as v-effect="el.textContent = count", or remove the empty directive.
+=== petite-vue/valid-v-scope
+petite-vue/valid-v-scope · lint rule
+Require v-scope to bind an object literal
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/index.md
+
+invalid:
+  <div v-scope="count"></div>
+  <div v-scope="foo()"></div>
+  <div v-scope="a + b"></div>
+  <div v-scope="123"></div>
+
+valid:
+  <div v-scope></div>
+  <div v-scope="{}"></div>
+  <div v-scope="{ count: 0 }"></div>
+  <div v-scope="({ count: 0 })"></div>
+
+help:
+  petite-vue's v-scope introduces scope bindings from an object literal, e.g. v-scope="{ count: 0 }". A non-object value declares no bindings. Use an object literal, or a bare v-scope to mark a scope root without bindings.
+=== script/component-options-name-casing
+script/component-options-name-casing · lint rule
+Enforce PascalCase for the component `name` option
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    name: 'my-component' // kebab-case
+  }
+
+valid:
+  export default {
+    name: 'MyComponent'
+  }
+=== script/custom-event-name-casing
+script/custom-event-name-casing · lint rule
+Enforce camelCase for emitted custom event names
+
+tier: complete
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const emit = defineEmits(['my-event'])
+  emit('my-event')         // kebab-case → report
+
+valid:
+  const emit = defineEmits(['myEvent'])
+  emit('myEvent')
+=== script/define-emits-declaration
+script/define-emits-declaration · lint rule
+Enforce the type-based defineEmits<{}>() form over the runtime/array form
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  // Runtime array form
+  const emit = defineEmits(['change', 'update'])
+  
+  // Runtime object form
+  const emit = defineEmits({
+    change: (id: number) => true,
+  })
+
+valid:
+  // Type-based form (preferred)
+  const emit = defineEmits<{ change: [id: number] }>()
+  
+  // Named type alias
+  const emit = defineEmits<Emits>()
+=== script/define-macros-order
+script/define-macros-order · lint rule
+Enforce a consistent order of the Vue compiler macros in <script setup>
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  // defineProps before defineModel (out of canonical order)
+  const props = defineProps<{ count: number }>()
+  const model = defineModel<string>()
+
+valid:
+  defineOptions({ name: 'MyComponent' })
+  const model = defineModel<string>()
+  const props = defineProps<{ count: number }>()
+  const emit = defineEmits<{ change: [value: string] }>()
+  defineSlots<{ default(props: {}): any }>()
+=== script/define-props-declaration
+script/define-props-declaration · lint rule
+Enforce type-based defineProps<{ ... }>() over the runtime/object form
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  // Runtime / object form
+  const props = defineProps({
+    kind: { type: String },
+    count: { type: Number, default: 0 },
+  })
+  
+  // Runtime / array form
+  const props = defineProps(['kind', 'count'])
+
+valid:
+  // Type-based form
+  const props = defineProps<{ kind: string; count?: number }>()
+  
+  // Type-based with a referenced interface
+  const props = defineProps<Props>()
+=== script/define-props-destructuring
+script/define-props-destructuring · lint rule
+Disallow destructuring the return value of defineProps in <script setup>
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const { foo, bar } = defineProps<{ foo: string; bar?: number }>()
+  const [first] = defineProps<[string]>()
+
+valid:
+  const props = defineProps<{ foo: string }>()
+  // ...later: props.foo
+=== script/no-arrow-functions-in-watch
+script/no-arrow-functions-in-watch · lint rule
+Disallow arrow functions as Options API watch handlers
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    watch: {
+      // `this` is not the component instance inside an arrow function.
+      value: () => {
+        this.doSomething()
+      },
+      other: {
+        handler: () => {}
+      }
+    }
+  }
+
+valid:
+  export default {
+    watch: {
+      value(newValue, oldValue) {
+        this.doSomething()
+      },
+      other: {
+        handler(newValue) {},
+        deep: true
+      }
+    }
+  }
+=== script/no-async-in-computed
+script/no-async-in-computed · lint rule
+Disallow async functions in computed properties
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const data = computed(async () => {
+    const response = await fetch('/api/data')
+    return response.json()
+  })
+
+valid:
+  // Use ref + watch with cleanup for async operations
+  const data = ref(null)
+  watch(query, async (value, _oldValue, onCleanup) => {
+    const controller = new AbortController()
+    let active = true
+    onCleanup(() => {
+      active = false
+      controller.abort()
+    })
+    const response = await fetch(`/api/data?q=${value}`, { signal: controller.signal })
+    const next = await response.json()
+    if (active) data.value = next
+  })
+  
+  // Or use a dedicated async state library
+  const { data } = useAsyncData(() => fetch('/api/data'))
+
+help:
+  Use ref with watch() and cleanup for async operations; abort or ignore stale work before assigning the result.
+=== script/no-boolean-default
+script/no-boolean-default · lint rule
+Disallow a default on a Boolean prop
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    props: {
+      // Boolean props already default to false; an explicit default is confusing.
+      disabled: { type: Boolean, default: true },
+      checked: { type: Boolean, default: false }
+    }
+  }
+
+valid:
+  export default {
+    props: {
+      // No explicit default: defaults to false.
+      disabled: { type: Boolean },
+      disabled2: Boolean,
+      // Union type may legitimately need a default.
+      value: { type: [Boolean, String], default: '' },
+      // Non-Boolean prop.
+      count: { type: Number, default: 0 }
+    }
+  }
+=== script/no-deep-destructure-in-props
+script/no-deep-destructure-in-props · lint rule
+Disallow deeply nested destructuring in defineProps
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  // Deep nested destructuring
+  const { user: { name, age } } = defineProps<{ user: User }>()
+  
+  // Very deep nesting
+  const { config: { settings: { theme } } } = defineProps()
+
+valid:
+  // Simple destructuring (one level)
+  const { name, count = 0 } = defineProps<{ name: string; count?: number }>()
+  
+  // Access nested properties in the component instead
+  const props = defineProps<{ user: User }>()
+  const userName = computed(() => props.user.name)
+
+help:
+  Use simple destructuring and access nested properties via computed or direct prop access: const props = defineProps<...>(); const nested = computed(() => props.parent.child)
+=== script/no-deprecated-data-object-declaration
+script/no-deprecated-data-object-declaration · lint rule
+Disallow an object literal as the component data option (Vue 3 requires a function)
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    // `data` must be a function in Vue 3, not an object literal.
+    data: {
+      count: 0
+    }
+  }
+
+valid:
+  export default {
+    data() {
+      return { count: 0 }
+    }
+  }
+=== script/no-deprecated-destroyed-lifecycle
+script/no-deprecated-destroyed-lifecycle · lint rule
+Disallow deprecated destroyed and beforeDestroy lifecycle hooks
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: yes
+docs: docs/content/rules/type-and-script.md
+=== script/no-deprecated-dollar-listeners-api
+script/no-deprecated-dollar-listeners-api · lint rule
+Disallow the $listeners instance property removed in Vue 3 (merged into $attrs)
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const handlers = this.$listeners
+  const forwarded = ctx.$listeners
+  emit('input', $listeners)
+
+valid:
+  const handlers = this.$attrs
+  const forwarded = ctx.attrs
+=== script/no-deprecated-dollar-scopedslots-api
+script/no-deprecated-dollar-scopedslots-api · lint rule
+Disallow the $scopedSlots instance property removed in Vue 3 (use $slots)
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const header = this.$scopedSlots.header
+  const footer = ctx.$scopedSlots.footer
+  render($scopedSlots.default)
+
+valid:
+  const header = this.$slots.header
+  const footer = ctx.$slots.footer
+  render($slots.default)
+=== script/no-deprecated-events-api
+script/no-deprecated-events-api · lint rule
+Disallow the removed Vue 2 events API ($on / $off / $once)
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  this.$on('event', handler)
+  this.$once('event', handler)
+  this.$off('event', handler)
+  emitter.$off('event')
+
+valid:
+  // $emit is still valid in Vue 3
+  this.$emit('event', payload)
+  
+  // Use an external emitter instead
+  import mitt from 'mitt'
+  const emitter = mitt()
+  emitter.on('event', handler)
+=== script/no-deprecated-props-default-this
+script/no-deprecated-props-default-this · lint rule
+Disallow `this` inside a prop default/validator function (removed in Vue 3)
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    props: {
+      size: {
+        type: Number,
+        // `this` is not the component instance in Vue 3.
+        default() {
+          return this.defaultSize
+        }
+      },
+      value: {
+        type: Number,
+        validator() {
+          return this.value > 0
+        }
+      }
+    }
+  }
+
+valid:
+  export default {
+    props: {
+      size: {
+        type: Number,
+        // Vue 3 passes the raw props as the first argument instead.
+        default(props) {
+          return props.baseSize
+        }
+      },
+      value: {
+        type: Number,
+        validator(value) {
+          return value > 0
+        }
+      }
+    }
+  }
+=== script/no-dupe-keys
+script/no-dupe-keys · lint rule
+Disallow duplicate keys across Options API props/data/computed/methods/setup/inject
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    props: ['foo'],
+    data() {
+      return { foo: 1 } // duplicate of prop `foo`
+    },
+    computed: {
+      bar() { return 2 }
+    },
+    methods: {
+      bar() {} // duplicate of computed `bar`
+    }
+  }
+
+valid:
+  export default {
+    props: ['foo'],
+    data() {
+      return { bar: 1 }
+    },
+    computed: {
+      baz() { return 2 }
+    }
+  }
+=== script/no-duplicate-attr-inheritance
+script/no-duplicate-attr-inheritance · lint rule
+Flag a component that applies its fallthrough attributes twice
+
+tier: complete
+domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  defineOptions({ inheritAttrs: true })
+  export default { inheritAttrs: true }
+
+valid:
+  defineOptions({ inheritAttrs: false }) // intentional opt-out
+  export default {}                      // default inheritance, unstated
+=== script/no-export-in-script-setup
+script/no-export-in-script-setup · lint rule
+Disallow export statements inside <script setup>
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+=== script/no-get-current-instance
+script/no-get-current-instance · lint rule
+Disallow getCurrentInstance() in Vapor mode (returns null)
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: vapor
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  import { getCurrentInstance } from 'vue'
+  
+  const instance = getCurrentInstance()
+  const proxy = instance?.proxy
+
+valid:
+  import { useAttrs, useSlots } from 'vue'
+  
+  const attrs = useAttrs()
+  const slots = useSlots()
+
+help:
+  Use provide/inject or composables instead
+=== script/no-import-compiler-macros
+script/no-import-compiler-macros · lint rule
+Disallow importing Vue compiler macros that are auto-imported
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  import { defineProps, defineEmits } from 'vue'
+  import { withDefaults } from 'vue'
+  
+  const props = defineProps<Props>()
+
+valid:
+  // No import needed - compiler macros are auto-imported
+  const props = defineProps<Props>()
+  const emit = defineEmits<Emits>()
+  
+  // Regular imports are fine
+  import { ref, computed } from 'vue'
+=== script/no-internal-imports
+script/no-internal-imports · lint rule
+Disallow importing from Vue internal modules
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  import { foo } from '@vue/runtime-core/dist/runtime-core.esm-bundler'
+  import { bar } from 'vue/dist/vue.esm-bundler'
+
+valid:
+  import { ref, computed } from 'vue'
+=== script/no-multiple-slot-args
+script/no-multiple-slot-args · lint rule
+Disallow passing more than one argument to a scoped-slot function call
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  slots.default(foo, bar)
+  $slots.header(a, b)
+  this.$scopedSlots.item(x, y)
+  useSlots().default(a, b)
+  slots.default(...args)
+
+valid:
+  slots.default({ foo, bar })
+  slots.default(slotProps)
+  slots.default()
+=== script/no-next-tick
+script/no-next-tick · lint rule
+Disallow nextTick() usage in Vapor-oriented components
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: vapor
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  import { nextTick } from 'vue'
+  
+  await nextTick()
+  this.$nextTick(() => focusInput())
+
+valid:
+  import { onMounted } from 'vue'
+  
+  onMounted(() => {
+    focusInput()
+  })
+=== script/no-options-api
+script/no-options-api · lint rule
+Disallow Options API patterns in Vapor mode
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: vapor
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    data() { return { count: 0 } },
+    computed: { doubled() { return this.count * 2 } },
+    methods: { increment() { this.count++ } },
+    watch: { count(val) { console.log(val) } }
+  }
+
+valid:
+  import { ref, computed, watch } from 'vue'
+  const count = ref(0)
+  const doubled = computed(() => count.value * 2)
+  const increment = () => count.value++
+  watch(count, (val) => console.log(val))
+
+help:
+  Refactor to use <script setup> with Composition API
+=== script/no-potential-component-option-typo
+script/no-potential-component-option-typo · lint rule
+Flag likely typos in Options API component option names
+
+tier: heuristic
+domain: Options API component definitions written as object literals
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+=== script/no-reactive-destructure
+script/no-reactive-destructure · lint rule
+Disallow destructuring reactive objects which loses reactivity
+
+tier: complete
+domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const state = reactive({ count: 0, name: 'foo' })
+  const { count, name } = state  // loses reactivity!
+  
+  // Also passing reactive directly to functions that expect refs
+  someFunction(state.count)  // loses reactivity
+
+valid:
+  const state = reactive({ count: 0, name: 'foo' })
+  
+  // Use toRef or toRefs to maintain reactivity
+  const count = toRef(state, 'count')
+  const { count, name } = toRefs(state)
+  
+  // Or use computed for derived values
+  const doubleCount = computed(() => state.count * 2)
+  
+  // Pass refs or computed to functions
+  someFunction(toRef(state, 'count'))
+=== script/no-ref-as-operand
+script/no-ref-as-operand · lint rule
+Require ref-bound variables to be accessed via `.value` when used as an operand
+
+tier: complete
+domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+=== script/no-required-prop-with-default
+script/no-required-prop-with-default · lint rule
+Disallow a prop that is both required: true and has a default
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+=== script/no-reserved-identifiers
+script/no-reserved-identifiers · lint rule
+Disallow using Vue compiler reserved identifiers
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const __props = { name: 'test' }
+  const __emit = () => {}
+  let __sfc__ = {}
+
+valid:
+  const props = defineProps<Props>()
+  const emit = defineEmits<Emits>()
+  const myData = {}
+=== script/no-reserved-keys
+script/no-reserved-keys · lint rule
+Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    props: ['$el'],       // reserved: starts with `$`
+    computed: { _foo() { return 1 } }, // reserved: starts with `_`
+    methods: { emit() {} } // reserved: Vue built-in instance name
+  }
+=== script/no-reserved-props
+script/no-reserved-props · lint rule
+Disallow reserved names in a component's props declaration
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    props: {
+      ref: String,   // reserved
+      $foo: Number    // `$`-prefixed names are reserved
+    }
+  }
+  
+  export default {
+    props: ['key']    // reserved (array form)
+  }
+
+valid:
+  export default {
+    props: {
+      name: String,
+      refValue: Number
+    }
+  }
+=== script/no-restricted-globals
+script/no-restricted-globals · lint rule
+Disallow references to runtime-environment globals that must go through a typed wrapper
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const flag = process.env.FEATURE_FLAG
+  const token = localStorage.getItem('auth.token')
+  sessionStorage.setItem('view.scroll', String(window.scrollY))
+
+valid:
+  // Use a typed config helper that distinguishes server vs. client.
+  const flag = useFeatureFlag('FEATURE_FLAG')
+  
+  // Use a typed wrapper that scopes keys and handles SSR / disabled storage.
+  const token = authStorage.read('auth.token')
+  viewStorage.write('view.scroll', String(window.scrollY))
+=== script/no-restricted-members
+script/no-restricted-members · lint rule
+Disallow project-configured object.property member accesses
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const token = window.localStorage.getItem('auth.token')
+  const env = globalThis.process.env
+
+valid:
+  const token = authStorage.read('auth.token')
+=== script/no-side-effects-in-computed-properties
+script/no-side-effects-in-computed-properties · lint rule
+Disallow side effects in Options API computed getters
+
+tier: complete
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    data() {
+      return { count: 0, items: [] }
+    },
+    computed: {
+      doubled() {
+        this.count = this.count * 2 // side effect: assigns to data
+        return this.count
+      },
+      reversed() {
+        return this.items.reverse() // side effect: mutates the array
+      }
+    }
+  }
+
+valid:
+  export default {
+    data() {
+      return { count: 0, items: [] }
+    },
+    computed: {
+      doubled() {
+        return this.count * 2
+      },
+      reversed() {
+        return [...this.items].reverse() // operate on a copy
+      }
+    }
+  }
+=== script/no-top-level-ref-in-script
+script/no-top-level-ref-in-script · lint rule
+Disallow top-level ref/reactive to prevent Cross-Request State Pollution
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  <script>
+  // This state is shared across all requests in SSR!
+  const count = ref(0)
+  const user = reactive({ name: '' })
+  
+  export default {
+    setup() {
+      return { count, user }
+    }
+  }
+  </script>
+
+valid:
+  <script setup>
+  // Script setup creates fresh state per request
+  const count = ref(0)
+  </script>
+  
+  <script>
+  // Constants are fine
+  const API_URL = 'https://api.example.com'
+  
+  // Functions that create state are fine
+  function createState() {
+    return reactive({ count: 0 })
+  }
+  
+  export default {
+    setup() {
+      // Create state inside setup
+      const count = ref(0)
+      return { count }
+    }
+  }
+  </script>
+=== script/no-unstable-nested-components
+script/no-unstable-nested-components · lint rule
+Disallow component definitions inside setup or render functions
+
+tier: complete
+domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+=== script/no-unused-emit-declarations
+script/no-unused-emit-declarations · lint rule
+Flag declared events that are never emitted
+
+tier: complete
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const emit = defineEmits(['change', 'unused'])
+  emit('change')
+  // `unused` is never emitted
+
+valid:
+  const emit = defineEmits(['change'])
+  emit('change')
+=== script/no-use-computed-property-like-method
+script/no-use-computed-property-like-method · lint rule
+Disallow calling an Options API computed property like a method
+
+tier: complete
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+=== script/no-with-defaults
+script/no-with-defaults · lint rule
+Discourage withDefaults in favor of destructuring defaults (Vue 3.5+)
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  // Using withDefaults (verbose)
+  const props = withDefaults(defineProps<{
+    count?: number
+    name?: string
+  }>(), {
+    count: 0,
+    name: 'default'
+  })
+
+valid:
+  // Using destructuring defaults (Vue 3.5+)
+  const { count = 0, name = 'default' } = defineProps<{
+    count?: number
+    name?: string
+  }>()
+  
+  // Or without destructuring if defaults not needed
+  const props = defineProps<{ count: number }>()
+=== script/prefer-computed
+script/prefer-computed · lint rule
+Prefer computed() for derived reactive state
+
+tier: heuristic
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+=== script/prefer-define-options
+script/prefer-define-options · lint rule
+Prefer defineOptions() over a plain <script> that only sets name/inheritAttrs
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default { name: 'MyComponent', inheritAttrs: false }
+
+valid:
+  // Real options logic — keep the plain script.
+  export default {
+    name: 'MyComponent',
+    data() { return { count: 0 } },
+  }
+=== script/prefer-import-from-vue
+script/prefer-import-from-vue · lint rule
+Prefer importing from 'vue' instead of internal packages
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: yes
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  import { ref } from '@vue/runtime-core'
+  import { h } from '@vue/runtime-dom'
+
+valid:
+  import { ref, h } from 'vue'
+=== script/prefer-ref-over-reactive
+script/prefer-ref-over-reactive · lint rule
+Recommend using ref() over reactive() for state management
+
+tier: heuristic
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  // reactive requires careful handling to avoid losing reactivity
+  const state = reactive({
+    count: 0,
+    name: 'foo'
+  })
+
+valid:
+  // ref is more explicit and safer
+  const count = ref(0)
+  const name = ref('foo')
+  
+  // For objects, ref still works
+  const user = ref({ name: 'foo', age: 20 })
+  
+  // Or use multiple refs for related data
+  const userName = ref('foo')
+  const userAge = ref(20)
+=== script/prefer-use-attrs
+script/prefer-use-attrs · lint rule
+Recommend using useAttrs() over context.attrs
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  // In Options API style
+  export default {
+    setup(props, { attrs }) {
+      console.log(attrs.class)
+    }
+  }
+  
+  // Accessing $attrs in template
+  <div :class="$attrs.class"></div>
+
+valid:
+  // Using useAttrs()
+  const attrs = useAttrs()
+  console.log(attrs.class)
+=== script/prefer-use-id
+script/prefer-use-id · lint rule
+Recommend using useId() for generating unique IDs (Vue 3.5+)
+
+tier: heuristic
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  // Manual ID generation (not SSR-safe)
+  const id = `input-${Math.random()}`
+  const id = `field-${Date.now()}`
+  let counter = 0; const id = `el-${counter++}`
+
+valid:
+  // Using useId() (Vue 3.5+)
+  const id = useId()
+  
+  // In template
+  <label :for="id">Name</label>
+  <input :id="id" />
+=== script/prefer-use-slots
+script/prefer-use-slots · lint rule
+Recommend using useSlots() over context.slots
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  // In Options API style
+  export default {
+    setup(props, { slots }) {
+      return () => h('div', slots.default?.())
+    }
+  }
+  
+  // Using context.slots
+  const vnode = context.slots.default?.()
+
+valid:
+  // Using useSlots()
+  const slots = useSlots()
+  return () => h('div', slots.default?.())
+=== script/prefer-use-template-ref
+script/prefer-use-template-ref · lint rule
+Recommend useTemplateRef over ref for template references (Vue 3.5+)
+
+tier: complete
+domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  <script setup lang="ts">
+  import { ref } from 'vue'
+  const input = ref<HTMLInputElement | null>(null)
+  </script>
+  <template>
+    <input ref="input" />
+  </template>
+
+valid:
+  <script setup lang="ts">
+  import { ref, useTemplateRef } from 'vue'
+  // Paired with the template ref below.
+  const input = useTemplateRef<HTMLInputElement>('input')
+  // A nullable data ref the template never binds as a ref.
+  const error = ref(null)
+  </script>
+  <template>
+    <input ref="input" />
+    <p>{{ error }}</p>
+  </template>
+=== script/require-default-prop
+script/require-default-prop · lint rule
+Require a default value for every optional, non-Boolean prop
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    props: {
+      // optional, non-Boolean, no default
+      name: String,
+      age: { type: Number },
+    }
+  }
+
+valid:
+  export default {
+    props: {
+      name: { type: String, default: '' },
+      enabled: Boolean,                 // Boolean defaults to false
+      id: { type: Number, required: true },
+    }
+  }
+=== script/require-explicit-emits
+script/require-explicit-emits · lint rule
+Require emitted events to be declared in defineEmits or the emits option
+
+tier: complete
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+=== script/require-explicit-slots
+script/require-explicit-slots · lint rule
+Require slots consumed via useSlots() to be explicitly typed with defineSlots<...>()
+
+tier: complete
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const props = defineProps<{ id: number }>()
+  const slots = useSlots()
+
+valid:
+  defineSlots<{ default(props: { msg: string }): unknown }>()
+  const slots = useSlots()
+=== script/require-function-return-type
+script/require-function-return-type · lint rule
+Require return type annotations on functions
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const add = (a: number, b: number) => {
+    return a + b
+  }
+  
+  function greet(name: string) {
+    return `Hello, ${name}`
+  }
+
+valid:
+  const add = (a: number, b: number): number => {
+    return a + b
+  }
+  
+  function greet(name: string): string {
+    return `Hello, ${name}`
+  }
+=== script/require-prop-type-constructor
+script/require-prop-type-constructor · lint rule
+Require prop `type` values to be constructors rather than string literals
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    props: {
+      // The type should be the `String` constructor, not the string "String".
+      name: "String",
+      age: { type: "Number" },
+      id: { type: ["String", "Number"] }
+    }
+  }
+
+valid:
+  export default {
+    props: {
+      name: String,
+      age: { type: Number },
+      id: { type: [String, Number] }
+    }
+  }
+=== script/require-prop-types
+script/require-prop-types · lint rule
+Require every prop to declare a type
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    props: ['status']            // array form: no types
+  }
+  
+  export default {
+    props: {
+      status: null,              // no type
+      other: {}                  // empty descriptor: no type
+    }
+  }
+
+valid:
+  export default {
+    props: {
+      status: String,
+      other: { type: Number, default: 0 }
+    }
+  }
+=== script/require-symbol-provide
+script/require-symbol-provide · lint rule
+Recommend using Symbol as injection key for provide/inject
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  // String keys can collide
+  provide('user', user)
+  const user = inject('user')
+  
+  // Magic strings are error-prone
+  provide('theme', { dark: true })
+
+valid:
+  // Define injection key with Symbol
+  export const UserKey: InjectionKey<User> = Symbol('user')
+  
+  // Provide with Symbol
+  provide(UserKey, user)
+  
+  // Inject with Symbol
+  const user = inject(UserKey)
+=== script/require-typed-object-prop
+script/require-typed-object-prop · lint rule
+Require an explicit type on a prop whose runtime type is `Object` or `Array`
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const props = defineProps({
+    foo: Object,
+    bar: { type: Array },
+  })
+
+valid:
+  const props = defineProps({
+    foo: Object as PropType<Foo>,
+    bar: { type: Array as PropType<Bar[]> },
+  })
+  
+  // Type-based form carries the element type directly.
+  const typed = defineProps<{ foo: Foo; bar: Bar[] }>()
+=== script/require-typed-ref
+script/require-typed-ref · lint rule
+Require an explicit type argument on a ref() initialized with no value, null, or undefined
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  import { ref } from 'vue'
+  
+  const a = ref()           // Ref<undefined>
+  const b = ref(null)       // Ref<null>
+  const c = ref(undefined)  // Ref<undefined>
+
+valid:
+  import { ref } from 'vue'
+  
+  const a = ref<string>()
+  const b = ref<User | null>(null)
+  const c = ref(0)          // inferred Ref<number>
+=== script/require-valid-default-prop
+script/require-valid-default-prop · lint rule
+Require a prop's default value to be valid for its declared type
+
+tier: complete
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    props: {
+      count: { type: Number, default: '0' },     // string default for Number
+      enabled: { type: Boolean, default: 1 },     // non-boolean default for Boolean
+      items: { type: Array, default: [] },        // literal must be a factory
+      config: { type: Object, default: {} }       // literal must be a factory
+    }
+  }
+
+valid:
+  export default {
+    props: {
+      count: { type: Number, default: 0 },
+      enabled: { type: Boolean, default: false },
+      items: { type: Array, default: () => [] },
+      config: { type: Object, default: () => ({}) },
+      label: { type: [String, Number], default: '' }
+    }
+  }
+=== script/return-in-computed-property
+script/return-in-computed-property · lint rule
+Require a return value in every computed getter
+
+tier: complete
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+=== script/return-in-emits-validator
+script/return-in-emits-validator · lint rule
+Require a return value in every Options API emits validator
+
+tier: complete
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    emits: {
+      submit(payload) {
+        if (!payload.email) {
+          // missing return
+        }
+      }
+    }
+  }
+
+valid:
+  export default {
+    emits: {
+      submit(payload) {
+        return !!payload.email
+      }
+    }
+  }
+=== script/valid-define-emits
+script/valid-define-emits · lint rule
+Enforce valid defineEmits() usage (no type+runtime args, no local references, single call)
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  const local = ['change']
+  defineEmits(local)                       // references a local variable
+  defineEmits<Emits>(['change'])           // both type and runtime args
+  defineEmits(['change'])
+  defineEmits(['update'])                  // called more than once
+
+valid:
+  defineEmits(['change', 'update'])
+  defineEmits<{ change: [id: number] }>()
+=== script/valid-define-options
+script/valid-define-options · lint rule
+Enforce valid defineOptions() usage (single object arg, no props/emits/expose/slots)
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  defineOptions({ props: ['foo'] })   // use defineProps instead
+  defineOptions({ name: 'Foo' })
+  defineOptions({ name: 'Bar' })      // duplicate call
+  defineOptions('Foo')                // not an object literal
+
+valid:
+  defineOptions({ name: 'Foo', inheritAttrs: false })
+=== script/valid-define-props
+script/valid-define-props · lint rule
+Enforce valid defineProps() usage (single call, not both type and runtime args, no local references)
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  defineProps<{ foo: string }>({ foo: String }) // both type and runtime args
+  const foo = 'bar'
+  defineProps({ foo })                          // references local variable
+  defineProps({ foo: String })
+  defineProps({ bar: Number })                  // duplicate call
+
+valid:
+  defineProps<{ foo: string }>()
+  defineProps({ foo: String })
+=== script/valid-next-tick
+script/valid-next-tick · lint rule
+Require the result of a nextTick() call to be awaited, chained, or given a callback
+
+tier: complete
+domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  import { nextTick } from 'vue'
+  
+  nextTick()          // result ignored
+  this.$nextTick()    // result ignored
+
+valid:
+  import { nextTick } from 'vue'
+  
+  await nextTick()
+  nextTick().then(() => focusInput())
+  nextTick(() => focusInput())
+  this.$nextTick(() => focusInput())
+=== ssr/no-browser-globals-in-ssr
+ssr/no-browser-globals-in-ssr · lint rule
+Disallow browser-only globals in SSR context
+
+tier: heuristic
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/ssr.md
+
+help:
+  Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>
+=== ssr/no-hydration-mismatch
+ssr/no-hydration-mismatch · lint rule
+Disallow non-deterministic values that cause hydration mismatch
+
+tier: heuristic
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/ssr.md
+
+help:
+  Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values
+=== type/no-floating-promises
+type/no-floating-promises · lint rule
+Disallow floating (unhandled) Promises
+
+tier: complete
+domain: types the Corsa session resolves for the component; unresolved types are outside
+severity: warning
+category: type-aware
+autofix: no
+docs: docs/content/rules/type-and-script.md
+=== type/no-reactivity-loss
+type/no-reactivity-loss · lint rule
+Disallow plain snapshots of reactive values across assignments and calls
+
+tier: complete
+domain: types the Corsa session resolves for the component; unresolved types are outside
+severity: warning
+category: type-aware
+autofix: no
+docs: docs/content/rules/type-and-script.md
+=== type/no-unsafe-template-binding
+type/no-unsafe-template-binding · lint rule
+Disallow template bindings that resolve to unsafe types
+
+tier: complete
+domain: types the Corsa session resolves for the component; unresolved types are outside
+severity: warning
+category: type-aware
+autofix: no
+docs: docs/content/rules/type-and-script.md
+=== type/require-typed-emits
+type/require-typed-emits · lint rule
+Require type definition for defineEmits
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: type-aware
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  <script setup>
+  // Array-only emits without type
+  const emit = defineEmits(['click', 'update'])
+  </script>
+
+valid:
+  <script setup lang="ts">
+  interface Emits {
+    (e: 'click', value: MouseEvent): void
+    (e: 'update', value: string): void
+  }
+  const emit = defineEmits<Emits>()
+  </script>
+=== type/require-typed-props
+type/require-typed-props · lint rule
+Require type definition for defineProps
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: type-aware
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  <script setup>
+  // Runtime-only props without type
+  const props = defineProps(['msg', 'count'])
+  </script>
+
+valid:
+  <script setup lang="ts">
+  interface Props {
+    msg: string
+    count?: number
+  }
+  const props = defineProps<Props>()
+  </script>
+=== vapor/no-inline-template
+vapor/no-inline-template · lint rule
+Disallow deprecated inline-template attribute
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: vapor
+autofix: no
+docs: docs/content/rules/vapor.md
+
+invalid:
+  <my-component inline-template>
+    <div>Content</div>
+  </my-component>
+
+valid:
+  <my-component>
+    <template #default>
+      <div>Content</div>
+    </template>
+  </my-component>
+
+help:
+  Use slots instead of inline-template
+=== vapor/no-vue-lifecycle-events
+vapor/no-vue-lifecycle-events · lint rule
+Disallow @vue:xxx per-element lifecycle events (not supported in Vapor)
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: vapor
+autofix: no
+docs: docs/content/rules/vapor.md
+
+invalid:
+  <div @vue:mounted="handler"></div>
+  <div @vue:updated="handler"></div>
+  <div @vue:beforeUnmount="handler"></div>
+
+valid:
+  <!-- Use lifecycle hooks in script setup instead -->
+  <script setup vapor>
+  import { onMounted, onUpdated } from 'vue'
+  onMounted(() => { /* ... */ })
+  </script>
+  <div ref="el"></div>
+
+help:
+  Use component lifecycle hooks instead
+=== vapor/prefer-static-class
+vapor/prefer-static-class · lint rule
+Prefer static class over dynamic class binding for string literals
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: vapor
+autofix: yes
+docs: docs/content/rules/vapor.md
+
+invalid:
+  <div :class="'static-class'"></div>
+  <div :class="`always-same`"></div>
+
+valid:
+  <div class="static-class"></div>
+  <div :class="dynamicClass"></div>
+  <div :class="{ active: isActive }"></div>
+
+help:
+  Move static classes to the class attribute
+=== vapor/require-vapor-attribute
+vapor/require-vapor-attribute · lint rule
+Suggest adding vapor attribute to script setup
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: vapor
+autofix: yes
+docs: docs/content/rules/vapor.md
+=== vue/a11y-img-alt
+vue/a11y-img-alt · lint rule
+Require alt attribute on images for accessibility
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <img src="/photo.jpg" />
+  <img :src="photo" />
+
+valid:
+  <!-- Informative image -->
+  <img src="/photo.jpg" alt="Team photo from company retreat" />
+  
+  <!-- Decorative image (empty alt) -->
+  <img src="/decoration.svg" alt="" />
+  
+  <!-- Dynamic alt -->
+  <img :src="photo" :alt="photoDescription" />
+
+help:
+  Add alt="description" for informative images or alt="" for decorative images
+=== vue/attribute-hyphenation
+vue/attribute-hyphenation · lint rule
+Enforce attribute naming style on custom components
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: strongly-recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+
+invalid:
+  <MyComponent myProp="value" />
+  <MyComponent :myProp="value" />
+
+valid:
+  <MyComponent my-prop="value" />
+  <MyComponent :my-prop="value" />
+
+help:
+  Use kebab-case for attribute names
+=== vue/attribute-order
+vue/attribute-order · lint rule
+Enforce a consistent order of attributes
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div @click="onClick" v-if="show" id="main"></div>
+
+valid:
+  <div v-if="show" id="main" @click="onClick"></div>
+
+help:
+  Reorder attributes to follow the recommended order
+=== vue/component-definition-name-casing
+vue/component-definition-name-casing · lint rule
+Enforce PascalCase or kebab-case for component definition names
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: strongly-recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  myComponent.vue      -> should be MyComponent.vue or my-component.vue
+  my-Component.vue     -> should be MyComponent.vue or my-component.vue
+
+valid:
+  MyComponent.vue
+  my-component.vue
+  index.vue
+  App.vue
+
+help:
+  Rename the file to PascalCase or kebab-case:
+    myComponent.vue  -> MyComponent.vue
+    my-Component.vue -> my-component.vue
+=== vue/component-name-in-template-casing
+vue/component-name-in-template-casing · lint rule
+Enforce specific casing for component names in templates
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+
+invalid:
+  <my-component />
+  <myComponent />
+
+valid:
+  <MyComponent />
+  <RouterView />
+  <slot />
+=== vue/html-button-has-type
+vue/html-button-has-type · lint rule
+Require an explicit valid type on button elements
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <button>Click</button>
+  <button type="foo">Click</button>
+
+valid:
+  <button type="button">Click</button>
+  <button type="submit">Save</button>
+  <button type="reset">Reset</button>
+  <button :type="dynamicType">Click</button>
+
+help:
+  A '<button>' defaults to type="submit", which submits the enclosing form. Set an explicit type="button", "submit", or "reset".
+=== vue/html-quotes
+vue/html-quotes · lint rule
+Enforce quotes style of HTML attributes
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: strongly-recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div class='foo'></div>
+  <div class=foo></div>
+  <div v-if='foo'></div>
+
+valid:
+  <div class="foo"></div>
+
+help:
+  Use consistent quote style for HTML attribute values.
+=== vue/html-self-closing
+vue/html-self-closing · lint rule
+Enforce self-closing style
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: strongly-recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div></div>  <!-- should be <div /> when empty -->
+  <img>        <!-- should be <img /> -->
+  <br>         <!-- should be <br /> -->
+
+valid:
+  <div />
+  <img />
+  <br />
+  <div>content</div>
+
+help:
+  Use self-closing syntax
+=== vue/max-template-complexity
+vue/max-template-complexity · lint rule
+Limit a component's own template complexity (cyclomatic and cognitive)
+
+tier: exact
+domain: control flow of HTML SFC templates as lowered to S2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template>
+    <div v-if="a && b">
+      <li v-for="row in rows">
+        <b v-if="row.x ? row.y : row.z">…</b>
+        <!-- … and more nested branches … -->
+      </li>
+    </div>
+  </template>
+
+valid:
+  <template>
+    <RowList v-if="a && b" :rows="rows" />
+  </template>
+=== vue/multi-word-component-names
+vue/multi-word-component-names · lint rule
+Require component names to be multi-word
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  Item.vue
+  Table.vue
+
+valid:
+  TodoItem.vue
+  DataTable.vue
+  AppHeader.vue
+
+help:
+  Rename the component to use multiple words (e.g., "TodoItem" instead of "Item")
+=== vue/mustache-interpolation-spacing
+vue/mustache-interpolation-spacing · lint rule
+Enforce consistent spacing inside mustache interpolations
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: strongly-recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div>{{text}}</div>
+  <div>{{ text}}</div>
+  <div>{{text }}</div>
+
+valid:
+  <div>{{ text }}</div>
+  <div>{{ foo.bar }}</div>
+  <div>{{ foo + bar }}</div>
+=== vue/no-array-index-key
+vue/no-array-index-key · lint rule
+Disallow using the v-for index variable directly as the :key
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <li v-for="(item, index) in list" :key="index">{{ item }}</li>
+  <li v-for="(value, key, index) in obj" :key="index">{{ value }}</li>
+
+valid:
+  <li v-for="(item, index) in list" :key="item.id">{{ item }}</li>
+  <li v-for="item in list" :key="item.id">{{ item }}</li>
+
+help:
+  Bind :key to a stable id from the item (e.g. :key="item.id"). The index changes when the list is reordered or filtered, so Vue reuses the wrong element state.
+=== vue/no-bare-strings-in-template
+vue/no-bare-strings-in-template · lint rule
+Disallow raw human-readable text in the template that should be internationalized
+
+tier: heuristic
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div>hello</div>
+  <img alt="a cat" />
+  <input placeholder="Search" />
+  <button title="Close">x</button>
+
+valid:
+  <div>{{ $t('hello') }}</div>
+  <img :alt="$t('cat')" />
+  <div>-</div>
+  <div>123</div>
+  <button :title="$t('close')">{{ $t('x') }}</button>
+
+help:
+  Move the text into a translation function, e.g. {{ $t('key') }} for content or :title="$t('key')" for an attribute.
+=== vue/no-boolean-attr-value
+vue/no-boolean-attr-value · lint rule
+Disallow explicit values for boolean HTML attributes
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template>
+    <input disabled="disabled" />
+    <input checked="checked" />
+    <button disabled="true">Click</button>
+  </template>
+
+valid:
+  <template>
+    <input disabled />
+    <input checked />
+    <button disabled>Click</button>
+  </template>
+
+help:
+  Remove the value. Use just {attr} instead of {attr}="...".
+=== vue/no-child-content
+vue/no-child-content · lint rule
+Disallow child content when using v-html or v-text
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-html="content">child</div>
+  <div v-text="content">child</div>
+
+valid:
+  <div v-html="content"></div>
+  <div v-text="content"></div>
+  <div>child</div>
+
+help:
+  Why: When using v-html or v-text, Vue replaces the element's child content with the directive value. Any child content is silently ignored.
+  Fix: Remove the child content:
+    <!-- Before -->
+    <div v-html="content">This will be ignored</div>
+
+    <!-- After -->
+    <div v-html="content"></div>
+=== vue/no-deprecated-filter
+vue/no-deprecated-filter · lint rule
+Disallow deprecated Vue 2 filter syntax using the pipe operator
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  {{ message | capitalize }}
+  <div :id="rawId | toId" />
+  {{ a | b | c }}
+
+valid:
+  {{ capitalize(message) }}
+  <div :id="toId(rawId)" />
+  {{ a || b }}
+
+help:
+  Replace the filter with a method call or computed property (e.g. {{ capitalize(message) }} instead of {{ message | capitalize }}).
+=== vue/no-deprecated-functional-template
+vue/no-deprecated-functional-template · lint rule
+Disallow the `functional` attribute on the SFC `<template>`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template functional>
+    <div>{{ props.msg }}</div>
+  </template>
+
+valid:
+  <template>
+    <div>{{ msg }}</div>
+  </template>
+
+help:
+  Remove functional and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).
+=== vue/no-deprecated-html-element-is
+vue/no-deprecated-html-element-is · lint rule
+Disallow the `is` attribute on native HTML elements
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template>
+    <div is="MyComponent" />
+  </template>
+
+valid:
+  <template>
+    <component :is="MyComponent" />
+    <div is="vue:MyComponent" />
+  </template>
+
+help:
+  Use <component :is="..."> for dynamic components, or prefix the value with vue: (e.g. is="vue:MyComponent") for a customized built-in element.
+=== vue/no-deprecated-inline-template
+vue/no-deprecated-inline-template · lint rule
+Disallow the deprecated `inline-template` attribute
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+help:
+  Move the markup into the child component or pass it through slots instead of inline-template.
+=== vue/no-deprecated-router-link-tag-prop
+vue/no-deprecated-router-link-tag-prop · lint rule
+Disallow the `tag` prop on <router-link>
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template>
+    <router-link to="/home" tag="button">Home</router-link>
+  </template>
+
+valid:
+  <template>
+    <router-link to="/home" v-slot="{ navigate }">
+      <button @click="navigate">Home</button>
+    </router-link>
+  </template>
+
+help:
+  Remove the tag prop and render the element yourself using v-slot (it exposes href, navigate, and isActive).
+=== vue/no-deprecated-scope-attribute
+vue/no-deprecated-scope-attribute · lint rule
+Disallow the deprecated `scope` attribute on <template>
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <Foo>
+    <template scope="props">{{ props.msg }}</template>
+  </Foo>
+
+valid:
+  <Foo>
+    <template v-slot="props">{{ props.msg }}</template>
+  </Foo>
+  <table><th scope="col">Name</th></table>
+
+help:
+  Use v-slot instead (e.g. <template v-slot="props">).
+=== vue/no-deprecated-slot-attribute
+vue/no-deprecated-slot-attribute · lint rule
+Disallow the deprecated `slot` attribute
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template>
+    <Foo>
+      <template slot="header"><h1>Title</h1></template>
+    </Foo>
+  </template>
+
+valid:
+  <template>
+    <Foo>
+      <template v-slot:header><h1>Title</h1></template>
+    </Foo>
+  </template>
+
+help:
+  Use v-slot instead (e.g. <template v-slot:header>).
+=== vue/no-deprecated-slot-scope-attribute
+vue/no-deprecated-slot-scope-attribute · lint rule
+Disallow the deprecated `slot-scope` attribute
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <Foo>
+    <template slot-scope="props">{{ props.msg }}</template>
+  </Foo>
+
+valid:
+  <Foo>
+    <template v-slot="props">{{ props.msg }}</template>
+  </Foo>
+
+help:
+  Use v-slot instead (e.g. <template v-slot="props">).
+=== vue/no-deprecated-v-bind-sync
+vue/no-deprecated-v-bind-sync · lint rule
+Disallow the deprecated `.sync` modifier on `v-bind`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <MyComponent :title.sync="title" />
+  <MyComponent v-bind:title.sync="title" />
+  <MyComponent :title.sync.camel="title" />
+
+valid:
+  <MyComponent :title="title" />
+  <MyComponent v-model:title="title" />
+
+help:
+  Vue 3 removed the .sync modifier and folded its two-way binding into argumented v-model. Replace it with v-model:<prop> (e.g. :title.sync="title" -> v-model:title="title").
+=== vue/no-deprecated-v-on-native-modifier
+vue/no-deprecated-v-on-native-modifier · lint rule
+Disallow the deprecated `.native` modifier on `v-on`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <MyComponent @click.native="handler" />
+  <MyComponent v-on:click.native="handler" />
+  <MyComponent @click.native.stop="handler" />
+
+valid:
+  <MyComponent @click="handler" />
+  <MyComponent @click.stop="handler" />
+
+help:
+  Vue 3 removed the .native modifier: listeners that are not declared component events fall through to the root element automatically. Remove .native (e.g. @click.native -> @click).
+=== vue/no-deprecated-v-on-number-modifiers
+vue/no-deprecated-v-on-number-modifiers · lint rule
+Disallow deprecated numeric `keyCode` modifiers on `v-on`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <input @keyup.13="submit" />
+  <input v-on:keyup.27="cancel" />
+  <input @keyup.13.stop="submit" />
+
+valid:
+  <input @keyup.enter="submit" />
+  <input @keyup.esc="cancel" />
+
+help:
+  Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).
+=== vue/no-dupe-v-else-if
+vue/no-dupe-v-else-if · lint rule
+Disallow duplicate conditions in `v-if` / `v-else-if` chains
+
+tier: complete
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-if="foo"></div>
+  <div v-else-if="foo"></div>
+  
+  <div v-if="a === 1"></div>
+  <div v-else-if="a === 2"></div>
+  <div v-else-if="a === 1"></div>
+
+valid:
+  <div v-if="foo"></div>
+  <div v-else-if="bar"></div>
+  <div v-else></div>
+
+help:
+  Remove or modify the duplicate condition
+=== vue/no-duplicate-attributes
+vue/no-duplicate-attributes · lint rule
+Disallow duplicate attributes on the same element
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div id="foo" id="bar"></div>
+  <div :class="foo" class="bar"></div>
+
+valid:
+  <div id="foo"></div>
+  <div :class="foo"></div>
+
+help:
+  Remove the duplicate attribute
+=== vue/no-empty-component-block
+vue/no-empty-component-block · lint rule
+Disallow empty SFC blocks
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template></template>
+  
+  <script></script>
+  
+  <style>
+  </style>
+
+valid:
+  <template>
+    <div>Hello</div>
+  </template>
+  
+  <script setup>
+  const message = "Hello";
+  </script>
+  
+  <style scoped>
+  .button { color: red; }
+  </style>
+
+help:
+  Add meaningful content to the block or remove it entirely.
+=== vue/no-inline-style
+vue/no-inline-style · lint rule
+Discourage use of inline style attributes
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div style="color: red">text</div>
+
+valid:
+  <div class="text-red">text</div>
+  <span :class="{ 'text-red': isRed }">text</span>
+  <div :style="{ width: `${ratio}%` }">text</div>
+
+help:
+  Use CSS classes or scoped styles instead
+=== vue/no-invalid-html-attribute
+vue/no-invalid-html-attribute · lint rule
+Disallow invalid static values for HTML attributes
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+help:
+  Use only standard rel tokens that are allowed for this element, such as noopener noreferrer on links or stylesheet on link elements.
+=== vue/no-lone-template
+vue/no-lone-template · lint rule
+Disallow unnecessary `<template>` elements
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template>
+    <div>content</div>
+  </template>
+
+valid:
+  <template v-if="condition">
+    <div>content</div>
+  </template>
+  <template v-for="item in items">
+    <div>{{ item }}</div>
+  </template>
+  <template #header>
+    <div>Header</div>
+  </template>
+
+help:
+  Remove the <template> wrapper or add a directive (v-if, v-for, v-slot)
+=== vue/no-multi-spaces
+vue/no-multi-spaces · lint rule
+Disallow multiple consecutive spaces
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: strongly-recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div  class="foo"></div>
+  <div class="foo"  id="bar"></div>
+
+valid:
+  <div class="foo"></div>
+  <div class="foo" id="bar"></div>
+
+help:
+  Replace multiple spaces with a single space
+=== vue/no-multiple-objects-in-class
+vue/no-multiple-objects-in-class · lint rule
+Disallow multiple object literals inside a :class array binding
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div :class="[{ a }, { b }]"></div>
+  <div :class="[{ active: isActive }, { error: hasError }]"></div>
+
+valid:
+  <div :class="{ a, b }"></div>
+  <div :class="[{ active: isActive }, 'static']"></div>
+  <div :class="[foo, bar]"></div>
+
+help:
+  Merge the objects into one, e.g. :class="[{ a }, { b }]" becomes :class="{ a, b }".
+=== vue/no-multiple-template-root
+vue/no-multiple-template-root · lint rule
+Disallow multiple root nodes in a template
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+help:
+  Wrap the template in one rendered element; keep conditional branches in one v-if chain.
+=== vue/no-mutating-props
+vue/no-mutating-props · lint rule
+Disallow mutating component props
+
+tier: complete
+domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+=== vue/no-negated-v-if-condition
+vue/no-negated-v-if-condition · lint rule
+Disallow a negated v-if condition when the chain has a v-else
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-if="!ok">A</div>
+  <div v-else>B</div>
+
+valid:
+  <div v-if="ok">A</div>
+  <div v-else>B</div>
+  
+  <div v-if="!ok">A</div>
+  
+  <div v-if="a !== b">A</div>
+  <div v-else>B</div>
+
+help:
+  Remove the leading '!' and swap the v-if and v-else branch contents.
+=== vue/no-non-component-keep-alive-child
+vue/no-non-component-keep-alive-child · lint rule
+Disallow plain element wrappers directly below `<KeepAlive>`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+help:
+  Move the condition or key onto the component child, or render a dynamic component directly with <component :is="...">
+=== vue/no-preprocessor-lang
+vue/no-preprocessor-lang · lint rule
+Discourage CSS preprocessor usage in favor of modern CSS
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+=== vue/no-reserved-component-names
+vue/no-reserved-component-names · lint rule
+Disallow the use of reserved names as component names
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  export default {
+    name: 'button'
+  }
+
+valid:
+  <!-- Button.vue -->
+  <script setup></script>
+  <template><div /></template>
+
+help:
+  Rename the component to avoid using reserved names
+=== vue/no-root-v-if
+vue/no-root-v-if · lint rule
+Disallow v-if on the single root element of a template
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template>
+    <div v-if="show">content</div>
+  </template>
+
+valid:
+  <template>
+    <div>
+      <p v-if="show">content</p>
+    </div>
+  </template>
+
+help:
+  Wrap the content in an always-present root element, or use v-show instead of v-if.
+=== vue/no-script-non-standard-lang
+vue/no-script-non-standard-lang · lint rule
+Discourage non-standard script lang values
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+=== vue/no-src-attribute
+vue/no-src-attribute · lint rule
+Discourage src attribute on SFC blocks
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+=== vue/no-static-inline-styles
+vue/no-static-inline-styles · lint rule
+Disallow static inline style attributes
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+=== vue/no-template-key
+vue/no-template-key · lint rule
+Disallow `key` attribute on `<template>`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template :key="section">
+    <div>{{ item }}</div>
+  </template>
+
+valid:
+  <template v-for="item in items" :key="item.id">
+    <div>{{ item }}</div>
+  </template>
+
+help:
+  Move the key to the first child element inside template
+=== vue/no-template-lang
+vue/no-template-lang · lint rule
+Discourage lang attribute on template block
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+=== vue/no-template-shadow
+vue/no-template-shadow · lint rule
+Disallow variable names that shadow variables in outer scope
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: strongly-recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <!-- If 'item' is a component property -->
+  <div v-for="item in items">{{ item }}</div>
+  
+  <!-- Nested v-for with same variable name -->
+  <div v-for="item in items">
+    <div v-for="item in item.children">{{ item }}</div>
+  </div>
+
+valid:
+  <div v-for="item in items">
+    <div v-for="child in item.children">{{ child }}</div>
+  </div>
+
+help:
+  Rename the variable to avoid shadowing
+=== vue/no-template-target-blank
+vue/no-template-target-blank · lint rule
+Disallow target="_blank" without rel="noopener noreferrer"
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <a href="https://example.com" target="_blank">x</a>
+
+valid:
+  <a href="https://example.com" target="_blank" rel="noopener noreferrer">x</a>
+
+help:
+  Add rel="noopener noreferrer" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data
+=== vue/no-textarea-mustache
+vue/no-textarea-mustache · lint rule
+Disallow mustache interpolation in `<textarea>`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <textarea>{{ message }}</textarea>
+
+valid:
+  <textarea v-model="message"></textarea>
+
+help:
+  Use v-model instead of mustache interpolation in textarea
+=== vue/no-undefined-refs
+vue/no-undefined-refs · lint rule
+Disallow undefined variable references in templates
+
+tier: complete
+domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+help:
+  Make sure the variable is imported or defined in <script setup>
+=== vue/no-unsafe-url
+vue/no-unsafe-url · lint rule
+Warn about potentially unsafe URL bindings
+
+tier: heuristic
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+help:
+  Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol
+=== vue/no-unsandboxed-iframe
+vue/no-unsandboxed-iframe · lint rule
+Require a sandbox attribute on iframe elements
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <iframe src="/embed"></iframe>
+
+valid:
+  <iframe src="/embed" sandbox></iframe>
+  <iframe src="/embed" sandbox="allow-scripts"></iframe>
+
+help:
+  Add a sandbox attribute (e.g. sandbox="" for the most restrictive policy) and re-grant only the capabilities the embedded content needs
+=== vue/no-unused-components
+vue/no-unused-components · lint rule
+Disallow registering components that are not used inside templates
+
+tier: complete
+domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+severity: warning
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <script setup>
+  import MyButton from './MyButton.vue'  // imported but never used
+  </script>
+  
+  <template>
+    <div>Hello</div>
+  </template>
+
+valid:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  </script>
+  
+  <template>
+    <MyButton>Click me</MyButton>
+  </template>
+=== vue/no-unused-properties
+vue/no-unused-properties · lint rule
+Disallow unused properties defined in defineProps
+
+tier: complete
+domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+severity: warning
+category: strongly-recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <script setup lang="ts">
+  defineProps<{
+    msg: string
+    unused: number  // defined but never used
+  }>()
+  </script>
+  
+  <template>
+    <div>{{ msg }}</div>
+  </template>
+
+valid:
+  <script setup lang="ts">
+  defineProps<{
+    msg: string
+    count: number
+  }>()
+  </script>
+  
+  <template>
+    <div>{{ msg }} - {{ count }}</div>
+  </template>
+=== vue/no-unused-refs
+vue/no-unused-refs · lint rule
+Report template refs (ref="x") never referenced in <script>
+
+tier: complete
+domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template><input ref="unused" /></template>
+  <script setup>
+  const x = 1
+  </script>
+
+valid:
+  <template><input ref="inputEl" /></template>
+  <script setup>
+  import { ref } from 'vue'
+  const inputEl = ref(null)
+  </script>
+=== vue/no-unused-vars
+vue/no-unused-vars · lint rule
+Disallow unused variable definitions in v-for and v-slot directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <!-- 'index' is defined but never used -->
+  <li v-for="(item, index) in items" :key="item.id">{{ item }}</li>
+  
+  <!-- 'foo' is defined but never used -->
+  <template v-slot="{ foo }">
+    <span>Hello</span>
+  </template>
+
+valid:
+  <li v-for="(item, index) in items" :key="index">{{ item }}</li>
+  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
+  
+  <!-- Underscore prefix indicates intentionally unused -->
+  <li v-for="(item, _index) in items" :key="item.id">{{ item }}</li>
+  
+  <template v-slot="{ data }">
+    <span>{{ data }}</span>
+  </template>
+
+help:
+  Options:
+  1. Use the variable in your template
+  2. Remove unused variables:
+    <!-- Before -->
+    <li v-for="(item, index) in items" :key="item.id">
+
+    <!-- After (if index is unused) -->
+    <li v-for="item in items" :key="item.id">
+  3. Prefix with _ to indicate intentional non-use:
+    <li v-for="(_item, index) in items" :key="index">
+=== vue/no-use-v-else-with-v-for
+vue/no-use-v-else-with-v-for · lint rule
+Disallow using `v-else-if` or `v-else` on the same element as `v-for`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+help:
+  Move the conditional directive to a wrapper element around the v-for element.
+=== vue/no-use-v-if-with-v-for
+vue/no-use-v-if-with-v-for · lint rule
+Disallow using `v-if` on the same element as `v-for`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <li v-for="item in items" v-if="item.active">{{ item }}</li>
+
+valid:
+  <!-- Use computed property to filter -->
+  <li v-for="item in activeItems" :key="item.id">{{ item }}</li>
+  
+  <!-- Or wrap with template -->
+  <template v-for="item in items" :key="item.id">
+    <li v-if="item.active">{{ item }}</li>
+  </template>
+
+help:
+  Problem: v-for has higher priority than v-if, causing the entire list to iterate before filtering.
+  Solution 1: Use a computed property:
+    <script setup>
+    const activeUsers = computed(() =>
+    users.filter(u => u.isActive)
+    )
+    </script>
+    <template>
+    <li v-for="user in activeUsers" :key="user.id">
+    </template>
+  Solution 2: Wrap with <template>:
+    <template v-for="user in users" :key="user.id">
+    <li v-if="user.isActive">{{ user.name }}</li>
+    </template>
+=== vue/no-useless-mustaches
+vue/no-useless-mustaches · lint rule
+Disallow a mustache interpolation whose expression is a constant string literal
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div>{{ 'x' }}</div>
+  <div>{{ "x" }}</div>
+  <div>{{ `x` }}</div>
+
+valid:
+  <div>x</div>
+  <div>{{ x }}</div>
+  <div>{{ `pre-${x}` }}</div>
+  <span>A</span> {{ " " }} <span>B</span>
+
+help:
+  Replace the mustache with the plain text ({{ 'x' }} becomes x).
+=== vue/no-useless-template-attributes
+vue/no-useless-template-attributes · lint rule
+Disallow useless attributes on `<template>` elements
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template v-if="show" class="foo"><div /></template>
+  <template v-for="item in items" id="bar"><div /></template>
+  <template v-slot:header ref="tmpl"><div /></template>
+
+valid:
+  <template v-if="show"><div /></template>
+  <template v-for="item in items" :key="item"><div /></template>
+  <template v-slot:header><div /></template>
+
+help:
+  Why: <template> is not rendered to the DOM. Only structural directives (v-if, v-for, v-slot) and :key are meaningful.
+  Fix: Move attributes to a child element or remove them.
+=== vue/no-useless-v-bind
+vue/no-useless-v-bind · lint rule
+Disallow a v-bind whose value is a plain string literal
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div :foo="'bar'"></div>
+  <div :foo="`bar`"></div>
+
+valid:
+  <div foo="bar"></div>
+  <div :foo="bar"></div>
+  <div :foo="`pre-${bar}`"></div>
+
+help:
+  Replace the binding with a static attribute (foo=bar instead of :foo='bar').
+=== vue/no-v-for-template-key-on-child
+vue/no-v-for-template-key-on-child · lint rule
+Disallow `key` on the child of a `<template v-for>`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template v-for="item in items">
+    <div :key="item.id">{{ item }}</div>
+  </template>
+
+valid:
+  <template v-for="item in items" :key="item.id">
+    <div>{{ item }}</div>
+  </template>
+
+help:
+  Move the :key up onto the <template v-for> element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2).
+=== vue/no-v-html
+vue/no-v-html · lint rule
+Warn against v-html to prevent XSS vulnerabilities
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-html="userContent"></div>
+  <span v-html="htmlFromApi"></span>
+
+valid:
+  <!-- Use text interpolation for user content -->
+  <div>{{ userContent }}</div>
+  
+  <!-- Or sanitize HTML before rendering -->
+  <div v-html="sanitizedHtml"></div> <!-- with proper sanitization -->
+
+help:
+  Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.
+  Alternatives:
+  1. Use text interpolation (auto-escaped):
+    <p>{{ userContent }}</p>
+  2. Use a sanitization library:
+    import DOMPurify from 'dompurify'
+    const safeHtml = DOMPurify.sanitize(userInput)
+  3. Use a markdown renderer with XSS protection
+  If you must use v-html:
+  - Never use with user-provided content
+  - Only use with trusted, static content
+=== vue/no-v-text
+vue/no-v-text · lint rule
+Disallow the v-text directive; prefer mustache interpolation
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-text="message"></div>
+
+valid:
+  <div>{{ message }}</div>
+
+help:
+  Replace v-text="expr" with mustache interpolation in the element's content (e.g. <div>{{ expr }}</div>).
+=== vue/no-v-text-v-html-on-component
+vue/no-v-text-v-html-on-component · lint rule
+Disallow v-text / v-html on component elements
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <MyComponent v-html="content" />
+  <MyComponent v-text="content" />
+
+valid:
+  <div v-html="content"></div>
+  <component is="div" v-html="content" />
+  <MyComponent>{{ content }}</MyComponent>
+
+help:
+  Why: Components have their own rendering logic. v-text/v-html would overwrite the component's content unexpectedly.
+  Fix: Pass content via props or slots:
+    <!-- Instead of -->
+    <MyComponent v-html="content" />
+
+    <!-- Use slots -->
+    <MyComponent><div v-html="content" /></MyComponent>
+=== vue/permitted-contents
+vue/permitted-contents · lint rule
+Enforce HTML content model rules
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template>
+    <p><div>block in a paragraph</div></p>
+    <table><tr><td>row without tbody</td></tr></table>
+    <a href="#"><button>nested control</button></a>
+    <ul><div>not a list item</div></ul>
+  </template>
+
+valid:
+  <template>
+    <p><span>inline in a paragraph</span></p>
+    <table><tbody><tr><td>cell</td></tr></tbody></table>
+    <ul><li>list item</li><MyItem /></ul>
+  </template>
+
+help:
+  Why: HTML has content model rules that define which elements can be nested inside others. Violating these rules causes browsers to auto-correct the DOM, leading to unexpected rendering.
+  Common rules:
+  - <p>, <span>, <a> can only contain phrasing (inline) content
+  - <a> and <button> cannot be nested inside each other
+  - <ul>/<ol> direct children must be <li>
+  - <table> direct children must be <thead>, <tbody>, <tfoot>, <tr>, or <caption>
+=== vue/prefer-props-shorthand
+vue/prefer-props-shorthand · lint rule
+Recommend shorthand syntax for props (Vue 3.4+)
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+
+invalid:
+  <MyComponent :foo="foo" />
+  <MyComponent :user-name="userName" />
+  <MyComponent :count="count" :name="name" />
+
+valid:
+  <!-- Shorthand syntax (Vue 3.4+) -->
+  <MyComponent :foo />
+  <MyComponent :user-name />
+  <MyComponent :count :name />
+  
+  <!-- Different names are fine -->
+  <MyComponent :foo="bar" />
+  <MyComponent :count="totalCount" />
+
+help:
+  Use shorthand prop syntax
+=== vue/prefer-true-attribute-shorthand
+vue/prefer-true-attribute-shorthand · lint rule
+Prefer the shorthand for a boolean attribute bound to `true`
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <input :disabled="true" />
+
+valid:
+  <input disabled />
+  <input :disabled="false" />
+  <MyComponent :visible="true" />
+  <MyComponent :visible="isVisible" />
+
+help:
+  Drop the ='true' binding and write the attribute name on its own.
+=== vue/prop-name-casing
+vue/prop-name-casing · lint rule
+Enforce a casing for declared prop names
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: strongly-recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <script setup>
+  defineProps({ 'my-prop': String })
+  </script>
+
+valid:
+  <script setup>
+  defineProps({ myProp: String })
+  </script>
+
+help:
+  Declare props in camelCase; a template may still write them in kebab-case:
+    <!-- Bad -->
+    defineProps({ 'my-prop': String })
+
+    <!-- Good -->
+    defineProps({ myProp: String })
+=== vue/require-component-is
+vue/require-component-is · lint rule
+Require `v-bind:is` on `<component>` elements
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <component />
+  <component></component>
+
+valid:
+  <component :is="currentComponent" />
+  <component is="MyComponent" />
+
+help:
+  Why: The <component> element is a dynamic component placeholder. Without is, Vue cannot determine which component to render.
+  Fix:
+    <component :is="currentComponent" />
+    <component is="MyComponent" />
+=== vue/require-component-registration
+vue/require-component-registration · lint rule
+Require explicit import or registration for components
+
+tier: complete
+domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+=== vue/require-scoped-style
+vue/require-scoped-style · lint rule
+Require scoped attribute on style tags
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <style>
+  .button { color: red; }
+  </style>
+  
+  <style lang="scss">
+  .container { padding: 20px; }
+  </style>
+
+valid:
+  <style scoped>
+  .button { color: red; }
+  </style>
+  
+  <style scoped lang="scss">
+  .container { padding: 20px; }
+  </style>
+  
+  <!-- module styles are also fine -->
+  <style module>
+  .button { color: red; }
+  </style>
+
+help:
+  Add the 'scoped' attribute to the style block
+=== vue/require-toggle-inside-transition
+vue/require-toggle-inside-transition · lint rule
+Require a toggle on the element wrapped by `<transition>`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <transition>
+    <div>content</div>
+  </transition>
+
+valid:
+  <transition>
+    <div v-if="show">content</div>
+  </transition>
+
+help:
+  Add v-if, v-show, v-else, v-else-if, or a bound :key, or use a dynamic <component :is>; otherwise the element never enters or leaves and the <transition> does nothing.
+=== vue/require-v-for-key
+vue/require-v-for-key · lint rule
+Require `v-bind:key` with `v-for` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <li v-for="item in items">{{ item }}</li>
+
+valid:
+  <li v-for="item in items" :key="item.id">{{ item }}</li>
+
+help:
+  Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.
+  Fix: Add a unique identifier as the key:
+    <li v-for="item in items" :key="item.id">
+    {{ item.name }}
+    </li>
+  Best practices:
+  - Use unique, stable identifiers (like database IDs)
+  - Avoid using array index as key when list order may change
+  - Keys must be primitive values (string or number)
+=== vue/scoped-event-names
+vue/scoped-event-names · lint rule
+Recommend scoped event names using context:event format
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+help:
+  Use scoped event names like 'update:modelValue' instead of generic names
+=== vue/sfc-element-order
+vue/sfc-element-order · lint rule
+Enforce consistent order of SFC top-level elements
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <style>...</style>
+  <script setup>...</script>
+
+valid:
+  <script setup>...</script>
+  <template>...</template>
+  <style></style>
+=== vue/single-style-block
+vue/single-style-block · lint rule
+Recommend having a single style block
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+=== vue/slot-name-casing
+vue/slot-name-casing · lint rule
+Enforce kebab-case for named slots used via v-slot
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <MyComponent>
+    <template #mySlot>...</template>
+    <template #my_slot>...</template>
+  </MyComponent>
+
+valid:
+  <MyComponent>
+    <template #my-slot>...</template>
+    <template #default>...</template>
+  </MyComponent>
+
+help:
+  Rename the slot to kebab-case, e.g. '#my-slot' instead of '#mySlot' or '#my_slot'.
+=== vue/this-in-template
+vue/this-in-template · lint rule
+Disallow `this.` in template expressions
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div>{{ this.message }}</div>
+  <div :class="this.className"></div>
+  <button @click="this.handleClick()"></button>
+
+valid:
+  <div>{{ message }}</div>
+  <div :class="className"></div>
+  <button @click="handleClick()"></button>
+  <div>{{ 'this.is.a.string' }}</div>
+
+help:
+  Remove the 'this.' prefix; Vue resolves template identifiers against the component instance automatically.
+=== vue/use-unique-element-ids
+vue/use-unique-element-ids · lint rule
+Enforce unique element IDs using useId() instead of static literals
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template>
+    <label for="input">Name:</label>
+    <input id="input" type="text" />
+  </template>
+
+valid:
+  <script setup>
+  import { useId } from 'vue'
+  
+  const id = useId()
+  </script>
+  
+  <template>
+    <label :for="id">Name:</label>
+    <input :id="id" type="text" />
+  </template>
+
+help:
+  Why: Static id attributes can cause duplicate IDs when components are rendered multiple times, leading to accessibility issues and broken functionality (e.g., label-input associations).
+  Fix: Use useId() from Vue 3.5+:
+    <script setup>
+    import { useId } from 'vue'
+
+    const id = useId()
+    </script>
+
+    <template>
+    <label :for="id">Name:</label>
+    <input :id="id" type="text">
+    </template>
+  Benefits:
+  - Generates unique IDs for each component instance
+  - Stable across server and client rendering (SSR-safe)
+  - Works with labels, ARIA attributes, and form associations
+=== vue/use-v-on-exact
+vue/use-v-on-exact · lint rule
+Enforce `.exact` modifier on `v-on` when there are modifier-based handlers
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <button @click="handleClick" @click.ctrl="handleCtrlClick">Click</button>
+
+valid:
+  <button @click.exact="handleClick" @click.ctrl="handleCtrlClick">Click</button>
+  <button @click="handleClick">Click</button>
+
+help:
+  Why: @click fires even when Ctrl/Shift/Alt/Meta is pressed. Use .exact to only fire when no system modifiers are active.
+  Fix:
+    <!-- Before -->
+    <button @click="onClick" @click.ctrl="onCtrlClick" />
+
+    <!-- After -->
+    <button @click.exact="onClick" @click.ctrl="onCtrlClick" />
+=== vue/v-bind-style
+vue/v-bind-style · lint rule
+Enforce `v-bind` directive style
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: strongly-recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-bind:class="foo"></div>
+
+valid:
+  <div :class="foo"></div>
+
+help:
+  Replace with the preferred style
+=== vue/v-on-event-hyphenation
+vue/v-on-event-hyphenation · lint rule
+Enforce hyphenation of custom event names in v-on on components
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <MyComponent @myEvent="handler" />
+  <MyComponent v-on:myEvent="handler" />
+
+valid:
+  <MyComponent @my-event="handler" />
+  <div @myEvent="handler" />
+  <MyComponent @[dynamicEvent]="handler" />
+
+help:
+  Rename the listener to kebab-case so it matches the emitted event name.
+=== vue/v-on-handler-style
+vue/v-on-handler-style · lint rule
+Enforce writing v-on handlers as a method reference or an inline function
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <button @click="count++"></button>
+  <button @click="doThis(); doThat()"></button>
+  <button @click="foo = bar"></button>
+
+valid:
+  <button @click="handler"></button>
+  <button @click="foo.bar"></button>
+  <button @click="() => count++"></button>
+  <button @click="function () { count++ }"></button>
+
+help:
+  Write the handler as a method reference (e.g. @click="handler") or an inline function (e.g. @click="() => count++") instead of an inline statement.
+=== vue/v-on-style
+vue/v-on-style · lint rule
+Enforce `v-on` directive style
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: strongly-recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-on:click="handleClick"></div>
+
+valid:
+  <div @click="handleClick"></div>
+
+help:
+  Replace with the preferred style
+=== vue/v-slot-style
+vue/v-slot-style · lint rule
+Enforce `v-slot` directive style
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: strongly-recommended
+autofix: yes
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template v-slot:header>...</template>
+  <MyComponent #default="props">...</MyComponent>
+
+valid:
+  <template #header>...</template>
+  <MyComponent v-slot="props">...</MyComponent>
+
+help:
+  Shorthand: <template #header> (default)
+  Longform: <template v-slot:header>
+  Choose one style and be consistent.
+=== vue/valid-attribute-name
+vue/valid-attribute-name · lint rule
+Require valid attribute names
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div my"attr="value"></div>
+  <div 0abc="value"></div>
+
+valid:
+  <div my-attr="value"></div>
+  <div data-value="value"></div>
+
+help:
+  Attribute names must not contain spaces, quotes, >, /, =, or control characters
+=== vue/valid-template-root
+vue/valid-template-root · lint rule
+Enforce a valid `<template>` root for Vue 3 fragment semantics
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <template>
+    <template>content</template>
+  </template>
+
+valid:
+  <template>
+    <div>content</div>
+  </template>
+
+help:
+  Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node.
+=== vue/valid-v-bind
+vue/valid-v-bind · lint rule
+Enforce valid `v-bind` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-bind></div>
+  <div :></div>
+
+valid:
+  <div :class="foo"></div>
+  <div v-bind:class="foo"></div>
+  <div v-bind="{ class: foo }"></div>
+  <div :loading></div>  <!-- Vue 3.4+ same-name shorthand for :loading="loading" -->
+
+help:
+  Fix: Provide a value to bind:
+    <!-- Shorthand -->
+    <img :src="imageUrl" :alt="imageAlt">
+
+    <!-- Full syntax -->
+    <img v-bind:src="imageUrl">
+
+    <!-- Bind multiple attributes -->
+    <div v-bind="{ id: itemId, class: itemClass }"></div>
+=== vue/valid-v-cloak
+vue/valid-v-cloak · lint rule
+Enforce valid `v-cloak` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-cloak="foo"></div>
+  <div v-cloak:arg></div>
+  <div v-cloak.mod></div>
+
+valid:
+  <div v-cloak></div>
+
+help:
+  Remove the value, argument, or modifier from the v-cloak directive
+=== vue/valid-v-else
+vue/valid-v-else · lint rule
+Enforce valid `v-else` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: yes
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-else="foo"></div>
+  <div v-else v-if="bar"></div>
+  <div v-else></div> <!-- without preceding v-if -->
+
+valid:
+  <div v-if="foo"></div>
+  <div v-else></div>
+
+help:
+  Correct usage:
+    <div v-if="type === 'A'">A</div>
+    <div v-else-if="type === 'B'">B</div>
+    <div v-else>Other</div>
+  Rules:
+  - v-else takes no expression
+  - Must immediately follow v-if or v-else-if
+  - No other elements between them
+=== vue/valid-v-for
+vue/valid-v-for · lint rule
+Enforce valid `v-for` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-for></div>
+  <div v-for=""></div>
+  <div v-for.stop="item in items"></div>
+
+valid:
+  <div v-for="item in items" :key="item.id"></div>
+  <div v-for="(item, index) in items" :key="index"></div>
+
+help:
+  Valid v-for syntax:
+    <!-- Array iteration -->
+    <li v-for="item in items">{{ item }}</li>
+    <li v-for="(item, index) in items">{{ index }}: {{ item }}</li>
+
+    <!-- Object iteration -->
+    <li v-for="(value, key) in object">{{ key }}: {{ value }}</li>
+    <li v-for="(value, key, index) in object">{{ index }}</li>
+
+    <!-- Range -->
+    <span v-for="n in 10">{{ n }}</span>
+=== vue/valid-v-html
+vue/valid-v-html · lint rule
+Enforce valid `v-html` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-html></div>
+  <div v-html:arg="foo"></div>
+  <div v-html.mod="foo"></div>
+
+valid:
+  <div v-html="html"></div>
+
+help:
+  Add an expression to the v-html directive and remove any argument or modifier
+=== vue/valid-v-if
+vue/valid-v-if · lint rule
+Enforce valid `v-if` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-if></div>
+  <div v-if=""></div>
+  <div v-if="foo" v-else></div>
+
+valid:
+  <div v-if="foo"></div>
+  <div v-if="foo > 0"></div>
+
+help:
+  Fix: Add a boolean expression:
+    <div v-if="isVisible">Content</div>
+    <div v-if="items.length > 0">Has items</div>
+  Note: Use v-show for frequent toggling (better performance), v-if for conditions that rarely change.
+=== vue/valid-v-memo
+vue/valid-v-memo · lint rule
+Enforce valid `v-memo` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-memo></div>
+
+valid:
+  <div v-memo="[valueA, valueB]">content</div>
+
+help:
+  Usage:
+    <div v-memo="[valueA, valueB]">
+    <!-- Only re-renders when valueA or valueB changes -->
+    </div>
+  Note: v-memo accepts an array of dependencies, similar to React's useMemo.
+=== vue/valid-v-model
+vue/valid-v-model · lint rule
+Enforce valid `v-model` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-model="foo"></div>
+  <input v-model>
+
+valid:
+  <input v-model="foo">
+  <select v-model="selected"></select>
+  <textarea v-model="text"></textarea>
+  <MyComponent v-model="value" />
+
+help:
+  Supported elements:
+  - <input> (text, checkbox, radio, etc.)
+  - <textarea>
+  - <select>
+  - Custom components with modelValue prop
+  Examples:
+    <input v-model="message">
+    <input v-model.number="age" type="number">
+    <input v-model.trim="name">
+    <MyComponent v-model="value">
+=== vue/valid-v-on
+vue/valid-v-on · lint rule
+Enforce valid `v-on` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-on></div>
+  <div @></div>
+  <div @click></div>
+
+valid:
+  <div @click="handleClick"></div>
+  <div v-on:click="handleClick"></div>
+  <div v-on="{ click: handleClick }"></div>
+
+help:
+  Fix: Specify the event name:
+    <!-- Shorthand -->
+    <button @click="handleClick">Click</button>
+
+    <!-- Full syntax -->
+    <button v-on:click="handleClick">Click</button>
+
+    <!-- With modifiers -->
+    <form @submit.prevent="onSubmit">...</form>
+    <input @keyup.enter="onEnter">
+=== vue/valid-v-once
+vue/valid-v-once · lint rule
+Enforce valid `v-once` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-once="foo"></div>
+  <div v-once:arg></div>
+  <div v-once.mod></div>
+
+valid:
+  <div v-once></div>
+
+help:
+  Remove the value, argument, or modifier from the v-once directive
+=== vue/valid-v-show
+vue/valid-v-show · lint rule
+Enforce valid `v-show` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-show></div>
+  <template v-show="foo"><div></div></template>
+
+valid:
+  <div v-show="foo"></div>
+  <div v-show="foo > 0"></div>
+
+help:
+  Add an expression to the v-show directive
+=== vue/valid-v-slot
+vue/valid-v-slot · lint rule
+Enforce valid `v-slot` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-slot:header></div>                 <!-- not on component -->
+  <MyComponent v-slot v-slot:header />      <!-- duplicate -->
+  <template v-slot:header v-slot:footer />  <!-- multiple named slots -->
+
+valid:
+  <MyComponent v-slot="{ item }">{{ item }}</MyComponent>
+  <MyComponent><template #header>Header</template></MyComponent>
+  <MyComponent><template v-slot:header>Header</template></MyComponent>
+
+help:
+  Use v-slot on a component or a template element inside a component
+=== vue/valid-v-text
+vue/valid-v-text · lint rule
+Enforce valid `v-text` directives
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/vue.md
+
+invalid:
+  <div v-text></div>
+  <div v-text:arg="foo"></div>
+  <div v-text.mod="foo"></div>
+
+valid:
+  <div v-text="msg"></div>
+
+help:
+  Add an expression to the v-text directive and remove any argument or modifier
+=== vue/warn-custom-block
+vue/warn-custom-block · lint rule
+Warn about custom blocks in SFC files
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+=== vue/warn-custom-directive
+vue/warn-custom-directive · lint rule
+Warn about custom directives that need registration
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/vue.md
+
+valid:
+  <div v-if="show"></div>
+  <input v-model="value" />
+  <button @click="onClick">Click</button>

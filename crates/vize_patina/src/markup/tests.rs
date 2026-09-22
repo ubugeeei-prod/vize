@@ -15,6 +15,7 @@ mod heading_has_content_tests;
 mod heading_levels_tests;
 mod iframe_has_title_jsx_tests;
 mod iframe_has_title_tests;
+mod input_dialect;
 mod interactive_supports_focus_jsx_tests;
 mod interactive_supports_focus_tests;
 mod media_has_caption_tests;

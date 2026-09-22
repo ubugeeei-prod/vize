@@ -46,6 +46,8 @@ const formatterSensitiveContentIgnorePatterns = [
   // `vize_extension_host`'s `contract_surface` test (P6-8).
   "contracts/versions/**",
   "crates/**/tests/fixtures/**",
+  // Formatter input/output witnesses must retain their authored bytes.
+  "crates/vize_glyph/tests/style_spec/**",
   "docs/content/**/*.md",
   "examples/vite-musea/playwright-report/**",
   "tools/benchmarks/crates/davinci_harness/fixtures/**",

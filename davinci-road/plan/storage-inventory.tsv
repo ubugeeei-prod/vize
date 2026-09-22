@@ -31,6 +31,10 @@ infra	-	crates/vize_davinci/src/render/paint.rs	0	0	1	3	0	0	0	0
 infra	analysis	crates/vize_davinci/src/render/row.rs	1	1	1	2	0	0	0	0
 infra	-	crates/vize_davinci/src/render/text.rs	0	0	1	0	0	0	0	0
 infra	analysis	crates/vize_davinci/src/side_table.rs	1	2	0	0	0	0	0	0
+infra	contract	crates/vize_davinci/src/summary.rs	1	13	1	10	0	0	0	0
+infra	-	crates/vize_davinci/src/summary/facet.rs	0	0	1	9	0	0	0	0
+infra	contract	crates/vize_davinci/src/summary/folio.rs	1	2	1	9	0	0	0	0
+infra	analysis	crates/vize_davinci/src/summary/usage.rs	1	3	1	4	0	0	0	0
 infra	analysis	crates/vize_davinci/src/witness/audit.rs	1	2	0	0	0	0	0	0
 s1	-	crates/vize_s1/src/build.rs	0	0	0	0	1	7	0	0
 s1	-	crates/vize_s1/src/build/tag.rs	0	0	0	0	1	4	0	0
@@ -205,3 +209,7 @@ s1_to_s2	pass	crates/vize_s1_to_s2/src/pass/vslot.rs	1	2	1	4	0	0	0	0
 s1_to_s2	pass	crates/vize_s1_to_s2/src/pass/vslot/consume.rs	1	8	1	6	0	0	0	0
 s1_to_s2	pass	crates/vize_s1_to_s2/src/pass/vslot/group.rs	1	6	1	11	0	0	0	0
 s1_to_s2	pass	crates/vize_s1_to_s2/src/pass/vslot/spell.rs	1	1	1	10	0	0	0	0
+infra	-	crates/vize_davinci/src/render/catalog.rs	0	0	1	1	0	0	0	0
+infra	emit	crates/vize_davinci/src/render/why.rs	1	2	1	6	0	0	0	0
+s1_to_s2	analysis	crates/vize_s1_to_s2/src/partial.rs	1	7	1	1	0	0	0	0
+s1_to_s2	lower	crates/vize_s1_to_s2/src/partial/page.rs	1	12	1	2	0	0	0	0

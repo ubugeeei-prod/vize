@@ -9,10 +9,10 @@ use vize_atelier_core::steps::expression::is_template_global;
 use vize_carton::{Allocator, Span, Vec};
 use vize_s3::{
     op::{OpId, OpKind, Program, RegionId},
-    operand::{Operand, OperandRole as Role, ValueKind},
+    operand::{Operand, OperandRole as Role, OperandValue, ValueKind},
 };
 
-use super::super::{Branch, Content, Expr, Loop};
+use super::super::{Branch, Content, Expr, Loop, LoopSpans};
 use super::{Result, ident::reference, operands::js, operands::one};
 use crate::s3::{AdmissionFailure, LegacyReason, retained::Retained};
 
@@ -45,6 +45,7 @@ pub(super) fn branches<'a>(
         };
         branches.push(Branch {
             condition,
+            span: (value.value.span.start, value.value.span.end),
             region,
             roots: Vec::new_in(&alloc),
         });
@@ -56,10 +57,12 @@ pub(super) fn branches<'a>(
 }
 
 /// `carrier` is `Some` for a `<template v-for>`, holding its wrapper key.
+/// `carrier_span` is the carrier element's authored span (its `<`).
 pub(super) fn for_loop<'a>(
     values: &[Operand<'a>],
     retained: &Retained<'_, 'a>,
     carrier: Option<Option<(&'a str, Span)>>,
+    carrier_span: Span,
 ) -> Result<Content<'a>> {
     if values.iter().any(|value| {
         !matches!(
@@ -75,6 +78,16 @@ pub(super) fn for_loop<'a>(
     let value = one(values, Role::ForValue)?.value;
     let key = one(values, Role::ForKey)?.value;
     let index = one(values, Role::ForIndex)?.value;
+    let span_of = |value: OperandValue<'_>| (value.span.start, value.span.end);
+    let mut spans = LoopSpans {
+        source: span_of(source.value),
+        aliases: [
+            Some(span_of(value)),
+            (key.kind != ValueKind::Absent).then(|| span_of(key)),
+            (index.kind != ValueKind::Absent).then(|| span_of(index)),
+        ],
+        key_prop: None,
+    };
     let text = source.value.text;
     let source = if source.value.kind == ValueKind::Js
         && !text.is_empty()
@@ -95,15 +108,21 @@ pub(super) fn for_loop<'a>(
         return Err(LegacyReason::ControlFlow.into());
     }
     let key_prop = match carrier.flatten() {
-        Some((text, _)) if reference(text) => Some(Expr::plain(text)),
-        Some((text, span)) => Some(Expr {
-            text,
-            js: Some(
-                retained
-                    .expression(text, span)
-                    .ok_or(LegacyReason::ExpressionOrEncoding)?,
-            ),
-        }),
+        Some((text, key_span)) => {
+            spans.key_prop = Some((key_span.start, key_span.end));
+            if reference(text) {
+                Some(Expr::plain(text))
+            } else {
+                Some(Expr {
+                    text,
+                    js: Some(
+                        retained
+                            .expression(text, key_span)
+                            .ok_or(LegacyReason::ExpressionOrEncoding)?,
+                    ),
+                })
+            }
+        }
         None => None,
     };
     Ok(Content::For(Loop {
@@ -113,6 +132,8 @@ pub(super) fn for_loop<'a>(
         index,
         key_prop,
         template: carrier.is_some(),
+        spans,
+        carrier_start: carrier_span.start,
     }))
 }
 

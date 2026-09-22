@@ -15,10 +15,10 @@ use crate::s4::string_plan::{
 };
 
 /// Elements whose content model or runtime helpers are outside the plan
-/// emitter: the raw-text parents both parsers special-case (`textarea`
-/// renders through its own content rule), and the outlet / dynamic
-/// component tags, which never lower to plain elements.
-const REFUSED_TAGS: &[&str] = &["slot", "component", "script", "style", "title"];
+/// emitter: script/style raw text and the outlet / dynamic component tags.
+/// `textarea` renders through its own content rule; title text, entities and
+/// interpolations already agree through the shared text facts.
+const REFUSED_TAGS: &[&str] = &["slot", "component", "script", "style"];
 
 /// What renders between the start and end tags.
 enum Content<'r, 'a> {
@@ -52,7 +52,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
         self.ctx.push_string_part_static("<");
         self.ctx
-            .push_string_part_static_mapped(tag, element.span.start + 1);
+            .push_string_part_static_mapped(tag, open_tag_anchor(self.ctx.source, element, tag));
         let mut owned_content = None;
         if inherit || merged::needs_merged(attached) {
             if let Some(merged) = self.merged_attrs(attached, tag, inherit)? {
@@ -139,6 +139,31 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     fn skip_children(&mut self) -> Result<()> {
         self.pos = self.region_end(self.pos)?;
         Ok(())
+    }
+}
+
+/// Where the open-tag name is anchored.
+///
+/// An authored tag maps at the byte after `<`. An implicit `tbody` or `tr`
+/// has no tag in the source: its span starts at the triggering child's `<`,
+/// and the legacy walker anchors the synthesized name one byte later than
+/// that (zero-width loc at the child tag name, then `start + 1`).
+fn open_tag_anchor(source: &str, element: &s2::ElementOp<'_>, tag: &str) -> u32 {
+    let start = element.span.start;
+    let authored = source.get(start as usize..).is_some_and(|rest| {
+        let Some(name) = rest.strip_prefix('<') else {
+            return false;
+        };
+        name.starts_with(tag)
+            && name
+                .as_bytes()
+                .get(tag.len())
+                .is_some_and(|byte| !byte.is_ascii_alphanumeric() && *byte != b'-')
+    });
+    if authored {
+        start + 1
+    } else {
+        start.saturating_add(2)
     }
 }
 

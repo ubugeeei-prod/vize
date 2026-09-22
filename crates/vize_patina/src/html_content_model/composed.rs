@@ -13,7 +13,9 @@
 //! Declared domain: components resolved through the module graph (no
 //! name-based fallback, no dynamic `:is`); a `<slot>` pass-through is
 //! unknown — whether fallback content renders depends on what the usage
-//! passes — and slot content keeps its per-file verdicts.
+//! passes — and slot content keeps its per-file verdicts. A hyphenated tag
+//! is a usage too (`<my-card />` renders `MyCard`); the lint parser leaves
+//! it as an element, which would hide a `<div>` root inside a `<p>`.
 //!
 //! A child subtree guarded by `v-if="prop"` is left out when the usage does
 //! not pass `prop` and the caller's oracle proves its absent value falsy
@@ -24,7 +26,7 @@ use vize_s0::FxHashSet;
 use super::chain::Chain;
 use super::check::{Context, Report, Verdict, check, check_pruned, check_with};
 use super::class::ViolationClass;
-use super::skeleton::{NodeKind, Skeleton};
+use super::skeleton::{Skeleton, component_usage_name};
 
 /// How deep component chains are followed.
 const MAX_DEPTH: usize = 16;
@@ -109,10 +111,10 @@ impl Composer<'_> {
         let Some(&(file, node)) = path.last() else {
             return;
         };
-        let NodeKind::Component { name } = &self.skeletons[file as usize].node(node).kind else {
+        let Some(name) = component_usage_name(self.skeletons[file as usize].node(node)) else {
             return;
         };
-        let Some(child) = (self.resolve)(file, name.as_str()) else {
+        let Some(child) = (self.resolve)(file, name) else {
             return;
         };
         // A usage chain that revisits a file is recursion: stop there.

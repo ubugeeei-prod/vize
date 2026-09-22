@@ -49,14 +49,7 @@ pub(crate) fn document_symbols(
             .map(DocumentSymbolResponse::Nested);
     }
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: uri.path().to_string().into(),
-        ..Default::default()
-    };
-
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) else {
-        return None;
-    };
+    let descriptor = state.sfc_descriptor(uri, &content)?;
     let line_index = LineIndex::new(&content);
 
     let mut symbols = Vec::new();

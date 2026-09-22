@@ -6,6 +6,10 @@ use tower_lsp::lsp_types::{
     Position, Range, SemanticToken, SemanticTokensRangeResult, SemanticTokensResult,
 };
 
+fn fresh_state() -> crate::server::ServerState {
+    crate::server::ServerState::new()
+}
+
 #[derive(Debug)]
 struct DecodedToken {
     line: u32,
@@ -111,7 +115,7 @@ import Button from './Button.vue'
 </script>"#;
 
     let uri = tower_lsp::lsp_types::Url::parse("file:///test.art.vue").unwrap();
-    let result = SemanticTokensService::get_tokens(content, &uri);
+    let result = SemanticTokensService::get_tokens(&fresh_state(), content, &uri);
     assert!(result.is_some());
 
     if let Some(SemanticTokensResult::Tokens(tokens)) = result {
@@ -330,7 +334,7 @@ const count = ref(0)
 "#;
 
     let uri = tower_lsp::lsp_types::Url::parse("file:///test.vue").unwrap();
-    let result = SemanticTokensService::get_tokens(content, &uri);
+    let result = SemanticTokensService::get_tokens(&fresh_state(), content, &uri);
     assert!(result.is_some());
 
     if let Some(SemanticTokensResult::Tokens(tokens)) = result {
@@ -354,7 +358,7 @@ const count = ref(icon)
 "#;
 
     let uri = tower_lsp::lsp_types::Url::parse("file:///test.vue").unwrap();
-    let result = SemanticTokensService::get_tokens(content, &uri);
+    let result = SemanticTokensService::get_tokens(&fresh_state(), content, &uri);
     let Some(SemanticTokensResult::Tokens(tokens)) = result else {
         panic!("expected semantic tokens");
     };
@@ -393,6 +397,7 @@ const count = ref(0)
 
     let uri = tower_lsp::lsp_types::Url::parse("file:///test.vue").unwrap();
     let result = SemanticTokensService::get_tokens_range(
+        &fresh_state(),
         content,
         &uri,
         Range {
@@ -427,14 +432,6 @@ fn test_directive_expression_tokenization() {
         r#"<div v-if="todoGuards.isActive(todo) || todoGuards.isCompleted(todo)"></div>"#;
     let mut tokens = Vec::new();
     template::collect_directive_expression_tokens(template_str, 1, &mut tokens);
-
-    // Debug: print all tokens
-    for token in &tokens {
-        eprintln!(
-            "Token: line={}, start={}, length={}, type={}",
-            token.line, token.start, token.length, token.token_type
-        );
-    }
 
     // Should find tokens for the expression:
     // - todoGuards (variable)
@@ -540,7 +537,7 @@ const x = 1
 </art>"#;
 
     let uri = tower_lsp::lsp_types::Url::parse("file:///test.vue").unwrap();
-    let result = SemanticTokensService::get_tokens(content, &uri);
+    let result = SemanticTokensService::get_tokens(&fresh_state(), content, &uri);
     assert!(result.is_some());
 
     if let Some(SemanticTokensResult::Tokens(tokens)) = result {

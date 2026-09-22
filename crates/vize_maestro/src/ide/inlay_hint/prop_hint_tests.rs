@@ -32,7 +32,7 @@ console.log(title)
         },
     };
 
-    let hints = InlayHintService::get_hints(content, &uri, range);
+    let hints = InlayHintService::get_hints(&super::fresh_state(), content, &uri, range);
 
     // Should have hints for title in script (line 6) and template (line 10)
     assert!(!hints.is_empty(), "Should have inlay hints");
@@ -83,7 +83,7 @@ const { size, state, tone, variant } = defineProps<{
         },
     };
 
-    let hints = InlayHintService::get_hints(content, &uri, range);
+    let hints = InlayHintService::get_hints(&super::fresh_state(), content, &uri, range);
 
     // Exactly one hint per real reference: the aria-disabled comparison
     // plus the four `${...}` interpolations. The static `tag--size-`
@@ -129,7 +129,7 @@ console.log(localTitle)
         },
     };
 
-    let hints = InlayHintService::get_hints(content, &uri, range);
+    let hints = InlayHintService::get_hints(&super::fresh_state(), content, &uri, range);
 
     // Should have hints for localTitle (the alias), not title
     assert!(
@@ -162,7 +162,7 @@ const { title } = defineProps<{
         },
     };
 
-    let hints = InlayHintService::get_hints(content, &uri, range);
+    let hints = InlayHintService::get_hints(&super::fresh_state(), content, &uri, range);
 
     // Check that no hints are in the defineProps type definition
     // (lines 1-3 in script, which is around line 1-4 in the file)
@@ -204,7 +204,7 @@ const emit = defineEmits<{
         },
     };
 
-    let hints = InlayHintService::get_hints(content, &uri, range);
+    let hints = InlayHintService::get_hints(&super::fresh_state(), content, &uri, range);
 
     // Should have hints for title in :value="title" and possibly template
     // But NOT for title in 'update:title' event names
@@ -259,7 +259,7 @@ console.log(props.title)
         },
     };
 
-    let hints = InlayHintService::get_hints(content, &uri, range);
+    let hints = InlayHintService::get_hints(&super::fresh_state(), content, &uri, range);
 
     // Should have hints for title and count in template (lines 11 and 12)
     // Even though props are not destructured

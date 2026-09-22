@@ -6,6 +6,7 @@ pub(crate) mod component_import;
 mod component_model;
 #[cfg(all(test, feature = "native"))]
 mod corsa_tests;
+mod facts;
 pub(crate) mod helpers;
 mod html;
 #[cfg(all(test, feature = "native"))]

@@ -19,7 +19,12 @@ test("push SemVer checks preserve pull-request markers after squash merge", () =
     job,
     /rust-script tools\/commands\/ci\/github\/semver-change-marker\.rs "\$RUNNER_TEMP\/semver-change-marker\.txt"/,
   );
-  assert.match(job, /SEMVER_CHANGE_MARKER="\$\(cat "\$RUNNER_TEMP\/semver-change-marker\.txt"\)"/);
+  assert.match(job, /bash tools\/commands\/ci\/github\/check-semver\.sh/);
+  const script = readRepoFile("tools", "commands", "ci", "github", "check-semver.sh");
+  assert.match(
+    script,
+    /SEMVER_CHANGE_MARKER="\$\(cat "\$RUNNER_TEMP\/semver-change-marker\.txt"\)"/,
+  );
   assert.doesNotMatch(job, /git log -1 --format=%B/);
 });
 

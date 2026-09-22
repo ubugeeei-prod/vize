@@ -150,6 +150,34 @@ pub enum NodeKind {
     },
 }
 
+/// The tag a node uses when composition resolves it, if it is a component
+/// usage.
+///
+/// The lint parser only marks capitalized tags as components. Vue also
+/// renders a hyphenated tag (`<my-card />`) as the component `MyCard`, and
+/// that is the spelling whose root a parent `<p>` must reject. Hyphenated
+/// native tags (`annotation-xml`, `color-profile`) stay elements.
+pub(super) fn component_usage_name(node: &Node) -> Option<&str> {
+    match &node.kind {
+        NodeKind::Component { name } => Some(name.as_str()),
+        NodeKind::Element(element) if resolves_as_component(element.tag.as_str()) => {
+            Some(element.tag.as_str())
+        }
+        _ => None,
+    }
+}
+
+/// A hyphenated tag Vue treats as a component, not an HTML element.
+fn resolves_as_component(tag: &str) -> bool {
+    if !tag.contains('-') || vize_s0::is_native_tag(tag) {
+        return false;
+    }
+    if tag.bytes().any(|byte| byte.is_ascii_uppercase()) {
+        return !vize_s0::is_native_tag(&tag.to_ascii_lowercase());
+    }
+    true
+}
+
 /// A skeleton node in pre-order.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Node {

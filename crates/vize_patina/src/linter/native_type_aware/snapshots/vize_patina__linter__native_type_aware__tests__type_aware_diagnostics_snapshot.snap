@@ -4,75 +4,12 @@ expression: diagnostics
 ---
 [
     (
-        "vue/no-unused-properties",
-        "Prop 'msg' is defined but never used",
-        64,
-        69,
-        Some(
-            "Remove unused prop or use it in your template/script",
-        ),
-    ),
-    (
-        "vue/html-button-has-type",
-        "'<button>' is missing a 'type' attribute; add type=\"button\", \"submit\", or \"reset\"",
-        372,
-        402,
-        Some(
-            "A '<button>' defaults to type=\"submit\", which submits the enclosing form. Set an explicit type=\"button\", \"submit\", or \"reset\".",
-        ),
-    ),
-    (
-        "vue/v-on-handler-style",
-        "Prefer a method reference or an inline function over an inline statement for this v-on handler",
-        380,
-        401,
-        Some(
-            "Write the handler as a method reference (e.g. @click=\"handler\") or an inline function (e.g. @click=\"() => count++\") instead of an inline statement.",
-        ),
-    ),
-    (
-        "type/require-typed-props",
-        "Prop should have a type definition",
-        51,
-        71,
-        Some(
-            "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
-        ),
-    ),
-    (
-        "type/require-typed-emits",
-        "Emit should have a type definition",
-        72,
-        93,
-        Some(
-            "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
-        ),
-    ),
-    (
         "type/no-floating-promises",
         "Floating Promise must be awaited, returned, or explicitly ignored with `void`",
         281,
         291,
         Some(
             "Add `await`, return the Promise, or prefix it with `void` when the fire-and-forget behavior is intentional.",
-        ),
-    ),
-    (
-        "type/no-unsafe-template-binding",
-        "Template interpolation resolves to an unsafe `any` or `unknown` type",
-        347,
-        360,
-        Some(
-            "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
-        ),
-    ),
-    (
-        "type/no-unsafe-template-binding",
-        "Template event handler calls a value with an unsafe `any` or `unknown` type",
-        388,
-        398,
-        Some(
-            "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
         ),
     ),
     (
@@ -91,6 +28,69 @@ expression: diagnostics
         313,
         Some(
             "Pass `Ref<T>` or `ComputedRef<T>` instead, for example `toRef(source, 'key')` or `computed(() => value)`.",
+        ),
+    ),
+    (
+        "type/no-unsafe-template-binding",
+        "Template event handler calls a value with an unsafe `any` or `unknown` type",
+        388,
+        398,
+        Some(
+            "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+        ),
+    ),
+    (
+        "type/no-unsafe-template-binding",
+        "Template interpolation resolves to an unsafe `any` or `unknown` type",
+        347,
+        360,
+        Some(
+            "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+        ),
+    ),
+    (
+        "type/require-typed-emits",
+        "Emit should have a type definition",
+        72,
+        93,
+        Some(
+            "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
+        ),
+    ),
+    (
+        "type/require-typed-props",
+        "Prop should have a type definition",
+        51,
+        71,
+        Some(
+            "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
+        ),
+    ),
+    (
+        "vue/html-button-has-type",
+        "'<button>' is missing a 'type' attribute; add type=\"button\", \"submit\", or \"reset\"",
+        372,
+        402,
+        Some(
+            "A '<button>' defaults to type=\"submit\", which submits the enclosing form. Set an explicit type=\"button\", \"submit\", or \"reset\".",
+        ),
+    ),
+    (
+        "vue/no-unused-properties",
+        "Prop 'msg' is defined but never used",
+        64,
+        69,
+        Some(
+            "Remove unused prop or use it in your template/script",
+        ),
+    ),
+    (
+        "vue/v-on-handler-style",
+        "Prefer a method reference or an inline function over an inline statement for this v-on handler",
+        380,
+        401,
+        Some(
+            "Write the handler as a method reference (e.g. @click=\"handler\") or an inline function (e.g. @click=\"() => count++\") instead of an inline statement.",
         ),
     ),
 ]

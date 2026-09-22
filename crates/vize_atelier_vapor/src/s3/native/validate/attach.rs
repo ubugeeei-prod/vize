@@ -147,6 +147,7 @@ pub(super) fn bindings<'a>(
                 return Err(LegacyReason::Binding.into());
             };
             owner.key_prop = Some(binding.value);
+            owner.spans.key_prop = Some(binding.spans[1]);
             continue;
         }
         // Content directives replace the element's children at runtime.

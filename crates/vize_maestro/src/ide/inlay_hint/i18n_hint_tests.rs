@@ -30,7 +30,7 @@ fn test_i18n_message_preview_without_script_setup() {
         },
     };
 
-    let hints = InlayHintService::get_hints(content, &uri, range);
+    let hints = InlayHintService::get_hints(&super::fresh_state(), content, &uri, range);
     let labels: Vec<&str> = hints
         .iter()
         .filter_map(|hint| match &hint.label {
@@ -69,7 +69,7 @@ fn test_i18n_message_preview_from_workspace_json_catalog() {
         },
     };
 
-    let hints = InlayHintService::get_hints(content, &uri, range);
+    let hints = InlayHintService::get_hints(&super::fresh_state(), content, &uri, range);
     let labels: Vec<&str> = hints
         .iter()
         .filter_map(|hint| match &hint.label {

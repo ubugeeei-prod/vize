@@ -24,7 +24,7 @@ use crate::ide::{CodeLensService, InlayHintService};
 pub(super) fn code_lens(state: &ServerState, params: &CodeLensParams) -> Option<Vec<CodeLens>> {
     let uri = &params.text_document.uri;
     let content = state.documents.text(uri)?;
-    let lenses = CodeLensService::get_lenses(&content, uri);
+    let lenses = CodeLensService::get_lenses(state, &content, uri);
     (!lenses.is_empty()).then_some(lenses)
 }
 
@@ -32,6 +32,7 @@ pub(super) fn inlay_hint(state: &ServerState, params: &InlayHintParams) -> Optio
     let uri = &params.text_document.uri;
     let content = state.documents.text(uri)?;
     let hints = InlayHintService::get_hints_with_ecosystem(
+        state,
         &content,
         uri,
         params.range,
@@ -51,7 +52,10 @@ pub(super) fn document_color(
     let Some(content) = state.documents.text(uri) else {
         return Vec::new();
     };
-    DocumentColorService::colors(&content, uri.path())
+    let Some(descriptor) = state.sfc_descriptor(uri, &content) else {
+        return Vec::new();
+    };
+    DocumentColorService::colors(&content, &descriptor)
 }
 
 /// `textDocument/colorPresentation` is a pure function of the colour the picker

@@ -68,7 +68,7 @@ impl<'a> S2Markup<'a> {
     }
 
     /// View one JSX/TSX render root's P2-16 S2 projection.
-    pub fn from_jsx_root(root: &'a JsxS2Root<'a>) -> Self {
+    pub fn from_projected_root(root: &'a JsxS2Root<'a>) -> Self {
         Self {
             root: &root.root,
             source: root.source,

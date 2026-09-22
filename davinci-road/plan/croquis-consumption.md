@@ -71,6 +71,7 @@ Cross-crate aggregates — per-product totals, the products with no external con
 | `ExternalModuleScopeData`              | type  | `scope`              |
 | `HoistTracker`                         | type  | `hoist`              |
 | `ImportStatementInfo`                  | type  | `croquis`            |
+| `ImportedExport`                       | type  | `scope`              |
 | `InvalidExport`                        | type  | `croquis`            |
 | `InvalidExportKind`                    | type  | `croquis`            |
 | `JsGlobalScopeData`                    | type  | `scope`              |

@@ -489,7 +489,7 @@ pub(crate) fn find_component_prop_definition(
                 SfcCroquisOptions::full(),
             )
         };
-        if let Some(&(start, end)) = analysis.croquis.binding_spans.get(prop_name.as_str())
+        if let Some((start, end)) = super::facts::prop_span(&analysis.croquis, &prop_name)
             && end > start
         {
             let sfc_offset = analysis.script_source_offset(&descriptor, start);

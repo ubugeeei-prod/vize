@@ -11,7 +11,7 @@ use super::content_rules;
 use super::facts::{Ns, facts};
 use super::parser_rules::{Outcome, Subject};
 use super::parser_verdict::{ParserVerdict, evaluate_element};
-use super::skeleton::{NodeKind, Skeleton};
+use super::skeleton::{NodeKind, Skeleton, component_usage_name};
 use super::table_rules::{html_text, inert_whitespace};
 use super::tri::Tri;
 
@@ -166,7 +166,17 @@ impl Walker<'_, '_> {
         }
         let node = self.skeleton.node(index);
         match &node.kind {
-            NodeKind::Element(element) => {
+            NodeKind::Element(_) => {
+                // Before the element is pushed: a resolved `<my-card />` is
+                // replaced by its root, so the root is checked in this chain,
+                // not inside a `my-card` frame. Unresolved tags stay elements.
+                if component_usage_name(self.skeleton.node(index)).is_some() {
+                    (self.on_component)(index, chain);
+                }
+                let node = self.skeleton.node(index);
+                let NodeKind::Element(element) = &node.kind else {
+                    return;
+                };
                 let subject = Subject { element };
                 let (parser, ns) = evaluate_element(chain, &subject);
                 if let ParserVerdict::Diverges(class, frame) = parser {

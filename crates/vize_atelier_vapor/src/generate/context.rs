@@ -4,6 +4,7 @@ use super::{
     destructure::{parse_destructure_bindings, resolve_props_binding},
     expression,
 };
+use vize_atelier_core::codegen::document::EmitDocument;
 
 mod component_resolution;
 mod scopes;
@@ -14,7 +15,9 @@ use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, cstr};
 
 /// Generate context
 pub(crate) struct GenerateContext<'a> {
-    pub(crate) code: String,
+    /// The render code: a structured emission document that records links to
+    /// the template only for map-requesting compiles (P3-9).
+    pub(crate) out: EmitDocument,
     /// The source string node-loc spans index into.
     pub(crate) source: &'a str,
     indent_level: u32,
@@ -59,6 +62,8 @@ pub(crate) struct GenerateContext<'a> {
     pub(crate) component_name: Option<&'a str>,
     /// Treat the reserved `<Self>` tag as a reference to the current SFC.
     pub(crate) experimental_self_component: bool,
+    /// Authored anchors beyond the IR; `Some` only for map-requesting compiles.
+    pub(crate) spans: Option<&'a super::spans::VaporSourceSpans>,
 }
 
 impl<'a> GenerateContext<'a> {
@@ -69,7 +74,7 @@ impl<'a> GenerateContext<'a> {
         source: &'a str,
     ) -> Self {
         Self {
-            code: String::with_capacity(4096),
+            out: EmitDocument::with_capacity(4096, false),
             source,
             indent_level: 0,
             element_template_map,
@@ -89,6 +94,7 @@ impl<'a> GenerateContext<'a> {
             jsx_closure: false,
             component_name: None,
             experimental_self_component: false,
+            spans: None,
         }
     }
 
@@ -259,18 +265,18 @@ impl<'a> GenerateContext<'a> {
     }
 
     pub(crate) fn push(&mut self, s: &str) {
-        self.code.push_str(s);
+        self.out.push_str(s);
     }
 
     pub(crate) fn push_line(&mut self, s: &str) {
         self.push_indent();
-        self.code.push_str(s);
-        self.code.push('\n');
+        self.out.push_str(s);
+        self.out.push_char('\n');
     }
 
     pub(crate) fn push_indent(&mut self) {
         for _ in 0..self.indent_level {
-            self.code.push_str("  ");
+            self.out.push_str("  ");
         }
     }
 
@@ -287,7 +293,7 @@ impl<'a> GenerateContext<'a> {
     /// Push string to buffer (alias for `push`, compatible with `appends!`/`append!` macros)
     #[allow(dead_code)]
     pub(crate) fn push_str(&mut self, s: &str) {
-        self.code.push_str(s);
+        self.out.push_str(s);
     }
 
     /// Push formatted line (format_args! + newline with indentation)
@@ -295,7 +301,7 @@ impl<'a> GenerateContext<'a> {
         self.push_indent();
         use std::fmt::Write as _;
         let _ = self.write_fmt(args);
-        self.code.push('\n');
+        self.out.push_char('\n');
     }
 
     pub(crate) fn next_temp(&mut self) -> String {
@@ -308,7 +314,7 @@ impl<'a> GenerateContext<'a> {
 impl std::fmt::Write for GenerateContext<'_> {
     #[inline]
     fn write_str(&mut self, s: &str) -> std::fmt::Result {
-        self.code.push_str(s);
+        self.out.push_str(s);
         Ok(())
     }
 }

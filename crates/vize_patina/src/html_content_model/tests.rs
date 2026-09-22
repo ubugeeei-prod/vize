@@ -302,6 +302,13 @@ mod checker_tests {
             body("<p><MyCard><div></div></MyCard></p>"),
             Vec::<String>::new()
         );
+        // A hyphenated tag stays an element until composition resolves it, so
+        // an authored `<div>` inside it still closes the paragraph.
+        assert_eq!(
+            body("<p><my-card><div></div></my-card></p>"),
+            ["div@13 paragraph-auto-closed <- p@1"]
+        );
+        assert_eq!(body("<p><my-card /></p>"), Vec::<String>::new());
         assert_eq!(
             body("<p><Teleport to=\"body\"><div></div></Teleport></p>"),
             Vec::<String>::new()

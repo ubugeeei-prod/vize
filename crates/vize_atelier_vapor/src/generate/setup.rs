@@ -1,7 +1,7 @@
 //! Import generation and template escaping.
 
 use super::context::GenerateContext;
-use vize_carton::{String, cstr};
+use vize_carton::String;
 
 /// Generate imports based on used helpers
 pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {
@@ -58,22 +58,19 @@ pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {
     let mut helpers: Vec<_> = ctx.used_helpers.iter().copied().collect();
     helpers.sort_by_key(|h| helper_priority(h));
 
-    let imports = helpers
-        .iter()
-        .map(|h| cstr!("{h} as _{h}"))
-        .collect::<std::vec::Vec<_>>()
-        .join(", ");
-
-    cstr!("import {{ {imports} }} from 'vue';\n")
-}
-
-/// Escape template string for JavaScript
-pub(crate) fn escape_template(s: &str) -> String {
-    s.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .into()
+    let capacity = helpers.iter().map(|h| h.len() * 2 + 7).sum::<usize>() + 32;
+    let mut imports = String::with_capacity(capacity);
+    imports.push_str("import { ");
+    for (index, helper) in helpers.iter().enumerate() {
+        if index > 0 {
+            imports.push_str(", ");
+        }
+        imports.push_str(helper);
+        imports.push_str(" as _");
+        imports.push_str(helper);
+    }
+    imports.push_str(" } from 'vue';\n");
+    imports
 }
 
 /// Escape a value for use inside a double-quoted JavaScript string literal.

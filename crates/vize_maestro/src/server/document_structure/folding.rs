@@ -26,11 +26,7 @@ pub(crate) fn folding_ranges(
     let uri = &params.text_document.uri;
     let content = state.documents.text(uri)?;
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: uri.path().to_string().into(),
-        ..Default::default()
-    };
-    let descriptor = vize_atelier_sfc::parse_sfc(&content, options).ok()?;
+    let descriptor = state.sfc_descriptor(uri, &content)?;
     let authored_lines = AuthoredLineMap::new(&content);
 
     let mut ranges = Vec::new();

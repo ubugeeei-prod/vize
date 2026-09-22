@@ -1,5 +1,6 @@
 ---
 source: crates/vize_croquis/src/script_parser/tests.rs
+assertion_line: 297
 expression: result
 ---
 ScriptParseResult {
@@ -1238,6 +1239,16 @@ ScriptParseResult {
                     ExternalModuleScopeData {
                         source: "vue",
                         is_type_only: false,
+                        exports: [
+                            ImportedExport {
+                                local_name: "ref",
+                                export_name: "ref",
+                            },
+                            ImportedExport {
+                                local_name: "computed",
+                                export_name: "computed",
+                            },
+                        ],
                     },
                 ),
                 span: Span {
@@ -1268,6 +1279,12 @@ ScriptParseResult {
                     ExternalModuleScopeData {
                         source: "./MyComponent.vue",
                         is_type_only: false,
+                        exports: [
+                            ImportedExport {
+                                local_name: "MyComponent",
+                                export_name: "default",
+                            },
+                        ],
                     },
                 ),
                 span: Span {

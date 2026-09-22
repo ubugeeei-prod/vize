@@ -1,0 +1,8 @@
+错误[vue/no-unused-setup-bindings]: `total` 在 `<script setup>` 中声明，但没有任何地方读取它。
+ --> src/components/Totals.vue:2:7
+  |
+2 | const total = ref(0)
+  |       ^^^^^ 在此处声明
+  |
+  = 依据: `total` 是 <script setup> 中没有任何代码读取的绑定
+  = 帮助: 请删除该绑定，或在模板中读取它

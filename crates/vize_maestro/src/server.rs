@@ -24,6 +24,7 @@ mod importers;
 #[cfg(feature = "native")]
 mod initial_diagnostics;
 mod open_document;
+mod semantic_tokens;
 mod state;
 mod workspace_files;
 mod workspace_folder_events;

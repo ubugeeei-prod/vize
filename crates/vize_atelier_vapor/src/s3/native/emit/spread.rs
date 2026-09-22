@@ -27,10 +27,11 @@ impl<'a> Emitter<'a, '_> {
             unreachable!("bindings attach to elements")
         };
         let mut entries: Vec<'a, (u32, Entry<'a>)> = Vec::from_iter_in(
-            attributes.iter().map(|&(name, value, position)| {
+            attributes.iter().map(|&(name, value, span)| {
                 // A valueless attribute is the empty string, as upstream binds it.
+                // The value span's start is the authored position among sources.
                 (
-                    position,
+                    span.0,
                     Entry::Prop(name, Expr::plain(value.unwrap_or("")), true),
                 )
             }),

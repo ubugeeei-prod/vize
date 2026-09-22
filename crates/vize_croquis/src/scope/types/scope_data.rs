@@ -208,6 +208,19 @@ pub struct VueGlobalScopeData {
     pub globals: ParamNames,
 }
 
+/// One value import of a single export.
+///
+/// `export_name` is the name the module exports (`Foo` in
+/// `import { Foo as Bar }`, `default` for a default import), never a name
+/// chosen only by this file.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ImportedExport {
+    /// Binding name in this file.
+    pub local_name: CompactString,
+    /// Name the module exports.
+    pub export_name: CompactString,
+}
+
 /// Data specific to external module scope
 #[derive(Debug, Clone)]
 pub struct ExternalModuleScopeData {
@@ -215,6 +228,12 @@ pub struct ExternalModuleScopeData {
     pub source: CompactString,
     /// Whether this is a type-only import
     pub is_type_only: bool,
+    /// Value imports of one export, in source order.
+    ///
+    /// Type-only and namespace imports are omitted: neither names a component
+    /// export. A renamed import keeps the exported name here so a later read
+    /// does not have to recover it from the local binding.
+    pub exports: Vec<ImportedExport>,
 }
 
 /// Data specific to closure scope (function declaration, function expression, arrow function)

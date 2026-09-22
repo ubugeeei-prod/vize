@@ -1,0 +1,6004 @@
+=== compiler/abrupt-closing-of-empty-comment
+compiler/abrupt-closing-of-empty-comment · 编译器错误
+非法的注释。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  注释必须写成 <!-- … -->；<!--> 和 <!---> 会过早结束注释
+=== compiler/cache-handler-not-supported
+compiler/cache-handler-not-supported · 编译器错误
+此模式不支持 cacheHandlers 选项。
+
+阶段: emit
+严重级别: 错误
+
+帮助:
+  缓存处理函数需要 prefixIdentifiers；在此模式下请去掉 cacheHandlers 选项
+=== compiler/cdata-in-html-content
+compiler/cdata-in-html-content · 编译器错误
+CDATA 区块只能在 XML 上下文中使用。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  <![CDATA[ … ]]> 只能用在 <svg> 或 <math> 内部；请改为转义文本
+=== compiler/duplicate-attribute
+compiler/duplicate-attribute · 编译器错误
+属性重复。
+
+阶段: surface
+严重级别: 警告
+
+帮助:
+  请删除其中一个，或将它们的值合并
+=== compiler/end-tag-with-attributes
+compiler/end-tag-with-attributes · 编译器错误
+结束标签不能带有属性。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请把这些属性移到对应的开始标签上
+=== compiler/end-tag-with-trailing-solidus
+compiler/end-tag-with-trailing-solidus · 编译器错误
+结束标签末尾不能有斜杠。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请写成 </div>，而不是 </div/>
+=== compiler/eof-before-tag-name
+compiler/eof-before-tag-name · 编译器错误
+标签名之前意外遇到文件结尾。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  文件在 < 之后就结束了；请补全标签或删除多余的 <
+=== compiler/eof-in-cdata
+compiler/eof-in-cdata · 编译器错误
+CDATA 区块中意外遇到文件结尾。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请用 ]]> 结束该区块
+=== compiler/eof-in-comment
+compiler/eof-in-comment · 编译器错误
+注释中意外遇到文件结尾。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请用 --> 结束注释
+=== compiler/eof-in-script-html-comment-like-text
+compiler/eof-in-script-html-comment-like-text · 编译器错误
+脚本中意外遇到文件结尾。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  <script> 中的 <!-- 没有闭合；请删除它或用 --> 闭合
+=== compiler/eof-in-tag
+compiler/eof-in-tag · 编译器错误
+标签中意外遇到文件结尾。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请在文件结束前用 > 闭合标签
+=== compiler/extend-point
+compiler/extend-point · 编译器错误
+扩展点。
+
+阶段: surface
+严重级别: 错误
+=== compiler/incorrectly-closed-comment
+compiler/incorrectly-closed-comment · 编译器错误
+注释的闭合方式不正确。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请用 --> 而不是 --!> 闭合注释
+=== compiler/incorrectly-opened-comment
+compiler/incorrectly-opened-comment · 编译器错误
+注释的开始方式不正确。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请用 <!-- 开始注释；单独的 <! 会被当作无效注释
+=== compiler/invalid-end-tag
+compiler/invalid-end-tag · 编译器错误
+无效的结束标签。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  该结束标签没有对应的已打开元素；请删除它或补上对应的开始标签
+=== compiler/invalid-expression
+compiler/invalid-expression · 编译器错误
+解析 JavaScript 表达式时出错。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  模板表达式必须是单个 JavaScript 表达式；不能使用 if、let 等语句
+=== compiler/invalid-first-character-of-tag-name
+compiler/invalid-first-character-of-tag-name · 编译器错误
+标签名的首字符无效。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  标签名必须以 ASCII 字母开头；如需显示字面量 <，请写成 &lt;
+=== compiler/missing-attribute-value
+compiler/missing-attribute-value · 编译器错误
+缺少属性值。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请在 = 后写上属性值，或删除 =
+=== compiler/missing-directive-modifier
+compiler/missing-directive-modifier · 编译器错误
+缺少指令修饰符。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  . 后面必须跟修饰符名，例如 @click.stop
+=== compiler/missing-directive-name
+compiler/missing-directive-name · 编译器错误
+缺少指令名。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请在 v- 后写上指令名，例如 v-show
+=== compiler/missing-dynamic-directive-argument-end
+compiler/missing-dynamic-directive-argument-end · 编译器错误
+未找到动态指令参数的右方括号。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请用 ] 结束动态参数，例如 :[key]="value"
+=== compiler/missing-end-tag
+compiler/missing-end-tag · 编译器错误
+元素缺少结束标签。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请在父元素结束之前闭合该元素
+=== compiler/missing-end-tag-name
+compiler/missing-end-tag-name · 编译器错误
+缺少结束标签名。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  </> 不是有效的结束标签；请写上元素名，例如 </div>
+=== compiler/missing-interpolation-end
+compiler/missing-interpolation-end · 编译器错误
+未找到插值的结束符号。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请用 }} 结束插值
+=== compiler/missing-whitespace-between-attributes
+compiler/missing-whitespace-between-attributes · 编译器错误
+属性之间需要空白。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请用空格分隔各个属性
+=== compiler/module-mode-not-supported
+compiler/module-mode-not-supported · 编译器错误
+此模式不支持 ES 模块模式。
+
+阶段: emit
+严重级别: 错误
+
+帮助:
+  请在此处使用 function 模式编译，或切换到输出 ES 模块的构建
+=== compiler/nested-comment
+compiler/nested-comment · 编译器错误
+不允许嵌套注释。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  注释中不能包含 <!--；请先闭合外层注释
+=== compiler/prefix-id-not-supported
+compiler/prefix-id-not-supported · 编译器错误
+此模式不支持 prefixIdentifiers 选项。
+
+阶段: emit
+严重级别: 错误
+
+帮助:
+  该模式编译时不会为标识符添加前缀；请去掉 prefixIdentifiers 选项
+=== compiler/scope-id-not-supported
+compiler/scope-id-not-supported · 编译器错误
+此模式不支持 scopeId 选项。
+
+阶段: emit
+严重级别: 错误
+
+帮助:
+  作用域样式需要模块模式；请去掉 scopeId 选项或切换模式
+=== compiler/unexpected-character-in-attribute-name
+compiler/unexpected-character-in-attribute-name · 编译器错误
+属性名中出现了意外的字符。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  属性名中不能出现 "、' 或 <；请检查是否漏写了 = 或引号
+=== compiler/unexpected-character-in-unquoted-attribute-value
+compiler/unexpected-character-in-unquoted-attribute-value · 编译器错误
+未加引号的属性值中出现了意外的字符。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请给属性值加上引号；包含 "、'、<、= 或    的值必须加引号
+=== compiler/unexpected-equals-sign-before-attribute-name
+compiler/unexpected-equals-sign-before-attribute-name · 编译器错误
+属性名前出现了意外的等号。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  属性名不能以 = 开头；请删除多余的 =
+=== compiler/unexpected-null-character
+compiler/unexpected-null-character · 编译器错误
+出现了意外的空字符。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请删除 U+0000 字符；它通常意味着文件已损坏或混入了二进制数据
+=== compiler/unexpected-question-mark-instead-of-tag-name
+compiler/unexpected-question-mark-instead-of-tag-name · 编译器错误
+无效的标签名。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  <? 表示处理指令，而 HTML 不支持它；请将其删除
+=== compiler/unexpected-solidus-in-tag
+compiler/unexpected-solidus-in-tag · 编译器错误
+标签中出现了意外的斜杠。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  / 只能出现在 > 之前，用于自闭合标签
+=== compiler/unhandled-code-path
+compiler/unhandled-code-path · 编译器错误
+遇到了未处理的代码路径。
+
+阶段: emit
+严重级别: 错误
+
+帮助:
+  这是编译器的缺陷；请附上触发该问题的模板进行报告
+=== compiler/v-bind-no-expression
+compiler/v-bind-no-expression · 编译器错误
+v-bind 缺少表达式。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  请绑定一个值，例如 :title="title"，或使用同名简写 :title（Vue 3.4+）
+=== compiler/v-bind-same-name-shorthand
+compiler/v-bind-same-name-shorthand · 编译器错误
+v-bind 简写需要 prop 名。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  同名简写需要静态名称，例如 :title；动态的 :[name] 必须提供值
+=== compiler/v-else-no-adjacent-if
+compiler/v-else-no-adjacent-if · 编译器错误
+v-else/v-else-if 前面没有相邻的 v-if。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  请把它紧跟在带有 v-if 或 v-else-if 的元素之后；两者之间只能有注释和空白
+=== compiler/v-for-malformed-expression
+compiler/v-for-malformed-expression · 编译器错误
+v-for 的表达式无效。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  请使用 item in items、(item, index) in items 或 (value, key, index) in object 的形式
+=== compiler/v-for-no-expression
+compiler/v-for-no-expression · 编译器错误
+v-for 缺少表达式。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  请写出迭代表达式，例如 v-for="item in items"
+=== compiler/v-for-template-key-placement
+compiler/v-for-template-key-placement · 编译器错误
+<template v-for> 的 key 应放在 <template> 标签上。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  请把 :key 从子元素移到 <template v-for> 上
+=== compiler/v-if-no-expression
+compiler/v-if-no-expression · 编译器错误
+v-if/v-else-if 缺少表达式。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  请提供条件表达式，例如 v-if="visible"
+=== compiler/v-if-same-key
+compiler/v-if-same-key · 编译器错误
+v-if/v-else-if 的各个分支必须使用唯一的 key。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  请为每个分支指定不同的 key，或者去掉 key 让 Vue 自动生成
+=== compiler/v-model-arg-on-element
+compiler/v-model-arg-on-element · 编译器错误
+普通元素上不支持 v-model 参数。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  v-model:title 这样的参数只能用在组件上；原生输入元素请使用不带参数的 v-model
+=== compiler/v-model-malformed-expression
+compiler/v-model-malformed-expression · 编译器错误
+v-model 的值必须是有效的 JavaScript 成员表达式。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  v-model 会写回它的值，因此请绑定变量或属性（例如 form.title），而不是函数调用或字面量
+=== compiler/v-model-no-expression
+compiler/v-model-no-expression · 编译器错误
+v-model 缺少表达式。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  请绑定一个可写的值，例如 v-model="title"
+=== compiler/v-model-on-props
+compiler/v-model-on-props · 编译器错误
+v-model 不能用于 props。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  props 是只读的；请改为触发 update:<prop> 事件，或把 prop 复制到本地状态中
+=== compiler/v-model-on-scope
+compiler/v-model-on-scope · 编译器错误
+v-model 不能用于 v-for 或 v-slot 的作用域变量。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  作用域变量只是局部副本；请绑定源数据，例如 v-model="items[index]"
+=== compiler/v-on-no-expression
+compiler/v-on-no-expression · 编译器错误
+v-on 缺少表达式。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  请提供处理函数，例如 @click="save"，或使用只带修饰符的形式，例如 @submit.prevent
+=== compiler/v-show-no-expression
+compiler/v-show-no-expression · 编译器错误
+v-show 缺少表达式。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  请提供条件表达式，例如 v-show="open"
+=== compiler/v-slot-duplicate-slot-names
+compiler/v-slot-duplicate-slot-names · 编译器错误
+检测到重复的插槽名。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  组件的每个插槽只能提供一次；请合并这两个 <template>
+=== compiler/v-slot-extraneous-default-slot-children
+compiler/v-slot-extraneous-default-slot-children · 编译器错误
+组件已有显式的默认插槽，却还有多余的子节点。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  请把这些子节点移到 <template #default> 中，或删除显式的默认插槽
+=== compiler/v-slot-misplaced
+compiler/v-slot-misplaced · 编译器错误
+v-slot 只能用在组件或 <template> 标签上。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  请用 <template #name> 包裹内容，或把 v-slot 移到组件上
+=== compiler/v-slot-mixed-slot-usage
+compiler/v-slot-mixed-slot-usage · 编译器错误
+检测到 v-slot 与具名插槽混用。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  组件使用具名插槽时，默认插槽也请写在 <template #default> 中
+=== compiler/v-slot-unexpected-directive-on-slot-outlet
+compiler/v-slot-unexpected-directive-on-slot-outlet · 编译器错误
+<slot> 出口上不能使用自定义指令。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  <slot> 本身不渲染元素；请把指令移到其内部或外层的元素上
+=== a11y/alt-text
+a11y/alt-text · lint 规则
+要求媒体元素提供替代文本
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <img src="photo.jpg" />
+  <area href="/link" />
+  <input type="image" />
+  <object data="file.swf" />
+
+正确示例:
+  <img src="photo.jpg" alt="A sunset" />
+  <area href="/link" alt="Link description" />
+  <input type="image" alt="Submit" />
+  <object data="file.swf" title="Flash content" aria-label="Content" />
+=== a11y/anchor-has-content
+a11y/anchor-has-content · lint 规则
+要求锚点元素有无障碍内容
+
+精度层级: complete
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  修复选项:
+  1. 添加文本内容:
+    <a href="/about">关于我们</a>
+  2. 为仅图标链接添加aria-label:
+    <a href="/settings" aria-label="设置">
+    <IconSettings />
+    </a>
+  3. 包含带alt的图片:
+    <a href="/"><img src="logo.png" alt="首页"></a>
+=== a11y/anchor-is-valid
+a11y/anchor-is-valid · lint 规则
+强制锚元素使用有效的href
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <a href="">Link</a>
+  <a href="#">Link</a>
+  <a href="javascript:void(0)">Link</a>
+
+正确示例:
+  <a href="/about">About</a>
+  <a :href="url">Dynamic Link</a>
+
+帮助:
+  修复:
+    <!-- 使用有效的URL -->
+    <a href="/about">关于</a>
+
+    <!-- 点击处理器请使用<button> -->
+    <button @click="handleClick">操作</button>
+
+    <!-- 动态URL -->
+    <a :href="url">链接</a>
+=== a11y/aria-props
+a11y/aria-props · lint 规则
+禁止无效的ARIA属性
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 错误
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  原因: 无效的ARIA属性会阻止辅助技术向用户传达预期含义。
+  有效的ARIA属性在WAI-ARIA规范中定义:
+  https://www.w3.org/TR/wai-aria/#state_prop_def
+  常用ARIA属性:
+    <!-- 标签 -->
+    <input aria-label="搜索" />
+    <div aria-labelledby="title-id">
+
+    <!-- 状态 -->
+    <button aria-expanded="false">
+    <input aria-invalid="true">
+
+    <!-- 关系 -->
+    <input aria-describedby="hint-id">
+    <div aria-controls="panel-id">
+  注意: 不允许自定义aria-*属性。只能使用WAI-ARIA规范中的属性。
+=== a11y/aria-role
+a11y/aria-role · lint 规则
+带有ARIA role的元素必须使用有效的、非抽象的ARIA role
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 错误
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  原因: 无效的ARIA role会阻止辅助技术向用户传达预期含义。
+  有效的ARIA role在WAI-ARIA规范中定义:
+  https://www.w3.org/TR/wai-aria/#role_definitions
+  常用role:
+    <!-- 部件role -->
+    <div role="button">点击</div>
+    <div role="dialog">模态内容</div>
+    <div role="checkbox">切换</div>
+
+    <!-- 地标role -->
+    <nav role="navigation">...</nav>
+    <main role="main">...</main>
+    <aside role="complementary">...</aside>
+
+    <!-- 文档结构role -->
+    <div role="heading" aria-level="2">标题</div>
+    <div role="list">...</div>
+=== a11y/aria-unsupported-elements
+a11y/aria-unsupported-elements · lint 规则
+禁止在不支持的元素上使用ARIA属性
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 错误
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  删除ARIA属性或role。<meta>、<html>、<script>和<style>等元素不会渲染，不支持ARIA
+=== a11y/click-events-have-key-events
+a11y/click-events-have-key-events · lint 规则
+要求点击事件配合键盘事件处理程序
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  原因: 键盘用户无法触发仅有click的处理程序。
+  最佳方案: 使用语义化元素:
+    <button @click="handleClick">点击我</button>
+  如果必须使用div:
+    <div
+    role="button"
+    tabindex="0"
+    @click="handleClick"
+    @keydown.enter="handleClick"
+    @keydown.space="handleClick"
+    >
+    点击我
+    </div>
+=== a11y/form-control-has-label
+a11y/form-control-has-label · lint 规则
+要求表单控件有关联的标签
+
+精度层级: complete
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  方案1: 使用<label>和for:
+    <label for="email">邮箱</label>
+    <input id="email" type="email">
+  方案2: 将input包在label中:
+    <label>
+    邮箱
+    <input type="email">
+    </label>
+  方案3: 使用aria-label:
+    <input type="search" aria-label="搜索">
+  注意: placeholder不能替代label。
+=== a11y/heading-has-content
+a11y/heading-has-content · lint 规则
+要求标题元素有无障碍内容
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  原因: 空标题会使屏幕阅读器用户困惑，破坏文档结构。
+  修复:
+    <!-- 添加文本内容 -->
+    <h2>章节标题</h2>
+
+    <!-- 或为动态内容使用aria-label -->
+    <h2 aria-label="加载中..."><Spinner /></h2>
+=== a11y/heading-levels
+a11y/heading-levels · lint 规则
+禁止跳过标题级别
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <template>
+    <h1>Title</h1>
+    <h3>Subsection</h3>
+  </template>
+
+正确示例:
+  <template>
+    <h1>Title</h1>
+    <h2>Section</h2>
+    <h3>Subsection</h3>
+  </template>
+
+帮助:
+  标题级别应逐级递增。屏幕阅读器用户通过标题级别进行导航，跳级会使文档结构变得混乱。
+=== a11y/iframe-has-title
+a11y/iframe-has-title · lint 规则
+要求iframe元素有title属性
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  原因: 屏幕阅读器会朗读title帮助用户理解iframe内容。
+  修复:
+    <iframe
+    src="https://example.com/video"
+    title="产品演示视频"
+    ></iframe>
+  注意: title应描述内容，而非来源。
+=== a11y/img-alt
+a11y/img-alt · lint 规则
+要求图片有alt属性
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  原因: 屏幕阅读器使用alt文本向视障用户描述图片。
+  信息性图片:
+    <img src="chart.png" alt="第四季度销售增长20%">
+  装饰性图片:
+    <img src="decoration.png" alt="">
+  复杂图片:
+    <img src="diagram.png" alt="流程图" aria-describedby="desc">
+    <p id="desc">详细描述...</p>
+=== a11y/interactive-supports-focus
+a11y/interactive-supports-focus · lint 规则
+要求交互角色元素可聚焦
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <div role="button" @click="handle">Click</div>
+
+正确示例:
+  <div role="button" tabindex="0" @click="handle">Click</div>
+  <button @click="handle">Click</button>
+
+帮助:
+  原因: 交互角色意味着键盘用户可以操作该元素。
+  修复:
+    <div role="button" tabindex="0" @click="handle">
+    点击
+    </div>
+  更好的方式: 使用原生交互元素:
+    <button @click="handle">点击</button>
+=== a11y/label-has-for
+a11y/label-has-for · lint 规则
+要求标签关联表单控件
+
+精度层级: complete
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <label>Name</label>
+
+正确示例:
+  <label for="name">Name</label>
+  <label><input type="text" /> Name</label>
+  <label :for="id">Name</label>
+
+帮助:
+  修复方法:
+  1. 使用for属性:
+    <label for="name">姓名</label>
+    <input id="name" type="text">
+  2. 包裹表单控件:
+    <label>姓名 <input type="text"></label>
+=== a11y/landmark-roles
+a11y/landmark-roles · lint 规则
+校验地标角色的位置与唯一性
+
+精度层级: complete
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <template>
+    <main>content</main>
+    <main>another main</main>
+  </template>
+
+正确示例:
+  <template>
+    <main>content</main>
+    <nav aria-label="Primary">primary nav</nav>
+    <nav aria-label="Footer">footer nav</nav>
+  </template>
+=== a11y/media-has-caption
+a11y/media-has-caption · lint 规则
+要求媒体元素提供字幕
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <video src="movie.mp4"></video>
+
+正确示例:
+  <video src="movie.mp4">
+    <track kind="captions" src="captions.vtt" />
+  </video>
+  <video src="movie.mp4" muted></video>
+
+帮助:
+  修复:
+    <video src="movie.mp4">
+    <track kind="captions" src="captions.vtt" />
+    </video>
+  替代方案:
+  - 装饰性媒体添加muted属性
+  - 有描述的媒体添加aria-label
+=== a11y/mouse-events-have-key-events
+a11y/mouse-events-have-key-events · lint 规则
+要求鼠标事件配对焦点/失焦事件
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <div @mouseenter="show">...</div>
+
+正确示例:
+  <div @mouseenter="show" @focus="show">...</div>
+
+帮助:
+  原因: 键盘和触屏用户无法触发鼠标事件。
+  修复:
+    <div
+    @mouseenter="show"
+    @mouseleave="hide"
+    @focus="show"
+    @blur="hide"
+    tabindex="0"
+    >
+    悬停或聚焦
+    </div>
+=== a11y/no-access-key
+a11y/no-access-key · lint 规则
+禁止使用accesskey属性
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  删除accesskey属性。访问键在不同平台上创建不一致的键盘快捷键，并与辅助技术快捷键冲突
+=== a11y/no-aria-hidden-on-focusable
+a11y/no-aria-hidden-on-focusable · lint 规则
+禁止在可聚焦元素上使用aria-hidden="true"
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 错误
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  删除aria-hidden="true"或使用tabindex="-1"使元素不可聚焦
+=== a11y/no-autofocus
+a11y/no-autofocus · lint 规则
+禁止使用autofocus属性
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  删除autofocus属性。需要时使用ref和focus()以编程方式管理焦点
+=== a11y/no-distracting-elements
+a11y/no-distracting-elements · lint 规则
+禁止分散注意力的元素如<marquee>和<blink>
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  问题: 这些元素对认知障碍用户造成困扰。
+  修复: 删除此元素或使用CSS动画（支持prefers-reduced-motion）:
+    @media (prefers-reduced-motion: no-preference) {
+    .animated { animation: slide 3s ease; }
+    }
+=== a11y/no-i-for-icon
+a11y/no-i-for-icon · lint 规则
+禁止使用<i>元素作为图标
+
+精度层级: heuristic
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <template>
+    <i class="fas fa-home"></i>
+    <i class="material-icons">home</i>
+    <i class="bi bi-heart"></i>
+  </template>
+
+正确示例:
+  <template>
+    <span class="fas fa-home" aria-hidden="true"></span>
+    <i>italic text</i>
+  </template>
+
+帮助:
+  原因: <i>元素在HTML中语义为*斜体文本*。将其用于图标字体会导致无障碍问题——屏幕阅读器可能会朗读无意义的内容。
+  修复: 使用<span>配合aria-hidden="true":
+    <span class="fas fa-home" aria-hidden="true"></span>
+    <span class="sr-only">首页</span>
+  或使用SVG图标组件以获得最佳无障碍体验。
+=== a11y/no-redundant-roles
+a11y/no-redundant-roles · lint 规则
+禁止冗余的ARIA角色
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <nav role="navigation">...</nav>
+  <button role="button">...</button>
+
+正确示例:
+  <nav>...</nav>
+  <div role="navigation">...</div>
+
+帮助:
+  删除冗余的role属性。该元素通过HTML语义已经隐式具有此角色
+=== a11y/no-refer-to-non-existent-id
+a11y/no-refer-to-non-existent-id · lint 规则
+禁止引用不存在的ID
+
+精度层级: heuristic
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <template>
+    <label for="nonexistent">Name:</label>
+    <input id="name-input" />
+  </template>
+
+正确示例:
+  <template>
+    <label for="name-input">Name:</label>
+    <input id="name-input" />
+  </template>
+
+帮助:
+  原因: for、aria-labelledby、aria-describedby等ID引用属性必须指向一个存在的带有该id的元素。引用失效会静默破坏关联。
+  修复: 确保引用的ID存在于模板中:
+    <label for="name">姓名:</label>
+    <input id="name" type="text">
+=== a11y/no-role-presentation-on-focusable
+a11y/no-role-presentation-on-focusable · lint 规则
+禁止在可聚焦元素上使用role="presentation"或role="none"
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 错误
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  删除role属性或使元素不可聚焦。presentation角色在元素仍可聚焦的情况下删除了语义含义
+=== a11y/no-static-element-interactions
+a11y/no-static-element-interactions · lint 规则
+禁止在静态元素上使用事件处理器
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <div @click="handleClick">Click</div>
+
+正确示例:
+  <button @click="handleClick">Click</button>
+  <div role="button" tabindex="0" @click="handleClick">Click</div>
+
+帮助:
+  原因: 非交互元素（div、span等）不应在没有role的情况下拥有点击/键盘处理器。
+  修复方法:
+  1. 使用原生交互元素:
+    <button @click="handle">点击</button>
+  2. 添加role和tabindex:
+    <div role="button" tabindex="0" @click="handle">
+    点击
+    </div>
+=== a11y/placeholder-label-option
+a11y/placeholder-label-option · lint 规则
+要求 select 的占位 option 带有 disabled 或 hidden
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <template>
+    <select>
+      <option value="">Choose one</option>
+      <option value="a">A</option>
+    </select>
+  </template>
+
+正确示例:
+  <template>
+    <select>
+      <option value="" disabled>Choose one</option>
+      <option value="a">A</option>
+    </select>
+  </template>
+
+帮助:
+  为占位符<option>添加disabled或hidden以防止其被选中：
+  <option value="" disabled>请选择</option>
+=== a11y/role-has-required-aria-props
+a11y/role-has-required-aria-props · lint 规则
+要求ARIA角色具有必需的属性
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <div role="checkbox">Check</div>
+  <div role="slider">Slider</div>
+
+正确示例:
+  <div role="checkbox" aria-checked="false">Check</div>
+  <div role="slider" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">Slider</div>
+
+帮助:
+  角色{role}需要: {props}
+  示例:
+    <div role="{role}" {props}="...">
+    内容
+    </div>
+=== a11y/tabindex-no-positive
+a11y/tabindex-no-positive · lint 规则
+禁止正数tabindex值
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+帮助:
+  问题: 正数tabindex会打乱自然的Tab顺序。
+  修复:
+    <!-- 可聚焦元素 -->
+    <div tabindex="0">可聚焦</div>
+
+    <!-- 仅程序化聚焦 -->
+    <div tabindex="-1">程序化聚焦</div>
+
+    <!-- 避免 -->
+    <div tabindex="5">不要使用正数</div>
+=== a11y/use-list
+a11y/use-list · lint 规则
+建议对类似项目符号的文本使用列表元素
+
+精度层级: heuristic
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/accessibility.md
+
+错误示例:
+  <template>
+    <p>- Item one</p>
+    <p>- Item two</p>
+    <p>* Another item</p>
+  </template>
+
+正确示例:
+  <template>
+    <ul>
+      <li>Item one</li>
+      <li>Item two</li>
+    </ul>
+  </template>
+
+帮助:
+  屏幕阅读器无法将项目符号字符识别为列表项。请使用语义化的<ul>/<ol>和<li>元素代替。
+=== css/no-display-none
+css/no-display-none · lint 规则
+建议使用 v-show 代替 display: none
+
+精度层级: heuristic
+适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+严重级别: 警告
+类别: css
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== css/no-hardcoded-values
+css/no-hardcoded-values · lint 规则
+建议使用 CSS 变量代替硬编码的值
+
+精度层级: heuristic
+适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+严重级别: 警告
+类别: css
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== css/no-id-selectors
+css/no-id-selectors · lint 规则
+不建议在 CSS 中使用 ID 选择器
+
+精度层级: exact
+适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+严重级别: 警告
+类别: css
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== css/no-important
+css/no-important · lint 规则
+不建议在 CSS 中使用 !important
+
+精度层级: exact
+适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+严重级别: 警告
+类别: css
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== css/no-utility-classes
+css/no-utility-classes · lint 规则
+对在组件样式中实现工具类发出警告
+
+精度层级: heuristic
+适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+严重级别: 警告
+类别: css
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+
+错误示例:
+  .flex { display: flex; }
+  .mt-4 { margin-top: 1rem; }
+  .text-center { text-align: center; }
+
+正确示例:
+  .my-component { display: flex; margin-top: 1rem; }
+=== css/no-v-bind-performance
+css/no-v-bind-performance · lint 规则
+对 CSS v-bind() 的性能开销发出警告
+
+精度层级: exact
+适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+严重级别: 警告
+类别: css
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== css/prefer-logical-properties
+css/prefer-logical-properties · lint 规则
+推荐使用 CSS 逻辑属性，以更好地支持国际化
+
+精度层级: exact
+适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+严重级别: 警告
+类别: css
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== css/prefer-nested-selectors
+css/prefer-nested-selectors · lint 规则
+推荐对后代选择器使用 CSS 嵌套
+
+精度层级: heuristic
+适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+严重级别: 警告
+类别: css
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== css/prefer-slotted
+css/prefer-slotted · lint 规则
+推荐使用 ::v-slotted() 为插槽内容设置样式
+
+精度层级: heuristic
+适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+严重级别: 警告
+类别: css
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== css/require-font-display
+css/require-font-display · lint 规则
+要求在 @font-face 规则中指定 font-display
+
+精度层级: exact
+适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+严重级别: 警告
+类别: css
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== ecosystem/nuxt-prefer-nuxt-link
+ecosystem/nuxt-prefer-nuxt-link · lint 规则
+应用内部链接优先使用 NuxtLink
+
+精度层级: exact
+适用范围: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+严重级别: 警告
+类别: ecosystem
+自动修复: 不支持
+文档: docs/content/rules/ecosystem.md
+=== ecosystem/pinia-prefer-store-to-refs
+ecosystem/pinia-prefer-store-to-refs · lint 规则
+解构 Pinia store 时优先使用 storeToRefs()
+
+精度层级: complete
+适用范围: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+严重级别: 警告
+类别: ecosystem
+自动修复: 不支持
+文档: docs/content/rules/ecosystem.md
+=== ecosystem/router-link-require-to
+ecosystem/router-link-require-to · lint 规则
+要求 RouterLink 和 NuxtLink 组件提供 `to` 目标
+
+精度层级: exact
+适用范围: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+严重级别: 错误
+类别: ecosystem
+自动修复: 不支持
+文档: docs/content/rules/ecosystem.md
+=== ecosystem/void-link-require-href
+ecosystem/void-link-require-href · lint 规则
+要求 Void Vue 的 Link 组件提供 `href`
+
+精度层级: exact
+适用范围: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+严重级别: 错误
+类别: ecosystem
+自动修复: 不支持
+文档: docs/content/rules/ecosystem.md
+=== ecosystem/void-link-valid-method
+ecosystem/void-link-valid-method · lint 规则
+校验 Void Vue Link 组件的静态 method 属性
+
+精度层级: exact
+适用范围: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+严重级别: 警告
+类别: ecosystem
+自动修复: 不支持
+文档: docs/content/rules/ecosystem.md
+=== ecosystem/vue-i18n-no-missing-key
+ecosystem/vue-i18n-no-missing-key · lint 规则
+报告在 SFC 本地消息中不存在的静态 vue-i18n 键
+
+精度层级: complete
+适用范围: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+严重级别: 警告
+类别: ecosystem
+自动修复: 不支持
+文档: docs/content/rules/ecosystem.md
+=== ecosystem/vue-router-prefer-named-link
+ecosystem/vue-router-prefer-named-link · lint 规则
+RouterLink 中优先使用命名路由对象，而不是静态路径字符串
+
+精度层级: exact
+适用范围: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+严重级别: 警告
+类别: ecosystem
+自动修复: 不支持
+文档: docs/content/rules/ecosystem.md
+=== ecosystem/vue-router-prefer-named-push
+ecosystem/vue-router-prefer-named-push · lint 规则
+Vue Router 编程式导航优先使用命名路由对象
+
+精度层级: exact
+适用范围: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+严重级别: 警告
+类别: ecosystem
+自动修复: 不支持
+文档: docs/content/rules/ecosystem.md
+=== ecosystem/vue-test-utils-no-html-snapshot
+ecosystem/vue-test-utils-no-html-snapshot · lint 规则
+避免在 Vue Test Utils 测试中对 wrapper.html() 做快照
+
+精度层级: exact
+适用范围: Vue Router, Nuxt, Pinia, vue-i18n, Void and Vue Test Utils APIs used with literal arguments
+严重级别: 警告
+类别: ecosystem
+自动修复: 不支持
+文档: docs/content/rules/ecosystem.md
+=== html/deprecated-attr
+html/deprecated-attr · lint 规则
+禁止使用已弃用的 HTML 属性
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: html-conformance
+自动修复: 不支持
+文档: docs/content/rules/html.md
+
+错误示例:
+  <template>
+    <div align="center">text</div>
+    <table bgcolor="#fff" cellpadding="5">...</table>
+  </template>
+
+正确示例:
+  <template>
+    <div style="text-align: center">text</div>
+    <table style="background-color: #fff">...</table>
+  </template>
+
+帮助:
+  请使用{suggestion}代替。
+=== html/deprecated-element
+html/deprecated-element · lint 规则
+禁止使用已弃用的 HTML 元素
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: html-conformance
+自动修复: 不支持
+文档: docs/content/rules/html.md
+
+错误示例:
+  <template>
+    <center>centered text</center>
+    <font color="red">colored text</font>
+    <marquee>scrolling text</marquee>
+  </template>
+
+正确示例:
+  <template>
+    <div style="text-align: center">centered text</div>
+    <span style="color: red">colored text</span>
+  </template>
+
+帮助:
+  此元素已被HTML Living Standard废弃。请使用带有CSS的现代HTML元素代替。
+=== html/id-duplication
+html/id-duplication · lint 规则
+禁止重复的元素 ID
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 错误
+类别: html-conformance
+自动修复: 不支持
+文档: docs/content/rules/html.md
+
+错误示例:
+  <template>
+    <div id="content">first</div>
+    <div id="content">second</div>
+  </template>
+
+正确示例:
+  <template>
+    <div id="content">first</div>
+    <div id="sidebar">second</div>
+  </template>
+
+帮助:
+  元素ID在文档中必须唯一。重复的ID会破坏label关联、ARIA引用和getElementById()。
+=== html/no-consecutive-br
+html/no-consecutive-br · lint 规则
+禁止连续的 <br> 元素
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: html-conformance
+自动修复: 不支持
+文档: docs/content/rules/html.md
+
+错误示例:
+  <template>
+    <p>First paragraph<br><br>Second paragraph</p>
+  </template>
+
+正确示例:
+  <template>
+    <p>First paragraph</p>
+    <p>Second paragraph</p>
+  </template>
+
+帮助:
+  使用<p>元素或CSS margin/padding来控制间距，而不是多个<br>标签。
+=== html/no-dupe-style-properties
+html/no-dupe-style-properties · lint 规则
+禁止内联 style 属性中出现重复的属性
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: html-conformance
+自动修复: 不支持
+文档: docs/content/rules/html.md
+
+错误示例:
+  <template>
+    <div style="color: red; color: blue">text</div>
+    <div style="margin: 0; MARGIN: 1px">text</div>
+  </template>
+
+正确示例:
+  <template>
+    <div style="color: red; background: blue">text</div>
+    <div :style="{ color: a, color: b }">text</div>
+  </template>
+
+帮助:
+  请删除重复的声明。同一属性多次声明时只有最后一个值生效，因此前面的声明是无效代码。
+=== html/no-duplicate-class
+html/no-duplicate-class · lint 规则
+禁止在静态 class 属性中出现重复的类名
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: html-conformance
+自动修复: 不支持
+文档: docs/content/rules/html.md
+
+错误示例:
+  <template>
+    <div class="btn btn primary">click</div>
+  </template>
+
+正确示例:
+  <template>
+    <div class="btn primary">click</div>
+  </template>
+
+帮助:
+  请删除重复出现的类名，使每个类名在 class 属性中只出现一次。
+=== html/no-duplicate-dt
+html/no-duplicate-dt · lint 规则
+禁止 <dl> 中出现重复的 <dt> 名称
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: html-conformance
+自动修复: 不支持
+文档: docs/content/rules/html.md
+
+错误示例:
+  <template>
+    <dl>
+      <dt>Term A</dt>
+      <dd>Definition 1</dd>
+      <dt>Term A</dt>
+      <dd>Definition 2</dd>
+    </dl>
+  </template>
+
+正确示例:
+  <template>
+    <dl>
+      <dt>Term A</dt>
+      <dd>Definition A</dd>
+      <dt>Term B</dt>
+      <dd>Definition B</dd>
+    </dl>
+  </template>
+
+帮助:
+  定义列表中的每个术语应该是唯一的。将定义合并到单个<dt>下或使用不同的术语。
+=== html/no-empty-palpable-content
+html/no-empty-palpable-content · lint 规则
+禁止本应包含可见内容的元素为空
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: html-conformance
+自动修复: 不支持
+文档: docs/content/rules/html.md
+
+错误示例:
+  <template>
+    <p></p>
+    <li></li>
+    <td></td>
+  </template>
+
+正确示例:
+  <template>
+    <p>text</p>
+    <li>item</li>
+    <td>cell</td>
+  </template>
+
+帮助:
+  添加文本内容、子元素，或使用aria-label提供无障碍内容。
+=== html/require-datetime
+html/require-datetime · lint 规则
+要求 <time> 元素带有 datetime 属性
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: html-conformance
+自动修复: 不支持
+文档: docs/content/rules/html.md
+
+错误示例:
+  <template>
+    <time>last Tuesday</time>
+    <time>Christmas</time>
+  </template>
+
+正确示例:
+  <template>
+    <time datetime="2024-12-25">Christmas</time>
+    <time>2024-12-25</time>
+  </template>
+
+帮助:
+  添加包含机器可读日期/时间值的datetime属性，例如：<time datetime="2024-12-25">圣诞节</time>
+=== musea/no-empty-variant
+musea/no-empty-variant · lint 规则
+禁止空的 <variant> 块
+
+精度层级: exact
+适用范围: <art> and <variant> blocks of .art.vue files
+严重级别: 警告
+类别: musea
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== musea/prefer-design-tokens
+musea/prefer-design-tokens · lint 规则
+优先使用设计令牌 CSS 变量，而不是硬编码的原始值
+
+精度层级: heuristic
+适用范围: <art> and <variant> blocks of .art.vue files
+严重级别: 警告
+类别: musea
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+
+错误示例:
+  .button {
+    background: #3b82f6;  /* matches primitive token color.primary */
+  }
+
+正确示例:
+  .button {
+    background: var(--color-primary);
+  }
+=== musea/require-component
+musea/require-component · lint 规则
+要求 <art> 块带有 component 属性
+
+精度层级: exact
+适用范围: <art> and <variant> blocks of .art.vue files
+严重级别: 警告
+类别: musea
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== musea/require-title
+musea/require-title · lint 规则
+要求art块有title属性
+
+精度层级: exact
+适用范围: <art> and <variant> blocks of .art.vue files
+严重级别: 错误
+类别: musea
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+
+错误示例:
+  <art component="./Button.vue">
+    <!-- missing title -->
+  </art>
+
+正确示例:
+  <script setup>
+  defineArt("./Button.vue", { title: "Button" });
+  </script>
+  
+  <art>
+  </art>
+
+帮助:
+  添加title属性来描述组件
+=== musea/unique-variant-names
+musea/unique-variant-names · lint 规则
+要求变体名称唯一
+
+精度层级: exact
+适用范围: <art> and <variant> blocks of .art.vue files
+严重级别: 错误
+类别: musea
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== musea/valid-variant
+musea/valid-variant · lint 规则
+要求 <variant> 块带有 name 属性
+
+精度层级: exact
+适用范围: <art> and <variant> blocks of .art.vue files
+严重级别: 错误
+类别: musea
+自动修复: 不支持
+文档: docs/content/rules/musea-and-css.md
+=== nuxt/no-nuxt-config-test-key
+nuxt/no-nuxt-config-test-key · lint 规则
+禁止在 Nuxt 配置中设置 `test` 键
+
+精度层级: exact
+适用范围: Nuxt configuration objects and definePageMeta calls written as literals
+严重级别: 错误
+类别: nuxt
+自动修复: 不支持
+文档: docs/content/rules/index.md
+=== nuxt/no-page-meta-runtime-values
+nuxt/no-page-meta-runtime-values · lint 规则
+禁止在 `definePageMeta` 顶层使用运行时上下文的值（它在构建时被提取到单独的 chunk，并在组件 setup 之前执行）
+
+精度层级: complete
+适用范围: Nuxt configuration objects and definePageMeta calls written as literals
+严重级别: 错误
+类别: nuxt
+自动修复: 不支持
+文档: docs/content/rules/index.md
+=== nuxt/nuxt-config-keys-order
+nuxt/nuxt-config-keys-order · lint 规则
+推荐按照建议的顺序编写 Nuxt 配置属性
+
+精度层级: exact
+适用范围: Nuxt configuration objects and definePageMeta calls written as literals
+严重级别: 错误
+类别: nuxt
+自动修复: 支持
+文档: docs/content/rules/index.md
+=== nuxt/prefer-import-meta
+nuxt/prefer-import-meta · lint 规则
+优先使用 `import.meta.*`，而不是 `process.*`
+
+精度层级: exact
+适用范围: Nuxt configuration objects and definePageMeta calls written as literals
+严重级别: 错误
+类别: nuxt
+自动修复: 支持
+文档: docs/content/rules/index.md
+=== petite-vue/no-unsupported-directive
+petite-vue/no-unsupported-directive · lint 规则
+禁止petite-vue不支持的指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/index.md
+
+错误示例:
+  <div v-memo="[a, b]"></div>
+  <template v-slot:header></template>
+  <div v-my-directive></div>
+
+正确示例:
+  <div v-scope="{ count: 0 }" v-effect="console.log(count)"></div>
+  <div v-if="ok" v-bind:title="title" @click="count++"></div>
+
+帮助:
+  petite-vue支持v-scope、v-effect、v-if/v-else/v-else-if、v-for、v-show、v-html、v-text、v-model、v-bind(:)、v-on(@)、v-once、v-pre、v-cloak以及ref属性。请移除不支持的指令或使用受支持的替代方案。
+=== petite-vue/valid-v-effect
+petite-vue/valid-v-effect · lint 规则
+要求v-effect包含非空表达式
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/index.md
+
+错误示例:
+  <div v-effect></div>
+  <div v-effect=""></div>
+  <div v-effect="   "></div>
+
+正确示例:
+  <div v-effect="el.textContent = count"></div>
+  <div v-effect="count++"></div>
+
+帮助:
+  为v-effect提供一条作为响应式副作用运行的语句，例如 v-effect="el.textContent = count"，或移除这个空指令。
+=== petite-vue/valid-v-scope
+petite-vue/valid-v-scope · lint 规则
+要求v-scope绑定对象字面量
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/index.md
+
+错误示例:
+  <div v-scope="count"></div>
+  <div v-scope="foo()"></div>
+  <div v-scope="a + b"></div>
+  <div v-scope="123"></div>
+
+正确示例:
+  <div v-scope></div>
+  <div v-scope="{}"></div>
+  <div v-scope="{ count: 0 }"></div>
+  <div v-scope="({ count: 0 })"></div>
+
+帮助:
+  petite-vue的v-scope从对象字面量（例如 v-scope="{ count: 0 }"）引入作用域绑定。非对象值不会声明任何绑定。请使用对象字面量，或使用不带值的v-scope来标记一个不引入绑定的作用域根。
+=== script/component-options-name-casing
+script/component-options-name-casing · lint 规则
+强制组件的 `name` 选项使用 PascalCase
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    name: 'my-component' // kebab-case
+  }
+
+正确示例:
+  export default {
+    name: 'MyComponent'
+  }
+=== script/custom-event-name-casing
+script/custom-event-name-casing · lint 规则
+强制触发的自定义事件名使用 camelCase
+
+精度层级: complete
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const emit = defineEmits(['my-event'])
+  emit('my-event')         // kebab-case → report
+
+正确示例:
+  const emit = defineEmits(['myEvent'])
+  emit('myEvent')
+=== script/define-emits-declaration
+script/define-emits-declaration · lint 规则
+强制使用基于类型的 defineEmits<{}>() 形式，而不是运行时/数组形式
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  // Runtime array form
+  const emit = defineEmits(['change', 'update'])
+  
+  // Runtime object form
+  const emit = defineEmits({
+    change: (id: number) => true,
+  })
+
+正确示例:
+  // Type-based form (preferred)
+  const emit = defineEmits<{ change: [id: number] }>()
+  
+  // Named type alias
+  const emit = defineEmits<Emits>()
+=== script/define-macros-order
+script/define-macros-order · lint 规则
+强制 <script setup> 中 Vue 编译器宏的顺序保持一致
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  // defineProps before defineModel (out of canonical order)
+  const props = defineProps<{ count: number }>()
+  const model = defineModel<string>()
+
+正确示例:
+  defineOptions({ name: 'MyComponent' })
+  const model = defineModel<string>()
+  const props = defineProps<{ count: number }>()
+  const emit = defineEmits<{ change: [value: string] }>()
+  defineSlots<{ default(props: {}): any }>()
+=== script/define-props-declaration
+script/define-props-declaration · lint 规则
+强制使用基于类型的 defineProps<{ ... }>()，而不是运行时/对象形式
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  // Runtime / object form
+  const props = defineProps({
+    kind: { type: String },
+    count: { type: Number, default: 0 },
+  })
+  
+  // Runtime / array form
+  const props = defineProps(['kind', 'count'])
+
+正确示例:
+  // Type-based form
+  const props = defineProps<{ kind: string; count?: number }>()
+  
+  // Type-based with a referenced interface
+  const props = defineProps<Props>()
+=== script/define-props-destructuring
+script/define-props-destructuring · lint 规则
+禁止在 <script setup> 中解构 defineProps 的返回值
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const { foo, bar } = defineProps<{ foo: string; bar?: number }>()
+  const [first] = defineProps<[string]>()
+
+正确示例:
+  const props = defineProps<{ foo: string }>()
+  // ...later: props.foo
+=== script/no-arrow-functions-in-watch
+script/no-arrow-functions-in-watch · lint 规则
+禁止将箭头函数用作选项式 API 的 watch 处理函数
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    watch: {
+      // `this` is not the component instance inside an arrow function.
+      value: () => {
+        this.doSomething()
+      },
+      other: {
+        handler: () => {}
+      }
+    }
+  }
+
+正确示例:
+  export default {
+    watch: {
+      value(newValue, oldValue) {
+        this.doSomething()
+      },
+      other: {
+        handler(newValue) {},
+        deep: true
+      }
+    }
+  }
+=== script/no-async-in-computed
+script/no-async-in-computed · lint 规则
+禁止computed属性中的异步函数
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const data = computed(async () => {
+    const response = await fetch('/api/data')
+    return response.json()
+  })
+
+正确示例:
+  // Use ref + watch with cleanup for async operations
+  const data = ref(null)
+  watch(query, async (value, _oldValue, onCleanup) => {
+    const controller = new AbortController()
+    let active = true
+    onCleanup(() => {
+      active = false
+      controller.abort()
+    })
+    const response = await fetch(`/api/data?q=${value}`, { signal: controller.signal })
+    const next = await response.json()
+    if (active) data.value = next
+  })
+  
+  // Or use a dedicated async state library
+  const { data } = useAsyncData(() => fetch('/api/data'))
+
+帮助:
+  问题: computed必须同步返回值。
+  修复: 使用ref和带cleanup的watch处理异步操作，取消过期请求后再写入结果:
+    const data = ref(null)
+    watch(source, async (value, _oldValue, onCleanup) => {
+    const controller = new AbortController()
+    let active = true
+    onCleanup(() => {
+    active = false
+    controller.abort()
+    })
+    const next = await fetchData(value, { signal: controller.signal })
+    if (active) data.value = next
+    })
+=== script/no-boolean-default
+script/no-boolean-default · lint 规则
+禁止为 Boolean 类型的 prop 设置默认值
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    props: {
+      // Boolean props already default to false; an explicit default is confusing.
+      disabled: { type: Boolean, default: true },
+      checked: { type: Boolean, default: false }
+    }
+  }
+
+正确示例:
+  export default {
+    props: {
+      // No explicit default: defaults to false.
+      disabled: { type: Boolean },
+      disabled2: Boolean,
+      // Union type may legitimately need a default.
+      value: { type: [Boolean, String], default: '' },
+      // Non-Boolean prop.
+      count: { type: Number, default: 0 }
+    }
+  }
+=== script/no-deep-destructure-in-props
+script/no-deep-destructure-in-props · lint 规则
+禁止defineProps中的深层嵌套解构
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  // Deep nested destructuring
+  const { user: { name, age } } = defineProps<{ user: User }>()
+  
+  // Very deep nesting
+  const { config: { settings: { theme } } } = defineProps()
+
+正确示例:
+  // Simple destructuring (one level)
+  const { name, count = 0 } = defineProps<{ name: string; count?: number }>()
+  
+  // Access nested properties in the component instead
+  const props = defineProps<{ user: User }>()
+  const userName = computed(() => props.user.name)
+
+帮助:
+  问题: 深层解构会失去响应性。
+  修复:
+    // 错误
+    const { user: { name } } = defineProps<{ user: User }>()
+
+    // 正确
+    const props = defineProps<{ user: User }>()
+    const name = computed(() => props.user.name)
+=== script/no-deprecated-data-object-declaration
+script/no-deprecated-data-object-declaration · lint 规则
+禁止将对象字面量用作组件的 data 选项（Vue 3 要求使用函数）
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    // `data` must be a function in Vue 3, not an object literal.
+    data: {
+      count: 0
+    }
+  }
+
+正确示例:
+  export default {
+    data() {
+      return { count: 0 }
+    }
+  }
+=== script/no-deprecated-destroyed-lifecycle
+script/no-deprecated-destroyed-lifecycle · lint 规则
+禁止使用已弃用的 destroyed 和 beforeDestroy 生命周期钩子
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 支持
+文档: docs/content/rules/type-and-script.md
+=== script/no-deprecated-dollar-listeners-api
+script/no-deprecated-dollar-listeners-api · lint 规则
+禁止使用 Vue 3 中已移除的 $listeners 实例属性（已并入 $attrs）
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const handlers = this.$listeners
+  const forwarded = ctx.$listeners
+  emit('input', $listeners)
+
+正确示例:
+  const handlers = this.$attrs
+  const forwarded = ctx.attrs
+=== script/no-deprecated-dollar-scopedslots-api
+script/no-deprecated-dollar-scopedslots-api · lint 规则
+禁止使用 Vue 3 中已移除的 $scopedSlots 实例属性（请使用 $slots）
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const header = this.$scopedSlots.header
+  const footer = ctx.$scopedSlots.footer
+  render($scopedSlots.default)
+
+正确示例:
+  const header = this.$slots.header
+  const footer = ctx.$slots.footer
+  render($slots.default)
+=== script/no-deprecated-events-api
+script/no-deprecated-events-api · lint 规则
+禁止使用已移除的 Vue 2 事件 API（$on / $off / $once）
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  this.$on('event', handler)
+  this.$once('event', handler)
+  this.$off('event', handler)
+  emitter.$off('event')
+
+正确示例:
+  // $emit is still valid in Vue 3
+  this.$emit('event', payload)
+  
+  // Use an external emitter instead
+  import mitt from 'mitt'
+  const emitter = mitt()
+  emitter.on('event', handler)
+=== script/no-deprecated-props-default-this
+script/no-deprecated-props-default-this · lint 规则
+禁止在 prop 的 default/validator 函数中使用 `this`（Vue 3 已移除）
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    props: {
+      size: {
+        type: Number,
+        // `this` is not the component instance in Vue 3.
+        default() {
+          return this.defaultSize
+        }
+      },
+      value: {
+        type: Number,
+        validator() {
+          return this.value > 0
+        }
+      }
+    }
+  }
+
+正确示例:
+  export default {
+    props: {
+      size: {
+        type: Number,
+        // Vue 3 passes the raw props as the first argument instead.
+        default(props) {
+          return props.baseSize
+        }
+      },
+      value: {
+        type: Number,
+        validator(value) {
+          return value > 0
+        }
+      }
+    }
+  }
+=== script/no-dupe-keys
+script/no-dupe-keys · lint 规则
+禁止在选项式 API 的 props/data/computed/methods/setup/inject 之间出现重复的键
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    props: ['foo'],
+    data() {
+      return { foo: 1 } // duplicate of prop `foo`
+    },
+    computed: {
+      bar() { return 2 }
+    },
+    methods: {
+      bar() {} // duplicate of computed `bar`
+    }
+  }
+
+正确示例:
+  export default {
+    props: ['foo'],
+    data() {
+      return { bar: 1 }
+    },
+    computed: {
+      baz() { return 2 }
+    }
+  }
+=== script/no-duplicate-attr-inheritance
+script/no-duplicate-attr-inheritance · lint 规则
+标记重复应用透传属性的组件
+
+精度层级: complete
+适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  defineOptions({ inheritAttrs: true })
+  export default { inheritAttrs: true }
+
+正确示例:
+  defineOptions({ inheritAttrs: false }) // intentional opt-out
+  export default {}                      // default inheritance, unstated
+=== script/no-export-in-script-setup
+script/no-export-in-script-setup · lint 规则
+禁止在 <script setup> 中使用 export 语句
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+=== script/no-get-current-instance
+script/no-get-current-instance · lint 规则
+禁止getCurrentInstance()
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: vapor
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  import { getCurrentInstance } from 'vue'
+  
+  const instance = getCurrentInstance()
+  const proxy = instance?.proxy
+
+正确示例:
+  import { useAttrs, useSlots } from 'vue'
+  
+  const attrs = useAttrs()
+  const slots = useSlots()
+
+帮助:
+  修复: 使用provide/inject或composables:
+    // 错误
+    const instance = getCurrentInstance()
+
+    // 正确 - 使用provide/inject
+    const value = inject('key')
+
+    // 正确 - 使用composable
+    function useMyFeature() {
+    const state = ref(0)
+    return { state }
+    }
+=== script/no-import-compiler-macros
+script/no-import-compiler-macros · lint 规则
+禁止导入会被自动导入的 Vue 编译器宏
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  import { defineProps, defineEmits } from 'vue'
+  import { withDefaults } from 'vue'
+  
+  const props = defineProps<Props>()
+
+正确示例:
+  // No import needed - compiler macros are auto-imported
+  const props = defineProps<Props>()
+  const emit = defineEmits<Emits>()
+  
+  // Regular imports are fine
+  import { ref, computed } from 'vue'
+=== script/no-internal-imports
+script/no-internal-imports · lint 规则
+禁止从 Vue 内部模块导入
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  import { foo } from '@vue/runtime-core/dist/runtime-core.esm-bundler'
+  import { bar } from 'vue/dist/vue.esm-bundler'
+
+正确示例:
+  import { ref, computed } from 'vue'
+=== script/no-multiple-slot-args
+script/no-multiple-slot-args · lint 规则
+禁止向作用域插槽函数调用传入多个参数
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  slots.default(foo, bar)
+  $slots.header(a, b)
+  this.$scopedSlots.item(x, y)
+  useSlots().default(a, b)
+  slots.default(...args)
+
+正确示例:
+  slots.default({ foo, bar })
+  slots.default(slotProps)
+  slots.default()
+=== script/no-next-tick
+script/no-next-tick · lint 规则
+禁止在面向 Vapor 的组件中使用 nextTick()
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: vapor
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  import { nextTick } from 'vue'
+  
+  await nextTick()
+  this.$nextTick(() => focusInput())
+
+正确示例:
+  import { onMounted } from 'vue'
+  
+  onMounted(() => {
+    focusInput()
+  })
+=== script/no-options-api
+script/no-options-api · lint 规则
+禁止Options API模式
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: vapor
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    data() { return { count: 0 } },
+    computed: { doubled() { return this.count * 2 } },
+    methods: { increment() { this.count++ } },
+    watch: { count(val) { console.log(val) } }
+  }
+
+正确示例:
+  import { ref, computed, watch } from 'vue'
+  const count = ref(0)
+  const doubled = computed(() => count.value * 2)
+  const increment = () => count.value++
+  watch(count, (val) => console.log(val))
+
+帮助:
+  修复: 重构为使用Composition API:
+    <!-- 错误（Options API） -->
+    <script>
+    export default {
+    data() { return { count: 0 } },
+    methods: { increment() { this.count++ } }
+    }
+    </script>
+
+    <!-- 正确（Composition API） -->
+    <script setup>
+    import { ref } from 'vue'
+
+    const count = ref(0)
+    function increment() { count.value++ }
+    </script>
+=== script/no-potential-component-option-typo
+script/no-potential-component-option-typo · lint 规则
+标记选项式 API 组件选项名中可能的拼写错误
+
+精度层级: heuristic
+适用范围: Options API component definitions written as object literals
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+=== script/no-reactive-destructure
+script/no-reactive-destructure · lint 规则
+禁止解构响应式对象（会丢失响应性）
+
+精度层级: complete
+适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const state = reactive({ count: 0, name: 'foo' })
+  const { count, name } = state  // loses reactivity!
+  
+  // Also passing reactive directly to functions that expect refs
+  someFunction(state.count)  // loses reactivity
+
+正确示例:
+  const state = reactive({ count: 0, name: 'foo' })
+  
+  // Use toRef or toRefs to maintain reactivity
+  const count = toRef(state, 'count')
+  const { count, name } = toRefs(state)
+  
+  // Or use computed for derived values
+  const doubleCount = computed(() => state.count * 2)
+  
+  // Pass refs or computed to functions
+  someFunction(toRef(state, 'count'))
+=== script/no-ref-as-operand
+script/no-ref-as-operand · lint 规则
+要求 ref 变量用作运算数时通过 `.value` 访问
+
+精度层级: complete
+适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+=== script/no-required-prop-with-default
+script/no-required-prop-with-default · lint 规则
+禁止 prop 同时设置 required: true 和默认值
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+=== script/no-reserved-identifiers
+script/no-reserved-identifiers · lint 规则
+禁止使用 Vue 编译器保留的标识符
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const __props = { name: 'test' }
+  const __emit = () => {}
+  let __sfc__ = {}
+
+正确示例:
+  const props = defineProps<Props>()
+  const emit = defineEmits<Emits>()
+  const myData = {}
+=== script/no-reserved-keys
+script/no-reserved-keys · lint 规则
+禁止将 Vue 保留名称用作选项式 API 的 props/data/computed/methods/setup/inject 键
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    props: ['$el'],       // reserved: starts with `$`
+    computed: { _foo() { return 1 } }, // reserved: starts with `_`
+    methods: { emit() {} } // reserved: Vue built-in instance name
+  }
+=== script/no-reserved-props
+script/no-reserved-props · lint 规则
+禁止在组件的 props 声明中使用保留名称
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    props: {
+      ref: String,   // reserved
+      $foo: Number    // `$`-prefixed names are reserved
+    }
+  }
+  
+  export default {
+    props: ['key']    // reserved (array form)
+  }
+
+正确示例:
+  export default {
+    props: {
+      name: String,
+      refValue: Number
+    }
+  }
+=== script/no-restricted-globals
+script/no-restricted-globals · lint 规则
+禁止直接引用应通过类型化封装访问的运行环境全局变量
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const flag = process.env.FEATURE_FLAG
+  const token = localStorage.getItem('auth.token')
+  sessionStorage.setItem('view.scroll', String(window.scrollY))
+
+正确示例:
+  // Use a typed config helper that distinguishes server vs. client.
+  const flag = useFeatureFlag('FEATURE_FLAG')
+  
+  // Use a typed wrapper that scopes keys and handles SSR / disabled storage.
+  const token = authStorage.read('auth.token')
+  viewStorage.write('view.scroll', String(window.scrollY))
+=== script/no-restricted-members
+script/no-restricted-members · lint 规则
+禁止项目配置中限制的 object.property 成员访问
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const token = window.localStorage.getItem('auth.token')
+  const env = globalThis.process.env
+
+正确示例:
+  const token = authStorage.read('auth.token')
+=== script/no-side-effects-in-computed-properties
+script/no-side-effects-in-computed-properties · lint 规则
+禁止在选项式 API 的计算属性 getter 中产生副作用
+
+精度层级: complete
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    data() {
+      return { count: 0, items: [] }
+    },
+    computed: {
+      doubled() {
+        this.count = this.count * 2 // side effect: assigns to data
+        return this.count
+      },
+      reversed() {
+        return this.items.reverse() // side effect: mutates the array
+      }
+    }
+  }
+
+正确示例:
+  export default {
+    data() {
+      return { count: 0, items: [] }
+    },
+    computed: {
+      doubled() {
+        return this.count * 2
+      },
+      reversed() {
+        return [...this.items].reverse() // operate on a copy
+      }
+    }
+  }
+=== script/no-top-level-ref-in-script
+script/no-top-level-ref-in-script · lint 规则
+禁止在顶层使用 ref/reactive，以防止跨请求状态污染
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  <script>
+  // This state is shared across all requests in SSR!
+  const count = ref(0)
+  const user = reactive({ name: '' })
+  
+  export default {
+    setup() {
+      return { count, user }
+    }
+  }
+  </script>
+
+正确示例:
+  <script setup>
+  // Script setup creates fresh state per request
+  const count = ref(0)
+  </script>
+  
+  <script>
+  // Constants are fine
+  const API_URL = 'https://api.example.com'
+  
+  // Functions that create state are fine
+  function createState() {
+    return reactive({ count: 0 })
+  }
+  
+  export default {
+    setup() {
+      // Create state inside setup
+      const count = ref(0)
+      return { count }
+    }
+  }
+  </script>
+=== script/no-unstable-nested-components
+script/no-unstable-nested-components · lint 规则
+禁止在 setup 或 render 函数内部定义组件
+
+精度层级: complete
+适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+=== script/no-unused-emit-declarations
+script/no-unused-emit-declarations · lint 规则
+标记已声明但从未触发的事件
+
+精度层级: complete
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const emit = defineEmits(['change', 'unused'])
+  emit('change')
+  // `unused` is never emitted
+
+正确示例:
+  const emit = defineEmits(['change'])
+  emit('change')
+=== script/no-use-computed-property-like-method
+script/no-use-computed-property-like-method · lint 规则
+禁止像方法一样调用选项式 API 的计算属性
+
+精度层级: complete
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+=== script/no-with-defaults
+script/no-with-defaults · lint 规则
+不建议使用 withDefaults，推荐使用解构默认值（Vue 3.5+）
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  // Using withDefaults (verbose)
+  const props = withDefaults(defineProps<{
+    count?: number
+    name?: string
+  }>(), {
+    count: 0,
+    name: 'default'
+  })
+
+正确示例:
+  // Using destructuring defaults (Vue 3.5+)
+  const { count = 0, name = 'default' } = defineProps<{
+    count?: number
+    name?: string
+  }>()
+  
+  // Or without destructuring if defaults not needed
+  const props = defineProps<{ count: number }>()
+=== script/prefer-computed
+script/prefer-computed · lint 规则
+派生的响应式状态优先使用 computed()
+
+精度层级: heuristic
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+=== script/prefer-define-options
+script/prefer-define-options · lint 规则
+优先使用 defineOptions()，而不是只设置 name/inheritAttrs 的普通 <script>
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default { name: 'MyComponent', inheritAttrs: false }
+
+正确示例:
+  // Real options logic — keep the plain script.
+  export default {
+    name: 'MyComponent',
+    data() { return { count: 0 } },
+  }
+=== script/prefer-import-from-vue
+script/prefer-import-from-vue · lint 规则
+优先从 'vue' 导入，而不是从内部包导入
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  import { ref } from '@vue/runtime-core'
+  import { h } from '@vue/runtime-dom'
+
+正确示例:
+  import { ref, h } from 'vue'
+=== script/prefer-ref-over-reactive
+script/prefer-ref-over-reactive · lint 规则
+推荐使用 ref() 而不是 reactive() 管理状态
+
+精度层级: heuristic
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  // reactive requires careful handling to avoid losing reactivity
+  const state = reactive({
+    count: 0,
+    name: 'foo'
+  })
+
+正确示例:
+  // ref is more explicit and safer
+  const count = ref(0)
+  const name = ref('foo')
+  
+  // For objects, ref still works
+  const user = ref({ name: 'foo', age: 20 })
+  
+  // Or use multiple refs for related data
+  const userName = ref('foo')
+  const userAge = ref(20)
+=== script/prefer-use-attrs
+script/prefer-use-attrs · lint 规则
+推荐使用 useAttrs() 而不是 context.attrs
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  // In Options API style
+  export default {
+    setup(props, { attrs }) {
+      console.log(attrs.class)
+    }
+  }
+  
+  // Accessing $attrs in template
+  <div :class="$attrs.class"></div>
+
+正确示例:
+  // Using useAttrs()
+  const attrs = useAttrs()
+  console.log(attrs.class)
+=== script/prefer-use-id
+script/prefer-use-id · lint 规则
+推荐使用 useId() 生成唯一 ID（Vue 3.5+）
+
+精度层级: heuristic
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  // Manual ID generation (not SSR-safe)
+  const id = `input-${Math.random()}`
+  const id = `field-${Date.now()}`
+  let counter = 0; const id = `el-${counter++}`
+
+正确示例:
+  // Using useId() (Vue 3.5+)
+  const id = useId()
+  
+  // In template
+  <label :for="id">Name</label>
+  <input :id="id" />
+=== script/prefer-use-slots
+script/prefer-use-slots · lint 规则
+推荐使用 useSlots() 而不是 context.slots
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  // In Options API style
+  export default {
+    setup(props, { slots }) {
+      return () => h('div', slots.default?.())
+    }
+  }
+  
+  // Using context.slots
+  const vnode = context.slots.default?.()
+
+正确示例:
+  // Using useSlots()
+  const slots = useSlots()
+  return () => h('div', slots.default?.())
+=== script/prefer-use-template-ref
+script/prefer-use-template-ref · lint 规则
+推荐使用 useTemplateRef 而不是 ref 获取模板引用（Vue 3.5+）
+
+精度层级: complete
+适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  <script setup lang="ts">
+  import { ref } from 'vue'
+  const input = ref<HTMLInputElement | null>(null)
+  </script>
+  <template>
+    <input ref="input" />
+  </template>
+
+正确示例:
+  <script setup lang="ts">
+  import { ref, useTemplateRef } from 'vue'
+  // Paired with the template ref below.
+  const input = useTemplateRef<HTMLInputElement>('input')
+  // A nullable data ref the template never binds as a ref.
+  const error = ref(null)
+  </script>
+  <template>
+    <input ref="input" />
+    <p>{{ error }}</p>
+  </template>
+=== script/require-default-prop
+script/require-default-prop · lint 规则
+要求每个可选的非 Boolean prop 都有默认值
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    props: {
+      // optional, non-Boolean, no default
+      name: String,
+      age: { type: Number },
+    }
+  }
+
+正确示例:
+  export default {
+    props: {
+      name: { type: String, default: '' },
+      enabled: Boolean,                 // Boolean defaults to false
+      id: { type: Number, required: true },
+    }
+  }
+=== script/require-explicit-emits
+script/require-explicit-emits · lint 规则
+要求在 defineEmits 或 emits 选项中声明所触发的事件
+
+精度层级: complete
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+=== script/require-explicit-slots
+script/require-explicit-slots · lint 规则
+要求通过 useSlots() 使用的插槽用 defineSlots<...>() 显式声明类型
+
+精度层级: complete
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const props = defineProps<{ id: number }>()
+  const slots = useSlots()
+
+正确示例:
+  defineSlots<{ default(props: { msg: string }): unknown }>()
+  const slots = useSlots()
+=== script/require-function-return-type
+script/require-function-return-type · lint 规则
+要求函数带有返回类型注解
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const add = (a: number, b: number) => {
+    return a + b
+  }
+  
+  function greet(name: string) {
+    return `Hello, ${name}`
+  }
+
+正确示例:
+  const add = (a: number, b: number): number => {
+    return a + b
+  }
+  
+  function greet(name: string): string {
+    return `Hello, ${name}`
+  }
+=== script/require-prop-type-constructor
+script/require-prop-type-constructor · lint 规则
+要求 prop 的 `type` 使用构造函数而不是字符串字面量
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    props: {
+      // The type should be the `String` constructor, not the string "String".
+      name: "String",
+      age: { type: "Number" },
+      id: { type: ["String", "Number"] }
+    }
+  }
+
+正确示例:
+  export default {
+    props: {
+      name: String,
+      age: { type: Number },
+      id: { type: [String, Number] }
+    }
+  }
+=== script/require-prop-types
+script/require-prop-types · lint 规则
+要求每个 prop 都声明类型
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    props: ['status']            // array form: no types
+  }
+  
+  export default {
+    props: {
+      status: null,              // no type
+      other: {}                  // empty descriptor: no type
+    }
+  }
+
+正确示例:
+  export default {
+    props: {
+      status: String,
+      other: { type: Number, default: 0 }
+    }
+  }
+=== script/require-symbol-provide
+script/require-symbol-provide · lint 规则
+推荐使用 Symbol 作为 provide/inject 的注入键
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  // String keys can collide
+  provide('user', user)
+  const user = inject('user')
+  
+  // Magic strings are error-prone
+  provide('theme', { dark: true })
+
+正确示例:
+  // Define injection key with Symbol
+  export const UserKey: InjectionKey<User> = Symbol('user')
+  
+  // Provide with Symbol
+  provide(UserKey, user)
+  
+  // Inject with Symbol
+  const user = inject(UserKey)
+=== script/require-typed-object-prop
+script/require-typed-object-prop · lint 规则
+要求运行时类型为 `Object` 或 `Array` 的 prop 显式声明类型
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const props = defineProps({
+    foo: Object,
+    bar: { type: Array },
+  })
+
+正确示例:
+  const props = defineProps({
+    foo: Object as PropType<Foo>,
+    bar: { type: Array as PropType<Bar[]> },
+  })
+  
+  // Type-based form carries the element type directly.
+  const typed = defineProps<{ foo: Foo; bar: Bar[] }>()
+=== script/require-typed-ref
+script/require-typed-ref · lint 规则
+要求以无值、null 或 undefined 初始化的 ref() 显式指定类型参数
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  import { ref } from 'vue'
+  
+  const a = ref()           // Ref<undefined>
+  const b = ref(null)       // Ref<null>
+  const c = ref(undefined)  // Ref<undefined>
+
+正确示例:
+  import { ref } from 'vue'
+  
+  const a = ref<string>()
+  const b = ref<User | null>(null)
+  const c = ref(0)          // inferred Ref<number>
+=== script/require-valid-default-prop
+script/require-valid-default-prop · lint 规则
+要求 prop 的默认值符合其声明的类型
+
+精度层级: complete
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    props: {
+      count: { type: Number, default: '0' },     // string default for Number
+      enabled: { type: Boolean, default: 1 },     // non-boolean default for Boolean
+      items: { type: Array, default: [] },        // literal must be a factory
+      config: { type: Object, default: {} }       // literal must be a factory
+    }
+  }
+
+正确示例:
+  export default {
+    props: {
+      count: { type: Number, default: 0 },
+      enabled: { type: Boolean, default: false },
+      items: { type: Array, default: () => [] },
+      config: { type: Object, default: () => ({}) },
+      label: { type: [String, Number], default: '' }
+    }
+  }
+=== script/return-in-computed-property
+script/return-in-computed-property · lint 规则
+要求每个计算属性 getter 都有返回值
+
+精度层级: complete
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+=== script/return-in-emits-validator
+script/return-in-emits-validator · lint 规则
+要求选项式 API 的每个 emits 校验函数都有返回值
+
+精度层级: complete
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    emits: {
+      submit(payload) {
+        if (!payload.email) {
+          // missing return
+        }
+      }
+    }
+  }
+
+正确示例:
+  export default {
+    emits: {
+      submit(payload) {
+        return !!payload.email
+      }
+    }
+  }
+=== script/valid-define-emits
+script/valid-define-emits · lint 规则
+强制正确使用 defineEmits()（不能同时使用类型和运行时参数、不能引用局部变量、只能调用一次）
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  const local = ['change']
+  defineEmits(local)                       // references a local variable
+  defineEmits<Emits>(['change'])           // both type and runtime args
+  defineEmits(['change'])
+  defineEmits(['update'])                  // called more than once
+
+正确示例:
+  defineEmits(['change', 'update'])
+  defineEmits<{ change: [id: number] }>()
+=== script/valid-define-options
+script/valid-define-options · lint 规则
+强制正确使用 defineOptions()（只接受一个对象参数，不能包含 props/emits/expose/slots）
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  defineOptions({ props: ['foo'] })   // use defineProps instead
+  defineOptions({ name: 'Foo' })
+  defineOptions({ name: 'Bar' })      // duplicate call
+  defineOptions('Foo')                // not an object literal
+
+正确示例:
+  defineOptions({ name: 'Foo', inheritAttrs: false })
+=== script/valid-define-props
+script/valid-define-props · lint 规则
+强制正确使用 defineProps()（只能调用一次、不能同时使用类型和运行时参数、不能引用局部变量）
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  defineProps<{ foo: string }>({ foo: String }) // both type and runtime args
+  const foo = 'bar'
+  defineProps({ foo })                          // references local variable
+  defineProps({ foo: String })
+  defineProps({ bar: Number })                  // duplicate call
+
+正确示例:
+  defineProps<{ foo: string }>()
+  defineProps({ foo: String })
+=== script/valid-next-tick
+script/valid-next-tick · lint 规则
+要求 nextTick() 的结果被 await、链式调用或传入回调
+
+精度层级: complete
+适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  import { nextTick } from 'vue'
+  
+  nextTick()          // result ignored
+  this.$nextTick()    // result ignored
+
+正确示例:
+  import { nextTick } from 'vue'
+  
+  await nextTick()
+  nextTick().then(() => focusInput())
+  nextTick(() => focusInput())
+  this.$nextTick(() => focusInput())
+=== ssr/no-browser-globals-in-ssr
+ssr/no-browser-globals-in-ssr · lint 规则
+禁止在SSR上下文中使用浏览器专用全局变量
+
+精度层级: heuristic
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/ssr.md
+
+帮助:
+  问题: 浏览器API（如window、document）在服务器端不存在。
+  修复: 将浏览器专用代码移到客户端生命周期钩子中:
+    <script setup>
+    import { onMounted } from 'vue'
+
+    onMounted(() => {
+    // 浏览器专用代码
+    window.addEventListener('resize', handleResize)
+    })
+    </script>
+  或使用<ClientOnly>组件:
+    <ClientOnly>
+    <BrowserOnlyComponent />
+    </ClientOnly>
+=== ssr/no-hydration-mismatch
+ssr/no-hydration-mismatch · lint 规则
+禁止导致hydration不匹配的非确定性值
+
+精度层级: heuristic
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/ssr.md
+
+帮助:
+  问题: 服务器和客户端渲染的值不同会导致hydration错误。
+  常见问题:
+  - Date.now(), Math.random()
+  - 基于时间的格式化
+  - 客户端特定的值
+  修复:
+    // 对于唯一ID
+    const id = useId()
+
+    // 对于仅客户端的值
+    <ClientOnly>
+    <span>{{ Date.now() }}</span>
+    </ClientOnly>
+=== type/no-floating-promises
+type/no-floating-promises · lint 规则
+禁止悬空（未处理）的 Promise
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+=== type/no-reactivity-loss
+type/no-reactivity-loss · lint 规则
+禁止在赋值和调用中把响应式值变成普通快照
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+=== type/no-unsafe-template-binding
+type/no-unsafe-template-binding · lint 规则
+禁止解析为不安全类型的模板绑定
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+=== type/require-typed-emits
+type/require-typed-emits · lint 规则
+要求 defineEmits 带有类型定义
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  <script setup>
+  // Array-only emits without type
+  const emit = defineEmits(['click', 'update'])
+  </script>
+
+正确示例:
+  <script setup lang="ts">
+  interface Emits {
+    (e: 'click', value: MouseEvent): void
+    (e: 'update', value: string): void
+  }
+  const emit = defineEmits<Emits>()
+  </script>
+=== type/require-typed-props
+type/require-typed-props · lint 规则
+要求 defineProps 带有类型定义
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  <script setup>
+  // Runtime-only props without type
+  const props = defineProps(['msg', 'count'])
+  </script>
+
+正确示例:
+  <script setup lang="ts">
+  interface Props {
+    msg: string
+    count?: number
+  }
+  const props = defineProps<Props>()
+  </script>
+=== vapor/no-inline-template
+vapor/no-inline-template · lint 规则
+禁止已弃用的inline-template属性
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: vapor
+自动修复: 不支持
+文档: docs/content/rules/vapor.md
+
+错误示例:
+  <my-component inline-template>
+    <div>Content</div>
+  </my-component>
+
+正确示例:
+  <my-component>
+    <template #default>
+      <div>Content</div>
+    </template>
+  </my-component>
+
+帮助:
+  修复: 使用插槽代替inline-template:
+    <!-- 错误（已弃用） -->
+    <my-component inline-template>
+    <div>内容</div>
+    </my-component>
+
+    <!-- 正确 -->
+    <my-component>
+    <template #default>
+    <div>内容</div>
+    </template>
+    </my-component>
+=== vapor/no-vue-lifecycle-events
+vapor/no-vue-lifecycle-events · lint 规则
+禁止@vue:xxx元素级生命周期事件
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: vapor
+自动修复: 不支持
+文档: docs/content/rules/vapor.md
+
+错误示例:
+  <div @vue:mounted="handler"></div>
+  <div @vue:updated="handler"></div>
+  <div @vue:beforeUnmount="handler"></div>
+
+正确示例:
+  <!-- Use lifecycle hooks in script setup instead -->
+  <script setup vapor>
+  import { onMounted, onUpdated } from 'vue'
+  onMounted(() => { /* ... */ })
+  </script>
+  <div ref="el"></div>
+
+帮助:
+  修复: 使用组件生命周期钩子:
+    <!-- 错误 -->
+    <div @vue:mounted="onMounted">内容</div>
+
+    <!-- 正确 -->
+    <script setup>
+    import { onMounted } from 'vue'
+
+    onMounted(() => {
+    // 组件挂载时的逻辑
+    })
+    </script>
+=== vapor/prefer-static-class
+vapor/prefer-static-class · lint 规则
+优先使用静态class而非动态绑定
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: vapor
+自动修复: 支持
+文档: docs/content/rules/vapor.md
+
+错误示例:
+  <div :class="'static-class'"></div>
+  <div :class="`always-same`"></div>
+
+正确示例:
+  <div class="static-class"></div>
+  <div :class="dynamicClass"></div>
+  <div :class="{ active: isActive }"></div>
+
+帮助:
+  原因: 静态类在Vapor中更高效。
+  修复:
+    <!-- 不推荐 -->
+    <div :class="'static-class'">内容</div>
+
+    <!-- 推荐 -->
+    <div class="static-class">内容</div>
+=== vapor/require-vapor-attribute
+vapor/require-vapor-attribute · lint 规则
+建议为 script setup 添加 vapor 属性
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: vapor
+自动修复: 支持
+文档: docs/content/rules/vapor.md
+=== vue/a11y-img-alt
+vue/a11y-img-alt · lint 规则
+要求图片有alt属性以确保无障碍
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <img src="/photo.jpg" />
+  <img :src="photo" />
+
+正确示例:
+  <!-- Informative image -->
+  <img src="/photo.jpg" alt="Team photo from company retreat" />
+  
+  <!-- Decorative image (empty alt) -->
+  <img src="/decoration.svg" alt="" />
+  
+  <!-- Dynamic alt -->
+  <img :src="photo" :alt="photoDescription" />
+
+帮助:
+  为信息性图片添加alt="描述"，为装饰性图片添加alt=""
+=== vue/attribute-hyphenation
+vue/attribute-hyphenation · lint 规则
+强制模板中属性名的命名风格
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <MyComponent myProp="value" />
+  <MyComponent :myProp="value" />
+
+正确示例:
+  <MyComponent my-prop="value" />
+  <MyComponent :my-prop="value" />
+
+帮助:
+  属性名使用kebab-case风格
+=== vue/attribute-order
+vue/attribute-order · lint 规则
+强制模板中属性的排列顺序
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div @click="onClick" v-if="show" id="main"></div>
+
+正确示例:
+  <div v-if="show" id="main" @click="onClick"></div>
+
+帮助:
+  按推荐顺序重新排列属性
+=== vue/component-definition-name-casing
+vue/component-definition-name-casing · lint 规则
+强制组件文件名使用PascalCase或kebab-case
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  myComponent.vue      -> should be MyComponent.vue or my-component.vue
+  my-Component.vue     -> should be MyComponent.vue or my-component.vue
+
+正确示例:
+  MyComponent.vue
+  my-component.vue
+  index.vue
+  App.vue
+
+帮助:
+  将文件名改为PascalCase或kebab-case:
+    myComponent.vue  -> MyComponent.vue
+    my-Component.vue -> my-component.vue
+=== vue/component-name-in-template-casing
+vue/component-name-in-template-casing · lint 规则
+强制模板中组件名的命名风格
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <my-component />
+  <myComponent />
+
+正确示例:
+  <MyComponent />
+  <RouterView />
+  <slot />
+=== vue/html-button-has-type
+vue/html-button-has-type · lint 规则
+要求button元素具有明确且有效的type
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <button>Click</button>
+  <button type="foo">Click</button>
+
+正确示例:
+  <button type="button">Click</button>
+  <button type="submit">Save</button>
+  <button type="reset">Reset</button>
+  <button :type="dynamicType">Click</button>
+
+帮助:
+  '<button>' 的 type 默认为 "submit"，会提交其所在的表单。请显式设置 type="button"、"submit" 或 "reset"。
+=== vue/html-quotes
+vue/html-quotes · lint 规则
+强制HTML属性引号风格
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div class='foo'></div>
+  <div class=foo></div>
+  <div v-if='foo'></div>
+
+正确示例:
+  <div class="foo"></div>
+
+帮助:
+  HTML属性值使用一致的引号风格。
+=== vue/html-self-closing
+vue/html-self-closing · lint 规则
+强制自闭合样式
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div></div>  <!-- should be <div /> when empty -->
+  <img>        <!-- should be <img /> -->
+  <br>         <!-- should be <br /> -->
+
+正确示例:
+  <div />
+  <img />
+  <br />
+  <div>content</div>
+
+帮助:
+  使用自闭合语法
+=== vue/max-template-complexity
+vue/max-template-complexity · lint 规则
+限制组件自身模板的复杂度（圈复杂度与认知复杂度）
+
+精度层级: exact
+适用范围: control flow of HTML SFC templates as lowered to S2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template>
+    <div v-if="a && b">
+      <li v-for="row in rows">
+        <b v-if="row.x ? row.y : row.z">…</b>
+        <!-- … and more nested branches … -->
+      </li>
+    </div>
+  </template>
+
+正确示例:
+  <template>
+    <RowList v-if="a && b" :rows="rows" />
+  </template>
+=== vue/multi-word-component-names
+vue/multi-word-component-names · lint 规则
+要求组件名为多个单词
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  Item.vue
+  Table.vue
+
+正确示例:
+  TodoItem.vue
+  DataTable.vue
+  AppHeader.vue
+
+帮助:
+  原因: 单词组件名可能与现有或未来的HTML元素冲突。
+  修复:
+    <!-- 错误 -->
+    <script setup>
+    // Item.vue
+    </script>
+
+    <!-- 正确 -->
+    <script setup>
+    // TodoItem.vue, ListItem.vue
+    </script>
+=== vue/mustache-interpolation-spacing
+vue/mustache-interpolation-spacing · lint 规则
+强制mustache插值的间距
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div>{{text}}</div>
+  <div>{{ text}}</div>
+  <div>{{text }}</div>
+
+正确示例:
+  <div>{{ text }}</div>
+  <div>{{ foo.bar }}</div>
+  <div>{{ foo + bar }}</div>
+=== vue/no-array-index-key
+vue/no-array-index-key · lint 规则
+禁止直接将 v-for 的索引变量用作 :key
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <li v-for="(item, index) in list" :key="index">{{ item }}</li>
+  <li v-for="(value, key, index) in obj" :key="index">{{ value }}</li>
+
+正确示例:
+  <li v-for="(item, index) in list" :key="item.id">{{ item }}</li>
+  <li v-for="item in list" :key="item.id">{{ item }}</li>
+
+帮助:
+  请将 :key 绑定到项目中稳定的 id（例如 :key="item.id"）。当列表被重新排序或过滤时索引会变化，导致 Vue 复用错误的元素状态。
+=== vue/no-bare-strings-in-template
+vue/no-bare-strings-in-template · lint 规则
+禁止在模板中使用应当国际化的原始可读文本
+
+精度层级: heuristic
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div>hello</div>
+  <img alt="a cat" />
+  <input placeholder="Search" />
+  <button title="Close">x</button>
+
+正确示例:
+  <div>{{ $t('hello') }}</div>
+  <img :alt="$t('cat')" />
+  <div>-</div>
+  <div>123</div>
+  <button :title="$t('close')">{{ $t('x') }}</button>
+
+帮助:
+  请将文本移入翻译函数，例如内容使用 {{ $t('key') }}，属性使用 :title="$t('key')"。
+=== vue/no-boolean-attr-value
+vue/no-boolean-attr-value · lint 规则
+禁止为布尔型 HTML 属性显式指定值
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template>
+    <input disabled="disabled" />
+    <input checked="checked" />
+    <button disabled="true">Click</button>
+  </template>
+
+正确示例:
+  <template>
+    <input disabled />
+    <input checked />
+    <button disabled>Click</button>
+  </template>
+
+帮助:
+  请移除值。使用{attr}而不是{attr}="..."。
+=== vue/no-child-content
+vue/no-child-content · lint 规则
+禁止在使用v-html或v-text时包含子内容
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-html="content">child</div>
+  <div v-text="content">child</div>
+
+正确示例:
+  <div v-html="content"></div>
+  <div v-text="content"></div>
+  <div>child</div>
+
+帮助:
+  使用v-html或v-text时，子内容会被忽略。请删除子内容
+=== vue/no-deprecated-filter
+vue/no-deprecated-filter · lint 规则
+禁止已废弃的 Vue 2 过滤器语法（`|` 管道符）
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  {{ message | capitalize }}
+  <div :id="rawId | toId" />
+  {{ a | b | c }}
+
+正确示例:
+  {{ capitalize(message) }}
+  <div :id="toId(rawId)" />
+  {{ a || b }}
+
+帮助:
+  请将过滤器替换为方法调用或计算属性（例如用 {{ capitalize(message) }} 代替 {{ message | capitalize }}）。
+=== vue/no-deprecated-functional-template
+vue/no-deprecated-functional-template · lint 规则
+禁止在SFC的`<template>`上使用`functional`属性
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template functional>
+    <div>{{ props.msg }}</div>
+  </template>
+
+正确示例:
+  <template>
+    <div>{{ msg }}</div>
+  </template>
+
+帮助:
+  请移除functional并改用有状态组件，或将函数式组件写成普通函数（例如渲染函数或JSX）。
+=== vue/no-deprecated-html-element-is
+vue/no-deprecated-html-element-is · lint 规则
+禁止在原生HTML元素上使用`is`属性
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template>
+    <div is="MyComponent" />
+  </template>
+
+正确示例:
+  <template>
+    <component :is="MyComponent" />
+    <div is="vue:MyComponent" />
+  </template>
+
+帮助:
+  对于动态组件请使用<component :is="...">，对于定制内置元素请在值前加vue:前缀（例如 is="vue:MyComponent"）。
+=== vue/no-deprecated-inline-template
+vue/no-deprecated-inline-template · lint 规则
+禁止使用已弃用的`inline-template`属性
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+帮助:
+  请将标记移入子组件，或通过插槽传递，而不是使用inline-template。
+=== vue/no-deprecated-router-link-tag-prop
+vue/no-deprecated-router-link-tag-prop · lint 规则
+禁止 <router-link> 上已弃用的 `tag` 属性
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template>
+    <router-link to="/home" tag="button">Home</router-link>
+  </template>
+
+正确示例:
+  <template>
+    <router-link to="/home" v-slot="{ navigate }">
+      <button @click="navigate">Home</button>
+    </router-link>
+  </template>
+
+帮助:
+  请移除 tag 属性，并使用 v-slot（它会暴露 href、navigate 和 isActive）自行渲染元素。
+=== vue/no-deprecated-scope-attribute
+vue/no-deprecated-scope-attribute · lint 规则
+禁止在 <template> 上使用已弃用的 scope 属性
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <Foo>
+    <template scope="props">{{ props.msg }}</template>
+  </Foo>
+
+正确示例:
+  <Foo>
+    <template v-slot="props">{{ props.msg }}</template>
+  </Foo>
+  <table><th scope="col">Name</th></table>
+
+帮助:
+  请改用 v-slot（例如 <template v-slot="props">）。
+=== vue/no-deprecated-slot-attribute
+vue/no-deprecated-slot-attribute · lint 规则
+禁止使用已弃用的 slot 属性
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template>
+    <Foo>
+      <template slot="header"><h1>Title</h1></template>
+    </Foo>
+  </template>
+
+正确示例:
+  <template>
+    <Foo>
+      <template v-slot:header><h1>Title</h1></template>
+    </Foo>
+  </template>
+
+帮助:
+  请改用 v-slot（例如 <template v-slot:header>）。
+=== vue/no-deprecated-slot-scope-attribute
+vue/no-deprecated-slot-scope-attribute · lint 规则
+禁止使用已弃用的 slot-scope 属性
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <Foo>
+    <template slot-scope="props">{{ props.msg }}</template>
+  </Foo>
+
+正确示例:
+  <Foo>
+    <template v-slot="props">{{ props.msg }}</template>
+  </Foo>
+
+帮助:
+  请改用 v-slot（例如 <template v-slot="props">）。
+=== vue/no-deprecated-v-bind-sync
+vue/no-deprecated-v-bind-sync · lint 规则
+禁止在 `v-bind` 上使用已弃用的 `.sync` 修饰符
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <MyComponent :title.sync="title" />
+  <MyComponent v-bind:title.sync="title" />
+  <MyComponent :title.sync.camel="title" />
+
+正确示例:
+  <MyComponent :title="title" />
+  <MyComponent v-model:title="title" />
+
+帮助:
+  Vue 3 移除了 .sync 修饰符，并将其双向绑定并入带参数的 v-model。请改用 v-model:<prop>（例如 :title.sync="title" → v-model:title="title"）。
+=== vue/no-deprecated-v-on-native-modifier
+vue/no-deprecated-v-on-native-modifier · lint 规则
+禁止在 `v-on` 上使用已弃用的 `.native` 修饰符
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <MyComponent @click.native="handler" />
+  <MyComponent v-on:click.native="handler" />
+  <MyComponent @click.native.stop="handler" />
+
+正确示例:
+  <MyComponent @click="handler" />
+  <MyComponent @click.stop="handler" />
+
+帮助:
+  Vue 3 移除了 .native 修饰符：未声明为组件事件的监听器会自动透传到根元素。请移除 .native（例如 @click.native → @click）。
+=== vue/no-deprecated-v-on-number-modifiers
+vue/no-deprecated-v-on-number-modifiers · lint 规则
+禁止在 v-on 上使用已废弃的数字 keyCode 修饰符
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <input @keyup.13="submit" />
+  <input v-on:keyup.27="cancel" />
+  <input @keyup.13.stop="submit" />
+
+正确示例:
+  <input @keyup.enter="submit" />
+  <input @keyup.esc="cancel" />
+
+帮助:
+  请将数字 keyCode 修饰符替换为具名按键（例如用 @keyup.enter 代替 @keyup.13）。
+=== vue/no-dupe-v-else-if
+vue/no-dupe-v-else-if · lint 规则
+禁止v-if链中的重复条件
+
+精度层级: complete
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-if="foo"></div>
+  <div v-else-if="foo"></div>
+  
+  <div v-if="a === 1"></div>
+  <div v-else-if="a === 2"></div>
+  <div v-else-if="a === 1"></div>
+
+正确示例:
+  <div v-if="foo"></div>
+  <div v-else-if="bar"></div>
+  <div v-else></div>
+
+帮助:
+  问题: 重复条件永远不会执行。
+  修复:
+    <!-- 错误 -->
+    <div v-if="a">A</div>
+    <div v-else-if="a">重复！</div>
+
+    <!-- 正确 -->
+    <div v-if="a">A</div>
+    <div v-else-if="b">B</div>
+=== vue/no-duplicate-attributes
+vue/no-duplicate-attributes · lint 规则
+禁止重复属性
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div id="foo" id="bar"></div>
+  <div :class="foo" class="bar"></div>
+
+正确示例:
+  <div id="foo"></div>
+  <div :class="foo"></div>
+
+帮助:
+  问题: 重复属性可能导致意外行为。
+  修复: 删除重复的属性，只保留一个:
+    <!-- 错误 -->
+    <input class="a" class="b">
+
+    <!-- 正确 -->
+    <input class="a b">
+=== vue/no-empty-component-block
+vue/no-empty-component-block · lint 规则
+禁止空的SFC块，例如 <template></template>、<script></script> 或 <style></style>
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template></template>
+  
+  <script></script>
+  
+  <style>
+  </style>
+
+正确示例:
+  <template>
+    <div>Hello</div>
+  </template>
+  
+  <script setup>
+  const message = "Hello";
+  </script>
+  
+  <style scoped>
+  .button { color: red; }
+  </style>
+
+帮助:
+  请为该块添加有意义的内容，或将其整体删除。
+=== vue/no-inline-style
+vue/no-inline-style · lint 规则
+不建议使用内联style属性
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div style="color: red">text</div>
+
+正确示例:
+  <div class="text-red">text</div>
+  <span :class="{ 'text-red': isRed }">text</span>
+  <div :style="{ width: `${ratio}%` }">text</div>
+
+帮助:
+  原因: 内联样式难以维护和覆盖。
+  修复: 使用CSS类或scoped样式:
+    <!-- 不推荐 -->
+    <div style="color: red;">文本</div>
+
+    <!-- 推荐 -->
+    <div class="error-text">文本</div>
+
+    <style scoped>
+    .error-text { color: red; }
+    </style>
+=== vue/no-invalid-html-attribute
+vue/no-invalid-html-attribute · lint 规则
+禁止HTML属性使用无效的静态值
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+帮助:
+  请只使用此元素允许的标准rel标记，例如链接上的noopener noreferrer或link元素上的stylesheet。
+=== vue/no-lone-template
+vue/no-lone-template · lint 规则
+禁止不必要的template使用
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template>
+    <div>content</div>
+  </template>
+
+正确示例:
+  <template v-if="condition">
+    <div>content</div>
+  </template>
+  <template v-for="item in items">
+    <div>{{ item }}</div>
+  </template>
+  <template #header>
+    <div>Header</div>
+  </template>
+
+帮助:
+  删除<template>包装器或添加指令（v-if、v-for、v-slot）
+=== vue/no-multi-spaces
+vue/no-multi-spaces · lint 规则
+禁止多个连续空格
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div  class="foo"></div>
+  <div class="foo"  id="bar"></div>
+
+正确示例:
+  <div class="foo"></div>
+  <div class="foo" id="bar"></div>
+
+帮助:
+  修复: 将多个空格替换为单个空格:
+    <!-- 错误 -->
+    <div class="foo    bar">内容</div>
+
+    <!-- 正确 -->
+    <div class="foo bar">内容</div>
+=== vue/no-multiple-objects-in-class
+vue/no-multiple-objects-in-class · lint 规则
+禁止在:class数组绑定中使用多个对象字面量
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div :class="[{ a }, { b }]"></div>
+  <div :class="[{ active: isActive }, { error: hasError }]"></div>
+
+正确示例:
+  <div :class="{ a, b }"></div>
+  <div :class="[{ active: isActive }, 'static']"></div>
+  <div :class="[foo, bar]"></div>
+
+帮助:
+  请将这些对象合并为一个，例如 :class="[{ a }, { b }]" 改为 :class="{ a, b }"。
+=== vue/no-multiple-template-root
+vue/no-multiple-template-root · lint 规则
+禁止模板中出现多个根节点
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+帮助:
+  请用一个渲染元素包裹模板，并将条件分支保留在同一个v-if链中。
+=== vue/no-mutating-props
+vue/no-mutating-props · lint 规则
+禁止修改组件的 props
+
+精度层级: complete
+适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+=== vue/no-negated-v-if-condition
+vue/no-negated-v-if-condition · lint 规则
+当存在v-else分支时，禁止使用取反的v-if条件
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-if="!ok">A</div>
+  <div v-else>B</div>
+
+正确示例:
+  <div v-if="ok">A</div>
+  <div v-else>B</div>
+  
+  <div v-if="!ok">A</div>
+  
+  <div v-if="a !== b">A</div>
+  <div v-else>B</div>
+
+帮助:
+  请去掉开头的 '!'，并交换 v-if 与 v-else 分支的内容。
+=== vue/no-non-component-keep-alive-child
+vue/no-non-component-keep-alive-child · lint 规则
+禁止在 <KeepAlive> 正下方使用普通元素包装器
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+帮助:
+  将条件或 key 移到组件子节点上，或使用 <component :is="..."> 直接渲染动态组件
+=== vue/no-preprocessor-lang
+vue/no-preprocessor-lang · lint 规则
+不建议使用 CSS 预处理器，推荐使用现代 CSS
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+=== vue/no-reserved-component-names
+vue/no-reserved-component-names · lint 规则
+禁止使用保留的组件名
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  export default {
+    name: 'button'
+  }
+
+正确示例:
+  <!-- Button.vue -->
+  <script setup></script>
+  <template><div /></template>
+
+帮助:
+  问题: 使用保留名可能与HTML元素冲突。
+  修复: 重命名组件:
+    <!-- 错误 -->
+    <script setup>
+    // 组件名为 "Button"
+    </script>
+
+    <!-- 正确 -->
+    <script setup>
+    // 组件名为 "AppButton" 或 "CustomButton"
+    </script>
+=== vue/no-root-v-if
+vue/no-root-v-if · lint 规则
+禁止在模板的唯一根元素上使用 v-if
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template>
+    <div v-if="show">content</div>
+  </template>
+
+正确示例:
+  <template>
+    <div>
+      <p v-if="show">content</p>
+    </div>
+  </template>
+
+帮助:
+  请将内容包裹在始终存在的根元素中，或使用 v-show 代替 v-if。
+=== vue/no-script-non-standard-lang
+vue/no-script-non-standard-lang · lint 规则
+不建议使用非标准的 script lang 值
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+=== vue/no-src-attribute
+vue/no-src-attribute · lint 规则
+不建议在 SFC 块上使用 src 属性
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+=== vue/no-static-inline-styles
+vue/no-static-inline-styles · lint 规则
+禁止使用静态的内联 style 属性
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+=== vue/no-template-key
+vue/no-template-key · lint 规则
+禁止在template元素上使用key属性
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template :key="section">
+    <div>{{ item }}</div>
+  </template>
+
+正确示例:
+  <template v-for="item in items" :key="item.id">
+    <div>{{ item }}</div>
+  </template>
+
+帮助:
+  修复: 将key移到template内的子元素上:
+    <!-- 错误 -->
+    <template v-for="item in items" :key="item.id">
+    <div>{{ item }}</div>
+    </template>
+
+    <!-- 正确 -->
+    <template v-for="item in items">
+    <div :key="item.id">{{ item }}</div>
+    </template>
+=== vue/no-template-lang
+vue/no-template-lang · lint 规则
+不建议在 template 块上使用 lang 属性
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+=== vue/no-template-shadow
+vue/no-template-shadow · lint 规则
+禁止v-for中的变量遮蔽
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <!-- If 'item' is a component property -->
+  <div v-for="item in items">{{ item }}</div>
+  
+  <!-- Nested v-for with same variable name -->
+  <div v-for="item in items">
+    <div v-for="item in item.children">{{ item }}</div>
+  </div>
+
+正确示例:
+  <div v-for="item in items">
+    <div v-for="child in item.children">{{ child }}</div>
+  </div>
+
+帮助:
+  问题: 内层变量会遮蔽外层同名变量，导致混淆。
+  修复: 重命名变量:
+    <!-- 错误 -->
+    <div v-for="item in items">
+    <span v-for="item in item.children"><!-- 遮蔽 --></span>
+    </div>
+
+    <!-- 正确 -->
+    <div v-for="item in items">
+    <span v-for="child in item.children"></span>
+    </div>
+=== vue/no-template-target-blank
+vue/no-template-target-blank · lint 规则
+禁止没有rel="noopener noreferrer"的target="_blank"
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <a href="https://example.com" target="_blank">x</a>
+
+正确示例:
+  <a href="https://example.com" target="_blank" rel="noopener noreferrer">x</a>
+
+帮助:
+  为在新标签页打开的链接添加rel="noopener noreferrer"：noopener保护window.opener，noreferrer抑制referrer数据
+=== vue/no-textarea-mustache
+vue/no-textarea-mustache · lint 规则
+禁止在textarea中使用mustache插值
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <textarea>{{ message }}</textarea>
+
+正确示例:
+  <textarea v-model="message"></textarea>
+
+帮助:
+  问题: <textarea>{{ value }}</textarea>无法正常工作。
+  修复: 使用v-model:
+    <!-- 错误 -->
+    <textarea>{{ message }}</textarea>
+
+    <!-- 正确 -->
+    <textarea v-model="message"></textarea>
+=== vue/no-undefined-refs
+vue/no-undefined-refs · lint 规则
+禁止未定义的模板引用
+
+精度层级: complete
+适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+帮助:
+  确保变量已导入或在<script setup>中定义
+=== vue/no-unsafe-url
+vue/no-unsafe-url · lint 规则
+警告潜在的不安全URL绑定
+
+精度层级: heuristic
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+帮助:
+  在绑定前净化URL以防止通过javascript:协议的XSS攻击
+=== vue/no-unsandboxed-iframe
+vue/no-unsandboxed-iframe · lint 规则
+要求iframe元素具有sandbox属性
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <iframe src="/embed"></iframe>
+
+正确示例:
+  <iframe src="/embed" sandbox></iframe>
+  <iframe src="/embed" sandbox="allow-scripts"></iframe>
+
+帮助:
+  添加sandbox属性（最严格可用sandbox=""），并仅重新授予嵌入内容所需的能力
+=== vue/no-unused-components
+vue/no-unused-components · lint 规则
+禁止注册模板中未使用的组件
+
+精度层级: complete
+适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+严重级别: 警告
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <script setup>
+  import MyButton from './MyButton.vue'  // imported but never used
+  </script>
+  
+  <template>
+    <div>Hello</div>
+  </template>
+
+正确示例:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  </script>
+  
+  <template>
+    <MyButton>Click me</MyButton>
+  </template>
+=== vue/no-unused-properties
+vue/no-unused-properties · lint 规则
+禁止 defineProps 中定义却未使用的属性
+
+精度层级: complete
+适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <script setup lang="ts">
+  defineProps<{
+    msg: string
+    unused: number  // defined but never used
+  }>()
+  </script>
+  
+  <template>
+    <div>{{ msg }}</div>
+  </template>
+
+正确示例:
+  <script setup lang="ts">
+  defineProps<{
+    msg: string
+    count: number
+  }>()
+  </script>
+  
+  <template>
+    <div>{{ msg }} - {{ count }}</div>
+  </template>
+=== vue/no-unused-refs
+vue/no-unused-refs · lint 规则
+报告从未在 <script> 中引用的模板引用（ref="x"）
+
+精度层级: complete
+适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template><input ref="unused" /></template>
+  <script setup>
+  const x = 1
+  </script>
+
+正确示例:
+  <template><input ref="inputEl" /></template>
+  <script setup>
+  import { ref } from 'vue'
+  const inputEl = ref(null)
+  </script>
+=== vue/no-unused-vars
+vue/no-unused-vars · lint 规则
+禁止v-for指令中未使用的变量定义
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <!-- 'index' is defined but never used -->
+  <li v-for="(item, index) in items" :key="item.id">{{ item }}</li>
+  
+  <!-- 'foo' is defined but never used -->
+  <template v-slot="{ foo }">
+    <span>Hello</span>
+  </template>
+
+正确示例:
+  <li v-for="(item, index) in items" :key="index">{{ item }}</li>
+  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
+  
+  <!-- Underscore prefix indicates intentionally unused -->
+  <li v-for="(item, _index) in items" :key="item.id">{{ item }}</li>
+  
+  <template v-slot="{ data }">
+    <span>{{ data }}</span>
+  </template>
+
+帮助:
+  选项:
+  1. 在模板中使用该变量
+  2. 删除未使用的变量:
+    <!-- 之前 -->
+    <li v-for="(item, index) in items" :key="item.id">
+
+    <!-- 之后（如果index未使用） -->
+    <li v-for="item in items" :key="item.id">
+  3. 添加_前缀表示故意不使用:
+    <li v-for="(_item, index) in items" :key="index">
+=== vue/no-use-v-else-with-v-for
+vue/no-use-v-else-with-v-for · lint 规则
+禁止在同一元素上使用v-else-if或v-else和v-for
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+帮助:
+  请将条件指令移到包裹v-for元素的包装元素上。
+=== vue/no-use-v-if-with-v-for
+vue/no-use-v-if-with-v-for · lint 规则
+禁止在同一元素上使用v-if和v-for
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <li v-for="item in items" v-if="item.active">{{ item }}</li>
+
+正确示例:
+  <!-- Use computed property to filter -->
+  <li v-for="item in activeItems" :key="item.id">{{ item }}</li>
+  
+  <!-- Or wrap with template -->
+  <template v-for="item in items" :key="item.id">
+    <li v-if="item.active">{{ item }}</li>
+  </template>
+
+帮助:
+  问题: v-for优先级高于v-if，导致在过滤前迭代整个列表。
+  方案1: 使用computed属性:
+    <script setup>
+    const activeUsers = computed(() =>
+    users.filter(u => u.isActive)
+    )
+    </script>
+    <template>
+    <li v-for="user in activeUsers" :key="user.id">
+    </template>
+  方案2: 用<template>包装:
+    <template v-for="user in users" :key="user.id">
+    <li v-if="user.isActive">{{ user.name }}</li>
+    </template>
+=== vue/no-useless-mustaches
+vue/no-useless-mustaches · lint 规则
+禁止表达式为常量字符串字面量的插值表达式
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div>{{ 'x' }}</div>
+  <div>{{ "x" }}</div>
+  <div>{{ `x` }}</div>
+
+正确示例:
+  <div>x</div>
+  <div>{{ x }}</div>
+  <div>{{ `pre-${x}` }}</div>
+  <span>A</span> {{ " " }} <span>B</span>
+
+帮助:
+  请将该插值替换为纯文本（{{ 'x' }} 改为 x）。
+=== vue/no-useless-template-attributes
+vue/no-useless-template-attributes · lint 规则
+禁止<template>元素上的无用属性
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template v-if="show" class="foo"><div /></template>
+  <template v-for="item in items" id="bar"><div /></template>
+  <template v-slot:header ref="tmpl"><div /></template>
+
+正确示例:
+  <template v-if="show"><div /></template>
+  <template v-for="item in items" :key="item"><div /></template>
+  <template v-slot:header><div /></template>
+
+帮助:
+  <template>不会渲染到DOM。只有结构性指令（v-if、v-for、v-slot）和:key有效
+=== vue/no-useless-v-bind
+vue/no-useless-v-bind · lint 规则
+禁止值为纯字符串字面量的v-bind
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div :foo="'bar'"></div>
+  <div :foo="`bar`"></div>
+
+正确示例:
+  <div foo="bar"></div>
+  <div :foo="bar"></div>
+  <div :foo="`pre-${bar}`"></div>
+
+帮助:
+  请将该绑定替换为静态属性（用 foo=bar 代替 :foo='bar'）。
+=== vue/no-v-for-template-key-on-child
+vue/no-v-for-template-key-on-child · lint 规则
+禁止在`<template v-for>`的子元素上使用`key`
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template v-for="item in items">
+    <div :key="item.id">{{ item }}</div>
+  </template>
+
+正确示例:
+  <template v-for="item in items" :key="item.id">
+    <div>{{ item }}</div>
+  </template>
+
+帮助:
+  请将:key移到<template v-for>元素上。在Vue 3中，key位于template而非子元素上（与Vue 2相反）。
+=== vue/no-v-html
+vue/no-v-html · lint 规则
+禁止使用v-html以防止XSS攻击
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-html="userContent"></div>
+  <span v-html="htmlFromApi"></span>
+
+正确示例:
+  <!-- Use text interpolation for user content -->
+  <div>{{ userContent }}</div>
+  
+  <!-- Or sanitize HTML before rendering -->
+  <div v-html="sanitizedHtml"></div> <!-- with proper sanitization -->
+
+帮助:
+  安全风险: v-html渲染原始HTML，可能执行用户输入的恶意脚本。
+  替代方案:
+  1. 使用文本插值（自动转义）:
+    <p>{{ userContent }}</p>
+  2. 使用净化库:
+    import DOMPurify from 'dompurify'
+    const safeHtml = DOMPurify.sanitize(userInput)
+  3. 使用带XSS保护的markdown渲染器
+  如果必须使用v-html:
+  - 永远不要用于用户提供的内容
+  - 只用于可信的静态内容
+=== vue/no-v-text
+vue/no-v-text · lint 规则
+禁止使用v-text指令；推荐使用胡子插值
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-text="message"></div>
+
+正确示例:
+  <div>{{ message }}</div>
+
+帮助:
+  请将 v-text="expr" 替换为元素内容中的胡子插值（例如 <div>{{ expr }}</div>）。
+=== vue/no-v-text-v-html-on-component
+vue/no-v-text-v-html-on-component · lint 规则
+禁止在组件元素上使用v-text/v-html
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <MyComponent v-html="content" />
+  <MyComponent v-text="content" />
+
+正确示例:
+  <div v-html="content"></div>
+  <component is="div" v-html="content" />
+  <MyComponent>{{ content }}</MyComponent>
+
+帮助:
+  组件有自己的渲染逻辑。请通过props或插槽传递内容
+=== vue/permitted-contents
+vue/permitted-contents · lint 规则
+强制执行HTML内容模型规则
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template>
+    <p><div>block in a paragraph</div></p>
+    <table><tr><td>row without tbody</td></tr></table>
+    <a href="#"><button>nested control</button></a>
+    <ul><div>not a list item</div></ul>
+  </template>
+
+正确示例:
+  <template>
+    <p><span>inline in a paragraph</span></p>
+    <table><tbody><tr><td>cell</td></tr></tbody></table>
+    <ul><li>list item</li><MyItem /></ul>
+  </template>
+
+帮助:
+  原因: HTML有内容模型规则，定义了哪些元素可以嵌套在其他元素内。违反这些规则会导致浏览器自动修正DOM，产生意外的渲染结果。
+  主要规则:
+  - <p>、<span>、<a>只能包含短语（内联）内容
+  - <a>和<button>不能相互嵌套
+  - <ul>/<ol>的直接子元素只能是<li>
+  - <table>的直接子元素只能是<thead>、<tbody>、<tfoot>、<tr>或<caption>
+=== vue/prefer-props-shorthand
+vue/prefer-props-shorthand · lint 规则
+强制同名prop绑定使用简写语法
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <MyComponent :foo="foo" />
+  <MyComponent :user-name="userName" />
+  <MyComponent :count="count" :name="name" />
+
+正确示例:
+  <!-- Shorthand syntax (Vue 3.4+) -->
+  <MyComponent :foo />
+  <MyComponent :user-name />
+  <MyComponent :count :name />
+  
+  <!-- Different names are fine -->
+  <MyComponent :foo="bar" />
+  <MyComponent :count="totalCount" />
+
+帮助:
+  使用prop简写语法
+=== vue/prefer-true-attribute-shorthand
+vue/prefer-true-attribute-shorthand · lint 规则
+对绑定为true的布尔属性推荐使用简写
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <input :disabled="true" />
+
+正确示例:
+  <input disabled />
+  <input :disabled="false" />
+  <MyComponent :visible="true" />
+  <MyComponent :visible="isVisible" />
+
+帮助:
+  去掉 ='true' 绑定，仅写属性名即可。
+=== vue/prop-name-casing
+vue/prop-name-casing · lint 规则
+强制声明的prop名使用指定的命名风格
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <script setup>
+  defineProps({ 'my-prop': String })
+  </script>
+
+正确示例:
+  <script setup>
+  defineProps({ myProp: String })
+  </script>
+
+帮助:
+  声明prop时使用camelCase（模板中仍可写成kebab-case）:
+    <!-- 错误 -->
+    defineProps({ 'my-prop': String })
+
+    <!-- 正确 -->
+    defineProps({ myProp: String })
+=== vue/require-component-is
+vue/require-component-is · lint 规则
+要求`<component>`元素具有`v-bind:is`
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <component />
+  <component></component>
+
+正确示例:
+  <component :is="currentComponent" />
+  <component is="MyComponent" />
+
+帮助:
+  <component>是动态组件，需要is属性来确定要渲染的组件
+=== vue/require-component-registration
+vue/require-component-registration · lint 规则
+要求显式导入或注册组件
+
+精度层级: complete
+适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+=== vue/require-scoped-style
+vue/require-scoped-style · lint 规则
+要求style块使用scoped属性
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <style>
+  .button { color: red; }
+  </style>
+  
+  <style lang="scss">
+  .container { padding: 20px; }
+  </style>
+
+正确示例:
+  <style scoped>
+  .button { color: red; }
+  </style>
+  
+  <style scoped lang="scss">
+  .container { padding: 20px; }
+  </style>
+  
+  <!-- module styles are also fine -->
+  <style module>
+  .button { color: red; }
+  </style>
+
+帮助:
+  修复: 向style块添加scoped属性:
+    <style scoped>
+    .my-class { color: red; }
+    </style>
+  好处:
+  - 防止样式泄漏到其他组件
+  - 避免全局命名冲突
+  - 更好的组件封装
+=== vue/require-toggle-inside-transition
+vue/require-toggle-inside-transition · lint 规则
+要求`<transition>`包裹的元素具有切换条件
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <transition>
+    <div>content</div>
+  </transition>
+
+正确示例:
+  <transition>
+    <div v-if="show">content</div>
+  </transition>
+
+帮助:
+  请添加v-if、v-show、v-else、v-else-if或绑定的:key，或使用动态<component :is>；否则元素永远不会进入或离开，<transition>将不起作用。
+=== vue/require-v-for-key
+vue/require-v-for-key · lint 规则
+要求v-for指令使用v-bind:key
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <li v-for="item in items">{{ item }}</li>
+
+正确示例:
+  <li v-for="item in items" :key="item.id">{{ item }}</li>
+
+帮助:
+  原因: :key属性帮助Vue的虚拟DOM高效地跟踪和更新列表项。
+  修复: 添加唯一标识符作为key:
+    <li v-for="item in items" :key="item.id">
+    {{ item.name }}
+    </li>
+  最佳实践:
+  - 使用唯一、稳定的标识符（如数据库ID）
+  - 当列表顺序可能改变时，避免使用数组索引作为key
+  - key必须是原始值（字符串或数字）
+=== vue/scoped-event-names
+vue/scoped-event-names · lint 规则
+建议使用有作用域的事件名以便更好地组织
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+帮助:
+  使用'update:modelValue'这样的有作用域的事件名代替通用名称
+=== vue/sfc-element-order
+vue/sfc-element-order · lint 规则
+强制 SFC 顶层元素的顺序保持一致
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <style>...</style>
+  <script setup>...</script>
+
+正确示例:
+  <script setup>...</script>
+  <template>...</template>
+  <style></style>
+=== vue/single-style-block
+vue/single-style-block · lint 规则
+推荐只使用一个 style 块
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+=== vue/slot-name-casing
+vue/slot-name-casing · lint 规则
+强制通过v-slot使用的具名插槽采用短横线命名
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <MyComponent>
+    <template #mySlot>...</template>
+    <template #my_slot>...</template>
+  </MyComponent>
+
+正确示例:
+  <MyComponent>
+    <template #my-slot>...</template>
+    <template #default>...</template>
+  </MyComponent>
+
+帮助:
+  请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。
+=== vue/this-in-template
+vue/this-in-template · lint 规则
+禁止在模板表达式中使用 `this.`
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div>{{ this.message }}</div>
+  <div :class="this.className"></div>
+  <button @click="this.handleClick()"></button>
+
+正确示例:
+  <div>{{ message }}</div>
+  <div :class="className"></div>
+  <button @click="handleClick()"></button>
+  <div>{{ 'this.is.a.string' }}</div>
+
+帮助:
+  请移除 'this.' 前缀；Vue 会自动从组件实例解析模板中的标识符。
+=== vue/use-unique-element-ids
+vue/use-unique-element-ids · lint 规则
+强制使用useId()代替静态字面量生成唯一元素ID
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template>
+    <label for="input">Name:</label>
+    <input id="input" type="text" />
+  </template>
+
+正确示例:
+  <script setup>
+  import { useId } from 'vue'
+  
+  const id = useId()
+  </script>
+  
+  <template>
+    <label :for="id">Name:</label>
+    <input :id="id" type="text" />
+  </template>
+
+帮助:
+  原因: 静态id属性在组件多次渲染时可能导致重复ID，造成无障碍问题和功能故障（如label-input关联）。
+  修复: 使用Vue 3.5+的useId():
+    <script setup>
+    import { useId } from 'vue'
+
+    const id = useId()
+    </script>
+
+    <template>
+    <label :for="id">姓名:</label>
+    <input :id="id" type="text">
+    </template>
+  优点:
+  - 为每个组件实例生成唯一ID
+  - 在服务器和客户端渲染间保持稳定（SSR安全）
+  - 支持label、ARIA属性和表单关联
+=== vue/use-v-on-exact
+vue/use-v-on-exact · lint 规则
+使用系统修饰符时强制在v-on上使用.exact修饰符
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <button @click="handleClick" @click.ctrl="handleCtrlClick">Click</button>
+
+正确示例:
+  <button @click.exact="handleClick" @click.ctrl="handleCtrlClick">Click</button>
+  <button @click="handleClick">Click</button>
+
+帮助:
+  @click在按下Ctrl/Shift/Alt/Meta时也会触发。添加.exact使其仅在没有系统修饰键时触发
+=== vue/v-bind-style
+vue/v-bind-style · lint 规则
+强制v-bind指令风格
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-bind:class="foo"></div>
+
+正确示例:
+  <div :class="foo"></div>
+
+帮助:
+  简写（推荐）:
+    <img :src="url">
+  完整形式:
+    <img v-bind:src="url">
+=== vue/v-on-event-hyphenation
+vue/v-on-event-hyphenation · lint 规则
+强制组件上 v-on 自定义事件名称使用连字符
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <MyComponent @myEvent="handler" />
+  <MyComponent v-on:myEvent="handler" />
+
+正确示例:
+  <MyComponent @my-event="handler" />
+  <div @myEvent="handler" />
+  <MyComponent @[dynamicEvent]="handler" />
+
+帮助:
+  请将监听器重命名为 kebab-case，以与发出的事件名称匹配。
+=== vue/v-on-handler-style
+vue/v-on-handler-style · lint 规则
+强制将v-on处理函数写成方法引用或内联函数
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <button @click="count++"></button>
+  <button @click="doThis(); doThat()"></button>
+  <button @click="foo = bar"></button>
+
+正确示例:
+  <button @click="handler"></button>
+  <button @click="foo.bar"></button>
+  <button @click="() => count++"></button>
+  <button @click="function () { count++ }"></button>
+
+帮助:
+  请将处理函数写成方法引用（例如 @click="handler"）或内联函数（例如 @click="() => count++"），而不是内联语句。
+=== vue/v-on-style
+vue/v-on-style · lint 规则
+强制v-on指令风格
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-on:click="handleClick"></div>
+
+正确示例:
+  <div @click="handleClick"></div>
+
+帮助:
+  简写（推荐）:
+    <button @click="onClick">点击</button>
+  完整形式:
+    <button v-on:click="onClick">点击</button>
+=== vue/v-slot-style
+vue/v-slot-style · lint 规则
+强制v-slot指令风格
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template v-slot:header>...</template>
+  <MyComponent #default="props">...</MyComponent>
+
+正确示例:
+  <template #header>...</template>
+  <MyComponent v-slot="props">...</MyComponent>
+
+帮助:
+  简写: <template #header> (默认)
+  完整形式: <template v-slot:header>
+  选择一种风格并保持一致。
+=== vue/valid-attribute-name
+vue/valid-attribute-name · lint 规则
+要求有效的属性名
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div my"attr="value"></div>
+  <div 0abc="value"></div>
+
+正确示例:
+  <div my-attr="value"></div>
+  <div data-value="value"></div>
+
+帮助:
+  属性名不能包含空格、引号、>、/、=或控制字符
+=== vue/valid-template-root
+vue/valid-template-root · lint 规则
+强制 `<template>` 根符合 Vue 3 的片段语义
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <template>
+    <template>content</template>
+  </template>
+
+正确示例:
+  <template>
+    <div>content</div>
+  </template>
+
+帮助:
+  请用真实的根元素（例如 <div>）包裹内容，而不要把 <template> 或 <slot> 作为根节点。
+=== vue/valid-v-bind
+vue/valid-v-bind · lint 规则
+强制有效的v-bind指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-bind></div>
+  <div :></div>
+
+正确示例:
+  <div :class="foo"></div>
+  <div v-bind:class="foo"></div>
+  <div v-bind="{ class: foo }"></div>
+  <div :loading></div>  <!-- Vue 3.4+ same-name shorthand for :loading="loading" -->
+
+帮助:
+  修复: 提供要绑定的值:
+    <!-- 简写 -->
+    <img :src="imageUrl" :alt="imageAlt">
+
+    <!-- 完整语法 -->
+    <img v-bind:src="imageUrl">
+
+    <!-- 绑定多个属性 -->
+    <div v-bind="{ id: itemId, class: itemClass }"></div>
+=== vue/valid-v-cloak
+vue/valid-v-cloak · lint 规则
+强制有效的v-cloak指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-cloak="foo"></div>
+  <div v-cloak:arg></div>
+  <div v-cloak.mod></div>
+
+正确示例:
+  <div v-cloak></div>
+
+帮助:
+  请从v-cloak指令中移除值、参数或修饰符
+=== vue/valid-v-else
+vue/valid-v-else · lint 规则
+强制有效的v-else指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-else="foo"></div>
+  <div v-else v-if="bar"></div>
+  <div v-else></div> <!-- without preceding v-if -->
+
+正确示例:
+  <div v-if="foo"></div>
+  <div v-else></div>
+
+帮助:
+  正确用法:
+    <div v-if="type === 'A'">A</div>
+    <div v-else-if="type === 'B'">B</div>
+    <div v-else>其他</div>
+  规则:
+  - v-else不需要表达式
+  - 必须紧跟在v-if或v-else-if之后
+  - 它们之间不能有其他元素
+=== vue/valid-v-for
+vue/valid-v-for · lint 规则
+强制有效的v-for指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-for></div>
+  <div v-for=""></div>
+  <div v-for.stop="item in items"></div>
+
+正确示例:
+  <div v-for="item in items" :key="item.id"></div>
+  <div v-for="(item, index) in items" :key="index"></div>
+
+帮助:
+  有效的v-for语法:
+    <!-- 数组迭代 -->
+    <li v-for="item in items">{{ item }}</li>
+    <li v-for="(item, index) in items">{{ index }}: {{ item }}</li>
+
+    <!-- 对象迭代 -->
+    <li v-for="(value, key) in object">{{ key }}: {{ value }}</li>
+    <li v-for="(value, key, index) in object">{{ index }}</li>
+
+    <!-- 范围 -->
+    <span v-for="n in 10">{{ n }}</span>
+=== vue/valid-v-html
+vue/valid-v-html · lint 规则
+强制有效的v-html指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-html></div>
+  <div v-html:arg="foo"></div>
+  <div v-html.mod="foo"></div>
+
+正确示例:
+  <div v-html="html"></div>
+
+帮助:
+  请为v-html指令添加表达式，并移除参数或修饰符
+=== vue/valid-v-if
+vue/valid-v-if · lint 规则
+强制有效的v-if指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-if></div>
+  <div v-if=""></div>
+  <div v-if="foo" v-else></div>
+
+正确示例:
+  <div v-if="foo"></div>
+  <div v-if="foo > 0"></div>
+
+帮助:
+  修复: 添加布尔表达式:
+    <div v-if="isVisible">内容</div>
+    <div v-if="items.length > 0">有项目</div>
+  注意: 频繁切换使用v-show（性能更好），很少改变的条件使用v-if。
+=== vue/valid-v-memo
+vue/valid-v-memo · lint 规则
+强制有效的v-memo指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-memo></div>
+
+正确示例:
+  <div v-memo="[valueA, valueB]">content</div>
+
+帮助:
+  请使用v-memo="[valueA, valueB]"的形式指定依赖数组
+=== vue/valid-v-model
+vue/valid-v-model · lint 规则
+强制有效的v-model指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-model="foo"></div>
+  <input v-model>
+
+正确示例:
+  <input v-model="foo">
+  <select v-model="selected"></select>
+  <textarea v-model="text"></textarea>
+  <MyComponent v-model="value" />
+
+帮助:
+  支持的元素:
+  - <input> (text, checkbox, radio等)
+  - <textarea>
+  - <select>
+  - 带有modelValue prop的自定义组件
+  示例:
+    <input v-model="message">
+    <input v-model.number="age" type="number">
+    <input v-model.trim="name">
+    <MyComponent v-model="value">
+=== vue/valid-v-on
+vue/valid-v-on · lint 规则
+强制有效的v-on指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-on></div>
+  <div @></div>
+  <div @click></div>
+
+正确示例:
+  <div @click="handleClick"></div>
+  <div v-on:click="handleClick"></div>
+  <div v-on="{ click: handleClick }"></div>
+
+帮助:
+  修复: 指定事件名:
+    <!-- 简写 -->
+    <button @click="handleClick">点击</button>
+
+    <!-- 完整语法 -->
+    <button v-on:click="handleClick">点击</button>
+
+    <!-- 带修饰符 -->
+    <form @submit.prevent="onSubmit">...</form>
+    <input @keyup.enter="onEnter">
+=== vue/valid-v-once
+vue/valid-v-once · lint 规则
+强制有效的v-once指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-once="foo"></div>
+  <div v-once:arg></div>
+  <div v-once.mod></div>
+
+正确示例:
+  <div v-once></div>
+
+帮助:
+  请从v-once指令中移除值、参数或修饰符
+=== vue/valid-v-show
+vue/valid-v-show · lint 规则
+强制有效的v-show指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-show></div>
+  <template v-show="foo"><div></div></template>
+
+正确示例:
+  <div v-show="foo"></div>
+  <div v-show="foo > 0"></div>
+
+帮助:
+  修复: 添加布尔表达式:
+    <div v-show="isVisible">内容</div>
+  v-show vs v-if:
+  - v-show: 总是渲染，通过CSS切换显示（频繁切换时更好）
+  - v-if: 条件渲染，完全添加/移除DOM
+=== vue/valid-v-slot
+vue/valid-v-slot · lint 规则
+强制有效的v-slot指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-slot:header></div>                 <!-- not on component -->
+  <MyComponent v-slot v-slot:header />      <!-- duplicate -->
+  <template v-slot:header v-slot:footer />  <!-- multiple named slots -->
+
+正确示例:
+  <MyComponent v-slot="{ item }">{{ item }}</MyComponent>
+  <MyComponent><template #header>Header</template></MyComponent>
+  <MyComponent><template v-slot:header>Header</template></MyComponent>
+
+帮助:
+  正确用法:
+    <!-- 默认插槽 -->
+    <MyComponent v-slot="{ item }">
+    {{ item }}
+    </MyComponent>
+
+    <!-- 具名插槽 -->
+    <MyComponent>
+    <template #header>标题</template>
+    <template #footer>页脚</template>
+    </MyComponent>
+=== vue/valid-v-text
+vue/valid-v-text · lint 规则
+强制有效的v-text指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+错误示例:
+  <div v-text></div>
+  <div v-text:arg="foo"></div>
+  <div v-text.mod="foo"></div>
+
+正确示例:
+  <div v-text="msg"></div>
+
+帮助:
+  请为v-text指令添加表达式，并移除参数或修饰符
+=== vue/warn-custom-block
+vue/warn-custom-block · lint 规则
+对 SFC 文件中的自定义块发出警告
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+=== vue/warn-custom-directive
+vue/warn-custom-directive · lint 规则
+对需要注册的自定义指令发出警告
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/vue.md
+
+正确示例:
+  <div v-if="show"></div>
+  <input v-model="value" />
+  <button @click="onClick">Click</button>

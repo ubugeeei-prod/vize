@@ -4,10 +4,7 @@ use crate::ir::InsertNodeIRNode;
 use vize_carton::ensure_sufficient_stack;
 
 use super::component::transform_component;
-use super::template::{
-    generate_element_template, is_static_element, is_template_backed_element,
-    transform_template_ref,
-};
+use super::template::{is_static_element, is_template_backed_element, transform_template_ref};
 use super::{
     BlockIRNode, ChildRefIRNode, ElementNode, ElementType, NextRefIRNode, OperationNode, PropNode,
     SlotOutletIRNode, TemplateChildNode, TransformContext, get_slot_outlet_name,
@@ -42,7 +39,7 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     let parent_id = ctx.next_id();
 
     // Generate template (includes all children inline)
-    let template = generate_element_template(el, ctx.scope_id.as_deref());
+    let template = ctx.element_template(el);
 
     // Process parent props
     for prop in el.props.iter() {

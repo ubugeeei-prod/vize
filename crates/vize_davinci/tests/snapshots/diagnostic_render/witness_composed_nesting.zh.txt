@@ -1,0 +1,11 @@
+错误[html/cross-component-nesting]: <div>（由 <InfoCard> 在 src/components/InfoCard.vue:6:3 渲染）会关闭已打开的 <p>：浏览器会在它之前结束段落，渲染出的 DOM 与此模板不一致
+ --> src/App.vue:7:5
+  |
+6 |   <p>
+  |   -- <p> 在此处打开
+7 |     <InfoCard title="Composed" />
+  |     ^^^^^^^^^
+  |
+  = 依据: `<p` 是这条嵌套证明所依据的祖先元素
+  = 依据: `<InfoCard` 被渲染在父元素禁止其子内容出现的位置
+  = 帮助: 请在允许其根元素的位置渲染该组件，或更换父元素

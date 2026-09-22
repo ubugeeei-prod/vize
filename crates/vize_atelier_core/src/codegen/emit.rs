@@ -46,7 +46,7 @@ pub(super) fn generate_with_sections_and_options(
 
     // Generate function signature, anchored at the template section start.
     crate::walk_probe::record_walk(crate::walk_probe::WalkStage::Codegen);
-    ctx.record_mapping(root.loc.span.start);
+    ctx.anchor(root.loc.span.start);
     profile!(
         "atelier.codegen.function_signature",
         generate_function_signature(&mut ctx)
@@ -57,13 +57,13 @@ pub(super) fn generate_with_sections_and_options(
     ctx.newline();
 
     // Generate component/directive resolution
-    let assets_start = ctx.code.len();
+    let assets_start = ctx.code_len();
     profile!("atelier.codegen.assets", generate_assets(&mut ctx, root));
-    let assets_end = ctx.code.len();
+    let assets_end = ctx.code_len();
 
     // Generate return statement
     ctx.push("return ");
-    let return_expr_start = ctx.code.len();
+    let return_expr_start = ctx.code_len();
 
     // Generate root node
     if root_children.is_empty() {
@@ -111,7 +111,7 @@ pub(super) fn generate_with_sections_and_options(
             ctx.push("], 64 /* STABLE_FRAGMENT */))");
         }
     }
-    let return_expr_end = ctx.code.len();
+    let return_expr_end = ctx.code_len();
 
     ctx.deindent();
     ctx.newline();
@@ -164,15 +164,10 @@ pub(super) fn generate_with_sections_and_options(
         preamble.push_str(&hoists_code);
     }
 
-    // Assemble the source map (only populated when the `source_map` flag is on,
-    // in which case `take_map_builder` returns `Some`). Segments were recorded
-    // against byte offsets into `ctx.code` during emission, so resolve them
-    // against the final code buffer before it is moved out. The render `code`
-    // string itself is unchanged whether or not a map is produced.
-    let map = ctx.take_map_builder().map(|builder| {
-        let filename = ctx.options.filename.as_str();
-        builder.finish(ctx.code_as_str(), filename, root.source)
-    });
+    // Serialize the document's links (recorded only when the `source_map`
+    // flag is on) against the final code before it is moved out. The render
+    // `code` itself is unchanged whether or not a map is produced.
+    let map = ctx.source_map(ctx.options.filename.as_str(), root.source);
 
     CodegenResultWithSections {
         result: CodegenResult {

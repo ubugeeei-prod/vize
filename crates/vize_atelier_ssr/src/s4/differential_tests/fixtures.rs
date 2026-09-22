@@ -2,6 +2,17 @@
 
 /// Templates the string plan must own.
 pub(super) const ADMITTED: &[(&str, &str)] = &[
+    ("title-text", "<title>Hello world</title>"),
+    (
+        "title-interpolation",
+        "<div><title>{{ title }} — {{ count }}</title></div>",
+    ),
+    ("title-entities", "<title>A &amp; B &lt; C &#169;</title>"),
+    ("title-markup-text", "<title><b>not an element</b></title>"),
+    (
+        "title-multiline",
+        "<title>\n  {{ title }}\n  text\n</title>",
+    ),
     ("empty", ""),
     ("text-root", "hello"),
     ("text-escape", "a &lt;b&gt; &amp; 'c' \"d\""),
@@ -142,6 +153,11 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         "table-explicit",
         "<table><tbody><tr><td>{{ a }}</td></tr></tbody></table>",
     ),
+    ("table-implicit", "<table><tr><td>a</td></tr></table>"),
+    (
+        "table-implicit-tr",
+        "<table><tbody><td>{{ a }}</td></tbody></table>",
+    ),
     (
         "list-markup",
         "<ul><li>a</li><li :class=\"c\">{{ b }}</li></ul>",
@@ -189,7 +205,6 @@ pub(super) const REFUSED: &[(&str, &str)] = &[
     ("v-model-div", r#"<div v-model="msg"></div>"#),
     ("invalid-expression", "<div>{{ a &amp;&amp; b }}</div>"),
     ("invalid-bind", r#"<div :title="a +"></div>"#),
-    ("table-implicit", "<table><tr><td>a</td></tr></table>"),
     ("script", "<div><script>var a = 1 < 2</script></div>"),
     ("style", "<div><style>.a > b { }</style></div>"),
     ("whitespace-entities", "<p>a&#10;&#32; b</p>"),

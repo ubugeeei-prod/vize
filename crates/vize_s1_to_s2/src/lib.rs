@@ -69,6 +69,7 @@ pub mod emit;
 pub mod exemptions;
 pub mod key;
 pub mod lower;
+pub mod partial;
 pub mod pass;
 
 /// Croquis reactivity facts the S2 transform rewrite reads (P3-17).

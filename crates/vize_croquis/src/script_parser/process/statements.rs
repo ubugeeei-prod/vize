@@ -9,11 +9,8 @@
 use oxc_ast::ast::{Class, Declaration, Expression, Function, Statement, VariableDeclaration};
 use oxc_span::GetSpan;
 
-use crate::ScopeBinding;
-use crate::croquis::{
-    ImportStatementInfo, InvalidExport, InvalidExportKind, ReExportInfo, TypeExport, TypeExportKind,
-};
-use crate::scope::{BlockKind, BlockScopeData, ClosureScopeData, ExternalModuleScopeData};
+use crate::croquis::{InvalidExport, InvalidExportKind, ReExportInfo, TypeExport, TypeExportKind};
+use crate::scope::{BlockKind, BlockScopeData, ClosureScopeData};
 use vize_carton::CompactString;
 use vize_relief::BindingType;
 
@@ -25,7 +22,6 @@ use super::super::extract::{
 use super::super::walk::{extract_function_params, walk_expression, walk_statement};
 use super::enums::process_enum_declaration;
 use super::macros;
-use super::vue_runtime_api::is_vue_runtime_api;
 
 /// Process a single statement
 pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, source: &str) {
@@ -53,97 +49,7 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
             walk_expression(result, &expr_stmt.expression, source);
         }
 
-        // Module declarations (imports, exports)
-        Statement::ImportDeclaration(import) => {
-            result.import_statements.push(ImportStatementInfo {
-                start: import.span.start,
-                end: import.span.end,
-            });
-
-            let is_type_only = import.import_kind.is_type();
-
-            // Create external module scope for this import
-            let source_name = import.source.value.as_str();
-            let span = import.span;
-
-            result.scopes.enter_external_module_scope(
-                ExternalModuleScopeData {
-                    source: CompactString::new(source_name),
-                    is_type_only,
-                },
-                span.start,
-                span.end,
-            );
-
-            if let Some(specifiers) = &import.specifiers {
-                for spec in specifiers.iter() {
-                    let (name, is_type_spec, local_span) = match spec {
-                        oxc_ast::ast::ImportDeclarationSpecifier::ImportSpecifier(s) => {
-                            (s.local.name.as_str(), s.import_kind.is_type(), s.local.span)
-                        }
-                        oxc_ast::ast::ImportDeclarationSpecifier::ImportDefaultSpecifier(s) => {
-                            (s.local.name.as_str(), false, s.local.span)
-                        }
-                        oxc_ast::ast::ImportDeclarationSpecifier::ImportNamespaceSpecifier(s) => {
-                            (s.local.name.as_str(), false, s.local.span)
-                        }
-                    };
-
-                    if source_name == "vue"
-                        && let oxc_ast::ast::ImportDeclarationSpecifier::ImportSpecifier(s) = spec
-                    {
-                        let imported = s.imported.name().as_str();
-                        if is_vue_runtime_api(imported) && imported != name {
-                            result
-                                .reactivity_aliases
-                                .insert(CompactString::new(name), CompactString::new(imported));
-                            match imported {
-                                "inject" => {
-                                    result.inject_aliases.insert(CompactString::new(name));
-                                }
-                                "provide" => {
-                                    result.provide_aliases.insert(CompactString::new(name));
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-
-                    // Record definition span for Go-to-Definition
-                    result
-                        .binding_spans
-                        .insert(CompactString::new(name), (local_span.start, local_span.end));
-
-                    // Determine binding type based on specifier kind:
-                    // - Named imports (ImportSpecifier) -> SetupMaybeRef (could be ref/reactive)
-                    // - Default/Namespace imports -> SetupConst
-                    let binding_type = if is_type_only || is_type_spec {
-                        BindingType::ExternalModule
-                    } else {
-                        match spec {
-                            oxc_ast::ast::ImportDeclarationSpecifier::ImportSpecifier(_) => {
-                                BindingType::SetupMaybeRef
-                            }
-                            _ => BindingType::SetupConst, // default/namespace
-                        }
-                    };
-                    result.scopes.add_binding(
-                        CompactString::new(name),
-                        ScopeBinding::new(binding_type, span.start),
-                    );
-
-                    // Only add to bindings if not type-only
-                    if !is_type_only && !is_type_spec {
-                        result.bindings.add(name, binding_type);
-                        result
-                            .import_sources
-                            .insert(CompactString::new(name), CompactString::new(source_name));
-                    }
-                }
-            }
-
-            result.scopes.exit_scope();
-        }
+        Statement::ImportDeclaration(import) => super::imports::process_import(result, import),
 
         Statement::ExportNamedDeclaration(export) => {
             // Re-export: `export { ... } from "..."`

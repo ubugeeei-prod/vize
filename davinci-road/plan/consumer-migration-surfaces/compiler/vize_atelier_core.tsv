@@ -20,6 +20,8 @@ compiler	Compiler	source	crates/vize_atelier_core/src/codegen/component_binding.
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/context.rs	11	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/context/spans.rs	10	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/context/vnode_factory.rs	1	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/document.rs	16	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/document/tests.rs	3	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/element/block.rs	35	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/element/directives.rs	136	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/element/helpers.rs	9	s0	S0	stage	vize_s0	preferred	1
@@ -90,8 +92,6 @@ compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/params.rs	4	
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/slots/tests.rs	5	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/source_map_anchor.rs	1	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/source_map.rs	35	s0	S0	stage	vize_s0	preferred	3
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/spanned.rs	12	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/spanned.rs	167	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests.rs	5	s0	S0	stage	vize_s0	preferred	20
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for.rs	21	s0	S0	stage	vize_s0	preferred	2

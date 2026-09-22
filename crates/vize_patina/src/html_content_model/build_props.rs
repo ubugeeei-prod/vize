@@ -14,7 +14,7 @@
 use vize_relief::{ExpressionNode, PropNode};
 use vize_s0::CompactString;
 
-use super::skeleton::{NodeKind, PropFacts, Skeleton};
+use super::skeleton::{PropFacts, Skeleton, component_usage_name};
 use crate::markup::MarkupElement;
 
 /// Records [`PropFacts`] while the builder walks the template.
@@ -64,7 +64,7 @@ impl PropRecorder {
             self.facts.guards.push((first, CompactString::new(guard)));
         }
         for index in opened {
-            if matches!(skeleton.node(index).kind, NodeKind::Component { .. }) {
+            if component_usage_name(skeleton.node(index)).is_some() {
                 self.passed(node, index);
             }
         }

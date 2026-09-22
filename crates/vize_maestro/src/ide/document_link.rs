@@ -5,31 +5,40 @@
 //! - src attributes on script/style/template blocks
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 //! - CSS @import statements
+//!
+//! SFC blocks come from the resident descriptor (P5-6c): one parse per buffer
+//! revision, shared with the other request paths.
 
 use std::path::Path;
 
 use tower_lsp::lsp_types::{DocumentLink, Position, Range, Url};
 
 use super::offset_to_position;
+use crate::server::ServerState;
 
 mod imports;
+
+#[cfg(test)]
+mod resident_tests;
 
 /// Document link service.
 pub struct DocumentLinkService;
 
 impl DocumentLinkService {
-    /// Get document links for a file.
-    pub fn get_links(content: &str, uri: &Url) -> Vec<DocumentLink> {
+    /// Document links for a file, from its resident descriptor.
+    pub fn get_links(state: &ServerState, content: &str, uri: &Url) -> Vec<DocumentLink> {
+        let Some(descriptor) = state.sfc_descriptor(uri, content) else {
+            return Vec::new();
+        };
+        Self::links_from_descriptor(content, uri, &descriptor)
+    }
+
+    fn links_from_descriptor(
+        content: &str,
+        uri: &Url,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    ) -> Vec<DocumentLink> {
         let mut links = Vec::new();
-
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-            return links;
-        };
 
         let base_path = uri.to_file_path().ok();
 
@@ -257,6 +266,7 @@ mod tests {
     use std::fs;
 
     use super::DocumentLinkService;
+    use crate::server::ServerState;
     use tower_lsp::lsp_types::Url;
 
     #[test]
@@ -279,7 +289,7 @@ defineArt("./Button.vue", {
         fs::write(&art_path, source).unwrap();
         let uri = Url::from_file_path(&art_path).unwrap();
 
-        let links = DocumentLinkService::get_links(source, &uri);
+        let links = DocumentLinkService::get_links(&ServerState::new(), source, &uri);
 
         assert!(links.iter().any(|link| {
             link.target

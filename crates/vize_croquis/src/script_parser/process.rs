@@ -17,6 +17,7 @@ mod bindings;
 mod class_component;
 mod class_component_props;
 mod enums;
+mod imports;
 mod macros;
 mod module_exports;
 mod options_api;

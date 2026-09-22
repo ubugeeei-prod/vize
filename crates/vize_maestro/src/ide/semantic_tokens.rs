@@ -5,7 +5,10 @@
 //! - Vue directives
 //! - Script bindings
 //! - CSS v-bind variables
-#![allow(clippy::disallowed_methods)]
+//!
+//! SFC blocks come from the resident descriptor (P5-6c): one parse per buffer
+//! revision, shared with the other request paths. `.art.vue` files are
+//! tokenized from the buffer and are not parsed as SFCs.
 
 mod art;
 mod encoding;
@@ -14,6 +17,8 @@ mod style;
 mod template;
 mod types;
 
+#[cfg(test)]
+mod resident_tests;
 #[cfg(test)]
 mod tests;
 
@@ -29,9 +34,10 @@ pub(crate) use expressions::tokenize_expression;
 pub(crate) use types::AbsoluteToken;
 
 use tower_lsp::lsp_types::{
-    Range, SemanticTokens, SemanticTokensRangeResult, SemanticTokensResult,
+    Range, SemanticTokens, SemanticTokensRangeResult, SemanticTokensResult, Url,
 };
 
+use crate::server::ServerState;
 use encoding::{LineIndex, encode_tokens};
 
 /// Semantic tokens service.
@@ -56,25 +62,27 @@ fn token_overlaps_range(token: &AbsoluteToken, range: Range) -> bool {
 }
 
 impl SemanticTokensService {
-    /// Get semantic tokens for a document.
+    /// Semantic tokens for a document, from its resident descriptor.
     pub fn get_tokens(
+        state: &ServerState,
         content: &str,
-        uri: &tower_lsp::lsp_types::Url,
+        uri: &Url,
     ) -> Option<SemanticTokensResult> {
-        let tokens = Self::collect_tokens(content, uri)?;
+        let tokens = Self::collect_tokens(state, content, uri)?;
         Some(SemanticTokensResult::Tokens(SemanticTokens {
             result_id: None,
             data: encode_tokens(&tokens),
         }))
     }
 
-    /// Get semantic tokens for the visible range of a document.
+    /// Semantic tokens for the visible range, from the same resident descriptor.
     pub fn get_tokens_range(
+        state: &ServerState,
         content: &str,
-        uri: &tower_lsp::lsp_types::Url,
+        uri: &Url,
         range: Range,
     ) -> Option<SemanticTokensRangeResult> {
-        let tokens = Self::collect_tokens(content, uri)?;
+        let tokens = Self::collect_tokens(state, content, uri)?;
         let tokens = tokens
             .into_iter()
             .filter(|token| token_overlaps_range(token, range))
@@ -86,22 +94,21 @@ impl SemanticTokensService {
         }))
     }
 
-    fn collect_tokens(
-        content: &str,
-        uri: &tower_lsp::lsp_types::Url,
-    ) -> Option<Vec<AbsoluteToken>> {
-        // Check if this is an Art file
+    fn collect_tokens(state: &ServerState, content: &str, uri: &Url) -> Option<Vec<AbsoluteToken>> {
+        // Art files are not SFC parses. Tokenize the buffer and do not touch
+        // the resident tier.
         if uri.path().ends_with(".art.vue") {
             return Some(Self::collect_art_tokens(content));
         }
 
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
+        let descriptor = state.sfc_descriptor(uri, content)?;
+        Some(Self::tokens_from_descriptor(content, &descriptor))
+    }
 
-        let descriptor = vize_atelier_sfc::parse_sfc(content, options).ok()?;
-
+    fn tokens_from_descriptor(
+        content: &str,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    ) -> Vec<AbsoluteToken> {
         let mut tokens: Vec<AbsoluteToken> = Vec::new();
 
         // Collect tokens from template
@@ -159,6 +166,6 @@ impl SemanticTokensService {
         // Sort by position
         tokens.sort_by_key(|token| (token.line, token.start));
 
-        Some(tokens)
+        tokens
     }
 }

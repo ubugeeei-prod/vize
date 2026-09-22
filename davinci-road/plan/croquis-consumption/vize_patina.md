@@ -11,7 +11,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | product                           | kind  | module              | files | sites |
 | --------------------------------- | ----- | ------------------- | ----: | ----: |
 | `COMPILER_MACRO_NAMES`            | type  | `croquis`           |     1 |     1 |
-| `Croquis`                         | type  | `croquis`           |     9 |    22 |
+| `Croquis`                         | type  | `croquis`           |    11 |    26 |
 | `Drawer`                          | type  | `drawer`            |     1 |     1 |
 | `ElementIdKind`                   | type  | `croquis::template` |     1 |     2 |
 | `OptionMember`                    | type  | `croquis`           |     2 |     3 |
@@ -68,7 +68,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | product                 | resolved | grep |
 | ----------------------- | -------: | ---: |
 | `COMPILER_MACRO_NAMES`  |        1 |    2 |
-| `Croquis`               |       22 |   47 |
+| `Croquis`               |       26 |   50 |
 | `Drawer`                |        1 |    2 |
 | `ElementIdKind`         |        2 |    3 |
 | `OptionMember`          |        3 |    5 |

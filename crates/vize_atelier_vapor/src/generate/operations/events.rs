@@ -1,6 +1,7 @@
 use crate::ir::SetEventIRNode;
+use vize_atelier_core::codegen::document::EmitDocument;
 use vize_atelier_core::steps::{is_event_handler_reference_node, is_function_expression_node};
-use vize_carton::{String, cstr};
+use vize_carton::cstr;
 
 pub(super) use super::super::expression_retained::resolve_inline_handler_node as resolve_inline_handler;
 use super::super::{context::GenerateContext, expression::is_simple_path_expression};
@@ -12,33 +13,34 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
     let element = cstr!("n{}", set_event.element);
     let event_name = &set_event.key.content;
 
+    // Handler references and callbacks keep their expression anchors;
+    // rewritten inline bodies are emitted unanchored.
     let invoker_body = if let Some(value) = set_event.value.as_deref() {
         // Keep S3's checked direct-reference path free of expression reparses.
         if is_simple_path_expression(value.content.trim()) || is_event_handler_reference_node(value)
         {
-            let resolved = ctx.resolve_expression_node(value);
-            cstr!("e => {resolved}(e)")
+            let mut body = EmitDocument::plain("e => ");
+            body.push_spanned(&ctx.spanned_expression_node(value));
+            body.push_str("(e)");
+            body
         } else if is_function_expression_node(value) {
             // Authored and transformed callbacks already own their parameters.
-            ctx.resolve_expression_node(value)
+            ctx.spanned_expression_node(value)
         } else {
-            resolve_inline_handler(ctx, value)
+            EmitDocument::from(resolve_inline_handler(ctx, value))
         }
     } else {
-        String::from("() => {}")
+        EmitDocument::plain("() => {}")
     };
 
     // Wrap with withModifiers if there are DOM modifiers (stop, prevent, etc.)
     let wrapped_handler = if !set_event.modifiers.non_keys.is_empty() {
         ctx.use_helper("withModifiers");
-        let mods = set_event
-            .modifiers
-            .non_keys
-            .iter()
-            .map(|m| ["\"", m, "\""].concat())
-            .collect::<std::vec::Vec<_>>()
-            .join(",");
-        cstr!("_withModifiers({}, [{}])", invoker_body, mods)
+        wrap_handler(
+            "_withModifiers(",
+            &invoker_body,
+            &set_event.modifiers.non_keys,
+        )
     } else {
         invoker_body
     };
@@ -46,24 +48,18 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
     // propagation or prevent the default action before it is rejected.
     let wrapped_handler = if !set_event.modifiers.keys.is_empty() {
         ctx.use_helper("withKeys");
-        let keys = set_event
-            .modifiers
-            .keys
-            .iter()
-            .map(|k| ["\"", k, "\""].concat())
-            .collect::<std::vec::Vec<_>>()
-            .join(",");
-        cstr!("_withKeys({}, [{}])", wrapped_handler, keys)
+        wrap_handler("_withKeys(", &wrapped_handler, &set_event.modifiers.keys)
     } else {
         wrapped_handler
     };
 
     if set_event.delegate {
         ctx.add_delegate_event(event_name);
-        ctx.push_line_fmt(format_args!(
-            "{}.$evt{} = _createInvoker({})",
-            element, event_name, wrapped_handler
-        ));
+        let mut line =
+            EmitDocument::plain(&cstr!("{}.$evt{} = _createInvoker(", element, event_name));
+        line.push_spanned(&wrapped_handler);
+        line.push_str(")");
+        ctx.push_line_spanned(&line);
     } else if set_event.effect {
         // Dynamic event - use renderEffect + _on
         ctx.use_helper("on");
@@ -74,7 +70,9 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
         ctx.push_line("");
         ctx.push_line_fmt(format_args!(
             "_on({}, {}, _createInvoker({}), {{",
-            element, event_expr, wrapped_handler
+            element,
+            event_expr,
+            wrapped_handler.as_str()
         ));
         ctx.indent();
         ctx.push_line("effect: true");
@@ -103,7 +101,9 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             }
             ctx.push_line_fmt(format_args!(
                 "_on({}, \"{}\", _createInvoker({}), {{",
-                element, event_name, wrapped_handler
+                element,
+                event_name,
+                wrapped_handler.as_str()
             ));
             ctx.indent();
             for (index, opt) in opts.iter().enumerate() {
@@ -115,8 +115,30 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
         } else {
             ctx.push_line_fmt(format_args!(
                 "_on({}, \"{}\", _createInvoker({}))",
-                element, event_name, wrapped_handler
+                element,
+                event_name,
+                wrapped_handler.as_str()
             ));
         }
     }
+}
+
+/// `callee` + handler + `, [` + list + `])`, keeping the handler's anchors.
+fn wrap_handler(callee: &str, handler: &EmitDocument, list: &[&str]) -> EmitDocument {
+    let capacity =
+        callee.len() + handler.len() + list.iter().map(|s| s.len() + 3).sum::<usize>() + 5;
+    let mut out = EmitDocument::with_capacity(capacity, handler.is_recording());
+    out.push_str(callee);
+    out.push_spanned(handler);
+    out.push_str(", [");
+    for (index, item) in list.iter().enumerate() {
+        if index > 0 {
+            out.push_str(",");
+        }
+        out.push_str("\"");
+        out.push_str(item);
+        out.push_str("\"");
+    }
+    out.push_str("])");
+    out
 }
