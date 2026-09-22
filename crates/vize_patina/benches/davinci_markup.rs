@@ -1,18 +1,17 @@
-//! Allocation regression probes for the markup facade passes: the direct-IR
-//! JSX pass and the S2-backed template pass (P4-7a).
+//! Allocation regression probes for the markup facade passes: the S2 JSX
+//! pass and the S2-backed template pass (P4-7a, switched in P4-7b).
 //!
-//! Setup (parse, contexts, registry) stays outside the stage window; the
+//! Setup (lower, contexts, registry) stays outside the stage window; the
 //! measured section is exactly the per-rule `visit_with` loop `lint_jsx`
-//! drives over the OXC program. Root discovery streams each outermost JSX
-//! element straight into the walker, so the committed one-root fixture must
-//! perform **zero** root-container allocations no matter how many markup
-//! rules run — the exact `allocs` budget makes any reintroduced per-rule
-//! root vector (or child spill) fail closed.
+//! drives over the S2 projection for rules that do not need the list/branch
+//! partition. The one-root fixture must perform **zero** allocations in that
+//! window — the exact `allocs` budget makes any reintroduced per-rule root
+//! vector (or child spill) fail closed.
 
 use criterion::{Criterion, criterion_group};
 use davinci_harness::stage::bench_stage_with_metrics;
 use vize_patina::ir::TemplateSyntax;
-use vize_patina::markup::{MarkupContext, MarkupDocument, S2Template};
+use vize_patina::markup::{MarkupContext, MarkupDocument, S2Markup, S2Template};
 use vize_patina::{JsxLang, LintContext, RuleRegistry};
 use vize_s0::{Allocator, cstr};
 
@@ -31,12 +30,23 @@ fn davinci_markup(criterion: &mut Criterion) {
     let registry = RuleRegistry::default();
     let id = cstr!("patina_jsx_markup_one_root");
     bench_stage_with_metrics(criterion, &id, "synthetic:jsx-one-root-gallery", |window| {
-        let oxc_allocator = oxc_allocator::Allocator::default();
-        let parsed = vize_atelier_jsx::parse_module(&oxc_allocator, ONE_ROOT, JsxLang::Jsx);
-        assert!(parsed.diagnostics.is_empty(), "fixture must parse cleanly");
         let allocator = Allocator::new();
+        let lowered =
+            vize_atelier_jsx::lower_source(&allocator, allocator.as_oxc(), ONE_ROOT, JsxLang::Jsx);
+        assert!(
+            lowered
+                .diagnostics
+                .iter()
+                .all(|diagnostic| !diagnostic.is_error()),
+            "fixture must lower cleanly"
+        );
+        let projected = lowered.roots[0]
+            .s2
+            .as_ref()
+            .expect("the gallery root must project to S2");
+        let markup = S2Markup::from_projected_root(projected);
         let mut lint = LintContext::new(&allocator, ONE_ROOT, "bench.jsx");
-        let document = MarkupDocument::from_jsx(&parsed.program, TemplateSyntax::Vue, 0);
+        let document = MarkupDocument::from_s2(&markup, TemplateSyntax::Vue);
         let visited = {
             let mut markup_ctx = MarkupContext::new(&mut lint, &document);
             window.measure(|| {

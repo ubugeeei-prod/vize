@@ -137,7 +137,7 @@ pub fn compare_jsx(source: &str, lang: JsxLang) -> Result<JsxComparison, Diverge
             &MarkupDocument::new(&root.root, TemplateSyntax::Vue),
             source,
         );
-        let markup = S2Markup::from_jsx_root(s2_root);
+        let markup = S2Markup::from_projected_root(s2_root);
         let s2 = trace_document(
             &MarkupDocument::from_s2(&markup, TemplateSyntax::Vue),
             source,
