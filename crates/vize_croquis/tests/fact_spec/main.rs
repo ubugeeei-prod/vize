@@ -62,7 +62,11 @@ fn the_committed_planes_agree_with_the_specs() {
     let mut matrix = Planes::default();
     for file in &files {
         let source = std::fs::read_to_string(file).expect("matrix stub");
-        run_source(&vize_carton::cstr!("{}", file.display()), &source, &mut matrix);
+        run_source(
+            &vize_carton::cstr!("{}", file.display()),
+            &source,
+            &mut matrix,
+        );
     }
     eprintln!("{}", matrix.scope_lines("matrix plane"));
     assert_eq!(
@@ -104,7 +108,11 @@ fn the_corpus_shard_agrees_with_the_specs() {
             shard.undefined.skip("unreadable");
             continue;
         };
-        run_source(&vize_carton::cstr!("{}", file.display()), &source, &mut shard);
+        run_source(
+            &vize_carton::cstr!("{}", file.display()),
+            &source,
+            &mut shard,
+        );
     }
     eprintln!("{}", shard.scope_lines("corpus shard"));
     shard.assert_verdicts("corpus shard");
