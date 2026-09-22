@@ -1,0 +1,3 @@
+file	spelling
+crates/vize_davinci/tests/diagnostic_render/cases/markup.rs	v-on:submit.prevent
+crates/vize_davinci/tests/diagnostic_render/cases/markup.rs	v-on:keydown.enter

@@ -13,13 +13,13 @@ strict equality with the sources and this page to byte equality with the rows.
 
 ## Retained `alloc::vec::Vec`
 
-The library trees in the reviewed inventory contain 105 production files,
-117 direct `alloc::vec::Vec` paths, and 404 bound `Vec`/`StdVec` uses.
+The library trees in the reviewed inventory contain 109 production files,
+121 direct `alloc::vec::Vec` paths, and 433 bound `Vec`/`StdVec` uses.
 
 | Category | Files | Direct paths | Bound uses |
 | -------- | ----: | -----------: | ---------: |
 | contract |    23 |           34 |         86 |
-| analysis |    19 |           20 |         62 |
+| analysis |    23 |           24 |         91 |
 | lower    |    15 |           15 |         59 |
 | pass     |    16 |           16 |         70 |
 | emit     |    32 |           32 |        127 |
@@ -28,9 +28,9 @@ The library trees in the reviewed inventory contain 105 production files,
 
 | Scope    | Type                    | Files | Direct paths | Bound uses |
 | -------- | ----------------------- | ----: | -----------: | ---------: |
-| infra    | `alloc::vec::Vec`       |    19 |           19 |         69 |
+| infra    | `alloc::vec::Vec`       |    23 |           23 |         98 |
 | infra    | `alloc::string::String` |     0 |            0 |          0 |
-| infra    | `vize_s0::String`       |    20 |           20 |        141 |
+| infra    | `vize_s0::String`       |    27 |           27 |        170 |
 | infra    | `vize_s0::Vec`          |     0 |            0 |          0 |
 | infra    | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s1       | `alloc::vec::Vec`       |     0 |            0 |          0 |

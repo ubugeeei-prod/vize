@@ -35,7 +35,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis`                             |        1 |    3 |
 | `EffectGraphScript`                   |        2 |    3 |
 | `Scope`                               |        0 |    1 |
-| `Span`                                |        0 |    4 |
+| `Span`                                |        0 |    3 |
 | `build_effect_graph_from_sfc_scripts` |        1 |    2 |
 | `Croquis.bindings`                    |        0 |    2 |
 | `Croquis.scopes`                      |        0 |    1 |

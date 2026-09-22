@@ -17,5 +17,6 @@ linter	Linter	source	crates/vize/src/commands/lint/fix.rs	8	s0	S0	stage	vize_s0	
 linter	Linter	source	crates/vize/src/commands/lint/patterns.rs	22	s0	S0	stage	vize_s0	preferred	11
 linter	Linter	test/dev	crates/vize/src/commands/lint/patterns.rs	113	s0	S0	stage	vize_s0	preferred	4
 linter	Linter	source	crates/vize/src/commands/lint/rich.rs	15	davinci	Davinci	stage	vize_davinci	preferred	2
-linter	Linter	source	crates/vize/src/commands/lint/rich.rs	15	s0	S0	stage	vize_s0	preferred	2
+linter	Linter	source	crates/vize/src/commands/lint/rich.rs	15	s0	S0	stage	vize_s0	preferred	3
+linter	Linter	test/dev	crates/vize/src/commands/lint/rich.rs	224	s0	S0	stage	vize_s0	preferred	2
 linter	Linter	source	crates/vize/src/commands/lint/stdout.rs	4	s0	S0	stage	vize_s0	preferred	1
