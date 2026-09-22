@@ -180,6 +180,19 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         "legacy-content-tags",
         "<div><noembed>x</noembed><noframes>y</noframes><xmp>a &lt; b</xmp></div>",
     ),
+    ("v-model-div", r#"<div v-model="msg"></div>"#),
+    ("v-model-svg", r#"<svg v-model="msg"></svg>"#),
+    ("v-model-math", r#"<math v-model="msg"></math>"#),
+    ("v-model-template", r#"<template v-model="msg"></template>"#),
+    (
+        "v-model-nested",
+        r#"<section><div v-model="msg"></div></section>"#,
+    ),
+    ("v-pre-text", "<div v-pre>{{ not }} an interpolation</div>"),
+    (
+        "v-pre-whitespace",
+        "<pre>\n  a  b\n</pre><code v-pre class=\"font-code\">\n    {{ variable }}\n  </code>",
+    ),
 ];
 
 /// Templates the selector must keep on the legacy walker in this slice.
@@ -202,7 +215,6 @@ pub(super) const REFUSED: &[(&str, &str)] = &[
         r#"<div><p :[a+b]="val"></p></div>"#,
     ),
     ("v-model-argument", r#"<input v-model:foo="msg">"#),
-    ("v-model-div", r#"<div v-model="msg"></div>"#),
     ("invalid-expression", "<div>{{ a &amp;&amp; b }}</div>"),
     ("invalid-bind", r#"<div :title="a +"></div>"#),
     ("script", "<div><script>var a = 1 < 2</script></div>"),

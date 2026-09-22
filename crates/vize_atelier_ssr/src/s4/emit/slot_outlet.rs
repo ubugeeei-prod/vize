@@ -16,8 +16,9 @@ use crate::s4::string_plan::{
 };
 use crate::s4::{AdmissionFailure, LegacyReason};
 
-/// Outlet attachments the plan emitter owns: static props and `v-bind`
-/// (bindings other than `v-bind` render nothing on an outlet).
+/// Outlet attachments the plan emitter owns: static props and `v-bind`.
+/// Every other directive renders nothing on an outlet, matching the legacy
+/// slot walker, which only reads attributes and `v-bind`.
 fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
     for segment in attached {
         match (segment.kind, segment.source) {
@@ -41,7 +42,15 @@ fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
                         }
                         admit_value(bind.value.as_ref())?;
                     }
-                    s2::BindingOp::On(_) => {}
+                    s2::BindingOp::On(_)
+                    | s2::BindingOp::VueHtml(_)
+                    | s2::BindingOp::VueText(_)
+                    | s2::BindingOp::VueShow(_)
+                    | s2::BindingOp::VueOnce(_)
+                    | s2::BindingOp::VueMemo(_)
+                    | s2::BindingOp::VueCloak(_)
+                    | s2::BindingOp::Model(_)
+                    | s2::BindingOp::VueDirective(_) => {}
                     _ => return Err(LegacyReason::Binding.into()),
                 }
             }
