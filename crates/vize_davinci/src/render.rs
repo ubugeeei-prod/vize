@@ -110,7 +110,7 @@ impl<'c, C: Catalog> Renderer<'c, C> {
         diagnostic: &Diagnostic,
     ) {
         let painter = Painter::new(self.color);
-        let severity = diagnostic.severity;
+        let severity = diagnostic.severity();
         let primary_style = Style::Primary(severity);
 
         let (start, end) = file.range(diagnostic.span);

@@ -12,7 +12,7 @@
 use std::borrow::Cow;
 use std::io::IsTerminal;
 
-use vize_davinci::diagnostic::{Diagnostic, DiagnosticPart, PartKind, Severity, Stage};
+use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Stage};
 use vize_davinci::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
 use vize_fresco::{
     ColorSupport, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
@@ -160,15 +160,24 @@ pub(crate) fn render(
     out
 }
 
+/// Patina's error-severity findings reach the unified channel without
+/// witnesses until P4-6c's conversion; they are exempt by inventory
+/// (`davinci-road/plan/witness-exemptions.tsv`), never silently.
+static PATINA_LINT: Exemption = Exemption::new("vize", "patina-lint");
+
 /// A Patina diagnostic on the unified channel. Fix parts come before the
 /// general help so the help stays a footer rather than titling the fix.
 pub(crate) fn unify(lint: &LintDiagnostic) -> Diagnostic {
-    let severity = match lint.severity {
-        vize_patina::Severity::Error => Severity::Error,
-        vize_patina::Severity::Warning => Severity::Warning,
-    };
     let span = Span::new(lint.start, lint.end);
-    let mut diagnostic = Diagnostic::new(severity, Stage::Semantic, span, lint.message.as_str());
+    let message = lint.message.as_str();
+    let mut diagnostic = match lint.severity {
+        vize_patina::Severity::Error => {
+            Diagnostic::legacy_error(&PATINA_LINT, Stage::Semantic, span, message)
+        }
+        vize_patina::Severity::Warning => {
+            Diagnostic::new(Advisory::Warning, Stage::Semantic, span, message)
+        }
+    };
     for label in &lint.labels {
         let label_span = Span::new(label.start, label.end);
         let part = DiagnosticPart::new(PartKind::Secondary, label_span, label.message.as_str());
