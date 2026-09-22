@@ -33,14 +33,21 @@ linter	Linter	test/dev	crates/vize_patina/src/html_content_model/authored_tests.
 linter	Linter	source	crates/vize_patina/src/html_content_model/authored.rs	16	s0	S0	stage	vize_s0	preferred	2
 linter	Linter	source	crates/vize_patina/src/html_content_model/authored.rs	16	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/html_content_model/build_helpers.rs	5	s0	S0	stage	vize_s0	preferred	4
+linter	Linter	source	crates/vize_patina/src/html_content_model/build_props.rs	14	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/html_content_model/build_props.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	2
 linter	Linter	source	crates/vize_patina/src/html_content_model/build.rs	7	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/html_content_model/build.rs	7	old_ast	old AST/parser	old	vize_armature	legacy	1
 linter	Linter	test/dev	crates/vize_patina/src/html_content_model/composed_tests.rs	7	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize_patina/src/html_content_model/composed.rs	18	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/html_content_model/composed.rs	22	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/html_content_model/facts.rs	11	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/html_content_model/prune_tests.rs	9	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/html_content_model/skeleton.rs	12	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/html_content_model/tag_ids.rs	6	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/html_content_model/tests.rs	8	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/html_content_model/witness_tests.rs	11	davinci	Davinci	stage	vize_davinci	preferred	3
+linter	Linter	test/dev	crates/vize_patina/src/html_content_model/witness_tests.rs	11	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/html_content_model/witness.rs	17	davinci	Davinci	stage	vize_davinci	preferred	4
+linter	Linter	source	crates/vize_patina/src/html_content_model/witness.rs	17	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/ir.rs	8	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/lib.rs	140	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/category_config.rs	8	s0	S0	stage	vize_s0	preferred	1

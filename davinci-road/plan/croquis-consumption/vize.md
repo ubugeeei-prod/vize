@@ -22,8 +22,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | item              | files | sites |
 | ----------------- | ----: | ----: |
 | `BlockLocation`   |     1 |     1 |
-| `SfcDescriptor`   |     1 |     2 |
+| `SfcDescriptor`   |     2 |     4 |
 | `SfcParseOptions` |    11 |    14 |
+| `SfcScriptBlock`  |     1 |     1 |
 | `to_pascal_case`  |     1 |     1 |
 
 ## Naive grep disagreements (resolved/grep)

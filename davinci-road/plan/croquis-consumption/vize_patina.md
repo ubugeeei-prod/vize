@@ -73,13 +73,13 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeData`             |        2 |    4 |
 | `ScopeId`               |        0 |    1 |
 | `ScopeKind`             |        3 |    5 |
-| `Span`                  |        0 |  179 |
+| `Span`                  |        0 |  191 |
 | `Symbol`                |        0 |   15 |
 | `SymbolId`              |        0 |    3 |
 | `UnusedVarContext`      |        4 |    5 |
 | `Croquis.bindings`      |        1 |    6 |
 | `Croquis.macros`        |       22 |   31 |
 | `Croquis.reactivity`    |        1 |    4 |
-| `Croquis.scopes`        |        4 |   25 |
+| `Croquis.scopes`        |        4 |   27 |
 | `Croquis.template_info` |        0 |    1 |
 | `Croquis.types`         |        0 |    1 |
