@@ -50,6 +50,13 @@ pub(crate) fn lower_text_run<'a>(
         return start + 1;
     }
 
+    // A final child cannot form a compound. Keep its borrowed leaf instead
+    // of constructing owned parts that the one-member arm would discard.
+    if start + 1 == children.len() {
+        lower_single_text(cx, &children[start], plan[start], out);
+        return start + 1;
+    }
+
     // Scan the run: span-contiguous text/interpolation children whose
     // plan keeps them. Adjacent static members **fuse** into one part —
     // two list-adjacent text nodes are one DOM text run (the shape only
@@ -153,26 +160,7 @@ pub(crate) fn lower_text_run<'a>(
     if members == 1 {
         // A lone node never merges (the legacy run grouping's own rule);
         // it lowers as the plain leaf, with the condensed content.
-        match &children[start] {
-            SurfaceChild::Text(token) => {
-                let content = match plan[start] {
-                    TextAction::Content(content) => content,
-                    _ => token.text,
-                };
-                if content != token.text {
-                    let span = cx.token_span(token);
-                    cx.record(
-                        "condense.whitespace",
-                        None,
-                        token.text,
-                        String::from(content),
-                        span,
-                    );
-                }
-                super::super::leaf::lower_text(cx, token, content, out);
-            }
-            child => super::super::leaf::lower_leaf(cx, child, out),
-        }
+        lower_single_text(cx, &children[start], plan[start], out);
         // `i` is past everything the scan consumed, not just the lone
         // member: a dropped whitespace tail or a dropped comment was
         // already recorded above, and returning `start + 1` would let
@@ -235,6 +223,34 @@ pub(crate) fn lower_text_run<'a>(
         )));
     }
     i
+}
+
+fn lower_single_text<'a>(
+    cx: &mut Cx<'a>,
+    child: &SurfaceChild<'a>,
+    action: TextAction<'a>,
+    out: &mut vize_s0::Vec<'a, Op<'a>>,
+) {
+    match child {
+        SurfaceChild::Text(token) => {
+            let content = match action {
+                TextAction::Content(content) => content,
+                _ => token.text,
+            };
+            if content != token.text {
+                let span = cx.token_span(token);
+                cx.record(
+                    "condense.whitespace",
+                    None,
+                    token.text,
+                    String::from(content),
+                    span,
+                );
+            }
+            super::super::leaf::lower_text(cx, token, content, out);
+        }
+        child => super::super::leaf::lower_leaf(cx, child, out),
+    }
 }
 
 /// Lower a contiguous text/interpolation run under `v-pre`.

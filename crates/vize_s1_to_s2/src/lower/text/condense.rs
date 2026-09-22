@@ -204,9 +204,11 @@ fn text_groups<'a>(cx: &Cx<'a>, children: &[SurfaceChild<'a>]) -> StdVec<TextGro
             i += 1;
         }
         if texts == 0 {
-            // A comment run on its own is nobody's group; step past its
-            // first member and rescan (the next child may start one).
-            i = start + 1;
+            // A comment-only run is nobody's group. Every consumed
+            // member was an invisible comment, so skip the whole run
+            // instead of rescanning each suffix. A non-groupable first
+            // child consumed nothing and still needs one step forward.
+            i = i.max(start + 1);
             continue;
         }
         groups.push(TextGroup {
