@@ -71,7 +71,7 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
         .filter_map(|(index, rule)| {
             let name = names[index];
             (input.rules.contains(&name) && linter.is_rule_enabled(name))
-                .then(|| rule.as_markup_rule().map(|rule| (index, rule)))
+                .then(|| rule.as_markup_rule().map(|rule| (index, rule.name(), rule)))
                 .flatten()
         })
         .collect();
@@ -83,14 +83,17 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
     }
 
     let mut keep = vec![true; input.rule_count];
-    for (index, _) in &selected {
+    for (index, _, _) in &selected {
         keep[*index] = false;
     }
     {
         let mut visitor = LintVisitor::with_rule_filter(ctx, rules, names, exit, &keep);
         profile!("patina.template.visit", visitor.visit_root(input.root));
     }
-    let lowered = S2Template::lower(input.allocator, input.source);
+    let lowered = profile!(
+        "patina.sfc.facade.lower",
+        S2Template::lower(input.allocator, input.source)
+    );
     let markup = lowered.markup();
     let markup = crate::markup::reborrow_markup(&markup);
     let mut document = MarkupDocument::from_s2(markup, TemplateSyntax::Vue);

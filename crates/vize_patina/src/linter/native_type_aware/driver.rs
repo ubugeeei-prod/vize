@@ -1,14 +1,20 @@
+mod planning;
+use planning::{
+    collect_emit_static_warning_or_probe_need, collect_prop_static_warning_or_probe_need,
+    is_type_rule_active,
+};
+
 use super::super::engine::{SfcTemplateLintInput, TemplateAnalysis};
 use super::{
     LintResult, Linter, RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS,
     RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
-    has_promise_like_return, has_unsafe_template_type, push_script_warning, push_warning,
+    has_promise_like_return, has_unsafe_template_type, push_warning,
     should_warn_for_emit_validator, should_warn_for_prop_access, should_warn_for_reactivity_loss,
     source_path::absolute_source_file, with_corsa_session,
 };
 use super::{
     markers::{QueryKind, push_promise_marker},
-    parsing::{collect_floating_candidates, is_runtime_array_macro},
+    parsing::collect_floating_candidates,
     reactivity_loss::collect_reactivity_loss_queries,
     rule_queries::{MacroWarning, collect_emit_queries, collect_prop_queries, push_macro_warning},
     template_queries::{TemplateQueryKind, collect_template_query_sets},
@@ -16,7 +22,7 @@ use super::{
 use crate::diagnostic::LintDiagnostic;
 use vize_armature::Parser as TemplateParser;
 use vize_croquis::{
-    Croquis, script_parser,
+    script_parser,
     virtual_ts::{VirtualTsConfig, generate_virtual_ts_with_croquis},
 };
 use vize_s0::{FxHashSet, profile};
@@ -82,7 +88,14 @@ pub(super) fn lint_with_descriptor<'a>(
             warning_count: 0,
         }
     };
-    super::super::script_rules::append_builtin_script_diagnostics(linter, descriptor, &mut result);
+    super::super::script_rules::append_builtin_script_diagnostics(
+        linter,
+        descriptor,
+        &mut result,
+        template_ast
+            .as_ref()
+            .and_then(|(root, offset, _, fatal)| (!*fatal).then_some((root, *offset))),
+    );
 
     let Some(script_block) = descriptor
         .script_setup
@@ -409,86 +422,4 @@ pub(super) fn lint_with_descriptor<'a>(
     );
 
     result
-}
-
-#[inline]
-fn is_type_rule_active(linter: &Linter, rule_name: &str) -> bool {
-    linter.registry.has_rule(rule_name) && linter.is_rule_enabled(rule_name)
-}
-
-fn collect_prop_static_warning_or_probe_need(
-    linter: &Linter,
-    analysis: &Croquis,
-    result: &mut LintResult,
-    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
-) -> bool {
-    if !is_type_rule_active(linter, RULE_REQUIRE_TYPED_PROPS) {
-        return false;
-    }
-
-    let Some(call) = analysis.macros.define_props() else {
-        return false;
-    };
-    if call.type_args.is_some() {
-        return false;
-    }
-
-    if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
-        push_script_warning(
-            result,
-            descriptor,
-            LintDiagnostic::warn(RULE_REQUIRE_TYPED_PROPS, "Prop should have a type definition", call.start, call.end)
-            .with_help(
-                "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
-            ),
-        );
-        return false;
-    }
-
-    analysis
-        .macros
-        .props()
-        .iter()
-        .any(|prop| prop.prop_type.is_none())
-}
-
-fn collect_emit_static_warning_or_probe_need(
-    linter: &Linter,
-    analysis: &Croquis,
-    result: &mut LintResult,
-    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
-) -> bool {
-    if !is_type_rule_active(linter, RULE_REQUIRE_TYPED_EMITS) {
-        return false;
-    }
-
-    let Some(call) = analysis.macros.define_emits() else {
-        return false;
-    };
-    if call.type_args.is_some() {
-        return false;
-    }
-
-    if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
-        push_script_warning(
-            result,
-            descriptor,
-            LintDiagnostic::warn(
-                RULE_REQUIRE_TYPED_EMITS,
-                "Emit should have a type definition",
-                call.start,
-                call.end,
-            )
-            .with_help(
-                "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
-            ),
-        );
-        return false;
-    }
-
-    analysis
-        .macros
-        .emits()
-        .iter()
-        .any(|emit| emit.payload_type.is_none())
 }

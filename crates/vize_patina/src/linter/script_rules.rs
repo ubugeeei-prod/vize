@@ -8,7 +8,6 @@ use vize_s0::profile;
 mod html_scripts;
 mod prefilter;
 mod registry;
-mod template_ast;
 mod template_context;
 
 use html_scripts::extract_inline_scripts;
@@ -87,24 +86,13 @@ pub(crate) fn parse_sfc_for_lint<'a>(
     )
 }
 
-pub(crate) fn lint_with_descriptor<'a>(
-    linter: &Linter,
-    filename: &str,
-    descriptor: &SfcDescriptor<'a>,
-) -> LintResult {
-    let mut result = profile!(
-        "patina.sfc.descriptor.template_lint",
-        linter.lint_sfc_template_with_descriptor(filename, descriptor)
-    );
-
-    append_builtin_script_diagnostics(linter, descriptor, &mut result);
-    result
-}
-
+/// Reuse the template pass's validated AST. A missing or fatally malformed
+/// template supplies `None`, so partial trees never become script-rule evidence.
 pub(crate) fn append_builtin_script_diagnostics<'a>(
     linter: &Linter,
     descriptor: &SfcDescriptor<'a>,
     result: &mut LintResult,
+    template_ast: Option<(&vize_relief::RootNode<'_>, u32)>,
 ) {
     if linter.script_rules.is_empty() || !has_active_builtin_script_rules(linter) {
         return;
@@ -154,23 +142,22 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     // `<template>` source (`script/no-unused-emit-declarations`, where an
     // over-match only suppresses) or its parsed AST (rules that *create* a
     // finding from template evidence, where an over-match would be a false
-    // positive). The AST is parsed at most once.
-    let template_allocator = vize_s0::Allocator::default();
-    let template_ast = template_context::descriptor_needs_template_ast(
-        linter,
-        descriptor,
-        result.filename.as_str(),
-    )
-    .then(|| template_ast::parse_for_script_rules(linter, descriptor, &template_allocator))
-    .flatten();
+    // positive). The validated AST comes from the preceding template pass.
+    let template_ast = template_ast.filter(|_| {
+        template_context::descriptor_needs_template_ast(
+            linter,
+            descriptor,
+            result.filename.as_str(),
+        )
+    });
     let sfc_context = SfcScriptContext {
         is_sfc: true,
         template_source: descriptor
             .template
             .as_ref()
             .map(|block| block.content.as_ref()),
-        template_root: template_ast.as_ref().map(|ast| &ast.root),
-        template_offset: template_ast.as_ref().map(|ast| ast.offset),
+        template_root: template_ast.map(|(root, _)| root),
+        template_offset: template_ast.map(|(_, offset)| offset),
         // Both blocks are linted separately below, so a whole-file conclusion
         // is only available to a rule when there is a single block to draw it
         // from. Computed from the descriptor rather than filtered bindings: a skipped block
