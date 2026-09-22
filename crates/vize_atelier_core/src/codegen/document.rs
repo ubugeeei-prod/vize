@@ -18,6 +18,9 @@ use vize_s0::{Span, String};
 use super::rewrite_spans::rewritten_identifier_spans;
 use super::source_map::SourceMapBuilder;
 
+mod links;
+pub use links::GeneratedEdge;
+
 /// One generated↔authored link.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpanLink {
@@ -50,6 +53,8 @@ impl SpanLink {
 pub struct EmitDocument {
     text: String,
     links: Vec<SpanLink>,
+    /// Generated↔generated edges a target annotates (see [`GeneratedEdge`]).
+    edges: Vec<GeneratedEdge>,
     recording: bool,
 }
 
@@ -66,6 +71,7 @@ impl From<String> for EmitDocument {
         Self {
             text,
             links: Vec::new(),
+            edges: Vec::new(),
             recording: true,
         }
     }
@@ -82,6 +88,7 @@ impl EmitDocument {
         Self {
             text: String::with_capacity(capacity),
             links: Vec::new(),
+            edges: Vec::new(),
             recording,
         }
     }
@@ -123,16 +130,17 @@ impl EmitDocument {
         self.text
     }
 
-    pub fn into_parts(self) -> (String, Vec<SpanLink>) {
-        (self.text, self.links)
+    pub fn into_parts(self) -> (String, Vec<SpanLink>, Vec<GeneratedEdge>) {
+        (self.text, self.links, self.edges)
     }
 
     /// A recording fragment from text and links over it, the inverse of
     /// [`Self::into_parts`].
-    pub fn from_parts(text: String, links: Vec<SpanLink>) -> Self {
+    pub fn from_parts(text: String, links: Vec<SpanLink>, edges: Vec<GeneratedEdge>) -> Self {
         Self {
             text,
             links,
+            edges,
             recording: true,
         }
     }
@@ -212,6 +220,8 @@ impl EmitDocument {
             let base = self.cursor();
             self.links
                 .extend(other.links.iter().map(|link| link.rebased(base)));
+            self.edges
+                .extend(other.edges.iter().map(|edge| links::rebase_edge(edge, |at| at + base)));
         }
         self.text.push_str(&other.text);
     }
@@ -254,6 +264,8 @@ impl EmitDocument {
             generated: Span::new(out(link.generated.start), out(link.generated.end)),
             ..link.clone()
         }));
+        self.edges
+            .extend(other.edges.iter().map(|edge| links::rebase_edge(edge, out)));
     }
 
     /// Record every segment-bearing link into `builder`, in emission order.

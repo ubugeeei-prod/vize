@@ -135,7 +135,7 @@ pub(crate) fn generate_vapor_with_spans(
             .unwrap_or_default();
         template_code.push_str(&cstr!("const t{i} = _template(\""));
         template_code.push_escaped(
-            &EmitDocument::from_parts(String::new(template), links),
+            &EmitDocument::from_parts(String::new(template), links, Vec::new()),
             &TEMPLATE_ESCAPES,
         );
         template_code.push_str(
