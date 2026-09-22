@@ -320,7 +320,8 @@ vapor_visits_ratio_max = 1.00
 wall_time = "report-only"
 
 [sourcemap]
-# P3-9 TS-31 minimums; deleting legacy-sfc needs the sfc rows at or above it.
+# P3-9 TS-31 minimums. legacy-sfc is the frozen floor of the deleted
+# text-matching recovery; the sfc rows stay at or above it.
 dom_static_template = { backend = "dom", category = "static-template", anchors_min = 6, coverage_pct_min = 95, span_accuracy_pct_min = 100 }
 dom_rewritten_identifier = { backend = "dom", category = "rewritten-identifier", anchors_min = 7, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
 dom_section_boundary = { backend = "dom", category = "section-boundary", anchors_min = 3, coverage_pct_min = 100, span_accuracy_pct_min = 100 }

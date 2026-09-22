@@ -1,12 +1,11 @@
 # TS-31 source-map coverage battery: SFC fixtures (Davinci P3-9).
 #
-# Measures the SFC module map against authored `<script>` / `<script setup>`
-# statements. This is the domain the legacy text-matching recovery
-# (`crates/vize_atelier_sfc/src/source_map.rs`) documents: plain JavaScript
-# statements that the SFC emitter copies verbatim and that occur once in the
-# authored script. The structured SFC path must reach at least the legacy
-# row's measured coverage over this same battery before the recovery can be
-# deleted. Anchor fields follow `templates.toml`.
+# Measures the structured SFC module map against authored `<script>` /
+# `<script setup>` statements. This is the domain the deleted text-matching
+# recovery covered: plain JavaScript statements the emitter copies verbatim
+# that occur once in the authored script. The frozen `legacy-sfc` row is the
+# floor; the structured map must stay no worse on each of these anchors.
+# Anchor fields follow `templates.toml`.
 
 [[fixture]]
 name = "setup-counter"
