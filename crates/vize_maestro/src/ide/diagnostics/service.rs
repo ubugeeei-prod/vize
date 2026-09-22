@@ -74,7 +74,7 @@ impl DiagnosticService {
             return diagnostics;
         }
 
-        let descriptor = match Self::parse_sfc_for_collect(uri, &content) {
+        let descriptor = match Self::descriptor_for_collect(state, uri, &content) {
             Ok(descriptor) => descriptor,
             Err(parse_diagnostic) => {
                 tracing::info!("collect: skipping dependent diagnostics after SFC parse error");
@@ -241,7 +241,7 @@ impl DiagnosticService {
         // Standard SFC: parse once, then mirror `collect`'s parser-error
         // short-circuit so lint only surfaces when the full pipeline would
         // also surface it.
-        let Ok(descriptor) = Self::parse_sfc_for_collect(uri, &content) else {
+        let Ok(descriptor) = Self::descriptor_for_collect(state, uri, &content) else {
             return diagnostics;
         };
         let script_diags =

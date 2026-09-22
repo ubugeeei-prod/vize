@@ -23,7 +23,7 @@ impl DiagnosticService {
                 .iter()
                 .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SCRIPT_PARSER))
             && state.documents.text(uri).is_some_and(|source| {
-                Self::parse_sfc_for_collect(uri, &source)
+                Self::descriptor_for_collect(state, uri, &source)
                     .is_ok_and(|descriptor| vize_canon::supports_native_script_syntax(&descriptor))
             });
         if has_blocking_parser_error(&diagnostics, native_script_syntax) {

@@ -25,9 +25,12 @@ fn add_inline_self_component_binding(
 }
 
 impl DiagnosticService {
+    /// `descriptor` is the resident parse of `content`. Offsets in it address
+    /// that buffer; a rejected SFC yields no inline art document.
     pub(in crate::ide::diagnostics) fn generate_virtual_ts_for_inline_art_variants(
         uri: &Url,
         content: &str,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
         options_api: bool,
         legacy_vue2: bool,
         base_options: &VirtualTsOptions,
@@ -35,17 +38,6 @@ impl DiagnosticService {
         if uri.path().ends_with(".art.vue") || !content.contains("<art") {
             return Vec::new();
         }
-
-        let descriptor = match vize_atelier_sfc::parse_sfc(
-            content,
-            vize_atelier_sfc::SfcParseOptions {
-                filename: uri.path().to_string().into(),
-                ..Default::default()
-            },
-        ) {
-            Ok(descriptor) => descriptor,
-            Err(_) => return Vec::new(),
-        };
 
         let mut results = Vec::new();
         let mut variant_index = 0usize;

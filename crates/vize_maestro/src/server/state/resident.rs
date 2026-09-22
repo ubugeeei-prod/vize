@@ -1,10 +1,12 @@
-//! The resident tier behind the request paths (Davinci P5-6a).
+//! The resident tier behind the request paths (Davinci P5-6a, diagnostics in
+//! P5-6b).
 //!
-//! Hover, completion and definition read the SFC descriptor of a document
-//! through [`ResidentCache`] instead of calling `parse_sfc` per request: the
-//! cache holds each document as an input of a `vize_resident` salsa database,
-//! so every request between two keystrokes shares one parse. Components read
-//! from disk go through the same cache keyed by their path.
+//! Hover, completion, definition and diagnostics read the SFC parse of a
+//! document through [`ResidentCache`] instead of calling `parse_sfc` per
+//! request: the cache holds each document as an input of a `vize_resident`
+//! salsa database, so every request between two keystrokes shares one parse.
+//! A rejected parse stays in that memo, error included. Components read from
+//! disk go through the same cache keyed by their path.
 //!
 //! The lock is held only for the lookup — never across an `.await` — and the
 //! descriptor handed out is an owned, shared snapshot.
@@ -13,7 +15,7 @@ use std::path::Path;
 
 use parking_lot::Mutex;
 use tower_lsp::lsp_types::Url;
-use vize_resident::{ResidentDocuments, SharedDescriptor};
+use vize_resident::{ParsedSfc, ResidentDocuments, SharedDescriptor};
 
 use super::ServerState;
 
@@ -22,14 +24,9 @@ use super::ServerState;
 pub(crate) struct ResidentCache(Mutex<ResidentDocuments>);
 
 impl ResidentCache {
-    /// The descriptor of document `key`'s `text`, parsed as `filename`.
-    pub(crate) fn descriptor(
-        &self,
-        key: &str,
-        filename: &str,
-        text: &str,
-    ) -> Option<SharedDescriptor> {
-        self.0.lock().descriptor(key, filename, text)
+    /// The parse of document `key`'s `text`, including a rejection.
+    pub(crate) fn parsed(&self, key: &str, filename: &str, text: &str) -> ParsedSfc {
+        self.0.lock().parsed(key, filename, text)
     }
 
     /// Release document `key`'s buffer.
@@ -47,14 +44,21 @@ impl ResidentCache {
 impl ServerState {
     /// The memoized descriptor of open document `uri` whose text is `text`.
     pub(crate) fn sfc_descriptor(&self, uri: &Url, text: &str) -> Option<SharedDescriptor> {
-        self.resident.descriptor(uri.as_str(), uri.path(), text)
+        self.sfc_parsed(uri, text).into_descriptor()
+    }
+
+    /// The memoized parse of open document `uri` whose text is `text`. A
+    /// rejection is stored with the error, so diagnostics can publish it
+    /// without parsing the buffer again.
+    pub(crate) fn sfc_parsed(&self, uri: &Url, text: &str) -> ParsedSfc {
+        self.resident.parsed(uri.as_str(), uri.path(), text)
     }
 
     /// The memoized descriptor of the component at `path` whose text was just
     /// read from disk as `text`.
     pub(crate) fn component_descriptor(&self, path: &Path, text: &str) -> Option<SharedDescriptor> {
         let path = path.to_string_lossy();
-        self.resident.descriptor(&path, &path, text)
+        self.resident.parsed(&path, &path, text).into_descriptor()
     }
 }
 

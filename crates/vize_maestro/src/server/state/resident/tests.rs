@@ -1,10 +1,13 @@
 //! P5-6a: the hover, completion and definition requests between two
 //! keystrokes share one parse — exact accounting from the resident tier.
 
-use tower_lsp::lsp_types::Url;
+use tower_lsp::lsp_types::{DiagnosticSeverity, Range, Url};
 use vize_resident::DescriptorStats;
 
-use crate::ide::{CompletionService, DefinitionService, HoverService, IdeContext};
+use crate::ide::diagnostics::sources;
+use crate::ide::{
+    CompletionService, DefinitionService, DiagnosticService, HoverService, IdeContext,
+};
 use crate::server::ServerState;
 
 const SFC: &str = r#"<script setup lang="ts">
@@ -94,6 +97,117 @@ fn the_served_descriptor_is_the_clean_parse() {
         assert_eq!(template.loc.start, clean_template.loc.start);
         assert_eq!(served.styles.len(), clean.styles.len());
     }
+}
+
+#[test]
+fn diagnostics_publish_a_memoized_parse_error_without_a_second_parse() {
+    let state = ServerState::new();
+    state.apply_lsp_initialization_options(Some(&serde_json::json!({
+        "lint": true,
+        "typecheck": true
+    })));
+    let uri = Url::parse("file:///Broken.vue").unwrap();
+    let broken = "<template><div></div>";
+    state
+        .documents
+        .open(uri.clone(), broken.to_string(), 1, "vue".to_string());
+
+    let first = DiagnosticService::collect(&state, &uri);
+    assert_eq!(
+        state.resident.take_stats(),
+        DescriptorStats {
+            lookups: 1,
+            parses: 1,
+        },
+    );
+    let second = DiagnosticService::collect(&state, &uri);
+    assert_eq!(
+        state.resident.take_stats(),
+        DescriptorStats {
+            lookups: 1,
+            parses: 0,
+        },
+    );
+    assert_eq!(second, first);
+    assert_eq!(first.len(), 1);
+    let diagnostic = &first[0];
+    assert_eq!(diagnostic.source.as_deref(), Some(sources::SFC_PARSER));
+    assert_eq!(diagnostic.severity, Some(DiagnosticSeverity::ERROR));
+    assert_eq!(diagnostic.code, None);
+    assert_eq!(
+        diagnostic.message,
+        "Malformed <template> block: the closing tag is missing."
+    );
+    assert_eq!(
+        diagnostic.range,
+        Range {
+            start: tower_lsp::lsp_types::Position {
+                line: 0,
+                character: 0,
+            },
+            end: tower_lsp::lsp_types::Position {
+                line: 0,
+                character: 21,
+            },
+        }
+    );
+
+    let fixed = "<template><div></div></template>\n";
+    state
+        .documents
+        .open(uri.clone(), fixed.to_string(), 2, "vue".to_string());
+    let repaired = DiagnosticService::collect(&state, &uri);
+    assert_eq!(
+        state.resident.take_stats(),
+        DescriptorStats {
+            lookups: 1,
+            parses: 1,
+        },
+    );
+    assert!(
+        repaired
+            .iter()
+            .all(|diagnostic| diagnostic.source.as_deref() != Some(sources::SFC_PARSER))
+    );
+}
+
+#[test]
+fn a_valid_sfc_is_parsed_once_per_revision_for_diagnostics() {
+    let state = ServerState::new();
+    state.apply_lsp_initialization_options(Some(&serde_json::json!({
+        "lint": true,
+        "typecheck": false,
+        "ecosystem": false
+    })));
+    let uri = Url::parse("file:///Ok.vue").unwrap();
+    state.documents.open(
+        uri.clone(),
+        "<template><p>ok</p></template>\n".to_string(),
+        1,
+        "vue".to_string(),
+    );
+    let first = DiagnosticService::collect(&state, &uri);
+    assert_eq!(
+        state.resident.take_stats(),
+        DescriptorStats {
+            lookups: 1,
+            parses: 1,
+        },
+    );
+    let second = DiagnosticService::collect(&state, &uri);
+    assert_eq!(
+        state.resident.take_stats(),
+        DescriptorStats {
+            lookups: 1,
+            parses: 0,
+        },
+    );
+    assert_eq!(second, first);
+    assert!(
+        first
+            .iter()
+            .all(|diagnostic| diagnostic.source.as_deref() != Some(sources::SFC_PARSER))
+    );
 }
 
 #[test]

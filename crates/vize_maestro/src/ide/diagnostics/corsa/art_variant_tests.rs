@@ -30,9 +30,12 @@ fn art_uri() -> Url {
 }
 
 fn generate(content: &str) -> Vec<(usize, VirtualTsResult)> {
+    let uri = art_uri();
+    let descriptor =
+        vize_resident::descriptor::parse_descriptor(uri.path(), content).expect("art sfc parses");
     DiagnosticService::generate_virtual_ts_for_art_with_dependencies(
-        &art_uri(),
         content,
+        &descriptor,
         &VirtualTsOptions::default(),
     )
     .expect("art virtual TypeScript")

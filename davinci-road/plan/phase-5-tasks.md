@@ -168,6 +168,8 @@
 
 ## P5-6b — Maestro diagnostics wave
 
+**Landed 2026-09-22** — full record: [phase-5-records/p5-6b.md](./phase-5-records/p5-6b.md).
+
 **Start gate:** gated on P4-5a — diagnostics come from the single post-pass.
 
 **Lane:** D
@@ -176,7 +178,7 @@
 
 **Steps:**
 
-- [ ] Migrate `crates/vize_maestro/src/ide/diagnostics*` outside the P4-5a assembly function
+- [x] Migrate `crates/vize_maestro/src/ide/diagnostics*` outside the P4-5a assembly function _(resident parse, including a memoized rejection; Corsa still goes through `assemble_diagnostics`; ceiling 50 → 47)_
 
 **Acceptance:** diagnostics LSP suites exact; the `parse_sfc` ceiling falls by the wave's count; keystroke-to-diagnostics p95 recorded against the baseline.
 

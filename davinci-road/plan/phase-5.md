@@ -74,7 +74,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [ ] [P5-4b](./phase-5-tasks.md#p5-4b--summary-firewalls-durability-and-memory-bounds) Summary firewalls, durability and memory bounds — lane C · startable now (behind P5-2)
 - [x] [P5-5](./phase-5-tasks.md#p5-5--snapshot-tree-under-salsa) Snapshot tree under salsa — lane C · startable now
 - [x] [P5-6a](./phase-5-tasks.md#p5-6a--maestro-hover-completion-and-definition-wave) Maestro hover, completion and definition wave — lane D · startable now
-- [ ] [P5-6b](./phase-5-tasks.md#p5-6b--maestro-diagnostics-wave) Maestro diagnostics wave — lane D · gated on P4-5a
+- [x] [P5-6b](./phase-5-tasks.md#p5-6b--maestro-diagnostics-wave) Maestro diagnostics wave — lane D · gated on P4-5a
 - [ ] [P5-6c](./phase-5-tasks.md#p5-6c--maestro-remaining-wave-and-string-passing-retired) Maestro remaining wave and string passing retired — lane D · gated on P4-10a
 - [ ] [P5-7](./phase-5-tasks-later.md#p5-7--block-level-projection-reuse) Block-level projection reuse — lane E · gated on P4-5c
 - [ ] [P5-8](./phase-5-tasks-later.md#p5-8--corsa-session-reuse) Corsa session reuse — lane F · startable now

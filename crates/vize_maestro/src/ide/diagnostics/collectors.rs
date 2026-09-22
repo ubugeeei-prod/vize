@@ -257,48 +257,6 @@ impl DiagnosticService {
         diagnostics
     }
 
-    /// Parse the SFC once for the diagnostic pipeline, returning either the
-    /// parsed descriptor or a single SFC parser error diagnostic to surface.
-    #[allow(clippy::result_large_err)]
-    pub(super) fn parse_sfc_for_collect<'a>(
-        uri: &Url,
-        content: &'a str,
-    ) -> Result<SfcDescriptor<'a>, Diagnostic> {
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        match vize_atelier_sfc::parse_sfc(content, options) {
-            Ok(descriptor) => Ok(descriptor),
-            Err(err) => {
-                let range = if let Some(ref loc) = err.loc {
-                    Range {
-                        start: Position {
-                            line: loc.start_line.saturating_sub(1) as u32,
-                            character: loc.start_column.saturating_sub(1) as u32,
-                        },
-                        end: Position {
-                            line: loc.end_line.saturating_sub(1) as u32,
-                            character: loc.end_column.saturating_sub(1) as u32,
-                        },
-                    }
-                } else {
-                    Range::default()
-                };
-
-                Err(Diagnostic {
-                    range,
-                    severity: Some(DiagnosticSeverity::ERROR),
-                    source: Some(sources::SFC_PARSER.to_string()),
-                    #[allow(clippy::disallowed_methods)]
-                    message: err.message.to_string(),
-                    ..Default::default()
-                })
-            }
-        }
-    }
-
     /// Collect template parser diagnostics.
     pub(super) fn collect_template_diagnostics(
         _uri: &Url,

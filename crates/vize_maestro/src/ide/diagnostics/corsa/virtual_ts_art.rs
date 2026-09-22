@@ -52,9 +52,11 @@ struct ArtScriptContext {
 }
 
 impl DiagnosticService {
+    /// `descriptor` is the resident parse of `content`. Offsets in it address
+    /// that buffer; a rejected SFC has no virtual document.
     pub(in crate::ide::diagnostics) fn generate_virtual_ts_for_art_with_dependencies(
-        uri: &Url,
         content: &str,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
         base_options: &VirtualTsOptions,
     ) -> Option<ArtVirtualTsResult> {
         let art_allocator = vize_s0::Allocator::new();
@@ -62,15 +64,6 @@ impl DiagnosticService {
             &art_allocator,
             content,
             vize_musea::ArtParseOptions::default(),
-        )
-        .ok()?;
-
-        let descriptor = vize_atelier_sfc::parse_sfc(
-            content,
-            vize_atelier_sfc::SfcParseOptions {
-                filename: uri.path().to_string().into(),
-                ..Default::default()
-            },
         )
         .ok()?;
 

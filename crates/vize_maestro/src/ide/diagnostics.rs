@@ -14,6 +14,7 @@ mod art_variant_typecheck_tests;
 #[cfg(all(test, feature = "native"))]
 mod assembly_parity_tests;
 mod builder;
+mod cached_descriptor;
 mod collectors;
 mod component_props;
 #[cfg(test)]

@@ -154,11 +154,16 @@ impl DiagnosticService {
         let mut documents = Vec::new();
         let mut finished = Vec::new();
         if is_art_file {
-            let Some(art_virtual) = Self::generate_virtual_ts_for_art_with_dependencies(
-                uri,
-                &content,
-                &virtual_ts_options,
-            ) else {
+            let Some(art_virtual) = Self::descriptor_for_collect(state, uri, &content)
+                .ok()
+                .and_then(|descriptor| {
+                    Self::generate_virtual_ts_for_art_with_dependencies(
+                        &content,
+                        &descriptor,
+                        &virtual_ts_options,
+                    )
+                })
+            else {
                 tracing::warn!("failed to generate virtual ts for {}", uri);
                 return Ok(vec![]);
             };
@@ -208,10 +213,14 @@ impl DiagnosticService {
             documents.push(document);
         }
 
-        if !is_art_file {
+        if !is_art_file
+            && content.contains("<art")
+            && let Ok(descriptor) = Self::descriptor_for_collect(state, uri, &content)
+        {
             for (variant_index, inline_virtual) in Self::generate_virtual_ts_for_inline_art_variants(
                 uri,
                 &content,
+                &descriptor,
                 options_api,
                 legacy_vue2,
                 &virtual_ts_options,

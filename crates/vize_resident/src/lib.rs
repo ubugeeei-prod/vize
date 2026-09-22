@@ -13,7 +13,7 @@
 //!   tracked fields), and the `sfc_blocks` → `s1_block` / `s2_page` queries.
 //! - [`descriptor`] — [`ResidentDocuments`]: the SFC descriptor as a
 //!   memoized query, one parse per buffer revision for Maestro's request
-//!   paths (P5-6a).
+//!   paths (P5-6a). A rejected parse is kept in the same memo (P5-6b).
 //! - [`accounting`] — cache-hit accounting read from salsa's event stream
 //!   (TS-46).
 //! - [`equivalence`] — TS-42: edit scripts run through the database, every
@@ -36,4 +36,7 @@ pub use artifact::{
     compute_file_artifacts,
 };
 pub use db::{ResidentDatabase, SourceFile};
-pub use descriptor::{DescriptorStats, ResidentDocuments, SharedDescriptor};
+pub use descriptor::{
+    DescriptorParseError, DescriptorParseLoc, DescriptorStats, ParsedSfc, ResidentDocuments,
+    SharedDescriptor,
+};

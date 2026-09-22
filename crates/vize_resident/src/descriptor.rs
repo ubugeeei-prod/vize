@@ -1,16 +1,17 @@
-//! The SFC descriptor as a resident query (P5-6a).
+//! The SFC descriptor as a resident query (P5-6a, parse failures in P5-6b).
 //!
-//! Maestro's hover, completion and definition paths used to call `parse_sfc`
-//! on the whole buffer once per request — several times per request on some
-//! paths. [`ResidentDocuments`] serves them one parse per buffer revision:
-//! each document is a [`SourceFile`] input of a [`ResidentDatabase`], and
-//! [`sfc_descriptor`] is the memoized query every request path reads. A
-//! request whose text equals the stored buffer starts no revision, so every
-//! request between two keystrokes shares the one memo.
+//! Maestro's request paths used to call `parse_sfc` on the whole buffer once
+//! per request. [`ResidentDocuments`] serves them one parse per buffer
+//! revision: each document is a [`SourceFile`] input of a
+//! [`ResidentDatabase`], and [`sfc_descriptor`] is the memoized query every
+//! request path reads. A request whose text equals the stored buffer starts
+//! no revision, so every request between two keystrokes shares the one memo.
+//! A rejected parse is stored with its error, so the diagnostics path can
+//! publish that one parser diagnostic without parsing again.
 
 use core::ops::Deref;
 
-use vize_croquis::sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
+use vize_croquis::sfc::{SfcDescriptor, SfcError, SfcParseOptions, parse_sfc};
 use vize_s0::{FxHashMap, String};
 
 use crate::accounting::Accounting;
@@ -45,22 +46,104 @@ impl PartialEq for SharedDescriptor {
 
 impl Eq for SharedDescriptor {}
 
+/// Line/column span of a rejected parse, one-based, as the parser reported it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DescriptorParseLoc {
+    /// One-based line of the first byte.
+    pub start_line: usize,
+    /// One-based column of the first byte.
+    pub start_column: usize,
+    /// One-based line just after the span.
+    pub end_line: usize,
+    /// One-based column just after the span.
+    pub end_column: usize,
+}
+
+/// The parser's rejection of one buffer, retained so a later request does not
+/// parse again to recover the diagnostic.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DescriptorParseError {
+    /// Parser message, unchanged.
+    pub message: String,
+    /// Parser code, when it reported one.
+    pub code: Option<String>,
+    /// Location, when the parser reported one.
+    pub loc: Option<DescriptorParseLoc>,
+}
+
+impl DescriptorParseError {
+    fn from_sfc(error: &SfcError) -> Self {
+        Self {
+            message: error.message.clone(),
+            code: error.code.clone(),
+            loc: error.loc.as_ref().map(|loc| DescriptorParseLoc {
+                start_line: loc.start_line,
+                start_column: loc.start_column,
+                end_line: loc.end_line,
+                end_column: loc.end_column,
+            }),
+        }
+    }
+}
+
+/// One revision's parse: the descriptor, or the single error that rejected it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ParsedSfc {
+    /// The buffer parsed.
+    Descriptor(SharedDescriptor),
+    /// The buffer was rejected. The error is the memo — not a reason to parse
+    /// again.
+    Failed(DescriptorParseError),
+}
+
+impl ParsedSfc {
+    /// The descriptor, when this revision parsed.
+    #[must_use]
+    pub fn descriptor(&self) -> Option<&SharedDescriptor> {
+        match self {
+            Self::Descriptor(descriptor) => Some(descriptor),
+            Self::Failed(_) => None,
+        }
+    }
+
+    /// The descriptor, when this revision parsed.
+    #[must_use]
+    pub fn into_descriptor(self) -> Option<SharedDescriptor> {
+        match self {
+            Self::Descriptor(descriptor) => Some(descriptor),
+            Self::Failed(_) => None,
+        }
+    }
+}
+
 /// Parse `text` as an SFC named `filename` — the clean path the query
-/// memoizes. `None` when the parser rejects the source.
+/// memoizes. `None` when the parser rejects the source; the error is kept by
+/// [`parse_outcome`].
 #[must_use]
 pub fn parse_descriptor(filename: &str, text: &str) -> Option<SharedDescriptor> {
+    parse_outcome(filename, text).into_descriptor()
+}
+
+/// Parse `text` as an SFC named `filename`, keeping a rejection.
+#[must_use]
+pub fn parse_outcome(filename: &str, text: &str) -> ParsedSfc {
     let options = SfcParseOptions {
         filename: String::from(filename),
         ..Default::default()
     };
-    let descriptor = parse_sfc(text, options).ok()?;
-    Some(SharedDescriptor(Shared::new(descriptor.into_owned())))
+    match parse_sfc(text, options) {
+        Ok(descriptor) => {
+            ParsedSfc::Descriptor(SharedDescriptor(Shared::new(descriptor.into_owned())))
+        }
+        Err(error) => ParsedSfc::Failed(DescriptorParseError::from_sfc(&error)),
+    }
 }
 
-/// The file's SFC descriptor, parsed with its path as the filename.
+/// The file's SFC parse, with its path as the filename. A rejection is part
+/// of the memo.
 #[salsa::tracked(returns(ref))]
-pub fn sfc_descriptor(db: &dyn salsa::Database, file: SourceFile) -> Option<SharedDescriptor> {
-    parse_descriptor(file.path(db).as_str(), file.text(db).as_str())
+pub fn sfc_descriptor(db: &dyn salsa::Database, file: SourceFile) -> ParsedSfc {
+    parse_outcome(file.path(db).as_str(), file.text(db).as_str())
 }
 
 /// Lookups served and parses run since the last
@@ -86,20 +169,28 @@ pub struct ResidentDocuments {
 impl ResidentDocuments {
     /// The descriptor of document `key` whose current text is `text`,
     /// parsed as `filename`. A text that differs from the stored buffer is a
-    /// new revision; an equal one reads the memo.
+    /// new revision; an equal one reads the memo. `None` when this revision
+    /// was rejected — the error itself is [`parsed`](Self::parsed).
     pub fn descriptor(
         &mut self,
         key: &str,
         filename: &str,
         text: &str,
     ) -> Option<SharedDescriptor> {
+        self.parsed(key, filename, text).into_descriptor()
+    }
+
+    /// The parse of document `key` whose current text is `text`, parsed as
+    /// `filename`, including a rejection. A text that differs from the stored
+    /// buffer is a new revision; an equal one reads the memo.
+    pub fn parsed(&mut self, key: &str, filename: &str, text: &str) -> ParsedSfc {
         self.lookups += 1;
         let file = self.file(key, filename, text);
-        let descriptor = sfc_descriptor(&self.db, file).clone();
+        let parsed = sfc_descriptor(&self.db, file).clone();
         // Drain the event records on every lookup: a long-lived process
         // must not accumulate them.
         self.parses += executions(&self.db.take_accounting());
-        descriptor
+        parsed
     }
 
     /// Release document `key`'s buffer: its text becomes empty and its memo

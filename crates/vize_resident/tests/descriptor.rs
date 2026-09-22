@@ -4,7 +4,7 @@
 use core::fmt::Write as _;
 
 use vize_resident::descriptor::parse_descriptor;
-use vize_resident::{DescriptorStats, ResidentDocuments, SharedDescriptor};
+use vize_resident::{DescriptorStats, ParsedSfc, ResidentDocuments, SharedDescriptor};
 use vize_s0::String;
 
 const SFC: &str = "<script setup>\nconst n = 1\n</script>\n<template><p>{{ n }}</p></template>\n<style>p{}</style>\n";
@@ -76,6 +76,43 @@ fn the_filename_is_part_of_the_descriptor() {
     assert_eq!(renamed.filename, "/b.vue");
     assert!(first != renamed);
     assert_eq!(docs.take_stats(), stats(2, 2));
+}
+
+#[test]
+fn a_rejected_buffer_is_parsed_once_and_keeps_the_error() {
+    let mut docs = ResidentDocuments::default();
+    let text = "<template><div></div>";
+    let first = docs.parsed("file:///Broken.vue", "/Broken.vue", text);
+    let again = docs.parsed("file:///Broken.vue", "/Broken.vue", text);
+    assert_eq!(docs.take_stats(), stats(2, 1));
+    let ParsedSfc::Failed(error) = &first else {
+        panic!("unclosed template is a parse error, got {first:?}");
+    };
+    assert_eq!(
+        error.message.as_str(),
+        "Malformed <template> block: the closing tag is missing."
+    );
+    let loc = error.loc.expect("the parser reports a location");
+    assert_eq!(
+        (
+            loc.start_line,
+            loc.start_column,
+            loc.end_line,
+            loc.end_column
+        ),
+        (1, 1, 1, 22)
+    );
+    assert_eq!(again, first);
+    assert!(
+        docs.descriptor("file:///Broken.vue", "/Broken.vue", text)
+            .is_none()
+    );
+    assert_eq!(docs.take_stats(), stats(1, 0), "the rejection is the memo");
+
+    let fixed = "<template><div></div></template>\n";
+    let repaired = docs.parsed("file:///Broken.vue", "/Broken.vue", fixed);
+    assert!(matches!(repaired, ParsedSfc::Descriptor(_)));
+    assert_eq!(docs.take_stats(), stats(1, 1));
 }
 
 #[test]
