@@ -49,11 +49,11 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 | item                        | files | sites |
 | --------------------------- | ----: | ----: |
-| `Bindings`                  |     2 |     4 |
+| `Bindings`                  |     3 |     4 |
 | `CroquisFacts`              |     2 |     2 |
-| `Demand`                    |     2 |     4 |
+| `Demand`                    |     1 |     4 |
 | `EmitDefinition`            |     3 |     3 |
-| `FactConsumer`              |     2 |     2 |
+| `FactConsumer`              |     1 |     2 |
 | `InjectEntry`               |     4 |     8 |
 | `InjectPattern`             |     4 |    21 |
 | `MacroKind`                 |     1 |     1 |
@@ -76,7 +76,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Analyzer`                             |       40 |   49 |
 | `AnalyzerOptions`                      |       19 |   56 |
 | `ComponentUsage`                       |       38 |   85 |
-| `Croquis`                              |      101 |  127 |
+| `Croquis`                              |      101 |  128 |
 | `EffectGraphScript`                    |        1 |    2 |
 | `EffectGraphSummary`                   |       20 |   32 |
 | `ElementIdKind`                        |        3 |    4 |
