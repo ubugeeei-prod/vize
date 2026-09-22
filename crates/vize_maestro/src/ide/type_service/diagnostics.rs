@@ -183,12 +183,7 @@ impl TypeService {
             return vec![];
         };
 
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) else {
+        let Some(descriptor) = state.sfc_descriptor(uri, &content) else {
             return vec![];
         };
 

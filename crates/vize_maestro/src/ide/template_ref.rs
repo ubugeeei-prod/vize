@@ -115,14 +115,7 @@ fn static_ref_value_at_offset(content: &str, offset: usize) -> Option<StaticRefV
 }
 
 fn use_template_ref_binding(ctx: &IdeContext<'_>, ref_name: &str) -> Option<TemplateRefBinding> {
-    let descriptor = vize_atelier_sfc::parse_sfc(
-        &ctx.content,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        },
-    )
-    .ok()?;
+    let descriptor = ctx.descriptor()?;
     let script_setup = descriptor.script_setup.as_ref()?;
     let content = script_setup.content.as_ref();
 
