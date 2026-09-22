@@ -6,9 +6,9 @@
 //! verifies the token it found before anchoring it.
 
 use vize_atelier_core::codegen::document::EmitDocument;
-use vize_carton::Span;
+use vize_carton::{Span, String};
 
-use super::super::AuthoredSpan;
+use super::super::{AuthoredSpan, BindingKind, Content};
 use super::Emitter;
 
 impl Emitter<'_, '_> {
@@ -63,6 +63,43 @@ impl Emitter<'_, '_> {
         (start, start + text.len() as u32)
     }
 
+    /// The first component authoring `tag`, at its tag-name byte. No-op
+    /// unless a map was requested (`token` needs the source).
+    pub(super) fn note_component_tag(&mut self, tag: &str, span: AuthoredSpan) {
+        let Some((start, _)) = self.token(span, |raw| tag_offset(raw, tag)) else {
+            return;
+        };
+        if !self.tags.contains_key(tag) {
+            self.tags.insert(String::new(tag), start);
+        }
+    }
+
+    /// Authored `name` token of a `<template #name>` carrier, and the unit
+    /// from that token to the carrier's `<`. `None` when maps are off or
+    /// `name` is not that token (a synthesized `default` stays a stub).
+    pub(super) fn slot_name_anchor(&mut self, carrier: usize, name: &str) -> Option<AuthoredSpan> {
+        let (directive, open) = {
+            let node = &self.artifact.nodes[carrier];
+            let open = match node.content {
+                Content::Element {
+                    tag: "template",
+                    tag_span,
+                    ..
+                } => tag_span.0,
+                _ => return None,
+            };
+            let directive = node
+                .bindings
+                .iter()
+                .find(|binding| binding.kind == BindingKind::Slot)
+                .map(|binding| binding.spans[0])?;
+            (directive, open)
+        };
+        let (start, _) = self.token(directive, |raw| slot_name_offset(raw, name))?;
+        self.units.insert(start, open);
+        Some((start, start + name.len() as u32))
+    }
+
     /// `span` without the whitespace the payload value was trimmed of.
     pub(super) fn trimmed(&self, span: AuthoredSpan) -> AuthoredSpan {
         let Some(raw) = self
@@ -91,6 +128,22 @@ pub(super) fn value_offset(raw: &str, name: &str, value: &str) -> Option<usize> 
         .trim_start();
     let rest = rest.strip_prefix(['"', '\'']).unwrap_or(rest);
     rest.starts_with(value).then(|| raw.len() - rest.len())
+}
+
+/// Offset of a static slot name in `#name` / `v-slot:name` authored text.
+pub(super) fn slot_name_offset(raw: &str, name: &str) -> Option<usize> {
+    if name.is_empty() {
+        return None;
+    }
+    let rest = raw
+        .strip_prefix('#')
+        .or_else(|| raw.strip_prefix("v-slot:"))?;
+    let tail = rest.strip_prefix(name)?;
+    // A modifier dot or `="params"` ends the token; a longer name does not.
+    tail.chars()
+        .next()
+        .is_none_or(|ch| !ch.is_ascii_alphanumeric() && !matches!(ch, '_' | '-' | ':'))
+        .then_some(raw.len() - rest.len())
 }
 
 /// Offset of a static argument in a `:name` / `v-bind:name` / `.name` /

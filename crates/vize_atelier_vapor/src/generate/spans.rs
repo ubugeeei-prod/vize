@@ -37,18 +37,21 @@ pub(crate) struct VaporSourceSpans {
 pub(crate) type TemplateSpans = FxHashMap<usize, std::vec::Vec<SpanLink>>;
 
 impl VaporSourceSpans {
-    /// Spans for a native S3 compile: its template anchors, and each
-    /// control-flow unit keyed by the authored start of the expression the IR
-    /// keeps for it (condition, loop source) as the legacy walk keys them.
+    /// Spans for a native S3 compile: its template anchors, each unit keyed
+    /// by the authored start of the expression the IR keeps (condition, loop
+    /// source, slot name) as the legacy walk keys them, and the tag-name
+    /// start of the first component authoring each tag.
     pub(crate) fn native(
         templates: TemplateSpans,
         units: FxHashMap<u32, u32>,
         else_units: FxHashMap<u32, u32>,
+        tags: FxHashMap<String, u32>,
     ) -> Self {
         Self {
             templates,
             units,
             else_units,
+            tags,
             ..Self::default()
         }
     }

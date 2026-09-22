@@ -46,8 +46,10 @@ enum Content<'a> {
     For(Loop<'a>),
     /// A resolved component; `children` is its slot content. `is` is the
     /// `:is` expression of a `<component>`, which is created dynamically.
+    /// `tag_span` is the whole component; its tag name starts after `<`.
     Component {
         tag: &'a str,
+        tag_span: AuthoredSpan,
         props: Vec<'a, Prop<'a>>,
         is: Option<Expr<'a>>,
     },

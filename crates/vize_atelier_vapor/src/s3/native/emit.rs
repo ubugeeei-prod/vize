@@ -78,6 +78,7 @@ pub(super) fn emit<'a>(
         template_spans: TemplateSpans::default(),
         units: FxHashMap::default(),
         else_units: FxHashMap::default(),
+        tags: FxHashMap::default(),
     };
     let block = emitter.block(&roots);
     let spans = spans.then(|| {
@@ -85,6 +86,7 @@ pub(super) fn emit<'a>(
             std::mem::take(&mut emitter.template_spans),
             std::mem::take(&mut emitter.units),
             std::mem::take(&mut emitter.else_units),
+            std::mem::take(&mut emitter.tags),
         )
     });
     ir.block = block;
@@ -101,10 +103,12 @@ struct Emitter<'a, 'b> {
     /// The authored source, only for map-requesting compiles.
     source: Option<&'a str>,
     template_spans: TemplateSpans,
-    /// Expression span start -> authored start of its control-flow unit.
+    /// Expression span start -> authored start of its control-flow or slot unit.
     units: FxHashMap<u32, u32>,
     /// Condition span start -> authored start of the following `v-else`.
     else_units: FxHashMap<u32, u32>,
+    /// Component tag -> authored start of its tag name (the byte after `<`).
+    tags: FxHashMap<String, u32>,
 }
 
 impl<'a> Emitter<'a, '_> {

@@ -23,6 +23,7 @@ impl<'a> Emitter<'a, '_> {
     ) {
         let Content::Component {
             tag,
+            tag_span,
             ref mut props,
             is,
         } = self.artifact.nodes[index].content
@@ -32,6 +33,8 @@ impl<'a> Emitter<'a, '_> {
         // Each node is emitted once, so its payload moves out of the artifact.
         let props = take(self.allocator, props);
         let children = take(self.allocator, &mut self.artifact.nodes[index].children);
+        // Before slot bodies, so the outer tag wins over a nested one.
+        self.note_component_tag(tag, tag_span);
         // Named templates each render their content block and then take the
         // template's own id; otherwise the children are one slot, `default`
         // unless the component's own `v-slot` names it.
@@ -46,11 +49,11 @@ impl<'a> Emitter<'a, '_> {
                 let content = take(self.allocator, &mut self.artifact.nodes[child].children);
                 let block = self.block(&content);
                 self.id();
-                slots.push(self.slot(slot, block));
+                slots.push(self.slot(child, slot, block));
             }
         } else if own.is_some() || !children.is_empty() {
             let block = self.block(&children);
-            slots.push(self.slot(own.unwrap_or(("default", "")), block));
+            slots.push(self.slot(index, own.unwrap_or(("default", "")), block));
         }
         let id = existing.unwrap_or_else(|| self.id());
         let props = self.props(&props, true);
@@ -105,9 +108,16 @@ impl<'a> Emitter<'a, '_> {
     }
 
     /// One slot function: its static name, parameter pattern and block.
-    fn slot(&self, (name, params): (&'a str, &'a str), block: BlockIRNode<'a>) -> IRSlot<'a> {
+    /// A `<template #name>` keeps `name`'s authored span; other slots stay stubs.
+    fn slot(
+        &mut self,
+        carrier: usize,
+        (name, params): (&'a str, &'a str),
+        block: BlockIRNode<'a>,
+    ) -> IRSlot<'a> {
+        let name_span = self.slot_name_anchor(carrier, name);
         IRSlot {
-            name: self.expression(Expr::plain(name), true),
+            name: self.spanned(Expr::plain(name), true, name_span),
             fn_exp: (!params.is_empty()).then(|| self.expression(Expr::plain(params), false)),
             block,
         }
