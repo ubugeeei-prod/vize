@@ -56,7 +56,8 @@ fn required_slot_check_anchors_to_component_name() {
     let source_start = template.find("Child").expect("component tag present");
     let source_range = source_start..source_start + "Child".len();
     let mapping = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .find(|mapping| {
             mapping.src_range == source_range

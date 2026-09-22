@@ -5,6 +5,7 @@ export type * from "./features";
 export type * from "./analysis";
 export type * from "./inspector";
 export type * from "./spolvero";
+export type * from "./profile";
 
 import type {
   CompilerOptions,

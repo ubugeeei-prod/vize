@@ -43,8 +43,26 @@
   box-shadow: inset 0 0 0 1px var(--color-notice-border);
 }
 
-.davinci-line.section {
+.davinci-line.davinci-section {
   margin-top: 4px;
+}
+
+/* S3 partition overlay: teal static, ochre dynamic. */
+.davinci-mark {
+  flex-shrink: 0;
+  align-self: center;
+  width: 8px;
+  height: 8px;
+  margin-left: 10px;
+  border-radius: 50%;
+}
+
+.davinci-mark.static {
+  background: var(--color-teal);
+}
+
+.davinci-mark.dynamic {
+  background: var(--color-notice);
 }
 
 .davinci-ln {
@@ -128,4 +146,118 @@
 .tk-dynamic {
   color: var(--color-notice);
   background: var(--color-notice-bg);
+}
+
+/* Page difference against the previous page of the same stage */
+.davinci-diff,
+.davinci-remarks {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.davinci-diff-summary {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.davinci-diff-mark {
+  flex-shrink: 0;
+  width: 1.5em;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.davinci-line.diff-add {
+  background: var(--color-success-bg);
+}
+
+.davinci-line.diff-add .davinci-diff-mark {
+  color: var(--color-success);
+}
+
+.davinci-line.diff-remove {
+  background: var(--color-error-bg);
+}
+
+.davinci-line.diff-remove .davinci-diff-mark {
+  color: var(--color-error);
+}
+
+/* Optimization remarks */
+.davinci-remarks-empty {
+  max-width: 64ch;
+  padding: 20px 22px;
+  border: 1px dashed var(--border-primary);
+  border-radius: 8px;
+}
+
+.davinci-remarks-title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.davinci-remark-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.davinci-remark {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+}
+
+.davinci-remark-outcome {
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.davinci-remark.applied .davinci-remark-outcome {
+  color: var(--color-teal);
+  background: var(--color-teal-bg);
+}
+
+.davinci-remark.missed .davinci-remark-outcome {
+  color: var(--color-notice);
+  background: var(--color-notice-bg);
+}
+
+.davinci-remark.analysis .davinci-remark-outcome {
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+}
+
+.davinci-remark-pass {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.davinci-remark-message {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: baseline;
+}
+
+.davinci-remark-arg {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
 }

@@ -169,11 +169,17 @@ const value = { missing: 'bad' }
         .expect("named value emitted inside singleton spread");
     let authored_missing = template.find("missing").unwrap();
     let span = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .flat_map(|mapping| &mapping.sub_spans)
         .find(|span| span.gen_range.contains(&generated_missing))
-        .unwrap_or_else(|| panic!("singleton value lost its sub-span: {:?}", output.mappings));
+        .unwrap_or_else(|| {
+            panic!(
+                "singleton value lost its sub-span: {:?}",
+                output.mapping.spans()
+            )
+        });
     assert_eq!(
         generated_missing - span.gen_range.start,
         authored_missing - span.src_range.start,
@@ -215,14 +221,16 @@ const bag = { count: 1 }
     let source_missing = template.find("missing").expect("authored member present");
     let generated_missing = generated_start + generated.find("missing").unwrap();
     let span = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .flat_map(|mapping| &mapping.sub_spans)
         .find(|span| span.gen_range.contains(&generated_missing))
         .unwrap_or_else(|| {
             panic!(
                 "following member must have a precise mapping: spreads={:?} mappings={:?}",
-                summary.component_usages[0].spread_props, output.mappings
+                summary.component_usages[0].spread_props,
+                output.mapping.spans()
             )
         });
 

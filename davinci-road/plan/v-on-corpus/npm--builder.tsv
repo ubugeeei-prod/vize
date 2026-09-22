@@ -1,0 +1,16 @@
+file	spelling
+npm/builder/vite-musea/gallery/components/FullscreenPreview.vue	@click.self
+npm/builder/vite-musea/gallery/components/GalleryLayout.vue	@pointerdown.stop.prevent
+npm/builder/vite-musea/gallery/components/PropsPanel.vue	@keyup.enter
+npm/builder/vite-musea/gallery/components/PropsPanel.vue	@keyup.enter
+npm/builder/vite-musea/gallery/components/ResizeHandle.vue	@pointerdown.stop.prevent
+npm/builder/vite-musea/gallery/components/SearchModal.vue	@click.self
+npm/builder/vite-musea/gallery/components/tokens/SourceEditModal.vue	@click.self
+npm/builder/vite-musea/gallery/components/tokens/TokenCard.vue	@click.stop
+npm/builder/vite-musea/gallery/components/tokens/TokenCard.vue	@click.stop
+npm/builder/vite-musea/gallery/components/tokens/TokenCard.vue	@click.stop
+npm/builder/vite-musea/gallery/components/tokens/TokenDeleteConfirm.vue	@click.self
+npm/builder/vite-musea/gallery/components/tokens/TokenFormModal.vue	@click.self
+npm/builder/vite-musea/gallery/components/tokens/TokenFormModal.vue	@submit.prevent
+npm/builder/vite-musea/gallery/components/tokens/TokenUsageModal.vue	@click.self
+npm/builder/vite-musea/gallery/views/ComponentView.vue	@pointerdown.stop.prevent

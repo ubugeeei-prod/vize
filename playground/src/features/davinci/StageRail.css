@@ -97,11 +97,47 @@
 /* Pass timeline */
 .davinci-timeline {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 10px 20px;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--border-primary);
   flex-shrink: 0;
+}
+
+.davinci-timeline-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Where the time went, in run order: one segment per measured step. */
+.davinci-time-strip {
+  display: flex;
+  flex: 1;
+  gap: 2px;
+  height: 6px;
+}
+
+.davinci-time-segment {
+  min-width: 3px;
+  border-radius: 3px;
+  opacity: 0.55;
+}
+
+.davinci-time-segment.current {
+  opacity: 1;
+}
+
+.davinci-time-segment.rung-s1 {
+  background: var(--hl-tag);
+}
+
+.davinci-time-segment.rung-s2 {
+  background: var(--hl-directive);
+}
+
+.davinci-time-segment.rung-s3 {
+  background: var(--color-notice);
 }
 
 .davinci-steps {
@@ -156,13 +192,32 @@
   border-radius: 2px;
 }
 
-.davinci-step-rung {
+.davinci-step-rung,
+.davinci-step-time {
   font-size: 11px;
   color: var(--text-muted);
 }
 
+/* A fixed slot so live timings never reflow the steps while typing. */
+.davinci-step-time {
+  min-width: 6ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.davinci-step-remarks {
+  min-width: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--color-notice);
+  background: var(--color-notice-bg);
+  border-radius: 8px;
+}
+
 .davinci-timeline-summary {
-  margin: 0;
+  margin: 0 0 0 auto;
   font-size: 12px;
   color: var(--text-muted);
   white-space: nowrap;

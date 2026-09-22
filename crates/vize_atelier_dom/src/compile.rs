@@ -15,9 +15,14 @@ mod inner;
 #[cfg(feature = "davinci-differential")]
 pub(crate) mod legacy;
 mod pipeline;
+mod selection;
 mod sfc;
 mod source_map;
 mod stage_options;
+
+/// The `davinci-differential` DOM legacy-lane override (P3-17).
+#[cfg(feature = "davinci-differential")]
+pub use selection::differential;
 
 use crate::options::DomCompilerOptions;
 use inner::{compile_template_inner, compile_template_inner_with_sections};

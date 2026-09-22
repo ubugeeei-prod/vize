@@ -1,0 +1,27 @@
+# Hello, dialect — an input-dialect guest component on `vize_extension_sdk`.
+#
+# Local development builds it against the in-tree SDK:
+#   cargo build --release --target wasm32-wasip2 \
+#     --manifest-path crates/vize_extension_sdk/examples/hello-dialect/Cargo.toml
+# CI builds the same sources against the packed SDK tarball instead, with no
+# path into the workspace (`crates/vize_extension_host/tests/sdk_hello.rs`).
+[package]
+name = "hello-dialect"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+vize_extension_sdk = { path = "../.." }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
+
+[workspace]

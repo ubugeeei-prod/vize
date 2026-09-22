@@ -91,7 +91,8 @@ fn the_strict_form_maps_each_access_back_to_its_authored_occurrence() {
     let output = generate(true);
 
     let mut mapped = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .filter(|mapping| {
             output.code.get(mapping.gen_range.clone()) == Some("$missing")
@@ -116,7 +117,8 @@ fn the_permissive_form_maps_the_single_declaration_to_the_first_occurrence() {
     let output = generate(false);
 
     let mapped = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .filter(|mapping| output.code.get(mapping.gen_range.clone()) == Some("$missing"))
         .map(|mapping| mapping.src_range.clone())

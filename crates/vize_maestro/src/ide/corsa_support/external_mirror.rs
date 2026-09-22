@@ -5,7 +5,6 @@ use vize_s0::cstr;
 
 use crate::ide::IdeContext;
 use crate::ide::diagnostics::VirtualTsResult;
-use crate::ide::diagnostics::corsa::semantic_links_after_import_rewrite;
 
 use super::canonical::{CanonicalVirtualDocument, map_lsp_range_to_source};
 
@@ -82,15 +81,11 @@ fn map_range(
     let mirror_doc = CanonicalVirtualDocument {
         source_uri: source_uri.clone(),
         request_uri: cstr!("{}{}", source_uri.path(), generated.virtual_suffix),
-        virtual_result: VirtualTsResult {
-            code: generated.code.to_string(),
-            source_mappings: generated.mappings,
-            semantic_links: semantic_links_after_import_rewrite(
-                generated.semantic_links,
-                &generated.import_source_map,
-            ),
-            import_source_map: generated.import_source_map,
-        },
+        virtual_result: VirtualTsResult::from_projection(
+            generated.code.to_string(),
+            generated.mapping,
+            generated.import_source_map,
+        ),
         dependencies: Vec::new(),
         materialized_sources: Vec::new(),
         session_project_roots: Vec::new(),

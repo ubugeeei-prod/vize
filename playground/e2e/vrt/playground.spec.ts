@@ -27,6 +27,20 @@ const OUTPUT_READY: Record<(typeof TABS)[number], string> = {
   davinci: ".davinci-rail",
 };
 
+/** Per-tab regions whose content is machine-dependent (measured timings). */
+const MASKED: Partial<Record<(typeof TABS)[number], string[]>> = {
+  davinci: [
+    ".davinci-badge",
+    ".davinci-time-strip",
+    ".davinci-step-time",
+    ".davinci-timeline-summary",
+  ],
+};
+
+function masks(page: Page, tab: (typeof TABS)[number]) {
+  return (MASKED[tab] ?? []).map((selector) => page.locator(selector));
+}
+
 async function waitForReady(page: Page, tab: (typeof TABS)[number]) {
   await page.waitForFunction(
     () => document.querySelector(".wasm-status")?.textContent?.includes("WASM"),
@@ -50,7 +64,7 @@ for (const tab of TABS) {
       await page.goto(`/?tab=${tab}`);
       await waitForReady(page, tab);
       // GitHub Actions on Linux is the canonical baseline for these snapshots.
-      await expect(page).toHaveScreenshot(`${tab}-light.png`);
+      await expect(page).toHaveScreenshot(`${tab}-light.png`, { mask: masks(page, tab) });
     });
 
     test(`dark`, async ({ page }) => {
@@ -58,7 +72,7 @@ for (const tab of TABS) {
       await waitForReady(page, tab);
       await page.getByRole("button", { name: "Dark mode" }).click();
       await page.waitForTimeout(300);
-      await expect(page).toHaveScreenshot(`${tab}-dark.png`);
+      await expect(page).toHaveScreenshot(`${tab}-dark.png`, { mask: masks(page, tab) });
     });
   });
 }

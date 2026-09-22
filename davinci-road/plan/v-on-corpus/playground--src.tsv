@@ -1,0 +1,17 @@
+file	spelling
+playground/src/features/cross-file/CrossFilePlayground.vue	@keydown.enter
+playground/src/features/cross-file/CrossFilePlayground.vue	@click.stop
+playground/src/features/cross-file/CrossFilePlayground.vue	@keydown.enter
+playground/src/features/cross-file/CrossFilePlayground.vue	@keydown.enter
+playground/src/features/cross-file/CrossFilePlayground.vue	@keydown.enter
+playground/src/features/cross-file/CrossFilePlayground.vue	@keydown.enter
+playground/src/features/davinci/FolioView.vue	@keydown.enter.prevent
+playground/src/features/davinci/FolioView.vue	@keydown.space.prevent
+playground/src/features/inspector/InspectorPlayground.vue	@click.prevent
+playground/src/features/musea/MuseaPlayground.vue	@keydown.enter
+playground/src/features/musea/MuseaPlayground.vue	@keydown.enter
+playground/src/features/musea/MuseaPlayground.vue	@keydown.enter
+playground/src/presets.ts	@click.prevent
+playground/src/presets.ts	@keyup.enter
+playground/src/presets.ts	@mouseover.self
+playground/src/shared/presets/davinci.ts	@keyup.enter

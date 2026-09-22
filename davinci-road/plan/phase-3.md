@@ -18,10 +18,11 @@
 - [ ] P3-10 Try-measure-commit extraction _(slice 1 pins optimization budgets before extraction; see [record](./phase-3-records/p3-10.md))_
 - [x] P3-11 IVM oracle
 - [x] P3-12 Behavioral (sprout) runner incl. IME scripts
-- [ ] P3-13 Optimization remarks + corpus remarks-diff
+- [x] P3-13 Optimization remarks + corpus remarks-diff
 - [x] P3-14 `folio-reduce` _(`vize reduce`; see [record](./phase-3-records/p3-14.md))_
 - [x] P3-15 Lean theorems (lattice / grouping / IVM linearity)
 - [ ] P3-16 Phase exit
+- [ ] P3-17 Production SFC reach _(slice 1 measures `compile_sfc` reach per shipping shape and pins `[reach]` floors; see [record](./phase-3-records/p3-17.md))_
 
 ---
 
@@ -291,8 +292,10 @@ remarks-diff over the 433 in-repo fixtures is wired into `clippy-and-test`
 against a committed baseline whose bless refuses unexplained
 `applied → missed` transitions. _Feed slice 2026-09-21:_ the Spolvero feed
 (inspector, `analyzeSfc`, `davinci-opt`) carries the remarks, and the C-13
-backlog is mined from the TS-32 corpus. Playground rendering (C-5) and
-emitters outside the pass manager remain open.
+backlog is mined from the TS-32 corpus. _Rendering slice 2026-09-22:_ the
+playground's Davinci tab renders them (C-5). **Landed** 2026-09-22: both
+acceptance items hold; emitters for decisions made outside the pass manager
+are follow-ups in the record.
 
 **P3-14 `folio-reduce`.** Interestingness-script driver (llvm-reduce model)
 with S1-subtree deletion vocabulary; oracles composable from diagnostics /
@@ -320,6 +323,20 @@ to equal recompute-from-scratch, retain keyed identities and allocate exactly
 the inserted delta, completing the three theorem families in the CI-lenient
 lane (see the record).
 
+**P3-17 Production SFC reach.** Every Davinci backend stage must be reached
+by the compiles users actually run: `compile_sfc` with a Croquis summary,
+inline render closures, binding metadata, scoped styles and module-mode
+hoisting, not only the bare template entry points the stage corpora compare.
+_Accept:_ the production-reach gate reports per-shape reach from the backends'
+selection counters with `reach-budgets.toml [reach]` floors only rising; the
+production-path parity oracle (forced legacy DOM lane, whole-module byte
+equality) is empty; the Croquis refusal is lifted from the DOM selector on
+that oracle. _First slice 2026-09-22:_ see
+[P3-17 record](./phase-3-records/p3-17.md): measured reach is 0/342 DOM
+templates on both DOM shapes, 29/342 SSR, 3/342 Vapor (44 and 151 after #6337 / #6308) on the committed
+fixtures; the Croquis-informed S2 rewrites and the module-hoisting entry
+remain open.
+
 **P3-16 Phase exit.**
 
 _First slice 2026-09-14:_ see
@@ -331,6 +348,7 @@ that still describe a completed Phase 3 task as unfinished.
 
 - [ ] Vapor: TS-33 behavioral parity green; SSR **and VDOM**: TS-11 byte-empty (P3-7 changes patch-flag derivation, so DOM parity re-gates here)
 - [ ] TS-31 source-map coverage ≥ budget on all three backends
+- [ ] Production reach: `[reach]` floors held and raised, production-path DOM parity oracle empty, no DOM shape refused for its Croquis summary (P3-17)
 - [ ] Vapor compile bench beats the pinned double-transform floor
 - [ ] TS-32 remarks-diff clean; old vapor/ssr lanes + flags deleted
 - [ ] TS-27/TS-28/TS-29/TS-30 all mandatory-green; TS-20 totality fuzz extended to S2→S3 green

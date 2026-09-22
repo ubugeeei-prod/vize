@@ -914,6 +914,8 @@ importers:
         specifier: catalog:typescript
         version: 3.3.11(typescript@6.0.3)
 
+  npm/extension-sdk: {}
+
   npm/framework/musea-nuxt:
     devDependencies:
       typescript:

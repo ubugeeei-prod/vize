@@ -8,6 +8,8 @@ const props = defineProps<{
   selected: number | null;
   /** Lines covering the source cursor (reverse provenance). */
   linked: number[];
+  /** Per-line gutter marks (the S3 partition kind of an op line). */
+  marks?: Map<number, string>;
 }>();
 
 const emit = defineEmits<{
@@ -58,6 +60,11 @@ function toggle(index: number) {
         @keydown.enter.prevent="toggle(line.index)"
         @keydown.space.prevent="toggle(line.index)"
       >
+        <span
+          :class="['davinci-mark', marks?.get(line.index)]"
+          :title="marks?.get(line.index)"
+          aria-hidden="true"
+        ></span>
         <span class="davinci-ln">{{ line.index + 1 }}</span>
         <span class="davinci-code"
           ><span v-for="(token, ti) in line.tokens" :key="ti" :class="`tk-${token.type}`">{{
@@ -67,9 +74,14 @@ function toggle(index: number) {
       </div>
       <div
         v-else
-        :class="['davinci-line', { section: line.tokens[0]?.type === 'section' }]"
+        :class="['davinci-line', { 'davinci-section': line.tokens[0]?.type === 'section' }]"
         :data-line="line.index"
       >
+        <span
+          :class="['davinci-mark', marks?.get(line.index)]"
+          :title="marks?.get(line.index)"
+          aria-hidden="true"
+        ></span>
         <span class="davinci-ln">{{ line.index + 1 }}</span>
         <span class="davinci-code"
           ><span v-for="(token, ti) in line.tokens" :key="ti" :class="`tk-${token.type}`">{{

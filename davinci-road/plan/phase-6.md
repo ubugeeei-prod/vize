@@ -61,8 +61,8 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [x] [P6-1a](./phase-6-tasks.md#p6-1a--input-dialect-wit-world-and-capability-handshake) Input-dialect WIT world and capability handshake — lane A · startable now
 - [ ] [P6-1b](./phase-6-tasks.md#p6-1b--expression-dialect-wit-world) Expression-dialect WIT world — lane A · gated on P4-5a
 - [ ] [P6-1c](./phase-6-tasks.md#p6-1c--output-target-wit-world) Output-target WIT world — lane A · gated on P3-9
-- [ ] [P6-2](./phase-6-tasks.md#p6-2--prebuilt-versioned-sdk) Prebuilt versioned SDK — lane B · startable now
-- [ ] [P6-3](./phase-6-tasks.md#p6-3--in-process-wasmtime-hosting-lane) In-process wasmtime hosting lane — lane C · startable now
+- [x] [P6-2](./phase-6-tasks.md#p6-2--prebuilt-versioned-sdk) Prebuilt versioned SDK — lane B · startable now
+- [x] [P6-3](./phase-6-tasks.md#p6-3--in-process-wasmtime-hosting-lane) In-process wasmtime hosting lane — lane C · startable now
 - [x] [P6-4a](./phase-6-tasks.md#p6-4a--moonbit-hosting-spike) MoonBit hosting spike — lane D · startable now
 - [ ] [P6-4b](./phase-6-tasks.md#p6-4b--moonbit-expression-dialect) MoonBit expression dialect — lane D · gated on P4-5b
 - [ ] [P6-5](./phase-6-tasks.md#p6-5--exprref-validation-report) ExprRef validation report — lane D · startable now (behind P6-4b)

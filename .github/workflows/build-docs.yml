@@ -85,14 +85,15 @@ jobs:
           key: docs-wasm
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
+      # wasm-bindgen outputs only: both directories also hold tracked sources.
       - name: Cache WASM build
         id: cache-wasm
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: |
-            npm/wasm
-            playground/src/wasm
-          key: ${{ runner.os }}-docs-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/wasm/package.json') }}
+            npm/wasm/vize_vitrine*
+            playground/src/wasm/vize_vitrine*
+          key: ${{ runner.os }}-docs-wasm-v2-${{ hashFiles('crates/**/*.rs', 'crates/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/moon/cmd/github/build_vitrine_wasm/**') }}
 
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'

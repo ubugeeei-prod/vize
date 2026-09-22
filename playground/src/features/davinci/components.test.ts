@@ -38,9 +38,33 @@ describe("StageRail", () => {
 
 describe("PassTimeline", () => {
   const steps: TimelineStep[] = [
-    { key: "s2/lower", rung: "s2", pass: "lower", changed: true, producer: true },
-    { key: "s2/v-slot", rung: "s2", pass: "v-slot", changed: false, producer: false },
-    { key: "s2/legacy", rung: "s2", pass: "legacy", changed: true, producer: false },
+    {
+      key: "s2/lower",
+      rung: "s2",
+      pass: "lower",
+      changed: true,
+      producer: true,
+      nanos: null,
+      remarks: 0,
+    },
+    {
+      key: "s2/v-slot",
+      rung: "s2",
+      pass: "v-slot",
+      changed: false,
+      producer: false,
+      nanos: null,
+      remarks: 0,
+    },
+    {
+      key: "s2/legacy",
+      rung: "s2",
+      pass: "legacy",
+      changed: true,
+      producer: false,
+      nanos: null,
+      remarks: 0,
+    },
   ];
 
   it("marks producers and changed passes and summarizes them", async () => {
@@ -106,6 +130,32 @@ describe("FolioView", () => {
     await rows[5].trigger("keydown", { key: "Enter" });
     expect(wrapper.emitted("hover")).toEqual([[4], [null], [4]]);
     expect(wrapper.emitted("select")).toEqual([[4], [null]]);
+    wrapper.unmount();
+  });
+
+  it("marks the lines it is given in the gutter", () => {
+    const wrapper = mount(FolioView, {
+      props: {
+        lines,
+        kind: "disegno",
+        selected: null,
+        linked: [],
+        marks: new Map([
+          [4, "static"],
+          [5, "dynamic"],
+        ]),
+      },
+    });
+    const marks = wrapper.findAll(".davinci-mark");
+    expect(marks.map((mark) => mark.classes().filter((c) => c !== "davinci-mark"))).toEqual([
+      [],
+      [],
+      [],
+      [],
+      ["static"],
+      ["dynamic"],
+      [],
+    ]);
     wrapper.unmount();
   });
 });

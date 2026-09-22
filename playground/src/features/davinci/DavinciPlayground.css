@@ -54,11 +54,32 @@
   color: var(--text-muted);
 }
 
+.davinci-keys {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 .davinci-source .davinci-hint {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.davinci-example {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.davinci-select {
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
 }
 
 .davinci-ghost {
@@ -130,6 +151,19 @@
   background: var(--bg-secondary);
 }
 
+.davinci-subtabs-gap {
+  flex: 1;
+}
+
+.davinci-count {
+  margin-left: 4px;
+  padding: 0 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+}
+
 .davinci-body {
   flex: 1;
   min-height: 0;
@@ -198,6 +232,37 @@
   white-space: nowrap;
 }
 
+/* Why the focused op exists: its provenance rules (lowering, then pass facts). */
+.davinci-why {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--hl-keyword);
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.davinci-why.fact {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-teal);
+  background: var(--color-teal-bg);
+}
+
+.davinci-why.remark.applied {
+  color: var(--color-teal);
+  background: var(--color-teal-bg);
+}
+
+.davinci-why.remark.missed {
+  color: var(--color-notice);
+  background: var(--color-notice-bg);
+}
+
 .davinci-snippet {
   font-family: var(--font-mono);
   font-size: 13px;
@@ -218,7 +283,7 @@
     border-bottom: 1px solid var(--border-primary);
   }
 
-  .davinci-timeline {
+  .davinci-timeline-row {
     flex-direction: column;
     align-items: flex-start;
   }

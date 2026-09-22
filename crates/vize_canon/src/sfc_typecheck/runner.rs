@@ -277,8 +277,8 @@ fn type_check_sfc_impl(
             result.virtual_ts_helpers =
                 Some(include_str!("../virtual_ts/helpers/pattern_matching.d.ts"));
         }
-        result.virtual_ts_mappings = output.mappings;
-        result.virtual_ts_semantic_links = output.semantic_links;
+        (result.virtual_ts_mappings, result.virtual_ts_semantic_links) =
+            output.mapping.into_parts();
     }
 
     // Record analysis time on native only

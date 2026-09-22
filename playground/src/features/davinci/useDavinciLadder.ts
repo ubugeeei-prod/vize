@@ -10,6 +10,8 @@ import {
 } from "vue";
 import type { WasmModule } from "../../wasm/index";
 import { negotiateSpolveroFeed } from "../../wasm/types/spolvero";
+import { ladderStepTimings, negotiateProfileExport } from "../../wasm/types/profile";
+import type { InspectorDiff } from "../../wasm/types/inspector";
 import { DAVINCI_PRESET } from "../../shared/presets/davinci";
 import type { EditorHighlight } from "../../shared/MonacoEditor.vue";
 import {
@@ -19,10 +21,20 @@ import {
 } from "../atelier/codeOutputs";
 import { buildLadder, type RungId, type StageLadder } from "./ladder";
 import { folioLines, linesCovering } from "./folioLines";
-import { sfcOffsetToTemplateBytes, templateBytesToSfcRange, templateStartInSfc } from "./offsets";
+import {
+  sfcOffsetToTemplateBytes,
+  templateBytesToSfcRange,
+  templateStartInSfc,
+  type Range,
+} from "./offsets";
+import { remarksAt, type SpolveroRemark } from "./remarks";
+import { parseProvenance, recordsForNode } from "./provenance";
+import { graphLineKinds, partitionKinds } from "./partition";
 
 export type StageId = RungId | "s4";
 export type OutputTarget = "dom" | "vapor" | "ssr";
+/** What the stage body shows: the page, its diff to the previous page, or remarks. */
+export type PageView = "page" | "diff" | "remarks";
 
 const FILENAME = "Component.vue";
 
@@ -41,6 +53,8 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
   const outputs = shallowRef<CodeOutputs>(createEmptyCodeOutputs());
   const templateStart = ref(0);
   const ladderTime = ref<number | null>(null);
+  /** Why step timings are missing, when the profile did not negotiate. */
+  const profileNote = ref<string | null>(null);
 
   const stage = ref<StageId>("s2");
   const pageKeys = ref<Partial<Record<RungId, string>>>({});
@@ -48,6 +62,9 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
   const selectedLine = ref<number | null>(null);
   const hoveredLine = ref<number | null>(null);
   const cursorBytes = ref<number | null>(null);
+  const pageView = ref<PageView>("page");
+  const pinnedSpan = ref<Range | null>(null);
+  const remarks = computed<SpolveroRemark[]>(() => ladder.value?.remarks ?? []);
 
   const rung = computed(() =>
     stage.value === "s4" ? null : (ladder.value?.rungs.find((r) => r.id === stage.value) ?? null),
@@ -59,14 +76,52 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
     return current.pages.find((p) => p.key === key) ?? current.pages[0];
   });
   const lines = computed(() => (page.value ? folioLines(page.value.kind, page.value.text) : []));
+  /** On the S3 graph page, each op line's exported static/dynamic partition. */
+  const lineMarks = computed(() => {
+    const shown = page.value;
+    const partition = rung.value?.pages.find((p) => p.kind === "partition");
+    if (!shown || shown.kind !== "impeto" || !partition) return new Map<number, string>();
+    return graphLineKinds(shown.text, partitionKinds(partition.text));
+  });
+  /** The page this one is compared against: the previous page of its stage. */
+  const previousPage = computed(() => {
+    const current = rung.value;
+    const shown = page.value;
+    if (!current || !shown || shown.kind !== "disegno") return null;
+    const index = current.pages.indexOf(shown);
+    return index > 0 ? current.pages[index - 1] : null;
+  });
+  const diff = computed<InspectorDiff | null>(() => {
+    const before = previousPage.value;
+    const after = page.value;
+    if (pageView.value !== "diff" || !before || !after) return null;
+    return getCompiler()?.buildInspectorDiff(before.text, after.text) ?? null;
+  });
   const linkedLines = computed(() =>
     cursorBytes.value === null ? [] : linesCovering(lines.value, cursorBytes.value).slice(0, 1),
   );
 
   const focusLine = computed(() => hoveredLine.value ?? selectedLine.value);
+  const provenance = computed(() => {
+    const s2 = ladder.value?.rungs.find((r) => r.id === "s2");
+    const page = s2?.pages.find((p) => p.kind === "provenance");
+    return page ? parseProvenance(page.text) : [];
+  });
+  /** Why the focused S2 op exists: its lowering record, then pass facts. */
+  const focusProvenance = computed(() => {
+    const index = focusLine.value;
+    const node = index === null ? null : (lines.value[index]?.node ?? null);
+    return node === null ? [] : recordsForNode(provenance.value, node);
+  });
+  /** What the passes said about the focused S2 op (remarks at its span). */
+  const focusRemarks = computed(() => {
+    const index = focusLine.value;
+    const line = index === null ? null : lines.value[index];
+    return line?.node === null || !line?.span ? [] : remarksAt(remarks.value, line.span);
+  });
   const focusSpan = computed(() => {
     const index = focusLine.value;
-    return index === null ? null : (lines.value[index]?.span ?? null);
+    return index === null ? pinnedSpan.value : (lines.value[index]?.span ?? null);
   });
   const highlights = computed<EditorHighlight[]>(() => {
     const span = focusSpan.value;
@@ -83,6 +138,7 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
 
   function selectStage(next: StageId) {
     stage.value = next;
+    pageView.value = "page";
     selectedLine.value = null;
     hoveredLine.value = null;
   }
@@ -90,7 +146,12 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
   function selectPage(rungId: RungId, key: string) {
     pageKeys.value = { ...pageKeys.value, [rungId]: key };
     stage.value = rungId;
+    if (pageView.value === "remarks") pageView.value = "page";
     selectedLine.value = null;
+  }
+
+  function locateRemark(remark: SpolveroRemark) {
+    pinnedSpan.value = remark.span;
   }
 
   function onCursor(offset: number) {
@@ -124,7 +185,10 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
       const sfc = compiler.compileSfc(source.value, options);
       const start = sfc.descriptor.template?.loc.start;
       templateStart.value = start === undefined ? 0 : templateStartInSfc(source.value, start);
-      ladder.value = buildLadder(negotiated.feed, FILENAME);
+      const profile = negotiateProfileExport(analysis.spolveroProfile);
+      profileNote.value = profile.ok ? null : profile.error;
+      const timings = profile.ok ? ladderStepTimings(profile.profile) : new Map<string, number>();
+      ladder.value = buildLadder(negotiated.feed, FILENAME, timings);
       error.value = null;
       const compiled = await compileCodeOutputs({
         compiler,
@@ -150,6 +214,7 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
   watch(lines, () => {
     selectedLine.value = null;
     hoveredLine.value = null;
+    pinnedSpan.value = null;
   });
   watch(getCompiler, (compiler) => {
     if (compiler) void run();
@@ -180,19 +245,28 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
     error,
     outputs,
     ladderTime,
+    profileNote,
     stage,
     rung,
     page,
     lines,
+    lineMarks,
+    previousPage,
+    diff,
+    pageView,
+    remarks,
     linkedLines,
     outputTarget,
     selectedLine,
     hoveredLine,
     focusLine,
     focusSource,
+    focusProvenance,
+    focusRemarks,
     highlights,
     selectStage,
     selectPage,
+    locateRemark,
     onCursor,
   };
 }

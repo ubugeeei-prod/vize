@@ -62,7 +62,8 @@ const benchmarkMirror = 1
     let name_start = template.find(":code").expect("attribute present") + 1;
     let name_range = name_start..name_start + "code".len();
     let name_span = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .flat_map(|mapping| &mapping.sub_spans)
         .find(|span| span.src_range == name_range)
@@ -78,7 +79,8 @@ const benchmarkMirror = 1
     let source_start = template.find(expression).expect("bound expression present");
     let source_range = source_start..source_start + expression.len();
     let value_span = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .flat_map(|mapping| &mapping.sub_spans)
         .find(|span| span.src_range == source_range)
@@ -123,7 +125,8 @@ fn static_attribute_values_are_type_checked_like_dynamic_bindings() {
     let name_start = template.find("msg=").expect("attribute present");
     let name_range = name_start..name_start + "msg".len();
     let name_span = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .flat_map(|mapping| &mapping.sub_spans)
         .find(|span| span.src_range == name_range)
@@ -137,7 +140,8 @@ fn static_attribute_values_are_type_checked_like_dynamic_bindings() {
     let value_range = value_start..value_start + "You did it!".len();
     assert!(
         output
-            .mappings
+            .mapping
+            .spans()
             .iter()
             .flat_map(|mapping| &mapping.sub_spans)
             .any(|span| span.src_range == value_range),
@@ -257,7 +261,8 @@ const fooBar = 3
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
     let sub_spans: Vec<_> = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .flat_map(|mapping| &mapping.sub_spans)
         .collect();
@@ -309,7 +314,8 @@ const total = 1
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
     let sub_spans: Vec<_> = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .flat_map(|mapping| &mapping.sub_spans)
         .collect();

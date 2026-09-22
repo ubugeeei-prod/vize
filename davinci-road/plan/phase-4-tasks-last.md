@@ -52,14 +52,16 @@
 
 **Steps:**
 
-- [ ] `crates/vize_patina/src/html_content_model/` (table + total checker); the generator and its `--check` wired into `tests/tooling/davinci-matrices.test.ts` (TS-12)
-- [ ] Seeded-defect classes for nesting violations added to `tools/commands/davinci/seed-defects.rs`
+- [x] `crates/vize_patina/src/html_content_model/` (table + total checker); the generator and its `--check` wired into `tests/tooling/davinci-matrices.test.ts` (TS-12)
+- [x] Seeded-defect classes for nesting violations added to `tools/commands/davinci/seed-defects.rs`
 
 **Acceptance:** `--check` proven to fail on an injected table edit; TS-37 nesting classes at 100% recall, count-exact by identity; TS-38 zero untriaged candidates for the upgraded rules on the corpus shard; TS-9 changes listed line by line in the PR.
 
 **Deps:** P4-6a.
 
 **Non-goals:** cross-component composition (P4-11b); ARIA rules (P4-8a).
+
+**Landed 2026-09-22:** the exact checker: 21 classes, verdicts pinned against Chromium and parse5. The table is generated from the pinned WHATWG snapshot, and `--check` is proven against an injected edit. TS-37 is 100% by identity on the miniature set, the corpus shard and five apps. TS-38 is triaged (FP-2), and Lean proves the walk sound. See the [P4-11a record](./phase-4-records/p4-11a.md).
 
 ## P4-11b — Composed cross-component conformance
 

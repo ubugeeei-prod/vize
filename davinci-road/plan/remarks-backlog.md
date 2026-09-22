@@ -9,7 +9,7 @@
 > [remarks-format.md](./remarks-format.md)), ranked by corpus hits: the
 > optimization backlog the P3-13 remarks mine for continuous task C-13.
 
-Corpus: 433 files, 1001 remarks (138 applied, 863 missed), 24 missed reasons.
+Corpus: 437 files, 1007 remarks (143 applied, 864 missed), 24 missed reasons.
 
 1. `s2.hoist-static static-subtree` `blocker="child" op="ui.interpolation"` - 185 hits in 81 files; first at `tests/_fixtures/_projects/class-component/src/App.vue` @354:376
 2. `s2.hoist-static static-props` `blocker="binding" op="ui.on"` - 151 hits in 58 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
@@ -22,7 +22,7 @@ Corpus: 433 files, 1001 remarks (138 applied, 863 missed), 24 missed reasons.
 9. `s2.hoist-static static-props` `blocker="binding" op="vue.directive"` - 30 hits in 13 files; first at `tests/_fixtures/_projects/generic-build/src/DirectiveBuiltins.vue` @393:534
 10. `s2.hoist-static static-subtree` `blocker="child" op="ui.element"` - 27 hits in 17 files; first at `tests/_fixtures/_projects/class-component/src/App.vue` @343:422
 11. `s2.hoist-static static-subtree` `blocker="binding" op="vue.directive"` - 23 hits in 10 files; first at `tests/_fixtures/_projects/generic-build/src/DirectiveBuiltins.vue` @393:534
-12. `s2.hoist-static static-subtree` `blocker="child" op="ui.component"` - 20 hits in 14 files; first at `tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue` @4057:4291
+12. `s2.hoist-static static-subtree` `blocker="child" op="ui.component"` - 21 hits in 15 files; first at `tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue` @4057:4291
 13. `s2.hoist-static static-props` `blocker="ref-attribute"` - 17 hits in 12 files; first at `tests/_fixtures/_projects/generic-build/src/BindingPatchFlags.vue` @660:1412
 14. `s2.hoist-static static-subtree` `blocker="child" op="ui.for"` - 11 hits in 8 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefinePropsGeneric.vue` @190:268
 15. `s2.hoist-static static-props` `blocker="binding" op="ui.bind" rule="reserved-key"` - 10 hits in 9 files; first at `tests/_fixtures/_projects/generic-build/src/NormalScriptBindings.vue` @370:556

@@ -19,17 +19,30 @@
       recomputes the ladder from the same sources)._
 - [ ] C-3 Pass timeline + fusion-group view from timing JSON (starts: P2-13)
       _Partial 2026-09-21: the Davinci tab shows every executed step in run
-      order and marks which passes changed the folio (exact page compare).
-      Open: per-pass timing and fusion groups (the profiler clock is
-      `std::time::Instant`, which wasm32-unknown-unknown lacks)._
+      order, marks which passes changed the folio (exact page compare), diffs
+      consecutive S2 pages through the inspector's line diff, and shows each
+      step's wall time. The timing is the P0-11 profile export (`analyzeSfc`
+      `spolveroProfile`, key `davinci.spolvero.step`, `{stage, pass, block}`
+      attribution) serialized by the profiler's own exporter from durations a
+      host clock measured (`vize_curator::inspector::ladder_run`; the browser
+      passes `performance.now()`, since `std::time::Instant` is absent on
+      wasm32-unknown-unknown; `spolvero_timing` pins it with a deterministic
+      clock). Open: fusion groups (no group index reaches the feed or the
+      export yet)._
 - [ ] C-4 Flame views from profiler export (starts: P0-11 data available)
-- [ ] C-5 S3 pages, provenance navigation, remarks rendering (starts: P3-13)
+- [x] C-5 S3 pages, provenance navigation, remarks rendering (starts: P3-13)
       _S3 pages landed 2026-09-21 in the same feed: `s3` (graph),
       `s3-partition` (the new `[s3-partition-folio]` page) and `s3-values`.
       Provenance navigation landed in the Davinci tab the same day: a stage
       line highlights its authored span in the editor, and the editor cursor
-      marks the narrowest stage line covering it. Open: remarks rendering
-      (P3-13)._
+      marks the narrowest stage line covering it. Since 2026-09-22 the feed
+      also carries `s2-provenance` (the new `[s2-provenance-folio]` page:
+      every lowering and pass decision, dropped input included), and a
+      focused S2 op shows why it exists - its lowering rule plus the facts
+      passes attached. Remarks rendering landed the same day on P3-13's
+      feed `remarks` member: the tab lists every remark by kind with its
+      arguments and source site, a focused S2 op shows the remarks about
+      its construct, and each timeline step counts its pass's remarks._
 - [ ] C-6 Fact browser incl. reactivity-lattice overlay (starts: P4-1)
       _Constraint recorded 2026-09-21: the lattice has no per-SFC producer
       yet (P3-7 evaluates it per binding kind inside DOM patch emission), so

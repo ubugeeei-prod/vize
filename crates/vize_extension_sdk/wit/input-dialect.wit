@@ -1,0 +1,42 @@
+package vize:contracts@0.1.0;
+
+/// The input-dialect boundary: one source block in, its S1 surface page and
+/// S2 semantic page out.
+///
+/// The call is coarse-grained on purpose: the canonical ABI copies at every
+/// boundary, so a block crosses once and comes back whole. Lowering is
+/// total, as in-tree: malformed input yields pages plus diagnostics, never
+/// a refusal.
+interface input-lowering {
+  use types.{diagnostic, page};
+
+  /// One source block, whole.
+  record source-block {
+    /// The block's authored text.
+    source: string,
+    /// File-absolute byte offset of the block's first byte. S1 page offsets
+    /// are block-relative; S2 page spans and diagnostic spans add `base`.
+    base: u32,
+    /// The block's `lang` attribute, when authored.
+    lang: option<string>,
+  }
+
+  /// Everything one block lowers to.
+  record lowered-block {
+    /// The lossless S1 surface page (`s1-page`): its tokens tile `source`.
+    surface: page,
+    /// The S2 semantic page (`s2-page`, the disegno grammar).
+    semantic: page,
+    /// Surface diagnostics, then the lowering's own, in decision order.
+    diagnostics: list<diagnostic>,
+  }
+
+  /// Lower one block.
+  lower-block: func(block: source-block) -> lowered-block;
+}
+
+/// What an input-dialect guest component implements.
+world input-dialect {
+  export handshake;
+  export input-lowering;
+}

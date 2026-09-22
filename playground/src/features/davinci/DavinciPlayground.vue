@@ -2,16 +2,20 @@
 import "./DavinciPlayground.css";
 import "./StageRail.css";
 import "./FolioView.css";
-import { computed } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { type WasmModule, getWasm } from "../../wasm/index";
 import MonacoEditor from "../../shared/MonacoEditor.vue";
-import { DAVINCI_PRESET } from "../../shared/presets/davinci";
+import { DAVINCI_EXAMPLES } from "../../shared/presets/davinci";
 import StageRail from "./StageRail.vue";
 import PassTimeline from "./PassTimeline.vue";
 import FolioView from "./FolioView.vue";
 import OutputView from "./OutputView.vue";
+import FolioDiffView from "./FolioDiffView.vue";
+import RemarksPanel from "./RemarksPanel.vue";
 import type { TimelineStep } from "./ladder";
-import { useDavinciLadder } from "./useDavinciLadder";
+import { useDavinciLadder, type StageId } from "./useDavinciLadder";
+import { stepKeyAction } from "./keys";
+import { formatArg } from "./remarks";
 
 const props = defineProps<{
   compiler: WasmModule | null;
@@ -24,28 +28,62 @@ const {
   error,
   outputs,
   ladderTime,
+  profileNote,
   stage,
   rung,
   page,
   lines,
+  lineMarks,
+  previousPage,
+  diff,
+  pageView,
+  remarks,
   linkedLines,
   outputTarget,
   selectedLine,
   hoveredLine,
   focusSource,
+  focusProvenance,
+  focusRemarks,
   highlights,
   selectStage,
   selectPage,
+  locateRemark,
   onCursor,
 } = useDavinciLadder(() => props.compiler ?? getWasm());
 
-const pageTabs = computed(() =>
-  rung.value && rung.value.pages.length > 1 ? rung.value.pages : [],
+const showTabs = computed(
+  () => rung.value !== null && (rung.value.pages.length > 1 || rung.value.id !== "s1"),
 );
+
+function toggleView(view: "diff" | "remarks") {
+  pageView.value = pageView.value === view ? "page" : view;
+}
+
+const example = ref(DAVINCI_EXAMPLES[0].key);
+
+function loadExample(key: string) {
+  const found = DAVINCI_EXAMPLES.find((item) => item.key === key);
+  if (found) source.value = found.code;
+}
+
+watch(example, loadExample);
 
 function selectStep(step: TimelineStep) {
   selectPage(step.rung, step.key);
 }
+
+// Presenter keys: 1-4 jump to a stage, arrows walk the pass timeline.
+function onKey(event: KeyboardEvent) {
+  const action = stepKeyAction(event, ladder.value?.timeline ?? [], page.value?.key ?? null);
+  if (!action) return;
+  event.preventDefault();
+  if (action.kind === "stage") selectStage(action.stage as StageId);
+  else selectStep(action.step);
+}
+
+onMounted(() => window.addEventListener("keydown", onKey));
+onUnmounted(() => window.removeEventListener("keydown", onKey));
 
 function snippet(text: string): string {
   const flat = text.replace(/\s+/g, " ").trim();
@@ -59,7 +97,15 @@ function snippet(text: string): string {
       <header class="davinci-bar">
         <h2 class="davinci-title">Source</h2>
         <span class="davinci-hint">Put the cursor on markup to find it in the stage page</span>
-        <button type="button" class="davinci-ghost" @click="source = DAVINCI_PRESET">Reset</button>
+        <div class="davinci-example">
+          <label class="davinci-hint" for="davinci-example">Example</label>
+          <select id="davinci-example" v-model="example" class="davinci-select">
+            <option v-for="item in DAVINCI_EXAMPLES" :key="item.key" :value="item.key">
+              {{ item.label }}
+            </option>
+          </select>
+        </div>
+        <button type="button" class="davinci-ghost" @click="loadExample(example)">Reset</button>
       </header>
       <div class="davinci-editor">
         <MonacoEditor v-model="source" language="vue" :highlights :theme @cursor="onCursor" />
@@ -73,6 +119,7 @@ function snippet(text: string): string {
           >{{ ladderTime.toFixed(2) }} ms</span
         >
         <span class="davinci-badge" title="Spolvero feed schema_version">feed v1</span>
+        <span class="davinci-hint davinci-keys">Keys 1–4 pick a stage, ← → walk the steps</span>
       </header>
 
       <div v-if="error" class="davinci-message error" role="alert">{{ error }}</div>
@@ -80,25 +127,51 @@ function snippet(text: string): string {
         <StageRail :rungs="ladder.rungs" :selected="stage" @select="selectStage" />
         <PassTimeline :steps="ladder.timeline" :current="page?.key ?? null" @select="selectStep" />
 
-        <div v-if="pageTabs.length > 0" class="davinci-subtabs" role="tablist" aria-label="Pages">
+        <div v-if="showTabs && rung" class="davinci-subtabs" role="tablist" aria-label="Pages">
           <button
-            v-for="tab in pageTabs"
+            v-for="tab in rung.pages"
             :key="tab.key"
             type="button"
             role="tab"
-            :class="['davinci-subtab', { active: page?.key === tab.key }]"
+            :class="['davinci-subtab', { active: pageView === 'page' && page?.key === tab.key }]"
             :aria-selected="page?.key === tab.key"
-            @click="selectPage(rung!.id, tab.key)"
+            @click="selectPage(rung.id, tab.key)"
           >
             {{ tab.label }}
+          </button>
+          <span class="davinci-subtabs-gap" aria-hidden="true"></span>
+          <button
+            v-if="previousPage"
+            type="button"
+            :class="['davinci-subtab', { active: pageView === 'diff' }]"
+            :aria-pressed="pageView === 'diff'"
+            @click="toggleView('diff')"
+          >
+            Diff vs {{ previousPage.label }}
+          </button>
+          <button
+            type="button"
+            :class="['davinci-subtab', { active: pageView === 'remarks' }]"
+            :aria-pressed="pageView === 'remarks'"
+            @click="toggleView('remarks')"
+          >
+            Remarks <span class="davinci-count">{{ remarks.length }}</span>
           </button>
         </div>
 
         <div class="davinci-body">
           <OutputView v-if="stage === 's4'" v-model:target="outputTarget" :outputs :theme />
+          <RemarksPanel v-else-if="pageView === 'remarks'" :remarks @locate="locateRemark" />
+          <FolioDiffView
+            v-else-if="pageView === 'diff' && diff && previousPage && page"
+            :diff
+            :before="previousPage.label"
+            :after="page.label"
+          />
           <FolioView
             v-else-if="page"
             :lines
+            :marks="lineMarks"
             :kind="page.kind"
             :selected="selectedLine"
             :linked="linkedLines"
@@ -114,12 +187,32 @@ function snippet(text: string): string {
               >{{ focusSource.span.start }}–{{ focusSource.span.end }}</span
             >
             <code class="davinci-snippet">{{ snippet(focusSource.text) }}</code>
+            <span
+              v-for="(record, index) in focusProvenance"
+              :key="index"
+              :class="['davinci-why', { fact: record.rule.startsWith('pass.') }]"
+              :title="`${record.rule}: ${record.before} → ${record.after}`"
+              >{{ record.rule
+              }}<template v-if="record.rule.startsWith('pass.')">
+                {{ snippet(record.after) }}</template
+              ></span
+            >
+            <span
+              v-for="(remark, index) in focusRemarks"
+              :key="`remark-${index}`"
+              :class="['davinci-why', 'remark', remark.kind]"
+              :title="remark.args.map(formatArg).join(' ')"
+              >{{ remark.kind }} {{ remark.name }}</span
+            >
           </template>
           <span v-else-if="stage !== 's4'" class="davinci-hint"
             >Point at a line to see the authored source it came from</span
           >
           <span v-else class="davinci-hint"
             >Emitted by the same compiler build, from the same source</span
+          >
+          <span v-if="profileNote" class="davinci-hint"
+            >Step timings unavailable: {{ profileNote }}</span
           >
           <span v-if="ladder.unplaced.length" class="davinci-hint"
             >Unplaced pages: {{ ladder.unplaced.join(", ") }}</span

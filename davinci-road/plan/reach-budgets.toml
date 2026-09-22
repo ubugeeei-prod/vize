@@ -1,0 +1,24 @@
+# Davinci production-reach floors (P3-17) — a budgets.toml companion kept in
+# its own file because budgets.toml is at the source-length ceiling.
+# ratchet: numbers may only tighten; loosening requires budget-loosen: <charter ref> in the commit body
+#
+# Per shipping compile shape: committed-fixture templates whose module a
+# Davinci stage emitted (DOM: S2, SSR: S4 plan, Vapor: native S3) when
+# compiled through `compile_sfc` exactly as each adapter does, counted from the
+# backends' one-per-template selection counters by
+# `crates/vize_atelier_sfc/tests/davinci_production_reach.rs` (per-reason
+# table: phase-3-records/p3-17.md). `accepted_min` only rises — the gate
+# prints when a run exceeds it, so the PR that raises reach raises the floor;
+# `templates_min` guards the denominator.
+#
+# Shapes: `dom_inline` = `vize build` / Rust `compile_sfc` (inline render);
+# `dom_module` = the Vite plugin's NAPI default (module mode, separate render);
+# `ssr` = the Vite SSR build shape; `vapor` = `vapor: true`.
+
+schema_version = 1
+
+[reach]
+dom_inline = { accepted_min = 0, templates_min = 342 }
+dom_module = { accepted_min = 0, templates_min = 342 }
+ssr = { accepted_min = 44, templates_min = 342 }
+vapor = { accepted_min = 151, templates_min = 342 }

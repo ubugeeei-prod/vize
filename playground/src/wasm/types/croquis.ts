@@ -293,4 +293,6 @@ export interface CroquisResult {
    * before reading any page.
    */
   spolvero?: unknown;
+  /** The same ladder run's step timings: a raw P0-11 profile export. */
+  spolveroProfile?: unknown;
 }

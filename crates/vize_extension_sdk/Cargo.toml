@@ -1,0 +1,29 @@
+# The prebuilt, versioned SDK for `vize:contracts` guests (Davinci P6-2).
+#
+# A guest author depends on this crate alone: the WIT package, its bindings,
+# the handshake constants, page writers and the `no_std` guest runtime. It
+# depends on no vize implementation crate (a tooling test pins the set), so
+# no consumer ever compiles vize internals — the Swift macro lesson.
+[package]
+name = "vize_extension_sdk"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SDK for Vize extension-contract guests: WIT bindings, handshake, page writers"
+# First publication needs the maintainer's crates.io registration (P6-2
+# record); until then CI packs the crate and builds guests from the tarball.
+publish = false
+metadata.vize.stability = "experimental"
+include = ["Cargo.toml", "README.md", "src/**", "wit/**"]
+
+[features]
+default = ["runtime"]
+# On `wasm32`, provide the runtime an import-free `no_std` guest needs: the
+# global allocator, `cabi_realloc`, `memcmp`/`bcmp` and the panic handler.
+runtime = ["dep:dlmalloc"]
+
+[dependencies]
+dlmalloc = { workspace = true, optional = true }
+wit-bindgen = { workspace = true }

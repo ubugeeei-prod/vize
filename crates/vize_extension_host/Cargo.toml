@@ -38,6 +38,8 @@ davinci_test_support = { workspace = true }
 # P6-8: the released contract surfaces are classified with marquette's
 # `wit` reader (test tooling only; no runtime edge).
 vize_marquette = { workspace = true, features = ["wit"] }
+# P6-2: the SDK's page writers and handshake are checked against this host.
+vize_extension_sdk = { workspace = true }
 
 [[bin]]
 name = "vize-extension-host"
@@ -46,4 +48,12 @@ required-features = ["extension-host"]
 
 [[test]]
 name = "wit_golden"
+required-features = ["extension-host"]
+
+[[test]]
+name = "sdk_hello"
+required-features = ["extension-host"]
+
+[[test]]
+name = "guest_limits"
 required-features = ["extension-host"]

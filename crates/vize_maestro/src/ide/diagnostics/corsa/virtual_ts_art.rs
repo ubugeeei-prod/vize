@@ -147,12 +147,12 @@ impl DiagnosticService {
             &virtual_ts_options,
         );
         let code = output.code;
-        let semantic_links = output.semantic_links;
+        let (source_mappings, semantic_links) = output.mapping.into_parts();
 
         ArtVariantGeneration {
             virtual_result: VirtualTsResult {
                 code: code.to_string(),
-                source_mappings: output.mappings,
+                source_mappings,
                 semantic_links,
                 import_source_map: Default::default(),
             },

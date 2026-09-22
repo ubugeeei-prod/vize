@@ -21,6 +21,6 @@ _None._
 | product            | resolved | grep |
 | ------------------ | -------: | ---: |
 | `BindingMetadata`  |        0 |   20 |
-| `Croquis`          |        2 |    6 |
+| `Croquis`          |        2 |   10 |
 | `Scope`            |        0 |    1 |
 | `Croquis.bindings` |        0 |    1 |

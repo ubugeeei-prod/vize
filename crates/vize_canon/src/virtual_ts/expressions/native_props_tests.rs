@@ -38,7 +38,8 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
     let name_start = template.find("disabled").expect("prop name");
     let name_range = name_start..name_start + "disabled".len();
     let check_mapping = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .find(|mapping| {
             output.code[mapping.gen_range.clone()].contains("__vize_native_prop_check_")
@@ -49,7 +50,8 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
         "synthetic positions outside authored expressions must stay on the prop name"
     );
     let name_span = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .flat_map(|mapping| &mapping.sub_spans)
         .find(|span| span.src_range == name_range)
@@ -68,7 +70,8 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
     let value_start = template.find("disabledFlag").expect("bound expression");
     let value_range = value_start..value_start + "disabledFlag".len();
     let value_span = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .flat_map(|mapping| &mapping.sub_spans)
         .find(|span| span.src_range == value_range)

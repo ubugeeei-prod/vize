@@ -14,7 +14,9 @@ use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 
 use vize_s0::cstr;
 
-use crate::contract::{Capability, GuestError, InputDialectGuest, LoweredBlock, SourceBlock};
+use crate::contract::{
+    Capability, GuestError, GuestLimits, InputDialectGuest, LoweredBlock, SourceBlock,
+};
 use crate::wire::{Request, Response, read_message, transport, write_message};
 
 /// A guest behind a child process.
@@ -25,11 +27,25 @@ pub struct OutOfProcessGuest {
     stdout: BufReader<ChildStdout>,
 }
 
-/// The command that serves `component` from the `runner` binary.
+/// The command that serves `component` from the `runner` binary under the
+/// default [`GuestLimits`].
 #[must_use]
 pub fn serve_command(runner: &Path, component: &Path) -> Command {
+    serve_command_with(runner, component, GuestLimits::default())
+}
+
+/// The command that serves `component` from the `runner` binary under
+/// `limits`: the child enforces them exactly as the in-process host does.
+#[must_use]
+pub fn serve_command_with(runner: &Path, component: &Path, limits: GuestLimits) -> Command {
     let mut command = Command::new(runner);
-    command.arg("serve").arg(component);
+    command
+        .arg("serve")
+        .arg(component)
+        .arg("--fuel")
+        .arg(vize_s0::cstr!("{}", limits.fuel_per_call).as_str())
+        .arg("--memory")
+        .arg(vize_s0::cstr!("{}", limits.max_memory_bytes).as_str());
     command
 }
 

@@ -9,7 +9,7 @@ use vize_carton::{String as CompactString, ToCompactString};
 
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::{ImportRewriter, ImportSourceMap};
-use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping, VizeSemanticLink};
+use crate::virtual_ts::{ProjectionMapping, VirtualTsCheckOptions, VirtualTsOptions};
 
 use super::build::{descriptor_uses_jsx_script, prepend_vue_jsx_reference};
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
@@ -20,10 +20,8 @@ pub struct VueDocumentVirtualTs {
     pub code: CompactString,
     /// Generated source before import rewriting, used for sibling overlays.
     pub pre_rewrite_code: CompactString,
-    /// Byte-range source mappings in pre-rewrite generated TS coordinates.
-    pub mappings: Vec<VizeMapping>,
-    /// Semantic links in pre-rewrite generated TS coordinates.
-    pub semantic_links: Vec<VizeSemanticLink>,
+    /// Span links and semantic links in pre-rewrite generated TS coordinates.
+    pub mapping: ProjectionMapping,
     /// Source map for `.vue -> .vue.ts` import rewrites.
     pub import_source_map: ImportSourceMap,
     /// Source type used for parsing the generated virtual document.
@@ -167,8 +165,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
     Ok(VueDocumentVirtualTs {
         code: rewritten.code,
         pre_rewrite_code: code,
-        mappings,
-        semantic_links,
+        mapping: ProjectionMapping::from_parts(mappings, semantic_links),
         import_source_map: rewritten.source_map,
         source_type,
         virtual_suffix: if use_tsx_virtual { ".tsx" } else { ".ts" },

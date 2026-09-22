@@ -1,0 +1,3 @@
+file	spelling
+tests/davinci_test_support/src/surface_fixture.rs	@click.stop
+tests/davinci_test_support/src/surface_fixture.rs	v-on:click.stop.prevent

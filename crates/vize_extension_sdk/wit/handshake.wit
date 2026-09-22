@@ -1,0 +1,22 @@
+package vize:contracts@0.1.0;
+
+/// The capability handshake every contract world exports.
+///
+/// The host calls `get-capability` first, exactly once per guest instance,
+/// and refuses the guest before any other call when the offer does not
+/// negotiate: a protocol version the host does not speak, a feature list
+/// that is not sorted and unique, or a missing feature the world requires.
+interface handshake {
+  /// What a guest offers.
+  record capability {
+    /// The integer protocol version the guest speaks.
+    protocol-version: u32,
+    /// Feature strings the guest implements, sorted and unique. The
+    /// input-dialect world requires `s1-page@1` and `s2-page@1`: the page
+    /// schema versions the guest writes.
+    features: list<string>,
+  }
+
+  /// The guest's offer.
+  get-capability: func() -> capability;
+}

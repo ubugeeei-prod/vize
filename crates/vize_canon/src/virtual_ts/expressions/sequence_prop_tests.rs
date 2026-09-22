@@ -42,7 +42,8 @@ fn sequence_prop_values_are_grouped_without_mapping_synthetic_parentheses() {
     let value_start = template.find(expression).expect("bound expression present");
     let value_range = value_start..value_start + expression.len();
     let value_spans: Vec<_> = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .flat_map(|mapping| &mapping.sub_spans)
         .filter(|span| span.src_range == value_range)

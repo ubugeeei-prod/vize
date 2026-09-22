@@ -107,13 +107,32 @@ describe("buildLadder", () => {
 
   it("lists steps in run order and marks which passes changed the folio", () => {
     const changed = { path: "Component.vue", stage: "s2", pass: "legacy", text: `${S2}x` };
-    const ladder = buildLadder(feed([changed]));
+    const timings = new Map([
+      ["s2/lower", 5000],
+      ["s2/legacy", 9000],
+    ]);
+    const ladder = buildLadder(feed([changed]), undefined, timings);
+    const step = (
+      pass: string,
+      rung: string,
+      changed: boolean,
+      producer: boolean,
+      nanos = null,
+    ) => ({
+      key: `${rung}/${pass}`,
+      rung,
+      pass,
+      changed,
+      producer,
+      nanos,
+      remarks: 0,
+    });
     expect(ladder.timeline).toEqual([
-      { key: "s1/parse", rung: "s1", pass: "parse", changed: true, producer: true },
-      { key: "s2/lower", rung: "s2", pass: "lower", changed: true, producer: true },
-      { key: "s2/hoist-static", rung: "s2", pass: "hoist-static", changed: false, producer: false },
-      { key: "s2/legacy", rung: "s2", pass: "legacy", changed: true, producer: false },
-      { key: "s3/lower", rung: "s3", pass: "lower", changed: true, producer: true },
+      step("parse", "s1", true, true),
+      { ...step("lower", "s2", true, true), nanos: 5000 },
+      step("hoist-static", "s2", false, false),
+      { ...step("legacy", "s2", true, false), nanos: 9000 },
+      step("lower", "s3", true, true),
     ]);
   });
 
@@ -123,5 +142,57 @@ describe("buildLadder", () => {
     const ladder = buildLadder(feed([other, future]), "Component.vue");
     expect(ladder.unplaced).toEqual(["s4-plan"]);
     expect(ladder.rungs[0].pages).toHaveLength(1);
+  });
+
+  it("files the provenance page under S2 without counting it as a pass or step", () => {
+    const provenance = {
+      path: "Component.vue",
+      stage: "s2-provenance",
+      pass: "transform",
+      text: "[s2-provenance-folio]\n\n[s2-provenance-folio.records]\n\n",
+    };
+    const ladder = buildLadder(feed([provenance]));
+    const s2 = ladder.rungs[1];
+    expect(s2.pages.map(({ key, kind, label }) => [key, kind, label])).toEqual([
+      ["s2/lower", "disegno", "Lowered"],
+      ["s2/hoist-static", "disegno", "hoist-static"],
+      ["s2-provenance/transform", "provenance", "Provenance"],
+    ]);
+    expect(s2.facts).toEqual(["2 ops", "1 pass"]);
+    expect(ladder.timeline.map(({ key }) => key)).not.toContain("s2-provenance/transform");
+  });
+
+  it("takes this file's remarks from the feed and counts them per step", () => {
+    const remark = (path: string | null, pass: string) => ({
+      path,
+      stage: "s2",
+      pass,
+      kind: "missed" as const,
+      name: "static-subtree",
+      span: { start: 3, end: 23 },
+      args: [{ key: "tag", value: "div" }],
+    });
+    const withRemarks: SpolveroFeed = {
+      ...feed(),
+      remarks: [remark("Component.vue", "hoist-static"), remark("Other.vue", "hoist-static")],
+    };
+    const ladder = buildLadder(withRemarks, "Component.vue");
+    expect(ladder.remarks).toEqual([
+      {
+        stage: "s2",
+        pass: "hoist-static",
+        kind: "missed",
+        name: "static-subtree",
+        span: { start: 3, end: 23 },
+        args: [{ key: "tag", value: "div" }],
+      },
+    ]);
+    expect(ladder.timeline.map(({ key, remarks }) => [key, remarks])).toEqual([
+      ["s1/parse", 0],
+      ["s2/lower", 0],
+      ["s2/hoist-static", 1],
+      ["s3/lower", 0],
+    ]);
+    expect(buildLadder(feed()).remarks).toEqual([]);
   });
 });

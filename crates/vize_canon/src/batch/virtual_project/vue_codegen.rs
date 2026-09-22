@@ -284,7 +284,7 @@ pub(super) fn generate_vue_virtual_ts(
     }
 
     let mut code = output.code;
-    let mut mappings = output.mappings;
+    let (mut mappings, semantic_links) = output.mapping.into_parts();
     append_style_scoped_classes(&mut code, source, descriptor, codegen_options.check_options);
     style_modules::append_duplicate_style_modules(
         &mut code,
@@ -297,7 +297,7 @@ pub(super) fn generate_vue_virtual_ts(
     Ok(GeneratedVueFile {
         code,
         mappings,
-        semantic_links: output.semantic_links,
+        semantic_links,
         diagnostics,
     })
 }

@@ -1,0 +1,71 @@
+/// The Vize extension contracts (Davinci phase 6).
+///
+/// Versioning and compatibility policy: `davinci-road/contracts-compat-policy.md`.
+/// Every released version's canonical surface: `contracts/versions/`.
+package vize:contracts@0.1.0;
+
+/// Values every vize contract world shares.
+interface types {
+  /// A byte range in file-absolute UTF-8 offsets (the S0 span).
+  record span {
+    start: u32,
+    end: u32,
+  }
+
+  /// A serialized stage artifact: one folio page in `Full` mode.
+  record page {
+    /// The page grammar's schema version. A reader refuses any version it
+    /// does not read, with the exact error its contract names.
+    schema-version: u32,
+    /// Canonical `Full` text: printing the parsed page reproduces it.
+    text: string,
+  }
+
+  /// How much a diagnostic claims.
+  enum severity {
+    error,
+    warning,
+    info,
+    hint,
+  }
+
+  /// The stage a diagnostic came from.
+  enum stage {
+    source,
+    surface,
+    semantic,
+    lowered,
+    emit,
+  }
+
+  /// What a structured diagnostic part is doing.
+  enum part-kind {
+    primary,
+    secondary,
+    help,
+    suggestion,
+  }
+
+  /// One labelled span of a diagnostic.
+  record diagnostic-part {
+    kind: part-kind,
+    span: span,
+    message: string,
+  }
+
+  /// The proof a diagnostic rests on.
+  variant witness {
+    /// A producer that predates the witness SDK, exempt by inventory.
+    legacy-exempt(string),
+  }
+
+  /// A diagnostic in the one channel every renderer reads.
+  record diagnostic {
+    severity: severity,
+    stage: stage,
+    span: span,
+    message: string,
+    parts: list<diagnostic-part>,
+    witness: option<witness>,
+  }
+}

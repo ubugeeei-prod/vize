@@ -28,6 +28,27 @@ ui.component Comp @39:90
 
 "#;
 
+const S2_PROVENANCE_PAGE: &str = r##"[s2-provenance-folio]
+
+[s2-provenance-folio.records]
+rule=condense.drop-whitespace node=- before="\n  " after="" @0:3
+rule=lower.element node=0 before="<div :class=\"cls\">" after="ui.element div" @3:36
+rule=lower.bind node=1 before=":class=\"cls\"" after="ui.bind \"class\"" @8:20
+rule=lower.interpolation node=2 before=" msg " after="ui.interpolation js" @21:30
+rule=condense.drop-whitespace node=- before="\n  " after="" @36:39
+rule=lower.component node=3 before="<Comp v-model=\"x\">" after="ui.component Comp" @39:90
+rule=lower.model node=4 before="v-model=\"x\"" after="ui.model" @45:56
+rule=lower.element node=5 before="<template #a>" after="ui.element template" @57:83
+rule=lower.slot-content node=6 before="#a" after="ui.slot-content \"a\"" @67:69
+rule=lower.text node=7 before="hi" after="ui.text" @70:72
+rule=condense.drop-whitespace node=- before="\n" after="" @90:91
+rule=pass.v-slot.group node=3 before="Comp" after="groups \"a\"" @39:90
+rule=pass.hoist-static.fact node=0 before="ui.element" after="level=not-static props=false nested=true native=true" @3:36
+rule=pass.hoist-static.fact node=5 before="ui.element" after="level=not-static props=false nested=true native=true" @57:83
+rule=pass.hoist-static.fact node=3 before="ui.component" after="level=not-static props=false nested=false native=false" @39:90
+
+"##;
+
 const S3_PAGE: &str = "[s3-folio]
 phase=built
 
@@ -140,6 +161,7 @@ fn the_ladder_validates_and_pins_every_rung_exactly() {
         ("s2", "v-slot", S2_PAGE),
         ("s2", "v-model", S2_PAGE),
         ("s2", "hoist-static", S2_PAGE),
+        ("s2-provenance", "transform", S2_PROVENANCE_PAGE),
         ("s3", "lower", S3_PAGE),
         ("s3-partition", "lower", S3_PARTITION_PAGE),
         ("s3-values", "lower", S3_VALUES_PAGE),
@@ -171,6 +193,7 @@ fn the_s2_pass_pages_follow_the_artifact_selected_plan() {
             ("s1", "parse"),
             ("s2", "lower"),
             ("s2", "hoist-static"),
+            ("s2-provenance", "transform"),
             ("s3", "lower"),
             ("s3-partition", "lower"),
             ("s3-values", "lower"),
@@ -217,6 +240,11 @@ fn a_malformed_template_still_climbs_every_rung() {
             ("s1", "parse", template),
             ("s2", "lower", s2),
             ("s2", "hoist-static", s2),
+            (
+                "s2-provenance",
+                "transform",
+                "[s2-provenance-folio]\n\n[s2-provenance-folio.records]\nrule=condense.drop-whitespace node=- before=\"\\n\" after=\"\" @0:1\nrule=lower.element node=0 before=\"<div class=\\\"open>{{ msg }\\n\" after=\"ui.element div\" @1:27\nrule=pass.hoist-static.fact node=0 before=\"ui.element\" after=\"level=fully-static props=true nested=false native=true\" @1:27\n\n",
+            ),
             (
                 "s3",
                 "lower",

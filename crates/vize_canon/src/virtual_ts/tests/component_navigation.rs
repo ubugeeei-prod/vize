@@ -43,7 +43,8 @@ const count = 1
 
     let tag_start = template.find("Child").unwrap();
     let tag_mapping = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .find(|mapping| mapping.src_range == (tag_start..tag_start + "Child".len()))
         .expect("component tag should map to a generated component reference");
@@ -51,7 +52,8 @@ const count = 1
 
     let static_prop_start = template.find("label").unwrap();
     let static_prop_mapping = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .find(|mapping| mapping.src_range == (static_prop_start..static_prop_start + "label".len()))
         .expect("static prop name should map to a generated prop type reference");
@@ -59,7 +61,8 @@ const count = 1
 
     let dynamic_prop_start = template.find(":count").unwrap() + 1;
     let dynamic_prop_mapping = output
-        .mappings
+        .mapping
+        .spans()
         .iter()
         .find(|mapping| {
             mapping.src_range == (dynamic_prop_start..dynamic_prop_start + "count".len())

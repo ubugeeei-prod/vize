@@ -391,11 +391,10 @@ fn map_position_to_sfc(
         return fallback_position_to_sfc(start_line, start_char, end_line, end_char, script_offset);
     };
 
-    if let Some((src_start, src_end)) = crate::virtual_ts::mapping::map_generated_range_to_source(
-        &virtual_ts.mappings,
-        gen_start_offset,
-        gen_end_offset,
-    ) {
+    if let Some((src_start, src_end)) = virtual_ts
+        .mapping
+        .diagnostic_range_to_authored(gen_start_offset, gen_end_offset)
+    {
         return (src_start as u32, src_end as u32);
     }
 

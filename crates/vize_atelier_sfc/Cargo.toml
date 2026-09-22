@@ -20,6 +20,10 @@ davinci-differential = [
   "vize_atelier_core/davinci-differential",
   "vize_atelier_vapor/davinci-differential",
 ]
+# Arms only the DOM legacy-lane override (P3-17) so the production-reach
+# gate can compile every `compile_sfc` shape on both DOM lanes and compare
+# the complete modules, without the P1-7 retained-AST dual-run panics.
+davinci-dom-differential = ["vize_atelier_dom/davinci-differential"]
 
 [dependencies]
 vize_s0.workspace = true
@@ -76,6 +80,10 @@ harness = false
 [[test]]
 name = "davinci_differential"
 required-features = ["davinci-differential"]
+
+[[test]]
+name = "davinci_production_reach"
+required-features = ["davinci-dom-differential"]
 
 [[example]]
 name = "css_engine_recovery"

@@ -1243,11 +1243,9 @@ defineProps<{
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     let expression_start = template.find("\"class\"").unwrap() + 1;
-    let expression_end = expression_start + "class".len();
-    let mapping = output
-        .mappings
-        .iter()
-        .find(|mapping| mapping.src_range == (expression_start..expression_end))
+    let expression = expression_start..expression_start + "class".len();
+    let mapping = (output.mapping.spans().iter())
+        .find(|mapping| mapping.src_range == expression)
         .expect("should map the rewritten class prop expression");
     assert_eq!(&output.code[mapping.gen_range.clone()], "props[\"class\"]");
 
@@ -1570,11 +1568,11 @@ const msg = ref('Hello')
 
     // Should have at least one mapping for the template expression
     assert!(
-        !output.mappings.is_empty(),
+        !output.mapping.spans().is_empty(),
         "Should generate source mappings for template expressions"
     );
     // All mappings should have valid ranges
-    for mapping in &output.mappings {
+    for mapping in output.mapping.spans() {
         assert!(
             mapping.gen_range.start < mapping.gen_range.end,
             "Generated range should be non-empty"
@@ -1608,7 +1606,7 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
     let expression = "inputRef && inputRef.focus()";
     let source_start = template.find(expression).unwrap();
     let source_end = source_start + expression.len();
-    let mappings = output.mappings.iter();
+    let mappings = output.mapping.spans().iter();
     let mapping = mappings
         .flat_map(|mapping| &mapping.sub_spans)
         .find(|span| span.src_range == (source_start..source_end))

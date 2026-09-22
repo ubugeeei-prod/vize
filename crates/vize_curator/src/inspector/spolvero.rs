@@ -27,14 +27,19 @@
 //!   from the S2 transform pipeline ([`template_remarks`]), spans in the
 //!   template's byte frame (the pages' frame) - the decision explanations
 //!   Spolvero renders (C-5).
+//! - **Step timings** ([`ladder_run`], [`ladder_profile`]): the same run
+//!   timed by a host-supplied clock and exported as a P0-11 profile document
+//!   (C-3), since the feed schema carries no timing.
 //!
 //! Files that are not `.vue`, fail SFC parsing, or have no template block
 //! contribute no page: the feed is a stage-dump channel, not a diagnostics
 //! channel (diagnostics stay on their own surfaces).
 
 mod ladder;
+mod profile;
 
-pub use ladder::ladder_pages;
+pub use ladder::{LadderClock, LadderRun, LadderStep, ladder_pages, ladder_run};
+pub use profile::{LADDER_STEP_KEY, ladder_profile};
 pub use vize_davinci::folio::feed::{SpolveroFeed, SpolveroPage, SpolveroRemark};
 use vize_davinci::pass::RemarkCollector;
 use vize_s0::{Allocator, String, cstr};

@@ -5,6 +5,7 @@
 
 import type { SpolveroFeed, SpolveroPage } from "../../wasm/types/spolvero";
 import type { PageKind } from "./folioLines";
+import type { SpolveroRemark } from "./remarks";
 
 export type RungId = "s1" | "s2" | "s3";
 
@@ -37,6 +38,10 @@ export interface TimelineStep {
   changed: boolean;
   /** Whether the step is a lowering/parse (a new artifact), not a pass. */
   producer: boolean;
+  /** Measured wall time in nanoseconds, when the run was profiled. */
+  nanos: number | null;
+  /** How many optimization remarks this step's pass emitted. */
+  remarks: number;
 }
 
 export interface StageLadder {
@@ -46,11 +51,14 @@ export interface StageLadder {
   template: string;
   /** Stage names the view does not know how to place, kept visible. */
   unplaced: string[];
+  /** The passes' optimization remarks for this file, in canonical order. */
+  remarks: SpolveroRemark[];
 }
 
 const PAGE_KINDS: Record<string, { rung: RungId; kind: PageKind; label: string }> = {
   s1: { rung: "s1", kind: "surface", label: "Surface" },
   s2: { rung: "s2", kind: "disegno", label: "" },
+  "s2-provenance": { rung: "s2", kind: "provenance", label: "Provenance" },
   s3: { rung: "s3", kind: "impeto", label: "Graph" },
   "s3-partition": { rung: "s3", kind: "partition", label: "Partition" },
   "s3-values": { rung: "s3", kind: "values", label: "Values" },
@@ -84,9 +92,9 @@ function rungFacts(id: RungId, pages: LadderPage[]): string[] {
       return [plural(lines, "line")];
     }
     case "s2": {
-      const lowered = pages[0]?.text ?? "";
-      const ops = /^ops=(\d+)$/m.exec(lowered);
-      const passes = pages.length - 1;
+      const trees = pages.filter((page) => page.kind === "disegno");
+      const ops = /^ops=(\d+)$/m.exec(trees[0]?.text ?? "");
+      const passes = Math.max(trees.length - 1, 0);
       return [plural(Number(ops?.[1] ?? 0), "op"), plural(passes, "pass")];
     }
     case "s3": {
@@ -105,13 +113,23 @@ function pageLabel(stage: string, pass: string): string {
   return known?.label || `${stage}/${pass}`;
 }
 
-/** Shape a negotiated feed's pages (for one file) into the ladder. */
-export function buildLadder(feed: SpolveroFeed, path?: string): StageLadder {
+/**
+ * Shape a negotiated feed's pages (for one file) into the ladder; `timings`
+ * (from the profile export, keyed `stage/pass`) fills each step's wall time.
+ */
+export function buildLadder(
+  feed: SpolveroFeed,
+  path?: string,
+  timings: ReadonlyMap<string, number> = new Map(),
+): StageLadder {
   const pages: SpolveroPage[] = feed.pages.filter(
     (page) => path === undefined || page.path === path,
   );
   const grouped: Record<RungId, LadderPage[]> = { s1: [], s2: [], s3: [] };
   const unplaced: string[] = [];
+  const remarks: SpolveroRemark[] = (feed.remarks ?? [])
+    .filter((remark) => path === undefined || remark.path === path)
+    .map(({ stage, pass, kind, name, span, args }) => ({ stage, pass, kind, name, span, args }));
   for (const page of pages) {
     const placement = PAGE_KINDS[page.stage];
     if (!placement) {
@@ -140,8 +158,11 @@ export function buildLadder(feed: SpolveroFeed, path?: string): StageLadder {
   for (const rung of rungs) {
     for (const page of rung.pages) {
       // The S3 partition and value pages come from the same lowering step as
-      // the graph; the timeline shows steps, not pages.
-      if (page.kind === "partition" || page.kind === "values") continue;
+      // the graph, and the provenance page records decisions across S2's
+      // steps; the timeline shows steps, not pages.
+      if (page.kind === "partition" || page.kind === "values" || page.kind === "provenance") {
+        continue;
+      }
       const producer = page.pass === "lower" || page.pass === "parse";
       timeline.push({
         key: page.key,
@@ -149,6 +170,8 @@ export function buildLadder(feed: SpolveroFeed, path?: string): StageLadder {
         pass: page.pass,
         changed: producer || previous[rung.id] !== page.text,
         producer,
+        nanos: timings.get(page.key) ?? null,
+        remarks: remarks.filter((remark) => `${remark.stage}/${remark.pass}` === page.key).length,
       });
       previous[rung.id] = page.text;
     }
@@ -159,5 +182,6 @@ export function buildLadder(feed: SpolveroFeed, path?: string): StageLadder {
     timeline,
     template: grouped.s1[0]?.text ?? "",
     unplaced,
+    remarks,
   };
 }
