@@ -78,8 +78,9 @@ mod tests {
         let spec = include_str!("../../../../../davinci-road/plan/complexity-metrics.md");
         let cyclomatic = alloc::format!("cyclomatic complexity exceeds {CYCLOMATIC_WARN_ABOVE}**");
         let cognitive = alloc::format!("cognitive\ncomplexity exceeds {COGNITIVE_WARN_ABOVE}**");
-        assert!(spec.contains(cyclomatic.as_str()), "{cyclomatic}");
-        assert!(spec.contains(cognitive.as_str()), "{cognitive}");
+        // Each threshold sentence appears exactly once in the spec.
+        assert_eq!(spec.matches(cyclomatic.as_str()).count(), 1, "{cyclomatic}");
+        assert_eq!(spec.matches(cognitive.as_str()).count(), 1, "{cognitive}");
     }
 
     #[test]

@@ -65,7 +65,7 @@ fn the_table_names_exactly_the_registered_rules_in_order() {
     let names: Vec<&str> = RULE_CONTRACTS.iter().map(|entry| entry.name).collect();
     let registered: Vec<&str> = registered().into_keys().collect();
     assert_eq!(names, registered);
-    assert_eq!(names.len(), 248);
+    assert_eq!(names.len(), 249);
 }
 
 #[test]
@@ -129,7 +129,7 @@ fn the_tier_census_is_pinned() {
             (("complete", "error"), 10),
             (("complete", "warning"), 22),
             (("exact", "error"), 88),
-            (("exact", "warning"), 111),
+            (("exact", "warning"), 112),
             (("heuristic", "warning"), 17),
         ]
     );

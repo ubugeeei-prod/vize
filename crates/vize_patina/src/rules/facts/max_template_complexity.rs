@@ -157,5 +157,4 @@ fn label(row: &Contribution) -> vize_s0::String {
 }
 
 #[cfg(test)]
-#[path = "max_template_complexity_tests.rs"]
 mod tests;

@@ -33,6 +33,9 @@ const SCRIPT: Domain =
 const STYLE: Domain = Domain::new(
     "the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand",
 );
+const TEMPLATE_FLOW: Domain = Domain::new(
+    "control flow of HTML SFC templates as lowered to S2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside",
+);
 const TYPES: Domain =
     Domain::new("types the Corsa session resolves for the component; unresolved types are outside");
 
@@ -193,6 +196,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("vue/html-button-has-type", Exact, HTML, Warning),
     row!("vue/html-quotes", Exact, STYLE, Warning),
     row!("vue/html-self-closing", Exact, STYLE, Warning),
+    row!("vue/max-template-complexity", Exact, TEMPLATE_FLOW, Warning),
     row!("vue/multi-word-component-names", Exact, STYLE, Error),
     row!("vue/mustache-interpolation-spacing", Exact, STYLE, Warning),
     row!("vue/no-array-index-key", Exact, DIRECTIVES, Warning),
