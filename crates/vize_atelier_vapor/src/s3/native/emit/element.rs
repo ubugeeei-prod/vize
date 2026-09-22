@@ -94,6 +94,9 @@ impl<'a> Emitter<'a, '_> {
         let mut reserved = reserved.into_iter();
         let mut cursor = 0;
         let mut offset = 0;
+        // The last referenced element child and its offset: a later element
+        // sibling is reached from it, as the retained lane and upstream do.
+        let mut previous: Option<(usize, usize)> = None;
         while cursor < children.len() {
             let child = children[cursor];
             cursor += 1;
@@ -104,7 +107,13 @@ impl<'a> Emitter<'a, '_> {
                 Content::Element { .. } => {
                     let (id, nested) = if self.dynamic[child] {
                         let parent = parent.expect("dynamic ancestry is materialized");
-                        let id = self.child(parent, offset, block);
+                        let id = match previous {
+                            Some((prev_id, prev_offset)) => {
+                                self.next(prev_id, offset - prev_offset, block)
+                            }
+                            None => self.child(parent, offset, block),
+                        };
+                        previous = Some((id, offset));
                         (Some(id), self.reserve(child))
                     } else {
                         (None, std::vec::Vec::new())

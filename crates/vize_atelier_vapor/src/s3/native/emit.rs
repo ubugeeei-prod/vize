@@ -18,7 +18,7 @@ use vize_atelier_core::{RootNode, SimpleExpressionNode, SourceLocation};
 use vize_carton::{Allocator, Box, String, Vec, ensure_sufficient_stack};
 
 use super::{Content, Expr, NativeArtifact};
-use crate::ir::{BlockIRNode, ChildRefIRNode, IREffect, OperationNode, RootIRNode};
+use crate::ir::{BlockIRNode, ChildRefIRNode, IREffect, NextRefIRNode, OperationNode, RootIRNode};
 
 pub(super) fn emit<'a>(
     artifact: NativeArtifact<'a>,
@@ -141,6 +141,17 @@ impl<'a> Emitter<'a, '_> {
                 parent_id,
                 offset,
             }));
+        child_id
+    }
+
+    /// A sibling reached `offset` positions after an already referenced one.
+    fn next(&mut self, prev_id: usize, offset: usize, block: &mut BlockIRNode<'a>) -> usize {
+        let child_id = self.id();
+        block.operation.push(OperationNode::NextRef(NextRefIRNode {
+            child_id,
+            prev_id,
+            offset,
+        }));
         child_id
     }
 
