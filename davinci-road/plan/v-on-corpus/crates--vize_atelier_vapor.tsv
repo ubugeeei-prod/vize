@@ -6,6 +6,7 @@ crates/vize_atelier_vapor/src/s3/tests.rs	@change.once
 crates/vize_atelier_vapor/src/s3/tests.rs	@custom-event.capture
 crates/vize_atelier_vapor/src/s3/tests/attributes.rs	@keydown.enter
 crates/vize_atelier_vapor/src/s3/tests/components.rs	@change.once
+crates/vize_atelier_vapor/src/s3/tests/models.rs	@keydown.enter
 crates/vize_atelier_vapor/src/tests.rs	@click.stop
 crates/vize_atelier_vapor/tests/davinci_mounted_behavior/events.rs	@keydown.enter.stop
 crates/vize_atelier_vapor/tests/davinci_vapor_artifact.rs	@keydown.enter
