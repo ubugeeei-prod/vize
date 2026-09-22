@@ -130,10 +130,12 @@ linter	Linter	source	crates/vize_patina/src/markup/binding.rs	13	old_ast	old AST
 linter	Linter	source	crates/vize_patina/src/markup/binding.rs	13	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/markup/context.rs	7	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/markup/context.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	1
-linter	Linter	source	crates/vize_patina/src/markup/differential.rs	27	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize_patina/src/markup/differential.rs	27	old_ast	old AST/parser	old	vize_relief	legacy	2
-linter	Linter	source	crates/vize_patina/src/markup/differential.rs	27	old_ast	old AST/parser	old	vize_armature	legacy	1
-linter	Linter	source	crates/vize_patina/src/markup/differential/battery.rs	284	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/markup/differential.rs	28	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/markup/differential.rs	28	old_ast	old AST/parser	old	vize_relief	legacy	2
+linter	Linter	source	crates/vize_patina/src/markup/differential.rs	28	old_ast	old AST/parser	old	vize_armature	legacy	1
+linter	Linter	source	crates/vize_patina/src/markup/differential/battery.rs	295	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/markup/differential/nesting.rs	17	s1	S1	stage	vize_s1	preferred	1
+linter	Linter	source	crates/vize_patina/src/markup/differential/nesting.rs	17	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/markup/differential/rule_fixtures.rs	13	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/markup/differential/trace.rs	12	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/markup/directive.rs	11	s1	S1	stage	vize_s1	preferred	3
