@@ -17,13 +17,14 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 | item              | files | sites |
 | ----------------- | ----: | ----: |
-| `SfcParseOptions` |     3 |     3 |
+| `SfcParseOptions` |     4 |     4 |
 | `SfcScriptBlock`  |     1 |     1 |
 
 ## Naive grep disagreements (resolved/grep)
 
 | product                   | resolved | grep |
 | ------------------------- | -------: | ---: |
+| `Croquis`                 |        0 |    1 |
 | `CroquisSemanticSnapshot` |        3 |    4 |
 | `CroquisSemanticSummary`  |        1 |    2 |
 | `Croquis.bindings`        |        0 |    1 |

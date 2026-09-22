@@ -43,9 +43,9 @@ pub fn template_facts<C: FactConsumer>(
     end: u32,
 ) -> Option<ComplexityFacts> {
     let template = source.get(start as usize..end as usize)?;
-    let mut manager = FactManager::new(&TEMPLATE_FACTS, template);
+    let mut manager = FactManager::new(&TEMPLATE_FACTS);
     let view = manager
-        .prepare::<C>()
+        .prepare::<C>(template)
         .expect("the template registry computes every group a template consumer demands");
     let table = view
         .get::<TemplateComplexityGroup>()

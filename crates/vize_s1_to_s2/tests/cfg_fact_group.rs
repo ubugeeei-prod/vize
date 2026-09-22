@@ -40,9 +40,9 @@ fn the_group_is_computed_once_read_under_demand_and_equals_the_pass() {
     let produced = produced_count(TemplateComplexityGroup::ID);
     let undeclared = undeclared_accesses();
 
-    let mut manager = FactManager::new(&TEMPLATE_FACTS, TEMPLATE);
+    let mut manager = FactManager::new(&TEMPLATE_FACTS);
     let rule_facts = manager
-        .prepare::<Rule>()
+        .prepare::<Rule>(TEMPLATE)
         .unwrap()
         .get::<TemplateComplexityGroup>()
         .unwrap()
@@ -50,7 +50,7 @@ fn the_group_is_computed_once_read_under_demand_and_equals_the_pass() {
         .cloned()
         .unwrap();
     let report_facts = manager
-        .prepare::<Report>()
+        .prepare::<Report>(TEMPLATE)
         .unwrap()
         .get::<TemplateComplexityGroup>()
         .unwrap()
